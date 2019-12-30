@@ -147,7 +147,9 @@ public class JsonHelper {
     }
     
     class public func getKeyAndValueFromString(_ string: String) -> (String, String) {
-        
+        if string == "{}" {
+            return ("", "")
+        }
         let colonStringIndex = string.index(string.firstIndex(of: ":")!, offsetBy:0)
         let keyStartIndex = string.index(string.startIndex, offsetBy:0)
         let keyEndIndex = string.index(colonStringIndex, offsetBy:-1)

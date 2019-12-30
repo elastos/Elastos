@@ -135,10 +135,10 @@ class DummyAdapter: DIDAdapter {
             for ti in idtxs {
                 if ti.getDid() == target {
                     let dic = try ti.toJson()
+                    arr.append(dic)
                     if (!all) {
                         break
                     }
-                    arr.append(dic)
                 }
             }
             redic["transaction"] = arr

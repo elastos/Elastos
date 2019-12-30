@@ -144,7 +144,7 @@ public class FileSystemStorage: DIDStorage {
     
     public override func storeDidMeta(_ did: DID, _ meta: DIDMeta?) throws {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.META_FILE
-        let metadata: String = meta != nil ? meta!.alias : ""
+        let metadata: String = meta != nil ? meta!.toJson() : ""
         if metadata == "" {
             try deleteFile(path)
         }
@@ -225,8 +225,8 @@ public class FileSystemStorage: DIDStorage {
     
     public override func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta?) throws {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + id.fragment + "/" + FileSystemStorage.META_FILE
-        let metadata: String = meta != nil ? meta!.description() : ""
-
+        let metadata: String = meta != nil ? meta!.toJson() : ""
+        
         if metadata == "" {
            _ = try deleteFile(path)
         }
@@ -389,8 +389,6 @@ public class FileSystemStorage: DIDStorage {
         return re && isDir.boolValue
     }
 
-
-    
     func getFile(_ create: Bool, _ path: String) throws -> String {
         let relPath = path
         let fileManager = FileManager.default

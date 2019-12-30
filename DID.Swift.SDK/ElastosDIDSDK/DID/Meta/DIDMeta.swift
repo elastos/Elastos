@@ -22,13 +22,13 @@ public class DIDMeta: Metadata {
         return try fromString(metadata, DIDMeta.self)
     }
 
-    override func fromJson(_ json: Dictionary<String, String>) throws {
-        var value = json[ALIAS]
+    override func fromJson(_ json: OrderedDictionary<String, Any>) throws {
+        var value = json[ALIAS] as? String ?? ""
         if value != "" {
-            self.alias = value!
+            self.alias = value
         }
         
-        value = json[DEACTIVATED]
+        value = json[DEACTIVATED] as? String ?? ""
         if value != "" {
             if value != "0" {
                 self.deactivated = true
@@ -38,20 +38,20 @@ public class DIDMeta: Metadata {
             }
         }
         
-        value = json[TXID]
+        value = json[TXID] as? String ?? ""
         if value != "" {
-            self.transactionId = value!
+            self.transactionId = value
         }
         
-        value = json[TIMESTAMP]
+        value = json[TIMESTAMP] as? String ?? ""
         if value != "" {
-            let date = DateFormater.parseDate(value!)
+            let date = DateFormater.parseDate(value)
             self.updated = date
         }
     }
     
-    override func toJson(_ json: Dictionary<String, Any>) {
-        var dic: Dictionary<String, Any> = [: ]
+    override func toJson() -> String {
+        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         if alias != "" {
             dic[ALIAS] = alias
         }
@@ -67,6 +67,8 @@ public class DIDMeta: Metadata {
         if updated != nil {
             dic[TIMESTAMP] = DateFormater.format(updated!)
         }
+        
+        return JsonHelper.creatJsonString(dic: dic)
     }
     
     override public func merge(_ meta: Metadata) throws {

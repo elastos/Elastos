@@ -200,23 +200,22 @@ class DIDStoreTests: XCTestCase {
                 path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
                 XCTAssertTrue(testData.existsFile(path))
                 
-//                resolved = try doc.subject.resolve(true)
                 resolved = try doc.subject?.resolve(true)
+                try store.storeDid(resolved!)
                 XCTAssertNotNil(resolved)
                 XCTAssertEqual(alias, try resolved!.getAlias())
                 XCTAssertEqual(doc.subject, resolved!.subject)
                 XCTAssertEqual(doc.proof.signature, resolved!.proof.signature)
                 XCTAssertTrue(try resolved!.isValid())
-                
-                var dids: Array<DID> = try store.listDids(DIDStore.DID_ALL)
-                XCTAssertEqual(100, dids.count)
-                
-                dids = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
-                XCTAssertEqual(100, dids.count)
-                
-                dids = try store.listDids(DIDStore.DID_NO_PRIVATEKEY)
-                XCTAssertEqual(0, dids.count)
             }
+            var dids: Array<DID> = try store.listDids(DIDStore.DID_ALL)
+            XCTAssertEqual(100, dids.count)
+            
+            dids = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
+            XCTAssertEqual(100, dids.count)
+            
+            dids = try store.listDids(DIDStore.DID_NO_PRIVATEKEY)
+            XCTAssertEqual(0, dids.count)
         } catch {
             XCTFail()
         }
@@ -272,8 +271,8 @@ class DIDStoreTests: XCTestCase {
             try testData.initIdentity()
             
             // Store test data into current store
-            let issuer: DIDDocument = try testData.loadTestDocument()
-            let test: DIDDocument = try testData.loadTestIssuer()
+            let issuer: DIDDocument = try testData.loadTestIssuer()
+            let test: DIDDocument = try testData.loadTestDocument()
                         
             var doc: DIDDocument = try  store.loadDid(issuer.subject!)
             XCTAssertEqual(issuer.subject, doc.subject)

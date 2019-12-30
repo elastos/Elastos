@@ -163,9 +163,7 @@ public class DIDStore: NSObject {
         
         
         let privatekeyData: Data = try key.getPrivateKeyData()
-//        let encryptedKey = try encryptToBase64(storepass, privatekeyData)
-//        // TODO: get real private key bytes
-//        let data = encryptedKey.data(using: .utf8)
+        // TODO: get real private key bytes
         try storePrivateKey(did, id, privatekeyData, storepass)
         
         var doc: DIDDocument = DIDDocument(did)
@@ -173,7 +171,8 @@ public class DIDStore: NSObject {
         _ = try doc.addAuthenticationKey(id, try key.getPublicKeyBase58())
         
         doc = try doc.seal(self, storepass)
-        try storeDid(doc, alias ?? "")
+        try storeDid(doc)
+        try doc.setAlias(alias!)
         try storage.storePrivateIdentityIndex(nextIndex)
         
         return doc

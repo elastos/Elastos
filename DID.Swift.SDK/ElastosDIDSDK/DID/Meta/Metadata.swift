@@ -30,9 +30,7 @@ public class Metadata {
         return extra[EXTRA_PREFIX + name] as? String
     }
     
-    func fromJson(_ json: Dictionary<String, String>) throws {
-        
-    }
+    func fromJson(_ json: OrderedDictionary<String, Any>) throws {}
     
     class func fromString<T: Metadata>(_ metadata: String, _ clazz: T.Type) throws -> T {
         
@@ -41,30 +39,17 @@ public class Metadata {
             return meta
         }
         // check as! Dictionary<String, String>
-        let dic = JsonHelper.handleString(metadata) as! Dictionary<String, String>
+        let dic = JsonHelper.handleString(metadata) as! OrderedDictionary<String, Any>
         
         try meta.fromJson(dic)
-        
+        dic.forEach { key, value in
+            let v = value as! String
+            meta.setExtraInternal(key, v)
+        }
         return meta
-        
-        /*
-
-         Iterator<Map.Entry<String,JsonNode>> it = node.fields();
-         while (it.hasNext()) {
-             Map.Entry<String,JsonNode> field = it.next();
-             JsonNode vn = field.getValue();
-             String key = field.getKey();
-             String value = vn != null ? vn.asText() : null;
-
-             meta.setExtraInternal(key, value);
-         }
-
-         return meta;
-         
-         */
     }
     
-    func toJson(_ json: Dictionary<String, Any>) {}
+    func toJson() -> String { return "" }
     
     func description() -> String {
         if extra.count != 0 {
