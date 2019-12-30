@@ -23,37 +23,50 @@ class Common(common_pb2_grpc.CommonServicer):
 
         date_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S %z")
 
+        #Generate the api key
         if secret_key == request.secret_key:
             api_key = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(string_length))
-            api_present = self.session.query(UserApiRelations).filter_by(api_key=api_key).first()
+            try:
+                api_present = self.session.query(UserApiRelations).filter_by(api_key=api_key).first()
+            except Exception as e:
+                print(e)
 
+            #Generate a new api key if its already present
             if api_present:
                 while api_present.api_key == api_key:
                     api_key = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(string_length))
 
             result = self.session.query(Users).filter_by(did=check_did).first()
 
+            #If did is already present replace the api key
             if result:
-                insert = self.session.query(UserApiRelations).filter_by(user_id=result.id).first()
-                insert.api_key = api_key
-                self.session.commit()
-                self.session.close()
+                try:
+                    insert = self.session.query(UserApiRelations).filter_by(user_id=result.id).first()
+                    insert.api_key = api_key
+                    self.session.commit()
+                    self.session.close()
+                except Exception:
+                    print("Unable to insert into api relations table")
+            #Else insert the did and api key into respective tables
             else:
-                user = Users(
-                    did=check_did,
-                    created_on=date_now,
-                    last_logged_on=date_now
-                )
-                self.session.add(user)
-                self.session.commit()
-                insert = self.session.query(Users).filter_by(did=check_did).first()
-                user_api = UserApiRelations(
-                    user_id=insert.id,
-                    api_key=api_key
-                )
-                self.session.add(user_api)
-                self.session.commit()
-                self.session.close()
+                try:
+                    user = Users(
+                        did=check_did,
+                        created_on=date_now,
+                        last_logged_on=date_now
+                    )
+                    self.session.add(user)
+                    self.session.commit()
+                    insert = self.session.query(Users).filter_by(did=check_did).first()
+                    user_api = UserApiRelations(
+                        user_id=insert.id,
+                        api_key=api_key
+                    )
+                    self.session.add(user_api)
+                    self.session.commit()
+                    self.session.close()
+                except Exception:
+                    print("Unable to insert new values into the tables")
             return common_pb2.Response(api_key=api_key, status_message='Success', status=True)
         else:
             return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
@@ -65,7 +78,8 @@ class Common(common_pb2_grpc.CommonServicer):
         if secret_key == request.secret_key:
             show_did = request.did
             result = self.session.query(Users).filter_by(did=show_did).first()
-
+            
+            #Get the api key for the requested did
             if result:
                 get_api_key = self.session.query(UserApiRelations).filter_by(user_id=result.id).first()
                 got_api_key = get_api_key.api_key
