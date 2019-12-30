@@ -72,6 +72,14 @@
                 </button>
                 <div class="collapse navbar-collapse">
                     <ul class="navbar-nav">
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'login:feed' %}">
+                                <button class="text-white" type="button"
+                                        style="background: transparent ; border: #FFFFFF">Feed
+                                </button>
+                            </a>
+                        </li>
                         <li class="nav-item active">
                             <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
                                     data-toggle="collapse" data-target="#menu_services"
@@ -80,36 +88,60 @@
                                 Services
                             </button>
                         </li>
-                        <li class="nav-item">
-                            <a href="{% url 'login:feed' %}">
-                                <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF">Feed</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
-                                    data-toggle="collapse" data-target="#menu_playground"
-                                    aria-controls="navbarToggleExternalContent" aria-expanded="false"
-                                    aria-label="Toggle navigation">
-                                Playground
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
-                                    data-toggle="collapse" data-target="#menu_applications"
-                                    aria-controls="navbarToggleExternalContent" aria-expanded="false"
-                                    aria-label="Toggle navigation">
-                                Applications
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
-                                    data-toggle="collapse" data-target="#menu_workspaces"
-                                    aria-controls="navbarToggleExternalContent" aria-expanded="false"
-                                    aria-label="Toggle navigation">
-                                Workspace
-                            </button>
-                        </li>
                     </ul>
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Playground</a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
+                            <a class="dropdown-item" href="#">Golang[COMING SOON]</a>
+                            <a class="dropdown-item" href="#">Python[COMING SOON]</a>
+                            <a class="dropdown-item" href="#">elastOS[COMING SOON]</a>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <div class="row">
+                            <div class="dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button"
+                                        style="border-color:transparent; background-color:transparent"
+                                        id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true"
+                                        aria-expanded="false">
+                                    Applications
+                                </button>
+                                <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+                                    <li class="dropdown-submenu">
+                                        <a class="dropdown-item" tabindex="-1" href="#">Browser</a>
+                                        <ul class="dropdown-menu">
+                                            <li class="dropdown-item"><a tabindex="-1" href="{% url 'browser:mainchain' %}">Mainchain Browser</a></li>
+                                            <li class="dropdown-item"><a href="{% url 'browser:sidechain_did' %}">DID Sidechain Browser</a></li>
+                                            <li class="dropdown-item"><a tabindex="-1" href="{% url 'browser:sidechain_token' %}">Token Sidechain Browser</a></li>
+                                            <li class="dropdown-item"><a tabindex="-1" href="{% url 'browser:sidechain_neo' %}">NEO Sidechain Browser[COMING SOON]</a></li>
+                                            <li class="dropdown-item"><a tabindex="-1" href="{% url 'browser:sidechain_eth' %}">ETH Sidechain Browser</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="dropdown-submenu">
+                                        <a class="dropdown-item" tabindex="-1" href="#">ElastOS Tools</a>
+                                        <ul class="dropdown-menu">
+                                            <li class="dropdown-item"><a tabindex="-1" href="#">DApp Store
+                                                Dashboard[COMING SOON]</a></li>
+                                            <li class="dropdown-item"><a href="#">Deploy DApp[COMING SOON]</a></li>
+                                            <li class="dropdown-item"><a tabindex="-1" href="#">DApp Store
+                                                Dashboard[COMING SOON]</a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Workspace</a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
+                            <a class="dropdown-item" href="#">Deploy your private net[COMING SOON]</a>
+                            <a class="dropdown-item" href="#">Deploy your testnet nodes[COMING SOON]</a>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="dropdown">
@@ -135,8 +167,8 @@
                                     </li>
                                     {% if recent_services.exists %}
                                         {% for item in recent_services %}
-                                             <a href="{% url  item.view  %}"
-                                                style="color:black; text-decoration:none">{{ item.name }}</a> <br>
+                                            <a href="{% url  item.view %}"
+                                               style="color:black; text-decoration:none">{{ item.name }}</a> <br>
                                         {% endfor %}
                                     {% endif %}
                                 </ul>
@@ -191,65 +223,6 @@
                 </div>
             </div>
 
-            <div class="pos-f-t">
-              <div class="collapse mx-auto" id="menu_playground">
-                  <div class="bg-primary p-2 text-center">
-                      <a class="dropdown-item" href="#">Golang[COMING SOON]</a>
-                      <a class="dropdown-item" href="#">Python[COMING SOON]</a>
-                      <a class="dropdown-item" href="#">elastOS[COMING SOON]</a>
-                  </div>
-              </div>
-            </div>
-
-            <div class="pos-f-t">
-              <div class="collapse mx-auto" id="menu_applications">
-                  <div class="bg-primary p-2 text-center">
-                      <div class="row">
-                        <li class="col-md-3" style="list-style-type:none">
-                          <ul>
-                              <li class="dropdown-header"
-                                  style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
-                                  
-                              </li>
-                          </ul>
-                        </li>
-
-                          <li class="col-md-3" style="list-style-type:none">
-                              <ul>
-                                <li class="dropdown-header" style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
-                                  Browser
-                                </li>
-                                <a href="{% url 'browser:mainchain' %}" style="color:black; text-decoration:none">Mainchain Browser</a><br>
-                                <a href="{% url 'browser:sidechain_did' %}" style="color:black; text-decoration:none">DID Sidechain Browser</a><br>
-                                <a href="{% url 'browser:sidechain_token' %}" style="color:black; text-decoration:none">Token Sidechain Browser</a><br>
-                                <a href="{% url 'browser:sidechain_neo' %}" style="color:black; text-decoration:none">NEO Sidechain Browser[COMING SOON]</a><br>
-                                <a href="{% url 'browser:sidechain_eth' %}" style="color:black; text-decoration:none">ETH Sidechain Browser</a><br>
-                              </ul>
-                          </li>
-                          <li class="col-md-3" style="list-style-type:none">
-                              <ul>
-                                  <li class="dropdown-header" style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
-                                    elastOS Tools
-                                  </li>
-                                  <a href="{% url 'service:create_wallet' %}"
-                                     style="color:black; text-decoration:none">DApp Store Dashboard[COMING SOON]</a> <br>
-                                  <a href="{% url 'service:view_wallet' %}" style="color:black; text-decoration:none">Deploy DApp[COMING SOON]</a> <br>
-                                  <a href="{% url 'service:request_ela' %}" style="color:black; text-decoration:none">Deploy Vault[COMING SOON]</a>
-                              </ul>
-                          </li>
-                      </div>
-                  </div>
-              </div>
-          </div>
-
-            <div class="pos-f-t">
-                <div class="collapse mx-auto" id="menu_workspaces">
-                    <div class="bg-primary p-2 text-center">
-                        <a class="dropdown-item" href="#">Deploy your private net[COMING SOON]</a>
-                        <a class="dropdown-item" href="#">Deploy your testnet nodes[COMING SOON]</a>
-                    </div>
-                </div>
-            </div>
         {% endif %}
     </header>
 </head>
