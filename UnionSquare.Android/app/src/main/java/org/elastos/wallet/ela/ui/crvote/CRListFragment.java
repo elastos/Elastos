@@ -495,15 +495,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
                 try {
                     String totalvotes = ((CRListBean) baseEntity).getData().getResult().getTotalvotes();
-                    Iterator<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> iterator = curentList.iterator();
-                    while (iterator.hasNext()) {
-                        //筛选当前节点
-                        CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = iterator.next();
-                        setVoterate(bean, totalvotes);
-                    }
+                    resetData(curentList, totalvotes);
                     onGetVoteList(curentList);
-
-
                 } catch (Exception e) {
 
                     onGetVoteList(null);
