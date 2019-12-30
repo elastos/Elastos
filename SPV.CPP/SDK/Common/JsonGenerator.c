@@ -93,7 +93,7 @@ static inline state_t pop_state(JsonGenerator *generator)
         return STATE_UNKNOWN;
 
     state = (state_t)generator->state[--generator->deep];
-    return state > 0 ? state : state ^ 0x80;
+    return state > 0 ? state : state & 0x7F;
 }
 
 static inline state_t get_state(JsonGenerator *generator)
@@ -107,7 +107,7 @@ static inline state_t get_state(JsonGenerator *generator)
         return STATE_UNKNOWN;
 
     state = (state_t)generator->state[generator->deep - 1];
-    state = state > 0 ? state : state ^ 0x80;
+    state = state > 0 ? state : state & 0x7F;
     return (state_t)state;
 }
 
@@ -259,7 +259,7 @@ int JsonGenerator_WriteString(JsonGenerator *generator, const char *value)
     size_t len;
     int is_sticky;
 
-    if (!generator || !generator->buffer || !value)
+    if (!generator || !generator->buffer)
         return -1;
 
     assert(get_state(generator) == STATE_FIELD
@@ -267,17 +267,22 @@ int JsonGenerator_WriteString(JsonGenerator *generator, const char *value)
 
     is_sticky = is_state_sticky(generator);
 
-    len = strlen(value);
+    len = value ? strlen(value) : 4; // null value
     if (ensure_capacity(generator, len + 2 + is_sticky) == -1)
         return -1;
 
     if (is_sticky)
         generator->buffer[generator->pos++] = comma_symbol;
 
-    generator->buffer[generator->pos++] = start_sting_quote;
-    strcpy(generator->buffer + generator->pos, value);
-    generator->pos += len;
-    generator->buffer[generator->pos++] = end_sting_quote;
+    if (value) {
+        generator->buffer[generator->pos++] = start_sting_quote;
+        strcpy(generator->buffer + generator->pos, value);
+        generator->pos += len;
+        generator->buffer[generator->pos++] = end_sting_quote;
+    } else {
+        strcpy(generator->buffer + generator->pos, "null");
+        generator->pos += 4;
+    }
 
     if (get_state(generator) == STATE_FIELD)
         pop_state(generator);
