@@ -81,7 +81,7 @@
                             </button>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'login:home' %}">
+                            <a href="{% url 'login:feed' %}">
                                 <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF">Feed</button>
                             </a>
                         </li>
@@ -133,7 +133,12 @@
                                         style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
                                         Recently Opened
                                     </li>
-                                    <!-- Recently Opened Services go here -->
+                                    {% if recent_services.exists %}
+                                        {% for item in recent_services %}
+                                             <a href="{% url  item.view  %}"
+                                                style="color:black; text-decoration:none">{{ item.name }}</a> <br>
+                                        {% endfor %}
+                                    {% endif %}
                                 </ul>
                             </li>
 
@@ -154,7 +159,6 @@
                                        style="color:black; text-decoration:none">Upload and Sign</a> <br>
                                     <a href="{% url 'service:verify_and_show' %}"
                                        style="color:black; text-decoration:none">Verify and Show</a>
-
                                 </ul>
                             </li>
                             <li class="col-md-3" style="list-style-type:none">

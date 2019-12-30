@@ -175,11 +175,23 @@
           </div>
 
           <!-- Services -->
-          <div class="row" style="margin-top: 15px;">
-            
-          </div>
+        <div>
+            {% if most_visited_pages.exists %}
+                {% for item in most_visited_pages %}
+                    <div class="row justify-content-center" style="margin-top: 15px;">
+                          <div class="card text-white justify-content-center bg-secondary mb-3 w-50 ">
+                                  <a href="{% url item.view %}" style="color: inherit">
+                                    <div class="card-body justify-content-center">
+                                        {{ item.name }}
+                                    </div>
+                                  </a>
+
+                          </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
         </div>
-      </div>
+
   
 </main>
 

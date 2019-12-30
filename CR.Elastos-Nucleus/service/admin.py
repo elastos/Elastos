@@ -17,3 +17,4 @@ class UserServiceSessionVarsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UserServiceSessionVars, UserServiceSessionVarsAdmin)
+

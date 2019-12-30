@@ -30,8 +30,8 @@ tools/.postgres-data
 www/
 
 # logs
-elastos-nucleus.log
-queries.log
+elastos-nucleus.log*
+queries.log*
 
 # uploaded files
 documents/

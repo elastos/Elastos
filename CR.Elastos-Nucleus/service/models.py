@@ -2,10 +2,8 @@
 import os
 
 from django.db import models
-from django.utils import timezone
 
 from console_main import settings
-from login import models as loginModels
 
 
 class UploadFile(models.Model):
