@@ -41,7 +41,7 @@ class DummyAdapter: DIDAdapter {
                 throw TestError.failue("Invalid ID transaction request.")
             }
             if request.operation != IDChainRequest.Operation.DEACTIVATE {
-                guard try request.doc!.isValid() else {
+                if try !request.doc!.isValid() {
                     throw TestError.failue("Invalid DID Document.")
                 }
             }

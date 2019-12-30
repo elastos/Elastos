@@ -955,6 +955,7 @@ public class DIDDocument: NSObject {
     }
     
     public func seal(_ store: DIDStore, _ storepass: String) throws -> DIDDocument {
+        
         setDefaultExpires()
         meta.store = store
         let signKey: DIDURL = getDefaultPublicKey()

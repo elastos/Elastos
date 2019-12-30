@@ -42,9 +42,8 @@ public class DateFormater {
     }
     
     public class func format(_ date: Date) -> String{
-        var formatter = Foundation.DateFormatter()
-        formatter = Foundation.DateFormatter()
-        formatter.dateFormat = "YYYY-MM-dd'T'HH:mm:ss'Z'"
+        let formatter = Foundation.DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
         formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
         let localDate = formatter.string(from: date)
         return localDate
@@ -53,7 +52,7 @@ public class DateFormater {
     public class func currentDateToWantDate(_ year: Int)-> Date {
         let current = Date()
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(abbreviation: "UTC")!
+        calendar.timeZone = TimeZone.current
         var comps:DateComponents?
         
         comps = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: current)

@@ -71,7 +71,7 @@ public class ResolveResult {
         
         let rr: ResolveResult = ResolveResult(did, status)
         
-        if (status != STATUS_NOT_FOUND) {
+        if (status != ResolveResult.STATUS_NOT_FOUND) {
             let txs: Array<Any> = result[TRANSACTION] as! Array<Any>
             if (txs.count == 0)
             {

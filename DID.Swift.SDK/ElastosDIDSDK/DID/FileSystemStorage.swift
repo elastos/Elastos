@@ -144,7 +144,7 @@ public class FileSystemStorage: DIDStorage {
     
     public override func storeDidMeta(_ did: DID, _ meta: DIDMeta?) throws {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.META_FILE
-        var metadata: String = meta != nil ? meta!.description() : ""
+        let metadata: String = meta != nil ? meta!.alias : ""
         if metadata == "" {
             try deleteFile(path)
         }

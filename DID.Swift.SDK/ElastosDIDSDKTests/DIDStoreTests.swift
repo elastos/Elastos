@@ -200,7 +200,8 @@ class DIDStoreTests: XCTestCase {
                 path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
                 XCTAssertTrue(testData.existsFile(path))
                 
-                resolved = try store.resolveDid(doc.subject!, true)
+//                resolved = try doc.subject.resolve(true)
+                resolved = try doc.subject?.resolve(true)
                 XCTAssertNotNil(resolved)
                 XCTAssertEqual(alias, try resolved!.getAlias())
                 XCTAssertEqual(doc.subject, resolved!.subject)

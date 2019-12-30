@@ -8,7 +8,6 @@ let storePath: String = "/Users/liaihong/Desktop/DID_iOS/storeRoot"
 let storePass: String = "passwd"
 let passphrase: String = "secret"
 let walletPassword: String = "test111111"
-let verbose: Bool = true
 
 let walletDir: String = "/Users/liaihong/.didwallet"
 let walletId: String = "test"

@@ -29,6 +29,7 @@ class TestData: XCTestCase {
     private var testVp: VerifiablePresentation?
     private var testVpNormalizedJson: String?
     private var restoreMnemonic: String?
+    let verbose: Bool = true
     
     private var store: DIDStore!
 

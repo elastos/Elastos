@@ -162,6 +162,10 @@ public class JsonHelper {
     
     class public func handleString(_ jsonString: String) -> Any? {
         
+        print("000000000000000000000000")
+        print(jsonString)
+        print("000000000000000000000000")
+
         if isDictionaryJsonString(jsonString) {
             
             var orderDictionary: OrderedDictionary<String, Any>
@@ -236,7 +240,9 @@ public class JsonHelper {
                     if (level == 0 && index == String(content).count - 1) {
                         tempStr = (tempStr ?? "") + String(char)
                     }
-                    if isDictionaryJsonString(tempStr ?? "") {
+                    if tempStr == "[]" {
+                        return resultArray
+                    } else if isDictionaryJsonString(tempStr ?? "") {
                         resultArray.append(self.handleString(tempStr!) as Any)
                     } else if isArrayJsonString(tempStr ?? "") {
                         resultArray.append(self.handleString(tempStr!) as Any)
