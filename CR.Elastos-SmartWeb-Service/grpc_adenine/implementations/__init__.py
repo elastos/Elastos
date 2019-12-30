@@ -10,9 +10,9 @@ from decouple import config
 from web3 import Web3, HTTPProvider
 from web3.middleware import geth_poa_middleware
 
-# Set up logging
 from grpc_adenine.settings import REQUEST_TIMEOUT
 
+# Set up logging
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.DEBUG,

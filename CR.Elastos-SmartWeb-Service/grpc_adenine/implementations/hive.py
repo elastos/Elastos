@@ -44,7 +44,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         response = check_rate_limit(self.rate_limiter, settings.UPLOAD_AND_SIGN_LIMIT, api_key, self.UploadAndSign.__name__)
         if response:
             return hive_pb2.Response(output=json.dumps(response),
-                                     status_message='Number of daily access limit exceeded',
+                                     status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
                                      status=False)
 
         # reading the file content
@@ -111,7 +111,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         response = check_rate_limit(self.rate_limiter, settings.VERIFY_AND_SHOW_LIMIT, api_key, self.VerifyAndShow.__name__)
         if response:
             return hive_pb2.Response(output=json.dumps(response),
-                                     status_message='Number of daily access limit exceeded',
+                                     status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
                                      status=False)
 
         # verify the hash key

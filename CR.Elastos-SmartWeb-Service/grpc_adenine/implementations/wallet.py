@@ -50,7 +50,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         response = check_rate_limit(self.rate_limiter, settings.CREATE_WALLET_LIMIT, api_key, self.CreateWallet.__name__)
         if response:
             return wallet_pb2.Response(output=json.dumps(response),
-                                       status_message='Number of daily access limit exceeded',
+                                       status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
                                        status=False)
 
         # Create wallets
@@ -110,7 +110,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         response = check_rate_limit(self.rate_limiter, settings.VIEW_WALLET_LIMIT, api_key, self.ViewWallet.__name__)
         if response:
             return wallet_pb2.Response(output=json.dumps(response),
-                                       status_message='Number of daily access limit exceeded',
+                                       status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
                                        status=False)
 
         request_input = json.loads(request.input)
@@ -149,7 +149,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         response = check_rate_limit(self.rate_limiter, settings.REQUEST_ELA_LIMIT, api_key, self.RequestELA.__name__)
         if response:
             return wallet_pb2.Response(output=json.dumps(response),
-                                       status_message='Number of daily access limit exceeded',
+                                       status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
                                        status=False)
 
         request_input = json.loads(request.input)

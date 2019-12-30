@@ -48,7 +48,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         response = check_rate_limit(self.rate_limiter, settings.DEPLOY_ETH_CONTRACT_LIMIT, api_key, self.DeployEthContract.__name__)
         if response:
             return sidechain_eth_pb2.Response(output=json.dumps(response),
-                                              status_message='Number of daily access limit exceeded',
+                                              status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
                                               status=False)
 
         # reading the file content
@@ -137,7 +137,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         response = check_rate_limit(self.rate_limiter, settings.WATCH_ETH_CONTRACT_LIMIT, api_key, self.WatchEthContract.__name__)
         if response:
             return sidechain_eth_pb2.Response(output=json.dumps(response),
-                                              status_message='Number of daily access limit exceeded',
+                                              status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
                                               status=False)
 
         # reading the file content
