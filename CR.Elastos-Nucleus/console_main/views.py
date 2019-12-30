@@ -47,7 +47,8 @@ def landing(request):
         request.session['did'] = user.did
         request.session['logged_in'] = True
         populate_session_vars_from_database(request, user.did)
-    return render(request, 'landing.html')
+        recent_services = get_recent_services(user.did)
+    return render(request, 'landing.html', {'recent_services': recent_services})
 
 
 def populate_session_vars_from_database(request, did):
