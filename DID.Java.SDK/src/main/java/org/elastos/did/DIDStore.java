@@ -263,6 +263,13 @@ public final class DIDStore {
 			signKey = doc.getDefaultPublicKey();
 
 		String lastTxid = doc.getTransactionId();
+		if (lastTxid == null || lastTxid.isEmpty()) {
+			// TODO: check me!!!
+			DIDDocument resolved = did.resolve();
+			if (resolved != null)
+				lastTxid = resolved.getTransactionId();
+		}
+
 		if (lastTxid == null || lastTxid.isEmpty())
 			lastTxid = DIDBackend.getInstance().create(doc, signKey, storepass);
 		else
