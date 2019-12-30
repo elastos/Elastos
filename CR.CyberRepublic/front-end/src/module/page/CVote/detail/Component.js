@@ -510,7 +510,7 @@ class C extends StandardPage {
       const sections = [
         'abstract',
         'motivation',
-        'specification',
+        'specifications',
         'rationale',
         'backwardCompatibility',
         'referenceImplementation',
