@@ -24,6 +24,8 @@
 #define __JSON_GENERATOR_H__
 
 #include <stddef.h>
+#include <stdio.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +37,7 @@ typedef struct JsonGenerator {
     size_t capacity;
     size_t pos;
     short deep;
-    char state[JSON_GENERATOR_MAX_DEEPS];
+    uint8_t state[JSON_GENERATOR_MAX_DEEPS];
     char *buffer;
 } JsonGenerator;
 
