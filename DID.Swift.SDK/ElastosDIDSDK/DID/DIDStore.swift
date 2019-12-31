@@ -382,7 +382,7 @@ public class DIDStore: NSObject {
         try storage.storeCredentialMeta(credential.subject.id, credential.id, meta)
 
         if (vcCache != nil) {
-            vcCache?.put(credential.id, data: credential)
+            vcCache!.put(credential.id!, data: credential)
         }
     }
 
@@ -444,7 +444,7 @@ public class DIDStore: NSObject {
         vc = try storage.loadCredential(did, id)
         if (vc != nil) {
             let v = vc as! VerifiableCredential
-            vcCache!.put(v.id, data: v)
+            vcCache!.put(v.id!, data: v)
         }
 
         return vc as? VerifiableCredential
