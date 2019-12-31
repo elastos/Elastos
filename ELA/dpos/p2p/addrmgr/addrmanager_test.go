@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"net"
 	"testing"
-	"time"
 
 	"github.com/elastos/Elastos.ELA/dpos/p2p/addrmgr"
 )
@@ -19,8 +18,6 @@ import (
 var someIP = "173.194.115.66"
 
 func TestStartStop(t *testing.T) {
-	time.Now()
-
 	n := addrmgr.New("teststartstop")
 	n.Start()
 	n.Stop()
