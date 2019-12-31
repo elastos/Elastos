@@ -14,7 +14,7 @@ export default class extends Base {
     const options = {
       model: this.getName(),
       field: 'vid',
-      startAt: 100,
+      startAt: 10,
     }
     schema.plugin(autoIncrement, options)
     schema.index({ status: -1, vid: -1 })
