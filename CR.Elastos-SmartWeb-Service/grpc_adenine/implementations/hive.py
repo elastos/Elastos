@@ -1,12 +1,12 @@
 import json
 from decouple import config
 from requests import Session
-
+import logging
 from grpc_adenine import settings
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs import hive_pb2
 from grpc_adenine.stubs import hive_pb2_grpc
-from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key, check_rate_limit
+from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key, check_rate_limit, get_did_from_api
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 from cryptography.fernet import Fernet
 
@@ -30,6 +30,8 @@ class Hive(hive_pb2_grpc.HiveServicer):
     def UploadAndSign(self, request, context):
 
         api_key = request.api_key
+        did = get_did_from_api(api_key)
+
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
@@ -38,7 +40,9 @@ class Hive(hive_pb2_grpc.HiveServicer):
                     'API_Key': api_key
                 }
             }
-            return hive_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified', status=False)
+            status_message = "API Key could not be verified"
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return hive_pb2.Response(output=json.dumps(response), status_message=status_message, status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = check_rate_limit(self.rate_limiter, settings.UPLOAD_AND_SIGN_LIMIT, api_key, self.UploadAndSign.__name__)

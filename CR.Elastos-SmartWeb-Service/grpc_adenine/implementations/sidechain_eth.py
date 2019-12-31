@@ -2,7 +2,7 @@ import json
 from decouple import config
 from requests import Session
 from pathlib import Path
-
+import logging
 from web3 import Web3, HTTPProvider
 from web3.middleware import geth_poa_middleware
 from solc import compile_standard
@@ -34,6 +34,8 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
     def DeployEthContract(self, request, context):
 
         api_key = request.api_key
+        did = get_did_from_api(api_key)
+        
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
@@ -101,9 +103,17 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             'data': '0x' + bytecode
         }
         signed_tx = self.web3.eth.account.sign_transaction(transaction, eth_private_key)
+        if signed_tx is None:
+            status_message = 'Error: Transaction could not be signed'
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
 
         # Submit the transaction that deploys the contract
         tx_hash = self.web3.eth.sendRawTransaction(signed_tx.rawTransaction)
+        if tx_hash is None:
+            status_message = 'Error: Transaction could not be send to deploy contract'
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
 
         # Wait for the transaction to be mined, and get the transaction receipt
         tx_receipt = self.web3.eth.waitForTransactionReceipt(tx_hash)
