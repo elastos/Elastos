@@ -257,6 +257,8 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
         return NULL;
 
     strcat(file_root, file_suffix);
+    if (type == DIDStore_PrivateKey)
+        return file_root;
 
     if (create && test_path(file_root) < 0 && mkdir(file_root, S_IRWXU) == -1)
         return NULL;
@@ -278,19 +280,20 @@ static const char *get_file_path(DIDStore *store, DIDStore_Type type,
     if (!root)
         return NULL;
 
-    if (type == DIDStore_Root)
+    if (type == DIDStore_Root || type == DIDStore_PrivateKey
+            || type == DIDStore_CredentialRoot)
         return root;
 
-	if (type == DIDStore_DID || type == DIDStore_CredentialRoot)
-		return get_file_root(store, DIDStore_Doc, didstring, fragment, create);
+    if (type == DIDStore_DID)
+        return get_file_root(store, DIDStore_Doc, didstring, fragment, create);
 
-	if (type == DIDStore_Doc || type == DIDStore_Rootkey || type == DIDStore_RootIndex) {
-		len = snprintf(file_path, sizeof(file_path), "%s/%s", root, methods[type]);
+    if (type == DIDStore_Doc || type == DIDStore_Rootkey || type == DIDStore_RootIndex) {
+        len = snprintf(file_path, sizeof(file_path), "%s/%s", root, methods[type]);
         if (len < 0 || len > sizeof(file_path))
             return NULL;
 
-		return file_path;
-	}
+        return file_path;
+    }
 
     if (type == DIDStore_DIDMeta || type == DIDStore_CredentialMeta) {
         len = snprintf(file_path, sizeof(file_path), "%s/.meta", root);
