@@ -2,21 +2,14 @@ package org.elastos.wallet.ela.ui.Assets.bean;
 
 public class SubWalletBasicInfo {
 
+
     /**
-     * Info : {"Account":{"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"},"CoinIndex":2}
-     * ChainID : TokenChain
+     * ChainID : ELA
+     * Info : {"Account":{"HasPassPhrase":true,"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"},"CoinIndex":0}
      */
 
-    private InfoBean Info;
     private String ChainID;
-
-    public InfoBean getInfo() {
-        return Info;
-    }
-
-    public void setInfo(InfoBean Info) {
-        this.Info = Info;
-    }
+    private InfoBean Info;
 
     public String getChainID() {
         return ChainID;
@@ -26,10 +19,18 @@ public class SubWalletBasicInfo {
         this.ChainID = ChainID;
     }
 
+    public InfoBean getInfo() {
+        return Info;
+    }
+
+    public void setInfo(InfoBean Info) {
+        this.Info = Info;
+    }
+
     public static class InfoBean {
         /**
-         * Account : {"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"}
-         * CoinIndex : 2
+         * Account : {"HasPassPhrase":true,"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"}
+         * CoinIndex : 0
          */
 
         private AccountBean Account;
@@ -53,6 +54,7 @@ public class SubWalletBasicInfo {
 
         public static class AccountBean {
             /**
+             * HasPassPhrase : true
              * M : 1
              * N : 1
              * Readonly : false
@@ -60,11 +62,20 @@ public class SubWalletBasicInfo {
              * Type : Standard
              */
 
+            private boolean HasPassPhrase;
             private int M;
             private int N;
             private boolean Readonly;
             private boolean SingleAddress;
             private String Type;
+
+            public boolean isHasPassPhrase() {
+                return HasPassPhrase;
+            }
+
+            public void setHasPassPhrase(boolean HasPassPhrase) {
+                this.HasPassPhrase = HasPassPhrase;
+            }
 
             public int getM() {
                 return M;

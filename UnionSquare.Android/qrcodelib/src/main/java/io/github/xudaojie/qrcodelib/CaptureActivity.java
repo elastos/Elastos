@@ -167,11 +167,7 @@ public class CaptureActivity extends Activity implements Callback {
                     if (BuildConfig.DEBUG) Log.d(TAG, result.getText());
                     handleDecode(result, null);
                 } else {
-                    new AlertDialog.Builder(CaptureActivity.this)
-                            .setTitle(R.string.qr_tip)
-                            .setMessage(R.string.qrcannotrecognize)
-                            .setPositiveButton(R.string.qr_sure, null)
-                            .show();
+                    Toast.makeText(mActivity, R.string.qrcannotrecognize, Toast.LENGTH_SHORT).show();
                 }
             } else {
                 if (BuildConfig.DEBUG) Log.e(TAG, "image path not found");
@@ -232,6 +228,9 @@ public class CaptureActivity extends Activity implements Callback {
             bundle.putString("result", resultString);
             resultIntent.putExtras(bundle);
             this.setResult(RESULT_OK, resultIntent);
+            //Log.d("???",resultString);
+            //12229703  纯数字重启   restartPreview();
+          //  restartPreview();
         }
         mActivity.finish();
     }

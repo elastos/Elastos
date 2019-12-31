@@ -33,9 +33,10 @@ public class SureOutportKSTFragment extends BaseFragment {
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
         wallet = data.getParcelable("wallet");
-        if (wallet != null) {
+        String keyStore = data.getString("keyStore");
+        if (wallet != null && keyStore != null) {
             tv1.setText(wallet.getWalletName());
-            et1.setText(wallet.getKeyStore());
+            et1.setText(keyStore);
         }
     }
 

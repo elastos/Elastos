@@ -1,5 +1,7 @@
 package org.elastos.wallet.ela.ui.vote.bean;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -19,9 +21,8 @@ public class VoteListBean extends BaseEntity implements Serializable {
     }
 
     /**
-     * code : 0
-     * message : 查询成功^_^
-     * data : {"error":null,"id":null,"jsonrpc":"2.0","result":{"producers":[{"ownerpublickey":"0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc","nodepublickey":"022e2fce0641869a1a8af60f735279a45d2e28dc1d4c54ef7f9872b777d718b624","nickname":"arbiter-223","url":"ela_test.org","location":112211,"active":true,"votes":"1136.02815617","netaddress":"127.0.0.1","index":0,"voterate":"0.312349415480802"},{"ownerpublickey":"03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d","nodepublickey":"0296e28b9bced49e175de2d2ae0e6a03724da9d00241213c988eeb65583a14f0c9","nickname":"arbiter-225","url":"ela_test.org","location":112211,"active":true,"votes":"1087.66022539","netaddress":"127.0.0.1","index":1,"voterate":"0.299050717886824"},{"ownerpublickey":"028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472","nodepublickey":"0385ddab890e035ceb8db18d23addeaf2634e967342589c71ace3f1d42aafe26d9","nickname":"arbiter-222","url":"ela_test.org","location":112211,"active":true,"votes":"700.70423291","netaddress":"127.0.0.1","index":2,"voterate":"0.192657687563168"},{"ownerpublickey":"02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b","nodepublickey":"028bb013ce8228a28823a27e93c87dd5d92df186a0c3b947e430ccf667f120310e","nickname":"arbiter-221","url":"ela_test.org","location":112211,"active":true,"votes":"644.05835174","netaddress":"127.0.0.1","index":3,"voterate":"0.177082978629461"},{"ownerpublickey":"02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03","nodepublickey":"03244fc761c06bb5e7d1590df24cb5f0dab634d85865b9c30d620e76f3218b77af","nickname":"arbiter-224","url":"ela_test.org","location":112211,"active":true,"votes":"66.59171697","netaddress":"127.0.0.1","index":4,"voterate":"0.018309303126401"},{"ownerpublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nodepublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nickname":"ssss","url":"https://www.baidu.com","location":1,"active":true,"votes":"2","netaddress":"ssssssd","index":5,"voterate":"0.000549897313345"}],"totalvotes":"3637.04268318","totalcounts":6,"totalvoterate":"0.000003576128237"}}
+     * message : Query successful ^_^
+     * data : {"error":null,"id":null,"jsonrpc":"2.0","result":{"producers":[{"ownerpublickey":"035ecacbdacb997ef284bf9d4d62ff1a07cee034be455c2a2b5b2435651fd4716b","nodepublickey":"035ecacbdacb997ef284bf9d4d62ff1a07cee034be455c2a2b5b2435651fd4716b","nickname":"r_adr_us00","url":"www.r_adr_us00.com","location":86,"active":true,"votes":"18071.07053744","state":"Active","registerheight":317077,"cancelheight":0,"inactiveheight":0,"illegalheight":0,"index":34,"voterate":"0.001094719222928"},{"ownerpublickey":"026482b31d6cf94d8d5529414192ff37535984dd9810368a463cc33cbb40e57823","nodepublickey":"026482b31d6cf94d8d5529414192ff37535984dd9810368a463cc33cbb40e57823","nickname":"呵呵","url":"www.12306.cn","location":82,"active":false,"votes":"15052","state":"Returned","registerheight":190506,"cancelheight":197102,"inactiveheight":0,"illegalheight":0,"index":35,"voterate":"0.000911828311963"},{"ownerpublickey":"0320c4ae2c4748371eb9b3ade9523e229555541f7a068ded91de7d68cac3460bb1","nodepublickey":"ffff","nickname":"田","url":"qw","location":244,"active":false,"votes":"0","state":"Returned","registerheight":193107,"cancelheight":193757,"inactiveheight":0,"illegalheight":0,"index":80,"voterate":"0.000000000000000"}],"totalvotes":"16507493.57365232","totalcounts":81,"totalvoterate":"0.093102692892006"}}
      * exceptionMsg : null
      */
 
@@ -70,7 +71,7 @@ public class VoteListBean extends BaseEntity implements Serializable {
          * error : null
          * id : null
          * jsonrpc : 2.0
-         * result : {"producers":[{"ownerpublickey":"0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc","nodepublickey":"022e2fce0641869a1a8af60f735279a45d2e28dc1d4c54ef7f9872b777d718b624","nickname":"arbiter-223","url":"ela_test.org","location":112211,"active":true,"votes":"1136.02815617","netaddress":"127.0.0.1","index":0,"voterate":"0.312349415480802"},{"ownerpublickey":"03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d","nodepublickey":"0296e28b9bced49e175de2d2ae0e6a03724da9d00241213c988eeb65583a14f0c9","nickname":"arbiter-225","url":"ela_test.org","location":112211,"active":true,"votes":"1087.66022539","netaddress":"127.0.0.1","index":1,"voterate":"0.299050717886824"},{"ownerpublickey":"028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472","nodepublickey":"0385ddab890e035ceb8db18d23addeaf2634e967342589c71ace3f1d42aafe26d9","nickname":"arbiter-222","url":"ela_test.org","location":112211,"active":true,"votes":"700.70423291","netaddress":"127.0.0.1","index":2,"voterate":"0.192657687563168"},{"ownerpublickey":"02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b","nodepublickey":"028bb013ce8228a28823a27e93c87dd5d92df186a0c3b947e430ccf667f120310e","nickname":"arbiter-221","url":"ela_test.org","location":112211,"active":true,"votes":"644.05835174","netaddress":"127.0.0.1","index":3,"voterate":"0.177082978629461"},{"ownerpublickey":"02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03","nodepublickey":"03244fc761c06bb5e7d1590df24cb5f0dab634d85865b9c30d620e76f3218b77af","nickname":"arbiter-224","url":"ela_test.org","location":112211,"active":true,"votes":"66.59171697","netaddress":"127.0.0.1","index":4,"voterate":"0.018309303126401"},{"ownerpublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nodepublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nickname":"ssss","url":"https://www.baidu.com","location":1,"active":true,"votes":"2","netaddress":"ssssssd","index":5,"voterate":"0.000549897313345"}],"totalvotes":"3637.04268318","totalcounts":6,"totalvoterate":"0.000003576128237"}
+         * result : {"producers":[{"ownerpublickey":"035ecacbdacb997ef284bf9d4d62ff1a07cee034be455c2a2b5b2435651fd4716b","nodepublickey":"035ecacbdacb997ef284bf9d4d62ff1a07cee034be455c2a2b5b2435651fd4716b","nickname":"r_adr_us00","url":"www.r_adr_us00.com","location":86,"active":true,"votes":"18071.07053744","state":"Active","registerheight":317077,"cancelheight":0,"inactiveheight":0,"illegalheight":0,"index":34,"voterate":"0.001094719222928"},{"ownerpublickey":"026482b31d6cf94d8d5529414192ff37535984dd9810368a463cc33cbb40e57823","nodepublickey":"026482b31d6cf94d8d5529414192ff37535984dd9810368a463cc33cbb40e57823","nickname":"呵呵","url":"www.12306.cn","location":82,"active":false,"votes":"15052","state":"Returned","registerheight":190506,"cancelheight":197102,"inactiveheight":0,"illegalheight":0,"index":35,"voterate":"0.000911828311963"},{"ownerpublickey":"0320c4ae2c4748371eb9b3ade9523e229555541f7a068ded91de7d68cac3460bb1","nodepublickey":"ffff","nickname":"田","url":"qw","location":244,"active":false,"votes":"0","state":"Returned","registerheight":193107,"cancelheight":193757,"inactiveheight":0,"illegalheight":0,"index":80,"voterate":"0.000000000000000"}],"totalvotes":"16507493.57365232","totalcounts":81,"totalvoterate":"0.093102692892006"}
          */
 
         private Object error;
@@ -112,10 +113,10 @@ public class VoteListBean extends BaseEntity implements Serializable {
 
         public static class ResultBean implements Serializable {
             /**
-             * producers : [{"ownerpublickey":"0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc","nodepublickey":"022e2fce0641869a1a8af60f735279a45d2e28dc1d4c54ef7f9872b777d718b624","nickname":"arbiter-223","url":"ela_test.org","location":112211,"active":true,"votes":"1136.02815617","netaddress":"127.0.0.1","index":0,"voterate":"0.312349415480802"},{"ownerpublickey":"03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d","nodepublickey":"0296e28b9bced49e175de2d2ae0e6a03724da9d00241213c988eeb65583a14f0c9","nickname":"arbiter-225","url":"ela_test.org","location":112211,"active":true,"votes":"1087.66022539","netaddress":"127.0.0.1","index":1,"voterate":"0.299050717886824"},{"ownerpublickey":"028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472","nodepublickey":"0385ddab890e035ceb8db18d23addeaf2634e967342589c71ace3f1d42aafe26d9","nickname":"arbiter-222","url":"ela_test.org","location":112211,"active":true,"votes":"700.70423291","netaddress":"127.0.0.1","index":2,"voterate":"0.192657687563168"},{"ownerpublickey":"02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b","nodepublickey":"028bb013ce8228a28823a27e93c87dd5d92df186a0c3b947e430ccf667f120310e","nickname":"arbiter-221","url":"ela_test.org","location":112211,"active":true,"votes":"644.05835174","netaddress":"127.0.0.1","index":3,"voterate":"0.177082978629461"},{"ownerpublickey":"02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03","nodepublickey":"03244fc761c06bb5e7d1590df24cb5f0dab634d85865b9c30d620e76f3218b77af","nickname":"arbiter-224","url":"ela_test.org","location":112211,"active":true,"votes":"66.59171697","netaddress":"127.0.0.1","index":4,"voterate":"0.018309303126401"},{"ownerpublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nodepublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nickname":"ssss","url":"https://www.baidu.com","location":1,"active":true,"votes":"2","netaddress":"ssssssd","index":5,"voterate":"0.000549897313345"}]
-             * totalvotes : 3637.04268318
-             * totalcounts : 6
-             * totalvoterate : 0.000003576128237
+             * producers : [{"ownerpublickey":"035ecacbdacb997ef284bf9d4d62ff1a07cee034be455c2a2b5b2435651fd4716b","nodepublickey":"035ecacbdacb997ef284bf9d4d62ff1a07cee034be455c2a2b5b2435651fd4716b","nickname":"r_adr_us00","url":"www.r_adr_us00.com","location":86,"active":true,"votes":"18071.07053744","state":"Active","registerheight":317077,"cancelheight":0,"inactiveheight":0,"illegalheight":0,"index":34,"voterate":"0.001094719222928"},{"ownerpublickey":"026482b31d6cf94d8d5529414192ff37535984dd9810368a463cc33cbb40e57823","nodepublickey":"026482b31d6cf94d8d5529414192ff37535984dd9810368a463cc33cbb40e57823","nickname":"呵呵","url":"www.12306.cn","location":82,"active":false,"votes":"15052","state":"Returned","registerheight":190506,"cancelheight":197102,"inactiveheight":0,"illegalheight":0,"index":35,"voterate":"0.000911828311963"},{"ownerpublickey":"0320c4ae2c4748371eb9b3ade9523e229555541f7a068ded91de7d68cac3460bb1","nodepublickey":"ffff","nickname":"田","url":"qw","location":244,"active":false,"votes":"0","state":"Returned","registerheight":193107,"cancelheight":193757,"inactiveheight":0,"illegalheight":0,"index":80,"voterate":"0.000000000000000"}]
+             * totalvotes : 16507493.57365232
+             * totalcounts : 81
+             * totalvoterate : 0.093102692892006
              */
 
             private String totalvotes;
@@ -155,18 +156,22 @@ public class VoteListBean extends BaseEntity implements Serializable {
                 this.producers = producers;
             }
 
-            public static class ProducersBean implements Serializable, Comparable<ProducersBean> {
+            public static class ProducersBean implements Serializable, Comparable<ProducersBean>, Parcelable {
                 /**
-                 * ownerpublickey : 0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc
-                 * nodepublickey : 022e2fce0641869a1a8af60f735279a45d2e28dc1d4c54ef7f9872b777d718b624
-                 * nickname : arbiter-223
-                 * url : ela_test.org
-                 * location : 112211
+                 * ownerpublickey : 035ecacbdacb997ef284bf9d4d62ff1a07cee034be455c2a2b5b2435651fd4716b
+                 * nodepublickey : 035ecacbdacb997ef284bf9d4d62ff1a07cee034be455c2a2b5b2435651fd4716b
+                 * nickname : r_adr_us00
+                 * url : www.r_adr_us00.com
+                 * location : 86
                  * active : true
-                 * votes : 1136.02815617
-                 * netaddress : 127.0.0.1
-                 * index : 0
-                 * voterate : 0.312349415480802
+                 * votes : 18071.07053744
+                 * state : Active
+                 * registerheight : 317077
+                 * cancelheight : 0
+                 * inactiveheight : 0
+                 * illegalheight : 0
+                 * index : 34
+                 * voterate : 0.001094719222928
                  */
                 @Override
                 public boolean equals(Object other) {
@@ -180,7 +185,11 @@ public class VoteListBean extends BaseEntity implements Serializable {
                 private int location;
                 private boolean active;
                 private String votes;
-                private String netaddress;
+                private String state;
+                private int registerheight;
+                private int cancelheight;
+                private int inactiveheight;
+                private int illegalheight;
                 private int index;
                 private String voterate;
 
@@ -240,12 +249,44 @@ public class VoteListBean extends BaseEntity implements Serializable {
                     this.votes = votes;
                 }
 
-                public String getNetaddress() {
-                    return netaddress;
+                public String getState() {
+                    return state;
                 }
 
-                public void setNetaddress(String netaddress) {
-                    this.netaddress = netaddress;
+                public void setState(String state) {
+                    this.state = state;
+                }
+
+                public int getRegisterheight() {
+                    return registerheight;
+                }
+
+                public void setRegisterheight(int registerheight) {
+                    this.registerheight = registerheight;
+                }
+
+                public int getCancelheight() {
+                    return cancelheight;
+                }
+
+                public void setCancelheight(int cancelheight) {
+                    this.cancelheight = cancelheight;
+                }
+
+                public int getInactiveheight() {
+                    return inactiveheight;
+                }
+
+                public void setInactiveheight(int inactiveheight) {
+                    this.inactiveheight = inactiveheight;
+                }
+
+                public int getIllegalheight() {
+                    return illegalheight;
+                }
+
+                public void setIllegalheight(int illegalheight) {
+                    this.illegalheight = illegalheight;
                 }
 
                 public int getIndex() {
@@ -264,12 +305,86 @@ public class VoteListBean extends BaseEntity implements Serializable {
                     this.voterate = voterate;
                 }
 
+                @Override
+                public String toString() {
+                    return "ProducersBean{" +
+                            "ownerpublickey='" + ownerpublickey + '\'' +
+                            ", nodepublickey='" + nodepublickey + '\'' +
+                            ", nickname='" + nickname + '\'' +
+                            ", url='" + url + '\'' +
+                            ", location=" + location +
+                            ", active=" + active +
+                            ", votes='" + votes + '\'' +
+                            ", state='" + state + '\'' +
+                            ", registerheight=" + registerheight +
+                            ", cancelheight=" + cancelheight +
+                            ", inactiveheight=" + inactiveheight +
+                            ", illegalheight=" + illegalheight +
+                            ", index=" + index +
+                            ", voterate='" + voterate + '\'' +
+                            '}';
+                }
 
                 @Override
                 public int compareTo(@NonNull ProducersBean o) {
-                    return Double.compare(Double.parseDouble(o.getVoterate()), Double.parseDouble(this.getVoterate()));
+                    return Integer.compare(this.getIndex(),o.getIndex());
 
                 }
+
+                @Override
+                public int describeContents() {
+                    return 0;
+                }
+
+                @Override
+                public void writeToParcel(Parcel dest, int flags) {
+                    dest.writeString(this.ownerpublickey);
+                    dest.writeString(this.nodepublickey);
+                    dest.writeString(this.nickname);
+                    dest.writeString(this.url);
+                    dest.writeInt(this.location);
+                    dest.writeByte(this.active ? (byte) 1 : (byte) 0);
+                    dest.writeString(this.votes);
+                    dest.writeString(this.state);
+                    dest.writeInt(this.registerheight);
+                    dest.writeInt(this.cancelheight);
+                    dest.writeInt(this.inactiveheight);
+                    dest.writeInt(this.illegalheight);
+                    dest.writeInt(this.index);
+                    dest.writeString(this.voterate);
+                }
+
+                public ProducersBean() {
+                }
+
+                protected ProducersBean(Parcel in) {
+                    this.ownerpublickey = in.readString();
+                    this.nodepublickey = in.readString();
+                    this.nickname = in.readString();
+                    this.url = in.readString();
+                    this.location = in.readInt();
+                    this.active = in.readByte() != 0;
+                    this.votes = in.readString();
+                    this.state = in.readString();
+                    this.registerheight = in.readInt();
+                    this.cancelheight = in.readInt();
+                    this.inactiveheight = in.readInt();
+                    this.illegalheight = in.readInt();
+                    this.index = in.readInt();
+                    this.voterate = in.readString();
+                }
+
+                public static final Parcelable.Creator<ProducersBean> CREATOR = new Parcelable.Creator<ProducersBean>() {
+                    @Override
+                    public ProducersBean createFromParcel(Parcel source) {
+                        return new ProducersBean(source);
+                    }
+
+                    @Override
+                    public ProducersBean[] newArray(int size) {
+                        return new ProducersBean[size];
+                    }
+                };
             }
         }
     }

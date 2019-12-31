@@ -19,4 +19,11 @@ public class CommmonBooleanEntity extends BaseEntity {
     }
 
     private boolean data;
+
+    @Override
+    public String toString() {
+        return "CommmonBooleanEntity{" +
+                "data=" + data +
+                '}';
+    }
 }

@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.TextUtils;
-import android.util.Log;
+import org.elastos.wallet.ela.utils.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -166,13 +166,13 @@ public class ImportMnemonicFragment extends BaseFragment implements ImportMnemon
 
     @Override
     public void onImportMnemonic(String data) {
-        new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this);
+        new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this,null);
 
 
     }
 
     @Override
-    public void onCreateSubWallet(String data) {
+    public void onCreateSubWallet(String data,Object o) {
         RealmUtil realmUtil = new RealmUtil();
         if (data != null) {
             //创建Mainchain子钱包

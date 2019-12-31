@@ -25,13 +25,16 @@ namespace Elastos {
                     uint32_t confirms);
 
             /**
-			 * Callback method fired when best block chain height increased. This callback could be used to show progress.
-			 * @param currentBlockHeight is the of current block when callback fired.
-			 * @param estimatedHeight is max height of blockchain.
-			 * @param lastBlockTime timestamp of the last block.
-			 */
-            virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight,
-                                             time_t lastBlockTime);
+             * Callback method fired when best block chain height increased. This callback could be used to show progress.
+             * @param progressInfo progress info contain detail as below:
+             * {
+             *     "Progress": 50,                    # 0% ~ 100%
+             *     "BytesPerSecond": 12345678,        # 12.345678 MBytes / s
+             *     "LastBlockTime": 1573799697,       # timestamp of last block
+             *     "DownloadPeer": "127.0.0.1"        # IP address of node
+             * }
+             */
+            virtual void OnBlockSyncProgress(const nlohmann::json &progressInfo);
 
             virtual void OnBalanceChanged(const std::string &asset, const std::string &balance);
 

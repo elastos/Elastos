@@ -3,15 +3,18 @@ package org.elastos.wallet.ela.ui.main;
 import android.os.Bundle;
 import android.view.View;
 
-import com.blankj.utilcode.util.CacheDoubleUtils;
+import com.blankj.utilcode.util. CacheDiskUtils;
 import com.chaychan.library.BottomBarItem;
 import com.chaychan.library.BottomBarLayout;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
-import org.elastos.wallet.ela.ui.find.fragment.FindFragment;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonObjectWithMethNameViewData;
+import org.elastos.wallet.ela.ui.find.FindFragment;
+import org.elastos.wallet.ela.ui.main.presenter.MainPresenter;
 import org.elastos.wallet.ela.ui.mine.MineFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -22,7 +25,7 @@ import butterknife.BindView;
  *
  */
 
-public class MainFragment extends BaseFragment {
+public class MainFragment extends BaseFragment implements CommmonObjectWithMethNameViewData {
 
     @BindView(R.id.bottombar)
     BottomBarLayout mbottomBarLayout;
@@ -52,7 +55,6 @@ public class MainFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
-        bottombaritem.setBackgroundResource(R.color.qmui_config_color_25_white);
         SupportFragment homeFragment = findFragment(AssetskFragment.class);
         if (homeFragment == null) {
             mFragments[0] = AssetskFragment.newInstance();
@@ -84,34 +86,44 @@ public class MainFragment extends BaseFragment {
                 showHideFragment(mFragments[current], mFragments[before]);
                 switch (current) {
                     case 0:
-                        bottombaritem.setBackgroundResource(R.color.qmui_config_color_25_white);
-                        bottombaritem1.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
-                        bottombaritem2.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
+                        bottombaritem.setBackgroundResource(R.color.mainitembg);
+                        bottombaritem1.setBackgroundResource(R.color.black1);
+                        bottombaritem2.setBackgroundResource(R.color.black1);
                         break;
                     case 1:
-                        bottombaritem.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
-                        bottombaritem1.setBackgroundResource(R.color.qmui_config_color_25_white);
-                        bottombaritem2.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
+                        bottombaritem.setBackgroundResource(R.color.black1);
+                        bottombaritem1.setBackgroundResource(R.color.mainitembg);
+                        bottombaritem2.setBackgroundResource(R.color.black1);
                         break;
                     case 2:
-                        bottombaritem.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
-                        bottombaritem1.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
-                        bottombaritem2.setBackgroundResource(R.color.qmui_config_color_25_white);
+                        bottombaritem.setBackgroundResource(R.color.black1);
+                        bottombaritem1.setBackgroundResource(R.color.black1);
+                        bottombaritem2.setBackgroundResource(R.color.mainitembg);
                         break;
                 }
             }
         });
 
         initArea();
+        initServer();
     }
 
 
     private void initArea() {
         if (new SPUtil(getContext()).getFristLogin()) {
-            CacheDoubleUtils.getInstance().clear();
+             CacheDiskUtils.getInstance().clear();
             new SPUtil(getContext()).setFristLogin();
         }
         AppUtlis.getArea(getContext(), null);
+    }
+
+    private void initServer() {
+
+        if (MyApplication.chainID <= 0) {
+            //主网才有高可用
+            new MainPresenter().getServerList(this);
+        }
+
     }
 
 
@@ -124,4 +136,17 @@ public class MainFragment extends BaseFragment {
     }
 
 
+    @Override
+    public void onGetCommonData(String methodname, Object data) {
+
+        switch (methodname) {
+            case "ping":
+                String address = (String) data;
+                if (!address.equals(MyApplication.REQUEST_BASE_URL)) {
+                    new SPUtil(this.getContext()).setDefaultServer(address);
+                    //通过比较差异 sp和MyApplication.REQUEST_BASE_URL判断是否更新
+                }
+                break;
+        }
+    }
 }

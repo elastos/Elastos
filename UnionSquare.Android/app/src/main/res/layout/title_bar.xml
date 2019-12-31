@@ -11,8 +11,8 @@
         android:layout_height="@dimen/statusbar_view_height" />
 
     <android.support.v7.widget.Toolbar
-        android:layout_marginBottom="5dp"
         android:id="@+id/toolbar"
+        android:layout_marginBottom="5dp"
         android:layout_width="match_parent"
         android:layout_height="48dp">
         <!--自定义toolbar的title 和subtitle -->

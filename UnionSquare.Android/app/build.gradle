@@ -3,6 +3,14 @@ apply plugin: 'realm-android'
 
 
 android {
+    signingConfigs {
+        relsease {
+            storeFile file('elaWallet.jks')
+            storePassword 'elaWallet'
+            keyAlias = 'elaWallet'
+            keyPassword 'elaWallet'
+        }
+    }
     flavorDimensions "default"
     productFlavors {
         applicationVariants.all { variant ->
@@ -45,6 +53,11 @@ android {
             applicationId "org.elastos.unionsquare.regtest"
             resValue "string", "app_name", "ELARegTest"
         }
+        PrvNet {
+            dimension "default"
+            applicationId "org.elastos.unionsquare.prvNet"
+            resValue "string", "app_name", "ELAPrvNet"
+        }
     }
 
     /*
@@ -86,6 +99,7 @@ android {
                 cppFlags "-Wl,--no-warn-search-mismatch"
             }
         }
+        signingConfig signingConfigs.relsease
         sourceSets {
             main {
                 jniLibs.srcDirs = ['src/main/jni/libs']
@@ -106,6 +120,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.relsease
         }
     }
     externalNativeBuild {
@@ -152,14 +167,14 @@ dependencies {
     //cardview
     implementation 'com.android.support:cardview-v7:28.0.0'
     //utilcode
-    implementation 'com.blankj:utilcode:1.23.7'
+    implementation 'com.blankj:utilcode:1.25.9'
     //BottomBarLayout
     implementation 'com.github.chaychan:BottomBarLayout:1.1.2'
     //banner
     implementation 'com.youth.banner:banner:1.4.10'
     //glide
-    implementation 'com.github.bumptech.glide:glide:4.8.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
+    implementation 'com.github.bumptech.glide:glide:4.9.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
     //agentweb
 /*    implementation 'com.just.agentweb:agentweb:4.0.2'*/
     //loadview
@@ -178,10 +193,11 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.5.0'
     implementation project(':qrcodelib')
-   /* //bug
-    implementation 'com.tencent.bugly:crashreport:latest.release'
+    implementation "com.github.bumptech.glide:okhttp3-integration:4.9.0"
+    //bug
+//    implementation 'com.tencent.bugly:crashreport:latest.release'
     //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.1.9
-    implementation 'com.tencent.bugly:nativecrashreport:latest.release'*/
+//    implementation 'com.tencent.bugly:nativecrashreport:latest.release'
 
 }
 repositories {

@@ -10,6 +10,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
@@ -20,6 +24,7 @@ import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.QRCodeUtils;
+import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.elastos.wallet.ela.utils.ScreenUtil;
@@ -113,7 +118,7 @@ public class ContactDetailFragment extends BaseFragment {
                 tvAdd.setVisibility(View.GONE);
                 llEdit.setVisibility(View.VISIBLE);
                 //只有查看页面才会有这些操作
-                EventBus.getDefault().register(this);
+                registReceiver();
                 dialogUtil = new DialogUtil();
                 break;
         }
@@ -202,7 +207,7 @@ public class ContactDetailFragment extends BaseFragment {
                     ClipboardUtil.copyClipboar(getBaseActivity(), walletAddr);
                 } else {
                     //显示二维码
-                    Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(walletAddr, ScreenUtil.dp2px(getContext(), 150), ScreenUtil.dp2px(getContext(), 150));
+                    Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(walletAddr, ScreenUtil.dp2px(getContext(), 240), ScreenUtil.dp2px(getContext(), 240), Constant.TRANSFER, "ELA");
                     dialogUtil.showImage(getBaseActivity(), mBitmap);
                 }
 
@@ -254,6 +259,17 @@ public class ContactDetailFragment extends BaseFragment {
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
                 etWalletaddr.setText(result);
+                String address = result;
+                try {
+                    QrBean qrBean = JSON.parseObject(result, QrBean.class);
+                    int type = qrBean.getExtra().getType();
+                    if (type == Constant.TRANSFER) {
+                        address = qrBean.getData();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                etWalletaddr.setText(address);
             }
         }
 

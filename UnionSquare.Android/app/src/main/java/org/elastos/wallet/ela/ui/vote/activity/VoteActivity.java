@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.text.TextUtils;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -14,15 +15,20 @@ import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
+import org.elastos.wallet.ela.utils.Log;
+import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 
+/**
+ * 输入投票数量
+ */
 public class VoteActivity extends BaseActivity {
     @BindView(R.id.et_pwd)
     ClearEditText etPwd;
-    String fee;
+    String maxBalance;
     @BindView(R.id.tv_max)
     TextView tv_max;
     @BindView(R.id.tv_maxvote)
@@ -46,11 +52,30 @@ public class VoteActivity extends BaseActivity {
 
     @Override
     protected void setExtraData(Intent data) {
-        fee = data.getStringExtra("fee");
+        maxBalance = data.getStringExtra("maxBalance");
         //Double num = Double.parseDouble(fee) / MyWallet.RATE;
-        int num = Arith.div(fee,MyWallet.RATE_S).intValue();
-        tv_max.setOnClickListener(v -> etPwd.setText(num + ""));
+        String num = NumberiUtil.maxNumberFormat(Arith.div(maxBalance, MyWallet.RATE_S), 12);
+        tv_max.setOnClickListener(v -> etPwd.setText("MAX"));
         tv_maxvote.setText(getString(R.string.maximum_voting_rights) + "  " + num);
+        etPwd.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (!TextUtils.isEmpty(etPwd.getText()) && etPwd.getText().toString().equals("MAX")) {
+                    etPwd.setText("");
+                }
+                return false;
+            }
+        });
+        NumberiUtil.editTestFormat(etPwd,8);
+      /*  etPwd.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                Log.d("???",hasFocus+"");
+                if (hasFocus && !TextUtils.isEmpty(etPwd.getText()) && etPwd.getText().toString().equals("MAX")) {
+                    tv_maxvote.setText("");
+                }
+            }
+        });*/
     }
 
     @OnClick({R.id.tv_sure})

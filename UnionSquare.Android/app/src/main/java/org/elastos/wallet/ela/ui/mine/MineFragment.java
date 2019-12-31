@@ -4,14 +4,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -19,6 +16,8 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.did.fragment.AddDIDFragment;
+import org.elastos.wallet.ela.ui.did.fragment.DIDListFragment;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.adapter.ContactRecAdapetr;
 import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
@@ -33,9 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * tab-设置
@@ -62,17 +59,20 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
     TextView tvEnglish;
     @BindView(R.id.ll_languge)
     LinearLayout llLanguge;
+    @BindView(R.id.tv_language)
+    TextView tvLanguage;
     @BindView(R.id.iv_contact)
     ImageView ivContact;
     @BindView(R.id.rl_contact)
     RelativeLayout rlContact;
     @BindView(R.id.tv_contact_none)
     TextView tvContactNone;
+    @BindView(R.id.tv_did)
+    TextView tvDid;
     @BindView(R.id.rv)
     RecyclerView rv;
     @BindView(R.id.iv_contact_add)
     ImageView ivContactAdd;
-    Unbinder unbinder;
     private SPUtil sp;
     private RealmUtil realmUtil;
     private List<Contact> contacts = new ArrayList<>();
@@ -95,11 +95,14 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
         ivTitleLeft.setVisibility(View.GONE);
         sp = new SPUtil(getContext());
         llLanguge.getChildAt(sp.getLanguage()).setSelected(true);
+        tvLanguage.setText(sp.getLanguage() == 0 ? "中文(简体)" : "English");
+        llLanguge.getChildAt(sp.getLanguage()).setSelected(true);
         realmUtil = new RealmUtil();
         registReceiver();
     }
 
-    @OnClick({R.id.rl_language, R.id.rl_contact, R.id.tv_chinese, R.id.tv_english, R.id.iv_contact_add, R.id.rl_about})
+    @OnClick({R.id.rl_language, R.id.rl_contact, R.id.tv_chinese, R.id.tv_english,
+            R.id.iv_contact_add, R.id.rl_about, R.id.rl_did})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_chinese:
@@ -164,7 +167,13 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
 
                 break;
             case R.id.rl_about:
-                ((BaseFragment) getParentFragment()).start(new AboutFragment());
+                ((BaseFragment) getParentFragment()).start(AboutFragment.class);
+                break;
+            case R.id.rl_did:
+                // ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
+                ((BaseFragment) getParentFragment()).start(DIDListFragment.class);
+                ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
+                // ((BaseFragment) getParentFragment()).start(DIDListFragment.class);
                 break;
         }
     }

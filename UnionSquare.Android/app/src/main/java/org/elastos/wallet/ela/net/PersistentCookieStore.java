@@ -2,7 +2,7 @@ package org.elastos.wallet.ela.net;
 
 import android.content.SharedPreferences;
 import android.text.TextUtils;
-import android.util.Log;
+import org.elastos.wallet.ela.utils.Log;
 
 import org.elastos.wallet.ela.MyApplication;
 

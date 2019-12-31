@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
@@ -52,7 +51,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
         chainId = data.getStringExtra("chainId");
         attributes = data.getStringExtra("attributes");
         wallet = data.getParcelableExtra("wallet");
-        type = data.getIntExtra("type", 0);//1只签名目前只有钱包管理的签名用到
+        type = data.getIntExtra("type", 0);//1签名成功不publish
       /*  tvAddress.setText(toAddress);
         tvAmount.setText(amount + " " + chainId);
         tvCharge.setText(NumberiUtil.maxNumberFormat(new BigDecimal(((double) fee) / MyWallet.RATE + "").toPlainString(), 12) + " " + chainId);//0.0001
@@ -85,10 +84,21 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
                     finish();
                     return;
                 }
-                presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
+                switch (wallet.getType()) {
+                    //0 普通单签 1单签只读 2普通多签 3多签只读
+                    case 0:
+                        presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
+                        break;
+                    case 2:
+                        post(RxEnum.SIGNSUCCESS.ordinal(), "", data);
+                        finish();
+                        break;
+
+                }
+
                 break;
             case "publishTransaction":
-                post(RxEnum.TRANSFERSUCESS.ordinal(), "转账成功", null);
+                post(RxEnum.TRANSFERSUCESS.ordinal(), "", null);
                 finish();
                 break;
         }

@@ -4,7 +4,7 @@
 
 package org.elastos.wallet.core;
 
-import android.util.Log;
+import org.elastos.wallet.ela.utils.Log;
 
 import java.util.ArrayList;
 
@@ -67,7 +67,7 @@ public class MasterWallet {
         return null;
     }
 
-    public SubWallet CreateSubWallet(String chainID, long feePerKb) throws WalletException {
+    public SubWallet CreateSubWallet(String chainID) throws WalletException {
         if ((!CHAINID.MAIN.equals(chainID)) && (!CHAINID.ID.equals(chainID))) {
             throw new WalletException("Not support the other sidechain now.");
         }
@@ -78,7 +78,7 @@ public class MasterWallet {
             }
         }
 
-        long subProxy = CreateSubWallet(mInstance, chainID, feePerKb);
+        long subProxy = CreateSubWallet(mInstance, chainID);
         if (subProxy == 0) {
             Log.e(TAG, "Native create subwallet fail: subProxy is 0");
             throw new WalletException("Native create subwallet fail");
@@ -107,21 +107,16 @@ public class MasterWallet {
             }
         }
         wallet.RemoveCallback();
-        DestroyWallet(mInstance, wallet.GetProxy());
+        DestroyWallet(mInstance, wallet.GetChainID());
     }
 
-    public String GetPublicKey() throws WalletException {
-        return GetPublicKey(mInstance);
+    public String GetOwnerPublicKeyRing() throws WalletException {
+        return GetOwnerPublicKeyRing(mInstance);
     }
 
-    public String Sign(String message, String payPassword) throws WalletException {
-        return Sign(mInstance, message, payPassword);
+    public String GetPublicKeyRing() throws WalletException {
+        return GetPublicKeyRing(mInstance);
     }
-
-    public boolean CheckSign(String publicKey, String message, String signature) throws WalletException {
-        return CheckSign(mInstance, publicKey, message, signature);
-    }
-
 
     public boolean IsAddressValid(String address) throws WalletException {
         return IsAddressValid(mInstance, address);
@@ -139,25 +134,79 @@ public class MasterWallet {
         ChangePassword(mInstance, oldPassword, newPassword);
     }
 
+    public String GetPubKeyInfo() throws WalletException {
+        return GetPubKeyInfo(mInstance);
+    }
+
+    public boolean VerifyPrivateKey(String mnemonic, String passphrase) throws WalletException {
+        return VerifyPrivateKey(mInstance, mnemonic, passphrase);
+    }
+
+    public boolean VerifyPassPhrase(String passPhrase, String payPasswd) throws WalletException {
+        return VerifyPassPhrase(mInstance, passPhrase, payPasswd);
+    }
+
+    public boolean VerifyPayPassword(String payPasswd) throws WalletException {
+        return VerifyPayPassword(mInstance, payPasswd);
+    }
+
+    public String ExportKeystore(String backPasswd, String payPasswd) throws WalletException {
+        return ExportKeystore(mInstance, backPasswd, payPasswd);
+    }
+
+    public String ExportMnemonic(String payPasswd) throws WalletException {
+        return ExportMnemonic(mInstance, payPasswd);
+    }
+
+    public String ExportReadonlyWallet() throws WalletException {
+        return ExportReadonlyWallet(mInstance);
+    }
+
+    public String ExportPrivateKey(String payPasswd) throws WalletException {
+        return ExportPrivateKey(mInstance, payPasswd);
+    }
+
+    public String ExportMasterPublicKey() throws WalletException {
+        return ExportMasterPublicKey(mInstance);
+    }
+
     private native String GetID(long instance);
 
     private native String GetBasicInfo(long instance);
 
     private native Object[] GetAllSubWallets(long instance);
 
-    private native long CreateSubWallet(long instance, String chainID, long feePerKb);
+    private native long GetSubWallet(long instance, String chainID);
 
-    private native String GetPublicKey(long instance);
+    private native long CreateSubWallet(long instance, String chainID);
 
-    private native void DestroyWallet(long instance, long subWalletProxy);
+    private native String GetOwnerPublicKeyRing(long instance);
 
-    private native String Sign(long instance, String message, String payPassword);
+    private native String GetPublicKeyRing(long instance);
 
-    private native boolean CheckSign(long instance, String publicKey, String message, String signature);
+    private native void DestroyWallet(long instance, String chainID);
 
     private native boolean IsAddressValid(long instance, String address);
 
     private native String[] GetSupportedChains(long instance);
 
     private native void ChangePassword(long instance, String oldPassword, String newPassword);
+
+    private native String GetPubKeyInfo(long instance);
+
+    private native boolean VerifyPrivateKey(long instance, String mnemonic, String passphrase);
+
+    private native boolean VerifyPassPhrase(long instance, String passPhrase, String payPasswd);
+
+    private native boolean VerifyPayPassword(long instance, String payPasswd);
+
+    private native String ExportKeystore(long instance, String backPasswd, String payPasswd);
+
+    private native String ExportMnemonic(long instance, String payPasswd);
+
+    private native String ExportReadonlyWallet(long instance);
+
+    private native String ExportPrivateKey(long instance, String payPasswd);
+
+    private native String ExportMasterPublicKey(long instance);
 }

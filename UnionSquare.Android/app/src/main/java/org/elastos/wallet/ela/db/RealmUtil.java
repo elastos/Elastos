@@ -23,7 +23,7 @@ import io.realm.RealmResults;
 
 public class RealmUtil {
 
-    public static final long DB_VERSION_CODE = 3;//当前数据库版本号
+    public static final long DB_VERSION_CODE = 5;//当前数据库版本号
     public static final String DB_NAME = "DB";//BuildConfig
 
     @Inject
@@ -197,6 +197,27 @@ public class RealmUtil {
         return wallets;
     }
 
+    /*查询所有钱包*/
+    public List<Wallet> queryTypeUserAllWallet(int type) {
+        Realm realm = getInstanceRealm();
+        RealmResults<Wallet> list = realm.where(Wallet.class).equalTo("type", type)
+                .findAll();
+
+        List<Wallet> wallets = getWalletList(list);
+        closeRealm(realm);
+        return wallets;
+    }
+
+    public List<Wallet> queryUnReadOnlyUserAllWallet() {
+        Realm realm = getInstanceRealm();
+        RealmResults<Wallet> list = realm.where(Wallet.class).beginGroup()
+                .equalTo("type", 0).or().equalTo("type", 2).endGroup()
+                .findAll();
+
+        List<Wallet> wallets = getWalletList(list);
+        closeRealm(realm);
+        return wallets;
+    }
 
     public Wallet queryUserWallet(String walletId) {
         Realm realm = getInstanceRealm();
@@ -246,16 +267,6 @@ public class RealmUtil {
     }
 
 
-    public void updateWalletKeystore(String walletAddr, String keyStore) {
-        //更新钱包keystore
-        Realm realm = getInstanceRealm();
-        realm.beginTransaction();
-        Wallet wallet = realm.where(Wallet.class).equalTo("walletAddr", walletAddr.toLowerCase()).findFirst();
-        wallet.setKeyStore(keyStore);
-        realm.commitTransaction();
-        closeRealm(realm);
-    }
-
     public void upDataWalletName(String walletId, String name) {
         Realm realm = getInstanceRealm();
         Wallet wallet = realm.where(Wallet.class).equalTo("walletId", walletId).findFirst();
@@ -280,19 +291,6 @@ public class RealmUtil {
         }
     }
 
-
-    public void deleteMnemonic(@NonNull String walletAddress, String memberId) {
-        Realm realm = getInstanceRealm();
-        Wallet wallet = realm.where(Wallet.class)
-                .equalTo("memberId", memberId).equalTo("walletAddr", walletAddress.toLowerCase())
-                .findFirst();
-        if (wallet != null) {
-            realm.beginTransaction();
-            wallet.setMnemonic(null);
-            realm.commitTransaction();
-        }
-        realm.close();
-    }
 
     private List<Wallet> getWalletList(RealmResults<Wallet> list) {
         List<Wallet> wallets = new ArrayList<>();
@@ -423,8 +421,13 @@ public class RealmUtil {
         for (Map.Entry<String, List<SubWallet>> entry : listMap.entrySet()) {
             List<SubWallet> assetList = entry.getValue();
             for (SubWallet subWallet : assetList) {
+                subWallet.setFiled1("Connecting");
+                subWallet.setSyncTime("- -");
+                subWallet.setProgress(0);
                 subWallet.setWallletId(subWallet.getBelongId() + subWallet.getChainId());
                 subWallet.setFiled2("false");
+                subWallet.setBytesPerSecond(0);
+                subWallet.setDownloadPeer(null);
                 realm.copyToRealmOrUpdate(subWallet);
             }
         }
@@ -488,7 +491,7 @@ public class RealmUtil {
         closeRealm(realm);
     }
 
-    public void updateWalletSyncTime(String belongId, String chainId, String syncTime, RealmTransactionAbs listener) {
+   /* public void updateWalletSyncTime(String belongId, String chainId, String syncTime, RealmTransactionAbs listener) {
         //更新钱包keystore
         Realm realm = getInstanceRealm();
         realm.beginTransaction();
@@ -503,7 +506,7 @@ public class RealmUtil {
         realm.commitTransaction();
         closeRealm(realm);
         listener.onSuccess();
-    }
+    }*/
 
     public SubWallet querySubWallet(String belongId, String chainId) {
         Realm realm = getInstanceRealm();
@@ -514,6 +517,7 @@ public class RealmUtil {
             subWallet = new SubWallet();
             subWallet.setBelongId(belongId);
             subWallet.setChainId(chainId);
+            subWallet.setSyncTime("- -");
             subWallet.setWallletId(subWallet.getBelongId() + subWallet.getChainId());
             realm.beginTransaction();
             realm.copyToRealmOrUpdate(subWallet);
@@ -525,7 +529,7 @@ public class RealmUtil {
         return tempSubWallet;
     }
 
-    public String querySubWalletSyncTime(String belongId, String chainId) {
+   /* public String querySubWalletSyncTime(String belongId, String chainId) {
         Realm realm = getInstanceRealm();
         SubWallet subWallet = realm.where(SubWallet.class)
                 .equalTo("belongId", belongId).equalTo("chainId", chainId)
@@ -544,7 +548,7 @@ public class RealmUtil {
         String syncTime = subWallet.getSyncTime();
         closeRealm(realm);
         return syncTime;
-    }
+    }*/
 
 
 }

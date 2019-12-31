@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.Assets.adapter;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,10 +18,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-/**
- * Created by wangdongfeng on 2018/4/14.
- */
-
 public class WalletListRecAdapetr extends RecyclerView.Adapter<WalletListRecAdapetr.ViewHolder> {
 
 
@@ -32,10 +29,17 @@ public class WalletListRecAdapetr extends RecyclerView.Adapter<WalletListRecAdap
     private List<Wallet> list;
 
     private Context context;
+    private boolean showStatus;
 
     public WalletListRecAdapetr(Context context, List<Wallet> list) {
+        this(context, list, true);
+
+    }
+
+    public WalletListRecAdapetr(Context context, List<Wallet> list, boolean showStatus) {
         this.list = list;
         this.context = context;
+        this.showStatus = showStatus;
 
     }
 
@@ -49,12 +53,32 @@ public class WalletListRecAdapetr extends RecyclerView.Adapter<WalletListRecAdap
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
         Wallet data = list.get(position);
-        if (data.isDefault()) {
+
+        if (!showStatus) {
+            holder.view.setVisibility(View.GONE);
+        } else if (data.isDefault()) {
             holder.view.setVisibility(View.VISIBLE);
         } else {
             holder.view.setVisibility(View.GONE);
         }
         holder.tvName.setText(data.getWalletName());
+
+        Drawable drawable = context.getDrawable(R.mipmap.single_wallet);
+        switch (data.getType()) {
+            //0 普通单签 1单签只读 2普通多签 3多签只读
+            case 1:
+                drawable = context.getDrawable(R.mipmap.single_walllet_readonly);
+                break;
+            case 2:
+                drawable = context.getDrawable(R.mipmap.multi_wallet);
+                break;
+            case 3:
+                drawable = context.getDrawable(R.mipmap.multi_wallet_readonly);
+                break;
+        }
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        holder.tvName.setCompoundDrawables(drawable, null, null, null);
+
         if (commonRvListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

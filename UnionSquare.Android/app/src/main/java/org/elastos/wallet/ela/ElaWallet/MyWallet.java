@@ -1,5 +1,6 @@
 package org.elastos.wallet.ela.ElaWallet;
 
+import org.elastos.wallet.core.IDChainSubWallet;
 import org.elastos.wallet.core.MainchainSubWallet;
 import org.elastos.wallet.core.MasterWallet;
 import org.elastos.wallet.core.MasterWalletManager;
@@ -13,6 +14,7 @@ import org.elastos.wallet.ela.rxjavahelp.CommonEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.listener.ISubWalletListener;
 import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjectWithMethNameEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
@@ -32,9 +34,9 @@ import java.util.ArrayList;
 public class MyWallet {
     private static final String TAG = "Wallet";
     public static final String ELA = "ELA";
+    public static final String IDChain = "IDChain";
     public static final long RATE = 100000000;
     public static final String RATE_S = RATE + "";
-    public static final Double RATE_ = 100000000.0;
     public static final long feePerKb = 10000L;
     public static String Url = getTxHashBaseUrl();
     public MasterWalletManager mMasterWalletManager = null;
@@ -43,6 +45,8 @@ public class MyWallet {
     public static final String SUCCESSCODE = "00000";
     private static final String WalletException = "000001";
     private static final String JSONEXCEPTION = "000002";
+    public static final String errorCodeDoInMeathed = "000003";//没有此钱包 要在代码里处理
+
 
     private int errCodeInvalidMasterWallet = 10002;
     private int errCodeInvalidSubWallet = 10003;
@@ -57,8 +61,21 @@ public class MyWallet {
     public MyWallet() {
 
         mRootPath = MyApplication.getAppContext().getFilesDir().getParent();
-//		mDIDManagerSupervisor = new DIDManagerSupervisor(mRootPath);
-        mMasterWalletManager = new MasterWalletManager(mRootPath, "");
+        String net = "MainNet";
+        String config = "";
+        switch (MyApplication.chainID) {
+            case 1:
+                net = "TestNet";
+                break;
+            case 2:
+                net = "RegTest";
+                break;
+            case 3:
+                net = "PrvNet";
+                break;
+
+        }
+        mMasterWalletManager = new MasterWalletManager(mRootPath, net, config, "");
     }
 
     private static String getTxHashBaseUrl() {
@@ -68,7 +85,7 @@ public class MyWallet {
                 baseUrl = "https://blockchain-beta.elastos.org/tx/";
                 break;
             case 2:
-                baseUrl = "https://blockchain-regtest.elastos.org/";
+                baseUrl = "https://blockchain-regtest.elastos.org/tx/";
                 break;
 
         }
@@ -206,24 +223,42 @@ public class MyWallet {
         return null;
     }
 
+/*    private BaseEntity getSubWallet1(String masterWalletID, String chainID) {
+        SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+        if (subWallet != null) {
+            org.elastos.wallet.ela.db.table.SubWallet newSubWallet = new org.elastos.wallet.ela.db.table.SubWallet();
+            newSubWallet.setBalance(subWallet.GetBalance() + "");
+            newSubWallet.setBelongId(masterWalletID);
+            newSubWallet.setChainId(subWallet.GetChainID());
+            return new CommmonObjEntity(SUCCESSCODE, newSubWallet);
+        }
+        return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+    }*/
+
+    private IDChainSubWallet getIDChainSubWallet(String masterWalletID) {
+        SubWallet subWallet = getSubWallet(masterWalletID, IDChain);
+
+        if ((subWallet instanceof IDChainSubWallet)) {
+            return (IDChainSubWallet) subWallet;
+        }
+        return null;
+
+    }
     // args[0]: String masterWalletID
     // args[1]: String chainID
 
     public BaseEntity createSubWallet(String masterWalletID, String chainID) {
-        long feePerKb = 10000;
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
                 return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
             }
 
-            SubWallet subWallet = masterWallet.CreateSubWallet(chainID, feePerKb);
+            SubWallet subWallet = masterWallet.CreateSubWallet(chainID);
             if (subWallet == null) {
                 return errorProcess(errCodeCreateSubWallet + "", "Create " + formatWalletName(masterWalletID, chainID));
 
             }
-
-            //basicInfo = subWallet.GetBasicInfo();
             return new CommmonStringEntity(SUCCESSCODE, subWallet.GetBasicInfo());
         } catch (WalletException e) {
             return exceptionProcess(e, "Create " + formatWalletName(masterWalletID, chainID));
@@ -290,7 +325,7 @@ public class MyWallet {
             ArrayList<org.elastos.wallet.ela.db.table.SubWallet> newSubWalletList = new ArrayList<>();
             for (SubWallet subWallet : subWalletList) {
                 org.elastos.wallet.ela.db.table.SubWallet newSubWallet = new org.elastos.wallet.ela.db.table.SubWallet();
-                newSubWallet.setBalance(subWallet.GetBalance(SubWallet.BalanceType.Total) + "");
+                newSubWallet.setBalance(subWallet.GetBalance() + "");
                 newSubWallet.setBelongId(masterWalletID);
                 newSubWallet.setChainId(subWallet.GetChainID());
                 newSubWalletList.add(newSubWallet);
@@ -475,7 +510,7 @@ public class MyWallet {
 
             }
 
-            String keystore = mMasterWalletManager.ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
+            String keystore = masterWallet.ExportKeystore(backupPassword, payPassword);
 
             return new CommmonStringEntity(SUCCESSCODE, keystore);
         } catch (WalletException e) {
@@ -492,7 +527,7 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
             }
 
-            String mnemonic = mMasterWalletManager.ExportWalletWithMnemonic(masterWallet, backupPassword);
+            String mnemonic = masterWallet.ExportMnemonic(backupPassword);
 
             //  return new CommmonStringEntity(SUCCESSCODE, mnemonic);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, mnemonic, "exportWalletWithMnemonic");
@@ -510,7 +545,7 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
             }
 
-            String walletJson = mMasterWalletManager.ExportReadonlyWallet(masterWallet);
+            String walletJson = masterWallet.ExportReadonlyWallet();
 
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, walletJson, "exportReadonlyWallet");
         } catch (WalletException e) {
@@ -520,8 +555,7 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    // args[2]: int BalanceType (0: Default, 1: Voted, 2: Total)
-    public BaseEntity getBalance(String masterWalletID, String chainID, SubWallet.BalanceType BalanceType) {
+    public BaseEntity getBalance(String masterWalletID, String chainID) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -529,7 +563,7 @@ public class MyWallet {
 
             }
 
-            return new CommmonObjEntity(SUCCESSCODE, new BalanceEntity(chainID, subWallet.GetBalance(BalanceType) + "", masterWalletID));
+            return new CommmonObjEntity(SUCCESSCODE, new BalanceEntity(chainID, subWallet.GetBalance() + "", masterWalletID));
 
         } catch (WalletException e) {
             return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " balance");
@@ -572,6 +606,57 @@ public class MyWallet {
         }
     }
 
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: int start
+    // args[3]: int count
+    public BaseEntity getAllPublicKeys(String masterWalletID, String chainID, int start, int count) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+            }
+            String allPublicKeys = subWallet.GetAllPublicKeys(start, count);
+
+            return new CommmonStringEntity(SUCCESSCODE, allPublicKeys);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " all addresses");
+        }
+    }
+
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String fromAddress
+    // args[3]: String toAddress
+    // args[4]: long amount
+    // args[5]: String memo
+    // args[6]: Boolean useVotedUTXO
+    public BaseEntity getFee(String masterWalletID, String chainID, String fromAddress,
+                             String toAddress, String amount) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+            }
+
+            String tx = subWallet.CreateTransaction(fromAddress, toAddress, amount, "");
+            long fee = MyWallet.feePerKb;
+            try {
+                JSONObject jsonObject = new JSONObject(tx);
+
+                if (jsonObject.has("Fee")) {
+                    fee = jsonObject.getLong("Fee");
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return new CommmonLongEntity(SUCCESSCODE, fee);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Create " + formatWalletName(masterWalletID, chainID) + " tx");
+        }
+    }
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
@@ -588,14 +673,13 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
             }
 
-            String tx = subWallet.CreateTransaction(fromAddress, toAddress, amount, memo, useVotedUTXO);
+            String tx = subWallet.CreateTransaction(fromAddress, toAddress, amount, memo);
 
             return new CommmonStringEntity(SUCCESSCODE, tx);
         } catch (WalletException e) {
             return exceptionProcess(e, "Create " + formatWalletName(masterWalletID, chainID) + " tx");
         }
     }
-
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
@@ -614,6 +698,19 @@ public class MyWallet {
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, result, "signTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, "Sign " + formatWalletName(masterWalletID, chainID) + " tx");
+        }
+    }
+
+    public BaseEntity signDigest(String masterWalletID, String did, String digest, String payPassword) {
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String result = idChainSubWallet.SignDigest(did, digest, payPassword);
+            return new CommmonStringEntity(SUCCESSCODE, result);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "signDigest " + formatWalletName(masterWalletID) + " tx");
         }
     }
 
@@ -668,8 +765,9 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
             }
 
-            if (subWallet.IsCallbackRegistered()) {
+            if (subWallet.getCallback() != null) {
                 Log.d(TAG, "listener already registered, do nothing");
+                subWallet.getCallback().setListener(listener);
                 return new CommmonStringEntity(SUCCESSCODE, "listener already registered");
             }
 
@@ -684,14 +782,14 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[2]: String fromAddress
-    // args[3]: String lockedAddress
+    // args[3]: String sideChainID
     // args[4]: long amount
     // args[5]: String sideChainAddress
     // args[6]: String memo
     // args[7]: boolean useVotedUTXO
     public BaseEntity createDepositTransaction(String masterWalletID, String chainID,
-                                               String fromAddress, String lockedAddress,
-                                               String amount, String sideChainAddress, String memo, boolean useVotedUTXO) {
+                                               String fromAddress, String sideChainID,
+                                               String amount, String sideChainAddress, String memo) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -706,7 +804,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateDepositTransaction(fromAddress, lockedAddress, amount, sideChainAddress, memo, useVotedUTXO);
+            String txJson = mainchainSubWallet.CreateDepositTransaction(fromAddress, sideChainID, amount, sideChainAddress, memo);
 
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createDepositTransaction");
         } catch (WalletException e) {
@@ -806,6 +904,67 @@ public class MyWallet {
         }
     }
 
+
+    public BaseEntity getPubKeyInfo(String masterWalletID) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+
+            String pubKeyInfo = masterWallet.GetPubKeyInfo();
+            return new CommmonStringEntity(SUCCESSCODE, pubKeyInfo);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "getPubKeyInfo " + formatWalletName(masterWalletID));
+        }
+    }
+
+    public BaseEntity verifyPrivateKey(String masterWalletID, String mnemonic, String passphrase) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+
+            boolean result = masterWallet.VerifyPrivateKey(mnemonic, passphrase);
+            return new CommmonBooleanEntity(SUCCESSCODE, result);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "verifyPrivateKey " + formatWalletName(masterWalletID));
+        }
+    }
+
+    public BaseEntity verifyPayPassword(String masterWalletID, String payPasswd) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+
+            boolean result = masterWallet.VerifyPayPassword(payPasswd);
+            return new CommmonBooleanEntity(SUCCESSCODE, result);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "verifyPayPassword " + formatWalletName(masterWalletID));
+        }
+    }
+
+    public BaseEntity verifyPassPhrase(String masterWalletID, String passphrase, String payPasswd) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+
+            boolean result = masterWallet.VerifyPassPhrase(passphrase, payPasswd);
+            return new CommmonBooleanEntity(SUCCESSCODE, result);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "verifyPassPhrase " + formatWalletName(masterWalletID));
+        }
+    }
+
     /*****************************************投票相关**************************************/
     // args[0]: String masterWalletID
     // args[1]: String chainID
@@ -816,7 +975,7 @@ public class MyWallet {
     // args[6]: String IPAddress
     // args[7]: long location
     // args[8]: String payPasswd
-    public BaseEntity generateProducerPayload(String masterWalletID, String chainID, String ownerPublicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd) throws JSONException {
+    public BaseEntity generateProducerPayload(String masterWalletID, String chainID, String ownerPublicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -834,7 +993,7 @@ public class MyWallet {
             String payloadJson = mainchainSubWallet.GenerateProducerPayload(ownerPublicKey, nodePublicKey, nickName, url, IPAddress, location, payPasswd);
 
             KLog.a(payloadJson);
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, payloadJson, "payload");
+            return new CommmonStringEntity(SUCCESSCODE, payloadJson);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " generate producer payload");
         }
@@ -863,10 +1022,10 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateRegisterProducerTransaction(fromAddress, payloadJson, amount, memo, useVotedUTXO);
+            String txJson = mainchainSubWallet.CreateRegisterProducerTransaction(fromAddress, payloadJson, amount, memo);
 
             KLog.a(txJson);
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createRegisterProducerTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, txJson);
         } catch (WalletException e) {
             //  return new CommmonStringWithiMethNameEntity("", "", "");
             return exceptionProcess(e, formatWalletName(masterWalletID) + " change password");
@@ -907,8 +1066,8 @@ public class MyWallet {
     // args[3]: long   stake
     // args[4]: String publicKeys JSONArray
     // args[5]: String memo
-    // args[6]: boolean useVotedUTXO
-    public BaseEntity createVoteProducerTransaction(String masterWalletID, String chainID, String fromAddress, String stake, String publicKeys, String memo, boolean useVotedUTXO) {
+    // args[6]: String invalidCandidates
+    public BaseEntity createVoteProducerTransaction(String masterWalletID, String chainID, String fromAddress, String stake, String publicKeys, String memo, String invalidCandidates) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -923,9 +1082,9 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo, useVotedUTXO);
+            String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo, invalidCandidates);
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createVoteProducerTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, txJson);
             // successProcess(cc, txJson);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " create vote producer tx");
@@ -1004,7 +1163,7 @@ public class MyWallet {
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
             String payloadJson = mainchainSubWallet.GenerateCancelProducerPayload(publicKey, payPasswd);
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, payloadJson, "generateCancelProducerPayload");
+            return new CommmonStringEntity(SUCCESSCODE, payloadJson);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " generate cancel producer payload");
         }
@@ -1017,7 +1176,7 @@ public class MyWallet {
     // args[3]: String payloadJson
     // args[4]: String memo
     // args[5]: boolean useVotedUTXO
-    public BaseEntity createCancelProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO) {
+    public BaseEntity createCancelProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1032,16 +1191,16 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateCancelProducerTransaction(fromAddress, payloadJson, memo, useVotedUTXO);
+            String txJson = mainchainSubWallet.CreateCancelProducerTransaction(fromAddress, payloadJson, "");
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createCancelProducerTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, txJson);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " create cancel producer tx");
         }
     }
 
     //取回押金
-    public BaseEntity createRetrieveDepositTransaction(String masterWalletID, String chainID, String amount, String memo) {
+    public BaseEntity createRetrieveDepositTransaction(String masterWalletID, String chainID, String amount) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1055,9 +1214,9 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateRetrieveDepositTransaction(amount, memo);
+            String txJson = mainchainSubWallet.CreateRetrieveDepositTransaction(amount, "");
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createRetrieveDepositTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, txJson);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " create retrieve deposit tx");
         }
@@ -1085,9 +1244,9 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateUpdateProducerTransaction(fromAddress, payloadJson, memo, useVotedUTXO);
+            String txJson = mainchainSubWallet.CreateUpdateProducerTransaction(fromAddress, payloadJson, memo);
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createUpdateProducerTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, txJson);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " create update producer tx");
         }
@@ -1101,7 +1260,7 @@ public class MyWallet {
     // args[4]: String url
     // args[5]: String location
     // args[6]: String payPasswd
-    public BaseEntity generateCRInfoPayload(String masterWalletID, String chainID, String crPublickey, String nickName, String url, long location, String payPasswd) throws JSONException {
+    public BaseEntity generateCRInfoPayload(String masterWalletID, String chainID, String crPublickey, String nickName, String url, long location) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1116,10 +1275,10 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String payloadJson = mainchainSubWallet.GenerateCRInfoPayload(crPublickey, nickName, url, location, payPasswd);
+            String payloadJson = mainchainSubWallet.GenerateCRInfoPayload(crPublickey, nickName, url, location);
 
             KLog.a(payloadJson);
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, payloadJson, "generateCRInfoPayload");
+            return new CommmonStringEntity(SUCCESSCODE, payloadJson);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " generate crInfo payload");
         }
@@ -1127,9 +1286,9 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    // args[2]: String crPublickey
+    // args[2]: String crDID
     // args[3]: String payPasswd
-    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String crPublickey, String payPasswd) throws JSONException {
+    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String crDID) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1144,10 +1303,9 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String payloadJson = mainchainSubWallet.GenerateUnregisterCRPayload(crPublickey, payPasswd);
-
+            String payloadJson = mainchainSubWallet.GenerateUnregisterCRPayload(crDID);
             KLog.a(payloadJson);
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, payloadJson, "generateUnregisterCRPayload");
+            return new CommmonStringEntity(SUCCESSCODE, payloadJson);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " generate unregister payload");
         }
@@ -1163,16 +1321,16 @@ public class MyWallet {
 
             }
 
-            if (!(subWallet instanceof MainchainSubWallet)) {
-                return errorProcess("" + errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+            if (!(subWallet instanceof IDChainSubWallet)) {
+                return errorProcess("" + errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IDChainSubWallet");
 
             }
 
-            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            IDChainSubWallet idChainSubWallet = (IDChainSubWallet) subWallet;
 
-            String did = mainchainSubWallet.GetCROwnerDID();
+            String did = idChainSubWallet.GetAllDID(0, 1);
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, did, "getCROwnerDID");
+            return new CommmonStringEntity(SUCCESSCODE, did);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " get cr owner did");
         }
@@ -1188,16 +1346,16 @@ public class MyWallet {
 
             }
 
-            if (!(subWallet instanceof MainchainSubWallet)) {
+            if (!(subWallet instanceof IDChainSubWallet)) {
                 return errorProcess("" + errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 
             }
 
-            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            IDChainSubWallet idChainSubWallet = (IDChainSubWallet) subWallet;
 
-            String did = mainchainSubWallet.GetCROwnerPublicKey();
+            String publicKeys = idChainSubWallet.GetAllPublicKeys(0, 1);
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, did, "getCROwnerPublicKey");
+            return new CommmonStringEntity(SUCCESSCODE, publicKeys);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " get cr owner publickey");
         }
@@ -1225,9 +1383,9 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String tx = mainchainSubWallet.CreateRegisterCRTransaction(fromAddress, payload, amount, memo, useVotedUTXO);
+            String tx = mainchainSubWallet.CreateRegisterCRTransaction(fromAddress, payload, amount, memo);
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, tx, "createRegisterCRTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, tx);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "create register cr tx");
         }
@@ -1254,9 +1412,9 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String tx = mainchainSubWallet.CreateUpdateCRTransaction(fromAddress, payload, memo, useVotedUTXO);
+            String tx = mainchainSubWallet.CreateUpdateCRTransaction(fromAddress, payload, memo);
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, tx, "createUpdateCRTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, tx);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "create update cr tx");
         }
@@ -1268,7 +1426,7 @@ public class MyWallet {
     // args[3]: String payload
     // args[4]: String memo
     // args[5]: boolean useVotedUTXO
-    public BaseEntity createUnregisterCRTransaction(String masterWalletID, String chainID, String fromAddress, String payload, String memo, boolean useVotedUTXO) {
+    public BaseEntity createUnregisterCRTransaction(String masterWalletID, String chainID, String fromAddress, String payload) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1283,9 +1441,9 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String tx = mainchainSubWallet.CreateUnregisterCRTransaction(fromAddress, payload, memo, useVotedUTXO);
+            String tx = mainchainSubWallet.CreateUnregisterCRTransaction(fromAddress, payload, "");
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, tx, "createUnregisterCRTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, tx);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "create unregister cr tx");
         }
@@ -1295,7 +1453,7 @@ public class MyWallet {
     // args[1]: String chainID
     // args[2]: String amount
     // args[3]: String memo
-    public BaseEntity createRetrieveCRDepositTransaction(String masterWalletID, String chainID, String amount, String memo) {
+    public BaseEntity createRetrieveCRDepositTransaction(String masterWalletID, String chainID, String crPublickey, String amount, String memo) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1310,9 +1468,9 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String tx = mainchainSubWallet.CreateRetrieveCRDepositTransaction(amount, memo);
+            String tx = mainchainSubWallet.CreateRetrieveCRDepositTransaction(crPublickey, amount, memo);
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, tx, "createRetrieveCRDepositTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, tx);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "create retrieve cr tx");
         }
@@ -1320,9 +1478,11 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    // args[2]: String amount
-    // args[3]: String memo
-    public BaseEntity createVoteCRTransaction(String masterWalletID, String chainID, String fromAddress, String votes, String memo, boolean useVotedUTXO) {
+    // args[2]: String fromAddress
+    // args[3]: String votes
+    // args[4]: String memo
+    // args[5]: String invalidCandidates
+    public BaseEntity createVoteCRTransaction(String masterWalletID, String chainID, String fromAddress, String votes, String memo, String invalidCandidates) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1337,11 +1497,59 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String tx = mainchainSubWallet.CreateVoteCRTransaction(fromAddress, votes, memo, useVotedUTXO);
+            String tx = mainchainSubWallet.CreateVoteCRTransaction(fromAddress, votes, memo, invalidCandidates);
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, tx, "createVoteCRTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, tx);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "create vote cr tx");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID (only main chain ID 'ELA')
+    public BaseEntity getVotedCRList(String masterWalletID, String chainID) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess("" + errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                return errorProcess("" + errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+
+            }
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+
+            String list = mainchainSubWallet.GetVotedCRList();
+
+            return new CommmonStringEntity(SUCCESSCODE, list);
+
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " get voted cr list");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID (only main chain ID 'ELA')
+    public BaseEntity getRegisteredCRInfo(String masterWalletID, String chainID) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                return errorProcess("" + errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String info = mainchainSubWallet.GetRegisteredCRInfo();
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " get registerd cr info");
         }
     }
 
@@ -1383,7 +1591,7 @@ public class MyWallet {
         }
     }
 
-    public BaseEntity createCombineUTXOTransaction(String masterWalletID, String chainID, String memo, boolean useVotedUTXO) {
+    public BaseEntity createCombineUTXOTransaction(String masterWalletID, String chainID, String memo) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1391,7 +1599,7 @@ public class MyWallet {
 
             }
 
-            String result = subWallet.CreateConsolidateTransaction(memo, useVotedUTXO);
+            String result = subWallet.CreateConsolidateTransaction(memo);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, result, "createCombineUTXOTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "createCombineUTXOTransaction");
@@ -1438,29 +1646,32 @@ public class MyWallet {
             if (masterWallet == null) {
                 return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
             }
-            String privateKey = mMasterWalletManager.ExportxPrivateKey(masterWallet, payPasswd);
+            String privateKey = masterWallet.ExportPrivateKey(payPasswd);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, privateKey, "exportxPrivateKey");
         } catch (WalletException e) {
             return exceptionProcess(e, "ExportxPrivateKey" + formatWalletName(masterWalletID));
         }
     }
 
-    public BaseEntity createMultiSignMasterWallet(String masterWalletID, String coSigners, int requiredSignCount, long timestamp) {
+    public BaseEntity createMultiSignMasterWallet(String masterWalletID, String coSigners, int requiredSignCount,
+                                                  boolean singleAddress, boolean compatible, long timestamp) {
         try {
             MasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(masterWalletID, coSigners,
-                    requiredSignCount, timestamp);
+                    requiredSignCount, singleAddress, compatible, timestamp);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(), "createMultiSignMasterWallet");
         } catch (WalletException e) {
             return exceptionProcess(e, "createMultiSignMasterWallet" + formatWalletName(masterWalletID));
         }
     }
 
-    public BaseEntity createMultiSignMasterWallet(String masterWalletID, String privKey, String payPassword,
-                                                  String coSigners, int requiredSignCount, long timestamp) {
+    public BaseEntity createMultiSignMasterWallet(String masterWalletID, String privKey,
+                                                  String payPassword, String coSigners,
+                                                  int requiredSignCount, boolean singleAddress,
+                                                  boolean compatible, long timestamp) {
         try {
             MasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(
                     masterWalletID, privKey, payPassword, coSigners,
-                    requiredSignCount, timestamp);
+                    requiredSignCount, singleAddress, compatible, timestamp);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(), "createMultiSignMasterWallet");
         } catch (WalletException e) {
             return exceptionProcess(e, "createMultiSignMasterWallet" + formatWalletName(masterWalletID));
@@ -1469,11 +1680,11 @@ public class MyWallet {
 
     public BaseEntity createMultiSignMasterWallet(
             String masterWalletId, String mnemonic, String phrasePassword, String payPassword,
-            String coSigners, int requiredSignCount, long timestamp) {
+            String coSigners, int requiredSignCount, boolean singleAddress, boolean compatible, long timestamp) {
         try {
             MasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(
                     masterWalletId, mnemonic, phrasePassword, payPassword,
-                    coSigners, requiredSignCount, timestamp);
+                    coSigners, requiredSignCount, singleAddress, compatible, timestamp);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, masterWallet.GetBasicInfo(), "createMultiSignMasterWallet");
         } catch (WalletException e) {
             return exceptionProcess(e, "createMultiSignMasterWallet" + formatWalletName(masterWalletId));
@@ -1491,7 +1702,105 @@ public class MyWallet {
             subWallet.SyncStart();
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, "", "syncStart");
         } catch (WalletException e) {
-            return exceptionProcess(e, "syncStart " + formatWalletName(masterWalletID, chainID) + " all tx");
+            return exceptionProcess(e, "syncStart " + formatWalletName(masterWalletID, chainID));
+        }
+    }
+
+    public BaseEntity syncStop(String masterWalletID, String chainID) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            subWallet.SyncStop();
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, "", "syncStop");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "syncStop " + formatWalletName(masterWalletID, chainID));
+        }
+    }
+
+    public BaseEntity setFixedPeer(String masterWalletID, String chainID, String address, int port) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+            return new CommmonBooleanEntity(SUCCESSCODE, subWallet.SetFixedPeer(address, port));
+        } catch (WalletException e) {
+            return exceptionProcess(e, "setFixedPeer " + formatWalletName(masterWalletID, chainID));
+        }
+    }
+
+    public BaseEntity getTransactionSignedInfo(String masterWalletID, String chainID, String rawTransaction) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            String result = subWallet.GetTransactionSignedInfo(rawTransaction);
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, result, "getTransactionSignedInfo");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "getTransactionSignedInfo " + formatWalletName(masterWalletID, chainID));
+        }
+    }
+
+    /***********************************************************DID**************************************************************/
+
+
+    public BaseEntity getDIDByPublicKey(String masterWalletID, String publicKey) {
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String did = idChainSubWallet.GetPublicKeyDID(publicKey);
+            return new CommmonStringEntity(SUCCESSCODE, did);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, IDChain) + "GetDIDByPublicKey");
+        }
+    }
+
+    public BaseEntity generateDIDInfoPayload(String masterWalletID, String inputJson, String passwd) {
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String did = idChainSubWallet.GenerateDIDInfoPayload(inputJson, passwd);
+            return new CommmonStringEntity(SUCCESSCODE, did);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, IDChain) + "GenerateDIDInfoPayload");
+        }
+    }
+
+    public BaseEntity createIDTransaction(String masterWalletID, String payloadJson) {
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String did = idChainSubWallet.CreateIDTransaction(payloadJson, "");
+            return new CommmonStringEntity(SUCCESSCODE, did);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, IDChain) + "CreateIDTransaction");
+        }
+    }
+
+    public BaseEntity getResolveDIDInfo(String masterWalletID, int start, int count, String did) {
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String info = idChainSubWallet.GetResolveDIDInfo(start, count, did);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, IDChain) + "GetResolveDIDInfo");
         }
     }
 }

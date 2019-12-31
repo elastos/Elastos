@@ -1,6 +1,5 @@
 package org.elastos.wallet.ela.ui.Assets.presenter;
 
-import org.elastos.wallet.core.SubWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
@@ -18,7 +17,7 @@ public class CommonGetBalancePresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().getBalance(walletId, chainID, SubWallet.BalanceType.Total);
+                return baseFragment.getMyWallet().getBalance(walletId, chainID);
             }
         });
         subscriberObservable(observer, observable);

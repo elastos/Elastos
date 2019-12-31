@@ -50,6 +50,7 @@ public class MnemonicWordFragment extends BaseFragment implements GenerateMnemon
     @BindView(R.id.tv_mnemonic)
     AppCompatTextView tv_mnemonic;
     private CreateWalletBean createWalletBean;
+    private Bundle bundle;
 
 
     @Override
@@ -60,6 +61,7 @@ public class MnemonicWordFragment extends BaseFragment implements GenerateMnemon
 
     @Override
     protected void setExtraData(Bundle data) {
+        bundle = data;
         createWalletBean = data.getParcelable("CreateWalletBean");
 
     }
@@ -138,7 +140,6 @@ public class MnemonicWordFragment extends BaseFragment implements GenerateMnemon
     }
 
     private void toNextPager() {
-        Bundle bundle = new Bundle();
         bundle.putString("mnemonic", createWalletBean.getMnemonic());
         bundle.putParcelable("createWalletBean", createWalletBean);
         start(VerifyMnemonicWordsFragment.class, bundle);
@@ -167,6 +168,7 @@ public class MnemonicWordFragment extends BaseFragment implements GenerateMnemon
                 regex(Arrays.toString(Arrays.copyOfRange(re, 8, re.length))));*/
 
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();

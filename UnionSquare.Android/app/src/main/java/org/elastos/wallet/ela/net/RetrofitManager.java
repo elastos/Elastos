@@ -7,6 +7,7 @@ import com.blankj.utilcode.util.NetworkUtils;
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,9 +26,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class RetrofitManager {
-    private static long CONNECT_TIMEOUT = 25L;
-    private static long READ_TIMEOUT = 10L;
-    private static long WRITE_TIMEOUT = 10L;
+    private static long CONNECT_TIMEOUT = 30L;
+    private static long READ_TIMEOUT = 30L;
+    private static long WRITE_TIMEOUT = 30L;
     //设缓存有效期为1天
     private static final long CACHE_STALE_SEC = 60 * 60 * 24 * 1;
     //查询缓存的Cache-Control设置，为if-only-cache时只查询缓存而不会请求服务器，max-stale可以配合设置缓存失效时间
@@ -38,10 +39,23 @@ public class RetrofitManager {
     // 避免出现 HTTP 403 Forbidden，参考：http://stackoverflow.com/questions/13670692/403-forbidden-with-java-but-not-web-browser
     private static final String AVOID_HTTP403_FORBIDDEN = "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11";
     private static volatile OkHttpClient mOkHttpClient;
+
+    public static ApiServer getApiService1() {
+        return apiService1;
+    }
+
     private static ApiServer apiService1;
 
     public static synchronized ApiServer getApiService(Context context) {
-
+        if (MyApplication.chainID <= 0) {
+            String address = new SPUtil(context).getDefaultServer(MyApplication.serverList.iterator().next());
+            if (!address.equals(MyApplication.REQUEST_BASE_URL)) {
+                //主网高可用导致差异 强制刷新apiService1
+                MyApplication.REQUEST_BASE_URL = address;
+                createApiService(context);
+                return apiService1;
+            }
+        }
         if (apiService1 == null) {
             createApiService(context);
         }
@@ -90,7 +104,7 @@ public class RetrofitManager {
      *
      * @return
      */
-    private static OkHttpClient getOkHttpClient(Context context) {
+    public static OkHttpClient getOkHttpClient(Context context) {
         HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());
         if (BuildConfig.DEBUG) {
             logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -98,10 +112,12 @@ public class RetrofitManager {
             logInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
         }
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        try {
-            OkhttpManager.getInstance().setTrustrCertificates(context.getAssets().open("server.cer"));
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (MyApplication.chainID > 0) {
+            try {
+                OkhttpManager.getInstance().setTrustrCertificates(context.getAssets().open("server.cer"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         builder = OkhttpManager.getInstance().build();
         if (mOkHttpClient == null) {
@@ -112,7 +128,7 @@ public class RetrofitManager {
                             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
                             .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
                             .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
-                           // .addInterceptor(mRewriteCacheControlInterceptor)
+                            // .addInterceptor(mRewriteCacheControlInterceptor)
                             .addInterceptor(logInterceptor)
                             .addInterceptor(new InterceptorCom())
                             /*  .cookieJar(new CookiesManager())*/
@@ -163,24 +179,46 @@ public class RetrofitManager {
      * @param <T>
      * @return
      */
-    public static <T> T create(Class<T> clazz, Context context) {
+    private static <T> T create(Class<T> clazz, Context context) {
         Retrofit retrofit;
-        Retrofit.Builder build = new Retrofit.Builder().baseUrl(Constant.REQUEST_BASE_URL)
+        Retrofit.Builder build = new Retrofit.Builder().baseUrl(MyApplication.REQUEST_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
-        if (MyApplication.chainID <= 0) {
-            retrofit = build.client(getOkHttpClient()).build();
-        } else {
-            retrofit = build.client(getOkHttpClient(context)).build();
-        }
+
+        retrofit = build.client(getOkHttpClient(context)).build();
+
         return retrofit.create(clazz);
     }
 
-    public static <T> T create(Class<T> clazz) {
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(Constant.REQUEST_BASE_URL)
+    private static <T> T create(Class<T> clazz) {
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(MyApplication.REQUEST_BASE_URL)
                 .client(getOkHttpClient())
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create()).build();
         return retrofit.create(clazz);
+    }
+
+
+    public static ApiServer specialCreate() {
+        Retrofit retrofit;
+        Retrofit.Builder build = new Retrofit.Builder().baseUrl(Constant.SERVERLIST_BASE)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
+        HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());
+        logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        synchronized (RetrofitManager.class) {
+            OkHttpClient mOkHttpClient = builder//.cache(cache)
+                    .connectTimeout(2, TimeUnit.SECONDS)
+                    .readTimeout(2, TimeUnit.SECONDS)
+                    .writeTimeout(2, TimeUnit.SECONDS)
+                    .addInterceptor(logInterceptor)
+                    .addInterceptor(new InterceptorCom())
+                    .build();
+            retrofit = build.client(mOkHttpClient).build();
+            return retrofit.create(ApiServer.class);
+        }
+
     }
 }

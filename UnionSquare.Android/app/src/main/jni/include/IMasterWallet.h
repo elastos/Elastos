@@ -6,7 +6,6 @@
 #define __ELASTOS_SDK_IMASTERWALLET_H__
 
 #include "ISubWallet.h"
-#include "IIDAgent.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -25,9 +24,9 @@ namespace Elastos {
 			virtual std::string GetID() const = 0;
 
 			/**
-			 * Here is a example of standard wallet basic info:
-			 * {"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"}
-			 * @return basic information of current master wallet.
+			 * Get basic info of master wallet
+			 * @return basic information. Such as:
+			 * {"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard", "HasPassPhrase": false}
 			 */
 			virtual nlohmann::json GetBasicInfo() const = 0;
 
@@ -38,48 +37,89 @@ namespace Elastos {
 			virtual std::vector<ISubWallet *> GetAllSubWallets() const = 0;
 
 			/**
-			 * Create a sub wallet by specifying wallet type.
+			 * Get a sub wallet of chainID.
 			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-			 * @param feePerKb specify fee per kb to calculate fee by size of transaction. Fee per key default set to zero so that sub wallet will calculate by default "fee rate".
 			 * @return If success will return a pointer of sub wallet interface.
 			 */
-			virtual ISubWallet *CreateSubWallet(
-					const std::string &chainID,
-					uint64_t feePerKB) = 0;
+			virtual ISubWallet *GetSubWallet(const std::string &chainID) const = 0;
+
+			/**
+			 * Create a sub wallet of chainID.
+			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+			 * @return If success will return a pointer of sub wallet interface.
+			 */
+			virtual ISubWallet *CreateSubWallet(const std::string &chainID) = 0;
+
+			/**
+			 * Export Keystore of the current wallet in JSON format.
+			 * @param backupPassword use to decrypt key store file. Backup password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param payPassword use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return If success will return key store content in json format.
+			 */
+			virtual nlohmann::json ExportKeystore(
+				const std::string &backupPassword,
+				const std::string &payPassword) const = 0;
+
+			/**
+			 * Export mnemonic of the current wallet.
+			 * @param payPassword use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return If success will return the mnemonic of master wallet.
+			 */
+			virtual std::string ExportMnemonic(const std::string &payPassword) const = 0;
+
+			/**
+			 * Export wallet info except private keys.
+			 * @return If success, readonly wallet will be returned.
+			 */
+			virtual nlohmann::json ExportReadonlyWallet() const = 0;
+
+			/**
+			 * Export root private key of the current wallet.
+			 * @param payPasswd use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return root private key.
+			 */
+			virtual std::string ExportPrivateKey(const std::string &payPasswd) const = 0;
+
+			/**
+			 * Export master public key.
+			 * @return master public key
+			 */
+			virtual std::string ExportMasterPublicKey() const = 0;
+
+			/**
+			 * Verify private key whether same as current wallet
+			 * @param mnemonic
+			 * @param passphrase
+			 * @return
+			 */
+			virtual bool VerifyPrivateKey(const std::string &mnemonic, const std::string &passphrase) const = 0;
+
+			/**
+			 *
+			 * @param passphrase
+			 * @param payPasswd
+			 * @return
+			 */
+			virtual bool VerifyPassPhrase(const std::string &passphrase, const std::string &payPasswd) const = 0;
+
+			/**
+			 *
+			 * @param payPasswd
+			 * @return
+			 */
+			virtual bool VerifyPayPassword(const std::string &payPasswd) const = 0;
 
 			/**
 			 * Destroy a sub wallet created by the master wallet.
-			 * @param wallet sub wallet object, should created by the master wallet.
+			 * @param chainID chain ID of subWallet.
 			 */
-			virtual void DestroyWallet(ISubWallet *wallet) = 0;
+			virtual void DestroyWallet(const std::string &chainID) = 0;
 
 			/**
-			 * Get public key of the root private key belongs to the master wallet.
-			 * @return public key of the root private key
+			 * Get public key info
+			 * @return public key info
 			 */
-			virtual std::string GetPublicKey() const = 0;
-
-			/**
-			 * Sign message through root private key of the master wallet.
-			 * @param message need to signed, it should not be empty.
-			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @return signed data of the message.
-			 */
-			virtual std::string Sign(
-					const std::string &message,
-					const std::string &payPassword) = 0;
-
-			/**
-			 * Verify signature by public key and raw message. This method can check signatures signed by any private keys not just the root private key of the master wallet.
-			 * @param publicKey belong to the private key signed the signature.
-			 * @param message raw data.
-			 * @param signature signed data by a private key that correspond to the public key.
-			 * @return true or false.
-			 */
-			virtual bool CheckSign(
-					const std::string &publicKey,
-					const std::string &message,
-					const std::string &signature) = 0;
+			virtual nlohmann::json GetPubKeyInfo() const = 0;
 
 			/**
 			 * Verify an address which can be normal, multi-sign, cross chain, or id address.
@@ -101,7 +141,6 @@ namespace Elastos {
 			 */
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
 
-			virtual IIDAgent *GetIIDAgent() = 0;
 		};
 
 	}

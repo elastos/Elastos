@@ -1,8 +1,11 @@
 package org.elastos.wallet.ela.utils;
 
+import android.text.Editable;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.widget.EditText;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -183,7 +186,15 @@ public class MatcherUtil {
 
     }
 
-    public static InputFilter filter( int digits) {
+    /*source: CharSequence, //将要输入的字符串,如果是删除操作则为空字符串
+    start: Int, //将要输入的字符串起始下标，一般为0
+    end: Int, //start + source字符的长度
+    dest: Spanned, //输入之前文本框中的内容
+    dstart: Int, //将会被替换的起始位置
+    dend: Int //dstart+将会被替换的字符串长度
+    返回值 ：CharSequence //方法返回的值将会替换掉dest字符串中dstartd位置到dend位置之间字符，返回source表示不做任何处理，返回空字符串""表示不输入任何字符
+ **/
+    public static InputFilter filter(int digits) {
 // beizhu.setFilters(new InputFilter[]{MatcherUtil.filter(getContext())});
         return new InputFilter() {
             public CharSequence filter(CharSequence source, int start, int end,
@@ -205,4 +216,55 @@ public class MatcherUtil {
             }
         };
     }
+
+    /**
+     * 限制edittext字节数
+     * @param editText
+     * @param wei 字节数
+     */
+    public static void editTextFormat(EditText editText, int wei) {
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (editText.getTag() != null && (boolean) editText.getTag()) {
+                    editText.setTag(false);
+                    return;
+                }
+                if (!TextUtils.isEmpty(s)) {
+                    String original = s.toString().trim();
+                    if (original.getBytes().length <= wei) {
+                        return;
+                    }
+                    StringBuffer res = new StringBuffer();
+                    for (int i = 0; i < original.length(); i++) {
+                        char c = original.charAt(i);
+                        if (String.valueOf(c).getBytes().length + res.toString().getBytes().length <= wei) {
+                            res = res.append(c);
+                        } else {
+                            break;
+                        }
+
+                    }
+                    editText.setTag(true);
+                    editText.setText(res.toString());
+                    editText.setSelection(res.length());
+
+
+                }
+            }
+        });
+    }
+
+
+
 }

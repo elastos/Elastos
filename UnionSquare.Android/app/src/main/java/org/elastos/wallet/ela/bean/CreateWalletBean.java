@@ -11,6 +11,7 @@ public class CreateWalletBean implements Parcelable {
     private String phrasePassword = "";//助记词密码
     private String payPassword;
     private boolean singleAddress;
+    private String privateKey;
 
     public CreateWalletBean() {
 
@@ -64,14 +65,24 @@ public class CreateWalletBean implements Parcelable {
         this.singleAddress = singleAddress;
     }
 
+    public String getPrivateKey() {
+        return privateKey;
+    }
+
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
+    }
+
     @Override
     public String toString() {
         return "CreateWalletBean{" +
                 "masterWalletID='" + masterWalletID + '\'' +
+                ", masterWalletName='" + masterWalletName + '\'' +
                 ", mnemonic='" + mnemonic + '\'' +
                 ", phrasePassword='" + phrasePassword + '\'' +
                 ", payPassword='" + payPassword + '\'' +
                 ", singleAddress=" + singleAddress +
+                ", privateKey='" + privateKey + '\'' +
                 '}';
     }
 
@@ -82,20 +93,29 @@ public class CreateWalletBean implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.masterWalletID);
+        dest.writeString(this.masterWalletName);
+        dest.writeString(this.mnemonic);
+        dest.writeString(this.phrasePassword);
+        dest.writeString(this.payPassword);
+        dest.writeByte(this.singleAddress ? (byte) 1 : (byte) 0);
+        dest.writeString(this.privateKey);
+    }
 
-        dest.writeString(masterWalletID);
-        dest.writeString(masterWalletName);
-        dest.writeString(mnemonic);
-        dest.writeString(phrasePassword);
-        dest.writeString(payPassword);
-        dest.writeByte((byte) (singleAddress ? 1 : 0));
-
+    protected CreateWalletBean(Parcel in) {
+        this.masterWalletID = in.readString();
+        this.masterWalletName = in.readString();
+        this.mnemonic = in.readString();
+        this.phrasePassword = in.readString();
+        this.payPassword = in.readString();
+        this.singleAddress = in.readByte() != 0;
+        this.privateKey = in.readString();
     }
 
     public static final Creator<CreateWalletBean> CREATOR = new Creator<CreateWalletBean>() {
         @Override
-        public CreateWalletBean createFromParcel(Parcel in) {
-            return new CreateWalletBean(in);
+        public CreateWalletBean createFromParcel(Parcel source) {
+            return new CreateWalletBean(source);
         }
 
         @Override
@@ -103,14 +123,4 @@ public class CreateWalletBean implements Parcelable {
             return new CreateWalletBean[size];
         }
     };
-
-    protected CreateWalletBean(Parcel in) {
-        masterWalletID = in.readString();
-        masterWalletName = in.readString();
-        mnemonic = in.readString();
-        phrasePassword = in.readString();
-        payPassword = in.readString();
-        singleAddress = in.readByte() != 0;
-
-    }
 }

@@ -1,7 +1,6 @@
 package org.elastos.wallet.ela.utils;
 
 
-
 public enum RxEnum {
     //
     ONE,//创建钱包
@@ -9,6 +8,8 @@ public enum RxEnum {
     DELETE,//删除钱包
     FOUR,
     UPDATAPROPERTY,//增加或者删除资产
+    ADDPROPERTY,//增加资产
+    DELETEPROPERTY,//删除资产
     UPDATA_WALLET_NAME,//钱包名称
     SIX,//性别
     IDENTITY_AUTHENTICATION,//认证身份
@@ -50,9 +51,25 @@ public enum RxEnum {
     VOTETRANSFERACTIVITY,//投票
     BALANCECHANGE,//balance发生变化
     CHANGELANGUAGE,//改变语言
-    SIGNSUCCESS;//签名成功
+    SIGNSUCCESS,//签名成功
 
-    enum Type {
+    //opentype
+    CREATEDEFAULT,//创建单签钱包时候的
+    MANAGER,//钱包管理
+    PRIVATEKEY,//创建多签钱包时候添加私钥使用
+    //添加私钥
+    CREATEPRIVATEKEY,//新建私钥成功
+    IMPORTRIVATEKEY,//导入助记词成功
+    SELECTRIVATEKEY,//导入助记词成功
+    TOSIGN,//生成待签名交易
+
+    //did
+    KEEPDRAFT,//保存草稿
+    IPVALID,//节点ip可用
+    AGREE,//cr注册同意协议
+    GETDEPOSITVOTR,//列表其他获得非active数据
+
+   /* enum Type {
         CoinBase, // 创币交易
         RegisterAsset, // 注册资产交易
         TransferAsset, // 普通转账交易
@@ -74,7 +91,7 @@ public enum RxEnum {
 
         RegisterIdentification, // 注册ID交易 待定 will refactor later
         //  TypeMaxCount
-    }
+    }*/
 
 
 }

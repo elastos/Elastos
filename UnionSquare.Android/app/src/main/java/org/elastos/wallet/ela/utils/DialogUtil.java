@@ -1,16 +1,24 @@
 package org.elastos.wallet.ela.utils;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -18,13 +26,20 @@ import android.view.animation.LinearInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseActivity;
+import org.elastos.wallet.ela.utils.adpter.TextAdapter;
 import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener2;
+import org.elastos.wallet.ela.utils.widget.TextConfigDataPicker;
+import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -40,8 +55,8 @@ public class DialogUtil {
     private static Dialog httpialog = null;//全局的滚动条
 
     public synchronized Dialog getHttpDialog(Context context, String msg) {
-        if (httpialog != null) {
-            return httpialog;
+        if (context == null) {
+            return null;
         }
         View v = LayoutInflater.from(context).inflate(R.layout.loading_dialog, null);// 得到加载view
         LinearLayout layout = v.findViewById(R.id.dialog_view);// 加载布局
@@ -59,7 +74,7 @@ public class DialogUtil {
         loadingDialog.setContentView(layout, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT));// 设置布局
-        httpialog = loadingDialog;
+        // httpialog = loadingDialog;
         return loadingDialog;
     }
 
@@ -187,6 +202,7 @@ public class DialogUtil {
         });
         dialog.show();
     }
+
     /*提示imageview*/
     public void showImage(BaseActivity activity, Bitmap mBitmap) {
         Dialog dialog = getDialogs1(activity, R.layout.dialog_image);
@@ -222,6 +238,36 @@ public class DialogUtil {
         return dialog;
     }
 
+    public Dialog showWarmPromptInput3(BaseActivity activity, String title, String hint, WarmPromptListener2 listener) {
+        dialog = getDialogs(activity, R.layout.dialog_input3);
+
+        TextView tvTitle = dialog.findViewById(R.id.tv_title);
+        ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
+        EditText etContent = dialog.findViewById(R.id.et_content);
+        TextView tvCancel = dialog.findViewById(R.id.tv_cancel);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextView tvnoSure = dialog.findViewById(R.id.tv_nosure);
+
+        if (title != null) {
+            tvTitle.setText(Html.fromHtml(title));
+        }
+        if (hint != null) {
+            etContent.setHint(Html.fromHtml(hint));
+        }
+
+        tvnoSure.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.noAffireBtnClick(v);
+        });
+        ivCancel.setOnClickListener(v -> dialogDismiss(dialog));
+        tvCancel.setOnClickListener(v -> dialogDismiss(dialog));
+
+        tvSure.setOnClickListener(v -> {
+            listener.affireBtnClick(etContent);
+        });
+        dialog.show();
+        return dialog;
+    }
 
     public void showTransferSucess(BaseActivity activity) {
         Dialog dialog = new Dialog(activity, R.style.coustom_dialog);
@@ -237,6 +283,7 @@ public class DialogUtil {
         }, 2000);//3秒后执行Runnable中的run方法
         dialog.show();
     }
+
     public void showTransferSucess(BaseActivity activity, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity, R.style.coustom_dialog);
         dialog.setContentView(R.layout.dialog_transfersuccess);
@@ -246,11 +293,233 @@ public class DialogUtil {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (dialog != null)
+                if (dialog.isShowing()) {
                     dialog.dismiss();
-                listener.affireBtnClick(null);
+                    listener.affireBtnClick(null);
+                }
             }
         }, 2888);//3秒后执行Runnable中的run方法
         dialog.show();
+    }
+
+    public void showSelectNum(BaseActivity activity, WarmPromptListener listener) {
+        Dialog dialog = new Dialog(activity);
+        dialog.setContentView(R.layout.dialog_numberpicker);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextConfigNumberPicker numberPicker = dialog.findViewById(R.id.np);
+        tvSure.setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.affireBtnClick(numberPicker);
+        });
+
+        //设置需要显示的内容数组
+        // numberPicker.setDisplayedValues(numbers);
+        //设置最大最小值
+        numberPicker.setMinValue(2);
+        numberPicker.setMaxValue(6);
+        //设置默认的位置
+        numberPicker.setValue(2);
+        numberPicker.setWrapSelectorWheel(false);
+        numberPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        numberPicker.setMInputStyle(16f);
+        numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                picker.performClick();
+            }
+        });
+        Window window = dialog.getWindow();
+        window.getDecorView().setPadding(0, 0, 0, 0);
+        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+        params.width = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(params);
+        window.getDecorView().setBackgroundResource(R.color.pickerbg);
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+        dialog.show();
+    }
+
+    public void showCommonSelect(BaseActivity activity, String[] strings, WarmPromptListener listener) {
+        Dialog dialog = new Dialog(activity);
+        dialog.setContentView(R.layout.dialog_numberpicker);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextConfigNumberPicker numberPicker = dialog.findViewById(R.id.np);
+        tvSure.setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.affireBtnClick(numberPicker);
+        });
+        //DatePicker
+        //设置需要显示的内容数组
+        numberPicker.setDisplayedValues(strings);
+        //设置最大最小值
+        numberPicker.setMinValue(0);
+        numberPicker.setMaxValue(strings.length - 1);
+        //设置默认的位置
+        // numberPicker.setValue(2);
+        numberPicker.setWrapSelectorWheel(false);
+        numberPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        numberPicker.setMInputStyle(16f);
+        numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                picker.performClick();
+            }
+        });
+
+        WindowManager m = activity.getWindowManager();
+        Window window = dialog.getWindow();
+        window.getDecorView().setPadding(0, 0, 0, 0);
+        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+        params.width = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(params);
+        window.getDecorView().setBackgroundResource(R.color.pickerbg);
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+        dialog.show();
+    }
+
+    public void showTime(BaseActivity activity, long minDate, long maxDate, WarmPromptListener listener) {
+        Dialog dialog = new Dialog(activity);
+        dialog.setContentView(R.layout.dialog_timepicker);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextConfigDataPicker datePicker = dialog.findViewById(R.id.np);
+        //datePicker.updateUI(datePicker);
+        datePicker.setMinDate(minDate);
+        datePicker.setMaxDate(maxDate);
+        tvSure.setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.affireBtnClick(datePicker);
+        });
+        //DatePicker
+        //设置需要显示的内容数组
+     /*   numberPicker.setDisplayedValues(strings);
+        //设置最大最小值
+        numberPicker.setMinValue(0);
+        numberPicker.setMaxValue(strings.length-1);
+        //设置默认的位置
+        // numberPicker.setValue(2);
+        numberPicker.setWrapSelectorWheel(false);
+        numberPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        numberPicker.setMInputStyle(16f);
+        numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                picker.performClick();
+            }
+        });*/
+
+        /*WindowManager m = activity.getWindowManager();*/
+        Window window = dialog.getWindow();
+        window.getDecorView().setPadding(0, 0, 0, 0);
+        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+        params.width = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(params);
+        window.getDecorView().setBackgroundResource(R.color.pickerbg);
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+        dialog.show();
+    }
+
+    public static void backgroundAlpha(Context context, float bgAlpha) {
+        WindowManager.LayoutParams lp = ((Activity) context).getWindow().getAttributes();
+        lp.alpha = bgAlpha; // 0.0-1.0
+        ((Activity) context).getWindow().setAttributes(lp);
+    }
+
+    public void showCommonWarmPrompt(BaseActivity activity, String contentStr, String textSure, String textCancel, boolean pop, WarmPromptListener listener) {
+        Dialog dialog = getDialogs(activity, R.layout.dialog_settingtip1);
+
+        ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
+        TextView tvCancel = dialog.findViewById(R.id.tv_cancel);
+        if (!TextUtils.isEmpty(textCancel)) {
+            tvCancel.setText(textCancel);
+        }
+        TextView contentTv = dialog.findViewById(R.id.tv_content);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        if (!TextUtils.isEmpty(textSure)) {
+            tvSure.setText(textSure);
+        }
+
+
+        if (!TextUtils.isEmpty(contentStr)) {
+            contentTv.setText(Html.fromHtml(contentStr));
+        }
+
+        ivCancel.setOnClickListener(v -> dialogDismiss(dialog));
+        tvCancel.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            if (pop)
+                activity.pop();
+        });
+
+        tvSure.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.affireBtnClick(contentTv);
+        });
+        dialog.show();
+    }
+
+    public void showCommonWarmPrompt1(BaseActivity activity, String contentStr, String textSure, String textCancel, boolean pop, NewWarmPromptListener listener) {
+        Dialog dialog = getDialogs(activity, R.layout.dialog_settingtip1);
+
+        ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
+        TextView tvCancel = dialog.findViewById(R.id.tv_cancel);
+        if (!TextUtils.isEmpty(textCancel)) {
+            tvCancel.setText(textCancel);
+        }
+        TextView contentTv = dialog.findViewById(R.id.tv_content);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        if (!TextUtils.isEmpty(textSure)) {
+            tvSure.setText(textSure);
+        }
+
+
+        if (!TextUtils.isEmpty(contentStr)) {
+            contentTv.setText(Html.fromHtml(contentStr));
+        }
+
+        ivCancel.setOnClickListener(v -> {
+            listener.onCancel(tvCancel);
+            dialogDismiss(dialog);
+        });
+
+        tvCancel.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.onCancel(tvCancel);
+            if (pop)
+                activity.pop();
+        });
+
+        tvSure.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.affireBtnClick(contentTv);
+        });
+        dialog.show();
+    }
+
+    public static void showComTextPopup(EditText view, Context context, List<String> textList) {
+        int x = view.getWidth();
+        RecyclerView recyclerView = (RecyclerView) LayoutInflater.from(context).inflate(R.layout.popup_text, null);
+        PopupWindow popupWindow = new PopupWindow(recyclerView, x, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        // 设置PopupWindow是否能响应外部点击事件
+        //popupWindow.setOutsideTouchable(true);
+        // popupWindow.setTouchable(true);
+        popupWindow.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
+        recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
+        TextAdapter adapter = new TextAdapter(textList, context);
+        adapter.setOnItemOnclickListner(new TextAdapter.OnItemClickListner() {
+            @Override
+            public void onItemClick(View v, int position, String text) {
+                view.setText(text);
+                popupWindow.dismiss();
+            }
+        });
+        recyclerView.setAdapter(adapter);
+        popupWindow.showAsDropDown(view, 0, 0);
+        //  return popupWindow;
     }
 }

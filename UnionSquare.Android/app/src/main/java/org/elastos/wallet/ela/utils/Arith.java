@@ -39,10 +39,18 @@ public class Arith {
         BigDecimal b2 = new BigDecimal(v2);
         return b1.subtract(b2);
     }
+
+    public static BigDecimal sub(String v1, long v2) {
+        BigDecimal b1 = new BigDecimal(v1);
+        BigDecimal b2 = new BigDecimal(v2);
+        return b1.subtract(b2);
+    }
+
     public static BigDecimal sub(BigDecimal b1, String v2) {
         BigDecimal b2 = new BigDecimal(v2);
         return b1.subtract(b2);
     }
+
     /**
      * 提供精确的乘法运算。
      *
@@ -53,6 +61,33 @@ public class Arith {
     public static BigDecimal mul(String v1, String v2) {
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
+        return b1.multiply(b2);
+    }
+
+    /**
+     * 提供精确的乘法运算。取整
+     *
+     * @param v1 被乘数
+     * @param v2 乘数
+     * @return 两个参数的积
+     */
+    public static BigDecimal mulRemoveZero(String v1, String v2) {
+        return mul(v1, v2).setScale(0, BigDecimal.ROUND_DOWN);
+    }
+
+    public static BigDecimal mul(Object v1, Object v2) {
+        BigDecimal b1;
+        BigDecimal b2;
+        if (v1 instanceof BigDecimal) {
+            b1 = (BigDecimal) v1;
+        } else {
+            b1 = new BigDecimal(v1.toString());
+        }
+        if (v2 instanceof BigDecimal) {
+            b2 = (BigDecimal) v2;
+        } else {
+            b2 = new BigDecimal(v2.toString());
+        }
         return b1.multiply(b2);
     }
 
@@ -84,12 +119,26 @@ public class Arith {
                     "The scale must be a positive integer or zero");*/
         }
         if ("0".equals(v2.trim())) {
-            return new BigDecimal("-1");
+            return new BigDecimal("0");
         }
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
 
-        return b1.divide(b2, scale, BigDecimal.ROUND_HALF_DOWN);
+        return b1.divide(b2, scale, BigDecimal.ROUND_DOWN);
+    }
+
+    public static BigDecimal div(BigDecimal v1, int v2, int scale) {
+        if (scale < 0) {
+            return new BigDecimal("-1");
+            /*throw new IllegalArgumentException(
+                    "The scale must be a positive integer or zero");*/
+        }
+        if (0 == v2) {
+            return new BigDecimal("0");
+        }
+        BigDecimal b2 = new BigDecimal(v2);
+
+        return v1.divide(b2, scale, BigDecimal.ROUND_DOWN);
     }
 
     /**

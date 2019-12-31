@@ -1,7 +1,6 @@
 package org.elastos.wallet.ela.ui.vote.SuperNodeList;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
@@ -9,9 +8,12 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -27,14 +29,15 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
     private BaseFragment context;
     private Map<String, String> map;
 
-    private int pos;
-    // private boolean is;
+    private boolean is;
+    private SuperNodeListPresenter presenter;
 
-    public SuperNodeListAdapter1(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
+    public SuperNodeListAdapter1(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, boolean is) {
         super(R.layout.item_super_node_list1, data);
         this.context = context;
-        this.pos = pos;
-        //  this.is = is;
+
+        this.is = is;
+
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle)
                 .placeholder(R.mipmap.found_vote_initial_circle).circleCrop();
         if (map == null) {
@@ -44,23 +47,34 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
         }
     }
 
+    public void setIs(boolean is) {
+        this.is = is;
+    }
+
     @Override
     protected void convert(BaseViewHolder helper, VoteListBean.DataBean.ResultBean.ProducersBean bean) {
 
-        helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.black));
-        if (pos == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.ll, Color.parseColor("#307CA2"));
+        helper.setBackgroundColor(R.id.ll, mContext.getResources().getColor(R.color.black));
+        if (is && 0 == helper.getLayoutPosition()) {
+            helper.setBackgroundColor(R.id.ll, mContext.getResources().getColor(R.color.blue1));
         }
-        helper.setText(R.id.tv_rank, "" + (helper.getLayoutPosition() + 1));
+        helper.setText(R.id.tv_rank, "" + (bean.getIndex() + 1));
         helper.setText(R.id.tv_name, bean.getNickname());
-        helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
-        helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
-        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
+        helper.setText(R.id.tv_address, AppUtlis.getLoc(mContext, bean.getLocation() + ""));
+        BigDecimal voterateDecimal = new BigDecimal(bean.getVoterate());
+        if (voterateDecimal.compareTo(new BigDecimal(0.01)) < 0) {
+            helper.setText(R.id.tv_zb, "< 1%");
+        } else {
+            String voterate = NumberiUtil.numberFormat(Arith.mul(voterateDecimal, 100), 2);
+            helper.setText(R.id.tv_zb, voterate + "%");
+
+        }
+        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + mContext.getString(R.string.ticket));
         ImageView iv = helper.getView(R.id.iv_icon);
         iv.setImageResource(R.mipmap.found_vote_initial_circle);
         String baseUrl = bean.getUrl();
         iv.setTag(R.id.error_tag_empty, baseUrl);
-        GlideApp.with(context).clear(iv);
+        GlideApp.with(mContext).clear(iv);
         if (baseUrl == null) {
             return;
         }
@@ -71,8 +85,10 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
             glideRequest.load(map.get(baseUrl)).into(iv);
             return;
         }
-
-        new SuperNodeListPresenter().getUrlJson(iv, baseUrl, context, new NodeDotJsonViewData() {
+        if (presenter == null) {
+            presenter = new SuperNodeListPresenter();
+        }
+        presenter.getUrlJson(iv, baseUrl, context, new NodeDotJsonViewData() {
             @Override
             public void onError(String url) {
                 map.put(url, "");
@@ -90,8 +106,26 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
                 }
 
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
-                map.put(url, imgUrl);
-                glideRequest.load(imgUrl).into(iv1);
+                // map.put(url, imgUrl);
+                //glideRequest.load(imgUrl).into(iv1);
+                presenter.getImage(iv1, url, imgUrl, context, new NodeDotJsonViewData() {
+                    @Override
+                    public void onError(String url) {
+                        map.put(url, "");
+                    }
+
+                    @Override
+                    public void onGetImage(ImageView iv1, String url, ImageBean imageBean) {
+                        if (iv1.getTag(R.id.error_tag_empty) == null || !(iv1.getTag(R.id.error_tag_empty).toString()).equals(url)) {
+                            GlideApp.with(mContext).clear(iv1);
+                            iv1.setImageResource(R.mipmap.found_vote_initial);
+                            return;
+                        }
+                        String newimgUrl = MyApplication.REQUEST_BASE_URL + "/" + imageBean.getData();
+                        map.put(url, newimgUrl);
+                        glideRequest.load(newimgUrl).into(iv1);
+                    }
+                });
             }
         });
     }

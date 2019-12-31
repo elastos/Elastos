@@ -63,7 +63,7 @@ public class TransferRecordRecAdapetr extends RecyclerView.Adapter<TransferRecor
         } else {
             holder.tvStatus.setText(R.string.confirmed);
             holder.tvStatus.setTextColor(context.getResources().getColor(R.color.blue1));
-            holder.tvTime.setText(DateUtil.time(data.getTimestamp()));
+            holder.tvTime.setText(DateUtil.time(data.getTimestamp(),context));
         }
 
         switch (direction) {

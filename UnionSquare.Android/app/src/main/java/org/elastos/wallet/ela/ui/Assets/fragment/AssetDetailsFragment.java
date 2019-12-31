@@ -25,10 +25,11 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.ui.Assets.activity.PwdActivity;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.adapter.TransferRecordRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordEntity;
+import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetDetailPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetsPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
@@ -41,6 +42,8 @@ import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
 import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
+import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -107,6 +110,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     private SubWallet subWallet;
     private AssetDetailPresenter assetDetailPresenter;
 
+
     @Override
     protected int getLayoutId() {
         initClassicsFooter();
@@ -116,17 +120,18 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
     @Override
     protected void setExtraData(Bundle data) {
-        chainId = data.getString("ChainId", "ELA");
+
         wallet = data.getParcelable("wallet");
         subWallet = data.getParcelable("subWallet");
+        chainId = subWallet.getChainId();
         tvTitle.setText(chainId);
+
 
     }
 
     @Override
     protected void initView(View view) {
         assetDetailPresenter = new AssetDetailPresenter();
-        onErrorRefreshLayout(srl);
         if (chainId.equals(MyWallet.ELA)) {
             tvChain.setText(getString(R.string.side_chain_top_up));
             viewLine.setVisibility(View.VISIBLE);
@@ -143,7 +148,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), chainId, 2, this);
         //String synctime = new RealmUtil().querySubWalletSyncTime(wallet.getWalletId(), chainId);
         if (subWallet != null) {
-            tvSynctime.setText(getString(R.string.lastsynctime) + subWallet.getSyncTime());
+            tvSynctime.setText(getString(R.string.lastsynctime) + DateUtil.time(subWallet.getSyncTime(), getContext()));
         }
 
         registReceiver();
@@ -159,7 +164,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 //转账
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
-                bundle.putString("ChainId", chainId);
+                bundle.putString("ChainID", chainId);
                 start(TransferFragment.class, bundle);
                 break;
             case R.id.tv_chain:
@@ -288,6 +293,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         if (rbEarnRecorder.isChecked()) {
             startCount1 = 0;
             assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, startCount1, pageCount, "", this);
@@ -295,22 +301,22 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             startCount = 0;
             presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, pageCount, "", this);
         }
-        new AssetsPresenter().syncStart(wallet.getWalletId(), chainId, this);
-
     }
 
     @Override
     public void onLoadMore(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         if (rbEarnRecorder.isChecked()) {
             assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, startCount1, pageCount, "", this);
         } else {
             presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, startCount + pageCount, "", this);
         }
+        new AssetsPresenter().syncStart(wallet.getWalletId(), chainId, this);
     }
 
     @Override
     public void onBalance(BalanceEntity data) {
-        if (data != null) {
+        if (data != null && !TextUtils.isEmpty(data.getBalance())) {
             tvBalance.setText(NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 12) + " ELA");
         }
     }
@@ -330,8 +336,35 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             SubWallet subWallet = (SubWallet) result.getObj();
             if (subWallet != null && subWallet.getBelongId().equals(wallet.getWalletId()) &&
                     subWallet.getChainId().equals(chainId)) {
-                tvSynctime.setText(getString(R.string.lastsynctime) + subWallet.getSyncTime());
+                tvSynctime.setText(getString(R.string.lastsynctime) + DateUtil.time(subWallet.getSyncTime(), getContext()));
             }
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                }
+            });
+
+        }
+        if (integer == RxEnum.TOSIGN.ordinal()) {
+            //生成待签名交易
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            start(SignFragment.class, bundle);
+
+        }
+        if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
+            //签名成功
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            bundle.putBoolean("signStatus", true);
+            start(SignFragment.class, bundle);
+
         }
 
     }
@@ -395,10 +428,12 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 break;
             case "createCombineUTXOTransaction":
                 //零钱换整
-                Intent intent = new Intent(getActivity(), PwdActivity.class);
+                Intent intent = new Intent(getActivity(), TransferActivity.class);
+
                 intent.putExtra("wallet", wallet);
-                intent.putExtra("chainId", chainId);
                 intent.putExtra("attributes", data);
+                intent.putExtra("chainId", chainId);
+                intent.putExtra("type", Constant.TOWHOL);
                 startActivity(intent);
                 break;
             case "getAllCoinBaseTransaction":

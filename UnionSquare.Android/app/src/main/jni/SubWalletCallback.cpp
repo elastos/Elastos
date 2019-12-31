@@ -41,18 +41,23 @@ namespace Elastos {
 
             env->CallVoidMethod(_obj, methodId, jtxid, jstatus, jdesc, confirms);
 
+            env->DeleteLocalRef(jtxid);
+            env->DeleteLocalRef(jstatus);
+            env->DeleteLocalRef(jdesc);
+            env->DeleteLocalRef(clazz);
 //            Detach();
         }
 
-        void SubWalletCallback::OnBlockSyncProgress(uint32_t currentBlockHeight,
-                                                    uint32_t estimatedHeight,
-                                                    time_t lastBlockTime) {
+        void SubWalletCallback::OnBlockSyncProgress(const nlohmann::json &progressInfo) {
             JNIEnv *env = GetEnv();
 
+            jstring info = env->NewStringUTF(progressInfo.dump().c_str());
             jclass clazz = env->GetObjectClass(_obj);
-            jmethodID methodId = env->GetMethodID(clazz, "OnBlockSyncProgress", "(IIJ)V");
-            env->CallVoidMethod(_obj, methodId, currentBlockHeight, estimatedHeight, (jlong)lastBlockTime);
+            jmethodID methodId = env->GetMethodID(clazz, "OnBlockSyncProgress", "(Ljava/lang/String;)V");
+            env->CallVoidMethod(_obj, methodId, info);
 
+            env->DeleteLocalRef(info);
+            env->DeleteLocalRef(clazz);
 //            Detach();
         }
 
@@ -67,6 +72,9 @@ namespace Elastos {
                                                   "(Ljava/lang/String;Ljava/lang/String;)V");
             env->CallVoidMethod(_obj, methodId, assetID, value);
 
+            env->DeleteLocalRef(assetID);
+            env->DeleteLocalRef(value);
+            env->DeleteLocalRef(clazz);
 //            Detach();
         }
 
@@ -82,6 +90,9 @@ namespace Elastos {
                                                   "(Ljava/lang/String;Ljava/lang/String;)V");
             env->CallVoidMethod(_obj, methodId, jHash, jResult);
 
+            env->DeleteLocalRef(jResult);
+            env->DeleteLocalRef(jHash);
+            env->DeleteLocalRef(clazz);
 //            Detach();
         }
 
@@ -96,6 +107,10 @@ namespace Elastos {
             jmethodID methodId = env->GetMethodID(clazz, "OnAssetRegistered",
                                                   "(Ljava/lang/String;Ljava/lang/String;)V");
             env->CallVoidMethod(_obj, methodId, jasset, jinfo);
+
+            env->DeleteLocalRef(jasset);
+            env->DeleteLocalRef(jinfo);
+            env->DeleteLocalRef(clazz);
         }
 
         void SubWalletCallback::OnConnectStatusChanged(const std::string &status) {
@@ -107,6 +122,9 @@ namespace Elastos {
             jmethodID methodID = env->GetMethodID(clazz, "OnConnectStatusChanged", "(Ljava/lang/String;)V");
 
             env->CallVoidMethod(_obj, methodID, jstatus);
+
+            env->DeleteLocalRef(jstatus);
+            env->DeleteLocalRef(clazz);
         }
 
 

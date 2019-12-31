@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/asset_bg"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <ImageView
+        android:id="@+id/iv_qr"
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:layout_marginTop="50dp"
+        android:background="@mipmap/asset_code_border"
+        android:padding="10dp" />
+
+    <TextView
+        android:id="@+id/tv_address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/common_margin"
+        android:layout_marginTop="28dp"
+        android:layout_marginRight="@dimen/common_margin"
+        android:background="@drawable/sc_26ffffff_cr14"
+        android:gravity="center"
+        android:paddingLeft="25dp"
+        android:paddingTop="10dp"
+        android:paddingRight="25dp"
+        android:paddingBottom="10dp"
+        android:textColor="#ffffffff"
+        android:textSize="12sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px40"
+        android:gravity="center"
+        android:text="@string/scancreatemulwallet"
+        android:textSize="11sp" />
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/tv_copy"
+        style="@style/button1"
+        android:layout_marginLeft="79dp"
+        android:layout_marginRight="79dp"
+        android:layout_marginBottom="50dp"
+        android:text="@string/copymulpublickey" />
+
+
+</LinearLayout>

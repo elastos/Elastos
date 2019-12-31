@@ -8,14 +8,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by wangdongfeng on 2018/4/13.
- */
 
 public class SPUtil {
 
     private static final String detrust_fileName = "ela_sp";
     private static final String LANGUAGE = "language";
+    private static final String SERVER = "server";
+    private static final String SERVERLIST = "serverList";
     private Context context;
 
 
@@ -63,6 +62,22 @@ public class SPUtil {
     }
 
     /**
+     * 存储单个set数据
+     */
+    public void setSharedPreferencesKeyVale(String key, Set<String> value) {
+        SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
+        edit.putStringSet(key, value);
+        edit.commit();
+    }
+
+    /**
+     * 获取单个set数据
+     */
+    public Set<String> getSharedPreferencesKeyVale(String key, Set<String> defValue) {
+        return getSharedPreferences(detrust_fileName).getStringSet(key, defValue);
+    }
+
+    /**
      * 存储单个int数据
      */
     public void setSharedPreferencesKeyVale(String key, int value) {
@@ -86,6 +101,24 @@ public class SPUtil {
 
     public int getLanguage() {
         return getSharedPreferencesKeyVale(LANGUAGE, -1);
+    }
+
+    public void setDefaultServer(String value) {
+        setSharedPreferencesKeyVale(SERVER, value);
+    }
+
+
+    public String getDefaultServer(String defaultServer) {
+        return getSharedPreferencesKeyVale(SERVER, defaultServer);
+    }
+
+    public void setDefaultServerList(Set<String> value) {
+        setSharedPreferencesKeyVale(SERVERLIST, value);
+    }
+
+
+    public Set<String> getDefaultServerList(Set<String> defaultSet) {
+        return getSharedPreferencesKeyVale(SERVERLIST, defaultSet);
     }
 
 

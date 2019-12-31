@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/commonbg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/common_margin_30"
+                android:layout_marginRight="@dimen/common_margin_30"
+                android:background="@color/a26ffffff"
+                android:orientation="vertical">
+
+                <org.elastos.wallet.ela.utils.ClearEditText
+                    android:id="@+id/et_walletname"
+                    style="@style/settingItem_margin15"
+                    android:background="@null"
+                    android:gravity="center_vertical"
+                    android:hint="@string/inputWalletName"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/whiter50" />
+
+                <View style="@style/line_margin15" />
+
+                <LinearLayout
+                    style="@style/settingItem_margin15"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:text="@string/signnum" />
+
+                    <TextView
+                        android:id="@+id/tv_signnum"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="2"
+                        android:textSize="13sp" />
+
+                    <ImageView
+                        android:id="@+id/iv_chosenum"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:paddingLeft="15dp"
+                        android:src="@mipmap/setting_list_arrow" />
+                </LinearLayout>
+
+                <View style="@style/line_margin15" />
+
+                <LinearLayout
+                    style="@style/settingItem_margin15"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:text="@string/readonly" />
+
+                    <CheckBox
+                        android:id="@+id/cb_readonly"
+                        android:layout_width="30dp"
+                        android:layout_height="15dp"
+                        android:background="@drawable/selector_rb"
+                        android:button="@null" />
+                </LinearLayout>
+
+                <View style="@style/line_margin15" />
+
+                <LinearLayout
+                    style="@style/settingItem_margin15"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:text="@string/single_address_wallet" />
+
+                    <CheckBox
+                        android:id="@+id/cb_single"
+                        android:layout_width="30dp"
+                        android:layout_height="15dp"
+                        android:background="@drawable/selector_rb"
+                        android:button="@null" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_addmainkey"
+                android:layout_width="192dp"
+                android:layout_height="38dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/setting_item"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/iv_status"
+                    android:layout_width="14dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginRight="12dp"
+                    android:src="@mipmap/setting_contacts_add" />
+
+                <View
+                    style="@style/linevertical"
+                    android:layout_marginTop="9dp"
+                    android:layout_marginBottom="9dp" />
+
+                <TextView
+                    android:id="@+id/tv_status"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/addmainkey" />
+            </LinearLayout>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv"
+                style="@style/settingItem_margin"
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp" />
+
+            <ImageView
+                android:id="@+id/iv_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="38dp"
+                android:src="@mipmap/asset_adding_btn" />
+
+            <TextView
+                android:id="@+id/tv_create"
+                style="@style/button_margin"
+                android:layout_marginTop="50dp"
+                android:layout_marginBottom="60dp"
+                android:text="@string/surecreate" />
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+</LinearLayout>

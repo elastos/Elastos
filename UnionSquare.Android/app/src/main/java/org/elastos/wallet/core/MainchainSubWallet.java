@@ -15,8 +15,8 @@ public class MainchainSubWallet extends SubWallet {
         mMainchainProxy = proxy;
     }
 
-    public String CreateDepositTransaction(String fromAddress, String lockedAddress, String amount, String sideChainAddress, String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateDepositTransaction(mMainchainProxy, fromAddress, lockedAddress, amount, sideChainAddress, memo, useVotedUTXO);
+    public String CreateDepositTransaction(String fromAddress, String sideChainID, String amount, String sideChainAddress, String memo) throws WalletException {
+        return CreateDepositTransaction(mMainchainProxy, fromAddress, sideChainID, amount, sideChainAddress, memo);
     }
 
     public String GenerateProducerPayload(String publicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd) throws WalletException {
@@ -27,16 +27,16 @@ public class MainchainSubWallet extends SubWallet {
         return GenerateCancelProducerPayload(mMainchainProxy, publicKey, payPasswd);
     }
 
-    public String CreateRegisterProducerTransaction(String fromAddress, String payloadJson, String amount, String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateRegisterProducerTransaction(mMainchainProxy, fromAddress, payloadJson, amount, memo, useVotedUTXO);
+    public String CreateRegisterProducerTransaction(String fromAddress, String payloadJson, String amount, String memo) throws WalletException {
+        return CreateRegisterProducerTransaction(mMainchainProxy, fromAddress, payloadJson, amount, memo);
     }
 
-    public String CreateUpdateProducerTransaction(String fromAddress, String payloadJson, String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateUpdateProducerTransaction(mMainchainProxy, fromAddress, payloadJson, memo, useVotedUTXO);
+    public String CreateUpdateProducerTransaction(String fromAddress, String payloadJson, String memo) throws WalletException {
+        return CreateUpdateProducerTransaction(mMainchainProxy, fromAddress, payloadJson, memo);
     }
 
-    public String CreateCancelProducerTransaction(String fromAddress, String payloadJson, String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateCancelProducerTransaction(mMainchainProxy, fromAddress, payloadJson, memo, useVotedUTXO);
+    public String CreateCancelProducerTransaction(String fromAddress, String payloadJson, String memo) throws WalletException {
+        return CreateCancelProducerTransaction(mMainchainProxy, fromAddress, payloadJson, memo);
     }
 
     public String CreateRetrieveDepositTransaction(String amount, String memo) throws WalletException {
@@ -47,8 +47,8 @@ public class MainchainSubWallet extends SubWallet {
         return GetOwnerPublicKey(mMainchainProxy);
     }
 
-    public String CreateVoteProducerTransaction(String fromAddress, String stake, String publicKeys, String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateVoteProducerTransaction(mMainchainProxy, fromAddress, stake, publicKeys, memo, useVotedUTXO);
+    public String CreateVoteProducerTransaction(String fromAddress, String stake, String publicKeys, String memo, String invalidCandidates) throws WalletException {
+        return CreateVoteProducerTransaction(mMainchainProxy, fromAddress, stake, publicKeys, memo, invalidCandidates);
     }
 
     public String GetVotedProducerList() throws WalletException {
@@ -64,44 +64,88 @@ public class MainchainSubWallet extends SubWallet {
     }
 
     public String GenerateCRInfoPayload(String crPublickey, String nickName, String url,
-                                        long location, String payPasswd) throws WalletException {
-        return GenerateCRInfoPayload(mMainchainProxy, crPublickey, nickName, url, location, payPasswd);
+                                        long location) throws WalletException {
+        return GenerateCRInfoPayload(mMainchainProxy, crPublickey, nickName, url, location);
     }
 
-    public String GenerateUnregisterCRPayload(String crPublickey, String payPasswd) throws WalletException {
-        return GenerateUnregisterCRPayload(mMainchainProxy, crPublickey, payPasswd);
+    public String GenerateUnregisterCRPayload(String crDID) throws WalletException {
+        return GenerateUnregisterCRPayload(mMainchainProxy, crDID);
     }
 
-    public String GetCROwnerDID() throws WalletException {
-        return GetCROwnerDID(mMainchainProxy);
+    public String CreateRegisterCRTransaction(String fromAddress, String payload, String amount, String memo) throws WalletException {
+        return CreateRegisterCRTransaction(mMainchainProxy, fromAddress, payload, amount, memo);
     }
 
-    public String GetCROwnerPublicKey() throws WalletException {
-        return GetCROwnerPublicKey(mMainchainProxy);
+    public String CreateUpdateCRTransaction(String fromAddress, String payload, String memo) throws WalletException {
+        return CreateUpdateCRTransaction(mMainchainProxy, fromAddress, payload, memo);
     }
 
-    public String CreateRegisterCRTransaction(String fromAddress, String payload, String amount, String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateRegisterCRTransaction(mMainchainProxy, fromAddress, payload, amount, memo, useVotedUTXO);
+    public String CreateUnregisterCRTransaction(String fromAddress, String payload, String memo) throws WalletException {
+        return CreateUnregisterCRTransaction(mMainchainProxy, fromAddress, payload, memo);
     }
 
-    public String CreateUpdateCRTransaction(String fromAddress, String payload, String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateUpdateCRTransaction(mMainchainProxy, fromAddress, payload, memo, useVotedUTXO);
+    public String CreateRetrieveCRDepositTransaction(String crPublickey, String amount, String memo) throws WalletException {
+        return CreateRetrieveCRDepositTransaction(mMainchainProxy, crPublickey, amount, memo);
     }
 
-    public String CreateUnregisterCRTransaction(String fromAddress, String payload, String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateUnregisterCRTransaction(mMainchainProxy, fromAddress, payload,  memo, useVotedUTXO);
+    public String CreateVoteCRTransaction(String fromAddress, String votes, String memo, String invalidCandidates) throws WalletException {
+        return CreateVoteCRTransaction(mMainchainProxy, fromAddress, votes, memo, invalidCandidates);
     }
 
-    public String CreateRetrieveCRDepositTransaction(String amount, String memo) throws WalletException {
-        return CreateRetrieveCRDepositTransaction(mMainchainProxy, amount, memo);
+    public String GetVotedCRList() throws WalletException {
+        return GetVotedCRList(mMainchainProxy);
     }
 
-    public String CreateVoteCRTransaction(String fromAddress, String votes, String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateVoteCRTransaction(mMainchainProxy, fromAddress, votes, memo, useVotedUTXO);
+    public String GetRegisteredCRInfo() throws WalletException {
+        return GetRegisteredCRInfo(mMainchainProxy);
     }
 
-    private native String CreateDepositTransaction(long proxy, String fromAddress, String lockedAddress, String amount,
-                                                   String sideChainAddress, String memo, boolean useVotedUTXO);
+    public String SponsorProposalDigest(byte type, String sponsorPublicKey, String draftHash, String budgets, String recipient) throws WalletException {
+        return SponsorProposalDigest(mMainchainProxy, type, sponsorPublicKey, draftHash, budgets, recipient);
+    }
+
+    public String CRSponsorProposalDigest(String sponsorSignedProposal, String crSponsorDID) throws WalletException {
+        return CRSponsorProposalDigest(mMainchainProxy, sponsorSignedProposal, crSponsorDID);
+    }
+
+    public String CreateCRCProposalTransaction(String crSignedProposal, String memo) throws WalletException {
+        return CreateCRCProposalTransaction(mMainchainProxy, crSignedProposal, memo);
+    }
+
+    public String CreateVoteCRCProposalTransaction(String fromAddress, String votes, String memo, String invalidCandidates) throws WalletException {
+        return CreateVoteCRCProposalTransaction(mMainchainProxy, fromAddress, votes, memo, invalidCandidates);
+    }
+
+    public String CreateImpeachmentCRCTransaction(String fromAddress, String votes, String memo, String invalidCandidates) throws WalletException {
+        return CreateImpeachmentCRCTransaction(mMainchainProxy, fromAddress, votes, memo, invalidCandidates);
+    }
+
+    public String GenerateCRCProposalReview(String proposalHash, byte voteResult, String crDID, String payPasswd) throws WalletException {
+        return GenerateCRCProposalReview(mMainchainProxy, proposalHash, voteResult, crDID, payPasswd);
+    }
+
+    public String CreateCRCProposalReviewTransaction(String proposalHash, String proposalReview, String memo) throws WalletException {
+        return CreateCRCProposalReviewTransaction(mMainchainProxy, proposalReview, memo);
+    }
+
+    public String LeaderProposalTrackDigest(byte type, String proposalHash, String documentHash, byte stage, String appropriation, String leaderPubKey, String newLeaderPubKey) {
+        return LeaderProposalTrackDigest(mMainchainProxy, type, proposalHash, documentHash, stage, appropriation, leaderPubKey, newLeaderPubKey);
+    }
+
+    public String NewLeaderProposalTrackDigest(String leaderSignedProposalTracking) {
+        return NewLeaderProposalTrackDigest(leaderSignedProposalTracking);
+    }
+
+    public String SecretaryGeneralProposalTrackDigest(String leaderSignedProposalTracking) {
+        return SecretaryGeneralProposalTrackDigest(leaderSignedProposalTracking);
+    }
+
+    public String CreateProposalTrackingTransaction(String SecretaryGeneralSignedPayload, String memo) {
+        return CreateProposalTrackingTransaction(mMainchainProxy, SecretaryGeneralSignedPayload, memo);
+    }
+
+    private native String CreateDepositTransaction(long proxy, String fromAddress, String sideChainID, String amount,
+                                                   String sideChainAddress, String memo);
 
     private native String GenerateProducerPayload(long proxy, String publicKey, String nodePublicKey, String nickName,
                                                   String url, String IPAddress, long location, String payPasswd);
@@ -109,17 +153,17 @@ public class MainchainSubWallet extends SubWallet {
     private native String GenerateCancelProducerPayload(long proxy, String publicKey, String payPasswd);
 
     private native String CreateRegisterProducerTransaction(long proxy, String fromAddress, String payloadJson, String amount,
-                                                            String memo, boolean useVotedUTXO);
+                                                            String memo);
 
-    private native String CreateUpdateProducerTransaction(long proxy, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO);
+    private native String CreateUpdateProducerTransaction(long proxy, String fromAddress, String payloadJson, String memo);
 
-    private native String CreateCancelProducerTransaction(long proxy, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO);
+    private native String CreateCancelProducerTransaction(long proxy, String fromAddress, String payloadJson, String memo);
 
     private native String CreateRetrieveDepositTransaction(long proxy, String amount, String memo);
 
     private native String GetOwnerPublicKey(long proxy);
 
-    private native String CreateVoteProducerTransaction(long proxy, String fromAddress, String stake, String publicKeys, String memo, boolean useVotedUTXO);
+    private native String CreateVoteProducerTransaction(long proxy, String fromAddress, String stake, String publicKeys, String memo, String invalidCandidates);
 
     private native String GetVotedProducerList(long proxy);
 
@@ -127,22 +171,44 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String GetOwnerAddress(long proxy);
 
-    private native String GenerateCRInfoPayload(long proxy, String crPublickey, String nickName, String url, long location, String payPasswd);
+    private native String GenerateCRInfoPayload(long proxy, String crPublickey, String nickName, String url, long location);
 
-    private native String GenerateUnregisterCRPayload(long proxy, String crPublicKey, String payPasswd);
+    private native String GenerateUnregisterCRPayload(long proxy, String crDID);
 
-    private native String GetCROwnerDID(long proxy);
+    private native String CreateRegisterCRTransaction(long proxy, String fromAddress, String payload, String amount, String memo);
 
-    private native String GetCROwnerPublicKey(long proxy);
+    private native String CreateUpdateCRTransaction(long proxy, String fromAddress, String payload, String memo);
 
-    private native String CreateRegisterCRTransaction(long proxy, String fromAddress, String payload, String amount, String memo, boolean useVotedUTXO);
+    private native String CreateUnregisterCRTransaction(long proxy, String fromAddress, String payload, String memo);
 
-    private native String CreateUpdateCRTransaction(long proxy, String fromAddress, String payload, String memo, boolean useVotedUTXO);
+    private native String CreateRetrieveCRDepositTransaction(long Proxy, String crPublickey, String amount, String memo);
 
-    private native String CreateUnregisterCRTransaction(long proxy, String fromAddress, String payload, String memo, boolean useVotedUTXO);
+    private native String CreateVoteCRTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
 
-    private native String CreateRetrieveCRDepositTransaction(long Proxy, String amount, String memo);
+    private native String GetVotedCRList(long Proxy);
 
-    private native String CreateVoteCRTransaction(long Proxy, String fromAddress, String votes, String memo, boolean useVotedUTXO);
+    private native String GetRegisteredCRInfo(long Proxy);
+
+    private native String SponsorProposalDigest(long Proxy, byte type, String sponsorPublicKey, String draftHash, String budgets, String recipient);
+
+    private native String CRSponsorProposalDigest(long Proxy, String sponsorSignedProposal, String crSponsorDID);
+
+    private native String CreateCRCProposalTransaction(long Proxy, String crSignedProposal, String memo);
+
+    private native String CreateVoteCRCProposalTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
+
+    private native String CreateImpeachmentCRCTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
+
+    private native String GenerateCRCProposalReview(long Proxy, String proposalHash, byte voteResult, String crDID, String payPasswd);
+
+    private native String CreateCRCProposalReviewTransaction(long Proxy, String proposalReview, String memo);
+
+    private native String LeaderProposalTrackDigest(long Proxy, byte type, String proposalHash, String documentHash, byte stage, String appropriation, String leaderPubKey, String newLeaderPubKey);
+
+    private native String NewLeaderProposalTrackDigest(long Proxy, String leaderSignedProposalTracking);
+
+    private native String SecretaryGeneralProposalTrackDigest(long Proxy, String leaderSignedProposalTracking);
+
+    private native String CreateProposalTrackingTransaction(long Proxy, String SecretaryGeneralSignedPayload, String memo);
 
 }

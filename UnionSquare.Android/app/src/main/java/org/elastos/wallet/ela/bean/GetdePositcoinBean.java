@@ -1,26 +1,17 @@
 package org.elastos.wallet.ela.bean;
 
-public class GetdePositcoinBean {
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 
+public class GetdePositcoinBean  extends BaseEntity {
     /**
-     * code : 0
-     * message : 查询成功^_^
-     * data : {"error":null,"id":null,"jsonrpc":"2.0","result":{"available":"0","deducted":"0"}}
+     * message : Query successful ^_^
+     * data : {"error":null,"id":null,"jsonrpc":"2.0","result":{"available":"5000","deducted":"0"}}
      * exceptionMsg : null
      */
 
-    private String code;
     private String message;
     private DataBean data;
     private Object exceptionMsg;
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
 
     public String getMessage() {
         return message;
@@ -51,7 +42,7 @@ public class GetdePositcoinBean {
          * error : null
          * id : null
          * jsonrpc : 2.0
-         * result : {"available":"0","deducted":"0"}
+         * result : {"available":"5000","deducted":"0"}
          */
 
         private Object error;
@@ -93,7 +84,7 @@ public class GetdePositcoinBean {
 
         public static class ResultBean {
             /**
-             * available : 0
+             * available : 5000
              * deducted : 0
              */
 

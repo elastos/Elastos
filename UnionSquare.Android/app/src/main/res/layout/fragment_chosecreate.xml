@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/commonbg"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <RelativeLayout
+        android:id="@+id/rl_single"
+        style="@style/settingItem_margin"
+        android:layout_height="58dp"
+        android:background="@color/a26ffffff"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="17dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@mipmap/single_wallet"
+            android:drawablePadding="8dp"
+            android:text="@string/singlewallet"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="21dp"
+            android:src="@mipmap/asset_list_arrow" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_mul"
+        style="@style/settingItem_margin"
+        android:layout_height="58dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/a26ffffff"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="17dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@mipmap/multi_wallet"
+            android:drawablePadding="8dp"
+            android:text="@string/mulwallet"
+            android:textSize="15sp" />
+
+        <ImageView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="21dp"
+            android:src="@mipmap/asset_list_arrow" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_single_readomly"
+        style="@style/settingItem_margin"
+        android:layout_height="58dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/a26ffffff"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="17dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@mipmap/single_walllet_readonly"
+            android:drawablePadding="8dp"
+            android:text="@string/singlereadonlywallet"
+            android:textSize="15sp" />
+
+        <ImageView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="21dp"
+            android:src="@mipmap/asset_list_arrow" />
+    </RelativeLayout>
+</LinearLayout>

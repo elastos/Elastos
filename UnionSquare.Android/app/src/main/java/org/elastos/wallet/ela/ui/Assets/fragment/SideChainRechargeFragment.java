@@ -9,6 +9,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -17,11 +19,12 @@ import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
+import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.SideChainPresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonBooleanViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
@@ -29,13 +32,12 @@ import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
+import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.math.BigDecimal;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -66,7 +68,6 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
     private SideChainPresenter presenter;
     private String address;
     private String amount;
-    private String genesisAddress;
     private String chargeChain;
 
     @Override
@@ -88,10 +89,9 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         ivTitleRight.setImageResource(R.mipmap.setting_adding_scan);
         registReceiver();
         presenter = new SideChainPresenter();
-        chargeChain = "IDChain";
+        chargeChain = MyWallet.IDChain;
         tvTochain.setText(getString(R.string.chargerto) + chargeChain);
-        presenter.getGenesisAddress(wallet.getWalletId(), chargeChain, this);
-        etBalance.setFilters(new InputFilter[]{MatcherUtil.filter(4)});
+        NumberiUtil.editTestFormat(etBalance,4);
     }
 
     @OnClick({R.id.iv_paste, R.id.iv_contact, R.id.tv_max, R.id.tv_next, R.id.iv_title_right, R.id.ll_choseaddress})
@@ -128,7 +128,8 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
             etPayeeaddr.setText(contact.getWalletAddr());
 
 
-        } else if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
@@ -136,14 +137,33 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
                 }
             });
 
-        } else if (integer == RxEnum.CHOSESIDECHAIN.ordinal()) {
+        }
+        if (integer == RxEnum.CHOSESIDECHAIN.ordinal()) {
             String temp = (String) result.getObj();
             if (!chargeChain.equals(temp)) {
                 chargeChain = temp;
                 tvTochain.setText(getString(R.string.chargerto) + chargeChain);
-                presenter.getGenesisAddress(wallet.getWalletId(), chargeChain, this);
 
             }
+        }
+        if (integer == RxEnum.TOSIGN.ordinal()) {
+            //生成待签名交易
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            start(SignFragment.class, bundle);
+
+        }
+        if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
+            //签名成功
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            bundle.putBoolean("signStatus", true);
+            start(SignFragment.class, bundle);
+
         }
     }
 
@@ -159,7 +179,24 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                etPayeeaddr.setText(result);
+                if (result.startsWith("elastos:")) {
+                    //elastos:EJQcgWDazveSy436TauPJ3R8PCYpifp6HA?amount=6666.00000000
+                    result = result.replace("elastos:", "");
+                    String[] parts = result.split("\\?");
+                    diposeElastosCaode(new TransferPresenter().analyzeElastosData(parts, wallet.getWalletId(), this), parts);
+                    return;
+                }
+                try {
+                    QrBean qrBean = JSON.parseObject(result, QrBean.class);
+                    int type = qrBean.getExtra().getType();
+                    if (type == Constant.TRANSFER) {
+                        address = qrBean.getData();
+                        etPayeeaddr.setText(address);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    showToast(getString(R.string.infoformatwrong));
+                }
             }
         }
 
@@ -169,13 +206,11 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
     @Override
     public void onGetCommonData(String methodname, String data) {
         switch (methodname) {
-            case "getGenesisAddress":
-                genesisAddress = data;
-                break;
             case "createDepositTransaction":
                 Intent intent = new Intent(getActivity(), TransferActivity.class);
                 intent.putExtra("amount", amount);
                 intent.putExtra("toAddress", address);
+
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", chainId);
                 intent.putExtra("attributes", data);
@@ -188,7 +223,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
     @Override
     public void onBalance(BalanceEntity data) {
         // String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + "", 12) + " " + data.getChainId());
-        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 12) + " " + data.getChainId());
+        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.numberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 4) + " " + data.getChainId());
         etBalance.setHint(balance);
     }
 
@@ -200,7 +235,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         }
         String remark = etRemark.getText().toString().trim();
         //long actualSpend = (long) (Double.parseDouble(amount) * MyWallet.RATE);
-        presenter.createDepositTransaction(wallet.getWalletId(), chainId, "", genesisAddress, Arith.mul(amount, MyWallet.RATE_S).toPlainString(), address, remark, true, this);
+        presenter.createDepositTransaction(wallet.getWalletId(), chainId, "", chargeChain, Arith.mulRemoveZero(amount, MyWallet.RATE_S).toPlainString(), address, remark, this);
 
     }
 
@@ -223,5 +258,17 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         presenter.isAddressValid(wallet.getWalletId(), address, this);
     }
 
+    private void diposeElastosCaode(int analyzeElastosData, String[] parts) {
+        switch (analyzeElastosData) {
+            case 0:
+                showToast(getString(R.string.infoformatwrong));
+                break;
+            case 2:
+                etBalance.setText(parts[1].replace("amount=", ""));
+            case 1:
+                etPayeeaddr.setText(parts[0]);
+                break;
+        }
+    }
 
 }

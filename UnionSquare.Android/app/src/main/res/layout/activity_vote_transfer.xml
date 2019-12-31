@@ -27,10 +27,11 @@
                 android:src="@mipmap/window_54_close" />
 
             <TextView
+                android:id="@+id/tv_title"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="@string/registration_deposit"
+                android:text="@string/transactiondetail"
                 android:textSize="15sp" />
 
         </RelativeLayout>
@@ -67,6 +68,7 @@
             android:visibility="gone" />
 
         <LinearLayout
+            android:id="@+id/ll_amount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -118,28 +120,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp" />
 
-        <LinearLayout
-            android:id="@+id/ll_rate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:padding="15dp">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/rate" />
-
-            <TextView
-                android:id="@+id/tv_rate"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right"
-                android:maxLines="1"
-                android:text="1:1" />
-        </LinearLayout>
 
         <View
             style="@style/line1"
@@ -156,7 +137,7 @@
                 android:id="@+id/tv_next"
                 style="@style/button_margin"
                 android:layout_gravity="center"
-                android:text="@string/sure" />
+                android:text="@string/next" />
         </LinearLayout>
 
     </LinearLayout>

@@ -27,11 +27,9 @@ import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewDa
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
-import org.elastos.wallet.ela.utils.klog.KLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -39,7 +37,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * 我的投票
@@ -106,10 +103,8 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
     //变更投票
     @OnClick(R.id.ll_bgtp)
     public void onViewClicked() {
-        Bundle bundle = new Bundle();
+        Bundle bundle = getArguments();
         bundle.putString("type", "2");
-        bundle.putString("zb", zb);
-        bundle.putSerializable("netList", (Serializable) netList);
         start(NodeCartFragment.class, bundle);
     }
 
@@ -125,15 +120,10 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
                 if (netList == null || netList.size() == 0) {
                     return;
                 }
-                if (data.equals("{}")) {
-                    ivType.setBackgroundResource(R.mipmap.my_vote_go_img);
-                    tvBlank.setVisibility(View.VISIBLE);
-                    recyclerview.setVisibility(View.GONE);
-                    ll_bgtp.setVisibility(View.GONE);
-                } else {
+                if (data != null && !data.equals("{}") && !data.equals("null") && !data.equals("")) {
                     recyclerview.setVisibility(View.VISIBLE);
                     tvBlank.setVisibility(View.GONE);
-                    ivType.setBackgroundResource(R.mipmap.found_vote_mine_lock);
+                    ivType.setImageResource(R.mipmap.found_vote_mine_lock);
                     ll_bgtp.setVisibility(View.VISIBLE);
                     try {
                         JSONObject jsonObject = new JSONObject(data);
@@ -179,7 +169,11 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
             helper.setText(R.id.tv_name, item.name);
             if (item.no == Integer.MAX_VALUE) {
                 helper.setText(R.id.tv_no, "- -");
+                helper.setTextColor(R.id.tv_no, mContext.getResources().getColor(R.color.whiter50));
+                helper.setTextColor(R.id.tv_name, mContext.getResources().getColor(R.color.whiter50));
             } else {
+                helper.setTextColor(R.id.tv_no, mContext.getResources().getColor(R.color.whiter));
+                helper.setTextColor(R.id.tv_name, mContext.getResources().getColor(R.color.whiter));
                 helper.setText(R.id.tv_no, "NO." + item.no);
 
             }
@@ -191,13 +185,13 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
         Recorder recorder = new Recorder();
         for (int i = 0; i < netList.size(); i++) {
             if (netList.get(i).getOwnerpublickey().equals(publickey)) {
-                recorder.no = (i + 1);
+                recorder.no = (netList.get(i).getIndex() + 1);
                 recorder.name = netList.get(i).getNickname();
                 return recorder;
             }
         }
         recorder.no = Integer.MAX_VALUE;
-        recorder.name = getString(R.string.invalidnode);
+        recorder.name = getString(R.string.invalidcr);
         return recorder;
     }
 

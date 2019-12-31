@@ -44,59 +44,50 @@
     </com.qmuiteam.qmui.layout.QMUILinearLayout>
 
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/px40"
-        android:layout_marginTop="@dimen/px20"
-        android:layout_marginRight="@dimen/px30"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px25"
+        android:layout_marginBottom="@dimen/px20">
 
-        android:gravity="center"
-        android:orientation="horizontal"
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="@string/connecting"
+            android:textColor="@color/qmui_config_color_white"
+            android:textSize="11sp" />
 
-        >
+        <TextView
+            android:id="@+id/tv_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_toRightOf="@id/tv_status"
+            android:textColor="@color/qmui_config_color_white"
+            android:textSize="11sp" />
 
-
-        <android.support.v7.widget.AppCompatSeekBar
-            android:id="@+id/sb_suger"
-            android:focusable="false"
-            android:clickable="false"
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:layout_marginLeft="13dp"
-            android:layout_marginRight="13dp"
-            android:layout_weight="1"
-            android:max="100"
-            android:maxHeight="2dp"
-            android:paddingStart="0dp"
-            android:paddingLeft="0dp"
-            android:paddingEnd="0dp"
-            android:progress="0"
-            android:paddingRight="0dp"
-            android:progressDrawable="@drawable/suger_seekbar_line"
-            android:thumb="@null" />
+        <ImageView
+            android:visibility="gone"
+            android:id="@+id/iv_sync"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="8dp"
+            android:layout_toLeftOf="@id/tv_progress"
+            android:src="@mipmap/asset_transfer_sidelink_switch" />
 
         <TextView
             android:id="@+id/tv_progress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
             android:layout_marginLeft="@dimen/px2"
             android:layout_marginRight="@dimen/px30"
             android:textColor="@color/qmui_config_color_white"
             android:textSize="11sp" />
-
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tv_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="@dimen/px10"
-        android:layout_marginBottom="@dimen/px10"
-        android:text="上次同步时间：--"
-        android:textColor="@color/qmui_config_color_white"
-        android:textSize="11sp" />
-
-
-
+    </RelativeLayout>
 </com.qmuiteam.qmui.layout.QMUILinearLayout>

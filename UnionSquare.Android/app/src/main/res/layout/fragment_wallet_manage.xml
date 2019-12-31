@@ -8,7 +8,7 @@
     <include layout="@layout/title" />
 
     <LinearLayout
-        android:id="@+id/ll_1"
+        android:id="@+id/ll_updatename"
         style="@style/settingItem_margin"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
@@ -23,11 +23,13 @@
             android:textSize="14dp" />
 
         <TextView
-            android:id="@+id/tv_1"
+            android:id="@+id/tv_updatename"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:ellipsize="end"
             android:gravity="right"
+            android:singleLine="true"
             android:textColor="@color/whiter50"
             android:textSize="13dp" />
 
@@ -40,7 +42,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/ll_2"
+        android:id="@+id/ll_updatepwd"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
@@ -69,7 +71,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/ll_3"
+        android:id="@+id/ll_exportkeystore"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
@@ -98,7 +100,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/ll_4"
+        android:id="@+id/ll_exportmnemonic"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
@@ -127,7 +129,7 @@
     </LinearLayout>
     <!--android:visibility="gone"-->
     <LinearLayout
-        android:id="@+id/ll_5"
+        android:id="@+id/ll_sign"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
@@ -156,12 +158,133 @@
             android:src="@mipmap/asset_list_arrow" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/ll_exportreadonly"
+        style="@style/settingItem_margin"
+        android:layout_marginTop="10dp"
+        android:background="@color/mainitembg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:text="@string/exportreadonly"
+            android:textColor="@color/whiter"
+            android:textSize="14dp" />
+
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="@dimen/px40"
+            android:src="@mipmap/asset_list_arrow" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_showmulpublickey"
+        style="@style/settingItem_margin"
+        android:layout_marginTop="10dp"
+        android:background="@color/mainitembg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:text="@string/showmulpublickey"
+            android:textColor="@color/whiter"
+            android:textSize="14dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="@dimen/px40"
+            android:src="@mipmap/asset_list_arrow" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_showwalletpublickey"
+        style="@style/settingItem_margin"
+        android:layout_marginTop="10dp"
+        android:background="@color/mainitembg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:text="@string/showwallletpk"
+            android:textColor="@color/whiter"
+            android:textSize="14dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="@dimen/px40"
+            android:src="@mipmap/asset_list_arrow" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_nodeconect"
+        style="@style/settingItem_margin"
+        android:layout_marginTop="10dp"
+        android:background="@color/mainitembg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:text="@string/nodeconnectsetting"
+            android:textColor="@color/whiter"
+            android:textSize="14dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="@dimen/px40"
+            android:src="@mipmap/asset_list_arrow" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/tv_delete"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginLeft="@dimen/common_margin_button"
-        android:layout_marginTop="140dp"
+        android:layout_marginTop="50dp"
         android:layout_marginRight="@dimen/common_margin_button"
         android:background="@color/mainitembg"
         android:gravity="center"

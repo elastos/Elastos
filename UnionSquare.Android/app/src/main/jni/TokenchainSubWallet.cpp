@@ -192,9 +192,9 @@ static jstring JNICALL CreateTransaction(JNIEnv *env, jobject clazz, jlong insta
     return tx;
 }
 
-#define JNI_CreateCombineUTXOTransaction "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateConsolidateTransaction "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
-static jstring JNICALL CreateCombineUTXOTransaction(JNIEnv *env, jobject clazz, jlong instance,
+static jstring JNICALL CreateConsolidateTransaction(JNIEnv *env, jobject clazz, jlong instance,
                                                     jstring jassetID,
                                                     jstring jmemo) {
     bool exception = false;
@@ -207,7 +207,7 @@ static jstring JNICALL CreateCombineUTXOTransaction(JNIEnv *env, jobject clazz, 
 
     try {
         ITokenchainSubWallet *wallet = (ITokenchainSubWallet *) instance;
-        nlohmann::json result = wallet->CreateCombineUTXOTransaction(assetID, memo);
+        nlohmann::json result = wallet->CreateConsolidateTransaction(assetID, memo);
 
         tx = env->NewStringUTF(result.dump().c_str());
     } catch (const std::exception &e) {
@@ -255,7 +255,7 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetBalanceWithAddress),
         REGISTER_METHOD(CreateRegisterAssetTransaction),
         REGISTER_METHOD(CreateTransaction),
-        REGISTER_METHOD(CreateCombineUTXOTransaction),
+        REGISTER_METHOD(CreateConsolidateTransaction),
         REGISTER_METHOD(GetAllAssets),
 };
 

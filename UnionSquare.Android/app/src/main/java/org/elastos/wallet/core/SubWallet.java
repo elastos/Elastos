@@ -4,7 +4,7 @@
 
 package org.elastos.wallet.core;
 
-import android.util.Log;
+import org.elastos.wallet.ela.utils.Log;
 
 import org.elastos.wallet.ela.db.table.Wallet;
 
@@ -15,12 +15,6 @@ public class SubWallet {
     private long mInstance;
     private SubWalletCallback mCallback = null;
     private String TAG = "SubWallet";
-
-    public enum BalanceType {
-        Default,
-        Voted,
-        Total,
-    }
 
     public String GetChainID() throws WalletException {
         return GetChainID(mInstance);
@@ -34,9 +28,9 @@ public class SubWallet {
         return GetBalanceInfo(mInstance);
     }
 
-    public String GetBalance(BalanceType type) throws WalletException {
+    public String GetBalance() throws WalletException {
         Log.d(TAG, "SubWallet [" + mInstance + "] get balance");
-        return GetBalance(mInstance, type.ordinal());
+        return GetBalance(mInstance);
     }
 
     public String CreateAddress() throws WalletException {
@@ -47,12 +41,20 @@ public class SubWallet {
         return GetAllAddress(mInstance, start, count);
     }
 
-    public String GetBalanceWithAddress(String address, BalanceType type) throws WalletException {
-        return GetBalanceWithAddress(mInstance, address, type.ordinal());
+    public String GetAllPublicKeys(int start, int count) throws WalletException {
+        return GetAllPublicKeys(mInstance, start, count);
+    }
+
+    public String GetBalanceWithAddress(String address) throws WalletException {
+        return GetBalanceWithAddress(mInstance, address);
     }
 
     public boolean IsCallbackRegistered() {
         return mCallback != null;
+    }
+
+    public SubWalletCallback getCallback() {
+        return mCallback;
     }
 
     public void AddCallback(SubWalletCallback subCallback) throws WalletException {
@@ -68,7 +70,7 @@ public class SubWallet {
     public void RemoveCallback() throws WalletException {
         if (mCallback != null) {
             Log.d(TAG, "SubWallet[" + mInstance + "] removing callback");
-            RemoveCallback(mInstance, mCallback.GetProxy());
+            RemoveCallback(mInstance);
             mCallback.Dispose();
             mCallback = null;
         } else {
@@ -76,16 +78,16 @@ public class SubWallet {
         }
     }
 
-    public String CreateTransaction(String fromAddress, String toAddress, String amount, String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateTransaction(mInstance, fromAddress, toAddress, amount, memo, useVotedUTXO);
+    public String CreateTransaction(String fromAddress, String toAddress, String amount, String memo) throws WalletException {
+        return CreateTransaction(mInstance, fromAddress, toAddress, amount, memo);
     }
 
     public String GetAllUTXOs(int start, int count, String address) {
         return GetAllUTXOs(mInstance, start, count, address);
     }
 
-    public String CreateConsolidateTransaction(String memo, boolean useVotedUTXO) throws WalletException {
-        return CreateConsolidateTransaction(mInstance, memo, useVotedUTXO);
+    public String CreateConsolidateTransaction(String memo) throws WalletException {
+        return CreateConsolidateTransaction(mInstance, memo);
     }
 
     public String SignTransaction(String rawTransaction, String payPassword) throws WalletException {
@@ -112,8 +114,8 @@ public class SubWallet {
         return CheckSign(mInstance, publicKey, message, signature);
     }
 
-    public String GetPublicKey() throws WalletException {
-        return GetPublicKey(mInstance);
+    public String GetOwnerPublicKeyRing() throws WalletException {
+        return GetOwnerPublicKeyRing(mInstance);
     }
 
     public String GetAllCoinBaseTransaction(int start, int count, String txid) throws WalletException {
@@ -122,6 +124,10 @@ public class SubWallet {
 
     public String GetAssetInfo(String assetID) throws WalletException {
         return GetAssetInfo(mInstance, assetID);
+    }
+
+    public boolean SetFixedPeer(String address, int port) throws WalletException {
+        return SetFixedPeer(mInstance, address, port);
     }
 
     public void SyncStart() throws WalletException {
@@ -147,23 +153,25 @@ public class SubWallet {
 
     private native String GetBalanceInfo(long subProxy);
 
-    private native String GetBalance(long subProxy, int balanceType);
+    private native String GetBalance(long subProxy);
 
     private native String CreateAddress(long subProxy);
 
     private native String GetAllAddress(long subProxy, int start, int count);
 
-    private native String GetBalanceWithAddress(long subProxy, String address, int balanceType);
+    private native String GetAllPublicKeys(long subProxy, int start, int count);
+
+    private native String GetBalanceWithAddress(long subProxy, String address);
 
     private native void AddCallback(long subProxy, long subCallback);
 
-    private native void RemoveCallback(long subProxys, long subCallback);
+    private native void RemoveCallback(long subProxys);
 
-    private native String CreateTransaction(long subProxy, String fromAddress, String toAddress, String amount, String memo, boolean useVotedUTXO);
+    private native String CreateTransaction(long subProxy, String fromAddress, String toAddress, String amount, String memo);
 
     private native String GetAllUTXOs(long subProxy, int start, int count, String address);
 
-    private native String CreateConsolidateTransaction(long subProxy, String memo, boolean useVotedUTXO);
+    private native String CreateConsolidateTransaction(long subProxy, String memo);
 
     private native String SignTransaction(long subProxy, String rawTransaction, String payPassword);
 
@@ -177,11 +185,13 @@ public class SubWallet {
 
     private native boolean CheckSign(long subProxy, String publicKey, String message, String signature);
 
-    private native String GetPublicKey(long subProxy);
+    private native String GetOwnerPublicKeyRing(long subProxy);
 
     private native String GetAllCoinBaseTransaction(long subProxy, int start, int count, String txid);
 
     private native String GetAssetInfo(long subProxy, String assetID);
+
+    private native boolean SetFixedPeer(long subProxy, String address, int port);
 
     private native void SyncStart(long proxy);
 

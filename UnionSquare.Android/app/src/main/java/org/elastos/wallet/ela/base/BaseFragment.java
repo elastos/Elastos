@@ -20,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.ToastUtils;
-import com.classic.common.MultipleStatusView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.footer.ClassicsFooter;
 import com.scwang.smartrefresh.layout.header.ClassicsHeader;
@@ -31,16 +30,11 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
-import org.elastos.wallet.ela.di.component.DaggerFragmentComponent;
-import org.elastos.wallet.ela.di.component.FragmentComponent;
-import org.elastos.wallet.ela.di.moudule.FragmentModule;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.greenrobot.eventbus.EventBus;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import permissions.dispatcher.NeedsPermission;
@@ -55,14 +49,11 @@ import permissions.dispatcher.RuntimePermissions;
  */
 @RuntimePermissions
 public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends SupportFragment implements BaseContract.Baseview {
-    protected FragmentComponent mFragmentComponent;
+
     private String requstStr = "";
     private Unbinder unbinder;
     public Context mContext;
 
-    @Nullable
-    @BindView(R.id.MultipleStatusView)
-    MultipleStatusView multipleStatusView;
 
     protected abstract int getLayoutId();
 
@@ -77,7 +68,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initFragmentComponent();
+
         initInjector();
         attachView();
         mContext = getContext();
@@ -88,6 +79,13 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         return getBaseActivity().getWallet();
     }
 
+    protected String getText(TextView et) {
+        String text = et.getText().toString().trim();
+        if (!TextUtils.isEmpty(text)) {
+            return text;
+        }
+        return null;
+    }
 
     @Nullable
     @Override
@@ -148,14 +146,6 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     }
 
 
-    private void initFragmentComponent() {
-        mFragmentComponent = DaggerFragmentComponent.builder()
-                .applicationComponent(MyApplication.getInstance().getApplicationComponent())
-                .fragmentModule(new FragmentModule(this))
-                .build();
-    }
-
-
     /**
      * 贴上view
      */
@@ -176,16 +166,12 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
 
     @Override
     public void showLoading() {
-        if (multipleStatusView != null) {
-            multipleStatusView.showLoading();
-        }
+
     }
 
     @Override
     public void hideLoading() {
-        if (multipleStatusView != null) {
-            multipleStatusView.showContent();
-        }
+
     }
 
     @Override
@@ -336,7 +322,8 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
 
     /*弹出当前页面*/
     public void popBackFragment() {
-        getBaseActivity().onBackPressed();
+        if (getBaseActivity() != null)
+            getBaseActivity().onBackPressed();
     }
 
 
@@ -397,21 +384,31 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         //popTo(MainFragment.class, false);
         Fragment mainFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
         if (mainFragment != null) {
-            // Log.d("+++++++", "1");
             getBaseActivity().getSupportFragmentManager().popBackStackImmediate(MainFragment.class.getName(), 0);
         } else {
-            // Log.d("+++++++", "2");
             getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
             ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, MainFragment.newInstance());
         }
     }
 
     public void toHomeWalletFragment() {
-        getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
-        ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, HomeWalletFragment.newInstance());
-        //todo 优化  判断 MainFragment是否存在 存在退回到它并更新数据  不纯在执行下面的
-        //  popTo(MainFragment.class,false);
+        Fragment homeWalletFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(HomeWalletFragment.class.getName());
+        if (homeWalletFragment != null) {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(HomeWalletFragment.class.getName(), 0);
+        } else {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
+            ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, HomeWalletFragment.newInstance());
+        }
+    }
 
+    public void popToTagetFragment(Class<BaseFragment> aClass) {
+        Fragment fragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(aClass.getName());
+        if (fragment != null) {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(aClass.getName(), 0);
+        } else {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
+            ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, MainFragment.newInstance());
+        }
     }
 
     public void registReceiver() {
@@ -448,11 +445,22 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     private void onDestroyRefreshLayout() {
         getBaseActivity().onDestroyRefreshLayout();
     }
+
     private static final long WAIT_TIME = 2000L;
     private long TOUCH_TIME = 0;
+
     public boolean closeApp() {
+        if (smartRefreshLayout != null) {
+            if (smartRefreshLayout.isRefreshing()) {
+                smartRefreshLayout.finishRefresh();
+            }
+            if (smartRefreshLayout.isLoading()) {
+                smartRefreshLayout.finishLoadMore();
+            }
+        }
         if (System.currentTimeMillis() - TOUCH_TIME < WAIT_TIME) {
             _mActivity.finish();
+            System.exit(0);
         } else {
             TOUCH_TIME = System.currentTimeMillis();
             Toast.makeText(_mActivity, getString(R.string.press_exit_again), Toast.LENGTH_SHORT).show();

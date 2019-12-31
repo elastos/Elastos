@@ -4,15 +4,14 @@ import android.content.Context;
 import android.os.Environment;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
-import org.elastos.wallet.ela.ui.Assets.listener.GetSupportedChainsListner;
-import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.utils.CopyFile;
 import org.elastos.wallet.ela.utils.Log;
 
 import java.io.File;
@@ -42,15 +41,19 @@ public class AboutPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext()) + "", "moveLogFile");
+                if (MyApplication.chainID > 0) {
+                    moveWalletFile(baseFragment.getContext());
+                }
+                moveLogFile(baseFragment.getContext(),"/spvsdk.1.log");
+                return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext(),"/spvsdk.log") + "", "moveLogFile");
             }
         });
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    private static String moveLogFile(Context context) {
+    private static String moveLogFile(Context context,String logName) {
         String rootPath = context.getFilesDir().getParent();
-        File file = new File(rootPath + "/spvsdk.log");
+        File file = new File(rootPath +logName );
         if (!file.exists()) {
             return null;
         }
@@ -68,7 +71,7 @@ public class AboutPresenter extends PresenterAbstract {
             }
 
 
-            OutputStream fosto = new FileOutputStream(file1 + "/spvsdk.log");
+            OutputStream fosto = new FileOutputStream(file1 + logName);
             byte bt[] = new byte[1024];
             int c = 0;
             while ((c = is.read(bt)) > 0) {
@@ -76,11 +79,39 @@ public class AboutPresenter extends PresenterAbstract {
             }
             is.close();
             fosto.close();
-            return file1.getAbsolutePath() + "/spvsdk.log";
+            return file1.getAbsolutePath() + logName;
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;
         }
 
+    }
+
+    private static String moveWalletFile(Context context) {
+        String rootPath = context.getFilesDir().getParent();
+
+        String root = "RegTest";
+        switch (MyApplication.chainID) {
+            case 1:
+                root = "TestNet";
+                break;
+            case 2:
+                root = "RegTest";
+                break;
+            case 3:
+                root = "PrvNet";
+                break;
+
+        }
+
+        String target = Environment.getExternalStoragePublicDirectory(
+                context.getPackageName()).getAbsolutePath();
+        try {
+            CopyFile.dirCopy(rootPath + "/" + root, target + "/" + root);
+            return target;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 }

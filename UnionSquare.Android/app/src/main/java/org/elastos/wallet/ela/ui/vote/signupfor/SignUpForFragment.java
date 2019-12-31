@@ -16,12 +16,8 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
-import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
-import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
@@ -30,13 +26,14 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
-import org.elastos.wallet.ela.utils.klog.KLog;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -44,7 +41,7 @@ import butterknife.OnClick;
 /**
  * 报名参选
  */
-public class SignUpForFragment extends BaseFragment implements CommmonStringWithMethNameViewData, WarmPromptListener, CommonBalanceViewData, CommmonLongViewData {
+public class SignUpForFragment extends BaseFragment implements CommmonStringWithMethNameViewData, CommmonStringViewData {
 
 
     @BindView(R.id.tv_title)
@@ -57,15 +54,10 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
     TextView tvArea;
     @BindView(R.id.et_url)
     EditText etUrl;
-    @BindView(R.id.et_net)
-    EditText et_net;
+
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     SignUpPresenter presenter;
-    @BindView(R.id.et_walletkey)
-    EditText et_walletkey;
-    private DialogUtil dialogUtil = new DialogUtil();
-    private TransferPresenter transferpresenter = new TransferPresenter();
 
 
     @Override
@@ -84,7 +76,9 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
         presenter = new SignUpPresenter();
         //获取公钥
         presenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
-        EventBus.getDefault().register(this);
+        registReceiver();
+        MatcherUtil.editTextFormat(etUrl, 100);
+        MatcherUtil.editTextFormat(etDotname, 100);
     }
 
     public static SignUpForFragment newInstance() {
@@ -94,16 +88,14 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
         return fragment;
     }
 
-    String name, publickey, walletkey, net, area, url, pwd;
+    String name, nodePublicKey, area, url;
 
     @OnClick({R.id.tv_sure, R.id.ll_area})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_sure:
                 name = etDotname.getText().toString().trim();//节点名称
-                publickey = etPublickey.getText().toString().trim();//节点公钥
-                walletkey = et_walletkey.getText().toString().trim();//钱包公钥
-                net = et_net.getText().toString().trim();//网络地址
+                nodePublicKey = etPublickey.getText().toString().trim();//节点公钥
                 area = tvArea.getText().toString().trim();//国家地址
                 url = etUrl.getText().toString().trim();//官网
 
@@ -111,20 +103,12 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
                     ToastUtils.showShort(getString(R.string.inputdotname));
                     return;
                 }
-                if (TextUtils.isEmpty(publickey)) {
+                if (TextUtils.isEmpty(nodePublicKey)) {
                     ToastUtils.showShort(getString(R.string.inputdotpublickey));
                     return;
                 }
 
-                if (TextUtils.isEmpty(datakey)) {
-                    ToastUtils.showShort(getString(R.string.walletkey));
-                    return;
-                }
 
-                /*if (TextUtils.isEmpty(net)) {
-                    ToastUtils.showShort(getString(R.string.network_address));
-                    return;
-                }*/
                 if (TextUtils.isEmpty(area)) {
                     ToastUtils.showShort(getString(R.string.countryregion_cannot_be_empty));
                     return;
@@ -133,13 +117,9 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
                     ToastUtils.showShort(getString(R.string.the_official_website_cannot_be_empty));
                     return;
                 }
-               /* if (!AppUtlis.urlReg(url)) {
-                    ToastUtils.showShort(getString(R.string.please_enter_the_correct_url));
-                    return;
-                }*/
-                dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
-                //查询余额
-               // new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2,this);
+                //模拟交易获得手续费
+                new TransferPresenter().createTransaction(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", Arith.mulRemoveZero("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
+
                 break;
             case R.id.ll_area:
                 //选择国家和地区
@@ -174,7 +154,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
         }
     }
 
-    String  datakey;
+    String ownerPublicKey;
 
     @Override
     public void onGetCommonData(String methodname, String data) {
@@ -183,60 +163,42 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
             //获取钱包公钥
             case "getPublicKeyForVote":
                 //KLog.a(data);
-                this.datakey = data;
-                et_walletkey.setText(data);
+                this.ownerPublicKey = data;
                 etPublickey.setText(data);
                 break;
-            //验证密码
-            case "exportWalletWithMnemonic":
-
-                presenter.getGenerateProducerPayload(wallet.getWalletId(), MyWallet.ELA, datakey, publickey, name, url, net, code, pwd, this);
-                break;
-            //验证交易
-            case "payload":
-                KLog.a(data);
-                presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
-                break;
-            //创建交易
-            case "createRegisterProducerTransaction":
-                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
-                intent.putExtra("wallet", wallet);
-                intent.putExtra("type", Constant.TRANFER);
-                intent.putExtra("amount", "5000");
-                intent.putExtra("chainId", MyWallet.ELA);
-                intent.putExtra("toAddress", publickey);
-                intent.putExtra("pwd", pwd);
-                intent.putExtra("attributes", data);
-                startActivity(intent);
-                dialogUtil.dialogDismiss();
-                break;
         }
     }
 
 
     @Override
-    public void affireBtnClick(View view) {
-        pwd = ((EditText) view).getText().toString().trim();
-        if (TextUtils.isEmpty(pwd)) {
-            showToastMessage(getString(R.string.pwdnoempty));
-            return;
+    public void onGetCommonData(String data) {
+        //获得createTransaction
+        //这里获得手续费
+        long fee = MyWallet.feePerKb;
+        try {
+            JSONObject jsonObject = new JSONObject(data);
+
+            if (jsonObject.has("Fee")) {
+                fee = jsonObject.getLong("Fee");
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+        //获得手续费后
+        Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+        intent.putExtra("wallet", wallet);
+        intent.putExtra("type", Constant.SUPERNODESIGN);
+        intent.putExtra("amount", "5000");
+        intent.putExtra("chainId", MyWallet.ELA);
+        intent.putExtra("nodePublicKey", nodePublicKey);
+        intent.putExtra("ownerPublicKey", ownerPublicKey);
+        intent.putExtra("fee", fee);
+        intent.putExtra("name", name);
+        intent.putExtra("url", url);
+        intent.putExtra("code", code);
 
-        new WallletManagePresenter().exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
-    }
-
-    @Override
-    public void onBalance(BalanceEntity data) {
-        if (Long.parseLong(data.getBalance()) / MyWallet.RATE <= 5000) {
-            ToastUtils.showShort(R.string._5000);
-        } else {
-            dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
-        }
-    }
-
-    @Override
-    public void onGetCommonData(long fee) {
-
+        startActivity(intent);
     }
 
 }

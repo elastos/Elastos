@@ -30,7 +30,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="@string/transferdetail"
+                android:text="@string/transactiondetail"
                 android:textSize="15sp" />
 
         </RelativeLayout>
@@ -38,111 +38,102 @@
 
         <View style="@style/line1" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:padding="15dp">
+        <RelativeLayout
+            android:id="@+id/rl_address"
+            style="@style/settingItem_margin15">
 
             <TextView
-                android:layout_width="0dp"
+                android:id="@+id/tv_address_tag"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_centerVertical="true"
                 android:text="@string/transferaddress" />
 
             <TextView
                 android:id="@+id/tv_address"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="15dp"
+                android:layout_toRightOf="@id/tv_address_tag"
                 android:gravity="right"
                 android:maxLines="2" />
-        </LinearLayout>
 
-        <View
-            style="@style/line1"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp" />
+            <View
+                style="@style/line1"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:padding="15dp">
+
+        <RelativeLayout
+            android:id="@+id/rl_amount"
+            style="@style/settingItem_margin15">
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_centerVertical="true"
                 android:text="@string/amount" />
 
             <TextView
                 android:id="@+id/tv_amount"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:maxLines="1" />
-        </LinearLayout>
 
-        <View
-            style="@style/line1"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp" />
+            <View
+                style="@style/line1"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:padding="15dp">
+
+        <RelativeLayout style="@style/settingItem_margin15">
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_centerVertical="true"
                 android:text="@string/charge" />
 
             <TextView
                 android:id="@+id/tv_charge"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:maxLines="1" />
-        </LinearLayout>
 
-        <View
-            style="@style/line1"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp" />
+            <View
+                style="@style/line1"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
 
-        <LinearLayout
-            android:id="@+id/ll_rate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:padding="15dp">
+
+        <RelativeLayout
+            android:id="@+id/rl_rate"
+            style="@style/settingItem_margin15">
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_centerVertical="true"
                 android:text="@string/rate" />
 
             <TextView
                 android:id="@+id/tv_rate"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right"
-                android:maxLines="1"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:text="1:1" />
-        </LinearLayout>
 
-        <View
-            style="@style/line1"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp" />
+            <View
+                style="@style/line1"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
+
 
         <LinearLayout
             android:layout_width="match_parent"
