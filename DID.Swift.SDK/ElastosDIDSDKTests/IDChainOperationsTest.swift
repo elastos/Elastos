@@ -9,7 +9,6 @@ class IDChainOperationsTest: XCTestCase {
             let testData: TestData = TestData()
             let store: DIDStore = try testData.setupStore(false)
             try testData.initIdentity()
-//            XCTAssertTrue(store.getAdapter())
             let adapter: SPVAdaptor = DIDBackend.shareInstance().adapter as! SPVAdaptor
             
             while true {

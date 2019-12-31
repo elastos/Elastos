@@ -493,16 +493,52 @@ public class DIDDocument: NSObject {
     
     private func parse(url: URL) throws {
         let json = try! String(contentsOf: url)
-        var jsonString = json.replacingOccurrences(of: " ", with: "")
-        jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
-        let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
+        var string: String = ""
+        var token: Bool = false
+        
+        let str = json.replacingOccurrences(of: "\n", with: "")
+
+        for (_, c) in str.enumerated() {
+            
+            if token {
+                string.append(c)
+            } else {
+                if c != " " && c != "\n"{
+                    string.append(c)
+                }
+            }
+            
+            if c == "\"" {
+                token = !token
+            }
+            
+        }
+
+        let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         return try parse(ordDic)
     }
     
     private func parse(json: String) throws {
-        var jsonString = json.replacingOccurrences(of: " ", with: "")
-        jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
-        let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
+        var string: String = ""
+        var token: Bool = false
+        
+        let str = json.replacingOccurrences(of: "\n", with: "")
+        for (_, c) in str.enumerated() {
+            
+            if token {
+                string.append(c)
+            } else {
+                if c != " " && c != "\n"{
+                    string.append(c)
+                }
+            }
+            
+            if c == "\"" {
+                token = !token
+            }
+        }
+        let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
+        
         return try parse(ordDic)
     }
     

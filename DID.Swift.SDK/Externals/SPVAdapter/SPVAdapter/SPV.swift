@@ -36,7 +36,7 @@ public class SPV {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         let parameters: [String: Any] = [
             "jsonrpc": "2.0",
-            "method": "resolvedid",
+            "method": "resolvedid", //   getidxspayloads
             "params": ["id":id, "all": all],
             "id": requestId
         ]
