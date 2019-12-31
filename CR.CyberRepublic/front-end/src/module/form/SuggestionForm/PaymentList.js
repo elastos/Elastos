@@ -24,6 +24,7 @@ class PaymentList extends BaseComponent {
         <StyledHead>
           <StyledRow>
             <th>{I18N.get('suggestion.budget.payment')} #</th>
+            <th>{I18N.get('suggestion.budget.type')}</th>
             <th>{I18N.get('suggestion.budget.amount')}(ELA)</th>
             <th>{I18N.get('suggestion.budget.reasons')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
@@ -39,6 +40,7 @@ class PaymentList extends BaseComponent {
             list.map((item, index) => (
               <StyledRow key={index}>
                 <td>{index + 1}</td>
+                <td>{item.type}</td>
                 <td>{item.amount}</td>
                 <td>
                   <MarkdownPreview

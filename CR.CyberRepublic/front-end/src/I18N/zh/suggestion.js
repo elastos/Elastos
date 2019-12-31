@@ -121,12 +121,16 @@ export default {
   budget: {
     create: '创建支付项',
     payment: '支付',
+    type: '类型',
     amount: '金额',
     reasons: '理由',
     criteria: '支付标准',
     action: '操作',
     desc: '请基于里程碑填写：',
-    schedule: '支出计划'
+    schedule: '支出计划',
+    advance: '预付款(小于总金额的30%)',
+    completion: '提案完成付款',
+    conditioned: '有条件的付款'
   },
   plan: {
     teamMember: '团队成员',

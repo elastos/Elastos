@@ -122,12 +122,16 @@ export default {
   budget: {
     create: 'Add Payment Line',
     payment: 'Payment',
+    type: 'Type',
     amount: 'Amount',
     reasons: 'Reasons',
     criteria: 'Criteria of Payment',
     action: 'Action',
     desc: 'Based on milestone selected below:',
-    schedule: 'Payment Schedule'
+    schedule: 'Payment Schedule',
+    advance: 'Advance payment (< 30% of total)',
+    completion: 'Proposal completion payment',
+    conditioned: 'Conditioned payment'
   },
   plan: {
     teamMember: 'Team Member',
