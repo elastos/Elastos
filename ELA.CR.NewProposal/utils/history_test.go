@@ -56,7 +56,6 @@ func TestHistory_Commit(t *testing.T) {
 	historyData.history.RollbackTo(39)
 	assert.Equal(t, true, *historyData.value == 60)
 	assert.Equal(t, true, historyData.history.height == 39)
-	assert.Equal(t, true, historyData.history.height == 39)
 
 	historyData.history.RollbackTo(38)
 	assert.Equal(t, true, *historyData.value == 60)
