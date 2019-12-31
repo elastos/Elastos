@@ -34,11 +34,11 @@
 #define EXPAND_SIZE         2048
 
 typedef enum {
-    STATE_UNKNOWN           = 0,
-    STATE_ROOT              = 1,
-    STATE_OBJECT            = 2,
-    STATE_ARRAY             = 3,
-    STATE_FIELD             = 4,
+	STATE_UNKNOWN           = 0,
+	STATE_ROOT              = 1,
+	STATE_OBJECT            = 2,
+	STATE_ARRAY             = 3,
+	STATE_FIELD             = 4,
 } state_t;
 
 static const char colon_symbol          = ':';
@@ -47,275 +47,274 @@ static const char start_object_symbol   = '{';
 static const char end_object_symbol     = '}';
 static const char start_array_symbol    = '[';
 static const char end_array_symbol      = ']';
-static const char start_sting_quote     = '"';
-static const char end_sting_quote       = '"';
+static const char start_string_quote    = '"';
+static const char end_string_quote      = '"';
 
 static int ensure_capacity(JsonGenerator *generator, size_t len)
 {
-    char *buffer;
+	char *buffer;
 
-    assert(generator);
-    assert(generator->buffer);
+	assert(generator);
+	assert(generator->buffer);
 
-    if (generator->pos + len + 1 <= generator->capacity)
-        return 0;
+	if (generator->pos + len + 1 <= generator->capacity)
+		return 0;
 
-    buffer = (char *)realloc(generator->buffer, generator->capacity + EXPAND_SIZE);
-    if (!buffer)
-        return -1;
+	buffer = (char *)realloc(generator->buffer, generator->capacity + EXPAND_SIZE);
+	if (!buffer)
+		return -1;
 
 #ifndef NDEBUG
-    // realloc does not guarantee that the additional memory is also zero-filled.
-    memset(buffer + generator->capacity, 0, EXPAND_SIZE);
+	// realloc does not guarantee that the additional memory is also zero-filled.
+	memset(buffer + generator->capacity, 0, EXPAND_SIZE);
 #endif
 
-    generator->capacity = generator->capacity + EXPAND_SIZE;
-    generator->buffer = buffer;
-    return 0;
+	generator->capacity = generator->capacity + EXPAND_SIZE;
+	generator->buffer = buffer;
+	return 0;
 }
 
 static inline void push_state(JsonGenerator *generator, state_t state)
 {
-    assert(generator);
-    assert(generator->deep < sizeof(generator->state));
+	assert(generator);
+	assert(generator->deep < sizeof(generator->state));
 
-    generator->state[generator->deep++] = (char)state;
+	generator->state[generator->deep++] = (uint8_t)state;
 }
 
 static inline state_t pop_state(JsonGenerator *generator)
 {
-    state_t state;
+	state_t state;
 
-    assert(generator);
-    assert(generator->deep > 0);
+	assert(generator);
+	assert(generator->deep > 0);
 
-    if (generator->deep <= 0)
-        return STATE_UNKNOWN;
+	if (generator->deep <= 0)
+		return STATE_UNKNOWN;
 
-    state = (state_t)generator->state[--generator->deep];
-    return state > 0 ? state : state & 0x7F;
+	state = (state_t)(generator->state[--generator->deep] & 0x7F);
+	return state;
 }
 
 static inline state_t get_state(JsonGenerator *generator)
 {
-    char state;
+	uint8_t state;
 
-    assert(generator);
-    assert(generator->deep > 0);
+	assert(generator);
+	assert(generator->deep > 0);
 
-    if (generator->deep <= 0)
-        return STATE_UNKNOWN;
+	if (generator->deep <= 0)
+		return STATE_UNKNOWN;
 
-    state = (state_t)generator->state[generator->deep - 1];
-    state = state > 0 ? state : state & 0x7F;
-    return (state_t)state;
+	state = (state_t)(generator->state[generator->deep - 1] & 0x7F);
+	return state;
 }
 
 static inline void set_state_sticky(JsonGenerator *generator)
 {
-    assert(generator);
-    assert(generator->deep > 0);
+	assert(generator);
+	assert(generator->deep > 0);
 
-    generator->state[generator->deep - 1] |= 0x80;
+	generator->state[generator->deep - 1] |= 0x80;
 }
 
 static inline int is_state_sticky(JsonGenerator *generator)
 {
-    assert(generator);
-    assert(generator->deep > 0);
+	assert(generator);
+	assert(generator->deep > 0);
 
-    if (generator->deep <= 0)
-        return STATE_UNKNOWN;
+	if (generator->deep <= 0)
+		return STATE_UNKNOWN;
 
-    return generator->state[generator->deep - 1] < 0;
+	return (generator->state[generator->deep - 1] & 0x80) == 0x80;
 }
 
 JsonGenerator *JsonGenerator_Initialize(JsonGenerator *generator)
 {
-    if (!generator)
-        return NULL;
+	if (!generator)
+		return NULL;
 
-    generator->buffer = (char *)malloc(INITIAL_SIZE);
-    if (!generator->buffer)
-        return NULL;
+	generator->buffer = (char *)malloc(INITIAL_SIZE);
+	if (!generator->buffer)
+		return NULL;
 
 #ifndef NDEBUG
-    // zero-filled just for debug.
-    memset(generator->buffer, 0, INITIAL_SIZE);
-    memset(generator->state, 0, sizeof(generator->state));
+	// zero-filled just for debug.
+	memset(generator->buffer, 0, INITIAL_SIZE);
+	memset(generator->state, 0, sizeof(generator->state));
 #endif
 
-    generator->capacity = INITIAL_SIZE;
-    generator->pos = 0;
-    generator->deep = 0;
-    generator->buffer[0] = 0;
+	generator->capacity = INITIAL_SIZE;
+	generator->pos = 0;
+	generator->deep = 0;
+	generator->buffer[0] = 0;
 
-    push_state(generator, STATE_ROOT);
-    return generator;
+	push_state(generator, STATE_ROOT);
+	return generator;
 }
 
 int JsonGenerator_WriteStartObject(JsonGenerator *generator)
 {
-    int is_sticky;
+	int is_sticky;
 
-    if(!generator || !generator->buffer)
-        return -1;
+	if (!generator || !generator->buffer)
+		return -1;
 
-    assert(get_state(generator) == STATE_ROOT
-           || get_state(generator) == STATE_ARRAY
-           || get_state(generator) == STATE_FIELD);
+	assert(get_state(generator) == STATE_ROOT
+	       || get_state(generator) == STATE_ARRAY
+	       || get_state(generator) == STATE_FIELD);
 
-    is_sticky = is_state_sticky(generator);
+	is_sticky = is_state_sticky(generator);
 
-    if (ensure_capacity(generator, 1 + is_sticky) == -1)
-        return -1;
+	if (ensure_capacity(generator, 1 + is_sticky) == -1)
+		return -1;
 
-    if (is_sticky)
-        generator->buffer[generator->pos++] = comma_symbol;
+	if (is_sticky)
+		generator->buffer[generator->pos++] = comma_symbol;
 
-    generator->buffer[generator->pos++] = start_object_symbol;
-    set_state_sticky(generator);
-    push_state(generator, STATE_OBJECT);
+	generator->buffer[generator->pos++] = start_object_symbol;
+	set_state_sticky(generator);
+	push_state(generator, STATE_OBJECT);
 
-    return 0;
+	return 0;
 }
 
 int JsonGenerator_WriteEndObject(JsonGenerator *generator)
 {
-    if (!generator || !generator->buffer || ensure_capacity(generator, 1) == -1)
-        return -1;
+	if (!generator || !generator->buffer || ensure_capacity(generator, 1) == -1)
+		return -1;
 
-    assert(get_state(generator) == STATE_OBJECT);
+	assert(get_state(generator) == STATE_OBJECT);
 
-    generator->buffer[generator->pos++] = end_object_symbol;
-    pop_state(generator);
-    if (get_state(generator) == STATE_FIELD)
-        pop_state(generator); /* pop field state */
+	generator->buffer[generator->pos++] = end_object_symbol;
+	pop_state(generator);
+	if (get_state(generator) == STATE_FIELD)
+		pop_state(generator); /* pop field state */
 
-    return 0;
+	return 0;
 }
 
 int JsonGenerator_WriteStartArray(JsonGenerator *generator)
 {
-    if (!generator || !generator->buffer || ensure_capacity(generator, 1) == -1)
-        return -1;
+	if (!generator || !generator->buffer || ensure_capacity(generator, 1) == -1)
+		return -1;
 
-    assert(get_state(generator) == STATE_FIELD);
+	assert(get_state(generator) == STATE_FIELD);
 
-    generator->buffer[generator->pos++] = start_array_symbol;
-    push_state(generator, STATE_ARRAY);
+	generator->buffer[generator->pos++] = start_array_symbol;
+	push_state(generator, STATE_ARRAY);
 
-    return 0;
+	return 0;
 }
 
 int JsonGenerator_WriteEndArray(JsonGenerator *generator)
 {
-    if (!generator || !generator->buffer || ensure_capacity(generator, 1) == -1)
-        return -1;
+	if (!generator || !generator->buffer || ensure_capacity(generator, 1) == -1)
+		return -1;
 
-    assert(get_state(generator) == STATE_ARRAY);
+	assert(get_state(generator) == STATE_ARRAY);
 
-    generator->buffer[generator->pos++] = end_array_symbol;
-    pop_state(generator);
-    if (get_state(generator) == STATE_FIELD)
-        pop_state(generator); /* pop field state */
+	generator->buffer[generator->pos++] = end_array_symbol;
+	pop_state(generator);
+	if (get_state(generator) == STATE_FIELD)
+		pop_state(generator); /* pop field state */
 
-    return 0;
+	return 0;
 }
 
 int JsonGenerator_WriteFieldName(JsonGenerator *generator, const char *name)
 {
-    size_t len;
-    int is_sticky;
+	size_t len;
+	int is_sticky;
 
-    if (!generator || !generator->buffer || !name || !*name)
-        return -1;
+	if (!generator || !generator->buffer || !name || !*name)
+		return -1;
 
-    assert(get_state(generator) == STATE_OBJECT);
+	assert(get_state(generator) == STATE_OBJECT);
 
-    is_sticky = is_state_sticky(generator);
+	is_sticky = is_state_sticky(generator);
 
-    len = strlen(name);
-    if (ensure_capacity(generator, len + 3 + is_sticky) == -1)
-        return -1;
+	len = strlen(name);
+	if (ensure_capacity(generator, len + 3 + is_sticky) == -1)
+		return -1;
 
-    if (is_sticky)
-        generator->buffer[generator->pos++] = comma_symbol;
+	if (is_sticky)
+		generator->buffer[generator->pos++] = comma_symbol;
 
-    generator->buffer[generator->pos++] = start_sting_quote;
-    strcpy(generator->buffer + generator->pos, name);
-    generator->pos += len;
-    generator->buffer[generator->pos++] = end_sting_quote;
-    generator->buffer[generator->pos++] = colon_symbol;
+	generator->buffer[generator->pos++] = start_string_quote;
+	strcpy(generator->buffer + generator->pos, name);
+	generator->pos += len;
+	generator->buffer[generator->pos++] = end_string_quote;
+	generator->buffer[generator->pos++] = colon_symbol;
 
-    set_state_sticky(generator);
-    push_state(generator, STATE_FIELD);
+	set_state_sticky(generator);
+	push_state(generator, STATE_FIELD);
 
-    return 0;
+	return 0;
 }
 
 int JsonGenerator_WriteString(JsonGenerator *generator, const char *value)
 {
-    size_t len;
-    int is_sticky;
+	size_t len;
+	int is_sticky;
 
-    if (!generator || !generator->buffer)
-        return -1;
+	if (!generator || !generator->buffer)
+		return -1;
 
-    assert(get_state(generator) == STATE_FIELD
-           || get_state(generator) == STATE_ARRAY);
+	assert(get_state(generator) == STATE_FIELD
+	       || get_state(generator) == STATE_ARRAY);
 
-    is_sticky = is_state_sticky(generator);
+	is_sticky = is_state_sticky(generator);
 
-    len = value ? strlen(value) : 4; // null value
-    if (ensure_capacity(generator, len + 2 + is_sticky) == -1)
-        return -1;
+	len = value ? strlen(value) : 4; // null value
+	if (ensure_capacity(generator, len + 2 + is_sticky) == -1)
+		return -1;
 
-    if (is_sticky)
-        generator->buffer[generator->pos++] = comma_symbol;
+	if (is_sticky)
+		generator->buffer[generator->pos++] = comma_symbol;
 
-    if (value) {
-        generator->buffer[generator->pos++] = start_sting_quote;
-        strcpy(generator->buffer + generator->pos, value);
-        generator->pos += len;
-        generator->buffer[generator->pos++] = end_sting_quote;
-    } else {
-        strcpy(generator->buffer + generator->pos, "null");
-        generator->pos += 4;
-    }
+	if (value) {
+		generator->buffer[generator->pos++] = start_string_quote;
+		strcpy(generator->buffer + generator->pos, value);
+		generator->pos += len;
+		generator->buffer[generator->pos++] = end_string_quote;
+	} else {
+		strcpy(generator->buffer + generator->pos, "null");
+		generator->pos += 4;
+	}
 
-    if (get_state(generator) == STATE_FIELD)
-        pop_state(generator);
-    else
-        set_state_sticky(generator);
+	if (get_state(generator) == STATE_FIELD)
+		pop_state(generator);
+	else
+		set_state_sticky(generator);
 
-    return 0;
+	return 0;
 }
 
 int JsonGenerator_WriteStringField(JsonGenerator *generator,
                                    const char *name, const char *value)
 {
-    int rc;
+	int rc;
 
-    rc = JsonGenerator_WriteFieldName(generator, name);
-    if (rc < 0)
-        return rc;
+	rc = JsonGenerator_WriteFieldName(generator, name);
+	if (rc < 0)
+		return rc;
 
-    return JsonGenerator_WriteString(generator, value);
+	return JsonGenerator_WriteString(generator, value);
 }
 
 const char *JsonGenerator_Finish(JsonGenerator *generator)
 {
-    const char *buffer;
+	const char *buffer;
 
-    if (!generator || !generator->buffer || get_state(generator) != STATE_ROOT)
-        return NULL;
+	if (!generator || !generator->buffer || get_state(generator) != STATE_ROOT)
+		return NULL;
 
-    if (generator->buffer[generator->pos] != 0)
-        generator->buffer[generator->pos] = 0;
+	if (generator->buffer[generator->pos] != 0)
+		generator->buffer[generator->pos] = 0;
 
-    buffer = (const char *)generator->buffer;
-    generator->buffer = NULL;
+	buffer = (const char *)generator->buffer;
+	generator->buffer = NULL;
 
-    return buffer;
+	return buffer;
 }
