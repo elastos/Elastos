@@ -7,7 +7,7 @@ public class Constants {
     public static let DATE_FORMAT_ISO_8601: String = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
     public static let MAX_VALID_YEARS: Int = 5
-
+    
     public static let UTC: TimeZone = TimeZone(abbreviation: "UTC")!
     public static let ID: String = "id"
     public static let PUBLICKEY: String = "publicKey"

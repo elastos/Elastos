@@ -63,7 +63,7 @@ class DummyAdapter: DIDAdapter {
                     throw TestError.failue("DID already dactivated.")
                 }
                 
-                guard request.previousTxid != ti!.transactionId else {
+                guard request.previousTxid == ti!.transactionId else {
                     throw TestError.failue("Previous transaction id missmatch.")
                 }
                 break
@@ -142,7 +142,6 @@ class DummyAdapter: DIDAdapter {
                 }
             }
             redic["transaction"] = arr
-            
         }
         
         dic["result"] = redic

@@ -65,7 +65,7 @@ public class DerivedKey: NSObject {
         let d = pkData.withUnsafeMutableBytes { re -> UnsafeMutablePointer<UInt8> in
             return re
         }
-        base58_encode(base58, d, pkData.count)
+        let re = base58_encode(base58, d, pkData.count)
         let base58Str = String(cString: base58)
         return base58Str
     }

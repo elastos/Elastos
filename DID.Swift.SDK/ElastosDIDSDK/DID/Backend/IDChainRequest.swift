@@ -7,6 +7,7 @@ public class IDChainRequest: NSObject {
     private static let HEADER: String = "header"
     private static let SPECIFICATION: String = "specification"
     private static let OPERATION: String = "operation"
+    private static let PREVIOUS_TXID: String  = "previousTxid"
     private static let PAYLOAD: String = "payload"
     private static let PROOF: String = Constants.PROOF
     private static let KEY_TYPE: String = Constants.TYPE
@@ -87,10 +88,12 @@ public class IDChainRequest: NSObject {
         let c_input = (json.toUnsafePointerUInt8())!
         payload = json + "\0"
         payload = String(cString: payload.toUnsafePointerUInt8()!)
-        let c_payload = UnsafeMutablePointer<Int8>.allocate(capacity: 2048)
+        let c_payload = UnsafeMutablePointer<Int8>.allocate(capacity: 4096)
         print(payload)
-        base64_url_encode(c_payload, c_input, payload.count)
-        payload = String(cString: c_payload)
+        let re = base64_url_encode(c_payload, c_input, payload.count)
+        let jsonStr: String = String(cString: c_payload)
+        let endIndex = jsonStr.index(jsonStr.startIndex, offsetBy: re)
+        payload = String(jsonStr[jsonStr.startIndex..<endIndex])
     }
     
     func setPayload(_ payload: String) throws {
@@ -142,7 +145,10 @@ public class IDChainRequest: NSObject {
             }
         }
         
-        let inputs: [CVarArg] = [specification, specification.count, operation.toString(), operation.toString().count, payload, payload.count]
+        let inputs: [CVarArg] = [specification, specification.count,
+                                 operation.toString(), operation.toString().count,
+                                 previousTxid, previousTxid.count,
+                                 payload, payload.count]
         let count = inputs.count / 2
         
         return try doc.verify(signKey!, signature, count, inputs)
@@ -155,8 +161,11 @@ public class IDChainRequest: NSObject {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         dic[IDChainRequest.SPECIFICATION] = specification
         dic[IDChainRequest.OPERATION] = operation.toString()
+        if (operation == Operation.UPDATE) {
+            dic[IDChainRequest.PREVIOUS_TXID] = previousTxid
+        }
         json[IDChainRequest.HEADER] = dic
-        
+
         // playload
         json[IDChainRequest.PAYLOAD] = payload
         
@@ -202,6 +211,10 @@ public class IDChainRequest: NSObject {
             
         }
         let request: IDChainRequest = try IDChainRequest(op)
+        if (op == Operation.UPDATE) {
+            let txid = try JsonHelper.getString(header, PREVIOUS_TXID, false, nil, PREVIOUS_TXID)
+            request.previousTxid = txid
+        }
         let payload: String = try JsonHelper.getString(json, PAYLOAD, false, nil, PAYLOAD)
         try request.setPayload(payload)
         

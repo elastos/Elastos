@@ -25,11 +25,11 @@ public class SPV {
     }
     
     public class func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String? {
-        let startIndex = did.index(did.startIndex, offsetBy: 12)
-        let id = String(did[startIndex..<did.endIndex])
-//        let id = "im4wF5ZqiWFB1ATd2JxuxW6HHzR5Ks3LUS"
+//        let startIndex = did.index(did.startIndex, offsetBy: 12)
+//        let id = String(did[startIndex..<did.endIndex])
+        let did = "did:elastos:iSvDGK1LmLxT15pcFfr5kX6aCRLTuaX9vJ"
         var resuleString = ""
-        let url:URL! = URL(string: "https://coreservices-didsidechain-privnet.elastos.org")
+        let url:URL! = URL(string: "http://api.elastos.io:21606") //  https://coreservices-didsidechain-privnet.elastos.org
         var request:URLRequest! = URLRequest.init(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -37,7 +37,7 @@ public class SPV {
         let parameters: [String: Any] = [
             "jsonrpc": "2.0",
             "method": "resolvedid", //   getidxspayloads
-            "params": ["id":id, "all": all],
+            "params": ["did":did, "all": all],
             "id": requestId
         ]
         request.httpBody = try! JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
@@ -49,7 +49,6 @@ public class SPV {
                     semaphore.signal()
                     return
             }
-            
             guard (200 ... 299) ~= response.statusCode else { // check for http errors
                 semaphore.signal()
                 return

@@ -481,10 +481,7 @@ public class DIDDocument: NSObject {
         let cpk: UnsafeMutablePointer<UInt8> = pkData.withUnsafeMutableBytes { (pk: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
             return pk
         }
-        let csignature = signature.withCString { re -> UnsafeMutablePointer<Int8> in
-            let mre = UnsafeMutablePointer<Int8>.init(mutating: re)
-            return mre
-        }
+        let csignature = signature.toUnsafeMutablePointerInt8()
         let c_inputs = getVaList(cinputs)
         
         let re = ecdsa_verify_base64v(csignature, cpk, Int32(count), c_inputs)
@@ -511,9 +508,7 @@ public class DIDDocument: NSObject {
             if c == "\"" {
                 token = !token
             }
-            
         }
-
         let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         return try parse(ordDic)
     }
