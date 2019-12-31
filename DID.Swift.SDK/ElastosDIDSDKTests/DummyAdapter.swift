@@ -55,7 +55,7 @@ class DummyAdapter: DIDAdapter {
                 break
                 }
             case .UPDATE: do {
-                guard ti == nil else {
+                guard ti != nil else {
                     throw TestError.failue("DID not exist.")
                 }
                 

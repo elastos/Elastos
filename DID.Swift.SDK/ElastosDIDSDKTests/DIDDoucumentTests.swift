@@ -10,47 +10,6 @@ class DIDDoucumentTests: XCTestCase {
     var documentPath: String!
     var normalizedPath: String!
     
-    func loadTestDocument() throws -> DIDDocument {
-        let bundle = Bundle(for: type(of: self))
-        let path = bundle.path(forResource: "testdiddoc", ofType: "json")!
-        let doc = try DIDDocument.fromJson(path: path)
-        return doc
-    }
-    
-    func updateForTesting(_ doc: DIDDocument) throws -> DIDDocument {
-        var id: DIDURL
-        var success: Bool
-        
-        for i in 0...5 {
-            id = try DIDURL(doc.subject!, "test-pk-\(i)")
-            let data = Data()
-            let udata = [UInt8](data)
-            let keyBase58: String = Base58.base58FromBytes(udata)
-            success = try doc.addPublicKey(id, doc.subject!, keyBase58)
-            XCTAssertTrue(success)
-        }
-        
-        for i in 0...5 {
-            id = try DIDURL(doc.subject!, "test-auth-\(i)")
-            let data = Data()
-            let udata = [UInt8](data)
-            let keyBase58: String = Base58.base58FromBytes(udata)
-            success = try doc.addAuthenticationKey(id, keyBase58)
-            XCTAssertTrue(success)
-        }
-        
-        let controller: DID = try DID("did:elastos:ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh")
-        for i in 0...5 {
-            id = try DIDURL(doc.subject!, "test-autho-\(i)")
-            let data = Data()
-            let udata = [UInt8](data)
-            let keyBase58: String = Base58.base58FromBytes(udata)
-            success = try doc.addAuthorizationKey(id, controller, keyBase58)
-            XCTAssertTrue(success)
-        }
-        return doc
-    }
-    
     func testGetPublicKey() {
         do {
             let testData: TestData = TestData()

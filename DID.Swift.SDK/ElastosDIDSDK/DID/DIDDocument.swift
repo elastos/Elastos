@@ -424,13 +424,12 @@ public class DIDDocument: NSObject {
             return false
         }
         
-        var json = try toJson(nil, true, true)
+        let json = try toJson(nil, true, true)
         
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
         
         return try verify(proof.creator!, proof.signature, count, inputs)
-            
     }
     
     public func isValid() throws -> Bool {

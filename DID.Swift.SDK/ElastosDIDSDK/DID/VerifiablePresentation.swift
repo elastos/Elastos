@@ -35,10 +35,13 @@ public class VerifiablePresentation: NSObject{
     
     public func isGenuine() throws -> Bool {
         let signer: DID = getSigner()
-        let signerDoc: DIDDocument = try signer.resolve()!
-
+        let signerDoc = try signer.resolve()
+        if (signerDoc == nil) {
+            return false
+        }
+        
         // Check the integrity of signer' document.
-        if (try !signerDoc.isGenuine()) {
+        if (try !signerDoc!.isGenuine()) {
             return false
         }
         // Unsupported public key type;
@@ -46,10 +49,10 @@ public class VerifiablePresentation: NSObject{
             return false
         }
         // Credential should signed by authentication key.
-        if (try !signerDoc.isAuthenticationKey(proof!.verificationMethod)) {
+        if (try !signerDoc!.isAuthenticationKey(proof!.verificationMethod)) {
         return false
         }
-
+        
         // All credentials should owned by signer
         for i in 0..<credentials.values.count {
             let vc = credentials.values[i]
@@ -65,15 +68,19 @@ public class VerifiablePresentation: NSObject{
         let json = JsonHelper.creatJsonString(dic: dic)
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
-        return try signerDoc.verify(proof!.verificationMethod, proof!.signature, count, inputs)
+        return try signerDoc!.verify(proof!.verificationMethod, proof!.signature, count, inputs)
     }
     
     public func isValid() throws -> Bool {
         let signer: DID = getSigner()
-        let signerDoc: DIDDocument = try signer.resolve()!
+        let signerDoc = try signer.resolve()
 
+        if signerDoc == nil {
+            return false
+        }
+        
         // Check the validity of signer' document.
-        if (try !signerDoc.isValid()){
+        if (try !signerDoc!.isValid()){
             return false
         }
 
@@ -83,7 +90,7 @@ public class VerifiablePresentation: NSObject{
         }
 
         // Credential should signed by authentication key.
-        if (try !signerDoc.isAuthenticationKey(proof!.verificationMethod)){
+        if (try !signerDoc!.isAuthenticationKey(proof!.verificationMethod)){
             return false
         }
 
@@ -103,7 +110,7 @@ public class VerifiablePresentation: NSObject{
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
         
-        return try signerDoc.verify(proof!.verificationMethod, proof!.signature, count, inputs)
+        return try signerDoc!.verify(proof!.verificationMethod, proof!.signature, count, inputs)
     }
     
     public func getCredentialCount() -> Int {

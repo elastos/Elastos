@@ -44,7 +44,7 @@ class IDChainOperationsTest: XCTestCase {
                 }
             }
         } catch {
-            
+            XCTFail()
         }
     }
     

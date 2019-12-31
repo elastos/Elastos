@@ -7,9 +7,7 @@ public class Metadata {
     public var store: DIDStore?
     var extra: OrderedDictionary<String, Any> = OrderedDictionary()
     
-    required init() {
-        
-    }
+    public required init() { }
     
     func setExtraInternal(_ name: String, _ value: String) {
         if !name.starts(with: EXTRA_PREFIX) {

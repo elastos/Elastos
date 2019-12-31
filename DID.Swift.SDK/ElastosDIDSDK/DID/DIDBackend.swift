@@ -150,7 +150,7 @@ public class DIDBackend: NSObject {
             let jsonStr: String = request.toJson(true)
             return try adapter.createIdTransaction(jsonStr, nil)
         } catch {
-            throw  DIDError.failue("Create ID transaction error. \(error.localizedDescription).")
+            throw  DIDError.failue("Create ID transaction error.")
         }
     }
     

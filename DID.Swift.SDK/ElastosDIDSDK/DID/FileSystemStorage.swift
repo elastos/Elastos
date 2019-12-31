@@ -149,6 +149,9 @@ public class FileSystemStorage: DIDStorage {
             try deleteFile(path)
         }
         else {
+            if metadata == "{}" {
+                return 
+            }
             try writeTextToPath(path, metadata)
         }
     }

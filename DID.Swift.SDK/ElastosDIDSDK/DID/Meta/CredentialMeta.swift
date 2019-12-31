@@ -10,7 +10,7 @@ public class CredentialMeta: Metadata {
     }
     
     override func fromJson(_ json: OrderedDictionary<String, Any>) throws {
-        let value = json[ALIAS] as! String
+        let value = json[ALIAS] as? String ?? ""
         if value != "" {
             self.alias = value
         }

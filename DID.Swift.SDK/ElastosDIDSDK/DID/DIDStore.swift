@@ -42,7 +42,7 @@ public class DIDStore: NSObject {
         let cinput: UnsafePointer<UInt8> = input.withUnsafeBytes{ (by: UnsafePointer<UInt8>) -> UnsafePointer<UInt8> in
             return by
         }
-        let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 2048)
+        let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 4096)
           let re = encrypt_to_base64(base64url, passwd, cinput, input.count)
         guard re >= 0 else {
             throw DIDStoreError.failue("encryptToBase64 error.")
@@ -54,7 +54,7 @@ public class DIDStore: NSObject {
     }
     
     public func decryptFromBase64(_ passwd: String ,_ input: String) throws -> [Int8] {
-        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 2048)
+        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
             throw DIDStoreError.failue("decryptFromBase64 error.")
@@ -69,7 +69,7 @@ public class DIDStore: NSObject {
     }
     
     public func decryptFromBase64(_ passwd: String ,_ input: String) throws -> Data {
-        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 2048)
+        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
             throw DIDStoreError.failue("decryptFromBase64 error.")
@@ -172,7 +172,9 @@ public class DIDStore: NSObject {
         
         doc = try doc.seal(self, storepass)
         try storeDid(doc)
-        try doc.setAlias(alias!)
+        if alias != nil {        
+            try doc.setAlias(alias!)
+        }
         try storage.storePrivateIdentityIndex(nextIndex)
         
         return doc
@@ -267,13 +269,12 @@ public class DIDStore: NSObject {
             try storeCredential(vc)
         }
         
-        let count = didCache!.getCount()
-        if count != 0 {
+        if didCache != nil {
             didCache!.put(doc.subject!, data: doc)
         }
     }
     
-    func storeDidMeta(_ did: DID, _ meta: DIDMeta) throws {
+   public func storeDidMeta(_ did: DID, _ meta: DIDMeta) throws {
         try storage.storeDidMeta(did, meta)
         if (didCache != nil) {
             let d = didCache!.get(did)
@@ -284,7 +285,7 @@ public class DIDStore: NSObject {
         }
     }
     
-    func storeDidMeta(_ did: String, _ meta: DIDMeta) throws {
+    public func storeDidMeta(_ did: String, _ meta: DIDMeta) throws {
         try storeDidMeta(try DID(did), meta)
     }
     
@@ -547,7 +548,7 @@ public class DIDStore: NSObject {
     }
 
     public func sign(_ did: DID, _ id: DIDURL? = nil, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
-        let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 2048)
+        let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 4096)
         var privatekeys: Data
         if id == nil {
             let doc = try resolveDid(did)
