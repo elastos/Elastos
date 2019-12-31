@@ -110,6 +110,7 @@ class TestData: XCTestCase {
         try importPrivateKey((testDocument?.getDefaultPublicKey())!, "document.primary", "sk")
         try importPrivateKey(testDocument!.getPublicKey("key2")!.id, "document.key2", "sk")
         try importPrivateKey(testDocument!.getPublicKey("key3")!.id, "document.key3", "sk")
+        try store.publishDid(testDocument!, storePass)
         return testDocument!
     }
     

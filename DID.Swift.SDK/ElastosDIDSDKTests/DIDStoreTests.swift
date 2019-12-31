@@ -363,7 +363,7 @@ class DIDStoreTests: XCTestCase {
             
             vc = try  store.loadCredential(test.subject!.description, "notExist")
             XCTAssertNil(vc)
-            
+
             id = try DIDURL(test.subject!, "twitter")
             XCTAssertTrue(try store.containsCredential(test.subject!, id))
             XCTAssertTrue(try store.containsCredential(test.subject!.description, "twitter"))

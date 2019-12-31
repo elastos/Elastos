@@ -56,6 +56,7 @@ public class DIDBackend: NSObject {
         guard json != nil else {
             throw DIDResolveError.failue("Unknown error.")
         }
+        // TODO: unsafe
         var jsonString = json!.replacingOccurrences(of: " ", with: "")
         jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
         let resultJson = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
@@ -74,29 +75,6 @@ public class DIDBackend: NSObject {
             try ResolverCache.store(rr)
         }
         return rr
-        /*
-         // Check response id, should equals requestId
-         JsonNode result = node.get(RESULT);
-         if (result == null || result.isNull()) {
-             JsonNode error = node.get(ERROR);
-             throw new DIDResolveException("Resolve DID error("
-                     + error.get(ERROR_CODE).longValue() + "): "
-                     + error.get(ERROR_MESSAGE).textValue());
-         }
-
-         ResolveResult rr = ResolveResult.fromJson(result);
-
-         if (rr.getStatus() != ResolveResult.STATUS_NOT_FOUND) {
-             try {
-                 ResolverCache.store(rr);
-             } catch (IOException e) {
-                 System.out.println("!!! Cache resolved resolved result error: "
-                         + e.getMessage());
-             }
-         }
-
-         return rr;
-         */
     }
     
     func resolve(_ did: DID, _ force: Bool) throws -> DIDDocument? {

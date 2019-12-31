@@ -65,7 +65,6 @@ public class LRUCache {
     }
     
     public func get(_ key: AnyHashable, data: Any? = nil) -> Any? {
-        
         if cache.contains(where: { $0.key == key }) {
             return self.cache[key]
         }
