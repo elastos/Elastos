@@ -10,6 +10,9 @@ set(SPVSDK_SOURCE_FILES
 
 set(SPVSDK_DEPENDS boost libressl libfruit libsqlite json libspdlog)
 set(LIBS boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3 spdlog)
+if(ANDROID)
+	set(LIBS ${LIBS} log)
+endif()
 
 add_custom_target(libspvsdk)
 
