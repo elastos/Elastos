@@ -1966,12 +1966,25 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 		for _, content := range object.Contents {
 			var contentInfo VoteContentInfo
 			contentInfo.VoteType = content.VoteType
-			for _, cv := range content.CandidateVotes {
-				contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
-					CandidateVotes{
-						Candidate: common.BytesToHexString(cv.Candidate),
-						Votes:     cv.Votes.String(),
-					})
+			switch contentInfo.VoteType {
+			case outputpayload.Delegate:
+				for _, cv := range content.CandidateVotes {
+					contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
+						CandidateVotes{
+							Candidate: common.BytesToHexString(cv.Candidate),
+							Votes:     cv.Votes.String(),
+						})
+				}
+			case outputpayload.CRC:
+				for _, cv := range content.CandidateVotes {
+					c, _ := common.Uint168FromBytes(cv.Candidate)
+					addr, _ := c.ToAddress()
+					contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
+						CandidateVotes{
+							Candidate: addr,
+							Votes:     cv.Votes.String(),
+						})
+				}
 			}
 			obj.Contents = append(obj.Contents, contentInfo)
 		}
