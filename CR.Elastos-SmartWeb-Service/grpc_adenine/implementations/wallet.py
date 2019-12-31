@@ -10,7 +10,7 @@ from web3.middleware import geth_poa_middleware
 from grpc_adenine import settings
 from grpc_adenine.implementations import WalletAddresses, WalletAddressesETH
 from grpc_adenine.implementations.rate_limiter import RateLimiter
-from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit
+from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit, get_did_from_api
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs import wallet_pb2
 from grpc_adenine.stubs import wallet_pb2_grpc
@@ -284,7 +284,6 @@ def view_wallet_general(session, chain, address):
     response = session.post(get_balance_url, data=json.dumps(d), timeout=REQUEST_TIMEOUT)
     if response is None:
             status_message = 'Error: Wallet balance could not retrieved'
-            logging.debug(f"{did} : {api_key} : {status_message}")
             return wallet_pb2.Response(output="", status_message=status_message, status=False)
 
     data = json.loads(response.text)

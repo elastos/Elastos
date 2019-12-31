@@ -9,7 +9,7 @@ from solc import compile_standard
 
 from grpc_adenine import settings
 from grpc_adenine.implementations.rate_limiter import RateLimiter
-from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit
+from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit, get_did_from_api
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs import sidechain_eth_pb2
 from grpc_adenine.stubs import sidechain_eth_pb2_grpc
@@ -35,7 +35,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
 
         api_key = request.api_key
         did = get_did_from_api(api_key)
-        
+
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
