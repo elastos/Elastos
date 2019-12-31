@@ -5,12 +5,12 @@
 #ifndef __ELASTOS_SDK_SUBWALLET_H__
 #define __ELASTOS_SDK_SUBWALLET_H__
 
-#include <SDK/P2P/ChainParams.h>
-#include <SDK/SpvService/SpvService.h>
-#include <SDK/Account/SubAccount.h>
+#include <P2P/ChainParams.h>
+#include <SpvService/SpvService.h>
+#include <Account/SubAccount.h>
 
-#include <Interface/ISubWallet.h>
-#include <Interface/ISubWalletCallback.h>
+#include <ISubWallet.h>
+#include <ISubWalletCallback.h>
 
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -56,35 +56,34 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBalanceInfo() const;
 
-			virtual std::string GetBalance(BalanceType type = Default) const;
+			virtual std::string GetBalance() const;
 
-			virtual std::string GetBalanceWithAddress(const std::string &address, BalanceType type = Default) const;
+			virtual std::string GetBalanceWithAddress(const std::string &address) const;
 
 			virtual std::string CreateAddress();
 
-			virtual nlohmann::json GetAllAddress(uint32_t start,
-												 uint32_t count) const;
+			virtual nlohmann::json GetAllAddress(uint32_t start, uint32_t count, bool internal = false) const;
+
+			virtual nlohmann::json GetAllPublicKeys(uint32_t start, uint32_t count) const;
 
 			virtual void AddCallback(ISubWalletCallback *subCallback);
 
-			virtual void RemoveCallback(ISubWalletCallback *subCallback);
+			virtual void RemoveCallback();
 
 			virtual nlohmann::json CreateTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					const std::string &amount,
-					const std::string &memo,
-					bool useVotedUTXO = false);
+					const std::string &memo);
 
 			virtual nlohmann::json GetAllUTXOs(uint32_t start, uint32_t count, const std::string &address) const;
 
 			virtual nlohmann::json CreateConsolidateTransaction(
-					const std::string &memo,
-					bool useVotedUTXO = false);
+					const std::string &memo);
 
 			virtual nlohmann::json SignTransaction(
 					const nlohmann::json &createdTx,
-					const std::string &payPassword);
+					const std::string &payPassword) const;
 
 			virtual nlohmann::json GetTransactionSignedInfo(
 					const nlohmann::json &rawTransaction) const;
@@ -95,26 +94,17 @@ namespace Elastos {
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
 					uint32_t count,
-					const std::string &addressOrTxid) const;
+					const std::string &txid) const;
 
 			virtual nlohmann::json GetAllCoinBaseTransaction(
 				uint32_t start,
 				uint32_t count,
 				const std::string &txID) const;
 
-			virtual std::string Sign(
-					const std::string &message,
-					const std::string &payPassword);
-
-			virtual bool CheckSign(
-					const std::string &publicKey,
-					const std::string &message,
-					const std::string &signature);
-
 			virtual nlohmann::json GetAssetInfo(
 					const std::string &assetID) const;
 
-			virtual std::string GetPublicKey() const;
+			virtual bool SetFixedPeer(const std::string &address, uint16_t port);
 
 			virtual void SyncStart();
 
@@ -129,7 +119,7 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+			virtual void onCoinBaseSpent(const UTXOArray &spentUTXO);
 
 			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
@@ -146,24 +136,20 @@ namespace Elastos {
 		protected: //implement PeerManager::Listener
 			virtual void syncStarted();
 
-			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
+			virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer);
 
-			// func syncStopped(_ error: BRPeerManagerError?)
 			virtual void syncStopped(const std::string &error);
 
-			// func txStatusUpdate()
 			virtual void txStatusUpdate() {}
 
-			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
-			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers) {}
 
-			// func networkIsReachable() -> Bool}
+			virtual void saveBlackPeer(const PeerInfo &peer) {}
+
 			virtual bool networkIsReachable() { return true; }
 
-			// Called on publishTransaction
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
 			virtual void syncIsInactive(uint32_t time) {}
@@ -175,24 +161,19 @@ namespace Elastos {
 
 			SubWallet(const CoinInfoPtr &info,
 					  const ChainConfigPtr &config,
-					  MasterWallet *parent);
+					  MasterWallet *parent,
+					  const std::string &netType);
 
-			virtual TransactionPtr CreateTx(
-				const std::string &fromAddress,
-				const std::vector<OutputPtr> &outputs,
+			TransactionPtr CreateConsolidateTx(
 				const std::string &memo,
-				bool useVotedUTXO = false) const;
+				const uint256 &asset) const;
 
 			virtual void publishTransaction(const TransactionPtr &tx);
-
-			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const;
 
 			virtual void fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
 													  const nlohmann::json &desc, uint32_t confirms);
 
 			const CoinInfoPtr &GetCoinInfo() const;
-
-			std::string GetBalanceTypeString(BalanceType type) const;
 
 			void EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const;
 
@@ -200,11 +181,10 @@ namespace Elastos {
 
 		protected:
 			WalletManagerPtr _walletManager;
-			std::vector<ISubWalletCallback *> _callbacks;
+			ISubWalletCallback * _callback;
 			MasterWallet *_parent;
 			CoinInfoPtr _info;
 			ChainConfigPtr _config;
-			SubAccountPtr _subAccount;
 		};
 
 	}

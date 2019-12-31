@@ -22,31 +22,31 @@ namespace Elastos {
 			return instance.get();
 		}
 
-		MerkleBlockPtr Registry::CreateMerkleBlock(const std::string &pluginType) {
-			if (_plugins.find(pluginType) == _plugins.end()) {
-				if (_pluginInjectors.find(pluginType) == _pluginInjectors.end())
+		MerkleBlockPtr Registry::CreateMerkleBlock(const std::string &chainID) {
+			if (_plugins.find(chainID) == _plugins.end()) {
+				if (_pluginInjectors.find(chainID) == _pluginInjectors.end())
 					return nullptr;
 
-				std::vector<IPlugin *> plugins = _pluginInjectors[pluginType]->getMultibindings<IPlugin>();
+				std::vector<IPlugin *> plugins = _pluginInjectors[chainID]->getMultibindings<IPlugin>();
 				assert(!plugins.empty());
-				_plugins[pluginType] = *plugins.begin();
+				_plugins[chainID] = *plugins.begin();
 			}
-			return _plugins[pluginType]->CreateBlock();
+			return _plugins[chainID]->CreateBlock();
 		}
 
 		Registry::Registry() {
 		}
 
-		void Registry::RegisterPlugin(const std::string &pluginType, fruit::Component<> (*pluginFun)()) {
-			if (_pluginInjectors.find(pluginType) != _pluginInjectors.end()) {
+		void Registry::RegisterPlugin(const std::string &chainID, fruit::Component<> (*pluginFun)()) {
+			if (_pluginInjectors.find(chainID) != _pluginInjectors.end()) {
 				return;
 			}
-			_pluginInjectors[pluginType] = PluginInjectorPtr(new fruit::Injector<>(pluginFun));
+			_pluginInjectors[chainID] = PluginInjectorPtr(new fruit::Injector<>(pluginFun));
 		}
 
-		void Registry::UnRegisterPlugin(const std::string &pluginType) {
-			if (_pluginInjectors.find(pluginType) != _pluginInjectors.end())
-				_pluginInjectors.erase(pluginType);
+		void Registry::UnRegisterPlugin(const std::string &chainID) {
+			if (_pluginInjectors.find(chainID) != _pluginInjectors.end())
+				_pluginInjectors.erase(chainID);
 		}
 
 	}

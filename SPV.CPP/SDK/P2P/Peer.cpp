@@ -20,9 +20,9 @@
 #include "Message/GetAddressMessage.h"
 #include "Message/RejectMessage.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/hash.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <Common/hash.h>
 
 #include <arpa/inet.h>
 #include <cfloat>
@@ -64,7 +64,9 @@ namespace Elastos {
 				_lastblock(0),
 				_earliestKeyTime(0),
 				_currentBlockHeight(0),
-				_startTime(0) {
+				_startTime(0),
+				_downloadStartTime(0),
+				_downloadBytes(0) {
 
 			_managerID = manager->GetID();
 			RegisterListner(_manager);
@@ -95,6 +97,25 @@ namespace Elastos {
 
 		void Peer::SetTimestamp(uint64_t timestamp) {
 			_info.Timestamp = timestamp;
+		}
+
+		time_t Peer::GetDownloadStartTime() const {
+			return _downloadStartTime;
+		}
+
+		void Peer::ScheduleDownloadStartTime() {
+			struct timeval tv;
+			gettimeofday(&tv, NULL);
+
+			_downloadStartTime = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+		}
+
+		uint32_t Peer::GetDownloadBytes() const {
+			return _downloadBytes;
+		}
+
+		void Peer::SetDownloadBytes(uint32_t bytes) {
+			_downloadBytes = bytes;
 		}
 
 		uint64_t Peer::GetServices() const {
@@ -401,6 +422,9 @@ namespace Elastos {
 				}
 			}
 
+			if (_socket == -1)
+				error = 0;
+
 			socket = _socket;
 			_socket = -1;
 			_status = Peer::Disconnected;
@@ -452,9 +476,12 @@ namespace Elastos {
 				_currentBlockTxHashes.clear();
 				_currentBlock.reset();
 				r = 0;
-			} else if (_messages.find(type) != _messages.end())
+			} else if (_messages.find(type) != _messages.end()) {
+				_downloadBytes += msg.size();
 				r = _messages[type]->Accept(msg);
-			else this->error("dropping {}, length {}, not implemented", type, msg.size());
+			} else {
+				this->error("dropping {}, length {}, not implemented", type, msg.size());
+			}
 
 			return r;
 		}

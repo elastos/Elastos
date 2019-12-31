@@ -50,8 +50,6 @@ tags
 doxygen.cfg
 doc/
 
-cmake-*
+[cC]make-*
 
-ThirdParty/openssl/install
-ThirdParty/openssl/openssl-1.0.2o.tar.gz
-ThirdParty/openssl/openssl-1.0.2o
+/[bB]uild

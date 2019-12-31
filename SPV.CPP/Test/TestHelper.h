@@ -7,16 +7,16 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
-#include <SDK/Plugin/Block/AuxPow.h>
-#include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/TransactionInput.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Transaction/Attribute.h>
-#include <SDK/Plugin/Transaction/Program.h>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
-#include <SDK/Common/BigInt.h>
+#include <Plugin/Block/AuxPow.h>
+#include <Plugin/Block/MerkleBlock.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/TransactionInput.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Plugin/Transaction/Attribute.h>
+#include <Plugin/Transaction/Program.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
+#include <Common/BigInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -54,7 +54,7 @@ namespace Elastos {
 
 		static BigInt getRandBigInt() {
 			BigInt bg;
-			bg.setWord(rand());
+			bg.setUint64(rand());
 			return bg;
 		}
 
@@ -111,7 +111,6 @@ namespace Elastos {
 			tx.SetLockTime(getRandUInt32());
 			tx.SetBlockHeight(getRandUInt32());
 			tx.SetTimestamp(getRandUInt32());
-			tx.SetTransactionType(Transaction::transferAsset);
 			tx.SetPayloadVersion(getRandUInt8());
 			tx.SetFee(getRandUInt64());
 
@@ -124,11 +123,9 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < 20; ++i) {
-				OutputPtr output(new TransactionOutput());
-				output->SetAmount(getRandUInt64());
-				output->SetAssetID(getRanduint256());
+				Address addr(getRandUInt168());
+				OutputPtr output(new TransactionOutput(getRandBigInt(), addr, getRanduint256()));
 				output->SetOutputLock(getRandUInt32());
-				output->SetProgramHash(getRandUInt168());
 				if (version >= Transaction::TxVersion::V09) {
 					output->SetType(TransactionOutput::Type(i % 2));
 					if (output->GetType() == TransactionOutput::VoteOutput) {
@@ -190,7 +187,7 @@ namespace Elastos {
 				o1 = tx1.GetOutputs()[i];
 				o2 = tx2.GetOutputs()[i];
 				REQUIRE(o2->AssetID() == o1->AssetID());
-				REQUIRE(o2->ProgramHash() == o1->ProgramHash());
+				REQUIRE(*o2->Addr() == *o1->Addr());
 				REQUIRE(o2->OutputLock() == o1->OutputLock());
 				REQUIRE(o2->Amount() == o1->Amount());
 
@@ -208,8 +205,8 @@ namespace Elastos {
 
 					for (size_t j = 0; j < vc1.size(); ++j) {
 						REQUIRE(vc1[j].GetType() == vc2[j].GetType());
-						const std::vector<CandidateVotes> &cand1 = vc1[j].GetCandidates();
-						const std::vector<CandidateVotes> &cand2 = vc2[j].GetCandidates();
+						const std::vector<CandidateVotes> &cand1 = vc1[j].GetCandidateVotes();
+						const std::vector<CandidateVotes> &cand2 = vc2[j].GetCandidateVotes();
 
 						REQUIRE(cand1.size() == cand2.size());
 						for (size_t k = 0; k < cand1.size(); ++k) {

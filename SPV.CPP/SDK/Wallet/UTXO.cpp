@@ -4,10 +4,10 @@
 
 #include "UTXO.h"
 
-#include <SDK/Plugin/Transaction/TransactionInput.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/BigInt.h>
+#include <Plugin/Transaction/TransactionInput.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Common/ErrorChecker.h>
+#include <Common/BigInt.h>
 
 #include <boost/bind.hpp>
 

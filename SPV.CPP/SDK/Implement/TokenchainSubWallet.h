@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_TOKENCHAINSUBWALLET_H__
 
 #include "SidechainSubWallet.h"
-#include <Interface/ITokenchainSubWallet.h>
+#include <ITokenchainSubWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -36,7 +36,7 @@ namespace Elastos {
 				const std::string &assetID,
 				const std::string &memo);
 
-			virtual nlohmann::json CreateCombineUTXOTransaction(
+			virtual nlohmann::json CreateConsolidateTransaction(
 				const std::string &assetID,
 				const std::string &memo);
 
@@ -47,7 +47,8 @@ namespace Elastos {
 
 			TokenchainSubWallet(const CoinInfoPtr &info,
 							   const ChainConfigPtr &config,
-							   MasterWallet *parent);
+							   MasterWallet *parent,
+							   const std::string &netType);
 
 		};
 

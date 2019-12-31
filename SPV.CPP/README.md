@@ -2,7 +2,6 @@
 
 - [Summary](#summary)
 - [Build Guide](#build-guide)
-	- [Prepare](#prepare-source-code)
 	- [Build on Ubuntu/MacOS](#build-on-ubuntumacos)
 	- [Build for IOS](#build-for-ios)
 	- [Build for Android](#build-for-android)
@@ -12,7 +11,7 @@
 
 ## Summary
 
-This repository is a basic library aimed to provide a serials of wallet related interfaces for anyone who want to build a wallet themselves.
+This repository is a basic library aimed to provide a serials of wallet related interfaces.
 
 ## Build Guide
 
@@ -24,13 +23,9 @@ Make sure your computer have installed the required packages below:
 - [xcode](https://developer.apple.com/xcode/download)  (for IOS or MacOS)
 - [ndk](https://developer.android.com/ndk/downloads/)  (for Android)
 
-### Prepare Source Code
+Download this repository using Git:
 ```shell
-$ cd /home/xxx/dev/
 $ git clone git@github.com:elastos/Elastos.ELA.SPV.Cpp.git
-$ cd Elastos.ELA.SPV.Cpp
-$ git submodule init
-$ git submodule update --force --recursive
 ```
 
 ### Build on Ubuntu/MacOS
@@ -43,64 +38,53 @@ $ xcrun -find clang
 
 And then, build
 ```shell
-$ cd /home/xxx/dev/Elastos.ELA.SPV.Cpp
-$ mkdir cmake-build
-$ cd cmake-build
-$ cmake ..
-$ make -j 8
+$ cd YOUR-PATH/Elastos.ELA.SPV.Cpp
+$ cd Build
+$ mkdir host && cd host
+$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=YOUR-INSTALL-PATH ../..
+$ make -j NCPU && make install
 ```
 
 ### Build for IOS
-1. Architecture armv7 and arm64.
+1. Architecture (arm64)
 
    ```shell
-    $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
-    $ mkdir cmake-build-ios
-    $ cd cmake-build-ios
-    $ cmake -DSPV_PLATFORM=IOS -DCMAKE_INSTALL_PREFIX=$SOMEWHERE/spvsdk/ios/arm ..
-    $ make -j 8 && make install
+    $ cd YOUR-PATH/Elastos.ELA.SPV.Cpp
+    $ cd Build
+    $ mkdir iphoneos && cd iphoneos
+    $ cmake -IOS_PLATFORM=iphoneos -DCMAKE_TOOLCHAIN_FILE=../../CMake/iOSToolchain.cmake -DCMAKE_INSTALL_PREFIX=YOUR-INSTALL-PATH ../..
+    $ make -j NCPU && make install
    ```
 
-2. Simulator
-
-   x86
+2. Simulator (x86_64)
 
    ```shell
-   $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
-   $ mkdir cmake-build-simulator
-   $ cd cmake-build-simulator
-   $ cmake -DSPV_PLATFORM=IOS -DIOS_PLATFORM=SIMULATOR ..
-   $ make -j 8 && make install
+   $ cd YOUR-PATH/Elastos.ELA.SPV.Cpp
+   $ cd Build
+   $ mkdir iphonesimulator && cd iphonesimulator
+   $ cmake -IOS_PLATFORM=iphonesimulator -DCMAKE_TOOLCHAIN_FILE=../../CMake/iOSToolchain.cmake -DCMAKE_INSTALL_PREFIX=YOUR-INSTALL-PATH ../..
+   $ make -j NCPU && make install
    ```
-   x86_64
-   ```shell
-   $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
-   $ mkdir cmake-build-simulator64
-   $ cd cmake-build-simulator64
-   $ cmake -DSPV_PLATFORM=IOS -DIOS_PLATFORM=SIMULATOR64 ..
-   $ make -j 8 && make install
-   ```
-
-Note: If built successfully, you will see output static library in directory *cmake-build-ios/lib/* or in installed directory, which combined with all dependent static libraries(libsqlite.a libboost_*.a libcrypto.a libssl.a libbigint.a). Support minimum IOS target version is 10.0
 
 ### Build for Android
 
 `NDK` version: r16+
 
-Unzip to somewhere, for example */Users/xxx/dev/android-ndk-r16*
+To generate the required Makefile in the current directory, please make sure to first replace 'YOUR-TARGET-ARCHITECTURE' and 'YOUR-ANDROID-NDK-HOME' with the correct option and path.
 
-Set system environment variable **ANDROID_NDK** to */Users/xxx/dev/android-ndk-r16*
-
-Support architecture **arm64-v8a** **armeabi-v7a** and simulator( **x86** **x86_64** )
-
-Set **CMAKE_ANDROID_ARCH_ABI** properly to fit your need
+-DANDROID_ABI accepts the following target architecture options:
+- armeabi-v7a
+- arm64-v8a
+- x86
+- x86_64
 
 ```shell
-$ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
-$ mkdir cmake-build-ndk
-$ cd cmake-build-ndk
-$ cmake -DSPV_PLATFORM=Android -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a ..
-$ make -j 8 && make install
+$ cd YOUR-PATH/Elastos.ELA.SPV.Cpp
+$ cd Build
+$ mkdir android
+$ cd android
+$ cmake -DANDROID_ABI=YOUR-TARGET-ARCHITECTURE -DANDROID_NDK_HOME=YOUR-ANDROID-NDK-HOME -DCMAKE_TOOLCHAIN_FILE=../../CMake/AndroidToolchain.cmake -DCMAKE_INSTALL_PREFIX=YOUR-INSTALL-PATH ../..
+$ make -j NCPU && make install
 ```
 ## Interface Document
 ```shell

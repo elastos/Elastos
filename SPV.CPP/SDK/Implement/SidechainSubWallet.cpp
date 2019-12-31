@@ -5,12 +5,13 @@
 #include "SidechainSubWallet.h"
 #include "MasterWallet.h"
 
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h>
-#include <SDK/SpvService/Config.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <Core/BRAddress.h>
+#include <Common/ErrorChecker.h>
+#include <Plugin/Transaction/Payload/TransferCrossChainAsset.h>
+#include <SpvService/Config.h>
+#include <WalletCore/CoinInfo.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+
+#include <BRAddress.h>
 
 #include <vector>
 #include <map>
@@ -21,8 +22,9 @@ namespace Elastos {
 
 		SidechainSubWallet::SidechainSubWallet(const CoinInfoPtr &info,
 											   const ChainConfigPtr &config,
-											   MasterWallet *parent) :
-				SubWallet(info, config, parent) {
+											   MasterWallet *parent,
+											   const std::string &netType) :
+				SubWallet(info, config, parent, netType) {
 
 		}
 
@@ -36,11 +38,14 @@ namespace Elastos {
 			const std::string &mainChainAddress,
 			const std::string &memo) {
 
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("mainChainAddr: {}", mainChainAddress);
 			ArgInfo("memo: {}", memo);
+
+			ErrorChecker::CheckBigIntAmount(amount);
 
 			BigInt bgAmount;
 			bgAmount.setDec(amount);
@@ -55,12 +60,10 @@ namespace Elastos {
 			}
 
 			std::vector<OutputPtr> outputs;
-			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount + _config->MinFee(), Address(ELA_SIDECHAIN_DESTROY_ADDR), Asset::GetELAAssetID())));
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount + _config->MinFee(), Address(ELA_SIDECHAIN_DESTROY_ADDR))));
+			AddressPtr fromAddr(new Address(fromAddress));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
-			ErrorChecker::CheckLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
-
-			tx->SetTransactionType(Transaction::transferCrossChainAsset, payload);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferCrossChainAsset, payload, fromAddr, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -70,7 +73,7 @@ namespace Elastos {
 		}
 
 		std::string SidechainSubWallet::GetGenesisAddress() const {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 
 			std::string address = _config->GenesisAddress();
 

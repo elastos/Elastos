@@ -5,17 +5,15 @@
 #ifndef __ELASTOS_SDK_UTXO_H__
 #define __ELASTOS_SDK_UTXO_H__
 
-#include <SDK/Common/uint256.h>
-
+#include <Common/uint256.h>
+#include <Plugin/Transaction/TransactionOutput.h>
 #include <vector>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class TransactionInput;
-		class TransactionOutput;
 		class BigInt;
-		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
 		typedef boost::shared_ptr<TransactionInput> InputPtr;
 
 		class UTXO {
@@ -73,6 +71,18 @@ namespace Elastos {
 		};
 		typedef boost::shared_ptr<UTXO> UTXOPtr;
 		typedef std::vector<UTXOPtr> UTXOArray;
+
+		typedef struct {
+			bool operator() (const UTXOPtr &x, const UTXOPtr &y) const {
+				if (x->Hash() == y->Hash()) {
+					return x->Index() < y->Index();
+				} else {
+					return x->Hash() < y->Hash();
+				}
+			}
+		} UTXOCompare;
+
+		typedef std::set<UTXOPtr, UTXOCompare> UTXOSet;
 
 	}
 }

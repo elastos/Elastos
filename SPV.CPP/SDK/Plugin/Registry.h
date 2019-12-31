@@ -16,7 +16,9 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		typedef std::string PluginType;
+#define CHAINID_MAINCHAIN  "ELA"
+#define CHAINID_IDCHAIN    "IDChain"
+#define CHAINID_TOKENCHAIN "TokenChain"
 
 		class Registry : public boost::noncopyable {
 		public:
@@ -24,11 +26,11 @@ namespace Elastos {
 
 			static Registry *Instance(bool erase = false);
 
-			void RegisterPlugin(const std::string &pluginType, fruit::Component<> (*pluginFun)());
+			void RegisterPlugin(const std::string &chainID, fruit::Component<> (*pluginFun)());
 
-			void UnRegisterPlugin(const std::string &pluginType);
+			void UnRegisterPlugin(const std::string &chainID);
 
-			MerkleBlockPtr CreateMerkleBlock(const std::string &pluginType);
+			MerkleBlockPtr CreateMerkleBlock(const std::string &chainID);
 
 		private:
 			Registry();
@@ -40,21 +42,21 @@ namespace Elastos {
 
 		class RegisterProxy {
 		public:
-			RegisterProxy(const std::string &pluginType, fruit::Component<> (*pluginFun)()) :
-					_pluginType(pluginType) {
+			RegisterProxy(const std::string &chainID, fruit::Component<> (*pluginFun)()) :
+					_chainID(chainID) {
 				if (Registry::Instance()) {
-					Registry::Instance()->RegisterPlugin(pluginType, pluginFun);
+					Registry::Instance()->RegisterPlugin(chainID, pluginFun);
 				}
 			}
 
 			~RegisterProxy() {
 				if (Registry::Instance()) {
-					Registry::Instance()->UnRegisterPlugin(_pluginType);
+					Registry::Instance()->UnRegisterPlugin(_chainID);
 				}
 			}
 
 		private:
-			std::string _pluginType;
+			std::string _chainID;
 		};
 
 #define REGISTER_MERKLEBLOCKPLUGIN(pluginKey, pluginComponentFunction) \

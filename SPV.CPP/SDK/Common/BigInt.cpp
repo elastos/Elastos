@@ -23,7 +23,7 @@ namespace Elastos {
 
 		BigInt::BigInt() {
 			this->allocate();
-			this->setWord(0);
+			this->setUint64(0);
 		}
 
 		BigInt::BigInt(const BigInt &bigint) {
@@ -38,9 +38,9 @@ namespace Elastos {
 
 		}
 
-		BigInt::BigInt(BN_ULONG num) {
+		BigInt::BigInt(uint64_t num) {
 			this->allocate();
-			this->operator=(num);
+			this->setUint64(num);
 		}
 
 		BigInt::BigInt(const std::vector<unsigned char> &bytes, bool bigEndian) {
@@ -78,8 +78,8 @@ namespace Elastos {
 			return *this;
 		}
 
-		BigInt &BigInt::operator=(BN_ULONG num) {
-			this->setWord(num);
+		BigInt &BigInt::operator=(uint64_t num) {
+			this->setUint64(num);
 			return *this;
 		}
 
@@ -119,75 +119,83 @@ namespace Elastos {
 			return *this;
 		}
 
-		BigInt &BigInt::operator+=(BN_ULONG rhs) {
-			if (!BN_add_word(this->bn, rhs)) {
+		BigInt &BigInt::operator+=(uint64_t rhs) {
+			BigInt rhsBG(rhs);
+			if (!BN_add(this->bn, this->bn, rhsBG.bn))
 				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt +=");
-			}
 			return *this;
 		}
 
-		BigInt &BigInt::operator-=(BN_ULONG rhs) {
-			if (!BN_sub_word(this->bn, rhs)) {
+		BigInt &BigInt::operator-=(uint64_t rhs) {
+			BigInt rhsBG(rhs);
+			if (!BN_sub(this->bn, this->bn, rhsBG.bn)) {
 				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt -=");
 			}
 			return *this;
 		}
 
-		BigInt &BigInt::operator*=(BN_ULONG rhs) {
-			if (!BN_mul_word(this->bn, rhs)) {
+		BigInt &BigInt::operator*=(uint64_t rhs) {
+			BigInt rhsBG(rhs);
+			if (!BN_mul(this->bn, this->bn, rhsBG.bn, this->ctx)) {
 				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt *=");
 			}
 			return *this;
 		}
 
-		BigInt &BigInt::operator/=(BN_ULONG rhs) {
-			BN_div_word(this->bn, rhs);
+		BigInt &BigInt::operator/=(uint64_t rhs) {
+			BigInt rhsBG(rhs);
+			if (!BN_div(this->bn, NULL, this->bn, rhsBG.bn, this->ctx)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt /=");
+			}
 			return *this;
 		}
 
-		BigInt &BigInt::operator%=(BN_ULONG rhs) {
-			this->setWord(BN_mod_word(this->bn, rhs));
+		BigInt &BigInt::operator%=(uint64_t rhs) {
+			BigInt rhsBG(rhs);
+			if (!BN_div(NULL, this->bn, this->bn, rhsBG.bn, this->ctx)) {
+				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt %=");
+			}
 			return *this;
 		}
 
-		const BigInt BigInt::operator+(const BigInt &rightOperand) const {
+		BigInt BigInt::operator+(const BigInt &rightOperand) const {
 			return BigInt(*this) += rightOperand;
 		}
 
-		const BigInt BigInt::operator-(const BigInt &rightOperand) const {
+		BigInt BigInt::operator-(const BigInt &rightOperand) const {
 			return BigInt(*this) -= rightOperand;
 		}
 
-		const BigInt BigInt::operator*(const BigInt &rightOperand) const {
+		BigInt BigInt::operator*(const BigInt &rightOperand) const {
 			return BigInt(*this) *= rightOperand;
 		}
 
-		const BigInt BigInt::operator/(const BigInt &rightOperand) const {
+		BigInt BigInt::operator/(const BigInt &rightOperand) const {
 			return BigInt(*this) /= rightOperand;
 		}
 
-		const BigInt BigInt::operator%(const BigInt &rightOperand) const {
+		BigInt BigInt::operator%(const BigInt &rightOperand) const {
 			return BigInt(*this) %= rightOperand;
 		}
 
-		const BigInt BigInt::operator+(BN_ULONG rightOperand) const {
+		BigInt BigInt::operator+(uint64_t rightOperand) const {
 			return BigInt(*this) += rightOperand;
 		}
 
-		const BigInt BigInt::operator-(BN_ULONG rightOperand) const {
+		BigInt BigInt::operator-(uint64_t rightOperand) const {
 			return BigInt(*this) -= rightOperand;
 		}
 
-		const BigInt BigInt::operator*(BN_ULONG rightOperand) const {
+		BigInt BigInt::operator*(uint64_t rightOperand) const {
 			return BigInt(*this) *= rightOperand;
 		}
 
-		const BigInt BigInt::operator/(BN_ULONG rightOperand) const {
+		BigInt BigInt::operator/(uint64_t rightOperand) const {
 			return BigInt(*this) /= rightOperand;
 		}
 
-		BN_ULONG BigInt::operator%(BN_ULONG rightOperand) const {
-			return BN_mod_word(this->bn, rightOperand);
+		BigInt BigInt::operator%(uint64_t rightOperand) const {
+			return BigInt(*this) %= rightOperand;
 		}
 
 		BigInt &BigInt::operator<<=(int rhs) {
@@ -204,11 +212,11 @@ namespace Elastos {
 			return *this;
 		}
 
-		const BigInt BigInt::operator<<(int rhs) const {
+		BigInt BigInt::operator<<(int rhs) const {
 			return BigInt(*this) <<= rhs;
 		}
 
-		const BigInt BigInt::operator>>(int rhs) const {
+		BigInt BigInt::operator>>(int rhs) const {
 			return BigInt(*this) >>= rhs;
 		}
 
@@ -255,6 +263,7 @@ namespace Elastos {
 		}
 
 		// this method is not safe, will be deprecated
+#if 0
 		BN_ULONG BigInt::getWord() const {
 			return BN_get_word(this->bn);
 		}
@@ -264,6 +273,7 @@ namespace Elastos {
 				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt set word");
 			}
 		}
+#endif
 
 		void BigInt::setRaw(BIGNUM *bn) {
 			if (this->bn) {
@@ -347,14 +357,14 @@ namespace Elastos {
 			BigInt num = *this;
 			std::string inBase;
 			do {
-				inBase = alphabet[num % base] + inBase; // TODO: check whether this is most efficient structure manipulation
+				inBase = alphabet[(num % base).getUint64()] + inBase; // TODO: check whether this is most efficient structure manipulation
 				num /= base;
 			} while (!num.isZero());
 			return inBase;
 		}
 
 		void BigInt::setInBase(const std::string& inBase, unsigned int base, const char* alphabet) {
-			this->setWord(0);
+			this->setUint64(0);
 			for (unsigned int i = 0; i < inBase.size(); i++) {
 				const char* pPos = strchr(alphabet, inBase[i]);
 				if (!pPos) continue;

@@ -3,8 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "CoinBase.h"
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
 
 #include <cstring>
 

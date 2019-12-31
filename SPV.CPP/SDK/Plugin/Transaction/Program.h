@@ -5,7 +5,8 @@
 #ifndef __ELASTOS_SDK_PROGRAM_H__
 #define __ELASTOS_SDK_PROGRAM_H__
 
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
+#include <WalletCore/Address.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -13,6 +14,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class Transaction;
+		class Address;
 
 		class Program {
 		public:
@@ -26,7 +28,7 @@ namespace Elastos {
 
 			Program &operator=(const Program &tx);
 
-			std::vector<bytes_t> DecodePublicKey() const;
+			SignType DecodePublicKey(std::vector<bytes_t> &pubkeys) const;
 
 			bool VerifySignature(const uint256 &md) const;
 
@@ -61,6 +63,7 @@ namespace Elastos {
 		};
 
 		typedef boost::shared_ptr<Program> ProgramPtr;
+		typedef std::vector<ProgramPtr> ProgramArray;
 
 	}
 }

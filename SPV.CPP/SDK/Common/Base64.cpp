@@ -4,6 +4,10 @@
 
 #include "Base64.h"
 
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/buffer.h>
+
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -41,7 +45,7 @@ namespace Elastos {
 
 			bytes_t buffer(decodedLen);
 
-			bio = BIO_new_mem_buf(input.c_str(), -1);
+			bio = BIO_new_mem_buf((void *)input.c_str(), -1);
 			b64 = BIO_new(BIO_f_base64());
 			bio = BIO_push(b64, bio);
 
@@ -52,6 +56,25 @@ namespace Elastos {
 			return buffer;
 		}
 
+		std::string Base64::EncodeURL(const bytes_t &input) {
+			std::string str = Encode(input);
+			str.erase(std::remove(str.begin(), str.end(), '='), str.end());
+			std::replace(str.begin(), str.end(), '+', '-');
+			std::replace(str.begin(), str.end(), '/', '_');
+			return str;
+		}
+
+		bytes_t Base64::DecodeURL(const std::string &input) {
+			std::string str = input;
+			std::replace(str.begin(), str.end(), '-', '+');
+			std::replace(str.begin(), str.end(), '_', '/');
+
+			long append = 4 - str.length() % 4;
+			if (append != 4)
+				str += std::string(append, '=');
+
+			return Decode(str);
+		}
 
 	}
 }

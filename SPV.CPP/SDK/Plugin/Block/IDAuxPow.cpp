@@ -4,11 +4,11 @@
 
 #include "IDAuxPow.h"
 
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/ByteStream.h>
-#include <SDK/Common/Log.h>
+#include <Common/Utils.h>
+#include <Common/ByteStream.h>
+#include <Common/Log.h>
 
-#include <Core/BRMerkleBlock.h>
+#include <BRMerkleBlock.h>
 
 namespace Elastos {
 	namespace ElaWallet {

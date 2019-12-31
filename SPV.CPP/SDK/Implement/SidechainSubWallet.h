@@ -7,7 +7,7 @@
 
 #include "SubWallet.h"
 
-#include <Interface/ISidechainSubWallet.h>
+#include <ISidechainSubWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -29,7 +29,8 @@ namespace Elastos {
 
 			SidechainSubWallet(const CoinInfoPtr &info,
 							   const ChainConfigPtr &config,
-							   MasterWallet *parent);
+							   MasterWallet *parent,
+							   const std::string &netType);
 
 		};
 

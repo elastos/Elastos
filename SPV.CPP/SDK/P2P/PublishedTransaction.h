@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_PUBLISHEDTRANSACTION_H__
 #define __ELASTOS_SDK_PUBLISHEDTRANSACTION_H__
 
-#include "SDK/Plugin/Transaction/Transaction.h"
+#include <Plugin/Transaction/Transaction.h>
 
 #include <boost/function.hpp>
 

@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_UNREGISTERCR_H__
 #define __ELASTOS_SDK_UNREGISTERCR_H__
 
-#include <SDK/Plugin/Transaction/Payload/IPayload.h>
+#include <Plugin/Transaction/Payload/IPayload.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -15,9 +15,9 @@ namespace Elastos {
 
 			~UnregisterCR();
 
-			void SetCode(const bytes_t &code);
+			void SetDID(const uint168 &did);
 
-			const bytes_t &GetCode() const;
+			const uint168 &GetDID() const;
 
 			void SetSignature(const bytes_t &signature);
 
@@ -41,7 +41,7 @@ namespace Elastos {
 
 			UnregisterCR &operator=(const UnregisterCR &payload);
 		private:
-			bytes_t _code;
+			uint168 _did;
 			bytes_t _signature;
 		};
 	}

@@ -11,21 +11,16 @@ namespace Elastos {
 			_path(path),
 			_sqlite(path),
 			_peerDataSource(&_sqlite),
+			_peerBlackList(&_sqlite),
 			_coinbaseDataStore(&_sqlite),
 			_transactionDataStore(&_sqlite),
 			_assetDataStore(&_sqlite),
-			_merkleBlockDataSource(&_sqlite) {
+			_merkleBlockDataSource(&_sqlite),
+			_didDataStore(&_sqlite){}
 
-		}
+		DatabaseManager::DatabaseManager() : DatabaseManager("spv_wallet.db") {}
 
-		DatabaseManager::DatabaseManager() :
-			DatabaseManager("spv_wallet.db") {
-
-		}
-
-		DatabaseManager::~DatabaseManager() {
-
-		}
+		DatabaseManager::~DatabaseManager() {}
 
 		bool DatabaseManager::PutCoinBase(const std::vector<UTXOPtr> &entitys) {
 			return _coinbaseDataStore.Put(entitys);
@@ -52,8 +47,8 @@ namespace Elastos {
 			return _coinbaseDataStore.Update(txHashes, blockHeight, timestamp);
 		}
 
-		bool DatabaseManager::UpdateSpentCoinBase(const std::vector<uint256> &txHashes) {
-			return _coinbaseDataStore.UpdateSpent(txHashes);
+		bool DatabaseManager::UpdateSpentCoinBase(const UTXOArray &spentUTXO) {
+			return _coinbaseDataStore.UpdateSpent(spentUTXO);
 		}
 
 		bool DatabaseManager::DeleteCoinBase(const uint256 &hash) {
@@ -76,8 +71,12 @@ namespace Elastos {
 			return _transactionDataStore.GetAllTransactionsCount();
 		}
 
-		std::vector<TransactionPtr> DatabaseManager::GetAllTransactions() const {
-			return _transactionDataStore.GetAllTransactions();
+		TransactionPtr DatabaseManager::GetTransaction(const uint256 &hash, const std::string &chainID) {
+			return _transactionDataStore.GetTransaction(hash, chainID);
+		}
+
+		std::vector<TransactionPtr> DatabaseManager::GetAllTransactions(const std::string &chainID) const {
+			return _transactionDataStore.GetAllTransactions(chainID);
 		}
 
 		bool DatabaseManager::UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight,
@@ -93,36 +92,55 @@ namespace Elastos {
 			return _transactionDataStore.DeleteTxByHashes(hashes);
 		}
 
-		bool DatabaseManager::PutPeer(const std::string &iso, const PeerEntity &peerEntity) {
-			return _peerDataSource.PutPeer(iso, peerEntity);
+		bool DatabaseManager::PutPeer(const PeerEntity &peerEntity) {
+			return _peerDataSource.PutPeer(peerEntity);
 		}
 
-		bool DatabaseManager::PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
-			return _peerDataSource.PutPeers(iso, peerEntities);
+		bool DatabaseManager::PutPeers(const std::vector<PeerEntity> &peerEntities) {
+			return _peerDataSource.PutPeers(peerEntities);
 		}
 
-		bool DatabaseManager::DeletePeer(const std::string &iso, const PeerEntity &peerEntity) {
-			return _peerDataSource.DeletePeer(iso, peerEntity);
+		bool DatabaseManager::DeletePeer(const PeerEntity &peerEntity) {
+			return _peerDataSource.DeletePeer(peerEntity);
 		}
 
 		bool DatabaseManager::DeleteAllPeers() {
 			return _peerDataSource.DeleteAllPeers();
 		}
 
-		std::vector<PeerEntity> DatabaseManager::GetAllPeers(const std::string &iso) const {
-			return _peerDataSource.GetAllPeers(iso);
+		std::vector<PeerEntity> DatabaseManager::GetAllPeers() const {
+			return _peerDataSource.GetAllPeers();
 		}
 
-		size_t DatabaseManager::GetAllPeersCount(const std::string &iso) const {
-			return _peerDataSource.GetAllPeersCount(iso);
+		bool DatabaseManager::DeleteBlackPeer(const PeerEntity &entity) {
+			return _peerBlackList.DeletePeer(entity);
+		}
+
+		bool DatabaseManager::DeleteAllBlackPeers() {
+			return _peerBlackList.DeleteAllPeers();
+		}
+
+		std::vector<PeerEntity> DatabaseManager::GetAllBlackPeers() const {
+			return _peerBlackList.GetAllPeers();
+		}
+
+		bool DatabaseManager::PutBlackPeer(const PeerEntity &entity) {
+			return _peerBlackList.PutPeer(entity);
+		}
+
+		bool DatabaseManager::PutBlackPeers(const std::vector<PeerEntity> &entitys) {
+			return _peerBlackList.PutPeers(entitys);
+		}
+
+		size_t DatabaseManager::GetAllPeersCount() const {
+			return _peerDataSource.GetAllPeersCount();
 		}
 
 		bool DatabaseManager::PutMerkleBlock(const std::string &iso, const MerkleBlockPtr &blockPtr) {
 			return _merkleBlockDataSource.PutMerkleBlock(iso, blockPtr);
 		}
 
-		bool DatabaseManager::PutMerkleBlocks(const std::string &iso,
-											  const std::vector<MerkleBlockPtr> &blocks) {
+		bool DatabaseManager::PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockPtr> &blocks) {
 			return _merkleBlockDataSource.PutMerkleBlocks(iso, blocks);
 		}
 
@@ -134,8 +152,9 @@ namespace Elastos {
 			return _merkleBlockDataSource.DeleteAllBlocks(iso);
 		}
 
-		std::vector<MerkleBlockPtr> DatabaseManager::GetAllMerkleBlocks(const std::string &iso, const std::string &pluginType) const {
-			return _merkleBlockDataSource.GetAllMerkleBlocks(iso, pluginType);
+		std::vector<MerkleBlockPtr> DatabaseManager::GetAllMerkleBlocks(const std::string &iso,
+																		const std::string &chainID) const {
+			return _merkleBlockDataSource.GetAllMerkleBlocks(iso, chainID);
 		}
 
 		const boost::filesystem::path &DatabaseManager::GetPath() const {
@@ -162,13 +181,46 @@ namespace Elastos {
 			return _assetDataStore.GetAllAssets();
 		}
 
+		bool DatabaseManager::PutDID(const std::string &iso, const DIDEntity &didEntity) {
+			return _didDataStore.PutDID(iso, didEntity);
+		}
+
+		bool DatabaseManager::UpdateDID(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
+			return _didDataStore.UpdateDID(hashes, blockHeight, timestamp);
+		}
+
+		bool DatabaseManager::DeleteDID(const std::string &did) {
+			return _didDataStore.DeleteDID(did);
+		}
+
+		bool DatabaseManager::DeleteDIDByTxHash(const std::string &txHash) {
+			return _didDataStore.DeleteDIDByTxHash(txHash);
+		}
+
+		std::string DatabaseManager::GetDIDByTxHash(const std::string &txHash) const {
+			return _didDataStore.GetDIDByTxHash(txHash);
+		}
+
+		bool DatabaseManager::GetDIDDetails(const std::string &did, DIDEntity &didEntity) const {
+			return _didDataStore.GetDIDDetails(did, didEntity);
+		}
+
+		std::vector<DIDEntity> DatabaseManager::GetAllDID() const {
+			return _didDataStore.GetAllDID();
+		}
+
+		bool DatabaseManager::DeleteAllDID() {
+			return _didDataStore.DeleteAllDID();
+		}
+
 		void DatabaseManager::flush() {
 			_transactionDataStore.flush();
 			_coinbaseDataStore.flush();
 			_merkleBlockDataSource.flush();
 			_peerDataSource.flush();
 			_assetDataStore.flush();
+			_didDataStore.flush();
 		}
 
-	}
-}
+	} // namespace ElaWallet
+} // namespace Elastos

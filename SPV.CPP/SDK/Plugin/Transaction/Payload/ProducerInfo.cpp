@@ -4,8 +4,8 @@
 
 #include "ProducerInfo.h"
 
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {

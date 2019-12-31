@@ -4,12 +4,12 @@
 
 #include "AuxPow.h"
 
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/hash.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <Common/hash.h>
 
-#include <Core/BRMerkleBlock.h>
-#include <Core/BRTransaction.h>
+#include <BRMerkleBlock.h>
+#include <BRTransaction.h>
 
 #include <stdlib.h>
 

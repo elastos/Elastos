@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_SIDECHAINMERKLEBLOCK_H__
 
 #include "MerkleBlockBase.h"
-#include <SDK/Plugin/Block/IDAuxPow.h>
+#include <Plugin/Block/IDAuxPow.h>
 
 #include <fruit/fruit.h>
 

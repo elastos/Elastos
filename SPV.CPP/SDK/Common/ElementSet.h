@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_TRANSACTIONSET_H__
 
 #include <set>
-#include <SDK/Common/uint256.h>
+#include <Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -14,9 +14,14 @@ namespace Elastos {
 		template<class T>
 		class ElementSet {
 		public:
+			typedef struct {
+				bool operator() (const T &x, const T &y) const {
+					return x->GetHash() < y->GetHash();
+				}
+			} TCompare;
 
 			T Get(const uint256 &hash) const {
-				typename std::set<T>::const_iterator it;
+				typename std::set<T, TCompare>::const_iterator it;
 				it = std::find_if(_elements.begin(), _elements.end(), [&hash](const T &e) {
 					return hash == e->GetHash();
 				});
@@ -27,39 +32,54 @@ namespace Elastos {
 				return *it;
 			}
 
-			bool Contains(const T &tx) const {
-				if (_elements.find(tx) != _elements.end()) {
-					return true;
-				}
+			std::set<T, TCompare> &Raw() {
+				return _elements;
+			}
 
-				return Contains(tx->GetHash());
+			bool Contains(const T &e) const {
+				return _elements.find(e) != _elements.end();
 			}
 
 			bool Contains(const uint256 &hash) const {
-				typename std::set<T>::const_iterator it;
-				it = std::find_if(_elements.begin(), _elements.end(), [&hash](const T &e) {
-					return hash == e->GetHash();
-				});
-				return it != _elements.end();
+				return Get(hash) != nullptr;
 			}
 
-			void Insert(const T &tx) {
-				_elements.insert(tx);
+			bool Insert(const T &e) {
+				return _elements.insert(e).second;
 			}
 
 			size_t Size() {
 				return _elements.size();
 			}
 
-			void Remove(const T &tx) {
-				typename std::set<T>::const_iterator it;
-				for(it = _elements.cbegin(); it != _elements.cend();) {
-					if (tx->GetHash() == (*it)->GetHash()) {
-						it = _elements.erase(it);
-					} else {
-						++it;
-					}
+			bool Remove(const T &e) {
+				return _elements.erase(e) > 0;
+			}
+
+			bool RemoveMatchPrevHash(const uint256 &hash) {
+				typename std::set<T, TCompare>::const_iterator it;
+				it = std::find_if(_elements.cbegin(), _elements.cend(), [&hash](const T &e) {
+					return hash == e->GetPrevBlockHash();
+				});
+
+				if (it != _elements.end()) {
+					_elements.erase(it);
+					return true;
 				}
+
+				return false;
+			}
+
+			T GetMatchPrevHash(const uint256 &hash) const {
+				typename std::set<T, TCompare>::const_iterator it;
+				it = std::find_if(_elements.cbegin(), _elements.cend(), [&hash](const T &e) {
+					return hash == e->GetPrevBlockHash();
+				});
+
+				if (it != _elements.end())
+					return *it;
+
+				return nullptr;
 			}
 
 			void Clear() {
@@ -67,7 +87,7 @@ namespace Elastos {
 			}
 
 		private:
-			std::set<T> _elements;
+			std::set<T, TCompare> _elements;
 		};
 
 	}

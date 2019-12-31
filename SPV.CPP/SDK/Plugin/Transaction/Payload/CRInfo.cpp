@@ -3,7 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "CRInfo.h"
-#include <SDK/Common/Log.h>
+#include <Common/Log.h>
+#include <WalletCore/Key.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -157,6 +158,21 @@ namespace Elastos {
 
 			std::string signature = j["Signature"].get<std::string>();
 			_signature.setHex(signature);
+		}
+
+		bool CRInfo::IsValid() const {
+			ByteStream stream(_code);
+			bytes_t pubKey;
+			stream.ReadVarBytes(pubKey);
+
+			Key key;
+			key.SetPubKey(pubKey);
+
+			ByteStream ostream;
+			SerializeUnsigned(ostream, 0);
+			uint256 digest(sha256(ostream.GetBytes()));
+
+			return key.Verify(digest, _signature);
 		}
 
 		IPayload &CRInfo::operator=(const IPayload &payload) {

@@ -3,9 +3,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "RegisterIdentification.h"
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Utils.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
+#include <Common/Utils.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -140,7 +140,7 @@ namespace Elastos {
 					}
 
 					if (!istream.ReadVarString(value.Info)) {
-						Log::error("Payload register identification deserialize proof fail");
+						Log::error("Payload register identification deserialize info fail");
 						return false;
 					}
 					content.Values.push_back(value);

@@ -8,9 +8,6 @@
 #include "typedefs.h"
 
 #include <string>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include <openssl/buffer.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -21,6 +18,10 @@ namespace Elastos {
 			static std::string Encode(const bytes_t &input);
 
 			static bytes_t Decode(const std::string &input);
+
+			static std::string EncodeURL(const bytes_t &input);
+
+			static bytes_t DecodeURL(const std::string &input);
 
 		};
 	}

@@ -7,12 +7,12 @@
 #include "GetBlocksMessage.h"
 #include "PingMessage.h"
 
-#include <SDK/P2P/Peer.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/P2P/PeerManager.h>
+#include <P2P/Peer.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <P2P/PeerManager.h>
 
-#include <Core/BRArray.h>
+#include <BRArray.h>
 #include <float.h>
 
 #define MAX_BLOCKS_COUNT 100  //note max blocks count is 500 in btc while 100 in ela
@@ -95,9 +95,9 @@ namespace Elastos {
 				std::vector<uint256> txHashes;
 				for (i = 0; i < transactions.size(); i++) {
 					if (_peer->KnownTxHashSet().find(transactions[i]) != _peer->KnownTxHashSet().end()) {
-						FireHasTx(hash);
+						FireHasTx(transactions[i]);
 					} else {
-						txHashes.push_back(hash);
+						txHashes.push_back(transactions[i]);
 					}
 				}
 

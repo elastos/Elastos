@@ -4,9 +4,9 @@
 
 #include "GetBlocksMessage.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/P2P/Peer.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <P2P/Peer.h>
 
 namespace Elastos {
 	namespace ElaWallet {

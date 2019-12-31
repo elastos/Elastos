@@ -6,8 +6,8 @@
 
 #include <catch.hpp>
 
-#include <SDK/Common/Base64.h>
-#include <SDK/Common/Log.h>
+#include <Common/Base64.h>
+#include <Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 

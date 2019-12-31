@@ -8,34 +8,49 @@
 #include "Sqlite.h"
 #include "TableBase.h"
 
-#include <SDK/Common/uint256.h>
+#include <Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class Transaction;
+
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
 
 		class TransactionDataStore : public TableBase {
 		public:
 			TransactionDataStore(Sqlite *sqlite);
+
 			TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite);
+
 			~TransactionDataStore();
 
 			bool PutTransaction(const std::string &iso, const TransactionPtr &tx);
+
 			bool PutTransactions(const std::string &iso, const std::vector<TransactionPtr> &txns);
+
 			bool DeleteAllTransactions();
+
 			size_t GetAllTransactionsCount() const;
-			std::vector<TransactionPtr> GetAllTransactions() const;
+
+			TransactionPtr GetTransaction(const uint256 &hash, const std::string &chainID);
+
+			std::vector<TransactionPtr> GetAllTransactions(const std::string &chainID) const;
+
 			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+
 			bool DeleteTxByHash(const uint256 &hash);
+
 			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
 
 			void flush();
-		private:
-			TransactionPtr SelectTxByHash(const std::string &hash) const;
 
-			void PutTransactionInternal(const std::string &iso, const TransactionPtr &tx);
+		private:
+			TransactionPtr SelectTxByHash(const std::string &hash, const std::string &chainID) const;
+
+			bool ContainHash(const std::string &hash) const;
+
+			bool PutTransactionInternal(const std::string &iso, const TransactionPtr &tx);
 
 		private:
 			/*
@@ -50,19 +65,18 @@ namespace Elastos {
 			const std::string TX_REMARK = "transactionRemark";
 			const std::string TX_ASSETID = "assetID";
 
-			const std::string TX_DATABASE_CREATE = "create table if not exists " + TX_TABLE_NAME + " (" +
-				TX_COLUMN_ID + " text not null, " +
-				TX_BUFF + " blob, " +
-				TX_BLOCK_HEIGHT + " integer, " +
-				TX_TIME_STAMP + " integer, " +
-				TX_REMARK + " text DEFAULT '', " +
-				TX_ASSETID + " text not null, " +
-				TX_ISO + " text DEFAULT 'ELA' );";
+			const std::string TX_DATABASE_CREATE = "create table if not exists " +
+												   TX_TABLE_NAME + " (" +
+												   TX_COLUMN_ID + " text not null, " +
+												   TX_BUFF + " blob, " +
+												   TX_BLOCK_HEIGHT + " integer, " +
+												   TX_TIME_STAMP + " integer, " +
+												   TX_REMARK + " text DEFAULT '', " +
+												   TX_ASSETID + " text not null, " +
+												   TX_ISO + " text DEFAULT 'ELA' );";
 		};
 
-	}
-}
+	} // namespace ElaWallet
+} // namespace Elastos
 
-
-#endif //SPVCLIENT_TRANSACTIONDATASTORE_H
-
+#endif // SPVCLIENT_TRANSACTIONDATASTORE_H

@@ -4,15 +4,14 @@
 
 #define CATCH_CONFIG_MAIN
 
-
-#include "catch.hpp"
-#include <SDK/WalletCore/BIPs/Mnemonic.h>
-#include <SDK/Common/Log.h>
+#include <catch.hpp>
+#include <WalletCore/Mnemonic.h>
+#include <Common/Log.h>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include <SDK/Common/Log.h>
+#include <Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 

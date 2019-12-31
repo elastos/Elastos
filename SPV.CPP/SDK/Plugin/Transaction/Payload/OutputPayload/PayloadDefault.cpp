@@ -3,9 +3,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "PayloadDefault.h"
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {

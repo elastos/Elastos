@@ -3,9 +3,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "RegisterAsset.h"
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Plugin/Transaction/Asset.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <Plugin/Transaction/Asset.h>
 
 namespace Elastos {
 	namespace ElaWallet {

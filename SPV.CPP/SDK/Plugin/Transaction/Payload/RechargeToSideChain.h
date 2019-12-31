@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_RECHARGETOSIDECHAIN_H
 #define __ELASTOS_SDK_RECHARGETOSIDECHAIN_H
 
-#include <SDK/Common/uint256.h>
+#include <Common/uint256.h>
 #include "IPayload.h"
 
 namespace Elastos {

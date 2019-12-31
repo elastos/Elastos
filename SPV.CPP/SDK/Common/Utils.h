@@ -16,6 +16,8 @@ namespace Elastos {
 			static uint8_t getRandomByte();
 
 			static bytes_t GetRandom(size_t bytes);
+
+			static bool ParseInternetTime(const std::string &utcTime, time_t &timeStamp);
 		};
 	}
 }

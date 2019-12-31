@@ -5,36 +5,35 @@
 #ifndef __ELASTOS_SDK_SPVSERVICE_H__
 #define __ELASTOS_SDK_SPVSERVICE_H__
 
-#include "CoreSpvService.h"
 #include "BackgroundExecutor.h"
+#include "CoreSpvService.h"
 
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Database/DatabaseManager.h>
-#include <SDK/WalletCore/KeyStore/KeyStore.h>
-
-#include <nlohmann/json.hpp>
-#include <boost/function.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/function.hpp>
+#include <nlohmann/json.hpp>
 #include <vector>
 
 namespace Elastos {
 	namespace ElaWallet {
 
+		class DatabaseManager;
 		class Transaction;
+		struct DIDEntity;
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
+		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;
 
 		class SpvService :
 				public CoreSpvService {
 		public:
 
 			SpvService(const std::string &walletID,
+					   const std::string &chainID,
 					   const SubAccountPtr &subAccount,
 					   const boost::filesystem::path &dbPath,
 					   time_t earliestPeerTime,
-					   uint32_t reconnectSeconds,
-					   const PluginType &pluginTypes,
-					   const ChainParamsPtr &chainParams);
+					   const ChainConfigPtr &config,
+					   const std::string &netType);
 
 			virtual ~SpvService();
 
@@ -43,6 +42,8 @@ namespace Elastos {
 			void SyncStop();
 
 			void ExecutorStop();
+
+			TransactionPtr GetTransaction(const uint256 &hash, const std::string &chainID);
 
 			size_t GetAllTransactionsCount();
 
@@ -54,8 +55,6 @@ namespace Elastos {
 
 			void DatabaseFlush();
 
-			virtual const WalletPtr &getWallet();
-
 		public:
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
@@ -65,7 +64,7 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+			virtual void onCoinBaseSpent(const UTXOArray &spentUTXO);
 
 			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
@@ -82,7 +81,7 @@ namespace Elastos {
 		public:
 			virtual void syncStarted();
 
-			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
+			virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer);
 
 			virtual void syncStopped(const std::string &error);
 
@@ -92,20 +91,34 @@ namespace Elastos {
 
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
 
+			virtual void saveBlackPeer(const PeerInfo &peer);
+
 			virtual bool networkIsReachable();
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
 			virtual void connectStatusChanged(const std::string &status);
 
+			virtual void saveDIDInfo(const DIDEntity &didEntity);
+
+			virtual void updateDIDInfo(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
+
+			virtual void deleteDIDInfo(const std::string &txHash);
+
+			virtual std::string GetDIDByTxHash(const std::string &txHash) const;
+
+			virtual std::vector<DIDEntity> loadDIDList()  const;
+
 		protected:
 			virtual std::vector<UTXOPtr> loadCoinBaseUTXOs();
 
-			virtual std::vector<TransactionPtr> loadTransactions();
+			virtual std::vector<TransactionPtr> loadTransactions(const std::string &chainID);
 
-			virtual std::vector<MerkleBlockPtr> loadBlocks();
+			virtual std::vector<MerkleBlockPtr> loadBlocks(const std::string &chainID);
 
 			virtual std::vector<PeerInfo> loadPeers();
+
+			virtual std::set<PeerInfo> loadBlackPeers();
 
 			virtual std::vector<AssetPtr> loadAssets();
 
@@ -114,7 +127,8 @@ namespace Elastos {
 			virtual const WalletListenerPtr &createWalletListener();
 
 		private:
-			DatabaseManager _databaseManager;
+			DatabaseManagerPtr _databaseManager;
+
 			BackgroundExecutor _executor;
 
 			std::vector<Wallet::Listener *> _walletListeners;

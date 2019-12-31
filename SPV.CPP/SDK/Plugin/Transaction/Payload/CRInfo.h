@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_CRINFO_H__
 #define __ELASTOS_SDK_CRINFO_H__
 
-#include <SDK/Plugin/Transaction/Payload/IPayload.h>
+#include "IPayload.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -52,6 +52,8 @@ namespace Elastos {
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+
+			virtual bool IsValid() const;
 
 			virtual IPayload &operator=(const IPayload &payload);
 

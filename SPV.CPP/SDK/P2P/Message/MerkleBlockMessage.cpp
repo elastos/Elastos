@@ -4,18 +4,18 @@
 
 #include "MerkleBlockMessage.h"
 
-#include <SDK/P2P/PeerManager.h>
-#include <SDK/P2P/Peer.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Plugin/Block/AuxPow.h>
-#include <SDK/Plugin/Block/ELAMerkleBlock.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Plugin/Block/MerkleBlock.h>
+#include <P2P/PeerManager.h>
+#include <P2P/Peer.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <Plugin/Block/AuxPow.h>
+#include <Plugin/Block/ELAMerkleBlock.h>
+#include <Plugin/Registry.h>
+#include <Plugin/Block/MerkleBlock.h>
 
-#include <Core/BRMerkleBlock.h>
-#include <Core/BRArray.h>
-#include <Core/BRMerkleBlock.h>
+#include <BRMerkleBlock.h>
+#include <BRArray.h>
+#include <BRMerkleBlock.h>
 
 #include <boost/scoped_ptr.hpp>
 
@@ -31,16 +31,16 @@ namespace Elastos {
 			ByteStream stream(msg);
 
 			PeerManager *manager = _peer->GetPeerManager();
-			MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(manager->GetPluginType()));
+			MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(manager->GetChainID()));
 
 			if (block == nullptr) {
-				_peer->error("create merkle block pointer with type {} fail", manager->GetPluginType());
+				_peer->error("create merkle block pointer with type fail");
 				return false;
 			}
 
 			if (!block->Deserialize(stream)) {
 				_peer->debug("merkle block orignal data: {}", msg.getHex());
-				_peer->error("merkle block deserialize with type {} fail", manager->GetPluginType());
+				_peer->error("merkle block deserialize with type fail");
 				return false;
 			}
 

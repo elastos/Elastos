@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_CHAINPARAMS_H__
 #define __ELASTOS_SDK_CHAINPARAMS_H__
 
-#include <SDK/Common/uint256.h>
+#include <Common/uint256.h>
 
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -15,40 +15,23 @@ namespace Elastos {
 
 		class CheckPoint {
 		public:
-			CheckPoint() :
-				_height(0),
-				_timestamp(0),
-				_target(0)
-			{ }
+			CheckPoint();
 
-			CheckPoint(uint32_t height, const std::string &hash, time_t timestamp, uint32_t target) :
-				_height(height),
-				_timestamp(timestamp),
-				_target(target) {
-				_hash.SetHex(hash);
-			}
+			CheckPoint(uint32_t height, const std::string &hash, time_t timestamp, uint32_t target);
 
-			CheckPoint(const CheckPoint &checkPoint) {
-				this->operator=(checkPoint);
-			}
+			CheckPoint(const CheckPoint &checkPoint);
 
-			~CheckPoint() {}
+			~CheckPoint();
 
-			CheckPoint &operator=(const CheckPoint &checkpoint) {
-				_height = checkpoint._height;
-				_hash = checkpoint._hash;
-				_timestamp = checkpoint._timestamp;
-				_target = checkpoint._target;
-				return *this;
-			}
+			CheckPoint &operator=(const CheckPoint &checkpoint);
 
-			const uint32_t &Height() const { return _height; }
+			const uint32_t &Height() const;
 
-			const uint256 &Hash() const { return _hash; }
+			const uint256 &Hash() const;
 
-			const time_t &Timestamp() const { return _timestamp; }
+			const time_t &Timestamp() const;
 
-			const uint32_t &Target() const { return _target; }
+			const uint32_t &Target() const;
 
 		private:
 			uint32_t _height;
@@ -59,48 +42,34 @@ namespace Elastos {
 
 		class ChainParams {
 		public:
-			ChainParams() :
-				_standardPort(0),
-				_magicNumber(0),
-				_services(0),
-				_targetTimeSpan(0),
-				_targetTimePerBlock(0)
-			{ }
+			ChainParams();
 
-			ChainParams(const ChainParams &chainParams) {
-				this->operator=(chainParams);
-			}
+			ChainParams(uint16_t standardPort, uint32_t magic,
+				const std::vector<std::string> &dnsSeeds, const std::vector<CheckPoint> &checkpoints);
 
-			~ChainParams() {}
+			ChainParams(const ChainParams &chainParams);
 
-			ChainParams &operator=(const ChainParams &params) {
-				_dnsSeeds = params._dnsSeeds;
-				_checkpoints = params._checkpoints;
-				_standardPort = params._standardPort;
-				_magicNumber = params._magicNumber;
-				_services = params._services;
-				_targetTimeSpan = params._targetTimeSpan;
-				_targetTimePerBlock = params._targetTimePerBlock;
-				return *this;
-			}
+			~ChainParams();
 
-			const std::vector<std::string> &DNSSeeds() const { return _dnsSeeds; }
+			ChainParams &operator=(const ChainParams &params);
 
-			const CheckPoint &LastCheckpoint() const { return _checkpoints.back(); }
+			const std::vector<std::string> &DNSSeeds() const;
 
-			const CheckPoint &FirstCheckpoint() const { return _checkpoints.front(); }
+			const CheckPoint &LastCheckpoint() const;
 
-			const std::vector<CheckPoint> &Checkpoints() const { return _checkpoints; }
+			const CheckPoint &FirstCheckpoint() const;
 
-			const uint32_t &MagicNumber()  const { return _magicNumber; }
+			const std::vector<CheckPoint> &Checkpoints() const;
 
-			const uint16_t &StandardPort() const { return _standardPort; }
+			const uint32_t &MagicNumber() const;
 
-			const uint64_t &Services() const { return _services; }
+			const uint16_t &StandardPort() const;
 
-			const uint32_t &TargetTimeSpan() const { return _targetTimeSpan; }
+			const uint64_t &Services() const;
 
-			const uint32_t &TargetTimePerBlock() const { return _targetTimePerBlock; }
+			const uint32_t &TargetTimeSpan() const;
+
+			const uint32_t &TargetTimePerBlock() const;
 
 		private:
 			friend class Config;

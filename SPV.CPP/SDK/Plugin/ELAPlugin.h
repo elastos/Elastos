@@ -5,9 +5,9 @@
 #ifndef __ELASTOS_SDK_ELAPLUGIN_H__
 #define __ELASTOS_SDK_ELAPLUGIN_H__
 
-#include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Plugin/Interface/IPlugin.h>
+#include <Plugin/Block/MerkleBlock.h>
+#include <Plugin/Registry.h>
+#include <Plugin/Interface/IPlugin.h>
 
 #include <fruit/fruit.h>
 

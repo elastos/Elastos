@@ -5,6 +5,8 @@
 #include "Log.h"
 #include "ErrorChecker.h"
 
+#include <regex>
+
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -35,29 +37,25 @@ namespace Elastos {
 			CheckCondition(condition, err, msg, Exception::Type::InvalidArgument);
 		}
 
+		void ErrorChecker::CheckBigIntAmount(const std::string &amount) {
+			if (amount == "-1")
+				return;
+
+			for (size_t i = 0; i < amount.size(); ++i)
+				CheckCondition(!isdigit(amount[i]), Error::InvalidArgument, "invalid bigint amount: " + amount);
+		}
+
 		void ErrorChecker::CheckLogic(bool condition, Error::Code err, const std::string &msg) {
 			CheckCondition(condition, err, msg, Exception::Type::LogicError);
 		}
 
 		void ErrorChecker::CheckCondition(bool condition, Error::Code err, const std::string &msg,
-		                                  Exception::Type type) {
+		                                  Exception::Type type, bool enableLog) {
 			if (condition) {
 				nlohmann::json errJson = MakeErrorJson(err, msg);
 
-				Log::error(errJson.dump());
-
-				if (type == Exception::LogicError) {
-					throw std::logic_error(errJson.dump());
-				} else if (type == Exception::InvalidArgument) {
-					throw std::invalid_argument(errJson.dump());
-				}
-			}
-		}
-
-		void ErrorChecker::CheckCondition(bool condition, Error::Code err, const std::string &msg, const BigInt &data,
-		                                  Exception::Type type) {
-			if (condition) {
-				nlohmann::json errJson = MakeErrorJson(err, msg, data);
+				if (enableLog)
+					Log::error(errJson.dump());
 
 				if (type == Exception::LogicError) {
 					throw std::logic_error(errJson.dump());
@@ -96,32 +94,9 @@ namespace Elastos {
 			               msg + " json array size expect at least " + std::to_string(count), Exception::LogicError);
 		}
 
-		void ErrorChecker::CheckPathExists(const boost::filesystem::path &path) {
+		void ErrorChecker::CheckPathExists(const boost::filesystem::path &path, bool enableLog) {
 			CheckCondition(!boost::filesystem::exists(path), Error::PathNotExist,
-			               "Path '" + path.string() + "' do not exist");
-		}
-
-		void ErrorChecker::CheckPubKeyJsonArray(const nlohmann::json &jsonArray, size_t checkCount,
-		                                        const std::string &msg) {
-
-			CheckJsonArray(jsonArray, checkCount, msg + " pubkey");
-
-			for (nlohmann::json::const_iterator it = jsonArray.begin(); it != jsonArray.end(); ++it) {
-				ErrorChecker::CheckParam(!(*it).is_string(), Error::PubKeyFormat, msg + " is not string");
-
-				std::string pubKey = (*it).get<std::string>();
-
-				// TODO fix here later
-				ErrorChecker::CheckCondition(pubKey.find("xpub") != -1, Error::PubKeyFormat,
-				                             msg + " public key is not support xpub");
-
-				ErrorChecker::CheckCondition(pubKey.length() != 33 * 2 && pubKey.length() != 65 * 2,
-				                             Error::PubKeyLength, "Public key length should be 33 or 65 bytes");
-				for (nlohmann::json::const_iterator it1 = it + 1; it1 != jsonArray.end(); ++it1) {
-					ErrorChecker::CheckParam(pubKey == (*it1).get<std::string>(),
-					                         Error::PubKeyFormat, msg + " contain the same");
-				}
-			}
+			               "Path '" + path.string() + "' do not exist", Exception::LogicError, enableLog);
 		}
 
 		void ErrorChecker::CheckPrivateKey(const std::string &key) {
@@ -131,6 +106,12 @@ namespace Elastos {
 
 			ErrorChecker::CheckCondition(key.length() != 32 * 2, Error::InvalidArgument,
 			                             "Private key length should be 32 bytes");
+		}
+
+		void ErrorChecker::CheckInternetDate(const std::string &date) {
+			std::regex reg = std::regex("(\\d{4})-(0\\d{1}|1[0-2])-(0\\d{1}|[12]\\d{1}|3[01])T(0\\d{1}|1\\d{1}|2[0-3]):[0-5]\\d{1}:([0-5]\\d{1}Z)");
+			ErrorChecker::CheckParam(!std::regex_match(date, reg), Error::InvalidArgument,
+			                         "date format is error. such as 2019-01-01T19:20:18Z");
 		}
 
 	}

@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_ATTRIBUTE_H__
 #define __ELASTOS_SDK_ATTRIBUTE_H__
 
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -57,6 +57,7 @@ namespace Elastos {
 		};
 
 		typedef boost::shared_ptr<Attribute> AttributePtr;
+		typedef std::vector<AttributePtr> AttributeArray;
 
 	}
 }

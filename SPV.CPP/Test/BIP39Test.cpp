@@ -4,13 +4,11 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
+#include <catch.hpp>
 
-#include <SDK/WalletCore/BIPs/BIP39.h>
-#include <SDK/WalletCore/BIPs/Mnemonic.h>
-#include <SDK/Common/Log.h>
-
-#include <boost/algorithm/string/split.hpp>
+#include <WalletCore/BIP39.h>
+#include <WalletCore/WordLists/Chinese.h>
+#include <Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -28,36 +26,19 @@ TEST_CASE("BIP39 test", "[BIP39]") {
 	}
 
 	SECTION("Decode mnemonic") {
-		std::fstream infile("Data/mnemonic_chinese.txt");
-		std::string line;
-		std::vector<std::string> dictionary;
 		std::string mnemonic = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
 
-		while (std::getline(infile, line)) {
-			dictionary.push_back(line);
-		}
-
-		REQUIRE(dictionary.size() == 2048);
-
-		bytes_t entropy = BIP39::Decode(dictionary, mnemonic);
-
+		REQUIRE(ChineseWordLists.size() == 2048);
+		bytes_t entropy = BIP39::Decode(ChineseWordLists, mnemonic);
 		REQUIRE("e9b2c1aa5a85467099067cdb5a44f2ac" == entropy.getHex());
 	}
 
 	SECTION("Encode mnemonic") {
-		std::fstream infile("Data/mnemonic_chinese.txt");
-		std::string line;
-		std::vector<std::string> dictionary;
 		std::string mnemonic = "闲 齿 兰 丹 请 毛 训 胁 浇 摄 县 诉";
 
-		while (std::getline(infile, line)) {
-			dictionary.push_back(line);
-		}
-
-		REQUIRE(dictionary.size() == 2048);
-
+		REQUIRE(ChineseWordLists.size() == 2048);
 		bytes_t entropy("e9b2c1aa5a85467099067cdb5a44f2ac");
-		std::string result = BIP39::Encode(dictionary, entropy);
+		std::string result = BIP39::Encode(ChineseWordLists, entropy);
 		REQUIRE(result == mnemonic);
 	}
 

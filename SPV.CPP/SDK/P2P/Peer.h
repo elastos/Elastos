@@ -8,9 +8,9 @@
 #include "PeerInfo.h"
 #include "Message/Message.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ElementSet.h>
-#include <SDK/Common/uint256.h>
+#include <Common/Log.h>
+#include <Common/ElementSet.h>
+#include <Common/uint256.h>
 
 #include <deque>
 #include <boost/shared_ptr.hpp>
@@ -40,6 +40,7 @@ namespace Elastos {
 
 #define time_after(a,b)  ((long)(b) - (long)(a) < 0)
 #define PEER_DEBUG(p, ...) 	SPVLOG_DEBUG("{} {}:{} " __va_first(__VA_ARGS__, NULL), (p)->GetPeerManager()->GetID(), (p)->GetHost(), (p)->GetPort(), __va_rest(__VA_ARGS__, NULL))
+#define PEER_INFO(p, ...) 	SPVLOG_INFO("{} {}:{} " __va_first(__VA_ARGS__, NULL), (p)->GetPeerManager()->GetID(), (p)->GetHost(), (p)->GetPort(), __va_rest(__VA_ARGS__, NULL))
 
 
 		class Peer : public boost::enable_shared_from_this<Peer> {
@@ -110,6 +111,14 @@ namespace Elastos {
 			uint64_t GetTimestamp() const;
 
 			void SetTimestamp(uint64_t timestamp);
+
+			time_t GetDownloadStartTime() const;
+
+			void ScheduleDownloadStartTime();
+
+			uint32_t GetDownloadBytes() const;
+
+			void SetDownloadBytes(uint32_t bytes);
 
 			uint64_t GetServices() const;
 
@@ -356,6 +365,8 @@ namespace Elastos {
 			std::string _useragent;
 			uint32_t _version, _lastblock, _earliestKeyTime, _currentBlockHeight;
 			double _startTime, _pingTime;
+			uint64_t _downloadStartTime; // millisecond
+			uint32_t _downloadBytes;
 			volatile double _disconnectTime, _mempoolTime;
 			bool _sentVerack, _gotVerack, _sentGetaddr, _sentFilter, _sentGetdata, _sentMempool, _sentGetblocks;
 			uint256 _lastBlockHash;

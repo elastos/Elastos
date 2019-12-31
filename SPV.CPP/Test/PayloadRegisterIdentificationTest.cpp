@@ -4,10 +4,10 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
-#include <SDK/Plugin/Transaction/Payload/RegisterIdentification.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
+#include <catch.hpp>
+#include <Plugin/Transaction/Payload/RegisterIdentification.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 

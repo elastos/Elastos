@@ -4,7 +4,7 @@
 
 #include "ELAMerkleBlock.h"
 
-#include <SDK/Common/Utils.h>
+#include <Common/Utils.h>
 
 #include <cstring>
 #include <cstdlib>
@@ -41,6 +41,7 @@ namespace Elastos {
 			if (block->flags) free(block->flags);
 
 			delete elablock;
+			elablock = nullptr;
 		}
 
 		ELAMerkleBlock &ELAMerkleBlock::operator=(const ELAMerkleBlock &orig) {

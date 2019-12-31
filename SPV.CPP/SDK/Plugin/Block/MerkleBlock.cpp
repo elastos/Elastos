@@ -4,15 +4,15 @@
 
 #include "MerkleBlock.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/hash.h>
+#include <Common/Log.h>
+#include <Plugin/Registry.h>
+#include <Common/Utils.h>
+#include <Common/hash.h>
 
-#include <Core/BRCrypto.h>
-#include <Core/BRMerkleBlock.h>
-#include <Core/BRMerkleBlock.h>
-#include <Core/BRMerkleBlock.h>
+#include <BRCrypto.h>
+#include <BRMerkleBlock.h>
+#include <BRMerkleBlock.h>
+#include <BRMerkleBlock.h>
 
 #define MAX_PROOF_OF_WORK 0xff7fffff    // highest value for difficulty _target
 

@@ -9,11 +9,11 @@
 #include "TransactionPeerList.h"
 #include "PublishedTransaction.h"
 
-#include <SDK/Common/Lockable.h>
-#include <SDK/WalletCore/BIPs/BloomFilter.h>
-#include <SDK/Plugin/Interface/IMerkleBlock.h>
-#include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Plugin/Registry.h>
+#include <Common/Lockable.h>
+#include <WalletCore/BloomFilter.h>
+#include <Plugin/Interface/IMerkleBlock.h>
+#include <Plugin/Block/MerkleBlock.h>
+#include <Plugin/Registry.h>
 
 #include <string>
 #include <vector>
@@ -46,27 +46,22 @@ namespace Elastos {
 
 				virtual ~Listener() {}
 
-				// func syncStarted()
 				virtual void syncStarted() = 0;
 
-				virtual void syncProgress(uint32_t currentHeight, uint32_t estimateHeight, time_t lastBlockTime) = 0;
+				virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) = 0;
 
-				// func syncStopped(_ error: BRPeerManagerError?)
 				virtual void syncStopped(const std::string &error) = 0;
 
-				// func txStatusUpdate()
 				virtual void txStatusUpdate() = 0;
 
-				// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
 				virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) = 0;
 
-				// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 				virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers) = 0;
 
-				// func networkIsReachable() -> Bool}
+				virtual void saveBlackPeer(const PeerInfo &peer) = 0;
+
 				virtual bool networkIsReachable() = 0;
 
-				// Called on publishTransaction
 				virtual void txPublished(const std::string &hash, const nlohmann::json &result) = 0;
 
 				virtual void connectStatusChanged(const std::string &status) = 0;
@@ -79,8 +74,10 @@ namespace Elastos {
 						uint32_t reconnectSeconds,
 						const std::vector<MerkleBlockPtr> &blocks,
 						const std::vector<PeerInfo> &peers,
+						const std::set<PeerInfo> &blackPeers,
 						const boost::shared_ptr<Listener> &listener,
-						const PluginType &plugin);
+						const std::string &chainID,
+						const std::string &netType);
 
 			~PeerManager();
 
@@ -131,17 +128,13 @@ namespace Elastos {
 
 			bool GetReconnectEnableStatus() const;
 
-			void SetFixedPeer(uint128 address, uint16_t port);
-
-			void SetFixedPeers(const std::vector<PeerInfo> &peers);
-
-			bool UseFixedPeer(const std::string &node, int port);
+			bool SetFixedPeer(const std::string &address, uint16_t port);
 
 			std::string GetCurrentPeerName() const;
 
 			std::string GetDownloadPeerName() const;
 
-			const PeerPtr GetDownloadPeer() const;
+			PeerPtr GetDownloadPeer() const;
 
 			size_t GetPeerCount() const;
 
@@ -151,7 +144,7 @@ namespace Elastos {
 
 			uint64_t GetRelayCount(const uint256 &txHash) const;
 
-			const PluginType &GetPluginType() const;
+			const std::string &GetChainID() const;
 
 			const std::vector<PeerInfo> &GetPeers() const;
 
@@ -190,7 +183,7 @@ namespace Elastos {
 		private:
 			void FireSyncStarted();
 
-			void FireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
+			void FireSyncProgress(double progress, const PeerPtr &peer, const MerkleBlockPtr &block);
 
 			void FireSyncStopped(int error);
 
@@ -199,6 +192,8 @@ namespace Elastos {
 			void FireSaveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
 			void FireSavePeers(bool replace, const std::vector<PeerInfo> &peers);
+
+			void FireSaveBlackPeer(const PeerInfo &peer);
 
 			bool FireNetworkIsReachable();
 
@@ -269,12 +264,14 @@ namespace Elastos {
 
 			void ReconnectLaster(time_t seconds);
 
+			double GetSyncProgressInternal(uint32_t startHeight);
+
 		private:
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount;
 			bool _syncSucceeded, _needGetAddr, _enableReconnect;
 
 			std::vector<PeerInfo> _peers;
-			std::vector<PeerInfo> _fiexedPeers;
+			std::set<PeerInfo> _blackPeers;
 			PeerInfo _fixedPeer;
 
 			std::vector<PeerPtr> _connectedPeers;
@@ -287,14 +284,15 @@ namespace Elastos {
 			BloomFilterPtr _bloomFilter;
 			double _fpRate, _averageTxPerBlock;
 			BlockSet _blocks;
-			std::set<MerkleBlockPtr> _orphans;
+			BlockSet _orphans;
 			BlockSet _checkpoints;
 			MerkleBlockPtr _lastBlock, _lastOrphan;
 			std::vector<TransactionPeerList> _txRelays, _txRequests;
 			std::vector<PublishedTransaction> _publishedTx;
 			std::vector<uint256> _publishedTxHashes;
 
-			PluginType _pluginType;
+			std::string _chainID;
+			std::string _netType;
 			WalletPtr _wallet;
 			ChainParamsPtr _chainParams;
 

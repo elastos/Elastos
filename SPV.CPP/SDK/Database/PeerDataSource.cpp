@@ -4,8 +4,8 @@
 
 #include "PeerDataSource.h"
 
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/ErrorChecker.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
 
 #include <sstream>
 
@@ -25,112 +25,174 @@ namespace Elastos {
 		PeerDataSource::~PeerDataSource() {
 		}
 
-		bool PeerDataSource::PutPeer(const std::string &iso, const PeerEntity &peerEntity) {
-			return DoTransaction([&iso, &peerEntity, this]() {
-				this->PutPeerInternal(iso, peerEntity);
+		bool PeerDataSource::PutPeer(const PeerEntity &peerEntity) {
+			return DoTransaction([&peerEntity, this]() {
+				return this->PutPeerInternal(peerEntity);
 			});
 		}
 
-		bool PeerDataSource::PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
+		bool PeerDataSource::PutPeers(const std::vector<PeerEntity> &peerEntities) {
 			if (peerEntities.empty())
 				return true;
 
-			return DoTransaction([&iso, &peerEntities, this] {
+			return DoTransaction([&peerEntities, this] {
 				for (size_t i = 0; i < peerEntities.size(); ++i) {
-					this->PutPeerInternal(iso, peerEntities[i]);
+					if (!this->PutPeerInternal(peerEntities[i]))
+						return false;
 				}
+
+				return true;
 			});
 		}
 
-		bool PeerDataSource::PutPeerInternal(const std::string &iso, const PeerEntity &peerEntity) {
-			std::stringstream ss;
+		bool PeerDataSource::PutPeerInternal(const PeerEntity &peerEntity) {
+			std::string sql;
 
-			ss << "INSERT INTO " << PEER_TABLE_NAME << " (" <<
-			   PEER_ADDRESS << "," <<
-			   PEER_PORT << "," <<
-			   PEER_TIMESTAMP << "," <<
-			   PEER_ISO <<
-			   ") VALUES (?, ?, ?, ?);";
+			sql = "INSERT INTO " + PEER_TABLE_NAME + " (" + PEER_ADDRESS + "," + PEER_PORT + "," +
+				  PEER_TIMESTAMP + "," + PEER_ISO + ") VALUES (?, ?, ?, ?);";
 
 			sqlite3_stmt *stmt;
-			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
-										 "Prepare sql " + ss.str());
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}" + sql);
+				return false;
+			}
 
-			_sqlite->BindBlob(stmt, 1, peerEntity.address.begin(), peerEntity.address.size(), nullptr);
-			_sqlite->BindInt(stmt, 2, peerEntity.port);
-			_sqlite->BindInt64(stmt, 3, peerEntity.timeStamp);
-			_sqlite->BindText(stmt, 4, iso, nullptr);
+			if (!_sqlite->BindBlob(stmt, 1, peerEntity.address.begin(), peerEntity.address.size(), nullptr) ||
+				!_sqlite->BindInt(stmt, 2, peerEntity.port) ||
+				!_sqlite->BindInt64(stmt, 3, peerEntity.timeStamp) ||
+				!_sqlite->BindText(stmt, 4, "", nullptr)) {
+				Log::error("bind args");
+			}
 
-			_sqlite->Step(stmt);
+			if (SQLITE_DONE != _sqlite->Step(stmt)) {
+				Log::error("step");
+			}
 
-			_sqlite->Finalize(stmt);
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Peer put finalize");
+				return false;
+			}
 
 			return true;
 		}
 
-		bool PeerDataSource::DeletePeer(const std::string &iso, const PeerEntity &peerEntity) {
-			return DoTransaction([&iso, &peerEntity, this]() {
-				std::stringstream ss;
+		bool PeerDataSource::DeletePeer(const PeerEntity &peerEntity) {
+			return DoTransaction([&peerEntity, this]() {
+				std::string sql;
 
-				ss << "DELETE FROM " << PEER_TABLE_NAME <<
-				   " WHERE " << PEER_COLUMN_ID << " = " << peerEntity.id << ";";
+				sql = "DELETE FROM " + PEER_TABLE_NAME + " WHERE " + PEER_ADDRESS + " = ? AND " + PEER_PORT + " = ?;";
 
-				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
-											 "Exec sql " + ss.str());
+				sqlite3_stmt *stmt;
+				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+					Log::error("prepare sql: {}", sql);
+					return false;
+				}
+
+				if (!_sqlite->BindBlob(stmt, 1, peerEntity.address.begin(), peerEntity.address.size(), nullptr) ||
+					!_sqlite->BindInt(stmt, 2, peerEntity.port)) {
+					Log::error("bind args");
+				}
+
+				if (SQLITE_DONE != _sqlite->Step(stmt)) {
+					Log::error("step");
+				}
+
+				if (!_sqlite->Finalize(stmt)) {
+					Log::error("Peer delete finalize");
+					return false;
+				}
+
+				return true;
 			});
 		}
 
 		bool PeerDataSource::DeleteAllPeers() {
 			return DoTransaction([this]() {
-				std::stringstream ss;
 
-				ss << "DELETE FROM " << PEER_TABLE_NAME << ";";
+				std::string sql = "DELETE FROM " + PEER_TABLE_NAME + ";";
 
-				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
-											 "Exec sql " + ss.str());
+				if (!_sqlite->exec(sql, nullptr, nullptr)) {
+					Log::error("exec sql: {}", sql);
+					return false;
+				}
+
+				return true;
 			});
 		}
 
-		std::vector<PeerEntity> PeerDataSource::GetAllPeers(const std::string &iso) const {
+		bool PeerDataSource::Contain(const PeerEntity &entity) const {
+			bool contain = false;
+
+			std::string sql;
+
+			sql = "SELECT " +
+				  PEER_ADDRESS + "," +
+				  PEER_PORT +
+				  " FROM " + PEER_TABLE_NAME +
+				  " WHERE " + PEER_ADDRESS + " = ? AND " + PEER_PORT + " = ?;";
+
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}" + sql);
+				return false;
+			}
+
+			if (!_sqlite->BindBlob(stmt, 1, entity.address.begin(), entity.address.size(), nullptr) ||
+				!_sqlite->BindInt(stmt, 2, entity.port)) {
+				Log::error("bind args");
+			}
+
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
+				contain = true;
+			}
+
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Peer contain finalize");
+				return false;
+			}
+
+			return contain;
+		}
+
+		std::vector<PeerEntity> PeerDataSource::GetAllPeers() const {
 			std::vector<PeerEntity> peers;
 
-			DoTransaction([&peers, this]() {
-				PeerEntity peer;
-				std::stringstream ss;
+			PeerEntity peer;
+			std::string sql;
 
-				ss << "SELECT " <<
-				   PEER_COLUMN_ID << ", " <<
-				   PEER_ADDRESS << ", " <<
-				   PEER_PORT << ", " <<
-				   PEER_TIMESTAMP <<
-				   " FROM " << PEER_TABLE_NAME << ";";
+			sql = "SELECT " + PEER_COLUMN_ID + ", " + PEER_ADDRESS + ", " + PEER_PORT + ", " +
+				  PEER_TIMESTAMP + " FROM " + PEER_TABLE_NAME + ";";
 
-				sqlite3_stmt *stmt;
-				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
-											 "Prepare sql " + ss.str());
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return {};
+			}
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					// id
-					peer.id = _sqlite->ColumnInt(stmt, 0);
+			while (SQLITE_ROW == _sqlite->Step(stmt)) {
+				// id
+				peer.id = _sqlite->ColumnInt(stmt, 0);
 
-					// address
-					const uint8_t *paddr = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
-					size_t len = _sqlite->ColumnBytes(stmt, 1);
-					assert(len == peer.address.size());
-					len = len <= peer.address.size() ? len : peer.address.size();
-					memcpy(peer.address.begin(), paddr, len);
+				// address
+				const uint8_t *paddr = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
+				size_t len = _sqlite->ColumnBytes(stmt, 1);
+				assert(len == peer.address.size());
+				len = len <= peer.address.size() ? len : peer.address.size();
+				memcpy(peer.address.begin(), paddr, len);
 
-					// port
-					peer.port = _sqlite->ColumnInt(stmt, 2);
+				// port
+				peer.port = _sqlite->ColumnInt(stmt, 2);
 
-					// timestamp
-					peer.timeStamp = _sqlite->ColumnInt64(stmt, 3);
+				// timestamp
+				peer.timeStamp = _sqlite->ColumnInt64(stmt, 3);
 
-					peers.push_back(peer);
-				}
+				peers.push_back(peer);
+			}
 
-				_sqlite->Finalize(stmt);
-			});
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Peer get all finalize");
+				return {};
+			}
 
 			return peers;
 		}
@@ -139,26 +201,27 @@ namespace Elastos {
 			_sqlite->flush();
 		}
 
-		size_t PeerDataSource::GetAllPeersCount(const std::string &iso) const {
+		size_t PeerDataSource::GetAllPeersCount() const {
 			size_t count = 0;
 
-			DoTransaction([&count, this]() {
-				std::stringstream ss;
+			std::string sql;
 
-				ss << "SELECT " <<
-				   " COUNT(" << PEER_COLUMN_ID << ") AS nums " <<
-				   " FROM " << PEER_TABLE_NAME << ";";
+			sql = "SELECT COUNT(" + PEER_COLUMN_ID + ") AS nums FROM " + PEER_TABLE_NAME + ";";
 
-				sqlite3_stmt *stmt;
-				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
-											 "Prepare sql " + ss.str());
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return 0;
+			}
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					count = (uint32_t) _sqlite->ColumnInt(stmt, 0);
-				}
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
+				count = (uint32_t) _sqlite->ColumnInt(stmt, 0);
+			}
 
-				_sqlite->Finalize(stmt);
-			});
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Peer get all count finalize");
+				return 0;
+			}
 
 			return count;
 		}

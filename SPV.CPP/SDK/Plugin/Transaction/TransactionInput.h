@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONINPUT_H__
 #define __ELASTOS_SDK_TRANSACTIONINPUT_H__
 
-#include <SDK/Common/ByteStream.h>
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <Common/ByteStream.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
 
 #include <nlohmann/json.hpp>
 

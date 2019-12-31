@@ -8,26 +8,28 @@
 #include "TransactionInput.h"
 #include "TransactionOutput.h"
 #include "Transaction.h"
-#include "SDK/Plugin/Transaction/Payload/CoinBase.h"
-#include "SDK/Plugin/Transaction/Payload/RechargeToSideChain.h"
-#include "SDK/Plugin/Transaction/Payload/WithdrawFromSideChain.h"
-#include "SDK/Plugin/Transaction/Payload/Record.h"
-#include "SDK/Plugin/Transaction/Payload/RegisterAsset.h"
-#include "SDK/Plugin/Transaction/Payload/SideChainPow.h"
-#include "SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h"
-#include "SDK/Plugin/Transaction/Payload/TransferAsset.h"
-#include "SDK/Plugin/Transaction/Payload/RegisterIdentification.h"
-#include "SDK/Plugin/Transaction/Payload/ProducerInfo.h"
-#include "SDK/Plugin/Transaction/Payload/CancelProducer.h"
-#include "SDK/Plugin/Transaction/Payload/ReturnDepositCoin.h"
-#include "SDK/Plugin/Transaction/Payload/CRInfo.h"
-#include "SDK/Plugin/Transaction/Payload/UnregisterCR.h"
-#include <SDK/Wallet/UTXO.h>
+#include <Plugin/Transaction/Payload/CoinBase.h>
+#include <Plugin/Transaction/Payload/RechargeToSideChain.h>
+#include <Plugin/Transaction/Payload/WithdrawFromSideChain.h>
+#include <Plugin/Transaction/Payload/Record.h>
+#include <Plugin/Transaction/Payload/RegisterAsset.h>
+#include <Plugin/Transaction/Payload/SideChainPow.h>
+#include <Plugin/Transaction/Payload/TransferCrossChainAsset.h>
+#include <Plugin/Transaction/Payload/TransferAsset.h>
+#include <Plugin/Transaction/Payload/ProducerInfo.h>
+#include <Plugin/Transaction/Payload/CancelProducer.h>
+#include <Plugin/Transaction/Payload/ReturnDepositCoin.h>
+#include <Plugin/Transaction/Payload/CRInfo.h>
+#include <Plugin/Transaction/Payload/UnregisterCR.h>
+#include <Plugin/Transaction/Payload/CRCProposal.h>
+#include <Plugin/Transaction/Payload/CRCProposalReview.h>
+#include <Plugin/Transaction/Payload/CRCProposalTracking.h>
+#include <Wallet/UTXO.h>
+#include <Wallet/Wallet.h>
 
-#include <SDK/Common/Utils.h>
-#include <SDK/Wallet/Wallet.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
+#include <Common/hash.h>
 
 #include <boost/make_shared.hpp>
 #include <cstring>
@@ -45,13 +47,25 @@ namespace Elastos {
 				_blockHeight(TX_UNCONFIRMED),
 				_payloadVersion(0),
 				_fee(0),
-				_assetTableID(""),
 				_payload(nullptr),
 				_type(DEFAULT_PAYLOAD_TYPE),
 				_isRegistered(false),
 				_txHash(0),
 				_timestamp(0) {
-			InitPayloadFromType(_type);
+			_payload = InitPayload(_type);
+		}
+
+		Transaction::Transaction(uint8_t type, const PayloadPtr &payload) :
+			_version(TxVersion::Default),
+			_lockTime(TX_LOCKTIME),
+			_blockHeight(TX_UNCONFIRMED),
+			_payloadVersion(0),
+			_fee(0),
+			_type(type),
+			_isRegistered(false),
+			_txHash(0),
+			_timestamp(0),
+			_payload(payload) {
 		}
 
 		Transaction::Transaction(const Transaction &tx) {
@@ -61,7 +75,6 @@ namespace Elastos {
 		Transaction &Transaction::operator=(const Transaction &orig) {
 			_isRegistered = orig._isRegistered;
 			_txHash = orig.GetHash();
-			_assetTableID = orig._assetTableID;
 
 			_version = orig._version;
 			_lockTime = orig._lockTime;
@@ -72,7 +85,7 @@ namespace Elastos {
 			_payloadVersion = orig._payloadVersion;
 			_fee = orig._fee;
 
-			InitPayloadFromType(orig._type);
+			_payload = InitPayload(orig._type);
 
 			*_payload = *orig._payload;
 
@@ -135,25 +148,14 @@ namespace Elastos {
 			_version = version;
 		}
 
-		void Transaction::SetTransactionType(Type t, const PayloadPtr &payload) {
-			if (_type != t) {
-				_type = t;
-				if (payload != nullptr) {
-					_payload = payload;
-				} else {
-					InitPayloadFromType(_type);
-				}
-			}
-		}
-
-		Transaction::Type Transaction::GetTransactionType() const {
+		uint8_t Transaction::GetTransactionType() const {
 			return _type;
 		}
 
 		void Transaction::Reinit() {
 			Cleanup();
 			_type = DEFAULT_PAYLOAD_TYPE;
-			InitPayloadFromType(_type);
+			_payload = InitPayload(_type);
 
 			_version = TxVersion::Default;
 			_lockTime = TX_LOCKTIME;
@@ -282,12 +284,6 @@ namespace Elastos {
 			return txSize;
 		}
 
-//		size_t Transaction::GetSize() {
-//			ByteStream ostream;
-//			Serialize(ostream);
-//			return ostream.GetBytes().size();
-//		}
-
 		nlohmann::json Transaction::GetSignedInfo() const {
 			nlohmann::json info;
 			uint256 md = GetShaData();
@@ -299,7 +295,7 @@ namespace Elastos {
 		}
 
 		bool Transaction::IsSigned() const {
-			if (_type == Type::rechargeToSideChain || _type == Type::coinBase)
+			if (_type == rechargeToSideChain || _type == coinBase)
 				return true;
 
 			if (_programs.size() == 0)
@@ -316,7 +312,7 @@ namespace Elastos {
 		}
 
 		bool Transaction::IsCoinBase() const {
-			return _type == Type::coinBase;
+			return _type == coinBase;
 		}
 
 		bool Transaction::IsValid() const {
@@ -363,6 +359,10 @@ namespace Elastos {
 
 		IPayload *Transaction::GetPayload() {
 			return _payload.get();
+		}
+
+		const PayloadPtr &Transaction::GetPayloadPtr() const {
+			return _payload;
 		}
 
 		void Transaction::SetPayload(const PayloadPtr &payload) {
@@ -441,9 +441,7 @@ namespace Elastos {
 			ostream.WriteUint32(_lockTime);
 		}
 
-		bool Transaction::Deserialize(const ByteStream &istream, bool extend) {
-			Reinit();
-
+		bool Transaction::DeserializeType(const ByteStream &istream) {
 			uint8_t flagByte = 0;
 			if (!istream.ReadByte(flagByte)) {
 				Log::error("deserialize flag byte error");
@@ -452,21 +450,28 @@ namespace Elastos {
 
 			if (flagByte >= TxVersion::V09) {
 				_version = static_cast<TxVersion>(flagByte);
-				uint8_t txType = 0;
-				if (!istream.ReadByte(txType)) {
+				if (!istream.ReadByte(_type)) {
 					Log::error("deserialize type error");
 					return false;
 				}
-				_type = static_cast<Type>(txType);
 			} else {
 				_version = TxVersion::Default;
-				_type = static_cast<Type>(flagByte);
+				_type = flagByte;
+			}
+			return true;
+		}
+
+		bool Transaction::Deserialize(const ByteStream &istream, bool extend) {
+			Reinit();
+
+			if (!DeserializeType(istream)) {
+				return false;
 			}
 
 			if (!istream.ReadByte(_payloadVersion))
 				return false;
 
-			InitPayloadFromType(_type);
+			_payload = InitPayload(_type);
 
 			if (_payload == nullptr) {
 				Log::error("new _payload with _type={} when deserialize error", _type);
@@ -573,7 +578,7 @@ namespace Elastos {
 			}
 			j["Inputs"] = inputsJson;
 
-			j["Type"] = (uint8_t) _type;
+			j["Type"] = _type;
 			j["PayloadVersion"] = _payloadVersion;
 			j["PayLoad"] = _payload->ToJson(_payloadVersion);
 
@@ -619,9 +624,9 @@ namespace Elastos {
 					_inputs.push_back(input);
 				}
 
-				_type = Type(j["Type"].get<uint8_t>());
+				_type = j["Type"].get<uint8_t>();
 				_payloadVersion = j["PayloadVersion"];
-				InitPayloadFromType(_type);
+				_payload = InitPayload(_type);
 
 				if (_payload == nullptr) {
 					Log::error("_payload is nullptr when convert from json");
@@ -697,9 +702,9 @@ namespace Elastos {
 				TransactionPtr tx = wallet->TransactionForHash((*in)->TxHash());
 				if (tx) {
 					const OutputPtr o = tx->OutputOfIndex((*in)->Index());
-					if (o && wallet->ContainsAddress(o->Addr()) && !wallet->IsVoteDepositAddress(o->Addr())) {
+					if (o && wallet->ContainsAddress(o->Addr()) && !wallet->IsDepositAddress(o->Addr())) {
 						const BigInt &spentAmount = o->Amount();
-						addr = o->Addr().String();
+						addr = o->Addr()->String();
 
 						if (detail) {
 							if (inputList.find(addr) == inputList.end()) {
@@ -717,7 +722,7 @@ namespace Elastos {
 					UTXOPtr cb = wallet->CoinBaseTxForHash((*in)->TxHash());
 					if (cb && cb->Index() == (*in)->Index()) {
 						const BigInt &spentAmount = cb->Output()->Amount();
-						addr = Address(cb->Output()->ProgramHash()).String();
+						addr = cb->Output()->Addr()->String();
 
 						if (detail) {
 							if (inputList.find(addr) == inputList.end()) {
@@ -744,7 +749,7 @@ namespace Elastos {
 			std::map<std::string, BigInt> outputList;
 			for (OutputArray::iterator o = _outputs.begin(); o != _outputs.end(); ++o) {
 				const BigInt &oAmount = (*o)->Amount();
-				addr = (*o)->Addr().String();
+				addr = (*o)->Addr()->String();
 
 				if ((*o)->GetType() == TransactionOutput::VoteOutput) {
 					outputPayload = (*o)->GetPayload()->ToJson();
@@ -753,7 +758,7 @@ namespace Elastos {
 				}
 
 				containAddress = wallet->ContainsAddress((*o)->Addr());
-				if (containAddress && !wallet->IsVoteDepositAddress((*o)->Addr())) {
+				if (containAddress && !wallet->IsDepositAddress((*o)->Addr())) {
 					changeAmount += oAmount;
 				} else {
 					outputAmount += oAmount;
@@ -846,41 +851,49 @@ namespace Elastos {
 			return uint256(sha256(stream.GetBytes()));
 		}
 
-		void Transaction::InitPayloadFromType(Type type) {
+		PayloadPtr Transaction::InitPayload(uint8_t type) {
+			PayloadPtr payload = nullptr;
+
 			if (type == coinBase) {
-				_payload = PayloadPtr(new CoinBase());
+				payload = PayloadPtr(new CoinBase());
 			} else if (type == registerAsset) {
-				_payload = PayloadPtr(new RegisterAsset());
+				payload = PayloadPtr(new RegisterAsset());
 			} else if (type == transferAsset) {
-				_payload = PayloadPtr(new TransferAsset());
+				payload = PayloadPtr(new TransferAsset());
 			} else if (type == record) {
-				_payload = PayloadPtr(new Record());
+				payload = PayloadPtr(new Record());
 			} else if (type == deploy) {
 				//todo add deploy _payload
 				//_payload = boost::shared_ptr<PayloadDeploy>(new PayloadDeploy());
 			} else if (type == sideChainPow) {
-				_payload = PayloadPtr(new SideChainPow());
+				payload = PayloadPtr(new SideChainPow());
 			} else if (type == rechargeToSideChain) { // side chain payload
-				_payload = PayloadPtr(new RechargeToSideChain());
+				payload = PayloadPtr(new RechargeToSideChain());
 			} else if (type == withdrawFromSideChain) {
-				_payload = PayloadPtr(new WithdrawFromSideChain());
+				payload = PayloadPtr(new WithdrawFromSideChain());
 			} else if (type == transferCrossChainAsset) {
-				_payload = PayloadPtr(new TransferCrossChainAsset());
+				payload = PayloadPtr(new TransferCrossChainAsset());
 			} else if (type == registerProducer || type == updateProducer) {
-				_payload = PayloadPtr(new ProducerInfo());
+				payload = PayloadPtr(new ProducerInfo());
 			} else if (type == cancelProducer) {
-				_payload = PayloadPtr(new CancelProducer());
+				payload = PayloadPtr(new CancelProducer());
 			} else if (type == returnDepositCoin) {
-				_payload = PayloadPtr(new ReturnDepositCoin());
-			} else if (type == registerIdentification) { // ID chain payload
-				_payload = PayloadPtr(new RegisterIdentification());
+				payload = PayloadPtr(new ReturnDepositCoin());
 			} else if (type == registerCR || type == updateCR) {
-				_payload = PayloadPtr(new CRInfo());
+				payload = PayloadPtr(new CRInfo());
 			} else if (type == unregisterCR) {
-				_payload = PayloadPtr(new UnregisterCR());
+				payload = PayloadPtr(new UnregisterCR());
 			} else if (type == returnCRDepositCoin) {
-				_payload = PayloadPtr(new ReturnDepositCoin());
+				payload = PayloadPtr(new ReturnDepositCoin());
+			} else if (type == crcProposal) {
+				payload = PayloadPtr(new CRCProposal());
+			} else if (type == crcProposalReview) {
+				payload = PayloadPtr(new CRCProposalReview());
+			} else if (type == crcProposalTracking) {
+				payload = PayloadPtr(new CRCProposalTracking());
 			}
+
+			return payload;
 		}
 
 		void Transaction::Cleanup() {

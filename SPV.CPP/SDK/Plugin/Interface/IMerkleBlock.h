@@ -7,7 +7,7 @@
 
 #include "ELAMessageSerializable.h"
 
-#include <Core/BRInt.h>
+#include <BRInt.h>
 
 #include <boost/shared_ptr.hpp>
 

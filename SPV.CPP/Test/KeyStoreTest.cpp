@@ -6,16 +6,15 @@
 
 #include <catch.hpp>
 #include <nlohmann/json.hpp>
-#include <SDK/Account/Account.h>
-#include <SDK/Common/Log.h>
-#include <SDK/WalletCore/KeyStore/KeyStore.h>
-#include <SDK/WalletCore/BIPs/BIP39.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/Plugin/Transaction/Asset.h>
+#include <Account/Account.h>
+#include <Common/Log.h>
+#include <WalletCore/KeyStore.h>
+#include <WalletCore/BIP39.h>
+#include <WalletCore/Base58.h>
+#include <WalletCore/HDKeychain.h>
+#include <WalletCore/CoinInfo.h>
 
 #include <fstream>
-#include <boost/filesystem.hpp>
 
 using namespace Elastos::ElaWallet;
 
@@ -34,7 +33,6 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 
 			const ElaNewWalletJson &walletData = ks.WalletJson();
 			REQUIRE(!walletData.HasPassPhrase());
-			REQUIRE(walletData.PassPhrase().empty());
 			REQUIRE(walletData.Mnemonic() == mnemonic);
 			REQUIRE(walletData.GetM() == 1);
 			REQUIRE(walletData.GetN() == 1);
@@ -72,7 +70,6 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE_NOTHROW(ks.Import(keystoreJson, passwd));
 			const ElaNewWalletJson &walletData = ks.WalletJson();
 			REQUIRE(walletData.HasPassPhrase());
-			REQUIRE(walletData.PassPhrase().empty());
 			REQUIRE(walletData.Mnemonic() == mnemonic);
 			REQUIRE(walletData.GetM() == 1);
 			REQUIRE(walletData.GetN() == 1);
@@ -111,7 +108,6 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE(walletData.HasPassPhrase());
 			REQUIRE(walletData.Mnemonic().empty());
 			REQUIRE(walletData.xPrivKey().empty());
-			REQUIRE(walletData.PassPhrase().empty());
 			REQUIRE(walletData.GetM() == 1);
 			REQUIRE(walletData.GetN() == 1);
 
@@ -131,7 +127,7 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 
 		SECTION("multi sign keystore with private key and without passphrase") {
 			const std::string passwd = "s12345678";
-			const std::string addr = "8ZmSJ3Kz7nSmPBdXYmspYYHKqU11617ks5";
+			//const std::string addr = "8ZmSJ3Kz7nSmPBdXYmspYYHKqU11617ks5";
 			const std::string &mnemonic = "令 厘 选 健 爱 轨 烯 距 握 译 控 礼";
 			nlohmann::json keystoreJson = nlohmann::json::parse("{\"iv\":\"2ZKIcWrVmEPp3I2B/4WYcA==\",\"v\":1,\"iter\":10000,\"ks\":128,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"4+aks85XBtI=\",\"ct\":\"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\"}");
 
@@ -139,7 +135,6 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE_NOTHROW(ks.Import(keystoreJson, passwd));
 			const ElaNewWalletJson &walletData = ks.WalletJson();
 			REQUIRE(!walletData.HasPassPhrase());
-			REQUIRE(walletData.PassPhrase().empty());
 			REQUIRE(walletData.Mnemonic() == mnemonic);
 
 			REQUIRE(2 == walletData.GetM());
@@ -163,8 +158,8 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 				pubkeys.push_back(pubkey);
 			}
 			Address addr1(PrefixMultiSign, pubkeys, walletData.GetM());
-			REQUIRE(addr1.String() == addr);
-			REQUIRE(walletData.SingleAddress());
+			REQUIRE(!walletData.SingleAddress());
+			//REQUIRE(addr1.String() == addr);
 		}
 	}
 
@@ -177,10 +172,10 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 				"{\"adata\":\"\",\"cipher\":\"aes\",\"ct\":\"ugZV9gZlLiUiYZ0wCkxjP+/OFhoRF/bYtwEpBdilpIkhiNSvOgxjRX8R6wyT84gR809Sd/Stc3moH+zAEw1qgOKeLatz33r+H2K5OnpR1MIkflpYI2XFPZBt0+TckN/OsTq1v+QiFRlSLtdSJWdWS9o943nBxLc81x7HbcdPpGTaPAXUj6HNp1V5HW+qLdc9lUkL0EYPRZ//9VLJY9AdhuNhsOZxBokAVYy4qobQ1p4tWaj4v8/qYUMcokdKeDYZmsdY8r5wVPmHehACkBMAfPcNbzwS32M8wHq2WeNDie/oPmrKZLn74vYURweSBAUqF4x/QDbitJkc7aonSebx0qOvLhrJap5MtP8R19quGNqmT2Vb7aPsPTzdExrRPXJyZZ4s91iJYWYkq9+tSmWFGUdbMnJv8hlVKNfdxM/DzaBvwFyGgIR58VvESFOQwuPLCUEgUPQjjDhE31+CqQUwLH2SSDNE9lNgGGRzCKdyXFKIYbk3cF7/E1UzHXnt0gOBxneGCpqE+Qo4ChQ+4YNxdRdAwnrbYJbhxRvbEoCguGgiWnBmrJUODGBntM+OEQexNqJ9hoAPBezm4hrlAz274owPKhRnsjpZrJ43ChvVTiMUji6RpignlpV5mYcjD6dpU7tf3yeibD5tdhzb7vsBe3BLqW5x4z66H2JbLz542ts0qaMwpX0/SE3r7vTBsH5ZxrHYzObXbUqqKAUfyXhVfoDCC5Zm6CgaKhbuxZvtxaYnatNkwYCyS+ihy0By6LvNmFyZsDUGq3tiRAkpNRIxJSuzFbnYGNgvoGj9W6MNmbgwL5kUiHOTHd+jloVlmKkmGdTaxBAzgQoX8NyM35pR7zHc6dccuOQBT7IcEHA0QF4WXEwQR3lztX/zHYsWBSlnYn782suDBKtF2pmxW7vbLlylyn804Ni1HjaeRQYztZe5t2ld3Bum4rSIW7+tQux2jqNAitayEvxb4j2owPLbZwKEOwDik4JJG65smQ1FfwNkiusrWRNyjJgBlgZ5HchrPSwGY48Z8+J6oRRZOqJf4QyTfT7xwq0gYvUXBSQjj+ZtmZprToohO9N8RV928AEwHzUlFamS2a/DtZ03qMnXahKE4K5EophFIE0FbUXrxxbZYj2v3H7s7xoVoDAVIYwFyEhapmD69aglei0a8lcfuryB3a5OMirnW3BJblD8t8MfTncoeoRhT2qYhrDfU6/A+tL3ArKaVI9IM070gVTy24Co/gk1svfKdsnKDRq4x80aydpcuw9rilS+gbAHRcnts/vc9oqelLzChKFpGFRbkBgccKNFlO4bhPnwGFjfVc3seAw31zFOu3ixO42o8U1s1vlSyIMmroMnV4hE609FJlyQXK4I9htl8zrxx5J5u7DMjy3w0nWIckpz04+oSXujgaK9p/EYdIQDGQq0sQzoazeXxTxxTPNLWEf/chepgBnd3L+sxKRtQKTEksFSJqlasy4qMWo+IxEayFlRWNarUA60xWywCdEffNAqxxLRR/WoExXUuz2lZnpk3MbJ7ZkEP+CuiObfiJNt5dGkUkaEjyhakDv9Ug2iDulu1eDemMJipDflndNux2xXGKU2K3hOe2GfMxNcbWdq4ll44qx/uf+kqr/KYq4bxJ8+3uW8T85ORFKVU/RypRU884q+vGYlF9KpPlIxWUCA7pMtV3ClZ9YbWlfexKacL2VxZbVxsxAt4HS88PhPW4reafL3KY23Au9V07XZp9XKdu4EzM14OUzA0j8yYH52/X5iXEGD+sxrZogBtl3l4xAesO981spamZhjLdeBWUJnA6X1JY5MY++Vh4I7stvi0R0LQ4f3LjMXzCdCLDbrNchPtV8m/VlRXBxfw4OJ6FOxvkKEFqGBygOYH613cqa6HW/AlqwhTN42azUYBXMbUHPv3j23FiRrSzjg0OzEnkEVZ20yNn8B8JaKg+9UkWKOy9Gyqrz/LfMsIOs=\",\"iter\":10000,\"iv\":\"aknqq5k9rY7GfrIzSXLt1Q==\",\"ks\":128,\"mode\":\"ccm\",\"salt\":\"HoI5PkRT1Wc=\",\"ts\":64,\"v\":1}");
 
 			KeyStore ks;
-			REQUIRE_NOTHROW(ks.Import(keystoreJson, passwd));
+			REQUIRE_THROWS(ks.Import(keystoreJson, passwd));
+#if 0
 			const ElaNewWalletJson &walletData = ks.WalletJson();
 			REQUIRE(!walletData.HasPassPhrase());
-			REQUIRE(walletData.PassPhrase().empty());
 			REQUIRE(walletData.Mnemonic() == mnemonic);
 
 			REQUIRE(1 == walletData.GetM());
@@ -212,6 +207,7 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE(coinInfos[1]->GetVisibleAssets().size() == 1);
 			REQUIRE(coinInfos[1]->GetVisibleAssets()[0] == Asset::GetELAAssetID());
 			REQUIRE(!walletData.SingleAddress());
+#endif
 		}
 
 		SECTION("with private key and with passphrase") {
@@ -221,12 +217,12 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			nlohmann::json keystoreJson  = nlohmann::json::parse("{\"adata\":\"\",\"cipher\":\"aes\",\"ct\":\"W21+P8TWNznXpQlJlSqrbWMbZZof7rmDkwK0oTYPjqhVsUNf+PF3EhNPsLV7OSJOF7SwjCl0wB+6xEUjxXNcuqMBjQQJ4Mduv3APesxupdh2H43a56ZlAZV9wIT5Tk1YaUIlBsIqGgJ+ZTyHYohWj6V9+IH6mJSxRSwFhr9IHyL9Z6KQqc5AngLzMpRSC4zAnpDxZx/b4N5hqS0sm42MhgZxnXDC31100PR2Mzy/PFoAgcN7whT4eCsF3v2nJ/RG3BTrw9zz4sCuVwTH8vRs7qSB9KWKoNUsfG2qtGtidc8KPg5pwHZnZlqK69Yp9vifFlQEo4e9miMSzKRwce4sUe/lO1A7HCZt9Vq8lDJ1PerX8KMeLyy9fsqkjDpRhENs1Vopa6Xr08ksZn8YhcRWYc1p/K6tgI7gLoZpD+hG22HDdNHKY+HVskQsL5LhR5wQE609gPO2zs4JTK4TB6hwqD8zcfkDNJqIFs+3iqAmfyDH3TfXGDyrGkTIHUM5HjcVk4bECBv84lI4lX8y49yapwQdigXis93uSR4EAxBqHsmy9mCTIjUDjTcltJVwgsqt6zBrfJy0qR7/qzY9nR8dnOo6i2Ep3kfsf/MSHAhovtfRcXW6lwvDs3lKMDAnQqx1Py0+7irNYvdy4GfwPIopJgcoZEC5x2JhTnXaN0zk7b8XyGy9MImQQnzws6t0OEJLHLXYwZyMS/7+kx5XwsmSrEgFUVtSlx1Gcfj8RVzKjv8oADrh1obEo8eTjiHL1p2dE6dRH0hkgTsm/0sJz9FeNJqmOa8kTuYg6+8gEfmjiHLd/qFAb5sJg0WLThAIWNXGFoLSld/9e5tO1xBMjKrt1CtAUPq++Lo8q1uAmdZXnWkeUs2DTMGdPNdcDY88BpbKyYOlVh1Wq2n9hSjrBySANx+UVxJfyZXOwcmw23eKsNA31V0yhGvSO4ZgLsIgmgtbSWCRItX5XT6YG2GuCN8R3Jx5lE6rzoQrWzSZgGTooRTsw7T8qmVy6E8DLW1+OiZS5n5vyl0pI+dxDx75Yt23O34dh1nvJLmGN0oQEabA6qCXBxdgf/O0y319HgnjEusmoyqG4hs6GGQ+u8qxUviXMFreQAersgsNoF8Jo+24aRNHTq+fEcjOh5DFvSlYFh763Eu7GSqS2fLnIRrBW/4Y7WMdhdEbFxLueDAWdt0Nu4GXZsGLCUaAjGlzfEwgHxoBTca6/4HDeg7XbrbemKLU+KQFdfxU4zlLxJyR5zHRnRVMmFHQJf3nYkjYAuKkdgv9+nvqEfeX0Xn5/hdNgTAncDPfNKIt5NoJrMVyYGFjpnvRZZ4YxRW56+TK0OdTvVsc6Sp1gsnp4y3MkHNxvMktjZKPl2TPDi1diUUCoKqkP0pjADZSwxvo4vOWKLPKCivcREi0ID8TIVIJ+SM0jO6fcQ==\",\"iter\":10000,\"iv\":\"oD/5rjOJ8wQpv1jS8QH6kw==\",\"ks\":128,\"mode\":\"ccm\",\"salt\":\"iIjm5NrNxR0=\",\"ts\":64,\"v\":1}");
 
 			KeyStore ks;
-			REQUIRE_NOTHROW(ks.Import(keystoreJson, passwd));
+			REQUIRE_THROWS(ks.Import(keystoreJson, passwd));
 
+#if 0
 			const ElaNewWalletJson &walletData = ks.WalletJson();
 
 			REQUIRE(walletData.HasPassPhrase());
-			REQUIRE(walletData.PassPhrase().empty());
 			REQUIRE(walletData.Mnemonic() == mnemonic);
 
 			REQUIRE(1 == walletData.GetM());
@@ -254,6 +250,7 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE(coinInfos[0]->GetVisibleAssets().size() == 1);
 			REQUIRE(coinInfos[0]->GetVisibleAssets()[0] == Asset::GetELAAssetID());
 			REQUIRE(!walletData.SingleAddress());
+#endif
 		}
 
 		SECTION("with private key and with passphrase and single address") {
@@ -263,12 +260,12 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			nlohmann::json keystoreJson = nlohmann::json::parse("{\"adata\":\"\",\"cipher\":\"aes\",\"ct\":\"/17CPdZfIS+iT7SWtt0x7f4vsokkOad9tVoOxt9gt0IWf0347BNqTC02NnDEftlE6AzqLxMQ7TY3QSTK/iOKx7gQdYm+1qU1jDCFjrwFvs27KHWtfFrW3XHYkzk2XQiZ2pf/EoY4w3K0Z8L4fudr24btJYP6M+/IJews1atdWDmCd3/FonsRJEaQfeDMMr4nBif/0+fcMwbcRprWX+qxQrw3A/VSZp6vLHROG7VA4mKCxHUOryCofgbJfo9z/6bQQuXL6R4cYEUnYqn7fQAiv7SNv54AlcgiVhnfYDBl6mqUMrmvsX6pYSzQvst6p3a2PCWln5YkLDFEsHaxqtDeLSUZz7Z0VUCXnLXM103CoIXMZbHE5M1ILuF+tOomORy1po4Xk32cyH78h0Dnuz5qGXXPFc/NsZ9v1oXERUnVPhyYTQE+GMaehMSXEttdlZRg4vgSAwro3kgdt8o39ou81s4KPjv9PIowIuFDmT0VKFvM+QKj8MTUSVEQPCdJjsrg960AycVo00/YZpD2AJbNjSulouiizZ61B2TRIGa0afbAl5D8Mz9xRbbfje2Nfc81il+X2dSgT3DX4E/ZbVCFVHuWgbDYlcftq6YfGd231WkgZlCEYJQG6Ab2jiVHLe8yyz0jrVtz5BPueqKrtDbvVHDQ7g79J7UJvG33vdbtsSNczA+oBcxaHiJ1qoUmJyO2W4x3u8vv6mkP2/AWaFaNBHEheBJ3j9DU898766K0ElGZJky4pucZmyWsvJqteKUlohfGpTYlVUaRrXxIhIx2cWelYKrQTni6iDzfOP1N6WvYQlvCq8uAdsQHt6H7wbM5QTuJp22vdiIpFkhYLII5acxNATMHpHZMIrelTsaHr/dqEtSmvZOb0v/qlaPYsDovoLBeW4G5vx53Mz6KFH6cdwPTZL+NKsWim8wcARD2VY7U7TvNoZqjsn9E32sapXCVjRtM5zzdhIYzqU1/UNFHxCUZ0o5vvW0P48Y1QUOIssD3h5hw1GiVg0A/VRW/PxB96wQjVeYcuAquDcn2sqpA6NVSkXsg+T7p+uHiqwx85wZ1zfRuZHhq3ZpmNAIzRMm9uyngFFVoSBewCzRvsMP/kjj5mqLx8igjdmUXa2hidDuAXVO7KdFvx5KFgpLM2fmhxcl1GxSY7OGpmU4gLncLKD1C5oBnCW+QW/BUl6e1++K7YrtpGiZrbkV4WLqHdPF1SNciATdyAMvQ21b/6MBOKFc3wh8CjfOyRhK8QnAmFauOqqFx5F4NXtx89wXQUMhf5tVnLp0NVxzmsU7BQSBVZAyJY/27tmbTR0Nv3UDbWscGAX7uaUJyvAxZJ3YXSLkZ8ITYb/w2Il/WvcTMU6v5guO8Xm+jkLk21JsrzZAG+pgjquWBaeqJ2/yF33TVMsBZT5tzLQonN6YX\",\"iter\":10000,\"iv\":\"vwYqwOxaqkGA9JQetCHtcg==\",\"ks\":128,\"mode\":\"ccm\",\"salt\":\"DVFsO/mhTm0=\",\"ts\":64,\"v\":1}");
 
 			KeyStore ks;
-			REQUIRE_NOTHROW(ks.Import(keystoreJson, passwd));
+			REQUIRE_THROWS(ks.Import(keystoreJson, passwd));
 
+#if 0
 			const ElaNewWalletJson &walletData = ks.WalletJson();
 
 			REQUIRE(walletData.HasPassPhrase());
-			REQUIRE(walletData.PassPhrase().empty());
 			REQUIRE(walletData.Mnemonic() == mnemonic);
 
 			REQUIRE(1 == walletData.GetM());
@@ -296,6 +293,7 @@ TEST_CASE("KeyStore test", "[KeyStore]") {
 			REQUIRE(coinInfos[0]->GetVisibleAssets().size() == 1);
 			REQUIRE(coinInfos[0]->GetVisibleAssets()[0] == Asset::GetELAAssetID());
 			REQUIRE(walletData.SingleAddress());
+#endif
 		}
 
 	}

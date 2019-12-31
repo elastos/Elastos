@@ -4,10 +4,10 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
+#include <catch.hpp>
 #include "TestHelper.h"
-#include <SDK/Common/Log.h>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+#include <Common/Log.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -19,7 +19,7 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		for (size_t i = 0; i < 10; ++i) {
 			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandBytes(33));
+				candidates.push_back(CandidateVotes(getRandBytes(33)));
 			}
 			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
@@ -35,10 +35,10 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
 			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
-			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
-			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
-				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
-				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
+			REQUIRE((vc1[i].GetCandidateVotes().size() == vc2[i].GetCandidateVotes().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidateVotes().size(); c++) {
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetCandidate() == vc2[i].GetCandidateVotes()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetVotes() == vc2[i].GetCandidateVotes()[c].GetVotes()));
 			}
 		}
 	}
@@ -48,7 +48,7 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		for (size_t i = 0; i < 10; ++i) {
 			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandBytes(33));
+				candidates.push_back(CandidateVotes(getRandBytes(33)));
 			}
 			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
@@ -62,10 +62,10 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
 			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
-			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
-			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
-				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
-				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
+			REQUIRE((vc1[i].GetCandidateVotes().size() == vc2[i].GetCandidateVotes().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidateVotes().size(); c++) {
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetCandidate() == vc2[i].GetCandidateVotes()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetVotes() == vc2[i].GetCandidateVotes()[c].GetVotes()));
 			}
 		}
 	}
@@ -75,7 +75,7 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		for (size_t i = 0; i < 10; ++i) {
 			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandBytes(33));
+				candidates.push_back(CandidateVotes(getRandBytes(33)));
 			}
 			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
@@ -88,10 +88,10 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
 			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
-			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
-			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
-				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
-				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
+			REQUIRE((vc1[i].GetCandidateVotes().size() == vc2[i].GetCandidateVotes().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidateVotes().size(); c++) {
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetCandidate() == vc2[i].GetCandidateVotes()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetVotes() == vc2[i].GetCandidateVotes()[c].GetVotes()));
 			}
 		}
 	}
@@ -101,7 +101,7 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		for (size_t i = 0; i < 10; ++i) {
 			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandBytes(33));
+				candidates.push_back(CandidateVotes(getRandBytes(33)));
 			}
 			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
@@ -114,10 +114,10 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
 			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
-			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
-			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
-				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
-				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
+			REQUIRE((vc1[i].GetCandidateVotes().size() == vc2[i].GetCandidateVotes().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidateVotes().size(); c++) {
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetCandidate() == vc2[i].GetCandidateVotes()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetVotes() == vc2[i].GetCandidateVotes()[c].GetVotes()));
 			}
 		}
 	}

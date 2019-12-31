@@ -5,10 +5,10 @@
 #include "MerkleBlock.h"
 #include "SidechainMerkleBlock.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Common/hash.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <Plugin/Registry.h>
+#include <Common/hash.h>
 
 #include <sstream>
 

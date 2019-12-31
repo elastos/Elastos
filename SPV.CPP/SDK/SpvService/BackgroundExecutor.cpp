@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "BackgroundExecutor.h"
-#include <SDK/Common/Log.h>
+#include <Common/Log.h>
 
 using namespace boost;
 using namespace asio;

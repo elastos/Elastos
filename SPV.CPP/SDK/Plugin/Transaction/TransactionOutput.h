@@ -5,15 +5,13 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 #define __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/WalletCore/BIPs/Address.h>
-#include <SDK/Common/BigInt.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
+#include <Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
+#include <Plugin/Transaction/Asset.h>
+#include <WalletCore/Address.h>
+#include <Common/BigInt.h>
 
 #include <boost/shared_ptr.hpp>
-
-#define TX_RECHARGE_OUTPUT_SIZE 65
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -36,9 +34,6 @@ namespace Elastos {
 			TransactionOutput(const BigInt &amount, const Address &toAddress, const uint256 &assetID = Asset::GetELAAssetID(),
 							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
-//			TransactionOutput(const BigInt &amount, const uint168 &programHash, const uint256 &assetID = Asset::GetELAAssetID(),
-//							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
-
 			~TransactionOutput();
 
 			size_t EstimateSize() const;
@@ -49,7 +44,7 @@ namespace Elastos {
 
 			bool IsValid() const;
 
-			Address Addr() const;
+			const AddressPtr &Addr() const;
 
 			const BigInt &Amount() const;
 
@@ -62,10 +57,6 @@ namespace Elastos {
 			uint32_t OutputLock() const;
 
 			void SetOutputLock(uint32_t outputLock);
-
-			const uint168 &ProgramHash() const;
-
-			void SetProgramHash(const uint168 &hash);
 
 			const Type &GetType() const;
 
@@ -95,7 +86,7 @@ namespace Elastos {
 			BigInt _amount; // to support token chain
 			uint256 _assetID;
 			uint32_t _outputLock;
-			uint168 _programHash;
+			AddressPtr _addr;
 
 			Type _outputType;
 

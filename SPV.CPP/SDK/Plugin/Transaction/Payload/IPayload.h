@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_IPAYLOAD_H__
 #define __ELASTOS_SDK_IPAYLOAD_H__
 
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
 
 #include <boost/shared_ptr.hpp>
 

@@ -4,14 +4,15 @@
 
 #include "TransactionMessage.h"
 
-#include <SDK/P2P/Peer.h>
-#include <SDK/P2P/PeerManager.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
+#include <P2P/Peer.h>
+#include <P2P/PeerManager.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/IDTransaction.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
 
-#include <Core/BRTransaction.h>
-#include <Core/BRArray.h>
+#include <BRTransaction.h>
+#include <BRArray.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -22,9 +23,16 @@ namespace Elastos {
 		}
 
 		bool TransactionMessage::Accept(const bytes_t &msg) {
-			ByteStream stream(msg);
-			TransactionPtr tx = TransactionPtr(new Transaction());
+			std::string chainID = _peer->GetPeerManager()->GetChainID();
 
+			ByteStream stream(msg);
+
+			TransactionPtr tx;
+			if (chainID == CHAINID_MAINCHAIN) {
+				tx = TransactionPtr(new Transaction());
+			} else if (chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
+				tx = TransactionPtr(new IDTransaction());
+			}
 
 			if (!tx->Deserialize(stream)) {
 				_peer->error("malformed tx message with length: {}", msg.size());
@@ -35,7 +43,7 @@ namespace Elastos {
 			} else {
 				uint256 txHash = tx->GetHash();
 
-				PEER_DEBUG(_peer, "got tx {}", txHash.GetHex());
+				PEER_INFO(_peer, "got tx {}", txHash.GetHex());
 
 				FireRelayedTx(tx);
 
@@ -57,7 +65,7 @@ namespace Elastos {
 		void TransactionMessage::Send(const SendMessageParameter &param) {
 			const TransactionParameter &txParam = static_cast<const TransactionParameter &>(param);
 
-			PEER_DEBUG(_peer, "sending tx {}", txParam.tx->GetHash().GetHex());
+			PEER_INFO(_peer, "sending tx {}", txParam.tx->GetHash().GetHex());
 
 			ByteStream stream;
 			txParam.tx->Serialize(stream);

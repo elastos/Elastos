@@ -7,36 +7,38 @@
 
 #include "Executor.h"
 
-#include <SDK/P2P/PeerManager.h>
-#include <SDK/Account/SubAccount.h>
-#include <SDK/Wallet/Wallet.h>
-
-//#include <boost/thread.hpp>
+#include <P2P/PeerManager.h>
+#include <Account/SubAccount.h>
+#include <Wallet/Wallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class ChainParams;
+		class ChainConfig;
 
 		typedef boost::shared_ptr<ChainParams> ChainParamsPtr;
+		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
 
 		class CoreSpvService :
 				public Wallet::Listener,
 				public PeerManager::Listener {
 
 		public:
-			CoreSpvService(const PluginType &pluginType, const ChainParamsPtr &chainParams);
+			CoreSpvService();
+
+			void Init(const std::string &walletID,
+					  const std::string &chainID,
+					  const SubAccountPtr &subAccount,
+					  time_t earliestPeerTime,
+					  const ChainConfigPtr &config,
+					  const std::string &netType);
 
 			virtual ~CoreSpvService();
 
-			void init(const std::string &walletID,
-					  const SubAccountPtr &subAccount,
-					  time_t earliestPeerTime,
-					  uint32_t reconnectSeconds);
+			virtual const WalletPtr &GetWallet() const;
 
-			virtual const WalletPtr &getWallet();
-
-			virtual const PeerManagerPtr &getPeerManager();
+			virtual const PeerManagerPtr &GetPeerManager() const;
 
 		public: //override from Wallet
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
@@ -47,7 +49,7 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+			virtual void onCoinBaseSpent(const UTXOArray &spentUTXO);
 
 			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
@@ -64,7 +66,7 @@ namespace Elastos {
 		public: //override from PeerManager
 			virtual void syncStarted();
 
-			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
+			virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer);
 
 			virtual void syncStopped(const std::string &error);
 
@@ -73,6 +75,8 @@ namespace Elastos {
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
+
+			virtual void saveBlackPeer(const PeerInfo &peer);
 
 			virtual bool networkIsReachable();
 
@@ -83,11 +87,13 @@ namespace Elastos {
 		protected:
 			virtual std::vector<UTXOPtr> loadCoinBaseUTXOs();
 
-			virtual std::vector<TransactionPtr> loadTransactions();
+			virtual std::vector<TransactionPtr> loadTransactions(const std::string &chainID);
 
-			virtual std::vector<MerkleBlockPtr> loadBlocks();
+			virtual std::vector<MerkleBlockPtr> loadBlocks(const std::string &chainID);
 
 			virtual std::vector<PeerInfo> loadPeers();
+
+			virtual std::set<PeerInfo> loadBlackPeers();
 
 			virtual std::vector<AssetPtr> loadAssets();
 
@@ -100,11 +106,6 @@ namespace Elastos {
 			virtual const WalletListenerPtr &createWalletListener();
 
 		protected:
-			SubAccountPtr _subAccount;
-
-			PluginType _pluginTypes;
-			ChainParamsPtr _chainParams;
-			uint32_t _reconnectSeconds;
 
 			WalletPtr _wallet; // Optional<BRCoreWallet>
 			WalletListenerPtr _walletListener;
@@ -123,7 +124,7 @@ namespace Elastos {
 
 			virtual void syncStarted();
 
-			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
+			virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer);
 
 			virtual void syncStopped(const std::string &error);
 
@@ -132,6 +133,8 @@ namespace Elastos {
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
+
+			virtual void saveBlackPeer(const PeerInfo &peer);
 
 			virtual bool networkIsReachable();
 
@@ -149,12 +152,11 @@ namespace Elastos {
 				public PeerManager::Listener {
 		public:
 			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener,
-											   Executor *executor,
-											   const PluginType &pluginType);
+											   Executor *executor);
 
 			virtual void syncStarted();
 
-			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
+			virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer);
 
 			virtual void syncStopped(const std::string &error);
 
@@ -163,6 +165,8 @@ namespace Elastos {
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
+
+			virtual void saveBlackPeer(const PeerInfo &peer);
 
 			virtual bool networkIsReachable();
 
@@ -188,7 +192,7 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+			virtual void onCoinBaseSpent(const UTXOArray &spentUTXO);
 
 			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
@@ -218,7 +222,7 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+			virtual void onCoinBaseSpent(const UTXOArray &spentUTXO);
 
 			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 

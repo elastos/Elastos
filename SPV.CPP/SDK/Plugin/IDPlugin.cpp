@@ -4,7 +4,7 @@
 
 #include "IDPlugin.h"
 
-#include <SDK/Plugin/Block/SidechainMerkleBlock.h>
+#include <Plugin/Block/SidechainMerkleBlock.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -19,7 +19,7 @@ namespace Elastos {
 					.install(getSidechainMerkleBlockFactoryComponent);
 		}
 
-		REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);
+		REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
 
 	}
 }

@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_LOCALSTORE_H__
 #define __ELASTOS_SDK_LOCALSTORE_H__
 
-#include <SDK/IDAgent/IDAgentImpl.h>
-#include <SDK/WalletCore/KeyStore/KeyStore.h>
+#include <Common/Mstream.h>
+#include <WalletCore/KeyStore.h>
 
 #include <boost/filesystem.hpp>
 #include <vector>
@@ -25,26 +25,17 @@ namespace Elastos {
 
 			LocalStore(const std::string &path);
 
-			LocalStore(const std::string &path, const std::string &xprv, bool singleAddress, const std::string &payPasswd);
-
-			LocalStore(const std::string &path, const std::string &mnemonic, const std::string &passphrase,
-					   bool singleAddress, const std::string &payPasswd);
-
-			LocalStore(const std::string &path, const ElaNewWalletJson &json, const std::string &payPasswd);
-
-			LocalStore(const std::string &path, const std::vector<std::string> &pubkeys, int m);
-
 			~LocalStore();
-
-			void GetReadOnlyWalletJson(ElaNewWalletJson &json);
-
-			void GetWalletJson(ElaNewWalletJson &json, const std::string &payPasswd);
-
-			void RegenerateKey(const std::string &payPasswd);
 
 			void ChangePasswd(const std::string &oldPasswd, const std::string &newPasswd);
 
+			bool Load();
+
 			void Save();
+
+			void Remove();
+
+			const std::string &GetDataPath() const;
 
 			void SaveTo(const std::string &path);
 
@@ -72,6 +63,10 @@ namespace Elastos {
 
 			void SetxPubKey(const std::string &xpubkey);
 
+			const std::string &GetxPubKeyHDPM() const;
+
+			void SetxPubKeyHDPM(const std::string &xpub);
+
 			const std::string &GetRequestPubKey() const;
 
 			void SetRequestPubKey(const std::string &pubkey);
@@ -79,6 +74,10 @@ namespace Elastos {
 			const std::string &GetOwnerPubKey() const;
 
 			void SetOwnerPubKey(const std::string &ownerPubKey);
+
+			const std::string &DerivationStrategy() const;
+
+			void SetDerivationStrategy(const std::string &strategy);
 
 			const std::vector<PublicKeyRing> &GetPublicKeyRing() const;
 
@@ -101,6 +100,10 @@ namespace Elastos {
 			bool Readonly() const;
 
 			void SetReadonly(bool status);
+
+			int Account() const;
+
+			void SetAccount(int account);
 
 			const std::vector<CoinInfoPtr> &GetSubWalletInfoList() const;
 
@@ -128,6 +131,7 @@ namespace Elastos {
 
 			// plain text
 			std::string _xPubKey;
+			std::string _xPubKeyHDPM; // BIP45 / BIP44 (compatible with web wallet)
 			std::string _requestPubKey;
 			std::string _ownerPubKey;
 			std::string _derivationStrategy;

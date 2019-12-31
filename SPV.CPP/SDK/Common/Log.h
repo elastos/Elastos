@@ -8,7 +8,7 @@
 #include <CMakeConfig.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_sinks.h>
-#include <spdlog/sinks/file_sinks.h>
+#include <spdlog/sinks/rotating_file_sink.h>
 #if defined(__ANDROID__)
 #include <spdlog/sinks/android_sink.h>
 #endif
@@ -25,23 +25,27 @@ namespace Elastos {
 #define SPV_FILE_NAME "spvsdk.log"
 #define GetFunName() (std::string("<<< ") + (__FUNCTION__) + " >>>")
 
-			static inline void registerMultiLogger(const std::string &path = "") {
+			static inline void registerMultiLogger(const std::string &path = ".") {
 				if (spdlog::get(SPV_DEFAULT_LOG) != nullptr)
 					return ;
 
+#ifdef SPV_CONSOLE_LOG
 #if defined(__ANDROID__)
-				auto console_sink = std::make_shared<spdlog::sinks::android_sink>("spvsdk");
+				auto console_sink = std::make_shared<spdlog::sinks::android_sink_mt>("spvsdk");
 #else
 				auto console_sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>();
 #endif
 				console_sink->set_level(spdlog::level::trace);
 
 				std::vector<spdlog::sink_ptr> sinks = {console_sink};
+#else
+				std::vector<spdlog::sink_ptr> sinks = {};
+#endif
 
 				std::string filepath = SPV_FILE_NAME;
 				if (path != "") {
 					filepath = path + "/" + SPV_FILE_NAME;
-					auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath, 1024*1024*2, 1);
+					auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath, 1024*1024*50, 1);
 					file_sink->set_level(spdlog::level::debug);
 					sinks.push_back(file_sink);
 				}
@@ -50,7 +54,7 @@ namespace Elastos {
 				spdlog::register_logger(logger);
 
 				spdlog::get(SPV_DEFAULT_LOG)->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
-				spdlog::get(SPV_DEFAULT_LOG)->flush_on(spdlog::level::warn);
+				spdlog::get(SPV_DEFAULT_LOG)->flush_on(spdlog::level::debug);
 			}
 
 			template<typename Arg1, typename... Args>
@@ -131,9 +135,12 @@ namespace Elastos {
 #define __va_first(first, ...) first
 #define __va_rest(first, ...) __VA_ARGS__
 #define ArgInfo(...) Log::info(std::string("+++ ") + __va_first(__VA_ARGS__, NULL), __va_rest(__VA_ARGS__, NULL))
+#else
+#define ArgInfo(...)
 #endif
 
-#define SPVLOG_DEBUG(...) SPDLOG_DEBUG(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
+#define SPVLOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
+#define SPVLOG_INFO(...)  SPDLOG_LOGGER_INFO(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
 
 	}
 }

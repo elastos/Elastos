@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "UnregisterCR.h"
-#include <SDK/Common/Log.h>
+#include <Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -15,12 +15,12 @@ namespace Elastos {
 
 		}
 
-		void UnregisterCR::SetCode(const bytes_t &code) {
-			_code = code;
+		void UnregisterCR::SetDID(const uint168 &did) {
+			_did = did;
 		}
 
-		const bytes_t &UnregisterCR::GetCode() const {
-			return _code;
+		const uint168 &UnregisterCR::GetDID() const {
+			return _did;
 		}
 
 		void UnregisterCR::SetSignature(const bytes_t &signature) {
@@ -33,10 +33,9 @@ namespace Elastos {
 
 		size_t UnregisterCR::EstimateSize(uint8_t version) const {
 			size_t size = 0;
-			ByteStream stream;
+			size += _did.size();
 
-			size += stream.WriteVarUint(_code.size());
-			size += _code.size();
+			ByteStream stream;
 			size += stream.WriteVarUint(_signature.size());
 			size += _signature.size();
 
@@ -62,12 +61,12 @@ namespace Elastos {
 		}
 
 		void UnregisterCR::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.WriteVarBytes(_code);
+			ostream.WriteBytes(_did);
 		}
 
 		bool UnregisterCR::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
-			if (!istream.ReadVarBytes(_code)) {
-				Log::error("UnregisterCR Deserialize: read _code");
+			if (!istream.ReadBytes(_did)) {
+				Log::error("UnregisterCR Deserialize: read _did");
 				return false;
 			}
 			return true;
@@ -75,14 +74,14 @@ namespace Elastos {
 
 		nlohmann::json UnregisterCR::ToJson(uint8_t version) const {
 			nlohmann::json j;
-			j["Code"] = _code.getHex();
+			j["DID"] = _did.GetHex();
 			j["Signature"] = _signature.getHex();
 			return j;
 		}
 
 		void UnregisterCR::FromJson(const nlohmann::json &j, uint8_t version) {
-			std::string code = j["Code"].get<std::string>();
-			_code.setHex(code);
+			std::string did = j["DID"].get<std::string>();
+			_did.SetHex(did);
 
 			std::string signature = j["Signature"].get<std::string>();
 			_signature.setHex(signature);
@@ -100,7 +99,7 @@ namespace Elastos {
 		}
 
 		UnregisterCR &UnregisterCR::operator=(const UnregisterCR &payload) {
-			_code = payload._code;
+			_did = payload._did;
 			_signature = payload._signature;
 			return *this;
 		}

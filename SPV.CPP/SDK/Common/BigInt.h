@@ -39,7 +39,7 @@ namespace Elastos {
 
             BigInt(const BigInt& bigint);
 
-            BigInt(BN_ULONG num);
+            BigInt(uint64_t num);
 
             BigInt(const std::vector<unsigned char>& bytes, bool bigEndian = false);
 
@@ -55,7 +55,7 @@ namespace Elastos {
             //BigInt& operator=(BN_ULONG rhs) { if (!BN_set_word(this->bn, rhs)) throw std::runtime_error("BIGNUM Error."); return *this; }
             BigInt& operator=(const BigInt& bigint);
 
-            BigInt& operator=(BN_ULONG num);
+            BigInt& operator=(uint64_t num);
 
             // Arithmetic Operations
             BigInt& operator+=(const BigInt& rhs);
@@ -64,30 +64,30 @@ namespace Elastos {
             BigInt& operator/=(const BigInt& rhs);
             BigInt& operator%=(const BigInt& rhs);
 
-            BigInt& operator+=(BN_ULONG rhs);
-            BigInt& operator-=(BN_ULONG rhs);
-            BigInt& operator*=(BN_ULONG rhs);
-            BigInt& operator/=(BN_ULONG rhs);
-            BigInt& operator%=(BN_ULONG rhs);
+            BigInt& operator+=(uint64_t rhs);
+            BigInt& operator-=(uint64_t rhs);
+            BigInt& operator*=(uint64_t rhs);
+            BigInt& operator/=(uint64_t rhs);
+            BigInt& operator%=(uint64_t rhs);
 
-            const BigInt operator+(const BigInt& rightOperand) const;
-            const BigInt operator-(const BigInt& rightOperand) const;
-            const BigInt operator*(const BigInt& rightOperand) const;
-            const BigInt operator/(const BigInt& rightOperand) const;
-            const BigInt operator%(const BigInt& rightOperand) const;
+            BigInt operator+(const BigInt& rightOperand) const;
+            BigInt operator-(const BigInt& rightOperand) const;
+            BigInt operator*(const BigInt& rightOperand) const;
+            BigInt operator/(const BigInt& rightOperand) const;
+            BigInt operator%(const BigInt& rightOperand) const;
 
-            const BigInt operator+(BN_ULONG rightOperand) const;
-            const BigInt operator-(BN_ULONG rightOperand) const;
-            const BigInt operator*(BN_ULONG rightOperand) const;
-            const BigInt operator/(BN_ULONG rightOperand) const;
-            BN_ULONG operator%(BN_ULONG rightOperand) const;
+            BigInt operator+(uint64_t rightOperand) const;
+            BigInt operator-(uint64_t rightOperand) const;
+            BigInt operator*(uint64_t rightOperand) const;
+            BigInt operator/(uint64_t rightOperand) const;
+            BigInt operator%(uint64_t rightOperand) const;
 
             // Bitshift Operators
             BigInt& operator<<=(int rhs);
             BigInt& operator>>=(int rhs);
 
-            const BigInt operator<<(int rhs) const;
-            const BigInt operator>>(int rhs) const;
+            BigInt operator<<(int rhs) const;
+            BigInt operator>>(int rhs) const;
 
             // Comparison Operators
             bool operator==(const BigInt& rhs) const;
@@ -103,8 +103,10 @@ namespace Elastos {
             void setUint64(uint64_t num);
 
             // Accessor Methods
+#if 0
             BN_ULONG getWord() const;
             void setWord(BN_ULONG num);
+#endif
 
             void setRaw(BIGNUM *bn);
 

@@ -5,8 +5,7 @@
 #ifndef __ELASTOS_SDK_PEERINFO_H__
 #define __ELASTOS_SDK_PEERINFO_H__
 
-
-#include <SDK/Common/uint256.h>
+#include <Common/uint256.h>
 #include <sys/types.h>
 #include <string>
 
@@ -35,6 +34,8 @@ namespace Elastos {
 			PeerInfo &operator=(const PeerInfo &peerInfo);
 
 			bool operator==(const PeerInfo &info) const;
+
+			bool operator<(const PeerInfo &info) const;
 
 			bool operator!=(const PeerInfo &info) const;
 

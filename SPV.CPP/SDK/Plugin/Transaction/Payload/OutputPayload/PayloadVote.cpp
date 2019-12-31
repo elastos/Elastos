@@ -3,9 +3,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "PayloadVote.h"
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -13,7 +13,7 @@ namespace Elastos {
 
 		}
 
-		CandidateVotes::CandidateVotes(const bytes_t &candidate, uint64_t votes) :
+		CandidateVotes::CandidateVotes(const bytes_t &candidate, const BigInt &votes) :
 				_candidate(candidate), _votes(votes) {
 
 		}
@@ -26,25 +26,35 @@ namespace Elastos {
 			return _candidate;
 		}
 
-		uint64_t CandidateVotes::GetVotes() const {
+		const BigInt &CandidateVotes::GetVotes() const {
 			return _votes;
+		}
+
+		void CandidateVotes::SetVotes(uint64_t votes) {
+			_votes = votes;
 		}
 
 		void CandidateVotes::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteVarBytes(_candidate);
 
 			if (version >= VOTE_PRODUCER_CR_VERSION) {
-				ostream.WriteUint64(_votes);
+				ostream.WriteUint64(_votes.getUint64());
 			}
 		}
 
 		bool CandidateVotes::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!istream.ReadVarBytes(_candidate)) {
+				Log::error("CandidateVotes deserialize candidate fail");
 				return false;
 			}
 
-			if (version >= VOTE_PRODUCER_CR_VERSION && !istream.ReadUint64(_votes)) {
-				return false;
+			if (version >= VOTE_PRODUCER_CR_VERSION) {
+				uint64_t votes = 0;
+				if (!istream.ReadUint64(votes)) {
+					Log::error("CandidateVotes deserialize votes fail");
+					return false;
+				}
+				_votes.setUint64(votes);
 			}
 
 			return true;
@@ -54,7 +64,7 @@ namespace Elastos {
 			nlohmann::json j;
 			j["Candidate"] = _candidate.getHex();
 			if (version >= VOTE_PRODUCER_CR_VERSION) {
-				j["Votes"] = _votes;
+				j["Votes"] = _votes.getDec();
 			}
 			return j;
 		}
@@ -62,7 +72,7 @@ namespace Elastos {
 		void CandidateVotes::FromJson(const nlohmann::json &j, uint8_t version) {
 			_candidate.setHex(j["Candidate"].get<std::string>());
 			if (version >= VOTE_PRODUCER_CR_VERSION) {
-				_votes = j["Votes"].get<uint64_t>();
+				_votes.setDec(j["Votes"].get<std::string>());
 			}
 		}
 
@@ -70,7 +80,11 @@ namespace Elastos {
 
 		}
 
-		VoteContent::VoteContent(Type t, const std::vector<CandidateVotes> &c) : _type(Delegate), _candidates(c) {
+		VoteContent::VoteContent(Type t) :
+			_type(t) {
+		}
+
+		VoteContent::VoteContent(Type t, const std::vector<CandidateVotes> &c) : _type(t), _candidates(c) {
 
 		}
 
@@ -86,8 +100,51 @@ namespace Elastos {
 			return _type;
 		}
 
-		const std::vector<CandidateVotes> &VoteContent::GetCandidates() const {
+		std::string VoteContent::GetTypeString() const {
+			if (_type == VoteContent::CRC) {
+				return "CRC";
+			} else if (_type == VoteContent::Delegate) {
+				return "Delegate";
+			} else if (_type == VoteContent::CRCProposal) {
+				return "CRCProposal";
+			} else if (_type == VoteContent::CRCImpeachment) {
+				return "CRCImpeachment";
+			}
+
+			return "Unknow";
+		}
+
+		void VoteContent::SetCandidateVotes(const std::vector<CandidateVotes> &candidateVotes) {
+			_candidates = candidateVotes;
+		}
+
+		const std::vector<CandidateVotes> &VoteContent::GetCandidateVotes() const {
 			return _candidates;
+		}
+
+		void VoteContent::SetAllCandidateVotes(uint64_t votes) {
+			for (size_t i = 0; i < _candidates.size(); ++i) {
+				_candidates[i].SetVotes(votes);
+			}
+		}
+
+		BigInt VoteContent::GetMaxVoteAmount() const {
+			BigInt max = 0;
+
+			for (std::vector<CandidateVotes>::const_iterator it = _candidates.cbegin(); it != _candidates.cend(); ++it)
+				if (max < (*it).GetVotes())
+					max = (*it).GetVotes();
+
+			return max;
+		}
+
+		BigInt VoteContent::GetTotalVoteAmount() const {
+			BigInt total = 0;
+
+			for (std::vector<CandidateVotes>::const_iterator it = _candidates.cbegin(); it != _candidates.cend(); ++it)
+				total += (*it).GetVotes();
+
+			return total;
 		}
 
 		void VoteContent::Serialize(ByteStream &ostream, uint8_t version) const {
@@ -173,21 +230,28 @@ namespace Elastos {
 			return _content;
 		}
 
+		uint8_t PayloadVote::Version() const {
+			return _version;
+		}
+
 		size_t PayloadVote::EstimateSize() const {
 			ByteStream stream;
 			size_t size = 0;
 
 			size += 1;
 			size += stream.WriteVarUint(_content.size());
-			for (size_t i = 0; i < _content.size(); ++i) {
+			for (std::vector<VoteContent>::const_iterator vc = _content.cbegin(); vc != _content.cend(); ++vc) {
 				size += 1;
-				size += stream.WriteVarUint(_content[i].GetCandidates().size());
-				for (size_t j = 0; j < _content[i].GetCandidates().size(); ++j) {
-					size += stream.WriteVarUint(_content[i].GetCandidates()[j].GetCandidate().size());
-					size += _content[i].GetCandidates()[j].GetCandidate().size();
+				size += stream.WriteVarUint((*vc).GetCandidateVotes().size());
+
+				const std::vector<CandidateVotes> &candidateVotes = (*vc).GetCandidateVotes();
+				std::vector<CandidateVotes>::const_iterator cv;
+				for (cv = candidateVotes.cbegin(); cv != candidateVotes.cend(); ++cv) {
+					size += stream.WriteVarUint((*cv).GetCandidate().size());
+					size += (*cv).GetCandidate().size();
 
 					if (_version >= VOTE_PRODUCER_CR_VERSION) {
-						size += stream.WriteVarUint(_content[i].GetCandidates()[j].GetVotes());
+						size += stream.WriteVarUint((*cv).GetVotes().getUint64());
 					}
 				}
 			}

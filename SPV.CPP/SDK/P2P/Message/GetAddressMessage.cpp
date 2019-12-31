@@ -4,8 +4,8 @@
 
 #include "GetAddressMessage.h"
 
-#include <SDK/P2P/Peer.h>
-#include <SDK/P2P/PeerManager.h>
+#include <P2P/Peer.h>
+#include <P2P/PeerManager.h>
 
 namespace Elastos {
 	namespace ElaWallet {

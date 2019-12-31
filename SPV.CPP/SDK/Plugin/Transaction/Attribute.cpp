@@ -4,8 +4,8 @@
 
 #include "Attribute.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -72,10 +72,10 @@ namespace Elastos {
 				return false;
 			}
 
-//			if (!isValid()) {
-//				Log::error("invalid attribute usage: {}", (uint8_t)_usage);
-//				return false;
-//			}
+			if (!IsValid()) {
+				Log::error("invalid attribute usage: {}", (uint8_t)_usage);
+				return false;
+			}
 
 			if (!istream.ReadVarBytes(_data)) {
 				Log::error("Attribute deserialize data fail");

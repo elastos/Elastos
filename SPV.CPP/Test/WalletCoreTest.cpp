@@ -4,14 +4,16 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
-#include <SDK/Common/typedefs.h>
+#include <catch.hpp>
+#include <Common/typedefs.h>
+#include <Common/Log.h>
+
+#include <WalletCore/AES.h>
+#include <WalletCore/Base58.h>
+#include <WalletCore/HDKeychain.h>
+#include <WalletCore/Key.h>
+
 #include <nlohmann/json.hpp>
-#include <SDK/WalletCore/Crypto/AES.h>
-#include <SDK/Common/Log.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
-#include <SDK/WalletCore/BIPs/Key.h>
 
 using namespace Elastos::ElaWallet;
 

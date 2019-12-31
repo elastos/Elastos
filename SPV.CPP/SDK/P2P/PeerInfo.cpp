@@ -56,6 +56,16 @@ namespace Elastos {
 					Port == info.Port);
 		}
 
+		bool PeerInfo::operator<(const PeerInfo &info) const {
+			if (Address < info.Address) {
+				return true;
+			} else if (Address > info.Address) {
+				return false;
+			} else {
+				return Port < info.Port;
+			}
+		}
+
 		bool PeerInfo::operator!=(const PeerInfo &info) const {
 			return !operator==(info);
 		}

@@ -4,63 +4,75 @@
 
 #include "CoreSpvService.h"
 
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Common/Log.h>
+#include <Plugin/Registry.h>
+#include <Plugin/Transaction/Asset.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
+#include <SpvService/Config.h>
 
 #include <sstream>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		CoreSpvService::CoreSpvService(const PluginType &pluginTypes, const ChainParamsPtr &chainParams) :
-				_wallet(nullptr),
-				_walletListener(nullptr),
-				_peerManager(nullptr),
-				_peerManagerListener(nullptr),
-				_subAccount(nullptr),
-				_pluginTypes(pluginTypes),
-				_chainParams(chainParams) {
+		CoreSpvService::CoreSpvService() {
+
+		}
+
+		void CoreSpvService::Init(const std::string &walletID,
+								  const std::string &chainID,
+								  const SubAccountPtr &subAccount,
+								  time_t earliestPeerTime,
+								  const ChainConfigPtr &config,
+								  const std::string &netType) {
+
+			if (chainID != CHAINID_MAINCHAIN &&
+				chainID != CHAINID_IDCHAIN &&
+				chainID != CHAINID_TOKENCHAIN) {
+				ErrorChecker::ThrowParamException(Error::InvalidChainID, "invalid chain ID");
+			}
+
+			std::vector<TransactionPtr>  txs = loadTransactions(chainID);
+			std::vector<UTXOPtr> cbs = loadCoinBaseUTXOs();
+
+			std::sort(txs.begin(), txs.end(), [](const TransactionPtr &a, const TransactionPtr &b) {
+				return a->GetBlockHeight() < b->GetBlockHeight();
+			});
+
+			std::sort(cbs.begin(), cbs.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
+				return a->BlockHeight() < b->BlockHeight();
+			});
+
+			if (_peerManager == nullptr) {
+				_peerManager = PeerManagerPtr(new PeerManager(
+						config->ChainParameters(),
+						nullptr,
+						earliestPeerTime,
+						config->DisconnectionTime(),
+						loadBlocks(chainID),
+						loadPeers(),
+						loadBlackPeers(),
+						createPeerManagerListener(),
+						chainID,
+						netType));
+			}
+
+			if (_wallet == nullptr) {
+				_wallet = WalletPtr(new Wallet(_peerManager->GetLastBlockHeight(), walletID, chainID,
+											   loadAssets(), txs, cbs, subAccount, createWalletListener()));
+				_peerManager->SetWallet(_wallet);
+			}
 		}
 
 		CoreSpvService::~CoreSpvService() {
 
 		}
 
-		void CoreSpvService::init(const std::string &walletID,
-								  const SubAccountPtr &subAccount,
-								  time_t earliestPeerTime,
-								  uint32_t reconnectSeconds) {
-			_subAccount = subAccount;
-			_reconnectSeconds = reconnectSeconds;
-
-			std::vector<TransactionPtr>  txs = loadTransactions();
-			std::vector<UTXOPtr> cbs = loadCoinBaseUTXOs();
-
-			if (_peerManager == nullptr) {
-				_peerManager = PeerManagerPtr(new PeerManager(
-						_chainParams,
-						nullptr,
-						earliestPeerTime,
-						_reconnectSeconds,
-						loadBlocks(),
-						loadPeers(),
-						createPeerManagerListener(),
-						_pluginTypes));
-			}
-
-			if (_wallet == nullptr) {
-				_wallet = WalletPtr(new Wallet(_peerManager->GetLastBlockHeight(), walletID,
-											   loadAssets(), txs, cbs,
-											   _subAccount, createWalletListener()));
-				_peerManager->SetWallet(_wallet);
-			}
-		}
-
-		const WalletPtr &CoreSpvService::getWallet() {
+		const WalletPtr &CoreSpvService::GetWallet() const {
 			return _wallet;
 		}
 
-		const PeerManagerPtr &CoreSpvService::getPeerManager() {
+		const PeerManagerPtr &CoreSpvService::GetPeerManager() const {
 			return _peerManager;
 		}
 
@@ -81,7 +93,7 @@ namespace Elastos {
 
 		}
 
-		void CoreSpvService::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+		void CoreSpvService::onCoinBaseSpent(const UTXOArray &spentUTXO) {
 
 		}
 
@@ -113,7 +125,7 @@ namespace Elastos {
 
 		}
 
-		void CoreSpvService::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+		void CoreSpvService::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {
 
 		}
 
@@ -131,7 +143,9 @@ namespace Elastos {
 		}
 
 		void CoreSpvService::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
+		}
 
+		void CoreSpvService::saveBlackPeer(const PeerInfo &peer) {
 		}
 
 		bool CoreSpvService::networkIsReachable() {
@@ -150,23 +164,23 @@ namespace Elastos {
 			return std::vector<UTXOPtr>();
 		}
 
-		std::vector<TransactionPtr> CoreSpvService::loadTransactions() {
-			//todo complete me
+		std::vector<TransactionPtr> CoreSpvService::loadTransactions(const std::string &chainID) {
 			return std::vector<TransactionPtr>();
 		}
 
-		std::vector<MerkleBlockPtr> CoreSpvService::loadBlocks() {
-			//todo complete me
+		std::vector<MerkleBlockPtr> CoreSpvService::loadBlocks(const std::string &chainID) {
 			return std::vector<MerkleBlockPtr>();
 		}
 
 		std::vector<PeerInfo> CoreSpvService::loadPeers() {
-			//todo complete me
 			return std::vector<PeerInfo>();
 		}
 
+		std::set<PeerInfo> CoreSpvService::loadBlackPeers() {
+			return std::set<PeerInfo>();
+		}
+
 		std::vector<AssetPtr> CoreSpvService::loadAssets() {
-			// todo complete me
 			return std::vector<AssetPtr>();
 		}
 
@@ -197,10 +211,9 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight,
-															   time_t lastBlockTime) {
+		void WrappedExceptionPeerManagerListener::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {
 			try {
-				_listener->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
+				_listener->syncProgress(progress, lastBlockTime, bytesPerSecond, downloadPeer);
 			} catch (const std::exception &e) {
 				Log::error("syncProgress exception: {}", e.what());
 			}
@@ -231,13 +244,19 @@ namespace Elastos {
 			}
 		}
 
-		void
-		WrappedExceptionPeerManagerListener::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
-
+		void WrappedExceptionPeerManagerListener::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 			try {
 				_listener->savePeers(replace, peers);
 			} catch (const std::exception &e) {
 				Log::error("savePeers exception: {}", e.what());
+			}
+		}
+
+		void WrappedExceptionPeerManagerListener::saveBlackPeer(const PeerInfo &peer) {
+			try {
+				_listener->saveBlackPeer(peer);
+			} catch (const std::exception &e) {
+				Log::error("saveBlockPeer exception: {}", e.what());
 			}
 		}
 
@@ -269,8 +288,7 @@ namespace Elastos {
 
 		WrappedExecutorPeerManagerListener::WrappedExecutorPeerManagerListener(
 				PeerManager::Listener *listener,
-				Executor *executor,
-				const PluginType &pluginType) :
+				Executor *executor) :
 				_listener(listener),
 				_executor(executor) {
 		}
@@ -285,11 +303,10 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight,
-															  time_t lastBlockTime) {
-			_executor->Execute(Runnable([this, currentHeight, estimatedHeight, lastBlockTime]() -> void {
+		void WrappedExecutorPeerManagerListener::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {
+			_executor->Execute(Runnable([this, progress, lastBlockTime, bytesPerSecond, downloadPeer]() -> void {
 				try {
-					_listener->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
+					_listener->syncProgress(progress, lastBlockTime, bytesPerSecond, downloadPeer);
 				} catch (const std::exception &e) {
 					Log::error("syncProgress exception: {}", e.what());
 				}
@@ -336,8 +353,17 @@ namespace Elastos {
 			}));
 		}
 
-		bool WrappedExecutorPeerManagerListener::networkIsReachable() {
+		void WrappedExecutorPeerManagerListener::saveBlackPeer(const PeerInfo &peer) {
+			_executor->Execute(Runnable([this, peer]() -> void {
+				try {
+					_listener->saveBlackPeer(peer);
+				} catch (const std::exception &e) {
+					Log::error("saveBlackPeer exception: {}", e.what());
+				}
+			}));
+		}
 
+		bool WrappedExecutorPeerManagerListener::networkIsReachable() {
 			bool result = true;
 			_executor->Execute(Runnable([this, result]() -> void {
 				try {
@@ -350,7 +376,6 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::txPublished(const std::string &hash, const nlohmann::json &result) {
-
 			_executor->Execute(Runnable([this, hash, result]() -> void {
 				try {
 					_listener->txPublished(hash, result);
@@ -408,9 +433,9 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionWalletListener::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+		void WrappedExceptionWalletListener::onCoinBaseSpent(const UTXOArray &spentUTXO) {
 			try {
-				_listener->onCoinBaseSpent(spentHashes);
+				_listener->onCoinBaseSpent(spentUTXO);
 			} catch (const std::exception &e) {
 				Log::error("onCoinBaseSpent exception: {}", e.what());
 			}
@@ -519,10 +544,10 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
-			_executor->Execute(Runnable([this, spentHashes]() -> void {
+		void WrappedExecutorWalletListener::onCoinBaseSpent(const UTXOArray &spentUTXO) {
+			_executor->Execute(Runnable([this, spentUTXO]() -> void {
 				try {
-					_listener->onCoinBaseSpent(spentHashes);
+					_listener->onCoinBaseSpent(spentUTXO);
 				} catch (const std::exception &e) {
 					Log::error("onCoinBaseSpent exception: {}", e.what());
 				}

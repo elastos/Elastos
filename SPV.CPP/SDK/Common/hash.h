@@ -16,7 +16,7 @@
 #include <openssl/ripemd.h>
 #include <openssl/hmac.h>
 
-#include <SDK/Common/uchar_vector.h>
+#include <Common/uchar_vector.h>
 
 //#include "hashblock.h" // for Hash9
 //#include "scrypt/scrypt.h" // for scrypt_1024_1_1_256

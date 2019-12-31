@@ -5,10 +5,10 @@
 #ifndef __ELASTOS_SDK_AUXPOW_H__
 #define __ELASTOS_SDK_AUXPOW_H__
 
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
 
-#include <Core/BRTransaction.h>
-#include <Core/BRMerkleBlock.h>
+#include <BRTransaction.h>
+#include <BRMerkleBlock.h>
 
 #include <vector>
 

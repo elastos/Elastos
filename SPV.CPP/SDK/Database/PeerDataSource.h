@@ -8,10 +8,7 @@
 #include "Sqlite.h"
 #include "TableBase.h"
 
-#include <SDK/Common/uint256.h>
-
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/shared_mutex.hpp>
+#include <Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -45,16 +42,18 @@ namespace Elastos {
 			PeerDataSource(SqliteTransactionType type, Sqlite *sqlite);
 			~PeerDataSource();
 
-			bool PutPeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
-			bool DeletePeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool PutPeer(const PeerEntity &peerEntity);
+			bool PutPeers(const std::vector<PeerEntity> &peerEntities);
+			bool DeletePeer(const PeerEntity &peerEntity);
 			bool DeleteAllPeers();
-			size_t GetAllPeersCount(const std::string &iso) const;
-			std::vector<PeerEntity> GetAllPeers(const std::string &iso) const;
+			size_t GetAllPeersCount() const;
+			std::vector<PeerEntity> GetAllPeers() const;
 
 			void flush();
 		private:
-			bool PutPeerInternal(const std::string &iso, const PeerEntity &peerEntity);
+			bool Contain(const PeerEntity &entity) const;
+
+			bool PutPeerInternal(const PeerEntity &peerEntity);
 
 		private:
 			/*

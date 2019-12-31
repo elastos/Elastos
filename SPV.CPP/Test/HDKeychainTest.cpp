@@ -4,17 +4,17 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
+#include <catch.hpp>
 #include "TestHelper.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Lockable.h>
-#include <SDK/WalletCore/Crypto/AES.h>
-#include <SDK/WalletCore/BIPs/BIP39.h>
-#include <SDK/WalletCore/BIPs/Mnemonic.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <Common/Lockable.h>
+#include <WalletCore/AES.h>
+#include <WalletCore/BIP39.h>
+#include <WalletCore/Mnemonic.h>
+#include <WalletCore/HDKeychain.h>
+#include <WalletCore/Base58.h>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 

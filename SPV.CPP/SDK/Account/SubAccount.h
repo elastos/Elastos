@@ -6,8 +6,9 @@
 #define __ELASTOS_SDK_SUBACCOUNT_H__
 
 #include "Account.h"
+#include "ISubAccount.h"
 
-#include <SDK/Common/Lockable.h>
+#include <Common/Lockable.h>
 
 #include <set>
 
@@ -17,62 +18,66 @@ namespace Elastos {
 		class Transaction;
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
 
-		class SubAccount {
+		class SubAccount : public ISubAccount {
 		public:
 			SubAccount(const AccountPtr &parent, uint32_t coinIndex);
 
+			~SubAccount();
+
 			nlohmann::json GetBasicInfo() const;
 
-			void Init(const std::vector<TransactionPtr> &tx, Lockable *lock);
+			void Init();
+
+			void InitDID();
 
 			bool IsSingleAddress() const;
 
-			bool IsDepositAddress(const Address &address) const;
+			bool IsProducerDepositAddress(const AddressPtr &address) const;
 
-			bool IsOwnerAddress(const Address &address) const;
+			bool IsOwnerAddress(const AddressPtr &address) const;
 
-			bool IsCRDepositAddress(const Address &address) const;
+			bool IsCRDepositAddress(const AddressPtr &address) const;
 
-			void AddUsedAddrs(const Address &address);
+			bool AddUsedAddrs(const AddressPtr &address);
 
-			size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool internal) const;
+			size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const;
 
-			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
+			size_t GetAllDID(AddressArray &did, uint32_t start, size_t count) const;
 
-			bool ContainsAddress(const Address &address) const;
+			AddressArray UnusedAddresses(uint32_t gapLimit, bool internal);
 
-			void ClearUsedAddresses();
+			bool ContainsAddress(const AddressPtr &address) const;
 
-			bytes_ptr OwnerPubKey() const;
+			size_t GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
+			                        bool containInternal) const;
+
+			bytes_t OwnerPubKey() const;
 
 			bytes_t DIDPubKey() const;
 
-			void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd);
+			void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) const;
+
+			Key GetKeyWithDID(const AddressPtr &did, const std::string &payPasswd) const;
 
 			Key DeriveOwnerKey(const std::string &payPasswd);
 
 			Key DeriveDIDKey(const std::string &payPasswd);
 
-			bool FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd);
-
-			bool GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const;
+			bool GetCodeAndPath(const AddressPtr &addr, bytes_t &code, std::string &path) const;
 
 			size_t InternalChainIndex(const TransactionPtr &tx) const;
 
 			size_t ExternalChainIndex(const TransactionPtr &tx) const;
 
-			const AccountPtr &Parent() const { return _parent; }
+			AccountPtr Parent() const;
 		private:
 			uint32_t _coinIndex;
-			std::vector<Address> _internalChain, _externalChain;
-			std::set<Address> _usedAddrs, _allAddrs;
-			mutable Address _depositAddress, _ownerAddress, _crDepositAddress;
+			AddressArray _internalChain, _externalChain, _did;
+			AddressSet _usedAddrs, _allAddrs, _allDID;
+			mutable AddressPtr _depositAddress, _ownerAddress, _crDepositAddress;
 
 			AccountPtr _parent;
-			Lockable *_lock;
 		};
-
-		typedef boost::shared_ptr<SubAccount> SubAccountPtr;
 
 	}
 }

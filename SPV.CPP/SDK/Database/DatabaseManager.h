@@ -8,8 +8,10 @@
 #include "MerkleBlockDataSource.h"
 #include "TransactionDataStore.h"
 #include "PeerDataSource.h"
+#include "PeerBlackList.h"
 #include "AssetDataStore.h"
 #include "CoinBaseUTXODataStore.h"
+#include "DIDDataStore.h"
 #include "Sqlite.h"
 
 namespace Elastos {
@@ -31,7 +33,7 @@ namespace Elastos {
 			size_t GetCoinBaseTotalCount() const;
 			std::vector<UTXOPtr> GetAllCoinBase() const;
 			bool UpdateCoinBase(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
-			bool UpdateSpentCoinBase(const std::vector<uint256> &txHashes);
+			bool UpdateSpentCoinBase(const UTXOArray &spentUTXO);
 			bool DeleteCoinBase(const uint256 &hash);
 
 			// Transaction's database interface
@@ -39,25 +41,32 @@ namespace Elastos {
 			bool PutTransactions(const std::string &iso, const std::vector<TransactionPtr> &txns);
 			bool DeleteAllTransactions();
 			size_t GetAllTransactionsCount() const;
-			std::vector<TransactionPtr> GetAllTransactions() const;
+			TransactionPtr GetTransaction(const uint256& hash, const std::string &chainID);
+			std::vector<TransactionPtr> GetAllTransactions(const std::string &chainID) const;
 			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 			bool DeleteTxByHash(const uint256 &hash);
 			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
 
 			// Peer's database interface
-			bool PutPeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
-			bool DeletePeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool PutPeer(const PeerEntity &peerEntity);
+			bool PutPeers(const std::vector<PeerEntity> &peerEntities);
+			bool DeletePeer(const PeerEntity &peerEntity);
 			bool DeleteAllPeers();
-			size_t GetAllPeersCount(const std::string &iso) const;
-			std::vector<PeerEntity> GetAllPeers(const std::string &iso) const;
+			size_t GetAllPeersCount() const;
+			std::vector<PeerEntity> GetAllPeers() const;
+			// Peer's black list
+			bool PutBlackPeer(const PeerEntity &entity);
+			bool PutBlackPeers(const std::vector<PeerEntity> &entitys);
+			bool DeleteBlackPeer(const PeerEntity &entity);
+			bool DeleteAllBlackPeers();
+			std::vector<PeerEntity> GetAllBlackPeers() const;
 
 			// MerkleBlock's database interface
 			bool PutMerkleBlock(const std::string &iso, const MerkleBlockPtr &blockPtr);
 			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockPtr> &blocks);
 			bool DeleteMerkleBlock(const std::string &iso, long id);
 			bool DeleteAllBlocks(const std::string &iso);
-			std::vector<MerkleBlockPtr> GetAllMerkleBlocks(const std::string &iso, const std::string &pluginType) const;
+			std::vector<MerkleBlockPtr> GetAllMerkleBlocks(const std::string &iso, const std::string &chainID) const;
 
 			// Asset's database interface
 			bool PutAsset(const std::string &iso, const AssetEntity &asset);
@@ -65,6 +74,16 @@ namespace Elastos {
 			bool DeleteAllAssets();
 			bool GetAssetDetails(const std::string &assetID, AssetEntity &asset) const;
 			std::vector<AssetEntity> GetAllAssets() const;
+
+			// DID's database interface
+			bool PutDID(const std::string &iso, const DIDEntity &didEntity);
+			bool UpdateDID(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+			bool DeleteDID(const std::string &did);
+			bool DeleteDIDByTxHash(const std::string &txHash);
+			bool GetDIDDetails(const std::string &did, DIDEntity &didEntity) const;
+			std::string GetDIDByTxHash(const std::string &txHash) const;
+			std::vector<DIDEntity> GetAllDID() const;
+			bool DeleteAllDID();
 
 			const boost::filesystem::path &GetPath() const;
 
@@ -74,10 +93,12 @@ namespace Elastos {
 			boost::filesystem::path _path;
 			Sqlite                	_sqlite;
 			PeerDataSource        	_peerDataSource;
+			PeerBlackList           _peerBlackList;
 			CoinBaseUTXODataStore   _coinbaseDataStore;
 			TransactionDataStore  	_transactionDataStore;
 			MerkleBlockDataSource 	_merkleBlockDataSource;
 			AssetDataStore          _assetDataStore;
+			DIDDataStore            _didDataStore;
 		};
 
 	}

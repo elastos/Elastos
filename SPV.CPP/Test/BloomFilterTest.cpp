@@ -7,9 +7,9 @@
 #include <catch.hpp>
 
 #include <nlohmann/json.hpp>
-#include <SDK/WalletCore/BIPs/BloomFilter.h>
-#include <SDK/WalletCore/BIPs/Address.h>
-#include <SDK/Common/Log.h>
+#include <WalletCore/BloomFilter.h>
+#include <WalletCore/Address.h>
+#include <Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 
