@@ -1,4 +1,8 @@
-import { ABSTRACT_MAX_WORDS, SUGGESTION_STATUS } from '@/constant'
+import {
+  ABSTRACT_MAX_WORDS,
+  SUGGESTION_STATUS,
+  SUGGESTION_BUDGET_TYPE
+} from '@/constant'
 
 export default {
   title: {
@@ -129,9 +133,9 @@ export default {
     action: 'Action',
     desc: 'Based on milestone selected below:',
     schedule: 'Payment Schedule',
-    advance: 'Advance payment (< 30% of total)',
-    completion: 'Proposal completion payment',
-    conditioned: 'Conditioned payment'
+    [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Advance payment (< 30% of total)',
+    [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Proposal completion payment',
+    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Conditioned payment'
   },
   plan: {
     teamMember: 'Team Member',

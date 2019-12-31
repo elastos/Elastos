@@ -397,6 +397,12 @@ export const SUGGESTION_SEARCH_FILTERS = create([
   'NAME'
 ])
 
+export const SUGGESTION_BUDGET_TYPE = create([
+  'ADVANCE',
+  'COMPLETION',
+  'CONDITIONED'
+])
+
 // elip
 export const ELIP_STATUS = create([
   'WAIT_FOR_REVIEW',

@@ -1,4 +1,8 @@
-import { ABSTRACT_MAX_WORDS, SUGGESTION_STATUS } from '@/constant'
+import {
+  ABSTRACT_MAX_WORDS,
+  SUGGESTION_STATUS,
+  SUGGESTION_BUDGET_TYPE
+} from '@/constant'
 
 export default {
   title: {
@@ -128,9 +132,9 @@ export default {
     action: '操作',
     desc: '请基于里程碑填写：',
     schedule: '支出计划',
-    advance: '预付款(小于总金额的30%)',
-    completion: '提案完成付款',
-    conditioned: '有条件的付款'
+    [SUGGESTION_BUDGET_TYPE.ADVANCE]: '预付款(小于总金额的30%)',
+    [SUGGESTION_BUDGET_TYPE.COMPLETION]: '提案完成付款',
+    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '有条件的付款'
   },
   plan: {
     teamMember: '团队成员',

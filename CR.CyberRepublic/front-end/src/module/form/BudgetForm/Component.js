@@ -1,10 +1,11 @@
-import React, { Fragment, Component } from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Form, Input, Button, Tabs, Radio } from 'antd'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import I18N from '@/I18N'
 import moment from 'moment/moment'
+import { SUGGESTION_BUDGET_TYPE } from '@/constant'
 
 const FormItem = Form.Item
 const { TabPane } = Tabs
@@ -80,13 +81,13 @@ class BudgetForm extends Component {
               initialValue: item && item.type ? item.type : ''
             })(
               <Radio.Group>
-                <Radio value="1">{I18N.get('suggestion.budget.advance')}</Radio>
-                <Radio value="2">
-                  {I18N.get('suggestion.budget.completion')}
-                </Radio>
-                <Radio value="3">
-                  {I18N.get('suggestion.budget.conditioned')}
-                </Radio>
+                {Object.values(SUGGESTION_BUDGET_TYPE).map(item => {
+                  return (
+                    <Radio value={item}>
+                      {I18N.get(`suggestion.budget.${item}`)}
+                    </Radio>
+                  )
+                })}
               </Radio.Group>
             )}
           </FormItem>
