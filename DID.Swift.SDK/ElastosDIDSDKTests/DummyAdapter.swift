@@ -159,7 +159,8 @@ class DummyAdapter: DIDAdapter {
     }
     
     private func getLastTransaction(_ did: DID) -> IDTransactionInfo? {
-        for ti in idtxs {
+        let reversedArr = idtxs.reversed()
+        for ti in reversedArr {
             if ti.getDid() == did {
                 return ti
             }

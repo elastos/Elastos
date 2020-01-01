@@ -56,6 +56,7 @@ public class LRUCache {
                 // Move the accessed key to the front of the cache queue
                 self.cacheQueue.remove(at: index!)
                 self.cacheQueue.append(key)
+                self.cacheItems.updateValue(data, forKey: key)
             }
         }
     }
