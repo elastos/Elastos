@@ -32,6 +32,17 @@ class VerifiablePresentationTest: XCTestCase {
             
             XCTAssertTrue(try vp.isGenuine())
             XCTAssertTrue(try vp.isValid())
+            
+        }
+        catch {
+            XCTFail()
+        }
+    }
+    
+    func testBuild() {
+        do {
+            // TODO
+            
         }
         catch {
             XCTFail()

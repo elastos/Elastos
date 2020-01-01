@@ -98,7 +98,7 @@ public class VerifiablePresentation: NSObject{
 
         // All credentials should owned by signer
         
-        for i in 0..<credentials.values.count {
+        for _ in 0..<credentials.values.count {
             let vc = credentials.values[0]
             if (vc.subject.id != signer) {
                 return false
@@ -109,7 +109,9 @@ public class VerifiablePresentation: NSObject{
         }
         let dic = toJson(true)
         let json = JsonHelper.creatJsonString(dic: dic)
-        let inputs: [CVarArg] = [json, json.count]
+        let inputs: [CVarArg] = [json, json.count,
+                                 proof!.realm!, proof!.realm!.count,
+                                 proof!.nonce!, proof!.nonce!.count]
         let count = inputs.count / 2
         
         return try signerDoc!.verify(proof!.verificationMethod, proof!.signature, count, inputs)

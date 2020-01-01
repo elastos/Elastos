@@ -38,7 +38,7 @@ class TestDataGenerator: XCTest {
             print("Generate issuer DID: \(doc.subject)...")
             
             let selfIssuer = try Issuer(doc)
-            var props: Dictionary<String, String> = [: ]
+            var props: OrderedDictionary<String, String> = OrderedDictionary()
             props["name"] = "Test Issuer"
             props["nation"] = "Singapore"
             props["language"] = "English"
@@ -96,7 +96,7 @@ class TestDataGenerator: XCTest {
             try doc.addService("carrier", "CarrierAddress", "carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d");
             
             let selfIssuer = try Issuer(doc)
-            var props: Dictionary<String, String> = [: ]
+            var props: OrderedDictionary<String, String> = OrderedDictionary()
             props["name"] = "John"
             props["gender"] = "Male"
             props["nation"] = "Singapore"
@@ -107,7 +107,7 @@ class TestDataGenerator: XCTest {
             
             let kycIssuer = try Issuer(issuer)
             
-            props = [: ]
+            props = OrderedDictionary()
             props["email"] = "john@example.com"
             let vcEmail: VerifiableCredential = try selfIssuer.seal(for: doc.subject!, "email", ["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"], props, storePass)
             doc.addCredential(vcProfile)
@@ -158,7 +158,7 @@ class TestDataGenerator: XCTest {
             // Passport credential
             id = try DIDURL(test.subject!, "passport")
             print("Generate credential:  \(id)...")
-            props = [: ]
+            props = OrderedDictionary()
             props["nation"] = "Singapore"
             props["passport"] = "S653258Z07"
             
@@ -178,7 +178,7 @@ class TestDataGenerator: XCTest {
             id = try DIDURL(test.subject!, "twitter")
             print("Generate credential:  \(id)...")
             
-            props = [: ]
+            props = OrderedDictionary()
             props["twitter"] = "@john"
             let vcTwitter =  try selfIssuer.seal(for: doc.subject!, "twitter", ["InternetAccountCredential", "TwitterCredential"], props, storePass)
             
@@ -259,7 +259,7 @@ class TestDataGenerator: XCTest {
             
             let doc = try store?.newDid(storePass)
             print("******** Publishing DID: \(doc?.subject)")
-            try store?.publishDid(doc!, storePass)
+            try store?.publishDid(doc!.subject!, storePass)
             while (true) {
                 // TODO: Waiting 30s
                 do {

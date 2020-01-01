@@ -50,7 +50,7 @@ public class Issuer {
         return signKey
     }
     
-    public func seal(for did : DID, _ id: String, _ type: Array<String>, _ properties: Dictionary<String, String>, _ storepass: String) throws -> VerifiableCredential {
+    public func seal(for did : DID, _ id: String, _ type: Array<String>, _ properties: OrderedDictionary<String, String>, _ storepass: String) throws -> VerifiableCredential {
         let credential: VerifiableCredential = VerifiableCredential()
         credential.issuer = didDocument?.subject
         credential.subject = CredentialSubject(did)

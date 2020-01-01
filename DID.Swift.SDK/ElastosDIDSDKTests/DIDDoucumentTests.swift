@@ -242,6 +242,7 @@ class DIDDoucumentTests: XCTestCase {
         }
         
     }
+    
     func testAddAuthenticationKey() {
         do {
             let testData: TestData = TestData()
@@ -960,6 +961,55 @@ class DIDDoucumentTests: XCTestCase {
         self.measure {
             // Put the code you want to measure the time of here.
         }
+    }
+
+    // TODO
+    func testSignAndVerifyNew() {
+
+        do {
+            let testData: TestData = TestData()
+            try testData.setupStore(true)
+            try testData.initIdentity()
+            
+            let doc: DIDDocument = try testData.loadTestDocument()
+            XCTAssertNotNil(doc)
+            XCTAssertTrue(try doc.isValid())
+            
+            let pkid: DIDURL = try DIDURL(doc.subject!, "primary")
+            
+            for i in 0..<10 {
+                var data: [String]  = Array(repeating: String(i), count: 1024)
+                var inputString = data.joined(separator: "")
+                
+                var inputs: [CVarArg] = [inputString, inputString.count]
+                let count = inputs.count / 2
+                
+                var sig: String = try doc.sign(pkid, storePass, 1, inputs)
+                var result: Bool = try doc.verify(sig, count, inputs)
+                XCTAssertTrue(result)
+                
+                data[0] = String(i + 1)
+                inputString = data.joined(separator: "")
+                inputs = [inputString, inputString.count]
+                result = try doc.verify(sig, count, inputs)
+                XCTAssertFalse(result)
+
+                sig = try doc.sign(storePass, count, inputs)
+                result = try doc.verify(sig, count, inputs)
+                XCTAssertTrue(result)
+                
+                data[0] = String(i + 2)
+                inputString = data.joined(separator: "")
+                inputs = [inputString, inputString.count]
+                result = try doc.verify(sig, count, inputs)
+                XCTAssertFalse(result)
+            }
+            
+        } catch {
+            print(error)
+            XCTFail()
+        }
+        
     }
 
 }

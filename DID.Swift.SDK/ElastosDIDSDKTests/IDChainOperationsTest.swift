@@ -4,6 +4,8 @@ import ElastosDIDSDK
 
 class IDChainOperationsTest: XCTestCase {
 
+    public static let DUMMY_TEST = false
+
     public func testPublishAndResolve() throws {
         do {
             let testData: TestData = TestData()
@@ -23,8 +25,9 @@ class IDChainOperationsTest: XCTestCase {
                 wait(for: [lock], timeout: 30)
             }
             let doc = try store.newDid(storePass)
-            let success = try store.publishDid(doc, storePass)
-            XCTAssertTrue((success != nil))
+            let did = doc.subject
+            let txid = try store.publishDid(did!, storePass)
+            XCTAssertNotNil(txid)
             print("Published new DID: \(doc.subject!)")
             
             print("Try to resolve new published DID.")
@@ -45,6 +48,220 @@ class IDChainOperationsTest: XCTestCase {
         } catch {
             XCTFail()
         }
+    }
+    
+    public func testUpdateAndResolveWithCredentials() throws {
+//
+//        do {
+//
+//            let testData: TestData = TestData()
+//            let store: DIDStore = try testData.setupStore(false)
+//            let mnemonic: String = try testData.initIdentity()
+//            print("Mnemonic: " + mnemonic)
+//
+//            var adapter: SPVAdaptor = DIDBackend.shareInstance().adapter as! SPVAdaptor
+//
+//            // need synchronize?
+//            if DIDBackend.shareInstance().adapter is SPVAdaptor {
+//                adapter = DIDBackend.shareInstance().adapter as! SPVAdaptor
+//            }
+//
+//            print("Waiting for wallet available to create DID")
+//            while true {
+//                if try adapter.isAvailable() {
+//                    print("OK")
+//                    break
+//                } else {
+//                    print("...")
+//                }
+//                let lock = XCTestExpectation(description: "******** Waiting for adapter available, Waiting 30s")
+//                wait(for: [lock], timeout: 30)
+//            }
+//
+//            // Create new DID and publish to ID sidechain.
+//
+//            var doc: DIDDocument = try store.newDid(storePass)
+//            let did: DID = doc.subject!
+//
+//            var selfIssuer: Issuer = try Issuer(doc)
+//
+//
+//            var credential: VerifiableCredential = VerifiableCredential()
+//            credential.id = try DIDURL(did, "profile")
+//            credential.types = ["BasicProfileCredential", "SelfProclaimedCredential"]
+//
+//            var cs: CredentialSubject = CredentialSubject(did)
+//            cs.addProperty("name", "John")
+//            cs.addProperty("gender", "Male")
+//            cs.addProperty("nation", "Singapore")
+//            cs.addProperty("language", "English")
+//            cs.addProperty("email", "john@example.com")
+//            cs.addProperty("twitter", "@john")
+//
+//            var vc: VerifiableCredential = try selfIssuer.seal(for: did, "profile", credential.types, cs.properties, storePass)
+//
+//            doc.addCredential(vc)
+//            doc = try doc.seal(store, storePass)
+//
+//            XCTAssertNotNil(doc)
+//            XCTAssertEqual(1, doc.getCredentialCount())
+//            try store.storeDid(doc)
+//
+//            var txid: String = try store.publishDid(doc, storePass)!;
+//            XCTAssertNotNil(txid)
+//
+//            print("Published new DID: \(did)")
+//
+//            print("Waiting for create transaction confirm")
+//            while true {
+//                if try adapter.isAvailable() {
+//                    print("OK")
+//                    break
+//                } else {
+//                    print("...")
+//                }
+//                let lock = XCTestExpectation(description: "******** Waiting for adapter available, Waiting 30s")
+//                wait(for: [lock], timeout: 30)
+//            }
+//
+//            print("Try to resolve new published DID")
+//
+//            while true {
+//                let rdoc: DIDDocument? = try did.resolve(true) ?? nil
+//                if rdoc != nil {
+//                    print("OK")
+//                    break
+//                } else {
+//                    print("...")
+//                }
+//                let lock = XCTestExpectation(description: "******** Waiting 30s")
+//                wait(for: [lock], timeout: 30)
+//            }
+//
+//            var resolved: DIDDocument = try did.resolve(true)!
+//            XCTAssertEqual(did, resolved.subject)
+//            XCTAssertTrue(try resolved.isValid())
+//            // TODO 判断方法有问题
+//            XCTAssertEqual(did.description, resolved.description)
+//            try store.storeDid(resolved)
+//            var lastTxid: String = resolved.getTransactionId()
+//            print("Last transaction id: \(lastTxid)")
+//
+//            // Update
+//            selfIssuer = try Issuer(resolved);
+//            credential = VerifiableCredential()
+//            credential.id = try DIDURL(did, "passport")
+//            credential.types = ["BasicProfileCredential", "SelfProclaimedCredential"]
+//
+//            cs = CredentialSubject(resolved.subject!)
+//            cs.addProperty("nation", "Singapore")
+//            cs.addProperty("passport", "S653258Z07")
+//            vc = try selfIssuer.seal(for: resolved.subject!, "passport", credential.types, cs.properties, storePass)
+//
+//            XCTAssertNotNil(vc)
+//            resolved.addCredential(vc)
+//            try resolved.seal(store, storePass)
+//            XCTAssertNotNil(doc)
+//            XCTAssertEqual(2, doc.getCredentialCount())
+//            try store.storeDid(doc)
+//            txid = store.publishDid(did, storePass)
+//            XCTAssertNotNil(txid)
+//            print("Updated DID: \(did)")
+//
+//            print("Waiting for update transaction confirm")
+//            while true {
+//                if try adapter.isAvailable() {
+//                    print("OK")
+//                    break
+//                } else {
+//                    print("...")
+//                }
+//                let lock = XCTestExpectation(description: "******** Waiting for adapter available, Waiting 30s")
+//                wait(for: [lock], timeout: 30)
+//            }
+//            print("Try to resolve updated DID.")
+//            while true {
+//                let rdoc: DIDDocument? = try did.resolve(true) ?? nil
+//                if rdoc != nil {
+//                    print("OK")
+//                    break
+//                } else {
+//                    print("...")
+//                }
+//                let lock = XCTestExpectation(description: "******** Waiting 30s")
+//                wait(for: [lock], timeout: 30)
+//            }
+//
+//            resolved = try did.resolve(true)!
+//            XCTAssertEqual(did, resolved.subject)
+//            XCTAssertTrue(try resolved.isValid())
+//            // TODO 判断方法有问题
+//            XCTAssertEqual(did.description, resolved.description)
+//            try store.storeDid(resolved)
+//            lastTxid = resolved.getTransactionId()
+//            print("Last transaction id: \(lastTxid)")
+//
+//            selfIssuer = try Issuer(resolved);
+//            credential = VerifiableCredential()
+//            credential.id = try DIDURL(did, "test")
+//            credential.types = ["TestCredential", "SelfProclaimedCredential"]
+//
+//            cs = CredentialSubject(resolved.subject!)
+//            cs.addProperty("Abc", "Abc")
+//            cs.addProperty("abc", "abc")
+//            cs.addProperty("Foobar", "Foobar")
+//            cs.addProperty("foobar", "foobar")
+//            cs.addProperty("zoo", "zoo")
+//            cs.addProperty("Zoo", "Zoo")
+//            vc = try selfIssuer.seal(for: resolved.subject!, "test", credential.types, cs.properties, storePass)
+//
+//            XCTAssertNotNil(vc)
+//            resolved.addCredential(vc)
+//            try resolved.seal(store, storePass)
+//            XCTAssertNotNil(doc)
+//            XCTAssertEqual(3, doc.getCredentialCount())
+//            try store.storeDid(doc)
+//            txid = store.publishDid(did, storePass)
+//            XCTAssertNotNil(txid)
+//            print("Updated DID: \(did)")
+//
+//            print("Waiting for update transaction confirm")
+//            while true {
+//                if try adapter.isAvailable() {
+//                    print("OK")
+//                    break
+//                } else {
+//                    print("...")
+//                }
+//                let lock = XCTestExpectation(description: "******** Waiting for adapter available, Waiting 30s")
+//                wait(for: [lock], timeout: 30)
+//            }
+//            print("Try to resolve updated DID.")
+//            while true {
+//                let rdoc: DIDDocument? = try did.resolve(true) ?? nil
+//                if rdoc != nil {
+//                    print("OK")
+//                    break
+//                } else {
+//                    print("...")
+//                }
+//                let lock = XCTestExpectation(description: "******** Waiting 30s")
+//                wait(for: [lock], timeout: 30)
+//            }
+//
+//            var resolved: DIDDocument = try did.resolve(true)!
+//            XCTAssertEqual(did, resolved.subject)
+//            XCTAssertTrue(try resolved.isValid())
+//            // TODO 判断方法有问题
+//            XCTAssertEqual(did.description, resolved.description)
+//            try store.storeDid(resolved)
+//            var lastTxid: String = resolved.getTransactionId()
+//            print("Last transaction id: \(lastTxid)")
+//
+//        } catch {
+//            XCTFail()
+//        }
+    
     }
     
     public func testRestore() throws {

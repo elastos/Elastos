@@ -87,7 +87,7 @@ class IssuerTest: XCTestCase {
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             let testDoc: DIDDocument = try testData.loadTestDocument()
             
-            var props: Dictionary<String, String> = [: ]
+            var props: OrderedDictionary<String, String> = OrderedDictionary()
             props["name"] = "John"
             props["gender"] = "Male"
             props["nation"] = "Singapore"
@@ -131,7 +131,7 @@ class IssuerTest: XCTestCase {
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             
-            var props: Dictionary<String, String> = [:]
+            var props: OrderedDictionary<String, String> = OrderedDictionary()
             props["name"] = "Testing Issuer"
             props["nation"] = "Singapore"
             props["language"] = "English"
