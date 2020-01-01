@@ -66,7 +66,9 @@ public class VerifiablePresentation: NSObject{
         }
         let dic = toJson(true)
         let json = JsonHelper.creatJsonString(dic: dic)
-        let inputs: [CVarArg] = [json, json.count]
+        let inputs: [CVarArg] = [json, json.count,
+                                 proof!.realm!, proof!.realm!.count,
+                                 proof!.nonce!, proof!.nonce!.count]
         let count = inputs.count / 2
         return try signerDoc!.verify(proof!.verificationMethod, proof!.signature, count, inputs)
     }
