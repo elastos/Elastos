@@ -98,6 +98,7 @@ class TestData: XCTestCase {
         if testIssuer == nil {
             testIssuer = try loadDIDDocument("issuer", "json")
             try importPrivateKey((testIssuer?.getDefaultPublicKey())!, "issuer.primary", "sk")
+            try store.publishDid(testIssuer!, storePass)
         }
         return testIssuer!
     }

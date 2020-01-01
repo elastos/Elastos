@@ -52,7 +52,7 @@ class VerifiablePresentationTest: XCTestCase {
             XCTAssertTrue(try vp.isValid())
 
             let normalized: VerifiablePresentation = try VerifiablePresentation.fromJson(
-                try testData.loadPresentationNormalizedJson())
+            try testData.loadPresentationNormalizedJson())
             XCTAssertNotNil(normalized)
             XCTAssertTrue(try normalized.isGenuine())
             XCTAssertTrue(try normalized.isValid())

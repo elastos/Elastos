@@ -60,7 +60,7 @@ public class VerifiablePresentation: NSObject{
                 return false
             }
             
-            if try vc.isGenuine() {
+            if try !vc.isGenuine() {
                 return false
             }
         }
