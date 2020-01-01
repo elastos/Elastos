@@ -11,7 +11,11 @@ public class DIDStorage {
     public func storePrivateIdentityIndex(_ index: Int) throws {}
 
     public func loadPrivateIdentityIndex() throws -> Int { return 0 }
+    
+    public func storeMnemonic(_ mnemonic: String) throws {}
 
+    public func loadMnemonic() throws -> String { return "" }
+    
     // DIDs
     public func storeDidMeta(_ did: DID, _ alias: DIDMeta) throws { }
 

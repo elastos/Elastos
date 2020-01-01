@@ -38,7 +38,7 @@ public class FileSystemStorage: DIDStorage {
     private static let PRIVATE_DIR: String = "private"
     private static let HDKEY_FILE: String = "key"
     private static let INDEX_FILE: String = "index"
-    
+    private static let MNEMONIC_FILE: String = "mnemonic";
     private static let DID_DIR: String = "ids"
     private static let DOCUMENT_FILE: String = "document"
     private static let CREDENTIALS_DIR: String = "credentials"
@@ -141,9 +141,28 @@ public class FileSystemStorage: DIDStorage {
         let index = try readTextFromPath(targetPath)
         return Int(index)!
     }
+    public override func storeMnemonic(_ mnemonic: String) throws {
+        do {
+            let p = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.MNEMONIC_FILE
+            let path = try getFile(true, p)
+            try writeTextToPath(path, mnemonic)
+        } catch {
+            throw DIDStoreError.failue("Store mnemonic error.")
+        }
+    }
     
+    public override func loadMnemonic() throws -> String {
+        do {
+            let path = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.MNEMONIC_FILE
+            return try readTextFromPath(path)
+        } catch {
+            throw DIDStoreError.failue("Load mnemonic error.")
+        }
+    }
+
     public override func storeDidMeta(_ did: DID, _ meta: DIDMeta?) throws {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.META_FILE
+        try getFile(true, path)
         let metadata: String = meta != nil ? meta!.toJson() : ""
         if metadata == "" {
             try deleteFile(path)
@@ -155,7 +174,7 @@ public class FileSystemStorage: DIDStorage {
             try writeTextToPath(path, metadata)
         }
     }
-
+    
     public override func loadDidMeta(_ did: DID) throws -> DIDMeta {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.META_FILE
         let meta = try readTextFromPath(path)
@@ -227,14 +246,20 @@ public class FileSystemStorage: DIDStorage {
     }
     
     public override func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta?) throws {
-        let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + id.fragment + "/" + FileSystemStorage.META_FILE
-        let metadata: String = meta != nil ? meta!.toJson() : ""
         
-        if metadata == "" {
-           _ = try deleteFile(path)
+        do {
+            let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + id.fragment + "/" + FileSystemStorage.META_FILE
+            let metadata: String = meta != nil ? meta!.toJson() : ""
+            
+            if metadata == "" {
+                _ = try deleteFile(path)
+            }
+            else {
+                try writeTextToPath(path, metadata)
+            }
         }
-        else {
-            try writeTextToPath(path, metadata)
+        catch {
+            throw DIDStoreError.failue("Write alias error.")
         }
     }
 

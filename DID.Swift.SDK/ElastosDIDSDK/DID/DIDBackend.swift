@@ -122,7 +122,7 @@ public class DIDBackend: NSObject {
         }
     }
     
-    func update(_ doc: DIDDocument, _ previousTxid: String, _ signKey: DIDURL, _ storepass: String) throws -> String? {
+    func update(_ doc: DIDDocument, _ previousTxid: String?, _ signKey: DIDURL, _ storepass: String) throws -> String? {
         do {
             let request: IDChainRequest = try IDChainRequest.update(doc, previousTxid, signKey, storepass)
             let jsonStr: String = request.toJson(true)
@@ -132,41 +132,25 @@ public class DIDBackend: NSObject {
         }
     }
     
-    public func deactivate(_ did: DID, _ signKey: DIDURL, _ storepass: String) throws -> String? {
+    func deactivate(_ doc: DIDDocument?, _ signKey: DIDURL?, _ storepass: String?) throws -> String {
         do {
-            let request: IDChainRequest = try IDChainRequest.deactivate(did, signKey, storepass)
-            let jsonStr: String = request.toJson(true)
-            return try adapter.createIdTransaction(jsonStr, nil)
-        } catch {
-            throw  DIDError.failue("Deactivate ID transaction error: \(error.localizedDescription).")
+            let request = try IDChainRequest.deactivate(doc!, signKey!, storepass!)
+        let json = request.toJson(true)
+            return try adapter.createIdTransaction(json, nil)!
+        }
+        catch {
+            throw DIDStoreError.failue("Create ID transaction error.")
         }
     }
     
-    /*
-     public func resolve(_ did: DID) throws -> DIDDocument? {
-     do {
-     let res = try adapter.resolve(did.methodSpecificId)
-     guard res != nil else {
-     return nil
-     }
-     var jsonString = res!.replacingOccurrences(of: " ", with: "")
-     jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
-     let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
-     let result = ordDic["result"] as! Array<Any>
-     
-     if (result.count == 0) {
-     return nil
-     }
-     let re = result[0] as! OrderedDictionary<String, Any>
-     let request: IDChainRequest = try IDChainRequest.fromJson(re)
-     if try !request.isValid() {
-     throw  DIDError.failue("Signature verify failed.")
-     }
-     return request.doc
-     } catch {
-     throw DIDError.failue("Resolve DID error: \(error.localizedDescription)")
-     }
-     }
-     */
-    
+    func deactivate(_ target: DID, _ targetSignKey: DIDURL, _ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> String? {
+        do {
+            let request: IDChainRequest = try! IDChainRequest.deactivate(target, targetSignKey, doc, signKey, storepass)
+            let json = request.toJson(true)
+            return try adapter.createIdTransaction(json, nil)
+            }
+        catch {
+            throw DIDStoreError.failue("Create ID transaction error.")
+        }
+    }
 }

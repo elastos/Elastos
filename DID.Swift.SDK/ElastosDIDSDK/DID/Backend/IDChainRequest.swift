@@ -58,20 +58,28 @@ public class IDChainRequest: NSObject {
         return request
     }
     
-    public class func update(_ doc: DIDDocument,_ previousTxid: String, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
+    public class func update(_ doc: DIDDocument,_ previousTxid: String?, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
         let request: IDChainRequest = try IDChainRequest(Operation.UPDATE)
-        request.previousTxid = previousTxid
+        request.previousTxid = previousTxid != nil ? previousTxid! : ""
         try request.setPayload(doc)
         try request.seal(signKey, storepass)
         
         return request
     }
     
-    public class func deactivate(_ did: DID, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
+    public class func deactivate(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
         let request: IDChainRequest = try IDChainRequest(Operation.DEACTIVATE)
-        try request.setPayload(did)
+        try request.setPayload(doc)
         try request.seal(signKey, storepass)
         
+        return request
+    }
+    
+    public class func deactivate(_ target: DID, _ targetSignKey: DIDURL, _ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
+        let request = try IDChainRequest(Operation.DEACTIVATE)
+        try request.setPayload(target)
+        try request.seal(targetSignKey, doc, signKey, storepass)
+
         return request
     }
     
@@ -84,16 +92,22 @@ public class IDChainRequest: NSObject {
     func setPayload(_ doc: DIDDocument) throws {
         self.did = doc.subject
         self.doc = doc
-        let json = try doc.description(false)
-        let c_input = (json.toUnsafePointerUInt8())!
-        payload = json + "\0"
-        payload = String(cString: payload.toUnsafePointerUInt8()!)
-        let c_payload = UnsafeMutablePointer<Int8>.allocate(capacity: 4096)
-        print(payload)
-        let re = base64_url_encode(c_payload, c_input, payload.count)
-        let jsonStr: String = String(cString: c_payload)
-        let endIndex = jsonStr.index(jsonStr.startIndex, offsetBy: re)
-        payload = String(jsonStr[jsonStr.startIndex..<endIndex])
+        
+        if operation != Operation.DEACTIVATE {
+            let json = try doc.description(false)
+            let c_input = (json.toUnsafePointerUInt8())!
+            payload = json + "\0"
+            payload = String(cString: payload.toUnsafePointerUInt8()!)
+            let c_payload = UnsafeMutablePointer<Int8>.allocate(capacity: 4096)
+            print(payload)
+            let re = base64_url_encode(c_payload, c_input, payload.count)
+            let jsonStr: String = String(cString: c_payload)
+            let endIndex = jsonStr.index(jsonStr.startIndex, offsetBy: re)
+            payload = String(jsonStr[jsonStr.startIndex..<endIndex])
+        }
+        else {
+            payload = doc.subject!.description
+        }
     }
     
     func setPayload(_ payload: String) throws {
@@ -129,6 +143,18 @@ public class IDChainRequest: NSObject {
         self.signature = (try doc?.sign(signKey, storepass, count, inputs))!
         self.signKey = signKey
         self.keyType = Constants.defaultPublicKeyType
+    }
+    
+    func seal(_ targetSignKey: DIDURL, _ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws {
+        let prevtxid = operation == Operation.UPDATE ? previousTxid : ""
+        let inputs: [CVarArg] = [specification, specification.count,
+                                 operation.toString(), operation.toString().count,
+                                 prevtxid, prevtxid.count,
+                                 payload, payload.count]
+        let count = inputs.count / 2
+        self.signature = (try doc.sign(signKey, storepass, count, inputs))
+        self.signKey = signKey
+        self.keyType = Constants.DEFAULT_PUBLICKEY_TYPE
     }
     
     public func isValid() throws -> Bool {

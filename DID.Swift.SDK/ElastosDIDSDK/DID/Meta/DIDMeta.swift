@@ -81,7 +81,10 @@ public class DIDMeta: Metadata {
             alias = m.alias
         }
         
-        deactivated = m.deactivated
+        if !deactivated {
+            deactivated = m.deactivated
+        }
+        
         if m.transactionId != "" {
             transactionId = m.transactionId
         }

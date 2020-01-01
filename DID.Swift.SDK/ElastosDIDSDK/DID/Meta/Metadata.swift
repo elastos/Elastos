@@ -62,5 +62,4 @@ public class Metadata {
             extra[key] = value
         }
     }
-    
 }
