@@ -135,10 +135,23 @@ public class IDChainRequest: NSObject {
     }
     
     func seal(_ signKey: DIDURL, _ storepass: String) throws {
-        let inputs: [CVarArg] = [specification, specification.count,
-                                 operation.toString(), operation.toString().count,
-                                 previousTxid, previousTxid.count,
-                                 payload, payload.count]
+        var inputs: [CVarArg] = [ ]
+        if specification.count > 0 {
+            inputs.append(specification)
+            inputs.append(specification.count)
+        }
+        if operation.toString().count > 0 {
+            inputs.append(operation.toString())
+            inputs.append(operation.toString().count)
+        }
+        if previousTxid.count > 0 {
+            inputs.append(previousTxid)
+            inputs.append(previousTxid.count)
+        }
+        if payload.count > 0 {
+            inputs.append(payload)
+            inputs.append(payload.count)
+        }
         let count = inputs.count / 2
         self.signature = (try doc?.sign(signKey, storepass, count, inputs))!
         self.signKey = signKey
@@ -146,11 +159,24 @@ public class IDChainRequest: NSObject {
     }
     
     func seal(_ targetSignKey: DIDURL, _ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws {
+        var inputs: [CVarArg] = []
         let prevtxid = operation == Operation.UPDATE ? previousTxid : ""
-        let inputs: [CVarArg] = [specification, specification.count,
-                                 operation.toString(), operation.toString().count,
-                                 prevtxid, prevtxid.count,
-                                 payload, payload.count]
+        if specification.count > 0 {
+            inputs.append(specification)
+            inputs.append(specification.count)
+        }
+        if operation.toString().count > 0 {
+            inputs.append(operation.toString())
+            inputs.append(operation.toString().count)
+        }
+        if prevtxid.count > 0 {
+            inputs.append(prevtxid)
+            inputs.append(prevtxid.count)
+        }
+        if payload.count > 0 {
+            inputs.append(payload)
+            inputs.append(payload.count)
+        }
         let count = inputs.count / 2
         self.signature = (try doc.sign(signKey, storepass, count, inputs))
         self.signKey = signKey
@@ -170,11 +196,23 @@ public class IDChainRequest: NSObject {
                 return false
             }
         }
-        
-        let inputs: [CVarArg] = [specification, specification.count,
-                                 operation.toString(), operation.toString().count,
-                                 previousTxid, previousTxid.count,
-                                 payload, payload.count]
+        var inputs: [CVarArg] = []
+        if specification.count > 0 {
+            inputs.append(specification)
+            inputs.append(specification.count)
+        }
+        if operation.toString().count > 0 {
+            inputs.append(operation.toString())
+            inputs.append(operation.toString().count)
+        }
+        if previousTxid.count > 0 {
+            inputs.append(previousTxid)
+            inputs.append(previousTxid.count)
+        }
+        if payload.count > 0 {
+            inputs.append(payload)
+            inputs.append(payload.count)
+        }
         let count = inputs.count / 2
         
         return try doc.verify(signKey!, signature, count, inputs)

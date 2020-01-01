@@ -66,9 +66,19 @@ public class VerifiablePresentation: NSObject{
         }
         let dic = toJson(true)
         let json = JsonHelper.creatJsonString(dic: dic)
-        let inputs: [CVarArg] = [json, json.count,
-                                 proof!.realm!, proof!.realm!.count,
-                                 proof!.nonce!, proof!.nonce!.count]
+        var inputs: [CVarArg] = []
+        if json.count > 0 {
+            inputs.append(json)
+            inputs.append(json.count)
+        }
+        if proof?.realm != nil && proof!.realm!.count > 0 {
+            inputs.append(proof!.realm!)
+            inputs.append(proof!.realm!.count)
+        }
+        if proof?.nonce != nil && proof!.nonce!.count > 0 {
+            inputs.append(proof!.nonce!)
+            inputs.append(proof!.nonce!.count)
+        }
         let count = inputs.count / 2
         return try signerDoc!.verify(proof!.verificationMethod, proof!.signature, count, inputs)
     }
@@ -109,9 +119,20 @@ public class VerifiablePresentation: NSObject{
         }
         let dic = toJson(true)
         let json = JsonHelper.creatJsonString(dic: dic)
-        let inputs: [CVarArg] = [json, json.count,
-                                 proof!.realm!, proof!.realm!.count,
-                                 proof!.nonce!, proof!.nonce!.count]
+        var inputs: [CVarArg] = []
+        if json.count > 0 {
+            inputs.append(json)
+            inputs.append(json.count)
+        }
+        
+        if proof?.realm != nil && proof!.realm!.count > 0 {
+            inputs.append(proof!.realm!)
+            inputs.append(proof!.realm!.count)
+        }
+        if proof?.nonce != nil && proof!.nonce!.count > 0 {
+            inputs.append(proof!.nonce!)
+            inputs.append(proof!.nonce!.count)
+        }
         let count = inputs.count / 2
         
         return try signerDoc!.verify(proof!.verificationMethod, proof!.signature, count, inputs)

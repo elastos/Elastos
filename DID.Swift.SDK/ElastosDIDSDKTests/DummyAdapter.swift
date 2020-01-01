@@ -109,7 +109,7 @@ class DummyAdapter: DIDAdapter {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         dic["id"] = requestId
         dic["jsonrpc"] = "2.0"
-        
+
         var redic: OrderedDictionary<String, Any> = OrderedDictionary()
         redic["did"] = target.description
         var status:Int = 3
@@ -129,10 +129,12 @@ class DummyAdapter: DIDAdapter {
             }
             matched = true
         }
+
         redic["status"] = String("\(status)")
         if status != 3 {
+            let reversedArr: Array = idtxs.reversed()
             var arr: Array<OrderedDictionary<String, Any>> = [ ]
-            for ti in idtxs {
+            for ti in reversedArr {
                 if ti.getDid() == target {
                     let dic = try ti.toJson()
                     arr.append(dic)
@@ -143,7 +145,7 @@ class DummyAdapter: DIDAdapter {
             }
             redic["transaction"] = arr
         }
-        
+
         dic["result"] = redic
         if (verbose) {
             print("failed")

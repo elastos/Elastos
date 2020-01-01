@@ -138,40 +138,43 @@ class DIDStoreTests: XCTestCase {
             
             let doc: DIDDocument = try store.newDid(storePass)
             XCTAssertTrue(try doc.isValid())
-            try store.publishDid(doc.subject!, storePass)
+            _ = try store.publishDid(doc.subject!, storePass)
             
-            var resolved = try store.resolveDid(doc.subject!, true)
+            var resolved = try! store.resolveDid(doc.subject!, true)
             try store.storeDid(resolved!)
             XCTAssertNotNil(resolved)
             
             // Update
             var key = try TestData.generateKeypair()
-            try resolved?.addAuthenticationKey("key1", try key.getPublicKeyBase58())
+            _ = try resolved?.addAuthenticationKey("key1", try! key.getPublicKeyBase58())
             var newDoc = try resolved!.seal(store, storePass)
             XCTAssertEqual(2, newDoc.getPublicKeyCount())
             XCTAssertEqual(2, newDoc.getAuthenticationKeyCount())
             
             print(newDoc.getTransactionId())
-            try store.publishDid(newDoc.subject!, storePass)
+            _ = try store.publishDid(newDoc.subject!, storePass)
+            try store.storeDid(newDoc)
+            
+            resolved = try newDoc.subject!.resolve()!
+
             //            resolved = doc.subject.resolve(true)
-            resolved = try doc.subject?.resolve()
+            resolved = try doc.subject!.resolve()!
             try store.storeDid(resolved!)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(newDoc.description, resolved?.description)
+            XCTAssertEqual(try newDoc.toJson(nil, true, true),try resolved?.toJson(nil, true, true))
             
             // Update again
-            key = try TestData.generateKeypair()
+            key = try! TestData.generateKeypair()
             try resolved?.addAuthenticationKey("key2", key.getPublicKeyBase58())
-            newDoc = try resolved!.seal(store, storePass)
+            newDoc = try! resolved!.seal(store, storePass)
             XCTAssertEqual(3, newDoc.getPublicKeyCount())
             XCTAssertEqual(3, newDoc.getAuthenticationKeyCount())
+            try store.storeDid(newDoc)
+            try! store.publishDid(newDoc.subject!, storePass)
             
-            try store.publishDid(newDoc.subject!, storePass)
-            
-            resolved = try doc.subject?.resolve(true)
+            resolved = try! doc.subject?.resolve(true)
             XCTAssertNotNil(resolved)
             XCTAssertEqual(newDoc.description, resolved?.description)
-            
         } catch {
             XCTFail()
         }
