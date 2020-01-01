@@ -102,10 +102,10 @@ public class VerifiableCredential: DIDObject {
     }
 
     private func checkGenuine() throws -> Bool {
-        let issuerDoc: DIDDocument = try issuer.resolve()!
+        let issuerDoc = try issuer.resolve()
         
         // Credential should signed by authentication key.
-        if (try !issuerDoc.isAuthenticationKey(proof.verificationMethod)){
+        if (try !issuerDoc!.isAuthenticationKey(proof.verificationMethod)){
             return false
         }
         
@@ -118,7 +118,7 @@ public class VerifiableCredential: DIDObject {
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
         
-        return try issuerDoc.verify(proof.signature, count, inputs)
+        return try issuerDoc!.verify(proof.verificationMethod, proof.signature, count, inputs)
     }
     
     public func isValid() throws -> Bool {
@@ -143,7 +143,7 @@ public class VerifiableCredential: DIDObject {
             return false
         }
         
-        return try checkGenuine()
+        return try !checkExpired() && checkGenuine()
     }
     
     public func toJson(_ normalized: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {

@@ -103,7 +103,7 @@ public class DIDBackend: NSObject {
             meta.transactionId = ti.transactionId
             meta.updated = ti.timestamp
             doc.meta = meta
-            return doc;
+            return doc
         }
     }
     

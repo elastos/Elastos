@@ -56,7 +56,7 @@ public class VerifiablePresentation: NSObject{
         // All credentials should owned by signer
         for i in 0..<credentials.values.count {
             let vc = credentials.values[i]
-            if vc.subject.id == signer {
+            if vc.subject.id != signer {
                 return false
             }
             

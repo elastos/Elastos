@@ -50,7 +50,7 @@ class VerifiablePresentationTest: XCTestCase {
             XCTAssertNotNil(vp)
             XCTAssertTrue(try vp.isGenuine())
             XCTAssertTrue(try vp.isValid())
-            
+
             let normalized: VerifiablePresentation = try VerifiablePresentation.fromJson(
                 try testData.loadPresentationNormalizedJson())
             XCTAssertNotNil(normalized)
