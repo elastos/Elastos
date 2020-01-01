@@ -31,6 +31,10 @@ import org.elastos.did.meta.CredentialMeta;
 import org.elastos.did.meta.DIDMeta;
 
 public interface DIDStorage {
+	public interface ReEncryptor {
+		public String reEncrypt(String data) throws DIDStoreException;
+	};
+
 	// Root private identity
 	public boolean containsPrivateIdentity() throws DIDStoreException;
 
@@ -101,5 +105,8 @@ public interface DIDStorage {
 			throws DIDStoreException;
 
 	public boolean deletePrivateKey(DID did, DIDURL id)
+			throws DIDStoreException;
+
+	public void changePassword(ReEncryptor reEncryptor)
 			throws DIDStoreException;
 }

@@ -90,6 +90,9 @@ class FileSystemStorage implements DIDStorage {
 
 	private static final String META_FILE = ".meta";
 
+	private static final String JOURNAL_SUFFIX = ".journal";
+	private static final String DEPRECATED_SUFFIX = ".deprecated";
+
 	private static final String DEFAULT_CHARSET = "UTF-8";
 
 	private File storeRoot;
@@ -158,6 +161,8 @@ class FileSystemStorage implements DIDStorage {
 		if (!Arrays.equals(STORE_VERSION, version))
 			throw new DIDStoreException("DIDStore \""
 					+ storeRoot.getAbsolutePath() + "\", unsupported version.");
+
+		postChangePassword();
 	}
 
 	private static void deleteFile(File file) {
@@ -635,6 +640,121 @@ class FileSystemStorage implements DIDStorage {
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	private boolean needReencrypt(File file) {
+		String[] patterns = {
+				"(.+)\\" + File.separator + PRIVATE_DIR + "\\" +
+				File.separator + HDKEY_FILE,
+				"(.+)\\" + File.separator + PRIVATE_DIR + "\\" +
+				File.separator + MNEMONIC_FILE,
+				"(.+)\\" + File.separator + DID_DIR + "\\" +
+				File.separator + "(.+)" + "\\" + File.separator +
+				PRIVATEKEYS_DIR + "\\" + File.separator + "(.+)"
+		};
+
+		String path = file.getAbsolutePath();
+		for (String pattern : patterns) {
+			if (path.matches(pattern))
+				return true;
+		}
+
+		return false;
+	}
+
+	private void copy(File src, File dest, ReEncryptor reEncryptor)
+			throws IOException, DIDStoreException {
+		if (src.isDirectory()) {
+			if (!dest.exists()) {
+				dest.mkdir();
+			}
+
+			String files[] = src.list();
+			for (String file : files) {
+				File srcFile = new File(src, file);
+				File destFile = new File(dest, file);
+				copy(srcFile, destFile, reEncryptor);
+			}
+		} else {
+			if (needReencrypt(src)) {
+				String org = readText(src);
+				writeText(dest, reEncryptor.reEncrypt(org));
+			} else {
+			    FileInputStream in = null;
+			    FileOutputStream out = null;
+			    try {
+			        in = new FileInputStream(src);
+			        out = new FileOutputStream(dest);
+			        out.getChannel().transferFrom(in.getChannel(), 0, in.getChannel().size());
+				} finally {
+					if (in != null)
+						in.close();
+
+					if (out != null)
+						out.close();
+				}
+			}
+		}
+	}
+
+	private void postChangePassword() {
+		File privateDir = getDir(PRIVATE_DIR);
+		File privateDeprecated = getDir(PRIVATE_DIR + DEPRECATED_SUFFIX);
+		File privateJournal = getDir(PRIVATE_DIR + JOURNAL_SUFFIX);
+
+		File didDir = getDir(DID_DIR);
+		File didDeprecated = getDir(DID_DIR + DEPRECATED_SUFFIX);
+		File didJournal = getDir(DID_DIR + JOURNAL_SUFFIX);
+
+		File stageFile = getFile("postChangePassword");
+
+		if (stageFile.exists()) {
+			if (privateJournal.exists()) {
+				if (privateDir.exists())
+					privateDir.renameTo(privateDeprecated);
+
+				privateJournal.renameTo(privateDir);
+			}
+
+			if (didJournal.exists()) {
+				if (didDir.exists())
+					didDir.renameTo(didDeprecated);
+
+				didJournal.renameTo(didDir);
+			}
+
+			deleteFile(privateDeprecated);
+			deleteFile(didDeprecated);
+			stageFile.delete();
+		} else {
+			if (privateJournal.exists())
+				deleteFile(privateJournal);
+
+			if (didJournal.exists())
+				deleteFile(didJournal);
+		}
+	}
+
+	@Override
+	public void changePassword(ReEncryptor reEncryptor)
+			throws DIDStoreException {
+		try {
+			File privateDir = getDir(PRIVATE_DIR);
+			File privateJournal = getDir(PRIVATE_DIR + JOURNAL_SUFFIX);
+
+			File didDir = getDir(DID_DIR);
+			File didJournal = getDir(DID_DIR + JOURNAL_SUFFIX);
+
+			copy(privateDir, privateJournal, reEncryptor);
+			copy(didDir, didJournal, reEncryptor);
+
+			@SuppressWarnings("unused")
+			File stageFile = getFile(true, "postChangePassword");
+		} catch (Exception e) {
+			throw new DIDStoreException("Change store password failed.");
+		} finally {
+			postChangePassword();
 		}
 	}
 }

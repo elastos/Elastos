@@ -22,10 +22,12 @@
 
 package org.elastos.did;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.elastos.did.DIDDocument.PublicKey;
+import org.elastos.did.DIDStorage.ReEncryptor;
 import org.elastos.did.exception.DIDDeactivatedException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDExpiredException;
@@ -861,5 +863,21 @@ public final class DIDStore {
 	public String sign(DID did, String storepass, byte[] ... data)
 			throws DIDStoreException {
 		return sign(did, null, storepass, data);
+	}
+
+	public void changePassword(String oldPassword, String newPassword)
+			throws DIDStoreException {
+		ReEncryptor ree = new ReEncryptor() {
+			@Override
+			public String reEncrypt(String data) throws DIDStoreException {
+				byte[] secret = DIDStore.decryptFromBase64(data, oldPassword);
+				String result = DIDStore.encryptToBase64(secret, newPassword);
+				Arrays.fill(secret, (byte)0);
+
+				return result;
+			}
+		};
+
+		storage.changePassword(ree);
 	}
 }

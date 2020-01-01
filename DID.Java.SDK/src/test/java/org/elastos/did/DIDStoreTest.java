@@ -711,6 +711,124 @@ public class DIDStoreTest {
 	}
 
 	@Test
+	public void testChangePassword() throws DIDException {
+    	TestData testData = new TestData();
+    	DIDStore store = testData.setupStore(true);
+    	testData.initIdentity();
+
+		for (int i = 0; i < 10; i++) {
+    		String alias = "my did " + i;
+        	DIDDocument doc = store.newDid(alias, TestConfig.storePass);
+        	assertTrue(doc.isValid());
+
+        	DIDDocument resolved = doc.getSubject().resolve(true);
+        	assertNull(resolved);
+
+        	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+        	File file = new File(TestConfig.storeRoot + File.separator + "ids"
+        			+ File.separator + doc.getSubject().getMethodSpecificId()
+        			+ File.separator + "document");
+        	assertTrue(file.exists());
+        	assertTrue(file.isFile());
+
+        	file = new File(TestConfig.storeRoot + File.separator + "ids"
+        			+ File.separator + doc.getSubject().getMethodSpecificId()
+        			+ File.separator + ".meta");
+        	assertTrue(file.exists());
+        	assertTrue(file.isFile());
+
+        	resolved = doc.getSubject().resolve(true);
+        	assertNotNull(resolved);
+        	store.storeDid(resolved);
+        	assertEquals(alias, resolved.getAlias());
+        	assertEquals(doc.getSubject(), resolved.getSubject());
+        	assertEquals(doc.getProof().getSignature(),
+        			resolved.getProof().getSignature());
+
+        	assertTrue(resolved.isValid());
+    	}
+
+		List<DID> dids = store.listDids(DIDStore.DID_ALL);
+		assertEquals(10, dids.size());
+
+		dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(10, dids.size());
+
+		dids = store.listDids(DIDStore.DID_NO_PRIVATEKEY);
+		assertEquals(0, dids.size());
+
+		store.changePassword(TestConfig.storePass, "newpasswd");
+
+		dids = store.listDids(DIDStore.DID_ALL);
+		assertEquals(10, dids.size());
+
+		dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(10, dids.size());
+
+		dids = store.listDids(DIDStore.DID_NO_PRIVATEKEY);
+		assertEquals(0, dids.size());
+
+		DIDDocument doc = store.newDid("newpasswd");
+		assertNotNull(doc);
+	}
+
+	@Test(expected = DIDStoreException.class)
+	public void testChangePasswordWithWrongPassword() throws DIDException {
+    	TestData testData = new TestData();
+    	DIDStore store = testData.setupStore(true);
+    	testData.initIdentity();
+
+		for (int i = 0; i < 10; i++) {
+    		String alias = "my did " + i;
+        	DIDDocument doc = store.newDid(alias, TestConfig.storePass);
+        	assertTrue(doc.isValid());
+
+        	DIDDocument resolved = doc.getSubject().resolve(true);
+        	assertNull(resolved);
+
+        	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+        	File file = new File(TestConfig.storeRoot + File.separator + "ids"
+        			+ File.separator + doc.getSubject().getMethodSpecificId()
+        			+ File.separator + "document");
+        	assertTrue(file.exists());
+        	assertTrue(file.isFile());
+
+        	file = new File(TestConfig.storeRoot + File.separator + "ids"
+        			+ File.separator + doc.getSubject().getMethodSpecificId()
+        			+ File.separator + ".meta");
+        	assertTrue(file.exists());
+        	assertTrue(file.isFile());
+
+        	resolved = doc.getSubject().resolve(true);
+        	assertNotNull(resolved);
+        	store.storeDid(resolved);
+        	assertEquals(alias, resolved.getAlias());
+        	assertEquals(doc.getSubject(), resolved.getSubject());
+        	assertEquals(doc.getProof().getSignature(),
+        			resolved.getProof().getSignature());
+
+        	assertTrue(resolved.isValid());
+    	}
+
+		List<DID> dids = store.listDids(DIDStore.DID_ALL);
+		assertEquals(10, dids.size());
+
+		dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(10, dids.size());
+
+		dids = store.listDids(DIDStore.DID_NO_PRIVATEKEY);
+		assertEquals(0, dids.size());
+
+		store.changePassword("wrongpasswd", "newpasswd");
+
+		// Dead code
+		DIDDocument doc = store.newDid("newpasswd");
+		assertNotNull(doc);
+	}
+
+	@Test
 	public void testCompatibility() throws DIDException {
 		URL url = this.getClass().getResource("/teststore");
 		File dir = new File(url.getPath());
