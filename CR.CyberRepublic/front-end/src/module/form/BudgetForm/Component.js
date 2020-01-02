@@ -229,6 +229,14 @@ export default Form.create()(BudgetForm)
 const Wrapper = styled.div`
   max-width: 650px;
   margin: 0 auto;
+  .ant-radio-wrapper:hover .ant-radio,
+  .ant-radio:hover .ant-radio-inner,
+  .ant-radio-input:focus + .ant-radio-inner {
+    border-color: #008d85;
+  }
+  .ant-radio-input:focus + .ant-radio-inner {
+    box-shadow: none;
+  }
 `
 const Label = styled.div`
   font-size: 17px;
