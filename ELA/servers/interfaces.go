@@ -1518,8 +1518,6 @@ type RpcCRCProposal struct {
 	CRSponsorDID string
 	// The hash of draft proposal.
 	DraftHash string
-	// The budget of different stages.
-	Budgets   []common.Fixed64
 	Recipient string
 }
 
@@ -1798,19 +1796,17 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 			crVotes[k.String()] = v
 		}
 		RpcProposalBaseState := RpcProposalBaseState{
-			Status:                 proposal.Status.String(),
-			ProposalHash:           proposal.Proposal.Hash().String(),
-			TxHash:                 proposal.TxHash.String(),
-			CRVotes:                crVotes,
-			VotersRejectAmount:     proposal.VotersRejectAmount.String(),
-			RegisterHeight:         proposal.RegisterHeight,
-			VoteStartHeight:        proposal.VoteStartHeight,
-			CurrentStage:           proposal.CurrentStage,
-			TrackingCount:          proposal.TrackingCount,
-			TerminatedHeight:       proposal.TerminatedHeight,
-			CurrentWithdrawalStage: proposal.CurrentWithdrawalStage,
-			AppropriatedStage:      proposal.AppropriatedStage,
-			ProposalLeader:         hex.EncodeToString(proposal.ProposalLeader),
+			Status:             proposal.Status.String(),
+			ProposalHash:       proposal.Proposal.Hash().String(),
+			TxHash:             proposal.TxHash.String(),
+			CRVotes:            crVotes,
+			VotersRejectAmount: proposal.VotersRejectAmount.String(),
+			RegisterHeight:     proposal.RegisterHeight,
+			VoteStartHeight:    proposal.VoteStartHeight,
+			TrackingCount:      proposal.TrackingCount,
+			TerminatedHeight:   proposal.TerminatedHeight,
+			AppropriatedStage:  proposal.AppropriatedStage,
+			ProposalLeader:     hex.EncodeToString(proposal.ProposalLeader),
 		}
 		RpcProposalBaseStates = append(RpcProposalBaseStates, RpcProposalBaseState)
 	}
@@ -1883,7 +1879,6 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	rpcProposal.DraftHash = proposalState.Proposal.DraftHash.String()
 	rpcProposal.ProposalType = proposalState.Proposal.ProposalType
 	rpcProposal.SponsorPublicKey = common.BytesToHexString(proposalState.Proposal.SponsorPublicKey)
-	rpcProposal.Budgets = proposalState.Proposal.Budgets
 
 	var err error
 	rpcProposal.Recipient, err = proposalState.Proposal.Recipient.ToAddress()
@@ -1895,21 +1890,19 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		crVotes[k.String()] = v
 	}
 	RpcProposalState := RpcProposalState{
-		Status:                 proposalState.Status.String(),
-		Proposal:               rpcProposal,
-		ProposalHash:           proposalHash.String(),
-		TxHash:                 proposalState.TxHash.String(),
-		CRVotes:                crVotes,
-		VotersRejectAmount:     proposalState.VotersRejectAmount.String(),
-		RegisterHeight:         proposalState.RegisterHeight,
-		VoteStartHeight:        proposalState.VoteStartHeight,
-		CurrentStage:           proposalState.CurrentStage,
-		CurrentWithdrawalStage: proposalState.CurrentWithdrawalStage,
-		TrackingCount:          proposalState.TrackingCount,
-		TerminatedHeight:       proposalState.TerminatedHeight,
-		ProposalLeader:         hex.EncodeToString(proposalState.ProposalLeader),
-		AppropriatedStage:      proposalState.AppropriatedStage,
-		AvailWithdrawalAmount:  crCommittee.AvailableWithdrawalAmount(proposalHash).String(),
+		Status:                proposalState.Status.String(),
+		Proposal:              rpcProposal,
+		ProposalHash:          proposalHash.String(),
+		TxHash:                proposalState.TxHash.String(),
+		CRVotes:               crVotes,
+		VotersRejectAmount:    proposalState.VotersRejectAmount.String(),
+		RegisterHeight:        proposalState.RegisterHeight,
+		VoteStartHeight:       proposalState.VoteStartHeight,
+		TrackingCount:         proposalState.TrackingCount,
+		TerminatedHeight:      proposalState.TerminatedHeight,
+		ProposalLeader:        hex.EncodeToString(proposalState.ProposalLeader),
+		AppropriatedStage:     proposalState.AppropriatedStage,
+		AvailWithdrawalAmount: crCommittee.AvailableWithdrawalAmount(proposalHash).String(),
 	}
 	result := &RpcCRProposalStateInfo{RpcProposalState: RpcProposalState}
 	return ResponsePack(Success, result)
