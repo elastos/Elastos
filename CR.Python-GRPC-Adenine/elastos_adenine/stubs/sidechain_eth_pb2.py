@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='sidechain_eth',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x13sidechain_eth.proto\x12\rsidechain_eth\")\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\r\n\x05input\x18\x02 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\xe2\x01\n\x0cSidechainEth\x12\x46\n\x11\x44\x65ployEthContract\x12\x16.sidechain_eth.Request\x1a\x17.sidechain_eth.Response\"\x00\x12\x45\n\x10WatchEthContract\x12\x16.sidechain_eth.Request\x1a\x17.sidechain_eth.Response\"\x00\x12\x43\n\x0eRunEthContract\x12\x16.sidechain_eth.Request\x1a\x17.sidechain_eth.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x13sidechain_eth.proto\x12\rsidechain_eth\")\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\r\n\x05input\x18\x02 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\x9d\x01\n\x0cSidechainEth\x12\x46\n\x11\x44\x65ployEthContract\x12\x16.sidechain_eth.Request\x1a\x17.sidechain_eth.Response\"\x00\x12\x45\n\x10WatchEthContract\x12\x16.sidechain_eth.Request\x1a\x17.sidechain_eth.Response\"\x00\x62\x06proto3')
 )
 
 
@@ -135,7 +135,7 @@ _SIDECHAINETH = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=150,
-  serialized_end=376,
+  serialized_end=307,
   methods=[
   _descriptor.MethodDescriptor(
     name='DeployEthContract',
@@ -150,15 +150,6 @@ _SIDECHAINETH = _descriptor.ServiceDescriptor(
     name='WatchEthContract',
     full_name='sidechain_eth.SidechainEth.WatchEthContract',
     index=1,
-    containing_service=None,
-    input_type=_REQUEST,
-    output_type=_RESPONSE,
-    serialized_options=None,
-  ),
-  _descriptor.MethodDescriptor(
-    name='RunEthContract',
-    full_name='sidechain_eth.SidechainEth.RunEthContract',
-    index=2,
     containing_service=None,
     input_type=_REQUEST,
     output_type=_RESPONSE,
