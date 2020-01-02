@@ -951,13 +951,23 @@ func newCRCProposal(L *lua.LState) int {
 		os.Exit(1)
 	}
 
-	budgets := make([]common.Fixed64, 0)
+	budgets := make([]payload.Budget, 0)
 	budgetsTable.ForEach(func(i, value lua.LValue) {
+		index := lua.LVAsNumber(i)
 		budgetStr := lua.LVAsString(value)
 		budgetStr = strings.Replace(budgetStr, "{", "", 1)
 		budgetStr = strings.Replace(budgetStr, "}", "", 1)
-		vote, _ := common.StringToFixed64(budgetStr)
-		budgets = append(budgets, *vote)
+		amount, _ := common.StringToFixed64(budgetStr)
+		var budgetType uint8
+		if int(index) == len(budgets)-1 {
+			budgetType = 0x01
+		}
+		budget := &payload.Budget{
+			Stage:      byte(int(index)),
+			BudgetType: budgetType,
+			Amount:     *amount,
+		}
+		budgets = append(budgets, *budget)
 	})
 
 	publicKey, err := common.HexStringToBytes(publicKeyStr)
@@ -985,10 +995,10 @@ func newCRCProposal(L *lua.LState) int {
 	crcProposal := &payload.CRCProposal{
 		ProposalType:     payload.CRCProposalType(proposalType),
 		SponsorPublicKey: publicKey,
-		CRSponsorDID:     *getDid(ct.Code),
 		DraftHash:        *draftHash,
 		Budgets:          budgets,
 		Recipient:        *recipient,
+		CRSponsorDID:     *getDid(ct.Code),
 		CROpinionHash:    *opinionHash,
 	}
 

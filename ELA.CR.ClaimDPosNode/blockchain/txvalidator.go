@@ -1725,11 +1725,11 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 		proposalState.Status != crstate.Aborted {
 		return errors.New("proposal status is not VoterAgreed , Finished, or Aborted")
 	}
-	if withdrawPayload.Stage <= proposalState.CurrentWithdrawalStage {
-		return errors.New("CRCProposalWithdraw Stage wrong too small")
+	if _, ok := proposalState.WithdrawnBudgets[withdrawPayload.Stage]; ok {
+		return errors.New("CRCProposalWithdraw already paid")
 	}
-	if withdrawPayload.Stage != proposalState.CurrentStage {
-		return errors.New("Stage != proposalState.CurrentStage")
+	if proposalState.Status == crstate.Finished && proposalState.FinalPaymentStatus {
+		return errors.New("not allowed to take final payment until the proposal is complete")
 	}
 	if !bytes.Equal(proposalState.ProposalLeader, withdrawPayload.SponsorPublicKey) {
 		return errors.New("the SponsorPublicKey is not ProposalLeader of proposal")
@@ -1780,14 +1780,16 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 	switch cptPayload.ProposalTrackingType {
 	case payload.Common:
 		result = b.checkCRCProposalCommonTracking(cptPayload, proposalState)
-	case payload.Progress, payload.ProgressReject:
+	case payload.Progress:
+		result = b.checkCRCProposalProgressTracking(cptPayload, proposalState)
+	case payload.Rejected:
 		result = b.checkCRCProposalProgressTracking(cptPayload, proposalState)
 	case payload.Terminated:
 		result = b.checkCRCProposalTerminatedTracking(cptPayload, proposalState)
 	case payload.ProposalLeader:
 		result = b.checkCRCProposalLeaderTracking(cptPayload, proposalState)
-	case payload.Appropriation:
-		result = b.checkCRCProposalAppropriationTracking(cptPayload, proposalState)
+	case payload.Finalized:
+		result = b.checkCRCProposalFinalizedTracking(cptPayload, proposalState)
 	default:
 		result = errors.New("invalid proposal tracking type")
 	}
@@ -1853,8 +1855,10 @@ func (b *BlockChain) checkCRCProposalCommonTracking(
 func (b *BlockChain) checkCRCProposalProgressTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
-	if cptPayload.Stage != pState.CurrentStage {
-		return errors.New("invalid stage")
+	for _, budget := range pState.Proposal.Budgets {
+		if _, ok := pState.WithdrawnBudgets[budget.Stage]; ok {
+			return errors.New("invalid budgets with withdrawn budget")
+		}
 	}
 
 	// Check signature.
@@ -1872,6 +1876,17 @@ func (b *BlockChain) checkCRCProposalTerminatedTracking(
 	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
 }
 
+func (b *BlockChain) checkCRCProposalFinalizedTracking(
+	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
+	// Check stage of proposal
+	if len(pState.WithdrawableBudgets) != len(pState.Proposal.Budgets)-1 {
+		return errors.New("proposal don't allow finalized")
+	}
+
+	// Check signature.
+	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
+}
+
 func (b *BlockChain) checkCRCProposalLeaderTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
@@ -1881,16 +1896,6 @@ func (b *BlockChain) checkCRCProposalLeaderTracking(
 
 	// Check signature.
 	return b.checkCRCProposalTrackingSignature(cptPayload, pState)
-}
-
-func (b *BlockChain) checkCRCProposalAppropriationTracking(
-	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
-	// Check stage of proposal
-	if cptPayload.Stage != pState.CurrentStage+1 {
-		return errors.New("invalid stage")
-	}
-
-	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
 }
 
 func (b *BlockChain) checkCRCProposalTrackingSignature(
@@ -2059,7 +2064,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	// Check budgets of proposal.
 	var amount common.Fixed64
 	for _, b := range proposal.Budgets {
-		amount += b
+		amount += b.Amount
 	}
 	if amount > b.crCommittee.CRCCommitteeBalance*CRCProposalBudgetsPercentage/100 {
 		return errors.New("budgets exceeds 10% of CRC committee balance")

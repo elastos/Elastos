@@ -76,6 +76,14 @@ const (
 	MaxProposalDataSize = 2 * 1024 * 1024
 )
 
+type Budget struct {
+	// 0x00 regular payment
+	// 0x01 final payment
+	BudgetType byte
+	Stage      byte
+	Amount     common.Fixed64
+}
+
 type CRCProposal struct {
 	// The type of current proposal.
 	ProposalType CRCProposalType
@@ -89,7 +97,7 @@ type CRCProposal struct {
 	// The hash of draft proposal.
 	DraftHash common.Uint256
 	// The budget of different stages.
-	Budgets []common.Fixed64
+	Budgets []Budget
 	// The address of budget.
 	Recipient common.Uint168
 
@@ -152,6 +160,16 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 	return nil
 }
 
+func (b *Budget) Serialize(w io.Writer) error {
+	if err := common.WriteElement(w, b.BudgetType); err != nil {
+		return errors.New("failed to serialize BudgetType")
+	}
+	if err := common.WriteElement(w, b.Stage); err != nil {
+		return errors.New("failed to serialize BudgetType")
+	}
+	return b.Amount.Serialize(w)
+}
+
 func (p *CRCProposal) Serialize(w io.Writer, version byte) error {
 	if err := p.SerializeUnsigned(w, version); err != nil {
 		return err
@@ -170,6 +188,17 @@ func (p *CRCProposal) Serialize(w io.Writer, version byte) error {
 	}
 
 	return common.WriteVarBytes(w, p.CRSign)
+}
+
+func (b *Budget) Deserialize(r io.Reader) error {
+	if err := common.ReadElement(r, &b.BudgetType); err != nil {
+		return errors.New("[CRCProposal], BudgetType deserialize failed")
+	}
+	if err := common.ReadElement(r, &b.Stage); err != nil {
+		return errors.New("[CRCProposal], Stage deserialize failed")
+	}
+	return b.Amount.Deserialize(r)
+
 }
 
 func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
@@ -191,13 +220,14 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 	if err = p.DraftHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize DraftHash")
 	}
+
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
 		return errors.New("failed to deserialize Budgets")
 	}
-	p.Budgets = make([]common.Fixed64, 0)
+	p.Budgets = make([]Budget, 0)
 	for i := 0; i < int(count); i++ {
-		var budget common.Fixed64
+		var budget Budget
 		if err := budget.Deserialize(r); err != nil {
 			return errors.New("failed to deserialize Budgets")
 		}

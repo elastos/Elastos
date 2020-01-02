@@ -101,12 +101,14 @@ type ProposalState struct {
 	RegisterHeight     uint32
 	VoteStartHeight    uint32
 
-	CurrentStage           uint8
-	CurrentWithdrawalStage uint8
-	TrackingCount          uint8
-	TerminatedHeight       uint32
-	ProposalLeader         []byte
-	AppropriatedStage      uint8
+	WithdrawnBudgets    map[uint8]common.Fixed64 // proposalWithdraw
+	WithdrawableBudgets map[uint8]common.Fixed64 // proposalTracking
+	FinalPaymentStatus  bool
+
+	TrackingCount     uint8
+	TerminatedHeight  uint32
+	ProposalLeader    []byte
+	AppropriatedStage uint8
 }
 
 type ProposalHashSet map[common.Uint256]struct{}
@@ -741,9 +743,14 @@ func (p *ProposalState) Serialize(w io.Writer) (err error) {
 			return
 		}
 	}
-
-	if err = common.WriteUint8(w, p.CurrentStage); err != nil {
+	if err = p.serializeBudgets(p.WithdrawnBudgets, w); err != nil {
 		return
+	}
+	if err = p.serializeBudgets(p.WithdrawableBudgets, w); err != nil {
+		return
+	}
+	if err := common.WriteElement(w, p.FinalPaymentStatus); err != nil {
+		return err
 	}
 	if err = common.WriteUint8(w, p.TrackingCount); err != nil {
 		return
@@ -802,8 +809,14 @@ func (p *ProposalState) Deserialize(r io.Reader) (err error) {
 		p.CRVotes[key] = payload.VoteResult(value)
 	}
 
-	if p.CurrentStage, err = common.ReadUint8(r); err != nil {
+	if p.WithdrawnBudgets, err = p.deserializeBudgets(r); err != nil {
 		return
+	}
+	if p.WithdrawableBudgets, err = p.deserializeBudgets(r); err != nil {
+		return
+	}
+	if err = common.ReadElement(r, &p.FinalPaymentStatus); err != nil {
+		return err
 	}
 	if p.TrackingCount, err = common.ReadUint8(r); err != nil {
 		return
@@ -816,6 +829,43 @@ func (p *ProposalState) Deserialize(r io.Reader) (err error) {
 		return err
 	}
 	return p.TxHash.Deserialize(r)
+}
+
+func (p *ProposalState) serializeBudgets(withdrawableBudgets map[uint8]common.Fixed64,
+	w io.Writer) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(withdrawableBudgets))); err != nil {
+		return
+	}
+	for k, v := range withdrawableBudgets {
+		if err = common.WriteElement(w, k); err != nil {
+			return
+		}
+		if err = v.Serialize(w); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (p *ProposalState) deserializeBudgets(r io.Reader) (
+	withdrawableBudgets map[uint8]common.Fixed64, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	withdrawableBudgets = make(map[uint8]common.Fixed64)
+	for i := uint64(0); i < count; i++ {
+		var stage uint8
+		if err = common.ReadElement(r, &stage); err != nil {
+			return
+		}
+		var amount common.Fixed64
+		if err = amount.Deserialize(r); err != nil {
+			return
+		}
+		withdrawableBudgets[stage] = amount
+	}
+	return
 }
 
 func (p *ProposalKeyFrame) Serialize(w io.Writer) (err error) {
@@ -837,6 +887,7 @@ func (p *ProposalKeyFrame) Serialize(w io.Writer) (err error) {
 	}
 	return
 }
+
 func (p *ProposalKeyFrame) serializeProposalHashsMap(proposalHashMap map[common.Uint168]ProposalHashSet,
 	w io.Writer) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(proposalHashMap))); err != nil {

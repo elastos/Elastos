@@ -15,7 +15,7 @@ require (
 	github.com/tidwall/gjson v1.3.2
 	github.com/urfave/cli v1.22.0
 	github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036
-	golang.org/x/crypto v0.0.0-20190909091759-094676da4a83
-	golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e // indirect
+	golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876
+	golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )

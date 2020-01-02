@@ -97,6 +97,16 @@ func (p *ProposalManager) getAllProposals() (dst ProposalsMap) {
 	return
 }
 
+func (p *ProposalManager) getProposalByDraftHash(draftHash common.
+	Uint256) *ProposalState {
+	for _, v := range p.Proposals {
+		if v.Proposal.DraftHash.IsEqual(draftHash) {
+			return v
+		}
+	}
+	return nil
+}
+
 func (p *ProposalManager) getProposals(status ProposalStatus) (dst ProposalsMap) {
 	dst = NewProposalMap()
 	for k, v := range p.Proposals {
@@ -108,16 +118,6 @@ func (p *ProposalManager) getProposals(status ProposalStatus) (dst ProposalsMap)
 	return
 }
 
-func (p *ProposalManager) getProposalByDraftHash(draftHash common.
-	Uint256) *ProposalState {
-	for _, v := range p.Proposals {
-		if v.Proposal.DraftHash.IsEqual(draftHash) {
-			return v
-		}
-	}
-	return nil
-}
-
 // getProposal will return a proposal with specified hash,
 // and return nil if not found.
 func (p *ProposalManager) getProposal(hash common.Uint256) *ProposalState {
@@ -126,6 +126,20 @@ func (p *ProposalManager) getProposal(hash common.Uint256) *ProposalState {
 		return nil
 	}
 	return result
+}
+
+func (p *ProposalManager) availableWithdrawalAmount(hash common.Uint256) common.Fixed64 {
+	proposal := p.getProposal(hash)
+	amount := common.Fixed64(0)
+	if proposal == nil {
+		return amount
+	}
+	for i, a := range proposal.WithdrawableBudgets {
+		if _, ok := proposal.WithdrawnBudgets[i]; !ok {
+			amount += a
+		}
+	}
+	return amount
 }
 
 // updateProposals will update proposals' status.
@@ -176,23 +190,6 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 	}
 }
 
-func (p *ProposalManager) availableWithdrawalAmount(hash common.Uint256) common.Fixed64 {
-	propState := p.getProposal(hash)
-	if propState == nil {
-		return common.Fixed64(0)
-	}
-	amout := common.Fixed64(0)
-
-	//Budgets slice index from 0---n-1
-	//stage   user  index from 1---n
-	start := propState.CurrentWithdrawalStage
-	end := propState.CurrentStage
-	for i := start; i < end; i++ {
-		amout += propState.Proposal.Budgets[i]
-	}
-	return amout
-}
-
 // transferCRAgreedState will transfer CRAgreed state by votes' reject amount.
 func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 	height uint32, circulation common.Fixed64) {
@@ -206,10 +203,8 @@ func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 	} else {
 		p.history.Append(height, func() {
 			proposal.Status = VoterAgreed
-			proposal.CurrentStage = 1
 		}, func() {
 			proposal.Status = CRAgreed
-			proposal.CurrentStage = 0
 		})
 	}
 }
@@ -278,15 +273,20 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		return
 	}
 	proposalState := &ProposalState{
-		Status:                 Registered,
-		Proposal:               *proposal,
-		TxHash:                 tx.Hash(),
-		RegisterHeight:         height,
-		CRVotes:                map[common.Uint168]payload.VoteResult{},
-		VotersRejectAmount:     common.Fixed64(0),
-		CurrentStage:           0,
-		CurrentWithdrawalStage: 0,
-		ProposalLeader:         proposal.SponsorPublicKey,
+		Status:              Registered,
+		Proposal:            *proposal,
+		TxHash:              tx.Hash(),
+		CRVotes:             map[common.Uint168]payload.VoteResult{},
+		VotersRejectAmount:  common.Fixed64(0),
+		RegisterHeight:      height,
+		VoteStartHeight:     0,
+		WithdrawnBudgets:    make(map[uint8]common.Fixed64),
+		WithdrawableBudgets: make(map[uint8]common.Fixed64),
+		FinalPaymentStatus:  false,
+		TrackingCount:       0,
+		TerminatedHeight:    0,
+		ProposalLeader:      proposal.SponsorPublicKey,
+		AppropriatedStage:   0,
 	}
 	CRSponsorDID := proposal.CRSponsorDID
 	hash := proposal.Hash()
@@ -330,11 +330,17 @@ func (p *ProposalManager) proposalWithdraw(tx *types.Transaction,
 	if proposalState == nil {
 		return
 	}
-	withdrawStage := proposalState.CurrentWithdrawalStage
+	var amount common.Fixed64
+	for _, budget := range proposalState.Proposal.Budgets {
+		if budget.Stage == withdrawPayload.Stage {
+			amount = budget.Amount
+			break
+		}
+	}
 	history.Append(height, func() {
-		proposalState.CurrentWithdrawalStage = withdrawPayload.Stage
+		proposalState.WithdrawnBudgets[withdrawPayload.Stage] = amount
 	}, func() {
-		proposalState.CurrentWithdrawalStage = withdrawStage
+		delete(proposalState.WithdrawnBudgets, withdrawPayload.Stage)
 	})
 }
 
@@ -349,7 +355,6 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 	trackingType := proposalTracking.ProposalTrackingType
 	leader := proposalState.ProposalLeader
 	terminatedHeight := proposalState.TerminatedHeight
-	stage := proposalTracking.Stage
 	status := proposalState.Status
 
 	history.Append(height, func() {
@@ -357,14 +362,22 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 		switch trackingType {
 		case payload.Common:
 		case payload.Progress:
-		case payload.ProgressReject:
+			for _, budget := range proposalState.Proposal.Budgets {
+				if budget.Stage == proposalTracking.Stage {
+					proposalState.WithdrawableBudgets[proposalTracking.Stage] = budget.Amount
+					break
+				}
+			}
+			if len(proposalState.WithdrawableBudgets) == len(proposalState.Proposal.Budgets)-1 {
+				proposalState.FinalPaymentStatus = true
+			}
+		case payload.Rejected:
+		case payload.ProposalLeader:
+			proposalState.ProposalLeader = proposalTracking.NewLeaderPubKey
 		case payload.Terminated:
 			proposalState.TerminatedHeight = height
 			proposalState.Status = Aborted
-		case payload.ProposalLeader:
-			proposalState.ProposalLeader = proposalTracking.NewLeaderPubKey
-		case payload.Appropriation:
-			proposalState.CurrentStage = proposalTracking.Stage
+		case payload.Finalized:
 			if int(proposalTracking.Stage) == len(proposalState.Proposal.Budgets) {
 				proposalState.Status = Finished
 			}
@@ -374,14 +387,15 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 		switch trackingType {
 		case payload.Common:
 		case payload.Progress:
-		case payload.ProgressReject:
+			delete(proposalState.WithdrawableBudgets, proposalTracking.Stage)
+			proposalState.FinalPaymentStatus = false
+		case payload.Rejected:
+		case payload.ProposalLeader:
+			proposalState.ProposalLeader = leader
 		case payload.Terminated:
 			proposalState.TerminatedHeight = terminatedHeight
 			proposalState.Status = status
-		case payload.ProposalLeader:
-			proposalState.ProposalLeader = leader
-		case payload.Appropriation:
-			proposalState.CurrentStage = stage
+		case payload.Finalized:
 			proposalState.Status = status
 		}
 	})
