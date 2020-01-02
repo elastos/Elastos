@@ -5,6 +5,9 @@ cd tools
 ./postgres.sh
 cd ..
 
+# Build docker container
+docker build -t cyberrepublic/elastos-smartweb-service .
+
 # Remove previous docker container:
 docker container stop smartweb-service || true && docker container rm -f smartweb-service || true
 
