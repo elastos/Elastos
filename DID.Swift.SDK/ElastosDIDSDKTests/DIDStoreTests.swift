@@ -676,25 +676,75 @@ class DIDStoreTests: XCTestCase {
     
     // TODO:
     func testCompatibility() {
-
+        let bundle = Bundle(for: type(of: self))
+        let jsonPath: String = bundle.path(forResource: "teststore", ofType: "")!
+        print(jsonPath)
+        
+        DIDBackend.creatInstance(DummyAdapter())
+        let store = try! DIDStore.open("filesystem", jsonPath)
+        
+        let dids = try! store.listDids(DIDStore.DID_ALL)
+        XCTAssertEqual(2, dids.count)
+        
+        for did in dids {
+            if did.getAlias() == "Issuer" {
+                let vcs: [DIDURL] = try! store.listCredentials(did)
+                XCTAssertEqual(1, vcs.count)
+                
+                let id: DIDURL = vcs[0]
+                XCTAssertEqual("Profile", id.getAlias())
+                
+                XCTAssertNotNil(try! store.loadCredential(did, id))
+            } else if did.getAlias() == "Test" {
+                let vcs: [DIDURL] = try! store.listCredentials(did)
+                XCTAssertEqual(4, vcs.count)
+                
+                for id: DIDURL in vcs {
+                    XCTAssertTrue(id.getAlias() == "Profile"
+                    || id.getAlias() == "Email"
+                    || id.getAlias() == "Passport"
+                    || id.getAlias() == "Twitter")
+                    
+                    XCTAssertNotNil(try! store.loadCredential(did, id))
+                }
+            }
+        }
     }
     
     // TODO:
     func testCompatibilityNewDIDWithWrongPass() {
+        do {
+            DIDBackend.creatInstance(DummyAdapter())
+            let bundle = Bundle(for: type(of: self))
+            let jsonPath = bundle.path(forResource: "teststore", ofType: "")
+            let store = try! DIDStore.open("filesystem", jsonPath!)
 
-        print(Bundle.main.resourcePath)
-        
+            _ = try store.newDid("wrongpass");
+        } catch {
+            if error is DIDStoreError {
+                let err = error as! DIDStoreError
+                switch err {
+                case  DIDStoreError.failue("decryptFromBase64 error."):
+                    XCTAssertTrue(true)
+                default:
+                    XCTFail()
+                }
+            }
+        }
     }
     
     // TODO:
     func testCompatibilityNewDID() {
         
-        do {
-            
-        } catch {
-            print(error)
-            XCTFail()
-        }
+        DIDBackend.creatInstance(DummyAdapter())
+        let bundle = Bundle(for: type(of: self))
+        let jsonPath = bundle.path(forResource: "teststore", ofType: "")
+        let store = try! DIDStore.open("filesystem", jsonPath!)
+        
+        let doc: DIDDocument = try! store.newDid(storePass);
+        XCTAssertNotNil(doc);
+                
+        _ = try! store.deleteDid(doc.subject!)
     }
 
     func createDataForPerformanceTest(_ store: DIDStore) {
