@@ -1,6 +1,6 @@
 import json
 import secrets
-
+import logging
 from requests import Session
 from decouple import config
 
@@ -10,7 +10,7 @@ from web3.middleware import geth_poa_middleware
 from grpc_adenine import settings
 from grpc_adenine.implementations import WalletAddresses, WalletAddressesETH
 from grpc_adenine.implementations.rate_limiter import RateLimiter
-from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit
+from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit, get_did_from_api
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs import wallet_pb2
 from grpc_adenine.stubs import wallet_pb2_grpc
@@ -36,6 +36,8 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
     def CreateWallet(self, request, context):
 
         api_key = request.api_key
+        did = get_did_from_api(api_key)
+
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
@@ -55,9 +57,24 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
 
         # Create wallets
         wallet_mainchain = create_wallet_mainchain(self.session)
+        if wallet_mainchain is None:
+            status_message = 'Error: Mainchain wallet could not created'
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return wallet_pb2.Response(output="", status_message=status_message, status=False)
+
         wallet_sidechain_did = create_wallet_sidechain_did(self.session)
+        if wallet_sidechain_did is None:
+            status_message = 'Error: DID Sidechain wallet could not created'
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return wallet_pb2.Response(output="", status_message=status_message, status=False)
+
         wallet_sidechain_token = wallet_mainchain
+        
         wallet_sidechain_eth = create_wallet_sidechain_eth(self.web3)
+        if wallet_sidechain_eth is None:
+            status_message = 'Error: Eth Sidechain wallet could not created'
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return wallet_pb2.Response(output="", status_message=status_message, status=False)
 
         response = {
             'result': {
@@ -265,6 +282,10 @@ def view_wallet_general(session, chain, address):
             }
         }
     response = session.post(get_balance_url, data=json.dumps(d), timeout=REQUEST_TIMEOUT)
+    if response is None:
+            status_message = 'Error: Wallet balance could not retrieved'
+            return wallet_pb2.Response(output="", status_message=status_message, status=False)
+
     data = json.loads(response.text)
     balance = data['result']
     return balance
