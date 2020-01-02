@@ -81,10 +81,7 @@ class TeamInfoForm extends BaseComponent {
             )}
           </FormItem>
 
-          <Label gutter={-8}>
-            <span>*</span>
-            {I18N.get('suggestion.plan.moreInfo')}
-          </Label>
+          <Label gutter={-8}>{I18N.get('suggestion.plan.moreInfo')}</Label>
           <FormItem>
             {getFieldDecorator('info', {
               initialValue: item && item.info ? item.info : ''
