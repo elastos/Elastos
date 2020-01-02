@@ -204,29 +204,207 @@ class DIDStoreTests: XCTestCase {
     
     // TODO:
     func testDeactivateSelfAfterCreate() {
-        
+        do {
+            let testData: TestData = TestData()
+            let store: DIDStore = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+            
+            let doc = try store.newDid(storePass)
+            XCTAssertTrue(try doc.isValid())
+            
+            _ = try store.publishDid(doc.subject!, storePass)
+            let resolved: DIDDocument = try doc.subject!.resolve(true)!
+            XCTAssertNotNil(resolved)
+            
+            _ = try store.deactivateDid(doc.subject!, storePass)
+            
+            let resolvedNil: DIDDocument? = try doc.subject!.resolve(true)
+            
+            XCTAssertNil(resolvedNil)
+        } catch  {
+            XCTFail()
+        }
     }
     
     // TODO:
     func testDeactivateSelfAfterUpdate() {
-        
+        do {
+            let testData: TestData = TestData()
+            let store: DIDStore = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+            
+            let doc = try store.newDid(storePass)
+            XCTAssertTrue(try doc.isValid())
+            
+            _ = try store.publishDid(doc.subject!, storePass)
+            
+            var resolved: DIDDocument! = try doc.subject!.resolve(true)
+            XCTAssertNotNil(resolved)
+            try store.storeDid(resolved!)
+            
+            let key = try TestData.generateKeypair()
+            _ = try resolved?.addAuthenticationKey("key2", key.getPublicKeyBase58())
+            let newDoc = try resolved!.seal(store, storePass)
+            XCTAssertEqual(2, newDoc.getPublicKeyCount())
+            XCTAssertEqual(2, newDoc.getAuthenticationKeyCount())
+            try store.storeDid(newDoc)
+            
+            _ = try store.publishDid(newDoc.subject!, storePass)
+            
+            resolved = try doc.subject!.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(try newDoc.toJson(nil, true, true),try resolved?.toJson(nil, true, true))
+            try store.storeDid(resolved!)
+            
+            _ = try store.deactivateDid(newDoc.subject!, storePass)
+            
+            resolved = try doc.subject!.resolve(true)
+            
+            let resolvedNil: DIDDocument? = try doc.subject!.resolve(true)
+            
+            XCTAssertNil(resolvedNil)
+        } catch  {
+            XCTFail()
+        }
     }
     
     // TODO:
     func testDeactivateWithAuthorization1() {
-        
+        do {
+            let testData: TestData = TestData()
+            let store: DIDStore = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+            
+            let doc = try store.newDid(storePass)
+            XCTAssertTrue(try doc.isValid())
+            
+            _ = try store.publishDid(doc.subject!, storePass)
+            
+            var resolved: DIDDocument! = try doc.subject!.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(try doc.toJson(nil, true, true),try resolved?.toJson(nil, true, true))
+            
+            var target = try store.newDid(storePass)
+            _ = try target.authorizationDid("recovery", doc.subject!.description)
+            XCTAssertNotNil(target)
+            XCTAssertEqual(1, target.getAuthorizationKeyCount())
+            let controller = target.getAuthorizationKeys()[0].controller
+            XCTAssertEqual(doc.subject, controller)
+            target = try target.seal(store, storePass)
+            
+            _ = try store.publishDid(target.subject!, storePass)
+            
+            resolved = try target.subject!.resolve(true)!
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(try target.toJson(nil, true, true),try resolved.toJson(nil, true, true))
+            
+            _ = try store.deactivateDid(target.subject!, doc.subject!, storePass)
+            
+            let resolvedNil: DIDDocument? = try target.subject!.resolve(true)
+            
+            XCTAssertNil(resolvedNil)
+        } catch  {
+            XCTFail()
+        }
     }
     
     // TODO:
     func testDeactivateWithAuthorization2() {
-        
+        do {
+            let testData: TestData = TestData()
+            let store: DIDStore = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+            
+            var doc = try store.newDid(storePass)
+            let key = try TestData.generateKeypair()
+            let id = try DIDURL(doc.subject!, "key-2")
+            _ = try doc.addAuthenticationKey(id,try key.getPublicKeyBase58())
+            try store.storePrivateKey(doc.subject!, id, key.getPrivateKeyData(), storePass)
+            doc = try doc.seal(store, storePass)
+            XCTAssertTrue(try doc.isValid())
+            XCTAssertEqual(2, doc.getAuthorizationKeyCount())
+            try store.storeDid(doc)
+            
+            _ = try store.publishDid(doc.subject!, storePass)
+            
+            var resolved: DIDDocument = try doc.subject!.resolve(true)!
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(try doc.toJson(nil, true, true),try resolved.toJson(nil, true, true))
+            
+            var target: DIDDocument = try store.newDid(storePass)
+            _ = try target.addAuthorizationKey("recovery", doc.subject!.description, key.getPrivateKeyBase58())
+            target = try target.seal(store, storePass)
+            XCTAssertNotNil(target)
+            XCTAssertEqual(1, doc.getAuthorizationKeyCount())
+            let controller = target.getAuthorizationKeys()[0].controller
+            XCTAssertEqual(doc.subject, controller)
+            try store.storeDid(target)
+            
+            _ = try store.publishDid(target.subject!, storePass)
+            
+            resolved = try target.subject!.resolve()!
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(try target.toJson(nil, true, true),try resolved.toJson(nil, true, true))
+            
+            _ = try store.deactivateDid(target.subject!, doc.subject!, id, storePass)
+            
+            let resolvedNil: DIDDocument? = try target.subject!.resolve(true)
+            
+            XCTAssertNil(resolvedNil)
+        } catch  {
+            XCTFail()
+        }
     }
     
     // TODO:
     func testDeactivateWithAuthorization3() {
-        
+        do {
+            let testData: TestData = TestData()
+            let store: DIDStore = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+            
+            var doc = try store.newDid(storePass)
+            let key = try TestData.generateKeypair()
+            let id: DIDURL = try DIDURL(doc.subject!, "key-2")
+            _ = try doc.addAuthenticationKey(id, key.getPrivateKeyBase58())
+            
+            try store.storePrivateKey(doc.subject!, id, key.getPrivateKeyData(), storePass)
+            doc = try doc.seal(store, storePass)
+            XCTAssertTrue(try doc.isValid())
+            XCTAssertEqual(2, doc.getAuthenticationKeyCount())
+            try store.storeDid(doc)
+            
+            _ = try store.publishDid(doc.subject!, storePass)
+            
+            var resolved: DIDDocument = try doc.subject!.resolve(true)!
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(try doc.toJson(nil, true, true),try resolved.toJson(nil, true, true))
+            
+            var target = try store.newDid(storePass)
+            _ = try target.addAuthorizationKey("recovery", doc.subject!.description, try key.getPublicKeyBase58())
+            target = try target.seal(store, storePass)
+            XCTAssertNotNil(target)
+            XCTAssertEqual(1, target.getAuthorizationKeyCount())
+            let controller = target.getAuthorizationKeys()[0].controller
+            XCTAssertEqual(doc.subject, controller)
+            try store.storeDid(target)
+            
+            _ = try store.publishDid(target.subject!, storePass)
+            
+            resolved = try target.subject!.resolve()!
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(try doc.toJson(nil, true, true),try resolved.toJson(nil, true, true))
+            
+            _ = try store.deactivateDid(target.subject!, doc.subject!, storePass)
+            
+            resolved = try target.subject!.resolve(true)!
+            
+            XCTAssertNil(resolved)
+        } catch  {
+            XCTFail()
+        }
     }
-    
+
     func testBulkCreate() {
         do {
             let testData: TestData = TestData()

@@ -172,11 +172,9 @@ public class DIDStore: NSObject {
         let did: DID = DID(DID.METHOD, methodIdString)
         let id: DIDURL = try DIDURL(did, "primary")
         
-        
         let privatekeyData: Data = try key.getPrivateKeyData()
         // TODO: get real private key bytes
         try storePrivateKey(did, id, privatekeyData, storepass)
-        
         var doc: DIDDocument = DIDDocument(did)
         
         _ = try doc.addAuthenticationKey(id, try key.getPublicKeyBase58())
