@@ -23,7 +23,7 @@ class PaymentList extends BaseComponent {
       <StyledTable>
         <StyledHead>
           <StyledRow>
-            <th>{I18N.get('suggestion.budget.payment')} #</th>
+            <th>{I18N.get('suggestion.budget.payment')}#</th>
             <th>{I18N.get('suggestion.budget.type')}</th>
             <th>{I18N.get('suggestion.budget.amount')}(ELA)</th>
             <th>{I18N.get('suggestion.budget.reasons')}</th>
@@ -108,7 +108,7 @@ const StyledRow = styled.tr`
     line-height: 18px;
     padding: 8px 16px;
     color: #000;
-    word-break: break-all;
+    overflow-wrap: break-word;
     > button {
       margin: 0 4px;
     }

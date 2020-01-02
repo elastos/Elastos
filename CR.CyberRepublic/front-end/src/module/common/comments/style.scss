@@ -1,9 +1,7 @@
-
 @import '../../../style/variable';
 @import '../../../style/color';
 
 .c_Comments {
-
   h3 {
     margin: $gap_1 0 !important;
     padding: 0;
@@ -37,7 +35,7 @@
     margin-left: $gap_2;
     white-space: pre-wrap;
     width: 90%;
-    word-break: break-all;
+    overflow-wrap: break-word;
   }
 
   .non-mention {
@@ -52,5 +50,4 @@
   .form-wrapper {
     padding: $gap_2 0;
   }
-
 }
