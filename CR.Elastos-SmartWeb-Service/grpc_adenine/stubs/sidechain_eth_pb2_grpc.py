@@ -24,11 +24,6 @@ class SidechainEthStub(object):
         request_serializer=sidechain__eth__pb2.Request.SerializeToString,
         response_deserializer=sidechain__eth__pb2.Response.FromString,
         )
-    self.RunEthContract = channel.unary_unary(
-        '/sidechain_eth.SidechainEth/RunEthContract',
-        request_serializer=sidechain__eth__pb2.Request.SerializeToString,
-        response_deserializer=sidechain__eth__pb2.Response.FromString,
-        )
 
 
 class SidechainEthServicer(object):
@@ -49,13 +44,6 @@ class SidechainEthServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def RunEthContract(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
 
 def add_SidechainEthServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -66,11 +54,6 @@ def add_SidechainEthServicer_to_server(servicer, server):
       ),
       'WatchEthContract': grpc.unary_unary_rpc_method_handler(
           servicer.WatchEthContract,
-          request_deserializer=sidechain__eth__pb2.Request.FromString,
-          response_serializer=sidechain__eth__pb2.Response.SerializeToString,
-      ),
-      'RunEthContract': grpc.unary_unary_rpc_method_handler(
-          servicer.RunEthContract,
           request_deserializer=sidechain__eth__pb2.Request.FromString,
           response_serializer=sidechain__eth__pb2.Response.SerializeToString,
       ),

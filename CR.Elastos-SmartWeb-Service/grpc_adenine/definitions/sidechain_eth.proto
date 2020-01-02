@@ -6,7 +6,6 @@ package sidechain_eth;
 service SidechainEth {
   rpc DeployEthContract (Request) returns (Response) {}
   rpc WatchEthContract (Request) returns (Response) {}
-  rpc RunEthContract (Request) returns (Response) {}
 }
 
 // The request message
