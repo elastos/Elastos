@@ -10,7 +10,6 @@ import (
 	crand "crypto/rand"
 	"encoding/binary"
 	"fmt"
-	"math/big"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -610,7 +609,6 @@ func crpPayloadEqual(payload1 *payload.CRCProposal, payload2 *payload.CRCProposa
 		payload1.CRSponsorDID.IsEqual(payload2.CRSponsorDID) &&
 		payload1.DraftHash.IsEqual(payload2.DraftHash) &&
 		payload1.CROpinionHash.IsEqual(payload2.CROpinionHash) &&
-		budgetsEqual(payload1.Budgets, payload2.Budgets) &&
 		bytes.Equal(payload1.Sign, payload2.Sign) &&
 		bytes.Equal(payload1.CRSign, payload2.CRSign)
 }
@@ -831,7 +829,7 @@ func randomCRCProposalPayload() *payload.CRCProposal {
 		SponsorPublicKey: randomBytes(33),
 		CRSponsorDID:     *randomUint168(),
 		DraftHash:        *randomUint256(),
-		Budgets:          randomBudgets(),
+		Budgets:          randomBudgets(3),
 		Sign:             randomBytes(64),
 		CRSign:           randomBytes(64),
 		CROpinionHash:    *randomUint256(),
@@ -853,12 +851,19 @@ func randomCRCProposalTrackingPayload() *payload.CRCProposalTracking {
 	}
 }
 
-func randomBudgets() []common.Fixed64 {
-	max := big.NewInt(100)
-	count, _ := crand.Int(crand.Reader, max)
-	budgets := make([]common.Fixed64, count.Uint64())
-	for i := uint64(0); i < count.Uint64(); i++ {
-		budgets[i] = randomFix64()
+func randomBudgets(n int) []payload.Budget {
+	budgets := make([]payload.Budget, 0)
+	for i := 0; i < n; i++ {
+		var budgetType uint8
+		if i == n-1 {
+			budgetType = 0x01
+		}
+		budget := &payload.Budget{
+			Stage:      byte(i),
+			BudgetType: budgetType,
+			Amount:     randomFix64(),
+		}
+		budgets = append(budgets, *budget)
 	}
 	return budgets
 }

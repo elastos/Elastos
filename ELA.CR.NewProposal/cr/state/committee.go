@@ -271,8 +271,10 @@ func (c *Committee) resetCRCCommitteeUsedAmount(height uint32) {
 			v.Status == VoterCanceled || v.Status == Aborted {
 			continue
 		}
-		for i := int(v.CurrentWithdrawalStage); i < len(v.Proposal.Budgets); i++ {
-			budget += v.Proposal.Budgets[i]
+		for _, b := range v.Proposal.Budgets {
+			if _, ok := v.WithdrawnBudgets[b.Stage]; !ok {
+				budget += b.Amount
+			}
 		}
 	}
 
@@ -438,7 +440,7 @@ func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32
 		proposal := tx.Payload.(*payload.CRCProposal)
 		var budget common.Fixed64
 		for _, b := range proposal.Budgets {
-			budget += b
+			budget += b.Amount
 		}
 		history.Append(height, func() {
 			c.CRCCommitteeUsedAmount += budget

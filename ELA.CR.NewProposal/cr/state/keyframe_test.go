@@ -7,6 +7,8 @@ package state
 
 import (
 	"bytes"
+	crand "crypto/rand"
+	"encoding/binary"
 	"math/rand"
 	"testing"
 
@@ -438,16 +440,33 @@ func randomCRCProposal() *payload.CRCProposal {
 		SponsorPublicKey: randomBytes(33),
 		CRSponsorDID:     *randomUint168(),
 		DraftHash:        *randomUint256(),
-		Budgets: []common.Fixed64{
-			common.Fixed64(rand.Int63()),
-			common.Fixed64(rand.Int63()),
-			common.Fixed64(rand.Int63()),
-			common.Fixed64(rand.Int63()),
-			common.Fixed64(rand.Int63()),
-		},
-		Sign:   randomBytes(64),
-		CRSign: randomBytes(64),
+		Budgets:          randomBudgets(5),
+		Sign:             randomBytes(64),
+		CRSign:           randomBytes(64),
 	}
+}
+
+func randomBudgets(n int) []payload.Budget {
+	budgets := make([]payload.Budget, 0)
+	for i := 0; i < n; i++ {
+		var budgetType uint8
+		if i == n-1 {
+			budgetType = 0x01
+		}
+		budget := &payload.Budget{
+			Stage:      byte(i),
+			BudgetType: budgetType,
+			Amount:     randomFix64(),
+		}
+		budgets = append(budgets, *budget)
+	}
+	return budgets
+}
+
+func randomFix64() common.Fixed64 {
+	var randNum int64
+	binary.Read(crand.Reader, binary.BigEndian, &randNum)
+	return common.Fixed64(randNum)
 }
 
 func randomOutputs() *types.Output {

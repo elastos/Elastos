@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
+	crand "crypto/rand"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"math"
@@ -1611,13 +1613,14 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	txn := new(types.Transaction)
 	txn.TxType = types.CRCProposal
 	txn.Version = types.TxVersion09
+
 	crcProposalPayload := &payload.CRCProposal{
 		ProposalType:     payload.Normal,
 		SponsorPublicKey: publicKey1,
 		CRSponsorDID:     *getDid(code2),
 		DraftHash:        common.Hash(draftData),
 		CROpinionHash:    common.Hash(opinionHash),
-		Budgets:          []common.Fixed64{1e8, 1e8, 1e8},
+		Budgets:          randomBudgets(3),
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -1636,6 +1639,29 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 		Parameter: nil,
 	}}
 	return txn
+}
+
+func randomBudgets(n int) []payload.Budget {
+	budgets := make([]payload.Budget, 0)
+	for i := 0; i < n; i++ {
+		var budgetType uint8
+		if i == n-1 {
+			budgetType = 0x01
+		}
+		budget := &payload.Budget{
+			Stage:      byte(i),
+			BudgetType: budgetType,
+			Amount:     common.Fixed64((i + 1) * 1e8),
+		}
+		budgets = append(budgets, *budget)
+	}
+	return budgets
+}
+
+func randomFix64() common.Fixed64 {
+	var randNum int64
+	binary.Read(crand.Reader, binary.BigEndian, &randNum)
+	return common.Fixed64(randNum)
 }
 
 func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
@@ -1658,7 +1684,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	s.Chain.chainParams.SecretaryGeneral = publicKeyStr3
 
 	// Check Common tracking tx.
-	txn := s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0, 0,
+	txn := s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, "", "",
 		publicKeyStr3, privateKeyStr3)
 
@@ -1669,10 +1695,9 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 				SponsorPublicKey: leaderPubKey,
 				CRSponsorDID:     *randomUint168(),
 				DraftHash:        *randomUint256(),
-				Budgets:          []common.Fixed64{100, 200, 300},
+				Budgets:          randomBudgets(3),
 				Recipient:        *recipient,
 			},
-			CurrentStage:   1,
 			Status:         crstate.VoterAgreed,
 			ProposalLeader: leaderPubKey,
 		}
@@ -1680,107 +1705,77 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	err := s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.NoError(err)
 
-	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 1, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 1,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "stage need to be zero")
 
-	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "the NewLeaderPubKey need to be empty")
 
 	// Check Progress tracking tx.
-	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 1, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 1,
 		publicKeyStr1, privateKeyStr1, "", "",
 		publicKeyStr3, privateKeyStr3)
-
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.NoError(err)
 
-	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 0, 0,
-		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
-		publicKeyStr3, privateKeyStr3)
-	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "invalid stage")
-
-	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 1, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 1,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "the NewLeaderPubKey need to be empty")
 
 	// Check Terminated tracking tx.
-	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, "", "",
 		publicKeyStr3, privateKeyStr3)
-
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.NoError(err)
 
-	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 1, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 1,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "stage need to be zero")
 
-	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "the NewLeaderPubKey need to be empty")
 
 	// Check ProposalLeader tracking tx.
-	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0, 0,
+	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
-
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.NoError(err)
 
-	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 1, 0,
+	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 1,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "stage need to be zero")
 
-	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0, 0,
+	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, "", "",
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "invalid new proposal leader public key")
 
-	// Check Appropriation tracking tx.
-	txn = s.getCRCProposalTrackingTx(payload.Appropriation, *proposalHash, 2, 200,
-		publicKeyStr1, privateKeyStr1, "", "",
-		publicKeyStr3, privateKeyStr3)
-
-	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.NoError(err)
-
-	txn = s.getCRCProposalTrackingTx(payload.Appropriation, *proposalHash, 0, 200,
-		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
-		publicKeyStr3, privateKeyStr3)
-	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "invalid stage")
-
-	txn = s.getCRCProposalTrackingTx(payload.Appropriation, *proposalHash, 2, 200,
-		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
-		publicKeyStr3, privateKeyStr3)
-	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "the NewLeaderPubKey need to be empty")
-
 	// Check invalid proposal hash.
-	txn = s.getCRCProposalTrackingTx(payload.Common, *randomUint256(), 0, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Common, *randomUint256(), 0,
 		publicKeyStr1, privateKeyStr1, "", "",
 		publicKeyStr3, privateKeyStr3)
-
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "proposal not exist")
 
-	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, "", "",
 		publicKeyStr3, privateKeyStr3)
 
@@ -1792,10 +1787,9 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 				SponsorPublicKey: leaderPubKey,
 				CRSponsorDID:     *randomUint168(),
 				DraftHash:        *randomUint256(),
-				Budgets:          []common.Fixed64{100, 200, 300},
+				Budgets:          randomBudgets(3),
 				Recipient:        *recipient,
 			},
-			CurrentStage:     1,
 			TerminatedHeight: 100,
 			Status:           crstate.VoterCanceled,
 			ProposalLeader:   leaderPubKey,
@@ -1812,10 +1806,9 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 				SponsorPublicKey: leaderPubKey,
 				CRSponsorDID:     *randomUint168(),
 				DraftHash:        *randomUint256(),
-				Budgets:          []common.Fixed64{100, 200, 300},
+				Budgets:          randomBudgets(3),
 				Recipient:        *recipient,
 			},
-			CurrentStage:   1,
 			TrackingCount:  128,
 			Status:         crstate.VoterAgreed,
 			ProposalLeader: leaderPubKey,
@@ -1827,7 +1820,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 
 func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	trackingType payload.CRCProposalTrackingType,
-	proposalHash common.Uint256, stage uint8, appropriation common.Fixed64,
+	proposalHash common.Uint256, stage uint8,
 	leaderPublicKeyStr, leaderPrivateKeyStr,
 	newLeaderPublicKeyStr, newLeaderPrivateKeyStr,
 	sgPublicKeyStr, sgPrivateKeyStr string) *types.Transaction {
@@ -2325,7 +2318,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	}
 	CRCCommitteeAddressU168, _ := common.Uint168FromAddress(CRCCommitteeAddress)
 	s.Chain.chainParams.CRCCommitteeAddress = *CRCCommitteeAddressU168
-
 	// stage = 1 ok
 	txn := s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 1,
 		Recipient, CRCCommitteeAddressU168, 9*ela, 50*ela)
@@ -2333,14 +2325,13 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	propState := &crstate.ProposalState{
 		Status: crstate.VoterAgreed,
 		Proposal: payload.CRCProposal{
-
 			SponsorPublicKey: pk1Bytes,
 			Recipient:        *Recipient,
-			Budgets:          []common.Fixed64{10 * ela, 20 * ela, 30 * ela},
+			Budgets:          randomBudgets(3),
 		},
-		CurrentStage:           1,
-		CurrentWithdrawalStage: 0,
-		ProposalLeader:         pk1Bytes,
+		FinalPaymentStatus:  false,
+		WithdrawableBudgets: map[uint8]common.Fixed64{0: 10 * 1e8},
+		ProposalLeader:      pk1Bytes,
 	}
 	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
 		ProposalHash] = propState
@@ -2350,22 +2341,17 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 
 	//CRCProposalWithdraw Stage wrong too small
 	txn.Payload.(*payload.CRCProposalWithdraw).Stage = 0
+	propState.WithdrawnBudgets = map[uint8]common.Fixed64{0: 10 * 1e8}
 	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
-	s.EqualError(err, "CRCProposalWithdraw Stage wrong too small")
-
-	//Stage != proposalState.CurrentStage
-	txn.Payload.(*payload.CRCProposalWithdraw).Stage = 2
-	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
-	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
-	s.EqualError(err, "Stage != proposalState.CurrentStage")
+	s.EqualError(err, "CRCProposalWithdraw already paid")
 
 	//stage =2 ok
 	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 2,
 		Recipient, CRCCommitteeAddressU168, 19*ela, 40*ela)
 	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
-	propState.CurrentWithdrawalStage = 1
-	propState.CurrentStage = 2
+	propState.WithdrawableBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8}
+	propState.FinalPaymentStatus = false
 	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
 		ProposalHash] = propState
 	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
@@ -2376,8 +2362,9 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 3,
 		Recipient, CRCCommitteeAddressU168, 29*ela, 30*ela)
 	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
-	propState.CurrentWithdrawalStage = 2
-	propState.CurrentStage = 3
+	propState.WithdrawableBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8, 2: 30 * 1e8}
+	propState.WithdrawnBudgets = map[uint8]common.Fixed64{0: 10 * 1e8, 1: 20 * 1e8}
+	propState.FinalPaymentStatus = true
 	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
 		ProposalHash] = propState
 	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
@@ -2413,21 +2400,16 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 
 			SponsorPublicKey: pk1Bytes,
 			Recipient:        *Recipient,
-			Budgets:          []common.Fixed64{10 * ela, 20 * ela, 30 * ela},
+			Budgets:          randomBudgets(3),
 		},
-		CurrentStage:           1,
-		CurrentWithdrawalStage: 0,
-		ProposalLeader:         pk1Bytes,
+		FinalPaymentStatus: false,
+		ProposalLeader:     pk1Bytes,
 	}
 	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
 		ProposalHash] = propState
 	err = s.Chain.checkTransactionFee(txn, references)
 	s.EqualError(err, "transaction fee != withdrawPayload.Fee")
 
-	//withdrawAmout == 0
-	for i := 0; i < len(propState.Proposal.Budgets); i++ {
-		propState.Proposal.Budgets[i] = common.Fixed64(0)
-	}
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
 	s.EqualError(err, "withdrawAmout == 0")
 
@@ -2462,7 +2444,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 
 	// invalid payload
 	txn.Payload = &payload.CRInfo{}
-
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "invalid payload")
 
