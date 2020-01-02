@@ -17,18 +17,21 @@ class GenerateAPIKeyForm(forms.Form):
 class UploadAndSignForm(forms.ModelForm):
     network = forms.ChoiceField(
         choices=NETWORK_GMU, label="", initial='', widget=forms.Select(), required=True)
+    file_content = forms.CharField(widget=forms.TextInput, required=False)
     private_key = forms.CharField(max_length=300, widget=forms.Textarea)
     api_key = forms.CharField(max_length=64, widget=forms.Textarea)
 
     def __init__(self, *args, **kwargs):
         super(UploadAndSignForm, self).__init__(*args, **kwargs)
         self.fields['did'].required = False
+        self.fields['did'].widget = HiddenInput()
+
+        self.fields['file_content'].widget.attrs['rows'] = 10
+        self.fields['file_content'].widget.attrs['cols'] = 100
         self.fields['private_key'].widget.attrs['rows'] = 1
         self.fields['private_key'].widget.attrs['cols'] = 100
-
         self.fields['api_key'].widget.attrs['rows'] = 1
         self.fields['api_key'].widget.attrs['cols'] = 100
-        self.fields['did'].widget = HiddenInput()
 
     class Meta:
         model = UploadFile

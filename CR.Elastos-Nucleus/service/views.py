@@ -3,7 +3,11 @@ import logging
 import os
 
 from decouple import config
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from django.core.files.temp import NamedTemporaryFile
 from django.shortcuts import render, redirect
+from django.utils.crypto import get_random_string
 
 from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
     get_recent_services
@@ -108,15 +112,22 @@ def upload_and_sign(request):
             network = form.cleaned_data.get('network')
             api_key = form.cleaned_data.get('api_key')
             private_key = form.cleaned_data.get('private_key')
+            file_content = form.cleaned_data.get('file_content').encode()
             form.save()
-            temp_file = UploadFile.objects.get(did=did)
-            file_path = temp_file.uploaded_file.path
+            if file_content:
+                obj, created = UploadFile.objects.update_or_create(did=did)
+                obj.uploaded_file.save(get_random_string(length=32), ContentFile(file_content))
+            try:
+                temp_file = UploadFile.objects.get(did=did)
+                file_path = temp_file.uploaded_file.path
+            except Exception as e:
+                messages.success(request, "Please upload a file or fill out the 'File content' field")
+                return redirect(reverse('service:upload_and_sign'))
             try:
                 hive = Hive()
                 response = hive.upload_and_sign(api_key, private_key, file_path)
                 data = json.loads(response.output)
                 if response.status:
-                    temp_file.delete()
                     message_hash = data['result']['msg']
                     public_key = data['result']['pub']
                     signature = data['result']['sig']
@@ -133,6 +144,7 @@ def upload_and_sign(request):
                 messages.success(request, "File could not be uploaded. Please try again")
                 return redirect(reverse('service:upload_and_sign'))
             finally:
+                temp_file.delete()
                 hive.close()
     else:
         form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key'],
@@ -168,7 +180,7 @@ def verify_and_show(request):
                 hive = Hive()
                 response = hive.verify_and_show(api_key, request_input)
                 if response.status:
-                    content = response.output
+                    content = json.loads(response.output)["result"]["output"]
                     return render(request, 'service/verify_and_show.html',
                                   {'output': True, 'content': content, 'sample_code': sample_code,
                                    'recent_services': recent_services})

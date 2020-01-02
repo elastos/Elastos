@@ -60,8 +60,8 @@
         </button>
         </a>
     {% else %}
-        <textarea rows="6" cols="70"> Enter your text here </textarea> <br>
-        <button type="submit">Insert</button> <br>
+        <p>Either upload a file or fill in the "File content" field. The "File content"
+        field will overwrite the "Uploaded file" field</p>
        <form  class="form-group" method="post" enctype="multipart/form-data">
        {% csrf_token %}
        {{ form.as_p }}
