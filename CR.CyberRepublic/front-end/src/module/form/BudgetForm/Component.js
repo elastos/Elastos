@@ -58,6 +58,39 @@ class BudgetForm extends Component {
     )
   }
 
+  renderPaymentTypes() {
+    const { item, types } = this.props
+    return (
+      <Radio.Group>
+        {Object.values(SUGGESTION_BUDGET_TYPE).map(el => {
+          const specialTypes = types.filter(
+            type => type !== SUGGESTION_BUDGET_TYPE.CONDITIONED
+          )
+          if (!item) {
+            // add payment line
+            return (
+              !specialTypes.includes(el) && (
+                <Radio value={el} key={el}>
+                  {I18N.get(`suggestion.budget.${el}`)}
+                </Radio>
+              )
+            )
+          } else {
+            // edit payment line
+            const remained = specialTypes.filter(type => type !== item.type)
+            return (
+              !remained.includes(el) && (
+                <Radio value={el} key={el}>
+                  {I18N.get(`suggestion.budget.${el}`)}
+                </Radio>
+              )
+            )
+          }
+        })}
+      </Radio.Group>
+    )
+  }
+
   render() {
     const { getFieldDecorator } = this.props.form
     const { item } = this.props
@@ -79,17 +112,7 @@ class BudgetForm extends Component {
                 }
               ],
               initialValue: item && item.type ? item.type : ''
-            })(
-              <Radio.Group>
-                {Object.values(SUGGESTION_BUDGET_TYPE).map(item => {
-                  return (
-                    <Radio value={item}>
-                      {I18N.get(`suggestion.budget.${item}`)}
-                    </Radio>
-                  )
-                })}
-              </Radio.Group>
-            )}
+            })(this.renderPaymentTypes())}
           </FormItem>
 
           <Label>

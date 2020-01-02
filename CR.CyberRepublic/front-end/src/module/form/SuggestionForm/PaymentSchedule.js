@@ -100,6 +100,7 @@ class PaymentSchedule extends Component {
           {this.state.visible === true ? (
             <BudgetForm
               item={index >= 0 ? paymentItems[index] : null}
+              types={paymentItems.map(item => item.type)}
               onSubmit={this.handleSubmit}
               onCancel={this.hideModal}
             />
