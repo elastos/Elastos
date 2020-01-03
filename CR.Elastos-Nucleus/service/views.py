@@ -39,54 +39,57 @@ def generate_key(request):
     with open(os.path.join(module_dir, 'sample_code/go/generate_key.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     if request.method == 'POST':
-        form = GenerateAPIKeyForm(request.POST, initial={'did': did})
-        if form.is_valid():
-            try:
-                common = Common()
-                error_message = None
-                output = {}
-                if 'submit_get_api_key' in request.POST:
-                    response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did)
-                    if response.status:
-                        api_key = response.api_key
-                        obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
-                                                                                       defaults={'did': did,
-                                                                                                 'api_key': api_key})
-                        obj.save()
-                        populate_session_vars_from_database(request, did)
-                        output['get_api_key'] = True
+        if not request.session['generate_key_submit']:
+            form = GenerateAPIKeyForm(request.POST, initial={'did': did})
+            if form.is_valid():
+                try:
+                    common = Common()
+                    error_message = None
+                    output = {}
+                    if 'submit_get_api_key' in request.POST:
+                        response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did)
+                        if response.status:
+                            api_key = response.api_key
+                            obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
+                                                                                           defaults={'did': did,
+                                                                                                     'api_key': api_key})
+                            obj.save()
+                            populate_session_vars_from_database(request, did)
+                            output['get_api_key'] = True
+                        else:
+                            error_message = response.status_message
+                    elif 'submit_generate_api_key' in request.POST:
+                        response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did)
+                        if response.status:
+                            api_key = response.api_key
+                            obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
+                                                                                           defaults={'did': did,
+                                                                                                     'api_key': api_key})
+                            obj.save()
+                            populate_session_vars_from_database(request, did)
+                            output['generate_api_key'] = True
+                        else:
+                            error_message = response.status_message
                     else:
-                        error_message = response.status_message
-                elif 'submit_generate_api_key' in request.POST:
-                    response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did)
-                    if response.status:
-                        api_key = response.api_key
-                        obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
-                                                                                       defaults={'did': did,
-                                                                                                 'api_key': api_key})
-                        obj.save()
-                        populate_session_vars_from_database(request, did)
-                        output['generate_api_key'] = True
+                        error_message = "Invalid form submission. Please refresh the page and try generating a new API " \
+                                        "key again "
+                    if error_message:
+                        messages.success(request, error_message)
+                        return redirect(reverse('service:generate_key'))
                     else:
-                        error_message = response.status_message
-                else:
-                    error_message = "Invalid form submission. Please refresh the page and try generating a new API " \
-                                    "key again "
-                if error_message:
-                    messages.success(request, error_message)
+                        request.session['generate_key_submit'] = True
+                        request.session['api_key'] = api_key
+                        return render(request, "service/generate_key.html",
+                                      {'output': output, 'api_key': api_key, 'sample_code': sample_code,
+                                       'recent_services': recent_services})
+                except Exception as e:
+                    logging.debug(f"did: {did} Method: generate_key Error: {e}")
+                    messages.success(request, "Could not generate an API key. Please try again")
                     return redirect(reverse('service:generate_key'))
-                else:
-                    request.session['api_key'] = api_key
-                    return render(request, "service/generate_key.html",
-                                  {'output': output, 'api_key': api_key, 'sample_code': sample_code,
-                                   'recent_services': recent_services})
-            except Exception as e:
-                logging.debug(f"did: {did} Method: generate_key Error: {e}")
-                messages.success(request, "Could not generate an API key. Please try again")
-                return redirect(reverse('service:generate_key'))
-            finally:
-                common.close()
+                finally:
+                    common.close()
     else:
+        request.session['generate_key_submit'] = False
         form = GenerateAPIKeyForm(initial={'did': did})
         return render(request, "service/generate_key.html",
                       {'form': form, 'sample_code': sample_code, 'recent_services': recent_services})
@@ -104,49 +107,52 @@ def upload_and_sign(request):
     with open(os.path.join(module_dir, 'sample_code/go/upload_and_sign.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     if request.method == 'POST':
-        # Purge old requests for housekeeping.
-        UploadFile.objects.filter(did=did).delete()
+        if not request.session['upload_and_sign_submit']:
+            # Purge old requests for housekeeping.
+            UploadFile.objects.filter(did=did).delete()
 
-        form = UploadAndSignForm(request.POST, request.FILES, initial={'did': did})
-        if form.is_valid():
-            network = form.cleaned_data.get('network')
-            api_key = form.cleaned_data.get('api_key')
-            private_key = form.cleaned_data.get('private_key')
-            file_content = form.cleaned_data.get('file_content').encode()
-            form.save()
-            if file_content:
-                obj, created = UploadFile.objects.update_or_create(did=did)
-                obj.uploaded_file.save(get_random_string(length=32), ContentFile(file_content))
-            try:
-                temp_file = UploadFile.objects.get(did=did)
-                file_path = temp_file.uploaded_file.path
-            except Exception as e:
-                messages.success(request, "Please upload a file or fill out the 'File content' field")
-                return redirect(reverse('service:upload_and_sign'))
-            try:
-                hive = Hive()
-                response = hive.upload_and_sign(api_key, private_key, file_path)
-                data = json.loads(response.output)
-                if response.status:
-                    message_hash = data['result']['msg']
-                    public_key = data['result']['pub']
-                    signature = data['result']['sig']
-                    file_hash = data['result']['hash']
-                    return render(request, "service/upload_and_sign.html",
-                                  {"message_hash": message_hash, "public_key": public_key, "signature": signature,
-                                   "file_hash": file_hash, 'output': True, 'sample_code': sample_code,
-                                   'recent_services': recent_services})
-                else:
-                    messages.success(request, response.status_message)
+            form = UploadAndSignForm(request.POST, request.FILES, initial={'did': did})
+            if form.is_valid():
+                network = form.cleaned_data.get('network')
+                api_key = form.cleaned_data.get('api_key')
+                private_key = form.cleaned_data.get('private_key')
+                file_content = form.cleaned_data.get('file_content').encode()
+                form.save()
+                if file_content:
+                    obj, created = UploadFile.objects.update_or_create(did=did)
+                    obj.uploaded_file.save(get_random_string(length=32), ContentFile(file_content))
+                try:
+                    temp_file = UploadFile.objects.get(did=did)
+                    file_path = temp_file.uploaded_file.path
+                except Exception as e:
+                    messages.success(request, "Please upload a file or fill out the 'File content' field")
                     return redirect(reverse('service:upload_and_sign'))
-            except Exception as e:
-                logging.debug(f"did: {did} Method: upload_and_sign Error: {e}")
-                messages.success(request, "File could not be uploaded. Please try again")
-                return redirect(reverse('service:upload_and_sign'))
-            finally:
-                temp_file.delete()
-                hive.close()
+                try:
+                    hive = Hive()
+                    response = hive.upload_and_sign(api_key, private_key, file_path)
+                    data = json.loads(response.output)
+                    if response.status:
+                        request.session['upload_and_sign_submit'] = True
+                        message_hash = data['result']['msg']
+                        public_key = data['result']['pub']
+                        signature = data['result']['sig']
+                        file_hash = data['result']['hash']
+                        return render(request, "service/upload_and_sign.html",
+                                      {"message_hash": message_hash, "public_key": public_key, "signature": signature,
+                                       "file_hash": file_hash, 'output': True, 'sample_code': sample_code,
+                                       'recent_services': recent_services})
+                    else:
+                        messages.success(request, response.status_message)
+                        return redirect(reverse('service:upload_and_sign'))
+                except Exception as e:
+                    logging.debug(f"did: {did} Method: upload_and_sign Error: {e}")
+                    messages.success(request, "File could not be uploaded. Please try again")
+                    return redirect(reverse('service:upload_and_sign'))
+                finally:
+                    temp_file.delete()
+                    hive.close()
     else:
+        request.session['upload_and_sign_submit'] = False
         form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key'],
                                           'private_key': request.session['private_key_mainchain']})
         return render(request, "service/upload_and_sign.html",
@@ -165,35 +171,38 @@ def verify_and_show(request):
     with open(os.path.join(module_dir, 'sample_code/go/verify_and_show.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     if request.method == 'POST':
-        form = VerifyAndShowForm(request.POST)
-        if form.is_valid():
-            network = form.cleaned_data.get('network')
-            api_key = form.cleaned_data.get('api_key')
-            request_input = {
-                "msg": form.cleaned_data.get('message_hash'),
-                "pub": form.cleaned_data.get('public_key'),
-                "sig": form.cleaned_data.get('signature'),
-                "hash": form.cleaned_data.get('file_hash'),
-                "private_key": form.cleaned_data.get('private_key')
-            }
-            try:
-                hive = Hive()
-                response = hive.verify_and_show(api_key, request_input)
-                if response.status:
-                    content = json.loads(response.output)["result"]["output"]
-                    return render(request, 'service/verify_and_show.html',
-                                  {'output': True, 'content': content, 'sample_code': sample_code,
-                                   'recent_services': recent_services})
-                else:
-                    messages.success(request, response.status_message)
+        if not request.session['verify_and_show_submit']:
+            form = VerifyAndShowForm(request.POST)
+            if form.is_valid():
+                network = form.cleaned_data.get('network')
+                api_key = form.cleaned_data.get('api_key')
+                request_input = {
+                    "msg": form.cleaned_data.get('message_hash'),
+                    "pub": form.cleaned_data.get('public_key'),
+                    "sig": form.cleaned_data.get('signature'),
+                    "hash": form.cleaned_data.get('file_hash'),
+                    "private_key": form.cleaned_data.get('private_key')
+                }
+                try:
+                    hive = Hive()
+                    response = hive.verify_and_show(api_key, request_input)
+                    if response.status:
+                        request.session['verify_and_show_submit'] = True
+                        content = json.loads(response.output)["result"]["output"]
+                        return render(request, 'service/verify_and_show.html',
+                                      {'output': True, 'content': content, 'sample_code': sample_code,
+                                       'recent_services': recent_services})
+                    else:
+                        messages.success(request, response.status_message)
+                        return redirect(reverse('service:verify_and_show'))
+                except Exception as e:
+                    logging.debug(f"did: {did} Method: verify_and_show Error: {e}")
+                    messages.success(request, "File could not be verified nor shown. Please try again")
                     return redirect(reverse('service:verify_and_show'))
-            except Exception as e:
-                logging.debug(f"did: {did} Method: verify_and_show Error: {e}")
-                messages.success(request, "File could not be verified nor shown. Please try again")
-                return redirect(reverse('service:verify_and_show'))
-            finally:
-                hive.close()
+                finally:
+                    hive.close()
     else:
+        request.session['verify_and_show_submit'] = False
         form = VerifyAndShowForm(
             initial={'api_key': request.session['api_key'], 'private_key': request.session['private_key_mainchain'],
                      'public_key': request.session['public_key_mainchain']})
@@ -213,65 +222,68 @@ def create_wallet(request):
     with open(os.path.join(module_dir, 'sample_code/go/create_wallet.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     if request.method == "POST":
-        form = CreateWalletForm(request.POST)
-        if form.is_valid():
-            network = form.cleaned_data.get('network')
-            api_key = form.cleaned_data.get('api_key')
-            try:
-                wallet = Wallet()
-                response = wallet.create_wallet(api_key)
-                if response.status:
-                    content = json.loads(response.output)['result']
-                    wallet_mainchain = content['mainchain']
-                    wallet_did = content['sidechain']['did']
-                    wallet_token = content['sidechain']['token']
-                    wallet_eth = content['sidechain']['eth']
-                    obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
-                                                                                   defaults={'did': did,
-                                                                                             'api_key': api_key,
-                                                                                             'mnemonic_mainchain':
-                                                                                                 wallet_mainchain[
-                                                                                                     'mnemonic'],
-                                                                                             'public_key_mainchain':
-                                                                                                 wallet_mainchain[
-                                                                                                     'public_key'],
-                                                                                             'private_key_mainchain':
-                                                                                                 wallet_mainchain[
-                                                                                                     'private_key'],
-                                                                                             'address_mainchain':
-                                                                                                 wallet_mainchain[
+        if not request.session['create_wallet_submit']:
+            form = CreateWalletForm(request.POST)
+            if form.is_valid():
+                network = form.cleaned_data.get('network')
+                api_key = form.cleaned_data.get('api_key')
+                try:
+                    wallet = Wallet()
+                    response = wallet.create_wallet(api_key)
+                    if response.status:
+                        request.session['create_wallet_submit'] = True
+                        content = json.loads(response.output)['result']
+                        wallet_mainchain = content['mainchain']
+                        wallet_did = content['sidechain']['did']
+                        wallet_token = content['sidechain']['token']
+                        wallet_eth = content['sidechain']['eth']
+                        obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
+                                                                                       defaults={'did': did,
+                                                                                                 'api_key': api_key,
+                                                                                                 'mnemonic_mainchain':
+                                                                                                     wallet_mainchain[
+                                                                                                         'mnemonic'],
+                                                                                                 'public_key_mainchain':
+                                                                                                     wallet_mainchain[
+                                                                                                         'public_key'],
+                                                                                                 'private_key_mainchain':
+                                                                                                     wallet_mainchain[
+                                                                                                         'private_key'],
+                                                                                                 'address_mainchain':
+                                                                                                     wallet_mainchain[
+                                                                                                         'address'],
+                                                                                                 'private_key_did':
+                                                                                                     wallet_did[
+                                                                                                         'private_key'],
+                                                                                                 'public_key_did':
+                                                                                                     wallet_did[
+                                                                                                         'public_key'],
+                                                                                                 'address_did': wallet_did[
                                                                                                      'address'],
-                                                                                             'private_key_did':
-                                                                                                 wallet_did[
-                                                                                                     'private_key'],
-                                                                                             'public_key_did':
-                                                                                                 wallet_did[
-                                                                                                     'public_key'],
-                                                                                             'address_did': wallet_did[
-                                                                                                 'address'],
-                                                                                             'did_did': wallet_did[
-                                                                                                 'did'],
-                                                                                             'address_eth': wallet_eth[
-                                                                                                 'address'],
-                                                                                             'private_key_eth':
-                                                                                                 wallet_eth[
-                                                                                                     'private_key']})
-                    obj.save()
-                    populate_session_vars_from_database(request, did)
-                    return render(request, "service/create_wallet.html",
-                                  {'output': True, 'wallet_mainchain': wallet_mainchain,
-                                   'wallet_did': wallet_did, 'wallet_token': wallet_token, 'wallet_eth': wallet_eth,
-                                   'sample_code': sample_code, 'recent_services': recent_services})
-                else:
-                    messages.success(request, response.status_message)
+                                                                                                 'did_did': wallet_did[
+                                                                                                     'did'],
+                                                                                                 'address_eth': wallet_eth[
+                                                                                                     'address'],
+                                                                                                 'private_key_eth':
+                                                                                                     wallet_eth[
+                                                                                                         'private_key']})
+                        obj.save()
+                        populate_session_vars_from_database(request, did)
+                        return render(request, "service/create_wallet.html",
+                                      {'output': True, 'wallet_mainchain': wallet_mainchain,
+                                       'wallet_did': wallet_did, 'wallet_token': wallet_token, 'wallet_eth': wallet_eth,
+                                       'sample_code': sample_code, 'recent_services': recent_services})
+                    else:
+                        messages.success(request, response.status_message)
+                        return redirect(reverse('service:create_wallet'))
+                except Exception as e:
+                    logging.debug(f"did: {did} Method: create_wallet Error: {e}")
+                    messages.success(request, "Could not create wallet at this time. Please try again")
                     return redirect(reverse('service:create_wallet'))
-            except Exception as e:
-                logging.debug(f"did: {did} Method: create_wallet Error: {e}")
-                messages.success(request, "Could not create wallet at this time. Please try again")
-                return redirect(reverse('service:create_wallet'))
-            finally:
-                wallet.close()
+                finally:
+                    wallet.close()
     else:
+        request.session['create_wallet_submit'] = False
         form = CreateWalletForm(initial={'api_key': request.session['api_key']})
         return render(request, 'service/create_wallet.html',
                       {'output': False, 'form': form, 'sample_code': sample_code, 'recent_services': recent_services})
@@ -459,43 +471,46 @@ def deploy_eth_contract(request):
         sample_code['go'] = myfile.read()
     did = request.session['did']
     if request.method == 'POST':
-        # Purge old requests for housekeeping.
-        UploadFile.objects.filter(did=did).delete()
+        if not request.session['deploy_eth_contract_submit']:
+            # Purge old requests for housekeeping.
+            UploadFile.objects.filter(did=did).delete()
 
-        form = DeployETHContractForm(request.POST, request.FILES, initial={'did': did})
-        if form.is_valid():
-            network = form.cleaned_data.get('network')
-            api_key = form.cleaned_data.get('api_key')
-            eth_account_address = form.cleaned_data.get('eth_account_address')
-            eth_private_key = form.cleaned_data.get('eth_private_key')
-            eth_gas = form.cleaned_data.get('eth_gas')
-            form.save()
-            temp_file = UploadFile.objects.get(did=did)
-            file_path = temp_file.uploaded_file.path
-            try:
-                sidechain_eth = SidechainEth()
-                response = sidechain_eth.deploy_eth_contract(api_key, eth_account_address, eth_private_key, eth_gas,
-                                                             file_path)
-                data = json.loads(response.output)
-                if response.status:
-                    temp_file.delete()
-                    contract_address = data['result']['contract_address']
-                    contract_name = data['result']['contract_name']
-                    contract_code_hash = data['result']['contract_code_hash']
-                    return render(request, "service/deploy_eth_contract.html",
-                                  {"contract_address": contract_address, "contract_name": contract_name,
-                                   "contract_code_hash": contract_code_hash, 'output': True, 'sample_code': sample_code,
-                                   'recent_services': recent_services})
-                else:
-                    messages.success(request, response.status_message)
+            form = DeployETHContractForm(request.POST, request.FILES, initial={'did': did})
+            if form.is_valid():
+                network = form.cleaned_data.get('network')
+                api_key = form.cleaned_data.get('api_key')
+                eth_account_address = form.cleaned_data.get('eth_account_address')
+                eth_private_key = form.cleaned_data.get('eth_private_key')
+                eth_gas = form.cleaned_data.get('eth_gas')
+                form.save()
+                temp_file = UploadFile.objects.get(did=did)
+                file_path = temp_file.uploaded_file.path
+                try:
+                    sidechain_eth = SidechainEth()
+                    response = sidechain_eth.deploy_eth_contract(api_key, eth_account_address, eth_private_key, eth_gas,
+                                                                 file_path)
+                    data = json.loads(response.output)
+                    if response.status:
+                        request.session['deploy_eth_contract_submit'] = True
+                        temp_file.delete()
+                        contract_address = data['result']['contract_address']
+                        contract_name = data['result']['contract_name']
+                        contract_code_hash = data['result']['contract_code_hash']
+                        return render(request, "service/deploy_eth_contract.html",
+                                      {"contract_address": contract_address, "contract_name": contract_name,
+                                       "contract_code_hash": contract_code_hash, 'output': True, 'sample_code': sample_code,
+                                       'recent_services': recent_services})
+                    else:
+                        messages.success(request, response.status_message)
+                        return redirect(reverse('service:deploy_eth_contract'))
+                except Exception as e:
+                    logging.debug(f"did: {did} Method: deploy_eth_contract Error: {e}")
+                    messages.success(request, "Could not deploy smart contract to Eth sidechain. Please try again")
                     return redirect(reverse('service:deploy_eth_contract'))
-            except Exception as e:
-                logging.debug(f"did: {did} Method: deploy_eth_contract Error: {e}")
-                messages.success(request, "Could not deploy smart contract to Eth sidechain. Please try again")
-                return redirect(reverse('service:deploy_eth_contract'))
-            finally:
-                sidechain_eth.close()
+                finally:
+                    sidechain_eth.close()
     else:
+        request.session['deploy_eth_contract_submit'] = False
         form = DeployETHContractForm(initial={'did': did, 'api_key': request.session['api_key'],
                                               'eth_account_address': request.session['address_eth'],
                                               'eth_private_key': request.session['private_key_eth'],
@@ -516,37 +531,40 @@ def watch_eth_contract(request):
     with open(os.path.join(module_dir, 'sample_code/go/watch_eth_contract.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     if request.method == 'POST':
-        form = WatchETHContractForm(request.POST)
-        if form.is_valid():
-            network = form.cleaned_data.get('network')
-            api_key = form.cleaned_data.get('api_key')
-            contract_address = form.cleaned_data.get('contract_address')
-            contract_name = form.cleaned_data.get('contract_name')
-            contract_code_hash = form.cleaned_data.get('contract_code_hash')
-            try:
-                sidechain_eth = SidechainEth()
-                response = sidechain_eth.watch_eth_contract(api_key, contract_address, contract_name,
-                                                            contract_code_hash)
-                data = json.loads(response.output)
-                if response.status:
-                    contract_address = data['result']['contract_address']
-                    contract_functions = data['result']['contract_functions']
-                    contract_source = data['result']['contract_source']
-                    return render(request, "service/watch_eth_contract.html",
-                                  {'output': True, 'contract_address': contract_address, 'contract_name': contract_name,
-                                   'contract_functions': contract_functions, 'contract_source': contract_source,
-                                   'sample_code': sample_code,
-                                   'recent_services': recent_services})
-                else:
-                    messages.success(request, response.status_message)
+        if not request.session['watch_eth_contract_submit']:
+            form = WatchETHContractForm(request.POST)
+            if form.is_valid():
+                network = form.cleaned_data.get('network')
+                api_key = form.cleaned_data.get('api_key')
+                contract_address = form.cleaned_data.get('contract_address')
+                contract_name = form.cleaned_data.get('contract_name')
+                contract_code_hash = form.cleaned_data.get('contract_code_hash')
+                try:
+                    sidechain_eth = SidechainEth()
+                    response = sidechain_eth.watch_eth_contract(api_key, contract_address, contract_name,
+                                                                contract_code_hash)
+                    data = json.loads(response.output)
+                    if response.status:
+                        request.session['watch_eth_contract_submit'] = True
+                        contract_address = data['result']['contract_address']
+                        contract_functions = data['result']['contract_functions']
+                        contract_source = data['result']['contract_source']
+                        return render(request, "service/watch_eth_contract.html",
+                                      {'output': True, 'contract_address': contract_address, 'contract_name': contract_name,
+                                       'contract_functions': contract_functions, 'contract_source': contract_source,
+                                       'sample_code': sample_code,
+                                       'recent_services': recent_services})
+                    else:
+                        messages.success(request, response.status_message)
+                        return redirect(reverse('service:watch_eth_contract'))
+                except Exception as e:
+                    logging.debug(f"did={did} Method: watch_eth_contract Error: {e}")
+                    messages.success(request, "Could not view smart contract code at this time. Please try again")
                     return redirect(reverse('service:watch_eth_contract'))
-            except Exception as e:
-                logging.debug(f"did={did} Method: watch_eth_contract Error: {e}")
-                messages.success(request, "Could not view smart contract code at this time. Please try again")
-                return redirect(reverse('service:watch_eth_contract'))
-            finally:
-                sidechain_eth.close()
+                finally:
+                    sidechain_eth.close()
     else:
+        request.session['watch_eth_contract_submit'] = False
         form = WatchETHContractForm(initial={'api_key': request.session['api_key']})
         return render(request, 'service/watch_eth_contract.html',
                       {'output': False, 'form': form, 'sample_code': sample_code, 'recent_services': recent_services})
@@ -573,4 +591,3 @@ def suggest_service(request):
     track_page_visit(did, 'Suggest a new service', 'service:suggest_service', True)
     recent_services = get_recent_services(did)
     return render(request, "service/suggest_service.html", {'recent_services': recent_services})
-
