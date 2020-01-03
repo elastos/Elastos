@@ -134,7 +134,7 @@ export default {
     action: 'Action',
     desc: 'Based on milestone selected below:',
     schedule: 'Payment Schedule',
-    total: 'Total Budget',
+    total: 'Total Amount',
     address: 'ELA Receive Address',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Advance payment (< 30% of total)',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Proposal completion payment',

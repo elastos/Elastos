@@ -80,7 +80,7 @@ class C extends BaseComponent {
         return
       }
       const budget = form.getFieldValue('budget')
-      if (budget && _.isArray(budget.paymentItems)) {
+      if (budget && _.isArray(budget.budget)) {
         values.budget = budget.budget
         values.budgetAmount = budget.budgetAmount
         values.elaAddress = budget.elaAddress

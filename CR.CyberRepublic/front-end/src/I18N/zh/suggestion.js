@@ -133,7 +133,7 @@ export default {
     action: '操作',
     desc: '请基于里程碑填写：',
     schedule: '支出计划',
-    total: '总预算',
+    total: '总金额',
     address: 'ELA 接收地址',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: '预付款(小于总金额的30%)',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: '提案完成付款',
