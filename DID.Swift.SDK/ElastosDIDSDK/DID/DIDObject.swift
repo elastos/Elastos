@@ -13,4 +13,3 @@ public class DIDObject: NSObject {
         self.type = type
     }
 }
-
