@@ -177,6 +177,7 @@ const Container = styled.div`
   margin: 0 auto;
 `
 const Header = styled.div`
+  position: relative;
   margin: 27px 0 80px;
   width: 211px;
   height: 64px;
