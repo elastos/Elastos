@@ -40,7 +40,7 @@
 static const char *spec = "elastos/did/1.0";
 static const char* operation[] = {"create", "update", "deactivate"};
 
-static int header_toJson(JsonGenerator *gen, DIDRequest *req)
+static int header_toJson(JsonGenerator *gen, DIDRequest *req, DIDRequest_Type type)
 {
     assert(gen);
     assert(req);
@@ -48,6 +48,9 @@ static int header_toJson(JsonGenerator *gen, DIDRequest *req)
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "specification", req->header.spec));
     CHECK(JsonGenerator_WriteStringField(gen, "operation", req->header.op));
+    if (type != RequestType_Create)
+        CHECK(JsonGenerator_WriteStringField(gen, "previousTxid", req->header.prevtxid));
+
     CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
@@ -70,14 +73,15 @@ static int proof_toJson(JsonGenerator *gen, DIDRequest *req)
     return 0;
 }
 
-static int didrequest_toJson_internal(JsonGenerator *gen, DIDRequest *req)
+static int didrequest_toJson_internal(JsonGenerator *gen, DIDRequest *req,
+        DIDRequest_Type type)
 {
     assert(gen);
     assert(req);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteFieldName(gen, "header"));
-    CHECK(header_toJson(gen, req));
+    CHECK(header_toJson(gen, req, type));
     CHECK(JsonGenerator_WriteStringField(gen, "payload", req->payload));
     CHECK(JsonGenerator_WriteFieldName(gen, "proof"));
     CHECK(proof_toJson(gen, req));
@@ -85,7 +89,7 @@ static int didrequest_toJson_internal(JsonGenerator *gen, DIDRequest *req)
     return 0;
 }
 
-static const char *didRequest_toJson(DIDRequest *req)
+static const char *didRequest_toJson(DIDRequest *req, DIDRequest_Type type)
 {
     JsonGenerator g, *gen;
 
@@ -95,7 +99,7 @@ static const char *didRequest_toJson(DIDRequest *req)
     if (!gen)
         return NULL;
 
-    if (didrequest_toJson_internal(gen, req) < 0)
+    if (didrequest_toJson_internal(gen, req, type) < 0)
         return NULL;
 
     return JsonGenerator_Finish(gen);
@@ -106,6 +110,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
 {
     DIDRequest req;
     const char *payload, *op, *requestJson;
+    char prevtxid[MAX_TXID];
     size_t len;
     int rc;
     char signature[SIGNATURE_BYTES * 2 + 16];
@@ -119,6 +124,13 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
     if (!store)
         return NULL;
 
+    rc = DID_GetTxid(did, prevtxid, sizeof(prevtxid));
+    if (rc)
+        return NULL;
+
+    if (type == RequestType_Create)
+        strcpy(prevtxid, "");
+
     if (type == RequestType_Deactivate)
         payload = data;
     else {
@@ -128,8 +140,9 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
     }
 
     op = operation[type];
-    rc = DIDStore_Sign(store, did, signKey, storepass, signature, 3,
+    rc = DIDStore_Sign(store, did, signKey, storepass, signature, 4,
             (unsigned char*)spec, strlen(spec), (unsigned char*)op, strlen(op),
+            (unsigned char *)prevtxid, strlen(prevtxid),
             (unsigned char*)payload, strlen(payload));
     if (rc < 0) {
         free((char*)payload);
@@ -138,30 +151,31 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
 
     req.header.spec = (char*)spec;
     req.header.op = (char*)op;
+    req.header.prevtxid = (char*)prevtxid;
     req.payload = payload;
     req.proof.signature = signature;
     DIDURL_Copy(&req.proof.verificationMethod, signKey);
 
-    requestJson = didRequest_toJson(&req);
+    requestJson = didRequest_toJson(&req, type);
     free((char*)payload);
-
     return requestJson;
 }
 
 int DIDRequest_Verify(DIDRequest *request)
 {
     return DIDDocument_Verify(request->doc, &request->proof.verificationMethod,
-            (char*)request->proof.signature, 3, (unsigned char*)request->header.spec,
-            strlen(request->header.spec), (unsigned char*)request->header.op,
-            strlen(request->header.op), (unsigned char*)request->payload,
-            strlen(request->payload));
+            (char*)request->proof.signature, 4,
+            (unsigned char*)request->header.spec, strlen(request->header.spec),
+            (unsigned char*)request->header.op, strlen(request->header.op),
+            (unsigned char *)request->header.prevtxid, strlen(request->header.prevtxid),
+            (unsigned char*)request->payload, strlen(request->payload));
 }
 
 DIDDocument *DIDRequest_FromJson(cJSON *json)
 {
     DIDRequest req;
     cJSON *item, *field = NULL;
-    char *op, *docJson;
+    char *op, *docJson, *previousTxid;
     DID *subject;
     size_t len;
 
@@ -188,6 +202,12 @@ DIDDocument *DIDRequest_FromJson(cJSON *json)
         req.header.op = op;
     else
         return NULL;
+
+    field = cJSON_GetObjectItem(item, "previousTxid");
+    if (!strcmp(op, "create") && !field)
+        req.header.prevtxid = "";
+    else
+        req.header.prevtxid = cJSON_GetStringValue(field);
 
     item = cJSON_GetObjectItem(json, "payload");
     if (!item || !cJSON_IsString(item))

@@ -19,13 +19,13 @@ static DID did;
 static Credential *credential;
 static DIDStore *store;
 
-int get_cred_hint(CredentialEntry *entry, void *context)
+int get_cred_alias(CredentialEntry *entry, void *context)
 {
     if(!entry)
         return -1;
 
-    printf("\n credential: %s#%s, hint: %s\n",
-            entry->id.did.idstring, entry->id.fragment, entry->hint);
+    printf("\n credential: %s#%s, alias: %s\n",
+            entry->id.did.idstring, entry->id.fragment, entry->alias);
     return 0;
 }
 
@@ -46,14 +46,14 @@ static void test_didstore_contain_creds(void)
 
 static void test_didstore_list_cred(void)
 {
-    int rc = DIDStore_ListCredentials(store, &did, get_cred_hint, NULL);
+    int rc = DIDStore_ListCredentials(store, &did, get_cred_alias, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 
 static void test_didstore_select_cred(void)
 {
     int rc = DIDStore_SelectCredentials(store, &did, &(credential->id),
-            "BasicProfileCredential", get_cred_hint, NULL);
+            "BasicProfileCredential", get_cred_alias, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 

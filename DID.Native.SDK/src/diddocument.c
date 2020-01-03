@@ -28,11 +28,13 @@
 
 #include "did.h"
 #include "diddocument.h"
+#include "didstore.h"
 #include "credential.h"
 #include "common.h"
 #include "JsonGenerator.h"
 #include "crypto.h"
 #include "HDkey.h"
+#include "didmeta.h"
 
 #define MAX_EXPIRES              5
 
@@ -654,6 +656,14 @@ static int Parser_Credentials_InDoc(DIDDocument *document, cJSON *json)
     return 0;
 }
 
+DIDMeta *document_getmeta(DIDDocument *document)
+{
+    if (!document)
+        return NULL;
+
+    return &document->meta;
+}
+
 ////////////////////////////////Document///////////////////////////////////////////////////////////
 DIDDocument *DIDDocument_FromJson(const char *json)
 {
@@ -836,13 +846,50 @@ void DIDDocument_Destroy(DIDDocument *document)
     document = NULL;
 }
 
+int DIDDocument_SetAlias(DIDDocument *document, const char *alias)
+{
+    DIDStore *store;
+
+    if (!document)
+        return -1;
+
+    if (DIDMeta_SetAlias(&document->meta, alias) == -1)
+        return -1;
+
+    store = DIDStore_GetInstance();
+    return didstore_storedidmeta(store, &document->meta, &document->did);
+}
+
+int DIDDocument_GetAlias(DIDDocument *document, char *alias, size_t size)
+{
+    if (!document || !alias || size <= 0)
+        return -1;
+
+    return DIDMeta_GetAlias(&document->meta, alias, size);
+}
+
+int DIDDocument_GetTxid(DIDDocument *document, char *txid, size_t size)
+{
+    if (!document || !txid || size <= 0)
+        return -1;
+
+    return DIDMeta_GetTxid(&document->meta, txid, size);
+}
+
+time_t DIDDocument_GetTimestamp(DIDDocument *document)
+{
+    if (!document)
+        return 0;
+
+    return DIDMeta_GetTimestamp(&document->meta);
+}
+
 bool DIDDocument_IsDeactivated(DIDDocument *document)
 {
     if (!document)
         return true;
 
-    //Todo:
-    return false;
+    return DIDMeta_GetDeactived(&document->meta);
 }
 
 bool DIDDocument_IsGenuine(DIDDocument *document)

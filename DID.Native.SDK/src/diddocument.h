@@ -27,14 +27,13 @@
 #include <time.h>
 #include "ela_did.h"
 #include "did.h"
+#include "didmeta.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define MAX_SIGN        128
-#define MAX_ALIAS       64
-#define MAX_TXID        128
 #define CHECK(func)        do { if (func == -1) return -1; } while(0)
 
 typedef struct DocumentProof {
@@ -43,12 +42,6 @@ typedef struct DocumentProof {
     DIDURL creater;
     char signatureValue[MAX_SIGN];
 } DocumentProof;
-
-typedef struct DIDMeta {
-    char alias[MAX_ALIAS];
-    char txid[MAX_TXID];
-    bool deactived;
-} DIDMeta;
 
 struct DIDDocument {
     DID did;
@@ -100,6 +93,8 @@ struct Service {
 struct DIDDocumentBuilder {
     DIDDocument *document;
 };
+
+DIDMeta *document_getmeta(DIDDocument *document);
 
 #ifdef __cplusplus
 }

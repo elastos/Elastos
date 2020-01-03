@@ -36,6 +36,7 @@ typedef struct DIDRequest {
     struct {
         char *spec;
         char *op;
+        char *prevtxid;
     } header;
 
     const char *payload;

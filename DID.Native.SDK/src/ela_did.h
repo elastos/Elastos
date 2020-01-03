@@ -127,12 +127,12 @@ typedef struct DIDDocumentBuilder DIDDocumentBuilder;
 typedef struct Issuer           Issuer;
 /**
  * \~English
- * DIDEntry includes did(DID) and hint for list did callback.
+ * DIDEntry includes did(DID) and alias for list did callback.
  */
 typedef struct DIDEntry         DIDEntry;
 /**
  * \~English
- * CredentialEntry includes id(DIDURL) and hint for list credential callback.
+ * CredentialEntry includes id(DIDURL) and alias for list credential callback.
  */
 typedef struct CredentialEntry  CredentialEntry;
 /**
@@ -160,16 +160,16 @@ struct DIDAdapter {
 };
 /**
  * \~English
- * DID list callbacks, return hint about did.
+ * DID list callbacks, return alias about did.
  * API need to free entry memory.
  */
-typedef int DIDStore_GetDIDHintCallback(DIDEntry *entry, void *context);
+typedef int DIDStore_GetDIDAliasCallback(DIDEntry *entry, void *context);
 /**
  * \~English
- * Credential list callbacks, return hint about credential.
+ * Credential list callbacks, return alias about credential.
  * API need to free entry memory.
  */
-typedef int DIDStore_GetCredHintCallback(CredentialEntry *entry, void *context);
+typedef int DIDStore_GetCredAliasCallback(CredentialEntry *entry, void *context);
 
 /******************************************************************************
  * DID
@@ -304,6 +304,76 @@ DID_API void DID_Destroy(DID *did);
  *      Otherwise, return NULL.
  */
 DID_API DIDDocument *DID_Resolve(DID *did);
+
+/**
+ * \~English
+ * Set alias for did.
+ *
+ * @param
+ *      did                      [in] The handle of DID.
+  * @param
+ *      alias                    [in] Alias string for DID.
+ * @return
+ *      If no error occurs, return 0.
+ *      Otherwise, return -1.
+ */
+DID_API int DID_SetAlias(DID *did, const char *alias);
+
+/**
+ * \~English
+ * Get alias for did.
+ *
+ * @param
+ *      did                        [in] The handle of DID.
+  * @param
+ *      alias                      [out] The buffer of storing alias.
+ * @param
+ *      size                       [out] The size of buffer.
+ * @return
+ *      If no error occurs, return alias string, adn free string buffer.
+ *      Otherwise, return NULL.
+ */
+DID_API int DID_GetAlias(DID *did, char *alias, size_t size);
+
+/**
+ * \~English
+ * Get transaction id of did.
+ *
+ * @param
+ *      did                         [in] The handle of DID.
+  * @param
+ *      txid                        [out] The buffer of storing alias.
+ * @param
+ *      size                        [out] The size of buffer.
+ * @return
+ *      If no error occurs, return transaction string, and free string buffer.
+ *      Otherwise, return NULL.
+ */
+DID_API int DID_GetTxid(DID *did, char *txid, size_t size);
+
+/**
+ * \~English
+ * Get did status, deactived or not.
+ *
+ * @param
+ *      did                      [in] The handle of DID.
+ * @return
+ *      If no error occurs, return status.
+ *      Otherwise, return false.
+ */
+DID_API bool DID_GetDeactived(DID *did);
+
+/**
+ * \~English
+ * Get the last timestamp of transaction id for did.
+ *
+ * @param
+ *      did                      [in] The handle of DID.
+ * @return
+ *      If no error occurs, return time stamp.
+ *      Otherwise, return 0.
+ */
+DID_API time_t DID_GetTimestamp(DID *did);
 
 /******************************************************************************
  * DIDURL
@@ -446,6 +516,36 @@ DID_API int DIDURL_Copy(DIDURL *newid, DIDURL *oldid);
  *      id                  [in] A handle to DID URL to be destroied.
  */
 DID_API void DIDURL_Destroy(DIDURL *id);
+
+/**
+ * \~English
+ * Set alias for id.
+ *
+ * @param
+ *      id                       [in] The handle of DIDURL.
+  * @param
+ *      alias                    [in] Alias string for DID.
+ * @return
+ *      If no error occurs, return 0.
+ *      Otherwise, return -1.
+ */
+DID_API int DIDURL_SetAlias(DIDURL *id, const char *alias);
+
+/**
+ * \~English
+ * Get alias for id, mainly for credential.
+ *
+ * @param
+ *      id                        [in] The handle of DIDURL.
+  * @param
+ *      alias                     [out] The buffer of storing alias.
+ * @param
+ *      size                      [out] The size of buffer.
+ * @return
+ *      If no error occurs, return alias string, and free buffer returned.
+ *      Otherwise, return NULL.
+ */
+DID_API int DIDURL_GetAlias(DIDURL *id, char *alias, size_t size);
 
 /******************************************************************************
  * DIDDocument
@@ -594,7 +694,7 @@ DID_API DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder,
  * what type of key it is.
  *
  * @param
- *      bulder               [in] A handle to DIDDocument Builder.
+ *      builder               [in] A handle to DIDDocument Builder.
  * @param
  *      key                  [in] An identifier of public key.
  * @param
@@ -605,7 +705,7 @@ DID_API DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *bulder,
+DID_API int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *builder,
         DIDURL *keyid, DID *controller, const char *key);
 
 /**
@@ -613,7 +713,7 @@ DID_API int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *bulder,
  * Remove specified public key from DID Document.
  *
  * @param
- *      bulder               [in] A handle to DIDDocument Builder.
+ *      builder               [in] A handle to DIDDocument Builder.
  * @param
  *      key                  [in] An identifier of public key.
  * @param
@@ -621,7 +721,7 @@ DID_API int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *bulder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_RemovePublicKey(DIDDocumentBuilder *bulder,
+DID_API int DIDDocumentBuilder_RemovePublicKey(DIDDocumentBuilder *builder,
         DIDURL *keyid, bool force);
 
 /**
@@ -632,7 +732,7 @@ DID_API int DIDDocumentBuilder_RemovePublicKey(DIDDocumentBuilder *bulder,
  * A DID Document must include an authentication property.
  *
  * @param
- *      bulder               [in] A handle to DIDDocument Builder.
+ *      builder               [in] A handle to DIDDocument Builder.
  * @param
  *      key                  [in] An identifier of public key.
  * @param
@@ -643,7 +743,7 @@ DID_API int DIDDocumentBuilder_RemovePublicKey(DIDDocumentBuilder *bulder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *bulder,
+DID_API int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *builder,
         DIDURL *keyid, const char *key);
 
 /**
@@ -657,7 +757,7 @@ DID_API int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *bulder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuilder_RemoveAuthenticationKey(DIDDocumentBuilder *bulder,
+DID_API int DIDDocumentBuiler_RemoveAuthenticationKey(DIDDocumentBuilder *builder,
         DIDURL *keyid);
 
 /**
@@ -854,7 +954,6 @@ DID_API ssize_t DIDDocument_SelectPublicKeys(DIDDocument *document, const char *
  *      Otherwise, return NULL
  */
 DID_API DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document);
-
 
 /**
  * \~English
@@ -1197,6 +1296,61 @@ DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *s
  */
 DID_API int DIDDocument_Verify(DIDDocument *document, DIDURL *keyid, char *sig,
         int count, ...);
+
+/**
+ * \~English
+ * Set nickname for DID.
+ *
+ * @param
+ *      document                 [in] The handle to DIDDocument.
+ * @param
+ *      alias                    [in] The nickname to store.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocument_SetAlias(DIDDocument *document, const char *alias);
+
+/**
+ * \~English
+ * Get nickname for DID.
+ *
+ * @param
+ *      document                     [in] The handle to DID.
+ * @param
+ *      alias                        [out] The buffer of storing alias.
+ * @param
+ *      size                         [out] The size of buffer.
+ * @return
+ *      If no error occurs, return 0. Otherwise, return -1.
+ */
+DID_API int DIDDocument_GetAlias(DIDDocument *document, char *alias, size_t size);
+
+/**
+ * \~English
+ * Get transaction id of the latest updated DIDDocument.
+ *
+ * @param
+ *      document                     [in] The handle to DID.
+ * @param
+ *      alias                        [out] The buffer of storing transaction id.
+ * @param
+ *      size                         [out] The size of buffer.
+ * @return
+ *      If no error occurs, return 0. Otherwise, return -1.
+ */
+DID_API int DIDDocument_GetTxid(DIDDocument *document, char *txid, size_t size);
+
+/**
+ * \~English
+ * Get timestamp of the latest transaction.
+ *
+ * @param
+ *      document                     [in] The handle to DID.
+ * @return
+ *      If no error occurs, return timestamp.
+ *      Otherwise, return NULL.
+ */
+DID_API time_t DIDDocument_GetTimestamp(DIDDocument *document);
 
 /**
  * \~English
@@ -1599,6 +1753,34 @@ DID_API bool Credential_IsGenuine(Credential *cred);
  */
 DID_API bool Credential_IsValid(Credential *cred);
 
+/**
+ * \~English
+ * Set Credential from DID Store.
+ *
+ * @param
+ *      did                     [in] The handle to DID.
+ * @param
+ *      alias                    [in] The nickname of credential.
+ * @return
+*      0 on success, -1 if an error occurred.
+ */
+DID_API int Credential_SetAlias(Credential *credential, const char *alias);
+
+/**
+ * \~English
+ * Get credential alias.
+ *
+ * @param
+ *      credential                [in] The handle to DID.
+ * @param
+ *      alias                     [out] The buffer of storing alias.
+ * @param
+ *      size                      [out] The size of buffer.
+ * @return
+ *      If no error occurs, return 0. Otherwise, return -1.
+ */
+DID_API int Credential_GetAlias(Credential *credential, char *alias, size_t size);
+
 /******************************************************************************
  * Issuer
  *****************************************************************************/
@@ -1752,12 +1934,12 @@ DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
  * @param
  *      storepass              [in] The pass word of DID holder.
  * @param
- *      hint                   [in] The nickname of DID.
+ *      alias                   [in] The nickname of DID.
  * @return
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
  */
-DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char *hint);
+DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char *alias);
 
 /**
  * \~English
@@ -1789,11 +1971,11 @@ DID_API int DIDStore_Signv(DIDStore *store, DID *did, DIDURL *key,
  * @param
  *      document                 [in] The handle to DID Document.
  * @param
- *      hint                     [in] The nickname of DID.
+ *      alias                     [in] The nickname of DID.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *hint);
+DID_API int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias);
 
 /**
  * \~English
@@ -1806,32 +1988,6 @@ DID_API int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char
  *      Otherwise, return NULL.
  */
 DID_API DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did);
-
-/**
- * \~English
- * Set nickname for DID.
- *
- * @param
- *      did                     [in] The handle to DID.
- * @param
- *      hint                    [in] The nickname to store.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDStore_SetDIDHint(DIDStore *store, DID *did, const char *hint);
-
-/**
- * \~English
- * Get nickname for DID.
- *
- * @param
- *      did                     [in] The handle to DID.
- * @return
- *      If no error occurs, return hint string. Return value must be free after
- *      finishing use.
- *      Otherwise, return NULL.
- */
-DID_API const char *DIDStore_GetDIDHint(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -1860,13 +2016,13 @@ DID_API void DIDStore_DeleteDID(DIDStore *store, DID *did);
  * List DIDs in DID Store.
  *
  * @param
- *      callback                [in] Get DID hint call back.
+ *      callback                [in] Get DID alias call back.
  * @param
  *      context                 [in] The caller defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDHintCallback *callback,
+DID_API int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDAliasCallback *callback,
         void *context);
 
 /**
@@ -1876,12 +2032,12 @@ DID_API int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDHintCallback *callb
  * @param
  *      credential              [in] The handle to Credential.
  * @param
- *      hint                    [in] The nickname of credential.
+ *      alias                    [in] The nickname of credential.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_StoreCredential(DIDStore *store, Credential *credential,
-        const char *hint);
+        const char *alias);
 
 /**
  * \~English
@@ -1896,35 +2052,6 @@ DID_API int DIDStore_StoreCredential(DIDStore *store, Credential *credential,
  *      Otherwise, return NULL.
  */
 DID_API Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *credid);
-
-/**
- * \~English
- * Set Credential from DID Store.
- *
- * @param
- *      did                     [in] The handle to DID.
- * @param
- *      hint                    [in] The nickname of credential.
- * @return
-*      0 on success, -1 if an error occurred.
- */
-DID_API int DIDStore_SetCredentialHint(DIDStore *store, DID *did, DIDURL *credid,
-        const char *hint);
-
-/**
- * \~English
- * Get credential hint.
- *
- * @param
- *      did                     [in] The handle to DID.
- * @param
- *      id                      [in] The identifier of credential.
- * @return
- *      If no error occurs, return hint string. Return value must free after
- *      finishing use.
- *      Otherwise, return NULL.
- */
-DID_API const char *DIDStore_GetCredentialHint(DIDStore *store, DID *did, DIDURL *credid);
 
 /**
  * \~English
@@ -1968,14 +2095,14 @@ DID_API void DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
  * @param
  *      did                     [in] The handle to DID.
  * @param
- *      callback                [in] Get credential hint call back.
+ *      callback                [in] Get credential alias call back.
  * @param
  *      context                 [in] The caller defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
-        DIDStore_GetCredHintCallback *callback, void *context);
+        DIDStore_GetCredAliasCallback *callback, void *context);
 
 /**
  * \~English
@@ -1988,14 +2115,14 @@ DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
  * @param
  *      type                    [in] The type of Credential to be selected.
  * @param
- *      callback                [in] Get credential hint call back.
+ *      callback                [in] Get credential alias call back.
  * @param
  *      context                 [in] The caller defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *credid,
-        const char *type, DIDStore_GetCredHintCallback *callback, void *context);
+        const char *type, DIDStore_GetCredAliasCallback *callback, void *context);
 
 /**
  * \~English

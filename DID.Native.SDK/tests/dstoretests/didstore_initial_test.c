@@ -27,7 +27,7 @@ static const char *getpassword(const char *walletDir, const char *walletId)
 
 static void test_didstore_newdid(void)
 {
-    char _storepath[PATH_MAX], _path[PATH_MAX];
+    char _storepath[PATH_MAX], _path[PATH_MAX], newalias[MAX_ALIAS];
     const char *storePath;
     char *path;
     DIDDocument *doc, *loaddoc;
@@ -39,8 +39,7 @@ static void test_didstore_newdid(void)
     store = TestData_SetupStore(storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), storetag,
-            strlen(storetag));
+    path = get_file_path(_path, PATH_MAX, 2, storePath, storetag);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     hasidentity = DIDStore_HasPrivateIdentity(store);
@@ -54,33 +53,31 @@ static void test_didstore_newdid(void)
     hasidentity = DIDStore_HasPrivateIdentity(store);
     CU_ASSERT_TRUE_FATAL(hasidentity);
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), privateindex,
-            strlen(privateindex));
+    path = get_file_path(_path, PATH_MAX, 2, storePath, privateindex);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), privatekey,
-            strlen(privatekey));
+    path = get_file_path(_path, PATH_MAX, 2, storePath, privatekey);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     doc = DIDStore_NewDID(store, storepass, alias);
     CU_ASSERT_PTR_NOT_NULL_FATAL(doc);
-    //printf("##### doc signature: %s\n", doc->proof.signatureValue);
     CU_ASSERT_TRUE_FATAL(DIDDocument_IsValid(doc));
 
     DID *did = DIDDocument_GetSubject(doc);
     const char *idstring = DID_GetMethodSpecificId(did);
 
-    path = get_file_path(_path, PATH_MAX, 5, storePath, strlen(storePath),
-            storedirroot, strlen(storedirroot), "/", 1, (char*)idstring,
-            strlen(idstring), docstring, strlen(docstring));
+    path = get_file_path(_path, PATH_MAX, 5, storePath, storedirroot, "/",
+            (char*)idstring, docstring);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    path = get_file_path(_path, PATH_MAX, 5, storePath, strlen(storePath),
-            storedirroot, strlen(storedirroot), "/", 1, (char*)idstring,
-            strlen(idstring), metastring, strlen(metastring));
+    path = get_file_path(_path, PATH_MAX, 5, storePath, storedirroot, "/",
+            (char*)idstring, metastring);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    CU_ASSERT_STRING_EQUAL(DIDStore_GetDIDHint(store, did), alias);
+    rc = DIDDocument_GetAlias(doc, newalias, sizeof(newalias));
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    CU_ASSERT_STRING_EQUAL(newalias, alias);
+
     loaddoc = DIDStore_LoadDID(store, did);
     CU_ASSERT_PTR_NOT_NULL_FATAL(loaddoc);
 
@@ -91,15 +88,12 @@ static void test_didstore_newdid(void)
     CU_ASSERT_NOT_EQUAL_FATAL(isEquals, 0);
 
     CU_ASSERT_TRUE_FATAL(DIDDocument_IsValid(loaddoc));
-    //add by chenyu
-    const char *data = DIDDocument_ToJson(loaddoc, 0, 0);
-    //printf("#### load document: %s\n", data);
     TestData_Free();
 }
 
 static void test_didstore_newdid_withouAlias(void)
 {
-    char _storepath[PATH_MAX], _path[PATH_MAX];
+    char _storepath[PATH_MAX], _path[PATH_MAX], newalias[MAX_ALIAS];
     const char *storePath;
     char *path;
     DIDDocument *doc, *loaddoc;
@@ -111,8 +105,7 @@ static void test_didstore_newdid_withouAlias(void)
     store = TestData_SetupStore(storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), storetag,
-            strlen(storetag));
+    path = get_file_path(_path, PATH_MAX, 2, storePath, storetag);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     hasidentity = DIDStore_HasPrivateIdentity(store);
@@ -126,12 +119,10 @@ static void test_didstore_newdid_withouAlias(void)
     hasidentity = DIDStore_HasPrivateIdentity(store);
     CU_ASSERT_TRUE_FATAL(hasidentity);
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), privateindex,
-            strlen(privateindex));
+    path = get_file_path(_path, PATH_MAX, 2, storePath, privateindex);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), privatekey,
-            strlen(privatekey));
+    path = get_file_path(_path, PATH_MAX, 2, storePath, privatekey);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     doc = DIDStore_NewDID(store, storepass, NULL);
@@ -141,18 +132,17 @@ static void test_didstore_newdid_withouAlias(void)
     DID *did = DIDDocument_GetSubject(doc);
     const char *idstring = DID_GetMethodSpecificId(did);
 
-    path = get_file_path(_path, PATH_MAX, 5, storePath, strlen(storePath),
-            storedirroot, strlen(storedirroot), "/", 1, (char*)idstring,
-            strlen(idstring), docstring, strlen(docstring));
+    path = get_file_path(_path, PATH_MAX, 5, storePath, storedirroot, "/",
+            (char*)idstring, docstring);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    path = get_file_path(_path, PATH_MAX, 5, storePath, strlen(storePath),
-            storedirroot, strlen(storedirroot), "/", 1, (char*)idstring,
-            strlen(idstring), metastring, strlen(metastring));
-    CU_ASSERT_FALSE_FATAL(file_exist(path));
+    path = get_file_path(_path, PATH_MAX, 5, storePath, storedirroot, "/",
+            (char*)idstring, metastring);
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    CU_ASSERT_PTR_NULL_FATAL(DIDStore_GetDIDHint(store, did));
-    return;
+    rc = DIDDocument_GetAlias(doc, newalias, sizeof(newalias));
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    CU_ASSERT_STRING_EQUAL(newalias, "");
 }
 
 static void test_didstore_initial_error(void)
@@ -202,12 +192,10 @@ static void test_didstore_privateIdentity_error(void)
     hasidentity = DIDStore_HasPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
-    path = get_file_path(_temp, PATH_MAX, 2, storePath, strlen(storePath), privateindex,
-            strlen(privateindex));
+    path = get_file_path(_temp, PATH_MAX, 2, storePath, privateindex);
     CU_ASSERT_FALSE(file_exist(path));
 
-    path = get_file_path(_temp, PATH_MAX, 2, storePath, strlen(storePath), privatekey,
-            strlen(privatekey));
+    path = get_file_path(_temp, PATH_MAX, 2, storePath, privatekey);
     CU_ASSERT_FALSE(file_exist(path));
 
     TestData_Free();

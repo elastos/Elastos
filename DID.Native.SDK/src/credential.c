@@ -310,6 +310,14 @@ static int Credential_ToJson_Internal(JsonGenerator *gen,  Credential *cred,
     return 0;
 }
 
+CredentialMeta *credential_getmeta(Credential *credential)
+{
+    if (!credential)
+        return NULL;
+
+    return &credential->meta;
+}
+
 ///////////////////////////////////////////////////////////////////////////
 void Credential_Destroy(Credential *cred)
 {
@@ -865,4 +873,28 @@ bool Credential_IsValid(Credential *cred)
     }
 
     return Credential_IsGenuine(cred) && !Credential_IsExpired(cred);
+}
+
+int Credential_SetAlias(Credential *credential, const char *alias)
+{
+    DIDStore *store;
+    int rc;
+
+    if (!credential)
+        return -1;
+
+    rc = CredentialMeta_SetAlias(&credential->meta, alias);
+    if (rc)
+        return rc;
+
+    store = DIDStore_GetInstance();
+    return didstore_storecredmeta(store, &credential->meta, &credential->id);
+}
+
+int Credential_GetAlias(Credential *credential, char *alias, size_t size)
+{
+    if (!credential || !alias || strlen(credential->meta.alias) >= size)
+        return -1;
+
+    return CredentialMeta_GetAlias(&credential->meta, alias, size);
 }

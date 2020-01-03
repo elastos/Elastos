@@ -29,6 +29,7 @@
 #include "ela_did.h"
 #include "did.h"
 #include "JsonGenerator.h"
+#include "credmeta.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,6 +71,7 @@ struct Credential {
     time_t expirationDate;
     CredentialSubject subject;
     CredentialProof proof;
+    CredentialMeta meta;
 };
 
 int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds,
@@ -78,6 +80,8 @@ int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds,
 Credential *Parser_Credential(cJSON *json, DID *did);
 
 ssize_t Parser_Credentials(DID *did, Credential **creds, size_t size, cJSON *json);
+
+CredentialMeta *credential_getmeta(Credential *credential);
 
 #ifdef __cplusplus
 }

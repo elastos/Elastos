@@ -48,6 +48,8 @@ set(SRC
     mnemonic.c
     presentation.c
     issuer.c
+    credmeta.c
+    didmeta.c
     ${utility-SOURCES})
 
 set(HEADERS

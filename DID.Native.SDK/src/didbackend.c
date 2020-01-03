@@ -25,9 +25,12 @@
 #include <cjson/cJSON.h>
 
 #include "ela_did.h"
+#include "common.h"
 #include "did.h"
 #include "didrequest.h"
 #include "didbackend.h"
+#include "didmeta.h"
+#include "diddocument.h"
 
 const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
         DIDURL *signkey, const char *storepass)
@@ -112,6 +115,8 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
     cJSON *root, *item, *field;
     DIDDocument *document;
     char _idstring[MAX_DID];
+    time_t timestamp;
+    DIDMeta meta;
 
     if (!backend || !did)
         return NULL;
@@ -143,9 +148,9 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
     if (!field || !cJSON_IsNumber(field))
         goto errorExit;
 
-    //todo: check status
     if (field->valueint != 0)
         goto errorExit;
+    DIDMeta_SetDeactived(&meta, field->valueint);
 
     field = cJSON_GetObjectItem(item, "transaction");
     if (!field || !cJSON_IsArray(field))
@@ -158,12 +163,15 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
     field = cJSON_GetObjectItem(item, "txid");
     if (!field || !cJSON_IsString(field))
         goto errorExit;
-    //todo: store txid in meta file;
+
+    DIDMeta_SetTxid(&meta, field->valuestring);
 
     field = cJSON_GetObjectItem(item, "timestamp");
     if (!field || !cJSON_IsString(field))
         goto errorExit;
-    //todo : store timestamp in meta file;
+    if (parse_time(&timestamp, field->valuestring) == -1)
+        goto errorExit;
+    DIDMeta_SetTimestamp(&meta, timestamp);
 
     field = cJSON_GetObjectItem(item, "operation");
     if (!field || !cJSON_IsObject(field))
@@ -171,6 +179,11 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
 
     document = DIDRequest_FromJson(field);
     cJSON_Delete(root);
+    if (document && DIDMeta_Merge(&document->meta, &meta) == -1) {
+        DIDDocument_Destroy(document);
+        goto errorExit;
+    }
+
     return document;
 
 errorExit:

@@ -20,14 +20,10 @@
  * SOFTWARE.
  */
 
-#ifndef __DIDSTORE_H__
-#define __DIDSTORE_H__
+#ifndef __DIDMETA_H__
+#define __DIDMETA_H__
 
-#include <limits.h>
-#include "did.h"
-#include "didbackend.h"
-#include "didmeta.h"
-#include "credmeta.h"
+#include <cjson/cJSON.h>
 #include "ela_did.h"
 
 #ifdef __cplusplus
@@ -35,34 +31,44 @@ extern "C" {
 #endif
 
 #define MAX_ALIAS       64
+#define MAX_TXID        128
 
-typedef struct DIDBackend    DIDBackend;
-
-struct DIDEntry {
-    DID did;
+typedef struct DIDMeta {
     char alias[MAX_ALIAS];
-};
+    bool deactived;
+    char txid[MAX_TXID];
+    time_t timestamp;
+} DIDMeta;
 
-struct CredentialEntry {
-    DIDURL id;
-    char alias[MAX_ALIAS];
-};
+int DIDMeta_Init(DIDMeta *meta, const char *alias, char *txid,
+        bool deactived, time_t timestamp);
 
-struct DIDStore {
-    char root[PATH_MAX];
-    DIDBackend backend;
-};
+const char *DIDMeta_ToJson(DIDMeta *meta);
 
-int didstore_storedidmeta(DIDStore *store, DIDMeta *meta, DID *did);
+int DIDMeta_FromJson(DIDMeta *meta, const char *json);
 
-int didstore_loaddidmeta(DIDStore *store, DIDMeta *meta, DID *did);
+void DIDMeta_Destroy(DIDMeta *meta);
 
-int didstore_storecredmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
+int DIDMeta_SetAlias(DIDMeta *meta, const char *alias);
 
-int didstore_loadcredmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
+int DIDMeta_SetDeactived(DIDMeta *meta, bool deactived);
+
+int DIDMeta_SetTimestamp(DIDMeta *meta, time_t time);
+
+int DIDMeta_SetTxid(DIDMeta *meta, const char *txid);
+
+int DIDMeta_GetAlias(DIDMeta *meta, char *alias, size_t size);
+
+int DIDMeta_GetTxid(DIDMeta *meta, char *txid, size_t size);
+
+bool DIDMeta_GetDeactived(DIDMeta *meta);
+
+time_t DIDMeta_GetTimestamp(DIDMeta *meta);
+
+int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__DIDSTORE_H__
+#endif //__DIDMETA_H__

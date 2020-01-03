@@ -30,6 +30,7 @@
 #include "did.h"
 #include "diddocument.h"
 #include "didstore.h"
+#include "credential.h"
 
 static const char did_scheme[] = "did";
 static const char did_method[] = "elastos";
@@ -360,4 +361,131 @@ DIDDocument *DID_Resolve(DID *did)
         return NULL;
 
     return DIDStore_ResolveDID(store, did, false);
+}
+
+int DID_SetAlias(DID *did, const char *alias)
+{
+    DIDStore *store;
+    DIDMeta meta;
+    int rc;
+
+    if (!did)
+        return -1;
+
+    store = DIDStore_GetInstance();
+    rc = didstore_loaddidmeta(store, &meta, did);
+    if (rc)
+        return rc;
+
+    rc = DIDMeta_SetAlias(&meta, alias);
+    if (rc)
+        return rc;
+
+    return didstore_storedidmeta(store, &meta, did);
+}
+
+int DID_GetAlias(DID *did, char *alias, size_t size)
+{
+    DIDStore *store;
+    DIDMeta meta;
+    int rc;
+
+    if (!did || !alias || size <= 0)
+        return -1;
+
+    store = DIDStore_GetInstance();
+    rc = didstore_loaddidmeta(store, &meta, did);
+    if (rc)
+        return rc;
+
+    return DIDMeta_GetAlias(&meta, alias, size);
+}
+
+int DID_GetTxid(DID *did, char *txid, size_t size)
+{
+    DIDStore *store;
+    DIDMeta meta;
+    int rc;
+
+    if (!did || !txid || size <= 0)
+        return -1;
+
+    store = DIDStore_GetInstance();
+    rc = didstore_loaddidmeta(store, &meta, did);
+    if (rc)
+        return rc;
+
+    return DIDMeta_GetTxid(&meta, txid, size);
+}
+
+bool DID_GetDeactived(DID *did)
+{
+    DIDStore *store;
+    DIDMeta meta;
+    int rc;
+
+    if (!did)
+        return false;
+
+    store = DIDStore_GetInstance();
+    rc = didstore_loaddidmeta(store, &meta, did);
+    if (rc)
+        return rc;
+
+    return DIDMeta_GetDeactived(&meta);
+}
+
+time_t DID_GetTimestamp(DID *did)
+{
+    DIDStore *store;
+    DIDMeta meta;
+    int rc;
+
+    if (!did)
+        return 0;
+
+    store = DIDStore_GetInstance();
+    rc = didstore_loaddidmeta(store, &meta, did);
+    if (rc)
+        return rc;
+
+    return DIDMeta_GetTimestamp(&meta);
+}
+
+int DIDURL_SetAlias(DIDURL *id, const char *alias)
+{
+    DIDStore *store;
+    CredentialMeta meta;
+    int rc;
+
+    if (!id)
+        return -1;
+
+    store = DIDStore_GetInstance();
+    rc = didstore_loadcredmeta(store, &meta, id);
+    if (rc)
+        return rc;
+
+    rc = CredentialMeta_SetAlias(&meta, alias);
+    if (rc)
+        return rc;
+
+    return didstore_storecredmeta(store, &meta, id);
+}
+
+int DIDURL_GetAlias(DIDURL *id, char* alias, size_t size)
+{
+    DIDStore *store;
+    CredentialMeta meta;
+    int rc;
+
+    if (!id || !alias || size <= 0)
+        return -1;
+
+    store = DIDStore_GetInstance();
+    rc = didstore_loadcredmeta(store, &meta, id);
+    if (rc)
+        return rc;
+
+    return CredentialMeta_GetAlias(&meta, alias, size);
 }

@@ -18,12 +18,12 @@ static DIDDocument *document;
 static DID *did;
 static DIDStore *store;
 
-int get_did_hint(DIDEntry *entry, void *context)
+int get_did_alias(DIDEntry *entry, void *context)
 {
     if(!entry)
         return -1;
 
-    printf("\n did: %s, hint: %s\n", entry->did.idstring, entry->hint);
+    printf("\n did: %s, alias: %s\n", entry->did.idstring, entry->alias);
     free(entry);
     return 0;
 }
@@ -40,7 +40,7 @@ static void test_didstore_list_did(void)
 {
     int rc;
 
-    rc = DIDStore_ListDID(store, get_did_hint, NULL);
+    rc = DIDStore_ListDID(store, get_did_alias, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 

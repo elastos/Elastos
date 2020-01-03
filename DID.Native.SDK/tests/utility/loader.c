@@ -98,7 +98,7 @@ static char *load_file(const char *file)
     assert(file);
     assert(*file);
 
-    reclen = snprintf(path, PATH_MAX, "../etc/did/resources/%s", file);
+    reclen = snprintf(path, PATH_MAX, "../etc/did/resources/testdata/%s", file);
         if (reclen < 0 || reclen > PATH_MAX)
             return NULL;
 
@@ -141,12 +141,12 @@ char *get_file_path(char *path, size_t size, int count, ...)
     va_start(list, count);
     for (int i = 0; i < count; i++) {
         const char *suffix = va_arg(list, const char*);
-        int len = va_arg(list, int);
+        int len = strlen(suffix);
         totalsize = totalsize + len;
         if (totalsize > size)
             return NULL;
 
-        strncat(path, suffix, len+1);
+        strncat(path, suffix, len + 1);
     }
     va_end(list);
 

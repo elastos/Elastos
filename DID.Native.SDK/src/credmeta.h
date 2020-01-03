@@ -20,14 +20,10 @@
  * SOFTWARE.
  */
 
-#ifndef __DIDSTORE_H__
-#define __DIDSTORE_H__
+#ifndef __CREDMETA_H__
+#define __CREDMETA_H__
 
-#include <limits.h>
-#include "did.h"
-#include "didbackend.h"
-#include "didmeta.h"
-#include "credmeta.h"
+#include <cjson/cJSON.h>
 #include "ela_did.h"
 
 #ifdef __cplusplus
@@ -36,33 +32,27 @@ extern "C" {
 
 #define MAX_ALIAS       64
 
-typedef struct DIDBackend    DIDBackend;
-
-struct DIDEntry {
-    DID did;
+typedef struct CredentialMeta
+{
     char alias[MAX_ALIAS];
-};
+} CredentialMeta;
 
-struct CredentialEntry {
-    DIDURL id;
-    char alias[MAX_ALIAS];
-};
+int CredentialMeta_Init(CredentialMeta *meta, const char *alias);
 
-struct DIDStore {
-    char root[PATH_MAX];
-    DIDBackend backend;
-};
+const char *CredentialMeta_ToJson(CredentialMeta *meta);
 
-int didstore_storedidmeta(DIDStore *store, DIDMeta *meta, DID *did);
+int CredentialMeta_FromJson(CredentialMeta *meta, const char *json);
 
-int didstore_loaddidmeta(DIDStore *store, DIDMeta *meta, DID *did);
+void CredentialMeta_Destroy(CredentialMeta *meta);
 
-int didstore_storecredmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
+int CredentialMeta_SetAlias(CredentialMeta *meta, const char *alias);
 
-int didstore_loadcredmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
+int CredentialMeta_GetAlias(CredentialMeta *meta, char *alias, size_t size);
+
+int CredentialMeta_Merge(CredentialMeta *meta, CredentialMeta *frommeta);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__DIDSTORE_H__
+#endif //__CREDMETA_H__
