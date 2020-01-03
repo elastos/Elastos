@@ -81,16 +81,18 @@ export default class extends StandardPage {
         </Circles>
         <Container>
           <Header>{I18N.get('cs.candidates')}</Header>
-          {loading
-            ? this.renderLoading()
-            : _.map(chunkedList, (row, rowIndex) => {
-              const cols = _.map(row, this.renderCandidate)
-              return (
-                <Row gutter={24} key={rowIndex}>
-                  {cols}
-                </Row>
-              )
-            })}
+          <Row gutter={24}>
+            {loading
+              ? this.renderLoading()
+              : _.map(chunkedList, (row, rowIndex) => {
+                const cols = _.map(row, this.renderCandidate)
+                return (
+                  <div key={rowIndex}>
+                    {cols}
+                  </div>
+                )
+              })}
+          </Row>
           <StyledPagination>
             <Pagination
               defaultPageSize={PAGE_SIZE}
@@ -108,7 +110,7 @@ export default class extends StandardPage {
   renderCandidate = (col, colIndex) => {
     const voteRate = col.votes / this.state.totalVotes * 100
     return (
-      <Col lg={6} md={6} sm={24} key={colIndex}>
+      <Col lg={6} md={8} sm={12} xs={24} key={colIndex}>
         <Card>
           <StyledAvatar>
             <Avatar src={col.url} shape="square" size={176} icon="user" />
@@ -173,9 +175,6 @@ const Circles = styled.div`
 const Container = styled.div`
   max-width: 888px;
   margin: 0 auto;
-  .ant-row {
-    padding-bottom: 56px;
-  }
 `
 const Header = styled.div`
   margin: 27px 0 80px;
@@ -190,6 +189,7 @@ const Card = styled.div`
   width: 201px;
   height: 325px;
   background: ${bg.darkNavy};
+  margin: 28px auto;
 `
 const StyledAvatar = styled.div`
   width: 176px;
