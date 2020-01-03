@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, Modal } from 'antd'
+import { Button, Modal, Input } from 'antd'
 import I18N from '@/I18N'
 import BudgetForm from '@/module/form/BudgetForm/Container'
 import PaymentList from './PaymentList'
@@ -11,8 +11,31 @@ class PaymentSchedule extends Component {
     super(props)
     this.state = {
       visible: false,
-      paymentItems: props.initialValue ? props.initialValue : []
+      total: props.budgetAmount || '',
+      address: props.elaAddress || '',
+      paymentItems: props.initialValue || []
     }
+  }
+
+  changeValue(value) {
+    const { onChange, callback } = this.props
+    onChange(value)
+    callback('budget')
+  }
+
+  passDataToParent() {
+    const { total, address, paymentItems } = this.state
+    this.changeValue({
+      budgetAmount: Number(total),
+      elaAddress: address,
+      budget: paymentItems
+    })
+  }
+
+  handleChange = (e, field) => {
+    this.setState({ [field]: e.target.value }, () => {
+      this.passDataToParent()
+    })
   }
 
   hideModal = () => {
@@ -21,12 +44,6 @@ class PaymentSchedule extends Component {
 
   showModal = () => {
     this.setState({ visible: true, index: -1 })
-  }
-
-  changeValue(value) {
-    const { onChange, callback } = this.props
-    onChange(value)
-    callback('budget')
   }
 
   handleDelete = index => {
@@ -39,7 +56,7 @@ class PaymentSchedule extends Component {
         ]
       },
       () => {
-        this.changeValue(this.state.paymentItems)
+        this.passDataToParent()
       }
     )
   }
@@ -58,7 +75,7 @@ class PaymentSchedule extends Component {
         return item
       })
       this.setState({ paymentItems: rs, visible: false }, () => {
-        this.changeValue(this.state.paymentItems)
+        this.passDataToParent()
       })
       return
     }
@@ -68,15 +85,29 @@ class PaymentSchedule extends Component {
         visible: false
       },
       () => {
-        this.changeValue(this.state.paymentItems)
+        this.passDataToParent()
       }
     )
   }
 
   render() {
-    const { paymentItems, index } = this.state
+    const { paymentItems, index, total, address } = this.state
     return (
       <Wrapper>
+        <Section>
+          <Label>{I18N.get('suggestion.budget.total')}</Label>
+          <StyledInput
+            value={total}
+            onChange={e => this.handleChange(e, 'total')}
+          />
+        </Section>
+        <Section>
+          <Label>{I18N.get('suggestion.budget.address')}</Label>
+          <StyledInput
+            value={address}
+            onChange={e => this.handleChange(e, 'address')}
+          />
+        </Section>
         <Header>
           <Label>{I18N.get('suggestion.budget.schedule')}</Label>
           <Button onClick={this.showModal}>
@@ -121,6 +152,7 @@ export default PaymentSchedule
 
 const Wrapper = styled.div``
 const Header = styled.div`
+  margin-top: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -137,4 +169,24 @@ const Label = styled.div`
   font-size: 17px;
   line-height: 24px;
   color: #000000;
+`
+const Section = styled.div`
+  margin-top: 24px;
+`
+const StyledInput = styled.input`
+  outline: 0;
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  margin-top: 16px;
+  padding: 6px 11px;
+  width: 50%;
+  height: 40px;
+  transition: all 0.3s;
+  &:hover {
+    border-color: #66bda3;
+  }
+  &:focus {
+    border-color: #66bda3;
+    box-shadow: 0 0 0 2px rgba(67, 175, 146, 0.2);
+  }
 `

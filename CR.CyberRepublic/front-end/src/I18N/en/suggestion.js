@@ -85,7 +85,8 @@ export default {
       tooLong: 'This field is too long',
       [`limit${ABSTRACT_MAX_WORDS}`]: `You can only type ${ABSTRACT_MAX_WORDS} words max.`,
       isNaN: 'Please input valid amount',
-      plan: 'Implementation team or milestones is empty'
+      plan: 'Implementation team or milestones is empty',
+      budget: 'Total amount, ELA receive address or payment schedule is empty'
     }
   },
   modal: {
@@ -133,6 +134,8 @@ export default {
     action: 'Action',
     desc: 'Based on milestone selected below:',
     schedule: 'Payment Schedule',
+    total: 'Total Budget',
+    address: 'ELA Receive Address',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Advance payment (< 30% of total)',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Proposal completion payment',
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Conditioned payment'

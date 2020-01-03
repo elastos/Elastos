@@ -79,6 +79,12 @@ class C extends BaseComponent {
         })
         return
       }
+      const budget = form.getFieldValue('budget')
+      if (budget && _.isArray(budget.paymentItems)) {
+        values.budget = budget.budget
+        values.budgetAmount = budget.budgetAmount
+        values.elaAddress = budget.elaAddress
+      }
       await onSubmit(values)
       this.setState({ loading: false })
     })
@@ -88,6 +94,12 @@ class C extends BaseComponent {
     const { form } = this.props
     if (this.props.onSaveDraft) {
       const values = form.getFieldsValue()
+      const budget = form.getFieldValue('budget')
+      if (budget && _.isArray(budget.budget)) {
+        values.budget = budget.budget
+        values.budgetAmount = budget.budgetAmount
+        values.elaAddress = budget.elaAddress
+      }
       this.props.onSaveDraft(values)
     }
   }
@@ -160,6 +172,19 @@ class C extends BaseComponent {
     return cb()
   }
 
+  validateBudget = (rule, value, cb) => {
+    if (value && !value.budgetAmount) {
+      return cb(true)
+    }
+    if (value && !value.elaAddress) {
+      return cb(true)
+    }
+    if (value && _.isEmpty(value.budget)) {
+      return cb(true)
+    }
+    return cb()
+  }
+
   getTextarea(id) {
     const initialValues = _.isEmpty(this.props.initialValues)
       ? { type: '1' }
@@ -172,26 +197,11 @@ class C extends BaseComponent {
         message: I18N.get('suggestion.form.error.required')
       }
     ]
-    if (id === 'abstract') {
-      rules.push({
-        message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`),
-        validator: this.validateAbstract
-      })
-    }
-    if (
-      id === 'plan' &&
-      ((initialValues.plan && typeof initialValues.plan !== 'string') ||
-        !initialValues.plan)
-    ) {
-      rules.push({
-        message: I18N.get('suggestion.form.error.plan'),
-        validator: this.validatePlan
-      })
-    }
-
-    let rc
     if (id === 'type') {
-      rc = (
+      return getFieldDecorator(id, {
+        rules,
+        initialValue: initialValues[id]
+      })(
         <Radio.Group>
           <Radio value="1">{I18N.get('suggestion.form.type.newMotion')}</Radio>
           <Radio value="2">
@@ -202,35 +212,61 @@ class C extends BaseComponent {
           </Radio>
         </Radio.Group>
       )
-    } else if (
+    }
+
+    if (id === 'abstract') {
+      rules.push({
+        message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`),
+        validator: this.validateAbstract
+      })
+    }
+
+    if (
       id === 'plan' &&
       ((initialValues.plan && typeof initialValues.plan !== 'string') ||
         !initialValues.plan)
     ) {
-      rc = (
+      rules.push({
+        message: I18N.get('suggestion.form.error.plan'),
+        validator: this.validatePlan
+      })
+
+      return getFieldDecorator('plan', {
+        rules,
+        initialValue: initialValues.plan
+      })(
         <ImplementationPlan
           initialValue={initialValues.plan}
           callback={this.onTextareaChange}
         />
       )
-    } else if (
+    }
+
+    if (
       id === 'budget' &&
       ((initialValues.budget && typeof initialValues.budget !== 'string') ||
         !initialValues.budget)
     ) {
-      rc = (
+      rules.push({
+        message: I18N.get('suggestion.form.error.budget'),
+        validator: this.validateBudget
+      })
+      const initialBudget = initialValues.budget
+        ? {
+            budgetAmount: initialValues.budgetAmount,
+            elaAddress: initialValues.elaAddress,
+            budget: initialValues.budget
+          }
+        : {}
+      return getFieldDecorator('budget', {
+        rules,
+        initialValue: initialBudget
+      })(
         <PaymentSchedule
-          initialValue={initialValues.budget}
+          initialValue={initialBudget.budget}
           callback={this.onTextareaChange}
-        />
-      )
-    } else {
-      rc = (
-        <CodeMirrorEditor
-          callback={this.onTextareaChange}
-          content={initialValues[id]}
-          activeKey={id}
-          name={id}
+          budgetAmount={initialBudget.budgetAmount}
+          elaAddress={initialBudget.elaAddress}
         />
       )
     }
@@ -238,7 +274,14 @@ class C extends BaseComponent {
     return getFieldDecorator(id, {
       rules,
       initialValue: initialValues[id]
-    })(rc)
+    })(
+      <CodeMirrorEditor
+        callback={this.onTextareaChange}
+        content={initialValues[id]}
+        activeKey={id}
+        name={id}
+      />
+    )
   }
 
   renderTabText(id) {

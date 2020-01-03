@@ -50,6 +50,9 @@ const SuggestionCore = {
   budgetAmount: {
     type: Number
   },
+  elaAddress: {
+    type: String
+  },
   budget: {
     type: Schema.Types.Mixed
   },

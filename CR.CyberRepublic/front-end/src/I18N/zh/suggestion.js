@@ -84,7 +84,8 @@ export default {
       tooLong: '文字太长',
       [`limit${ABSTRACT_MAX_WORDS}`]: `不能超过${ABSTRACT_MAX_WORDS}字`,
       isNaN: '请输入有效的金额',
-      plan: '实施团队或里程碑为空'
+      plan: '实施团队或里程碑为空',
+      budget: '总金额、ELA 接收地址或者支出计划为空'
     }
   },
   modal: {
@@ -132,6 +133,8 @@ export default {
     action: '操作',
     desc: '请基于里程碑填写：',
     schedule: '支出计划',
+    total: '总预算',
+    address: 'ELA 接收地址',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: '预付款(小于总金额的30%)',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: '提案完成付款',
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '有条件的付款'
