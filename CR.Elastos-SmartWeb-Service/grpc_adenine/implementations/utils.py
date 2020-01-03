@@ -6,7 +6,6 @@ from grpc_adenine.database.user import Users
 from sqlalchemy.sql import exists
 from decouple import config
 import base64
-import os
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -44,6 +43,7 @@ def check_rate_limit(rate_limiter, limit, api_key, service_name):
 def get_time():
     return datetime.datetime.now(pytz.timezone('America/New_York')).strftime("%Y-%m-%d %H:%M:%S %z")
 
+
 def get_did_from_api(api_key):
     session_maker = sessionmaker(bind=db_engine)
     session = session_maker()
@@ -51,6 +51,7 @@ def get_did_from_api(api_key):
     result = session.query(Users).filter_by(id=api_key_data.user_id).first()
     session.close()
     return result.did
+
 
 def get_encrypt_key(key):
     encoded = key.encode()

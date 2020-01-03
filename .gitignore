@@ -89,3 +89,6 @@ venv.bak/
 tools/privkey.pem
 tools/server.*
 tools/.postgres-data
+
+# Google Cloud Engine Stuff
+.gce

@@ -25,7 +25,8 @@ gcloud beta compute ssl-certificates create elastos-smartweb-service-certificate
 ## Repeat
 gcloud beta compute instance-templates create-with-container elastos-smartweb-service-template \
     --machine-type g1-small --tags elastos-smartweb-service-server \
-    --container-image="cyberrepublic/elastos-smartweb-service" --container-env-file=.env;
+    --container-image="cyberrepublic/elastos-smartweb-service" --container-env-file=.env \
+    --container-mount-host-path="host-path=.gce/service_account_key.json,mounth-path=.gce/service_account_key.json";
 gcloud compute instance-groups managed create elastos-smartweb-service-group \
     --base-instance-name elastos-smartweb-service --zone us-east4-c --size 2 \
     --template elastos-smartweb-service-template;
@@ -46,7 +47,6 @@ gcloud compute forwarding-rules create https-content-rule --address \
     `gcloud compute addresses describe  gce-ingress --global --format="value(address)"` \
     --global --target-https-proxy https-lb-proxy --ports 443;
 
-
 #### Remove everything:
 gcloud compute forwarding-rules delete https-content-rule  -q --global;
 gcloud compute target-https-proxies delete https-lb-proxy -q;
@@ -56,6 +56,8 @@ gcloud compute backend-services remove-backend elastos-smartweb-service-backend-
 gcloud compute backend-services delete elastos-smartweb-service-backend-service --global -q;
 #gcloud beta compute health-checks delete webpool-basic-check -q;
 gcloud compute  firewall-rules delete firewall-rules-grpc -q;
-gcloud compute  firewall-rules delete firewall-rules-allow-test-grpc -q;
 gcloud compute instance-groups managed delete elastos-smartweb-service-group --zone us-east4-c -q;
 gcloud compute instance-templates delete elastos-smartweb-service-template -q;
+
+
+### Debug
