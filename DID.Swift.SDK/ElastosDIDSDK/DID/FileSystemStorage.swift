@@ -31,50 +31,54 @@ import Foundation
  *
  */
 public class FileSystemStorage: DIDStorage {
-    
+
     private static let STORE_MAGIC: [UInt8] =  [0x00, 0x0D, 0x01, 0x0D]
     private static let STORE_VERSION: [UInt8] = [0x00, 0x00, 0x00, 0x01]
     private static let STORE_META_SIZE = 8
-    private static let PRIVATE_DIR: String = "private"
-    private static let HDKEY_FILE: String = "key"
-    private static let INDEX_FILE: String = "index"
-    private static let MNEMONIC_FILE: String = "mnemonic";
-    private static let DID_DIR: String = "ids"
-    private static let DOCUMENT_FILE: String = "document"
-    private static let CREDENTIALS_DIR: String = "credentials"
-    private static let CREDENTIAL_FILE: String = "credential"
-    private static let PRIVATEKEYS_DIR: String = "privatekeys"
-    private static let META_FILE: String = ".meta"
-    
-    private static let DEFAULT_CHARSET: String = "UTF-8"
+
+    private static let PRIVATE_DIR = "private"
+    private static let HDKEY_FILE = "key"
+    private static let INDEX_FILE = "index"
+    private static let MNEMONIC_FILE = "mnemonic";
+
+    private static let DID_DIR = "ids"
+    private static let DOCUMENT_FILE = "document"
+    private static let CREDENTIALS_DIR = "credentials"
+    private static let CREDENTIAL_FILE = "credential"
+    private static let PRIVATEKEYS_DIR = "privatekeys"
+
+    private static let META_FILE = ".meta"
+
+    private static let DEFAULT_CHARSET = "UTF-8"
     
     private var storeRootPath: String!
     
     public init(_ dir: String) throws {
-        super.init()
         if dir.isEmpty {
             throw DIDStoreError.failue("Invalid DIDStore root directory.")
         }
         self.storeRootPath = dir
-        if try exists(dir) {
-            try checkStore()
-        }
-        else {
+
+        guard try exists(dir) else {
             try creatStore(dir)
+            return
         }
+
+        try checkStore()
     }
     
     // create store file
     private func creatStore(_ dir: String) throws {
-        let fileManager = FileManager.default
-        try fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
-        let filePath = "\(dir)/\(FileSystemStorage.META_FILE)"
+        try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
+
+        let path = "\(dir)/\(FileSystemStorage.META_FILE)"
+        let tagFilePathURL = URL(fileURLWithPath: path)
         
-        var didStoreData: Data = Data(capacity: 8)
-        didStoreData.append(Data(bytes: FileSystemStorage.STORE_MAGIC, count: 4))
-        didStoreData.append(Data(bytes: FileSystemStorage.STORE_VERSION, count: 4))
-        let tagFilePathURL: URL = URL(fileURLWithPath: filePath)
-        try didStoreData.write(to: tagFilePathURL)
+        var data: Data = Data(capacity: 8)
+        data.append(contentsOf: FileSystemStorage.STORE_MAGIC)
+        data.append(contentsOf: FileSystemStorage.STORE_VERSION)
+
+        try data.write(to: tagFilePathURL)
     }
 
     private func checkStore() throws {
@@ -114,34 +118,34 @@ public class FileSystemStorage: DIDStorage {
         }
     }
 
-    public override func containsPrivateIdentity() throws -> Bool {
+    public func containsPrivateIdentity() throws -> Bool {
         let path = try getHDPrivateKeyFile(false)
         return try exists(path)
     }
     
-    public override func storePrivateIdentity(_ key: String) throws {
+    public func storePrivateIdentity(_ key: String) throws {
         let path = try getHDPrivateKeyFile(true)
         try writeTextToPath(path, key)
     }
     
-    public override func loadPrivateIdentity() throws -> String {
+    public func loadPrivateIdentity() throws -> String {
         let path = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.HDKEY_FILE
         return try readTextFromPath(path)
     }
     
-    public override func storePrivateIdentityIndex(_ index: Int) throws {
+    public func storePrivateIdentityIndex(_ index: Int) throws {
         let targetPath = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.INDEX_FILE
         let path = try getFile(true, targetPath)
         try writeTextToPath(path, String(index))
         _ = try readTextFromPath(path)
     }
     
-    public override func loadPrivateIdentityIndex() throws -> Int {
+    public func loadPrivateIdentityIndex() throws -> Int {
         let targetPath = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.INDEX_FILE
         let index = try readTextFromPath(targetPath)
         return Int(index)!
     }
-    public override func storeMnemonic(_ mnemonic: String) throws {
+    public func storeMnemonic(_ mnemonic: String) throws {
         do {
             let p = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.MNEMONIC_FILE
             let path = try getFile(true, p)
@@ -151,7 +155,7 @@ public class FileSystemStorage: DIDStorage {
         }
     }
     
-    public override func loadMnemonic() throws -> String {
+    public func loadMnemonic() throws -> String {
         do {
             let path = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.MNEMONIC_FILE
             return try readTextFromPath(path)
@@ -160,7 +164,7 @@ public class FileSystemStorage: DIDStorage {
         }
     }
 
-    public override func storeDidMeta(_ did: DID, _ meta: DIDMeta?) throws {
+    public func storeDidMeta(_ did: DID, _ meta: DIDMeta?) throws {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.META_FILE
         try getFile(true, path)
         let metadata: String = meta != nil ? meta!.toJson() : ""
@@ -175,20 +179,20 @@ public class FileSystemStorage: DIDStorage {
         }
     }
     
-    public override func loadDidMeta(_ did: DID) throws -> DIDMeta {
+    public func loadDidMeta(_ did: DID) throws -> DIDMeta {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.META_FILE
         let meta = try readTextFromPath(path)
         return try DIDMeta.fromString(meta)
     }
     
-    public override func storeDid(_ doc: DIDDocument) throws {
+    public func storeDid(_ doc: DIDDocument) throws {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + doc.subject!.methodSpecificId + "/" + FileSystemStorage.DOCUMENT_FILE
         _ = try getFile(true, path)
         _ = try exists(path)
         _ = try doc.toJson(path, true, false)
     }
     
-    public override func loadDid(_ did: DID) throws -> DIDDocument {
+    public func loadDid(_ did: DID) throws -> DIDDocument {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.DOCUMENT_FILE
         let exist = try exists(path)
         guard exist else {
@@ -197,18 +201,18 @@ public class FileSystemStorage: DIDStorage {
         return try DIDDocument.fromJson(path: path)
     }
     
-    public override func containsDid(_ did: DID) throws -> Bool {
+    public func containsDid(_ did: DID) throws -> Bool {
         let path = FileSystemStorage.DID_DIR + did.methodSpecificId + FileSystemStorage.DOCUMENT_FILE
         return try exists(path)
     }
     
-    public override func deleteDid(_ did: DID) throws -> Bool {
+    public func deleteDid(_ did: DID) throws -> Bool {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId
         let re = try deleteFile(path)
         return re
     }
     
-    public override func listDids(_ filter: Int) throws -> Array<DID>{
+    public func listDids(_ filter: Int) throws -> Array<DID>{
         var arr: Array<DID> = []
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR
         let re = try exists_dir(path)
@@ -245,7 +249,7 @@ public class FileSystemStorage: DIDStorage {
         return try containsPrivateKeys(did)
     }
     
-    public override func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta?) throws {
+    public func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta?) throws {
         
         do {
             let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + id.fragment + "/" + FileSystemStorage.META_FILE
@@ -263,13 +267,13 @@ public class FileSystemStorage: DIDStorage {
         }
     }
 
-    public override func loadCredentialMeta(_ did: DID, _ id: DIDURL) throws -> CredentialMeta {
+    public func loadCredentialMeta(_ did: DID, _ id: DIDURL) throws -> CredentialMeta {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + id.fragment + "/" + FileSystemStorage.META_FILE
         let meta = try readTextFromPath(path)
         return try CredentialMeta.fromString(meta)
     }
     
-    public override func storeCredential(_ credential: VerifiableCredential) throws {
+    public func storeCredential(_ credential: VerifiableCredential) throws {
         let targetPath = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + credential.subject.id.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + credential.id.fragment + "/" + FileSystemStorage.CREDENTIAL_FILE
 
         let path = try getFile(true, targetPath)
@@ -280,7 +284,7 @@ public class FileSystemStorage: DIDStorage {
         handle?.write(data)
     }
     
-    public override func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? {
+    public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? {
         let path: String = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + id.fragment + "/" + FileSystemStorage.CREDENTIAL_FILE
         guard try exists(path) else {
              return nil
@@ -288,7 +292,7 @@ public class FileSystemStorage: DIDStorage {
         return try VerifiableCredential.fromJsonInPath(path)
     }
     
-    public override func containsCredentials(_ did: DID) throws -> Bool {
+    public func containsCredentials(_ did: DID) throws -> Bool {
         let targetPath = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR
         let exit = try exists(targetPath)
         guard exit else {
@@ -301,12 +305,12 @@ public class FileSystemStorage: DIDStorage {
         return true
     }
     
-    public override func containsCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
+    public func containsCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
         let targetPath = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + id.fragment + "/" + FileSystemStorage.CREDENTIAL_FILE
         return try exists(targetPath)
     }
     
-    override public func deleteCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
+    func deleteCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
         let targetPath = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + id.fragment
         let path = try getFile(targetPath)
         if try exists_dir(path!) {
@@ -315,7 +319,7 @@ public class FileSystemStorage: DIDStorage {
         return false
     }
     
-    override public func listCredentials(_ did: DID) throws -> Array<DIDURL> {
+    func listCredentials(_ did: DID) throws -> Array<DIDURL> {
         let dir: String = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR
         guard try exists_dir(dir) else {
             return []
@@ -332,12 +336,12 @@ public class FileSystemStorage: DIDStorage {
         return arr
     }
     
-    public override func selectCredentials(_ did: DID, _ id: DIDURL, _ type: Array<Any>) throws -> Array<DIDURL> {
+    public func selectCredentials(_ did: DID, _ id: DIDURL, _ type: Array<Any>) throws -> Array<DIDURL> {
         // TODO: Auto-generated method stub
         return []
     }
     
-    public override func storePrivateKey(_ did: DID, _ id: DIDURL, _ privateKey: String) throws {
+    public func storePrivateKey(_ did: DID, _ id: DIDURL, _ privateKey: String) throws {
         let path: String = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR + "/" + id.fragment
         let privateKeyPath: String = try getFile(path) ?? ""
         
@@ -351,13 +355,13 @@ public class FileSystemStorage: DIDStorage {
         handle?.write(privateKey.data(using: String.Encoding.utf8)!)
     }
     
-    public override func loadPrivateKey(_ did: DID, _ id: DIDURL) throws -> String {
+    public func loadPrivateKey(_ did: DID, _ id: DIDURL) throws -> String {
         let path: String = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR + "/" + id.fragment
         let privateKeyPath = try getFile(path)
         return try! String(contentsOfFile:privateKeyPath!, encoding: String.Encoding.utf8)
     }
     
-    public override func containsPrivateKeys(_ did: DID) throws -> Bool  {
+    public func containsPrivateKeys(_ did: DID) throws -> Bool  {
         let dir: String = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR
         let path: String = try getFile(dir)!
         let fileManager: FileManager = FileManager.default
@@ -380,13 +384,13 @@ public class FileSystemStorage: DIDStorage {
         return keys.count > 0
     }
     
-    public override func containsPrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
+    public func containsPrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
         let dir: String = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR + "/" + id.fragment
         let path: String = try getFile(dir)!
         return try exists(path)
     }
     
-    public override func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
+    public func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
         let path: String = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR + "/" + id.fragment
         let privateKeyPath = try getFile(path)
         let re =  try exists(path)

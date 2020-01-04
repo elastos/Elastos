@@ -1,76 +1,62 @@
-
-public class DIDStorage {
-   
+protocol DIDStorage {
     // Root private identity
-    public func containsPrivateIdentity() throws -> Bool { return false }
+    func containsPrivateIdentity() throws -> Bool
 
-    public func storePrivateIdentity(_ key: String) throws { }
+    func storePrivateIdentity(_ key: String) throws
 
-    public func loadPrivateIdentity() throws -> String { return "" }
+    func loadPrivateIdentity() throws -> String
 
-    public func storePrivateIdentityIndex(_ index: Int) throws {}
+    func storePrivateIdentityIndex(_ index: Int) throws
 
-    public func loadPrivateIdentityIndex() throws -> Int { return 0 }
+    func loadPrivateIdentityIndex() throws -> Int
     
-    public func storeMnemonic(_ mnemonic: String) throws {}
+    func storeMnemonic(_ mnemonic: String) throws
 
-    public func loadMnemonic() throws -> String { return "" }
+    func loadMnemonic() throws -> String
     
     // DIDs
-    public func storeDidMeta(_ did: DID, _ alias: DIDMeta) throws { }
+    func storeDidMeta(_ did: DID, _ alias: DIDMeta?) throws
 
-    public func loadDidMeta(_ did: DID) throws -> DIDMeta { return DIDMeta() }
+    func loadDidMeta(_ did: DID) throws -> DIDMeta
 
-    public func storeDid(_ doc: DIDDocument) throws { }
+    func storeDid(_ doc: DIDDocument) throws
 
-    public func loadDid(_ did: DID)
-        throws -> DIDDocument { return DIDDocument() }
+    func loadDid(_ did: DID) throws -> DIDDocument
 
-    public func containsDid(_ did: DID) throws -> Bool { return false }
+    func containsDid(_ did: DID) throws -> Bool
 
-    public func deleteDid(_ did: DID) throws -> Bool { return false }
+    func deleteDid(_ did: DID) throws -> Bool
 
-    public func listDids(_ filter: Int) throws -> Array<DID> { return [] }
+    func listDids(_ filter: Int) throws -> Array<DID>
 
     // Credentials
-    public func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta?)
-        throws { }
+    func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta?) throws
 
-    public func loadCredentialMeta(_ did: DID, _ id: DIDURL)
-        throws -> CredentialMeta { return CredentialMeta() }
+    func loadCredentialMeta(_ did: DID, _ id: DIDURL) throws -> CredentialMeta
 
-    public func storeCredential(_ credential: VerifiableCredential)
-        throws { }
+    func storeCredential(_ credential: VerifiableCredential) throws
 
-    public func loadCredential(_ did: DID, _ id: DIDURL)
-        throws -> VerifiableCredential? { return nil }
+    func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential?
 
-    public func containsCredentials(_ did: DID) throws -> Bool { return false }
+    func containsCredentials(_ did: DID) throws -> Bool
 
-    public func containsCredential(_ did: DID, _ id: DIDURL)
-        throws -> Bool { return false }
+    func containsCredential(_ did: DID, _ id: DIDURL) throws -> Bool
 
-    public func deleteCredential(_ did: DID, _ id: DIDURL)
-        throws -> Bool { return false }
+    func deleteCredential(_ did: DID, _ id: DIDURL) throws -> Bool
 
-    public func listCredentials(_ did: DID) throws -> Array<DIDURL> { return [] }
+    func listCredentials(_ did: DID) throws -> Array<DIDURL>
 
-    public func selectCredentials(_ did: DID, _ id: DIDURL, _ type: Array<Any>)
-        throws -> Array<DIDURL> { return [] }
+    func selectCredentials(_ did: DID, _ id: DIDURL, _ type: Array<Any>)
+        throws -> Array<DIDURL>
 
     // Private keys
-    public func storePrivateKey(_ did: DID, _ id: DIDURL, _ privateKey: String)
-        throws { }
+    func storePrivateKey(_ did: DID, _ id: DIDURL, _ privateKey: String) throws
 
-    public func loadPrivateKey(_ did: DID, _ id: DIDURL)
-        throws -> String { return "" }
+    func loadPrivateKey(_ did: DID, _ id: DIDURL) throws -> String
 
-    public func containsPrivateKeys(_ did: DID) throws -> Bool { return false }
+    func containsPrivateKeys(_ did: DID) throws -> Bool
 
-    public func containsPrivateKey(_ did: DID, _ id: DIDURL)
-        throws -> Bool { return false }
+    func containsPrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool
 
-    public func deletePrivateKey(_ did: DID, _ id: DIDURL)
-        throws -> Bool { return false }
-    
+    func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool
 }
