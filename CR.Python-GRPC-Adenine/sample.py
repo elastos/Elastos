@@ -1,7 +1,12 @@
+import sys
+
 from decouple import config
 import json
 import argparse
 
+from elastos_adenine.stubs import health_check_pb2
+
+from elastos_adenine.health_check import HealthCheck
 from elastos_adenine.common import Common
 from elastos_adenine.hive import Hive
 from elastos_adenine.sidechain_eth import SidechainEth
@@ -22,6 +27,19 @@ def main():
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
     api_key_to_use = 'wjCV8z6g41PcDqvAzTnQGPUrwmDuYsdRDEo9JP8sw6GR6NAogCIQgfw5MRuViU3o'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
+
+    # Check whether grpc server is healthy first
+    try:
+        health_check = HealthCheck()
+        print("--> Checking the health status of grpc server")
+        response = health_check.check()
+        if response.status != health_check_pb2.HealthCheckResponse.SERVING:
+            print("grpc server is not running properly")
+        else:
+            print("grpc servier is running")
+    except Exception as e:
+        print(e)
+        sys.exit(1)
 
     if service == "generate_api_key":
         try:
