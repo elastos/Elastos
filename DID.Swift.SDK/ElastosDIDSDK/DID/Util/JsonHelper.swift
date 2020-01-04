@@ -163,10 +163,6 @@ public class JsonHelper {
     }
     
     class public func handleString(_ jsonString: String) -> Any? {
-        
-        print("000000000000000000000000")
-        print(jsonString)
-        print("000000000000000000000000")
 
         if isDictionaryJsonString(jsonString) {
             

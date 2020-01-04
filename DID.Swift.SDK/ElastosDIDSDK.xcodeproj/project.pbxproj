@@ -44,6 +44,7 @@
 		11D03ADA23A9D50200549296 /* VerifiablePresentationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D03AD923A9D50200549296 /* VerifiablePresentationTest.swift */; };
 		11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */; };
 		11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9C623545A5700453218 /* DIDStoreTests.swift */; };
+		11D67C6A23BF3BF500FF7B8E /* teststore in Resources */ = {isa = PBXBuildFile; fileRef = 11D67C6523BF3BF400FF7B8E /* teststore */; };
 		11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DA0796238B929F0066CC86 /* SPVAdaptor.swift */; };
 		11E09CBC23A8DB5A009B6A8D /* IssuerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E09CBB23A8DB5A009B6A8D /* IssuerTest.swift */; };
 		11E09CBE23A8E033009B6A8D /* TestDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E09CBD23A8E033009B6A8D /* TestDataGenerator.swift */; };
@@ -258,6 +259,7 @@
 		11D3C06F23815E4300875E51 /* libcurl.la */ = {isa = PBXFileReference; lastKnownFileType = text; name = libcurl.la; path = Externals/libhdkey/libcurl.la; sourceTree = "<group>"; };
 		11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDDoucumentTests.swift; sourceTree = "<group>"; };
 		11D4B9C623545A5700453218 /* DIDStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreTests.swift; sourceTree = "<group>"; };
+		11D67C6523BF3BF400FF7B8E /* teststore */ = {isa = PBXFileReference; lastKnownFileType = folder; path = teststore; sourceTree = "<group>"; };
 		11DA06DD238B7B750066CC86 /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = ElastosDIDSDKTests/spvadapter/lib/libspvsdk.a; sourceTree = "<group>"; };
 		11DA06DE238B7B750066CC86 /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = ElastosDIDSDKTests/spvadapter/lib/libcjson.a; sourceTree = "<group>"; };
 		11DA06DF238B7B750066CC86 /* libtls.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtls.a; path = ElastosDIDSDKTests/spvadapter/lib/libtls.a; sourceTree = "<group>"; };
@@ -525,6 +527,7 @@
 		11CA74D1235E131B006E66F7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				11D67C6523BF3BF400FF7B8E /* teststore */,
 				11E751B123A761FE0022C592 /* dids.restore */,
 				11E751B623A761FF0022C592 /* document.compact.json */,
 				11E751A723A761FD0022C592 /* document.json */,
@@ -837,6 +840,7 @@
 				11E751CC23A762000022C592 /* document.key3.sk in Resources */,
 				11E751D623A762000022C592 /* vc-passport.json in Resources */,
 				11E751C323A762000022C592 /* vc-twitter.compact.json in Resources */,
+				11D67C6A23BF3BF500FF7B8E /* teststore in Resources */,
 				11E751D523A762000022C592 /* issuer.json in Resources */,
 				11E751C123A762000022C592 /* document.json in Resources */,
 				11E751D323A762000022C592 /* vc-twitter.normalized.json in Resources */,

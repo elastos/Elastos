@@ -108,17 +108,13 @@ class DIDStoreTests: XCTestCase {
             XCTAssertNil(resolved)
             
             try store.publishDid(doc.subject!, storePass)
-            // todo change
-//            try store.publishDid(doc.subject, storePass)
-            
-            
             var path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/document"
             XCTAssertTrue(testData.existsFile(path))
             // todo isFile
 
-//            path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
-//            XCTAssertFalse(testData.existsFile(path))
-            
+            path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
+            XCTAssertFalse(testData.existsFile(path))
+
             resolved = try doc.subject?.resolve(true)
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.subject, resolved!.subject)
@@ -173,7 +169,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try! doc.subject?.resolve(true)
             XCTAssertNotNil(resolved)
-//            XCTAssertEqual(newDoc.description, resolved?.description)
+            XCTAssertEqual(try newDoc.description(), try resolved?.description())
         } catch {
             XCTFail()
         }
@@ -419,7 +415,7 @@ class DIDStoreTests: XCTestCase {
                 var resolved = try store.resolveDid(doc.subject!, true)
                 XCTAssertNil(resolved)
                 
-                try store.publishDid(doc.subject!, storePass)
+                _ = try store.publishDid(doc.subject!, storePass)
                 
                 var path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/document"
                 XCTAssertTrue(testData.existsFile(path))
@@ -828,9 +824,7 @@ class DIDStoreTests: XCTestCase {
     }
     
     func testMultipleStore() {
-        
         do {
-            
             var stores: Array = Array<DIDStore>()
             var docs: Array = Array<DIDDocument>()
             

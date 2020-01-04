@@ -325,9 +325,13 @@ class TestData: XCTestCase {
     }
     
     func existsFile(_ path: String) -> Bool {
-        var isDirectory = ObjCBool.init(false)
-        let fileExists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
-        return !isDirectory.boolValue && fileExists
+        let fileManager = FileManager.default
+        var isDir : ObjCBool = false
+        fileManager.fileExists(atPath: path, isDirectory:&isDir)
+        let readhandle = FileHandle.init(forReadingAtPath: path)
+        let data: Data = (readhandle?.readDataToEndOfFile()) ?? Data()
+        let str: String = String(data: data, encoding: .utf8) ?? ""
+        return str.count > 0 ? true : false
     }
     
     func currentDateToWantDate(_ year: Int)-> Date {
