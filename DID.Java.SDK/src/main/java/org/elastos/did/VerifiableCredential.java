@@ -33,11 +33,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
@@ -49,9 +45,10 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class VerifiableCredential extends DIDObject {
-	private final static String ID = "id";
+	protected final static String ID = "id";
 	private final static String TYPE = "type";
 	private final static String ISSUER = "issuer";
 	private final static String ISSUANCE_DATE = "issuanceDate";
@@ -74,12 +71,10 @@ public class VerifiableCredential extends DIDObject {
 
 	static public class CredentialSubject {
 		private DID id;
-		// TODO: use JSON object?
-		private Map<String, String> properties;
+		private ObjectNode properties;
 
 		protected CredentialSubject(DID id) {
 			this.id = id;
-			properties = new TreeMap<String, String>();
 		}
 
 		public DID getId() {
@@ -90,21 +85,26 @@ public class VerifiableCredential extends DIDObject {
 			return properties.size();
 		}
 
-		public Map<String, String> getProperties() {
-			// Make a copy
-			return new LinkedHashMap<String, String>(properties);
+		public String getPropertiesAsString() {
+			return properties.toString();
 		}
 
-		public String getProperty(String name) {
-			return properties.get(name);
+		public JsonNode getProperties() {
+			return properties.deepCopy();
 		}
 
-		protected void addProperty(String name, String value) {
-			properties.put(name, value);
+		public String getPropertyAsString(String name) {
+			return properties.get(name).asText();
 		}
 
-		protected void addProperties(Map<String, String> props) {
-			properties.putAll(props);
+		public JsonNode getProperty(String name) {
+			return properties.get(name).deepCopy();
+		}
+
+		protected void setProperties(JsonNode props) {
+			properties = props.deepCopy();
+			// remote ID field, avoid conflict with subject's id property.
+			properties.remove(ID);
 		}
 
 		protected static CredentialSubject fromJson(JsonNode node, DID ref)
@@ -117,18 +117,8 @@ public class VerifiableCredential extends DIDObject {
 
 			CredentialSubject cs = new CredentialSubject(id);
 
-			Iterator<Map.Entry<String, JsonNode>> props = node.fields();
-			Map.Entry<String, JsonNode> prop;
-			while (props.hasNext()) {
-				prop = props.next();
-
-				if (prop.getKey().equals(ID))
-					continue;
-
-				cs.addProperty(prop.getKey(), prop.getValue().asText());
-			}
-
-			// TODO: should check whether the subject is empty?
+			// Properties
+			cs.setProperties(node);
 
 			return cs;
 		}
@@ -144,13 +134,12 @@ public class VerifiableCredential extends DIDObject {
 			}
 
 			// Properties
-			for (Map.Entry<String, String> prop : properties.entrySet()) {
-				generator.writeFieldName(prop.getKey());
-				generator.writeString(prop.getValue());
-			}
+			if (properties != null)
+				JsonHelper.toJson(generator, properties, true);
 
 			generator.writeEndObject();
 		}
+
 	}
 
 	static public class Proof {
@@ -720,6 +709,7 @@ public class VerifiableCredential extends DIDObject {
 		try {
 			toJson(out, normalized, forSign);
 		} catch (IOException ignore) {
+			ignore.printStackTrace();
 		}
 
 		return out.toString();

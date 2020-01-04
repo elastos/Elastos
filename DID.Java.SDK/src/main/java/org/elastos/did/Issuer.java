@@ -22,6 +22,7 @@
 
 package org.elastos.did;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -30,6 +31,10 @@ import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDIDException;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class Issuer {
 	private static final String DEFAULT_PUBLICKEY_TYPE = Constants.DEFAULT_PUBLICKEY_TYPE;
@@ -183,13 +188,48 @@ public class Issuer {
 			if (properties == null || properties.size() == 0)
 				throw new IllegalArgumentException();
 
+			ObjectMapper mapper = new ObjectMapper();
+			ObjectNode node = mapper.createObjectNode();
+
+			for (Map.Entry<String, String> entry : properties.entrySet())
+				node.put(entry.getKey(), entry.getValue());
+
+			return properties(node);
+		}
+
+		public CredentialBuilder properties(String json) throws DIDException {
+			if (credential == null)
+				throw new IllegalStateException("Credential already sealed.");
+
+			if (json == null || json.isEmpty())
+				throw new IllegalArgumentException();
+
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode node;
+			try {
+				node = mapper.readTree(json);
+			} catch (IOException e) {
+				throw new DIDException("Credential properties is invalid.", e);
+			}
+
+			return properties(node);
+		}
+
+		public CredentialBuilder properties(JsonNode node) {
+			if (credential == null)
+				throw new IllegalStateException("Credential already sealed.");
+
+			if (node == null || node.size() == 0)
+				throw new IllegalArgumentException();
+
 			VerifiableCredential.CredentialSubject subject =
 					new VerifiableCredential.CredentialSubject(target);
-			subject.addProperties(properties);
+			subject.setProperties(node);
 			credential.setSubject(subject);
 
 			return this;
 		}
+
 
 		public VerifiableCredential seal(String storepass)
 				throws MalformedCredentialException, DIDStoreException {

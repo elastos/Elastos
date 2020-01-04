@@ -65,6 +65,10 @@ public final class TestData {
 	private String twitterVcCompactJson;
 	private String twitterVcNormalizedJson;
 
+	private VerifiableCredential jsonVc;
+	private String jsonVcCompactJson;
+	private String jsonVcNormalizedJson;
+
 	private VerifiablePresentation testVp;
 	private String testVpNormalizedJson;
 
@@ -206,6 +210,14 @@ public final class TestData {
 		return twitterVc;
 	}
 
+	public VerifiableCredential loadJsonCredential()
+			throws DIDException, IOException {
+		if (jsonVc == null)
+			jsonVc = loadCredential("vc-json.json");
+
+		return jsonVc;
+	}
+
 	public VerifiablePresentation loadPresentation()
 			throws DIDException, IOException {
 		if (testVp == null) {
@@ -309,6 +321,20 @@ public final class TestData {
 			twitterVcNormalizedJson = loadText("vc-twitter.normalized.json");
 
 		return twitterVcNormalizedJson;
+	}
+
+	public String loadJsonVcCompactJson() throws IOException {
+		if (jsonVcCompactJson == null)
+			jsonVcCompactJson = loadText("vc-json.compact.json");
+
+		return jsonVcCompactJson;
+	}
+
+	public String loadJsonVcNormalizedJson() throws IOException {
+		if (jsonVcNormalizedJson == null)
+			jsonVcNormalizedJson = loadText("vc-json.normalized.json");
+
+		return jsonVcNormalizedJson;
 	}
 
 	public String loadPresentationNormalizedJson() throws IOException {

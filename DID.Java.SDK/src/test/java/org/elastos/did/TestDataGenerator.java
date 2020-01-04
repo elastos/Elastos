@@ -274,7 +274,33 @@ public class TestDataGenerator {
 		json = vcTwitter.toString(false);
 		writeTo("vc-twitter.compact.json", json);
 
-		//System.out.println(vcPassport.isValid() ? "OK" : "Error");
+		//System.out.println(vcTwitter.isValid() ? "OK" : "Error");
+		System.out.println("OK");
+
+		// Json format credential
+		id = new DIDURL(test.getSubject(), "json");
+		System.out.print("Generate credential: " + id + "...");
+
+		cb = kycIssuer.issueFor(doc.getSubject());
+
+		String jsonProps = "{\"name\":\"Jay Holtslander\",\"alternateName\":\"Jason Holtslander\",\"booleanValue\":true,\"numberValue\":1234,\"doubleValue\":9.5,\"nationality\":\"Canadian\",\"birthPlace\":{\"type\":\"Place\",\"address\":{\"type\":\"PostalAddress\",\"addressLocality\":\"Vancouver\",\"addressRegion\":\"BC\",\"addressCountry\":\"Canada\"}},\"affiliation\":[{\"type\":\"Organization\",\"name\":\"Futurpreneur\",\"sameAs\":[\"https://twitter.com/futurpreneur\",\"https://www.facebook.com/futurpreneur/\",\"https://www.linkedin.com/company-beta/100369/\",\"https://www.youtube.com/user/CYBF\"]}],\"alumniOf\":[{\"type\":\"CollegeOrUniversity\",\"name\":\"Vancouver Film School\",\"sameAs\":\"https://en.wikipedia.org/wiki/Vancouver_Film_School\",\"year\":2000},{\"type\":\"CollegeOrUniversity\",\"name\":\"CodeCore Bootcamp\"}],\"gender\":\"Male\",\"Description\":\"Technologist\",\"disambiguatingDescription\":\"Co-founder of CodeCore Bootcamp\",\"jobTitle\":\"Technical Director\",\"worksFor\":[{\"type\":\"Organization\",\"name\":\"Skunkworks Creative Group Inc.\",\"sameAs\":[\"https://twitter.com/skunkworks_ca\",\"https://www.facebook.com/skunkworks.ca\",\"https://www.linkedin.com/company/skunkworks-creative-group-inc-\",\"https://plus.google.com/+SkunkworksCa\"]}],\"url\":\"https://jay.holtslander.ca\",\"image\":\"https://s.gravatar.com/avatar/961997eb7fd5c22b3e12fb3c8ca14e11?s=512&r=g\",\"address\":{\"type\":\"PostalAddress\",\"addressLocality\":\"Vancouver\",\"addressRegion\":\"BC\",\"addressCountry\":\"Canada\"},\"sameAs\":[\"https://twitter.com/j_holtslander\",\"https://pinterest.com/j_holtslander\",\"https://instagram.com/j_holtslander\",\"https://www.facebook.com/jay.holtslander\",\"https://ca.linkedin.com/in/holtslander/en\",\"https://plus.google.com/+JayHoltslander\",\"https://www.youtube.com/user/jasonh1234\",\"https://github.com/JayHoltslander\",\"https://profiles.wordpress.org/jasonh1234\",\"https://angel.co/j_holtslander\",\"https://www.foursquare.com/user/184843\",\"https://jholtslander.yelp.ca\",\"https://codepen.io/j_holtslander/\",\"https://stackoverflow.com/users/751570/jay\",\"https://dribbble.com/j_holtslander\",\"http://jasonh1234.deviantart.com/\",\"https://www.behance.net/j_holtslander\",\"https://www.flickr.com/people/jasonh1234/\",\"https://medium.com/@j_holtslander\"]}";
+
+		VerifiableCredential vcJson = cb.id(id)
+				.type("InternetAccountCredential", "TwitterCredential")
+				.properties(jsonProps)
+				.seal(TestConfig.storePass);
+		store.storeCredential(vcTwitter, "json");
+
+		json = vcJson.toString(true);
+		writeTo("vc-json.normalized.json", json);
+
+		json = formatJson(json);
+		writeTo("vc-json.json", json);
+
+		json = vcJson.toString(false);
+		writeTo("vc-json.compact.json", json);
+
+		//System.out.println(vcJson.isValid() ? "OK" : "Error");
 		System.out.println("OK");
 
 		// Presentation with above credentials
@@ -296,7 +322,7 @@ public class TestDataGenerator {
 		json = formatJson(json);
 		writeTo("vp.json", json);
 
-		//System.out.println(vcPassport.isValid() ? "OK" : "Error");
+		//System.out.println(vp.isValid() ? "OK" : "Error");
 		System.out.println("OK");
 	}
 

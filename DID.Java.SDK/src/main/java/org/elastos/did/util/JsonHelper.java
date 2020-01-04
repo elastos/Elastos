@@ -22,10 +22,15 @@
 
 package org.elastos.did.util;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import org.elastos.did.Constants;
 import org.elastos.did.DID;
@@ -34,6 +39,7 @@ import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.MalformedDIDException;
 import org.elastos.did.exception.MalformedDIDURLException;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class JsonHelper {
@@ -219,6 +225,69 @@ public class JsonHelper {
 			return parseDate(value);
 		} catch (ParseException e) {
 			throw ExceptionFactory.create(exceptionClass, "Invalid " + hint + ": " + value, e);
+		}
+	}
+
+	public static void toJson(JsonGenerator generator, JsonNode node)
+			throws IOException {
+		toJson(generator, node, false);
+	}
+
+	public static void toJson(JsonGenerator generator, JsonNode node,
+			boolean objectContext) throws IOException {
+		switch (node.getNodeType()) {
+		case ARRAY:
+			generator.writeStartArray();
+			Iterator<JsonNode> elems = node.elements();
+			while (elems.hasNext())
+				toJson(generator, elems.next());
+			generator.writeEndArray();
+			break;
+
+		case BINARY:
+			generator.writeBinary(node.binaryValue());
+			break;
+
+		case BOOLEAN:
+			generator.writeBoolean(node.asBoolean());
+			break;
+
+		case MISSING:
+			generator.writeString(node.asText());
+			break;
+
+		case NULL:
+			generator.writeNull();
+			break;
+
+		case NUMBER:
+			generator.writeNumber(node.asText());
+			break;
+
+		case OBJECT:
+		case POJO:
+			if (!objectContext)
+				generator.writeStartObject();
+
+			List<String> fields = new ArrayList<String>(node.size());
+
+			Iterator<String> it = node.fieldNames();
+			while (it.hasNext())
+				fields.add(it.next());
+
+			Collections.sort(fields);
+			for (String field : fields) {
+				generator.writeFieldName(field);
+				toJson(generator, node.get(field));
+			}
+
+			if (!objectContext)
+				generator.writeEndObject();
+			break;
+
+		case STRING:
+			generator.writeString(node.asText());
+			break;
 		}
 	}
 

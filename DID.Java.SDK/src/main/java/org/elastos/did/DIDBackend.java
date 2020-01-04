@@ -64,7 +64,8 @@ public class DIDBackend {
 	}
 
 	public static void initialize(DIDAdapter adapter) {
-		instance = new DIDBackend(adapter);
+		if (instance == null)
+			instance = new DIDBackend(adapter);
 	}
 
 	public static DIDBackend getInstance() throws DIDException {
