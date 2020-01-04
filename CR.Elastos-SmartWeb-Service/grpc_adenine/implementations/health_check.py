@@ -14,7 +14,6 @@
 """Reference implementation for health checking in gRPC Python."""
 
 import collections
-import logging
 import threading
 
 import grpc
