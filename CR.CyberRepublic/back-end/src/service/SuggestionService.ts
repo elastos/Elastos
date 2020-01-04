@@ -20,14 +20,6 @@ export default class extends Base {
       // in the sort query
       descUpdatedAt: new Date()
     }
-    let amount = 0.0;
-    if(param.budget && Array.isArray(param.budget) && param.budget.length){
-      param.budget.map(function(it) {
-        amount += Number(it.amount)
-      })
-    }
-    doc.budgetAmount = amount
-
     // save the document
     const result = await this.model.save(doc)
     await this.getDBModel('Suggestion_Edit_History').save({ ...param, suggestion: result._id })
@@ -103,15 +95,6 @@ export default class extends Base {
     }
 
     const doc = _.pick(param, BASE_FIELDS)
-
-    if (param.budget && Array.isArray(param.budget)) {
-      doc.budgetAmount = param.budget.reduce((sum, el) => {
-        if (el && el.amount) {
-          return sum += Number(el.amount)
-        }
-        return sum
-      }, 0.0)
-    }
 
     doc.descUpdatedAt = new Date()
     if (update) {

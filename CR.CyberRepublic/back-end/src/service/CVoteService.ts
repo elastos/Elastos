@@ -150,14 +150,6 @@ export default class extends Base {
     if (relevance) doc.relevance = relevance
     if (budget) {
       doc.budget = budget
-      if (Array.isArray(budget)) {
-        doc.budgetAmount = budget.reduce((sum, el) => {
-          if (el && el.amount) {
-            return sum += Number(el.amount)
-          }
-          return sum
-        }, 0.0)
-      }
     }
     if (plan) doc.plan = plan
 
@@ -227,14 +219,6 @@ export default class extends Base {
       plan,
       proposer,
       createdBy: this.currentUser._id
-    }
-    if (budget && Array.isArray(budget)) {
-      doc.budgetAmount = budget.reduce((sum, el) => {
-        if (el && el.amount) {
-          return sum += Number(el.amount)
-        }
-        return sum
-      }, 0.0)
     }
 
     const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
@@ -602,14 +586,6 @@ export default class extends Base {
     if (relevance) doc.relevance = relevance
     if (budget) {
       doc.budget = budget
-      if (Array.isArray(budget)) {
-        doc.budgetAmount = budget.reduce((sum, el) => {
-          if (el && el.amount) {
-            return sum += Number(el.amount)
-          }
-          return sum
-        }, 0.0)
-      }
     }
     if (plan) doc.plan = plan
 
