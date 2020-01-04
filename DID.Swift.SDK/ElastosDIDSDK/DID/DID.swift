@@ -7,13 +7,14 @@ public class DID: NSObject {
     public var methodSpecificId: String = ""
     public var meta: DIDMeta = DIDMeta()
 
-    public init(_ method: String, _ methodSpecificId: String) {
-        self.method = method
-        self.methodSpecificId = methodSpecificId
-    }
-    
     public override init() {
         super.init()
+    }
+
+    public init(_ method: String, _ methodSpecificId: String) {
+        super.init()
+        self.method = method
+        self.methodSpecificId = methodSpecificId
     }
 
     public init(_ did: String) throws {
@@ -22,7 +23,7 @@ public class DID: NSObject {
     }
     
     public func setExtra(_ name: String, _ value: String) throws {
-        self.meta.setExtra(name, value)
+        meta.setExtra(name, value)
         if meta.attachedStore() {
             try meta.store!.storeDidMeta(self, meta)
         }
@@ -57,9 +58,11 @@ public class DID: NSObject {
     
     public func resolve(_ force: Bool) throws -> DIDDocument? {
         let doc = try DIDBackend.shareInstance().resolve(self, force)
-        if doc != nil {
-            meta = doc!.meta
+        guard doc != nil else {  // TODO: can't make sure doc is not nil ?
+            return nil
         }
+
+        meta = doc!.meta
         return doc
     }
     
@@ -76,12 +79,16 @@ public class DID: NSObject {
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        if object is DID {
+        guard object != nil else {
+            return false;
+        }
+
+        guard !(object is DID) else {
             let did = object as! DID
             return did.description == description
         }
-        
-        if object is String {
+
+        guard !(object is String) else {
             let did = object as! String
             return did.isEqual(description)
         }
@@ -90,9 +97,13 @@ public class DID: NSObject {
     }
 }
 
+extension DID: Comparable {
+    public static func < (lhs: DID, rhs: DID) -> Bool {
+        return lhs.isEqual(rhs)
+    }
+}
+
 class DListener: DIDURLBaseListener {
-    public var name: String?
-    public var value: String?
     public var did: DID?
 
     init(_ did: DID) {
