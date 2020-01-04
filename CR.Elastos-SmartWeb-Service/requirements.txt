@@ -8,3 +8,4 @@ python-decouple==3.3
 web3==5.4.0
 py-solc==3.2.0
 cryptography==2.8
+pg8000==1.13.2

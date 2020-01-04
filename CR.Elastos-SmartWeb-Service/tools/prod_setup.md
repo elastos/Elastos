@@ -17,30 +17,40 @@ Google Cloud Engine:
 Setup in GCE:
 
 ## One time
+gcloud auth login;
+gcloud auth configure-docker;
 gcloud compute addresses create gce-ingress --global;
 gcloud compute addresses describe  gce-ingress --global --format="value(address)";
 gcloud beta compute ssl-certificates create elastos-smartweb-service-certificate \
     --domains elastos-smartweb-service.nucleusconsole.com --description "Certificate for Elastos Smartweb Service";
 
 ## Repeat
+# Docker
+docker build -t gcr.io/elastos-smartweb-service/elastos-smartweb-service -f .gce/Dockerfile .;
+docker push gcr.io/elastos-smartweb-service/elastos-smartweb-service;
+# Create instance groups
 gcloud beta compute instance-templates create-with-container elastos-smartweb-service-template \
     --machine-type g1-small --tags elastos-smartweb-service-server \
-    --container-image="cyberrepublic/elastos-smartweb-service" --container-env-file=.env \
-    --container-mount-host-path="host-path=.gce/service_account_key.json,mounth-path=.gce/service_account_key.json";
+    --container-image="gcr.io/elastos-smartweb-service/elastos-smartweb-service" --container-env-file=.env
 gcloud compute instance-groups managed create elastos-smartweb-service-group \
     --base-instance-name elastos-smartweb-service --zone us-east4-c --size 2 \
     --template elastos-smartweb-service-template;
-gcloud compute firewall-rules create firewall-rules-grpc --allow=tcp:8001 \
+# Create firewall rules
+gcloud compute firewall-rules create firewall-rules-grpc --action=allow --direction=ingress --rules=tcp:8001 \
     --source-ranges=130.211.0.0/22,35.191.0.0/16 --target-tags=elastos-smartweb-service-server;
 gcloud compute instance-groups managed set-named-ports elastos-smartweb-service-group \
     --named-ports=grpc-port:8001 --zone us-east4-c;
 # Create health check with name "elastos-smartweb-service-health-check"
+gcloud beta compute health-checks create tcp elastos-smartweb-service-health-check --port=8001
+# Create backend service
 gcloud beta compute backend-services create elastos-smartweb-service-backend-service \
     --port-name=grpc-port --protocol=http2 --health-checks=elastos-smartweb-service-health-check --global;
 gcloud beta compute backend-services add-backend elastos-smartweb-service-backend-service \
     --instance-group elastos-smartweb-service-group --instance-group-zone us-east4-c --global;
+# Create URL map
 gcloud compute url-maps create elastos-smartweb-service-map --default-service \
     elastos-smartweb-service-backend-service;
+# Create lb proxy
 gcloud compute target-https-proxies create https-lb-proxy  --url-map=elastos-smartweb-service-map \
     --ssl-certificates=elastos-smartweb-service-certificate --global;
 gcloud compute forwarding-rules create https-content-rule --address \
@@ -54,10 +64,13 @@ gcloud compute url-maps delete elastos-smartweb-service-map -q;
 gcloud compute backend-services remove-backend elastos-smartweb-service-backend-service \
     --instance-group=elastos-smartweb-service-group --global --instance-group-zone us-east4-c -q;
 gcloud compute backend-services delete elastos-smartweb-service-backend-service --global -q;
-#gcloud beta compute health-checks delete webpool-basic-check -q;
+gcloud beta compute health-checks delete elastos-smartweb-service-health-check -q;
 gcloud compute  firewall-rules delete firewall-rules-grpc -q;
 gcloud compute instance-groups managed delete elastos-smartweb-service-group --zone us-east4-c -q;
 gcloud compute instance-templates delete elastos-smartweb-service-template -q;
 
 
 ### Debug
+gcloud compute instances list 
+gcloud compute instances describe instance_name
+gcloud compute ssh instance_name
