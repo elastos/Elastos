@@ -85,7 +85,12 @@ export default {
       [`limit${ABSTRACT_MAX_WORDS}`]: `不能超过${ABSTRACT_MAX_WORDS}字`,
       isNaN: '请输入有效的金额',
       plan: '实施团队或里程碑为空',
-      budget: '总金额、ELA 接收地址或者支出计划为空'
+      milestones: '里程碑为空',
+      team: '实施团队为空',
+      budget: '总金额、ELA 接收地址或者支出计划为空',
+      totalBudget: '总预算为空',
+      elaAddress: 'ELA 接收地址为空',
+      paymentSchedule: '支出计划为空'
     }
   },
   modal: {

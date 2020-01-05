@@ -85,8 +85,11 @@ export default {
       tooLong: 'This field is too long',
       [`limit${ABSTRACT_MAX_WORDS}`]: `You can only type ${ABSTRACT_MAX_WORDS} words max.`,
       isNaN: 'Please input valid amount',
-      plan: 'Implementation team or milestones is empty',
-      budget: 'Total amount, ELA receive address or payment schedule is empty'
+      milestones: 'Milestones is empty',
+      team: 'Implementation team is empty',
+      totalBudget: 'Total budget is empty',
+      elaAddress: 'ELA receive address is empty',
+      paymentSchedule: 'Payment Schedule is empty'
     }
   },
   modal: {

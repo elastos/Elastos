@@ -165,23 +165,23 @@ class C extends BaseComponent {
 
   validatePlan = (rule, value, cb) => {
     if (value && _.isEmpty(value.teamInfo)) {
-      return cb(true)
+      return cb(I18N.get('suggestion.form.error.team'))
     }
     if (value && _.isEmpty(value.milestone)) {
-      return cb(true)
+      return cb(I18N.get('suggestion.form.error.milestones'))
     }
     return cb()
   }
 
   validateBudget = (rule, value, cb) => {
     if (value && !value.budgetAmount) {
-      return cb(true)
+      return cb(I18N.get('suggestion.form.error.totalBudget'))
     }
     if (value && !value.elaAddress) {
-      return cb(true)
+      return cb(I18N.get('suggestion.form.error.elaAddress'))
     }
     if (value && _.isEmpty(value.paymentItems)) {
-      return cb(true)
+      return cb(I18N.get('suggestion.form.error.paymentSchedule'))
     }
     return cb()
   }
@@ -228,7 +228,6 @@ class C extends BaseComponent {
         !initialValues.plan)
     ) {
       rules.push({
-        message: I18N.get('suggestion.form.error.plan'),
         validator: this.validatePlan
       })
 
@@ -249,7 +248,6 @@ class C extends BaseComponent {
         !initialValues.budget)
     ) {
       rules.push({
-        message: I18N.get('suggestion.form.error.budget'),
         validator: this.validateBudget
       })
 
