@@ -222,6 +222,7 @@ DIDDocument *DIDRequest_FromJson(cJSON *json)
         free(docJson);
         return NULL;
     }
+    docJson[len] = 0;
 
     req.doc = DIDDocument_FromJson(docJson);
     free(docJson);

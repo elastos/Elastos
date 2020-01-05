@@ -96,20 +96,12 @@ static int diddoc_sign_test_suite_init(void)
         return -1;
     }
 
-    did = DIDDocument_GetSubject(document);
-    if (!did) {
-        DIDDocument_Destroy(document);
-        TestData_Free();
-        return -1;
-    }
-
     return 0;
 }
 
 static int diddoc_sign_test_suite_cleanup(void)
 {
     DIDDocument_Destroy(document);
-    DIDStore_DeleteDID(store, did);
     TestData_Free();
 
     return 0;

@@ -13,7 +13,6 @@
 #include "ela_did.h"
 
 static DIDDocument *document;
-static DID *did;
 static DIDStore *store;
 
 static void test_didstore_store_did(void)
@@ -26,8 +25,6 @@ static void test_didstore_store_did(void)
     CU_ASSERT_NOT_EQUAL(rc, -1);
     rc = DIDStore_StoreDID(store, document, "littlefish");
     CU_ASSERT_NOT_EQUAL(rc, -1);
-
-    DIDStore_DeleteDID(store, did);
 }
 
 static int didstore_storedid_test_suite_init(void)
@@ -43,13 +40,6 @@ static int didstore_storedid_test_suite_init(void)
 
     document = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!document) {
-        TestData_Free();
-        return -1;
-    }
-
-    did = DIDDocument_GetSubject(document);
-    if (!did) {
-        DIDDocument_Destroy(document);
         TestData_Free();
         return -1;
     }
