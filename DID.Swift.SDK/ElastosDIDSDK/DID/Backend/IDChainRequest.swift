@@ -179,7 +179,7 @@ public class IDChainRequest: NSObject {
         }
         let count = inputs.count / 2
         self.signature = (try doc.sign(signKey, storepass, count, inputs))
-        self.signKey = signKey
+        self.signKey = targetSignKey
         self.keyType = Constants.DEFAULT_PUBLICKEY_TYPE
     }
     

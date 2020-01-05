@@ -414,7 +414,12 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertNil(resolved)
         } catch  {
-            XCTFail()
+            switch error {
+            case  DIDDeactivatedError.failue(""):
+                XCTAssertTrue(true)
+            default:
+                XCTFail()
+            }
         }
     }
 
