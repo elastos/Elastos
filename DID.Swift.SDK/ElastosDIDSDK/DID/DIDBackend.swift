@@ -72,7 +72,7 @@ public class DIDBackend: NSObject {
         }
         let rr: ResolveResult = try ResolveResult.fromJson(result)
         if rr.status != ResolveResult.STATUS_NOT_FOUND {
-            try ResolverCache.store(rr)
+            try ResolverCache.store(rr) 
         }
         return rr
     }

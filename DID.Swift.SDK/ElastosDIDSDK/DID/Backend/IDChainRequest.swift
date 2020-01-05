@@ -268,7 +268,7 @@ public class IDChainRequest: NSObject {
         case "UPDATE": do {
             op = .UPDATE
             }
-        case "DEACRIVATE": do {
+        case "DEACTIVATE": do {
             op = .DEACTIVATE
             }
         default: break

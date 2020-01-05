@@ -285,7 +285,7 @@ public class DIDDocument: NSObject {
                 pk_ = key!
             }
         }
-        guard authorizations[pk.id] == nil else {
+        guard authorizations[pk_.id] == nil else {
             return false
         }
         authorizations[pk_.id] = pk_

@@ -202,7 +202,7 @@ class DIDStoreTests: XCTestCase {
     func testDeactivateSelfAfterCreate() {
         do {
             let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let store: DIDStore = try! testData.setupStore(true)
             _ = try testData.initIdentity()
             
             let doc = try store.newDid(storePass)
@@ -214,11 +214,16 @@ class DIDStoreTests: XCTestCase {
             
             _ = try store.deactivateDid(doc.subject!, storePass)
             
-            let resolvedNil: DIDDocument? = try doc.subject!.resolve(true)
+            let resolvedNil = try doc.subject!.resolve(true)
             
             XCTAssertNil(resolvedNil)
         } catch  {
-            XCTFail()
+            switch error {
+            case  DIDDeactivatedError.failue(""):
+                XCTAssertTrue(true)
+            default:
+                XCTFail()
+            }
         }
     }
     
@@ -260,11 +265,15 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertNil(resolvedNil)
         } catch  {
-            XCTFail()
+            switch error {
+            case  DIDDeactivatedError.failue(""):
+                XCTAssertTrue(true)
+            default:
+                XCTFail()
+            }
         }
     }
     
-    // TODO:
     func testDeactivateWithAuthorization1() {
         do {
             let testData: TestData = TestData()
@@ -300,11 +309,15 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertNil(resolvedNil)
         } catch  {
-            XCTFail()
+            switch error {
+            case  DIDDeactivatedError.failue(""):
+                XCTAssertTrue(true)
+            default:
+                XCTFail()
+            }
         }
     }
     
-    // TODO:
     func testDeactivateWithAuthorization2() {
         do {
             let testData: TestData = TestData()
@@ -318,7 +331,7 @@ class DIDStoreTests: XCTestCase {
             try store.storePrivateKey(doc.subject!, id, key.getPrivateKeyData(), storePass)
             doc = try doc.seal(store, storePass)
             XCTAssertTrue(try doc.isValid())
-            XCTAssertEqual(2, doc.getAuthorizationKeyCount())
+            XCTAssertEqual(2, doc.getAuthenticationKeyCount())
             try store.storeDid(doc)
             
             _ = try store.publishDid(doc.subject!, storePass)
@@ -328,10 +341,10 @@ class DIDStoreTests: XCTestCase {
             XCTAssertEqual(try doc.toJson(nil, true, true),try resolved.toJson(nil, true, true))
             
             var target: DIDDocument = try store.newDid(storePass)
-            _ = try target.addAuthorizationKey("recovery", doc.subject!.description, key.getPrivateKeyBase58())
+            _ = try target.addAuthorizationKey("recovery", doc.subject!.description, key.getPublicKeyBase58())
             target = try target.seal(store, storePass)
             XCTAssertNotNil(target)
-            XCTAssertEqual(1, doc.getAuthorizationKeyCount())
+            XCTAssertEqual(1, target.getAuthorizationKeyCount())
             let controller = target.getAuthorizationKeys()[0].controller
             XCTAssertEqual(doc.subject, controller)
             try store.storeDid(target)
@@ -348,11 +361,15 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertNil(resolvedNil)
         } catch  {
-            XCTFail()
+            switch error {
+            case  DIDDeactivatedError.failue(""):
+                XCTAssertTrue(true)
+            default:
+                XCTFail()
+            }
         }
     }
     
-    // TODO:
     func testDeactivateWithAuthorization3() {
         do {
             let testData: TestData = TestData()
@@ -389,7 +406,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try target.subject!.resolve()!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try doc.toJson(nil, true, true),try resolved.toJson(nil, true, true))
+            XCTAssertEqual(try target.description(true),try resolved.description(true))
             
             _ = try store.deactivateDid(target.subject!, doc.subject!, storePass)
             
