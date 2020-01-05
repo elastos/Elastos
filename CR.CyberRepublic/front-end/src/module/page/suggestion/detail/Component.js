@@ -455,6 +455,10 @@ export default class extends StandardPage {
         ) {
           return `
             <h2>${I18N.get(`suggestion.fields.budget`)}</h2>
+            <p>${I18N.get(`suggestion.budget.total`)}</p>
+            <p>${detail.budgetAmount}</p>
+            <p>${I18N.get(`suggestion.budget.address`)}</p>
+            <p>${detail.elaAddress}</p>
             <p>${getBudgetHtml(detail.budget)}</p>
           `
         }

@@ -295,6 +295,10 @@ class C extends StandardPage {
         ) {
           return `
             <h2>${I18N.get(`proposal.fields.budget`)}</h2>
+            <p>${I18N.get(`suggestion.budget.total`)}</p>
+            <p>${data.budgetAmount}</p>
+            <p>${I18N.get(`suggestion.budget.address`)}</p>
+            <p>${data.elaAddress}</p>
             <p>${getBudgetHtml(data.budget)}</p>
           `
         }
