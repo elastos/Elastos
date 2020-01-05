@@ -2,7 +2,6 @@ import styled from 'styled-components'
 import { Anchor } from 'antd'
 import { breakPoint } from '@/constants/breakPoint'
 import { text } from '@/constants/color'
-// import { gap } from '@/constants/variable'
 
 export const Container = styled.div`
   padding: 30px 50px 80px 150px;
@@ -148,6 +147,17 @@ export const PartTitle = styled.h4`
 `
 
 export const PartContent = styled.div``
-export const PlanSubtitle = styled.div`
+
+export const Subtitle = styled.div`
   margin: 24px 0;
+  color: #000000;
+  font-weight: 500;
+`
+
+export const Paragraph = styled.div`
+  color: rgba(0, 0, 0, 0.75);
+  font-variant-ligatures: common-ligatures;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 `

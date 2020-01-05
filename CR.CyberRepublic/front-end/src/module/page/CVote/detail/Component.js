@@ -55,7 +55,8 @@ import {
   Part,
   PartTitle,
   PartContent,
-  PlanSubtitle
+  Subtitle,
+  Paragraph
 } from './style'
 import './style.scss'
 
@@ -68,7 +69,16 @@ const renderRichContent = (data, key, title) => {
     data.budget &&
     typeof data.budget !== 'string'
   ) {
-    rc = <PaymentList list={data.budget} editable={false} />
+    rc = (
+      <div>
+        <Subtitle>{`${I18N.get('suggestion.budget.total')} (ELA)`}</Subtitle>
+        <Paragraph>{data.budgetAmount}</Paragraph>
+        <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
+        <Paragraph>{data.elaAddress}</Paragraph>
+        <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
+        <PaymentList list={data.budget} editable={false} />
+      </div>
+    )
   } else if (
     key === 'plan' &&
     data.plan &&
@@ -76,16 +86,16 @@ const renderRichContent = (data, key, title) => {
   ) {
     rc = (
       <div>
-        <PlanSubtitle>
+        <Subtitle>
           {I18N.get('suggestion.plan.milestones')}
-        </PlanSubtitle>
+        </Subtitle>
         <Milestones
           initialValue={data.plan.milestone}
           editable={false}
         />
-        <PlanSubtitle>
+        <Subtitle>
           {I18N.get('suggestion.plan.teamInfo')}
-        </PlanSubtitle>
+        </Subtitle>
         <TeamInfoList
           list={data.plan.teamInfo}
           editable={false}

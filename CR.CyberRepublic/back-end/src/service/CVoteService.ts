@@ -18,6 +18,7 @@ const BASE_FIELDS = [
   'relevance',
   'budget',
   'budgetAmount',
+  'elaAddress',
   'plan'
 ]
 

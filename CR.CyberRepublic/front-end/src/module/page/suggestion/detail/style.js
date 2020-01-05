@@ -176,4 +176,8 @@ export const Subtitle = styled.div`
 `
 export const Paragraph = styled.div`
   color: rgba(0, 0, 0, 0.75);
+  font-variant-ligatures: common-ligatures;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 `
