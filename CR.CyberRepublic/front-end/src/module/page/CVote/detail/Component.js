@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  Form,
   Spin,
   Button,
   Input,
@@ -13,7 +12,6 @@ import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import StandardPage from '@/module/page/StandardPage'
-import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT, CVOTE_STATUS, ELIP_TYPE } from '@/constant'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
@@ -122,7 +120,6 @@ class C extends StandardPage {
     this.state = {
       persist: true,
       loading: false,
-      language: LANGUAGES.english, // language for this specifc form only
       visibleYes: false,
       visibleOppose: false,
       visibleAbstain: false,
@@ -967,4 +964,4 @@ class C extends StandardPage {
   }
 }
 
-export default Form.create()(C)
+export default C
