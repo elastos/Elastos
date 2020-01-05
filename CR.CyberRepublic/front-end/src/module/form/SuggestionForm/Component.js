@@ -174,16 +174,7 @@ class C extends BaseComponent {
   }
 
   validateBudget = (rule, value, cb) => {
-    if (value && !value.budgetAmount) {
-      return cb(I18N.get('suggestion.form.error.totalBudget'))
-    }
-    if (value && !value.elaAddress) {
-      return cb(I18N.get('suggestion.form.error.elaAddress'))
-    }
-    if (value && _.isEmpty(value.paymentItems)) {
-      return cb(I18N.get('suggestion.form.error.paymentSchedule'))
-    }
-    return cb()
+    return value && value.error ? cb(true) : cb()
   }
 
   getTextarea(id) {

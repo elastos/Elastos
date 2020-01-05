@@ -27,7 +27,8 @@ class PaymentSchedule extends Component {
 
   passDataToParent() {
     const { total, address, paymentItems, errors } = this.state
-    if (errors.total || errors.address) {
+    if (!total || errors.total || !address || !paymentItems.length) {
+      this.changeValue({ error: true })
       return
     }
     this.changeValue({
@@ -44,7 +45,7 @@ class PaymentSchedule extends Component {
 
   validateFields = (field, value) => {
     const { errors } = this.state
-    if (!value) {
+    if (!value || !value.length) {
       return {
         ...errors,
         [field]: I18N.get('suggestion.form.error.required')
@@ -77,12 +78,15 @@ class PaymentSchedule extends Component {
 
   handleDelete = index => {
     const { paymentItems } = this.state
+    const rs = [
+      ...paymentItems.slice(0, index),
+      ...paymentItems.slice(index + 1)
+    ]
+    const errors = this.validateFields('schedule', rs)
     this.setState(
       {
-        paymentItems: [
-          ...paymentItems.slice(0, index),
-          ...paymentItems.slice(index + 1)
-        ]
+        paymentItems: rs,
+        errors
       },
       () => {
         this.passDataToParent()
@@ -108,10 +112,13 @@ class PaymentSchedule extends Component {
       })
       return
     }
+    const rs = [...paymentItems, values]
+    const errors = this.validateFields('schedule', rs)
     this.setState(
       {
-        paymentItems: [...paymentItems, values],
-        visible: false
+        paymentItems: rs,
+        visible: false,
+        errors
       },
       () => {
         this.passDataToParent()
@@ -147,6 +154,7 @@ class PaymentSchedule extends Component {
             {I18N.get('suggestion.budget.create')}
           </Button>
         </Section>
+        {errors.schedule ? <Error>{errors.schedule}</Error> : null}
         {paymentItems.length ? (
           <PaymentList
             list={paymentItems}
