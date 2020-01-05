@@ -1,9 +1,24 @@
 import Base from './Base'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { validate, mail, user as userUtil, permissions, logger } from '../utility'
+import {
+  validate,
+  mail,
+  user as userUtil,
+  permissions,
+  logger
+} from '../utility'
 
-const BASE_FIELDS = ['title', 'type', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan']
+const BASE_FIELDS = [
+  'title',
+  'type',
+  'abstract',
+  'goal',
+  'motivation',
+  'relevance',
+  'budget',
+  'plan'
+]
 
 export default class extends Base {
   private model: any
@@ -22,7 +37,10 @@ export default class extends Base {
     }
     // save the document
     const result = await this.model.save(doc)
-    await this.getDBModel('Suggestion_Edit_History').save({ ...param, suggestion: result._id })
+    await this.getDBModel('Suggestion_Edit_History').save({
+      ...param,
+      suggestion: result._id
+    })
 
     return result
   }
@@ -31,8 +49,10 @@ export default class extends Base {
   public async sendMentionEmails(suggestion, mentions) {
     const db_user = this.getDBModel('User')
     const query = { role: constant.USER_ROLE.COUNCIL }
-    const councilMembers = await db_user.getDBInstance().find(query)
-        .select(constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+    const councilMembers = await db_user
+      .getDBInstance()
+      .find(query)
+      .select(constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
     const subject = 'You were mentioned in a suggestion'
     const body = `
@@ -90,7 +110,10 @@ export default class extends Base {
       throw 'Current document does not exist'
     }
 
-    if (!userId.equals(_.get(currDoc, 'createdBy')) && !permissions.isAdmin(_.get(this.currentUser, 'role'))) {
+    if (
+      !userId.equals(_.get(currDoc, 'createdBy')) &&
+      !permissions.isAdmin(_.get(this.currentUser, 'role'))
+    ) {
       throw 'Only owner can edit suggestion'
     }
 
@@ -100,7 +123,10 @@ export default class extends Base {
     if (update) {
       await Promise.all([
         this.model.update({ _id: id }, { $set: doc }),
-        this.getDBModel('Suggestion_Edit_History').save({ ...doc, suggestion: id })
+        this.getDBModel('Suggestion_Edit_History').save({
+          ...doc,
+          suggestion: id
+        })
       ])
     } else {
       await this.model.update({ _id: id }, { $set: doc })
@@ -109,17 +135,30 @@ export default class extends Base {
   }
 
   public async list(param: any): Promise<Object> {
-    const query = _.omit(
-      param,
-      [
-        'results', 'page', 'sortBy', 'sortOrder',
-        'filter', 'profileListFor', 'search',
-        'tagsIncluded', 'referenceStatus',
-        'status', 'startDate', 'endDate', 'author',
-        'budgetLow', 'budgetHigh'
-      ]
-    )
-    const { sortBy, sortOrder, tagsIncluded, referenceStatus, profileListFor } = param
+    const query = _.omit(param, [
+      'results',
+      'page',
+      'sortBy',
+      'sortOrder',
+      'filter',
+      'profileListFor',
+      'search',
+      'tagsIncluded',
+      'referenceStatus',
+      'status',
+      'startDate',
+      'endDate',
+      'author',
+      'budgetLow',
+      'budgetHigh'
+    ])
+    const {
+      sortBy,
+      sortOrder,
+      tagsIncluded,
+      referenceStatus,
+      profileListFor
+    } = param
 
     if (!profileListFor) {
       query.$or = []
@@ -139,24 +178,21 @@ export default class extends Base {
         }
 
         if (filter === SEARCH_FILTERS.TITLE) {
-          query.$or = [
-            { title: { $regex: search, $options: 'i' } }
-          ]
+          query.$or = [{ title: { $regex: search, $options: 'i' } }]
         }
 
         if (filter === SEARCH_FILTERS.ABSTRACT) {
-          query.$or = [
-            { abstract: { $regex: search, $options: 'i' } }
-          ]
+          query.$or = [{ abstract: { $regex: search, $options: 'i' } }]
         }
 
         if (filter === SEARCH_FILTERS.EMAIL) {
           const db_user = this.getDBModel('User')
-          const users = await db_user.getDBInstance().find({
-            $or: [
-              { email: { $regex: search, $options: 'i' } }
-            ]
-          }).select('_id')
+          const users = await db_user
+            .getDBInstance()
+            .find({
+              $or: [{ email: { $regex: search, $options: 'i' } }]
+            })
+            .select('_id')
           const userIds = _.map(users, (el: { _id: string }) => el._id)
           query.$or = [{ createdBy: { $in: userIds } }]
         }
@@ -164,13 +200,16 @@ export default class extends Base {
         if (filter === SEARCH_FILTERS.NAME) {
           const db_user = this.getDBModel('User')
           const pattern = search.split(' ').join('|')
-          const users = await db_user.getDBInstance().find({
-            $or: [
-              { username: { $regex: search, $options: 'i' } },
-              { 'profile.firstName': { $regex: pattern, $options: 'i' } },
-              { 'profile.lastName': { $regex: pattern, $options: 'i' } }
-            ]
-          }).select('_id')
+          const users = await db_user
+            .getDBInstance()
+            .find({
+              $or: [
+                { username: { $regex: search, $options: 'i' } },
+                { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+                { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+              ]
+            })
+            .select('_id')
           const userIds = _.map(users, (el: { _id: string }) => el._id)
           query.$or = [{ createdBy: { $in: userIds } }]
         }
@@ -196,7 +235,7 @@ export default class extends Base {
     }
 
     // budget
-    if(param.budgetLow || param.budgetHigh){
+    if (param.budgetLow || param.budgetHigh) {
       query.budgetAmount = {}
       if (param.budgetLow && param.budgetLow.length) {
         query.budgetAmount['$gte'] = param.budgetLow
@@ -207,14 +246,19 @@ export default class extends Base {
     }
     // isProposed
     if (param.isProposed) {
-      query["reference.1"] = {
+      query['reference.1'] = {
         $exists: true
       }
     }
     // startDate <  endDate
-    if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+    if (
+      param.startDate &&
+      param.startDate.length &&
+      param.endDate &&
+      param.endDate.length
+    ) {
       let endDate = new Date(param.endDate)
-      endDate.setDate(endDate.getDate()+1)
+      endDate.setDate(endDate.getDate() + 1)
       query.createdAt = {
         $gte: new Date(param.startDate),
         $lte: endDate
@@ -224,18 +268,20 @@ export default class extends Base {
     // console.log("[Author]" + param.author)
 
     // author
-    if(param.author && param.author.length) {
+    if (param.author && param.author.length) {
       let search = param.author
       const db_user = this.getDBModel('User')
       const pattern = search.split(' ').join('|')
-      const users = await db_user.getDBInstance().find({
-        $or: [
-          { username: { $regex: search, $options: 'i' } },
-          { 'profile.firstName': { $regex: pattern, $options: 'i' } },
-          { 'profile.lastName': { $regex: pattern, $options: 'i' } }
-        ]
-      }).select('_id')
-
+      const users = await db_user
+        .getDBInstance()
+        .find({
+          $or: [
+            { username: { $regex: search, $options: 'i' } },
+            { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+            { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+          ]
+        })
+        .select('_id')
 
       const userIds = _.map(users, (el: { _id: string }) => el._id)
 
@@ -245,7 +291,10 @@ export default class extends Base {
       // console.log("[Query]" + JSON.stringify(query))
     }
     // type
-    if(param.type && _.indexOf(_.values(constant.SUGGESTION_TYPE),param.type)){
+    if (
+      param.type &&
+      _.indexOf(_.values(constant.SUGGESTION_TYPE), param.type)
+    ) {
       query.type = param.type
     }
 
@@ -255,25 +304,45 @@ export default class extends Base {
       const sortObject = {}
       // hack to prioritize descUpdatedAt if it's createdAt
       if (sortBy === 'createdAt') {
-        sortObject['descUpdatedAt'] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
+        sortObject['descUpdatedAt'] = _.get(
+          constant.SORT_ORDER,
+          sortOrder,
+          constant.SORT_ORDER.DESC
+        )
       }
-      sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
+      sortObject[sortBy] = _.get(
+        constant.SORT_ORDER,
+        sortOrder,
+        constant.SORT_ORDER.DESC
+      )
 
       const excludedFields = [
-        '-comments', '-goal', '-motivation',
-        '-relevance', '-budget', '-plan',
-        '-subscribers', '-likes', '-dislikes', '-updatedAt'
+        '-comments',
+        '-goal',
+        '-motivation',
+        '-relevance',
+        '-budget',
+        '-plan',
+        '-subscribers',
+        '-likes',
+        '-dislikes',
+        '-updatedAt'
       ]
 
-      cursor = this.model.getDBInstance()
-                   .find(query, excludedFields.join(' '))
-                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-                   .sort(sortObject)
+      cursor = this.model
+        .getDBInstance()
+        .find(query, excludedFields.join(' '))
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+        .sort(sortObject)
     } else {
       // my suggestions on profile page
-      cursor = this.model.getDBInstance()
-                   .find(query, 'title activeness commentsNum createdAt dislikesNum displayId likesNum')
+      cursor = this.model
+        .getDBInstance()
+        .find(
+          query,
+          'title activeness commentsNum createdAt dislikesNum displayId likesNum'
+        )
     }
 
     if (param.results) {
@@ -284,7 +353,10 @@ export default class extends Base {
 
     const rs = await Promise.all([
       cursor,
-      this.model.getDBInstance().find(query).count()
+      this.model
+        .getDBInstance()
+        .find(query)
+        .count()
     ])
 
     return {
@@ -294,15 +366,24 @@ export default class extends Base {
   }
 
   public async export2csv(param: any): Promise<Object> {
-    const query = _.omit(
-      param,
-      [
-        'results', 'page', 'sortBy', 'sortOrder',
-        'filter', 'profileListFor', 'search',
-        'tagsIncluded', 'referenceStatus'
-      ]
-    )
-    const { sortBy, sortOrder, tagsIncluded, referenceStatus, profileListFor } = param
+    const query = _.omit(param, [
+      'results',
+      'page',
+      'sortBy',
+      'sortOrder',
+      'filter',
+      'profileListFor',
+      'search',
+      'tagsIncluded',
+      'referenceStatus'
+    ])
+    const {
+      sortBy,
+      sortOrder,
+      tagsIncluded,
+      referenceStatus,
+      profileListFor
+    } = param
 
     if (!profileListFor) {
       query.$or = []
@@ -322,24 +403,21 @@ export default class extends Base {
         }
 
         if (filter === SEARCH_FILTERS.TITLE) {
-          query.$or = [
-            { title: { $regex: search, $options: 'i' } }
-          ]
+          query.$or = [{ title: { $regex: search, $options: 'i' } }]
         }
 
         if (filter === SEARCH_FILTERS.ABSTRACT) {
-          query.$or = [
-            { abstract: { $regex: search, $options: 'i' } }
-          ]
+          query.$or = [{ abstract: { $regex: search, $options: 'i' } }]
         }
 
         if (filter === SEARCH_FILTERS.EMAIL) {
           const db_user = this.getDBModel('User')
-          const users = await db_user.getDBInstance().find({
-            $or: [
-              { email: { $regex: search, $options: 'i' } }
-            ]
-          }).select('_id')
+          const users = await db_user
+            .getDBInstance()
+            .find({
+              $or: [{ email: { $regex: search, $options: 'i' } }]
+            })
+            .select('_id')
           const userIds = _.map(users, (el: { _id: string }) => el._id)
           query.$or = [{ createdBy: { $in: userIds } }]
         }
@@ -347,13 +425,16 @@ export default class extends Base {
         if (filter === SEARCH_FILTERS.NAME) {
           const db_user = this.getDBModel('User')
           const pattern = search.split(' ').join('|')
-          const users = await db_user.getDBInstance().find({
-            $or: [
-              { username: { $regex: search, $options: 'i' } },
-              { 'profile.firstName': { $regex: pattern, $options: 'i' } },
-              { 'profile.lastName': { $regex: pattern, $options: 'i' } }
-            ]
-          }).select('_id')
+          const users = await db_user
+            .getDBInstance()
+            .find({
+              $or: [
+                { username: { $regex: search, $options: 'i' } },
+                { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+                { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+              ]
+            })
+            .select('_id')
           const userIds = _.map(users, (el: { _id: string }) => el._id)
           query.$or = [{ createdBy: { $in: userIds } }]
         }
@@ -379,27 +460,46 @@ export default class extends Base {
       const sortObject = {}
       // hack to prioritize descUpdatedAt if it's createdAt
       if (sortBy === 'createdAt') {
-        sortObject['descUpdatedAt'] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
+        sortObject['descUpdatedAt'] = _.get(
+          constant.SORT_ORDER,
+          sortOrder,
+          constant.SORT_ORDER.DESC
+        )
       }
-      sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
+      sortObject[sortBy] = _.get(
+        constant.SORT_ORDER,
+        sortOrder,
+        constant.SORT_ORDER.DESC
+      )
 
       const excludedFields = [
-        '-comments', '-goal', '-motivation',
-        '-relevance', '-budget', '-plan',
-        '-subscribers', '-likes', '-dislikes', '-updatedAt'
+        '-comments',
+        '-goal',
+        '-motivation',
+        '-relevance',
+        '-budget',
+        '-plan',
+        '-subscribers',
+        '-likes',
+        '-dislikes',
+        '-updatedAt'
       ]
 
-      cursor = this.model.getDBInstance()
-                   .find(query/*, excludedFields.join(' ')*/)
-                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-                   .sort(sortObject)
+      cursor = this.model
+        .getDBInstance()
+        .find(query /*, excludedFields.join(' ')*/)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+        .sort(sortObject)
     } else {
       // my suggestions on profile page
-      cursor = this.model.getDBInstance()
-                   .find(query/*, 'title activeness commentsNum createdAt dislikesNum displayId likesNum'*/)
-                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+      cursor = this.model
+        .getDBInstance()
+        .find(
+          query /*, 'title activeness commentsNum createdAt dislikesNum displayId likesNum'*/
+        )
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     }
 
     /*if (param.results) {
@@ -413,7 +513,7 @@ export default class extends Base {
       query.status = param.status
     }
     // budget
-    if(param.budgetLow || param.budgetHigh){
+    if (param.budgetLow || param.budgetHigh) {
       query.budgetAmount = {}
       if (param.budgetLow && param.budgetLow.length) {
         query.budgetAmount['$gte'] = param.budgetLow
@@ -424,14 +524,19 @@ export default class extends Base {
     }
     // isProposed
     if (param.isProposed) {
-      query["reference.1"] = {
+      query['reference.1'] = {
         $exists: true
       }
     }
     // startDate <  endDate
-    if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+    if (
+      param.startDate &&
+      param.startDate.length &&
+      param.endDate &&
+      param.endDate.length
+    ) {
       let endDate = new Date(param.endDate)
-      endDate.setDate(endDate.getDate()+1)
+      endDate.setDate(endDate.getDate() + 1)
       query.createdAt = {
         $gte: new Date(param.startDate),
         $lte: endDate
@@ -439,28 +544,37 @@ export default class extends Base {
     }
 
     // author
-    if(param.author && param.author.length) {
+    if (param.author && param.author.length) {
       let search = param.author
       const db_user = this.getDBModel('User')
       const pattern = search.split(' ').join('|')
-      const users = await db_user.getDBInstance().find({
-        $or: [
-          { username: { $regex: search, $options: 'i' } },
-          { 'profile.firstName': { $regex: pattern, $options: 'i' } },
-          { 'profile.lastName': { $regex: pattern, $options: 'i' } }
-        ]
-      }).select('_id')
+      const users = await db_user
+        .getDBInstance()
+        .find({
+          $or: [
+            { username: { $regex: search, $options: 'i' } },
+            { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+            { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+          ]
+        })
+        .select('_id')
       const userIds = _.map(users, (el: { _id: string }) => el._id)
       query.createdBy = { $in: userIds }
     }
     // type
-    if(param.type && _.indexOf(_.values(constant.SUGGESTION_TYPE),param.type)){
+    if (
+      param.type &&
+      _.indexOf(_.values(constant.SUGGESTION_TYPE), param.type)
+    ) {
       query.type = param.type
     }
 
     const rs = await Promise.all([
       cursor,
-      this.model.getDBInstance().find(query).count()
+      this.model
+        .getDBInstance()
+        .find(query)
+        .count()
     ])
 
     return {
@@ -486,7 +600,8 @@ export default class extends Base {
       })
     }
 
-    let doc = await this.model.getDBInstance()
+    let doc = await this.model
+      .getDBInstance()
       .findOne(query)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
@@ -525,7 +640,9 @@ export default class extends Base {
   }
 
   public async editHistories(param: any): Promise<Document[]> {
-    return await this.getDBModel('Suggestion_Edit_History').find({suggestion: param.id})
+    return await this.getDBModel('Suggestion_Edit_History').find({
+      suggestion: param.id
+    })
   }
 
   // like or unlike
@@ -540,16 +657,22 @@ export default class extends Base {
 
     // already liked, will unlike, use ObjectId.equals to compare
     if (_.findIndex(likes, oid => userId.equals(oid)) !== -1) {
-      await this.model.findOneAndUpdate({ _id }, {
-        $pull: { likes: userId },
-        $inc: { likesNum: -1, activeness: -1 }
-      })
+      await this.model.findOneAndUpdate(
+        { _id },
+        {
+          $pull: { likes: userId },
+          $inc: { likesNum: -1, activeness: -1 }
+        }
+      )
     } else {
       // not like yet, will like it
-      await this.model.findOneAndUpdate({ _id }, {
-        $push: { likes: userId },
-        $inc: { likesNum: 1, activeness: 1 }
-      })
+      await this.model.findOneAndUpdate(
+        { _id },
+        {
+          $push: { likes: userId },
+          $inc: { likesNum: 1, activeness: 1 }
+        }
+      )
     }
 
     return this.model.findById(_id)
@@ -567,16 +690,22 @@ export default class extends Base {
 
     // already liked, will unlike, use ObjectId.equals to compare
     if (_.findIndex(dislikes, oid => userId.equals(oid)) !== -1) {
-      await this.model.findOneAndUpdate({ _id }, {
-        $pull: { dislikes: userId },
-        $inc: { dislikesNum: -1, activeness: -1 }
-      })
+      await this.model.findOneAndUpdate(
+        { _id },
+        {
+          $pull: { dislikes: userId },
+          $inc: { dislikesNum: -1, activeness: -1 }
+        }
+      )
     } else {
       // not like yet, will like it
-      await this.model.findOneAndUpdate({ _id }, {
-        $push: { dislikes: userId },
-        $inc: { dislikesNum: 1, activeness: 1 }
-      })
+      await this.model.findOneAndUpdate(
+        { _id },
+        {
+          $push: { dislikes: userId },
+          $inc: { dislikesNum: 1, activeness: 1 }
+        }
+      )
     }
 
     return this.model.findById(_id)
@@ -596,11 +725,16 @@ export default class extends Base {
    */
   private async notifySubscribers(suggestionId: String) {
     try {
-      const db_user = this.getDBModel('User');
+      const db_user = this.getDBModel('User')
       const currentUserId = _.get(this.currentUser, '_id')
       const councilMember = await db_user.findById(currentUserId)
-      const suggestion = await this.model.getDBInstance().findById(suggestionId)
-        .populate('subscribers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      const suggestion = await this.model
+        .getDBInstance()
+        .findById(suggestionId)
+        .populate(
+          'subscribers.user',
+          constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
+        )
         .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
       // get users: creator and subscribers
@@ -610,42 +744,55 @@ export default class extends Base {
 
       const subject = 'The suggestion is under consideration of Council.'
       const body = `
-      <p>Council member ${userUtil.formatUsername(councilMember)} has marked this suggestion ${suggestion.title} as "Under Consideration"</p>
+      <p>Council member ${userUtil.formatUsername(
+        councilMember
+      )} has marked this suggestion ${
+        suggestion.title
+      } as "Under Consideration"</p>
       <br />
-      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/suggestion/${suggestion._id}">${process.env.SERVER_URL}/suggestion/${suggestion._id}</a></p>
+      <p>Click this link to view more details: <a href="${
+        process.env.SERVER_URL
+      }/suggestion/${suggestion._id}">${process.env.SERVER_URL}/suggestion/${
+        suggestion._id
+      }</a></p>
       <br /> <br />
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
 
-      const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
-        return {
-          _id: user._id,
-          username: userUtil.formatUsername(user)
-        }
-      }))
+      const recVariables = _.zipObject(
+        toMails,
+        _.map(toUsers, user => {
+          return {
+            _id: user._id,
+            username: userUtil.formatUsername(user)
+          }
+        })
+      )
 
       const mailObj = {
         to: toMails,
         // toName: ownerToName,
         subject,
         body,
-        recVariables,
+        recVariables
       }
 
       mail.send(mailObj)
-    } catch(error) {
+    } catch (error) {
       logger.error(error)
     }
   }
 
   private async notifyOwner(suggestionId: String, desc: String) {
     try {
-      const db_user = this.getDBModel('User');
+      const db_user = this.getDBModel('User')
       const currentUserId = _.get(this.currentUser, '_id')
       const councilMember = await db_user.findById(currentUserId)
-      const suggestion = await this.model.getDBInstance().findById(suggestionId)
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      const suggestion = await this.model
+        .getDBInstance()
+        .findById(suggestionId)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
       // get users: creator and subscribers
       const toUsers = [suggestion.createdBy]
@@ -653,29 +800,40 @@ export default class extends Base {
 
       const subject = 'Your suggestion needs more info for Council.'
       const body = `
-        <p>Council member ${userUtil.formatUsername(councilMember)} has marked your suggestion ${suggestion.title} as "Need more information".</p>
+        <p>Council member ${userUtil.formatUsername(
+          councilMember
+        )} has marked your suggestion ${
+        suggestion.title
+      } as "Need more information".</p>
         <br />
         <p>"${desc}"</p>
         <br />
-        <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/suggestion/${suggestion._id}">${process.env.SERVER_URL}/suggestion/${suggestion._id}</a></p>
+        <p>Click this link to view more details: <a href="${
+          process.env.SERVER_URL
+        }/suggestion/${suggestion._id}">${process.env.SERVER_URL}/suggestion/${
+        suggestion._id
+      }</a></p>
         <br /> <br />
         <p>Thanks</p>
         <p>Cyber Republic</p>
       `
 
-      const recVariables = _.zipObject(toMails, _.map(toUsers, (user) => {
-        return {
-          _id: user._id,
-          username: userUtil.formatUsername(user)
-        }
-      }))
+      const recVariables = _.zipObject(
+        toMails,
+        _.map(toUsers, user => {
+          return {
+            _id: user._id,
+            username: userUtil.formatUsername(user)
+          }
+        })
+      )
 
       const mailObj = {
         to: toMails,
         // toName: ownerToName,
         subject,
         body,
-        recVariables,
+        recVariables
       }
 
       mail.send(mailObj)
@@ -693,11 +851,14 @@ export default class extends Base {
         throw 'Current document does not exist'
       }
 
-      if (_.findIndex(currDoc.tags, (tagObj: any) => tagObj.type === type) !== -1) return currDoc
+      if (
+        _.findIndex(currDoc.tags, (tagObj: any) => tagObj.type === type) !== -1
+      )
+        return currDoc
 
       const tag: any = {
         type,
-        createdBy: _.get(this.currentUser, '_id'),
+        createdBy: _.get(this.currentUser, '_id')
       }
       if (desc) tag.desc = desc
       const updateObject = {
@@ -711,7 +872,7 @@ export default class extends Base {
         this.notifyOwner(_id, desc)
       }
       return this.model.findById(_id)
-    } catch(error) {
+    } catch (error) {
       logger.error(error)
     }
   }
@@ -737,9 +898,7 @@ export default class extends Base {
     const body = `
       <p>Council member ${council} requested secretary to do due diligence on suggestion #${sugg.displayId}</p>
       <br />
-      <p>Click the link to view the suggestion detail: <a href="${
-      process.env.SERVER_URL
-      }/suggestion/${sugg._id}">${process.env.SERVER_URL}/suggestion/${sugg._id}</a></p>
+      <p>Click the link to view the suggestion detail: <a href="${process.env.SERVER_URL}/suggestion/${sugg._id}">${process.env.SERVER_URL}/suggestion/${sugg._id}</a></p>
       <br />
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
@@ -760,9 +919,7 @@ export default class extends Base {
     const body = `
       <p>Council member ${council} requested secretary to provide advisory on suggestion #${sugg.displayId}</p>
       <br />
-      <p>Click the link to view the suggestion detail: <a href="${
-      process.env.SERVER_URL
-      }/suggestion/${sugg._id}">${process.env.SERVER_URL}/suggestion/${sugg._id}</a></p>
+      <p>Click the link to view the suggestion detail: <a href="${process.env.SERVER_URL}/suggestion/${sugg._id}">${process.env.SERVER_URL}/suggestion/${sugg._id}</a></p>
       <br />
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
@@ -807,7 +964,10 @@ export default class extends Base {
    */
   public async archive(param: any): Promise<object> {
     const { id: _id, isArchived } = param
-    const suggestion = await this.model.getDBInstance().findById(_id).populate('createdBy')
+    const suggestion = await this.model
+      .getDBInstance()
+      .findById(_id)
+      .populate('createdBy')
     if (!suggestion) {
       return
     }
@@ -819,11 +979,11 @@ export default class extends Base {
     let field = {}
     if (isArchived && isArchived === true) {
       field = {
-        status: constant.SUGGESTION_STATUS.ACTIVE,
+        status: constant.SUGGESTION_STATUS.ACTIVE
       }
     } else {
       field = {
-        status: constant.SUGGESTION_STATUS.ARCHIVED,
+        status: constant.SUGGESTION_STATUS.ARCHIVED
       }
     }
     try {
