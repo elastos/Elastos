@@ -379,7 +379,7 @@ class DIDStoreTests: XCTestCase {
             var doc = try store.newDid(storePass)
             let key = try TestData.generateKeypair()
             let id: DIDURL = try DIDURL(doc.subject!, "key-2")
-            _ = try doc.addAuthenticationKey(id, key.getPrivateKeyBase58())
+            _ = try doc.addAuthenticationKey(id, key.getPublicKeyBase58())
             
             try store.storePrivateKey(doc.subject!, id, key.getPrivateKeyData(), storePass)
             doc = try doc.seal(store, storePass)
@@ -406,7 +406,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try target.subject!.resolve()!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try target.description(true),try resolved.description(true))
+            XCTAssertEqual(try target.toJson(nil, true, true),try resolved.toJson(nil, true, true))
             
             _ = try store.deactivateDid(target.subject!, doc.subject!, storePass)
             
