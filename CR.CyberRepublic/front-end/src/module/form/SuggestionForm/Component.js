@@ -80,9 +80,10 @@ class C extends BaseComponent {
         return
       }
       const budget = form.getFieldValue('budget')
-      if (budget && _.isArray(budget.budget)) {
-        values.budget = budget.budget
-        values.budgetAmount = budget.budgetAmount
+      // exclude old suggestion data
+      if (budget && typeof budget !== 'string') {
+        values.budget = budget.paymentItems
+        values.budgetAmount = Number(budget.budgetAmount)
         values.elaAddress = budget.elaAddress
       }
       await onSubmit(values)
@@ -95,9 +96,9 @@ class C extends BaseComponent {
     if (this.props.onSaveDraft) {
       const values = form.getFieldsValue()
       const budget = form.getFieldValue('budget')
-      if (budget && _.isArray(budget.budget)) {
-        values.budget = budget.budget
-        values.budgetAmount = budget.budgetAmount
+      if (budget) {
+        values.budget = budget.paymentItems
+        values.budgetAmount = Number(budget.budgetAmount)
         values.elaAddress = budget.elaAddress
       }
       this.props.onSaveDraft(values)
@@ -179,7 +180,7 @@ class C extends BaseComponent {
     if (value && !value.elaAddress) {
       return cb(true)
     }
-    if (value && _.isEmpty(value.budget)) {
+    if (value && _.isEmpty(value.paymentItems)) {
       return cb(true)
     }
     return cb()
@@ -251,22 +252,20 @@ class C extends BaseComponent {
         message: I18N.get('suggestion.form.error.budget'),
         validator: this.validateBudget
       })
-      const initialBudget = initialValues.budget
-        ? {
-            budgetAmount: initialValues.budgetAmount,
-            elaAddress: initialValues.elaAddress,
-            budget: initialValues.budget
-          }
-        : {}
+
+      const initialBudget = initialValues.budget && {
+        budgetAmount: initialValues.budgetAmount,
+        elaAddress: initialValues.elaAddress,
+        paymentItems: initialValues.budget
+      }
+
       return getFieldDecorator('budget', {
         rules,
         initialValue: initialBudget
       })(
         <PaymentSchedule
-          initialValue={initialBudget.budget}
+          initialValue={initialBudget}
           callback={this.onTextareaChange}
-          budgetAmount={initialBudget.budgetAmount}
-          elaAddress={initialBudget.elaAddress}
         />
       )
     }

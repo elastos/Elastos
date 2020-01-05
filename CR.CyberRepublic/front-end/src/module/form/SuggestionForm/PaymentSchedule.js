@@ -9,11 +9,12 @@ import PaymentList from './PaymentList'
 class PaymentSchedule extends Component {
   constructor(props) {
     super(props)
+    const value = props.initialValue
     this.state = {
       visible: false,
-      total: props.budgetAmount || '',
-      address: props.elaAddress || '',
-      paymentItems: props.initialValue || [],
+      total: (value && value.budgetAmount) || '',
+      address: (value && value.elaAddress) || '',
+      paymentItems: (value && value.paymentItems) || [],
       errors: {}
     }
   }
@@ -32,7 +33,7 @@ class PaymentSchedule extends Component {
     this.changeValue({
       budgetAmount: Number(total),
       elaAddress: address,
-      budget: paymentItems
+      paymentItems
     })
   }
 
@@ -177,7 +178,7 @@ class PaymentSchedule extends Component {
 PaymentSchedule.propTypes = {
   onChange: PropTypes.func,
   callback: PropTypes.func,
-  initialValue: PropTypes.array
+  initialValue: PropTypes.object
 }
 
 export default PaymentSchedule
