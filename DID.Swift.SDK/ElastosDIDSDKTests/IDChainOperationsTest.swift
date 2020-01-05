@@ -52,11 +52,11 @@ class IDChainOperationsTest: XCTestCase {
     
     func testUpdateAndResolve() {
         do {
-        let testData = TestData()
+            let testData = TestData()
             var store = try testData.setupStore(IDChainOperationsTest.DUMMY_TEST)
             try testData.initIdentity()
             var adapter: SPVAdaptor? = nil
-//             need synchronize?
+            //             need synchronize?
             adapter = (DIDBackend.shareInstance().adapter as? SPVAdaptor)
             if adapter == nil {
                 print("Waiting for wallet available to create DID")
@@ -112,131 +112,99 @@ class IDChainOperationsTest: XCTestCase {
             var lastTxid = resolved!.getTransactionId()
             print("Last transaction id: \(lastTxid)")
             // Update
-//            DIDDocument.Builder db = resolved.edit();
-//            let key = try TestData.generateKeypair()
-//            try resolved?.addAuthenticationKey("key1", try key.getPublicKeyBase58())
-//            doc = resolved!.seal(, storePass)
-//            XCTAssertEqual(2, doc.getPublicKeyCount())
-//            XCTAssertEqual(2, doc.getAuthenticationKeyCount())
-//            try store.storeDid(doc)
+            //            DIDDocument.Builder db = resolved.edit();
+            var key = try TestData.generateKeypair()
+            try resolved?.addAuthenticationKey("key1", try key.getPublicKeyBase58())
+            doc = try resolved!.seal(store, storePass)
+            XCTAssertEqual(2, doc.getPublicKeyCount())
+            XCTAssertEqual(2, doc.getAuthenticationKeyCount())
+            try store.storeDid(doc)
+            
+            txid = try store.publishDid(did!, storePass)
+            XCTAssertNotNil(txid)
+            print("Updated DID: \(did)")
+            if adapter != nil {
+                print("Waiting for update transaction confirm")
+                while true {
+                    let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
+                    wait(for: [lock], timeout: 30)
+                    if try adapter!.isAvailable() {
+                        print(" OK")
+                    }
+                    else {
+                        print(".")
+                    }
+                }
+                print("Try to resolve updated DID.")
+                while true {
+                    let rdoc = try did!.resolve(true)
+                    if rdoc != nil && rdoc!.getTransactionId() != lastTxid {
+                        print(" OK")
+                    }
+                    else {
+                        print(".")
+                    }
+                    let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
+                    wait(for: [lock], timeout: 30)
+                }
+            }
+            resolved = try did!.resolve(true)
+            XCTAssertEqual(did, resolved?.subject)
+            XCTAssertTrue(try resolved!.isValid())
+            XCTAssertEqual(try doc.description(true), try resolved?.description(true))
+            try store.storeDid(resolved!)
+            lastTxid = resolved!.getTransactionId()
+            print("Last transaction id: \(lastTxid)")
+            // Update
+            //            db = resolved.edit()
+            key = try TestData.generateKeypair()
+            try resolved!.addAuthenticationKey("key2", key.getPublicKeyBase58())
+            doc = try resolved!.seal(store, storePass)
+            XCTAssertEqual(3, doc.getPublicKeyCount())
+            XCTAssertEqual(3, doc.getAuthenticationKeyCount())
+            try store.storeDid(doc);
+            txid = try store.publishDid(did!, storePass)
+            XCTAssertNotNil(txid)
+            print("Updated DID: \(did)")
+            
+            if adapter != nil {
+                print("Waiting for update transaction confirm")
+                while true {
+                    let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
+                    wait(for: [lock], timeout: 30)
+                    if try adapter!.isAvailable() {
+                        print(" OK")
+                    }
+                    else {
+                        print(".")
+                    }
+                }
+                print("Try to resolve updated DID.")
+                while true {
+                    let rdoc = try did!.resolve(true)
+                    if rdoc != nil && rdoc?.getTransactionId() != lastTxid {
+                        print(" OK")
+                    }
+                    else {
+                        print(".")
+                    }
+                    let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
+                    wait(for: [lock], timeout: 30)
+                }
+            }
+            resolved = try did!.resolve(true)
+            XCTAssertEqual(did, resolved?.subject)
+            XCTAssertTrue(try resolved!.isValid())
+            XCTAssertEqual(try doc.description(true), try resolved?.description(true))
+            
+            lastTxid = resolved!.getTransactionId()
+            print("Last transaction id: \(lastTxid)")
         }
         catch {
             
         }
     }
-    /*
-     public void testUpdateAndResolve() throws DIDException {
 
-
-         txid = store.publishDid(did, TestConfig.storePass);
-         assertNotNull(txid);
-         System.out.println("Updated DID: " + did);
-
-         if (adapter != null) {
-             System.out.print("Waiting for update transaction confirm");
-             while (true) {
-                 try {
-                     Thread.sleep(30000);
-                 } catch (InterruptedException ignore) {
-                 }
-
-                 if (adapter.isAvailable()) {
-                     System.out.println(" OK");
-                     break;
-                 } else {
-                     System.out.print(".");
-                 }
-             }
-
-             System.out.print("Try to resolve updated DID.");
-             while (true) {
-                 try {
-                     DIDDocument rdoc = did.resolve(true);
-                     if (rdoc != null && rdoc.getTransactionId() != lastTxid) {
-                         System.out.println(" OK");
-                         break;
-                     } else {
-                         System.out.print(".");
-                     }
-                 } catch (Exception ignore) {
-                     System.out.print("x");
-                 }
-
-                 try {
-                     Thread.sleep(30000);
-                 } catch (InterruptedException ignore) {
-                 }
-             }
-         }
-
-         resolved = did.resolve(true);
-         assertEquals(did, resolved.getSubject());
-         assertTrue(resolved.isValid());
-         assertEquals(doc.toString(true), resolved.toString(true));
-         store.storeDid(resolved);
-
-         lastTxid = resolved.getTransactionId();
-         System.out.println("Last transaction id: " + lastTxid);
-
-         // Update
-         db = resolved.edit();
-         key = TestData.generateKeypair();
-         db.addAuthenticationKey("key2", key.getPublicKeyBase58());
-         doc = db.seal(TestConfig.storePass);
-         assertEquals(3, doc.getPublicKeyCount());
-         assertEquals(3, doc.getAuthenticationKeyCount());
-         store.storeDid(doc);
-
-         txid = store.publishDid(did, TestConfig.storePass);
-         assertNotNull(txid);
-         System.out.println("Updated DID: " + did);
-
-         if (adapter != null) {
-             System.out.print("Waiting for update transaction confirm");
-             while (true) {
-                 try {
-                     Thread.sleep(30000);
-                 } catch (InterruptedException ignore) {
-                 }
-
-                 if (adapter.isAvailable()) {
-                     System.out.println(" OK");
-                     break;
-                 } else {
-                     System.out.print(".");
-                 }
-             }
-
-             System.out.print("Try to resolve updated DID.");
-             while (true) {
-                 try {
-                     DIDDocument rdoc = did.resolve(true);
-                     if (rdoc != null && rdoc.getTransactionId() != lastTxid) {
-                         System.out.println(" OK");
-                         break;
-                     } else {
-                         System.out.print(".");
-                     }
-                 } catch (Exception ignore) {
-                     System.out.print("x");
-                 }
-
-                 try {
-                     Thread.sleep(30000);
-                 } catch (InterruptedException ignore) {
-                 }
-             }
-         }
-
-         resolved = did.resolve(true);
-         assertEquals(did, resolved.getSubject());
-         assertTrue(resolved.isValid());
-         assertEquals(doc.toString(true), resolved.toString(true));
-
-         lastTxid = resolved.getTransactionId();
-         System.out.println("Last transaction id: " + lastTxid);
-     }
-     */
     public func testUpdateAndResolveWithCredentials() throws {
         do {
             let testData: TestData = TestData()
