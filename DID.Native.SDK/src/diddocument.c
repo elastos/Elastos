@@ -730,7 +730,6 @@ DIDDocument *DIDDocument_FromJson(const char *json)
         goto errorExit;
 
     cJSON_Delete(root);
-
     return doc;
 
 errorExit:
@@ -1135,13 +1134,13 @@ DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder, const char *st
     doc = builder->document;
     key = DIDDocument_GetDefaultPublicKey(doc);
     if (!key) {
-        DIDDocumentBuilder_Destroy(builder);
+       //DIDDocumentBuilder_Destroy(builder);
         return NULL;
     }
 
     data = DIDDocument_ToJson(doc, 0, 1);
     if (!data) {
-        DIDDocumentBuilder_Destroy(builder);
+        //DIDDocumentBuilder_Destroy(builder);
         return NULL;
     }
 
@@ -1149,7 +1148,7 @@ DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder, const char *st
             (unsigned char*)data, strlen(data));
     free((char*)data);
     if (rc) {
-        DIDDocumentBuilder_Destroy(builder);
+        //sDIDDocumentBuilder_Destroy(builder);
         return NULL;
     }
 

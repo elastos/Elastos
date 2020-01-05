@@ -68,10 +68,10 @@ int CredentialMeta_FromJson(CredentialMeta *meta, const char *json)
 {
     cJSON *root, *item;
 
-    if (!meta || !json);
+    if (!meta || !json)
         return -1;
 
-    memset(meta, 0, sizeof(meta));
+    memset(meta, 0, sizeof(CredentialMeta));
 
     root = cJSON_Parse(json);
     if (!root)

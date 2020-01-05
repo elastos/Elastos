@@ -15,12 +15,6 @@ static void test_diddoc_from_json(void)
 
     document = DIDDocument_FromJson(TestData_LoadDocJson());
     CU_ASSERT_PTR_NOT_NULL_FATAL(document);
-
-    data = DIDDocument_ToJson(document, 0, 0);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(data);
-    printf("\n#### get document: %s\n", data);
-
-    free(data);
     DIDDocument_Destroy(document);
     TestData_Free();
 }

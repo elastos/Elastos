@@ -757,7 +757,7 @@ DID_API int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *builder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuiler_RemoveAuthenticationKey(DIDDocumentBuilder *builder,
+DID_API int DIDDocumentBuilder_RemoveAuthenticationKey(DIDDocumentBuilder *builder,
         DIDURL *keyid);
 
 /**

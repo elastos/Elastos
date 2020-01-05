@@ -26,9 +26,11 @@
 #include "BRCrypto.h"
 #include <string.h>
 #include <assert.h>
+#include <sys/types.h>
 #include <openssl/ec.h>
 #include <openssl/obj_mac.h>
 #include <openssl/ecdsa.h>
+#include <openssl/bn.h>
 
 #define BIP32_SEED_KEY "Bitcoin seed"
 #define BIP32_XPRV     "\x04\x88\xAD\xE4"
@@ -89,38 +91,42 @@ void getPubKeyFromPrivKey(void *brecPoint, const UInt256 *k)
     }
 }
 
-size_t
-ECDSA65Sign_sha256(const void *privKey, size_t privKeyLen, const UInt256 *md, void *signedData, size_t signedDataSize)
+ssize_t
+ECDSA65Sign_sha256(const void *privKey, size_t privKeyLen, const UInt256 *md,
+        void *signedData, size_t signedDataSize)
 {
-    size_t out = 0;
-    uint8_t *psignedData = signedData;
-    if (0 == privKeyLen) {
-        return out;
-    }
+    ssize_t len;
+    uint8_t *pSignedData = (uint8_t *)signedData;
+
+    if (!privKey || 32 != privKeyLen || !signedData || 64 > signedDataSize)
+        return -1;
+
     EC_KEY *key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
     if (key) {
-        BIGNUM *privkeyIn = BN_bin2bn((const unsigned char *) privKey, (int) privKeyLen,
-                                      NULL);
+        BIGNUM *privkeyIn = BN_bin2bn((const unsigned char *)privKey,
+                (int)privKeyLen, NULL);
         if (privkeyIn) {
             if (1 == EC_KEY_set_private_key(key, privkeyIn)) {
                 ECDSA_SIG *sig = ECDSA_do_sign((unsigned char *) md, sizeof(*md), key);
                 if (NULL != sig) {
+                    unsigned char bin[32];
+
                     const BIGNUM *r = NULL;
                     const BIGNUM *s = NULL;
                     ECDSA_SIG_get0(sig, &r, &s);
-                    int nBitsR = BN_num_bits(r);
-                    int nBitsS = BN_num_bits(s);
-                    if (nBitsR <= 256 && nBitsS <= 256) {
-                        psignedData[0] = 64;
-                        uint8_t arrBIN[256] = {0};
-                        size_t szLen = 0;
-                        szLen = BN_bn2bin(r, arrBIN);
-                        memcpy(psignedData + 1 + (32 - szLen), arrBIN, szLen);
-                        memset(arrBIN, 0, sizeof(arrBIN));
-                        szLen = BN_bn2bin(s, arrBIN);
-                        memcpy(psignedData + 1 + 32 + (32 - szLen), arrBIN, szLen);
-                        out = szLen; //fixme
-                    }
+
+                    assert(BN_num_bits(r) <= 256);
+                    assert(BN_num_bits(s) <= 256);
+
+                    memset(signedData, 0, signedDataSize);
+
+                    len = BN_bn2bin(r, bin);
+                    memcpy(pSignedData + 32 - len, bin, len);
+
+                    len = BN_bn2bin(s, bin);
+                    memcpy(pSignedData + 64 - len, bin, len);
+                    len = 64;
+
                     ECDSA_SIG_free(sig);
                 }
             }
@@ -128,35 +134,37 @@ ECDSA65Sign_sha256(const void *privKey, size_t privKeyLen, const UInt256 *md, vo
         }
         EC_KEY_free(key);
     }
-    return out;
+
+    return len;
 }
 
-int ECDSA65Verify_sha256(const void *pubKey, size_t pubKeyLen, const UInt256 *md, const void *signedData,
-                         size_t signedDataLen)
+int ECDSA65Verify_sha256(const void *pubKey, size_t pubKeyLen, const UInt256 *md,
+        const void *signedData, size_t signedDataLen)
 {
-    int out = 0;
-    if (0 == pubKeyLen || 65 != signedDataLen) {
-        return out;
-    }
-    //todo
-//  if (PublickeyIsValid(pubKey, nid)) {
+    const uint8_t *pSignedData = (const uint8_t *)signedData;
+    int rc = 0;
+
+    if (!pubKey || 33 != pubKeyLen || !signedData || 64 != signedDataLen)
+        return rc;
+
+    // TODO:
+    // if (PublickeyIsValid(pubKey, nid)) {
     BIGNUM *_pubkey = NULL;
-    _pubkey = BN_bin2bn((const unsigned char *) (uint8_t *) pubKey, (int) pubKeyLen, NULL);
+    _pubkey = BN_bin2bn((const unsigned char *)pubKey, (int)pubKeyLen, NULL);
     EC_KEY *key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
     if (NULL != _pubkey && NULL != key) {
         const EC_GROUP *curve = EC_KEY_get0_group(key);
         EC_POINT *ec_p = EC_POINT_bn2point(curve, _pubkey, NULL, NULL);
         if (NULL != ec_p) {
             if (1 == EC_KEY_set_public_key(key, ec_p)) {
-                const uint8_t *p64 = &signedData[1];
                 ECDSA_SIG *sig = ECDSA_SIG_new();
                 if (NULL != sig) {
-                    BIGNUM *r = BN_bin2bn(&p64[0], 32, NULL);
-                    BIGNUM *s = BN_bin2bn(&p64[32], 32, NULL);
+                    BIGNUM *r = BN_bin2bn(pSignedData, 32, NULL);
+                    BIGNUM *s = BN_bin2bn(pSignedData + 32, 32, NULL);
                     ECDSA_SIG_set0(sig, r, s);
-                    if (1 == ECDSA_do_verify((uint8_t *) md, sizeof(*md), sig, key)) {
-                        out = 1;
-                    }
+                    if (1 == ECDSA_do_verify((uint8_t *) md, sizeof(*md), sig, key))
+                        rc = 1;
+
                     ECDSA_SIG_free(sig);
                 }
             }
@@ -172,8 +180,8 @@ int ECDSA65Verify_sha256(const void *pubKey, size_t pubKeyLen, const UInt256 *md
             EC_KEY_free(key);
         }
     }
-//  }
-    return out;
+    // }
+    return rc;
 }
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value

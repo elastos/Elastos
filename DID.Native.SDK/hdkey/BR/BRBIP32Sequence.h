@@ -30,6 +30,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <inttypes.h>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -106,7 +107,7 @@ void BRBIP32BitIDKey(BRKey *key, const void *seed, size_t seedLen, uint32_t inde
 
 void getPubKeyFromPrivKey(void *brecPoint, const UInt256 *k);
 
-size_t ECDSA65Sign_sha256(const void *privKey, size_t privKeyLen, const UInt256 *md, void *signedData, size_t signedDataSize);
+ssize_t ECDSA65Sign_sha256(const void *privKey, size_t privKeyLen, const UInt256 *md, void *signedData, size_t signedDataSize);
 
 int ECDSA65Verify_sha256(const void *pubKey, size_t pubKeyLen, const UInt256 *md, const void *signedData,
                          size_t signedDataLen);

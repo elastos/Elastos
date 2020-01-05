@@ -94,7 +94,6 @@ static int didstore_did_op_test_suite_init(void)
 static int didstore_did_op_test_suite_cleanup(void)
 {
     DIDDocument_Destroy(document);
-    DIDStore_DeleteDID(store, did);
     TestData_Free();
     return 0;
 }

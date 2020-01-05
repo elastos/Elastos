@@ -113,10 +113,10 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
     int rc;
     const char *data;
     cJSON *root, *item, *field;
-    DIDDocument *document;
+    DIDDocument *document = NULL;
     char _idstring[MAX_DID];
     time_t timestamp;
-    DIDMeta meta;
+    bool deactivated;
 
     if (!backend || !did)
         return NULL;
@@ -150,7 +150,7 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
 
     if (field->valueint != 0)
         goto errorExit;
-    DIDMeta_SetDeactived(&meta, field->valueint);
+    deactivated = field->valueint;
 
     field = cJSON_GetObjectItem(item, "transaction");
     if (!field || !cJSON_IsArray(field))
@@ -160,33 +160,34 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
     if (!item || !cJSON_IsObject(item))
         goto errorExit;
 
+    field = cJSON_GetObjectItem(item, "operation");
+    if (!field || !cJSON_IsObject(field))
+        goto errorExit;
+
+    document = DIDRequest_FromJson(field);
+    if (!document)
+        goto errorExit;
+
     field = cJSON_GetObjectItem(item, "txid");
     if (!field || !cJSON_IsString(field))
         goto errorExit;
-
-    DIDMeta_SetTxid(&meta, field->valuestring);
+    DIDMeta_SetTxid(&document->meta, field->valuestring);
 
     field = cJSON_GetObjectItem(item, "timestamp");
     if (!field || !cJSON_IsString(field))
         goto errorExit;
     if (parse_time(&timestamp, field->valuestring) == -1)
         goto errorExit;
-    DIDMeta_SetTimestamp(&meta, timestamp);
+    DIDMeta_SetTimestamp(&document->meta, timestamp);
+    DIDMeta_SetDeactived(&document->meta, deactivated);
+    DIDMeta_SetAlias(&document->meta, "");
 
-    field = cJSON_GetObjectItem(item, "operation");
-    if (!field || !cJSON_IsObject(field))
-        goto errorExit;
-
-    document = DIDRequest_FromJson(field);
     cJSON_Delete(root);
-    if (document && DIDMeta_Merge(&document->meta, &meta) == -1) {
-        DIDDocument_Destroy(document);
-        goto errorExit;
-    }
-
     return document;
 
 errorExit:
+    if (document)
+        DIDDocument_Destroy(document);
     cJSON_Delete(root);
     return NULL;
 }

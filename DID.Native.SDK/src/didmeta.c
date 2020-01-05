@@ -94,7 +94,7 @@ int DIDMeta_FromJson(DIDMeta *meta, const char *json)
     if (!meta || !json)
         return -1;
 
-    memset(meta, 0, sizeof(meta));
+    memset(meta, 0, sizeof(DIDMeta));
 
     root = cJSON_Parse(json);
     if (!root)
@@ -150,7 +150,7 @@ void DIDMeta_Destroy(DIDMeta *meta)
 
 int DIDMeta_SetAlias(DIDMeta *meta, const char *alias)
 {
-    if (!meta || (alias && strlen(alias) >= MAX_ALIAS))
+    if (!meta || (alias && strlen(alias) >= sizeof(meta->alias)))
         return -1;
 
     if (alias)
@@ -181,7 +181,7 @@ int DIDMeta_SetTimestamp(DIDMeta *meta, time_t time)
 
 int DIDMeta_SetTxid(DIDMeta *meta, const char *txid)
 {
-    if (!meta || (txid && strlen(txid) >= MAX_TXID))
+    if (!meta || (txid && strlen(txid) >= sizeof(meta->txid)))
         return -1;
 
     if (txid)

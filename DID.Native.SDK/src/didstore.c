@@ -884,7 +884,10 @@ static DIDDocument *create_document(DID *did, const char *key,
 
     DIDDocument_SetExpires(builder->document, 0);
     document = DIDDocumentBuilder_Seal(builder, storepass);
-    DIDDocumentBuilder_Destroy(builder);
+    if (!document) {
+        DIDDocumentBuilder_Destroy(builder);
+        return NULL;
+    }
 
     if (DIDMeta_Init(&document->meta, alias, NULL, false, 0) == -1) {
         DIDDocument_Destroy(document);
@@ -1556,7 +1559,7 @@ DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force)
         return NULL;
 
     document = DIDBackend_Resolve(&store->backend, did);
-    if (document && DIDStore_StoreDID(store, document, document->meta.alias) == -1) {
+    if (document && DIDStore_StoreDID(store, document, "") == -1) {
         DIDDocument_Destroy(document);
         return NULL;
     }
@@ -1570,10 +1573,15 @@ DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force)
 const char *DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
         DIDURL *signKey, const char *storepass)
 {
+    char alias[MAX_ALIAS];
+
     if (!store || !document || !storepass || !*storepass)
         return NULL;
 
-    if (DIDStore_StoreDID(store, document, document->meta.alias) == -1)
+    if (DIDDocument_GetAlias(document, alias, sizeof(alias)) == -1)
+        return NULL;
+
+    if (DIDStore_StoreDID(store, document, alias) == -1)
         return NULL;
 
     if (!signKey)
@@ -1585,14 +1593,19 @@ const char *DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
 const char *DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
         DIDURL *signKey, const char *storepass)
 {
+    char alias[MAX_ALIAS];
+
     if (!store || !document || !signKey || !storepass || !*storepass)
+        return NULL;
+
+    if (DIDDocument_GetAlias(document, alias, sizeof(alias)) == -1)
+        return NULL;
+
+    if (DIDStore_StoreDID(store, document, alias) == -1)
         return NULL;
 
     if (!signKey)
         signKey = DIDDocument_GetDefaultPublicKey(document);
-
-    if (DIDStore_StoreDID(store, document, document->meta.alias) == -1)
-        return NULL;
 
     return DIDBackend_Update(&store->backend, document, signKey, storepass);
 }

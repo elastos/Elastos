@@ -23,6 +23,7 @@ static void test_idchain_publishdid(void)
     DIDURL *signkey;
     DIDDocument *doc = NULL, *updatedoc = NULL;
     char createTxid[MAX_TXID], updateTxid[MAX_TXID];
+    const char *data;
     DID *did;
     int i = 0;
 
@@ -46,9 +47,11 @@ static void test_idchain_publishdid(void)
         }
         else {
             DIDDocument_GetTxid(doc, createTxid, sizeof(createTxid));
+            data = DIDDocument_ToJson(doc, 0, 0);
             printf("\n#### document resolved: time = %d.\n", ++i);
             printf("#### did: %s, transaction id: %s\n", did->idstring, createTxid);
-            printf("#### document: %s\n", DIDDocument_ToJson(doc, 0, 0));
+            printf("#### document: %s\n", data);
+            free((char*)data);
         }
 
     }
@@ -73,13 +76,18 @@ static void test_idchain_publishdid(void)
         }
         else {
             DIDDocument_GetTxid(updatedoc, updateTxid, sizeof(updateTxid));
+            data = DIDDocument_ToJson(updatedoc, 0, 0);
             printf(".");
             continue;
         }
     }
     printf("\n#### did: %s, transaction id: %s\n", did->idstring, updateTxid);
-    printf("#### document: %s\n", DIDDocument_ToJson(updatedoc, 0, 0));
+    printf("#### document: %s\n", data);
     printf("#### end resolve\n");
+    free((char*)data);
+
+    DIDDocument_Destroy(doc);
+    DIDDocument_Destroy(updatedoc);
 }
 
 static int idchain_operation_test_suite_init(void)

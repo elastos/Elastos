@@ -359,22 +359,14 @@ ssize_t sha256(uint8_t *digest, int count, ...)
 ssize_t ecdsa_signv(uint8_t *sig, uint8_t *privatekey, int count, va_list inputs)
 {
     uint8_t digest[SHA256_BYTES];
-    uint8_t signature[SIGNATURE_BYTES+1];
-    int rc;
 
     if (!sig || !privatekey || count <= 0)
         return -1;
 
     sha256v(digest, count, inputs);
 
-    // CHECKME: ECDSA65Sign_sha256 return wrong length - 32
-    rc = ECDSA65Sign_sha256(privatekey, PRIVATEKEY_BYTES,
-            (const UInt256 *)digest, signature, sizeof(signature));
-    if (rc != 32)
-        return -1;
-
-    memcpy(sig, signature + 1, SIGNATURE_BYTES);
-    return SIGNATURE_BYTES;
+    return ECDSA65Sign_sha256(privatekey, PRIVATEKEY_BYTES,
+            (const UInt256 *)digest, sig, SIGNATURE_BYTES);
 }
 
 ssize_t ecdsa_sign(uint8_t *sig, uint8_t *privatekey, int count, ...)
@@ -425,7 +417,6 @@ ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...)
 int ecdsa_verifyv(uint8_t *sig, uint8_t *publickey, int count, va_list inputs)
 {
     uint8_t digest[SHA256_BYTES];
-    uint8_t signature[SIGNATURE_BYTES+1];
     int rc;
 
     if (!sig || !publickey || count <= 0)
@@ -433,11 +424,8 @@ int ecdsa_verifyv(uint8_t *sig, uint8_t *publickey, int count, va_list inputs)
 
     sha256v(digest, count, inputs);
 
-    signature[0] = SIGNATURE_BYTES;
-    memcpy(signature + 1, sig, SIGNATURE_BYTES);
-
     rc = ECDSA65Verify_sha256(publickey, PUBLICKEY_BYTES,
-            (const UInt256 *)digest, signature, sizeof(signature));
+            (const UInt256 *)digest, sig, SIGNATURE_BYTES);
     return rc == 0 ? -1 : 0;
 }
 
