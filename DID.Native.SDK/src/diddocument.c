@@ -94,8 +94,8 @@ static int didurl_func(const void *a, const void *b)
     char _stringa[MAX_DID], _stringb[MAX_DID];
     char *stringa, *stringb;
 
-    PublicKey *keya = (PublicKey*)a;
-    PublicKey *keyb = (PublicKey*)b;
+    PublicKey *keya = *(PublicKey**)a;
+    PublicKey *keyb = *(PublicKey**)b;
 
     stringa = DIDURL_ToString(&keya->id, _stringa, MAX_DID, true);
     stringb = DIDURL_ToString(&keyb->id, _stringb, MAX_DID, true);

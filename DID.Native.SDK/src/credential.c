@@ -603,8 +603,8 @@ static int didurl_func(const void *a, const void *b)
     char _stringa[MAX_DID], _stringb[MAX_DID];
     char *stringa, *stringb;
 
-    Credential *creda = (Credential*)a;
-    Credential *credb = (Credential*)b;
+    Credential *creda = *(Credential**)a;
+    Credential *credb = *(Credential**)b;
 
     stringa = DIDURL_ToString(&creda->id, _stringa, MAX_DID, true);
     stringb = DIDURL_ToString(&credb->id, _stringb, MAX_DID, true);
