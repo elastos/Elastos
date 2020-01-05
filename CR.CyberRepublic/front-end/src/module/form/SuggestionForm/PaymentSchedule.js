@@ -123,7 +123,7 @@ class PaymentSchedule extends Component {
     return (
       <Wrapper>
         <Section>
-          <Label>{I18N.get('suggestion.budget.total')}</Label>
+          <Label>{`${I18N.get('suggestion.budget.total')} (ELA)`}</Label>
           <StyledInput
             error={errors.total ? true : false}
             value={total}

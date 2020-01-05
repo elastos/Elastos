@@ -106,7 +106,7 @@ export const StyledButton = styled(Button)`
 `
 
 export const CreateProposalText = styled.div`
-  background: #F2F6FB;
+  background: #f2f6fb;
   text-align: center;
   padding-top: 18px;
   padding-bottom: 18px;
@@ -169,6 +169,11 @@ export const StyledAnchor = styled(Anchor)`
   }
 `
 
-export const PlanSubtitle = styled.div`
+export const Subtitle = styled.div`
   margin: 24px 0;
+  color: #000000;
+  font-weight: 500;
+`
+export const Paragraph = styled.div`
+  color: rgba(0, 0, 0, 0.75);
 `

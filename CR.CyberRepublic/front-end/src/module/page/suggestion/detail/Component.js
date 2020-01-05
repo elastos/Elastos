@@ -56,8 +56,9 @@ import {
   ItemTitle,
   ItemText,
   StyledAnchor,
-  PlanSubtitle,
-  CreateProposalText
+  Subtitle,
+  CreateProposalText,
+  Paragraph
 } from './style'
 
 import './style.scss'
@@ -284,16 +285,12 @@ export default class extends StandardPage {
                 <DescLabel id="plan">
                   {I18N.get(`suggestion.fields.plan`)}
                 </DescLabel>
-                <PlanSubtitle>
-                  {I18N.get('suggestion.plan.milestones')}
-                </PlanSubtitle>
+                <Subtitle>{I18N.get('suggestion.plan.milestones')}</Subtitle>
                 <Milestones
                   initialValue={detail.plan.milestone}
                   editable={false}
                 />
-                <PlanSubtitle>
-                  {I18N.get('suggestion.plan.teamInfo')}
-                </PlanSubtitle>
+                <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
                 <TeamInfoList list={detail.plan.teamInfo} editable={false} />
               </div>
             )
@@ -309,6 +306,13 @@ export default class extends StandardPage {
                 <DescLabel id="budget">
                   {I18N.get('suggestion.fields.budget')}
                 </DescLabel>
+                <Subtitle>
+                  {`${I18N.get('suggestion.budget.total')} (ELA)`}
+                </Subtitle>
+                <Paragraph>{detail.budgetAmount}</Paragraph>
+                <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
+                <Paragraph>{detail.elaAddress}</Paragraph>
+                <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
                 <PaymentList list={detail.budget} editable={false} />
               </div>
             )

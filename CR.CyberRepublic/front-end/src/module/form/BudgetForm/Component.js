@@ -117,7 +117,7 @@ class BudgetForm extends Component {
 
           <Label>
             <span>*</span>
-            {`${I18N.get('suggestion.budget.amount')} (ELA)`}
+            {`${I18N.get('suggestion.budget.amount')}(ELA)`}
           </Label>
           <FormItem>
             {getFieldDecorator('amount', {
