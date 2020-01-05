@@ -89,35 +89,26 @@ export default class extends StandardPage {
   }
 
   renderAnchors() {
+    const sections = [
+      'preamble',
+      'abstract',
+      'motivation',
+      'goal',
+      'plan',
+      'relevance',
+      'budget'
+    ]
     return (
       <StyledAnchor offsetTop={420}>
-        <Anchor.Link
-          href="#preamble"
-          title={I18N.get('suggestion.fields.preamble')}
-        />
-        <Anchor.Link
-          href="#abstract"
-          title={I18N.get('suggestion.fields.abstract')}
-        />
-        <div style={{ marginTop: 48 }}>
-          <Anchor.Link
-            href="#goal"
-            title={I18N.get('suggestion.fields.goal')}
-          />
-        </div>
-        <Anchor.Link
-          href="#motivation"
-          title={I18N.get('suggestion.fields.motivation')}
-        />
-        <Anchor.Link href="#plan" title={I18N.get('suggestion.fields.plan')} />
-        <Anchor.Link
-          href="#relevance"
-          title={I18N.get('suggestion.fields.relevance')}
-        />
-        <Anchor.Link
-          href="#budget"
-          title={I18N.get('suggestion.fields.budget')}
-        />
+        {sections.map(section => {
+          return (
+            <Anchor.Link
+              key={section}
+              href={`#${section}`}
+              title={I18N.get(`suggestion.fields.${section}`)}
+            />
+          )
+        })}
       </StyledAnchor>
     )
   }
@@ -222,8 +213,8 @@ export default class extends StandardPage {
     const { detail } = this.props
     const sections = [
       'abstract',
-      'goal',
       'motivation',
+      'goal',
       'plan',
       'relevance',
       'budget'

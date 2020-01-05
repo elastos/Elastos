@@ -281,8 +281,8 @@ class C extends StandardPage {
     } else {
       sections = [
         'abstract',
-        'goal',
         'motivation',
+        'goal',
         'plan',
         'relevance',
         'budget'
@@ -423,13 +423,14 @@ class C extends StandardPage {
           href="#abstract"
           title={I18N.get('proposal.fields.abstract')}
         />
-        <LinkGroup marginTop={48}>
-          <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
-        </LinkGroup>
         <Anchor.Link
+          marginTop={48}
           href="#motivation"
           title={I18N.get('proposal.fields.motivation')}
         />
+        <LinkGroup>
+          <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
+        </LinkGroup>
         <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
         <Anchor.Link
           href="#relevance"
@@ -444,7 +445,7 @@ class C extends StandardPage {
         <LinkGroup marginTop={48}>
           <Anchor.Link href="#vote" title={I18N.get('proposal.fields.vote')} />
         </LinkGroup>
-        {_.each(commonLinks, (e) => (e))}
+        {_.each(commonLinks, e => e)}
       </StyledAnchor>
     )
   }
@@ -539,12 +540,12 @@ class C extends StandardPage {
           'abstract',
           I18N.get('proposal.fields.abstract')
         )}
-        {renderRichContent(data, 'goal', I18N.get('proposal.fields.goal'))}
         {renderRichContent(
           data,
           'motivation',
           I18N.get('proposal.fields.motivation')
         )}
+        {renderRichContent(data, 'goal', I18N.get('proposal.fields.goal'))}
         {renderRichContent(data, 'plan', I18N.get('proposal.fields.plan'))}
         {renderRichContent(
           data,

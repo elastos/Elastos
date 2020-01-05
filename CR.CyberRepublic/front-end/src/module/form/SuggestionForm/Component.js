@@ -19,8 +19,8 @@ const WORD_LIMIT = ABSTRACT_MAX_WORDS
 const TAB_KEYS = [
   'type',
   'abstract',
-  'goal',
   'motivation',
+  'goal',
   'plan',
   'relevance',
   'budget'
