@@ -131,6 +131,9 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
             EventBus.getDefault().unregister(this);
         }
         onDestroyRefreshLayout();
+        if (smartRefreshLayout != null) {
+            smartRefreshLayout = null;
+        }
     }
 
 

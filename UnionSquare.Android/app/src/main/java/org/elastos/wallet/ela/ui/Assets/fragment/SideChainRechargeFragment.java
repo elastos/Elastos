@@ -2,7 +2,6 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.InputFilter;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -17,6 +16,8 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
@@ -24,13 +25,12 @@ import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.SideChainPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonBooleanViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -43,7 +43,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class SideChainRechargeFragment extends BaseFragment implements CommmonStringWithMethNameViewData, CommonBalanceViewData, CommmonBooleanViewData {
+public class SideChainRechargeFragment extends BaseFragment implements CommmonStringWithMethNameViewData, CommonBalanceViewData, NewBaseViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.iv_title_right)
@@ -194,8 +194,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
                         etPayeeaddr.setText(address);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    showToast(getString(R.string.infoformatwrong));
+                    new TransferPresenter().isAddressValid(wallet.getWalletId(), result, this, result);
                 }
             }
         }
@@ -227,17 +226,6 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         etBalance.setHint(balance);
     }
 
-    @Override
-    public void onGetCommonData(boolean data) {
-        if (!data) {
-            showToastMessage(getString(R.string.invalidaddress));
-            return;
-        }
-        String remark = etRemark.getText().toString().trim();
-        //long actualSpend = (long) (Double.parseDouble(amount) * MyWallet.RATE);
-        presenter.createDepositTransaction(wallet.getWalletId(), chainId, "", chargeChain, Arith.mulRemoveZero(amount, MyWallet.RATE_S).toPlainString(), address, remark, this);
-
-    }
 
     private void startTransfer() {
         address = etPayeeaddr.getText().toString().trim();
@@ -250,12 +238,8 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
             showToastMessage(getString(R.string.transferamountnotnull));
             return;
         }
-       /* if (Arith.mul(amount, MyWallet.RATE_S).add(new BigDecimal(MyWallet.feePerKb+""))
-                .compareTo(new BigDecimal(maxBalance)) > 0) {
-            showToastMessage(getString(R.string.lack_of_balance));
-            return;
-        }*/
-        presenter.isAddressValid(wallet.getWalletId(), address, this);
+        new TransferPresenter().isAddressValid(wallet.getWalletId(), address, this, null);
+
     }
 
     private void diposeElastosCaode(int analyzeElastosData, String[] parts) {
@@ -271,4 +255,22 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         }
     }
 
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        //这里是判断地址是否合法
+        boolean data = ((CommmonBooleanEntity) baseEntity).getData();
+        if (!data) {
+            showToastMessage(getString(R.string.invalidaddress));
+            return;
+        }
+
+        if (o == null) {
+            String remark = etRemark.getText().toString().trim();
+            //long actualSpend = (long) (Double.parseDouble(amount) * MyWallet.RATE);
+            presenter.createDepositTransaction(wallet.getWalletId(), chainId, "", chargeChain, Arith.mulRemoveZero(amount, MyWallet.RATE_S).toPlainString(), address, remark, this);
+
+        } else {
+            etPayeeaddr.setText((String) o);
+        }
+    }
 }

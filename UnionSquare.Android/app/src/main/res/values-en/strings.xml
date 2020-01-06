@@ -192,7 +192,7 @@
     <string name="transfertype4">Deployment Transaction</string>
     <string name="transfertype5">Sidechain Mining Transaction</string>
     <string name="transfertype6">Sidechain Deposit Transaction</string>
-    <string name="transfertype7">Sidechain withdraw Transaction</string>
+    <string name="transfertype7">Mainchain withdraw Transaction</string>
     <string name="transfertype8">Cross Chain transfer Transaction</string>
     <string name="transfertype9">Node Registration Transaction</string>
     <string name="transfertype10">Node Cancellation Transaction</string>

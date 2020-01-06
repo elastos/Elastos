@@ -42,6 +42,7 @@ import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter1;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapterFather;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRAgreementFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRInformationFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRManageFragment;
@@ -57,17 +58,15 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
-import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -113,7 +112,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     private int pageNum = 1;
     private final int pageSize = 1000;//基本没分页了
     private AddDIDPresenter addDIDPresenter;
-    private boolean click;//点击创建或者管理cr  click=true
+
     private String publickey;
 
     @Override
@@ -169,14 +168,9 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 } else {
                     curentAdapter.removeAllPositionAndNotify();
                 }
-
                 break;
             case R.id.tv_myvote:
                 bundle = new Bundle();
-              /*  if (curentNode != null && status.equals("Registered") && curentNode.getState().equals("Active")) {
-                    bundle.putBoolean("is", is);
-                    bundle.putInt("pos", pos);
-                }*/
                 bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
                 bundle.putSerializable("netList", netList);
                 start(CRMyVoteFragment.class, bundle);
@@ -204,18 +198,12 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 bundle.putString("did", did);
                 if (status.equals("Unregistered")) {
                     start(CRAgreementFragment.class);
-
                 } else {
-                    if (did != null) {
-                        bundle.putString("status", status);
-                        bundle.putString("info", info);
-                        bundle.putParcelable("curentNode", curentNode);
-                        bundle.putString("publickey", publickey);
-                        start(CRManageFragment.class, bundle);
-                        return;
-                    }
-                    click = true;
-                    addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
+                    bundle.putString("status", status);
+                    bundle.putParcelable("info", info);
+                    bundle.putParcelable("curentNode", curentNode);
+                    bundle.putString("publickey", publickey);
+                    start(CRManageFragment.class, bundle);
                 }
 
                 break;
@@ -406,7 +394,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     }
 
     private String status;
-    private String info;
+    private CrStatusBean.InfoBean info;
 
 
     private Drawable getDrawable(int id) {
@@ -447,7 +435,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 if (!hasDelegate) {
                     otherUnActiveVote.add(depiositUnActiveVote);
                 }
-                Log.i("??", otherUnActiveVote.toString());
                 break;
             case "getAllSubWallets":
                 ISubWalletListEntity subWalletListEntity = (ISubWalletListEntity) baseEntity;
@@ -474,33 +461,17 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             case "getDIDByPublicKey":
                 did = ((CommmonStringEntity) baseEntity).getData();
                 //无论是点击创建或者管理  还是打开页面就加载的  did肯定都为null 不为null的上层已经拦截    两种情况互斥
-                pageNum = 1;
-                if (status.equals("Unregistered") && click) {
-                    //Unregistered刚进入时候不判断是否有idchain直接加载activelist
-                    click = false;
+
+               // if (status.equals("Unregistered")) {
+                    //只有Unregistered会到这里
                     Bundle bundle = new Bundle();
                     bundle.putString("did", did);
                     bundle.putSerializable("netList", netList);
                     bundle.putString("publickey", publickey);
                     start(CRSignUpForFragment.class, bundle);
-                } else {
-                    //如何是点击需要刷新全部数据  如果是刚打来 获得数据
-                    presenter.getCRlist(pageNum, pageSize, "all", this, true);
-                }
-                //如果是是点击创建或者管理  跳转相应页面
+              //  }
 
-                break;
-            case "getActiveCRlist":
-                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> curentList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
 
-                try {
-                    String totalvotes = ((CRListBean) baseEntity).getData().getResult().getTotalvotes();
-                    resetData(curentList, totalvotes);
-                    onGetVoteList(curentList);
-                } catch (Exception e) {
-
-                    onGetVoteList(null);
-                }
                 break;
             case "getCRlist":
                 //非unregister并且打开了idchain才会到这来  获得所有cr
@@ -509,25 +480,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                     String totalvotes = ((CRListBean) baseEntity).getData().getResult().getTotalvotes();
                     //重置信息  获得当前节点详情  剔除非active数据
                     resetData(curentAllList, totalvotes);
-
                     onGetVoteList(curentAllList);
-                    if (click) {
-                        click = false;
-                        Bundle bundle = new Bundle();
-                        bundle.putString("did", did);
-
-                        if (status.equals("Unregistered")) {
-                            bundle.putSerializable("netList", netList);
-                            bundle.putString("publickey", publickey);
-                            start(CRSignUpForFragment.class, bundle);
-                        } else {
-                            bundle.putString("status", status);
-                            bundle.putString("info", info);
-                            bundle.putParcelable("curentNode", curentNode);
-                            bundle.putString("publickey", publickey);
-                            start(CRManageFragment.class, bundle);
-                        }
-                    }
                 } catch (Exception e) {
                     onGetVoteList(null);
                 }
@@ -535,29 +488,32 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
                 break;
             case "getRegisteredCRInfo":
-
-                JSONObject jsonObject = JSON.parseObject(((CommmonStringEntity) baseEntity).getData());
-                status = jsonObject.getString("Status");
-                info = jsonObject.getString("Info");
+                CrStatusBean crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
+                status = crStatusBean.getStatus();
+                info = crStatusBean.getInfo();
                 if (!TextUtils.isEmpty(status)) {
                     switch (status) {
                         case "Unregistered":
                             tv_signupfor.setText(getString(R.string.sign_up_for));
                             tv_signupfor.setVisibility(View.VISIBLE);
                             tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_attend), null, null);
-                            presenter.getActiveCRlist(pageNum, pageSize, this);
+                            presenter.getCRlist(pageNum, pageSize, "all", this, true);
                             break;
                         case "ReturnDeposit":
+                            publickey = crStatusBean.getInfo().getCROwnerPublicKey();
+                            did = crStatusBean.getInfo().getCROwnerDID();
                             tv_signupfor.setVisibility(View.GONE);
-                            addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
+                            presenter.getCRlist(pageNum, pageSize, "all", this, true);
 
                             break;
                         case "Canceled":
                         case "Registered":
+                            publickey = crStatusBean.getInfo().getCROwnerPublicKey();
+                            did = crStatusBean.getInfo().getCROwnerDID();
                             tv_signupfor.setText(getString(R.string.electoral_affairs));
                             tv_signupfor.setVisibility(View.VISIBLE);
                             tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_management), null, null);
-                            addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
+                            presenter.getCRlist(pageNum, pageSize, "all", this, true);
 
                             break;
 
@@ -581,17 +537,12 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     @Override
     public void onLoadMore(RefreshLayout refreshLayout) {
         onErrorRefreshLayout(srl);
-        if (did == null) {
-            presenter.getActiveCRlist(pageNum, pageSize, CRListFragment.this);
-        } else {
-            presenter.getCRlist(pageNum, pageSize, "all", this, true);
-        }
-
+        presenter.getCRlist(pageNum, pageSize, "all", this, true);
     }
 
     private void showOpenDIDWarm(ISubWalletListEntity subWalletListEntity) {
-        new DialogUtil().showCommonWarmPrompt1(getBaseActivity(), getString(R.string.noidchainopenornot),
-                getString(R.string.toopen), getString(R.string.cancel), false, new NewWarmPromptListener() {
+        new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.noidchainopenornot),
+                getString(R.string.toopen), getString(R.string.cancel), false, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
                         Bundle bundle = new Bundle();
@@ -603,15 +554,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                         bundle.putStringArrayList("chainIds", chainIds);
                         start(AddAssetFragment.class, bundle);
                     }
-
-                    @Override
-                    public void onCancel(View view) {
-                        if (netList == null)//代表没请求过数据   为了避免打开注册 或者钱包管理时候重复调用
-                        {
-                            pageNum = 1;
-                            presenter.getActiveCRlist(pageNum, pageSize, CRListFragment.this);
-                        }
-                    }
                 });
     }
 
@@ -619,23 +561,15 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     public void Event(BusEvent result) {
         int integer = result.getCode();
 
-        if (integer == RxEnum.UPDATAPROPERTY.ordinal()) {
-            //子钱包改变  创建或删除
-            addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
+        if (integer == RxEnum.ADDPROPERTY.ordinal()) {
+            //增加子钱包
+            addDIDPresenter.getAllPublicKeys(wallet.getWalletId(), MyWallet.IDChain, 0, 1, CRListFragment.this);
         }
         if (integer == RxEnum.AGREE.ordinal()) {
             //注册did同意了协议
-            if (did != null) {
-                Bundle bundle = new Bundle();
-                bundle.putString("did", did);
-                bundle.putString("publickey", publickey);
-                bundle.putSerializable("netList", netList);
-                start(CRSignUpForFragment.class, bundle);
-                return;
-            }
             //注册cr前的判断
             addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
-            click = true;
+
         }
 
 

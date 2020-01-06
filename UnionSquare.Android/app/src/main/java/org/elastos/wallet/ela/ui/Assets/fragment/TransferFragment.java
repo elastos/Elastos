@@ -16,13 +16,15 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonBooleanViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
@@ -40,7 +42,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class TransferFragment extends BaseFragment implements CommonBalanceViewData, CommmonBooleanViewData, CommmonStringViewData {
+public class TransferFragment extends BaseFragment implements CommonBalanceViewData, CommmonStringViewData, NewBaseViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.iv_title_right)
@@ -145,7 +147,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             showToastMessage(getString(R.string.lack_of_balance));
             return;
         }*/
-        presenter.isAddressValid(wallet.getWalletId(), address, this);
+        presenter.isAddressValid(wallet.getWalletId(), address, this, null);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -209,12 +211,11 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
                     QrBean qrBean = JSON.parseObject(result, QrBean.class);
                     int type = qrBean.getExtra().getType();
                     if (type == Constant.TRANSFER) {
-                        address = qrBean.getData();
-                        etPayeeaddr.setText(address);
+                        etPayeeaddr.setText(qrBean.getData());
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    showToast(getString(R.string.infoformatwrong));
+                    //直接判断二维码内容是否是地址
+                    presenter.isAddressValid(wallet.getWalletId(), result, this, result);
                 }
             }
         }
@@ -231,23 +232,6 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         etBalance.setHint(balance);
     }
 
-    @Override
-    public void onGetCommonData(boolean data) {
-        //这里是判断地址是否合法
-        if (!data) {
-            showToastMessage(getString(R.string.invalidaddress));
-            return;
-        }
-        String value;
-        if ("MAX".equals(amount)) {
-            value = "-1";
-        } else {
-            value = Arith.mulRemoveZero(amount, MyWallet.RATE_S).toPlainString();
-        }
-        String remark = etRemark.getText().toString().trim();
-        //presenter.createTransaction(wallet.getWalletId(), chainId, "", address, (long) (Double.parseDouble(amount) * MyWallet.RATE), "", remark, Checked, this);
-        presenter.createTransaction(wallet.getWalletId(), chainId, "", address, value, remark, Checked, this);
-    }
 
     @Override
     public void onGetCommonData(String data) {
@@ -274,6 +258,30 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             case 1:
                 etPayeeaddr.setText(parts[0]);
                 break;
+        }
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        boolean data = ((CommmonBooleanEntity) baseEntity).getData();
+        if (!data) {
+            showToastMessage(getString(R.string.invalidaddress));
+            return;
+        }
+
+        if (o == null) {
+            //这里是判断地址是否合法
+            String value;
+            if ("MAX".equals(amount)) {
+                value = "-1";
+            } else {
+                value = Arith.mulRemoveZero(amount, MyWallet.RATE_S).toPlainString();
+            }
+            String remark = etRemark.getText().toString().trim();
+            presenter.createTransaction(wallet.getWalletId(), chainId, "", address, value, remark, Checked, this);
+
+        } else {
+            etPayeeaddr.setText((String) o);
         }
     }
 }
