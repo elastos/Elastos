@@ -6,6 +6,7 @@
 package test
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -26,6 +27,7 @@ var (
 
 func init() {
 	testing.Init()
+	os.RemoveAll(DataPath)
 }
 
 // SkipShort is used to skip the following testing in short mode

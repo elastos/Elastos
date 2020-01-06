@@ -4,11 +4,11 @@ go 1.13
 
 require (
 	github.com/btcsuite/btcd v0.0.0-20190824003749-130ea5bddde3
-	github.com/google/pprof v0.0.0-20191105193234-27840fff0d09 // indirect
+	github.com/fatih/color v1.8.0 // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
-	github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6 // indirect
 	github.com/itchyny/base58-go v0.0.5
+	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/syndtr/goleveldb v1.0.0

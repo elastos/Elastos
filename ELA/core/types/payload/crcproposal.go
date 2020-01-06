@@ -76,12 +76,18 @@ const (
 	MaxProposalDataSize = 2 * 1024 * 1024
 )
 
+const (
+	Imprest       BudgetType = 0x00
+	NormalPayment BudgetType = 0x01
+	FinalPayment  BudgetType = 0x02
+)
+
+type BudgetType byte
+
 type Budget struct {
-	// 0x00 regular payment
-	// 0x01 final payment
-	BudgetType byte
-	Stage      byte
-	Amount     common.Fixed64
+	Type   BudgetType
+	Stage  byte
+	Amount common.Fixed64
 }
 
 type CRCProposal struct {
@@ -161,11 +167,11 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 }
 
 func (b *Budget) Serialize(w io.Writer) error {
-	if err := common.WriteElement(w, b.BudgetType); err != nil {
-		return errors.New("failed to serialize BudgetType")
+	if err := common.WriteElement(w, b.Type); err != nil {
+		return errors.New("failed to serialize Type")
 	}
 	if err := common.WriteElement(w, b.Stage); err != nil {
-		return errors.New("failed to serialize BudgetType")
+		return errors.New("failed to serialize Type")
 	}
 	return b.Amount.Serialize(w)
 }
@@ -191,8 +197,8 @@ func (p *CRCProposal) Serialize(w io.Writer, version byte) error {
 }
 
 func (b *Budget) Deserialize(r io.Reader) error {
-	if err := common.ReadElement(r, &b.BudgetType); err != nil {
-		return errors.New("[CRCProposal], BudgetType deserialize failed")
+	if err := common.ReadElement(r, &b.Type); err != nil {
+		return errors.New("[CRCProposal], Type deserialize failed")
 	}
 	if err := common.ReadElement(r, &b.Stage); err != nil {
 		return errors.New("[CRCProposal], Stage deserialize failed")

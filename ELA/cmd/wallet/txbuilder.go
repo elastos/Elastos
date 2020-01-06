@@ -403,15 +403,6 @@ func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
 	if proposalHashStr == "" {
 		return errors.New("use --proposalhash to specify transfer proposalhash")
 	}
-	stageStr := c.String("stage")
-	if stageStr == "" {
-		return errors.New("use --stage to specify transfer stage")
-	}
-	stage, err := strconv.Atoi(stageStr)
-	if err != nil {
-		fmt.Println("get stage error:", err)
-		return err
-	}
 	CRCCommiteeAddr := c.String("crccommiteeaddr")
 	if CRCCommiteeAddr == "" {
 		return errors.New("use --crccommiteeaddr to specify from address")
@@ -427,8 +418,8 @@ func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
 	}
 	fee, err := common.StringToFixed64(feeStr)
 
-	fmt.Printf("proposalhash:%s, fee:%s stage:%s amout:%s CRCCommiteeAddr:%s\n",
-		proposalHashStr, feeStr, stageStr, amountStr, CRCCommiteeAddr)
+	fmt.Printf("proposalhash:%s, fee:%s amout:%s CRCCommiteeAddr:%s\n",
+		proposalHashStr, feeStr, amountStr, CRCCommiteeAddr)
 	*amount -= *fee
 
 	client, err := account.Open(walletPath, password)
@@ -453,7 +444,6 @@ func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
 		ProposalHash:     *proposalHash,
 		SponsorPublicKey: SponsorPublicKey,
-		Stage:            uint8(stage),
 		Fee:              *fee,
 	}
 
