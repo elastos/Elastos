@@ -57,7 +57,7 @@ func rollbackAction(c *cli.Context) error {
 	}
 
 	log.NewDefault("logs/node", 0, 0, 0)
-	chainStore, err := blockchain.NewChainStore(dataDir)
+	chainStore, err := blockchain.NewChainStore(dataDir, &chainParams)
 	if err != nil {
 		fmt.Println("create chain store failed, ", err)
 		return err

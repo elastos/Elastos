@@ -266,20 +266,20 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 	bestHeight := b.GetHeight()
 	log.Info("current block height ->", bestHeight)
 	arbiters := DefaultLedger.Arbitrators
-	//ckpManager := b.chainParams.CkpManager
+	ckpManager := b.chainParams.CkpManager
 	done := make(chan struct{})
 	go func() {
 		// Notify initialize process start.
 		startHeight := uint32(0)
 
-		//if err = ckpManager.Restore(); err != nil {
-		//	log.Warn(err)
-		//	err = nil
-		//}
-		//safeHeight := ckpManager.SafeHeight()
-		//if startHeight < safeHeight {
-		//	startHeight = safeHeight + 1
-		//}
+		if err = ckpManager.Restore(); err != nil {
+			log.Warn(err)
+			err = nil
+		}
+		safeHeight := ckpManager.SafeHeight()
+		if startHeight < safeHeight {
+			startHeight = safeHeight + 1
+		}
 
 		log.Info("[RecoverFromCheckPoints] recover start height: ", startHeight)
 		if barStart != nil && bestHeight >= startHeight {

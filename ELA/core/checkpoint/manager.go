@@ -199,6 +199,10 @@ func (m *Manager) Restore() (err error) {
 
 	sortedPoints := m.getOrderedCheckpoints()
 	for _, v := range sortedPoints {
+		// Skip 'dpos' and 'cr' checkpoint
+		if v.Key() == "dpos" || v.Key() == "cr" {
+			continue
+		}
 		if err = m.loadDefaultCheckpoint(v); err != nil {
 			return
 		}

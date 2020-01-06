@@ -71,7 +71,7 @@ func TestTxPoolInit(t *testing.T) {
 
 	params := &config.DefaultParams
 	blockchain.FoundationAddress = params.Foundation
-	chainStore, err := blockchain.NewChainStore(test.DataPath)
+	chainStore, err := blockchain.NewChainStore(test.DataPath, params)
 	if err != nil {
 		t.Fatal("open LedgerStore err:", err)
 		os.Exit(1)

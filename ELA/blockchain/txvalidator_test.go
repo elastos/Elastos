@@ -57,7 +57,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	FoundationAddress = params.Foundation
 	s.foundationAddress = params.Foundation
 
-	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "txvalidator"))
+	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "txvalidator"), params)
 	if err != nil {
 		s.Error(err)
 	}
