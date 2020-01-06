@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -99,7 +100,7 @@ func TestUnspentIndexInit(t *testing.T) {
 	var err error
 	unspentIndexDB, err = LoadBlockDB(test.DataPath)
 	assert.NoError(t, err)
-	testUnspentIndex = NewUnspentIndex(unspentIndexDB)
+	testUnspentIndex = NewUnspentIndex(unspentIndexDB, &config.DefaultParams)
 	assert.NotEqual(t, nil, testUnspentIndex)
 	assert.Equal(t, unspentIndexKey, testUnspentIndex.Key())
 	assert.Equal(t, unspentIndexName, testUnspentIndex.Name())
@@ -112,18 +113,12 @@ func TestUnspentIndexInit(t *testing.T) {
 		assert.NoError(t, err)
 		err = dbPutUnspentIndexEntry(dbTx, &unspentIndexReferTx2, []uint16{unspentIndexReferIndex2})
 		assert.NoError(t, err)
-		testUnspentIndex.txns[unspentIndexReferTx1] = &TxnInfo{
-			txn: &types.Transaction{
-				LockTime: 10,
-			},
-			blockHeight: 1,
-		}
-		testUnspentIndex.txns[unspentIndexReferTx2] = &TxnInfo{
-			txn: &types.Transaction{
-				LockTime: 20,
-			},
-			blockHeight: 1,
-		}
+		//testUnspentIndex.txCache.setTxn(1, &types.Transaction{
+		//	LockTime: 10,
+		//})
+		//testUnspentIndex.txCache.setTxn(1, &types.Transaction{
+		//	LockTime: 20,
+		//})
 
 		// check the initialization
 		indexes, err := dbFetchUnspentIndexEntry(dbTx, &unspentIndexReferTx1)
@@ -142,24 +137,22 @@ func TestUnspentIndex_ConnectBlock(t *testing.T) {
 		assert.NoError(t, err)
 
 		// the unspent txn should be cached
-		assert.Equal(t, &TxnInfo{
+		assert.Equal(t, &TxInfo{
 			txn:         unspentIndexCoinbase,
 			blockHeight: unspentIndexBlock.Height,
-		}, testUnspentIndex.txns[unspentIndexCoinbase.Hash()])
-		assert.Equal(t, &TxnInfo{
+		}, testUnspentIndex.txCache.getTxn(unspentIndexCoinbase.Hash()))
+		assert.Equal(t, &TxInfo{
 			txn:         testUnspentIndexTx1,
 			blockHeight: unspentIndexBlock.Height,
-		}, testUnspentIndex.txns[testUnspentIndexTx1.Hash()])
-		assert.Equal(t, &TxnInfo{
+		}, testUnspentIndex.txCache.getTxn(testUnspentIndexTx1.Hash()))
+		assert.Equal(t, &TxInfo{
 			txn:         testUnspentIndexTx2,
 			blockHeight: unspentIndexBlock.Height,
-		}, testUnspentIndex.txns[testUnspentIndexTx2.Hash()])
+		}, testUnspentIndex.txCache.getTxn(testUnspentIndexTx2.Hash()))
 
 		// the spent txn should be removed
-		_, ok1 := testUnspentIndex.txns[unspentIndexReferTx1]
-		assert.False(t, ok1)
-		_, ok2 := testUnspentIndex.txns[unspentIndexReferTx2]
-		assert.False(t, ok2)
+		assert.Equal(t, (*TxInfo)(nil), testUnspentIndex.txCache.getTxn(unspentIndexReferTx1))
+		assert.Equal(t, (*TxInfo)(nil), testUnspentIndex.txCache.getTxn(unspentIndexReferTx2))
 
 		// input items should be removed from db
 		indexes, err := dbFetchUnspentIndexEntry(dbTx, &unspentIndexReferTx1)
@@ -193,10 +186,8 @@ func TestUnspentIndex_DisconnectBlock(t *testing.T) {
 		assert.NoError(t, err)
 
 		// the spent txn should be removed
-		_, ok1 := testUnspentIndex.txns[unspentIndexReferTx1]
-		assert.False(t, ok1)
-		_, ok2 := testUnspentIndex.txns[unspentIndexReferTx2]
-		assert.False(t, ok2)
+		assert.Equal(t, (*TxInfo)(nil), testUnspentIndex.txCache.getTxn(unspentIndexReferTx1))
+		assert.Equal(t, (*TxInfo)(nil), testUnspentIndex.txCache.getTxn(unspentIndexReferTx2))
 
 		// the refer txn should be cached
 		//_, ok1 := testUnspentIndex.txns[unspentIndexReferTx1]

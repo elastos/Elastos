@@ -54,7 +54,7 @@ func TestCheckBlockSanity(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 	params := &config.DefaultParams
 	FoundationAddress = params.Foundation
-	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "sanity"))
+	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "sanity"), params)
 	if err != nil {
 		t.Error(err.Error())
 	}

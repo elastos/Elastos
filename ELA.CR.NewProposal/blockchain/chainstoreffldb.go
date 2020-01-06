@@ -15,6 +15,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -43,12 +44,12 @@ type ChainStoreFFLDB struct {
 	blocksCache      map[Uint256]*DposBlock
 }
 
-func NewChainStoreFFLDB(dataDir string) (IFFLDBChainStore, error) {
+func NewChainStoreFFLDB(dataDir string, params *config.Params) (IFFLDBChainStore, error) {
 	fflDB, err := LoadBlockDB(dataDir, blockDbName)
 	if err != nil {
 		return nil, err
 	}
-	indexManager := indexers.NewManager(fflDB)
+	indexManager := indexers.NewManager(fflDB, params)
 
 	s := &ChainStoreFFLDB{
 		db:               fflDB,

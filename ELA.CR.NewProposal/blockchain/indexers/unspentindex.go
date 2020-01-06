@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/database"
 )
@@ -85,33 +86,11 @@ func dbRemoveUnspentIndexEntry(dbTx database.Tx, txHash *common.Uint256) error {
 	return unspentIndex.Delete(txHash[:])
 }
 
-func putUnspent(dbTx database.Tx, unspents map[common.Uint256][]uint16) error {
-	for txHash, value := range unspents {
-		if len(value) == 0 {
-			err := dbRemoveUnspentIndexEntry(dbTx, &txHash)
-			if err != nil {
-				return err
-			}
-		} else {
-			err := dbPutUnspentIndexEntry(dbTx, &txHash, value)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-type TxnInfo struct {
-	txn         *types.Transaction
-	blockHeight uint32
-}
-
 // UnspentIndex implements a unspent set by tx hash index. That is to say,
 // it supports querying all unspent index by their tx hash.
 type UnspentIndex struct {
-	db   database.DB
-	txns map[common.Uint256]*TxnInfo
+	db      database.DB
+	txCache *TxCache
 }
 
 // Init initializes the hash-based unspent index. This is part of the Indexer
@@ -157,10 +136,7 @@ func (idx *UnspentIndex) ConnectBlock(dbTx database.Tx, block *types.Block) erro
 			continue
 		}
 		txnHash := txn.Hash()
-		idx.txns[txnHash] = &TxnInfo{
-			txn:         txn,
-			blockHeight: block.Height,
-		}
+		idx.txCache.setTxn(block.Height, txn)
 		for index := range txn.Outputs {
 			unspents[txnHash] = append(unspents[txnHash], uint16(index))
 		}
@@ -189,7 +165,7 @@ func (idx *UnspentIndex) ConnectBlock(dbTx database.Tx, block *types.Block) erro
 
 	for txHash, value := range unspents {
 		if len(value) == 0 {
-			delete(idx.txns, txHash)
+			idx.txCache.deleteTxn(txHash)
 			err := dbRemoveUnspentIndexEntry(dbTx, &txHash)
 			if err != nil {
 				return err
@@ -218,10 +194,7 @@ func (idx *UnspentIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) e
 		}
 		// remove all utxos created by this transaction
 		txnHash := txn.Hash()
-		idx.txns[txnHash] = &TxnInfo{
-			txn:         txn,
-			blockHeight: block.Height,
-		}
+		idx.txCache.deleteTxn(txnHash)
 		err := dbRemoveUnspentIndexEntry(dbTx, &txnHash)
 		if err != nil {
 			return err
@@ -246,7 +219,7 @@ func (idx *UnspentIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) e
 
 	for txHash, value := range unspents {
 		if len(value) == 0 {
-			delete(idx.txns, txHash)
+			idx.txCache.deleteTxn(txHash)
 			err := dbRemoveUnspentIndexEntry(dbTx, &txHash)
 			if err != nil {
 				return err
@@ -263,7 +236,7 @@ func (idx *UnspentIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) e
 }
 
 func (idx *UnspentIndex) FetchTx(txID common.Uint256) (*types.Transaction, uint32, error) {
-	if txnInfo, ok := idx.txns[txID]; ok {
+	if txnInfo := idx.txCache.getTxn(txID); txnInfo != nil {
 		return txnInfo.txn, txnInfo.blockHeight, nil
 	}
 
@@ -303,9 +276,11 @@ func dbFetchHeightByHash(dbTx database.Tx, hash *common.Uint256) (uint32, error)
 // It implements the Indexer interface which plugs into the IndexManager that in
 // turn is used by the blockchain package.  This allows the index to be
 // seamlessly maintained along with the chain.
-func NewUnspentIndex(db database.DB) *UnspentIndex {
-	return &UnspentIndex{
-		db:   db,
-		txns: make(map[common.Uint256]*TxnInfo),
+func NewUnspentIndex(db database.DB, params *config.Params) *UnspentIndex {
+	unspentIndex := &UnspentIndex{
+		db:      db,
+		txCache: NewTxCache(),
 	}
+	params.CkpManager.Register(NewCheckpoint(unspentIndex))
+	return unspentIndex
 }

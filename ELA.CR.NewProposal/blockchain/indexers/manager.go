@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/database"
@@ -512,9 +513,9 @@ func (m *Manager) IsTx3Exist(txHash *common.Uint256) bool {
 //
 // The manager returned satisfies the blockchain.IndexManager interface and thus
 // cleanly plugs into the normal blockchain processing path.
-func NewManager(db database.DB) *Manager {
+func NewManager(db database.DB, params *config.Params) *Manager {
 	txIndex := NewTxIndex(db)
-	unspentIndex := NewUnspentIndex(db)
+	unspentIndex := NewUnspentIndex(db, params)
 	utxoIndex := NewUtxoIndex(db, unspentIndex)
 	tx3Index := NewTx3Index(db)
 	var enabledIndexes []Indexer

@@ -87,7 +87,7 @@ func startDstNode() {
 	// Initializes the foundation address
 	blockchain.FoundationAddress = dstSettings.Params().Foundation
 
-	chainStore, err := blockchain.NewChainStore(dataDir)
+	chainStore, err := blockchain.NewChainStore(dataDir, dstSettings.Params())
 	if err != nil {
 		logger.Error(err)
 		return
