@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/utils"
 )
@@ -137,7 +138,7 @@ func (m *Manager) OnRollbackTo(height uint32) error {
 	sortedPoints := m.getOrderedCheckpoints()
 	for _, v := range sortedPoints {
 		if err := v.OnRollbackTo(height); err != nil {
-			return err
+			log.Debug("manager rollback failed,", err)
 		}
 	}
 	return nil

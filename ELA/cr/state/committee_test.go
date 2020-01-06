@@ -294,34 +294,34 @@ func TestCommittee_RollbackTo_SameCommittee_BeforeVoting(t *testing.T) {
 		}, nil)
 		height++
 	}
-	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 4, len(committee.GetAllCandidates()))
+	assert.False(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 5, len(committee.GetCandidates(Active)))
 
 	// rollback within voting period, candidates' state changes but committee
 	// state stay the same
 	height -= 2
 	assert.NoError(t, committee.RollbackTo(height))
-	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 3, len(committee.GetAllCandidates()))
+	assert.False(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 4, len(committee.GetCandidates(Active)))
 
 	// rollback to the voting height
 	height = config.DefaultParams.CRCommitteeStartHeight + config.
 		DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
 	assert.NoError(t, committee.RollbackTo(height))
-	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 1, len(committee.GetAllCandidates()))
+	assert.False(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 2, len(committee.GetCandidates(Active)))
 
 	// rollback to the height before voting
 	height--
 	assert.NoError(t, committee.RollbackTo(height))
-	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+	assert.False(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 1, len(committee.GetCandidates(Active)))
 
 	// rollback to the height having no history
 	height--
 	assert.NoError(t, committee.RollbackTo(height))
-	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+	assert.False(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 0, len(committee.GetCandidates(Active)))
 }
 
 func TestCommittee_RollbackTo_DifferenceCommittee(t *testing.T) {

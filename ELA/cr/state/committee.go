@@ -41,6 +41,12 @@ type Committee struct {
 	recordBalanceHeight uint32
 }
 
+type CommitteeKeyFrame struct {
+	*KeyFrame
+	*StateKeyFrame
+	*ProposalKeyFrame
+}
+
 // Deprecated: just for testing
 func (c *Committee) GetState() *State {
 	return c.state
@@ -515,16 +521,16 @@ func (c *Committee) RollbackTo(height uint32) error {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 	if err := c.lastHistory.RollbackTo(height); err != nil {
-		log.Warn("committee last history rollback err:", err)
+		log.Debug("committee last history rollback err:", err)
 	}
 	if err := c.manager.history.RollbackTo(height); err != nil {
-		log.Warn("manager rollback err:", err)
+		log.Debug("manager rollback err:", err)
 	}
 	if err := c.state.rollbackTo(height); err != nil {
-		log.Warn("state rollback err:", err)
+		log.Debug("state rollback err:", err)
 	}
 	if err := c.firstHistory.RollbackTo(height); err != nil {
-		log.Warn("committee first history rollback err:", err)
+		log.Debug("committee first history rollback err:", err)
 	}
 	return nil
 }
@@ -566,6 +572,9 @@ func (c *Committee) isInVotingPeriod(height uint32) bool {
 			height < c.params.CRCommitteeStartHeight
 	} else {
 		if !c.InElectionPeriod {
+			if c.LastVotingStartHeight == 0 {
+				return true
+			}
 			return height < c.LastVotingStartHeight+c.params.CRVotingPeriod
 		}
 		return inVotingPeriod(c.LastCommitteeHeight + c.params.CRDutyPeriod)
@@ -615,11 +624,12 @@ func (c *Committee) processCurrentMembers(height uint32,
 	}
 
 	if _, ok := c.HistoryMembers[c.state.CurrentSession]; !ok {
+		currentSession := c.state.CurrentSession
 		c.lastHistory.Append(height, func() {
-			c.HistoryMembers[c.state.CurrentSession] =
+			c.HistoryMembers[currentSession] =
 				make(map[common.Uint168]*CRMember)
 		}, func() {
-			delete(c.HistoryMembers, c.state.CurrentSession)
+			delete(c.HistoryMembers, currentSession)
 		})
 	}
 
@@ -679,12 +689,13 @@ func (c *Committee) processCurrentCandidates(height uint32,
 	}
 
 	oriCandidate := copyCandidateMap(c.state.Candidates)
+	currentSession := c.state.CurrentSession
 	c.lastHistory.Append(height, func() {
 		c.state.Candidates = make(map[common.Uint168]*Candidate)
-		c.state.HistoryCandidates[c.state.CurrentSession] = newHistoryCandidates
+		c.state.HistoryCandidates[currentSession] = newHistoryCandidates
 	}, func() {
 		c.state.Candidates = oriCandidate
-		delete(c.state.HistoryCandidates, c.state.CurrentSession)
+		delete(c.state.HistoryCandidates, currentSession)
 	})
 }
 
@@ -871,6 +882,16 @@ func (c *Committee) RegisterFuncitons(cfg *CommitteeFuncsConfig) {
 	})
 	c.getUTXO = cfg.GetUTXO
 	c.getHeight = cfg.GetHeight
+}
+
+func (c *Committee) SnapShort() *CommitteeKeyFrame {
+	keyFrame := &CommitteeKeyFrame{
+		KeyFrame:         c.KeyFrame.Snapshot(),
+		StateKeyFrame:    c.state.StateKeyFrame.Snapshot(),
+		ProposalKeyFrame: c.manager.ProposalKeyFrame.Snapshot(),
+	}
+
+	return keyFrame
 }
 
 func NewCommittee(params *config.Params) *Committee {
