@@ -49,6 +49,12 @@
             href="{% static 'css/styles.css' %}"
     />
 
+    <link
+            rel="stylesheet"
+            type="text/css"
+            href="{% static 'css/styles-new.css' %}"
+    />
+
     <!-- Title -->
     {% block title %}{% endblock %}
 
@@ -56,39 +62,33 @@
     {% block scripts %}{% endblock %}
 
     <!-- Header -->
-    <header class="sticky-top">
-        <nav
-                class="navbar sticky-top navbar-expand-lg navbar-dark flex-column flex-md-row bd-navbar"
-        >
-            <a class="navbar-brand" href="/#">
-                <img src="{% static 'images/logo.png' %}" width="30" height="30" class="d-inline-block align-top"
-                     alt=""/>
-                <strong>Nucleus Console</strong>
+    <header>
+        <nav class="navbar navbar-expand-lg flex-column flex-md-row">
+            <a href="{% url 'landing' %}">
+                <img src="{% static 'images/common/logo-converted.svg' %}" class="logo-converted"
+                     alt="Nucleus Logo"/>
             </a>
             {% if request.session.logged_in == True %}
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-oggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse">
-                    <ul class="navbar-nav">
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url 'login:feed' %}">
-                                <button class="text-white" type="button"
-                                        style="background: transparent ; border: #FFFFFF">Feed
-                                </button>
-                            </a>
-                        </li>
-                        <li class="nav-item active">
-                            <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
+                <div class="collapse navbar-collapse" style="padding-left: 1rem;">
+                    <div>
+                        <a href="{% url 'login:feed' %}">
+                            <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF">
+                                Feed
+                            </button>
+                        </a>
+                    </div>
+                    <div style="padding-left: 1rem;">
+                        <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
                                     data-toggle="collapse" data-target="#menu_services"
                                     aria-controls="navbarToggleExternalContent" aria-expanded="false"
                                     aria-label="Toggle navigation">
-                                Services
-                            </button>
-                        </li>
-                    </ul>
+                            Services
+                        </button>
+                    </div>
                     <div class="dropdown">
                         <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown"
                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Playground</a>
@@ -244,17 +244,20 @@
 
 <!-- Footer -->
 <footer class="footer">
-    <div class="container text-center">
+    <div class="text-center">
         <p>
-            <a class="link" href="http://www.cyberrepublic.org" target="_blank"
-            >Cyberrepublic.org</a
-            >
-            <a class="link" href="https://github.com/cyber-republic/" target="_blank"
-            >Report</a
-            >
+            <a href="{% static 'images/common/logo-converted.svg' %}">
+                <img src="{% static 'images/common/logo-converted.svg' %}" class="logo-converted"
+                     alt="Nucleus Logo"/>
+            </a>
         </p>
-        <p class="copyright">
-            Copyright © 2019 Cyber Republic. All Rights Reserved.
+        <p>
+            <a class="link" href="http://www.cyberrepublic.org" target="_blank">Cyberrepublic.org</a>
+            <span style="color: #242a37;">|</span>
+            <a class="link" href="https://github.com/cyber-republic/" target="_blank">Report</a>
+        </p>
+        <p>
+            <span class="copyright">Copyright © 2019 Cyber Republic. All Rights Reserved.</span>
         </p>
     </div>
 </footer>
