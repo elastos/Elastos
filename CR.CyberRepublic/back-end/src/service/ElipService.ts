@@ -386,7 +386,11 @@ export default class extends Base {
     const query: any = {}
 
     const status = constant.ELIP_STATUS
-    const privateStatus = [status.REJECTED, status.WAIT_FOR_REVIEW]
+    const privateStatus = [
+      status.REJECTED,
+      status.WAIT_FOR_REVIEW,
+      status.PERSONAL_DRAFT
+    ]
     const publicStatus = [status.DRAFT, status.SUBMITTED_AS_PROPOSAL]
 
     if (!this.isLoggedIn()) {
@@ -400,14 +404,27 @@ export default class extends Base {
       // secretary and admin
       const role = constant.USER_ROLE
       if ([role.SECRETARY, role.ADMIN].includes(userRole)) {
-        if (
-          param.filter &&
-          _.values(status).includes(param.filter)
-        ) {
+        const specialStatus = _.values(status).filter(
+          item => item === status.PERSONAL_DRAFT
+        )
+        if (!param.filter || param.filter === 'ALL') {
+          query.$or = [
+            {
+              createdBy: currentUserId,
+              status: { $in: status.PERSONAL_DRAFT }
+            },
+            { status: { $in: specialStatus} }
+          ]
+        }
+        if (param.filter && param.filter === status.PERSONAL_DRAFT) {
+          query.createdBy = currentUserId
+          query.status = param.filter
+        }
+        if (param.filter && specialStatus.includes(param.filter)) {
           query.status = param.filter
         }
       } else {
-        if (!param.filter || param.filter === constant.ELIP_FILTER.ALL) {
+        if (!param.filter || param.filter === 'ALL') {
           query.$or = [
             {
               createdBy: currentUserId,
