@@ -436,7 +436,7 @@
     <string name="Listofcandidates">Candidate List</string>
     <string name="menberpk">Candidate Public Key</string>
     <string name="menberdid">Candidate DID</string>
-    <string name="maxvote">Maximum Voting Rights About：</string>
+    <string name="maxvote">Maximum Voting Rights: Approx.&#160;</string>
     <string name="equaldivision">All &#38; Average</string>
     <string name="currentrank">Current Ranking：</string>
     <string name="ticketnum">Total Votes：</string>
@@ -453,7 +453,7 @@
     <string name="crinfor">About Council Members</string>
     <string name="quitcr">Withdraw From Election</string>
     <string name="officeweb">Election URL</string>
-    <string name="quitcrornot">Quit from the CR Election Race?\nAfter quitting, votes are permanently cleared</string>
+    <string name="quitcrornot">Quitting from the CR Election?\nAfter quitting, votes are permanently cleared.</string>
     <string name="plzinputcrurl">Input Election URL</string>
     <string name="invalidcr">Candidate nodes are invalid</string>
     <string name="all">Total&#160;</string>
