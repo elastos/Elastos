@@ -140,6 +140,7 @@ export default {
     schedule: '支出计划',
     total: '总预算',
     address: 'ELA 接收地址',
+    tip: '请先添加里程碑',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: '预付款(小于总金额的30%)',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: '提案完成付款',
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '有条件的付款'

@@ -126,8 +126,19 @@ class PaymentSchedule extends Component {
     )
   }
 
+  getMilestone = () => {
+    const milestone = sessionStorage.getItem('plan-milestone') || []
+    try {
+      const rs = JSON.parse(milestone)
+      return Array.isArray(rs) ? rs : []
+    } catch (err) {
+      return []
+    }
+  }
+
   render() {
     const { paymentItems, index, total, address, errors } = this.state
+    const milestone = this.getMilestone()
     return (
       <Wrapper>
         <Section>
@@ -150,9 +161,15 @@ class PaymentSchedule extends Component {
         </Section>
         <Section>
           <Label>{I18N.get('suggestion.budget.schedule')}</Label>
-          <Button onClick={this.showModal}>
+          <Button
+            onClick={this.showModal}
+            disabled={!milestone.length ? true : false}
+          >
             {I18N.get('suggestion.budget.create')}
           </Button>
+          {!milestone.length ? (
+            <Tip>{I18N.get('suggestion.budget.tip')}</Tip>
+          ) : null}
         </Section>
         {errors.schedule ? <Error>{errors.schedule}</Error> : null}
         {paymentItems.length ? (
@@ -175,6 +192,7 @@ class PaymentSchedule extends Component {
               types={paymentItems.map(item => item.type)}
               onSubmit={this.handleSubmit}
               onCancel={this.hideModal}
+              milestone={milestone}
             />
           ) : null}
         </Modal>
@@ -232,4 +250,8 @@ const StyledInput = styled.input`
 `
 const Error = styled.div`
   color: #f5222d;
+`
+const Tip = styled.div`
+  color: #666;
+  font-size: 13px;
 `

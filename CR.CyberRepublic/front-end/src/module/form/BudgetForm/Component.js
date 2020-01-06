@@ -40,16 +40,6 @@ class BudgetForm extends Component {
     this.setState({ activeKey })
   }
 
-  getMilestone = () => {
-    const milestone = sessionStorage.getItem('plan-milestone') || []
-    try {
-      const rs = JSON.parse(milestone)
-      return Array.isArray(rs) ? rs : []
-    } catch (err) {
-      return []
-    }
-  }
-
   renderTabText(date) {
     return (
       <TabText className="tab-text">
@@ -93,8 +83,7 @@ class BudgetForm extends Component {
 
   render() {
     const { getFieldDecorator } = this.props.form
-    const { item } = this.props
-    const milestone = this.getMilestone()
+    const { item, milestone } = this.props
     return (
       <Wrapper>
         <Title>{I18N.get('suggestion.budget.create')}</Title>

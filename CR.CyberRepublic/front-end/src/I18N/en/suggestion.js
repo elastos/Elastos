@@ -139,6 +139,7 @@ export default {
     schedule: 'Payment Schedule',
     total: 'Total Budget',
     address: 'ELA Receive Address',
+    tip: 'Please add milestone first',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Advance payment (< 30% of total)',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Proposal completion payment',
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Conditioned payment'
