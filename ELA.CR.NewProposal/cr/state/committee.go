@@ -560,7 +560,8 @@ func (c *Committee) isInVotingPeriod(height uint32) bool {
 			height < committeeUpdateHeight
 	}
 
-	if c.LastCommitteeHeight < c.params.CRCommitteeStartHeight {
+	if c.LastCommitteeHeight < c.params.CRCommitteeStartHeight &&
+		height <= c.params.CRCommitteeStartHeight {
 		return height >= c.params.CRVotingStartHeight &&
 			height < c.params.CRCommitteeStartHeight
 	} else {
