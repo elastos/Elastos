@@ -98,7 +98,7 @@ class C extends BaseComponent {
       const budget = form.getFieldValue('budget')
       if (budget) {
         values.budget = budget.paymentItems
-        values.budgetAmount = Number(budget.budgetAmount)
+        values.budgetAmount = budget.budgetAmount && Number(budget.budgetAmount)
         values.elaAddress = budget.elaAddress
       }
       this.props.onSaveDraft(values)
