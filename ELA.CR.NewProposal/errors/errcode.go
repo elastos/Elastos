@@ -78,6 +78,8 @@ const (
 	ErrTxPoolDPoSTxDuplicate      ErrCode = -71003
 	ErrTxPoolCRTxDuplicate        ErrCode = -71004
 	ErrTxPoolDoubleSpend          ErrCode = -71005
+	ErrTxPoolTypeCastFailure      ErrCode = -71006
+	ErrTxPoolTxDuplicate          ErrCode = -71007
 )
 
 type SimpleErr struct {
