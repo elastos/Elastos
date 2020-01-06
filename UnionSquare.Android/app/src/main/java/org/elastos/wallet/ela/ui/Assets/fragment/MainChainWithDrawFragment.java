@@ -2,7 +2,6 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.InputFilter;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -17,6 +16,8 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
@@ -24,13 +25,12 @@ import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.SideChainPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonBooleanViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -42,7 +42,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class MainChainWithDrawFragment extends BaseFragment implements CommonBalanceViewData, CommmonBooleanViewData, CommmonStringWithMethNameViewData {
+public class MainChainWithDrawFragment extends BaseFragment implements CommonBalanceViewData, CommmonStringWithMethNameViewData, NewBaseViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.iv_title_right)
@@ -173,12 +173,12 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
                     QrBean qrBean = JSON.parseObject(result, QrBean.class);
                     int type = qrBean.getExtra().getType();
                     if (type == Constant.TRANSFER) {
-                        address = qrBean.getData();
-                        etPayeeaddr.setText(address);
+                        etPayeeaddr.setText(qrBean.getData());
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    showToast(getString(R.string.infoformatwrong));
+                    //直接判断二维码内容是否是地址
+                    new TransferPresenter().isAddressValid(wallet.getWalletId(), result, this, result);
+
                 }
             }
         }
@@ -209,19 +209,10 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
             showToastMessage(getString(R.string.lack_of_balance));
             return;
         }*/
-        presenter.isAddressValid(wallet.getWalletId(), address, this);
-    }
-
-    @Override
-    public void onGetCommonData(boolean data) {
-        if (!data) {
-            showToastMessage(getString(R.string.invalidaddress));
-            return;
-        }
-        String remark = etRemark.getText().toString().trim();
-        presenter.createWithdrawTransaction(wallet.getWalletId(), chainId, "", Arith.mulRemoveZero(amount, MyWallet.RATE_S).toPlainString(), address, remark, this);
+        new TransferPresenter().isAddressValid(wallet.getWalletId(), address, this, null);
 
     }
+
 
     @Override
     public void onGetCommonData(String methodname, String data) {
@@ -251,6 +242,25 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
             case 1:
                 etPayeeaddr.setText(parts[0]);
                 break;
+        }
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        //这里是判断地址是否合法
+        boolean data = ((CommmonBooleanEntity) baseEntity).getData();
+        if (!data) {
+            showToastMessage(getString(R.string.invalidaddress));
+            return;
+        }
+
+        if (o == null) {
+
+            String remark = etRemark.getText().toString().trim();
+            presenter.createWithdrawTransaction(wallet.getWalletId(), chainId, "", Arith.mulRemoveZero(amount, MyWallet.RATE_S).toPlainString(), address, remark, this);
+
+        } else {
+            etPayeeaddr.setText((String) o);
         }
     }
 }

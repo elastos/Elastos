@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSON;
 import com.blankj.utilcode.util.ToastUtils;
 
 import org.elastos.wallet.R;
@@ -21,7 +20,7 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
-import org.elastos.wallet.ela.ui.crvote.bean.CRMenberInfoBean;
+import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
@@ -71,13 +70,12 @@ public class UpdateCRInformationFragment extends BaseFragment implements NewBase
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.update_information));
         registReceiver();
-        MatcherUtil.editTextFormat(etUrl,100);
+        MatcherUtil.editTextFormat(etUrl, 100);
     }
 
     @Override
     protected void setExtraData(Bundle data) {
-        String i = data.getString("info");
-        CRMenberInfoBean bean = JSON.parseObject(i, CRMenberInfoBean.class);
+        CrStatusBean.InfoBean bean = data.getParcelable("info");
         etDotname.setText(bean.getNickName());
         etDotname.setEnabled(false);
         code = bean.getLocation();

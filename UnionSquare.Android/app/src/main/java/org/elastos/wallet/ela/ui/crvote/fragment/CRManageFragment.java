@@ -10,8 +10,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.allen.library.SuperButton;
 
 import org.elastos.wallet.R;
@@ -27,7 +25,7 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
-import org.elastos.wallet.ela.ui.crvote.bean.CRMenberInfoBean;
+import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRManagePresenter;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
@@ -110,7 +108,6 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     private Wallet wallet = realmUtil.queryDefauleWallet();
     CRManagePresenter presenter;
     String status;
-    private String info;
     private String did;
     private String ownerPublicKey;
 
@@ -138,7 +135,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
         ownerPublicKey = data.getString("publickey");
         status = data.getString("status", "Canceled");
         did = data.getString("did", "");
-        info = data.getString("info", "");
+        CrStatusBean.InfoBean info = data.getParcelable("info");
         CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentNode");
         if (curentNode == null) {
             return;
@@ -152,8 +149,8 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             ll_xggl.setVisibility(View.GONE);
             ll_tq.setVisibility(View.VISIBLE);
             tvQuit.setText(curentNode.getNickname() + getString(R.string.hasquit));
-            JSONObject jsonObject = JSON.parseObject(info);
-            long height = jsonObject.getLong("Confirms");
+
+            long height = info.getConfirms();
             if (height >= 2160) {
                 //获取赎回金额
                 presenter.getCRDepositcoin(did, this);
@@ -205,9 +202,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 break;
 
             case R.id.sb_up:
-                Bundle bundle = new Bundle();
-                bundle.putString("info", info);
-                start(UpdateCRInformationFragment.class, bundle);
+                start(UpdateCRInformationFragment.class, getArguments());
                 break;
         }
     }
@@ -220,9 +215,9 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     }
 
 
-    private void onJustRegistered(String data, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode) {
+    private void onJustRegistered(CrStatusBean.InfoBean bean, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode) {
 
-        CRMenberInfoBean bean = JSON.parseObject(data, CRMenberInfoBean.class);
+
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         String url = bean.getURL();

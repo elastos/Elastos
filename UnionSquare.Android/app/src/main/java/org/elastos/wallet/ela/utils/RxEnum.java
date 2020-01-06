@@ -83,7 +83,7 @@ public enum RxEnum {
         Deploy, // 部署交易
         SideChainPow, // 侧链挖矿交易
         RechargeToSideChain, // 侧链充值交易
-        WithdrawFromSideChain, // 侧链提现交易
+        WithdrawFromSideChain, // 主链提现交易
         TransferCrossChainAsset, // 跨链交易
 
         RegisterProducer, // 注册参选交易

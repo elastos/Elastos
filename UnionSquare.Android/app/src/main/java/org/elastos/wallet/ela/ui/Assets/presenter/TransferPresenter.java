@@ -3,27 +3,24 @@ package org.elastos.wallet.ela.ui.Assets.presenter;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
-import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
-import org.elastos.wallet.ela.ui.common.listener.CommonBooleanListener;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringListner;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 
-public class TransferPresenter extends PresenterAbstract {
-
-
-    public void isAddressValid(String walletId, String addr, BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonBooleanListener.class, baseFragment);
+public class TransferPresenter extends NewPresenterAbstract {
+    public void isAddressValid(String walletId, String addr, BaseFragment baseFragment, String type) {
+        Observer observer = createObserver(baseFragment, "isAddressValid", type);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
                 return baseFragment.getMyWallet().isAddressValid(walletId, addr);
             }
         });
-        subscriberObservable(observer, observable);
+        subscriberObservable(observer, observable, baseFragment);
     }
 
 

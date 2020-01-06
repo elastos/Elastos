@@ -12,16 +12,6 @@ import io.reactivex.Observer;
 
 public class SideChainPresenter extends PresenterAbstract {
 
-    public void isAddressValid(String walletId, String addr, BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonBooleanListener.class, baseFragment);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().isAddressValid(walletId, addr);
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
 
 
     public void createDepositTransaction(String masterWalletID, String chainID, String fromAddress, String sideChainID, String amount

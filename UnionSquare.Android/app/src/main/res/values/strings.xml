@@ -195,7 +195,7 @@
     <string name="transfertype4">部署交易</string>
     <string name="transfertype5">侧链挖矿交易</string>
     <string name="transfertype6">侧链充值交易</string>
-    <string name="transfertype7">侧链提现交易</string>
+    <string name="transfertype7">主链提现交易</string>
     <string name="transfertype8">跨链交易</string>
     <string name="transfertype9">注册参选交易</string>
     <string name="transfertype10">取消参选交易</string>
@@ -213,7 +213,7 @@
     <string name="sidetransfertype4">部署交易</string>
     <string name="sidetransfertype5">侧链挖矿交易</string>
     <string name="sidetransfertype6">侧链充值交易</string>
-    <string name="sidetransfertype7">侧链提现交易</string>
+    <string name="sidetransfertype7">主链提现交易</string>
     <string name="sidetransfertype8">跨链交易</string>
     <string name="sidetransfertype9">注册参选交易</string>
     <string name="sidetransfertype10">ID交易</string>

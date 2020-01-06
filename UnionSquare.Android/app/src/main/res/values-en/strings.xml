@@ -193,7 +193,7 @@
     <string name="transfertype4">Deployment Transaction</string>
     <string name="transfertype5">Sidechain Mining Transaction</string>
     <string name="transfertype6">Sidechain Deposit Transaction</string>
-    <string name="transfertype7">Sidechain withdraw Transaction</string>
+    <string name="transfertype7">Mainchain withdraw Transaction</string>
     <string name="transfertype8">Cross Chain transfer Transaction</string>
     <string name="transfertype9">Node Registration Transaction</string>
     <string name="transfertype10">Node Cancellation Transaction</string>
@@ -211,7 +211,7 @@
     <string name="sidetransfertype4">Deployment Transaction</string>
     <string name="sidetransfertype5">Sidechain Mining Transaction</string>
     <string name="sidetransfertype6">Sidechain Deposit Transaction</string>
-    <string name="sidetransfertype7">Sidechain withdraw Transaction</string>
+    <string name="sidetransfertype7">Mainchain withdraw Transaction</string>
     <string name="sidetransfertype8">Cross Chain transfer Transaction</string>
     <string name="sidetransfertype9">Node Registration Transaction</string>
     <string name="sidetransfertype10">ID Transaction</string>
