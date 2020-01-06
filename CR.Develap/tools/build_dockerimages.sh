@@ -123,7 +123,7 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.wallet" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "9acddc6e5ce3ffa7305e618b723b66b9edf58108" "github.com/elastos/Elastos.ORG.Wallet.Service" "service.wallet" \
+    build_binary_and_docker "7ba7a8ff2e2bd3de51cf3ddda0d6916c88815dce" "github.com/elastos/Elastos.ORG.Wallet.Service" "service.wallet" \
         "cyberrepublic/elastos-wallet-service" "yes" ""
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.sidechain" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
@@ -138,8 +138,8 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "elaphant" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "153d9f73555ec386fbc376b0468b48c3e8c994f7" "github.com/elaphantapp/ElaphantNode" "elaphant" \
-        "cyberrepublic/elastos-elaphant-node" "yes" ""
+    build_binary_and_docker "v0.3.1" "github.com/elaphantapp/ElaphantNode" "elaphant" \
+        "cyberrepublic/elastos-elaphant-node" "yes" "v0.3.1"
 fi
 
 cd $CURRENT_DIR
