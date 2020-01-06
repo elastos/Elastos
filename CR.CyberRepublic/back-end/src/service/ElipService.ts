@@ -119,7 +119,8 @@ export default class extends Base {
               rationale,
               backwardCompatibility,
               referenceImplementation,
-              copyright
+              copyright,
+              personalDraft
           } = param
       if(!constant.ELIP_TYPE[elipType]){
         elipType = _.values(constant.ELIP_TYPE)[0]
@@ -134,25 +135,28 @@ export default class extends Base {
         backwardCompatibility,
         referenceImplementation,
         copyright,
-        status: constant.ELIP_STATUS.WAIT_FOR_REVIEW,
+        status: personalDraft ? constant.ELIP_STATUS.PERSONAL_DRAFT : constant.ELIP_STATUS.WAIT_FOR_REVIEW,
         contentType: constant.CONTENT_TYPE.MARKDOWN,
         createdBy: this.currentUser._id
       }
-      const councilMembers = await db_user.find({
-        role: constant.USER_ROLE.COUNCIL
-      })
-      const voteResult = []
-      _.map(councilMembers, user => {
-        voteResult.push({
-          votedBy: user._id,
-          value: constant.ELIP_VOTE_RESULT.UNDECIDED
+      if (!personalDraft) {
+        const councilMembers = await db_user.find({
+          role: constant.USER_ROLE.COUNCIL
         })
-      })
-      doc.voteResult = voteResult
-      doc.voteHistory = voteResult
-
+        const voteResult = []
+        _.map(councilMembers, user => {
+          voteResult.push({
+            votedBy: user._id,
+            value: constant.ELIP_VOTE_RESULT.UNDECIDED
+          })
+        })
+        doc.voteResult = voteResult
+        doc.voteHistory = voteResult
+      }
       const elip = await db_elip.save(doc)
-      this.notifySecretaries(elip)
+      if (!personalDraft) {
+        this.notifySecretaries(elip)
+      }
       return elip
     } catch (error) {
       logger.error(error)

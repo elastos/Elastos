@@ -130,7 +130,7 @@ class C extends BaseComponent {
     return !TAB_KEYS.includes(key) ? this.state.activeKey : key
   }
 
-  handleSubmit = async e => {
+  handleSubmit = async (e, personalDraft) => {
     const { onSubmit, form } = this.props
     this.setState({ loading: true })
     e.preventDefault()
@@ -143,18 +143,14 @@ class C extends BaseComponent {
         })
         return
       }
-
-      onSubmit({
-        title: values.title,
-        elipType: values.type,
-        abstract: values.abstract,
-        specifications: values.specification,
-        motivation: values.motivation,
-        rationale: values.rationale,
-        backwardCompatibility: values.backwardCompatibility,
-        referenceImplementation: values.referenceImplementation,
-        copyright: values.copyright
-      })
+      values.specifications = values.specification
+      delete values.specification
+      if (personalDraft) {
+        values.personalDraft = personalDraft
+      }
+      
+      await onSubmit(values)
+      this.setState({loading: false})
     })
   }
 
@@ -323,11 +319,7 @@ class C extends BaseComponent {
           >
             {_.map(TABS, value => this.renderTabItem(value))}
           </Tabs>
-          <Row
-            type="flex"
-            justify="center"
-            style={{ marginBottom: '30px' }}
-          >
+          <Row type="flex" justify="center" style={{ marginBottom: '30px' }}>
             <Col>
               <Button
                 loading={this.state.loading}
@@ -341,10 +333,7 @@ class C extends BaseComponent {
           </Row>
           <Row gutter={10} type="flex" justify="center">
             <Col>
-              <Button
-                onClick={onCancel}
-                className="cr-btn cr-btn-default"
-              >
+              <Button onClick={onCancel} className="cr-btn cr-btn-default">
                 {I18N.get('elip.button.cancel')}
               </Button>
             </Col>
@@ -355,6 +344,15 @@ class C extends BaseComponent {
                 htmlType="button"
               >
                 {I18N.get('elip.button.preview')}
+              </Button>
+            </Col>
+            <Col>
+              <Button
+                onClick={(e) => { this.handleSubmit(e, true) }}
+                className="cr-btn cr-btn-default"
+                htmlType="button"
+              >
+                {I18N.get('elip.button.personalDraft')}
               </Button>
             </Col>
             <Col>

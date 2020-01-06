@@ -71,7 +71,8 @@ export default {
     exportAsCSV: '导出CSV文件',
     clearFilter: '重置过滤',
     applyFilter: '应用过滤',
-    preview: '预览'
+    preview: '预览',
+    personalDraft: '保存为个人的草案'
   },
   msg: {
     updated: '更新成功',

@@ -71,7 +71,8 @@ export default {
     exportAsCSV: 'Export as CSV',
     clearFilter: 'Clear Filter',
     applyFilter: 'Apply Filter',
-    preview: 'Preview'
+    preview: 'Preview',
+    personalDraft: 'Save as Personal Draft'
   },
   msg: {
     updated: 'Updated successfully',
