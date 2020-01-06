@@ -11,6 +11,8 @@ let walletPassword: String = "test111111"
 
 let walletDir: String = "/Users/liaihong/.didwallet"
 let walletId: String = "test"
-let networkConfig: String = "/Users/liaihong/Documents/Git/Elastos.DID.Native.SDK/adapter/wallet/privnet.json"
+
+let networkConfig: String = "TestNet"
+//let networkConfig: String = "/Users/liaihong/Documents/Git/Elastos.DID.Native.SDK/adapter/wallet/privnet.json"
 //let resolver: String = "https://coreservices-didsidechain-privnet.elastos.org"
 let resolver: String = "http://api.elastos.io:21606"

@@ -11,40 +11,50 @@ class IDChainOperationsTest: XCTestCase {
             let testData: TestData = TestData()
             let store: DIDStore = try testData.setupStore(false)
             try testData.initIdentity()
-            let adapter: SPVAdaptor = DIDBackend.shareInstance().adapter as! SPVAdaptor
+            var adapter: SPVAdaptor? = nil
+            adapter = (DIDBackend.shareInstance().adapter as? SPVAdaptor)
             
-            while true {
-                if try adapter.isAvailable() {
-                    print("OK")
-                    break
+            if adapter != nil {
+                while true {
+                    if try adapter!.isAvailable() {
+                        print("OK")
+                        break
+                    }
+                    else {
+                        print("...")
+                    }
+                    let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
+                    wait(for: [lock], timeout: 30)
                 }
-                else {
-                    print("...")
-                }
-                let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
-                wait(for: [lock], timeout: 30)
             }
+
+            // Create new DID and publish to ID sidechain.
             let doc = try store.newDid(storePass)
             let did = doc.subject
             let txid = try store.publishDid(did!, storePass)
             XCTAssertNotNil(txid)
             print("Published new DID: \(doc.subject!)")
             
-            print("Try to resolve new published DID.")
-            while true {
-                let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
-                wait(for: [lock], timeout: 30)
-                let resolved = try store.resolveDid(doc.subject!, true)
-                if resolved != nil {
-                    print("OK")
-                    XCTAssertEqual(doc.subject!, resolved!.subject)
-                    XCTAssertTrue(try resolved!.isValid())
-                    break
-                }
-                else {
-                    print("...")
+            // Resolve new DID document
+            if adapter != nil {
+                print("Try to resolve new published DID.")
+                while true {
+                    let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
+                    wait(for: [lock], timeout: 30)
+                    let rdoc = try did!.resolve(true)
+                    if rdoc != nil {
+                        print("OK")
+                        break
+                    }
+                    else {
+                        print("...")
+                    }
                 }
             }
+            let resolved = try did!.resolve(true)
+            XCTAssertEqual(did, resolved!.subject)
+            XCTAssertTrue(try resolved!.isValid())
+            XCTAssertEqual(try doc.description(true), try resolved?.description(true))
         } catch {
             XCTFail()
         }
@@ -73,10 +83,10 @@ class IDChainOperationsTest: XCTestCase {
             }
             // Create new DID and publish to ID sidechain.
             var doc = try store.newDid(storePass)
-            var did = doc.subject
+            let did = doc.subject
             var txid = try store.publishDid(did!, storePass)
             XCTAssertNotNil(txid)
-            print("Published new DID: \(did)")
+            print("Published new DID: \(did!)")
             // Resolve new DID document
             
             if adapter != nil {
@@ -156,7 +166,6 @@ class IDChainOperationsTest: XCTestCase {
             lastTxid = resolved!.getTransactionId()
             print("Last transaction id: \(lastTxid)")
             // Update
-            //            db = resolved.edit()
             key = try TestData.generateKeypair()
             try resolved!.addAuthenticationKey("key2", key.getPublicKeyBase58())
             doc = try resolved!.seal(store, storePass)

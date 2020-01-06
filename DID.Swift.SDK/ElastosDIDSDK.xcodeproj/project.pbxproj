@@ -32,11 +32,9 @@
 		11641BC123B72AD00037016B /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 11641BBF23B72AD00037016B /* HDkey.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		116AC38A23A5FA410076BDC7 /* LRUCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116AC38523A5FA410076BDC7 /* LRUCache.swift */; };
 		116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA572360092D00BBEE4F /* TestUtils.swift */; };
-		1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182866A2395194000F1BBA3 /* BulkCreate.swift */; };
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
 		11A6B15B238FD79000D3C1F1 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B159238FD77E00D3C1F1 /* libcrypto.a */; };
 		11A6B15C238FD79000D3C1F1 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B15A238FD77E00D3C1F1 /* libhdkey.a */; };
-		11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */; };
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		11CBBBD423AFB39300730D7E /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B159238FD77E00D3C1F1 /* libcrypto.a */; };
 		11CBBBD523AFB39300730D7E /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B15A238FD77E00D3C1F1 /* libhdkey.a */; };
@@ -195,7 +193,6 @@
 		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
 		110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Antlr4.xcodeproj; path = Antlr4/Antlr4.xcodeproj; sourceTree = "<group>"; };
 		110AD2FE234E44C8006578D6 /* Base58.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
-		110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FakeConsoleAdaptor.swift; path = ElastosDIDSDKTests/FakeConsoleAdaptor.swift; sourceTree = SOURCE_ROOT; };
 		1125B5752382302800D396B6 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
 		1125B57D238234FB00D396B6 /* CHDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CHDKey.swift; path = include/CHDKey.swift; sourceTree = "<group>"; };
 		1125B5852382351700D396B6 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = "Externals/libhdkey/lib/-iphonesimulator/libboost_thread.a"; sourceTree = "<group>"; };
@@ -231,7 +228,6 @@
 		11641BBF23B72AD00037016B /* HDkey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HDkey.h; sourceTree = "<group>"; };
 		116AC38523A5FA410076BDC7 /* LRUCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LRUCache.swift; sourceTree = "<group>"; };
 		116CAA572360092D00BBEE4F /* TestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestUtils.swift; path = TestUtils/TestUtils.swift; sourceTree = "<group>"; };
-		1182866A2395194000F1BBA3 /* BulkCreate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkCreate.swift; sourceTree = "<group>"; };
 		119338DC237E4DB800C4998E /* TestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestConfig.swift; path = TestUtils/TestConfig.swift; sourceTree = "<group>"; };
 		119338E2237E622300C4998E /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E4237E623100C4998E /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
@@ -485,8 +481,6 @@
 				11E09CBD23A8E033009B6A8D /* TestDataGenerator.swift */,
 				11D03AD323A9D05600549296 /* VerifiableCredentialTest.swift */,
 				11D03AD923A9D50200549296 /* VerifiablePresentationTest.swift */,
-				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
-				1182866A2395194000F1BBA3 /* BulkCreate.swift */,
 				1155D94A2352FACE00DF8C9D /* Info.plist */,
 				11DA06FE238B7C8F0066CC86 /* ElastosDIDSDKTests-Bridging-Header.h */,
 			);
@@ -881,7 +875,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */,
 				11641BB523B702FC0037016B /* AbstractAdapter.swift in Sources */,
 				1137CFA92398D68D00250D4F /* CHDKey.swift in Sources */,
 				1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */,
@@ -898,7 +891,6 @@
 				11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */,
 				11D03AD423A9D05600549296 /* VerifiableCredentialTest.swift in Sources */,
 				11D03ADA23A9D50200549296 /* VerifiablePresentationTest.swift in Sources */,
-				1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */,
 				111F4B7B239E315C00FEE4E0 /* Base64.swift in Sources */,
 				11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */,
 				116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */,
