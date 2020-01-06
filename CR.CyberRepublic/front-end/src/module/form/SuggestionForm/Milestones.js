@@ -3,7 +3,9 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Button, Popover } from 'antd'
 import moment from 'moment'
+import linkifyStr from 'linkifyjs/string'
 import MilestoneForm from '@/module/form/MilestoneForm/Container'
+import I18N from '@/I18N'
 
 class Milestones extends Component {
   constructor(props) {
@@ -12,143 +14,239 @@ class Milestones extends Component {
       milestones: props.initialValue ? props.initialValue : [],
       milestonesTrigger: props.initialValue
         ? this.milestonesTrigger(props.initialValue.length)
-        : {}
+        : {},
+      currentMilestonesTrigger: {
+        index: -1,
+        clicked: false,
+        clickedSwitch: false
+      },
+      toggleCreateForm: false
     }
   }
 
   milestonesTrigger = size => {
     const triggers = {}
     for (let i = 0; i < size; i++) {
-      triggers[i] = { clicked: false, hovered: false }
+      triggers[i] = { clicked: false, clickedSwitch: false }
     }
     return triggers
   }
 
   handleSubmit = values => {
     const { milestones, milestonesTrigger } = this.state
-    this.setState({ milestones: [...milestones, values] }, () => {
-      this.props.onChange({ milestone: this.state.milestones })
-    })
-    this.setState({
-      milestonesTrigger: {
-        ...milestonesTrigger,
-        [milestones.length]: { clicked: false, hovered: false }
+    const { onChange } = this.props
+    this.setState(
+      {
+        milestones: [...milestones, values],
+        milestonesTrigger: {
+          ...milestonesTrigger,
+          [milestones.length]: { clicked: false, clickedSwitch: false }
+        },
+        toggleCreateForm: false
+      },
+      () => {
+        onChange({ milestone: this.state.milestones })
+        sessionStorage.setItem(
+          'plan-milestone',
+          JSON.stringify(this.state.milestones)
+        )
       }
-    })
+    )
   }
 
   handleEdit = (index, values) => {
     const { milestones } = this.state
+    const { onChange } = this.props
     const rs = milestones.map((item, key) => {
       if (index === key) {
         return values
       }
       return item
     })
-    this.setState({ milestones: rs }, () => {
-      this.props.onChange({ milestone: this.state.milestones })
-    })
-  }
-
-  handleHoverChange = (index, visible) => {
-    const { milestonesTrigger } = this.state
-    this.setState({
-      milestonesTrigger: {
-        ...milestonesTrigger,
-        [index]: { hovered: visible, clicked: false }
-      }
+    this.setState({ milestones: rs, currentMilestonesTrigger: {} }, () => {
+      onChange({ milestone: this.state.milestones })
+      sessionStorage.setItem(
+        'plan-milestone',
+        JSON.stringify(this.state.milestones)
+      )
     })
   }
 
   handleClickChange = (index, visible) => {
-    const { milestonesTrigger } = this.state
     this.setState({
-      milestonesTrigger: {
-        ...milestonesTrigger,
-        [index]: { clicked: visible, hovered: false }
+      currentMilestonesTrigger: {
+        index,
+        clicked: visible,
+        clickedSwitch: false
       }
     })
   }
 
+  handleClickSwitchChange = index => {
+    const { currentMilestonesTrigger } = this.state
+    const isCurrentMilestone = currentMilestonesTrigger.index === index
+    this.setState({
+      currentMilestonesTrigger: {
+        index,
+        clicked: false,
+        clickedSwitch: isCurrentMilestone
+          ? !currentMilestonesTrigger.clickedSwitch
+          : true
+      }
+    })
+  }
+
+  handleVisibleChange = visible => {
+    this.setState({ toggleCreateForm: visible })
+  }
+
+  hideCreateForm = () => {
+    this.setState({ toggleCreateForm: false })
+  }
+
+  getMilestoneTrigger = index => {
+    const { currentMilestonesTrigger, milestonesTrigger } = this.state
+    const isCurrentMilestone = currentMilestonesTrigger.index === index
+    if (isCurrentMilestone) {
+      return currentMilestonesTrigger
+    }
+    return milestonesTrigger[index]
+  }
+
+  renderSquare(item, index, isBigSquare = false, isAutoLink = false) {
+    const date = <div>{moment(item.date).format('MMM D, YYYY')}</div>
+    const version = (
+      <div className="square-content">
+        {isAutoLink ? (
+          <p
+            dangerouslySetInnerHTML={{
+              __html: linkifyStr(item.version)
+            }}
+          />
+        ) : (
+          <p>{item.version}</p>
+        )}
+      </div>
+    )
+    const moreBtn = (
+      <Button
+        type="link"
+        onClick={() => this.handleClickSwitchChange(index)}
+        style={{ margin: '8px 0 16px' }}
+      >
+        {this.getMilestoneTrigger(index).clickedSwitch
+          ? I18N.get('suggestion.plan.hideDetail')
+          : I18N.get('suggestion.plan.showDetail')}
+      </Button>
+    )
+
+    return isBigSquare ? (
+      <BigSquare>
+        {date}
+        {version}
+        {moreBtn}
+      </BigSquare>
+    ) : (
+      <Square>
+        {date}
+        {version}
+        {moreBtn}
+      </Square>
+    )
+  }
+
   render() {
-    const { milestones, milestonesTrigger } = this.state
+    const { milestones, toggleCreateForm } = this.state
     const { editable } = this.props
     const visible = editable === false ? editable : true
     return (
       <Wrapper>
         <Timeline>
-          {milestones && milestones.map((item, index) => (
-            <Milestone key={index}>
-              {visible ? (
-                <Popover
-                  content={
-                    <MilestoneForm
-                      item={{
-                        ...item,
-                        date: moment(item.date, 'YYYY-MM-DD'),
-                        index
-                      }}
-                      onSubmit={this.handleEdit}
-                    />
-                  }
-                  trigger="click"
-                  visible={milestonesTrigger[index].clicked}
-                  onVisibleChange={isVisible =>
-                    this.handleClickChange(index, isVisible)
-                  }
-                  placement="top"
-                >
-                  <Popover
-                    content={item.version}
-                    trigger="hover"
-                    visible={milestonesTrigger[index].hovered}
-                    onVisibleChange={isVisible =>
-                      this.handleHoverChange(index, isVisible)
-                    }
-                    overlayStyle={{width: '360px', wordWrap: 'break-word', wordBreak: 'normal'}}
-                  >
-                    <Square>
-                      <div>{moment(item.date).format('MMM D, YYYY')}</div>
-                      <div className="square-content">{item.version}</div>
-                    </Square>
-                    <Button
-                      type="primary"
-                      size="small"
-                      shape="circle"
-                      icon="edit"
-                    />
-                  </Popover>
-                </Popover>
-              ) : (
-                <Fragment>
-                  <Popover
-                    content={item.version}
-                    trigger="hover"
-                    visible={milestonesTrigger[index].hovered}
-                    onVisibleChange={isVisible =>
-                      this.handleHoverChange(index, isVisible)
-                    }
-                    overlayStyle={{width: '360px', wordWrap: 'break-word', wordBreak: 'normal'}}
-                  >
-                    <Square>
-                      <div>{moment(item.date).format('MMM D, YYYY')}</div>
-                      <div className="square-content">{item.version}</div>
-                    </Square>
-                    <Circle />
-                  </Popover>
-                </Fragment>
-              )}
-            </Milestone>
-          ))}
+          {milestones &&
+            milestones.map((item, index) => (
+              <Milestone key={index}>
+                {visible ? (
+                  <MilestoneItem>
+                    <Popover
+                      content={this.renderSquare(item, index, true)}
+                      trigger="click"
+                      overlayStyle={{}}
+                      visible={this.getMilestoneTrigger(index).clickedSwitch}
+                      onVisibleChange={isVisible =>
+                        this.handleClickSwitchChange(index)
+                      }
+                    >
+                      <Square>{this.renderSquare(item, index)}</Square>
+                    </Popover>
+                    <MilestoneEdit>
+                      <Popover
+                        content={
+                          <MilestoneForm
+                            item={{
+                              ...item,
+                              date: moment(item.date, 'YYYY-MM-DD'),
+                              index
+                            }}
+                            onSubmit={this.handleEdit}
+                            hidePopover={() => {
+                              this.handleClickChange(index, false)
+                            }}
+                          />
+                        }
+                        trigger="click"
+                        visible={this.getMilestoneTrigger(index).clicked}
+                        onVisibleChange={isVisible =>
+                          this.handleClickChange(index, isVisible)
+                        }
+                        placement="top"
+                      >
+                        <Button
+                          type="primary"
+                          size="small"
+                          shape="circle"
+                          icon="edit"
+                        />
+                      </Popover>
+                    </MilestoneEdit>
+                  </MilestoneItem>
+                ) : (
+                  <Fragment>
+                    <MilestoneItem>
+                      <Popover
+                        content={this.renderSquare(item, index, true)}
+                        trigger="click"
+                        overlayStyle={{}}
+                        visible={this.getMilestoneTrigger(index).clickedSwitch}
+                        onVisibleChange={isVisible =>
+                          this.handleClickSwitchChange(index)
+                        }
+                      >
+                        <Square>
+                          {this.renderSquare(item, index, false, true)}
+                        </Square>
+                      </Popover>
+                      <Circle />
+                    </MilestoneItem>
+                  </Fragment>
+                )}
+              </Milestone>
+            ))}
 
           <Action visible={visible}>
             {visible && (
               <Popover
-                content={<MilestoneForm onSubmit={this.handleSubmit} />}
+                content={
+                  <MilestoneForm
+                    onSubmit={this.handleSubmit}
+                    hidePopover={this.hideCreateForm}
+                  />
+                }
                 trigger="click"
                 placement="top"
+                visible={toggleCreateForm}
+                onVisibleChange={this.handleVisibleChange}
               >
-                <Button size="small" shape="circle" icon="plus" />
+                <CircleButton>+</CircleButton>
               </Popover>
             )}
           </Action>
@@ -159,7 +257,7 @@ class Milestones extends Component {
 }
 
 Milestones.propTypes = {
-  onChang: PropTypes.func,
+  onChange: PropTypes.func,
   initialValue: PropTypes.array,
   editable: PropTypes.bool
 }
@@ -168,9 +266,9 @@ export default Milestones
 
 const Wrapper = styled.div`
   margin-bottom: 32px;
-  overflow-x: auto;
-  overflow-y: hidden;
   padding-bottom: 24px;
+  overflow-x: auto;
+  overflow-y: visible;
 `
 
 const Timeline = styled.div`
@@ -184,9 +282,15 @@ const Milestone = styled.div`
     margin: 8px auto -12px;
   }
 `
-const Square = styled.div`
+const MilestoneItem = styled.div`
+  position: relative;
   width: 150px;
-  height: 88px;
+  height: 109px;
+`
+const Square = styled.div`
+  position: absolute;
+  width: 100%;
+  bottom: 12px;
   background: #0f2631;
   color: #fff;
   display: flex;
@@ -195,20 +299,96 @@ const Square = styled.div`
   justify-content: center;
   line-height: 20px;
   > div {
-    margin-bottom: 6px;
-    &:last-child {
-      margin-bottom: 0;
+    margin-top: 4px;
+    &:first-child {
+      margin-top: 14px;
     }
     &.square-content {
-      width: 140px;
-      text-align: center;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
+      width: 100%;
+      padding: 0 22px;
+      > p {
+        padding: 0;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+    }
+  }
+  > button.ant-btn {
+    display: inline-block;
+    color: #1de9b6;
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    height: 17px;
+    flex: 17px;
+    margin: 0 0 13px 0;
+    > span {
+      vertical-align: top;
+      font-family: Synthese;
+      font-size: 12px;
+      line-height: 17px;
     }
   }
 `
+const BigSquare = styled.div`
+  position: absolute;
+  width: 295px;
+  left: -135.5px;
+  bottom: 5px;
+  background: #0f2631;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 20px;
+  > div {
+    margin-top: 4px;
+    &:first-child {
+      margin-top: 20px;
+    }
+    &.square-content {
+      width: 100%;
+      padding: 0 20px;
+      > p {
+        padding: 0;
+        text-align: center;
+        overflow-wrap: break-word;
+        white-space: normal;
+      }
+    }
+  }
+  > button.ant-btn {
+    display: inline-block;
+    color: #1de9b6;
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    height: 17px;
+    flex: 17px;
+    margin: 0 0 13px 0;
+    > span {
+      vertical-align: top;
+      font-family: Synthese;
+      font-size: 12px;
+      line-height: 17px;
+    }
+  }
+`
+const MilestoneEdit = styled.div`
+  position: relative;
+  top: 97px;
+  > button.ant-btn {
+    background-color: #1de9b6;
+    box-shadow: none;
+    border-color: transparent;
+  }
+`
 const Circle = styled.div`
+  position: relative;
+  top: 101px;
   height: 16px;
   width: 16px;
   border-radius: 50%;
@@ -216,20 +396,11 @@ const Circle = styled.div`
   margin: 8px auto -8px;
 `
 const Action = styled.div`
-  padding-left: 110px;
+  padding-left: 60px;
   padding-right: ${props => (props.visible === false ? '0' : '150px')};
   border-bottom: 1px solid #ced6e3;
   position: relative;
   padding-bottom: 24px;
-  > button {
-    position: absolute;
-    bottom: -12px;
-    background: #0f2631;
-    border-color: unset;
-    > i {
-      color: #1de9b6;
-    }
-  }
   &:after {
     content: '>';
     position: absolute;
@@ -237,4 +408,20 @@ const Action = styled.div`
     bottom: ${props => (props.visible === false ? '-8px' : '-17px')};
     color: #ced6e3;
   }
+`
+const CircleButton = styled.div`
+  position: absolute;
+  bottom: -12px;
+  background: #ffffff;
+  border: 1px solid #008d85;
+  height: 24px;
+  width: 24px;
+  line-height: 22px;
+  text-align: center;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1de9b6;
+  font-family: sans-serif;
 `

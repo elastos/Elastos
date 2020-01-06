@@ -1,10 +1,13 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import PropTypes from 'prop-types'
-import BaseComponent from '@/model/BaseComponent'
+import { Form, Input, DatePicker } from 'antd'
 import styled from 'styled-components'
-import { Form, Input, Button, DatePicker } from 'antd'
+import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
+import DatePickerIcon from './DatePickerIcon'
+import CloseIcon from './CloseIcon'
 
+const { TextArea } = Input
 const FormItem = Form.Item
 
 class MilestoneForm extends BaseComponent {
@@ -21,7 +24,7 @@ class MilestoneForm extends BaseComponent {
 
   ord_render() {
     const { getFieldDecorator } = this.props.form
-    const { item } = this.props
+    const { item, hidePopover } = this.props
     const formItemLayout = {
       labelCol: {
         span: 24
@@ -32,43 +35,53 @@ class MilestoneForm extends BaseComponent {
       colon: false
     }
     return (
-      <Form onSubmit={this.handleSubmit}>
-        <FormItem
-          label={I18N.get('suggestion.plan.publishDate')}
-          {...formItemLayout}
-        >
-          {getFieldDecorator('date', {
-            rules: [
-              {
-                required: true,
-                message: I18N.get('suggestion.form.error.required')
-              }
-            ],
-            initialValue: item && item.date
-          })(<DatePicker />)}
-        </FormItem>
-        <FormItem
-          label={I18N.get('suggestion.plan.version')}
-          {...formItemLayout}
-        >
-          {getFieldDecorator('version', {
-            rules: [
-              {
-                required: true,
-                message: I18N.get('suggestion.form.error.required')
-              }
-            ],
-            initialValue: item && item.version
-          })(<Input />)}
-        </FormItem>
-        <Actions>
-          <Button type="primary" htmlType="submit" size="default">
-            {item
-              ? I18N.get('suggestion.form.button.update')
-              : I18N.get('suggestion.form.button.create')}
-          </Button>
-        </Actions>
-      </Form>
+      <Fragment>
+        <StyledIcon>
+          <CloseIcon onClick={hidePopover} />
+        </StyledIcon>
+        <Form style={{ width: 330, paddingTop: 24 }}>
+          <FormItem
+            label={I18N.get('suggestion.plan.publishDate')}
+            {...formItemLayout}
+          >
+            {getFieldDecorator('date', {
+              rules: [
+                {
+                  required: true,
+                  message: I18N.get('suggestion.form.error.required')
+                }
+              ],
+              initialValue: item && item.date
+            })(
+              <DatePicker
+                suffixIcon={<DatePickerIcon />}
+                placeholder={I18N.get('suggestion.plan.selectDate')}
+              />
+            )}
+          </FormItem>
+          <FormItem
+            label={I18N.get('suggestion.plan.goal')}
+            {...formItemLayout}
+          >
+            {getFieldDecorator('version', {
+              rules: [
+                {
+                  required: true,
+                  message: I18N.get('suggestion.form.error.required')
+                }
+              ],
+              initialValue: item && item.version
+            })(<TextArea rows={8} style={{ resize: 'none' }} />)}
+          </FormItem>
+          <Actions>
+            <Button onClick={this.handleSubmit}>
+              {item
+                ? I18N.get('suggestion.form.button.update')
+                : I18N.get('suggestion.form.button.create')}
+            </Button>
+          </Actions>
+        </Form>
+      </Fragment>
     )
   }
 }
@@ -83,7 +96,19 @@ export default Form.create()(MilestoneForm)
 const Actions = styled.div`
   display: flex;
   justify-content: center;
-  > button {
-    margin: 0 8px;
-  }
+`
+const Button = styled.div`
+  margin: -8px 8px 12px;
+  background-color: #008d85;
+  width: 90px;
+  height: 32px;
+  font-size: 13px;
+  line-height: 32px;
+  text-align: center;
+  color: #ffffff;
+  cursor: pointer;
+`
+const StyledIcon = styled.div`
+  text-align: right;
+  cursor: pointer;
 `

@@ -65,12 +65,16 @@ class TeamInfoSection extends Component {
   }
 
   render() {
+    const { title } = this.props
     const { teamInfos, index } = this.state
     return (
       <Wrapper>
-        <Button onClick={this.showModal}>
-          {I18N.get('suggestion.plan.createTeamInfo')}
-        </Button>
+        <Header>
+          <Label>{title}</Label>
+          <Button onClick={this.showModal}>
+            {I18N.get('suggestion.plan.createTeamInfo')}
+          </Button>
+        </Header>
         {teamInfos.length ? (
           <TeamInfoList
             list={teamInfos}
@@ -83,7 +87,7 @@ class TeamInfoSection extends Component {
           visible={this.state.visible}
           onCancel={this.hideModal}
           footer={null}
-          width="70%"
+          width={770}
         >
           {this.state.visible === true ? (
             <TeamInfoForm
@@ -99,7 +103,8 @@ class TeamInfoSection extends Component {
 }
 
 TeamInfoSection.propTypes = {
-  onChang: PropTypes.func,
+  title: PropTypes.string,
+  onChange: PropTypes.func,
   initialValue: PropTypes.array
 }
 
@@ -107,4 +112,23 @@ export default TeamInfoSection
 
 const Wrapper = styled.div`
   margin-bottom: 24px;
+`
+const Header = styled.div`
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .ant-btn {
+    border: 1px solid #000000;
+    color: #000000;
+    &:hover {
+      border: 1px solid #008d85;
+      color: #008d85;
+    }
+  }
+`
+const Label = styled.div`
+  font-size: 17px;
+  line-height: 24px;
+  color: #000000;
 `

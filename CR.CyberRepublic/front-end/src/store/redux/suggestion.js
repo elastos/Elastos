@@ -29,7 +29,7 @@ class SuggestionRedux extends BaseRedux {
       // if we select a detail
       detail: {},
       sortBy: null,
-      filter: {},
+      filters: {},
 
       // filter on list
       tags_included: {

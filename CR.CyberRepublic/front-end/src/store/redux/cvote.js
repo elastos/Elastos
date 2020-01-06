@@ -11,6 +11,7 @@ class CVoteSummaryRedux extends BaseRedux {
       data: undefined,
       all_cotes: [],
       all_cotes_total: 0,
+      filters: {},
     }
   }
 }

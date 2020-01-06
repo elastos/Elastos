@@ -1,4 +1,8 @@
-import { ABSTRACT_MAX_WORDS, SUGGESTION_STATUS } from '@/constant'
+import {
+  ABSTRACT_MAX_WORDS,
+  SUGGESTION_STATUS,
+  SUGGESTION_BUDGET_TYPE
+} from '@/constant'
 
 export default {
   title: {
@@ -43,7 +47,7 @@ export default {
     referred: 'Referred in Proposal',
     [SUGGESTION_STATUS.ACTIVE]: 'Active',
     [SUGGESTION_STATUS.ABUSED]: 'Abused',
-    [SUGGESTION_STATUS.ARCHIVED]: 'Archived',
+    [SUGGESTION_STATUS.ARCHIVED]: 'Archived'
   },
   form: {
     search: 'Search Suggestions',
@@ -65,32 +69,36 @@ export default {
     },
     note: {
       type: 'Select a suggestion type.',
-      abstract: 'Provide a brief description of the proposal content (no more than 200 words).',
-      goal: 'Describe the desired results achieved by implementing the proposal. Goals should be clear and measurable.',
-      motivation: 'Describe why this proposal is proposed. Motivation is critical for proposals that try to improve Elastos or CR. It should be clearly explained here why the existing mechanism is not enough to solve the problems the proposal wants to solve.',
-      motivationHighlight: 'Proposals with insufficient motivation are highly likely to be rejected.',
-      relevance: 'If the proposal is related to other CRC proposals, the proposal number of each related proposal should be provided here. The relationship between the proposal and each related proposal should be described. If there are conflicts with Elastos technology or other CRC proposals, the proposal must describe these conflicts and explain how to deal with them.',
-      budget: 'If the implementation of the proposal requires financial support from the CRC, describe the overall budget and expenditure plan. This financial plan should be aligned with the implementation plan.',
+      abstract: `Provide a brief description of the proposal content (no more than 200 words).`,
+      goal: `Describe the desired results achieved by implementing the proposal. Goals should be clear and measurable.`,
+      motivation: `Describe why this proposal is proposed. Motivation is critical for proposals that try to improve Elastos or CR. It should be clearly explained here why the existing mechanism is not enough to solve the problems the proposal wants to solve.`,
+      motivationHighlight: `Proposals with insufficient motivation are highly likely to be rejected.`,
+      relevance: `If the proposal is related to other CRC proposals, the proposal number of each related proposal should be provided here. The relationship between the proposal and each related proposal should be described. If there are conflicts with Elastos technology or other CRC proposals, the proposal must describe these conflicts and explain how to deal with them.`,
+      budget: `If the implementation of the proposal requires financial support from the CRC, describe the overall budget and expenditure plan. This financial plan should be aligned with the implementation plan.`,
       type: 'Select a proposal type.',
-      plan: 'Describe what methods and processes will be used to achieve goals, and a brief introduction of the executing person or team should be listed here as well. If proposal has a long implementation timeline, it should set some checkpoints in the implementation process. The interval between two checkpoints should be no more than 3 months. The checkpoints should be clear and measurable as the proposed goals.',
-      tracking: 'This part is updated by the proposer according to the progress of the proposal, including the achievement of goal and budget usage. It is used to present the implementation status of proposal according to the checkpoints in the implementation plan or the goals of the proposal. The CRC Secretariat is responsible to review and verify this part.',
-      summary: 'When proposal is completed, its proposer should submit a summary of the proposal implementation, including the achievement of goals and financial report. The CRC Secretariat is responsible for the review of this part.'
+      plan: `Describe what methods and processes will be used to achieve goals, and a brief introduction of the executing person or team should be listed here as well. If proposal has a long implementation timeline, it should set some checkpoints in the implementation process. The interval between two checkpoints should be no more than 3 months. The checkpoints should be clear and measurable as the proposed goals.`,
+      tracking: `This part is updated by the proposer according to the progress of the proposal, including the achievement of goal and budget usage. It is used to present the implementation status of proposal according to the checkpoints in the implementation plan or the goals of the proposal. The CRC Secretariat is responsible to review and verify this part.`,
+      summary: `When proposal is completed, its proposer should submit a summary of the proposal implementation, including the achievement of goals and financial report. The CRC Secretariat is responsible for the review of this part.`
     },
     error: {
       required: 'This field is required',
       tooLong: 'This field is too long',
       [`limit${ABSTRACT_MAX_WORDS}`]: `You can only type ${ABSTRACT_MAX_WORDS} words max.`,
       isNaN: 'Please input valid amount',
-      plan: 'Implementation team or milestones is empty',
+      milestones: 'Milestones is empty',
+      team: 'Implementation team is empty',
+      totalBudget: 'Total budget is empty',
+      elaAddress: 'ELA receive address is empty',
+      paymentSchedule: 'Payment Schedule is empty'
     }
   },
   modal: {
     addTagComment: 'Add Comment',
     confirm: 'Confirm',
     cancel: 'Cancel',
-    pleaseUpdate: 'Please update the Suggestion with the requested info and notify the council/community through a comment.',
+    pleaseUpdate: `Please update the Suggestion with the requested info and notify the council/community through a comment.`,
     commentsFromCouncil: 'Comments from Council/Admin:',
-    consideration: 'Are you sure to mark this suggestion as under council consideration?'
+    consideration: `Are you sure to mark this suggestion as under council consideration?`
   },
   tag: {
     show: 'Show',
@@ -120,24 +128,37 @@ export default {
     name: 'Author name'
   },
   budget: {
-    create: 'Add payment item',
+    create: 'Add Payment Line',
     payment: 'Payment',
+    type: 'Type',
     amount: 'Amount',
     reasons: 'Reasons',
     criteria: 'Criteria of Payment',
-    action: 'Action'
+    action: 'Action',
+    desc: 'Based on milestone selected below:',
+    schedule: 'Payment Schedule',
+    total: 'Total Budget',
+    address: 'ELA Receive Address',
+    tip: 'Please add milestone first',
+    [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Advance payment (< 30% of total)',
+    [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Proposal completion payment',
+    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Conditioned payment'
   },
   plan: {
     teamMember: 'Team Member',
     role: 'Role',
     responsibility: 'Responsibility',
     moreInfo: 'More Info',
-    createTeamInfo: 'Add team member',
+    createTeamInfo: 'Add Team Member',
     action: 'Action',
     teamInfo: 'Implementation Team',
     milestones: 'Milestones',
     publishDate: 'Publish Date',
-    version: 'Version'
+    version: 'Version',
+    goal: 'Goal',
+    showDetail: 'Show Detail',
+    hideDetail: 'Hide Detail',
+    selectDate: 'Select date'
   },
   label: {
     hasMadeIntoProposal: 'has made it into'

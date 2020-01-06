@@ -2,12 +2,13 @@ import React from 'react'
 import styled from 'styled-components'
 import { convertMarkdownToHtml } from '@/util/markdown-it'
 
-function MarkedPreview({ content }) {
+function MarkedPreview({ content, style }) {
   return (
     <Wrapper
       dangerouslySetInnerHTML={{
         __html: convertMarkdownToHtml(content)
       }}
+      style={style}
     />
   )
 }
@@ -23,6 +24,10 @@ const Wrapper = styled.div`
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   tab-size: 4;
+  &:first-child {
+    margin-top: 0;
+    padding-top: 0;
+  }
   p {
     margin: 1.2em 0;
     padding: 0;
@@ -196,4 +201,5 @@ const Wrapper = styled.div`
     top: -0.25em;
     vertical-align: top;
   }
+  ${props => props.style}
 `

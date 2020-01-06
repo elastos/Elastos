@@ -10,7 +10,17 @@ const request = require('request')
 
 let tm = undefined
 
-const BASE_FIELDS = ['title', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'budgetAmount', 'plan']
+const BASE_FIELDS = [
+  'title',
+  'abstract',
+  'goal',
+  'motivation',
+  'relevance',
+  'budget',
+  'budgetAmount',
+  'elaAddress',
+  'plan'
+]
 
 export default class extends Base {
   // create a DRAFT propoal with minimal info
@@ -31,12 +41,13 @@ export default class extends Base {
       proposer: proposer ? proposer : this.currentUser._id,
       createdBy: this.currentUser._id
     }
-    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
+    const suggestion =
+      suggestionId && (await db_suggestion.findById(suggestionId))
     if (!_.isEmpty(suggestion)) {
       doc.reference = suggestionId
     }
 
-    Object.assign(doc, _.pick(suggestion, BASE_FIELDS));
+    Object.assign(doc, _.pick(suggestion, BASE_FIELDS))
 
     try {
       return await db_cvote.save(doc)
@@ -52,12 +63,13 @@ export default class extends Base {
     const db_user = this.getDBModel('User')
     const { suggestionId } = param
 
-    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
+    const suggestion =
+      suggestionId && (await db_suggestion.findById(suggestionId))
     if (!suggestion) {
       throw 'cannot find suggestion'
     }
 
-    const creator = await db_user.findById(suggestion.createdBy);
+    const creator = await db_user.findById(suggestion.createdBy)
     const vid = await this.getNewVid()
 
     const doc: any = {
@@ -72,7 +84,7 @@ export default class extends Base {
       reference: suggestionId
     }
 
-    Object.assign(doc, _.pick(suggestion, BASE_FIELDS));
+    Object.assign(doc, _.pick(suggestion, BASE_FIELDS))
 
     const councilMembers = await db_user.find({
       role: constant.USER_ROLE.COUNCIL
@@ -150,14 +162,6 @@ export default class extends Base {
     if (relevance) doc.relevance = relevance
     if (budget) {
       doc.budget = budget
-      if (Array.isArray(budget)) {
-        doc.budgetAmount = budget.reduce((sum, el) => {
-          if (el && el.amount) {
-            return sum += Number(el.amount)
-          }
-          return sum
-        }, 0.0)
-      }
     }
     if (plan) doc.plan = plan
 
@@ -209,8 +213,8 @@ export default class extends Base {
 
     const vid = await this.getNewVid()
     const status = published
-                 ? constant.CVOTE_STATUS.PROPOSED
-                 : constant.CVOTE_STATUS.DRAFT
+      ? constant.CVOTE_STATUS.PROPOSED
+      : constant.CVOTE_STATUS.DRAFT
 
     const doc: any = {
       title,
@@ -228,16 +232,9 @@ export default class extends Base {
       proposer,
       createdBy: this.currentUser._id
     }
-    if (budget && Array.isArray(budget)) {
-      doc.budgetAmount = budget.reduce((sum, el) => {
-        if (el && el.amount) {
-          return sum += Number(el.amount)
-        }
-        return sum
-      }, 0.0)
-    }
 
-    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
+    const suggestion =
+      suggestionId && (await db_suggestion.findById(suggestionId))
     if (!_.isEmpty(suggestion)) {
       doc.reference = suggestionId
     }
@@ -298,14 +295,10 @@ export default class extends Base {
     // compose email object
     const subject = `The suggestion is referred in Proposal #${cvote.vid}`
     const body = `
-      <p>Council member ${cvote.proposedBy} has refer to your suggestion ${
-      suggestion.title
-    } in a proposal #${cvote.vid}.</p>
+      <p>Council member ${cvote.proposedBy} has refer to your suggestion ${suggestion.title} in a proposal #${cvote.vid}.</p>
       <br />
       <p>Click this link to view more details:</p>
-      <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${
-      process.env.SERVER_URL
-    }/proposals/${cvote._id}</a></p>
+      <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
       <br /> <br />
       <p>Thanks</p>
       <p>Cyber Republic</p>
@@ -350,11 +343,7 @@ export default class extends Base {
       <br />
       <p>${cvote.title}</p>
       <br />
-      <p>Click this link to view more details: <a href="${
-        process.env.SERVER_URL
-      }/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${
-      cvote._id
-    }</a></p>
+      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
       <br /> <br />
       <p>Thanks</p>
       <p>Cyber Republic</p>
@@ -412,11 +401,7 @@ export default class extends Base {
             <br />
             <p>${title}</p>
             <br />
-            <p>Click this link to vote: <a href="${
-              process.env.SERVER_URL
-            }/proposals/${_id}">${
-            process.env.SERVER_URL
-          }/proposals/${_id}</a></p>
+            <p>Click this link to vote: <a href="${process.env.SERVER_URL}/proposals/${_id}">${process.env.SERVER_URL}/proposals/${_id}</a></p>
             <br /> <br />
             <p>Thanks</p>
             <p>Cyber Republic</p>
@@ -476,56 +461,78 @@ export default class extends Base {
       query.published = param.published
     }
     // createBy
-    if(param.author && param.author.length) {
+    if (param.author && param.author.length) {
       let search = param.author
       const db_user = this.getDBModel('User')
       const pattern = search.split(' ').join('|')
-      const users = await db_user.getDBInstance().find({
-        $or: [
-          { username: { $regex: search, $options: 'i' } },
-          { 'profile.firstName': { $regex: pattern, $options: 'i' } },
-          { 'profile.lastName': { $regex: pattern, $options: 'i' } }
-        ]
-      }).select('_id')
+      const users = await db_user
+        .getDBInstance()
+        .find({
+          $or: [
+            { username: { $regex: search, $options: 'i' } },
+            { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+            { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+          ]
+        })
+        .select('_id')
       const userIds = _.map(users, (el: { _id: string }) => el._id)
       query.createdBy = { $in: userIds }
     }
     // cvoteType
-    if(param.type && _.indexOf(_.values(constant.CVOTE_TYPE), param.type) >= 0){
+    if (
+      param.type &&
+      _.indexOf(_.values(constant.CVOTE_TYPE), param.type) >= 0
+    ) {
       query.type = param.type
     }
     // startDate <  endDate
-    if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+    if (
+      param.startDate &&
+      param.startDate.length &&
+      param.endDate &&
+      param.endDate.length
+    ) {
       let endDate = new Date(param.endDate)
-      endDate.setDate(endDate.getDate()+1)
+      endDate.setDate(endDate.getDate() + 1)
       query.createdAt = {
         $gte: new Date(param.startDate),
         $lte: endDate
       }
     }
     // Ends in times - 7day = startDate <  endDate
-    if(param.endsInStartDate && param.endsInStartDate.length && param.endsInEndDate && param.endsInEndDate.length){
-      let endDate = new Date(new Date(param.endsInEndDate).getTime() - 7 * 24 * 3600 * 1000)
-      endDate.setDate(endDate.getDate()+1)
+    if (
+      param.endsInStartDate &&
+      param.endsInStartDate.length &&
+      param.endsInEndDate &&
+      param.endsInEndDate.length
+    ) {
+      let endDate = new Date(
+        new Date(param.endsInEndDate).getTime() - 7 * 24 * 3600 * 1000
+      )
+      endDate.setDate(endDate.getDate() + 1)
       query.createdAt = {
-        $gte: new Date(new Date(param.endsInStartDate).getTime() - 7 * 24 * 3600 * 1000),
+        $gte: new Date(
+          new Date(param.endsInStartDate).getTime() - 7 * 24 * 3600 * 1000
+        ),
         $lte: endDate
       }
       query.status = {
-        $in: [constant.CVOTE_STATUS.PROPOSED,
-	      constant.CVOTE_STATUS.ACTIVE,
-	      constant.CVOTE_STATUS.REJECT,
-	      constant.CVOTE_STATUS.FINAL,
-	      constant.CVOTE_STATUS.DEFERRED,
-	      constant.CVOTE_STATUS.INCOMPLETED]
+        $in: [
+          constant.CVOTE_STATUS.PROPOSED,
+          constant.CVOTE_STATUS.ACTIVE,
+          constant.CVOTE_STATUS.REJECT,
+          constant.CVOTE_STATUS.FINAL,
+          constant.CVOTE_STATUS.DEFERRED,
+          constant.CVOTE_STATUS.INCOMPLETED
+        ]
       }
     }
     // status
-    if(param.status && constant.CVOTE_STATUS[param.status]) {
+    if (param.status && constant.CVOTE_STATUS[param.status]) {
       query.status = param.status
     }
     // budget
-    if(param.budgetLow || param.budgetHigh){
+    if (param.budgetLow || param.budgetHigh) {
       query.budgetAmount = {}
       if (param.budgetLow && param.budgetLow.length) {
         query.budgetAmount['$gte'] = parseInt(param.budgetLow)
@@ -535,11 +542,14 @@ export default class extends Base {
       }
     }
     // has tracking
-    if(param.hasTracking) {
+    if (param.hasTracking) {
       const db_cvote_tracking = this.getDBModel('CVote_Tracking')
-      const hasTracking = await db_cvote_tracking.find({
-        status: constant.CVOTE_TRACKING_STATUS.REVIEWING
-      }, "proposalId")
+      const hasTracking = await db_cvote_tracking.find(
+        {
+          status: constant.CVOTE_TRACKING_STATUS.REVIEWING
+        },
+        'proposalId'
+      )
       let trackingProposals = []
       hasTracking.map(function(it) {
         trackingProposals.push(it.proposalId)
@@ -550,9 +560,19 @@ export default class extends Base {
     }
 
     if (param.$or) query.$or = param.$or
-    const fields = 'vid title type proposedBy status published proposedAt createdAt voteResult vote_map'
-    console.log("[query]" + JSON.stringify(query))
-    const list = await db_cvote.list(query, {vid: -1}, 100, fields)
+    const fields = [
+      'vid',
+      'title',
+      'type',
+      'proposedBy',
+      'status',
+      'published',
+      'proposedAt',
+      'createdAt',
+      'voteResult',
+      'vote_map'
+    ]
+    const list = await db_cvote.list(query, { vid: -1 }, 100, fields.join(' '))
     return list
   }
 
@@ -593,7 +613,8 @@ export default class extends Base {
     const doc: any = {
       contentType: constant.CONTENT_TYPE.MARKDOWN
     }
-    const willChangeToPublish = published === true && cur.status === constant.CVOTE_STATUS.DRAFT
+    const willChangeToPublish =
+      published === true && cur.status === constant.CVOTE_STATUS.DRAFT
 
     if (title) doc.title = title
     if (abstract) doc.abstract = abstract
@@ -602,14 +623,6 @@ export default class extends Base {
     if (relevance) doc.relevance = relevance
     if (budget) {
       doc.budget = budget
-      if (Array.isArray(budget)) {
-        doc.budgetAmount = budget.reduce((sum, el) => {
-          if (el && el.amount) {
-            return sum += Number(el.amount)
-          }
-          return sum
-        }, 0.0)
-      }
     }
     if (plan) doc.plan = plan
 
@@ -892,11 +905,13 @@ export default class extends Base {
     const { pageNum, pageSize, state } = param
 
     let ret = null
+    // url: 'http://54.223.244.60/api/dposnoderpc/check/listcrcandidates',
     const postPromise = util.promisify(request.post, {multiArgs: true});
     await postPromise({url: 'https://unionsquare.elastos.org/api/dposnoderpc/check/listcrcandidates',
                        form: { pageNum, pageSize, state },
                        encoding: 'utf8'
     }).then((value) => ret = value.body)
+
     return ret
   }
 }

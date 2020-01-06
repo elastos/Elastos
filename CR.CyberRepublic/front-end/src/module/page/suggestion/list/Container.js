@@ -1,12 +1,29 @@
+import _ from 'lodash'
 import {
   createContainer,
 } from '@/util'
 import {
-  SUGGESTION_STATUS
+  SUGGESTION_STATUS,
+  SUGGESTION_SEARCH_FILTERS
 } from '@/constant'
 import SuggestionService from '@/service/SuggestionService'
 import CommentService from '@/service/CommentService'
 import Component from './Component'
+
+const excludeFilters = (value, key) => !['search', 'filter'].includes(key)
+
+const defaultFilters = {
+  referenceStatus: false,
+  infoNeeded: false,
+  underConsideration: false,
+  search: '',
+  filter: SUGGESTION_SEARCH_FILTERS.TITLE,
+  status: SUGGESTION_STATUS.ACTIVE,
+  budgetRequested: '',
+  creationDate: [],
+  author: '',
+  type: ''
+}
 
 const mapState = (state) => {
   const currentUserId = state.user.current_user_id
@@ -18,7 +35,15 @@ const mapState = (state) => {
     dataList: state.suggestion.all_suggestions,
     total: state.suggestion.all_suggestions_total,
     currentUserId,
-    filter: state.suggestion.filter || {},
+    filters: _.isEmpty(state.suggestion.filters)
+      ? defaultFilters
+      : state.suggestion.filters,
+    isVisitableFilter: _.isEmpty(state.suggestion.filters)
+      ? false
+      : !_.isEqual(
+        _.filter(defaultFilters, excludeFilters),
+        _.filter(state.suggestion.filters, excludeFilters)
+      ),
     isLogin: state.user.is_login,
     isSecretary: state.user.is_secretary,
     user: state.user
@@ -32,6 +57,17 @@ const mapDispatch = () => {
   const commentService = new CommentService()
 
   return {
+    getDefaultFilters() {
+      return defaultFilters
+    },
+    async updateFilters(filters) {
+      return service.updateFilters({...defaultFilters, ...filters})
+    },
+
+    async clearFilters() {
+      return this.updateFilters({})
+    },
+
     async changePage(page) {
       return service.changePage(page)
     },

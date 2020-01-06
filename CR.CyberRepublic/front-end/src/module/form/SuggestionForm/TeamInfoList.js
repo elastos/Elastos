@@ -2,9 +2,10 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button } from 'antd'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
+import DeleteSvgIcon from '@/module/common/DeleteSvgIcon'
+import EditSvgIcon from '@/module/common/EditSvgIcon'
 
 class TeamInfoList extends BaseComponent {
   handleDelete = index => {
@@ -22,48 +23,53 @@ class TeamInfoList extends BaseComponent {
       <StyledTable>
         <StyledHead>
           <StyledRow>
-            <th style={{ width: '15%' }}>{I18N.get('suggestion.plan.teamMember')}</th>
-            <th style={{ width: '15%' }}>{I18N.get('suggestion.plan.role')}</th>
-            <th style={{ width: '30%' }}>{I18N.get('suggestion.plan.responsibility')}</th>
-            <th style={{ width: '30%' }}>{I18N.get('suggestion.plan.moreInfo')}</th>
+            <th style={{ width: '15%' }}>
+              {I18N.get('suggestion.plan.teamMember')}
+            </th>
+            <th style={{ width: '22%' }}>{I18N.get('suggestion.plan.role')}</th>
+            <th>{I18N.get('suggestion.plan.responsibility')}</th>
+            <th>{I18N.get('suggestion.plan.moreInfo')}</th>
             {visible && (
-              <th style={{ width: '10%' }}>
+              <th style={{ width: 110 }}>
                 {I18N.get('suggestion.plan.action')}
               </th>
             )}
           </StyledRow>
         </StyledHead>
         <tbody>
-          {list && list.map((item, index) => (
-            <StyledRow key={index}>
-              <td>{item.member}</td>
-              <td>{item.role}</td>
-              <td>
-                <MarkdownPreview content={item.responsibility} />
-              </td>
-              <td>
-                <MarkdownPreview content={item.info} />
-              </td>
-              {visible && (
+          {list &&
+            list.map((item, index) => (
+              <StyledRow key={index}>
+                <td>{item.member}</td>
+                <td>{item.role}</td>
                 <td>
-                  <Button
-                    size="small"
-                    type="danger"
-                    shape="circle"
-                    icon="delete"
-                    onClick={this.handleDelete.bind(this, index)}
-                  />
-                  <Button
-                    size="small"
-                    type="primary"
-                    shape="circle"
-                    icon="edit"
-                    onClick={this.handleEdit.bind(this, index)}
+                  <MarkdownPreview
+                    content={item.responsibility}
+                    style={{ p: { margin: '1em 0' } }}
                   />
                 </td>
-              )}
-            </StyledRow>
-          ))}
+                <td>
+                  <MarkdownPreview
+                    content={item.info}
+                    style={{ p: { margin: '1em 0' } }}
+                  />
+                </td>
+                {visible && (
+                  <td>
+                    <EditSvgIcon
+                      type="edit"
+                      onClick={this.handleEdit.bind(this, index)}
+                      style={{ marginRight: 22, cursor: 'pointer' }}
+                    />
+                    <DeleteSvgIcon
+                      type="delete"
+                      onClick={this.handleDelete.bind(this, index)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </td>
+                )}
+              </StyledRow>
+            ))}
         </tbody>
       </StyledTable>
     )
@@ -84,6 +90,7 @@ const StyledTable = styled.table`
   margin-bottom: 48px;
   width: 100%;
   font-size: 13px;
+  table-layout: fixed;
 `
 const StyledHead = styled.thead`
   > tr {
@@ -93,7 +100,6 @@ const StyledHead = styled.thead`
     line-height: 18px;
     padding: 16px;
     color: #fff;
-    width: 10%;
   }
 `
 const StyledRow = styled.tr`
@@ -101,9 +107,9 @@ const StyledRow = styled.tr`
   background: #f2f6fb;
   > td {
     line-height: 18px;
-    padding: 16px;
+    padding: 8px 16px;
     color: #000;
-    word-break: break-all;
+    overflow-wrap: break-word;
     > button {
       margin: 0 4px;
     }

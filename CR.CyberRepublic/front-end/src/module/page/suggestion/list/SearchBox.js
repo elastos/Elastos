@@ -2,15 +2,11 @@ import React, { Component } from 'react'
 import styled from 'styled-components'
 import { Input, Select } from 'antd'
 import I18N from '@/I18N'
+import {
+  SUGGESTION_SEARCH_FILTERS
+} from '@/constant'
 
-const SEARCH_FILTERS = {
-  TITLE: 'TITLE',
-  NUMBER: 'NUMBER',
-  ABSTRACT: 'ABSTRACT',
-  EMAIL: 'EMAIL',
-  NAME: 'NAME'
-}
-const DEFAULT_SEARCH_FILTER = SEARCH_FILTERS.TITLE
+const DEFAULT_SEARCH_FILTER = SUGGESTION_SEARCH_FILTERS.TITLE
 
 class SearchBox extends Component {
   constructor(props) {
@@ -26,11 +22,13 @@ class SearchBox extends Component {
   }
 
   handleChange = (filter) => {
+    const { onFilterChange } = this.props
     this.setState({ filter })
+    if (onFilterChange) onFilterChange(filter)
   }
 
   render() {
-    const { value } = this.props
+    const { value, onChange, filterValue } = this.props
     const SEARCH_FILTER_TEXTS = {
       TITLE: I18N.get('suggestion.search.title'),
       NUMBER: I18N.get('suggestion.search.number'),
@@ -43,16 +41,17 @@ class SearchBox extends Component {
         <Select
           style={{ width: 160 }}
           onChange={this.handleChange}
-          defaultValue={DEFAULT_SEARCH_FILTER}
+          value={filterValue}
         >
-          {_.map(SEARCH_FILTERS, value => (
+          {_.map(SUGGESTION_SEARCH_FILTERS, value => (
             <Select.Option key={value} value={value}>
               {SEARCH_FILTER_TEXTS[value]}
             </Select.Option>
           ))}
         </Select>
         <Input.Search
-          defaultValue={value}
+          value={value}
+          onChange={onChange}
           onSearch={this.handleSearch}
           placeholder={I18N.get('suggestion.form.search')}
         />

@@ -1,4 +1,8 @@
-import { ABSTRACT_MAX_WORDS, SUGGESTION_STATUS } from '@/constant'
+import {
+  ABSTRACT_MAX_WORDS,
+  SUGGESTION_STATUS,
+  SUGGESTION_BUDGET_TYPE
+} from '@/constant'
 
 export default {
   title: {
@@ -43,7 +47,7 @@ export default {
     referred: '相关提案',
     [SUGGESTION_STATUS.ACTIVE]: '活跃',
     [SUGGESTION_STATUS.ABUSED]: '已举报',
-    [SUGGESTION_STATUS.ARCHIVED]: '已归档',
+    [SUGGESTION_STATUS.ARCHIVED]: '已归档'
   },
   form: {
     search: '搜索建议',
@@ -67,14 +71,13 @@ export default {
       type: '选择一个建议类型。',
       abstract: '一个关于提案内容的简短描述（不超过200字）。',
       goal: '描述通过执行提案期望达到的效果。目标应该是清晰且可度量的。',
-      motivation: '描述为什么会提出这个提案。对于试图对亦来云有所改变的提案来说，动机至关重要。这里应该清楚的解释为什么现有的机制不足以解决提案想解决的问题，',
+      motivation: `描述为什么会提出这个提案。对于试图对亦来云有所改变的提案来说，动机至关重要。这里应该清楚的解释为什么现有的机制不足以解决提案想解决的问题，`,
       motivationHighlight: '没有足够动机的提案被拒的可能性很大。',
-      relevance: '如果和其它CRC提案有所关联，这里应该提供关联提案的提案号并且说明和相关提案的关系。如果与亦来云技术或者其它CRC提案有冲突，则应该对这些冲突进行说明并解释怎么处理它们。',
-      budget: '如果执行提案需要CRC的经费支持，这里应该说明总的预算以及支出计划。这是一个和执行计划配套的财务计划。',
+      relevance: `如果和其它CRC提案有所关联，这里应该提供关联提案的提案号并且说明和相关提案的关系。如果与亦来云技术或者其它CRC提案有冲突，则应该对这些冲突进行说明并解释怎么处理它们。`,
+      budget: `如果执行提案需要CRC的经费支持，这里应该说明总的预算以及支出计划。这是一个和执行计划配套的财务计划。`,
       type: '选择一个提案类型。',
-      plan: '这里应该说明通过什么方法和过程达成目标，对执行人或者团队应该有一个简单的介绍。如果提案的执行周期比较长，应该设立一些执行过程中的检查点，两个检查点之间不超过3个月。和提案目标一样，检查点也应该是清晰且可度量的。',
-      tracking: '这个部分由提案人负责按提案进度修改，内容包括目标完成情况及经费使用情况，用于按照执行计划中的检查点或提案目标跟踪提案的执行状况。CRC秘书处负责该部分内容的跟踪和审核。',
-      summary: '当提案完成的时候，提案人应该在这里提交对提案执行状况的一个总结，包括目标达成状况和财务决算。CRC秘书处负责该部分内容的审核。'
+      plan: `这里应该说明通过什么方法和过程达成目标，对执行人或者团队应该有一个简单的介绍。如果提案的执行周期比较长，应该设立一些执行过程中的检查点，两个检查点之间不超过3个月。和提案目标一样，检查点也应该是清晰且可度量的。`,
+      tracking: `当提案完成的时候，提案人应该在这里提交对提案执行状况的一个总结，包括目标达成状况和财务决算。CRC秘书处负责该部分内容的审核。`
     },
     error: {
       required: '必填项',
@@ -82,6 +85,12 @@ export default {
       [`limit${ABSTRACT_MAX_WORDS}`]: `不能超过${ABSTRACT_MAX_WORDS}字`,
       isNaN: '请输入有效的金额',
       plan: '实施团队或里程碑为空',
+      milestones: '里程碑为空',
+      team: '实施团队为空',
+      budget: '总金额、ELA 接收地址或者支出计划为空',
+      totalBudget: '总预算为空',
+      elaAddress: 'ELA 接收地址为空',
+      paymentSchedule: '支出计划为空'
     }
   },
   modal: {
@@ -122,10 +131,19 @@ export default {
   budget: {
     create: '创建支付项',
     payment: '支付',
+    type: '类型',
     amount: '金额',
     reasons: '理由',
     criteria: '支付标准',
-    action: '操作'
+    action: '操作',
+    desc: '请基于里程碑填写：',
+    schedule: '支出计划',
+    total: '总预算',
+    address: 'ELA 接收地址',
+    tip: '请先添加里程碑',
+    [SUGGESTION_BUDGET_TYPE.ADVANCE]: '预付款(小于总金额的30%)',
+    [SUGGESTION_BUDGET_TYPE.COMPLETION]: '提案完成付款',
+    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '有条件的付款'
   },
   plan: {
     teamMember: '团队成员',
@@ -137,7 +155,11 @@ export default {
     teamInfo: '实施团队',
     milestones: '里程碑',
     publishDate: '发布日期',
-    version: '版本'
+    version: '版本',
+    goal: '目标',
+    showDetail: '显示详细信息',
+    hideDetail: '隐藏详细信息',
+    selectDate: '选择日期'
   },
   label: {
     hasMadeIntoProposal: '已经将此建议发布为'

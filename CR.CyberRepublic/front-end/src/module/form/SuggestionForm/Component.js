@@ -19,8 +19,8 @@ const WORD_LIMIT = ABSTRACT_MAX_WORDS
 const TAB_KEYS = [
   'type',
   'abstract',
-  'goal',
   'motivation',
+  'goal',
   'plan',
   'relevance',
   'budget'
@@ -36,6 +36,18 @@ class C extends BaseComponent {
       activeKey: TAB_KEYS[0],
       errorKeys: {}
     }
+    const sugg = props.initialValues
+    if (
+      sugg &&
+      sugg.plan &&
+      typeof sugg.plan !== 'string' &&
+      sugg.plan.milestone
+    ) {
+      sessionStorage.setItem(
+        'plan-milestone',
+        JSON.stringify(sugg.plan.milestone)
+      )
+    }
   }
 
   componentDidMount() {
@@ -46,6 +58,7 @@ class C extends BaseComponent {
 
   componentWillUnmount() {
     clearInterval(this.timer)
+    sessionStorage.removeItem('plan-milestone')
   }
 
   getActiveKey(key) {
@@ -66,6 +79,13 @@ class C extends BaseComponent {
         })
         return
       }
+      const budget = form.getFieldValue('budget')
+      // exclude old suggestion data
+      if (budget && typeof budget !== 'string') {
+        values.budget = budget.paymentItems
+        values.budgetAmount = Number(budget.budgetAmount)
+        values.elaAddress = budget.elaAddress
+      }
       await onSubmit(values)
       this.setState({ loading: false })
     })
@@ -75,6 +95,12 @@ class C extends BaseComponent {
     const { form } = this.props
     if (this.props.onSaveDraft) {
       const values = form.getFieldsValue()
+      const budget = form.getFieldValue('budget')
+      if (budget) {
+        values.budget = budget.paymentItems
+        values.budgetAmount = budget.budgetAmount && Number(budget.budgetAmount)
+        values.elaAddress = budget.elaAddress
+      }
       this.props.onSaveDraft(values)
     }
   }
@@ -139,11 +165,16 @@ class C extends BaseComponent {
 
   validatePlan = (rule, value, cb) => {
     if (value && _.isEmpty(value.teamInfo)) {
-      return cb(true)
-    } if (value && _.isEmpty(value.milestone)) {
-      return cb(true)
+      return cb(I18N.get('suggestion.form.error.team'))
+    }
+    if (value && _.isEmpty(value.milestone)) {
+      return cb(I18N.get('suggestion.form.error.milestones'))
     }
     return cb()
+  }
+
+  validateBudget = (rule, value, cb) => {
+    return value && value.error ? cb(true) : cb()
   }
 
   getTextarea(id) {
@@ -158,26 +189,11 @@ class C extends BaseComponent {
         message: I18N.get('suggestion.form.error.required')
       }
     ]
-    if (id === 'abstract') {
-      rules.push({
-        message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`),
-        validator: this.validateAbstract
-      })
-    }
-    if (
-      id === 'plan' &&
-      ((initialValues.plan && typeof initialValues.plan !== 'string') ||
-        !initialValues.plan)
-    ) {
-      rules.push({
-        message: I18N.get('suggestion.form.error.plan'),
-        validator: this.validatePlan
-      })
-    }
-
-    let rc
     if (id === 'type') {
-      rc = (
+      return getFieldDecorator(id, {
+        rules,
+        initialValue: initialValues[id]
+      })(
         <Radio.Group>
           <Radio value="1">{I18N.get('suggestion.form.type.newMotion')}</Radio>
           <Radio value="2">
@@ -188,35 +204,57 @@ class C extends BaseComponent {
           </Radio>
         </Radio.Group>
       )
-    } else if (
+    }
+
+    if (id === 'abstract') {
+      rules.push({
+        message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`),
+        validator: this.validateAbstract
+      })
+    }
+
+    if (
       id === 'plan' &&
       ((initialValues.plan && typeof initialValues.plan !== 'string') ||
         !initialValues.plan)
     ) {
-      rc = (
+      rules.push({
+        validator: this.validatePlan
+      })
+
+      return getFieldDecorator('plan', {
+        rules,
+        initialValue: initialValues.plan
+      })(
         <ImplementationPlan
           initialValue={initialValues.plan}
           callback={this.onTextareaChange}
         />
       )
-    } else if (
+    }
+
+    if (
       id === 'budget' &&
       ((initialValues.budget && typeof initialValues.budget !== 'string') ||
         !initialValues.budget)
     ) {
-      rc = (
+      rules.push({
+        validator: this.validateBudget
+      })
+
+      const initialBudget = initialValues.budget && {
+        budgetAmount: initialValues.budgetAmount,
+        elaAddress: initialValues.elaAddress,
+        paymentItems: initialValues.budget
+      }
+
+      return getFieldDecorator('budget', {
+        rules,
+        initialValue: initialBudget
+      })(
         <PaymentSchedule
-          initialValue={initialValues.budget}
+          initialValue={initialBudget}
           callback={this.onTextareaChange}
-        />
-      )
-    } else {
-      rc = (
-        <CodeMirrorEditor
-          callback={this.onTextareaChange}
-          content={initialValues[id]}
-          activeKey={id}
-          name={id}
         />
       )
     }
@@ -224,15 +262,21 @@ class C extends BaseComponent {
     return getFieldDecorator(id, {
       rules,
       initialValue: initialValues[id]
-    })(rc)
+    })(
+      <CodeMirrorEditor
+        callback={this.onTextareaChange}
+        content={initialValues[id]}
+        activeKey={id}
+        name={id}
+      />
+    )
   }
 
   renderTabText(id) {
     const hasError = _.has(this.state.errorKeys, id)
     return (
       <TabText hasErr={hasError}>
-        {I18N.get(`suggestion.fields.${id}`)}
-*
+        {I18N.get(`suggestion.fields.${id}`)}*
       </TabText>
     )
   }

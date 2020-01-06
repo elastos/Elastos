@@ -9,10 +9,63 @@ import PaymentList from './PaymentList'
 class PaymentSchedule extends Component {
   constructor(props) {
     super(props)
+    const value = props.initialValue
     this.state = {
       visible: false,
-      paymentItems: props.initialValue ? props.initialValue : []
+      total: (value && value.budgetAmount) || '',
+      address: (value && value.elaAddress) || '',
+      paymentItems: (value && value.paymentItems) || [],
+      errors: {}
     }
+  }
+
+  changeValue(value) {
+    const { onChange, callback } = this.props
+    onChange(value)
+    callback('budget')
+  }
+
+  passDataToParent() {
+    const { total, address, paymentItems, errors } = this.state
+    if (!total || errors.total || !address || !paymentItems.length) {
+      this.changeValue({ error: true })
+      return
+    }
+    this.changeValue({
+      budgetAmount: Number(total),
+      elaAddress: address,
+      paymentItems
+    })
+  }
+
+  validateAmount = value => {
+    const reg = /^(0|[1-9][0-9]*)(\.[0-9]*)?$/
+    return (!isNaN(value) && reg.test(value)) || value === '' ? true : false
+  }
+
+  validateFields = (field, value) => {
+    const { errors } = this.state
+    if (!value || !value.length) {
+      return {
+        ...errors,
+        [field]: I18N.get('suggestion.form.error.required')
+      }
+    } else {
+      if (field === 'total' && !this.validateAmount(value)) {
+        return {
+          ...errors,
+          [field]: I18N.get('suggestion.form.error.isNaN')
+        }
+      }
+      return { ...errors, [field]: '' }
+    }
+  }
+
+  handleChange = (e, field) => {
+    const errors = this.validateFields(field, e.target.value)
+    this.setState({ [field]: e.target.value, errors }, () => {
+      this.passDataToParent()
+    })
   }
 
   hideModal = () => {
@@ -23,23 +76,20 @@ class PaymentSchedule extends Component {
     this.setState({ visible: true, index: -1 })
   }
 
-  changeValue(value) {
-    const { onChange, callback } = this.props
-    onChange(value)
-    callback('budget')
-  }
-
   handleDelete = index => {
     const { paymentItems } = this.state
+    const rs = [
+      ...paymentItems.slice(0, index),
+      ...paymentItems.slice(index + 1)
+    ]
+    const errors = this.validateFields('schedule', rs)
     this.setState(
       {
-        paymentItems: [
-          ...paymentItems.slice(0, index),
-          ...paymentItems.slice(index + 1)
-        ]
+        paymentItems: rs,
+        errors
       },
       () => {
-        this.changeValue(this.state.paymentItems)
+        this.passDataToParent()
       }
     )
   }
@@ -58,28 +108,70 @@ class PaymentSchedule extends Component {
         return item
       })
       this.setState({ paymentItems: rs, visible: false }, () => {
-        this.changeValue(this.state.paymentItems)
+        this.passDataToParent()
       })
       return
     }
+    const rs = [...paymentItems, values]
+    const errors = this.validateFields('schedule', rs)
     this.setState(
       {
-        paymentItems: [...paymentItems, values],
-        visible: false
+        paymentItems: rs,
+        visible: false,
+        errors
       },
       () => {
-        this.changeValue(this.state.paymentItems)
+        this.passDataToParent()
       }
     )
   }
 
+  getMilestone = () => {
+    const milestone = sessionStorage.getItem('plan-milestone') || []
+    try {
+      const rs = JSON.parse(milestone)
+      return Array.isArray(rs) ? rs : []
+    } catch (err) {
+      return []
+    }
+  }
+
   render() {
-    const { paymentItems, index } = this.state
+    const { paymentItems, index, total, address, errors } = this.state
+    const milestone = this.getMilestone()
     return (
       <Wrapper>
-        <Button onClick={this.showModal}>
-          {I18N.get('suggestion.budget.create')}
-        </Button>
+        <Section>
+          <Label>{`${I18N.get('suggestion.budget.total')} (ELA)`}</Label>
+          <StyledInput
+            error={errors.total ? true : false}
+            value={total}
+            onChange={e => this.handleChange(e, 'total')}
+          />
+          {errors.total ? <Error>{errors.total}</Error> : null}
+        </Section>
+        <Section>
+          <Label>{I18N.get('suggestion.budget.address')}</Label>
+          <StyledInput
+            error={errors.address ? true : false}
+            value={address}
+            onChange={e => this.handleChange(e, 'address')}
+          />
+          {errors.address ? <Error>{errors.address}</Error> : null}
+        </Section>
+        <Section>
+          <Label>{I18N.get('suggestion.budget.schedule')}</Label>
+          <Button
+            onClick={this.showModal}
+            disabled={!milestone.length ? true : false}
+          >
+            {I18N.get('suggestion.budget.create')}
+          </Button>
+          {!milestone.length ? (
+            <Tip>{I18N.get('suggestion.budget.tip')}</Tip>
+          ) : null}
+        </Section>
+        {errors.schedule ? <Error>{errors.schedule}</Error> : null}
         {paymentItems.length ? (
           <PaymentList
             list={paymentItems}
@@ -92,13 +184,15 @@ class PaymentSchedule extends Component {
           visible={this.state.visible}
           onCancel={this.hideModal}
           footer={null}
-          width="70%"
+          width={770}
         >
           {this.state.visible === true ? (
             <BudgetForm
               item={index >= 0 ? paymentItems[index] : null}
+              types={paymentItems.map(item => item.type)}
               onSubmit={this.handleSubmit}
               onCancel={this.hideModal}
+              milestone={milestone}
             />
           ) : null}
         </Modal>
@@ -110,9 +204,54 @@ class PaymentSchedule extends Component {
 PaymentSchedule.propTypes = {
   onChange: PropTypes.func,
   callback: PropTypes.func,
-  initialValue: PropTypes.array
+  initialValue: PropTypes.object
 }
 
 export default PaymentSchedule
 
 const Wrapper = styled.div``
+
+const Label = styled.div`
+  font-size: 17px;
+  line-height: 24px;
+  color: #000000;
+`
+const Section = styled.div`
+  margin-top: 24px;
+  .ant-btn {
+    margin-top: 16px;
+    border: 1px solid #000000;
+    color: #000000;
+    &:hover {
+      border: 1px solid #008d85;
+      color: #008d85;
+    }
+  }
+`
+const StyledInput = styled.input`
+  outline: 0;
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  margin-top: 16px;
+  padding: 6px 11px;
+  width: 50%;
+  height: 40px;
+  transition: all 0.3s;
+  &:hover {
+    border-color: ${props => (props.error ? '#f5222d' : '#66bda3')};
+  }
+  &:focus {
+    border-color: ${props => (props.error ? '#f5222d' : '#66bda3')};
+    box-shadow: ${props =>
+      props.error
+        ? '0 0 0 2px rgba(245, 34, 45, 0.2);'
+        : '0 0 0 2px rgba(67, 175, 146, 0.2)'};
+  }
+`
+const Error = styled.div`
+  color: #f5222d;
+`
+const Tip = styled.div`
+  color: #666;
+  font-size: 13px;
+`

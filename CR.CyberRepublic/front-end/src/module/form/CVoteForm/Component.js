@@ -333,12 +333,6 @@ class C extends BaseComponent {
                 </FormItem>
               </TabPaneInner>
             </TabPane>
-            <TabPane tab={this.renderTabText('goal')} key="goal">
-              <TabPaneInner>
-                <Note>{I18N.get('proposal.form.note.goal')}</Note>
-                <FormItem>{formProps.goal}</FormItem>
-              </TabPaneInner>
-            </TabPane>
             <TabPane tab={this.renderTabText('motivation')} key="motivation">
               <TabPaneInner>
                 <Note>
@@ -349,6 +343,12 @@ class C extends BaseComponent {
                   </NoteHighlight>
                 </Note>
                 <FormItem>{formProps.motivation}</FormItem>
+              </TabPaneInner>
+            </TabPane>
+            <TabPane tab={this.renderTabText('goal')} key="goal">
+              <TabPaneInner>
+                <Note>{I18N.get('proposal.form.note.goal')}</Note>
+                <FormItem>{formProps.goal}</FormItem>
               </TabPaneInner>
             </TabPane>
             <TabPane tab={this.renderTabText('plan')} key="plan">

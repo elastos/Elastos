@@ -56,8 +56,9 @@ import {
   ItemTitle,
   ItemText,
   StyledAnchor,
-  PlanSubtitle,
-  CreateProposalText
+  Subtitle,
+  CreateProposalText,
+  Paragraph
 } from './style'
 
 import './style.scss'
@@ -88,35 +89,26 @@ export default class extends StandardPage {
   }
 
   renderAnchors() {
+    const sections = [
+      'preamble',
+      'abstract',
+      'motivation',
+      'goal',
+      'plan',
+      'relevance',
+      'budget'
+    ]
     return (
       <StyledAnchor offsetTop={420}>
-        <Anchor.Link
-          href="#preamble"
-          title={I18N.get('suggestion.fields.preamble')}
-        />
-        <Anchor.Link
-          href="#abstract"
-          title={I18N.get('suggestion.fields.abstract')}
-        />
-        <div style={{ marginTop: 48 }}>
-          <Anchor.Link
-            href="#goal"
-            title={I18N.get('suggestion.fields.goal')}
-          />
-        </div>
-        <Anchor.Link
-          href="#motivation"
-          title={I18N.get('suggestion.fields.motivation')}
-        />
-        <Anchor.Link href="#plan" title={I18N.get('suggestion.fields.plan')} />
-        <Anchor.Link
-          href="#relevance"
-          title={I18N.get('suggestion.fields.relevance')}
-        />
-        <Anchor.Link
-          href="#budget"
-          title={I18N.get('suggestion.fields.budget')}
-        />
+        {sections.map(section => {
+          return (
+            <Anchor.Link
+              key={section}
+              href={`#${section}`}
+              title={I18N.get(`suggestion.fields.${section}`)}
+            />
+          )
+        })}
       </StyledAnchor>
     )
   }
@@ -221,8 +213,8 @@ export default class extends StandardPage {
     const { detail } = this.props
     const sections = [
       'abstract',
-      'goal',
       'motivation',
+      'goal',
       'plan',
       'relevance',
       'budget'
@@ -284,17 +276,13 @@ export default class extends StandardPage {
                 <DescLabel id="plan">
                   {I18N.get(`suggestion.fields.plan`)}
                 </DescLabel>
-                <PlanSubtitle>
-                  {I18N.get('suggestion.plan.teamInfo')}
-                </PlanSubtitle>
-                <TeamInfoList list={detail.plan.teamInfo} editable={false} />
-                <PlanSubtitle>
-                  {I18N.get('suggestion.plan.milestones')}
-                </PlanSubtitle>
+                <Subtitle>{I18N.get('suggestion.plan.milestones')}</Subtitle>
                 <Milestones
                   initialValue={detail.plan.milestone}
                   editable={false}
                 />
+                <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
+                <TeamInfoList list={detail.plan.teamInfo} editable={false} />
               </div>
             )
           }
@@ -309,6 +297,13 @@ export default class extends StandardPage {
                 <DescLabel id="budget">
                   {I18N.get('suggestion.fields.budget')}
                 </DescLabel>
+                <Subtitle>
+                  {`${I18N.get('suggestion.budget.total')} (ELA)`}
+                </Subtitle>
+                <Paragraph>{detail.budgetAmount}</Paragraph>
+                <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
+                <Paragraph>{detail.elaAddress}</Paragraph>
+                <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
                 <PaymentList list={detail.budget} editable={false} />
               </div>
             )
@@ -451,6 +446,10 @@ export default class extends StandardPage {
         ) {
           return `
             <h2>${I18N.get(`suggestion.fields.budget`)}</h2>
+            <p>${I18N.get(`suggestion.budget.total`)}</p>
+            <p>${detail.budgetAmount}</p>
+            <p>${I18N.get(`suggestion.budget.address`)}</p>
+            <p>${detail.elaAddress}</p>
             <p>${getBudgetHtml(detail.budget)}</p>
           `
         }

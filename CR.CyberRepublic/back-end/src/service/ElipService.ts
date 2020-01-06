@@ -381,80 +381,88 @@ export default class extends Base {
     const userRole = _.get(this.currentUser, 'role')
     const query: any = {}
 
-    if(_.indexOf(_.values(constant.ELIP_STATUS), param.filter) >= 0) {
-      query.status = param.filter
-    }
+    const status = constant.ELIP_STATUS
+    const privateStatus = [status.REJECTED, status.WAIT_FOR_REVIEW]
+    const publicStatus = [status.DRAFT, status.SUBMITTED_AS_PROPOSAL]
 
-    if (
-      this.isLoggedIn() &&
-      userRole !== constant.USER_ROLE.SECRETARY &&
-      param.filter === constant.ELIP_FILTER.ALL
-    ) {
-      // member self
-      query.$or = [
-        {
-          createdBy: currentUserId,
-          status: {
-            $in: [
-              constant.ELIP_STATUS.REJECTED,
-              constant.ELIP_STATUS.WAIT_FOR_REVIEW
-            ]
-          }
+    if (!this.isLoggedIn()) {
+      // guest
+      if (param.filter && publicStatus.includes(param.filter)) {
+        query.status = param.filter
+      } else {
+        query.status = { $in: publicStatus }
+      }
+    } else {
+      // secretary and admin
+      const role = constant.USER_ROLE
+      if ([role.SECRETARY, role.ADMIN].includes(userRole)) {
+        if (
+          param.filter &&
+          _.values(status).includes(param.filter)
+        ) {
+          query.status = param.filter
         }
-      ]
-      if(userRole !== constant.USER_ROLE.ADMIN) {
-        // member
-        query.$or.push({
-          status: {
-            $in: [
-              constant.ELIP_STATUS.DRAFT,
-              constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
-            ]
-          }
-        })
-      }else {
-        // admin
-        query.$or.push({
-          status: {
-            $in: [
-              constant.ELIP_STATUS.DRAFT,
-              constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL,
-              constant.ELIP_STATUS.WAIT_FOR_REVIEW,
-              constant.ELIP_STATUS.REJECTED
-            ]
-          }
-        })
+      } else {
+        if (!param.filter || param.filter === constant.ELIP_FILTER.ALL) {
+          query.$or = [
+            {
+              createdBy: currentUserId,
+              status: { $in: privateStatus }
+            },
+            { status: { $in: publicStatus } }
+          ]
+        }
+        if (privateStatus.includes(param.filter)) {
+          query.createdBy = currentUserId
+          query.status = param.filter
+        }
+        if (publicStatus.includes(param.filter)) {
+          query.status = param.filter
+        }
       }
     }
 
     // createBy
-    if(param.author && param.author.length) {
+    if (!_.isEmpty(param.author)) {
       let search = param.author
       const db_user = this.getDBModel('User')
       const pattern = search.split(' ').join('|')
-      const users = await db_user.getDBInstance().find({
-        $or: [
-          { username: { $regex: search, $options: 'i' } },
-          { 'profile.firstName': { $regex: pattern, $options: 'i' } },
-          { 'profile.lastName': { $regex: pattern, $options: 'i' } }
-        ]
-      }).select('_id')
-      const userIds = _.map(users, (el: { _id: string }) => el._id)
-      query.createdBy = { $in: userIds }
+      const users = await db_user
+        .getDBInstance()
+        .find({
+          $or: [
+            { username: { $regex: search, $options: 'i' } },
+            { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+            { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+          ]
+        })
+        .select('_id')
+      const userIds = users.map((el: { _id: string }) => el._id)
+      // prevent members to search private ELIPs
+      if (!_.isEmpty(query.createdBy)) {
+        const rs = userIds.filter((id: any) => id.equals(query.createdBy))
+        if (!rs.length) {
+          return []
+        }
+      } else {
+        query.createdBy = { $in: userIds }
+      }
     }
     
     // elipType
-    if(param.type && constant.ELIP_TYPE.hasOwnProperty(param.type)){
+    if(param.type && _.has(constant.ELIP_TYPE, param.type)){
       query.elipType = param.type
     }
 
     // startDate <  endDate
-    if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
-      let endDate = new Date(param.endDate)
-      endDate.setDate(endDate.getDate()+1)
+    if(
+      !_.isEmpty(param.startDate) &&
+      !_.isEmpty(param.endDate) &&
+      moment(param.endDate).isSameOrAfter(param.startDate)
+    ) {
       query.createdAt = {
-        $gte: new Date(param.startDate),
-        $lte: endDate
+        $gte: moment(param.startDate),
+        $lte: moment(param.endDate).add(1, 'd')
       }
     }
 

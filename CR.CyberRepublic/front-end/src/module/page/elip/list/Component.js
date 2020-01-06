@@ -28,15 +28,24 @@ const { RangePicker } = DatePicker
 export default class extends BaseComponent {
   constructor(props) {
     super(props)
+
+    const { isVisitableFilter } = this.props
+    const {
+      search,
+      filter,
+      creationDate,
+      author,
+      type
+    } = this.props.filters
     this.state = {
       list: [],
-      search: '',
-      isVisitableFilter: false,
-      filter: '',
       loading: true,
-      creationDate: [],
-      author: '',
-      type: ''
+      isVisitableFilter,
+      search,
+      filter,
+      creationDate,
+      author,
+      type,
     }
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
@@ -95,12 +104,17 @@ export default class extends BaseComponent {
   }
 
   searchChangedHandler = search => {
+    this.props.updateFilters({ search })
     this.setState({ search: search.trim() }, this.debouncedRefetch)
   }
 
   handleFilter = () => {
     const { isVisitableFilter } = this.state
     this.setState({ isVisitableFilter: !isVisitableFilter })
+  }
+
+  handleSearchChange = e => {
+    this.setState({ search: e.target.value })
   }
 
   handleStatusChange = filter => {
@@ -120,10 +134,26 @@ export default class extends BaseComponent {
   }
 
   handleClearFilter = () => {
-    this.setState({ search: '', filter: '', creationDate: [], author: '', type: '' })
+    const defaultFiltes = this.props.getDefaultFilters()
+    this.setState({ ...defaultFiltes })
+    this.props.clearFilters()
   }
 
   handleApplyFilter = () => {
+    const {
+      search,
+      filter,
+      creationDate,
+      author,
+      type
+    } = this.state
+    this.props.updateFilters({
+      search,
+      filter,
+      creationDate,
+      author,
+      type
+    })
     this.refetch()
   }
 
@@ -214,7 +244,8 @@ export default class extends BaseComponent {
     const searchInput = (
       <Col lg={8} md={12} sm={12} xs={24}>
         <StyledSearch
-          defaultValue={this.state.search}
+          value={this.state.search}
+          onChange={this.handleSearchChange}
           onSearch={this.searchChangedHandler}
           placeholder={I18N.get('developer.search.search.placeholder')}
         />
@@ -255,11 +286,17 @@ export default class extends BaseComponent {
                   value={filter}
                   onChange={this.handleStatusChange}
                 >
-                  {_.map(ELIP_STATUS, value => (
-                    <Select.Option key={value} value={value}>
-                      {I18N.get(`elip.status.${value}`)}
-                    </Select.Option>
-                  ))}
+                  {isLogin
+                    ? _.map(ELIP_STATUS, value => (
+                        <Select.Option key={value} value={value}>
+                          {I18N.get(`elip.status.${value}`)}
+                        </Select.Option>
+                      ))
+                    : _.map([ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED_AS_PROPOSAL], value => (
+                        <Select.Option key={value} value={value}>
+                          {I18N.get(`elip.status.${value}`)}
+                        </Select.Option>
+                      ))}
                 </Select>
               </FilterItem>
             </FilterContent>

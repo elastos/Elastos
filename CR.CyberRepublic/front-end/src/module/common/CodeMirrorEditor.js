@@ -36,14 +36,14 @@ class Component extends BaseComponent {
     if (callback) callback(activeKey)
   }
 
-  init=(editor) => {
-    const {activeKey} = this.props
+  init = editor => {
+    const { activeKey } = this.props
     this.props.init && this.props.init(activeKey, editor)
   }
 
   ord_render() {
     const { show, value } = this.state
-    const { name } = this.props
+    const { name, autofocus } = this.props
     return (
       <Wrapper>
         <Toolbar>
@@ -57,7 +57,7 @@ class Component extends BaseComponent {
               mode: 'gfm',
               theme: 'base16-light',
               lineWrapping: true,
-              autofocus: true
+              autofocus: autofocus === false ? autofocus : true
             }}
             onBeforeChange={(editor, data, value) => {
               this.setState({ value })
@@ -79,12 +79,16 @@ class Component extends BaseComponent {
 }
 
 Component.propTypes = {
-  name: PropTypes.string.isRequired
+  name: PropTypes.string.isRequired,
+  autofocus: PropTypes.bool
 }
 
 export default Component
 
 const Wrapper = styled.div`
+  .cm-s-base16-light.CodeMirror {
+    background: #fff;
+  }
   .CodeMirror {
     min-height: 200px;
     height: unset;
@@ -95,7 +99,7 @@ const Wrapper = styled.div`
     line-height: 1.5;
   }
   .CodeMirror-scroll {
-    padding: 16px 20px 30px 20px;
+    padding: 16px 11px 30px 11px;
     overflow: auto !important;
     min-height: 200px;
     margin-right: 0;

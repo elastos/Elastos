@@ -58,21 +58,34 @@ export default class extends BaseComponent {
   constructor(p) {
     super(p)
 
+    const { isVisitableFilter } = this.props
+    const {
+      voteResult,
+      search,
+      status,
+      budgetRequested,
+      hasTrackingMsg,
+      isUnvotedByYou,
+      creationDate,
+      author,
+      type,
+      endsDate
+    } = this.props.filters
     this.state = {
       list: [],
-      isVisitableFilter: false,
       loading: true,
-      voteResult: sessionStorage.getItem('voteResult') || FILTERS.ALL,
-      search: sessionStorage.getItem('proposalSearch') || '',
-      status: '',
-      budgetRequested: '',
-      hasTrackingMsg: false,
-      isUnvotedByYou: false,
-      creationDate: [],
-      author: '',
-      type: '',
-      endsDate: [],
-      page: 1
+      page: 1,
+      isVisitableFilter,
+      voteResult,
+      search,
+      status,
+      budgetRequested,
+      hasTrackingMsg,
+      isUnvotedByYou,
+      creationDate,
+      author,
+      type,
+      endsDate,
     }
 
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
@@ -85,6 +98,10 @@ export default class extends BaseComponent {
   handleFilter = () => {
     const { isVisitableFilter } = this.state
     this.setState({ isVisitableFilter: !isVisitableFilter })
+  }
+
+  handleSearchChange = e => {
+    this.setState({ search: e.target.value })
   }
 
   handleStatusChange = status => {
@@ -120,19 +137,36 @@ export default class extends BaseComponent {
   }
 
   handleClearFilter = () => {
-    this.setState({
-      status: '',
-      budgetRequested: '',
-      hasTrackingMsg: false,
-      isUnvotedByYou: false,
-      creationDate: [],
-      author: '',
-      type: '',
-      endsDate: []
-    })
+    const defaultFiltes = this.props.getDefaultFilters()
+    this.setState({ ...defaultFiltes })
+    this.props.clearFilters()
   }
 
   handleApplyFilter = () => {
+    const {
+      voteResult,
+      search,
+      status,
+      budgetRequested,
+      hasTrackingMsg,
+      isUnvotedByYou,
+      creationDate,
+      author,
+      type,
+      endsDate,
+    } = this.state
+    this.props.updateFilters({
+      voteResult,
+      search,
+      status,
+      budgetRequested,
+      hasTrackingMsg,
+      isUnvotedByYou,
+      creationDate,
+      author,
+      type,
+      endsDate,
+    })
     this.refetch()
   }
 
@@ -254,7 +288,8 @@ export default class extends BaseComponent {
     const searchInput = (
       <Col lg={8} md={8} sm={12} xs={24}>
         <StyledSearch
-          defaultValue={this.state.search}
+          value={this.state.search}
+          onChange={this.handleSearchChange}
           onSearch={this.searchChangedHandler}
           placeholder={I18N.get('developer.search.search.placeholder')}
         />
@@ -370,8 +405,6 @@ export default class extends BaseComponent {
 
   createAndRedirect = async () => {
     sessionStorage.removeItem('proposalPage')
-    sessionStorage.removeItem('voteResult')
-    sessionStorage.removeItem('proposalSearch')
 
     const { user } = this.props
     const fullName = userUtil.formatUsername(user)
@@ -403,16 +436,14 @@ export default class extends BaseComponent {
       creationDate,
       author,
       type,
-      endsDate
+      endsDate,
+      voteResult,
+      search,
     } = this.state
     const query = {}
-    const voteResult =
-      sessionStorage.getItem('voteResult') || this.state.voteResult
-    const searchStr =
-      this.state.search || sessionStorage.getItem('proposalSearch')
     const formatStr = 'YYYY-MM-DD'
-    if (searchStr) {
-      query.search = searchStr
+    if (search) {
+      query.search = search
     }
     if (!_.isEmpty(status)) {
       query.status = status
@@ -466,34 +497,8 @@ export default class extends BaseComponent {
 
   searchChangedHandler = search => {
     sessionStorage.removeItem('proposalPage')
-    sessionStorage.setItem('proposalSearch', search)
+    this.props.updateFilters({ search })
     this.setState({ search }, this.debouncedRefetch)
-  }
-
-  onFilterChanged = value => {
-    switch (value) {
-      case FILTERS.ALL:
-        this.clearFilters()
-        break
-      case FILTERS.UNVOTED:
-        this.setFilter(FILTERS.UNVOTED)
-        break
-      default:
-        this.clearFilters()
-        break
-    }
-  }
-
-  clearFilters = () => {
-    sessionStorage.removeItem('proposalPage')
-    sessionStorage.setItem('voteResult', FILTERS.ALL)
-    this.setState({ voteResult: FILTERS.ALL }, this.refetch)
-  }
-
-  setFilter = voteResult => {
-    sessionStorage.removeItem('proposalPage')
-    sessionStorage.setItem('voteResult', voteResult)
-    this.setState({ voteResult }, this.refetch)
   }
 
   toDetailPage(id) {

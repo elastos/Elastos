@@ -1,5 +1,5 @@
-const path = require('path');
 const webpack = require('webpack');
+const MomentTimezoneDataPlugin = require('moment-timezone-data-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const merge = require('webpack-merge');
@@ -250,5 +250,7 @@ module.exports = merge(common, {
         }),
         new webpack.optimize.AggressiveMergingPlugin(),
         new webpack.NoEmitOnErrorsPlugin(),
+        new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+        MomentTimezoneDataPlugin({ startYear: 2018, endYear: 2100 })
     ],
 });

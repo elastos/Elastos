@@ -25,13 +25,13 @@ class ImplementationPlan extends Component {
     const { plan } = this.state
     return (
       <div>
-        <Title>{I18N.get('suggestion.plan.teamInfo')}</Title>
+        <Title>{I18N.get('suggestion.plan.milestones')}</Title>
+        <Milestones onChange={this.changeValue} initialValue={plan.milestone} />
         <TeamInfoSection
+          title={I18N.get('suggestion.plan.teamInfo')}
           onChange={this.changeValue}
           initialValue={plan.teamInfo}
         />
-        <Title>{I18N.get('suggestion.plan.milestones')}</Title>
-        <Milestones onChange={this.changeValue} initialValue={plan.milestone} />
       </div>
     )
   }
@@ -40,7 +40,8 @@ class ImplementationPlan extends Component {
 export default ImplementationPlan
 
 const Title = styled.div`
-  font-weight: 500;
-  font-size: 16px;
-  margin-bottom: 16px;
+  font-size: 17px;
+  line-height: 24px;
+  color: #000000;
+  margin-bottom: 20px;
 `

@@ -60,12 +60,9 @@ class C extends StandardPage {
         </StyledSpin>
       )
     }
+    
     if (data && data.success && data.empty) {
-      return (
-        <div className="ebp-page">
-          <h1>{I18N.get('error.notfound')}</h1>
-        </div>
-      )
+      {this.props.history.push('/elips')}
     }
 
     return (

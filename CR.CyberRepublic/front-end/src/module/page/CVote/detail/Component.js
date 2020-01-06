@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  Form,
   Spin,
   Button,
   Input,
@@ -13,7 +12,6 @@ import { Link } from 'react-router-dom'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import StandardPage from '@/module/page/StandardPage'
-import { LANGUAGES } from '@/config/constant'
 import { CVOTE_RESULT, CVOTE_STATUS, ELIP_TYPE } from '@/constant'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
@@ -55,7 +53,8 @@ import {
   Part,
   PartTitle,
   PartContent,
-  PlanSubtitle
+  Subtitle,
+  Paragraph
 } from './style'
 import './style.scss'
 
@@ -68,7 +67,16 @@ const renderRichContent = (data, key, title) => {
     data.budget &&
     typeof data.budget !== 'string'
   ) {
-    rc = <PaymentList list={data.budget} editable={false} />
+    rc = (
+      <div>
+        <Subtitle>{`${I18N.get('suggestion.budget.total')} (ELA)`}</Subtitle>
+        <Paragraph>{data.budgetAmount}</Paragraph>
+        <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
+        <Paragraph>{data.elaAddress}</Paragraph>
+        <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
+        <PaymentList list={data.budget} editable={false} />
+      </div>
+    )
   } else if (
     key === 'plan' &&
     data.plan &&
@@ -76,18 +84,18 @@ const renderRichContent = (data, key, title) => {
   ) {
     rc = (
       <div>
-        <PlanSubtitle>
-          {I18N.get('suggestion.plan.teamInfo')}
-        </PlanSubtitle>
-        <TeamInfoList
-          list={data.plan.teamInfo}
-          editable={false}
-        />
-        <PlanSubtitle>
+        <Subtitle>
           {I18N.get('suggestion.plan.milestones')}
-        </PlanSubtitle>
+        </Subtitle>
         <Milestones
           initialValue={data.plan.milestone}
+          editable={false}
+        />
+        <Subtitle>
+          {I18N.get('suggestion.plan.teamInfo')}
+        </Subtitle>
+        <TeamInfoList
+          list={data.plan.teamInfo}
           editable={false}
         />
       </div>
@@ -112,7 +120,6 @@ class C extends StandardPage {
     this.state = {
       persist: true,
       loading: false,
-      language: LANGUAGES.english, // language for this specifc form only
       visibleYes: false,
       visibleOppose: false,
       visibleAbstain: false,
@@ -274,8 +281,8 @@ class C extends StandardPage {
     } else {
       sections = [
         'abstract',
-        'goal',
         'motivation',
+        'goal',
         'plan',
         'relevance',
         'budget'
@@ -288,6 +295,10 @@ class C extends StandardPage {
         ) {
           return `
             <h2>${I18N.get(`proposal.fields.budget`)}</h2>
+            <p>${I18N.get(`suggestion.budget.total`)}</p>
+            <p>${data.budgetAmount}</p>
+            <p>${I18N.get(`suggestion.budget.address`)}</p>
+            <p>${data.elaAddress}</p>
             <p>${getBudgetHtml(data.budget)}</p>
           `
         }
@@ -412,13 +423,14 @@ class C extends StandardPage {
           href="#abstract"
           title={I18N.get('proposal.fields.abstract')}
         />
-        <LinkGroup marginTop={48}>
-          <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
-        </LinkGroup>
         <Anchor.Link
+          marginTop={48}
           href="#motivation"
           title={I18N.get('proposal.fields.motivation')}
         />
+        <LinkGroup>
+          <Anchor.Link href="#goal" title={I18N.get('proposal.fields.goal')} />
+        </LinkGroup>
         <Anchor.Link href="#plan" title={I18N.get('proposal.fields.plan')} />
         <Anchor.Link
           href="#relevance"
@@ -433,7 +445,7 @@ class C extends StandardPage {
         <LinkGroup marginTop={48}>
           <Anchor.Link href="#vote" title={I18N.get('proposal.fields.vote')} />
         </LinkGroup>
-        {_.each(commonLinks, (e) => (e))}
+        {_.each(commonLinks, e => e)}
       </StyledAnchor>
     )
   }
@@ -496,22 +508,43 @@ class C extends StandardPage {
     const { data, user, isElip } = this.props
     if (isElip) {
       const sections = [
-        'abstract',
-        'motivation',
-        'specifications',
-        'rationale',
-        'backwardCompatibility',
-        'referenceImplementation',
-        'copyright'
+        {
+          id: 'abstract',
+          valueKey: 'abstract'
+        },
+        {
+          id: 'motivation',
+          valueKey: 'motivation'
+        },
+        {
+          id: 'specification',
+          valueKey: 'specifications'
+        },
+        {
+          id: 'rationale',
+          valueKey: 'rationale'
+        },
+        {
+          id: 'backwardCompatibility',
+          valueKey: 'backwardCompatibility'
+        },
+        {
+          id: 'referenceImplementation',
+          valueKey: 'referenceImplementation'
+        },
+        {
+          id: 'copyright',
+          valueKey: 'copyright'
+        }
       ]
       return (
         <div>
           <ElipPreamble {...data} user={user}/>
           {_.map(sections, section => (
-            <Part id={section} key={section}>
-              <PartTitle>{I18N.get(`elip.fields.${section}`)}</PartTitle>
+            <Part id={section.id} key={section.id}>
+              <PartTitle>{I18N.get(`elip.fields.${section.id}`)}</PartTitle>
               <PartContent>
-                <MarkdownPreview content={data[section] ? data[section] : ''} />
+                <MarkdownPreview content={data[section.valueKey] ? data[section.valueKey] : ''} />
               </PartContent>
             </Part>
           ))}
@@ -528,12 +561,12 @@ class C extends StandardPage {
           'abstract',
           I18N.get('proposal.fields.abstract')
         )}
-        {renderRichContent(data, 'goal', I18N.get('proposal.fields.goal'))}
         {renderRichContent(
           data,
           'motivation',
           I18N.get('proposal.fields.motivation')
         )}
+        {renderRichContent(data, 'goal', I18N.get('proposal.fields.goal'))}
         {renderRichContent(data, 'plan', I18N.get('proposal.fields.plan'))}
         {renderRichContent(
           data,
@@ -957,4 +990,4 @@ class C extends StandardPage {
   }
 }
 
-export default Form.create()(C)
+export default C

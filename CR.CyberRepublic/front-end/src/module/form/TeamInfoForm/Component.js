@@ -23,47 +23,47 @@ class TeamInfoForm extends BaseComponent {
   ord_render() {
     const { getFieldDecorator } = this.props.form
     const { item } = this.props
-    const formItemLayout = {
-      labelCol: {
-        span: 24
-      },
-      wrapperCol: {
-        span: 24
-      },
-      colon: false
-    }
     return (
-      <Form onSubmit={this.handleSubmit}>
-        <FormItem
-          label={I18N.get('suggestion.plan.teamMember')}
-          {...formItemLayout}
-        >
-          {getFieldDecorator('member', {
-            rules: [
-              {
-                required: true,
-                message: I18N.get('suggestion.form.error.required')
-              }
-            ],
-            initialValue: item && item.member ? item.member : ''
-          })(<Input />)}
-        </FormItem>
-        <FormItem label={I18N.get('suggestion.plan.role')} {...formItemLayout}>
-          {getFieldDecorator('role', {
-            rules: [
-              {
-                required: true,
-                message: I18N.get('suggestion.form.error.required')
-              }
-            ],
-            initialValue: item && item.role ? item.role : ''
-          })(<Input />)}
-        </FormItem>
-        <StyledFormItem>
-          <FormItem
-            label={I18N.get('suggestion.plan.responsibility')}
-            {...formItemLayout}
-          >
+      <Wrapper>
+        <Title>{I18N.get('suggestion.plan.createTeamInfo')}</Title>
+        <Form onSubmit={this.handleSubmit}>
+          <Label>
+            <span>*</span>
+            {I18N.get('suggestion.plan.teamMember')}
+          </Label>
+          <FormItem>
+            {getFieldDecorator('member', {
+              rules: [
+                {
+                  required: true,
+                  message: I18N.get('suggestion.form.error.required')
+                }
+              ],
+              initialValue: item && item.member ? item.member : ''
+            })(<Input />)}
+          </FormItem>
+
+          <Label>
+            <span>*</span>
+            {I18N.get('suggestion.plan.role')}
+          </Label>
+          <FormItem>
+            {getFieldDecorator('role', {
+              rules: [
+                {
+                  required: true,
+                  message: I18N.get('suggestion.form.error.required')
+                }
+              ],
+              initialValue: item && item.role ? item.role : ''
+            })(<Input />)}
+          </FormItem>
+
+          <Label gutter={-8}>
+            <span>*</span>
+            {I18N.get('suggestion.plan.responsibility')}
+          </Label>
+          <FormItem>
             {getFieldDecorator('responsibility', {
               rules: [
                 {
@@ -71,52 +71,47 @@ class TeamInfoForm extends BaseComponent {
                   message: I18N.get('suggestion.form.error.required')
                 }
               ],
-              initialValue: item && item.responsibility ? item.responsibility : ''
+              initialValue:
+                item && item.responsibility ? item.responsibility : ''
             })(
               <CodeMirrorEditor
                 content={item && item.responsibility ? item.responsibility : ''}
                 name="responsibility"
+                autofocus={false}
               />
             )}
           </FormItem>
-        </StyledFormItem>
-        <StyledFormItem>
-          <FormItem
-            label={I18N.get('suggestion.plan.moreInfo')}
-            {...formItemLayout}
-          >
+
+          <Label gutter={-8}>{I18N.get('suggestion.plan.moreInfo')}</Label>
+          <FormItem>
             {getFieldDecorator('info', {
-              rules: [
-                {
-                  required: true,
-                  message: I18N.get('suggestion.form.error.required')
-                }
-              ],
               initialValue: item && item.info ? item.info : ''
             })(
               <CodeMirrorEditor
                 content={item && item.info ? item.info : ''}
                 name="info"
+                autofocus={false}
               />
             )}
           </FormItem>
-        </StyledFormItem>
-        <Actions>
-          <Button
-            className="cr-btn cr-btn-default"
-            onClick={() => {
-              this.props.onCancel()
-            }}
-          >
-            {I18N.get('suggestion.cancel')}
-          </Button>
-          <Button className="cr-btn cr-btn-primary" htmlType="submit">
-            {item
-              ? I18N.get('suggestion.form.button.update')
-              : I18N.get('suggestion.form.button.create')}
-          </Button>
-        </Actions>
-      </Form>
+
+          <Actions>
+            <Button
+              className="cr-btn cr-btn-default"
+              onClick={() => {
+                this.props.onCancel()
+              }}
+            >
+              {I18N.get('suggestion.cancel')}
+            </Button>
+            <Button className="cr-btn cr-btn-primary" htmlType="submit">
+              {item
+                ? I18N.get('suggestion.form.button.update')
+                : I18N.get('suggestion.form.button.create')}
+            </Button>
+          </Actions>
+        </Form>
+      </Wrapper>
     )
   }
 }
@@ -129,16 +124,30 @@ TeamInfoForm.propTypes = {
 
 export default Form.create()(TeamInfoForm)
 
+const Wrapper = styled.div`
+  max-width: 650px;
+  margin: 0 auto;
+`
+const Title = styled.div`
+  font-size: 30px;
+  line-height: 42px;
+  color: #000000;
+  text-align: center;
+  margin-bottom: 42px;
+`
+const Label = styled.div`
+  font-size: 17px;
+  color: #000;
+  display: block;
+  margin-bottom: ${props => (props.gutter ? props.gutter : 10)}px;
+  > span {
+    color: #ff0000;
+  }
+`
 const Actions = styled.div`
   display: flex;
   justify-content: center;
   > button {
     margin: 0 8px;
-  }
-`
-const StyledFormItem = styled.div`
-  .ant-col-24.ant-form-item-label {
-    padding: 0;
-    margin-bottom: -12px;
   }
 `

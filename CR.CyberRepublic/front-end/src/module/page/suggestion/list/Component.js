@@ -60,6 +60,19 @@ export default class extends StandardPage {
   constructor(props) {
     super(props)
 
+    const { isVisitableFilter } = this.props
+    const {
+      referenceStatus,
+      infoNeeded,
+      underConsideration,
+      search,
+      filter,
+      status,
+      budgetRequested,
+      creationDate,
+      author,
+      type
+    } = this.props.filters
     const uri = URI(props.location.search || '')
 
     // we use the props from the redux store if its retained
@@ -68,20 +81,21 @@ export default class extends StandardPage {
       showArchived: false,
 
       // named status since we eventually want to use a struct of statuses to filter on
-      referenceStatus: false,
-      infoNeeded: false,
-      underConsideration: false,
+      referenceStatus,
+      infoNeeded,
+      underConsideration,
       isDropdownActionOpen: false,
       showMobile: false,
       results: 10,
       total: 0,
-      search: '',
-      filter: '',
-      status: SUGGESTION_STATUS.ACTIVE,
-      budgetRequested: '',
-      creationDate: [],
-      author: '',
-      type: ''
+      search,
+      filter,
+      status,
+      budgetRequested,
+      creationDate,
+      author,
+      type,
+      isVisitableFilter,
     }
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
@@ -98,6 +112,14 @@ export default class extends StandardPage {
   handleFilter = () => {
     const { isVisitableFilter } = this.state
     this.setState({ isVisitableFilter: !isVisitableFilter })
+  }
+
+  handleFilterChange = filter => {
+    this.setState({ filter })
+  }
+
+  handleSearchChange = e => {
+    this.setState({ search: e.target.value })
   }
 
   handleStatusChange = status => {
@@ -133,21 +155,36 @@ export default class extends StandardPage {
   }
 
   handleClearFilter = () => {
-    this.setState({
-      referenceStatus: false,
-      infoNeeded: false,
-      underConsideration: false,
-      search: '',
-      filter: '',
-      status: '',
-      budgetRequested: '',
-      creationDate: [],
-      author: '',
-      type: ''
-    })
+    const defaultFiltes = this.props.getDefaultFilters()
+    this.setState({ ...defaultFiltes })
+    this.props.clearFilters()
   }
 
   handleApplyFilter = () => {
+    const {
+      referenceStatus,
+      infoNeeded,
+      underConsideration,
+      search,
+      filter,
+      status,
+      budgetRequested,
+      creationDate,
+      author,
+      type
+    } = this.state
+    this.props.updateFilters({
+      referenceStatus,
+      infoNeeded,
+      underConsideration,
+      search,
+      filter,
+      status,
+      budgetRequested,
+      creationDate,
+      author,
+      type
+    })
     this.refetch()
   }
 
@@ -160,7 +197,7 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
-    const { isVisitableFilter } = this.state
+    const { isVisitableFilter, search, filter } = this.state
     const { isSecretary } = this.props
     const headerNode = this.renderHeader()
     const filterNode = this.renderFilters()
@@ -171,9 +208,7 @@ export default class extends StandardPage {
 
     return (
       <div>
-        <Meta
-          title="Cyber Republic - Elastos"
-        />
+        <Meta title="Cyber Republic - Elastos" />
         <div className="suggestion-header">{headerNode}</div>
         <SuggestionContainer className="p_SuggestionList">
           <Row
@@ -183,7 +218,13 @@ export default class extends StandardPage {
             style={{ margin: '24px 0 48px' }}
           >
             <Col xs={24} sm={12} style={{ paddingTop: 24 }}>
-              <SearchBox search={this.handleSearch} value={this.state.search} />
+              <SearchBox
+                search={this.handleSearch}
+                onChange={this.handleSearchChange}
+                value={search}
+                filterValue={filter}
+                onFilterChange={this.handleFilterChange}
+              />
             </Col>
             {filterNode}
             <Col xs={24} sm={8} style={{ textAlign: 'right', paddingTop: 24 }}>
@@ -242,6 +283,7 @@ export default class extends StandardPage {
   }
 
   handleSearch = (filter, search) => {
+    this.props.updateFilters({ search, filter })
     this.setState({ search, filter }, this.debouncedRefetch)
   }
 
@@ -664,18 +706,18 @@ export default class extends StandardPage {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     const { page } = this.props
     const {
-      results,
       referenceStatus,
+      infoNeeded,
+      underConsideration,
       search,
       filter,
       status,
-      infoNeeded,
-      underConsideration,
       budgetRequested,
       creationDate,
       author,
       type
     } = this.state
+    const { results } = this.state
     const query = {
       page,
       results

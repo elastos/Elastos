@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-const create = (list) => {
+const create = list => {
   return _.zipObject(list, list)
 }
 
@@ -16,7 +16,7 @@ export const CR_LINKS = {
   REDDIT: 'https://www.reddit.com/r/CyberRepublic',
   TELEGRAM: 'https://t.me/elastosgroup',
   TWITTER: 'https://twitter.com/cyber__republic',
-  YOUTUBE: 'https://www.youtube.com/channel/UCjHthS-zJr0axZF5Iw8En-w',
+  YOUTUBE: 'https://www.youtube.com/channel/UCjHthS-zJr0axZF5Iw8En-w'
 }
 
 export const ELASTOS_LINKS = {
@@ -24,7 +24,7 @@ export const ELASTOS_LINKS = {
   GITHUB: 'https://github.com/elastos',
   NEWS: 'https://news.elastos.org',
   WALLET: 'https://wallet.elastos.org',
-  WWW: 'https://www.elastos.org',
+  WWW: 'https://www.elastos.org'
 }
 
 export const USER_ROLE = {
@@ -33,7 +33,7 @@ export const USER_ROLE = {
   SECRETARY: 'SECRETARY',
   CUSTOM: 'CUSTOM',
   MEMBER: 'MEMBER',
-  LEADER: 'LEADER',
+  LEADER: 'LEADER'
 }
 
 export const USER_ROLE_TO_TEXT = {
@@ -42,7 +42,7 @@ export const USER_ROLE_TO_TEXT = {
   SECRETARY: 'Secretary General',
   CUSTOM: 'Custom',
   MEMBER: 'User',
-  LEADER: 'Leader',
+  LEADER: 'Leader'
 }
 
 export const USER_EMPOWER_TYPE = {
@@ -191,7 +191,14 @@ export const SUBMISSION_CAMPAIGN = {
   EMPOWER_35: 'EMPOWER_35'
 }
 
-export const SKILLSET_TYPE = create(['CPP', 'JAVASCRIPT', 'GO', 'PYTHON', 'JAVA', 'SWIFT'])
+export const SKILLSET_TYPE = create([
+  'CPP',
+  'JAVASCRIPT',
+  'GO',
+  'PYTHON',
+  'JAVA',
+  'SWIFT'
+])
 export const TEAM_TASK_DOMAIN = create([
   'AUTHENTICITY',
   'CURRENCY',
@@ -205,14 +212,27 @@ export const TEAM_TASK_DOMAIN = create([
 ])
 export const TEAM_USER_STATUS = create(['NORMAL', 'PENDING', 'REJECT'])
 export const TEAM_TYPE = create(['TEAM', 'CRCLE'])
-export const TEAM_SUBCATEGORY = create(['ESSENTIAL', 'ADVANCED', 'SERVICES', 'DEVELOPER'])
+export const TEAM_SUBCATEGORY = create([
+  'ESSENTIAL',
+  'ADVANCED',
+  'SERVICES',
+  'DEVELOPER'
+])
 // Images
 export const USER_AVATAR_DEFAULT = '/assets/images/user_blurred_white.png'
 export const TASK_AVATAR_DEFAULT = '/assets/images/Elastos_Logo.png'
 export const TEAM_AVATAR_DEFAULT = '/assets/images/team_blurred.svg'
 
 // council vote
-export const CVOTE_STATUS = create(['DRAFT', 'PROPOSED', 'ACTIVE', 'REJECT', 'FINAL', 'DEFERRED', 'INCOMPLETED'])
+export const CVOTE_STATUS = create([
+  'DRAFT',
+  'PROPOSED',
+  'ACTIVE',
+  'REJECT',
+  'FINAL',
+  'DEFERRED',
+  'INCOMPLETED'
+])
 
 export const CVOTE_STATUS_TEXT = {
   DRAFT: 'DRAFT',
@@ -230,83 +250,178 @@ export const CVOTE_RESULT = {
   SUPPORT: 'support',
   REJECT: 'reject',
   ABSTENTION: 'abstention',
-  UNDECIDED: 'undecided',
+  UNDECIDED: 'undecided'
 }
 
 export const CVOTE_RESULT_COLOR = {
   [CVOTE_RESULT.UNDECIDED]: '#CED6E3',
   [CVOTE_RESULT.ABSTENTION]: '#0F2631',
   [CVOTE_RESULT.SUPPORT]: '#1DE9B6',
-  [CVOTE_RESULT.REJECT]: '#BE1313',
+  [CVOTE_RESULT.REJECT]: '#BE1313'
 }
 
-export const CVOTE_TRACKING_STATUS = create(['DRAFT', 'REVIEWING', 'PUBLISHED', 'REJECT'])
-export const CVOTE_SUMMARY_STATUS = create(['DRAFT', 'REVIEWING', 'PUBLISHED', 'REJECT'])
+export const CVOTE_TRACKING_STATUS = create([
+  'DRAFT',
+  'REVIEWING',
+  'PUBLISHED',
+  'REJECT'
+])
+export const CVOTE_SUMMARY_STATUS = create([
+  'DRAFT',
+  'REVIEWING',
+  'PUBLISHED',
+  'REJECT'
+])
 
 export const CVOTE_TRACKING_STATUS_TEXT = {
   [CVOTE_TRACKING_STATUS.DRAFT]: 'DRAFT',
   [CVOTE_TRACKING_STATUS.REVIEWING]: 'REVIEWING',
   [CVOTE_TRACKING_STATUS.PUBLISHED]: 'APPROVED',
-  [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED',
+  [CVOTE_TRACKING_STATUS.REJECT]: 'REJECTED'
 }
 
 export const RESOURCE_TYPE_TO_TEXT = {
-  CVote: 'Proposal',
+  CVote: 'Proposal'
 }
 
 export const avatar_map = {
-  'Kevin Zhang': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/44f5fe8e-f062-41e4-ba5b-1dbbea4e63b0_kevin.jpeg',
-  'Fay Li': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/37706672-efa7-4a7a-8453-200f3ab615d9_IMG_4320.JPG',
-  'Yipeng Su': 'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/19691cdc-913f-40d1-9d1d-f88b709fcecf_yipeng.jpeg'
+  'Kevin Zhang':
+    'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/44f5fe8e-f062-41e4-ba5b-1dbbea4e63b0_kevin.jpeg',
+  'Fay Li':
+    'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/37706672-efa7-4a7a-8453-200f3ab615d9_IMG_4320.JPG',
+  'Yipeng Su':
+    'https://s3-ap-southeast-1.amazonaws.com/s3-cr-asia-prod/19691cdc-913f-40d1-9d1d-f88b709fcecf_yipeng.jpeg'
 }
 
 export const CVOTE_TYPE = {
   1: 'New Motion',
   2: 'Motion Against',
-  3: 'Anything Else',
+  3: 'Anything Else'
 }
 
 export const USER_SKILLSET = {
-  BUSINESS: create(['VIRTUAL_ASSISTANT', 'DATA_ENTRY', 'MARKET_RESEARCH', 'BUSINESS_PLANS',
-    'LEGAL_CONSULTING', 'FINANCIAL_CONSULTING', 'PRESENTATION']),
-  DESIGN: create(['LOGO_DESIGN', 'FLYERS', 'PACKAGING', 'ILLUSTRATION', 'INFOGRAPHIC', 'PRODUCT_DESIGN',
-    'MERCHANDISE', 'PHOTOSHOP']),
+  BUSINESS: create([
+    'VIRTUAL_ASSISTANT',
+    'DATA_ENTRY',
+    'MARKET_RESEARCH',
+    'BUSINESS_PLANS',
+    'LEGAL_CONSULTING',
+    'FINANCIAL_CONSULTING',
+    'PRESENTATION'
+  ]),
+  DESIGN: create([
+    'LOGO_DESIGN',
+    'FLYERS',
+    'PACKAGING',
+    'ILLUSTRATION',
+    'INFOGRAPHIC',
+    'PRODUCT_DESIGN',
+    'MERCHANDISE',
+    'PHOTOSHOP'
+  ]),
   DEVELOPER: {
     ...SKILLSET_TYPE,
     ...create(['SOFTWARE_TESTING'])
   },
-  MARKETING: create(['SOCIAL_MEDIA_MARKETING', 'SEO', 'CONTENT_MARKETING', 'VIDEO_MARKETING',
-    'EMAIL_MARKETING', 'MARKETING_STRATEGY', 'WEB_ANALYTICS', 'ECOMMERCE', 'MOBILE_ADVERTISING']),
+  MARKETING: create([
+    'SOCIAL_MEDIA_MARKETING',
+    'SEO',
+    'CONTENT_MARKETING',
+    'VIDEO_MARKETING',
+    'EMAIL_MARKETING',
+    'MARKETING_STRATEGY',
+    'WEB_ANALYTICS',
+    'ECOMMERCE',
+    'MOBILE_ADVERTISING'
+  ]),
   MUSIC: create(['VOICE_OVER', 'MIXING', 'MUSIC_PRODUCTION']),
-  WRITING: create(['TRANSLATION', 'PRODUCT_DESCRIPTIONS', 'WEBSITE_CONTENT', 'TECHNICAL_WRITING',
-    'PROOFREADING', 'CREATIVE_WRITING', 'ARTICLES_WRITING', 'SALES_COPY', 'PRESS_RELEASES',
-    'LEGAL_WRITING']),
-  VIDEO: create(['INTROS', 'LOGO_ANIMATION', 'PROMO_VIDEOS', 'VIDEO_ADS', 'VIDEO_EDITING',
-    'VIDEO_MODELING', 'PRODUCT_PHOTO']),
+  WRITING: create([
+    'TRANSLATION',
+    'PRODUCT_DESCRIPTIONS',
+    'WEBSITE_CONTENT',
+    'TECHNICAL_WRITING',
+    'PROOFREADING',
+    'CREATIVE_WRITING',
+    'ARTICLES_WRITING',
+    'SALES_COPY',
+    'PRESS_RELEASES',
+    'LEGAL_WRITING'
+  ]),
+  VIDEO: create([
+    'INTROS',
+    'LOGO_ANIMATION',
+    'PROMO_VIDEOS',
+    'VIDEO_ADS',
+    'VIDEO_EDITING',
+    'VIDEO_MODELING',
+    'PRODUCT_PHOTO'
+  ])
 }
 
 export const SORT_ORDER = create(['ASC', 'DESC'])
 
-export const USER_PROFESSION = create(['ENGINEERING', 'COMPUTER_SCIENCE', 'PRODUCT_MANAGEMENT',
-  'ART_DESIGN', 'SALES', 'MARKETING', 'BUSINESS_FINANCE', 'ENTREPRENEUR', 'STUDENT',
-  'HEALTH_MEDICINE', 'LITERATURE_WRITING', 'TRANSLATION', 'LAW', 'ECONOMICS', 'MANAGEMENT', 'OTHER'])
+export const USER_PROFESSION = create([
+  'ENGINEERING',
+  'COMPUTER_SCIENCE',
+  'PRODUCT_MANAGEMENT',
+  'ART_DESIGN',
+  'SALES',
+  'MARKETING',
+  'BUSINESS_FINANCE',
+  'ENTREPRENEUR',
+  'STUDENT',
+  'HEALTH_MEDICINE',
+  'LITERATURE_WRITING',
+  'TRANSLATION',
+  'LAW',
+  'ECONOMICS',
+  'MANAGEMENT',
+  'OTHER'
+])
 
 // suggestion
 export const SUGGESTION_STATUS = create(['ACTIVE', 'ABUSED', 'ARCHIVED'])
 
 export const SUGGESTION_ABUSED_STATUS = create(['REPORTED', 'HANDLED'])
 
-export const SUGGESTION_TAG_TYPE = create(['UNDER_CONSIDERATION', 'INFO_NEEDED'])
+export const SUGGESTION_TAG_TYPE = create([
+  'UNDER_CONSIDERATION',
+  'INFO_NEEDED'
+])
+
+export const SUGGESTION_SEARCH_FILTERS = create([
+  'TITLE',
+  'NUMBER',
+  'ABSTRACT',
+  'EMAIL',
+  'NAME'
+])
+
+export const SUGGESTION_BUDGET_TYPE = create([
+  'ADVANCE',
+  'COMPLETION',
+  'CONDITIONED'
+])
 
 // elip
-export const ELIP_STATUS = create(['WAIT_FOR_REVIEW', 'REJECTED', 'DRAFT', 'SUBMITTED_AS_PROPOSAL'])
-export const ELIP_FILTER = create(['ALL', 'DRAFT', 'SUBMITTED_BY_ME', 'WAIT_FOR_REVIEW'])
+export const ELIP_STATUS = create([
+  'WAIT_FOR_REVIEW',
+  'REJECTED',
+  'DRAFT',
+  'SUBMITTED_AS_PROPOSAL'
+])
+export const ELIP_FILTER = create([
+  'ALL',
+  'DRAFT',
+  'SUBMITTED_BY_ME',
+  'WAIT_FOR_REVIEW'
+])
 export const ELIP_REVIEW_STATUS = create(['APPROVED', 'REJECTED'])
 export const ELIP_VOTE_STATUS = create(['YES', 'OPPOSE', 'ABSTAIN'])
 export const ELIP_VOTE_STATUS_COLOR = {
   [ELIP_VOTE_STATUS.YES]: '#008D85',
   [ELIP_VOTE_STATUS.OPPOSE]: '#BE1313',
-  [ELIP_VOTE_STATUS.ABSTAIN]: '#C4C4C4',
+  [ELIP_VOTE_STATUS.ABSTAIN]: '#C4C4C4'
 }
 export const ELIP_TYPE = create(['STANDARD_TRACK', 'PROCESS', 'INFORMATIONAL'])
 export const ELIP_NUMBER_TYPE = ['4', '5', '6']

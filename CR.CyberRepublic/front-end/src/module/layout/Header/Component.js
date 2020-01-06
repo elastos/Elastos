@@ -6,11 +6,12 @@ import I18N from '@/I18N'
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '@/config/constant'
 import { USER_ROLE, USER_LANGUAGE } from '@/constant'
-import Flag from 'react-flags'
-import Data from '@/config/data'
 import UserEditForm from '@/module/form/UserEditForm/Container'
 import Headroom from 'react-headroom'
-import Flyout from './Flyout'
+
+import ChinaFlag from './ChinaFlag'
+import UsFlag from './UsFlag'
+import './style.scss'
 
 const { Header } = Layout
 
@@ -100,28 +101,14 @@ export default class extends BaseComponent {
     const menu = (
       <Menu onClick={this.clickItem.bind(this)} className="language-menu">
         <Menu.Item key="en">
-          <div>
-            <Flag
-              name="US"
-              format="png"
-              basePath="/assets/images/flags"
-              pngSize={24}
-              shiny={true}
-              alt="English"
-            />
+          <div className="language">
+            <UsFlag width={28} height={28} />
             <span className="language-us">English</span>
           </div>
         </Menu.Item>
         <Menu.Item key="zh">
-          <div>
-            <Flag
-              name="CN"
-              format="png"
-              basePath="/assets/images/flags"
-              pngSize={24}
-              shiny={true}
-              alt="English"
-            />
+          <div className="language">
+            <ChinaFlag width={24} height={24} />
             <span className="language-cn">简体中文</span>
           </div>
         </Menu.Item>
@@ -131,14 +118,11 @@ export default class extends BaseComponent {
     return (
       <Dropdown overlay={menu} placement="bottomCenter">
         <a className="ant-dropdown-link">
-          <Flag
-            name={Data.mappingLanguageKeyToName[this.props.lang]}
-            format="png"
-            basePath="/assets/images/flags"
-            pngSize={24}
-            shiny={true}
-            alt="English"
-          />
+          {this.props.lang === 'en' ? (
+            <UsFlag width={28} height={28} />
+          ) : (
+            <ChinaFlag width={24} height={24} />
+          )}
         </a>
       </Dropdown>
     )
@@ -169,7 +153,6 @@ export default class extends BaseComponent {
   buildCouncilDropdown() {
     return (
       <Menu onClick={this.clickItem.bind(this)} className="help-menu">
-
         <Menu.Item key="council">
           {I18N.get('navigation.council.submenu.incumbent')}
         </Menu.Item>

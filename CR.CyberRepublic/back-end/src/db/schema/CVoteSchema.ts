@@ -61,6 +61,9 @@ export const CVote = {
   budgetAmount: {
     type: Number
   },
+  elaAddress: {
+    type: String
+  },
   budget: {
     type: Schema.Types.Mixed
   },
