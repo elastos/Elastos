@@ -1094,7 +1094,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 		Transactions: []*types.Transaction{
 			txn,
 		},
-		Header: types.Header{Height:s.CurrentHeight},
+		Header: types.Header{Height: s.CurrentHeight},
 	}
 	s.Chain.state.ProcessBlock(block, nil)
 
@@ -1109,7 +1109,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	}
 	txn.Payload = updatePayload
 	s.CurrentHeight++
-	block.Header = types.Header{Height:s.CurrentHeight}
+	block.Header = types.Header{Height: s.CurrentHeight}
 	s.Chain.state.ProcessBlock(block, nil)
 
 	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "field NickName has invalid string length")
@@ -1276,6 +1276,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	s.EqualError(err, "should create tx during voting period")
 
 	// Not in vote Period upper c.params.CRCommitteeStartHeight
+	s.Chain.crCommittee.InElectionPeriod = true
 	err = s.Chain.checkRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
 	s.EqualError(err, "should create tx during voting period")
 
@@ -2024,7 +2025,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 	registerCRTxn1 := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
 	registerCRTxn2 := s.getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
 
-	s.CurrentHeight=1
+	s.CurrentHeight = 1
 	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
 	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
 		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
@@ -2037,7 +2038,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 			registerCRTxn1,
 			registerCRTxn2,
 		},
-		Header: types.Header{Height:s.CurrentHeight},
+		Header: types.Header{Height: s.CurrentHeight},
 	}
 	s.Chain.crCommittee.ProcessBlock(block, nil)
 
@@ -2105,6 +2106,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 	s.EqualError(err, "should create tx during voting period")
 
 	//not in vote Period lower upper c.params.CRCommitteeStartHeight
+	s.Chain.crCommittee.InElectionPeriod = true
 	err = s.Chain.checkUpdateCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
 	s.EqualError(err, "should create tx during voting period")
 
@@ -2134,7 +2136,7 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 
 	//register a cr to unregister
 	registerCRTxn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
-	s.CurrentHeight=1
+	s.CurrentHeight = 1
 	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
 	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
 		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
@@ -2146,7 +2148,7 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 		Transactions: []*types.Transaction{
 			registerCRTxn,
 		},
-		Header: types.Header{Height:s.CurrentHeight},
+		Header: types.Header{Height: s.CurrentHeight},
 	}
 	s.Chain.crCommittee.ProcessBlock(block, nil)
 	//ok
@@ -2164,6 +2166,7 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 	s.EqualError(err, "should create tx during voting period")
 
 	//not in vote Period lower upper c.params.CRCommitteeStartHeight
+	s.Chain.crCommittee.InElectionPeriod = true
 	err = s.Chain.checkUnRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
 	s.EqualError(err, "should create tx during voting period")
 
@@ -2581,7 +2584,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 }
 
 func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
-	s.CurrentHeight=1
+	s.CurrentHeight = 1
 	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
 	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
 		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
@@ -2701,7 +2704,7 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 }
 
 func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
-	s.CurrentHeight=1
+	s.CurrentHeight = 1
 	_, pk, _ := crypto.GenerateKeyPair()
 	cont, _ := contract.CreateStandardContract(pk)
 	code := cont.Code
@@ -2963,7 +2966,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	registerCRTxn2 := s.getRegisterCRTx(publicKey2, privateKeyStr2, "nickName2")
 	registerCRTxn3 := s.getRegisterCRTx(publicKey3, privateKeyStr3, "nickName3")
 
-	s.CurrentHeight=1
+	s.CurrentHeight = 1
 	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
 	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
 		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
@@ -2977,7 +2980,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			registerCRTxn2,
 			registerCRTxn3,
 		},
-		Header:types.Header{Height:s.CurrentHeight},
+		Header: types.Header{Height: s.CurrentHeight},
 	}
 	s.Chain.crCommittee.ProcessBlock(block, nil)
 	code1 := getCodeByPubKeyStr(publicKey1)
@@ -3451,7 +3454,7 @@ func (s *txValidatorTestSuite) TestCreateCRCAppropriationTransaction() {
 	crcCommiteeAddressHash, _ := common.Uint168FromAddress(crcCommiteeAddressStr)
 	s.Chain.chainParams.CRCCommitteeAddress = *crcCommiteeAddressHash
 
-	s.CurrentHeight=1
+	s.CurrentHeight = 1
 	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
 	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
 		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,

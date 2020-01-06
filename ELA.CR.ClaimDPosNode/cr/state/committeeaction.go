@@ -27,7 +27,7 @@ func (c *Committee) processTransactions(txs []*types.Transaction, height uint32)
 		c.processTransaction(tx, height)
 	}
 
-	// Check if any pending producers has got 6 confirms, set them to activate.
+	// Check if any pending candidates has got 6 confirms, set them to activate.
 	activateCandidateFromPending :=
 		func(key common.Uint168, candidate *Candidate) {
 			c.state.history.Append(height, func() {
@@ -160,7 +160,11 @@ func (c *Committee) processVotes(tx *types.Transaction, height uint32) {
 			}
 			if exist {
 				op := types.NewOutPoint(tx.Hash(), uint16(i))
-				c.state.Votes[op.ReferKey()] = struct{}{}
+				c.state.history.Append(height, func() {
+					c.state.Votes[op.ReferKey()] = struct{}{}
+				}, func() {
+					delete(c.state.Votes, op.ReferKey())
+				})
 				c.processVoteOutput(output, height)
 			}
 		}

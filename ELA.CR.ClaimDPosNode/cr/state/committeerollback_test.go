@@ -112,6 +112,12 @@ func getDIDByPublicKey(publicKey string) *common.Uint168 {
 	return ct1.ToProgramHash()
 }
 
+func committeeKeyFrameEqual(first *CommitteeKeyFrame, second *CommitteeKeyFrame) bool {
+	return keyframeEqual(first.KeyFrame, second.KeyFrame) &&
+		stateKeyframeEqual(first.StateKeyFrame, second.StateKeyFrame) &&
+		proposalKeyFrameEqual(first.ProposalKeyFrame, second.ProposalKeyFrame)
+}
+
 func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
@@ -162,12 +168,12 @@ func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
 			},
 		}, nil)
 	}
+	keyFrameA := committee.SnapShort()
 
 	voteCRTx := getVoteCRTx(6, []outputpayload.CandidateVotes{
 		{did1.Bytes(), 3},
 		{did2.Bytes(), 2},
 		{did3.Bytes(), 1}})
-
 	currentHeight++
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -177,41 +183,28 @@ func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
 			voteCRTx,
 		},
 	}, nil)
-
-	candidate1 := committee.GetCandidate(*did1)
-	assert.Equal(t, 0, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 3, len(committee.GetCandidates(Active)))
-	assert.Equal(t, common.Fixed64(3), candidate1.votes)
+	assert.Equal(t, common.Fixed64(3), committee.GetCandidate(*did1).votes)
+	keyFrameB := committee.SnapShort()
 
 	// rollback
 	currentHeight--
 	err := committee.RollbackTo(currentHeight)
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 3, len(committee.GetCandidates(Active)))
-	assert.Equal(t, common.Fixed64(0), candidate1.votes)
-
-	currentHeight--
-	err = committee.RollbackTo(currentHeight)
-	assert.NoError(t, err)
-	assert.Equal(t, 3, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 0, len(committee.GetCandidates(Active)))
+	assert.Equal(t, common.Fixed64(0), committee.GetCandidate(*did1).votes)
+	keyFrameC := committee.SnapShort()
 
 	// reprocess
 	currentHeight++
 	committee.ProcessBlock(&types.Block{
-		Header: types.Header{Height: currentHeight}}, nil)
-	assert.Equal(t, 0, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 3, len(committee.GetCandidates(Active)))
-	assert.Equal(t, common.Fixed64(0), candidate1.votes)
-
-	currentHeight++
-	committee.ProcessBlock(&types.Block{
 		Header:       types.Header{Height: currentHeight},
 		Transactions: []*types.Transaction{voteCRTx}}, nil)
-	assert.Equal(t, 0, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 3, len(committee.GetCandidates(Active)))
-	assert.Equal(t, common.Fixed64(3), candidate1.votes)
+	assert.Equal(t, common.Fixed64(3), committee.GetCandidate(*did1).votes)
+	keyFrameD := committee.SnapShort()
+
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
 }
 
 func TestCommittee_RollbackEndVotingPeriod(t *testing.T) {
@@ -288,28 +281,25 @@ func TestCommittee_RollbackEndVotingPeriod(t *testing.T) {
 	currentHeight = cfg.CRCommitteeStartHeight - 1
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{Height: currentHeight}}, nil)
-	candidate1 := committee.GetCandidate(*did1)
-	assert.Equal(t, 0, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 3, len(committee.GetCandidates(Active)))
-	assert.Equal(t, common.Fixed64(3), candidate1.votes)
 	assert.Equal(t, 0, len(committee.GetAllMembers()))
+	assert.Equal(t, 3, len(committee.GetAllCandidates()))
 
 	// process
+	keyFrameA := committee.SnapShort()
 	currentHeight++
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{Height: currentHeight}}, nil)
 	assert.Equal(t, 2, len(committee.GetAllMembers()))
 	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+	keyFrameB := committee.SnapShort()
 
 	// rollback
 	currentHeight--
 	err := committee.RollbackTo(currentHeight)
 	assert.NoError(t, err)
-	candidate2 := committee.GetCandidate(*did1)
-	assert.Equal(t, 0, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 3, len(committee.GetCandidates(Active)))
-	assert.Equal(t, common.Fixed64(3), candidate2.votes)
 	assert.Equal(t, 0, len(committee.GetAllMembers()))
+	assert.Equal(t, 3, len(committee.GetAllCandidates()))
+	keyFrameC := committee.SnapShort()
 
 	// reprocess
 	currentHeight++
@@ -317,6 +307,12 @@ func TestCommittee_RollbackEndVotingPeriod(t *testing.T) {
 		Header: types.Header{Height: currentHeight}}, nil)
 	assert.Equal(t, 2, len(committee.GetAllMembers()))
 	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+	keyFrameD := committee.SnapShort()
+
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
 }
 
 func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
@@ -405,34 +401,25 @@ func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
 	currentHeight = cfg.CRCommitteeStartHeight - 1
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{Height: currentHeight}}, nil)
-	candidate1 := committee.GetCandidate(*did1)
-	assert.Equal(t, 0, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 3, len(committee.GetCandidates(Active)))
-	assert.Equal(t, common.Fixed64(3), candidate1.votes)
-	assert.Equal(t, 0, len(committee.GetAllMembers()))
+	keyFrameA := committee.SnapShort()
 
 	// process
 	currentHeight++
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{Height: currentHeight}}, nil)
-	assert.Equal(t, 0, len(committee.GetAllMembers()))
-	assert.Equal(t, 3, len(committee.GetAllCandidates()))
+	keyFrameB := committee.SnapShort()
 
 	// rollback
 	currentHeight--
 	err := committee.RollbackTo(currentHeight)
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 3, len(committee.GetCandidates(Active)))
-	assert.Equal(t, common.Fixed64(3), candidate1.votes)
-	assert.Equal(t, 0, len(committee.GetAllMembers()))
+	keyFrameC := committee.SnapShort()
 
 	// reprocess
 	currentHeight++
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{Height: currentHeight}}, nil)
-	assert.Equal(t, 0, len(committee.GetAllMembers()))
-	assert.Equal(t, 3, len(committee.GetAllCandidates()))
+	keyFrameD := committee.SnapShort()
 
 	publicKeyStr4 := "027209c3a6bcb95e9ef766c81136bcd6f2338eee7f9caebf694825e411320bab12"
 	privateKeyStr4 := "b3b1c16abd786c4994af9ee8c79d25457f66509731f74d6a9a9673ca872fa8fa"
@@ -477,11 +464,7 @@ func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
 	currentHeight = cfg.CRCommitteeStartHeight - 1 + cfg.CRVotingPeriod
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{Height: currentHeight}}, nil)
-	candidate4 := committee.GetCandidate(*did4)
-	assert.Equal(t, 0, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 4, len(committee.GetCandidates(Active)))
-	assert.Equal(t, common.Fixed64(4), candidate4.votes)
-	assert.Equal(t, 0, len(committee.GetAllMembers()))
+	keyFrameA2 := committee.SnapShort()
 
 	// process
 	currentHeight++
@@ -489,15 +472,13 @@ func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
 		Header: types.Header{Height: currentHeight}}, nil)
 	assert.Equal(t, 4, len(committee.GetAllMembers()))
 	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+	keyFrameB2 := committee.SnapShort()
 
 	// rollback
 	currentHeight--
 	err = committee.RollbackTo(currentHeight)
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(committee.GetCandidates(Pending)))
-	assert.Equal(t, 4, len(committee.GetCandidates(Active)))
-	assert.Equal(t, common.Fixed64(4), candidate4.votes)
-	assert.Equal(t, 0, len(committee.GetAllMembers()))
+	keyFrameC2 := committee.SnapShort()
 
 	// reprocess
 	currentHeight++
@@ -505,4 +486,15 @@ func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
 		Header: types.Header{Height: currentHeight}}, nil)
 	assert.Equal(t, 4, len(committee.GetAllMembers()))
 	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+	keyFrameD2 := committee.SnapShort()
+
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
+
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA2, keyFrameC2))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA2, keyFrameB2))
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB2, keyFrameD2))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB2, keyFrameC2))
 }
