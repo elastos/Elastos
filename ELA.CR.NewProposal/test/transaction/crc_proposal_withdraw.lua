@@ -25,19 +25,15 @@ local asset_id = m.get_asset_id()
 local proposal_hash = getProposalHash()
 local amount = getAmount()
 local fee = getFee()
-local stage = getStage()
 local recipient = getToAddr()
 
 print("crcCommitteeAddress " .. crcCommitteeAddress)
 print("amount " .. amount)
 print("fee " .. fee)
-print("stage " .. stage)
 print("addr " .. addr)
 print("recipient " .. recipient)
 
-
-
-local crcproposalwithdraw_payload =crcproposalwithdraw.new(proposal_hash, stage, fee* 100000000 , wallet)
+local crcproposalwithdraw_payload =crcproposalwithdraw.new(proposal_hash, fee* 100000000 , wallet)
 -- transaction: version, txType, payloadVersion, payload, locktime
 local tx = transaction.new(9, 0x29, 0, crcproposalwithdraw_payload, 0)
 print(tx:get())

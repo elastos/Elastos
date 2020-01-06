@@ -203,8 +203,19 @@ func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 	} else {
 		p.history.Append(height, func() {
 			proposal.Status = VoterAgreed
+			for _, b := range proposal.Proposal.Budgets {
+				if b.Type == payload.Imprest {
+					proposal.WithdrawableBudgets[b.Stage] = b.Amount
+				}
+			}
 		}, func() {
 			proposal.Status = CRAgreed
+			for _, b := range proposal.Proposal.Budgets {
+				if b.Type == payload.Imprest {
+					delete(proposal.WithdrawableBudgets, b.Stage)
+				}
+			}
+
 		})
 	}
 }
@@ -330,17 +341,20 @@ func (p *ProposalManager) proposalWithdraw(tx *types.Transaction,
 	if proposalState == nil {
 		return
 	}
-	var amount common.Fixed64
-	for _, budget := range proposalState.Proposal.Budgets {
-		if budget.Stage == withdrawPayload.Stage {
-			amount = budget.Amount
-			break
+	withdrawingBudgets := make(map[uint8]common.Fixed64)
+	for i, a := range proposalState.WithdrawableBudgets {
+		if _, ok := proposalState.WithdrawnBudgets[i]; !ok {
+			withdrawingBudgets[i] = a
 		}
 	}
 	history.Append(height, func() {
-		proposalState.WithdrawnBudgets[withdrawPayload.Stage] = amount
+		for k, v := range withdrawingBudgets {
+			proposalState.WithdrawnBudgets[k] = v
+		}
 	}, func() {
-		delete(proposalState.WithdrawnBudgets, withdrawPayload.Stage)
+		for k, _ := range withdrawingBudgets {
+			delete(proposalState.WithdrawnBudgets, k)
+		}
 	})
 }
 
@@ -368,7 +382,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 					break
 				}
 			}
-			if len(proposalState.WithdrawableBudgets) == len(proposalState.Proposal.Budgets)-1 {
+			if len(proposalState.WithdrawnBudgets) == len(proposalState.Proposal.Budgets)-1 {
 				proposalState.FinalPaymentStatus = true
 			}
 		case payload.Rejected:

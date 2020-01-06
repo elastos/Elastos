@@ -854,14 +854,17 @@ func randomCRCProposalTrackingPayload() *payload.CRCProposalTracking {
 func randomBudgets(n int) []payload.Budget {
 	budgets := make([]payload.Budget, 0)
 	for i := 0; i < n; i++ {
-		var budgetType uint8
-		if i == n-1 {
-			budgetType = 0x01
+		var budgetType = payload.NormalPayment
+		if i == 0 {
+			budgetType = payload.Imprest
+		}
+		if i == len(budgets)-1 {
+			budgetType = payload.FinalPayment
 		}
 		budget := &payload.Budget{
-			Stage:      byte(i),
-			BudgetType: budgetType,
-			Amount:     randomFix64(),
+			Stage:  byte(i),
+			Type:   budgetType,
+			Amount: randomFix64(),
 		}
 		budgets = append(budgets, *budget)
 	}
