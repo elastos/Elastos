@@ -47,7 +47,8 @@ gcloud compute instance-templates create-with-container elastos-smartweb-service
    --container-env-file=.env
 gcloud compute instance-groups managed create elastos-smartweb-service-group \
     --base-instance-name elastos-smartweb-service --zone us-east4-c --size 2 \
-    --template elastos-smartweb-service-template;   
+    --template elastos-smartweb-service-template;
+       
 # Define http service
 gcloud compute instance-groups managed set-named-ports elastos-smartweb-service-group \
     --named-ports=grpc-port:8001 --zone us-east4-c;
@@ -87,6 +88,9 @@ gcloud compute networks subnets delete us-subnet --region=us-east4
 gcloud compute networks delete elastos-smartweb-service-network
 
 ### Debug
+PGDATABASE=smartweb_service gcloud sql connect elastos-smartweb-service --user=postgres --quiet
 gcloud compute instances list 
 gcloud compute instances describe instance_name
 gcloud compute ssh instance_name
+gcloud compute instance-groups managed recreate-instances elastos-smartweb-service-group \
+    --instances=instance_name --zone us-east4-c

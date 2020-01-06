@@ -21,10 +21,11 @@ db_port = config('DB_PORT')
 database_uri = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 gce = config('GCE', default=False, cast=bool)
 if gce:
-    database_uri = f"postgres+pg8000://{db_user}:{db_password}@{db_name}?unix_sock=/cloudsql/{db_host}/.s.PGSQL.{db_port}"
+    database_uri = f"postgresql+psycopg2://{db_user}:{db_password}@localhost:5432/"
 
 try:
     db_engine = create_engine(database_uri)
     connection = SQLAlchemy(database_uri)
 except Exception as e:
-    logging.debug(f"Encountered error while connecting to postgresql instance: database_uri: {database_uri} Error: {e}")
+    logging.debug(f"Error while connecting to the database: {e}")
+
