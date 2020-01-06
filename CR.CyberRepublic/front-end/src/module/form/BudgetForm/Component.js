@@ -151,8 +151,8 @@ class BudgetForm extends Component {
             })(
               <CodeMirrorEditor
                 content={item && item.reasons ? item.reasons : ''}
-                activeKey="reasons"
                 name="reasons"
+                autofocus={false}
               />
             )}
           </FormItem>
@@ -191,8 +191,8 @@ class BudgetForm extends Component {
             })(
               <CodeMirrorEditor
                 content={item && item.criteria ? item.criteria : ''}
-                activeKey="criteria"
                 name="criteria"
+                autofocus={false}
               />
             )}
           </FormItem>

@@ -43,7 +43,7 @@ class Component extends BaseComponent {
 
   ord_render() {
     const { show, value } = this.state
-    const { name } = this.props
+    const { name, autofocus } = this.props
     return (
       <Wrapper>
         <Toolbar>
@@ -57,7 +57,7 @@ class Component extends BaseComponent {
               mode: 'gfm',
               theme: 'base16-light',
               lineWrapping: true,
-              autofocus: true
+              autofocus: autofocus === false ? autofocus : true
             }}
             onBeforeChange={(editor, data, value) => {
               this.setState({ value })
@@ -79,7 +79,8 @@ class Component extends BaseComponent {
 }
 
 Component.propTypes = {
-  name: PropTypes.string.isRequired
+  name: PropTypes.string.isRequired,
+  autofocus: PropTypes.bool
 }
 
 export default Component
