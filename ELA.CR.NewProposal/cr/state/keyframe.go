@@ -307,7 +307,14 @@ func (kf *KeyFrame) Snapshot() *KeyFrame {
 	frame.LastCommitteeHeight = kf.LastCommitteeHeight
 	frame.LastVotingStartHeight = kf.LastVotingStartHeight
 	frame.InElectionPeriod = kf.InElectionPeriod
+	frame.NeedAppropriation = kf.NeedAppropriation
+	frame.CRCFoundationBalance = kf.CRCFoundationBalance
+	frame.CRCCommitteeBalance = kf.CRCCommitteeBalance
+	frame.CRCCommitteeUsedAmount = kf.CRCCommitteeUsedAmount
+	frame.DestroyedAmount = kf.DestroyedAmount
+	frame.CirculationAmount = kf.CirculationAmount
 	frame.Members = copyMembersMap(kf.Members)
+	frame.HistoryMembers = copyHistoryMembersMap(kf.HistoryMembers)
 	return frame
 }
 
@@ -1063,6 +1070,17 @@ func copyMembersMap(src map[common.Uint168]*CRMember) (
 	for k, v := range src {
 		p := *v
 		dst[k] = &p
+	}
+	return
+}
+
+// copyHistoryMembersMap copy the CR members map's key and value, and return
+// the dst map.
+func copyHistoryMembersMap(src map[uint64]map[common.Uint168]*CRMember) (
+	dst map[uint64]map[common.Uint168]*CRMember) {
+	dst = map[uint64]map[common.Uint168]*CRMember{}
+	for k, v := range src {
+		dst[k] = copyMembersMap(v)
 	}
 	return
 }

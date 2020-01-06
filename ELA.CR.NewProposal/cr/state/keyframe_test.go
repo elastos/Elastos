@@ -73,20 +73,47 @@ func TestProposalKeyFrame_Snapshot(t *testing.T) {
 }
 
 func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
-	if len(first.Nicknames) != len(second.Nicknames) ||
+	if first.CurrentSession != second.CurrentSession ||
+		len(first.Candidates) != len(second.Candidates) ||
+		len(first.HistoryCandidates) != len(second.HistoryCandidates) ||
+		len(first.DepositHashDIDMap) != len(second.DepositHashDIDMap) ||
 		len(first.CodeDIDMap) != len(second.CodeDIDMap) ||
+		len(first.DepositOutputs) != len(second.DepositOutputs) ||
+		len(first.CRCFoundationOutputs) != len(second.CRCFoundationOutputs) ||
+		len(first.CRCCommitteeOutputs) != len(second.CRCCommitteeOutputs) ||
+		len(first.Nicknames) != len(second.Nicknames) ||
 		len(first.Votes) != len(second.Votes) {
 		return false
 	}
 
-	for k := range first.Nicknames {
-		if _, ok := second.Nicknames[k]; !ok {
+	return candidatesMapEqual(first.Candidates, second.Candidates) &&
+		candidatesHistoryMapEqual(first.HistoryCandidates, second.HistoryCandidates) &&
+		depositHashDIDMapEqual(first.DepositHashDIDMap, second.DepositHashDIDMap) &&
+		codeDIDMapEqual(first.CodeDIDMap, second.CodeDIDMap) &&
+		amountMapEqual(first.DepositOutputs, second.DepositOutputs) &&
+		amountMapEqual(first.CRCFoundationOutputs, second.CRCFoundationOutputs) &&
+		amountMapEqual(first.CRCCommitteeOutputs, second.CRCCommitteeOutputs) &&
+		stringMapEqual(first.Nicknames, second.Nicknames) &&
+		stringMapEqual(first.Votes, second.Votes)
+
+}
+
+func stringMapEqual(first map[string]struct{}, second map[string]struct{}) bool {
+	for k := range first {
+		if _, ok := second[k]; !ok {
 			return false
 		}
 	}
+	return true
+}
 
-	for k, v := range first.CodeDIDMap {
-		v2, ok := second.CodeDIDMap[k]
+func codeDIDMapEqual(first map[string]common.Uint168,
+	second map[string]common.Uint168) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	for k, v := range first {
+		v2, ok := second[k]
 		if !ok {
 			return false
 		}
@@ -95,16 +122,43 @@ func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 			return false
 		}
 	}
+	return true
+}
 
-	for k := range first.Votes {
-		_, ok := second.Votes[k]
+func depositHashDIDMapEqual(first map[common.Uint168]common.Uint168,
+	second map[common.Uint168]common.Uint168) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	for k, v := range first {
+		v2, ok := second[k]
 		if !ok {
 			return false
 		}
-	}
 
-	return candidatesMapEqual(first.Candidates, second.Candidates) &&
-		candidatesHistoryMapEqual(first.HistoryCandidates, second.HistoryCandidates)
+		if !v.IsEqual(v2) {
+			return false
+		}
+	}
+	return true
+}
+
+func amountMapEqual(first map[string]common.Fixed64,
+	second map[string]common.Fixed64) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	for k, v := range first {
+		v2, ok := second[k]
+		if !ok {
+			return false
+		}
+
+		if v != v2 {
+			return false
+		}
+	}
+	return true
 }
 
 func candidatesMapEqual(first map[common.Uint168]*Candidate,
@@ -140,16 +194,39 @@ func candidatesHistoryMapEqual(first map[uint64]map[common.Uint168]*Candidate,
 
 func keyframeEqual(first *KeyFrame, second *KeyFrame) bool {
 	if first.LastCommitteeHeight != second.LastCommitteeHeight ||
-		len(first.Members) != len(second.Members) {
+		first.LastVotingStartHeight != second.LastVotingStartHeight ||
+		first.InElectionPeriod != second.InElectionPeriod ||
+		first.NeedAppropriation != second.NeedAppropriation ||
+		first.CRCFoundationBalance != second.CRCFoundationBalance ||
+		first.CRCCommitteeBalance != second.CRCCommitteeBalance ||
+		first.CRCCommitteeUsedAmount != second.CRCCommitteeUsedAmount ||
+		first.DestroyedAmount != second.DestroyedAmount ||
+		first.CirculationAmount != second.CirculationAmount ||
+		len(first.Members) != len(second.Members) ||
+		len(first.HistoryMembers) != len(second.HistoryMembers) {
 		return false
 	}
 
-	for k, v := range first.Members {
-		if !crMemberEqual(v, second.Members[k]) {
+	if !membersEuqal(first.Members, second.Members) {
+		return false
+	}
+
+	for k, v := range first.HistoryMembers {
+		if !membersEuqal(v, second.HistoryMembers[k]) {
 			return false
 		}
 	}
 
+	return true
+}
+
+func membersEuqal(first map[common.Uint168]*CRMember,
+	second map[common.Uint168]*CRMember) bool {
+	for k, v := range first {
+		if !crMemberEqual(v, second[k]) {
+			return false
+		}
+	}
 	return true
 }
 

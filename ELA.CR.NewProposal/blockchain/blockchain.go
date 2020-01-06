@@ -1442,7 +1442,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 		err := b.connectBlock(node, block, confirm)
 		if err != nil {
 			if err := b.state.RollbackTo(block.Height); err != nil {
-				log.Error("state rollback failed: ", err)
+				log.Debug("state rollback failed: ", err)
 			}
 			return false, false, err
 		}
