@@ -440,23 +440,26 @@ func randomCRCProposal() *payload.CRCProposal {
 		SponsorPublicKey: randomBytes(33),
 		CRSponsorDID:     *randomUint168(),
 		DraftHash:        *randomUint256(),
-		Budgets:          randomBudgets(5),
+		Budgets:          createBudgets(5),
 		Sign:             randomBytes(64),
 		CRSign:           randomBytes(64),
 	}
 }
 
-func randomBudgets(n int) []payload.Budget {
+func createBudgets(n int) []payload.Budget {
 	budgets := make([]payload.Budget, 0)
 	for i := 0; i < n; i++ {
-		var budgetType uint8
-		if i == n-1 {
-			budgetType = 0x01
+		var budgetType = payload.NormalPayment
+		if i == 0 {
+			budgetType = payload.Imprest
+		}
+		if i == len(budgets)-1 {
+			budgetType = payload.FinalPayment
 		}
 		budget := &payload.Budget{
-			Stage:      byte(i),
-			BudgetType: budgetType,
-			Amount:     randomFix64(),
+			Stage:  byte(i),
+			Type:   budgetType,
+			Amount: common.Fixed64((i + 1) * 1e8),
 		}
 		budgets = append(budgets, *budget)
 	}

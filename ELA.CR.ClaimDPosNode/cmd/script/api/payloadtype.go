@@ -958,14 +958,17 @@ func newCRCProposal(L *lua.LState) int {
 		budgetStr = strings.Replace(budgetStr, "{", "", 1)
 		budgetStr = strings.Replace(budgetStr, "}", "", 1)
 		amount, _ := common.StringToFixed64(budgetStr)
-		var budgetType uint8
+		var budgetType = payload.NormalPayment
+		if int(index) == 0 {
+			budgetType = payload.Imprest
+		}
 		if int(index) == len(budgets)-1 {
-			budgetType = 0x01
+			budgetType = payload.FinalPayment
 		}
 		budget := &payload.Budget{
-			Stage:      byte(int(index)),
-			BudgetType: budgetType,
-			Amount:     *amount,
+			Stage:  byte(int(index)),
+			Type:   budgetType,
+			Amount: *amount,
 		}
 		budgets = append(budgets, *budget)
 	})
@@ -998,7 +1001,7 @@ func newCRCProposal(L *lua.LState) int {
 		DraftHash:        *draftHash,
 		Budgets:          budgets,
 		Recipient:        *recipient,
-		CRSponsorDID:     *getDid(ct.Code),
+		CRSponsorDID:     *getDID(ct.Code),
 		CROpinionHash:    *opinionHash,
 	}
 
@@ -1106,7 +1109,7 @@ func RegisterCRCProposalReviewType(L *lua.LState) {
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), crcProposalReviewMethods))
 }
 
-func getDid(code []byte) *common.Uint168 {
+func getDID(code []byte) *common.Uint168 {
 	ct1, _ := contract.CreateCRDIDContractByCode(code)
 	return ct1.ToProgramHash()
 }
@@ -1130,7 +1133,7 @@ func newCRCProposalReview(L *lua.LState) int {
 	crcProposalReview := &payload.CRCProposalReview{
 		ProposalHash: *proposalHash,
 		VoteResult:   payload.VoteResult(voteResult),
-		DID:          *getDid(codeByte),
+		DID:          *getDID(codeByte),
 	}
 	if needSign {
 		rpSignBuf := new(bytes.Buffer)
@@ -1280,9 +1283,8 @@ func getPublicKeyFromCode(code []byte) []byte {
 // Constructor
 func newCRCProposalWithdraw(L *lua.LState) int {
 	proposalHashString := L.ToString(1)
-	stage := L.ToInt64(2)
-	fee := L.ToInt64(3)
-	client, err := checkClient(L, 4)
+	fee := L.ToInt64(2)
+	client, err := checkClient(L, 3)
 	if err != nil {
 		fmt.Println("err != nil wallet expected")
 		os.Exit(1)
@@ -1290,7 +1292,6 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 	proposalHash, _ := common.Uint256FromHexString(proposalHashString)
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
 		ProposalHash: *proposalHash,
-		Stage:        uint8(stage),
 		Fee:          common.Fixed64(fee),
 	}
 	rpSignBuf := new(bytes.Buffer)

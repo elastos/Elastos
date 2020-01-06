@@ -1725,12 +1725,7 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 		proposalState.Status != crstate.Aborted {
 		return errors.New("proposal status is not VoterAgreed , Finished, or Aborted")
 	}
-	if _, ok := proposalState.WithdrawnBudgets[withdrawPayload.Stage]; ok {
-		return errors.New("CRCProposalWithdraw already paid")
-	}
-	if proposalState.Status == crstate.Finished && proposalState.FinalPaymentStatus {
-		return errors.New("not allowed to take final payment until the proposal is complete")
-	}
+
 	if !bytes.Equal(proposalState.ProposalLeader, withdrawPayload.SponsorPublicKey) {
 		return errors.New("the SponsorPublicKey is not ProposalLeader of proposal")
 	}
@@ -1738,12 +1733,12 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	if b.isSmallThanMinTransactionFee(fee) {
 		return fmt.Errorf("transaction fee not enough")
 	}
-	withdrawAmout := b.crCommittee.AvailableWithdrawalAmount(withdrawPayload.ProposalHash)
-	if withdrawAmout == 0 {
-		return errors.New("withdrawAmout == 0")
+	withdrawAmount := b.crCommittee.AvailableWithdrawalAmount(withdrawPayload.ProposalHash)
+	if withdrawAmount == 0 {
+		return errors.New("no need to withdraw")
 	}
 	//Recipient count + fee must equal to availableWithdrawalAmount
-	if txn.Outputs[0].Value+fee != withdrawAmout {
+	if txn.Outputs[0].Value+fee != withdrawAmount {
 		return errors.New("txn.Outputs[0].Value + fee != withdrawAmout ")
 	}
 
@@ -1855,9 +1850,16 @@ func (b *BlockChain) checkCRCProposalCommonTracking(
 func (b *BlockChain) checkCRCProposalProgressTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
+	if _, ok := pState.WithdrawnBudgets[cptPayload.Stage]; ok {
+		return errors.New("invalid budgets with withdrawn budget")
+	}
+
 	for _, budget := range pState.Proposal.Budgets {
-		if _, ok := pState.WithdrawnBudgets[budget.Stage]; ok {
-			return errors.New("invalid budgets with withdrawn budget")
+		if cptPayload.Stage == budget.Stage {
+			if budget.Type == payload.Imprest ||
+				budget.Type == payload.FinalPayment {
+				return errors.New("invalid budgets with withdrawn budget.")
+			}
 		}
 	}
 

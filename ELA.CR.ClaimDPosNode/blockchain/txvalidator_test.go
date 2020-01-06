@@ -1620,7 +1620,7 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 		CRSponsorDID:     *getDid(code2),
 		DraftHash:        common.Hash(draftData),
 		CROpinionHash:    common.Hash(opinionHash),
-		Budgets:          randomBudgets(3),
+		Budgets:          createBudgets(3),
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -1641,20 +1641,28 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	return txn
 }
 
-func randomBudgets(n int) []payload.Budget {
+func createBudgets(n int) []payload.Budget {
 	budgets := make([]payload.Budget, 0)
 	for i := 0; i < n; i++ {
-		var budgetType uint8
+		var budgetType = payload.NormalPayment
+		if i == 0 {
+			budgetType = payload.Imprest
+		}
 		if i == n-1 {
-			budgetType = 0x01
+			budgetType = payload.FinalPayment
 		}
 		budget := &payload.Budget{
-			Stage:      byte(i),
-			BudgetType: budgetType,
-			Amount:     common.Fixed64((i + 1) * 1e8),
+			Stage:  byte(i),
+			Type:   budgetType,
+			Amount: common.Fixed64((i + 1) * 1e8),
 		}
 		budgets = append(budgets, *budget)
 	}
+	fmt.Println("------")
+	for i, b := range budgets {
+		fmt.Println("###: ", i, b.Type)
+	}
+	fmt.Println("------")
 	return budgets
 }
 
@@ -1695,7 +1703,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 				SponsorPublicKey: leaderPubKey,
 				CRSponsorDID:     *randomUint168(),
 				DraftHash:        *randomUint256(),
-				Budgets:          randomBudgets(3),
+				Budgets:          createBudgets(3),
 				Recipient:        *recipient,
 			},
 			Status:         crstate.VoterAgreed,
@@ -1787,7 +1795,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 				SponsorPublicKey: leaderPubKey,
 				CRSponsorDID:     *randomUint168(),
 				DraftHash:        *randomUint256(),
-				Budgets:          randomBudgets(3),
+				Budgets:          createBudgets(3),
 				Recipient:        *recipient,
 			},
 			TerminatedHeight: 100,
@@ -1806,7 +1814,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 				SponsorPublicKey: leaderPubKey,
 				CRSponsorDID:     *randomUint168(),
 				DraftHash:        *randomUint256(),
-				Budgets:          randomBudgets(3),
+				Budgets:          createBudgets(3),
 				Recipient:        *recipient,
 			},
 			TrackingCount:  128,
@@ -2262,7 +2270,6 @@ func (s *txValidatorTestSuite) getCRCProposalWithdrawTx(crPublicKeyStr,
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
 		ProposalHash:     *randomUint256(),
 		SponsorPublicKey: pkBytes,
-		Stage:            stage,
 		Fee:              common.Fixed64(1),
 	}
 
@@ -2327,7 +2334,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 		Proposal: payload.CRCProposal{
 			SponsorPublicKey: pk1Bytes,
 			Recipient:        *Recipient,
-			Budgets:          randomBudgets(3),
+			Budgets:          createBudgets(3),
 		},
 		FinalPaymentStatus:  false,
 		WithdrawableBudgets: map[uint8]common.Fixed64{0: 10 * 1e8},
@@ -2340,11 +2347,10 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	s.NoError(err)
 
 	//CRCProposalWithdraw Stage wrong too small
-	txn.Payload.(*payload.CRCProposalWithdraw).Stage = 0
 	propState.WithdrawnBudgets = map[uint8]common.Fixed64{0: 10 * 1e8}
 	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
-	s.EqualError(err, "CRCProposalWithdraw already paid")
+	s.EqualError(err, "no need to withdraw")
 
 	//stage =2 ok
 	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 2,
@@ -2400,7 +2406,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 
 			SponsorPublicKey: pk1Bytes,
 			Recipient:        *Recipient,
-			Budgets:          randomBudgets(3),
+			Budgets:          createBudgets(3),
 		},
 		FinalPaymentStatus: false,
 		ProposalLeader:     pk1Bytes,
@@ -2411,7 +2417,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	s.EqualError(err, "transaction fee != withdrawPayload.Fee")
 
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
-	s.EqualError(err, "withdrawAmout == 0")
+	s.EqualError(err, "no need to withdraw")
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	pk2Bytes, _ := common.HexStringToBytes(publicKeyStr2)

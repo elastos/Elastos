@@ -23,9 +23,6 @@ type CRCProposalWithdraw struct {
 	// Public key of sponsor.
 	SponsorPublicKey []byte
 
-	// Which stage of money to take
-	Stage uint8
-
 	//fee amount
 	Fee common.Fixed64
 
@@ -64,10 +61,6 @@ func (p *CRCProposalWithdraw) SerializeUnsigned(w io.Writer, version byte) error
 		return err
 	}
 
-	if err := common.WriteUint8(w, byte(p.Stage)); err != nil {
-		return errors.New("[CRCProposalWithdraw], Stage serialization error.")
-	}
-
 	if err := common.WriteUint64(w, uint64(p.Fee)); err != nil {
 		return errors.New("[CRCProposalWithdraw], Fee serialization error.")
 	}
@@ -99,12 +92,6 @@ func (p *CRCProposalWithdraw) DeserializeUnsigned(r io.Reader,
 		return err
 	}
 	p.SponsorPublicKey = SponsorPublicKey
-
-	val, err := common.ReadBytes(r, 1)
-	if err != nil {
-		return errors.New("[CRCProposalReview] Stage deserialization error.")
-	}
-	p.Stage = uint8(val[0])
 
 	var fee uint64
 	if fee, err = common.ReadUint64(r); err != nil {
