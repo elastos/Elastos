@@ -40,7 +40,6 @@ import (
 	"github.com/elastos/Elastos.ELA/utils"
 	"github.com/elastos/Elastos.ELA/utils/elalog"
 	"github.com/elastos/Elastos.ELA/utils/signal"
-	"github.com/elastos/Elastos.ELA/wallet"
 
 	"github.com/urfave/cli"
 )
@@ -153,7 +152,7 @@ func startNode(c *cli.Context, st *settings.Settings) {
 
 	// Initializes the foundation address
 	blockchain.FoundationAddress = st.Params().Foundation
-	chainStore, err := blockchain.NewChainStore(dataDir)
+	chainStore, err := blockchain.NewChainStore(dataDir, st.Params())
 	if err != nil {
 		printErrorAndExit(err)
 	}
@@ -258,12 +257,12 @@ func startNode(c *cli.Context, st *settings.Settings) {
 		dlog.Init(flagDataDir, uint8(st.Config().PrintLevel),
 			st.Config().MaxPerLogSize, st.Config().MaxLogsSize)
 		arbitrator, err = dpos.NewArbitrator(act, dpos.Config{
-			EnableEventLog:    true,
-			ChainParams:       st.Params(),
-			Arbitrators:       arbiters,
-			Server:            server,
-			TxMemPool:         txMemPool,
-			BlockMemPool:      blockMemPool,
+			EnableEventLog: true,
+			ChainParams:    st.Params(),
+			Arbitrators:    arbiters,
+			Server:         server,
+			TxMemPool:      txMemPool,
+			BlockMemPool:   blockMemPool,
 			Broadcast: func(msg p2p.Message) {
 				server.BroadcastMessage(msg)
 			},
@@ -278,13 +277,6 @@ func startNode(c *cli.Context, st *settings.Settings) {
 		defer arbitrator.Stop()
 	}
 
-	wal := wallet.NewWallet()
-	wallet.Store = chainStore
-	wallet.ChainParam = st.Params()
-	wallet.Chain = chain
-
-	st.Params().CkpManager.Register(wal)
-
 	servers.Compile = Version
 	servers.Config = st.Config()
 	servers.ChainParams = st.Params()
@@ -293,7 +285,6 @@ func startNode(c *cli.Context, st *settings.Settings) {
 	servers.TxMemPool = txMemPool
 	servers.Server = server
 	servers.Arbiters = arbiters
-	servers.Wallet = wal
 	servers.Pow = pow.NewService(&pow.Config{
 		PayToAddr:   st.Config().PowConfiguration.PayToAddr,
 		MinerInfo:   st.Config().PowConfiguration.MinerInfo,

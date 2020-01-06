@@ -173,7 +173,7 @@ func initLedger(L *lua.LState) int {
 	dlog.Init("elastos", logLevel, 0, 0)
 
 	ledger := blockchain.Ledger{}
-	chainStore, err := blockchain.NewChainStore(test.DataPath)
+	chainStore, err := blockchain.NewChainStore(test.DataPath, chainParams)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}

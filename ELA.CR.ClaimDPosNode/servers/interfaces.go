@@ -1253,36 +1253,6 @@ func SignRawTransactionWithKey(param Params) map[string]interface{} {
 	return ResponsePack(Success, common.BytesToHexString(result.Bytes()))
 }
 
-func ImportAddress(param Params) map[string]interface{} {
-	address, ok := param.String("address")
-	if !ok {
-		return ResponsePack(InvalidParams, "need a parameter named address")
-	}
-
-	if err := Wallet.ImportAddress(address, ChainParams.EnableUtxoDB); err != nil {
-		return ResponsePack(InternalError, "import address failed: "+err.Error())
-	}
-
-	return ResponsePack(Success, 0)
-}
-
-func ImportPubkey(param Params) map[string]interface{} {
-	pubKey, ok := param.String("pubkey")
-	if !ok {
-		return ResponsePack(InvalidParams, "need a parameter named pubkey")
-	}
-	pubKeyBytes, err := common.HexStringToBytes(pubKey)
-	if err != nil {
-		return ResponsePack(InvalidParams, "invalid pubkey")
-	}
-
-	if err := Wallet.ImportPubkey(pubKeyBytes, ChainParams.EnableUtxoDB); err != nil {
-		return ResponsePack(InternalError, "import public key failed: "+err.Error())
-	}
-
-	return ResponsePack(Success, 0)
-}
-
 func GetUnspends(param Params) map[string]interface{} {
 	address, ok := param.String("addr")
 	if !ok {

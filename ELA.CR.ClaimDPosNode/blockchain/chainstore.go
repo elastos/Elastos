@@ -14,6 +14,7 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -35,12 +36,12 @@ type ChainStore struct {
 	persistMutex       sync.Mutex
 }
 
-func NewChainStore(dataDir string) (IChainStore, error) {
+func NewChainStore(dataDir string, params *config.Params) (IChainStore, error) {
 	db, err := NewLevelDB(filepath.Join(dataDir, "chain"))
 	if err != nil {
 		return nil, err
 	}
-	fflDB, err := NewChainStoreFFLDB(dataDir)
+	fflDB, err := NewChainStoreFFLDB(dataDir, params)
 	if err != nil {
 		return nil, err
 	}
