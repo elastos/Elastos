@@ -77,6 +77,7 @@ class TeamInfoForm extends BaseComponent {
               <CodeMirrorEditor
                 content={item && item.responsibility ? item.responsibility : ''}
                 name="responsibility"
+                autofocus={false}
               />
             )}
           </FormItem>
@@ -89,6 +90,7 @@ class TeamInfoForm extends BaseComponent {
               <CodeMirrorEditor
                 content={item && item.info ? item.info : ''}
                 name="info"
+                autofocus={false}
               />
             )}
           </FormItem>
