@@ -508,22 +508,43 @@ class C extends StandardPage {
     const { data, user, isElip } = this.props
     if (isElip) {
       const sections = [
-        'abstract',
-        'motivation',
-        'specifications',
-        'rationale',
-        'backwardCompatibility',
-        'referenceImplementation',
-        'copyright'
+        {
+          id: 'abstract',
+          valueKey: 'abstract'
+        },
+        {
+          id: 'motivation',
+          valueKey: 'motivation'
+        },
+        {
+          id: 'specification',
+          valueKey: 'specifications'
+        },
+        {
+          id: 'rationale',
+          valueKey: 'rationale'
+        },
+        {
+          id: 'backwardCompatibility',
+          valueKey: 'backwardCompatibility'
+        },
+        {
+          id: 'referenceImplementation',
+          valueKey: 'referenceImplementation'
+        },
+        {
+          id: 'copyright',
+          valueKey: 'copyright'
+        }
       ]
       return (
         <div>
           <ElipPreamble {...data} user={user}/>
           {_.map(sections, section => (
-            <Part id={section} key={section}>
-              <PartTitle>{I18N.get(`elip.fields.${section}`)}</PartTitle>
+            <Part id={section.id} key={section.id}>
+              <PartTitle>{I18N.get(`elip.fields.${section.id}`)}</PartTitle>
               <PartContent>
-                <MarkdownPreview content={data[section] ? data[section] : ''} />
+                <MarkdownPreview content={data[section.valueKey] ? data[section.valueKey] : ''} />
               </PartContent>
             </Part>
           ))}

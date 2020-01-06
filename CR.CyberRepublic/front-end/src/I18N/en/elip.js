@@ -17,7 +17,7 @@ export default {
     type: 'Type',
     preamble: 'Preamble',
     abstract: 'Abstract',
-    specifications: 'Specifications',
+    specification: 'Specifications',
     motivation: 'Motivation',
     rationale: 'Rationale',
     backwardCompatibility: 'Backward Compatibility',
