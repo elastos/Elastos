@@ -2,10 +2,6 @@
     <!--<string name="app_name" translatable="false">Elastos</string>-->
     <!-- 状态视图  -->
     <item name="error_tag_empty" type="id" />
-    <string name="loading" translatable="false">加载中...</string>
-    <string name="text_empty" translatable="false">还没有数据呢！</string>
-    <string name="text_nonet" translatable="false">网络异常！</string>
-    <string name="text_retry" translatable="false">点击重试</string>
     <string name="vote">投票</string>
     <string name="sign_up_for">报名参选</string>
     <string name="going_to_vote">立即投票</string>

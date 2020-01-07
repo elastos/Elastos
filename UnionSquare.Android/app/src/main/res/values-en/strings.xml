@@ -1,10 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!--  <string name="app_name" translatable="false">Elastos</string>-->
     <!-- 状态视图  -->
-    <string name="loading" translatable="false">Loading...</string>
-    <string name="text_empty" translatable="false">No data</string>
-    <string name="text_nonet" translatable="false">Network Disconneted</string>
-    <string name="text_retry" translatable="false">Please Retry</string>
     <string name="vote">Vote</string>
     <string name="sign_up_for">Registration</string>
     <string name="going_to_vote">Vote</string>

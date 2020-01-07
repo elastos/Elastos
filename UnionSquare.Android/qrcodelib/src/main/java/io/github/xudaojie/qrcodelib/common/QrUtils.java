@@ -127,21 +127,20 @@ public class QrUtils {
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
-        int inSampleSize = 1;
+        float inSampleSize = 1;
 
         if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
+            //inSampleSize=Math.max(height/reqHeight,width/reqWidth);
+            float halfHeight = (height / 1.75f);
+            float halfWidth = (width / 1.75f);
 
             // Calculate the largest inSampleSize value that is a power of 2 and keeps both
             // height and width larger than the requested height and width.
             while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
+                inSampleSize = (inSampleSize * 1.75f);
             }
         }
-
-        return inSampleSize;
+        return (int) inSampleSize;
     }
 
     public static Bitmap decodeSampledBitmapFromFile(String imgPath, int reqWidth, int reqHeight) {
@@ -176,9 +175,9 @@ public class QrUtils {
                 new PlanarYUVLuminanceSource(data, width, height, 0, 0, width, height, false);
             /**
              * HybridBinarizer算法使用了更高级的算法，但使用GlobalHistogramBinarizer识别效率确实比HybridBinarizer要高一些。
-             * 
+             *
              * GlobalHistogram算法：（http://kuangjianwei.blog.163.com/blog/static/190088953201361015055110/）
-             * 
+             *
              * 二值化的关键就是定义出黑白的界限，我们的图像已经转化为了灰度图像，每个点都是由一个灰度值来表示，就需要定义出一个灰度值，大于这个值就为白（0），低于这个值就为黑（1）。
              * 在GlobalHistogramBinarizer中，是从图像中均匀取5行（覆盖整个图像高度），每行取中间五分之四作为样本；以灰度值为X轴，每个灰度值的像素个数为Y轴建立一个直方图，
              * 从直方图中取点数最多的一个灰度值，然后再去给其他的灰度值进行分数计算，按照点数乘以与最多点数灰度值的距离的平方来进行打分，选分数最高的一个灰度值。接下来在这两个灰度值中间选取一个区分界限，
@@ -194,7 +193,7 @@ public class QrUtils {
     }
 
     public static Result decodeImage(final String path) {
-        Bitmap bitmap = QrUtils.decodeSampledBitmapFromFile(path, 400, 400);
+        Bitmap bitmap = QrUtils.decodeSampledBitmapFromFile(path, 256, 256);
         // Google Photo 相册中选取云照片是会出现 Bitmap == null
         if (bitmap == null) return null;
         int width = bitmap.getWidth();
