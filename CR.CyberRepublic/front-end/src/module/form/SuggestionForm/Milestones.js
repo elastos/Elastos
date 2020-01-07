@@ -242,7 +242,10 @@ class Milestones extends Component {
               <Popover
                 content={
                   <MilestoneForm
-                    preItemDate={moment(_.last(milestones).date, 'YYYY-MM-DD')}
+                    preItemDate={
+                      _.last(milestones) &&
+                      moment(_.last(milestones).date, 'YYYY-MM-DD')
+                    }
                     onSubmit={this.handleSubmit}
                     hidePopover={this.hideCreateForm}
                   />
