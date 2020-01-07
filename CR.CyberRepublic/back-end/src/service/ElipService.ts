@@ -7,7 +7,16 @@ import * as moment from 'moment'
 
 let tm = undefined
 
-const BASE_FIELDS = ['title', 'abstract', 'specifications', 'motivation', 'rationale', 'backwardCompatibility', 'referenceImplementation', 'copyright'];
+const BASE_FIELDS = [
+  'title',
+  'abstract',
+  'specifications',
+  'motivation',
+  'rationale',
+  'backwardCompatibility',
+  'referenceImplementation',
+  'copyright'
+]
 export default class extends Base {
   public async update(param: any): Promise<Document> {
     try {
@@ -53,49 +62,21 @@ export default class extends Base {
         this.notifySecretaries(elip, true)
         return rs
       }
-
-      const { title,
-              elipType,
-              abstract,
-              specifications,
-              motivation,
-              rationale,
-              backwardCompatibility,
-              referenceImplementation,
-              copyright
-            } = param
+      const fields = [...BASE_FIELDS, 'elipType']
       const doc: any = {}
-      if (title) {
-        doc.title = title
+      for (let i = 0; i < fields.length; i++) {
+        const value = param[fields[i]]
+        if (!value) {
+          continue
+        } else {
+          if (fields[i] === 'elipType' && !constant.ELIP_TYPE[value]) {
+            continue
+          }
+          doc[fields[i]] = value
+        }
       }
-      if (elipType && constant.ELIP_TYPE[elipType]) {
-        doc.elipType = elipType
-      }
-      if (abstract) {
-        doc.abstract = abstract
-      }
-      if (specifications) {
-        doc.specifications = specifications
-      }
-      if (motivation) {
-        doc.motivation = motivation
-      }
-      if (rationale) {
-        doc.rationale = rationale
-      }
-      if (backwardCompatibility) {
-        doc.backwardCompatibility = backwardCompatibility
-      }
-      if (referenceImplementation) {
-        doc.referenceImplementation = referenceImplementation
-      }
-      if (copyright) {
-        doc.copyright = copyright
-      }
-      if (doc.title || doc.abstract
-          || doc.elipType  || doc.specifications || doc.motivation
-          || doc.rationale || doc.backwardCompatibility 
-          || referenceImplementation || doc.copyright) {
+
+      if (_.values(doc).length) {
         doc.status = constant.ELIP_STATUS.WAIT_FOR_REVIEW
         const rs = await db_elip.update({ _id }, doc)
         this.notifySecretaries(elip, true)
@@ -111,35 +92,28 @@ export default class extends Base {
     try {
       const db_elip = this.getDBModel('Elip')
       const db_user = this.getDBModel('User')
-      let { title,
-              elipType,
-              abstract,
-              specifications,
-              motivation,
-              rationale,
-              backwardCompatibility,
-              referenceImplementation,
-              copyright,
-              personalDraft
-          } = param
-      if(!constant.ELIP_TYPE[elipType]){
-        elipType = _.values(constant.ELIP_TYPE)[0]
+
+      const { personalDraft } = param
+      const fields = [...BASE_FIELDS, 'elipType']
+      const doc: any = {}
+      for (let i = 0; i < fields.length; i++) {
+        const value = param[fields[i]]
+        if (fields[i] === 'elipType' && !constant.ELIP_TYPE[value]) {
+          doc.elipType = _.values(constant.ELIP_TYPE)[0]
+        } else {
+          doc[fields[i]] = value
+        }
       }
-      const doc: any = {
-        title,
-        elipType,
-        abstract,
-        specifications,
-        motivation,
-        rationale,
-        backwardCompatibility,
-        referenceImplementation,
-        copyright,
-        status: personalDraft ? constant.ELIP_STATUS.PERSONAL_DRAFT : constant.ELIP_STATUS.WAIT_FOR_REVIEW,
-        contentType: constant.CONTENT_TYPE.MARKDOWN,
-        createdBy: this.currentUser._id
-      }
-      if (!personalDraft) {
+      const isPersonsalDraft = personalDraft && personalDraft === true
+
+      doc.status = isPersonsalDraft
+        ? constant.ELIP_STATUS.PERSONAL_DRAFT
+        : constant.ELIP_STATUS.WAIT_FOR_REVIEW
+
+      doc.contentType = constant.CONTENT_TYPE.MARKDOWN
+      doc.createdBy = this.currentUser._id
+
+      if (!isPersonsalDraft) {
         const councilMembers = await db_user.find({
           role: constant.USER_ROLE.COUNCIL
         })
@@ -153,8 +127,9 @@ export default class extends Base {
         doc.voteResult = voteResult
         doc.voteHistory = voteResult
       }
+      
       const elip = await db_elip.save(doc)
-      if (!personalDraft) {
+      if (!isPersonsalDraft) {
         this.notifySecretaries(elip)
       }
       return elip
