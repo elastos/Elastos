@@ -23,6 +23,7 @@ class UploadAndSignForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UploadAndSignForm, self).__init__(*args, **kwargs)
+        self.label_suffix = ""
         self.fields['did'].required = False
         self.fields['did'].widget = HiddenInput()
 
@@ -56,6 +57,7 @@ class VerifyAndShowForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(VerifyAndShowForm, self).__init__(*args, **kwargs)
+        self.label_suffix = ""
         self.fields['message_hash'].widget.attrs['rows'] = 1
         self.fields['message_hash'].widget.attrs['cols'] = 80
 
@@ -95,6 +97,7 @@ class ViewWalletForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ViewWalletForm, self).__init__(*args, **kwargs)
+        self.label_suffix = ""
         self.fields['chain'].required = False
 
         self.fields['api_key'].widget.attrs['rows'] = 1
@@ -115,6 +118,7 @@ class RequestELAForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(RequestELAForm, self).__init__(*args, **kwargs)
+        self.label_suffix = ""
         self.fields['chain'].required = False
 
         self.fields['api_key'].widget.attrs['rows'] = 1
@@ -137,6 +141,7 @@ class DeployETHContractForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(DeployETHContractForm, self).__init__(*args, **kwargs)
+        self.label_suffix = ""
         self.fields['did'].required = False
 
         self.fields['api_key'].widget.attrs['rows'] = 1
@@ -165,6 +170,7 @@ class WatchETHContractForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(WatchETHContractForm, self).__init__(*args, **kwargs)
+        self.label_suffix = ""
 
         self.fields['api_key'].widget.attrs['rows'] = 1
         self.fields['api_key'].widget.attrs['cols'] = 100
