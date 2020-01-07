@@ -21,13 +21,14 @@ class RateLimiter:
             date2 = result.last_access.strftime(self.date_format)
             diff = datetime.datetime.strptime(date1, self.date_format) - datetime.datetime.strptime(date2,
                                                                                                     self.date_format)
+            diff_seconds = diff.days * 24 * 3600 + diff.seconds
 
             lists = {
                 'user_api_id': result.user_api_id,
                 'service_name': result.service_name,
                 'last_access': result.last_access,
                 'access_count': result.access_count,
-                'diff': diff.seconds
+                'diff': diff_seconds
             }
 
             self.session.close()
@@ -45,7 +46,8 @@ class RateLimiter:
             service_list_data.access_count += 1
         elif flag == 'reset':
             service_list_data.access_count = 1
-
+            service_list_data.last_access = date_now
+        
         self.session.add(service_list_data)
 
         self.session.commit()
