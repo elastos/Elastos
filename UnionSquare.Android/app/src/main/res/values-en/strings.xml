@@ -150,7 +150,7 @@
     <string name="inputyourwallletpwd">Enter wallet password</string>
     <string name="transfersucess">Success，\n please wait for confirmation</string>
     <string name="inputsidechainrechargeaddress">Enter sidechain address</string>
-    <string name="rate">Rate：</string>
+    <string name="rate">Rate</string>
     <string name="rate11">Rate: 1:1</string>
     <string name="chargerto">Deposit to: </string>
     <string name="morecontent_wait">Coming soon...</string>
