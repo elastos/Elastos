@@ -148,8 +148,10 @@ class C extends BaseComponent {
         this.setState(data)
         return
       }
+      values.elipType = values.type
       values.specifications = values.specification
       delete values.specification
+      delete values.type
       if (personalDraft) {
         values.personalDraft = personalDraft
       }

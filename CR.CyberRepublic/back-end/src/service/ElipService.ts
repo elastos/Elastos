@@ -77,9 +77,14 @@ export default class extends Base {
       }
 
       if (_.values(doc).length) {
-        doc.status = constant.ELIP_STATUS.WAIT_FOR_REVIEW
+        const isRejected = elip.status === constant.ELIP_STATUS.REJECTED
+        if (isRejected) {
+          doc.status = constant.ELIP_STATUS.WAIT_FOR_REVIEW
+        }
         const rs = await db_elip.update({ _id }, doc)
-        this.notifySecretaries(elip, true)
+        if (isRejected) {
+          this.notifySecretaries(elip, true)
+        }
         return rs
       }
     } catch (error) {
