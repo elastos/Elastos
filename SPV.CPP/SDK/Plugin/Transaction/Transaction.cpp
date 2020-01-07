@@ -798,8 +798,8 @@ namespace Elastos {
 			}
 
 			summary["TxHash"] = GetHash().GetHex();
-			summary["Status"] = confirms <= 6 ? "Pending" : "Confirmed";
-			summary["ConfirmStatus"] = confirms <= 6 ? std::to_string(confirms) : "6+";
+			summary["Status"] = confirms <= 1 ? "Pending" : "Confirmed";
+			summary["ConfirmStatus"] = confirms;
 			summary["Timestamp"] = GetTimestamp();
 			summary["Direction"] = direction;
 			summary["Amount"] = amount.getDec();
@@ -836,6 +836,7 @@ namespace Elastos {
 				summary["OutputPayload"] = outputPayloads;
 
 				std::vector<nlohmann::json> attributes;
+				attributes.reserve(_attributes.size());
 				for (int i = 0; i < _attributes.size(); ++i) {
 					attributes.push_back(_attributes[i]->ToJson());
 				}

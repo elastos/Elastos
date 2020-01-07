@@ -925,7 +925,7 @@ namespace Elastos {
 						info["CROwnerPublicKey"] = pubKey.getHex();
 						info["CROwnerDID"] = did.String();
 						info["NickName"] = pinfo->GetNickName();
-						info["Url"] = pinfo->GetUrl();
+						info["URL"] = pinfo->GetUrl();
 						info["Location"] = pinfo->GetLocation();
 						info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
 

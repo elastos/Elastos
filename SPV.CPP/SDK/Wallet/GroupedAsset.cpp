@@ -95,15 +95,27 @@ namespace Elastos {
 			UTXOArray utxo(_utxos.begin(), _utxos.end());
 			utxo.insert(utxo.end(), _utxosVote.begin(), _utxosVote.end());
 			utxo.insert(utxo.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
-			utxo.insert(utxo.end(), _utxosDeposit.begin(), _utxosDeposit.end());
 			utxo.insert(utxo.end(), _utxosLocked.begin(), _utxosLocked.end());
 
-			BigInt spendingAmount;
+			BigInt spendingAmount, pendingAmount;
 			std::map<std::string, BigInt> addrAmount;
-			for (UTXOArray::iterator iter = utxo.begin(); iter != utxo.end(); ++iter) {
-				const OutputPtr &o = (*iter)->Output();
-				if (_parent->IsUTXOSpending(*iter))
+			for (const UTXOPtr &u : utxo) {
+				const OutputPtr &o = u->Output();
+				if (_parent->IsUTXOSpending(u))
 					spendingAmount += o->Amount();
+
+				if (u->GetConfirms(_parent->_blockHeight) < 2)
+					pendingAmount += o->Amount();
+
+				std::string addr = o->Addr()->String();
+				if (addrAmount.find(addr) == addrAmount.end())
+					addrAmount[addr] = o->Amount();
+				else
+					addrAmount[addr] += o->Amount();
+			}
+
+			for (const UTXOPtr &u : _utxosDeposit) {
+				const OutputPtr &o = u->Output();
 
 				std::string addr = o->Addr()->String();
 				if (addrAmount.find(addr) == addrAmount.end())
@@ -116,6 +128,7 @@ namespace Elastos {
 				addrBalance[it->first] = it->second.getDec();
 
 			info["SpendingBalance"] = spendingAmount.getDec();
+			info["PendingBalance"] = pendingAmount.getDec();
 			info["Address"] = addrBalance;
 
 			return info;

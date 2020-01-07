@@ -1352,6 +1352,8 @@ namespace Elastos {
 						peer->warn(
 							"bloom filter false positive rate {} too high after {} blocks, disconnecting...",
 							_fpRate, _lastBlock->GetHeight() + 1 - _filterUpdateHeight);
+						_fpRate = 0;
+						_averageTxPerBlock = 1400;
 						peer->Disconnect();
 						return;
 					} else if (_lastBlock->GetHeight() + 500 < peer->GetLastBlock() &&

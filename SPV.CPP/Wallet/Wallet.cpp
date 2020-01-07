@@ -1645,14 +1645,14 @@ static int _tx(int argc, char *argv[]) {
 				for (nlohmann::json::iterator it = tx.begin(); it != tx.end(); ++it) {
 					if (txHash.empty()) {
 						std::string txHash = (*it)["TxHash"];
-						std::string confirm = (*it)["ConfirmStatus"];
+						unsigned int confirm = (*it)["ConfirmStatus"];
 						time_t t = (*it)["Timestamp"];
 						std::string dir = (*it)["Direction"];
 						double amount = std::stod((*it)["Amount"].get<std::string>()) / SELA_PER_ELA;
 
 						localtime_r(&t, &tm);
 						strftime(buf, sizeof(buf), "%F %T", &tm);
-						printf("%s  %2s  %8s  %s  %.8lf\n", txHash.c_str(), confirm.c_str(), dir.c_str(), buf, amount);
+						printf("%s  %8u  %8s  %s  %.8lf\n", txHash.c_str(), confirm, dir.c_str(), buf, amount);
 					} else {
 						std::cout << (*it).dump(4) << std::endl;
 					}
@@ -1693,6 +1693,27 @@ static int _tx(int argc, char *argv[]) {
 		exceptionError(e);
 		return ERRNO_APP;
 	}
+	return 0;
+}
+
+// consolidate chainID
+static int consolidate(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
+
+	std::string chainID = argv[1];
+
+	try {
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
+
+		nlohmann::json tx = subWallet->CreateConsolidateTransaction("");
+		signAndPublishTx(subWallet, tx);
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+
 	return 0;
 }
 
@@ -1932,6 +1953,7 @@ struct command {
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},
 	{"tx",         _tx,            "chainID                                          List all tx records."},
+	{"consolidate",consolidate,    "chainID                                          Consolidate fragmentary utxo"},
 	{"signtx",     signtx,         "chainID                                          Sign tx"},
 	{"publishtx",  publishtx,      "chainID                                          Publish tx"},
 	{"utxo",       utxo,           "chainID                                          List all utxos"},
