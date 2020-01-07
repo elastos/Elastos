@@ -132,15 +132,20 @@ class C extends BaseComponent {
 
   handleSubmit = async (e, personalDraft) => {
     const { onSubmit, form } = this.props
-    this.setState({ loading: true })
+    if (!personalDraft) {
+      this.setState({ loading: true })
+    }
     e.preventDefault()
     form.validateFields(async (err, values) => {
       if (err) {
-        this.setState({
-          loading: false,
+        const data = {
           errorKeys: err,
           activeKey: this.getActiveKey(Object.keys(err)[0])
-        })
+        }
+        if (!personalDraft) {
+          data.loading = false
+        }
+        this.setState(data)
         return
       }
       values.specifications = values.specification
@@ -148,9 +153,10 @@ class C extends BaseComponent {
       if (personalDraft) {
         values.personalDraft = personalDraft
       }
-      
       await onSubmit(values)
-      this.setState({loading: false})
+      if (!personalDraft) {
+        this.setState({ loading: false })
+      }
     })
   }
 
@@ -349,7 +355,7 @@ class C extends BaseComponent {
             <Col>
               <Button
                 onClick={(e) => { this.handleSubmit(e, true) }}
-                className="cr-btn cr-btn-default"
+                className="cr-btn cr-btn-primary"
                 htmlType="button"
               >
                 {I18N.get('elip.button.personalDraft')}
