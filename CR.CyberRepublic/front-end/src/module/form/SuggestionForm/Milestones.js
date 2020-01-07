@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react'
+import _ from 'lodash'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Button, Popover } from 'antd'
@@ -182,6 +183,7 @@ class Milestones extends Component {
                       <Popover
                         content={
                           <MilestoneForm
+                            preItem={milestones[index - 1]}
                             item={{
                               ...item,
                               date: moment(item.date, 'YYYY-MM-DD'),
@@ -237,6 +239,7 @@ class Milestones extends Component {
               <Popover
                 content={
                   <MilestoneForm
+                    preItem={_.last(milestones)}
                     onSubmit={this.handleSubmit}
                     hidePopover={this.hideCreateForm}
                   />

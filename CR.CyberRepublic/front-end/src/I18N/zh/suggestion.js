@@ -90,7 +90,8 @@ export default {
       budget: '总金额、ELA 接收地址或者支出计划为空',
       totalBudget: '总预算为空',
       elaAddress: 'ELA 接收地址为空',
-      paymentSchedule: '支出计划为空'
+      paymentSchedule: '支出计划为空',
+      previousMilestoneDate: '日期必须晚于前一个里程碑'
     }
   },
   modal: {

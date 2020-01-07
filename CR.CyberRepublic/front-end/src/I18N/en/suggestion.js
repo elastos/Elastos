@@ -89,7 +89,8 @@ export default {
       team: 'Implementation team is empty',
       totalBudget: 'Total budget is empty',
       elaAddress: 'ELA receive address is empty',
-      paymentSchedule: 'Payment Schedule is empty'
+      paymentSchedule: 'Payment Schedule is empty',
+      previousMilestoneDate: 'The date must be later than the previous milestone.'
     }
   },
   modal: {
