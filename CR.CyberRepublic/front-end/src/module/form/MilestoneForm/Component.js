@@ -2,7 +2,6 @@ import React, { Fragment } from 'react'
 import _ from 'lodash'
 import PropTypes from 'prop-types'
 import { Form, Input, DatePicker } from 'antd'
-import moment from 'moment'
 import styled from 'styled-components'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
@@ -25,10 +24,10 @@ class MilestoneForm extends BaseComponent {
   }
 
   handleSelectDate = (rule, value, callback) => {
-    const { preItem } = this.props
+    const { preItemDate } = this.props
     if (
       value &&
-      !_.isEmpty(preItem) && moment(preItem.date).isAfter(value)
+      !_.isEmpty(preItemDate) && !preItemDate.isSameOrBefore(value)
     ) {
       callback(I18N.get('suggestion.form.error.previousMilestoneDate'))
     }
@@ -106,7 +105,7 @@ class MilestoneForm extends BaseComponent {
 MilestoneForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   item: PropTypes.object,
-  preItem: PropTypes.object,
+  preItemDate: PropTypes.object,
 }
 
 export default Form.create()(MilestoneForm)

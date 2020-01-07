@@ -183,7 +183,10 @@ class Milestones extends Component {
                       <Popover
                         content={
                           <MilestoneForm
-                            preItem={milestones[index - 1]}
+                            preItemDate={
+                              milestones[index - 1] &&
+                              moment(milestones[index - 1].date, 'YYYY-MM-DD')
+                            }
                             item={{
                               ...item,
                               date: moment(item.date, 'YYYY-MM-DD'),
