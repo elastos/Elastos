@@ -1,10 +1,10 @@
 .jumbotron-header {
   width: 389px;
   height: 118px;
-  font-family: BioSans;
   font-size: 44px;
   font-weight: bold;
   font-stretch: normal;
+  font-family: 'Overpass', sans-serif;
   font-style: normal;
   line-height: 1.33;
   letter-spacing: normal;
@@ -14,10 +14,10 @@
 .jumbotron-text {
   width: 444px;
   height: 85px;
-  font-family: Inter-BETA;
   font-size: 14px;
   font-weight: 300;
   font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
   font-style: normal;
   line-height: 1.52;
   letter-spacing: normal;
@@ -34,10 +34,10 @@
 .login-text {
   width: 162px;
   height: 22px;
-  font-family: Inter;
   font-size: 14px;
   font-weight: 600;
   font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
   font-style: normal;
   line-height: 1.52;
   letter-spacing: 0.5px;
@@ -48,10 +48,10 @@
 .main-content {
   width: 642px;
   height: 64px;
-  font-family: Inter-BETA;
   font-size: 14px;
   font-weight: 300;
   font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
   font-style: normal;
   line-height: 1.52;
   letter-spacing: normal;
@@ -68,10 +68,10 @@
 .mission-box h4 {
   width: 253px;
   height: 32px;
-  font-family: BioSans;
   font-size: 24px;
   font-weight: normal;
   font-stretch: normal;
+  font-family: 'Overpass', sans-serif;
   font-style: normal;
   line-height: 1.33;
   letter-spacing: normal;
@@ -82,10 +82,10 @@
 .mission-box p {
   width: 256px;
   height: 85px;
-  font-family: Inter-BETA;
   font-size: 14px;
   font-weight: 300;
   font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
   font-style: normal;
   line-height: 1.52;
   letter-spacing: normal;

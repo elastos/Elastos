@@ -7,10 +7,10 @@
 
 .login-header {
   height: 74px;
-  font-family: BioSans;
   font-size: 28px;
   font-weight: 600;
   font-stretch: normal;
+  font-family: 'Overpass', sans-serif;
   font-style: normal;
   line-height: 1.33;
   letter-spacing: normal;
@@ -19,10 +19,10 @@
 
 .scan-qr-text {
   height: 64px;
-  font-family: Inter-BETA;
   font-size: 14px;
   font-weight: 300;
   font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
   font-style: normal;
   line-height: 1.52;
   letter-spacing: normal;
@@ -33,10 +33,10 @@
 .scan-qr-wait {
   height: 21px;
   opacity: 0.5;
-  font-family: Inter;
   font-size: 14px;
   font-weight: normal;
   font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
   font-style: normal;
   line-height: 1.52;
   letter-spacing: normal;
@@ -47,10 +47,10 @@
 .form-field-label {
   width: 36px;
   height: 22px;
-  font-family: Inter;
   font-size: 14px;
   font-weight: normal;
   font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
   font-style: normal;
   line-height: 1.52;
   letter-spacing: normal;
