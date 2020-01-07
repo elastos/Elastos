@@ -49,7 +49,9 @@ public class CredentialSubject {
         let cs: CredentialSubject = CredentialSubject(id)
         json.forEach { key, value in
             if key != Constants.ID {
-                cs.addProperty(key, value as! String)
+                if key != "" {
+                    cs.addProperty(key, value as! String)
+                }
             }
         }
         return cs

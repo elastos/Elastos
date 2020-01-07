@@ -13,9 +13,9 @@ class DIDStoreTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             try _ = testData.setupStore(true)
-            _ = testData.exists(storePath)
+            _ = testData.exists(storeRoot)
             
-            let path = storePath + "/" + ".meta"
+            let path = storeRoot + "/" + ".meta"
             _ = testData.existsFile(path)
         } catch {
             print("testCreateEmptyStore error: \(error)")
@@ -45,12 +45,12 @@ class DIDStoreTests: XCTestCase {
             _ = try testData.initIdentity()
             XCTAssertTrue(try store.containsPrivateIdentity())
                         
-            var path = storePath + "/" + "private" + "/" + "key"
+            var path = storeRoot + "/" + "private" + "/" + "key"
             XCTAssertTrue(testData.existsFile(path))
-            path = storePath + "/" + "private" + "/" + "index"
+            path = storeRoot + "/" + "private" + "/" + "index"
             XCTAssertTrue(testData.existsFile(path))
             
-           store = try DIDStore.open("filesystem", storePath)
+           store = try DIDStore.open("filesystem", storeRoot)
             
             XCTAssertTrue(try store.containsPrivateIdentity())
         } catch {
@@ -74,11 +74,11 @@ class DIDStoreTests: XCTestCase {
             XCTAssertNil(resolved)
             
             _ = try store.publishDid(doc.subject!, storePass)
-            var path = storePath
+            var path = storeRoot
             
-            path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/document"
+            path = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/document"
             XCTAssertTrue(testData.existsFile(path))
-            path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
+            path = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
             XCTAssertTrue(testData.existsFile(path))
             
             resolved = try store.resolveDid(doc.subject!, true)!
@@ -108,11 +108,11 @@ class DIDStoreTests: XCTestCase {
             XCTAssertNil(resolved)
             
             try store.publishDid(doc.subject!, storePass)
-            var path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/document"
+            var path = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/document"
             XCTAssertTrue(testData.existsFile(path))
             // todo isFile
 
-            path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
+            path = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
             XCTAssertFalse(testData.existsFile(path))
 
             resolved = try doc.subject?.resolve(true)
@@ -439,10 +439,10 @@ class DIDStoreTests: XCTestCase {
                 
                 _ = try store.publishDid(doc.subject!, storePass)
                 
-                var path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/document"
+                var path = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/document"
                 XCTAssertTrue(testData.existsFile(path))
                 
-                path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
+                path = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
                 XCTAssertTrue(testData.existsFile(path))
                 
                 resolved = try doc.subject?.resolve(true)
@@ -490,7 +490,7 @@ class DIDStoreTests: XCTestCase {
                 var deleted: Bool = try store.deleteDid(did)
                 XCTAssertTrue(deleted)
                 
-                let path = storePath + "/ids/" + did.methodSpecificId
+                let path = storeRoot + "/ids/" + did.methodSpecificId
                 XCTAssertFalse(testData.exists(path))
                 
                 deleted = try store.deleteDid(did)
@@ -649,16 +649,16 @@ class DIDStoreTests: XCTestCase {
             vc = try testData.loadPassportCredential()
             try vc!.setAlias("Passport")
             
-            var path = storePath + "/ids/" + test.subject!.methodSpecificId + "/credentials/twitter/credential"
+            var path = storeRoot + "/ids/" + test.subject!.methodSpecificId + "/credentials/twitter/credential"
             XCTAssertTrue(testData.existsFile(path))
             
-            path = storePath + "/" + "ids" + "/" + test.subject!.methodSpecificId + "/" + "credentials" + "/" + "twitter" + "/" + ".meta"
+            path = storeRoot + "/" + "ids" + "/" + test.subject!.methodSpecificId + "/" + "credentials" + "/" + "twitter" + "/" + ".meta"
             XCTAssertTrue(testData.existsFile(path))
             
-            path = storePath + "/" + "ids" + "/" + test.subject!.methodSpecificId + "/" + "credentials" + "/" + "passport" + "/" + "credential"
+            path = storeRoot + "/" + "ids" + "/" + test.subject!.methodSpecificId + "/" + "credentials" + "/" + "passport" + "/" + "credential"
             XCTAssertTrue(testData.existsFile(path))
             
-            path = storePath + "/" + "ids" + "/" + test.subject!.methodSpecificId
+            path = storeRoot + "/" + "ids" + "/" + test.subject!.methodSpecificId
                 + "/" + "credentials" + "/" + "passport" + "/" + ".meta"
             XCTAssertTrue(testData.existsFile(path))
             
@@ -671,12 +671,12 @@ class DIDStoreTests: XCTestCase {
             deleted = try store.deleteCredential(test.subject!.description, "notExist")
             XCTAssertFalse(deleted)
             
-            path = storePath + "/" + "ids"
+            path = storeRoot + "/" + "ids"
                 + "/" + test.subject!.methodSpecificId
                 + "/" + "credentials" + "/" + "twitter"
             XCTAssertFalse(testData.existsFile(path))
             
-            path = storePath + "/" + "ids"
+            path = storeRoot + "/" + "ids"
                 + "/" + test.subject!.methodSpecificId
                 + "/" + "credentials" + "/" + "passport"
             XCTAssertFalse(testData.existsFile(path))
@@ -759,8 +759,8 @@ class DIDStoreTests: XCTestCase {
         let jsonPath = bundle.path(forResource: "teststore", ofType: "")
         let store = try! DIDStore.open("filesystem", jsonPath!)
         
-        let doc: DIDDocument = try! store.newDid(storePass);
-        XCTAssertNotNil(doc);
+        let doc: DIDDocument = try! store.newDid(storePass)
+        XCTAssertNotNil(doc)
                 
         _ = try! store.deleteDid(doc.subject!)
     }
@@ -793,13 +793,13 @@ class DIDStoreTests: XCTestCase {
         do {
             let adapter: DIDAdapter = DummyAdapter()
             let testData: TestData = TestData()
-            TestData.deleteFile(storePath)
+            TestData.deleteFile(storeRoot)
             var store: DIDStore
             if (cached){
-               store = try DIDStore.open("filesystem", storePath)
+               store = try DIDStore.open("filesystem", storeRoot)
             }
             else {
-               store = try DIDStore.open("filesystem", storePath, 0, 0)
+               store = try DIDStore.open("filesystem", storeRoot, 0, 0)
             }
                         
             let mnemonic: String = HDKey.generateMnemonic(0)
@@ -851,9 +851,9 @@ class DIDStoreTests: XCTestCase {
             var docs: Array = Array<DIDDocument>()
             
             for i in 0..<10 {
-                let path = storePath + String(i)
+                let path = storeRoot + String(i)
                 TestData.deleteFile(path)
-                let store: DIDStore = try DIDStore.open("filesystem", storePath + String(i))
+                let store: DIDStore = try DIDStore.open("filesystem", storeRoot + String(i))
                 stores.append(store)
                 let mnemonic: String = HDKey.generateMnemonic(0)
                 try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)

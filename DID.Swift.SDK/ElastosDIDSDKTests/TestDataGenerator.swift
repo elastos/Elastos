@@ -14,11 +14,11 @@ class TestDataGenerator: XCTest {
         do{
             let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "test111111"})
             adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
-            //        TestUtils.deleteFile(storePath)
-            store = try DIDStore.open("filesystem", storePath)
+            //        TestUtils.deleteFile(storeRoot)
+            store = try DIDStore.open("filesystem", storeRoot)
             DIDBackend.creatInstance(adapter)
-            TestData.deleteFile(storePath)
-            store = try DIDStore.open("filesystem", storePath)
+            TestData.deleteFile(storeRoot)
+            store = try DIDStore.open("filesystem", storeRoot)
             
             let mnemonic: String = HDKey.generateMnemonic(0)
             try store!.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)

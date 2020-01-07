@@ -1,18 +1,16 @@
 
 import Foundation
 
-let tempDir: String = "/Users/liaihong/Desktop/DID_iOS/tempDir"
+let root: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
+let tempDir: String = "\(root)/tempDir"
 
-//let storePath: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
-let storePath: String = "/Users/liaihong/Desktop/DID_iOS/storeRoot"
+let storeRoot: String = "\(root)/storeRoot"
 let storePass: String = "passwd"
 let passphrase: String = "secret"
-let walletPassword: String = "test111111"
+let walletPassword: String = "11111111"
 
-let walletDir: String = "/Users/liaihong/.didwallet"
+let walletDir: String = "/Users/liaihong/.wallet"
 let walletId: String = "test"
 
 let networkConfig: String = "TestNet"
-//let networkConfig: String = "/Users/liaihong/Documents/Git/Elastos.DID.Native.SDK/adapter/wallet/privnet.json"
-//let resolver: String = "https://coreservices-didsidechain-privnet.elastos.org"
 let resolver: String = "http://api.elastos.io:21606"

@@ -50,14 +50,14 @@ class TestData: XCTestCase {
         }
         else {
             if TestData.spvAdapter == nil {
-                let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "test111111"})
+                let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return walletPassword})
                 TestData.spvAdapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
             }
             adapter = TestData.spvAdapter!
         }
         DIDBackend.creatInstance(adapter)
-        TestData.deleteFile(storePath)
-        store = try DIDStore.open("filesystem", storePath)
+        TestData.deleteFile(storeRoot)
+        store = try DIDStore.open("filesystem", storeRoot)
         return store
     }
     

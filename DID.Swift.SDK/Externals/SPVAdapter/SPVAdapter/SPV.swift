@@ -27,7 +27,6 @@ public class SPV {
     public class func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String? {
 //        let startIndex = did.index(did.startIndex, offsetBy: 12)
 //        let id = String(did[startIndex..<did.endIndex])
-        let did = "did:elastos:iSvDGK1LmLxT15pcFfr5kX6aCRLTuaX9vJ"
         var resuleString = ""
         let url:URL! = URL(string: "http://api.elastos.io:21606") //  https://coreservices-didsidechain-privnet.elastos.org
         var request:URLRequest! = URLRequest.init(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60)
