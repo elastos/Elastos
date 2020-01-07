@@ -34,10 +34,9 @@ export default class extends StandardPage {
   }
 
   onSubmit = model => {
-    const id = this.state.elip._id
-    const status = ELIP_STATUS.DRAFT === this.state.elip.status ? ELIP_STATUS.SUBMITTED : ELIP_STATUS.WAIT_FOR_REVIEW
+    const { elip } = this.state
     return this.props
-      .update({ _id: id, status, ...model })
+      .update({ _id: elip._id, ...model })
       .then(() => this.historyBack())
       .catch(err => this.setState({ error: err }))
   }

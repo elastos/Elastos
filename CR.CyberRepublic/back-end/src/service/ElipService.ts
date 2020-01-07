@@ -22,6 +22,7 @@ export default class extends Base {
     try {
       const db_elip = this.getDBModel('Elip')
       const { _id, status } = param
+      const elipStatus = constant.ELIP_STATUS
       const elip = await db_elip
         .getDBInstance()
         .findOne({ _id })
@@ -38,30 +39,19 @@ export default class extends Base {
       }
       if (
         [
-          constant.ELIP_STATUS.WAIT_FOR_REVIEW,
-          constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
+          elipStatus.WAIT_FOR_REVIEW,
+          elipStatus.SUBMITTED_AS_PROPOSAL
         ].includes(elip.status)
       ) {
         throw `ElipService.update - can not update a ${status} elip`
       }
       if (
-        status === constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL &&
-        elip.status !== constant.ELIP_STATUS.DRAFT
+        status === elipStatus.SUBMITTED_AS_PROPOSAL &&
+        elip.status !== elipStatus.DRAFT
       ) {
         throw `ElipService.update - can not change elip status to submitted`
       }
 
-      if (
-        status === constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL &&
-        elip.status === constant.ELIP_STATUS.DRAFT
-      ) {
-        const rs = await db_elip.update(
-          { _id },
-          { status: constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL }
-        )
-        this.notifySecretaries(elip, true)
-        return rs
-      }
       const fields = [...BASE_FIELDS, 'elipType']
       const doc: any = {}
       for (let i = 0; i < fields.length; i++) {
@@ -75,19 +65,37 @@ export default class extends Base {
           doc[fields[i]] = value
         }
       }
+      
+      if (
+        status === elipStatus.SUBMITTED_AS_PROPOSAL &&
+        elip.status === elipStatus.DRAFT
+      ) {
+        doc.status = elipStatus.SUBMITTED_AS_PROPOSAL
+        const rs = await db_elip.update({ _id }, doc)
+        this.notifySecretaries(elip, true)
+        return rs
+      }
 
       if (_.values(doc).length) {
-        const isRejected = elip.status === constant.ELIP_STATUS.REJECTED
-        const isPersonsalDraft = elip.status === constant.ELIP_STATUS.PERSONAL_DRAFT
-        const isForReview = isRejected || (!param.personalDraft && isPersonsalDraft)
-        if (isForReview) {
-          doc.status = constant.ELIP_STATUS.WAIT_FOR_REVIEW
-        }
-        const rs = await db_elip.update({ _id }, doc)
-        if (isForReview) {
+        if (
+          status === elipStatus.WAIT_FOR_REVIEW &&
+          [elipStatus.REJECTED, elipStatus.PERSONAL_DRAFT].includes(
+            elip.status
+          )
+        ) {
+          doc.status = elipStatus.WAIT_FOR_REVIEW
+          const rs = await db_elip.update({ _id }, doc)
           this.notifySecretaries(elip, true)
+          return rs
         }
-        return rs
+
+        if (
+          status === elip.status &&
+          [elipStatus.PERSONAL_DRAFT, elipStatus.DRAFT].includes(elip.status)
+        ) {
+          const rs = await db_elip.update({ _id }, doc)
+          return rs
+        }
       }
     } catch (error) {
       logger.error(error)
@@ -100,7 +108,7 @@ export default class extends Base {
       const db_elip = this.getDBModel('Elip')
       const db_user = this.getDBModel('User')
 
-      const { personalDraft } = param
+      const { status } = param
       const fields = [...BASE_FIELDS, 'elipType']
       const doc: any = {}
       for (let i = 0; i < fields.length; i++) {
@@ -111,16 +119,20 @@ export default class extends Base {
           doc[fields[i]] = value
         }
       }
-      const isPersonsalDraft = personalDraft && personalDraft === true
-
-      doc.status = isPersonsalDraft
-        ? constant.ELIP_STATUS.PERSONAL_DRAFT
-        : constant.ELIP_STATUS.WAIT_FOR_REVIEW
-
+      
+      if (
+        [
+          constant.ELIP_STATUS.PERSONAL_DRAFT,
+          constant.ELIP_STATUS.WAIT_FOR_REVIEW
+        ].includes(status)
+      ) {
+        doc.status = status
+      }
+      
       doc.contentType = constant.CONTENT_TYPE.MARKDOWN
       doc.createdBy = this.currentUser._id
 
-      if (!isPersonsalDraft) {
+      if (status === constant.ELIP_STATUS.WAIT_FOR_REVIEW) {
         const councilMembers = await db_user.find({
           role: constant.USER_ROLE.COUNCIL
         })
@@ -136,7 +148,7 @@ export default class extends Base {
       }
       
       const elip = await db_elip.save(doc)
-      if (!isPersonsalDraft) {
+      if (status === constant.ELIP_STATUS.WAIT_FOR_REVIEW) {
         this.notifySecretaries(elip)
       }
       return elip

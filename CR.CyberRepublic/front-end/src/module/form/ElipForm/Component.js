@@ -130,9 +130,9 @@ class C extends BaseComponent {
     return !TAB_KEYS.includes(key) ? this.state.activeKey : key
   }
 
-  handleSubmit = async (e, personalDraft) => {
+  handleSubmit = async (e, status) => {
     const { onSubmit, form } = this.props
-    if (!personalDraft) {
+    if (!status) {
       this.setState({ loading: true })
     }
     e.preventDefault()
@@ -142,7 +142,7 @@ class C extends BaseComponent {
           errorKeys: err,
           activeKey: this.getActiveKey(Object.keys(err)[0])
         }
-        if (!personalDraft) {
+        if (!status) {
           data.loading = false
         }
         this.setState(data)
@@ -152,11 +152,11 @@ class C extends BaseComponent {
       values.specifications = values.specification
       delete values.specification
       delete values.type
-      if (personalDraft) {
-        values.personalDraft = personalDraft
+      if (status) {
+        values.status = status
       }
       await onSubmit(values)
-      if (!personalDraft) {
+      if (!status) {
         this.setState({ loading: false })
       }
     })
@@ -298,7 +298,7 @@ class C extends BaseComponent {
         <Col>
           <Button
             onClick={e => {
-              this.handleSubmit(e, true)
+              this.handleSubmit(e, ELIP_STATUS.PERSONAL_DRAFT)
             }}
             className="cr-btn cr-btn-primary"
             htmlType="button"
@@ -333,9 +333,7 @@ class C extends BaseComponent {
         <Fragment>
           <Col>
             <Button
-              onClick={e => {
-                this.handleSubmit(e, true)
-              }}
+              onClick={e => this.handleSubmit(e, ELIP_STATUS.DRAFT)}
               className="cr-btn cr-btn-primary"
               htmlType="button"
             >
@@ -345,7 +343,7 @@ class C extends BaseComponent {
           <Col>
             <Button
               onClick={e => {
-                this.handleSubmit(e, true)
+                this.handleSubmit(e, ELIP_STATUS.SUBMITTED_AS_PROPOSAL)
               }}
               className="cr-btn cr-btn-primary"
               htmlType="button"
@@ -364,7 +362,11 @@ class C extends BaseComponent {
     const previewModal = this.renderPreview()
     return (
       <Container>
-        <Form onSubmit={this.handleSubmit}>
+        <Form
+          onSubmit={e => {
+            this.handleSubmit(e, ELIP_STATUS.WAIT_FOR_REVIEW)
+          }}
+        >
           <Title className="komu-a cr-title-with-icon ">
             {data
               ? `${I18N.get('elip.button.edit')}`
@@ -410,7 +412,9 @@ class C extends BaseComponent {
           <Row gutter={10} type="flex" justify="center">
             <Col>
               <Button onClick={onCancel} className="cr-btn cr-btn-default">
-                {data ? I18N.get('elip.button.back') : I18N.get('elip.button.cancel')}
+                {data
+                  ? I18N.get('elip.button.back')
+                  : I18N.get('elip.button.cancel')}
               </Button>
             </Col>
             <Col>
