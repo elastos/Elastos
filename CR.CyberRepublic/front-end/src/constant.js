@@ -405,11 +405,12 @@ export const SUGGESTION_BUDGET_TYPE = create([
 
 // elip
 export const ELIP_STATUS = create([
+  'PERSONAL_DRAFT',
   'WAIT_FOR_REVIEW',
   'REJECTED',
   'DRAFT',
-  'SUBMITTED_AS_PROPOSAL',
-  'PERSONAL_DRAFT'
+  'FINAL_REVIEW',
+  'SUBMITTED_AS_PROPOSAL'
 ])
 export const ELIP_FILTER = create([
   'ALL',

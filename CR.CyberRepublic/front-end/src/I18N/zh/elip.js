@@ -45,9 +45,9 @@ export default {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: '等待审核',
     [ELIP_STATUS.REJECTED]: '已拒绝',
     [ELIP_STATUS.DRAFT]: '草案',
-    [ELIP_STATUS.SUBMITTED]: '已提交',
     [ELIP_STATUS.SUBMITTED_AS_PROPOSAL]: '提交为提案',
-    [ELIP_STATUS.PERSONAL_DRAFT]: '个人草案'
+    [ELIP_STATUS.PERSONAL_DRAFT]: '个人草案',
+    [ELIP_STATUS.FINAL_REVIEW]: '终审'
   },
   show: '展示',
   filter: {

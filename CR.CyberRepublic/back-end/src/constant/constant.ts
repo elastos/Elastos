@@ -309,11 +309,12 @@ export const DB_SELECTED_FIELDS = {
 
 // elip
 export const ELIP_STATUS = create([
+  'PERSONAL_DRAFT',
   'WAIT_FOR_REVIEW',
-  'DRAFT',
   'REJECTED',
-  'SUBMITTED_AS_PROPOSAL',
-  'PERSONAL_DRAFT'
+  'DRAFT',
+  'FINAL_REVIEW',
+  'SUBMITTED_AS_PROPOSAL'
 ])
 
 export const ELIP_FILTER = create([

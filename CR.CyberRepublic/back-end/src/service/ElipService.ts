@@ -70,7 +70,7 @@ export default class extends Base {
         status === elipStatus.SUBMITTED_AS_PROPOSAL &&
         elip.status === elipStatus.DRAFT
       ) {
-        doc.status = elipStatus.SUBMITTED_AS_PROPOSAL
+        doc.status = elipStatus.FINAL_REVIEW
         const rs = await db_elip.update({ _id }, doc)
         this.notifySecretaries(elip, true)
         return rs
