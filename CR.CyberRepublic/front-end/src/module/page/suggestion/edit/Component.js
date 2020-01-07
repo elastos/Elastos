@@ -43,10 +43,13 @@ export default class extends StandardPage {
       .then(() => this.historyBack())
       .catch(err => this.setState({ error: err }))
   }
+
   onSaveDraft = (model) => {
     const id = this.state.data._id
-    this.props.updateSuggestion({ id, ...model })
-      .catch(err => console.log(err))
+    console.log(id)
+    console.log(model)
+    // this.props.updateSuggestion({ id, ...model })
+    //   .catch(err => console.log(err))
   }
 
   ord_renderContent() {
@@ -83,6 +86,7 @@ export default class extends StandardPage {
               {I18N.get('suggestion.title.edit')}
             </h2>
             <SuggestionForm
+              isEditMode={true}
               lang={this.props.lang}
               initialValues={this.state.data}
               onSubmit={this.onSubmit}
