@@ -6,32 +6,30 @@
 {% endblock title %}
 
 {% block scripts %}
-<script src="{% static '/javascript/elaauth.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
+    <script src="{% static '/javascript/elaauth.js' %}"></script>
 {% endblock %} 
 
 {% load qr_code %} 
 
 {% block content %}
 <div class="row align-items-center justify-content-center">
-  <div class="col-md-8">
-    <div class="card-header text-center">
-      Scan the code using Elephant Wallet from your phone<br />
-      You can download the app on both Android and iOS devices<br />
-      For more info, go to the
-      <a href="https://elephantwallet.app/#footer" target="blank"
-        >Official Elephant Wallet App Website</a
-      >
+    <div class="col-md-12 text-center">
+        <h4 class="scan-qr-header">Scan the code with Elephant Wallet</h4>
     </div>
-    <div class="card-body text-center">
-      <img
-        src="{% qr_url_from_text request.session.elephant_url error_correction='Q' size=5 version=10 image_format='png' %}"
-      />
+    <div class="col-md-12 text-center">
+        <p class="scan-qr-text">
+            You can download the app on both Android and iOS devices. For more info, go to the
+            <a href="https://elephantwallet.app/#footer" target="blank">Official Elephant Wallet App Website</a>
+        </p>
     </div>
-    <div class="card-body text-center">
-      <p class="text-muted">
-        Waiting for phone authentication...
-      </p>
+    <div class="col-md-12 text-center">
+        <img src="{% qr_url_from_text request.session.elephant_url error_correction='Q' size=5 version=10 image_format='png' %}"/>
     </div>
-  </div>
+    <div class="col-md-12 text-center">
+        <p class="scan-qr-wait">
+            Waiting for phone authentication...
+        </p>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,45 @@
+.scan-qr-box {
+  width: 496px;
+  height: 700px;
+  border-radius: 8px;
+  box-shadow: 0 2px 120px 0 rgba(0, 0, 0, 0.5);
+}
+
+.scan-qr-header {
+  height: 74px;
+  font-family: BioSans;
+  font-size: 28px;
+  font-weight: 600;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.scan-qr-text {
+  height: 64px;
+  font-family: Inter-BETA;
+  font-size: 14px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  text-align: center;
+  color: #ffffff;
+}
+
+.scan-qr-wait {
+  height: 21px;
+  opacity: 0.5;
+  font-family: Inter;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  text-align: center;
+  color: #ffffff;
+}

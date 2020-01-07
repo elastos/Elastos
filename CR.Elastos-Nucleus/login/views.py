@@ -67,7 +67,6 @@ def check_ela_auth(request):
                 populate_session_vars_from_database(request, request.session['did'])
                 messages.success(request, "Logged in successfully!")
     except Exception as e:
-        logging.debug(f"Method: check_ela_auth Error: {e}")
         return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'redirect': redirect_url}, status=200)
 
