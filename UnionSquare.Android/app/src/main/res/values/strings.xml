@@ -152,7 +152,7 @@
     <string name="inputyourwallletpwd">请输入您的钱包密码</string>
     <string name="transfersucess">节点发送成功，\n 请耐心等待交易确认</string>
     <string name="inputsidechainrechargeaddress">请输入侧链充值地址</string>
-    <string name="rate">汇率：</string>
+    <string name="rate">汇率</string>
     <string name="rate11">汇率：1:1</string>
     <string name="chargerto">充值到:</string>
     <string name="morecontent_wait">------ 更多内容，敬请期待 ------</string>
