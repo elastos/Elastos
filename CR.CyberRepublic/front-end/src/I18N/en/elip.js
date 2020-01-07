@@ -59,6 +59,7 @@ export default {
   button: {
     add: 'Add ELIP',
     cancel: 'Cancel',
+    back: 'Back',
     submit: 'Submit for Review',
     reject: 'Reject',
     approve: 'Approve',
@@ -73,7 +74,8 @@ export default {
     clearFilter: 'Clear Filter',
     applyFilter: 'Apply Filter',
     preview: 'Preview',
-    personalDraft: 'Save as Personal Draft'
+    personalDraft: 'Save as Personal Draft',
+    saveChanges: 'Save Changes'
   },
   msg: {
     updated: 'Updated successfully',

@@ -59,6 +59,7 @@ export default {
   button: {
     add: '添加 ELIP',
     cancel: '取消',
+    back: '返回',
     submit: '提交',
     reject: '拒绝',
     approve: '批准',
@@ -73,7 +74,8 @@ export default {
     clearFilter: '重置过滤',
     applyFilter: '应用过滤',
     preview: '预览',
-    personalDraft: '保存为个人草案'
+    personalDraft: '保存为个人草案',
+    saveChanges: '保存修改'
   },
   msg: {
     updated: '更新成功',
