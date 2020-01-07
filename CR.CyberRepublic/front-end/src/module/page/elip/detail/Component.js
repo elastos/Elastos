@@ -413,10 +413,12 @@ class C extends StandardPage {
 
   renderEditButton() {
     const { data } = this.props
-    const isEditable =
-      this.isAuthor(data) &&
-      [ELIP_STATUS.REJECTED, ELIP_STATUS.DRAFT].includes(data.status)
-
+    const status = [
+      ELIP_STATUS.REJECTED,
+      ELIP_STATUS.DRAFT,
+      ELIP_STATUS.PERSONAL_DRAFT
+    ]
+    const isEditable = this.isAuthor(data) && status.includes(data.status)
     if (!isEditable) return null
 
     return (
