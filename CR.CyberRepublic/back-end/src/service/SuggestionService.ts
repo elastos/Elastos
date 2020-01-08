@@ -124,7 +124,8 @@ export default class extends Base {
     }
 
     const doc = _.pick(param, BASE_FIELDS)
-    Object.assign(currDoc, doc)
+    doc._id = ObjectId(id)
+    doc.createdBy = ObjectId(userId)
 
     const currDraft = await this.draftModel.getDBInstance().findById(id)
     if(currDraft) {
@@ -132,19 +133,18 @@ export default class extends Base {
     }
 
     doc.descUpdatedAt = new Date()
+    let result = null
     if (update) {
-      await Promise.all([
-        this.draftModel.save(currDoc),
-        this.getDBModel('Suggestion_Edit_History').save({
-          ...currDoc,
-          suggestion: id
-        })
-      ])
+      result = await this.draftModel.save(doc)
+      await this.getDBModel('Suggestion_Edit_History').save({
+        ...currDoc,
+        suggestion: id
+      })
     } else {
-      await this.draftModel.save(currDoc)
+      result = await this.draftModel.save(doc)
     }
-    
-    return this.show({ id })
+
+    return result
   }
 
   public async update(param: any): Promise<Document> {
