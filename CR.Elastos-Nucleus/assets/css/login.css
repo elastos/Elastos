@@ -63,3 +63,31 @@
   border-radius: 1px;
   background-color: #00dd62;
 }
+
+.feed-carousel {
+  background-color: #181b22;
+}
+
+.feed-carousel h2 {
+  height: 59px;
+  font-size: 44px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-family: Overpass;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.feed-carousel p {
+  height: 43px;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-family: Roboto;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #ffffff;
+}

@@ -120,5 +120,3 @@ def get_recent_services(did):
     return recent_services
 
 
-
-
