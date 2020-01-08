@@ -35,7 +35,7 @@ const (
 	// charge of the CRC proposal.
 	ProposalLeader CRCProposalTrackingType = 0x04
 
-	// Finalized indicates that the transaction is used for appropriation.
+	// Finalized for summary proposal execution, as well as the application of final payment
 	Finalized CRCProposalTrackingType = 0x05
 )
 

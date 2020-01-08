@@ -171,7 +171,7 @@ func (b *Budget) Serialize(w io.Writer) error {
 		return errors.New("failed to serialize Type")
 	}
 	if err := common.WriteElement(w, b.Stage); err != nil {
-		return errors.New("failed to serialize Type")
+		return errors.New("failed to serialize Stage")
 	}
 	return b.Amount.Serialize(w)
 }

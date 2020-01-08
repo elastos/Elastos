@@ -206,6 +206,7 @@ func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 			for _, b := range proposal.Proposal.Budgets {
 				if b.Type == payload.Imprest {
 					proposal.WithdrawableBudgets[b.Stage] = b.Amount
+					break
 				}
 			}
 		}, func() {
@@ -213,6 +214,7 @@ func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 			for _, b := range proposal.Proposal.Budgets {
 				if b.Type == payload.Imprest {
 					delete(proposal.WithdrawableBudgets, b.Stage)
+					break
 				}
 			}
 

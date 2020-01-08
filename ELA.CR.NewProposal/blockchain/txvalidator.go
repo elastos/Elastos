@@ -1840,7 +1840,7 @@ func (b *BlockChain) checkCRCProposalCommonTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
 	if cptPayload.Stage != 0 {
-		return errors.New("stage need to be zero")
+		return errors.New("stage should assignment zero value")
 	}
 
 	// Check signature.
@@ -1858,7 +1858,7 @@ func (b *BlockChain) checkCRCProposalProgressTracking(
 		if cptPayload.Stage == budget.Stage {
 			if budget.Type == payload.Imprest ||
 				budget.Type == payload.FinalPayment {
-				return errors.New("invalid budgets with withdrawn budget.")
+				return errors.New("imprest and final payment not allowed to withdraw")
 			}
 		}
 	}
@@ -1871,7 +1871,7 @@ func (b *BlockChain) checkCRCProposalTerminatedTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
 	if cptPayload.Stage != 0 {
-		return errors.New("stage need to be zero")
+		return errors.New("stage should assignment zero value")
 	}
 
 	// Check signature.
@@ -1893,7 +1893,7 @@ func (b *BlockChain) checkCRCProposalLeaderTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
 	if cptPayload.Stage != 0 {
-		return errors.New("stage need to be zero")
+		return errors.New("stage should assignment zero value")
 	}
 
 	// Check signature.
