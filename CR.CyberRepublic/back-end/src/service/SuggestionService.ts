@@ -126,12 +126,14 @@ export default class extends Base {
     const doc = _.pick(param, BASE_FIELDS)
     Object.assign(currDoc, doc)
 
+    const currDraft = await this.draftModel.getDBInstance().findById(id)
+    if(currDraft) {
+      await this.draftModel.remove({ _id: ObjectId(id) })
+    }
+
     doc.descUpdatedAt = new Date()
     if (update) {
-      const currDraft = await this.draftModel.getDBInstance().findById(id)
-      
       await Promise.all([
-        this.draftModel.remove({ _id: ObjectId(id) }),
         this.draftModel.save(currDoc),
         this.getDBModel('Suggestion_Edit_History').save({
           ...currDoc,
@@ -139,9 +141,9 @@ export default class extends Base {
         })
       ])
     } else {
-      await this.draftModel.remove({ _id: ObjectId(id) })
       await this.draftModel.save(currDoc)
     }
+    
     return this.show({ id })
   }
 
@@ -161,12 +163,16 @@ export default class extends Base {
       throw 'Only owner can edit suggestion'
     }
 
-    const doc = _.pick(param, BASE_FIELDS)
+    const currDraft = await this.draftModel.getDBInstance().findById(id)
+    if(currDraft) {
+      await this.draftModel.remove({ _id: ObjectId(id) })
+    }
 
+    const doc = _.pick(param, BASE_FIELDS)
     doc.descUpdatedAt = new Date()
+    
     if (update) {
       await Promise.all([
-        this.draftModel.remove({ _id: ObjectId(id) }),
         this.model.update({ _id: id }, { $set: doc }),
         this.getDBModel('Suggestion_Edit_History').save({
           ...doc,
@@ -174,7 +180,6 @@ export default class extends Base {
         })
       ])
     } else {
-      await this.draftModel.remove({ _id: ObjectId(id) })
       await this.model.update({ _id: id }, { $set: doc })
     }
     return this.show({ id })
