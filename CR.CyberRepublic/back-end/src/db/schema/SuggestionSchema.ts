@@ -142,3 +142,4 @@ export const Suggestion = {
   ],
   tags: [tag]
 }
+

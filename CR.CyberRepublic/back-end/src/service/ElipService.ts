@@ -16,10 +16,10 @@ export default class extends Base {
       const elip = await db_elip
         .getDBInstance()
         .findOne({ _id })
-        .populate(
-          'voteResult.votedBy',
-          constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
-        )
+//        .populate(
+//          'voteResult.votedBy',
+//          constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
+//        )
         .populate('createdBy')
       if (!elip) {
         throw 'ElipService.update - invalid elip id'
@@ -141,7 +141,7 @@ export default class extends Base {
       const councilMembers = await db_user.find({
         role: constant.USER_ROLE.COUNCIL
       })
-      const voteResult = []
+/*      const voteResult = []
       _.map(councilMembers, user => {
         voteResult.push({
           votedBy: user._id,
@@ -150,7 +150,7 @@ export default class extends Base {
       })
       doc.voteResult = voteResult
       doc.voteHistory = voteResult
-
+*/
       const elip = await db_elip.save(doc)
       this.notifySecretaries(elip)
       return elip
@@ -160,7 +160,7 @@ export default class extends Base {
     }
   }
 
-  public async vote(param): Promise<Document> {
+/*  public async vote(param): Promise<Document> {
     const db_elip = this.getDBModel('Elip')
     const { _id, value, reason } = param
     const cur = await db_elip.findOne({ _id })
@@ -191,7 +191,7 @@ export default class extends Base {
 
     return await this.getById(_id)
   }
-
+*/
   public async getNewVid() {
     const db_elip = this.getDBModel('Elip')
     const n = await db_elip.count({})
@@ -305,10 +305,10 @@ export default class extends Base {
     const rs = await db_elip
       .getDBInstance()
       .findOne(query)
-      .populate(
-        'voteResult.votedBy',
-        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
-      )
+//      .populate(
+//        'voteResult.votedBy',
+//        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
+//      )
       .populate('reference')
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
     if (!rs) {
@@ -355,10 +355,10 @@ export default class extends Base {
     let rs = await db_elip
       .getDBInstance()
       .findById({ _id })
-      .populate(
-        'voteResult.votedBy',
-        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
-      )
+//      .populate(
+//        'voteResult.votedBy',
+//        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
+//      )
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
     if (!rs) {
       throw 'ElipService.remove - invalid elip id'
@@ -755,6 +755,7 @@ export default class extends Base {
     this.notifyCouncilToVote()
   }
 
+  /*
   public cronjob() {
     if (tm) {
       return false
@@ -764,4 +765,5 @@ export default class extends Base {
       this.eachJob()
     }, 1000 * 60)
   }
+  */
 }

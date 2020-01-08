@@ -92,7 +92,7 @@ export const Elip = {
     type: String,
     enum: _.values(constant.ELIP_STATUS)
   },
-  voteHistory: [ElipHistorySchema],
-  voteResult: [ElipResultSchema],
+//  voteHistory: [ElipHistorySchema],
+//  voteResult: [ElipResultSchema],
   comments: [[CommentSchema]]
 }
