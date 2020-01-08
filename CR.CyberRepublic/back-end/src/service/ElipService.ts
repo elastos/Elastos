@@ -86,7 +86,12 @@ export default class extends Base {
         ) {
           doc.status = elipStatus.WAIT_FOR_REVIEW
           const rs = await db_elip.update({ _id }, doc)
-          this.notifySecretaries(elip, true)
+          if (elip.status === elipStatus.REJECTED) {
+            this.notifySecretaries(elip, true)
+          }
+          if (elip.status === elipStatus.PERSONAL_DRAFT) {
+            this.notifySecretaries(elip)
+          }
           return rs
         }
 
