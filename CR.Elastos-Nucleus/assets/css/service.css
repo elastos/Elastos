@@ -5,12 +5,10 @@
 
 .search-form {
   width: 300px;
-  height: 40px;
   border-radius: 2px;
 }
 
 .search-form input {
-  height: 30px;
   font-size: 13px;
   font-weight: normal;
   font-stretch: normal;
@@ -42,7 +40,7 @@
 .service-divider {
   height: 1px;
   opacity: 0.8;
-  background-color: #181b22;
+  background-color: white;
   margin: 0px 30px 30px 30px;
 }
 
