@@ -1,7 +1,7 @@
 
 import Foundation
 import ElastosDIDSDK
-import SPVAdapter
+import SPVWrapper
 
 public typealias PasswordCallback = (_ walletDir: String, _ walletId: String) -> String?
 public class SPVAdaptor: DIDAdapter {
@@ -33,14 +33,22 @@ public class SPVAdaptor: DIDAdapter {
     
     public func createIdTransaction(_ payload: String, _ memo: String?) throws -> String? {
         let password = passwordCallback!(walletDir, walletId)
-        if password == nil {
-            return nil
+        guard password != nil else {
+            throw DIDResolveError.failue("password is not nil.")
+        }
+        
+        guard handle != nil else {
+            throw DIDResolveError.failue("Unkonw error.")
         }
         let re = try SPV.createIdTransaction(handle, password!, payload, memo)
         return re
     }
     
     public func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String? {
-        return try SPV.resolve(requestId, did, all)
+        let re = SPV.resolve(requestId, did, all)
+        guard re != nil else {
+            throw DIDResolveError.failue("Unkonw error.")
+        }
+        return re
     }
 }

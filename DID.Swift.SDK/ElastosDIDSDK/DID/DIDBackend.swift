@@ -53,9 +53,6 @@ public class DIDBackend: NSObject {
         let requestId = generateRequestId()
         
         let json = try adapter.resolve(requestId, did.description, false)
-        guard json != nil else {
-            throw DIDResolveError.failue("Unknown error.")
-        }
         // TODO: unsafe
         var jsonString = json!.replacingOccurrences(of: " ", with: "")
         jsonString = jsonString.replacingOccurrences(of: "\n", with: "")

@@ -16,7 +16,7 @@ public class SPV {
         return rc == 1
     }
     
-    public class func createIdTransaction(_ handle: OpaquePointer, _ password: String, _ payload: String, _ memo: String?) throws -> String? {
+    public class func createIdTransaction(_ handle: OpaquePointer, _ password: String, _ payload: String, _ memo: String?) -> String? {
         let re = SpvDidAdapter_CreateIdTransaction(handle, payload, memo, password)
         if re != nil {
            return String(cString: re!)
@@ -24,7 +24,7 @@ public class SPV {
         return nil
     }
     
-    public class func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String? {
+    public class func resolve(_ requestId: String, _ did: String, _ all: Bool) -> String? {
 //        let startIndex = did.index(did.startIndex, offsetBy: 12)
 //        let id = String(did[startIndex..<did.endIndex])
         var resuleString = ""

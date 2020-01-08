@@ -1,7 +1,7 @@
 
 import Foundation
 import ElastosDIDSDK
-import SPVAdapter
+import SPVWrapper
 
 class DummyAdapter: DIDAdapter {
 

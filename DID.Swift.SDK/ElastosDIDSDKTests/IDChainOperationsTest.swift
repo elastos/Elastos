@@ -72,7 +72,7 @@ class IDChainOperationsTest: XCTestCase {
                 print("Waiting for wallet available to create DID")
                 while true {
                     wait(interval: 30)
-                    if try (adapter?.isAvailable())! {
+                    if try adapter!.isAvailable() {
                         print(" OK")
                         break
                     }else {
@@ -425,6 +425,8 @@ class IDChainOperationsTest: XCTestCase {
         let mnemonic: String = try testData.loadRestoreMnemonic()
         try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
         try store.synchronize(storePass)
+        print("Synchronizing from IDChain...")
+        print("OK")
         
         let dids: Array<DID> = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
         var didStrings: Array<String> = []

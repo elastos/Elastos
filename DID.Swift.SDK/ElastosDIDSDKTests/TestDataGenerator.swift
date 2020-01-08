@@ -1,7 +1,7 @@
 
 import XCTest
 import ElastosDIDSDK
-import SPVAdapter
+import SPVWrapper
 
 class TestDataGenerator: XCTest {
     private var outputDir: String = ""
