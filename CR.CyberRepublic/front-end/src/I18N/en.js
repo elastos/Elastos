@@ -300,6 +300,7 @@ const en = {
 
   // Suggestion Button Text
   'suggestion.btnText.edit': 'Edit Suggestion',
+  'suggestion.btnText.editDraft': 'Edit Draft',
   'suggestion.btnText.consider': 'Under Consideration',
   'suggestion.btnText.markConsider': 'Mark as Under Consideration',
   'suggestion.btnText.needMoreInfo': 'Needs More Info',

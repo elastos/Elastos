@@ -311,4 +311,39 @@ export default class extends BaseService {
   async updateFilters(filters) {
     this.dispatch(this.selfRedux.actions.filters_update(filters))
   }
+
+  async saveDraft(doc) {
+    this.dispatch(this.selfRedux.actions.loading_update(true))
+
+    const path = `${this.prefixPath}/${doc.id}/saveDraft`
+    let res
+    try {
+
+      res = await api_request({
+        path,
+        method: 'put',
+        data: doc,
+      })
+    } catch (error) {
+      this.dispatch(this.selfRedux.actions.loading_update(false))
+      message.error('Error happened, please try again later or contact admin.')
+      logger.error(error)
+    }
+    return res
+  }
+
+  async getDraft(id) {
+    this.dispatch(this.selfRedux.actions.loading_update(true))
+    this.dispatch(this.selfRedux.actions.draft_reset())
+
+    const path = `${this.prefixPath}/${id}/showDraft`
+    const result = await api_request({
+      path,
+      method: 'get',
+    })
+
+    this.dispatch(this.selfRedux.actions.loading_update(false))
+    this.dispatch(this.selfRedux.actions.draft_update(result))
+    return result
+  }
 }
