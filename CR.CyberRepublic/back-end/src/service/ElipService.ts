@@ -73,7 +73,7 @@ export default class extends Base {
       ) {
         doc.status = elipStatus.FINAL_REVIEW
         const rs = await db_elip.update({ _id }, doc)
-        this.notifySecretaries(elip, true)
+        // this.notifySecretaries()
         return rs
       }
 
@@ -86,11 +86,12 @@ export default class extends Base {
         ) {
           doc.status = elipStatus.WAIT_FOR_REVIEW
           const rs = await db_elip.update({ _id }, doc)
+          const title = doc.title ? doc.title : elip.title
           if (elip.status === elipStatus.REJECTED) {
-            this.notifySecretaries(elip, true)
+            this.notifySecretaries(this.updateMailTemplate(title, elip._id))
           }
           if (elip.status === elipStatus.PERSONAL_DRAFT) {
-            this.notifySecretaries(elip)
+            this.notifySecretaries(this.createMailTemplate(title, elip._id))
           }
           return rs
         }
@@ -155,7 +156,7 @@ export default class extends Base {
       
       const elip = await db_elip.save(doc)
       if (status === constant.ELIP_STATUS.WAIT_FOR_REVIEW) {
-        this.notifySecretaries(elip)
+        this.notifySecretaries(this.createMailTemplate(elip.title, elip._id))
       }
       return elip
     } catch (error) {
@@ -202,7 +203,33 @@ export default class extends Base {
     return n + 1
   }
 
-  private async notifySecretaries(elip: any, update?: boolean) {
+  private updateMailTemplate(title: string, id: string) {
+    const subject = 'An ELIP updated'
+    const body = `
+      <p>This is ELIP ${title} updated and to be reviewed:</p>
+      <br />
+      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
+      <br />
+      <p>Cyber Republic Team</p>
+      <p>Thanks</p>
+    `
+    return {subject, body}
+  }
+
+  private createMailTemplate(title: string, id: string) {
+    const subject = 'New ELIP created'
+    const body = `
+      <p>This is a new ELIP ${title} added and to be reviewed:</p>
+      <br />
+      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
+      <br />
+      <p>Cyber Republic Team</p>
+      <p>Thanks</p>
+    `
+    return {subject, body}
+  }
+
+  private async notifySecretaries(content: {subject: string, body: string}) {
     const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
     const secretaries = await db_user.find({
@@ -213,20 +240,7 @@ export default class extends Base {
       user => !user._id.equals(currentUserId)
     )
     const toMails = _.map(toUsers, 'email')
-    const subject = update ? 'An ELIP updated' : 'New ELIP created'
-    const p = `This is ELIP ${elip.title} updated and to be reviewed:`
-    const p1 = `This is a new ELIP ${elip.title} added and to be reviewed:`
-    const body = `
-      <p>${update ? p : p1}</p>
-      <br />
-      <p>Click this link to view more details: <a href="${
-        process.env.SERVER_URL
-      }/elips/${elip._id}">${process.env.SERVER_URL}/elips/${elip._id}</a></p>
-      <br />
-      <p>Cyber Republic Team</p>
-      <p>Thanks</p>
-    `
-
+    
     const recVariables = _.zipObject(
       toMails,
       _.map(toUsers, user => {
@@ -239,8 +253,8 @@ export default class extends Base {
 
     const mailObj = {
       to: toMails,
-      subject,
-      body,
+      subject: content.subject,
+      body: content.body,
       recVariables
     }
 
