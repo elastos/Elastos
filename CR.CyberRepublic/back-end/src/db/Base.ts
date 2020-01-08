@@ -111,6 +111,9 @@ export default abstract class {
         return await this.db.remove(query)
     }
 
+  public async findAndRemove(query) {
+    return await this.db.findAndRemove(query)
+  }
 
     private buildUpdateOptions(opts?: updateOptions): updateOptions{
         return _.extend({
