@@ -8,7 +8,9 @@ export default createContainer(Component, (state) => {
   return {
     currentUserId: state.user.current_user_id,
     isCouncil: state.user.is_council,
-    isAdmin: state.user.is_admin
+    isAdmin: state.user.is_admin,
+    detail: state.suggestion.detail,
+    draft: state.suggestion.draft,
   }
 }, () => {
   const service = new SuggestionService()
@@ -22,6 +24,12 @@ export default createContainer(Component, (state) => {
     },
     updateSuggestion(suggestion) {
       return service.update(suggestion)
+    },
+    getDraft(id) {
+      return service.getDraft(id)
+    },
+    saveDraft(suggestion) {
+      return service.saveDraft(suggestion)
     }
   }
 })

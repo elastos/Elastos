@@ -28,6 +28,7 @@ class SuggestionRedux extends BaseRedux {
 
       // if we select a detail
       detail: {},
+      draft: {},
       sortBy: null,
       filters: {},
 
