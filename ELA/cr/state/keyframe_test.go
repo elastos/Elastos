@@ -87,7 +87,6 @@ func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 		len(first.Votes) != len(second.Votes) {
 		return false
 	}
-
 	return candidatesMapEqual(first.Candidates, second.Candidates) &&
 		candidatesHistoryMapEqual(first.HistoryCandidates, second.HistoryCandidates) &&
 		depositHashDIDMapEqual(first.DepositHashDIDMap, second.DepositHashDIDMap) &&
@@ -388,7 +387,7 @@ func proposalKeyFrameEqual(first, second *ProposalKeyFrame) bool {
 		}
 	}
 
-	return proposalHashEqual(first.ProposalHashs, second.ProposalHashs)
+	return proposalHashEqual(first.ProposalHashes, second.ProposalHashes)
 }
 
 func randomProposalKeyframe() *ProposalKeyFrame {
@@ -399,7 +398,7 @@ func randomProposalKeyframe() *ProposalKeyFrame {
 		*randomUint256(): randomProposalState(),
 		*randomUint256(): randomProposalState(),
 	},
-		ProposalHashs: map[common.Uint168]ProposalHashSet{
+		ProposalHashes: map[common.Uint168]ProposalHashSet{
 			*randomUint168(): randomProposalHashSet(),
 			*randomUint168(): randomProposalHashSet(),
 		},

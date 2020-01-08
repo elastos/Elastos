@@ -886,7 +886,7 @@ func (c *Committee) RegisterFuncitons(cfg *CommitteeFuncsConfig) {
 	c.getHeight = cfg.GetHeight
 }
 
-func (c *Committee) SnapShort() *CommitteeKeyFrame {
+func (c *Committee) Snapshot() *CommitteeKeyFrame {
 	keyFrame := &CommitteeKeyFrame{
 		KeyFrame:         c.KeyFrame.Snapshot(),
 		StateKeyFrame:    c.state.StateKeyFrame.Snapshot(),

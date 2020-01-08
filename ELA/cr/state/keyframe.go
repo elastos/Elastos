@@ -163,7 +163,7 @@ type ProposalsMap map[common.Uint256]*ProposalState
 type ProposalKeyFrame struct {
 	Proposals ProposalsMap
 	//key is did value is proposalhash set
-	ProposalHashs map[common.Uint168]ProposalHashSet
+	ProposalHashes map[common.Uint168]ProposalHashSet
 }
 
 func NewProposalMap() ProposalsMap {
@@ -882,7 +882,7 @@ func (p *ProposalKeyFrame) Serialize(w io.Writer) (err error) {
 			return
 		}
 	}
-	if err = p.serializeProposalHashsMap(p.ProposalHashs, w); err != nil {
+	if err = p.serializeProposalHashsMap(p.ProposalHashes, w); err != nil {
 		return
 	}
 	return
@@ -961,7 +961,7 @@ func (p *ProposalKeyFrame) Deserialize(r io.Reader) (err error) {
 		}
 		p.Proposals[k] = &v
 	}
-	if p.ProposalHashs, err = p.deserializeProposalHashsMap(r); err != nil {
+	if p.ProposalHashes, err = p.deserializeProposalHashsMap(r); err != nil {
 		return
 	}
 	return
@@ -979,8 +979,8 @@ func (p *ProposalKeyFrame) Snapshot() *ProposalKeyFrame {
 
 func NewProposalKeyFrame() *ProposalKeyFrame {
 	return &ProposalKeyFrame{
-		Proposals:     make(map[common.Uint256]*ProposalState),
-		ProposalHashs: make(map[common.Uint168]ProposalHashSet),
+		Proposals:      make(map[common.Uint256]*ProposalState),
+		ProposalHashes: make(map[common.Uint168]ProposalHashSet),
 	}
 }
 
