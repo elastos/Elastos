@@ -413,6 +413,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		bmsg.block.Block.Height)
 	_, isOrphan, err := sm.blockMemPool.AddDposBlock(bmsg.block)
 	if err != nil {
+		log.Warn("add block error:", err)
 		elaErr := errors.SimpleWithMessage(errors.ErrP2pReject, err,
 			fmt.Sprintf("Rejected block %v from %s", blockHash, peer))
 

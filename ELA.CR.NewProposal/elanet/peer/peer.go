@@ -171,8 +171,8 @@ func (p *Peer) PushGetBlocksMsg(locator []*common.Uint256, stopHash *common.Uint
 	p.prevGetBlocksMtx.Unlock()
 
 	if isDuplicate {
-		log.Debugf("Filtering duplicate [getblocks] with begin "+
-			"hash %v, stop hash %v", beginHash, stopHash)
+		//log.Debugf("Filtering duplicate [getblocks] with begin "+
+		//	"hash %v, stop hash %v", beginHash, stopHash)
 		return nil
 	}
 

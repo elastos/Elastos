@@ -260,8 +260,6 @@ func (s *Settings) initNetSetting() (err error) {
 
 	if s.conf.MaxBlockHeaderSize > 0 {
 		pact.MaxBlockHeaderSize = s.conf.MaxBlockHeaderSize
-	} else {
-		pact.MaxBlockHeaderSize = 1000
 	}
 
 	if s.conf.MaxTxPerBlock > 0 {

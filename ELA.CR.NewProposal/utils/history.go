@@ -98,9 +98,9 @@ func (h *History) Append(height uint32, execute func(), rollback func()) {
 
 	// if cached changes not created, create a new cache instance.
 	if h.cachedChanges == nil {
-		if h.height != 0 && height <= h.height {
+		if h.height != 0 && height < h.height {
 			errMsg := fmt.Errorf("state history failed, expect larger "+
-				"than %d got %d", h.height, height)
+				"than %d got %d", h.height-1, height)
 			panic(errMsg)
 		}
 		h.cachedChanges = &HeightChanges{height: height}
@@ -186,7 +186,7 @@ func (h *History) RollbackTo(height uint32) error {
 	// check whether history is allowed for rollback.
 	if height >= h.height {
 		return fmt.Errorf("rollback to %d overflow history capacity,"+
-			" at least rollback to %d", height, h.height)
+			" at least rollback to %d", height, h.height-1)
 	}
 
 	// rollback and reset tempChanges before rollback.
