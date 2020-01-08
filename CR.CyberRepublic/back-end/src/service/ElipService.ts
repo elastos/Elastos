@@ -242,15 +242,13 @@ export default class extends Base {
     const rs = await db_elip
       .getDBInstance()
       .findOne(query)
-      .populate(
-        'voteResult.votedBy',
-        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
-      )
       .populate('reference')
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+
     if (!rs) {
       return { elip: { success: true, empty: true } }
     }
+
     const db_elip_review = this.getDBModel('Elip_Review')
     const reviews = await db_elip_review
       .getDBInstance()
@@ -259,13 +257,16 @@ export default class extends Base {
 
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
-
+    const status = constant.ELIP_STATUS
+    const publicStatus = [
+      status.DRAFT,
+      status.SUBMITTED_AS_PROPOSAL,
+      status.CANCELLED
+    ]
     const isVisible = rs.createdBy._id.equals(currentUserId) ||
       userRole === constant.USER_ROLE.SECRETARY ||
       userRole === constant.USER_ROLE.ADMIN ||
-      [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL].includes(
-        rs.status
-      )
+      publicStatus.includes(rs.status)
 
     if (_.isEmpty(rs.comments)) {
       return isVisible ? { elip: rs, reviews } : { elip: { success: true, empty: true } }
