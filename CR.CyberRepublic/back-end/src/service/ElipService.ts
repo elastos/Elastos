@@ -24,10 +24,6 @@ export default class extends Base {
       const elip = await db_elip
         .getDBInstance()
         .findOne({ _id })
-        .populate(
-          'voteResult.votedBy',
-          constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
-        )
         .populate('createdBy')
       if (!elip) {
         throw 'ElipService.update - invalid elip id'
@@ -112,7 +108,6 @@ export default class extends Base {
   public async create(param: any): Promise<Document> {
     try {
       const db_elip = this.getDBModel('Elip')
-      const db_user = this.getDBModel('User')
 
       const { status } = param
       const fields = [...BASE_FIELDS, 'elipType']
@@ -134,25 +129,8 @@ export default class extends Base {
       ) {
         doc.status = status
       }
-      
-      doc.contentType = constant.CONTENT_TYPE.MARKDOWN
       doc.createdBy = this.currentUser._id
 
-      if (status === constant.ELIP_STATUS.WAIT_FOR_REVIEW) {
-        const councilMembers = await db_user.find({
-          role: constant.USER_ROLE.COUNCIL
-        })
-        const voteResult = []
-        _.map(councilMembers, user => {
-          voteResult.push({
-            votedBy: user._id,
-            value: constant.ELIP_VOTE_RESULT.UNDECIDED
-          })
-        })
-        doc.voteResult = voteResult
-        doc.voteHistory = voteResult
-      }
-      
       const elip = await db_elip.save(doc)
       if (status === constant.ELIP_STATUS.WAIT_FOR_REVIEW) {
         this.notifySecretaries(this.createMailTemplate(elip.title, elip._id))
