@@ -1907,6 +1907,8 @@ if state flag not provided return the cr candidates in pending and active state.
 | location       | uint64 | the location number of the cr candiate    |
 | state          | bool   | if cr candiate has confirmed              |
 | votes          | string | the votes currently held                  |
+| registerheight | uint32 | the register CR candidate height          |
+| cancelheight   | uint32 | the unregister CR candidate height        |
 | index          | uint64 | the index of the cr candiate              |
 | totalvotes     | string | the total votes of registered cr candiate |
 | totalcounts    | uint64 | the total counts of registered cr candiate|
@@ -1940,6 +1942,8 @@ Response:
                 "location": 38025,
                 "state": "Canceled",
                 "votes": "0",
+                "registerheight": 111,
+                "cancelheight": 151,
                 "index": 0
             }
         ],
