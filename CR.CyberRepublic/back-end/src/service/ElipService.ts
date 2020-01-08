@@ -73,7 +73,8 @@ export default class extends Base {
       ) {
         doc.status = elipStatus.FINAL_REVIEW
         const rs = await db_elip.update({ _id }, doc)
-        // this.notifySecretaries()
+        const author = userUtil.formatUsername(this.currentUser)
+        this.notifySecretaries(this.finalReviewMailTemplate(author, elip.vid, elip._id))
         return rs
       }
 
@@ -225,6 +226,19 @@ export default class extends Base {
       <br />
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
+    `
+    return {subject, body}
+  }
+
+  private finalReviewMailTemplate(author: string, vid: number, id: string) {
+    const subject = `[Final review needed] ELIP #${vid} submitted as proposal`
+    const body = `
+      <p>${author} has submitted ELIP #${vid} as proposal, please review it.</p>
+      <br />
+      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
+      <br />
+      <p>Thanks</p>
+      <p>Cyber Republic</p>
     `
     return {subject, body}
   }
