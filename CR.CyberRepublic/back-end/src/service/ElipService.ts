@@ -24,11 +24,10 @@ export default class extends Base {
       const elip = await db_elip
         .getDBInstance()
         .findOne({ _id })
-        .populate('createdBy')
       if (!elip) {
         throw 'ElipService.update - invalid elip id'
       }
-      if (!elip.createdBy._id.equals(this.currentUser._id)) {
+      if (!elip.createdBy.equals(this.currentUser._id)) {
         throw 'ElipService.update - current user is not the author of elip'
       }
       if (
