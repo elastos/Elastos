@@ -45,6 +45,7 @@ export default {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: 'WAIT FOR REVIEW',
     [ELIP_STATUS.REJECTED]: 'REJECTED',
     [ELIP_STATUS.DRAFT]: 'DRAFT',
+    [ELIP_STATUS.CANCELLED]: 'CANCELLED',
     [ELIP_STATUS.SUBMITTED_AS_PROPOSAL]: 'SUBMITTED AS PROPOSAL',
     [ELIP_STATUS.PERSONAL_DRAFT]: 'PERSONAL DRAFT',
     [ELIP_STATUS.FINAL_REVIEW]: 'FINAL REVIEW'
@@ -75,7 +76,8 @@ export default {
     applyFilter: 'Apply Filter',
     preview: 'Preview',
     personalDraft: 'Save as Personal Draft',
-    saveChanges: 'Save Changes'
+    saveChanges: 'Save Changes',
+    cancelled: 'Mark as Cancelled'
   },
   msg: {
     updated: 'Updated successfully',

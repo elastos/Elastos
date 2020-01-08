@@ -46,6 +46,17 @@ export default class extends Base {
         throw `ElipService.update - can not change elip status to final review`
       }
 
+      if (
+        status === elipStatus.CANCELLED &&
+        elip.status === elipStatus.DRAFT
+      ) {
+        const rs = await db_elip.update(
+          { _id },
+          { status: elipStatus.CANCELLED }
+        )
+        return rs
+      }
+
       const fields = [...BASE_FIELDS, 'elipType']
       const doc: any = {}
       for (let i = 0; i < fields.length; i++) {

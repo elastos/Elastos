@@ -313,6 +313,7 @@ export const ELIP_STATUS = create([
   'WAIT_FOR_REVIEW',
   'REJECTED',
   'DRAFT',
+  'CANCELLED',
   'FINAL_REVIEW',
   'SUBMITTED_AS_PROPOSAL'
 ])

@@ -45,6 +45,7 @@ export default {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: '等待审核',
     [ELIP_STATUS.REJECTED]: '已拒绝',
     [ELIP_STATUS.DRAFT]: '草案',
+    [ELIP_STATUS.CANCELLED]: '已取消',
     [ELIP_STATUS.SUBMITTED_AS_PROPOSAL]: '提交为提案',
     [ELIP_STATUS.PERSONAL_DRAFT]: '个人草案',
     [ELIP_STATUS.FINAL_REVIEW]: '终审'
@@ -75,7 +76,8 @@ export default {
     applyFilter: '应用过滤',
     preview: '预览',
     personalDraft: '保存为个人草案',
-    saveChanges: '保存修改'
+    saveChanges: '保存修改',
+    cancelled: '取消草案'
   },
   msg: {
     updated: '更新成功',
