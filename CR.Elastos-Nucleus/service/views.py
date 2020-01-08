@@ -2,10 +2,11 @@ import json
 import logging
 import os
 
+from django.core import serializers
+from django.http import HttpResponse,JsonResponse
+
 from decouple import config
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
-from django.core.files.temp import NamedTemporaryFile
 from django.shortcuts import render, redirect
 from django.utils.crypto import get_random_string
 
@@ -24,7 +25,7 @@ from .forms import UploadAndSignForm, VerifyAndShowForm
 from .forms import CreateWalletForm, ViewWalletForm, RequestELAForm
 from .forms import DeployETHContractForm, WatchETHContractForm
 
-from .models import UploadFile, UserServiceSessionVars
+from .models import UploadFile, UserServiceSessionVars, SavedFileInformation
 
 
 @login_required
@@ -134,6 +135,10 @@ def upload_and_sign(request):
                         public_key = data['result']['pub']
                         signature = data['result']['sig']
                         file_hash = data['result']['hash']
+                        if network == 'gmunet':
+                            SavedFileInformation.objects.update_or_create(did=did, file_name=temp_file.filename(),
+                                                                          message_hash=message_hash,
+                                                                          signature=signature, file_hash=file_hash)
                         return render(request, "service/upload_and_sign.html",
                                       {"message_hash": message_hash, "public_key": public_key, "signature": signature,
                                        "file_hash": file_hash, 'output': True, 'sample_code': sample_code,
@@ -148,6 +153,8 @@ def upload_and_sign(request):
                 finally:
                     temp_file.delete()
                     hive.close()
+        else:
+            return redirect(reverse('service:upload_and_sign'))
     else:
         request.session['upload_and_sign_submit'] = False
         form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key'],
@@ -167,9 +174,18 @@ def verify_and_show(request):
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/verify_and_show.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
-    if request.method == 'POST':
+    if request.is_ajax():
+        filename = request.POST.get('file_name')
+        try:
+            userFile = SavedFileInformation.objects.filter(did=did, file_name=filename)
+            data = serializers.serialize('json' , userFile)
+            data = data[1:-1]
+            return JsonResponse(data, status=200)
+        except Exception as e:
+            return redirect(reverse('service:verify_and_show'))
+    elif request.method == 'POST':
         if not request.session['verify_and_show_submit']:
-            form = VerifyAndShowForm(request.POST)
+            form = VerifyAndShowForm(request.POST, did=did)
             if form.is_valid():
                 network = form.cleaned_data.get('network')
                 api_key = form.cleaned_data.get('api_key')
@@ -198,11 +214,13 @@ def verify_and_show(request):
                     return redirect(reverse('service:verify_and_show'))
                 finally:
                     hive.close()
+        else:
+            return redirect(reverse('service:verify_and_show'))
     else:
         request.session['verify_and_show_submit'] = False
         form = VerifyAndShowForm(
             initial={'api_key': request.session['api_key'], 'private_key': request.session['private_key_mainchain'],
-                     'public_key': request.session['public_key_mainchain']})
+                     'public_key': request.session['public_key_mainchain']}, did=did)
         return render(request, 'service/verify_and_show.html',
                       {'output': False, 'form': form, 'sample_code': sample_code, 'recent_services': recent_services})
 
@@ -281,6 +299,8 @@ def create_wallet(request):
                     return redirect(reverse('service:create_wallet'))
                 finally:
                     wallet.close()
+        else:
+            return redirect(reverse('service:create_wallet'))
     else:
         request.session['create_wallet_submit'] = False
         form = CreateWalletForm(initial={'api_key': request.session['api_key']})
@@ -509,6 +529,8 @@ def deploy_eth_contract(request):
                     return redirect(reverse('service:deploy_eth_contract'))
                 finally:
                     sidechain_eth.close()
+        else:
+            return redirect(reverse('service:deploy_eth_contract'))
     else:
         request.session['deploy_eth_contract_submit'] = False
         form = DeployETHContractForm(initial={'did': did, 'api_key': request.session['api_key'],
@@ -564,6 +586,8 @@ def watch_eth_contract(request):
                     return redirect(reverse('service:watch_eth_contract'))
                 finally:
                     sidechain_eth.close()
+        else:
+            return redirect(reverse('service:watch_eth_contract'))
     else:
         request.session['watch_eth_contract_submit'] = False
         form = WatchETHContractForm(initial={'api_key': request.session['api_key']})

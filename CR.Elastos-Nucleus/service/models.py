@@ -14,6 +14,10 @@ class UploadFile(models.Model):
         os.remove(os.path.join(settings.MEDIA_ROOT, self.uploaded_file.name))
         super(UploadFile, self).delete(*args, **kwargs)
 
+    def filename(self):
+        name_list = self.uploaded_file.name.split('/')
+        return name_list[-1]
+
 
 class UserServiceSessionVars(models.Model):
     did = models.CharField(max_length=64)
@@ -31,3 +35,16 @@ class UserServiceSessionVars(models.Model):
 
     address_eth = models.CharField(max_length=64)
     private_key_eth = models.CharField(max_length=300)
+
+
+class SavedFileInformation(models.Model):
+    did = models.CharField(max_length= 64 ,  null=False)
+    file_name = models.CharField(max_length=300 , null=True)
+    message_hash = models.CharField(max_length=300, null=False)
+    signature = models.CharField(max_length=300 , null=False)
+    file_hash = models.CharField(max_length=300 , null=False)
+
+    def __str__(self):
+        return self.file_name
+
+

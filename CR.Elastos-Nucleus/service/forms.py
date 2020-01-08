@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import HiddenInput
 
-from .models import UploadFile
+from .models import UploadFile , SavedFileInformation
 from .choices import *
 
 
@@ -42,6 +42,7 @@ class UploadAndSignForm(forms.ModelForm):
 class VerifyAndShowForm(forms.Form):
     network = forms.ChoiceField(
         choices=NETWORK_GMU, label="", initial='', widget=forms.Select(), required=True)
+    Files = forms.ModelChoiceField(queryset=None)
     message_hash = forms.CharField(
         max_length=300, widget=forms.Textarea, help_text="Enter the Message Hash from DID")
     public_key = forms.CharField(
@@ -56,6 +57,7 @@ class VerifyAndShowForm(forms.Form):
         max_length=64, widget=forms.Textarea, help_text="Enter your API Key")
 
     def __init__(self, *args, **kwargs):
+        did = kwargs.pop('did' , None)
         super(VerifyAndShowForm, self).__init__(*args, **kwargs)
         self.label_suffix = ""
         self.fields['message_hash'].widget.attrs['rows'] = 1
@@ -75,6 +77,8 @@ class VerifyAndShowForm(forms.Form):
 
         self.fields['api_key'].widget.attrs['rows'] = 1
         self.fields['api_key'].widget.attrs['cols'] = 80
+
+        self.fields['Files'] = forms.ModelChoiceField(queryset=SavedFileInformation.objects.filter(did = did))
 
 
 class CreateWalletForm(forms.Form):
@@ -183,3 +187,5 @@ class WatchETHContractForm(forms.Form):
 
         self.fields['contract_code_hash'].widget.attrs['rows'] = 1
         self.fields['contract_code_hash'].widget.attrs['cols'] = 100
+
+

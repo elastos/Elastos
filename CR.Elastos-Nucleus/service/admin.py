@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import UploadFile, UserServiceSessionVars
+from .models import UploadFile, UserServiceSessionVars , SavedFileInformation
 
 
 class UploadFileAdmin(admin.ModelAdmin):
@@ -17,4 +17,14 @@ class UserServiceSessionVarsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UserServiceSessionVars, UserServiceSessionVarsAdmin)
+
+class SavedFileInformationAdmin(admin.ModelAdmin):
+    model = SavedFileInformation
+    list_display = ('did', 'file_name' , 'message_hash' , 'signature' , 'file_hash')
+
+
+admin.site.register( SavedFileInformation , SavedFileInformationAdmin)
+
+
+
 
