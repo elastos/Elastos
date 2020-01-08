@@ -39,57 +39,54 @@ def generate_key(request):
     with open(os.path.join(module_dir, 'sample_code/go/generate_key.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     if request.method == 'POST':
-        if not request.session['generate_key_submit']:
-            form = GenerateAPIKeyForm(request.POST, initial={'did': did})
-            if form.is_valid():
-                try:
-                    common = Common()
-                    error_message = None
-                    output = {}
-                    if 'submit_get_api_key' in request.POST:
-                        response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did)
-                        if response.status:
-                            api_key = response.api_key
-                            obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
-                                                                                           defaults={'did': did,
-                                                                                                     'api_key': api_key})
-                            obj.save()
-                            populate_session_vars_from_database(request, did)
-                            output['get_api_key'] = True
-                        else:
-                            error_message = response.status_message
-                    elif 'submit_generate_api_key' in request.POST:
-                        response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did)
-                        if response.status:
-                            api_key = response.api_key
-                            obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
-                                                                                           defaults={'did': did,
-                                                                                                     'api_key': api_key})
-                            obj.save()
-                            populate_session_vars_from_database(request, did)
-                            output['generate_api_key'] = True
-                        else:
-                            error_message = response.status_message
+        form = GenerateAPIKeyForm(request.POST, initial={'did': did})
+        if form.is_valid():
+            try:
+                common = Common()
+                error_message = None
+                output = {}
+                if 'submit_get_api_key' in request.POST:
+                    response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did)
+                    if response.status:
+                        api_key = response.api_key
+                        obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
+                                                                                       defaults={'did': did,
+                                                                                                 'api_key': api_key})
+                        obj.save()
+                        populate_session_vars_from_database(request, did)
+                        output['get_api_key'] = True
                     else:
-                        error_message = "Invalid form submission. Please refresh the page and try generating a new API " \
-                                        "key again "
-                    if error_message:
-                        messages.success(request, error_message)
-                        return redirect(reverse('service:generate_key'))
+                        error_message = response.status_message
+                elif 'submit_generate_api_key' in request.POST:
+                    response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did)
+                    if response.status:
+                        api_key = response.api_key
+                        obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
+                                                                                       defaults={'did': did,
+                                                                                                 'api_key': api_key})
+                        obj.save()
+                        populate_session_vars_from_database(request, did)
+                        output['generate_api_key'] = True
                     else:
-                        request.session['generate_key_submit'] = True
-                        request.session['api_key'] = api_key
-                        return render(request, "service/generate_key.html",
-                                      {'output': output, 'api_key': api_key, 'sample_code': sample_code,
-                                       'recent_services': recent_services})
-                except Exception as e:
-                    logging.debug(f"did: {did} Method: generate_key Error: {e}")
-                    messages.success(request, "Could not generate an API key. Please try again")
+                        error_message = response.status_message
+                else:
+                    error_message = "Invalid form submission. Please refresh the page and try generating a new API " \
+                                    "key again "
+                if error_message:
+                    messages.success(request, error_message)
                     return redirect(reverse('service:generate_key'))
-                finally:
-                    common.close()
+                else:
+                    request.session['api_key'] = api_key
+                    return render(request, "service/generate_key.html",
+                                  {'output': output, 'api_key': api_key, 'sample_code': sample_code,
+                                   'recent_services': recent_services})
+            except Exception as e:
+                logging.debug(f"did: {did} Method: generate_key Error: {e}")
+                messages.success(request, "Could not generate an API key. Please try again")
+                return redirect(reverse('service:generate_key'))
+            finally:
+                common.close()
     else:
-        request.session['generate_key_submit'] = False
         form = GenerateAPIKeyForm(initial={'did': did})
         return render(request, "service/generate_key.html",
                       {'form': form, 'sample_code': sample_code, 'recent_services': recent_services})
@@ -258,12 +255,14 @@ def create_wallet(request):
                                                                                                  'public_key_did':
                                                                                                      wallet_did[
                                                                                                          'public_key'],
-                                                                                                 'address_did': wallet_did[
-                                                                                                     'address'],
+                                                                                                 'address_did':
+                                                                                                     wallet_did[
+                                                                                                         'address'],
                                                                                                  'did_did': wallet_did[
                                                                                                      'did'],
-                                                                                                 'address_eth': wallet_eth[
-                                                                                                     'address'],
+                                                                                                 'address_eth':
+                                                                                                     wallet_eth[
+                                                                                                         'address'],
                                                                                                  'private_key_eth':
                                                                                                      wallet_eth[
                                                                                                          'private_key']})
@@ -498,7 +497,8 @@ def deploy_eth_contract(request):
                         contract_code_hash = data['result']['contract_code_hash']
                         return render(request, "service/deploy_eth_contract.html",
                                       {"contract_address": contract_address, "contract_name": contract_name,
-                                       "contract_code_hash": contract_code_hash, 'output': True, 'sample_code': sample_code,
+                                       "contract_code_hash": contract_code_hash, 'output': True,
+                                       'sample_code': sample_code,
                                        'recent_services': recent_services})
                     else:
                         messages.success(request, response.status_message)
@@ -550,7 +550,8 @@ def watch_eth_contract(request):
                         contract_functions = data['result']['contract_functions']
                         contract_source = data['result']['contract_source']
                         return render(request, "service/watch_eth_contract.html",
-                                      {'output': True, 'contract_address': contract_address, 'contract_name': contract_name,
+                                      {'output': True, 'contract_address': contract_address,
+                                       'contract_name': contract_name,
                                        'contract_functions': contract_functions, 'contract_source': contract_source,
                                        'sample_code': sample_code,
                                        'recent_services': recent_services})
