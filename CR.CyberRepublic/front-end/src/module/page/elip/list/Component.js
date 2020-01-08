@@ -292,11 +292,18 @@ export default class extends BaseComponent {
                           {I18N.get(`elip.status.${value}`)}
                         </Select.Option>
                       ))
-                    : _.map([ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED_AS_PROPOSAL], value => (
-                        <Select.Option key={value} value={value}>
-                          {I18N.get(`elip.status.${value}`)}
-                        </Select.Option>
-                      ))}
+                    : _.map(
+                        [
+                          ELIP_STATUS.DRAFT,
+                          ELIP_STATUS.CANCELLED,
+                          ELIP_STATUS.SUBMITTED_AS_PROPOSAL
+                        ],
+                        value => (
+                          <Select.Option key={value} value={value}>
+                            {I18N.get(`elip.status.${value}`)}
+                          </Select.Option>
+                        )
+                      )}
                 </Select>
               </FilterItem>
             </FilterContent>

@@ -325,7 +325,11 @@ export default class extends Base {
       status.PERSONAL_DRAFT,
       status.FINAL_REVIEW
     ]
-    const publicStatus = [status.DRAFT, status.SUBMITTED_AS_PROPOSAL]
+    const publicStatus = [
+      status.DRAFT,
+      status.SUBMITTED_AS_PROPOSAL,
+      status.CANCELLED
+    ]
 
     if (!this.isLoggedIn()) {
       // guest
