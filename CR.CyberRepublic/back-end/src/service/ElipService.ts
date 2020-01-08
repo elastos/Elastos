@@ -40,16 +40,17 @@ export default class extends Base {
       if (
         [
           elipStatus.WAIT_FOR_REVIEW,
+          elipStatus.FINAL_REVIEW,
           elipStatus.SUBMITTED_AS_PROPOSAL
         ].includes(elip.status)
       ) {
         throw `ElipService.update - can not update a ${status} elip`
       }
       if (
-        status === elipStatus.SUBMITTED_AS_PROPOSAL &&
+        status === elipStatus.FINAL_REVIEW &&
         elip.status !== elipStatus.DRAFT
       ) {
-        throw `ElipService.update - can not change elip status to submitted`
+        throw `ElipService.update - can not change elip status to final review`
       }
 
       const fields = [...BASE_FIELDS, 'elipType']
@@ -67,7 +68,7 @@ export default class extends Base {
       }
       
       if (
-        status === elipStatus.SUBMITTED_AS_PROPOSAL &&
+        status === elipStatus.FINAL_REVIEW &&
         elip.status === elipStatus.DRAFT
       ) {
         doc.status = elipStatus.FINAL_REVIEW
@@ -383,7 +384,8 @@ export default class extends Base {
     const privateStatus = [
       status.REJECTED,
       status.WAIT_FOR_REVIEW,
-      status.PERSONAL_DRAFT
+      status.PERSONAL_DRAFT,
+      status.FINAL_REVIEW
     ]
     const publicStatus = [status.DRAFT, status.SUBMITTED_AS_PROPOSAL]
 

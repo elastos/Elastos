@@ -88,8 +88,8 @@ class C extends StandardPage {
 
   submittedAsProposal = async () => {
     try {
-      const { submitAsPropose, data } = this.props
-      await submitAsPropose({ id: data._id })
+      const { updateStatus, data } = this.props
+      await updateStatus({ _id: data._id, status: ELIP_STATUS.FINAL_REVIEW })
       message.info(I18N.get('elip.msg.marked'))
       this.refetch()
     } catch (error) {

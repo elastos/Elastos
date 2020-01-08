@@ -35,9 +35,6 @@ const mapDispatch = () => {
     },
     async deleteData(param) {
       return service.deleteData(param)
-    },
-    async submitAsPropose(param) {
-      return service.submitAsPropose(param)
     }
   }
 }

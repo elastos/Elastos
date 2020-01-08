@@ -343,7 +343,7 @@ class C extends BaseComponent {
           <Col>
             <Button
               onClick={e => {
-                this.handleSubmit(e, ELIP_STATUS.SUBMITTED_AS_PROPOSAL)
+                this.handleSubmit(e, ELIP_STATUS.FINAL_REVIEW)
               }}
               className="cr-btn cr-btn-primary"
               htmlType="button"
