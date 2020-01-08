@@ -250,7 +250,7 @@ func (p *ProposalManager) isProposalFull(did common.Uint168) bool {
 }
 
 func (p *ProposalManager) getProposalCount(did common.Uint168) int {
-	proposalHashsSet, ok := p.ProposalHashs[did]
+	proposalHashsSet, ok := p.ProposalHashes[did]
 	if !ok {
 		return 0
 	}
@@ -259,21 +259,25 @@ func (p *ProposalManager) getProposalCount(did common.Uint168) int {
 
 func (p *ProposalManager) addProposal(did common.Uint168,
 	proposalHash common.Uint256) {
-	proposalHashsSet, ok := p.ProposalHashs[did]
+	proposalHashesSet, ok := p.ProposalHashes[did]
 	if !ok {
-		proposalHashsSet = NewProposalHashSet()
-		proposalHashsSet.Add(proposalHash)
-		p.ProposalHashs[did] = proposalHashsSet
+		proposalHashesSet = NewProposalHashSet()
+		proposalHashesSet.Add(proposalHash)
+		p.ProposalHashes[did] = proposalHashesSet
 		return
 	}
-	proposalHashsSet.Add(proposalHash)
+	proposalHashesSet.Add(proposalHash)
 }
 
 func (p *ProposalManager) delProposal(did common.Uint168,
 	proposalHash common.Uint256) {
-	proposalHashsSet, ok := p.ProposalHashs[did]
+	proposalHashesSet, ok := p.ProposalHashes[did]
 	if ok {
-		proposalHashsSet.Remove(proposalHash)
+		if len(proposalHashesSet) == 1 {
+			delete(p.ProposalHashes, did)
+			return
+		}
+		proposalHashesSet.Remove(proposalHash)
 	}
 }
 
