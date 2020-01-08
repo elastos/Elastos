@@ -257,19 +257,20 @@ export default class extends Base {
 
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
+    
     const status = constant.ELIP_STATUS
     const publicStatus = [
       status.DRAFT,
       status.SUBMITTED_AS_PROPOSAL,
       status.CANCELLED
     ]
+    const superRoles = [constant.USER_ROLE.SECRETARY, constant.USER_ROLE.ADMIN]
     const isVisible = rs.createdBy._id.equals(currentUserId) ||
-      userRole === constant.USER_ROLE.SECRETARY ||
-      userRole === constant.USER_ROLE.ADMIN ||
+      (superRoles.includes(userRole) && rs.status !== status.PERSONAL_DRAFT) ||
       publicStatus.includes(rs.status)
 
-    if (_.isEmpty(rs.comments)) {
-      return isVisible ? { elip: rs, reviews } : { elip: { success: true, empty: true } }
+    if (!isVisible) {
+      return { elip: { success: true, empty: true } }
     }
 
     for (const comment of rs.comments) {
@@ -285,7 +286,7 @@ export default class extends Base {
       await Promise.all(promises)
     }
 
-    return isVisible ? { elip: rs, reviews } : { elip: { success: true, empty: true } }
+    return { elip: rs, reviews }
   }
 
   public async remove(_id : string): Promise<any> {
