@@ -2503,7 +2503,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	for i := 0; i < int(s.Chain.chainParams.MaxCommitteeProposalCount); i++ {
 		proposalHashSet.Add(*randomUint256())
 	}
-	s.Chain.crCommittee.GetProposalManager().ProposalHashs[crcProposal.
+	s.Chain.crCommittee.GetProposalManager().ProposalHashes[crcProposal.
 		CRSponsorDID] = proposalHashSet
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "proposal is full")
