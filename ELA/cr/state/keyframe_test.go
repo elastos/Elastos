@@ -453,7 +453,7 @@ func createBudgets(n int) []payload.Budget {
 		if i == 0 {
 			budgetType = payload.Imprest
 		}
-		if i == len(budgets)-1 {
+		if i == n-1 {
 			budgetType = payload.FinalPayment
 		}
 		budget := &payload.Budget{

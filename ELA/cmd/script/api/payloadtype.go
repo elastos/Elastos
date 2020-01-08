@@ -962,7 +962,7 @@ func newCRCProposal(L *lua.LState) int {
 		if int(index) == 0 {
 			budgetType = payload.Imprest
 		}
-		if int(index) == len(budgets)-1 {
+		if int(index) == budgetsTable.Len()-1 {
 			budgetType = payload.FinalPayment
 		}
 		budget := &payload.Budget{

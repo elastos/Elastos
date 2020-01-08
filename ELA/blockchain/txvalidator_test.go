@@ -1658,11 +1658,6 @@ func createBudgets(n int) []payload.Budget {
 		}
 		budgets = append(budgets, *budget)
 	}
-	fmt.Println("------")
-	for i, b := range budgets {
-		fmt.Println("###: ", i, b.Type)
-	}
-	fmt.Println("------")
 	return budgets
 }
 
@@ -1717,7 +1712,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "stage need to be zero")
+	s.EqualError(err, "stage should assignment zero value")
 
 	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
@@ -1749,7 +1744,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "stage need to be zero")
+	s.EqualError(err, "stage should assignment zero value")
 
 	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
@@ -1768,7 +1763,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "stage need to be zero")
+	s.EqualError(err, "stage should assignment zero value")
 
 	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, "", "",
