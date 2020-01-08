@@ -319,6 +319,10 @@ export default class extends Base {
     const query: any = {}
 
     const status = constant.ELIP_STATUS
+    if (param.filter && !_.values(status).includes(param.filter)) {
+      return []
+    }
+    
     const privateStatus = [
       status.REJECTED,
       status.WAIT_FOR_REVIEW,
@@ -333,36 +337,41 @@ export default class extends Base {
 
     if (!this.isLoggedIn()) {
       // guest
-      if (param.filter && publicStatus.includes(param.filter)) {
-        query.status = param.filter
-      } else {
+      if (!param.filter) {
         query.status = { $in: publicStatus }
+      } else {
+        if (publicStatus.includes(param.filter)) {
+          query.status = param.filter
+        } else {
+          return []
+        }
       }
     } else {
       // secretary and admin
       const role = constant.USER_ROLE
       if ([role.SECRETARY, role.ADMIN].includes(userRole)) {
-        const specialStatus = _.values(status).filter(
-          item => item === status.PERSONAL_DRAFT
-        )
-        if (!param.filter || param.filter === 'ALL') {
+        if (!param.filter) {
           query.$or = [
             {
               createdBy: currentUserId,
               status: { $in: status.PERSONAL_DRAFT }
             },
-            { status: { $in: specialStatus} }
+            {
+              status: {
+                $in: _.values(status).filter(
+                  item => item === status.PERSONAL_DRAFT
+                )
+              }
+            }
           ]
-        }
-        if (param.filter && param.filter === status.PERSONAL_DRAFT) {
-          query.createdBy = currentUserId
-          query.status = param.filter
-        }
-        if (param.filter && specialStatus.includes(param.filter)) {
+        } else {
+          if (param.filter === status.PERSONAL_DRAFT) {
+            query.createdBy = currentUserId
+          }
           query.status = param.filter
         }
       } else {
-        if (!param.filter || param.filter === 'ALL') {
+        if (!param.filter) {
           query.$or = [
             {
               createdBy: currentUserId,
@@ -370,12 +379,10 @@ export default class extends Base {
             },
             { status: { $in: publicStatus } }
           ]
-        }
-        if (privateStatus.includes(param.filter)) {
-          query.createdBy = currentUserId
-          query.status = param.filter
-        }
-        if (publicStatus.includes(param.filter)) {
+        } else {
+          if (privateStatus.includes(param.filter)) {
+            query.createdBy = currentUserId
+          }
           query.status = param.filter
         }
       }
