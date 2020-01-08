@@ -1462,13 +1462,15 @@ type producersInfo struct {
 
 //single cr candidate info
 type crCandidateInfo struct {
-	Code     string `json:"code"`
-	DID      string `json:"did"`
-	NickName string `json:"nickname"`
-	Url      string `json:"url"`
-	Location uint64 `json:"location"`
-	State    string `json:"state"`
-	Votes    string `json:"votes"`
+	Code           string `json:"code"`
+	DID            string `json:"did"`
+	NickName       string `json:"nickname"`
+	Url            string `json:"url"`
+	Location       uint64 `json:"location"`
+	State          string `json:"state"`
+	Votes          string `json:"votes"`
+	RegisterHeight uint32 `json:"registerheight"`
+	CancelHeight   uint32 `json:"cancelheight"`
 
 	Index uint64 `json:"index"`
 }
@@ -1627,14 +1629,16 @@ func ListCRCandidates(param Params) map[string]interface{} {
 		totalVotes += c.Votes()
 		didAddress, _ := c.Info().DID.ToAddress()
 		candidateInfo := crCandidateInfo{
-			Code:     hex.EncodeToString(c.Info().Code),
-			DID:      didAddress,
-			NickName: c.Info().NickName,
-			Url:      c.Info().Url,
-			Location: c.Info().Location,
-			State:    c.State().String(),
-			Votes:    c.Votes().String(),
-			Index:    uint64(i),
+			Code:           hex.EncodeToString(c.Info().Code),
+			DID:            didAddress,
+			NickName:       c.Info().NickName,
+			Url:            c.Info().Url,
+			Location:       c.Info().Location,
+			State:          c.State().String(),
+			Votes:          c.Votes().String(),
+			RegisterHeight: c.RegisterHeight(),
+			CancelHeight:   c.CancelHeight(),
+			Index:          uint64(i),
 		}
 		candidateInfoSlice = append(candidateInfoSlice, candidateInfo)
 	}
