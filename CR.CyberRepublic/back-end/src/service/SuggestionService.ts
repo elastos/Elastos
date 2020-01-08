@@ -1,5 +1,6 @@
 import Base from './Base'
 import * as _ from 'lodash'
+import {Document, Types} from 'mongoose'
 import { constant } from '../constant'
 import {
   validate,
@@ -9,6 +10,7 @@ import {
   logger
 } from '../utility'
 
+const ObjectId = Types.ObjectId
 const BASE_FIELDS = [
   'title',
   'type',
@@ -129,7 +131,7 @@ export default class extends Base {
       const currDraft = await this.draftModel.getDBInstance().findById(id)
       
       await Promise.all([
-        this.draftModel.findAndRemove({ _id: id }),
+        this.draftModel.remove({ _id: ObjectId(id) }),
         this.draftModel.save(currDoc),
         this.getDBModel('Suggestion_Edit_History').save({
           ...currDoc,
@@ -137,7 +139,7 @@ export default class extends Base {
         })
       ])
     } else {
-      await this.draftModel.findAndRemove({ _id: id })
+      await this.draftModel.remove({ _id: ObjectId(id) })
       await this.draftModel.save(currDoc)
     }
     return this.show({ id })
@@ -164,7 +166,7 @@ export default class extends Base {
     doc.descUpdatedAt = new Date()
     if (update) {
       await Promise.all([
-        this.draftModel.findAndRemove({ _id: id }),
+        this.draftModel.remove({ _id: ObjectId(id) }),
         this.model.update({ _id: id }, { $set: doc }),
         this.getDBModel('Suggestion_Edit_History').save({
           ...doc,
@@ -172,7 +174,7 @@ export default class extends Base {
         })
       ])
     } else {
-      await this.draftModel.findAndRemove({ _id: id })
+      await this.draftModel.remove({ _id: ObjectId(id) })
       await this.model.update({ _id: id }, { $set: doc })
     }
     return this.show({ id })
