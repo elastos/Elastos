@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package pact
 
@@ -33,7 +33,7 @@ var (
 	MaxBlockContextSize uint32 = 8000000
 
 	// MaxBlockHeaderSize is the maximum number of bytes allowed per block header.
-	MaxBlockHeaderSize uint32 = 1000
+	MaxBlockHeaderSize uint32 = 1000000
 
 	// MaxTxPerBlock is the maximux number of transactions allowed per block.
 	MaxTxPerBlock uint32 = 10000

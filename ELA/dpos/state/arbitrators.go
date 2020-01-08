@@ -263,15 +263,15 @@ func (a *arbitrators) ForceChange(height uint32) error {
 	}
 	a.snapshot(height)
 
-	if err := a.clearingDPOSReward(block, false); err != nil {
+	if err := a.clearingDPOSReward(block, height+1, false); err != nil {
 		return err
 	}
 
-	if err := a.updateNextArbitrators(height+1, height); err != nil {
+	if err := a.updateNextArbitrators(height+1, height+1); err != nil {
 		return err
 	}
 
-	if err := a.changeCurrentArbitrators(height); err != nil {
+	if err := a.changeCurrentArbitrators(height + 1); err != nil {
 		return err
 	}
 
@@ -279,9 +279,13 @@ func (a *arbitrators) ForceChange(height uint32) error {
 		go events.Notify(events.ETDirectPeersChanged,
 			a.getNeedConnectArbiters())
 	}
-
-	a.forceChanged = true
-
+	oriForceChanged := a.forceChanged
+	a.history.Append(height+1, func() {
+		a.forceChanged = true
+	}, func() {
+		a.forceChanged = oriForceChanged
+	})
+	a.history.Commit(height + 1)
 	a.dumpInfo(height)
 	return nil
 }
@@ -320,10 +324,11 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	switch changeType {
 	case updateNext:
 		if err := a.updateNextArbitrators(versionHeight, block.Height); err != nil {
-			panic(fmt.Sprintf("[IncreaseChainHeight] update next arbiters at height: %d, error: %s", block.Height, err))
+			panic(fmt.Sprintf("[IncreaseChainHeight] update next arbiters" +
+				" at height: %d, error: %s", block.Height, err))
 		}
 	case normalChange:
-		if err := a.clearingDPOSReward(block, true); err != nil {
+		if err := a.clearingDPOSReward(block, block.Height, true); err != nil {
 			panic(fmt.Sprintf("normal change fail when clear DPOS reward: "+
 				" transaction, height: %d, error: %s", block.Height, err))
 		}
@@ -394,7 +399,7 @@ func (a *arbitrators) accumulateReward(block *types.Block) {
 
 }
 
-func (a *arbitrators) clearingDPOSReward(block *types.Block,
+func (a *arbitrators) clearingDPOSReward(block *types.Block, historyHeight uint32,
 	smoothClearing bool) (err error) {
 	if block.Height < a.chainParams.PublicDPOSHeight ||
 		block.Height == a.clearingHeight {
@@ -419,7 +424,7 @@ func (a *arbitrators) clearingDPOSReward(block *types.Block,
 	oriAccumulativeReward := a.accumulativeReward
 	oriClearingHeight := a.clearingHeight
 	oriChange := a.finalRoundChange
-	a.history.Append(block.Height, func() {
+	a.history.Append(historyHeight, func() {
 		a.arbitersRoundReward = roundReward
 		a.accumulativeReward = dposReward
 		a.clearingHeight = block.Height

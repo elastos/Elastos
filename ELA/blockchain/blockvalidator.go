@@ -74,7 +74,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 
 	// A block must not exceed the maximum allowed block payload when serialized.
 	blockSize := block.GetSize()
-	if blockSize > int(pact.MaxBlockContextSize+pact.MaxBlockHeaderSize) {
+	if blockSize > int(pact.MaxBlockContextSize + pact.MaxBlockHeaderSize) {
 		return errors.New("[PowCheckBlockSanity] serialized block is too big")
 	}
 
