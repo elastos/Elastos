@@ -87,6 +87,7 @@ func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 		len(first.Votes) != len(second.Votes) {
 		return false
 	}
+
 	return candidatesMapEqual(first.Candidates, second.Candidates) &&
 		candidatesHistoryMapEqual(first.HistoryCandidates, second.HistoryCandidates) &&
 		depositHashDIDMapEqual(first.DepositHashDIDMap, second.DepositHashDIDMap) &&
