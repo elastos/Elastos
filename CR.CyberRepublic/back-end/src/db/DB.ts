@@ -9,6 +9,7 @@ import User_Community from './User_Community'
 import Task_Candidate from './Task_Candidate'
 import Submission from './Submission'
 import Suggestion from './Suggestion'
+import SuggestionDraft from './SuggestionDraft'
 import CVote from './CVote'
 import CVote_Tracking from './CVote_Tracking'
 import CVote_Summary from './CVote_Summary'
@@ -102,6 +103,7 @@ export default class {
     this.db.Log = new Log(db)
     this.db.Submission = new Submission(db)
     this.db.Suggestion = new Suggestion(db)
+    this.db.SuggestionDraft = new SuggestionDraft(db)
     this.db.CVote = new CVote(db)
     this.db.CVote_Tracking = new CVote_Tracking(db)
     this.db.CVote_Summary = new CVote_Summary(db)

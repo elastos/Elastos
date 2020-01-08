@@ -57,7 +57,8 @@ export default {
       saveDraft: 'Save as Draft',
       save: 'Save & Post',
       update: 'Update',
-      create: 'Create'
+      create: 'Create',
+      discardChanges: 'Discard changes'
     },
     fields: {
       title: 'Title'

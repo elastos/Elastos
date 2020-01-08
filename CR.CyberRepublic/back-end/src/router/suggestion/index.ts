@@ -1,9 +1,11 @@
 import Base from '../Base'
 import create from './create'
 import update from './update'
+import saveDraft from './saveDraft'
 import list from './list'
 import export2csv from './export2csv'
 import show from './show'
+import showDraft from './showDraft'
 import addTag from './addTag'
 import like from './like'
 import dislike from './dislike'
@@ -42,8 +44,18 @@ export default Base.setRouter([
     method: 'get',
   },
   {
+    path: '/:id/showDraft',
+    router: showDraft,
+    method: 'get',
+  },
+  {
     path: '/:id/update',
     router: update,
+    method: 'put',
+  },
+  {
+    path: '/:id/saveDraft',
+    router: saveDraft,
     method: 'put',
   },
   {

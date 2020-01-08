@@ -57,7 +57,8 @@ export default {
       saveDraft: '保存草稿',
       save: '保存并发布',
       update: '更新',
-      create: '创建'
+      create: '创建',
+      discardChanges: '放弃修改'
     },
     fields: {
       title: '标题'

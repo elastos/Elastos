@@ -25,11 +25,19 @@ export default class extends StandardPage {
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     super.componentDidMount()
-    this.props.getDetail(_.get(this.props, 'match.params.id'))
-      .then(data => this.setState({ data, loading: false }))
-      .catch(err => this.setState({ error: err, loading: false }))
+    const { getDetail, getDraft } = this.props
+    const id = _.get(this.props, 'match.params.id')
+    const detail = await getDetail(id)
+    const draft = await getDraft(id)
+    let data
+    if (draft && draft.empty) {
+      data = detail
+    } else {
+      data = draft
+    }
+    this.setState({data, loading: false})
   }
 
   historyBack = () => {
@@ -43,10 +51,13 @@ export default class extends StandardPage {
       .then(() => this.historyBack())
       .catch(err => this.setState({ error: err }))
   }
-  onSaveDraft = (model) => {
+
+  onSaveDraft = async (model) => {
     const id = this.state.data._id
-    this.props.updateSuggestion({ id, ...model })
-      .catch(err => console.log(err))
+    const rs = await this.props.saveDraft({ id, ...model })
+    if (rs) {
+      this.historyBack()
+    }
   }
 
   ord_renderContent() {
@@ -83,6 +94,7 @@ export default class extends StandardPage {
               {I18N.get('suggestion.title.edit')}
             </h2>
             <SuggestionForm
+              isEditMode={true}
               lang={this.props.lang}
               initialValues={this.state.data}
               onSubmit={this.onSubmit}

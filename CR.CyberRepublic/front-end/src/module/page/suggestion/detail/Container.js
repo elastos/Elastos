@@ -71,6 +71,9 @@ export default createContainer(Component, (state) => {
     },
     async needAdvisory(id) {
       return service.needAdvisory(id)
+    },
+    async getDraft(id) {
+      return service.getDraft(id)
     }
   }
 })

@@ -66,9 +66,9 @@ class C extends BaseComponent {
     return key
   }
 
-  handleSubmit = e => {
+  handleSave = (e, callback) => {
     e.preventDefault()
-    const { onSubmit, form } = this.props
+    const { form } = this.props
     this.setState({ loading: true })
     form.validateFields(async (err, values) => {
       if (err) {
@@ -86,14 +86,24 @@ class C extends BaseComponent {
         values.budgetAmount = Number(budget.budgetAmount)
         values.elaAddress = budget.elaAddress
       }
-      await onSubmit(values)
+      await callback(values)
       this.setState({ loading: false })
     })
   }
 
+  handleSubmit = e => {
+    const { onSubmit } = this.props
+    this.handleSave(e, onSubmit)
+  }
+
+  handleEditSaveDraft = e => {
+    const { onSaveDraft } = this.props
+    this.handleSave(e, onSaveDraft)
+  }
+
   handleSaveDraft = () => {
-    const { form } = this.props
-    if (this.props.onSaveDraft) {
+    const { isEditMode, form } = this.props
+    if (!isEditMode && this.props.onSaveDraft) {
       const values = form.getFieldsValue()
       const budget = form.getFieldValue('budget')
       if (budget) {
@@ -297,6 +307,28 @@ class C extends BaseComponent {
   }
 
   ord_render() {
+    const { isEditMode } = this.props
+    const saveDraftBtn = isEditMode && (
+      <Button
+        onClick={this.handleEditSaveDraft}
+        className="cr-btn cr-btn-default"
+        htmlType="button"
+        style={{ marginRight: 10 }}
+      >
+        {I18N.get('suggestion.form.button.saveDraft')}
+      </Button>
+    )
+    const cancelText = isEditMode ? I18N.get('suggestion.form.button.discardChanges') : I18N.get('suggestion.form.button.cancel')
+    const cancelBtn = (
+      <Button
+        onClick={this.props.onCancel}
+        className="cr-btn cr-btn-default"
+        htmlType="button"
+        style={{ marginRight: 10 }}
+      >
+        {cancelText}
+      </Button>
+    )
     return (
       <Container>
         <Form onSubmit={this.handleSubmit}>
@@ -342,14 +374,8 @@ class C extends BaseComponent {
           </Row>
 
           <Row gutter={8} type="flex" justify="center">
-            <Button
-              onClick={this.props.onCancel}
-              className="cr-btn cr-btn-default"
-              htmlType="button"
-              style={{ marginRight: 10 }}
-            >
-              {I18N.get('suggestion.form.button.cancel')}
-            </Button>
+            {cancelBtn}
+            {saveDraftBtn}
             <Button
               loading={this.state.loading}
               className="cr-btn cr-btn-primary"
