@@ -76,11 +76,6 @@ func TestTxPoolInit(t *testing.T) {
 		t.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
 	}
-	//dposStore, err := store.NewDposStore("Dpos_UnitTest")
-	//if err != nil {
-	//	t.Fatal("open dpos store err:", err)
-	//	os.Exit(1)
-	//}
 
 	arbitratorsPublicKeys := []string{
 		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",
@@ -111,11 +106,6 @@ func TestTxPoolInit(t *testing.T) {
 		Store:       chainStore,
 		Arbitrators: arbitrators,
 	}
-	//store.InitArbitrators(store.ArbitratorsConfig{
-	//	ArbitratorsCount: config.Parameters.DPoSConfiguration.NormalArbitratorsCount,
-	//	CandidatesCount:  config.Parameters.DPoSConfiguration.CandidatesCount,
-	//	Store:            dposStore,
-	//})
 
 	txPool = NewTxPool(&config.DefaultParams)
 }
@@ -141,8 +131,7 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	}
 
 	// 2. Add sidechain Tx to pool
-	txPool.addSidechainTx(txn1)
-	txPool.commitTemp()
+	assert.NoError(t, txPool.AppendTx(txn1))
 
 	// 3. Generate a withdraw transaction with duplicate sidechain Tx which already in the pool
 	txn2 := new(types.Transaction)
@@ -156,10 +145,8 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	}
 
 	// 4. Run verifyDuplicateSidechainTx
-	err := txPool.verifyDuplicateSidechainTx(txn2)
-	if err == nil {
-		t.Error("Should find the duplicate sidechain tx")
-	}
+	assert.Errorf(t, txPool.VerifyTx(txn2),
+		"Should find the duplicate sidechain tx")
 }
 
 func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
@@ -303,27 +290,18 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	utxoCacheDB.PutTransaction(tx1)
 	utxoCacheDB.PutTransaction(tx2)
 
-	txPool.addInputUTXOList(tx3, input1)
-	txPool.addInputUTXOList(tx4, input2)
-	txPool.addInputUTXOList(tx5, input3)
-
 	// 3. Verify CR related tx
-	errCode := txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode == nil)
-	txPool.commitTemp()
+	assert.NoError(t, txPool.VerifyTx(tx3))
+	assert.NoError(t, txPool.AppendTx(tx3))
 
 	// 4. Verify duplicate CR related tx
-	errCode = txPool.verifyCRRelatedTx(tx4)
-	assert.True(t, errCode.Code() == elaerr.ErrTxPoolCRTxDuplicate)
+	assert.Error(t, txPool.VerifyTx(tx4))
 
 	// 5. Verify duplicate producer related tx
-	errCode = txPool.verifyProducerRelatedTx(tx5)
-	assert.True(t, errCode.Code() == elaerr.ErrTxPoolDPoSTxDuplicate)
+	assert.Error(t, txPool.VerifyTx(tx5))
 
 	// 6. Verify duplicate producer related tx
-	errCode = txPool.verifyProducerRelatedTx(tx6)
-	assert.True(t, errCode.Code() == elaerr.ErrTxPoolDPoSTxDuplicate)
-	txPool.clearTemp()
+	assert.Error(t, txPool.VerifyTx(tx6))
 
 	// 7. Clean CR related tx
 	txs := make([]*types.Transaction, 1)
@@ -331,19 +309,14 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	txPool.cleanTransactions(txs)
 
 	// 8. Verify duplicate producer related tx
-	errCode = txPool.verifyProducerRelatedTx(tx5)
-	assert.True(t, errCode == nil)
-	txPool.commitTemp()
+	assert.NoError(t, txPool.VerifyTx(tx5))
+	assert.NoError(t, txPool.AppendTx(tx5))
 
 	// 9. Verify CR related tx
-	errCode = txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode.Code() == elaerr.ErrTxPoolCRTxDuplicate)
-	txPool.clearTemp()
+	assert.Error(t, txPool.VerifyTx(tx3))
 
 	// 10. Verify CR related tx
-	errCode = txPool.verifyCRRelatedTx(tx4)
-	assert.True(t, errCode == nil)
-	txPool.commitTemp()
+	assert.NoError(t, txPool.VerifyTx(tx4))
 
 	// 11. Clean producer related tx
 	txs2 := make([]*types.Transaction, 2)
@@ -352,28 +325,21 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	txPool.cleanTransactions(txs2)
 
 	// 12. Verify CR related tx
-	errCode = txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode == nil)
+	assert.NoError(t, txPool.VerifyTx(tx3))
 
 	// 13. Verify ReturnDepositCoin tx
-	errCode = txPool.verifyProducerRelatedTx(tx7)
-	assert.True(t, errCode == nil)
-	txPool.commitTemp()
+	assert.NoError(t, txPool.VerifyTx(tx7))
+	assert.NoError(t, txPool.AppendTx(tx7))
 
 	// 14. Verify same ReturnDepositCoin tx again
-	errCode = txPool.verifyProducerRelatedTx(tx7)
-	assert.True(t, errCode.Code() == elaerr.ErrTxPoolDPoSTxDuplicate)
-	txPool.clearTemp()
+	assert.Error(t, txPool.VerifyTx(tx7))
 
 	// 15. Verify ReturnCRDepositCoin tx
-	errCode = txPool.verifyCRRelatedTx(tx8)
-	assert.True(t, errCode == nil)
-	txPool.commitTemp()
+	assert.NoError(t, txPool.VerifyTx(tx8))
+	assert.NoError(t, txPool.AppendTx(tx8))
 
 	// 16. Verify same ReturnCRDepositCoin tx again
-	errCode = txPool.verifyCRRelatedTx(tx8)
-	assert.True(t, errCode.Code() == elaerr.ErrTxPoolCRTxDuplicate)
-	txPool.clearTemp()
+	assert.Error(t, txPool.VerifyTx(tx8))
 }
 
 func TestTxPool_CleanSidechainTx(t *testing.T) {
@@ -429,27 +395,24 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 
 	// 2. Add to sidechain txs pool
 	for _, txn := range txns {
-		txPool.addSidechainTx(txn)
-		txPool.commitTemp()
+		assert.NoError(t, txPool.AppendTx(txn))
 	}
 
 	// Verify sidechain tx pool state
 	for _, txn := range txns {
-		err := txPool.verifyDuplicateSidechainTx(txn)
-		if err == nil {
-			t.Error("Should find the duplicate sidechain tx")
-		}
+		assert.Error(t, txPool.VerifyTx(txn),
+			"Should find the duplicate sidechain tx")
 	}
 
 	// 3. Run cleanSidechainTx
-	txPool.cleanSidechainTx(txns)
+	for _, txn := range txns {
+		assert.NoError(t, txPool.RemoveTx(txn))
+	}
 
 	// Verify sidechian tx pool state
 	for _, txn := range txns {
-		err := txPool.verifyDuplicateSidechainTx(txn)
-		if err != nil {
-			t.Error("Should not find the duplicate sidechain tx")
-		}
+		assert.NoError(t, txPool.VerifyTx(txn),
+			"Should not find the duplicate sidechain tx")
 	}
 }
 
@@ -469,11 +432,6 @@ func TestTxPool_ReplaceDuplicateSideChainPowTx(t *testing.T) {
 		BlockHeight:     100,
 	}
 
-	// fixme
-	//_, ok := txPool.txnList[txn1.Hash()]
-	//if !ok {
-	//	t.Error("Add sidechainpow txn1 to txpool failed")
-	//}
 	txPool.txnList[txn1.Hash()] = txn1
 
 	txn2 := new(types.Transaction)
@@ -484,11 +442,6 @@ func TestTxPool_ReplaceDuplicateSideChainPowTx(t *testing.T) {
 		BlockHeight:     100,
 	}
 	txPool.replaceDuplicateSideChainPowTx(txn2)
-	// fixme
-	//_, ok = txPool.txnList[txn2.Hash()]
-	//if !ok {
-	//	t.Error("Add sidechainpow txn2 to txpool failed")
-	//}
 	txPool.txnList[txn2.Hash()] = txn2
 
 	if txn := txPool.GetTransaction(txn1.Hash()); txn != nil {
@@ -519,8 +472,7 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 	}
 
 	// 2. Add sidechain Tx to pool
-	txPool.addSidechainTx(txn1)
-	txPool.commitTemp()
+	assert.NoError(t, txPool.AppendTx(txn1))
 
 	// 3. Run IsDuplicateSidechainTx
 	inPool := txPool.IsDuplicateSidechainTx(sideTx1)
@@ -541,25 +493,40 @@ func TestTxPool_AppendToTxnPool(t *testing.T) {
 	tx.Deserialize(bytes.NewReader(txBytes))
 	errCode := txPool.AppendToTxPool(tx)
 	assert.Equal(t, errCode.Code(), elaerr.ErrBlockIneffectiveCoinbase)
-
 }
 
 func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
+	appendTx := func(tx *types.Transaction) elaerr.ELAError {
+		if err := txPool.AppendTx(tx); err != nil {
+			return err
+		}
+		txPool.txnList[tx.Hash()] = tx
+		return nil
+	}
+
 	txPool = NewTxPool(&config.DefaultParams)
-	var input *types.Input
-	var inputTxID common.Uint256
-	inputTxIDBytes, _ := hex.DecodeString("b07c062090c44682e29832f1993d4a0f47e49a148d8b0e07d739a32670ff3a95")
-	inputTxID.Deserialize(bytes.NewReader(inputTxIDBytes))
-	input = &types.Input{
+	/*------------------------------------------------------------*/
+	/* check double spend but not duplicate txs */
+	//two mock transactions, they are double-spent to each other.
+	tx1Prev := &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: &payload.TransferAsset{},
+		Outputs: []*types.Output{
+			{
+				AssetID:     common.Uint256{1, 1, 1},
+				Value:       1,
+				ProgramHash: common.Uint168{1, 1, 1},
+			},
+		},
+	}
+	input := &types.Input{
 		Previous: types.OutPoint{
-			TxID:  inputTxID,
+			TxID:  tx1Prev.Hash(),
 			Index: 0,
 		},
 		Sequence: 100,
 	}
-	/*------------------------------------------------------------*/
-	/* check double spend but not duplicate txs */
-	//two mock transactions, they are double-spent to each other.
+	utxoCacheDB.PutTransaction(tx1Prev)
 	tx1 := new(types.Transaction)
 	tx1.TxType = types.TransferAsset
 	tx1.PayloadVersion = 0
@@ -617,21 +584,17 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	newBLock.Height = 221
 	newBLock.AuxPow = blockAuxpow
 	newBLock.Transactions = []*types.Transaction{tx2}
-	txPool.addToTxList(tx1)
-	txPool.addInputUTXOList(tx1, input)
+	assert.NoError(t, appendTx(tx1))
 
 	txPool.CleanSubmittedTransactions(&newBLock)
 
-	tx := txPool.txnList[tx1.Hash()]
-	if tx != nil {
-		t.Error("Should delete double spent utxo transaction")
-	}
+	_, exist := txPool.txnList[tx1.Hash()]
+	assert.False(t, exist,
+		"Should delete double spent utxo transaction")
 
 	for _, input := range tx1.Inputs {
-		utxoInput := txPool.inputUTXOList[input.ReferKey()]
-		if utxoInput != nil {
-			t.Error("Should delete double spent utxo transaction")
-		}
+		assert.True(t, txPool.getInputUTXOList(input) == nil,
+			"Should delete double spent utxo transaction")
 	}
 	/*------------------------------------------------------------*/
 	/* check duplicated sidechain hashes */
@@ -655,6 +618,18 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 
 	txPool = NewTxPool(&config.DefaultParams)
 	//two mock transactions again, they have some identical sidechain hashes
+	tx3Prev := &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: &payload.TransferAsset{},
+		Outputs: []*types.Output{
+			{
+				AssetID:     common.Uint256{3, 3, 3},
+				Value:       1,
+				ProgramHash: common.Uint168{3, 3, 3},
+			},
+		},
+	}
+	utxoCacheDB.PutTransaction(tx3Prev)
 	tx3 := new(types.Transaction)
 	tx3.TxType = types.WithdrawFromSideChain
 	tx3.Payload = &payload.WithdrawFromSideChain{
@@ -663,12 +638,24 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	tx3.Inputs = []*types.Input{
 		{
 			Previous: types.OutPoint{
-				TxID:  inputTxID,
+				TxID:  tx3Prev.Hash(),
 				Index: 0,
 			},
 			Sequence: 100,
 		},
 	}
+	tx4Prev := &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: &payload.TransferAsset{},
+		Outputs: []*types.Output{
+			{
+				AssetID:     common.Uint256{4, 4, 4},
+				Value:       1,
+				ProgramHash: common.Uint168{4, 4, 4},
+			},
+		},
+	}
+	utxoCacheDB.PutTransaction(tx4Prev)
 	tx4 := new(types.Transaction)
 	tx4.TxType = types.WithdrawFromSideChain
 	tx4.Payload = &payload.WithdrawFromSideChain{
@@ -677,12 +664,24 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	tx4.Inputs = []*types.Input{
 		{
 			Previous: types.OutPoint{
-				TxID:  inputTxID,
-				Index: 1,
+				TxID:  tx4Prev.Hash(),
+				Index: 0,
 			},
 			Sequence: 100,
 		},
 	}
+	tx5Prev := &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: &payload.TransferAsset{},
+		Outputs: []*types.Output{
+			{
+				AssetID:     common.Uint256{5, 5, 5},
+				Value:       1,
+				ProgramHash: common.Uint168{5, 5, 5},
+			},
+		},
+	}
+	utxoCacheDB.PutTransaction(tx5Prev)
 	tx5 := new(types.Transaction)
 	tx5.TxType = types.WithdrawFromSideChain
 	tx5.Payload = &payload.WithdrawFromSideChain{
@@ -691,12 +690,24 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	tx5.Inputs = []*types.Input{
 		{
 			Previous: types.OutPoint{
-				TxID:  inputTxID,
-				Index: 2,
+				TxID:  tx5Prev.Hash(),
+				Index: 0,
 			},
 			Sequence: 100,
 		},
 	}
+	tx6Prev := &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: &payload.TransferAsset{},
+		Outputs: []*types.Output{
+			{
+				AssetID:     common.Uint256{6, 6, 6},
+				Value:       1,
+				ProgramHash: common.Uint168{6, 6, 6},
+			},
+		},
+	}
+	utxoCacheDB.PutTransaction(tx6Prev)
 	tx6 := new(types.Transaction)
 	tx6.TxType = types.WithdrawFromSideChain
 	tx6.Payload = &payload.WithdrawFromSideChain{
@@ -705,32 +716,18 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	tx6.Inputs = []*types.Input{
 		{
 			Previous: types.OutPoint{
-				TxID:  inputTxID,
-				Index: 3,
+				TxID:  tx6Prev.Hash(),
+				Index: 0,
 			},
 			Sequence: 100,
 		},
 	}
 
-	txPool.addToTxList(tx4)
-	for _, v := range tx4.Inputs {
-		txPool.addInputUTXOList(tx4, v)
-	}
-	txPool.addSidechainTx(tx4)
+	assert.NoError(t, appendTx(tx4))
+	assert.NoError(t, appendTx(tx5))
+	assert.NoError(t, appendTx(tx6))
 
-	txPool.addToTxList(tx5)
-	for _, v := range tx5.Inputs {
-		txPool.addInputUTXOList(tx5, v)
-	}
-	txPool.addSidechainTx(tx5)
-
-	txPool.addToTxList(tx6)
-	for _, v := range tx6.Inputs {
-		txPool.addInputUTXOList(tx6, v)
-	}
-	txPool.addSidechainTx(tx6)
-
-	newBLock.Transactions = []*types.Transaction{tx3}
+	newBLock.Transactions = []*types.Transaction{tx4, tx5, tx6}
 	txPool.CleanSubmittedTransactions(&newBLock)
 	if err := isTransactionCleaned(txPool, tx4); err != nil {
 		t.Error("should clean transaction tx4:", err)
@@ -740,20 +737,15 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 		t.Error("should clean transaction: tx5:", err)
 	}
 
-	// fixme
-	//if err := isTransactionExisted(txPool, tx6); err != nil {
-	//	t.Error("should have transaction: tx6", err)
-	//}
+	if err := isTransactionCleaned(txPool, tx6); err != nil {
+		t.Error("should have transaction: tx6", err)
+	}
 
 	/*------------------------------------------------------------*/
 	/* check double spend and duplicate txs */
 	txPool = NewTxPool(&config.DefaultParams)
 
-	txPool.addToTxList(tx4)
-	for _, v := range tx4.Inputs {
-		txPool.addInputUTXOList(tx4, v)
-	}
-	txPool.addSidechainTx(tx4)
+	assert.NoError(t, appendTx(tx4))
 
 	newBLock.Transactions = []*types.Transaction{tx4}
 
@@ -765,17 +757,12 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 
 	/*------------------------------------------------------------*/
 	/* normal case */
-	txPool.addToTxList(tx6)
-	for _, v := range tx6.Inputs {
-		txPool.addInputUTXOList(tx6, v)
-	}
-	txPool.addSidechainTx(tx6)
+	assert.NoError(t, appendTx(tx2))
 	newBLock.Transactions = []*types.Transaction{tx3}
 	txPool.CleanSubmittedTransactions(&newBLock)
-	// fixme
-	//if err := isTransactionExisted(txPool, tx6); err != nil {
-	//	t.Error("should have transaction: tx6", err)
-	//}
+	if err := isTransactionExisted(txPool, tx2); err != nil {
+		t.Error("should have transaction: tx6", err)
+	}
 }
 
 func TestTxPool_End(t *testing.T) {
@@ -784,40 +771,40 @@ func TestTxPool_End(t *testing.T) {
 	initialLedger = nil
 }
 
-func isTransactionCleaned(pool *TxPool, tx *types.Transaction) error {
-	if tx := pool.txnList[tx.Hash()]; tx != nil {
-		return fmt.Errorf("has transaction in transaction pool" + tx.Hash().String())
-	}
-	for _, input := range tx.Inputs {
-		if poolInput := pool.inputUTXOList[input.ReferKey()]; poolInput != nil {
-			return fmt.Errorf("has utxo inputs in input list pool" + input.String())
-		}
-	}
-	if tx.TxType == types.WithdrawFromSideChain {
-		payload := tx.Payload.(*payload.WithdrawFromSideChain)
-		for _, hash := range payload.SideChainTransactionHashes {
-			if sidechainPoolTx := pool.sidechainTxList[hash]; sidechainPoolTx != nil {
-				return fmt.Errorf("has sidechain hash in sidechain list pool" + hash.String())
-			}
-		}
-	}
-	return nil
-}
-
 func isTransactionExisted(pool *TxPool, tx *types.Transaction) error {
-	if tx := pool.txnList[tx.Hash()]; tx == nil {
-		return fmt.Errorf("does not have transaction in transaction pool" + tx.Hash().String())
+	if _, ok := pool.txnList[tx.Hash()]; !ok {
+		return fmt.Errorf("does not have transaction in transaction pool")
 	}
 	for _, input := range tx.Inputs {
-		if poolInput := pool.inputUTXOList[input.ReferKey()]; poolInput == nil {
+		if poolInput := pool.getInputUTXOList(input); poolInput == nil {
 			return fmt.Errorf("does not have utxo inputs in input list pool" + input.String())
 		}
 	}
 	if tx.TxType == types.WithdrawFromSideChain {
 		payload := tx.Payload.(*payload.WithdrawFromSideChain)
 		for _, hash := range payload.SideChainTransactionHashes {
-			if sidechainPoolTx := pool.sidechainTxList[hash]; sidechainPoolTx == nil {
+			if pool.conflictSlots[slotSidechainTxHashes].Contains(hash) {
 				return fmt.Errorf("does not have sidechain hash in sidechain list pool" + hash.String())
+			}
+		}
+	}
+	return nil
+}
+
+func isTransactionCleaned(pool *TxPool, tx *types.Transaction) error {
+	if tx := pool.txnList[tx.Hash()]; tx != nil {
+		return fmt.Errorf("has transaction in transaction pool" + tx.Hash().String())
+	}
+	for _, input := range tx.Inputs {
+		if poolInput := pool.getInputUTXOList(input); poolInput != nil {
+			return fmt.Errorf("has utxo inputs in input list pool" + input.String())
+		}
+	}
+	if tx.TxType == types.WithdrawFromSideChain {
+		payload := tx.Payload.(*payload.WithdrawFromSideChain)
+		for _, hash := range payload.SideChainTransactionHashes {
+			if pool.conflictSlots[slotSidechainTxHashes].Contains(hash) {
+				return fmt.Errorf("has sidechain hash in sidechain list pool" + hash.String())
 			}
 		}
 	}
