@@ -24,17 +24,16 @@
 #define __CREDMETA_H__
 
 #include <cjson/cJSON.h>
+
 #include "ela_did.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_ALIAS       64
-
 typedef struct CredentialMeta
 {
-    char alias[MAX_ALIAS];
+    char alias[ELA_MAX_ALIAS_LEN];
 } CredentialMeta;
 
 int CredentialMeta_Init(CredentialMeta *meta, const char *alias);

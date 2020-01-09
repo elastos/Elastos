@@ -23,7 +23,7 @@ static DIDAdapter *adapter;
 static int get_issuer_cred(DIDURL *id, void *context)
 {
     Credential *cred;
-    char alias[MAX_ALIAS];
+    char alias[ELA_MAX_ALIAS_LEN];
     DID *creddid;
     int rc;
 
@@ -51,7 +51,7 @@ static int get_issuer_cred(DIDURL *id, void *context)
 static int get_test_cred(DIDURL *id, void *context)
 {
     Credential *cred;
-    char alias[MAX_ALIAS];
+    char alias[ELA_MAX_ALIAS_LEN];
     DID *creddid;
     int rc;
 
@@ -78,7 +78,7 @@ static int get_test_cred(DIDURL *id, void *context)
 
 static int get_did(DID *did, void *context)
 {
-    char alias[MAX_ALIAS];
+    char alias[ELA_MAX_ALIAS_LEN];
     DIDDocument *doc = NULL;
     int rc;
 
@@ -118,7 +118,7 @@ static const char *getpassword(const char *walletDir, const char *walletId)
 
 static void test_openstore_file_exit(void)
 {
-    char _path[PATH_MAX], mnemonic[MAX_MNEMONIC];
+    char _path[PATH_MAX], mnemonic[ELA_MAX_MNEMONIC_LEN];
     char *path;
     bool hasidentity;
     int rc;

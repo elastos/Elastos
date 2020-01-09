@@ -24,13 +24,13 @@
 #include <string.h>
 #include <time.h>
 
+#include "ela_did.h"
 #include "did.h"
 #include "credential.h"
 #include "crypto.h"
 #include "issuer.h"
-#include "ela_did.h"
 
-static const char *ProofType = "ECDSAsecp256r1";
+extern const char *ProofType;
 
 Issuer *Issuer_Create(DID *did, DIDURL *signkey)
 {

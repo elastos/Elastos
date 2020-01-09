@@ -35,7 +35,7 @@ static void test_didurl_fromString_error(void)
 
 static void test_didurl_new_didurl(void)
 {
-    char _idstring[MAX_DIDURL];
+    char _idstring[ELA_MAX_DIDURL_LEN];
     const char *idstring;
 
     DIDURL *id = DIDURL_New(method_specific_string, fragment);

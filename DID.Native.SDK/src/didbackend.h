@@ -23,7 +23,6 @@
 #ifndef __DIDBACKEND_H__
 #define __DIDBACKEND_H__
 
-#include <stdio.h>
 #include "ela_did.h"
 
 #ifdef __cplusplus

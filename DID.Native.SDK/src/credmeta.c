@@ -105,7 +105,7 @@ void CredentialMeta_Destroy(CredentialMeta *meta)
 
 int CredentialMeta_SetAlias(CredentialMeta *meta, const char *alias)
 {
-    if (!meta || (alias && strlen(alias) >= MAX_ALIAS))
+    if (!meta || (alias && strlen(alias) >= ELA_MAX_ALIAS_LEN))
         return -1;
 
     if (alias)

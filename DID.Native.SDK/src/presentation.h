@@ -23,29 +23,27 @@
 #ifndef __PRESENTATION_H__
 #define __PRESENTATION_H__
 
-#include <stdio.h>
-
 #include "ela_did.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_TYPE        64
-#define MAX_SIGN        128
-#define MAX_NONCE       128
-#define MAX_REALM       128
+#define MAX_PRES_TYPE        64
+#define MAX_PRES_SIGN        128
+#define MAX_NONCE            128
+#define MAX_REALM            128
 
 typedef struct PresentationProof {
-    char type[MAX_TYPE];
+    char type[MAX_PRES_TYPE];
     DIDURL verificationMethod;
     char nonce[MAX_NONCE];
     char realm[MAX_REALM];
-    char signatureValue[MAX_SIGN];
+    char signatureValue[MAX_PRES_SIGN];
 } PresentationProof;
 
 struct Presentation {
-    char type[MAX_TYPE];
+    char type[MAX_PRES_TYPE];
     time_t created;
 
     struct {

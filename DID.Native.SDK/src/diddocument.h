@@ -23,8 +23,8 @@
 #ifndef __DIDDOCUMENT_H__
 #define __DIDDOCUMENT_H__
 
-#include <stdio.h>
 #include <time.h>
+
 #include "ela_did.h"
 #include "did.h"
 #include "didmeta.h"
@@ -33,14 +33,18 @@
 extern "C" {
 #endif
 
-#define MAX_SIGN        128
+#define MAX_PUBLICKEY_BASE58            64
+#define MAX_ENDPOINT                    256
+#define MAX_DOC_TYPE                    64
+#define MAX_DOC_SIGN                    128
+
 #define CHECK(func)        do { if (func == -1) return -1; } while(0)
 
 typedef struct DocumentProof {
-    char type[MAX_TYPE];
+    char type[MAX_DOC_TYPE];
     time_t created;
     DIDURL creater;
-    char signatureValue[MAX_SIGN];
+    char signatureValue[MAX_DOC_SIGN];
 } DocumentProof;
 
 struct DIDDocument {
@@ -79,14 +83,14 @@ struct DIDDocument {
 
 struct PublicKey {
     DIDURL id;
-    char type[MAX_TYPE];
+    char type[MAX_DOC_TYPE];
     DID controller;
     char publicKeyBase58[MAX_PUBLICKEY_BASE58];
 };
 
 struct Service {
     DIDURL id;
-    char type[MAX_TYPE];
+    char type[MAX_DOC_TYPE];
     char endpoint[MAX_ENDPOINT];
 };
 

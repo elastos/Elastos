@@ -24,7 +24,7 @@ static void test_did_get_specificid(void)
 
 static void test_did_tostring(void)
 {
-    char id[MAX_DID];
+    char id[ELA_MAX_DID_LEN];
     CU_ASSERT_STRING_EQUAL(DID_ToString(did, id, sizeof(id)), testdid_string);
 }
 
@@ -73,7 +73,7 @@ static void test_did_copy(void)
 {
     int rc;
     DID copydid;
-    char id[MAX_DID];
+    char id[ELA_MAX_DID_LEN];
 
     rc = DID_Copy(&copydid, did);
     CU_ASSERT_EQUAL(rc, 0);

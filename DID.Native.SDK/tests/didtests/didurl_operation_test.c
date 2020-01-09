@@ -34,7 +34,7 @@ static void test_didurl_get_fragment(void)
 
 static void test_didurl_tostring(void)
 {
-    char _idstring[MAX_DIDURL];
+    char _idstring[ELA_MAX_DIDURL_LEN];
     CU_ASSERT_STRING_EQUAL(DIDURL_ToString(id, _idstring, sizeof(_idstring), false),
             testid_string);
     CU_ASSERT_STRING_EQUAL(DIDURL_ToString(id, _idstring, sizeof(_idstring), true),
@@ -87,7 +87,7 @@ static void test_didurl_copy(void)
 {
     int rc;
     DIDURL copyid;
-    char _idstring[MAX_DIDURL];
+    char _idstring[ELA_MAX_DIDURL_LEN];
 
     rc = DIDURL_Copy(&copyid, id);
     CU_ASSERT_EQUAL(rc, 0);

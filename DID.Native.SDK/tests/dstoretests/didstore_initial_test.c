@@ -23,7 +23,7 @@ static const char *getpassword(const char *walletDir, const char *walletId)
 
 static void test_didstore_newdid(void)
 {
-    char _storepath[PATH_MAX], _path[PATH_MAX], newalias[MAX_ALIAS];
+    char _storepath[PATH_MAX], _path[PATH_MAX], newalias[ELA_MAX_ALIAS_LEN];
     const char *storePath;
     char *path;
     DIDDocument *doc, *loaddoc;
@@ -89,7 +89,7 @@ static void test_didstore_newdid(void)
 
 static void test_didstore_newdid_withouAlias(void)
 {
-    char _storepath[PATH_MAX], _path[PATH_MAX], newalias[MAX_ALIAS];
+    char _storepath[PATH_MAX], _path[PATH_MAX], newalias[ELA_MAX_ALIAS_LEN];
     const char *storePath;
     char *path;
     DIDDocument *doc, *loaddoc;

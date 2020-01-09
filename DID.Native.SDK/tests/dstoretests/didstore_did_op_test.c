@@ -20,7 +20,7 @@ static DIDStore *store;
 
 int get_did(DID *did, void *context)
 {
-    char _did[MAX_DID];
+    char _did[ELA_MAX_DID_LEN];
 
     if(!did)
         return 0;

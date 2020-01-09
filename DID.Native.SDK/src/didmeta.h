@@ -24,19 +24,17 @@
 #define __DIDMETA_H__
 
 #include <cjson/cJSON.h>
+
 #include "ela_did.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_ALIAS       64
-#define MAX_TXID        128
-
 typedef struct DIDMeta {
-    char alias[MAX_ALIAS];
+    char alias[ELA_MAX_ALIAS_LEN];
     bool deactived;
-    char txid[MAX_TXID];
+    char txid[ELA_MAX_TXID_LEN];
     time_t timestamp;
 } DIDMeta;
 

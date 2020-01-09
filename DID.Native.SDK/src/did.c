@@ -315,14 +315,14 @@ bool DIDURL_Equals(DIDURL *id1, DIDURL *id2)
 
 int DIDURL_Compare(DIDURL *id1, DIDURL *id2)
 {
-    char _idstring1[MAX_DIDURL], _idstring2[MAX_DIDURL];
+    char _idstring1[ELA_MAX_DIDURL_LEN], _idstring2[ELA_MAX_DIDURL_LEN];
     char *idstring1, *idstring2;
 
     if (!id1 || !id2)
         return -1;
 
-    idstring1 = DIDURL_ToString(id1, _idstring1, MAX_DIDURL, false);
-    idstring2 = DIDURL_ToString(id2, _idstring2, MAX_DIDURL, false);
+    idstring1 = DIDURL_ToString(id1, _idstring1, ELA_MAX_DIDURL_LEN, false);
+    idstring2 = DIDURL_ToString(id2, _idstring2, ELA_MAX_DIDURL_LEN, false);
     if (!idstring1 || !idstring2)
         return -1;
 

@@ -23,7 +23,6 @@
 #ifndef __DID_H__
 #define __DID_H__
 
-#include <stdio.h>
 #include "ela_did.h"
 
 #ifdef __cplusplus
@@ -32,14 +31,6 @@ extern "C" {
 
 #define MAX_ID_SPECIFIC_STRING          48
 #define MAX_FRAGMENT                    48
-
-#define MAX_DID                         128
-#define MAX_DIDURL                      256
-
-#define MAX_TYPE                        64
-#define MAX_PUBLICKEY_BASE58            64
-#define MAX_PRIVATEKEY_BASE64           80
-#define MAX_ENDPOINT                    256
 
 struct DID {
     char idstring[MAX_ID_SPECIFIC_STRING];

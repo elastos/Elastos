@@ -66,7 +66,8 @@ DIDStore *storeInstance = NULL;
 static char *StoreTag = "/.meta";
 static char MAGIC[] = { 0x00, 0x0D, 0x01, 0x0D };
 static char VERSION[] = { 0x00, 0x00, 0x00, 0x01 };
-static const char *ProofType = "ECDSAsecp256r1";
+
+extern const char *ProofType;
 
 typedef enum DIDStore_Type {
     DIDStore_Root,
@@ -388,7 +389,7 @@ static int load_files(const char *path, const char **string)
 static int is_empty_helper(const char *path, void *context)
 {
     if (!path) {
-        *(int *)context = 0;   	
+        *(int *)context = 0;
         return 0;
     }
 
@@ -738,7 +739,7 @@ static ssize_t load_mnemonic(DIDStore *store, const char *storepass,
 
     assert(store);
     assert(mnemonic);
-    assert(size >= MAX_MNEMONIC);
+    assert(size >= ELA_MAX_MNEMONIC_LEN);
 
     if (load_files(get_file_path(store, DIDStore_RootMnemonic, "private", NULL, 0),
         &encrpted_mnemonic) == -1)
@@ -1677,7 +1678,7 @@ DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force)
 const char *DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
         DIDURL *signKey, const char *storepass)
 {
-    char alias[MAX_ALIAS];
+    char alias[ELA_MAX_ALIAS_LEN];
 
     if (!store || !document || !storepass || !*storepass)
         return NULL;
@@ -1697,7 +1698,7 @@ const char *DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
 const char *DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
         DIDURL *signKey, const char *storepass)
 {
-    char alias[MAX_ALIAS];
+    char alias[ELA_MAX_ALIAS_LEN];
 
     if (!store || !document || !signKey || !storepass || !*storepass)
         return NULL;

@@ -62,6 +62,32 @@ typedef ptrdiff_t       ssize_t;
 
 /**
  * \~English
+ * DID string max length. eg, did:elastos:ixxxxxxxxxx
+ */
+#define ELA_MAX_DID_LEN                 128
+/**
+ * \~English
+ * DIDURL string max length. eg, did:elastos:ixxxxxxxxxx#xxxxxx
+ */
+#define ELA_MAX_DIDURL_LEN              256
+/**
+ * \~English
+ * DIDDocument and Credential alias max length.
+ */
+#define ELA_MAX_ALIAS_LEN               64
+/**
+ * \~English
+ * DID transaction id max length.
+ */
+#define ELA_MAX_TXID_LEN                128
+/**
+ * \~English
+ * Mnemonic max length.
+ */
+#define ELA_MAX_MNEMONIC_LEN            128
+
+/**
+ * \~English
  * DID is a globally unique identifier that does not require
  * a centralized registration authority.
  * It includes method specific string. (elastos:id:ixxxxxxxxxx).
@@ -224,7 +250,8 @@ DID_API const char *DID_GetMethodSpecificId(DID *did);
  *      did                  [in] A handle to DID.
  * @param
  *      idstring             [out] The buffer that will receive the id string.
-  * @param
+ *                                 The buffer size should at least (ELA_MAX_DID_LEN) bytes.
+ * @param
  *      len                  [in] The buffer size of idstring.
  * @return
  *      The id string pointer, or NULL if buffer is too small.
@@ -313,10 +340,12 @@ DID_API int DID_SetAlias(DID *did, const char *alias);
  *
  * @param
  *      did                        [in] The handle of DID.
-  * @param
- *      alias                      [out] The buffer of storing alias.
  * @param
- *      size                       [out] The size of buffer.
+ *      alias                      [out] The buffer that will receive the alias.
+ *                                       The buffer size should at least
+ *                                       (ELA_MAX_ALIAS_LEN) bytes.
+ * @param
+ *      size                       [in] The buffter size of alias.
  * @return
  *      If no error occurs, return alias string, adn free string buffer.
  *      Otherwise, return NULL.
@@ -330,9 +359,11 @@ DID_API int DID_GetAlias(DID *did, char *alias, size_t size);
  * @param
  *      did                         [in] The handle of DID.
   * @param
- *      txid                        [out] The buffer of storing alias.
+ *      txid                        [out] The buffer that will receive transaction id.
+ *                                       The buffer size should at least
+ *                                       (ELA_MAX_TXID_LEN) bytes.
  * @param
- *      size                        [out] The size of buffer.
+ *      size                        [in] The buffer size of txid.
  * @return
  *      If no error occurs, return transaction string, and free string buffer.
  *      Otherwise, return NULL.
@@ -444,6 +475,7 @@ DID_API const char *DIDURL_GetFragment(DIDURL *id);
  *      id               [in] A handle to DID URL.
  * @param
  *      idstring         [out] The buffer that will receive the id string.
+ *                             The buffer size should at least (ELA_MAX_DID_LEN) bytes.
  * @param
  *      len              [in] The buffer size of idstring.
  * @param
@@ -526,9 +558,11 @@ DID_API int DIDURL_SetAlias(DIDURL *id, const char *alias);
  * @param
  *      id                        [in] The handle of DIDURL.
   * @param
- *      alias                     [out] The buffer of storing alias.
+ *      alias                      [out] The buffer that will receive the alias.
+ *                                       The buffer size should at least
+ *                                       (ELA_MAX_ALIAS_LEN) bytes.
  * @param
- *      size                      [out] The size of buffer.
+ *      size                      [in] The buffer size of alias.
  * @return
  *      If no error occurs, return alias string, and free buffer returned.
  *      Otherwise, return NULL.
@@ -1303,11 +1337,13 @@ DID_API int DIDDocument_SetAlias(DIDDocument *document, const char *alias);
  * Get nickname for DID.
  *
  * @param
- *      document                     [in] The handle to DID.
+ *      document                    [in] The handle to DID.
  * @param
- *      alias                        [out] The buffer of storing alias.
+ *      alias                       [out] The buffer that will receive the alias.
+ *                                       The buffer size should at least
+ *                                       (ELA_MAX_ALIAS_LEN) bytes.
  * @param
- *      size                         [out] The size of buffer.
+ *      size                        [in] The buffer size of alias.
  * @return
  *      If no error occurs, return 0. Otherwise, return -1.
  */
@@ -1320,9 +1356,11 @@ DID_API int DIDDocument_GetAlias(DIDDocument *document, char *alias, size_t size
  * @param
  *      document                     [in] The handle to DID.
  * @param
- *      alias                        [out] The buffer of storing transaction id.
+ *      alias                        [out] The buffer that will receive transaction id.
+ *                                       The buffer size should at least
+ *                                       (ELA_MAX_TXID_LEN) bytes.
  * @param
- *      size                         [out] The size of buffer.
+ *      size                         [in] The buffer size of txid.
  * @return
  *      If no error occurs, return 0. Otherwise, return -1.
  */
@@ -1761,9 +1799,11 @@ DID_API int Credential_SetAlias(Credential *credential, const char *alias);
  * @param
  *      credential                [in] The handle to DID.
  * @param
- *      alias                     [out] The buffer of storing alias.
+ *      alias                      [out] The buffer that will receive the alias.
+ *                                       The buffer size should at least
+ *                                       (ELA_MAX_ALIAS_LEN) bytes.
  * @param
- *      size                      [out] The size of buffer.
+ *      size                      [in] The buffer size of alias.
  * @return
  *      If no error occurs, return 0. Otherwise, return -1.
  */
@@ -1934,13 +1974,15 @@ DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, con
  * Create new DID Document and store in the DID Store.
  *
  * @param
- *      store                     [in] THe handle to DIDStore.
-* @param
- *      storepass                 [in] The password of DIDStore.
+ *      store              [in] THe handle to DIDStore.
  * @param
- *      mnemonic                  [out] The mnemonic buffer.
+ *      storepass          [in] The password of DIDStore.
  * @param
- *      size                      [out] The buffter size.
+ *      mnemonic           [out] The buffer that will receive the mnemonic.
+ *                               The buffer size should at least
+ *                               (ELA_MAX_ADDRESS_LEN + 1) bytes.
+ * @param
+ *      size               [in] The buffter size.
  * @return
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
@@ -2023,11 +2065,11 @@ DID_API void DIDStore_DeleteDID(DIDStore *store, DID *did);
  * List DIDs in DID Store.
  *
  * @param
- *      store                   [in] The handle to DIDStore.
+ *      store       [in] The handle to DIDStore.
  * @param
- *      dids                    [out] The DIDs array.
+ *      callback    [in] a pointer to DIDStore_GetDIDCallback function.
  * @param
- *      size                    [out] The DID array.
+ *      context     [in] the application defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -2102,11 +2144,11 @@ DID_API void DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
  * List credentials of specific DID.
  *
  * @param
- *      did                     [in] The handle to DID.
+ *      did         [in] The handle to DID.
  * @param
- *      callback                [in] Get credential alias call back.
+ *      callback    [in] a pointer to DIDStore_GetCredCallback function.
  * @param
- *      context                 [in] The caller defined context data.
+ *      context     [in] the application defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -2118,15 +2160,15 @@ DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
  * Get credential conforming to identifier or type property.
  *
  * @param
- *      did                     [in] The handle to DID.
+ *      did         [in] The handle to DID.
  * @param
- *      id                      [in] The identifier of credential.
+ *      id          [in] The identifier of credential.
  * @param
- *      type                    [in] The type of Credential to be selected.
+ *      type        [in] The type of Credential to be selected.
  * @param
- *      callback                [in] Get credential alias call back.
+ *      callback    [in] a pointer to DIDStore_GetCredCallback function.
  * @param
- *      context                 [in] The caller defined context data.
+ *      context     [in] the application defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -2265,7 +2307,7 @@ DID_API DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force);
  *                             4: Chinese_traditional;
  *                             5: Japanese.
  * @return
- *      mnemonic string.
+ *      mnemonic string. Use Mnemonic_free after finish using mnemonic string.
  */
 DID_API const char *Mnemonic_Generate(int language);
 

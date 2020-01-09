@@ -31,7 +31,7 @@ static void test_did_fromString_error(void)
 
 static void test_did_new_did(void)
 {
-    char _didstring[MAX_DID];
+    char _didstring[ELA_MAX_DID_LEN];
     const char *didstring;
 
     DID *did = DID_New(method_specific_string);

@@ -23,7 +23,6 @@
 #ifndef __CREDENTIAL_H__
 #define __CREDENTIAL_H__
 
-#include <stdio.h>
 #include <cjson/cJSON.h>
 
 #include "ela_did.h"
@@ -35,8 +34,8 @@
 extern "C" {
 #endif
 
-#define MAX_TYPE        64
-#define MAX_SIGN        128
+#define MAX_CRED_TYPE        64
+#define MAX_CRED_SIGN        128
 
 typedef struct Property {
     char *key;
@@ -53,9 +52,9 @@ typedef struct CredentialSubject {
 } CredentialSubject;
 
 typedef struct CredentialProof {
-    char type[MAX_TYPE];
+    char type[MAX_CRED_TYPE];
     DIDURL verificationMethod;
-    char signatureValue[MAX_SIGN];
+    char signatureValue[MAX_CRED_SIGN];
 } CredentialProof;
 
 struct Credential {

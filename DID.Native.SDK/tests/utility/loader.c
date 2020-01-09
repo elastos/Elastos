@@ -25,6 +25,8 @@
 #include "crypto.h"
 #include "HDkey.h"
 #include "did.h"
+#include "diddocument.h"
+#include "didstore.h"
 
 typedef struct TestData {
     DIDStore *store;

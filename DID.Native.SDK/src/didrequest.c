@@ -28,9 +28,9 @@
 #include <time.h>
 #include <assert.h>
 
+#include "ela_did.h"
 #include "did.h"
 #include "common.h"
-#include "ela_did.h"
 #include "diddocument.h"
 #include "crypto.h"
 #include "didstore.h"
@@ -57,12 +57,12 @@ static int header_toJson(JsonGenerator *gen, DIDRequest *req, DIDRequest_Type ty
 
 static int proof_toJson(JsonGenerator *gen, DIDRequest *req)
 {
-    char _method[MAX_DIDURL], *method;
+    char _method[ELA_MAX_DIDURL_LEN], *method;
 
     assert(gen);
     assert(req);
 
-    method = DIDURL_ToString(&req->proof.verificationMethod, _method, MAX_DIDURL, 1);
+    method = DIDURL_ToString(&req->proof.verificationMethod, _method, ELA_MAX_DIDURL_LEN, 1);
     if (!method)
         return -1;
 
@@ -112,7 +112,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
 {
     DIDRequest req;
     const char *payload, *op, *requestJson;
-    char prevtxid[MAX_TXID];
+    char prevtxid[ELA_MAX_TXID_LEN];
     size_t len;
     int rc;
     char signature[SIGNATURE_BYTES * 2 + 16];

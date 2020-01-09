@@ -87,14 +87,14 @@ const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey
         const char *storepass)
 {
     const char *ret;
-    char data[MAX_DID], *datastring;
+    char data[ELA_MAX_DID_LEN], *datastring;
     const char *reqstring;
 
     if (!backend || !backend->adapter || !did || !signKey || !storepass ||
             !*storepass)
         return NULL;
 
-    datastring = DID_ToString(did, data, MAX_DID);
+    datastring = DID_ToString(did, data, ELA_MAX_DID_LEN);
     if (!reqstring)
         return NULL;
 
@@ -114,7 +114,7 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
     const char *data;
     cJSON *root, *item, *field;
     DIDDocument *document = NULL;
-    char _idstring[MAX_DID];
+    char _idstring[ELA_MAX_DID_LEN];
     time_t timestamp;
     bool deactivated;
 

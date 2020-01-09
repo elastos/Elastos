@@ -36,11 +36,11 @@
 #include "presentation.h"
 
 static const char *PresentationType = "VerifiablePresentation";
-static const char *ProofType = "ECDSAsecp256r1";
+extern const char *ProofType;
 
 static int proof_toJson(JsonGenerator *gen, Presentation *pre, int compact)
 {
-    char id[MAX_DIDURL];
+    char id[ELA_MAX_DIDURL_LEN];
 
     assert(gen);
     assert(gen->buffer);
@@ -61,7 +61,7 @@ static int proof_toJson(JsonGenerator *gen, Presentation *pre, int compact)
 static int Presentation_ToJson_Internal(JsonGenerator *gen, Presentation *pre,
         int compact, int forsign)
 {
-    char id[MAX_DIDURL];
+    char id[ELA_MAX_DIDURL_LEN];
     char _timestring[DOC_BUFFER_LEN];
 
     assert(gen);
@@ -351,7 +351,7 @@ int Presentation_Verify(Presentation *pre)
 const char* Presentation_ToJson(Presentation *pre, int compact, int forsign)
 {
     JsonGenerator g, *gen;
-    char id[MAX_DIDURL];
+    char id[ELA_MAX_DIDURL_LEN];
 
     if (!pre)
         return NULL;

@@ -24,18 +24,17 @@
 #define __DIDSTORE_H__
 
 #include <limits.h>
-#include "did.h"
+
+#include "ela_did.h"
 #include "didbackend.h"
 #include "didmeta.h"
 #include "credmeta.h"
-#include "ela_did.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_ALIAS       64
-#define MAX_MNEMONIC    128
+#define MAX_PRIVATEKEY_BASE64           80
 
 typedef struct DIDBackend    DIDBackend;
 

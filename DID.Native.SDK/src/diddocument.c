@@ -38,7 +38,7 @@
 
 #define MAX_EXPIRES              5
 
-static const char *ProofType = "ECDSAsecp256r1";
+const char *ProofType = "ECDSAsecp256r1";
 
 typedef enum KeyType {
     KeyType_Authentication,
@@ -65,7 +65,7 @@ static void Service_Destroy(Service *service)
 static
 int PublicKey_ToJson(JsonGenerator *gen, PublicKey *pk, int compact)
 {
-    char id[MAX_DIDURL];
+    char id[ELA_MAX_DIDURL_LEN];
 
     assert(gen);
     assert(gen->buffer);
@@ -91,14 +91,14 @@ int PublicKey_ToJson(JsonGenerator *gen, PublicKey *pk, int compact)
 
 static int didurl_func(const void *a, const void *b)
 {
-    char _stringa[MAX_DID], _stringb[MAX_DID];
+    char _stringa[ELA_MAX_DID_LEN], _stringb[ELA_MAX_DID_LEN];
     char *stringa, *stringb;
 
     PublicKey *keya = *(PublicKey**)a;
     PublicKey *keyb = *(PublicKey**)b;
 
-    stringa = DIDURL_ToString(&keya->id, _stringa, MAX_DID, true);
-    stringb = DIDURL_ToString(&keyb->id, _stringb, MAX_DID, true);
+    stringa = DIDURL_ToString(&keya->id, _stringa, ELA_MAX_DID_LEN, true);
+    stringb = DIDURL_ToString(&keyb->id, _stringb, ELA_MAX_DID_LEN, true);
 
     return strcmp(stringa, stringb);
 }
@@ -117,7 +117,7 @@ int PublicKeyArray_ToJson(JsonGenerator *gen, PublicKey **pks, size_t size,
 
     CHECK(JsonGenerator_WriteStartArray(gen));
     for (i = 0; i < size; i++ ) {
-        char id[MAX_DIDURL];
+        char id[ELA_MAX_DIDURL_LEN];
 
         if (!quoted)
             CHECK(PublicKey_ToJson(gen, pks[i], compact));
@@ -133,7 +133,7 @@ int PublicKeyArray_ToJson(JsonGenerator *gen, PublicKey **pks, size_t size,
 static
 int Service_ToJson(JsonGenerator *gen, Service *service, int compact)
 {
-    char id[MAX_DIDURL];
+    char id[ELA_MAX_DIDURL_LEN];
 
     assert(gen);
     assert(gen->buffer);
@@ -173,7 +173,7 @@ int ServiceArray_ToJson(JsonGenerator *gen, Service **services, size_t size,
 
 static int proof_toJson(JsonGenerator *gen, DIDDocument *doc, int compact)
 {
-    char id[MAX_DIDURL];
+    char id[ELA_MAX_DIDURL_LEN];
     char _timestring[DOC_BUFFER_LEN];
 
     assert(gen);
@@ -273,7 +273,7 @@ static int Parser_PublicKey(DID *did, cJSON *json, PublicKey **publickey)
     assert(strcmp(did->idstring, pk->id.did.idstring) == 0);
 
     // set default value for 'type'
-    strcpy(pk->type, "ECDSAsecp256r1");
+    strcpy(pk->type, ProofType);
 
     field = cJSON_GetObjectItem(json, "publicKeybase58");
     if (!field || !cJSON_IsString(field)) {
@@ -519,7 +519,7 @@ static int Parser_Proof(DIDDocument *document, cJSON *json)
 
     item = cJSON_GetObjectItem(json, "type");
     if (item) {
-        if ((cJSON_IsString(item) && strlen(item->valuestring) + 1 > MAX_TYPE) ||
+        if ((cJSON_IsString(item) && strlen(item->valuestring) + 1 > MAX_DOC_TYPE) ||
                 !cJSON_IsString(item))
             return -1;
         else
@@ -544,7 +544,7 @@ static int Parser_Proof(DIDDocument *document, cJSON *json)
 
     item = cJSON_GetObjectItem(json, "signatureValue");
     if (!item || !cJSON_IsString(item) ||
-            (strlen(item->valuestring) + 1 > MAX_SIGN))
+            (strlen(item->valuestring) + 1 > MAX_DOC_SIGN))
         return -1;
     strcpy(document->proof.signatureValue, item->valuestring);
 
@@ -743,7 +743,7 @@ static
 int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc,
         int compact, int forsign)
 {
-    char id[MAX_DIDURL];
+    char id[ELA_MAX_DIDURL_LEN];
     char _timestring[DOC_BUFFER_LEN];
     size_t i;
 
@@ -1179,7 +1179,7 @@ PublicKey *create_publickey(DIDURL *id, DID *controller, const char *publickey)
     DIDURL_Copy(&pk->id, id);
     DID_Copy(&pk->controller, controller);
 
-    strcpy(pk->type, "ECDSAsecp256r1");
+    strcpy(pk->type, ProofType);
     strcpy(pk->publicKeyBase58, publickey);
 
     return pk;
@@ -1502,7 +1502,7 @@ int DIDDocumentBuilder_AddService(DIDDocumentBuilder *builder, DIDURL *serviceid
     size_t i;
 
     if (!builder || !builder->document || !serviceid || !type || !*type
-        || strlen(type) >= MAX_TYPE || !endpoint || !*endpoint ||
+        || strlen(type) >= MAX_DOC_TYPE || !endpoint || !*endpoint ||
         strlen(endpoint) >= MAX_ENDPOINT)
         return -1;
 

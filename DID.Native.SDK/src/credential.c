@@ -41,7 +41,7 @@
 typedef struct DIDStore     DIDStore;
 
 static const char *PresentationsType = "VerifiablePresentation";
-static const char *ProofType = "ECDSAsecp256r1";
+extern const char *ProofType;
 
 static void free_subject(Credential *cred)
 {
@@ -228,7 +228,7 @@ static int subject_toJson(JsonGenerator *generator, Credential *cred, int compac
     Property *temp;
     Property **properties;
     size_t i, size;
-    char id[MAX_DID];
+    char id[ELA_MAX_DID_LEN];
 
     assert(generator);
     assert(generator->buffer);
@@ -256,7 +256,7 @@ static int subject_toJson(JsonGenerator *generator, Credential *cred, int compac
 
 static int proof_toJson(JsonGenerator *generator, Credential *cred, int compact)
 {
-    char id[MAX_DIDURL];
+    char id[ELA_MAX_DIDURL_LEN];
 
     assert(generator);
     assert(generator->buffer);
@@ -275,7 +275,7 @@ static int proof_toJson(JsonGenerator *generator, Credential *cred, int compact)
 static int Credential_ToJson_Internal(JsonGenerator *gen,  Credential *cred,
         int compact, int forsign)
 {
-    char id[MAX_DIDURL];
+    char id[ELA_MAX_DIDURL_LEN];
     char _timestring[DOC_BUFFER_LEN];
 
     assert(gen);
@@ -560,7 +560,7 @@ Credential *Parser_Credential(cJSON *json, DID *did)
     }
 
     //subject
-    strncpy((char*)credential->subject.id.idstring, did->idstring, MAX_ID_SPECIFIC_STRING);
+    strncpy((char*)credential->subject.id.idstring, did->idstring, sizeof(did->idstring));
     item = cJSON_GetObjectItem(json, "credentialSubject");
     if (!item || !cJSON_IsObject(item)|| parser_subject(item, credential) == -1)
          goto errorExit;
@@ -600,14 +600,14 @@ ssize_t Parser_Credentials(DID *did, Credential **creds, size_t size, cJSON *jso
 
 static int didurl_func(const void *a, const void *b)
 {
-    char _stringa[MAX_DID], _stringb[MAX_DID];
+    char _stringa[ELA_MAX_DID_LEN], _stringb[ELA_MAX_DID_LEN];
     char *stringa, *stringb;
 
     Credential *creda = *(Credential**)a;
     Credential *credb = *(Credential**)b;
 
-    stringa = DIDURL_ToString(&creda->id, _stringa, MAX_DID, true);
-    stringb = DIDURL_ToString(&credb->id, _stringb, MAX_DID, true);
+    stringa = DIDURL_ToString(&creda->id, _stringa, ELA_MAX_DID_LEN, true);
+    stringb = DIDURL_ToString(&credb->id, _stringb, ELA_MAX_DID_LEN, true);
 
     return strcmp(stringa, stringb);
 }
@@ -634,7 +634,7 @@ int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds,
 const char* Credential_ToJson(Credential *cred, int compact, int forsign)
 {
     JsonGenerator g, *gen;
-    char id[MAX_DIDURL];
+    char id[ELA_MAX_DIDURL_LEN];
 
     if (!cred)
         return NULL;

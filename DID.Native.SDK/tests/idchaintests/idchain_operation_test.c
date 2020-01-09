@@ -22,7 +22,7 @@ static void test_idchain_publishdid(void)
     char *txid;
     DIDURL *signkey;
     DIDDocument *doc = NULL, *updatedoc = NULL;
-    char createTxid[MAX_TXID], updateTxid[MAX_TXID];
+    char createTxid[ELA_MAX_TXID_LEN], updateTxid[ELA_MAX_TXID_LEN];
     const char *data;
     DID *did;
     int i = 0;

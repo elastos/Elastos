@@ -21,7 +21,7 @@ static DIDStore *store;
 
 int get_cred(DIDURL *id, void *context)
 {
-    char _id[MAX_DIDURL];
+    char _id[ELA_MAX_DIDURL_LEN];
 
     if(!id)
         return -1;
