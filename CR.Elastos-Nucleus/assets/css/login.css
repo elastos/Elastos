@@ -94,8 +94,8 @@
   border-radius: 8px;
   box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
   background-color: #242a37;
-  margin: 30px;
   padding: 15px;
+  margin: 30px;
 }
 
 .console-services-title {
@@ -132,27 +132,7 @@
   color: #ffffff;
 }
 
-.most-viewed {
-  width: 418px;
-  border-radius: 4px;
-  background-color: rgba(107, 121, 152, 0.24);
-  padding: 20px;
-  margin-top: 30px;
-}
-
-.most-viewed h5 {
-  opacity: 0.5;
-  font-size: 18px;
-  font-weight: bold;
-  font-stretch: normal;
-  font-family: Roboto;
-  font-style: normal;
-  line-height: 1.93;
-  letter-spacing: normal;
-  color: #ffffff;
-}
-
-.most-viewed a {
+.sidebar-content {
   font-size: 14px;
   font-weight: bold;
   font-stretch: normal;
@@ -179,21 +159,3 @@
   margin: 20px;
 }
 
-.activity-feed {
-  width: 418px;
-  border-radius: 4px;
-  background-color: rgba(107, 121, 152, 0.24);
-  padding: 20px;
-  margin-top: 30px;
-}
-
-.activity-feed p {
-  font-size: 14px;
-  font-weight: bold;
-  font-stretch: normal;
-  font-family: Overpass;
-  font-style: normal;
-  line-height: normal;
-  letter-spacing: normal;
-  color: #ffffff;
-}
