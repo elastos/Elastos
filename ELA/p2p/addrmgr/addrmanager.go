@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package addrmgr
 
@@ -528,7 +528,9 @@ func (a *AddrManager) DeserializeNetAddress(addr string) (*p2p.NetAddress, error
 		return nil, err
 	}
 
-	return a.HostToNetAddress(host, uint16(port), 0)
+	// The default services were temporarily changed from 0 to 7 to support
+	// address broadcasting after peers were read from peers.json file.
+	return a.HostToNetAddress(host, uint16(port), 7)
 }
 
 // Start begins the core address handler which manages a pool of known
