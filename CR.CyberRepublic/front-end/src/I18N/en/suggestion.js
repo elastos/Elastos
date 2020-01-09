@@ -142,7 +142,7 @@ export default {
     tip: 'Please add milestone first',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Advance payment (< 30% of total)',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Proposal completion payment',
-    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Conditioned payment'
+    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Phased payment'
   },
   plan: {
     teamMember: 'Team Member',
