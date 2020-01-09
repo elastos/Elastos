@@ -47,6 +47,7 @@
 
         <TextView
             android:id="@+id/tv_rank"
+            android:minWidth="35dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/iv_icon"
