@@ -530,7 +530,7 @@ class C extends StandardPage {
 
   renderReviewButton() {
     const { data, isSecretary } = this.props
-    const isVisible = isSecretary && data.status === ELIP_STATUS.WAIT_FOR_REVIEW
+    const isVisible = isSecretary && [ELIP_STATUS.WAIT_FOR_REVIEW, ELIP_STATUS.FINAL_REVIEW].includes(data.status)
 
     if (!isVisible) return null
 

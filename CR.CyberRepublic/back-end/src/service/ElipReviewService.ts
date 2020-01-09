@@ -17,6 +17,15 @@ export default class extends Base {
       if (!elip) {
         throw 'ElipReviewService.create - invalid elip id'
       }
+      if (
+        ![
+          constant.ELIP_STATUS.WAIT_FOR_REVIEW,
+          constant.ELIP_STATUS.FINAL_REVIEW,
+        ].includes(elip.status)
+      ) {
+        throw 'ElipReviewService.create - can not review this elip'
+      }
+
       const user = this.currentUser
       const { comment, status } = param
       const doc: any = {
@@ -26,13 +35,36 @@ export default class extends Base {
         elipId
       }
       const review = await db_elip_review.save(doc)
-      const elipStatus = status === constant.ELIP_REVIEW_STATUS.REJECTED ? constant.ELIP_STATUS.REJECTED : constant.ELIP_STATUS.DRAFT
-      await db_elip.update(
-        { _id: elipId },
-        { status: elipStatus }
-      )
-      this.notifyElipCreator(review, elip, status)
-    
+      const isRejected = status === constant.ELIP_REVIEW_STATUS.REJECTED
+      const isApproved = status === constant.ELIP_REVIEW_STATUS.APPROVED
+      let elipStatus: string
+      if (elip.status === constant.ELIP_STATUS.WAIT_FOR_REVIEW) {
+        if (isRejected) {
+          elipStatus = constant.ELIP_STATUS.REJECTED
+        }
+        if (isApproved) {
+          elipStatus = constant.ELIP_STATUS.DRAFT
+        }
+        await db_elip.update(
+          { _id: elipId },
+          { status: elipStatus }
+        )
+        this.notifyElipCreator(review, elip, status)
+      }
+      if (elip.status === constant.ELIP_STATUS.FINAL_REVIEW) {
+        if (isRejected) {
+          elipStatus = constant.ELIP_STATUS.DRAFT 
+          await db_elip.update(
+            { _id: elipId },
+            { status: elipStatus}
+          )
+        }
+        if (isApproved) {
+          elipStatus = constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
+          await this.proposeElip(elip)
+        }
+      }
+
       const createdBy = {
         _id: user._id,
         profile: { firstName: user.firstName, lastName: user.lastName},
@@ -66,6 +98,105 @@ export default class extends Base {
       toName: userUtil.formatUsername(elip.createdBy),
       subject,
       body
+    }
+
+    mail.send(mailObj)
+  }
+
+  public async proposeElip(elip: any): Promise<Document> {
+    const db_cvote = this.getDBModel('CVote')
+    const db_elip = this.getDBModel('Elip')
+    
+    const vid = await this.getNewCVoteVid()
+    const doc: any = {
+      vid,
+      type: constant.CVOTE_TYPE[elip.elipType],
+      status: constant.CVOTE_STATUS.PROPOSED,
+      published: true,
+      proposedBy: userUtil.formatUsername(elip.createdBy),
+      proposer: elip.createdBy._id,
+      createdBy: this.currentUser._id,
+      referenceElip: elip._id,
+      proposedAt: Date.now()
+    }
+
+    const BASE_FIELDS = [
+      'title',
+      'abstract',
+      'specifications',
+      'motivation',
+      'rationale',
+      'backwardCompatibility',
+      'referenceImplementation',
+      'copyright'
+    ]
+    Object.assign(doc, _.pick(elip, BASE_FIELDS))
+    try {
+      const res = await db_cvote.save(doc)
+      await db_elip.update(
+        { _id: elip._id },
+        {
+          reference: res._id,
+          status: constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
+        }
+      )
+      this.notifyCouncilAfterPropose(res)
+      return res
+    } catch (error) {
+      logger.error(error)
+      return
+    }
+  }
+
+  public async getNewCVoteVid() {
+    const db_cvote = this.getDBModel('CVote')
+    const n = await db_cvote.count({})
+    return n + 1
+  }
+
+  private async notifyCouncilAfterPropose(cvote: any) {
+    const db_user = this.getDBModel('User')
+    const currentUserId = _.get(this.currentUser, '_id')
+    const councilMembers = await db_user.find({
+      role: constant.USER_ROLE.COUNCIL
+    })
+    const toUsers = _.filter(
+      councilMembers,
+      user => !user._id.equals(currentUserId)
+    )
+    const toMails = _.map(toUsers, 'email')
+
+    const subject = `New Proposal: ${cvote.title}`
+    const body = `
+      <p>There is a new proposal added:</p>
+      <br />
+      <p>${cvote.title}</p>
+      <br />
+      <p>Click this link to view more details: <a href="${
+        process.env.SERVER_URL
+      }/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${
+      cvote._id
+    }</a></p>
+      <br /> <br />
+      <p>Thanks</p>
+      <p>Cyber Republic</p>
+    `
+
+    const recVariables = _.zipObject(
+      toMails,
+      _.map(toUsers, user => {
+        return {
+          _id: user._id,
+          username: userUtil.formatUsername(user)
+        }
+      })
+    )
+
+    const mailObj = {
+      to: toMails,
+      subject,
+      body,
+      recVariables
     }
 
     mail.send(mailObj)
