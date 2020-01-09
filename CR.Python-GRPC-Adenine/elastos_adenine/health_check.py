@@ -5,7 +5,6 @@ from decouple import config
 
 from .stubs import health_check_pb2
 from .stubs import health_check_pb2_grpc
-from elastos_adenine.settings import REQUEST_TIMEOUT
 
 
 class HealthCheck:

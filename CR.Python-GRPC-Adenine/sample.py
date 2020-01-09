@@ -25,7 +25,7 @@ def main():
     service = results.service
 
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'wjCV8z6g41PcDqvAzTnQGPUrwmDuYsdRDEo9JP8sw6GR6NAogCIQgfw5MRuViU3o'
+    api_key_to_use = 'HZjIK8GQH4Lp4Yua3PJhugomSrBg5Az1OyMouyPJ5iXRo0mM2DA9YETdM89EIrCa'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -36,7 +36,7 @@ def main():
         if response.status != health_check_pb2.HealthCheckResponse.SERVING:
             print("grpc server is not running properly")
         else:
-            print("grpc servier is running")
+            print("grpc server is running")
     except Exception as e:
         print(e)
         sys.exit(1)
@@ -88,10 +88,10 @@ def main():
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D56756E44527673387A436878576B76424B3771364D4E766E71646B646D424A4B313863437834504E37664547",
+                "msg": "516D507843635862756668654B7A6D61387A5271624463326668657437736F53697378357533546559317A74744D",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "E36334F561A2D3CD0068937A4F3F19E9EB605009B5D9C7A28E91064A4F874888432C0065BC60DDC1791FDBAFA1A28587BA57AA63C6C0ED0DB715A6574F8C7BF2",
-                "hash": "QmVunDRvs8zChxWkvBK7q6MNvnqdkdmBJK18cCx4PN7fEG",
+                "sig": "4CFB575857F56B984A241A1CC49F7E4D6B2E7CDCD35AAD7FF680F581C1E77AE63EEB4A1275FAA5CE2523266A9504C0129B1529804DB7DE5A145D4878544D2737",
+                "hash": "QmPxCcXbufheKzma8zRqbDc2fhet7soSisx5u3TeY1zttM",
                 "private_key": private_key_to_use
             }
             response = hive.verify_and_show(api_key_to_use, request_input)
@@ -147,7 +147,7 @@ def main():
                     print(i, ':', json_output['result'][i])
 
             # Eth sidechain
-            response = wallet.view_wallet(api_key_to_use, 'eth', '0x282c2795B9722d638778f5a1A0045c60b330F1A0')
+            response = wallet.view_wallet(api_key_to_use, 'eth', '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e')
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -184,9 +184,9 @@ def main():
                 print("Status Message :", response.status_message)
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
-            
+
             # Eth sidechain
-            response = wallet.request_ela(api_key_to_use, 'eth', '0x282c2795B9722d638778f5a1A0045c60b330F1A0')
+            response = wallet.request_ela(api_key_to_use, 'eth', '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e')
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -204,8 +204,9 @@ def main():
             # you must first run https://github.com/cyber-republic/elastos-privnet locally
             # For production GMUnet, this won't work
             print("\n--> Deploy ETH Contract")
-            response = sidechain_eth.deploy_eth_contract(api_key_to_use, '0x4505b967d56f84647eb3a40f7c365f7d87a88bc3',
-                                                         '0xf98fa0f1e6b6772077591ba9eefe68b227c59d9103477a4db3c411feec919abb', 2000000, 'test/HelloWorld.sol')
+            response = sidechain_eth.deploy_eth_contract(api_key_to_use, '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e',
+                                                         '0x35a12175385b24b2f906d6027d440aac7bd31e1097311fa8e3cf21ceac7c4809',
+                                                         2000000, 'test/HelloWorld.sol')
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -220,7 +221,7 @@ def main():
             sidechain_eth = SidechainEth()
             print("\n--> Watch ETH Contract")
             response = sidechain_eth.watch_eth_contract(api_key_to_use,
-                                                         '0x099E99A9f9668Cc6176c27F73da0b11B7DF42705', 'HelloWorld',
+                                                        '0x099E99A9f9668Cc6176c27F73da0b11B7DF42705', 'HelloWorld',
                                                         'QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd')
             if response.output:
                 json_output = json.loads(response.output)
