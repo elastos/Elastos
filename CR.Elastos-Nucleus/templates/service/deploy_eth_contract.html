@@ -66,15 +66,35 @@
         <p class="card-text">Smart Contract Name :  {{ contract_name }}</p>
         <p class="card-text">Smart Contract Code Hash :  {{ contract_code_hash }}</p>
         <a href="{% url "service:deploy_eth_contract" %}" methods="GET">
-        <button class="btn-default" style="background-color: #00dd62;">
+        <button class="submit-button">
             Upload Smart Contract Again
         </button>
         </a>
     {% else %}
-       <form  class="form-group" method="post" enctype="multipart/form-data">
-       {% csrf_token %}
-       {{ form.as_p }}
-       <button class="btn btn-secondary" type="submit" style="background-color: #00dd62;">Upload Smart Contract</button>
-       </form>
+        <div class="row align-items-center justify-content-center">
+            <div class="col-md-12 text-center">
+                <p class="form-header">
+                    Upload your smart contract Solidity file and deploy it on ETH Sidechain
+                </p>
+            </div>
+            <div class="col-md-12">
+                <form class="form-group text-center" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form.visible_fields %}
+                        <p>
+                            <span class="form-field-label">{{ field.label_tag }}</span><br>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small style="color: grey">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p style="color: red">{{ error }}</p>
+                            {% endfor %}
+                        </p>
+                    {% endfor %}
+                    <button class="submit-button" type="submit">Upload Smart Contract</button>
+                </form>
+            </div>
+        </div>
     {% endif %}
 {% endblock service %}

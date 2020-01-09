@@ -60,63 +60,129 @@
 {% endblock description %}
 
 {% block service %}
-    <h5 class="card-title">Request ELA on Mainchain Address</h5>
-    <form  class="form-group" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.mainchain.as_p }}
-      {% if output.mainchain %}
-      <h5 class="card-title">Response:</h5>
-      <p class="card-text">
-        Address: {{ address.mainchain }}<br>
-        Deposit Amount: {{ deposit_amount.mainchain }}<br>
-        It may take around 3 minutes for ELA to be deposited.
-      </p>
-      {% endif %}
-      <button class="btn btn-secondary" type="submit" name="submit_mainchain" style="background-color: #00dd62;">Request ELA</button>
-    </form>
+    <div class="row align-items-center justify-content-center">
+        <h5 class="card-title">Request ELA on Mainchain Address</h5>
+        <div class="col-md-12">
+            <form class="form-group text-center" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form.mainchain.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                {% if output.mainchain %}
+                    <h5 class="card-title">Response:</h5>
+                    <p class="card-text">
+                        Address: {{ address.mainchain }}<br>
+                        Deposit Amount: {{ deposit_amount.mainchain }}<br>
+                        It may take around 3 minutes for ELA to be deposited.
+                    </p>
+                {% endif %}
+                <button class="submit-button" type="submit" name="submit_mainchain">Request ELA</button>
+            </form>
+        </div>
+    </div>
 
-    <h5 class="card-title">Request ELA/DIDSC on DID Sidechain Address</h5>
-    <form  class="form-group" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.did.as_p }}
-      {% if output.did %}
-      <h5 class="card-title">Response:</h5>
-      <p class="card-text">
-        Address: {{ address.did }}<br>
-        Deposit Amount: {{ deposit_amount.did }}<br>
-        It may take around 10-15 minutes for ELA to be deposited.
-      </p>
-      {% endif %} 
-      <button class="btn btn-secondary" type="submit" name="submit_did" style="background-color: #00dd62;">Request ELA/DIDSC</button>
-    </form>
+    <div class="service-divider" style="background-color: black;"></div>
 
-    <h5 class="card-title">Request ELA/TOKENSC on Token Sidechain Address</h5>
-    <form  class="form-group" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.token.as_p }}
-      {% if output.token %}
-      <h5 class="card-title">Response:</h5>
-      <p class="card-text">
-        Address: {{ address.token }}<br>
-        Deposit Amount: {{ deposit_amount.token }}<br>
-        It may take around 10-15 minutes for ELA/TOKENSC to be deposited.
-      </p>
-      {% endif %}
-      <button class="btn btn-secondary" type="submit" name="submit_token" style="background-color: #00dd62;">Request ELA/TOKENSC</button>
-    </form>
+    <div class="row align-items-center justify-content-center">
+        <h5 class="card-title">Request ELA/DIDSC on DID Sidechain Address</h5>
+        <div class="col-md-12">
+            <form class="form-group text-center" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form.did.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                {% if output.did %}
+                    <h5 class="card-title">Response:</h5>
+                    <p class="card-text">
+                        Address: {{ address.did }}<br>
+                        Deposit Amount: {{ deposit_amount.did }}<br>
+                        It may take around 10-15 minutes for ELA/DIDSC to be deposited.
+                    </p>
+                {% endif %}
+                <button class="submit-button" type="submit" name="submit_did">Request ELA/DIDSC</button>
+            </form>
+        </div>
+    </div>
 
-    <h5 class="card-title">Request ELA/ETHSC on ETH Sidechain Address</h5>
-    <form  class="form-group" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.eth.as_p }}
-      {% if output.eth %}
-      <h5 class="card-title">Response:</h5>
-      <p class="card-text">
-        Address: {{ address.eth }}<br>
-        Deposit Amount: {{ deposit_amount.eth }}<br>
-        It may take around 1 minute for ELA/ETHSC to be deposited.
-      </p>
-      {% endif %}
-      <button class="btn btn-secondary" type="submit" name="submit_eth" style="background-color: #00dd62;">Request ELA/ETHSC</button>
-    </form>
+    <div class="service-divider" style="background-color: black;"></div>
+
+    <div class="row align-items-center justify-content-center">
+        <h5 class="card-title">Request ELA/TOKENSC on Token Sidechain Address</h5>
+        <div class="col-md-12">
+            <form class="form-group text-center" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form.token.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                {% if output.token %}
+                    <h5 class="card-title">Response:</h5>
+                    <p class="card-text">
+                        Address: {{ address.token }}<br>
+                        Deposit Amount: {{ deposit_amount.token }}<br>
+                        It may take around 10-15 minutes for ELA/TOKENSC to be deposited.
+                    </p>
+                {% endif %}
+                <button class="submit-button" type="submit" name="submit_token">Request ELA/TOKENSC</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="service-divider" style="background-color: black;"></div>
+
+    <div class="row align-items-center justify-content-center">
+        <h5 class="card-title">Request ELA/ETHSC on ETH Sidechain Address</h5>
+        <div class="col-md-12">
+            <form class="form-group text-center" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form.eth.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                {% if output.eth %}
+                    <h5 class="card-title">Response:</h5>
+                    <p class="card-text">
+                        Address: {{ address.eth }}<br>
+                        Deposit Amount: {{ deposit_amount.eth }}<br>
+                        It may take around 10-15 minutes for ELA/ETHSC to be deposited.
+                    </p>
+                {% endif %}
+                <button class="submit-button" type="submit" name="submit_eth">Request ELA/ETHSC</button>
+            </form>
+        </div>
+    </div>
 {% endblock service %}

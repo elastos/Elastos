@@ -68,13 +68,34 @@
         <h5 class="card-title">Content:</h5>
         <p class="card-text">{{ content | linebreaks }}</p>
           <a href="{% url 'service:verify_and_show' %}" methods="GET">
-            <button type="submit" class="btn btn-secondary" style="background-color: #00dd62;">Show Again</button>
+            <button type="submit" class="submit-button">Show Again</button>
         </a>
     {% else %}
-         <form class="form-group" method="post">
-             {% csrf_token %}
-             {{ form.as_p }}
-            <button class="btn btn-secondary" type="submit" style="background-color: #00dd62;">Submit</button>
-         </form>
+        <div class="row align-items-center justify-content-center">
+            <div class="col-md-12 text-center">
+                <p class="form-header">
+                    Either prepopulate info from one of your previously uploaded files or enter the information
+                    below
+                </p>
+            </div>
+            <div class="col-md-12">
+                <form class="form-group text-center" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form.visible_fields %}
+                        <p>
+                            <span class="form-field-label">{{ field.label_tag }}</span><br>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small style="color: grey">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p style="color: red">{{ error }}</p>
+                            {% endfor %}
+                        </p>
+                    {% endfor %}
+                    <button class="submit-button" type="submit">Show</button>
+                </form>
+            </div>
+        </div>
     {% endif %}
 {% endblock service %}

@@ -54,3 +54,5 @@ class DIDUserChangeForm(UserChangeForm):
     class Meta:
         model = DIDUser
         fields = ('email', 'name', 'did',)
+
+

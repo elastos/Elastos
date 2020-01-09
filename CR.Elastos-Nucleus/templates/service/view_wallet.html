@@ -60,59 +60,125 @@
 {% endblock description %}
 
 {% block service %}
-    <h5 class="card-title">Mainchain Balance</h5>
-    <form  class="form-group" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.mainchain.as_p }}
-      {% if output.mainchain %}
-      <h5 class="card-title">Response:</h5>
-      <p class="card-text">
-        Address: {{ address.mainchain }}<br>
-        Balance: {{ balance.mainchain }}
-      </p>
-      {% endif %}
-      <button class="btn btn-secondary" type="submit" name="submit_mainchain" style="background-color: #00dd62;">View Wallet</button>
-    </form>
+    <div class="row align-items-center justify-content-center">
+        <h5 class="card-title">Mainchain Balance</h5>
+        <div class="col-md-12">
+            <form class="form-group text-center" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form.mainchain.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                {% if output.mainchain %}
+                    <h5 class="card-title">Response:</h5>
+                    <p class="card-text">
+                        Address: {{ address.mainchain }}<br>
+                        Balance: {{ balance.mainchain }} ELA
+                    </p>
+                {% endif %}
+                <button class="submit-button" type="submit" name="submit_mainchain">View Mainchain Balance</button>
+            </form>
+        </div>
+    </div>
 
-    <h5 class="card-title">DID Sidechain Balance</h5>
-    <form  class="form-group" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.did.as_p }}
-      {% if output.did %}
-      <h5 class="card-title">Response:</h5>
-      <p class="card-text">
-        Address: {{ address.did }}<br>
-        Balance: {{ balance.did }}
-      </p>
-      {% endif %} 
-      <button class="btn btn-secondary" type="submit" name="submit_did" style="background-color: #00dd62;">View Wallet</button>
-    </form>
+    <div class="service-divider" style="background-color: black;"></div>
 
-    <h5 class="card-title">Token Sidechain Balance</h5>
-    <form  class="form-group" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.token.as_p }}
-      {% if output.token %}
-      <h5 class="card-title">Response:</h5>
-      <p class="card-text">
-        Address: {{ address.token }}<br>
-        Balance: {{ balance.token }}
-      </p>
-      {% endif %}
-      <button class="btn btn-secondary" type="submit" name="submit_token" style="background-color: #00dd62;">View Wallet</button>
-    </form>
+    <div class="row align-items-center justify-content-center">
+        <h5 class="card-title">DID Sidechain Balance</h5>
+        <div class="col-md-12">
+            <form class="form-group text-center" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form.did.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                {% if output.did %}
+                    <h5 class="card-title">Response:</h5>
+                    <p class="card-text">
+                        Address: {{ address.did }}<br>
+                        Balance: {{ balance.did }} ELA/DIDSC
+                    </p>
+                {% endif %}
+                <button class="submit-button" type="submit" name="submit_did">View DID Sidechain Balance</button>
+            </form>
+        </div>
+    </div>
 
-    <h5 class="card-title">ETH Sidechain Balance</h5>
-    <form  class="form-group" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.eth.as_p }}
-      {% if output.eth %}
-      <h5 class="card-title">Response:</h5>
-      <p class="card-text">
-        Address: {{ address.eth }}<br>
-        Balance: {{ balance.eth }}
-      </p>
-      {% endif %}
-      <button class="btn btn-secondary" type="submit" name="submit_eth" style="background-color: #00dd62;">View Wallet</button>
-    </form>
+    <div class="service-divider" style="background-color: black;"></div>
+
+    <div class="row align-items-center justify-content-center">
+        <h5 class="card-title">Token Sidechain Balance</h5>
+        <div class="col-md-12">
+            <form class="form-group text-center" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form.token.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                {% if output.token %}
+                    <h5 class="card-title">Response:</h5>
+                    <p class="card-text">
+                        Address: {{ address.token }}<br>
+                        Balance: {{ balance.token }} ELA/TOKENSC
+                    </p>
+                {% endif %}
+                <button class="submit-button" type="submit" name="submit_token">View Token Sidechain Balance</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="service-divider" style="background-color: black;"></div>
+
+    <div class="row align-items-center justify-content-center">
+        <h5 class="card-title">ETH Sidechain Balance</h5>
+        <div class="col-md-12">
+            <form class="form-group text-center" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form.eth.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                {% if output.eth %}
+                    <h5 class="card-title">Response:</h5>
+                    <p class="card-text">
+                        Address: {{ address.eth }}<br>
+                        Balance: {{ balance.eth }} ELA/ETHSC
+                    </p>
+                {% endif %}
+                <button class="submit-button" type="submit" name="submit_eth">View ETH Sidechain Balance</button>
+            </form>
+        </div>
+    </div>
 {% endblock service %}

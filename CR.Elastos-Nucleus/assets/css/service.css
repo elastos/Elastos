@@ -38,10 +38,10 @@
 }
 
 .service-divider {
-  height: 1px;
-  opacity: 0.8;
-  background-color: white;
-  margin: 0px 30px 30px 30px;
+    height: 1px;
+    opacity: 0.8;
+    background-color: white;
+    margin: 0px 30px 30px 30px;
 }
 
 /*----- Tabs -----*/
@@ -89,7 +89,7 @@ li.active a, li.active a:hover {
 .tab-content {
     margin: 0px 30px;
     border-radius: 4px;
-    background-color: rgba(107, 121, 152, 0.7);
+    background-color: #ffffff;
 }
 
 .tab {
@@ -110,9 +110,34 @@ pre.prettyprint {
     border: none !important;
 }
 
-.network-button {
-  width: 287px;
+.submit-button {
+  width: 250px;
   height: 44px;
-  border-radius: 4px;
-  background-color: #5ac8fa;
+  border-radius: 1px;
+  background-color: #00dd62;
+}
+
+.form-header {
+  height: 74px;
+  font-size: 18px;
+  font-weight: 600;
+  font-stretch: normal;
+  font-family: 'Overpass', sans-serif;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.form-field-label {
+  width: 36px;
+  height: 22px;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #6b7998;
 }

@@ -5,25 +5,32 @@
   <title>Edit Profile - Elastos Nucleus</title>
 {% endblock title %}
 
+{% block scripts %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
+{% endblock %}
+
 {% block content %}
     <div class="row align-items-center justify-content-center">
-        <div class="col-md-8">
-          <form method="post">
-            {% csrf_token %}
-            {% for field in form.visible_fields %}
-              <p>
-                {{ field.label_tag }}<br>
-                {{ field }}
-                {% if field.help_text %}
-                  <small style="color: grey">{{ field.help_text }}</small>
-                {% endif %}
-                {% for error in field.errors %}
-                  <p style="color: red">{{ error }}</p>
+        <div class="col-md-12 text-center">
+            <h4 class="login-header">Edit your information below</h4>
+        </div>
+        <div class="col-md-12">
+            <form class="text-center" method="post">
+                {% csrf_token %}
+                {% for field in form.visible_fields %}
+                    <p>
+                        <span class="form-field-label">{{ field.label_tag }}</span><br>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </p>
                 {% endfor %}
-              </p>
-            {% endfor %}
-            <button type="submit">Change</button>
-          </form>
+                <button class="register-button" type="submit" style="margin-bottom: 30px;">Change</button>
+            </form>
         </div>
     </div>
 {% endblock %}
