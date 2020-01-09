@@ -19,9 +19,8 @@ function csrfSafeMethod(method) {
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
 
-
-$('#id_Files').change(function () {
-    var fileName = $('#id_Files option:selected').text()
+$('#id_select_files').change(function () {
+    var fileName = $('#id_select_files option:selected').text()
     var csrftoken = getCookie('csrftoken');
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
