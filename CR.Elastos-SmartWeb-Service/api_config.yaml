@@ -13,6 +13,7 @@ name: elastos-smartweb-service.nucleusconsole.com
 #
 title: Elastos Smartweb Service gRPC API
 apis:
+- name: health_check.HealthServicer
 - name: common.Common
 - name: hive.Hive
 - name: wallet.Wallet
@@ -23,6 +24,8 @@ apis:
 #
 usage:
   rules:
+  - selector: health_check.HealthServicer.Check
+    allow_unregistered_calls: true
   - selector: common.Common.GenerateAPIRequest
     allow_unregistered_calls: true
   - selector: common.Common.GetAPIKey
