@@ -398,8 +398,12 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 			proposalState.TerminatedHeight = height
 			proposalState.Status = Aborted
 		case payload.Finalized:
-			if int(proposalTracking.Stage) == len(proposalState.Proposal.Budgets) {
-				proposalState.Status = Finished
+			proposalState.Status = Finished
+			for _, budget := range proposalState.Proposal.Budgets {
+				if budget.Type == payload.FinalPayment {
+					proposalState.WithdrawableBudgets[budget.Stage] = budget.Amount
+					break
+				}
 			}
 		}
 	}, func() {
@@ -417,6 +421,12 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 			proposalState.Status = status
 		case payload.Finalized:
 			proposalState.Status = status
+			for _, budget := range proposalState.Proposal.Budgets {
+				if budget.Type == payload.FinalPayment {
+					delete(proposalState.WithdrawableBudgets, budget.Stage)
+					break
+				}
+			}
 		}
 	})
 }
