@@ -318,3 +318,11 @@ const char *JsonGenerator_Finish(JsonGenerator *generator)
 
     return buffer;
 }
+
+void JsonGenerator_Destroy(JsonGenerator *generator)
+{
+    if (!generator || !generator->buffer)
+        return;
+
+    free(generator->buffer);
+}

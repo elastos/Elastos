@@ -360,8 +360,10 @@ const char* Presentation_ToJson(Presentation *pre, int compact, int forsign)
     if (!gen)
         return NULL;
 
-    if (Presentation_ToJson_Internal(gen, pre, compact, forsign) < 0)
-        return NULL; // TODO: to call finished ?
+    if (Presentation_ToJson_Internal(gen, pre, compact, forsign) < 0) {
+        JsonGenerator_Destroy(gen);
+        return NULL;
+    }
 
     return JsonGenerator_Finish(gen);
 }

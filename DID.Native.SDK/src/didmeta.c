@@ -54,15 +54,15 @@ static int DIDMeta_ToJson_Internal(JsonGenerator *gen, DIDMeta *meta)
     assert(meta);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
-    CHECK(JsonGenerator_WriteStringField(gen, "alias",
-            *meta->alias ? meta->alias : NULL));
-    CHECK(JsonGenerator_WriteStringField(gen, "deactived",
-            (!meta->deactived) ? "false" : "true"));
-    CHECK(JsonGenerator_WriteStringField(gen, "txid",
-            *meta->txid ? meta->txid : NULL));
-    CHECK(JsonGenerator_WriteStringField(gen, "timestamp",
-            meta->timestamp <= 0 ? NULL :
-            get_time_string(_timestring, sizeof(_timestring), &meta->timestamp)));
+    if (*meta->alias)
+        CHECK(JsonGenerator_WriteStringField(gen, "alias", meta->alias));
+    if (meta->deactived)
+        CHECK(JsonGenerator_WriteStringField(gen, "deactived", "true"));
+    if (*meta->txid)
+        CHECK(JsonGenerator_WriteStringField(gen, "txid", meta->txid));
+    if (meta->timestamp > 0)
+        CHECK(JsonGenerator_WriteStringField(gen, "timestamp",
+                get_time_string(_timestring, sizeof(_timestring), &meta->timestamp)));
     CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
@@ -78,8 +78,10 @@ const char *DIDMeta_ToJson(DIDMeta *meta)
     if (!gen)
         return NULL;
 
-    if (DIDMeta_ToJson_Internal(gen, meta) == -1)
+    if (DIDMeta_ToJson_Internal(gen, meta) == -1) {
+        JsonGenerator_Destroy(gen);
         return NULL;
+    }
 
     return JsonGenerator_Finish(gen);
 }
@@ -91,44 +93,35 @@ int DIDMeta_FromJson(DIDMeta *meta, const char *json)
     time_t timestamp;
     int rc;
 
-    if (!meta || !json)
+    if (!meta)
         return -1;
 
-    memset(meta, 0, sizeof(DIDMeta));
+    if (!json || !*json)
+        return 0;
 
     root = cJSON_Parse(json);
     if (!root)
         return -1;
 
     item = cJSON_GetObjectItem(root, "alias");
-    if (!item)
-        goto errorExit;
-
-    if (cJSON_IsString(item) &&
+    if (item && cJSON_IsString(item) &&
             DIDMeta_SetAlias(meta, cJSON_GetStringValue(item)) == -1)
         goto errorExit;
 
     item = cJSON_GetObjectItem(root, "deactived");
-    if (!item || !cJSON_IsString(item))
-        goto errorExit;
-
-    deactived = !strcmp(item->valuestring, "false") ? false : true;
-    if (DIDMeta_SetDeactived(meta, deactived) == -1)
-        goto errorExit;
+    if (item && cJSON_IsString(item)) {
+        deactived = !strcmp(item->valuestring, "true") ? true : false;
+        if (DIDMeta_SetDeactived(meta, deactived) == -1)
+            goto errorExit;
+    }
 
     item = cJSON_GetObjectItem(root, "txid");
-    if (!item)
-        goto errorExit;
-
-    if (cJSON_IsString(item) &&
+    if (item && cJSON_IsString(item) &&
             DIDMeta_SetTxid(meta, cJSON_GetStringValue(item)) == -1)
         goto errorExit;
 
     item = cJSON_GetObjectItem(root, "timestamp");
-    if (!item)
-        goto errorExit;
-
-    if (cJSON_IsString(item) && (parse_time(&timestamp, item->valuestring) == -1 ||
+    if (item && cJSON_IsString(item) && (parse_time(&timestamp, item->valuestring) == -1 ||
             DIDMeta_SetTimestamp(meta, timestamp) == -1))
         goto errorExit;
 
@@ -192,7 +185,6 @@ int DIDMeta_SetTxid(DIDMeta *meta, const char *txid)
     return 0;
 }
 
-
 int DIDMeta_GetAlias(DIDMeta *meta, char *alias, size_t size)
 {
     if (!meta || !alias || strlen(meta->alias) >= size)
@@ -232,8 +224,7 @@ int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta)
     if (!meta || !frommeta)
         return -1;
 
-    if (*frommeta->alias)
-        strcpy(meta->alias, frommeta->alias);
+    strcpy(meta->alias, frommeta->alias);
     if (*frommeta->txid)
         strcpy(meta->txid, frommeta->txid);
     if (!meta->deactived)
@@ -241,4 +232,15 @@ int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta)
     if (!frommeta->timestamp)
         meta->timestamp = frommeta->timestamp;
     return 0;
+}
+
+bool DIDMeta_IsEmpty(DIDMeta *meta)
+{
+    if (!meta)
+        return true;
+
+    if (*meta->alias && *meta->txid && !meta->deactived && !meta->timestamp)
+        return true;
+
+    return false;
 }

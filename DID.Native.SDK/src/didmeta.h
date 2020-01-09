@@ -67,6 +67,8 @@ time_t DIDMeta_GetTimestamp(DIDMeta *meta);
 
 int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta);
 
+bool DIDMeta_IsEmpty(DIDMeta *meta);
+
 #ifdef __cplusplus
 }
 #endif

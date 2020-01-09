@@ -35,18 +35,9 @@ extern "C" {
 #endif
 
 #define MAX_ALIAS       64
+#define MAX_MNEMONIC    128
 
 typedef struct DIDBackend    DIDBackend;
-
-struct DIDEntry {
-    DID did;
-    char alias[MAX_ALIAS];
-};
-
-struct CredentialEntry {
-    DIDURL id;
-    char alias[MAX_ALIAS];
-};
 
 struct DIDStore {
     char root[PATH_MAX];

@@ -66,7 +66,7 @@ typedef ptrdiff_t       ssize_t;
  * a centralized registration authority.
  * It includes method specific string. (elastos:id:ixxxxxxxxxx).
  */
-typedef struct DID              DID;
+typedef struct DID                 DID;
 /**
  * \~English
  * DID URL defines by the did-url rule, refers to a URL that begins with a DID
@@ -74,21 +74,21 @@ typedef struct DID              DID;
  * identifies the resource to be located.
  * DIDURL includes DID and Url fragment by user defined.
  */
-typedef struct DIDURL           DIDURL;
+typedef struct DIDURL               DIDURL;
 /**
  * \~English
  * Public keys are used for digital signatures, encryption and
  * other cryptographic operations, which are the basis for purposes such as
  * authentication or establishing secure communication with service endpoints.
  */
-typedef struct PublicKey        PublicKey;
+typedef struct PublicKey            PublicKey;
 /**
  * \~English
  * Credential is a set of one or more claims made by the same entity.
  * Credentials might also include an identifier and metadata to
  * describe properties of the credential.
  */
-typedef struct Credential       Credential;
+typedef struct Credential           Credential;
 /**
  * \~English
  * A Presentation can be targeted to a specific verifier by using a Linked Data
@@ -96,14 +96,14 @@ typedef struct Credential       Credential;
  * This also helps prevent a verifier from reusing a verifiable presentation as
  * their own.
  */
-typedef struct Presentation     Presentation;
+typedef struct Presentation         Presentation;
 /**
  * \~English
  * A service endpoint may represent any type of service the subject
  * wishes to advertise, including decentralized identity management services
  * for further discovery, authentication, authorization, or interaction.
  */
-typedef struct Service          Service;
+typedef struct Service              Service;
 /**
  * \~English
  * A DID resolves to a DID Document. This is the concrete serialization of
@@ -113,46 +113,36 @@ typedef struct Service          Service;
  * credential and services. One document must be have only subject,
  * and at least one public key.
  */
-typedef struct DIDDocument      DIDDocument;
+typedef struct DIDDocument          DIDDocument;
 /**
  * \~English
  * A DIDDocument Builder to modify DIDDocument elems.
  */
-typedef struct DIDDocumentBuilder DIDDocumentBuilder;
+typedef struct DIDDocumentBuilder   DIDDocumentBuilder;
 /**
  * \~English
  * A issuer is the did to issue credential. Issuer includes issuer's did and
  * issuer's sign key.
  */
-typedef struct Issuer           Issuer;
-/**
- * \~English
- * DIDEntry includes did(DID) and alias for list did callback.
- */
-typedef struct DIDEntry         DIDEntry;
-/**
- * \~English
- * CredentialEntry includes id(DIDURL) and alias for list credential callback.
- */
-typedef struct CredentialEntry  CredentialEntry;
+typedef struct Issuer               Issuer;
 /**
  * \~English
  * The value of the credential Subject property is defined as
  * a set of objects that contain one or more properties that are
  * each related to a subject of the credential.
  */
-typedef struct Property         Property;
+typedef struct Property             Property;
 /**
  * \~English
  * DIDStore is local store for specified DID.
  */
-typedef struct DIDStore         DIDStore;
+typedef struct DIDStore             DIDStore;
 /**
  * \~English
  * DIDAdapter is use for various method to create did transaction and resolve
  * did document from chain.
  */
-typedef struct DIDAdapter      DIDAdapter;
+typedef struct DIDAdapter           DIDAdapter;
 
 struct DIDAdapter {
     const char* (*createIdTransaction) (DIDAdapter *adapter, const char *payload, const char *memo);
@@ -161,15 +151,13 @@ struct DIDAdapter {
 /**
  * \~English
  * DID list callbacks, return alias about did.
- * API need to free entry memory.
  */
-typedef int DIDStore_GetDIDAliasCallback(DIDEntry *entry, void *context);
+typedef int DIDStore_GetDIDCallback(DID *did, void *context);
 /**
  * \~English
  * Credential list callbacks, return alias about credential.
- * API need to free entry memory.
  */
-typedef int DIDStore_GetCredAliasCallback(CredentialEntry *entry, void *context);
+typedef int DIDStore_GetCredCallback(DIDURL *id, void *context);
 
 /******************************************************************************
  * DID
@@ -1932,14 +1920,33 @@ DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
  * Create new DID Document and store in the DID Store.
  *
  * @param
- *      storepass              [in] The pass word of DID holder.
+ *      store                     [in] THe handle to DIDStore.
  * @param
- *      alias                   [in] The nickname of DID.
+ *      alias                     [in] The nickname of DID.
  * @return
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
  */
 DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char *alias);
+
+/**
+ * \~English
+ * Create new DID Document and store in the DID Store.
+ *
+ * @param
+ *      store                     [in] THe handle to DIDStore.
+* @param
+ *      storepass                 [in] The password of DIDStore.
+ * @param
+ *      mnemonic                  [out] The mnemonic buffer.
+ * @param
+ *      size                      [out] The buffter size.
+ * @return
+ *      If no error occurs, return the handle to DID Document.
+ *      Otherwise, return NULL.
+ */
+DID_API int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
+        char *mnemonic, size_t size);
 
 /**
  * \~English
@@ -2016,13 +2023,15 @@ DID_API void DIDStore_DeleteDID(DIDStore *store, DID *did);
  * List DIDs in DID Store.
  *
  * @param
- *      callback                [in] Get DID alias call back.
+ *      store                   [in] The handle to DIDStore.
  * @param
- *      context                 [in] The caller defined context data.
+ *      dids                    [out] The DIDs array.
+ * @param
+ *      size                    [out] The DID array.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDAliasCallback *callback,
+DID_API int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDCallback *callback,
         void *context);
 
 /**
@@ -2102,7 +2111,7 @@ DID_API void DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
-        DIDStore_GetCredAliasCallback *callback, void *context);
+        DIDStore_GetCredCallback *callback, void *context);
 
 /**
  * \~English
@@ -2122,7 +2131,7 @@ DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *credid,
-        const char *type, DIDStore_GetCredAliasCallback *callback, void *context);
+        const char *type, DIDStore_GetCredCallback *callback, void *context);
 
 /**
  * \~English

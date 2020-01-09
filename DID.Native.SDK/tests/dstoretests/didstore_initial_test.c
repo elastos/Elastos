@@ -14,11 +14,7 @@
 #include "diddocument.h"
 #include "didtest_adapter.h"
 
-static const char *privateindex = "/private/index";
-static const char *privatekey = "/private/key";
-static const char *storedirroot = "/ids";
-static const char *metastring = "/.meta";
-static const char *alias = "little fish";
+static const char *alias = "littlefish";
 
 static const char *getpassword(const char *walletDir, const char *walletId)
 {
@@ -162,6 +158,8 @@ static void test_didstore_initial_error(void)
 
     store = DIDStore_Initialize("", adapter);
     CU_ASSERT_PTR_NULL(store);
+
+    TestDIDAdapter_Destroy(adapter);
     DIDStore_Deinitialize();
 }
 

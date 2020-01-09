@@ -18,13 +18,14 @@ static DIDDocument *document;
 static DID *did;
 static DIDStore *store;
 
-int get_did_alias(DIDEntry *entry, void *context)
+int get_did(DID *did, void *context)
 {
-    if(!entry)
-        return -1;
+    char _did[MAX_DID];
 
-    printf("\n did: %s, alias: %s\n", entry->did.idstring, entry->alias);
-    free(entry);
+    if(!did)
+        return 0;
+
+    printf("\n did: %s\n", DID_ToString(did, _did, sizeof(_did)));
     return 0;
 }
 
@@ -40,7 +41,7 @@ static void test_didstore_list_did(void)
 {
     int rc;
 
-    rc = DIDStore_ListDID(store, get_did_alias, NULL);
+    rc = DIDStore_ListDID(store, get_did, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 
@@ -56,9 +57,8 @@ static void test_didstore_load_did(void)
 
 static void test_didstore_delete_did(void)
 {
-    if(DIDStore_ContainsDID(store, did) == true) {
+    if(DIDStore_ContainsDID(store, did))
         DIDStore_DeleteDID(store, did);
-    }
 
     bool rc = DIDStore_ContainsDID(store, did);
     CU_ASSERT_NOT_EQUAL(rc, true);

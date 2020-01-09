@@ -804,8 +804,10 @@ const char *DIDDocument_ToJson(DIDDocument *doc, int compact, int forsign)
     if (!gen)
         return NULL;
 
-    if (DIDDocument_ToJson_Internal(gen, doc, compact, forsign) < 0)
+    if (DIDDocument_ToJson_Internal(gen, doc, compact, forsign) < 0) {
+        JsonGenerator_Destroy(gen);
         return NULL;
+    }
 
     return JsonGenerator_Finish(gen);
 }

@@ -99,8 +99,10 @@ static const char *didRequest_toJson(DIDRequest *req, DIDRequest_Type type)
     if (!gen)
         return NULL;
 
-    if (didrequest_toJson_internal(gen, req, type) < 0)
+    if (didrequest_toJson_internal(gen, req, type) < 0) {
+        JsonGenerator_Destroy(gen);
         return NULL;
+    }
 
     return JsonGenerator_Finish(gen);
 }

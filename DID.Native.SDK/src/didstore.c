@@ -82,20 +82,22 @@ typedef enum DIDStore_Type {
     DIDStore_PrivateKey
 } DIDStore_Type;
 
-static const char* methods[] = { "", "key", "index", "", "mnemonic", "", "document",
+static const char* methods[] = { "", "key", "index", "mnemonic", "", "", "document",
             "credentials", "credentials", "credentials", "privatekeys"};
 
-typedef struct DID_Alias_Helper {
+typedef struct DID_List_Helper {
     DIDStore *store;
-    DIDStore_GetDIDAliasCallback *cb;
-} DID_Alias_Helper;
+    DIDStore_GetDIDCallback *cb;
+    void *context;
+} DID_List_Helper;
 
-typedef struct Cred_Alias_Helper {
+typedef struct Cred_List_Helper {
     DIDStore *store;
-    DIDStore_GetCredAliasCallback *cb;
+    DIDStore_GetCredCallback *cb;
+    void *context;
     DID did;
     const char *type;
-} Cred_Alias_Helper;
+} Cred_List_Helper;
 
 static int test_path(const char *path)
 {
@@ -119,6 +121,7 @@ static int list_dir(const char *path, const char *pattern,
 {
     char full_pattern[PATH_MAX];
     size_t len;
+    int rc = 0;
 
     assert(path);
     assert(pattern);
@@ -135,8 +138,10 @@ static int list_dir(const char *path, const char *pattern,
         return -1;
 
     do {
-        if(callback(c_file.name, context) < 0)
+        rc = callback(c_file.name, context);
+        if(rc < 0) {
             break;
+        }
     } while (_findnext(hFile, &c_file) == 0);
 
     _findclose(hFile);
@@ -150,14 +155,18 @@ static int list_dir(const char *path, const char *pattern,
 
     for (int i = 0; i < gl.gl_pathc; i++) {
         char *fn = gl.gl_pathv[i] + pos;
-        if(callback(fn, context) < 0)
+        rc = callback(fn, context);
+        if(rc < 0)
             break;
     }
 
     globfree(&gl);
 #endif
 
-    return 0;
+    if (!rc)
+        callback(NULL, context);
+
+    return rc;
 }
 
 static void delete_file(const char *path);
@@ -216,7 +225,8 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
     if (type == DIDStore_Root)
         return file_root;
 
-    if (type != DIDStore_Rootkey && type != DIDStore_RootIndex) {
+    if (type != DIDStore_Rootkey && type != DIDStore_RootIndex &&
+            type != DIDStore_RootMnemonic) {
         len = snprintf(file_root, sizeof(file_root), "%s/ids", store->root);
         if (len < 0 || len > sizeof(file_root))
             return NULL;
@@ -238,7 +248,8 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
         return NULL;
 
     if (type == DIDStore_Doc || type == DIDStore_Rootkey ||
-            type == DIDStore_RootIndex || type == DIDStore_DIDMeta)
+            type == DIDStore_RootIndex || type == DIDStore_RootMnemonic ||
+            type == DIDStore_DIDMeta)
        return file_root;
 
     len = snprintf(file_suffix, sizeof(file_suffix), "/%s", methods[type]);
@@ -291,7 +302,8 @@ static const char *get_file_path(DIDStore *store, DIDStore_Type type,
     if (type == DIDStore_DID)
         return get_file_root(store, DIDStore_Doc, didstring, fragment, create);
 
-    if (type == DIDStore_Doc || type == DIDStore_Rootkey || type == DIDStore_RootIndex) {
+    if (type == DIDStore_Doc || type == DIDStore_Rootkey || type == DIDStore_RootIndex ||
+            type == DIDStore_RootMnemonic) {
         len = snprintf(file_path, sizeof(file_path), "%s/%s", root, methods[type]);
         if (len < 0 || len > sizeof(file_path))
             return NULL;
@@ -375,6 +387,11 @@ static int load_files(const char *path, const char **string)
 
 static int is_empty_helper(const char *path, void *context)
 {
+    if (!path) {
+        *(int *)context = 0;   	
+        return 0;
+    }
+
     *(int *)context = 1;
     return -1;
 }
@@ -385,32 +402,39 @@ static bool is_empty(const char *path)
 
     assert(path);
 
-    if (list_dir(path, "*", is_empty_helper, &flag) < 0)
+    if (list_dir(path, "*", is_empty_helper, &flag) < 0 && flag)
         return false;
 
-    if (flag)
-        return true;
-
-    return false;
+    return true;
 }
 
 static int store_didmeta(DIDStore *store, DIDMeta *meta, DID *did)
 {
     const char *path, *data;
-    int rc;
+    int rc = 0;
 
     assert(store);
     assert(meta);
     assert(did);
 
+    if (DIDMeta_IsEmpty(meta))
+        return 0;
+
     path = get_file_path(store, DIDStore_DIDMeta, did->idstring, NULL, 1);
     if (!path)
         return -1;
 
-    if (test_path(path) == S_IFDIR)
+    if (test_path(path) == S_IFDIR) {
         delete_file(path);
+        return -1;
+    }
 
     data = DIDMeta_ToJson(meta);
+    if (!data) {
+        delete_file(path);
+        return -1;
+    }
+
     rc = store_file(path, data);
     free((char*)data);
     return rc;
@@ -425,20 +449,23 @@ static int load_didmeta(DIDStore *store, DIDMeta *meta, const char *did)
     assert(meta);
     assert(did);
 
+    memset(meta, 0, sizeof(DIDMeta));
     path = get_file_path(store, DIDStore_DIDMeta, did, NULL, 0);
     if (!path)
         return -1;
 
     rc = test_path(path);
     if (rc < 0)
-        return -1;
-    else if (rc == S_IFDIR) {
+        return 0;
+
+    if (rc == S_IFDIR) {
         delete_file(path);
         return -1;
     }
 
     if (load_files(path, &data) == -1)
         return -1;
+
     rc = DIDMeta_FromJson(meta, data);
     free((char*)data);
     return rc;
@@ -482,14 +509,24 @@ static int store_credmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
     assert(meta);
     assert(id);
 
+    if (CredentialMeta_IsEmpty(meta))
+        return 0;
+
     path = get_file_path(store, DIDStore_CredentialMeta, id->did.idstring, id->fragment, 1);
     if (!path)
         return -1;
 
-    if (test_path(path) == S_IFDIR)
+    if (test_path(path) == S_IFDIR) {
         delete_file(path);
+        return -1;
+    }
 
     data = CredentialMeta_ToJson(meta);
+    if (!data) {
+        delete_file(path);
+        return -1;
+    }
+
     rc = store_file(path, data);
     free((char*)data);
     return rc;
@@ -512,8 +549,9 @@ static int load_credmeta(DIDStore *store, CredentialMeta *meta, const char *did,
 
     rc = test_path(path);
     if (rc < 0)
-        return -1;
-    else if (rc == S_IFDIR) {
+        return 0;
+
+    if (rc == S_IFDIR) {
         delete_file(path);
         return -1;
     }
@@ -638,6 +676,7 @@ static int store_seed(DIDStore *store, uint8_t *seed, size_t size, const char *s
 {
     unsigned char base64[512];
 
+    assert(store);
     assert(seed);
     assert(storepass);
     assert(*storepass);
@@ -655,7 +694,6 @@ static int store_seed(DIDStore *store, uint8_t *seed, size_t size, const char *s
 static ssize_t load_seed(DIDStore *store, uint8_t *seed, size_t size, const char *storepass)
 {
     const char *encrpted_seed;
-    unsigned char binseed[SEED_BYTES];
     ssize_t len;
 
     assert(store);
@@ -668,9 +706,46 @@ static ssize_t load_seed(DIDStore *store, uint8_t *seed, size_t size, const char
             &encrpted_seed) == -1)
         return -1;
 
-    len = decrypt_from_base64(binseed, storepass, encrpted_seed);
+    len = decrypt_from_base64(seed, storepass, encrpted_seed);
     free((char*)encrpted_seed);
-    memcpy(seed, binseed, size);
+
+    return len;
+}
+
+static int store_mnemonic(DIDStore *store, const char *storepass, const char *mnemonic)
+{
+    unsigned char base64[512];
+
+    assert(store);
+    assert(mnemonic);
+    assert(*mnemonic);
+
+    if (encrypt_to_base64((char *)base64, storepass, mnemonic, strlen(mnemonic)) == -1)
+        return -1;
+
+    if (store_file(get_file_path(store, DIDStore_RootMnemonic, "private", NULL, 1),
+            (const char *)base64) == -1)
+        return -1;
+
+    return 0;
+}
+
+static ssize_t load_mnemonic(DIDStore *store, const char *storepass,
+        char *mnemonic, size_t size)
+{
+    const char *encrpted_mnemonic;
+    ssize_t len;
+
+    assert(store);
+    assert(mnemonic);
+    assert(size >= MAX_MNEMONIC);
+
+    if (load_files(get_file_path(store, DIDStore_RootMnemonic, "private", NULL, 0),
+        &encrpted_mnemonic) == -1)
+        return -1;
+
+    len = decrypt_from_base64(mnemonic, storepass, encrpted_mnemonic);
+    free((char*)encrpted_mnemonic);
 
     return len;
 }
@@ -714,28 +789,25 @@ static int store_index(DIDStore *store, int index)
 
 static int list_did_helper(const char *path, void *context)
 {
-    DID_Alias_Helper *dh = (DID_Alias_Helper*)context;
-    DIDEntry *entry;
-    DIDMeta meta;
+    DID_List_Helper *dh = (DID_List_Helper*)context;
+    const char *didpath;
+    DID did;
     int rc;
+
+    if (!path)
+        return dh->cb(NULL, dh->context);
 
     if (strcmp(path, ".") == 0 || strcmp(path, "..") == 0)
         return 0;
 
-    entry = (DIDEntry*)calloc(1, sizeof(DIDEntry));
-    if (!entry)
-        return -1;
+    if (strlen(path) >= sizeof(did.idstring)) {
+        didpath = get_file_root(dh->store, DIDStore_Doc, path, NULL, 0);
+        delete_file(didpath);
+        return 0;
+    }
 
-    strcpy((char*)entry->did.idstring, path);
-    if (load_didmeta(dh->store, &meta, path) == -1)
-        return -1;
-
-    rc = DIDMeta_GetAlias(&meta, entry->alias, sizeof(entry->alias));
-    if (rc)
-        return -1;
-
-    dh->cb(entry, NULL);
-    return 0;
+    strcpy(did.idstring, path);
+    return dh->cb(&did, dh->context);
 }
 
 static bool has_type(DID *did, const char *path, const char *type)
@@ -772,20 +844,20 @@ static bool has_type(DID *did, const char *path, const char *type)
 
 static int select_credential_helper(const char *path, void *context)
 {
+    Cred_List_Helper *ch = (Cred_List_Helper*)context;
     const char* string;
     Credential *credential;
-    CredentialEntry *entry;
-    CredentialMeta meta;
-    int rc;
+    const char *credpath;
+    DIDURL id;
 
-    Cred_Alias_Helper *ch = (Cred_Alias_Helper*)context;
-
-    assert(path);
+    if (!path)
+        return ch->cb(NULL, ch->context);
 
     if (strcmp(path, ".") == 0 || strcmp(path, "..") == 0)
         return -1;
 
-    if (load_files(path, &string) == -1)
+    credpath = get_file_path(ch->store, DIDStore_Credential, ch->did.idstring, path, 0);
+    if (load_files(credpath, &string) == -1)
         return -1;
 
     credential = Credential_FromJson(string, &(ch->did));
@@ -798,50 +870,38 @@ static int select_credential_helper(const char *path, void *context)
         if (!new_type)
             continue;
         if (strcmp(new_type, ch->type) == 0) {
-            entry = (CredentialEntry*)calloc(1, sizeof(CredentialEntry));
-            if (!entry)
-                continue;
-
-            strcpy((char*)entry->id.did.idstring, ch->did.idstring);
-            strcpy((char*)entry->id.fragment, path);
-            if (load_credmeta(ch->store, &meta, ch->did.idstring, path) == -1)
-                continue;
-            rc = CredentialMeta_GetAlias(&meta, entry->alias, sizeof(entry->alias));
-            if (rc)
-                continue;
-
-            return ch->cb(entry, NULL);
+            strcpy(id.did.idstring, ch->did.idstring);
+            strcpy(id.fragment, path);
+            Credential_Destroy(credential);
+            return ch->cb(&id, ch->context);
         }
     }
-    return -1;
+    Credential_Destroy(credential);
+    return 0;
 }
 
 static int list_credential_helper(const char *path, void *context)
 {
-    Cred_Alias_Helper *ch = (Cred_Alias_Helper*)context;
-    CredentialEntry *entry;
-    DIDURL *id;
-    CredentialMeta meta;
+    Cred_List_Helper *ch = (Cred_List_Helper*)context;
+    const char *credpath;
+    DIDURL id;
     int rc;
 
-    assert(path);
+    if (!path)
+        return ch->cb(NULL, ch->context);
 
-    if (strstr(path, ".") == 0 || strstr(path, "..") == 0)
+    if (strcmp(path, ".") == 0 || strcmp(path, "..") == 0)
         return 0;
 
-    entry = (CredentialEntry*)calloc(1, sizeof(CredentialEntry));
-    if (!entry)
-        return -1;
+    if (strlen(path) >= sizeof(id.fragment)) {
+        credpath = get_file_root(ch->store, DIDStore_Credential, ch->did.idstring, path, 0);
+        delete_file(credpath);
+        return 0;
+    }
 
-    strcpy((char*)entry->id.did.idstring, ch->did.idstring);
-    strcpy((char*)entry->id.fragment, path);
-    if (load_credmeta(ch->store, &meta, ch->did.idstring, path) == -1)
-        return -1;
-    rc = CredentialMeta_GetAlias(&meta, entry->alias, sizeof(entry->alias));
-    if (rc)
-        return -1;
-
-    return ch->cb(entry, NULL);
+    strcpy(id.did.idstring, ch->did.idstring);
+    strcpy(id.fragment, path);
+    return ch->cb(&id, ch->context);
 }
 
 static DIDDocument *create_document(DID *did, const char *key,
@@ -939,37 +999,56 @@ void DIDStore_Deinitialize()
     storeInstance = NULL;
 }
 
+int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
+        char *mnemonic, size_t size)
+{
+    if (!store || !mnemonic || size <= 0)
+        return -1;
+
+    return load_mnemonic(store, storepass, mnemonic, size);
+}
+
 int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
 {
-    const char *path, *string;
-    DIDMeta *meta;
+    const char *path, *data, *root;
+    DIDMeta meta;
+    int rc;
 
     if (!store || !document)
         return -1;
 
-    path = get_file_path(store, DIDStore_Doc, document->did.idstring, NULL, 1);
-    if (!path)
+    if (load_didmeta(store, &meta, document->did.idstring) == -1 ||
+            DIDMeta_SetAlias(&document->meta, alias) == -1 ||
+            DIDMeta_Merge(&meta, &document->meta) == -1)
         return -1;
 
-	string = DIDDocument_ToJson(document, 0, 0);
-	if (!string)
+    memcpy(&document->meta, &meta, sizeof(DIDMeta));
+	data = DIDDocument_ToJson(document, 0, 0);
+	if (!data)
 		return -1;
 
-    if (store_file(path, string) == 0) {
-        free((char*)string);
-        meta = document_getmeta(document);
-        if (DIDMeta_SetAlias(meta, alias) == -1)
-            return -1;
-
-        if (store_didmeta(store, meta, &document->did) == 0)
-            return 0;
-		else {
-			delete_file(path);
-			const char *did_path = get_file_root(store, DIDStore_DID, document->did.idstring, NULL, 0);
-			if (is_empty(did_path) == false)
-				delete_file(did_path);
-		}
+    path = get_file_path(store, DIDStore_Doc, document->did.idstring, NULL, 1);
+    if (!path) {
+        free((char*)data);
+        return -1;
     }
+
+    rc = store_file(path, data);
+    free((char*)data);
+    if (rc)
+        goto errorExit;
+
+    if (!store_didmeta(store, &document->meta, &document->did))
+        return 0;
+
+errorExit:
+    delete_file(path);
+
+    //check ids directory is empty or not
+    root = get_file_path(store, DIDStore_DID, document->did.idstring, NULL, 0);
+    if (is_empty(root))
+        delete_file(root);
+
     return -1;
 }
 
@@ -986,7 +1065,8 @@ DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did)
     rc = test_path(path);
     if (rc < 0)
         return NULL;
-    else if (rc == S_IFDIR) {
+
+    if (rc == S_IFDIR) {
         delete_file(path);
         return NULL;
     }
@@ -996,11 +1076,14 @@ DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did)
 
     document = DIDDocument_FromJson(string);
     free((char*)string);
+    if (!document)
+        return NULL;
 
     if (load_didmeta(store, &document->meta, document->did.idstring) == -1) {
         DIDDocument_Destroy(document);
         return NULL;
     }
+
     return document;
 }
 
@@ -1012,11 +1095,12 @@ bool DIDStore_ContainsDID(DIDStore *store, DID *did)
     if (!store || !did)
         return false;
 
-    path = get_file_path(store, DIDStore_DID, did->idstring, NULL, 0);
+    path = get_file_root(store, DIDStore_Doc, did->idstring, NULL, 0);
     rc = test_path(path);
     if (rc < 0)
         return false;
-    else if (rc == S_IFREG || is_empty(path) == false) {
+
+    if (rc == S_IFREG || is_empty(path)) {
         delete_file(path);
         return false;
     }
@@ -1038,33 +1122,35 @@ void DIDStore_DeleteDID(DIDStore *store, DID *did)
     path = get_file_path(store, DIDStore_DIDMeta, did->idstring, NULL, 0);
     if (test_path(path) > 0)
         delete_file(path);
-
-    return;
 }
 
-int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDAliasCallback *callback,
+int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDCallback *callback,
         void *context)
 {
     ssize_t size = 0;
-    char dir_path[PATH_MAX];
-    DID_Alias_Helper dh;
+    const char *root;
+    DID_List_Helper dh;
     int rc;
 
     if (!store || !callback)
         return -1;
 
-    strcpy(dir_path, store->root);
-    strcat(dir_path, "/ids");
-    rc = test_path(dir_path);
+    root = get_file_root(store, DIDStore_DID, NULL, NULL, 0);
+    if (!root)
+        return -1;
+
+    rc = test_path(root);
     if (rc < 0)
         return -1;
+
     if (rc != S_IFDIR)
         return -1;
 
     dh.store = store;
     dh.cb = callback;
+    dh.context = context;
 
-    if (list_dir(dir_path, "i*", list_did_helper, (void*)&dh) == -1)
+    if (list_dir(root, "*", list_did_helper, (void*)&dh) == -1)
         return -1;
 
     return 0;
@@ -1072,31 +1158,52 @@ int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDAliasCallback *callback,
 
 int DIDStore_StoreCredential(DIDStore *store, Credential *credential, const char *alias)
 {
-    const char *path, *data;
-    CredentialMeta *meta;
+    const char *path, *data, *root;
+    CredentialMeta meta;
+    DIDURL *id;
+    int rc;
 
     if (!store || !credential)
         return -1;
 
-    path = get_file_path(store, DIDStore_Credential, credential->id.did.idstring,
-            credential->id.fragment, 1);
-    if (!path)
+    id = Credential_GetId(credential);
+    if (!id)
         return -1;
 
+    if (load_credmeta(store, &meta, id->did.idstring, id->fragment) == -1 ||
+            CredentialMeta_SetAlias(&credential->meta, alias) == -1 ||
+            CredentialMeta_Merge(&meta, &credential->meta) == -1)
+        return -1;
+
+    memcpy(&credential->meta, &meta, sizeof(CredentialMeta));
     data = Credential_ToJson(credential, 1, 0);
     if (!data)
         return -1;
 
-    if (store_file(path, data) == 0) {
+    path = get_file_path(store, DIDStore_Credential, id->did.idstring, id->fragment, 1);
+    if (!path) {
         free((char*)data);
-        meta = credential_getmeta(credential);
-        if (CredentialMeta_SetAlias(meta, alias) == -1)
-            return -1;
-        if(store_credmeta(store, meta, &credential->id) == 0)
-            return 0;
-        else
-            delete_file(path);
+        return -1;
     }
+
+    rc = store_file(path, data);
+    free((char*)data);
+    if (rc)
+        goto errorExit;
+
+    if (!store_credmeta(store, &credential->meta, id))
+        return 0;
+
+errorExit:
+    delete_file(path);
+
+    root = get_file_root(store, DIDStore_Credential, id->did.idstring, id->fragment, 0);
+    if (is_empty(root))
+        delete_file(root);
+
+    root = get_file_root(store, DIDStore_CredentialRoot, id->did.idstring, id->fragment, 0);
+    if (is_empty(root))
+        delete_file(root);
 
     return -1;
 }
@@ -1139,12 +1246,13 @@ bool DIDStore_ContainsCredentials(DIDStore *store, DID *did)
     rc = test_path(path);
     if (rc < 0)
         return false;
-    else if (rc == S_IFREG) {
+
+    if (rc == S_IFREG) {
         delete_file(path);
         return false;
     }
 
-    return is_empty(path);
+    return !is_empty(path);
 }
 
 bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *id)
@@ -1155,11 +1263,12 @@ bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *id)
     if (!store || !did || !id || !DIDStore_ContainsCredentials(store, did))
         return false;
 
-    path = get_file_path(store, DIDStore_Credential, did->idstring, id->fragment, 0);
+    path = get_file_root(store, DIDStore_Credential, did->idstring, id->fragment, 0);
     rc = test_path(path);
     if (rc < 0)
         return false;
-    else if (rc == S_IFDIR) {
+
+    if (rc == S_IFREG) {
         delete_file(path);
         return false;
     }
@@ -1169,64 +1278,60 @@ bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *id)
 
 void DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id)
 {
-    const char *root, *path, *meta_path;
+    const char *path;
 
     if (!store || !did || !id)
         return;
 
-    path = get_file_path(store, DIDStore_Credential, did->idstring, id->fragment, 0);
-    if (test_path(path) > 0)
+    path = get_file_root(store, DIDStore_Credential, did->idstring, id->fragment, 0);
+    if (path && !is_empty(path))
         delete_file(path);
 
-    meta_path = get_file_path(store, DIDStore_CredentialMeta, did->idstring, id->fragment, 0);
-    if (test_path(meta_path) > 0)
-        delete_file(meta_path);
-
-    root = get_file_root(store, DIDStore_Credential, did->idstring, id->fragment, 0);
-    if (root && !is_empty(root))
-        delete_file(root);
+    path = get_file_root(store, DIDStore_CredentialRoot, did->idstring, id->fragment, 0);
+    if (path && !is_empty(path))
+        delete_file(path);
 
     return;
 }
 
 int DIDStore_ListCredentials(DIDStore *store, DID *did,
-        DIDStore_GetCredAliasCallback *callback, void *context)
+        DIDStore_GetCredCallback *callback, void *context)
 {
     ssize_t size = 0;
-    const char *dir_path;
-    Cred_Alias_Helper ch;
+    const char *root;
+    Cred_List_Helper ch;
     int rc;
 
     if (!store || !did || !callback)
         return -1;
 
-    dir_path = get_file_root(store, DIDStore_CredentialRoot, did->idstring, NULL, 0);
-    rc = test_path(dir_path);
+    root = get_file_root(store, DIDStore_CredentialRoot, did->idstring, NULL, 0);
+    rc = test_path(root);
     if (rc < 0)
         return -1;
+
     if (rc == S_IFREG) {
-        delete_file(dir_path);
+        delete_file(root);
         return -1;
     }
 
     ch.store = store;
     ch.cb = callback;
+    ch.context = context;
     strcpy((char*)ch.did.idstring, did->idstring);
     ch.type = NULL;
 
-    if (list_dir(dir_path, "*.*", list_credential_helper, (void*)&ch) == -1)
+    if (list_dir(root, "*", list_credential_helper, (void*)&ch) == -1)
         return -1;
 
     return 0;
 }
 
 int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *id,
-        const char *type, DIDStore_GetCredAliasCallback *callback, void *context)
+        const char *type, DIDStore_GetCredCallback *callback, void *context)
 {
     const char *path = NULL;
-    CredentialEntry entry;
-    Cred_Alias_Helper ch;
-    CredentialMeta meta;
+    Cred_List_Helper ch;
     int rc;
 
     if (!store || !did || (!id && !type) || !callback)
@@ -1235,14 +1340,8 @@ int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *id,
     if (id) {
         path = get_file_path(store, DIDStore_Credential, did->idstring, id->fragment, 0);
         if (test_path(path) > 0) {
-            if ((type && has_type(did, path, type) == true) || !type) {
-                if (!load_credmeta(store, &meta, did->idstring, id->fragment))
-                    CredentialMeta_GetAlias(&meta, entry.alias, sizeof(entry.alias));
-                strcpy(entry.id.did.idstring, id->did.idstring);
-                strcpy(entry.id.fragment, id->fragment);
-                callback(&entry, NULL);
-                return 0;
-            }
+            if ((type && has_type(did, path, type) == true) || !type)
+                return callback(id, context);
             return -1;
         }
         return -1;
@@ -1253,13 +1352,15 @@ int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *id,
     rc = test_path(path);
     if (rc < 0)
         return -1;
-    else if (rc == S_IFREG) {
+
+    if (rc == S_IFREG) {
         delete_file(path);
         return -1;
     }
 
     ch.store = store;
     ch.cb = callback;
+    ch.context = context;
     strcpy((char*)ch.did.idstring, did->idstring);
     ch.type = type;
 
@@ -1447,6 +1548,9 @@ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
 
     index = refresh_did_fromchain(store, storepass, seed, NULL, NULL, 0);
     if (index < 0)
+        return -1;
+
+    if (store_mnemonic(store, storepass, mnemonic) == -1)
         return -1;
 
     return store_index(store, index);

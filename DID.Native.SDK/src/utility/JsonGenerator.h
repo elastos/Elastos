@@ -60,6 +60,8 @@ int JsonGenerator_WriteStringField(JsonGenerator *generator,
 
 const char *JsonGenerator_Finish(JsonGenerator *generator);
 
+void JsonGenerator_Destroy(JsonGenerator *generator);
+
 /* void JsonGenerator_Destroy(JsonGenerator *generator); */
 
 #ifdef __cplusplus

@@ -41,8 +41,8 @@ static int CredentialMeta_ToJson_Internal(JsonGenerator *gen, CredentialMeta *me
     assert(meta);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
-    CHECK(JsonGenerator_WriteStringField(gen, "alias",
-            *meta->alias ? meta->alias : NULL));
+    if (*meta->alias)
+        CHECK(JsonGenerator_WriteStringField(gen, "alias", meta->alias));
     CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
@@ -58,8 +58,10 @@ const char *CredentialMeta_ToJson(CredentialMeta *meta)
     if (!gen)
         return NULL;
 
-    if (CredentialMeta_ToJson_Internal(gen, meta) == -1)
+    if (CredentialMeta_ToJson_Internal(gen, meta) == -1) {
+        JsonGenerator_Destroy(gen);
         return NULL;
+    }
 
     return JsonGenerator_Finish(gen);
 }
@@ -132,4 +134,15 @@ int CredentialMeta_Merge(CredentialMeta *meta, CredentialMeta *frommeta)
         strcpy(meta->alias, frommeta->alias);
 
     return 0;
+}
+
+bool CredentialMeta_IsEmpty(CredentialMeta *meta)
+{
+    if (!meta)
+        return true;
+
+    if (*meta->alias)
+        return false;
+
+    return true;
 }

@@ -81,12 +81,12 @@ static ssize_t encrypt( uint8_t *cipher, const char *passwd,
     generateKeyAndIv(passwd, key, iv);
 
     if (!(ctx = EVP_CIPHER_CTX_new())) {
-        ERR_print_errors_fp(stderr);
+        //ERR_print_errors_fp(stderr);
         return -1;
     }
 
     if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
-        ERR_print_errors_fp(stderr);
+        //ERR_print_errors_fp(stderr);
         EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
@@ -96,14 +96,14 @@ static ssize_t encrypt( uint8_t *cipher, const char *passwd,
     output = (uint8_t *)alloca(len + EVP_CIPHER_CTX_block_size(ctx));
 
     if (1 != EVP_EncryptUpdate(ctx, output, &olen, input, len)) {
-        ERR_print_errors_fp(stderr);
+        //ERR_print_errors_fp(stderr);
         EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
     cipher_len = olen;
 
     if (1 != EVP_EncryptFinal_ex(ctx, output + olen, &olen)) {
-        ERR_print_errors_fp(stderr);
+        //ERR_print_errors_fp(stderr);
         EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
@@ -132,12 +132,12 @@ static ssize_t decrypt(uint8_t *plain, const char *passwd,
     generateKeyAndIv(passwd, key, iv);
 
     if (!(ctx = EVP_CIPHER_CTX_new())) {
-        ERR_print_errors_fp(stderr);
+        //ERR_print_errors_fp(stderr);
         return -1;
     }
 
     if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
-        ERR_print_errors_fp(stderr);
+        //ERR_print_errors_fp(stderr);
         EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
@@ -147,14 +147,14 @@ static ssize_t decrypt(uint8_t *plain, const char *passwd,
     output = (uint8_t *)alloca(len + EVP_CIPHER_CTX_block_size(ctx));
 
     if (1 != EVP_DecryptUpdate(ctx, output, &olen, input, len)) {
-        ERR_print_errors_fp(stderr);
+        //ERR_print_errors_fp(stderr);
         EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
     plain_len = olen;
 
     if (1 != EVP_DecryptFinal_ex(ctx, output + olen, &olen)) {
-        ERR_print_errors_fp(stderr);
+        //ERR_print_errors_fp(stderr);
         EVP_CIPHER_CTX_free(ctx);
         return -1;
     }

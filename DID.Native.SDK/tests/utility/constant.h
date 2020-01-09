@@ -21,4 +21,12 @@ const char *compact_idstring;
 const char *storetag;
 const char *docstring;
 
+const char *privateindex;
+const char *privatekey;
+const char *privatemnemonic;
+const char *storedirroot;
+const char *metastring;
+
+const char *teststore_path;
+
 #endif /* __CONTANTS_H__ */

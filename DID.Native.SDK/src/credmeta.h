@@ -51,6 +51,8 @@ int CredentialMeta_GetAlias(CredentialMeta *meta, char *alias, size_t size);
 
 int CredentialMeta_Merge(CredentialMeta *meta, CredentialMeta *frommeta);
 
+bool CredentialMeta_IsEmpty(CredentialMeta *meta);
+
 #ifdef __cplusplus
 }
 #endif

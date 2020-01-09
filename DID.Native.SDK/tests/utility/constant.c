@@ -37,3 +37,11 @@ const char *compact_idstring = "#default";
 
 const char *storetag = "/.meta";
 const char *docstring = "/document";
+
+const char *privateindex = "/private/index";
+const char *privatekey = "/private/key";
+const char *privatemnemonic = "/private/mnemonic";
+const char *storedirroot = "/ids";
+const char *metastring = "/.meta";
+
+const char *teststore_path = "../etc/did/resources/teststore";

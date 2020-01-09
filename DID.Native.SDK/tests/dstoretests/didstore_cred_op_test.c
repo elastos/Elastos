@@ -19,13 +19,14 @@ static DID did;
 static Credential *credential;
 static DIDStore *store;
 
-int get_cred_alias(CredentialEntry *entry, void *context)
+int get_cred(DIDURL *id, void *context)
 {
-    if(!entry)
+    char _id[MAX_DIDURL];
+
+    if(!id)
         return -1;
 
-    printf("\n credential: %s#%s, alias: %s\n",
-            entry->id.did.idstring, entry->id.fragment, entry->alias);
+    printf("\ncredential: %s\n", DIDURL_ToString(id, _id, sizeof(_id), false));
     return 0;
 }
 
@@ -46,14 +47,14 @@ static void test_didstore_contain_creds(void)
 
 static void test_didstore_list_cred(void)
 {
-    int rc = DIDStore_ListCredentials(store, &did, get_cred_alias, NULL);
+    int rc = DIDStore_ListCredentials(store, &did, get_cred, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 
 static void test_didstore_select_cred(void)
 {
     int rc = DIDStore_SelectCredentials(store, &did, &(credential->id),
-            "BasicProfileCredential", get_cred_alias, NULL);
+            "BasicProfileCredential", get_cred, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 
@@ -69,9 +70,8 @@ static void test_didstore_load_cred(void)
 
 static void test_didstore_delete_cred(void)
 {
-    if(DIDStore_ContainsCredential(store, &did, &(credential->id)) == true) {
+    if(DIDStore_ContainsCredential(store, &did, &(credential->id)))
         DIDStore_DeleteCredential(store, &did, &(credential->id));
-    }
 
     bool rc = DIDStore_ContainsCredential(store, &did, &(credential->id));
     CU_ASSERT_NOT_EQUAL(rc, true);

@@ -643,8 +643,10 @@ const char* Credential_ToJson(Credential *cred, int compact, int forsign)
     if (!gen)
         return NULL;
 
-    if (Credential_ToJson_Internal(gen, cred, compact, forsign) < 0)
-        return NULL; // TODO: to call finished ?
+    if (Credential_ToJson_Internal(gen, cred, compact, forsign) < 0) {
+        JsonGenerator_Destroy(gen);
+        return NULL;
+    }
 
     return JsonGenerator_Finish(gen);
 }
