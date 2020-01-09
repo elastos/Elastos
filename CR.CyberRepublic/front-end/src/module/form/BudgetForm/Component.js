@@ -99,7 +99,7 @@ class BudgetForm extends Component {
                   message: I18N.get('suggestion.form.error.required')
                 }
               ],
-              initialValue: item && item.type ? item.type : SUGGESTION_BUDGET_TYPE.CONDITIONED
+              initialValue: item && item.type ? item.type : ''
             })(this.renderPaymentTypes())}
           </FormItem>
 
