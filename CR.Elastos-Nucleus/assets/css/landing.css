@@ -1,5 +1,6 @@
 .jumbotron-header {
   width: 389px;
+  height: 118px;
   font-size: 44px;
   font-weight: bold;
   font-stretch: normal;
@@ -12,6 +13,7 @@
 
 .jumbotron-text {
   width: 444px;
+  height: 85px;
   font-size: 14px;
   font-weight: 300;
   font-stretch: normal;
@@ -24,12 +26,14 @@
 
 .login-button {
   width: 222px;
+  height: 44px;
   border-radius: 1px;
   background-color: #00dd62;
 }
 
 .login-text {
   width: 162px;
+  height: 22px;
   font-size: 14px;
   font-weight: 600;
   font-stretch: normal;
@@ -43,6 +47,7 @@
 
 .main-content {
   width: 642px;
+  height: 64px;
   font-size: 14px;
   font-weight: 300;
   font-stretch: normal;
@@ -55,12 +60,14 @@
 
 .mission-box {
   width: 368px;
+  height: 405px;
   background-color: #181b22;
   box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);
 }
 
 .mission-box h4 {
   width: 253px;
+  height: 32px;
   font-size: 24px;
   font-weight: normal;
   font-stretch: normal;
@@ -74,6 +81,7 @@
 
 .mission-box p {
   width: 256px;
+  height: 85px;
   font-size: 14px;
   font-weight: 300;
   font-stretch: normal;
