@@ -291,26 +291,19 @@ export default class extends Base {
 
   public async remove(_id : string): Promise<any> {
     const db_elip = this.getDBModel('Elip')
-    let rs = await db_elip
-      .getDBInstance()
-      .findById({ _id })
-      .populate(
-        'voteResult.votedBy',
-        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
-      )
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
-    if (!rs) {
+    const elip = await db_elip.getDBInstance().findById({ _id })
+    if (!elip) {
       throw 'ElipService.remove - invalid elip id'
     }
-
-    const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
     if(userRole !== constant.USER_ROLE.ADMIN) {
       throw 'ElipService.remove - invalid user role'
     }
+    if (elip.status !== constant.ELIP_STATUS.CANCELLED) {
+      throw 'ElipService.remove - it is not a cancelled elip'
+    }
     
-    rs = await db_elip.remove({ _id })
-
+    const rs = await db_elip.remove({ _id })
     return rs
   }
 
@@ -361,7 +354,7 @@ export default class extends Base {
             {
               status: {
                 $in: _.values(status).filter(
-                  item => item === status.PERSONAL_DRAFT
+                  item => item !== status.PERSONAL_DRAFT
                 )
               }
             }
