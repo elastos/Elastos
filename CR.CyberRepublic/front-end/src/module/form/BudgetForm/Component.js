@@ -14,8 +14,7 @@ class BudgetForm extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      activeKey:
-        props.item && props.item.milestoneKey ? props.item.milestoneKey : '0'
+      activeKey: props.item && props.item.milestoneKey ? props.item.milestoneKey : '0'
     }
   }
 
@@ -100,7 +99,7 @@ class BudgetForm extends Component {
                   message: I18N.get('suggestion.form.error.required')
                 }
               ],
-              initialValue: item && item.type ? item.type : ''
+              initialValue: item && item.type ? item.type : SUGGESTION_BUDGET_TYPE.CONDITIONED
             })(this.renderPaymentTypes())}
           </FormItem>
 

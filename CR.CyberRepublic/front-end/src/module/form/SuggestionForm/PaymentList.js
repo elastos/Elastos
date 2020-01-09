@@ -6,6 +6,7 @@ import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import DeleteSvgIcon from '@/module/common/DeleteSvgIcon'
 import EditSvgIcon from '@/module/common/EditSvgIcon'
+import { SUGGESTION_BUDGET_TYPE } from '@/constant'
 
 class PaymentList extends BaseComponent {
   handleDelete = index => {
@@ -40,7 +41,13 @@ class PaymentList extends BaseComponent {
             list.map((item, index) => (
               <StyledRow key={index}>
                 <td>{index + 1}</td>
-                <td>{I18N.get(`suggestion.budget.${item.type}`)}</td>
+                <td>
+                  {item.type
+                    ? I18N.get(`suggestion.budget.${item.type}`)
+                    : I18N.get(
+                        `suggestion.budget.${SUGGESTION_BUDGET_TYPE.CONDITIONED}`
+                      )}
+                </td>
                 <td>{item.amount}</td>
                 <td>
                   <MarkdownPreview
