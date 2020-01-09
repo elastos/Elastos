@@ -1885,6 +1885,11 @@ func (b *BlockChain) checkCRCProposalFinalizedTracking(
 		return errors.New("proposal don't allow finalized")
 	}
 
+	// Check stage of proposal
+	if cptPayload.Stage != 0 {
+		return errors.New("stage should assignment zero value")
+	}
+
 	// Check signature.
 	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
 }

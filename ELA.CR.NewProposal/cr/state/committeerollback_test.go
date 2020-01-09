@@ -28,6 +28,12 @@ func getCodeByPubKeyStr(publicKey string) []byte {
 	return redeemScript
 }
 
+func getDIDByPublicKey(publicKey string) *common.Uint168 {
+	code1 := getCodeByPubKeyStr(publicKey)
+	ct1, _ := contract.CreateCRDIDContractByCode(code1)
+	return ct1.ToProgramHash()
+}
+
 func getCodeHexStr(publicKey string) string {
 	pkBytes, _ := common.HexStringToBytes(publicKey)
 	pk, _ := crypto.DecodePoint(pkBytes)
@@ -37,7 +43,6 @@ func getCodeHexStr(publicKey string) string {
 }
 
 func getRegisterCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transaction {
-
 	publicKeyStr1 := publicKeyStr
 	privateKeyStr1 := privateKeyStr
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
@@ -126,7 +131,7 @@ func getCRCProposalTx(publicKeyStr, privateKeyStr,
 		CRSponsorDID:     *getDid(code2),
 		DraftHash:        common.Hash(draftData),
 		CROpinionHash:    common.Hash(opinionHash),
-		Budgets:          []common.Fixed64{1e8, 1e8, 1e8},
+		Budgets:          createBudgets(3),
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -147,16 +152,95 @@ func getCRCProposalTx(publicKeyStr, privateKeyStr,
 	return txn
 }
 
-func getDIDByPublicKey(publicKey string) *common.Uint168 {
-	code1 := getCodeByPubKeyStr(publicKey)
-	ct1, _ := contract.CreateCRDIDContractByCode(code1)
-	return ct1.ToProgramHash()
+func getCRCProposalReviewTx(proposalHash common.Uint256, vote payload.VoteResult,
+	crPublicKeyStr, crPrivateKeyStr string) *types.Transaction {
+
+	privateKey1, _ := common.HexStringToBytes(crPrivateKeyStr)
+	code := getCodeByPubKeyStr(crPublicKeyStr)
+	txn := new(types.Transaction)
+	txn.TxType = types.CRCProposalReview
+	txn.Version = types.TxVersion09
+	crcProposalReviewPayload := &payload.CRCProposalReview{
+		ProposalHash: proposalHash,
+		VoteResult:   vote,
+		DID:          *getDid(code),
+	}
+
+	signBuf := new(bytes.Buffer)
+	crcProposalReviewPayload.SerializeUnsigned(signBuf, payload.CRCProposalReviewVersion)
+	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
+	crcProposalReviewPayload.Sign = sig
+
+	txn.Payload = crcProposalReviewPayload
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCodeByPubKeyStr(crPublicKeyStr),
+		Parameter: nil,
+	}}
+	return txn
+}
+
+func getCRCProposalTrackingTx(
+	trackingType payload.CRCProposalTrackingType,
+	proposalHash common.Uint256, stage uint8,
+	leaderPublicKeyStr, leaderPrivateKeyStr,
+	newLeaderPublicKeyStr, newLeaderPrivateKeyStr,
+	sgPrivateKeyStr string) *types.Transaction {
+
+	leaderPublicKey, _ := common.HexStringToBytes(leaderPublicKeyStr)
+	leaderPrivateKey, _ := common.HexStringToBytes(leaderPrivateKeyStr)
+
+	newLeaderPublicKey, _ := common.HexStringToBytes(newLeaderPublicKeyStr)
+	newLeaderPrivateKey, _ := common.HexStringToBytes(newLeaderPrivateKeyStr)
+
+	sgPrivateKey, _ := common.HexStringToBytes(sgPrivateKeyStr)
+
+	documentData := randomBytes(10)
+	opinionHash := randomBytes(10)
+	txn := new(types.Transaction)
+	txn.TxType = types.CRCProposalTracking
+	txn.Version = types.TxVersion09
+	cPayload := &payload.CRCProposalTracking{
+		ProposalTrackingType: trackingType,
+		ProposalHash:         proposalHash,
+		Stage:                stage,
+		DocumentHash:         common.Hash(documentData),
+		LeaderPubKey:         leaderPublicKey,
+		NewLeaderPubKey:      newLeaderPublicKey,
+		SecretaryOpinionHash: common.Hash(opinionHash),
+	}
+
+	signBuf := new(bytes.Buffer)
+	cPayload.SerializeUnsigned(signBuf, payload.CRCProposalTrackingVersion)
+	sig, _ := crypto.Sign(leaderPrivateKey, signBuf.Bytes())
+	cPayload.LeaderSign = sig
+
+	if newLeaderPublicKeyStr != "" && newLeaderPrivateKeyStr != "" {
+		common.WriteVarBytes(signBuf, sig)
+		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
+		cPayload.NewLeaderSign = crSig
+		sig = crSig
+	}
+
+	common.WriteVarBytes(signBuf, sig)
+	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
+	cPayload.SecretaryGeneralSign = crSig
+
+	txn.Payload = cPayload
+	return txn
 }
 
 func committeeKeyFrameEqual(first *CommitteeKeyFrame, second *CommitteeKeyFrame) bool {
 	return keyframeEqual(first.KeyFrame, second.KeyFrame) &&
 		stateKeyframeEqual(first.StateKeyFrame, second.StateKeyFrame) &&
 		proposalKeyFrameEqual(first.ProposalKeyFrame, second.ProposalKeyFrame)
+}
+
+func checkResult(t *testing.T, A *CommitteeKeyFrame, B *CommitteeKeyFrame,
+	C *CommitteeKeyFrame, D *CommitteeKeyFrame) {
+	assert.Equal(t, true, committeeKeyFrameEqual(A, C))
+	assert.Equal(t, false, committeeKeyFrameEqual(A, B))
+	assert.Equal(t, true, committeeKeyFrameEqual(B, D))
+	assert.Equal(t, false, committeeKeyFrameEqual(B, C))
 }
 
 func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
@@ -242,10 +326,7 @@ func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
 	assert.Equal(t, common.Fixed64(3), committee.GetCandidate(*did1).votes)
 	keyFrameD := committee.Snapshot()
 
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
+	checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
 }
 
 func TestCommittee_RollbackEndVotingPeriod(t *testing.T) {
@@ -350,10 +431,7 @@ func TestCommittee_RollbackEndVotingPeriod(t *testing.T) {
 	assert.Equal(t, 0, len(committee.GetAllCandidates()))
 	keyFrameD := committee.Snapshot()
 
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
+	checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
 }
 
 func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
@@ -529,15 +607,8 @@ func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
 	assert.Equal(t, 0, len(committee.GetAllCandidates()))
 	keyFrameD2 := committee.Snapshot()
 
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
-
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA2, keyFrameC2))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA2, keyFrameB2))
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB2, keyFrameD2))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB2, keyFrameC2))
+	checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
+	checkResult(t, keyFrameA2, keyFrameB2, keyFrameC2, keyFrameD2)
 }
 
 func TestCommittee_RollbackChangeCommittee(t *testing.T) {
@@ -676,10 +747,7 @@ func TestCommittee_RollbackChangeCommittee(t *testing.T) {
 	assert.Equal(t, 2, len(committee.GetAllMembers()))
 	keyFrameD := committee.Snapshot()
 
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
+	checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
 }
 
 func TestCommittee_RollbackCRCProposal(t *testing.T) {
@@ -760,6 +828,7 @@ func TestCommittee_RollbackCRCProposal(t *testing.T) {
 
 	// create CRC proposal tx
 	proposalTx := getCRCProposalTx(publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2)
+	proposalHash := proposalTx.Payload.(*payload.CRCProposal).Hash()
 	currentHeight++
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{Height: currentHeight},
@@ -787,8 +856,291 @@ func TestCommittee_RollbackCRCProposal(t *testing.T) {
 	assert.Equal(t, 1, len(committee.GetProposals(Registered)))
 	keyFrameD := committee.Snapshot()
 
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
-	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
-	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
+	checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
+
+	// set CR agreement count
+	committee.params.CRAgreementCount = 2
+
+	// review proposal
+	proposalReviewTx1 := getCRCProposalReviewTx(proposalHash, payload.Approve,
+		publicKeyStr1, privateKeyStr1)
+	proposalReviewTx2 := getCRCProposalReviewTx(proposalHash, payload.Approve,
+		publicKeyStr2, privateKeyStr2)
+	keyFrameA2 := committee.Snapshot()
+
+	// process
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			proposalReviewTx1,
+			proposalReviewTx2,
+		}}, nil)
+	keyFrameB2 := committee.Snapshot()
+	assert.Equal(t, Registered, committee.GetProposal(proposalHash).Status)
+
+	// rollback
+	currentHeight--
+	err = committee.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	keyFrameC2 := committee.Snapshot()
+
+	// reprocess
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			proposalReviewTx1,
+			proposalReviewTx2,
+		}}, nil)
+	keyFrameD2 := committee.Snapshot()
+	assert.Equal(t, Registered, committee.GetProposal(proposalHash).Status)
+
+	checkResult(t, keyFrameA2, keyFrameB2, keyFrameC2, keyFrameD2)
+
+	// change to CRAgreed
+	keyFrameA3 := committee.Snapshot()
+	currentHeight += cfg.ProposalCRVotingPeriod
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, CRAgreed, committee.GetProposal(proposalHash).Status)
+	keyFrameB3 := committee.Snapshot()
+
+	// rollback
+	currentHeight--
+	err = committee.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	assert.Equal(t, Registered, committee.GetProposal(proposalHash).Status)
+	keyFrameC3 := committee.Snapshot()
+
+	// reprocess
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, CRAgreed, committee.GetProposal(proposalHash).Status)
+	keyFrameD3 := committee.Snapshot()
+
+	checkResult(t, keyFrameA3, keyFrameB3, keyFrameC3, keyFrameD3)
+
+	// change to VoterAgreed
+	keyFrameA4 := committee.Snapshot()
+	currentHeight += cfg.ProposalPublicVotingPeriod
+	currentHeight += cfg.ProposalCRVotingPeriod
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, VoterAgreed, committee.GetProposal(proposalHash).Status)
+	keyFrameB4 := committee.Snapshot()
+
+	// rollback
+	currentHeight--
+	err = committee.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	assert.Equal(t, CRAgreed, committee.GetProposal(proposalHash).Status)
+	keyFrameC4 := committee.Snapshot()
+
+	// reprocess
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, VoterAgreed, committee.GetProposal(proposalHash).Status)
+	keyFrameD4 := committee.Snapshot()
+
+	checkResult(t, keyFrameA4, keyFrameB4, keyFrameC4, keyFrameD4)
+}
+
+func TestCommittee_RollbackCRCProposalTracking(t *testing.T) {
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+	did1 := getDIDByPublicKey(publicKeyStr1)
+	nickName1 := "nickname 1"
+
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	did2 := getDIDByPublicKey(publicKeyStr2)
+	nickName2 := "nickname 2"
+
+	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
+	did3 := getDIDByPublicKey(publicKeyStr3)
+	nickName3 := "nickname 3"
+
+	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	registerCRTxn2 := getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
+	registerCRTxn3 := getRegisterCRTx(publicKeyStr3, privateKeyStr3, nickName3)
+
+	// new committee
+	committee := NewCommittee(&config.DefaultParams)
+
+	// set count of CR member
+	cfg := &config.DefaultParams
+	cfg.CRCArbiters = cfg.CRCArbiters[0:2]
+	cfg.CRMemberCount = 2
+
+	// avoid getting UTXOs from database
+	currentHeight := cfg.CRVotingStartHeight
+	committee.recordBalanceHeight = currentHeight - 1
+
+	// register cr
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			registerCRTxn1,
+			registerCRTxn2,
+			registerCRTxn3,
+		},
+	}, nil)
+
+	// vote cr
+	for i := 0; i < 5; i++ {
+		currentHeight++
+		committee.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: currentHeight,
+			},
+		}, nil)
+	}
+
+	voteCRTx := getVoteCRTx(6, []outputpayload.CandidateVotes{
+		{did1.Bytes(), 3},
+		{did2.Bytes(), 2},
+		{did3.Bytes(), 1}})
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			voteCRTx,
+		},
+	}, nil)
+	assert.Equal(t, common.Fixed64(3), committee.GetCandidate(*did1).votes)
+
+	// end first voting period
+	currentHeight = cfg.CRCommitteeStartHeight
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, 2, len(committee.GetAllMembers()))
+
+	// create CRC proposal tx
+	proposalTx := getCRCProposalTx(publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2)
+	proposalHash := proposalTx.Payload.(*payload.CRCProposal).Hash()
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			proposalTx,
+		}}, nil)
+	assert.Equal(t, 1, len(committee.GetProposals(Registered)))
+	//assert.Equal(t, 2, committee.GetProposal(proposalTx.Payload.(*payload.CRCProposal).Hash()))
+
+	// set CR agreement count
+	committee.params.CRAgreementCount = 2
+
+	// review proposal
+	proposalReviewTx1 := getCRCProposalReviewTx(proposalHash, payload.Approve,
+		publicKeyStr1, privateKeyStr1)
+	proposalReviewTx2 := getCRCProposalReviewTx(proposalHash, payload.Approve,
+		publicKeyStr2, privateKeyStr2)
+
+	// process
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			proposalReviewTx1,
+			proposalReviewTx2,
+		}}, nil)
+	assert.Equal(t, Registered, committee.GetProposal(proposalHash).Status)
+
+	// change to CRAgreed
+	currentHeight += cfg.ProposalCRVotingPeriod
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, CRAgreed, committee.GetProposal(proposalHash).Status)
+
+	// change to VoterAgreed
+	currentHeight += cfg.ProposalPublicVotingPeriod
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, VoterAgreed, committee.GetProposal(proposalHash).Status)
+
+	// set secretary-general
+	publicKeyStr4 := "027209c3a6bcb95e9ef766c81136bcd6f2338eee7f9caebf694825e411320bab12"
+	privateKeyStr4 := "b3b1c16abd786c4994af9ee8c79d25457f66509731f74d6a9a9673ca872fa8fa"
+	committee.params.SecretaryGeneral = publicKeyStr4
+	committee.getHeight = func() uint32 {
+		return currentHeight
+	}
+
+	// proposal tracking of type progress
+	proposalTrackingTx := getCRCProposalTrackingTx(
+		payload.Progress, proposalHash, 1, publicKeyStr1, privateKeyStr1,
+		"", "", privateKeyStr4)
+	keyFrameA := committee.Snapshot()
+
+	// process
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			proposalTrackingTx,
+		}}, nil)
+	assert.Equal(t, 2, len(committee.GetProposal(proposalHash).WithdrawableBudgets))
+	keyFrameB := committee.Snapshot()
+
+	// rollback
+	currentHeight--
+	err := committee.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(committee.GetProposal(proposalHash).WithdrawableBudgets))
+	keyFrameC := committee.Snapshot()
+
+	// reprocess
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			proposalTrackingTx,
+		}}, nil)
+	assert.Equal(t, 2, len(committee.GetProposal(proposalHash).WithdrawableBudgets))
+	keyFrameD := committee.Snapshot()
+
+	checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
+
+	// proposal tracking of type finalized
+	proposalTrackingTx2 := getCRCProposalTrackingTx(
+		payload.Finalized, proposalHash, 0, publicKeyStr1, privateKeyStr1,
+		"", "", privateKeyStr4)
+	keyFrameA2 := committee.Snapshot()
+
+	// process
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			proposalTrackingTx2,
+		}}, nil)
+	assert.Equal(t, 3, len(committee.GetProposal(proposalHash).WithdrawableBudgets))
+	keyFrameB2 := committee.Snapshot()
+
+	// rollback
+	currentHeight--
+	err = committee.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(committee.GetProposal(proposalHash).WithdrawableBudgets))
+	keyFrameC2 := committee.Snapshot()
+
+	// reprocess
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			proposalTrackingTx2,
+		}}, nil)
+	assert.Equal(t, 3, len(committee.GetProposal(proposalHash).WithdrawableBudgets))
+	keyFrameD2 := committee.Snapshot()
+
+	checkResult(t, keyFrameA2, keyFrameB2, keyFrameC2, keyFrameD2)
 }
