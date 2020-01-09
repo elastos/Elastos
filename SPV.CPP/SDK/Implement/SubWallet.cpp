@@ -451,7 +451,7 @@ namespace Elastos {
 						cb["Status"] = confirms <= 100 ? "Pending" : "Confirmed";
 						cb["Direction"] = "Received";
 
-						cb["ConfirmStatus"] = confirms <= 100 ? std::to_string(confirms) : "100+";
+						cb["ConfirmStatus"] = confirms;
 						cb["Height"] = cbptr->BlockHeight();
 						cb["Spent"] = cbptr->Spent();
 						cb["Address"] = cbptr->Output()->Addr()->String();
