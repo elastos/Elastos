@@ -88,10 +88,7 @@ export default {
       plan: '实施团队或里程碑为空',
       milestones: '里程碑为空',
       team: '实施团队为空',
-      budget: '总金额、ELA 接收地址或者支出计划为空',
-      totalBudget: '总预算为空',
-      elaAddress: 'ELA 接收地址为空',
-      paymentSchedule: '支出计划为空'
+      amount: '金额大于总金额的30%'
     }
   },
   modal: {
@@ -138,8 +135,8 @@ export default {
     criteria: '支付标准',
     action: '操作',
     desc: '请基于里程碑填写：',
-    schedule: '支出计划',
-    total: '总预算',
+    schedule: '支付计划',
+    total: '总金额',
     address: 'ELA 接收地址',
     tip: '请先添加里程碑',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: '预支付(小于总金额的30%)',

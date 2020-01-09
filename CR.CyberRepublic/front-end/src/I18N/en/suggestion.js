@@ -88,9 +88,7 @@ export default {
       isNaN: 'Please input valid amount',
       milestones: 'Milestones is empty',
       team: 'Implementation team is empty',
-      totalBudget: 'Total budget is empty',
-      elaAddress: 'ELA receive address is empty',
-      paymentSchedule: 'Payment Schedule is empty'
+      amount: 'The amount is more than 30% of the total budget'
     }
   },
   modal: {
