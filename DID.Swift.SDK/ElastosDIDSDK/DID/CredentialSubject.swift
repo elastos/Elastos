@@ -14,8 +14,8 @@ public class CredentialSubject {
         return properties.count
     }
     
-    public func getProperty(_ name: String) -> String {
-        return properties[name]!
+    public func getProperty(_ name: String) -> String? {
+        return properties[name]
     }
     
     public func addProperty(_ name: String, _ value: String) {

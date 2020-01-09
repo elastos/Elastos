@@ -28,7 +28,7 @@ class DummyAdapter: DIDAdapter {
         return str
     }
     
-    func createIdTransaction(_ payload: String, _ memo: String?) throws -> String? {
+    func createIdTransaction(_ payload: String, _ memo: String?) throws -> String {
         do {
             let request: IDChainRequest = try IDChainRequest.fromJson(payload)
             
@@ -92,7 +92,7 @@ class DummyAdapter: DIDAdapter {
         }
     }
     
-    func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String? {
+    func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String {
         if (verbose) {
             print("Resolve: " + did + "...")
         }
@@ -148,7 +148,7 @@ class DummyAdapter: DIDAdapter {
 
         dic["result"] = redic
         if (verbose) {
-            print("failed")
+            print(matched ? "success" : "failed")
         }
         let json = JsonHelper.creatJsonString(dic: dic)
         return json

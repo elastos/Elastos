@@ -162,7 +162,7 @@ public class DIDStore: NSObject {
         }
     }
     
-    public func newDid(_ storepass:String, _ alias: String?) throws -> DIDDocument {
+    public func newDid(storepass: String, alias: String? = nil) throws -> DIDDocument {
         let privateIdentity =  try loadPrivateIdentity(storepass)
         var nextIndex: Int = try storage.loadPrivateIdentityIndex()
 
@@ -188,10 +188,10 @@ public class DIDStore: NSObject {
     }
     
     public func newDid(_ storepass: String) throws -> DIDDocument {
-        return try newDid(storepass, nil)
+        return try newDid(storepass: storepass)
     }
     
-    public func publishDid(_ did: DID, _ signKey: DIDURL?, _ storepass: String) throws -> String? {
+    public func publishDid(_ did: DID, signKey: DIDURL? = nil, _ storepass: String) throws -> String? {
         let doc = try loadDid(did)
         guard doc != nil else {
             throw DIDStoreError.failue("Can not find the document for \(did)")
@@ -212,7 +212,7 @@ public class DIDStore: NSObject {
             lastTxid = try DIDBackend.shareInstance().create(doc!, sigk!, storepass)
         }
         else {
-            lastTxid = try DIDBackend.shareInstance().update(doc!, lastTxid, sigk!, storepass)
+            lastTxid = try DIDBackend.shareInstance().update(doc!, previousTxid: lastTxid, sigk!, storepass)
         }
         if lastTxid != nil {
             doc?.meta.transactionId = lastTxid!
@@ -220,22 +220,14 @@ public class DIDStore: NSObject {
         return lastTxid
     }
 
-    public func publishDid(_ did: String, _ signKey: String?, _ storepass: String) throws -> String? {
+    public func publishDid(_ did: String, signKey: String? = nil, _ storepass: String) throws -> String? {
         let _did = try DID(did)
         let _signKey = signKey == nil ? nil : try DIDURL(_did, signKey!)
-        return try publishDid(_did, _signKey, storepass)
-    }
-    
-    public func publishDid(_ did: DID, _ storepass :String) throws -> String? {
-        return try publishDid(did, nil, storepass)
-    }
-    
-    public func publishDid(_ did: String, _ storepass :String) throws -> String? {
-        return try publishDid(did, nil, storepass)
+        return try publishDid(_did, signKey: _signKey, storepass)
     }
     
     // Deactivate self use authentication keys
-    public func deactivateDid(_ did: DID, _ signKey: DIDURL?, _ storepass: String) throws -> String {
+    public func deactivateDid(_ did: DID, signKey: DIDURL? = nil, _ storepass: String) throws -> String {
         // Document should use the IDChain's copy
         var localCopy = false
         var doc: DIDDocument?
@@ -267,22 +259,14 @@ public class DIDStore: NSObject {
         return txid
     }
     
-    public func deactivateDid(_ did: String,_ signKey: String?, _ storepass :String) throws -> String? {
+    public func deactivateDid(_ did: String, signKey: String? = nil, _ storepass :String) throws -> String? {
         let _did = try DID(did)
         let _signKey = signKey == nil ? nil : try DIDURL(_did, signKey!)
-        return try deactivateDid(_did, _signKey, storepass)
-    }
-
-    public func deactivateDid(_ did: DID, _ storepass :String) throws -> String? {
-        return try deactivateDid(did, nil, storepass)
-    }
-
-    public func deactivateDid(_ did: String, _ storepass :String) throws -> String? {
-        return try deactivateDid(did, nil, storepass)
+        return try deactivateDid(_did, signKey: _signKey, storepass)
     }
     
     // Deactivate target DID with authorization
-    public func deactivateDid(_ target: DID, _ did: DID, _ signKey: DIDURL?, _ storepass: String) throws -> String {
+    public func deactivateDid(_ target: DID, _ did: DID, signKey: DIDURL? = nil, _ storepass: String) throws -> String {
          // All documents should use the IDChain's copy
         var doc: DIDDocument?
         var sigk = signKey
@@ -341,17 +325,13 @@ public class DIDStore: NSObject {
         if (targetSignKey == nil) {
             throw DIDError.failue("No matched authorization key.")
         }
-        return try DIDBackend.shareInstance().deactivate(target, targetSignKey!, doc!, sigk!, storepass)!
+        return try DIDBackend.shareInstance().deactivate(target, targetSignKey!, doc!, sigk!, storepass)
     }
     
-    public func deactivateDid(_ target: String, _ did: String, _ signKey: String?, _ storepass: String) throws -> String? {
+    public func deactivateDid(_ target: String, _ did: String, signKey: String? = nil, _ storepass: String) throws -> String? {
         let _did = try DID(did)
         let _signKey = signKey == nil ? nil : try DIDURL(_did, signKey!)
-        return try deactivateDid(DID(target), _did, _signKey, storepass)
-    }
-    
-    public func deactivateDid(_ target: DID, _ did: DID, _ storepass: String) throws -> String? {
-        return try deactivateDid(target, did, nil, storepass)
+        return try deactivateDid(DID(target), _did, signKey: _signKey, storepass)
     }
     
     public func resolveDid(_ did: DID, _ force: Bool) throws -> DIDDocument? {
@@ -591,7 +571,7 @@ public class DIDStore: NSObject {
     
     public func listCredentials(_ did: DID) throws -> Array<DIDURL> {
 
-        var ids: Array<DIDURL> = try storage.listCredentials(did)
+        let ids: Array<DIDURL> = try storage.listCredentials(did)
 
         for id in ids {
             let meta = try loadCredentialMeta(did, id)
@@ -655,7 +635,7 @@ public class DIDStore: NSObject {
         return try deletePrivateKey(_did, DIDURL(_did, id))
     }
 
-    public func sign(_ did: DID, _ id: DIDURL? = nil, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
+    public func sign(_ did: DID, id: DIDURL? = nil, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
         let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 4096)
         var privatekeys: Data
         if id == nil {

@@ -214,6 +214,7 @@ public class VerifiablePresentation: NSObject{
 
         // credentials
         var arr: Array<OrderedDictionary<String, Any>> = []
+        credentials = DIDURLComparator.DIDOrderedDictionaryComparatorByVerifiableCredential(credentials)
         credentials.values.forEach { vc in
            let dic = vc.toJson(true)
             arr.append(dic)
@@ -248,19 +249,24 @@ public class VerifiablePresentation: NSObject{
         return toExternalForm()
     }
     
-    class public func seal(for did : DID, _ credentials: Array<VerifiableCredential>, _ realm: String, _ nonce: String, _ storepass: String) throws -> VerifiablePresentation {
-        let signer = try did.resolve()
-        if (signer == nil) {
-            throw DIDError.failue("Can not resolve DID.")
+    public class func seal(for did : DID, _ store: DIDStore, signKey: DIDURL? = nil, _ credentials: Array<VerifiableCredential>, _ realm: String, _ nonce: String, _ storepass: String) throws -> VerifiablePresentation {
+        var signK = signKey
+        let signer = try store.loadDid(did)
+        guard signer != nil else {
+            throw DIDError.failue("Can not load DID.")
         }
-        
-        let signKey = signer!.getDefaultPublicKey()
-        if try !signer!.isAuthorizationKey(signKey) {
-            throw DIDError.failue("Invalid sign key id.")
+        if signK == nil {
+            signK = signer!.getDefaultPublicKey()
         }
-        if (try signer!.hasPrivateKey(signKey)) {
+        else {// isAuthenticationKey
+            guard try signer!.isAuthenticationKey(signK!) else {
+                throw DIDError.failue("Invalid sign key id.")
+            }
+        }
+        guard try signer!.hasPrivateKey(signK!) else {
             throw DIDError.failue("No private key.")
         }
+        
         let presentation: VerifiablePresentation = VerifiablePresentation()
         for vc in credentials {
             presentation.addCredential(vc)
@@ -268,10 +274,19 @@ public class VerifiablePresentation: NSObject{
         
         let dic = presentation.toJson(true)
         let json = JsonHelper.creatJsonString(dic: dic)
-        let inputs: [CVarArg] = [json, json.count]
-        let count: Int = inputs.count / 2
-        let sig = try signer?.sign(signKey, storepass, count, inputs)
-        let proof = Proof(signKey, realm, nonce, sig!)
+        var inputs: [CVarArg] = []
+        if json.count > 0 {
+            inputs.append(json)
+            inputs.append(json.count)
+        }
+        inputs.append(realm)
+        inputs.append(realm.count)
+        inputs.append(nonce)
+        inputs.append(nonce.count)
+        
+        let count = inputs.count / 2
+        let sig = try signer?.sign(signK!, storepass, count, inputs)
+        let proof = Proof(signK!, realm, nonce, sig!)
         presentation.proof = proof
         
         return presentation

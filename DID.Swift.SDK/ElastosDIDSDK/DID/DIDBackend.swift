@@ -54,7 +54,7 @@ public class DIDBackend: NSObject {
         
         let json = try adapter.resolve(requestId, did.description, false)
         // TODO: unsafe
-        var jsonString = json!.replacingOccurrences(of: " ", with: "")
+        var jsonString = json.replacingOccurrences(of: " ", with: "")
         jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
         let resultJson = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
         let result: OrderedDictionary<String, Any> = resultJson[RESULT] as! OrderedDictionary<String, Any>
@@ -108,7 +108,7 @@ public class DIDBackend: NSObject {
         return try resolve(did, false)
     }
     
-    func create(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> String? {
+    func create(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> String {
         do {
             let request: IDChainRequest = try IDChainRequest.create(doc, signKey, storepass)
             let jsonString: String = request.toJson(true)
@@ -119,9 +119,9 @@ public class DIDBackend: NSObject {
         }
     }
     
-    func update(_ doc: DIDDocument, _ previousTxid: String?, _ signKey: DIDURL, _ storepass: String) throws -> String? {
+    func update(_ doc: DIDDocument, previousTxid: String? = nil, _ signKey: DIDURL, _ storepass: String) throws -> String {
         do {
-            let request: IDChainRequest = try IDChainRequest.update(doc, previousTxid, signKey, storepass)
+            let request: IDChainRequest = try IDChainRequest.update(doc, previousTxid: previousTxid, signKey, storepass)
             let jsonStr: String = request.toJson(true)
             return try adapter.createIdTransaction(jsonStr, nil)
         } catch {
@@ -129,20 +129,20 @@ public class DIDBackend: NSObject {
         }
     }
     
-    func deactivate(_ doc: DIDDocument?, _ signKey: DIDURL?, _ storepass: String?) throws -> String {
+    func deactivate(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> String {
         do {
-            let request = try IDChainRequest.deactivate(doc!, signKey!, storepass!)
+            let request = try IDChainRequest.deactivate(doc, signKey, storepass)
         let json = request.toJson(true)
-            return try adapter.createIdTransaction(json, nil)!
+            return try adapter.createIdTransaction(json, nil)
         }
         catch {
             throw DIDStoreError.failue("Create ID transaction error.")
         }
     }
     
-    func deactivate(_ target: DID, _ targetSignKey: DIDURL, _ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> String? {
+    func deactivate(_ target: DID, _ targetSignKey: DIDURL, _ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> String {
         do {
-            let request: IDChainRequest = try! IDChainRequest.deactivate(target, targetSignKey, doc, signKey, storepass)
+            let request: IDChainRequest = try IDChainRequest.deactivate(target, targetSignKey, doc, signKey, storepass)
             let json = request.toJson(true)
             return try adapter.createIdTransaction(json, nil)
             }

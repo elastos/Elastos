@@ -189,7 +189,7 @@ public class FileSystemStorage: DIDStorage {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + doc.subject!.methodSpecificId + "/" + FileSystemStorage.DOCUMENT_FILE
         _ = try getFile(true, path)
         _ = try exists(path)
-        _ = try doc.toJson(path, true, false)
+        _ = try doc.toJson(path: path, true, false)
     }
     
     public func loadDid(_ did: DID) throws -> DIDDocument {
@@ -250,7 +250,6 @@ public class FileSystemStorage: DIDStorage {
     }
     
     public func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta?) throws {
-        
         do {
             let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + id.fragment + "/" + FileSystemStorage.META_FILE
             let metadata: String = meta != nil ? meta!.toJson() : ""

@@ -57,22 +57,22 @@ class DIDDoucumentTests: XCTestCase {
             
             // Selector
             id = doc.getDefaultPublicKey()
-            pks = try doc.selectPublicKeys(id, Constants.defaultPublicKeyType)
+            pks = try doc.selectPublicKeys(id: id, type: Constants.defaultPublicKeyType)
             XCTAssertEqual(1, pks.count);
             XCTAssertEqual(try DIDURL(doc.subject!, "primary"), pks[0].id)
             
-            pks = try doc.selectPublicKeys(id, nil)
+            pks = try doc.selectPublicKeys(id: id)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "primary"), pks[0].id)
             
-            pks = try doc.selectPublicKeys(nil, Constants.defaultPublicKeyType)
+            pks = try doc.selectPublicKeys(type: Constants.defaultPublicKeyType)
             XCTAssertEqual(4, pks.count)
             
-            pks = try doc.selectPublicKeys("key2", Constants.defaultPublicKeyType)
+            pks = try doc.selectPublicKeys("key2", type: Constants.defaultPublicKeyType)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "key2"), pks[0].id)
             
-            pks = try doc.selectPublicKeys("key3", nil)
+            pks = try doc.selectPublicKeys("key3")
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "key3"), pks[0].id)
         } catch {
@@ -219,21 +219,21 @@ class DIDDoucumentTests: XCTestCase {
             
             // selector
             id = try DIDURL(doc.subject!, "key3")
-            pks = try doc.selectAuthenticationKeys(id, type: Constants.defaultPublicKeyType)
+            pks = try doc.selectAuthenticationKeys(id: id, type: Constants.defaultPublicKeyType)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(id, pks[0].id)
-            pks = try doc.selectAuthenticationKeys(id, type: nil)
+            pks = try doc.selectAuthenticationKeys(id: id)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(id, pks[0].id)
             
-            pks = try doc.selectAuthenticationKeys(nil, type: Constants.defaultPublicKeyType)
+            pks = try doc.selectAuthenticationKeys(type: Constants.defaultPublicKeyType)
             XCTAssertEqual(3, pks.count)
             
-            pks = try doc.selectAuthenticationKeys("key2", Constants.defaultPublicKeyType)
+            pks = try doc.selectAuthenticationKeys("key2", type: Constants.defaultPublicKeyType)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "key2"), pks[0].id)
             
-            pks = try doc.selectAuthenticationKeys("key2", nil)
+            pks = try doc.selectAuthenticationKeys("key2")
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "key2"), pks[0].id)
         } catch {
@@ -426,14 +426,14 @@ class DIDDoucumentTests: XCTestCase {
             
             // Selector
             id = try DIDURL(doc.subject!, "recovery")
-            pks = try doc.selectAuthorizationKeys(id, Constants.defaultPublicKeyType)
+            pks = try doc.selectAuthorizationKeys(id: id, type: Constants.defaultPublicKeyType)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(id, pks[0].id)
             
-            pks = try doc.selectAuthorizationKeys(id, nil)
+            pks = try doc.selectAuthorizationKeys(id: id)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(id, pks[0].id)
-            pks = try doc.selectAuthorizationKeys(nil, Constants.defaultPublicKeyType)
+            pks = try doc.selectAuthorizationKeys(type: Constants.defaultPublicKeyType)
             XCTAssertEqual(1, pks.count)
         } catch {
             print(error)
@@ -612,20 +612,20 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertNil(vc)
             
             // Credential selector.
-            vcs = try doc.selectCredentials(DIDURL(doc.subject!, "profile"),
-                                        "SelfProclaimedCredential")
+            vcs = try doc.selectCredentials(id: DIDURL(doc.subject!, "profile"),
+                                            type: "SelfProclaimedCredential")
             XCTAssertEqual(1, vcs.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "profile"), vcs[0].id)
             
-            vcs = try doc.selectCredentials(DIDURL(doc.subject!, "profile"), nil)
+            vcs = try doc.selectCredentials(id: DIDURL(doc.subject!, "profile"))
             XCTAssertEqual(1, vcs.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "profile"), vcs[0].id)
             
-            vcs = try doc.selectCredentials(nil, "SelfProclaimedCredential")
+            vcs = try doc.selectCredentials(type: "SelfProclaimedCredential")
             XCTAssertEqual(1, vcs.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "profile"), vcs[0].id)
             
-            vcs = try doc.selectCredentials(nil, "TestingCredential")
+            vcs = try doc.selectCredentials(type: "TestingCredential")
             XCTAssertEqual(0, vcs.count)
         } catch {
             print(error)
@@ -764,23 +764,23 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertNil(svc)
             
             // Service selector.
-            svcs = try doc.selectServices("vcr", "CredentialRepositoryService")
+            svcs = try doc.selectServices("vcr", type: "CredentialRepositoryService")
             XCTAssertEqual(1, svcs.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "vcr"), svcs[0].id)
             
-            svcs = try doc.selectServices(DIDURL(doc.subject!, "openid"), nil)
+            svcs = try doc.selectServices(id: DIDURL(doc.subject!, "openid"))
             XCTAssertEqual(1, svcs.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "openid"), svcs[0].id)
             
-            svcs = try doc.selectServices(nil, "CarrierAddress")
+            svcs = try doc.selectServices(type: "CarrierAddress")
             XCTAssertEqual(1, svcs.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "carrier"), svcs[0].id)
             
             // Service not exist, should return a empty list.
-            svcs = try doc.selectServices("notExistService", "CredentialRepositoryService")
+            svcs = try doc.selectServices("notExistService", type: "CredentialRepositoryService")
             XCTAssertEqual(0, svcs.count)
             
-            svcs = try doc.selectServices(nil, "notExistType")
+            svcs = try doc.selectServices(type: "notExistType")
             XCTAssertEqual(0, svcs.count)
         } catch {
             print(error)
@@ -819,7 +819,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(5, doc.getServiceCount())
             
             // Try to select new added 2 services
-            let svcs: Array<Service> = try doc.selectServices(nil, "Service.Testing")
+            let svcs: Array<Service> = try doc.selectServices(type:"Service.Testing")
             XCTAssertEqual(2, svcs.count)
             XCTAssertEqual("Service.Testing", svcs[0].type)
             XCTAssertEqual("Service.Testing", svcs[0].type)

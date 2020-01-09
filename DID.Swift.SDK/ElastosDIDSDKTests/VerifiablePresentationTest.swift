@@ -7,10 +7,10 @@ class VerifiablePresentationTest: XCTestCase {
     func testReadPresentation() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             
             // For integrity check
-            try testData.loadTestIssuer()
+            _ = try testData.loadTestIssuer()
             let testDoc: DIDDocument = try testData.loadTestDocument()
             
             let vp: VerifiablePresentation = try testData.loadPresentation()
@@ -42,7 +42,38 @@ class VerifiablePresentationTest: XCTestCase {
     func testBuild() {
         do {
             // TODO
+            let testData = TestData()
+            let store = try testData.setupStore(true)
+            // For integrity check
+            _ = try testData.loadTestIssuer()
+            let testDoc = try testData.loadTestDocument()
             
+            let arr: Array<VerifiableCredential> = [
+                try testData.loadProfileCredential()!,
+                try testData.loadEmailCredential(),
+                try testData.loadTwitterCredential(),
+                try testData.loadPassportCredential()!]
+            let vp = try VerifiablePresentation.seal(for: testDoc.subject!, store, arr, "https://example.com/", "873172f58701a9ee686f0630204fee59", storePass)
+            XCTAssertNotNil(vp)
+            XCTAssertEqual("VerifiablePresentation", vp.type)
+            XCTAssertEqual(testDoc.subject!, vp.getSigner())
+
+            XCTAssertEqual(4, vp.getCredentialCount())
+            let vcs = vp.getCredentials()
+            
+            vcs.forEach { vc in
+                let re = vc.id.fragment == "profile" || vc.id.fragment == "email" || vc.id.fragment == "twitter" || vc.id.fragment == "passport"
+                XCTAssertTrue(re)
+            }
+            
+            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "profile")))
+            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "email")))
+            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "twitter")))
+            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "passport")))
+            XCTAssertNil(try vp.getCredential(DIDURL(vp.getSigner(), "notExist")))
+
+            XCTAssertTrue(try vp.isGenuine())
+            XCTAssertTrue(try vp.isValid())
         }
         catch {
             XCTFail()
@@ -51,12 +82,12 @@ class VerifiablePresentationTest: XCTestCase {
     
     func testParseAndSerialize() {
         do {
-            var testData: TestData = TestData()
-            try testData.setupStore(true)
+            let testData: TestData = TestData()
+            _ = try testData.setupStore(true)
             
             // For integrity check
-            try testData.loadTestIssuer()
-            try testData.loadTestDocument()
+            _ = try testData.loadTestIssuer()
+            _ = try testData.loadTestDocument()
             let vp: VerifiablePresentation = try testData.loadPresentation()
             XCTAssertNotNil(vp)
             XCTAssertTrue(try vp.isGenuine())

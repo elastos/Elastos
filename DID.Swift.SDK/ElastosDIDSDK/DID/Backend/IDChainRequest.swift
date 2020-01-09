@@ -58,7 +58,7 @@ public class IDChainRequest: NSObject {
         return request
     }
     
-    public class func update(_ doc: DIDDocument,_ previousTxid: String?, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
+    public class func update(_ doc: DIDDocument, previousTxid: String? = nil, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
         let request: IDChainRequest = try IDChainRequest(Operation.UPDATE)
         request.previousTxid = previousTxid != nil ? previousTxid! : ""
         try request.setPayload(doc)

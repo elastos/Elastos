@@ -6,7 +6,7 @@ public class Issuer {
     public var signKey: DIDURL!
     public var target: DID?
 
-    public init(_ doc: DIDDocument, _ signKey: DIDURL? = nil) throws {
+    public init(_ doc: DIDDocument, signKey: DIDURL? = nil) throws {
        self.didDocument = doc
        self.signKey = signKey
        if (signKey == nil) {
@@ -22,23 +22,23 @@ public class Issuer {
        }
     }
     
-    public init(_ did: DID, _ signKey: DIDURL? = nil) throws {
-        self.signKey = signKey
-        self.target = did
-        self.didDocument = try did.resolve()
-        guard self.didDocument != nil else {
+    public init(_ did: DID, signKey: DIDURL? = nil, _ store: DIDStore) throws {
+        let doc = try store.loadDid(did)
+        guard (doc != nil) else {
             throw DIDError.failue("Can not resolve DID.")
         }
-        if signKey == nil {
-            self.signKey = self.didDocument?.getDefaultPublicKey()
+        self.didDocument = doc
+        self.signKey = signKey
+        if (signKey == nil) {
+            self.signKey = didDocument!.getDefaultPublicKey()
         } else {
-            guard try didDocument?.isAuthenticationKey(self.signKey) != nil else {
+            if (try !(didDocument!.isAuthenticationKey((self.signKey)))){
                 throw DIDError.failue("Invalid sign key id.")
             }
-        }
-        
-        guard (try self.didDocument!.hasPrivateKey(self.signKey)) else {
-            throw DIDError.failue("No private key.")
+            
+            if (try !didDocument!.hasPrivateKey(self.signKey)){
+                throw DIDError.failue("No private key.")
+            }
         }
     }
     
@@ -62,6 +62,7 @@ public class Issuer {
             let edate = DateFormater.currentDateToWantDate(Constants.MAX_VALID_YEARS)
             credential.expirationDate = edate
         }
+        credential.subject.addProperties(properties)
         let dic = credential.toJson(true, true)
         let json = JsonHelper.creatJsonString(dic: dic)
         let inputs: [CVarArg] = [json, json.count]

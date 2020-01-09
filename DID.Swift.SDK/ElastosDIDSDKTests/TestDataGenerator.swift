@@ -196,7 +196,7 @@ class TestDataGenerator: XCTest {
             // Presentation with above credentials
             print("Generate presentation...")
             
-            let vp: VerifiablePresentation = try VerifiablePresentation.seal(for: test.subject!, [vcProfile, vcEmail, vcPassport, vcTwitter], "https://example.com/", "873172f58701a9ee686f0630204fee59", storePass)
+            let vp: VerifiablePresentation = try VerifiablePresentation.seal(for: test.subject!, store, [vcProfile, vcEmail, vcPassport, vcTwitter], "https://example.com/", "873172f58701a9ee686f0630204fee59", storePass)
             json = vp.description
             writeTo("vp.normalized.json", json)
             

@@ -9,7 +9,7 @@ class VerifiableCredentialTest: XCTestCase {
             let testData = TestData()
             
             // for integrity check
-            try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             let issuer:DIDDocument = try testData.loadTestIssuer()
             let test: DIDDocument = try testData.loadTestDocument()
             let vc: VerifiableCredential = try testData.loadEmailCredential()
@@ -41,7 +41,7 @@ class VerifiableCredentialTest: XCTestCase {
             let testData: TestData = TestData()
             
             // for integrity check
-            try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             let test: DIDDocument = try testData.loadTestDocument()
             
             let vc = try testData.loadProfileCredential()

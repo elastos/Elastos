@@ -31,7 +31,7 @@ public class SPVAdaptor: DIDAdapter {
        return SPV.isAvailable(handle)
     }
     
-    public func createIdTransaction(_ payload: String, _ memo: String?) throws -> String? {
+    public func createIdTransaction(_ payload: String, _ memo: String?) throws -> String {
         let password = passwordCallback!(walletDir, walletId)
         guard password != nil else {
             throw DIDResolveError.failue("password is not nil.")
@@ -40,15 +40,18 @@ public class SPVAdaptor: DIDAdapter {
         guard handle != nil else {
             throw DIDResolveError.failue("Unkonw error.")
         }
-        let re = try SPV.createIdTransaction(handle, password!, payload, memo)
-        return re
+        let re = SPV.createIdTransaction(handle, password!, payload, memo)
+        guard re != nil else {
+            throw DIDResolveError.failue("Unkonw error.")
+        }
+        return re!
     }
     
-    public func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String? {
+    public func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String {
         let re = SPV.resolve(requestId, did, all)
         guard re != nil else {
             throw DIDResolveError.failue("Unkonw error.")
         }
-        return re
+        return re!
     }
 }

@@ -4,85 +4,90 @@ import ElastosDIDSDK
 
 class IssuerTest: XCTestCase {
     
-    func newIssuerTestWithSignKey() {
+    func testnewIssuerTestWithSignKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
-            
             let signKey: DIDURL = issuerDoc.getDefaultPublicKey()
-            
-            let issuer: Issuer = try Issuer(issuerDoc.subject!, signKey)
-            
-            XCTAssertEqual(issuer.getDid(), issuer.getDid())
+            let issuer: Issuer = try Issuer(issuerDoc.subject!, signKey: signKey, store)
+            XCTAssertEqual(issuerDoc.subject, issuer.getDid())
             XCTAssertEqual(signKey, issuer.signKey)
         } catch {
             XCTFail()
         }
     }
     
-    func newIssuerTestWithoutSignKey() {
+    func testnewIssuerTestWithoutSignKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
-            
-            let issuer: Issuer = try Issuer(issuerDoc.subject!)
-            
+            let issuer: Issuer = try Issuer(issuerDoc.subject!, store)
             XCTAssertEqual(issuerDoc.subject, issuer.getDid())
             XCTAssertEqual(issuerDoc.getDefaultPublicKey(), issuer.signKey)
-            
         } catch  {
             XCTFail()
         }
     }
     
-    func newIssuerTestWithInvalidKey() {
+    func testnewIssuerTestWithInvalidKey() {
         do {
             let testData: TestData = TestData()
-           let store = try testData.setupStore(true)
-            
+            let store = try testData.setupStore(true)
             var issuerDoc: DIDDocument = try testData.loadTestIssuer()
             
             let key: DerivedKey = try TestData.generateKeypair()
             let signKey: DIDURL = try DIDURL(issuerDoc.subject!, "testKey")
-            try issuerDoc.addAuthenticationKey(signKey, try key.getPublicKeyBase58())
+            _ = try issuerDoc.addAuthenticationKey(signKey, try key.getPublicKeyBase58())
             
             issuerDoc = try issuerDoc.seal(store, storePass)
             XCTAssertTrue(try issuerDoc.isValid())
             
-            let issuer: Issuer = try Issuer(issuerDoc, signKey)
-            
-            // Dead code.
+            let issuer: Issuer = try Issuer(issuerDoc, signKey: signKey)
             XCTAssertEqual(issuer.getDid(), issuer.getDid())
         } catch {
-            XCTFail()
+            if error is DIDError {
+                let err = error as! DIDError
+                switch err {
+                case  DIDError.failue("No private key."):
+                    XCTAssertTrue(true)
+                default:
+                    XCTFail()
+                }
+            }
         }
     }
     
-    func newIssuerTestWithInvalidKey2() {
+    func testnewIssuerTestWithInvalidKey2() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             let signKey: DIDURL = try DIDURL(issuerDoc.subject!, "recovery")
-            let issuer: Issuer = try Issuer(issuerDoc, signKey)
-            
-            // Dead code.
+            let issuer: Issuer = try Issuer(issuerDoc, signKey: signKey)
             XCTAssertEqual(issuer.getDid(), issuer.getDid())
         }
         catch {
-            XCTFail()
+            if error is DIDError {
+                let err = error as! DIDError
+                switch err {
+                case  DIDError.failue("Invalid sign key id."):
+                    XCTAssertTrue(true)
+                default:
+                    XCTFail()
+                }
+            }
         }
     }
     
-    func IssueKycCredentialTest() {
+    func testIssueKycCredentialTest() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             let testDoc: DIDDocument = try testData.loadTestDocument()
@@ -124,10 +129,10 @@ class IssuerTest: XCTestCase {
         }
     }
     
-    func IssueSelfProclaimedCredentialTest() {
+    func testIssueSelfProclaimedCredentialTest() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             
