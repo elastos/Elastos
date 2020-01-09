@@ -72,52 +72,49 @@
                     <div class="dropdown">
                         <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown"
                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Playground</a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
+                        <div class="dropdown-menu dropdown-menu-right others-submenu" aria-labelledby="accountDropdown">
                             <a class="dropdown-item" href="#">Golang[COMING SOON]</a>
                             <a class="dropdown-item" href="#">Python[COMING SOON]</a>
                             <a class="dropdown-item" href="#">elastOS[COMING SOON]</a>
                         </div>
                     </div>
 
-                    <div class="dropdown">
-                        <div class="row">
-                            <div class="dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button"
-                                        style="border-color:transparent; background-color:transparent"
-                                        id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true"
-                                        aria-expanded="false">
-                                    Applications
-                                </button>
-                                <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
-                                    <li class="dropdown-submenu">
-                                        <a class="dropdown-item" tabindex="-1" href="#">Browser</a>
-                                        <ul class="dropdown-menu">
-                                            <li class="dropdown-item"><a style="color:#212529" tabindex="-1" href="{% url 'browser:mainchain' %}">Mainchain Browser</a></li>
-                                            <li class="dropdown-item"><a style="color:#212529" href="{% url 'browser:sidechain_did' %}">DID Sidechain Browser</a></li>
-                                            <li class="dropdown-item"><a style="color:#212529" tabindex="-1" href="{% url 'browser:sidechain_token' %}">Token Sidechain Browser[COMING SOON]</a></li>
-                                            <li class="dropdown-item"><a style="color:#212529" tabindex="-1" href="{% url 'browser:sidechain_neo' %}">NEO Sidechain Browser[COMING SOON]</a></li>
-                                            <li class="dropdown-item"><a style="color:#212529" tabindex="-1" href="{% url 'browser:sidechain_eth' %}">ETH Sidechain Browser</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="dropdown-submenu">
-                                        <a class="dropdown-item" tabindex="-1" href="#">ElastOS Tools</a>
-                                        <ul class="dropdown-menu">
-                                            <li class="dropdown-item"><a style="color:#212529" tabindex="-1" href="#">DApp Store
+                    <div class="row">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button"
+                                    style="border-color:transparent; background-color:transparent"
+                                    id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+                                Applications
+                            </button>
+                            <ul class="dropdown-menu multi-level others-submenu" role="menu" aria-labelledby="dropdownMenu">
+                                <li class="dropdown-submenu others-submenu">
+                                    <a class="dropdown-item" href="#">Browser</a>
+                                    <ul class="dropdown-menu others-submenu">
+                                        <li class="dropdown-item "><a href="{% url 'browser:mainchain' %}">Mainchain Browser</a></li>
+                                        <li class="dropdown-item"><a href="{% url 'browser:sidechain_did' %}">DID Sidechain Browser</a></li>
+                                        <li class="dropdown-item"><a href="{% url 'browser:sidechain_token' %}">Token Sidechain Browser[COMING SOON]</a></li>
+                                        <li class="dropdown-item"><a href="{% url 'browser:sidechain_neo' %}">NEO Sidechain Browser[COMING SOON]</a></li>
+                                        <li class="dropdown-item"><a href="{% url 'browser:sidechain_eth' %}">ETH Sidechain Browser</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown-submenu others-submenu">
+                                    <a class="dropdown-item" href="#">ElastOS Tools</a>
+                                    <ul class="dropdown-menu others-submenu">
+                                        <li class="dropdown-item"><a href="#">DApp Store Dashboard[COMING SOON]</a></li>
+                                        <li class="dropdown-item"><a href="#">Deploy DApp[COMING SOON]</a></li>
+                                        <li class="dropdown-item"><a href="#">DApp Store
                                                 Dashboard[COMING SOON]</a></li>
-                                            <li class="dropdown-item"><a style="color:#212529" href="#">Deploy DApp[COMING SOON]</a></li>
-                                            <li class="dropdown-item"><a style="color:#212529" tabindex="-1" href="#">DApp Store
-                                                Dashboard[COMING SOON]</a></li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </div>
+                                    </ul>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
                     <div class="dropdown">
                         <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown"
                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Workspace</a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
+                        <div class="dropdown-menu dropdown-menu-right others-submenu" aria-labelledby="accountDropdown">
                             <a class="dropdown-item" href="#">Deploy your private net[COMING SOON]</a>
                             <a class="dropdown-item" href="#">Deploy your testnet nodes[COMING SOON]</a>
                         </div>
@@ -127,7 +124,7 @@
                 <div class="dropdown">
                     <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown"
                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
+                    <div class="dropdown-menu dropdown-menu-right others-submenu" aria-labelledby="accountDropdown">
                         <a class="dropdown-item" href="{% url 'login:edit_profile' %}">Edit Profile</a>
                         <a class="dropdown-item" href="{% url 'login:sign_out' %}">Log Out</a>
                     </div>
@@ -137,72 +134,55 @@
         {% if request.session.logged_in == True %}
             <div class="pos-f-t">
                 <div class="collapse mx-auto" id="menu_services">
-                    <div class="bg-primary p-2 text-center">
+                    <div class="p-2 text-center" style="background-color: #242a37;">
                         <div class="row">
                             <li class="col-md-3" style="list-style-type:none">
                                 <ul>
-                                    <li class="dropdown-header"
-                                        style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                    <li class="dropdown-header services-menu-title">
                                         Recently Opened
                                     </li>
                                     {% if recent_services.exists %}
                                         {% for item in recent_services %}
-                                            <a href="{% url  item.view %}"
-                                               style="color:black; text-decoration:none">{{ item.name }}</a> <br>
+                                            <a class="services-menu-content" href="{% url  item.view %}">{{ item.name }}</a><br>
                                         {% endfor %}
                                     {% endif %}
                                 </ul>
                             </li>
+                            <div class="divider-vertical"></div>
 
                             <li class="col-md-3" style="list-style-type:none">
                                 <ul>
-                                    <li class="dropdown-header"
-                                        style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
-                                        General
+                                    <li class="dropdown-header services-menu-title">
+                                        Common
                                     </li>
-                                    <a href="{% url 'service:generate_key' %}"
-                                       style="color:black; text-decoration:none">Generate API Key</a> <br> <br> <br>
-                                    <li style="list-style-type:none" class="divider"></li>
-                                    <li class="dropdown-header"
-                                        style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                    <a class="services-menu-content" href="{% url 'service:generate_key' %}">Generate API Key</a><br><br><br>
+                                    <li class="dropdown-header services-menu-title">
                                         Elastos Hive
                                     </li>
-                                    <a href="{% url 'service:upload_and_sign' %}"
-                                       style="color:black; text-decoration:none">Upload and Sign</a> <br>
-                                    <a href="{% url 'service:verify_and_show' %}"
-                                       style="color:black; text-decoration:none">Verify and Show</a>
+                                    <a class="services-menu-content" href="{% url 'service:upload_and_sign' %}">Upload and Sign</a><br>
+                                    <a class="services-menu-content" href="{% url 'service:verify_and_show' %}">Verify and Show</a>
                                 </ul>
                             </li>
                             <li class="col-md-3" style="list-style-type:none">
                                 <ul>
-                                    <li class="dropdown-header"
-                                        style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                    <li class="dropdown-header services-menu-title">
                                         Wallet
                                     </li>
-                                    <a href="{% url 'service:create_wallet' %}"
-                                       style="color:black; text-decoration:none">Create Wallet</a> <br>
-                                    <a href="{% url 'service:view_wallet' %}" style="color:black; text-decoration:none">View
-                                        Wallet</a> <br>
-                                    <a href="{% url 'service:request_ela' %}" style="color:black; text-decoration:none">Request
-                                        ELA</a>
-                                    <li class="divider" style="list-style-type:none"></li>
-                                    <li class="dropdown-header"
-                                        style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
-                                        Ethereum Sidechain
+                                    <a class="services-menu-content" href="{% url 'service:create_wallet' %}">Create Wallet</a><br>
+                                    <a class="services-menu-content" href="{% url 'service:view_wallet' %}">View Wallet</a><br>
+                                    <a class="services-menu-content" href="{% url 'service:request_ela' %}">Request ELA</a><br>
+                                    <li class="dropdown-header services-menu-title">
+                                        ETH Sidechain
                                     </li>
-                                    <a href="{% url 'service:deploy_eth_contract' %}"
-                                       style="color:black; text-decoration:none">Deploy ETH Contract</a> <br>
-                                    <a href="{% url 'service:watch_eth_contract' %}"
-                                       style="color:black; text-decoration:none">Watch ETH Contract</a> <br>
-                                    <a href="{% url 'service:run_eth_contract' %}"
-                                       style="color:black; text-decoration:none">Run ETH Contract</a> <br>
+                                    <a class="services-menu-content" href="{% url 'service:deploy_eth_contract' %}">Deploy ETH Contract</a><br>
+                                    <a class="services-menu-content" href="{% url 'service:watch_eth_contract' %}">Watch ETH Contract</a><br>
+                                    <a class="services-menu-content" href="{% url 'service:run_eth_contract' %}">Run ETH Contract</a><br>
                                 </ul>
                             </li>
                         </div>
                     </div>
                 </div>
             </div>
-
         {% endif %}
     </header>
 </head>
