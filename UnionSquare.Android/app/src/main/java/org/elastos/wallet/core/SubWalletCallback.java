@@ -52,7 +52,7 @@ public class SubWalletCallback {
      * @param confirms is confirm count util this callback fired.
      */
     public void OnTransactionStatusChanged(String txID, String status, String desc, int confirms) {
-//        Log.i(TAG, GetWalletID() + "[OnTransactionStatusChanged] " + txID + "," + status + "," + confirms);
+        Log.i(TAG, GetWalletID() + "[OnTransactionStatusChanged] " + txID + "," + status + "," + confirms);
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("txId", txID);

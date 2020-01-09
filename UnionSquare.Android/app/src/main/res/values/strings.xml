@@ -183,7 +183,8 @@
     <string name="registration_deposit">报名押金</string>
     <string name="please_enter_ticket">请输入票数</string>
     <string name="lack_of_balance">余额不足</string>
-    <string name="transfertype1001">投票交易</string>
+    <string name="transfertype1001">投票交易</string><!--自定义的特殊的类型非sdk返回-->
+    <string name="transfertype1002">投票交易</string><!--自定义的特殊的类型非sdk返回 会覆盖其他投票投票类型-->
     <string name="transfertype0">创币交易</string>
     <string name="transfertype1">注册资产交易</string>
     <string name="transfertype2">普通转账交易</string>
@@ -599,4 +600,6 @@
     <string name="finish">已完成</string>
     <string name="abolished">已废止</string>
     <string name="notsufficientfundskeepornot">账户余额不足，将使之前的投票结果失效。是否继续交易？</string>
+    <string name="commonfailereason">交易失败</string>
+    <string name="specialvotesucessreason">特殊投票交易成功</string>
 </resources>

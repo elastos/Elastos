@@ -140,7 +140,17 @@ public class Arith {
 
         return v1.divide(b2, scale, BigDecimal.ROUND_DOWN);
     }
+    public static BigDecimal div(BigDecimal v1, String v2, int scale) {
+        if (scale < 0) {
+            return new BigDecimal("-1");
+            /*throw new IllegalArgumentException(
+                    "The scale must be a positive integer or zero");*/
+        }
 
+        BigDecimal b2 = new BigDecimal(v2);
+
+        return v1.divide(b2, scale, BigDecimal.ROUND_DOWN);
+    }
     /**
      * 提供精确的小数位四舍五入处理。
      *

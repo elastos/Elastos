@@ -126,6 +126,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     private Dialog dialog;
     Runnable runable;
     Handler handler;
+    private int transType = 1001;
 
     @Override
     protected int getLayoutId() {
@@ -473,7 +474,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
-            bundle.putInt("transType",1001 );
+            bundle.putInt("transType", transType);
             start(SignFragment.class, bundle);
 
         }
@@ -484,31 +485,31 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
             bundle.putBoolean("signStatus", true);
-            bundle.putInt("transType",1001 );
+            bundle.putInt("transType", transType);
             start(SignFragment.class, bundle);
 
         }
     }
 
 
-    private void showOpenDraftWarm(String attributesJson, String status) {
+    private void showOpenDraftWarm(String attributesJson) {
         new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.notsufficientfundskeepornot),
                 getString(R.string.sure), getString(R.string.cancel), false, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        goTransferActivity(attributesJson, status);
+                        goTransferActivity(attributesJson);
                     }
                 });
     }
 
-    private void goTransferActivity(String attributesJson, String status) {
+    private void goTransferActivity(String attributesJson) {
         Intent intent = new Intent(getActivity(), TransferActivity.class);
         intent.putExtra("amount", num);
         intent.putExtra("wallet", wallet);
         intent.putExtra("chainId", MyWallet.ELA);
         intent.putExtra("attributes", attributesJson);
         intent.putExtra("type", Constant.SUPERNODEVOTE);
-        intent.putExtra("transType", 1001);
+        intent.putExtra("transType", transType);
         startActivity(intent);
     }
 
@@ -584,10 +585,12 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 JSONObject attributesJson = JSON.parseObject(attributes);
                 String status = attributesJson.getString("DropVotes");
                 if (!TextUtils.isEmpty(status) && !status.equals("[]")) {
-                    showOpenDraftWarm(attributes, status);
+                    transType = 1002;
+                    showOpenDraftWarm(attributes);
                     break;
                 }
-                goTransferActivity(attributes, status);
+                transType = 1001;
+                goTransferActivity(attributes);
                 break;
             case "getCRlist":
                 if (handler != null && runable != null) {

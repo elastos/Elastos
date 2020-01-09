@@ -364,9 +364,31 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     /***************ISubWalletListener子钱包同步的监听*****************/
     @Override
     public void OnTransactionStatusChanged(JSONObject jsonObject) {
-        // Log.e("???", jsonObject.toString());
-        //交易状态改变  tx: 19a3dda6e200416ad2c8eaa62047c1211089e594bb0cd70e788c26075fffd9bd, status: Added, confirms: 0
-        //交易状态改变  tx: 19a3dda6e200416ad2c8eaa62047c1211089e594bb0cd70e788c26075fffd9bd, status: Added, confirms: 1
+        try {
+            String hash = jsonObject.getString("txId");
+            String transferType = transactionMap.get(hash);
+            if (TextUtils.isEmpty(transferType)) {
+                return;
+            }
+            //1002是投票覆盖其他投票的特殊投票类型  在此成功时候给出提醒
+            if (!"1002".equals(transferType)) {
+                return;
+            }
+            //只需要一次成功的提醒
+            transactionMap.remove(hash);
+
+            String chainId = jsonObject.getString("ChainID");
+            String masterWalletID = jsonObject.getString("MasterWalletID");
+            String transferTypeDes = getTransferDes(transferType, chainId);
+            String walleName = realmUtil.queryUserWallet(masterWalletID).getWalletName();
+            String reason = getString(R.string.specialvotesucessreason);
+            showNotification(reason, transferTypeDes, walleName);
+            addToMessageCenter(hash, transferType, chainId, walleName, reason);
+
+        } catch (Exception e) {
+            Log.i(getClass().getSimpleName(), e.getMessage());
+        }
+
     }
 
     @Override
@@ -453,72 +475,50 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @Override
     public synchronized void OnTxPublished(JSONObject jsonObject) {
-        SPUtil sp = new SPUtil(getContext());
-        if (!sp.isOpenSendMsg()) {
-            return;
-        }
+
         try {
             String hash = jsonObject.getString("hash");
             String transferType = transactionMap.get(hash);
             if (TextUtils.isEmpty(transferType)) {
                 return;
             }
-            String chainId = jsonObject.getString("ChainID");
-            String transferTypeDes = getString(R.string.transfertype13);
-            try {
-                if (chainId.equals(MyWallet.IDChain)) {
-                    transferTypeDes = getString(getContext().getResources().getIdentifier("sidetransfertype" + transferType, "string",
-                            getContext().getPackageName()));
-                } else {
-                    transferTypeDes = getString(getContext().getResources().getIdentifier("transfertype" + transferType, "string",
-                            getContext().getPackageName()));
-                }
-            } catch (Exception e) {
-                Log.i("transferTypeDes", e.getMessage());
-            }
             String resultString = jsonObject.getString("result");
-            String masterWalletID = jsonObject.getString("MasterWalletID");
-            String walleName = realmUtil.queryUserWallet(masterWalletID).getWalletName();
             JSONObject result = new JSONObject(resultString);
             int code = result.getInt("Code");
             String reason = result.getString("Reason");
+            //只捕捉失败的回调
             if (code == 0 || (code == 18 && reason.contains("uplicate"))) {
                 return;
             }
+            //只需要捕捉一次失败
             transactionMap.remove(hash);
-            NotificationManager manager = (NotificationManager) getContext().getSystemService(NOTIFICATION_SERVICE);
-
-            //需添加的代码
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                String channelId = "default";
-                String channelName = "默认通知";
-                manager.createNotificationChannel(new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH));
-            }
-            Notification notification = new NotificationCompat.Builder(getContext(), "default")
-                    .setContentTitle(MyUtil.getAppName(getContext()))
-                    .setContentText("【" + walleName + getString(R.string.wallet) + "】" + transferTypeDes + reason + ".")
-                    .setWhen(System.currentTimeMillis())
-                    .setSmallIcon(R.mipmap.icon_ela)
-                    .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.icon_ela))
-                    .build();
-            manager.notify(1, notification);
-            if (messageList == null) {
-                messageList = new ArrayList<>();
-            }
-            MessageEntity messageEntity = new MessageEntity();
-            messageEntity.setReason(reason);
-            messageEntity.setTransferType(transferType);
-            messageEntity.setWalletName(walleName);
-            messageEntity.setTime(new Date().getTime() / 1000);
-            messageEntity.setHash(hash);
-            messageEntity.setChainId(chainId);
-            messageList.remove(messageEntity);
-            messageList.add(messageEntity);
-            post(RxEnum.NOTICE.ordinal(), null, null);
+            String chainId = jsonObject.getString("ChainID");
+            String masterWalletID = jsonObject.getString("MasterWalletID");
+            String transferTypeDes = getTransferDes(transferType, chainId);
+            String walleName = realmUtil.queryUserWallet(masterWalletID).getWalletName();
+            reason = getString(R.string.commonfailereason);
+            showNotification(reason, transferTypeDes, walleName);
+            addToMessageCenter(hash, transferType, chainId, walleName, reason);
 
         } catch (Exception e) {
             Log.i(getClass().getSimpleName(), e.getMessage());
         }
+    }
+
+    private String getTransferDes(String transferType, String chainId) {
+        String transferTypeDes = getString(R.string.transfertype13);
+        try {
+            if (chainId.equals(MyWallet.IDChain)) {
+                transferTypeDes = getString(getContext().getResources().getIdentifier("sidetransfertype" + transferType, "string",
+                        getContext().getPackageName()));
+            } else {
+                transferTypeDes = getString(getContext().getResources().getIdentifier("transfertype" + transferType, "string",
+                        getContext().getPackageName()));
+            }
+        } catch (Exception e) {
+            Log.i("transferTypeDes", e.getMessage());
+        }
+        return transferTypeDes;
     }
 
     @Override
@@ -718,5 +718,44 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 ((BaseFragment) getParentFragment()).start(TransferFragment.class, bundle);
                 break;
         }
+    }
+
+    private void addToMessageCenter(String hash, String transferType, String chainId, String walleName, String reason) {
+        if (messageList == null) {
+            messageList = new ArrayList<>();
+        }
+        MessageEntity messageEntity = new MessageEntity();
+        messageEntity.setReason(reason);
+        messageEntity.setTransferType(transferType);
+        messageEntity.setWalletName(walleName);
+        messageEntity.setTime(new Date().getTime() / 1000);
+        messageEntity.setHash(hash);
+        messageEntity.setChainId(chainId);
+        messageList.remove(messageEntity);
+        messageList.add(messageEntity);
+        post(RxEnum.NOTICE.ordinal(), null, null);
+    }
+
+    private void showNotification(String reason, String transferTypeDes, String walleName) {
+        SPUtil sp = new SPUtil(getContext());
+        if (!sp.isOpenSendMsg()) {
+            return;
+        }
+        NotificationManager manager = (NotificationManager) getContext().getSystemService(NOTIFICATION_SERVICE);
+
+        //需添加的代码
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String channelId = "default";
+            String channelName = "默认通知";
+            manager.createNotificationChannel(new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH));
+        }
+        Notification notification = new NotificationCompat.Builder(getContext(), "default")
+                .setContentTitle(MyUtil.getAppName(getContext()))
+                .setContentText("【" + walleName + getString(R.string.wallet) + "】" + transferTypeDes + reason + ".")
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.mipmap.icon_ela)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.icon_ela))
+                .build();
+        manager.notify(1, notification);
     }
 }
