@@ -3,7 +3,7 @@ import logging
 import os
 
 from django.core import serializers
-from django.http import HttpResponse,JsonResponse
+from django.http import HttpResponse
 
 from decouple import config
 from django.core.files.base import ContentFile
@@ -178,9 +178,9 @@ def verify_and_show(request):
         filename = request.POST.get('file_name')
         try:
             userFile = SavedFileInformation.objects.filter(did=did, file_name=filename)
-            data = serializers.serialize('json' , userFile)
+            data = serializers.serialize('json', userFile)
             data = data[1:-1]
-            return JsonResponse(data, status=200)
+            return HttpResponse(data, content_type='application/json')
         except Exception as e:
             return redirect(reverse('service:verify_and_show'))
     elif request.method == 'POST':
