@@ -48,7 +48,7 @@ class UploadAndSignForm(forms.ModelForm):
 class VerifyAndShowForm(forms.Form):
     network = forms.ChoiceField(
         choices=NETWORK_GMU, label="", initial='', widget=forms.Select(), required=True)
-    select_files = forms.ModelChoiceField(queryset=None, required=False)
+    select_files = forms.ModelChoiceField(queryset=None)
     message_hash = forms.CharField(
         max_length=300, widget=forms.Textarea)
     public_key = forms.CharField(
@@ -92,7 +92,7 @@ class VerifyAndShowForm(forms.Form):
         self.fields['api_key'].widget.attrs['cols'] = 80
 
         self.fields['select_files'].label = "Select a previously uploaded file"
-        self.fields['select_files'] = forms.ModelChoiceField(queryset=SavedFileInformation.objects.filter(did=did))
+        self.fields['select_files'] = forms.ModelChoiceField(queryset=SavedFileInformation.objects.filter(did=did), required=False)
 
         self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
 
