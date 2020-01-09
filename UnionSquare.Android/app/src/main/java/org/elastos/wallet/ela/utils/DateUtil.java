@@ -107,7 +107,7 @@ public class DateUtil {
         GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(dat);
         int Language = new SPUtil(context).getLanguage();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
         if (Language != 0) {
             format = new SimpleDateFormat("MMM dd HH:mm:ss yyyy", Locale.ENGLISH);
 

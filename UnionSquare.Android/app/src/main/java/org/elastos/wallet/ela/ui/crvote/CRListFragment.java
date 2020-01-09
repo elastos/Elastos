@@ -194,16 +194,10 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 start(CRNodeCartFragment.class, bundle);
                 break;
             case R.id.tv_signupfor:
-                bundle = new Bundle();
-                bundle.putString("did", did);
                 if (status.equals("Unregistered")) {
                     start(CRAgreementFragment.class);
                 } else {
-                    bundle.putString("status", status);
-                    bundle.putParcelable("info", info);
-                    bundle.putParcelable("curentNode", curentNode);
-                    bundle.putString("publickey", publickey);
-                    start(CRManageFragment.class, bundle);
+                    addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
                 }
 
                 break;
@@ -461,17 +455,18 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             case "getDIDByPublicKey":
                 did = ((CommmonStringEntity) baseEntity).getData();
                 //无论是点击创建或者管理  还是打开页面就加载的  did肯定都为null 不为null的上层已经拦截    两种情况互斥
-
-               // if (status.equals("Unregistered")) {
-                    //只有Unregistered会到这里
-                    Bundle bundle = new Bundle();
-                    bundle.putString("did", did);
+                Bundle bundle = new Bundle();
+                bundle.putString("did", did);
+                bundle.putString("publickey", publickey);
+                if (status.equals("Unregistered")) {
                     bundle.putSerializable("netList", netList);
-                    bundle.putString("publickey", publickey);
                     start(CRSignUpForFragment.class, bundle);
-              //  }
-
-
+                } else {
+                    bundle.putString("status", status);
+                    bundle.putParcelable("info", info);
+                    bundle.putParcelable("curentNode", curentNode);
+                    start(CRManageFragment.class, bundle);
+                }
                 break;
             case "getCRlist":
                 //非unregister并且打开了idchain才会到这来  获得所有cr
