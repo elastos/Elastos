@@ -67,7 +67,7 @@
         <p class="card-text">Smart Contract Functions :  {{ contract_functions }}</p>
         <p class="card-text">Smart Contract Source :<br>{{ contract_source | linebreaks }}</p>
         <a href="{% url "service:deploy_eth_contract" %}" methods="GET">
-        <button class="btn-default">
+        <button class="btn btn-secondary" style="background-color: #00dd62;">
             Watch Smart Contract Again
         </button>
         </a>
@@ -75,7 +75,7 @@
        <form  class="form-group" method="post" enctype="multipart/form-data">
        {% csrf_token %}
        {{ form.as_p }}
-       <button type="submit">Watch Smart Contract</button>
+       <button class="btn btn-secondary" type="submit" style="background-color: #00dd62;">Watch Smart Contract</button>
        </form>
     {% endif %}
 {% endblock service %}

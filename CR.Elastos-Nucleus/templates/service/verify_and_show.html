@@ -68,13 +68,13 @@
         <h5 class="card-title">Content:</h5>
         <p class="card-text">{{ content | linebreaks }}</p>
           <a href="{% url 'service:verify_and_show' %}" methods="GET">
-            <button type="submit" class="btn-default">Show Again</button>
+            <button type="submit" class="btn btn-secondary" style="background-color: #00dd62;">Show Again</button>
         </a>
     {% else %}
          <form class="form-group" method="post">
              {% csrf_token %}
              {{ form.as_p }}
-            <button type="submit" >Submit</button>
+            <button class="btn btn-secondary" type="submit" style="background-color: #00dd62;">Submit</button>
          </form>
     {% endif %}
 {% endblock service %}

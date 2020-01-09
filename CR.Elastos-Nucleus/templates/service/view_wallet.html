@@ -71,7 +71,7 @@
         Balance: {{ balance.mainchain }}
       </p>
       {% endif %}
-      <button type="submit" name="submit_mainchain">View Wallet</button>
+      <button class="btn btn-secondary" type="submit" name="submit_mainchain" style="background-color: #00dd62;">View Wallet</button>
     </form>
 
     <h5 class="card-title">DID Sidechain Balance</h5>
@@ -85,7 +85,7 @@
         Balance: {{ balance.did }}
       </p>
       {% endif %} 
-      <button type="submit" name="submit_did">View Wallet</button>
+      <button class="btn btn-secondary" type="submit" name="submit_did" style="background-color: #00dd62;">View Wallet</button>
     </form>
 
     <h5 class="card-title">Token Sidechain Balance</h5>
@@ -99,7 +99,7 @@
         Balance: {{ balance.token }}
       </p>
       {% endif %}
-      <button type="submit" name="submit_token">View Wallet</button>
+      <button class="btn btn-secondary" type="submit" name="submit_token" style="background-color: #00dd62;">View Wallet</button>
     </form>
 
     <h5 class="card-title">ETH Sidechain Balance</h5>
@@ -113,6 +113,6 @@
         Balance: {{ balance.eth }}
       </p>
       {% endif %}
-      <button type="submit" name="submit_eth">View Wallet</button>
+      <button class="btn btn-secondary" type="submit" name="submit_eth" style="background-color: #00dd62;">View Wallet</button>
     </form>
 {% endblock service %}

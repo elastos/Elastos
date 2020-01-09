@@ -68,7 +68,7 @@
         {% elif output.generate_api_key %}
             <input id="api_key" type="text" class="form-control" value="{{ api_key }}" readonly>
         {% endif %}
-        <button class="btn btn-secondary" type="submit" name="submit_get_api_key">Get API Key</button>
-        <button class="btn btn-secondary" type="submit" name="submit_generate_api_key">Generate API Key</button>
+        <button class="btn btn-secondary" type="submit" name="submit_get_api_key" style="background-color: #5ac8fa;">Get API Key</button>
+        <button class="btn btn-secondary" type="submit" name="submit_generate_api_key" style="background-color: #00dd62;">Generate API Key</button>
     </form>
 {% endblock service %}

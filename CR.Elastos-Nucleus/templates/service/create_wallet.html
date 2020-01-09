@@ -89,7 +89,7 @@
           Private Key: {{ wallet_eth.private_key }}
         </p>
         <a href="{% url "service:create_wallet" %}" methods="GET">
-            <button class="btn-default">
+            <button class="btn btn-secondary" style="background-color: #00dd62;">
                 Create Wallet Again
             </button>
         </a>
@@ -97,7 +97,7 @@
        <form  class="form-group" method="post" enctype="multipart/form-data">
        {% csrf_token %}
        {{ form.as_p }}
-       <button type="submit">Create Wallet</button>
+       <button class="btn btn-secondary" type="submit" style="background-color: #00dd62;">Create Wallet</button>
        </form>
     {% endif %}
 {% endblock service %}

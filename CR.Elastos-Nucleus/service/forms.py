@@ -5,6 +5,9 @@ from .models import UploadFile , SavedFileInformation
 from .choices import *
 
 
+GMUNET_BUTTON = 'width: 287px; height: 44px; border-radius: 4px; background-color: #5ac8fa;'
+
+
 class GenerateAPIKeyForm(forms.Form):
     did = forms.CharField(max_length=64)
 
@@ -17,7 +20,7 @@ class GenerateAPIKeyForm(forms.Form):
 class UploadAndSignForm(forms.ModelForm):
     network = forms.ChoiceField(
         choices=NETWORK_GMU, label="", initial='', widget=forms.Select(), required=True)
-    file_content = forms.CharField(widget=forms.TextInput, required=False)
+    file_content = forms.CharField(widget=forms.Textarea, required=False)
     private_key = forms.CharField(max_length=300, widget=forms.Textarea)
     api_key = forms.CharField(max_length=64, widget=forms.Textarea)
 
@@ -33,6 +36,8 @@ class UploadAndSignForm(forms.ModelForm):
         self.fields['private_key'].widget.attrs['cols'] = 100
         self.fields['api_key'].widget.attrs['rows'] = 1
         self.fields['api_key'].widget.attrs['cols'] = 100
+
+        self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
 
     class Meta:
         model = UploadFile
@@ -81,6 +86,8 @@ class VerifyAndShowForm(forms.Form):
         self.fields['select_files'] = forms.ModelChoiceField(queryset=SavedFileInformation.objects.filter(did=did))
         self.fields['select_files'].label = "Select a previously uploaded file"
 
+        self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
+
 
 class CreateWalletForm(forms.Form):
     network = forms.ChoiceField(
@@ -91,6 +98,8 @@ class CreateWalletForm(forms.Form):
         super(CreateWalletForm, self).__init__(*args, **kwargs)
         self.fields['api_key'].widget.attrs['rows'] = 1
         self.fields['api_key'].widget.attrs['cols'] = 100
+
+        self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
 
 
 class ViewWalletForm(forms.Form):
@@ -113,6 +122,8 @@ class ViewWalletForm(forms.Form):
 
         self.fields['chain'].widget = HiddenInput()
 
+        self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
+
 
 class RequestELAForm(forms.Form):
     network = forms.ChoiceField(
@@ -133,6 +144,8 @@ class RequestELAForm(forms.Form):
         self.fields['address'].widget.attrs['cols'] = 100
 
         self.fields['chain'].widget = HiddenInput()
+
+        self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
 
 
 class DeployETHContractForm(forms.ModelForm):
@@ -159,6 +172,8 @@ class DeployETHContractForm(forms.ModelForm):
         self.fields['eth_private_key'].widget.attrs['cols'] = 100
 
         self.fields['did'].widget = HiddenInput()
+
+        self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
 
     class Meta:
         model = UploadFile
@@ -189,4 +204,5 @@ class WatchETHContractForm(forms.Form):
         self.fields['contract_code_hash'].widget.attrs['rows'] = 1
         self.fields['contract_code_hash'].widget.attrs['cols'] = 100
 
+        self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
 

@@ -66,7 +66,7 @@
         <p class="card-text">Smart Contract Name :  {{ contract_name }}</p>
         <p class="card-text">Smart Contract Code Hash :  {{ contract_code_hash }}</p>
         <a href="{% url "service:deploy_eth_contract" %}" methods="GET">
-        <button class="btn-default">
+        <button class="btn-default" style="background-color: #00dd62;">
             Upload Smart Contract Again
         </button>
         </a>
@@ -74,7 +74,7 @@
        <form  class="form-group" method="post" enctype="multipart/form-data">
        {% csrf_token %}
        {{ form.as_p }}
-       <button type="submit">Upload Smart Contract</button>
+       <button class="btn btn-secondary" type="submit" style="background-color: #00dd62;">Upload Smart Contract</button>
        </form>
     {% endif %}
 {% endblock service %}

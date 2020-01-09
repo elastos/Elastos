@@ -67,7 +67,7 @@
         <p class="card-text">Signature : {{ signature }}</p>
         <p class="card-text">File Hash : {{ file_hash }}</p>
         <a href="{% url "service:upload_and_sign" %}" methods="GET">
-        <button class="btn-default">
+        <button class="btn btn-secondary" style="background-color: #00dd62;">
             Upload Again
         </button>
         </a>
@@ -77,7 +77,7 @@
        <form  class="form-group" method="post" enctype="multipart/form-data">
        {% csrf_token %}
        {{ form.as_p }}
-       <button type="submit">Upload</button>
+       <button class="btn btn-secondary" type="submit" style="background-color: #00dd62;">Upload</button>
        </form>
     {% endif %}
 {% endblock service %}

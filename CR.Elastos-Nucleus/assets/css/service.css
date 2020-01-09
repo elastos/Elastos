@@ -109,3 +109,10 @@ li.active a, li.active a:hover {
 pre.prettyprint {
     border: none !important;
 }
+
+.network-button {
+  width: 287px;
+  height: 44px;
+  border-radius: 4px;
+  background-color: #5ac8fa;
+}
