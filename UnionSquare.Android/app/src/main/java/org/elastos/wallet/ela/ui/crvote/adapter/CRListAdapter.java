@@ -44,8 +44,11 @@ public class CRListAdapter extends CRListAdapterFather {
         } else if (is) {
             no = (bean.getIndex() < data.get(0).getIndex()) ? no - 1 : no ;
         }*/
-        helper.setText(R.id.tv_rank, "No." +(bean.getIndex() + 1));
-
+        if (bean.getIndex() <12) {
+            helper.setText(R.id.tv_rank, "No." + (bean.getIndex() + 1));
+        } else {
+            helper.setText(R.id.tv_rank, "" + (bean.getIndex() + 1));
+        }
 
         ImageView iv = helper.getView(R.id.iv_icon);
         iv.setImageResource(R.mipmap.found_vote_initial);
