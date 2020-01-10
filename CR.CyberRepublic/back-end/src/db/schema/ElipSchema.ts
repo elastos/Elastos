@@ -3,32 +3,6 @@ import * as _ from 'lodash'
 import { constant } from '../../constant'
 import { CommentSchema } from './CommentSchema'
 
-export const ElipResultSchema = {
-  votedBy: {
-    type: Schema.Types.ObjectId,
-    ref: 'users',
-    required: true
-  },
-  value: {
-    type: String,
-    emun: _.values(constant.CVOTE_RESULT),
-    default: constant.CVOTE_RESULT.UNDECIDED
-  },
-  reason: {
-    type: String,
-    default: ''
-  }
-}
-
-export const ElipHistorySchema = {
-  ...ElipResultSchema,
-  createdAt: {
-    type: Date,
-    required: true,
-    default: Date.now
-  }
-}
-
 export const Elip = {
   title: {
     type: String,
@@ -92,7 +66,5 @@ export const Elip = {
     type: String,
     enum: _.values(constant.ELIP_STATUS)
   },
-//  voteHistory: [ElipHistorySchema],
-//  voteResult: [ElipResultSchema],
   comments: [[CommentSchema]]
 }

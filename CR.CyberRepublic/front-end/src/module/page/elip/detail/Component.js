@@ -60,9 +60,11 @@ class C extends StandardPage {
         </StyledSpin>
       )
     }
-    
+
     if (data && data.success && data.empty) {
-      {this.props.history.push('/elips')}
+      {
+        this.props.history.push('/elips')
+      }
     }
 
     return (
@@ -88,8 +90,8 @@ class C extends StandardPage {
 
   submittedAsProposal = async () => {
     try {
-      const { submitAsPropose, data } = this.props
-      await submitAsPropose({ id: data._id })
+      const { updateStatus, data } = this.props
+      await updateStatus({ _id: data._id, status: ELIP_STATUS.FINAL_REVIEW })
       message.info(I18N.get('elip.msg.marked'))
       this.refetch()
     } catch (error) {
@@ -162,16 +164,28 @@ class C extends StandardPage {
     return (
       <StyledAnchor offsetTop={300}>
         <LinkGroup>
-          <Anchor.Link href="#preamble" title={I18N.get('elip.fields.preamble')} />
-          <Anchor.Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
+          <Anchor.Link
+            href="#preamble"
+            title={I18N.get('elip.fields.preamble')}
+          />
+          <Anchor.Link
+            href="#abstract"
+            title={I18N.get('elip.fields.abstract')}
+          />
         </LinkGroup>
         <LinkGroup marginTop={48}>
-          <Anchor.Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
+          <Anchor.Link
+            href="#motivation"
+            title={I18N.get('elip.fields.motivation')}
+          />
           <Anchor.Link
             href="#specification"
             title={I18N.get('elip.fields.specification')}
           />
-          <Anchor.Link href="#rationale" title={I18N.get('elip.fields.rationale')} />
+          <Anchor.Link
+            href="#rationale"
+            title={I18N.get('elip.fields.rationale')}
+          />
         </LinkGroup>
         <LinkGroup marginTop={46}>
           <Anchor.Link
@@ -182,7 +196,10 @@ class C extends StandardPage {
             href="#referenceImplementation"
             title={I18N.get('elip.fields.referenceImplementation')}
           />
-          <Anchor.Link href="#copyright" title={I18N.get('elip.fields.copyright')} />
+          <Anchor.Link
+            href="#copyright"
+            title={I18N.get('elip.fields.copyright')}
+          />
         </LinkGroup>
         <LinkGroup marginTop={51}>{reviewLink}</LinkGroup>
       </StyledAnchor>
@@ -236,7 +253,9 @@ class C extends StandardPage {
             <Part id={section.id} key={section.id}>
               <PartTitle>{I18N.get(`elip.fields.${section.id}`)}</PartTitle>
               <PartContent>
-                <MarkdownPreview content={data[section.valueKey] ? data[section.valueKey] : ''} />
+                <MarkdownPreview
+                  content={data[section.valueKey] ? data[section.valueKey] : ''}
+                />
               </PartContent>
             </Part>
           ))}
@@ -282,7 +301,7 @@ class C extends StandardPage {
     data.proposer = data.createdBy
     data.displayId = data.vid
     const postedByText = I18N.get('from.CVoteForm.label.proposedby')
-    return <MetaComponent data={data} postedByText={postedByText} user={user}/>
+    return <MetaComponent data={data} postedByText={postedByText} user={user} />
   }
 
   renderTitleNode() {
@@ -300,6 +319,7 @@ class C extends StandardPage {
       <Row type="flex" justify="start" gutter={25.5}>
         {status}
         {edit}
+        {this.renderCancelledButton()}
         {submittedProposal}
         {deleteElip}
       </Row>
@@ -328,7 +348,16 @@ class C extends StandardPage {
       <Part id="preamble">
         <PartTitle>{I18N.get('elip.fields.preamble')}</PartTitle>
         <PartContent className="preamble">
-          {_.map(preambles, (v, k) => !_.isEmpty(v) && this.renderPreambleItem(I18N.get(`elip.fields.preambleItems.${k}`), v, k))}
+          {_.map(
+            preambles,
+            (v, k) =>
+              !_.isEmpty(v) &&
+              this.renderPreambleItem(
+                I18N.get(`elip.fields.preambleItems.${k}`),
+                v,
+                k
+              )
+          )}
         </PartContent>
       </Part>
     )
@@ -367,7 +396,9 @@ class C extends StandardPage {
   renderComment() {
     const { data } = this.props
     return (
-      [ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED_AS_PROPOSAL].includes(data.status) && (
+      [ELIP_STATUS.DRAFT, ELIP_STATUS.CANCELLED, ELIP_STATUS.SUBMITTED_AS_PROPOSAL].includes(
+        data.status
+      ) && (
         <Row style={{ marginTop: 24 }}>
           <LabelCol span={3} />
           <Col span={17}>
@@ -413,10 +444,12 @@ class C extends StandardPage {
 
   renderEditButton() {
     const { data } = this.props
-    const isEditable =
-      this.isAuthor(data) &&
-      [ELIP_STATUS.REJECTED, ELIP_STATUS.DRAFT].includes(data.status)
-
+    const status = [
+      ELIP_STATUS.REJECTED,
+      ELIP_STATUS.DRAFT,
+      ELIP_STATUS.PERSONAL_DRAFT
+    ]
+    const isEditable = this.isAuthor(data) && status.includes(data.status)
     if (!isEditable) return null
 
     return (
@@ -431,6 +464,25 @@ class C extends StandardPage {
         </Button>
       </Col>
     )
+  }
+
+  renderCancelledButton() {
+    const { data } = this.props
+    const isVisible = this.isAuthor(data) && data.status === ELIP_STATUS.DRAFT
+    if (isVisible) {
+      return (
+        <Col>
+          <Button
+            onClick={() => {
+              this.updateStatus(ELIP_STATUS.CANCELLED)
+            }}
+            className="cr-btn cr-btn-primary"
+          >
+            {I18N.get('elip.button.cancelled')}
+          </Button>
+        </Col>
+      )
+    }
   }
 
   renderSubmittedProposalButton() {
@@ -478,7 +530,7 @@ class C extends StandardPage {
 
   renderReviewButton() {
     const { data, isSecretary } = this.props
-    const isVisible = isSecretary && data.status === ELIP_STATUS.WAIT_FOR_REVIEW
+    const isVisible = isSecretary && [ELIP_STATUS.WAIT_FOR_REVIEW, ELIP_STATUS.FINAL_REVIEW].includes(data.status)
 
     if (!isVisible) return null
 

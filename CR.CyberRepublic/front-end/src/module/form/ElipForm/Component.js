@@ -1,11 +1,11 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import _ from 'lodash'
 import { Form, Input, Button, Row, Tabs, Typography, Modal, Col } from 'antd'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
-import { ELIP_TYPE } from '@/constant'
+import { ELIP_TYPE, ELIP_STATUS } from '@/constant'
 
 import {
   Container,
@@ -121,7 +121,7 @@ class C extends BaseComponent {
       isPreview: false
     }
 
-    _.forEach(TABS, (value) => {
+    _.forEach(TABS, value => {
       editors[value.id] = null
     })
   }
@@ -130,31 +130,35 @@ class C extends BaseComponent {
     return !TAB_KEYS.includes(key) ? this.state.activeKey : key
   }
 
-  handleSubmit = async e => {
+  handleSubmit = async (e, status) => {
     const { onSubmit, form } = this.props
-    this.setState({ loading: true })
+    if (!status) {
+      this.setState({ loading: true })
+    }
     e.preventDefault()
     form.validateFields(async (err, values) => {
       if (err) {
-        this.setState({
-          loading: false,
+        const data = {
           errorKeys: err,
           activeKey: this.getActiveKey(Object.keys(err)[0])
-        })
+        }
+        if (!status) {
+          data.loading = false
+        }
+        this.setState(data)
         return
       }
-
-      onSubmit({
-        title: values.title,
-        elipType: values.type,
-        abstract: values.abstract,
-        specifications: values.specification,
-        motivation: values.motivation,
-        rationale: values.rationale,
-        backwardCompatibility: values.backwardCompatibility,
-        referenceImplementation: values.referenceImplementation,
-        copyright: values.copyright
-      })
+      values.elipType = values.type
+      values.specifications = values.specification
+      delete values.specification
+      delete values.type
+      if (status) {
+        values.status = status
+      }
+      await onSubmit(values)
+      if (!status) {
+        this.setState({ loading: false })
+      }
     })
   }
 
@@ -272,18 +276,84 @@ class C extends BaseComponent {
         onCancel={this.handlePreview}
         cancelButtonProps={{ style: { display: 'none' } }}
       >
-        {isPreview && _.map(_.difference(TAB_KEYS, PREVIEW_EXCLUDE_KEYS), value => (
-          <Part id={value} key={value}>
-            <PartTitle>{I18N.get(`elip.fields.${value}`)}</PartTitle>
-            <PartContent>
-              <MarkdownPreview
-                content={fieldsValue[value] ? fieldsValue[value] : ''}
-              />
-            </PartContent>
-          </Part>
-        ))}
+        {isPreview &&
+          _.map(_.difference(TAB_KEYS, PREVIEW_EXCLUDE_KEYS), value => (
+            <Part id={value} key={value}>
+              <PartTitle>{I18N.get(`elip.fields.${value}`)}</PartTitle>
+              <PartContent>
+                <MarkdownPreview
+                  content={fieldsValue[value] ? fieldsValue[value] : ''}
+                />
+              </PartContent>
+            </Part>
+          ))}
       </Modal>
     )
+  }
+
+  renderPersonalDraftButton() {
+    const { data } = this.props
+    if (!data || (data && data.status === ELIP_STATUS.PERSONAL_DRAFT)) {
+      return (
+        <Col>
+          <Button
+            onClick={e => {
+              this.handleSubmit(e, ELIP_STATUS.PERSONAL_DRAFT)
+            }}
+            className="cr-btn cr-btn-primary"
+            htmlType="button"
+          >
+            {I18N.get('elip.button.personalDraft')}
+          </Button>
+        </Col>
+      )
+    }
+  }
+  renderReviewButton() {
+    const { data } = this.props
+    const rs = [ELIP_STATUS.PERSONAL_DRAFT, ELIP_STATUS.REJECTED]
+    if (!data || (data && rs.includes(data.status))) {
+      return (
+        <Col>
+          <Button
+            loading={this.state.loading}
+            className="cr-btn cr-btn-primary"
+            htmlType="submit"
+          >
+            {this.props.submitName || I18N.get('elip.button.submit')}
+          </Button>
+        </Col>
+      )
+    }
+  }
+  renderDraftButton() {
+    const { data } = this.props
+    if (data && data.status === ELIP_STATUS.DRAFT) {
+      return (
+        <Fragment>
+          <Col>
+            <Button
+              onClick={e => this.handleSubmit(e, ELIP_STATUS.DRAFT)}
+              className="cr-btn cr-btn-primary"
+              htmlType="button"
+            >
+              {I18N.get('elip.button.saveChanges')}
+            </Button>
+          </Col>
+          <Col>
+            <Button
+              onClick={e => {
+                this.handleSubmit(e, ELIP_STATUS.FINAL_REVIEW)
+              }}
+              className="cr-btn cr-btn-primary"
+              htmlType="button"
+            >
+              {I18N.get('elip.button.submittedAsProposal')}
+            </Button>
+          </Col>
+        </Fragment>
+      )
+    }
   }
 
   ord_render() {
@@ -292,7 +362,11 @@ class C extends BaseComponent {
     const previewModal = this.renderPreview()
     return (
       <Container>
-        <Form onSubmit={this.handleSubmit}>
+        <Form
+          onSubmit={e => {
+            this.handleSubmit(e, ELIP_STATUS.WAIT_FOR_REVIEW)
+          }}
+        >
           <Title className="komu-a cr-title-with-icon ">
             {data
               ? `${I18N.get('elip.button.edit')}`
@@ -323,11 +397,7 @@ class C extends BaseComponent {
           >
             {_.map(TABS, value => this.renderTabItem(value))}
           </Tabs>
-          <Row
-            type="flex"
-            justify="center"
-            style={{ marginBottom: '30px' }}
-          >
+          <Row type="flex" justify="center" style={{ marginBottom: '30px' }}>
             <Col>
               <Button
                 loading={this.state.loading}
@@ -341,11 +411,10 @@ class C extends BaseComponent {
           </Row>
           <Row gutter={10} type="flex" justify="center">
             <Col>
-              <Button
-                onClick={onCancel}
-                className="cr-btn cr-btn-default"
-              >
-                {I18N.get('elip.button.cancel')}
+              <Button onClick={onCancel} className="cr-btn cr-btn-default">
+                {data
+                  ? I18N.get('elip.button.back')
+                  : I18N.get('elip.button.cancel')}
               </Button>
             </Col>
             <Col>
@@ -357,15 +426,9 @@ class C extends BaseComponent {
                 {I18N.get('elip.button.preview')}
               </Button>
             </Col>
-            <Col>
-              <Button
-                loading={this.state.loading}
-                className="cr-btn cr-btn-primary"
-                htmlType="submit"
-              >
-                {this.props.submitName || I18N.get('elip.button.submit')}
-              </Button>
-            </Col>
+            {this.renderPersonalDraftButton()}
+            {this.renderDraftButton()}
+            {this.renderReviewButton()}
           </Row>
         </Form>
         {previewModal}

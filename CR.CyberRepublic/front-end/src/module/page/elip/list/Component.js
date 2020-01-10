@@ -57,7 +57,9 @@ export default class extends BaseComponent {
   getQuery = () => {
     const { filter, creationDate, author, type } = this.state
     const query = {}
-    query.filter = _.isEmpty(filter) ? 'ALL' : filter
+    if (!_.isEmpty(filter)) {
+      query.filter = filter
+    }
     if (!_.isEmpty(creationDate)) {
       const formatStr = 'YYYY-MM-DD'
       query.startDate = moment(creationDate[0]).format(formatStr)
@@ -292,11 +294,18 @@ export default class extends BaseComponent {
                           {I18N.get(`elip.status.${value}`)}
                         </Select.Option>
                       ))
-                    : _.map([ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED_AS_PROPOSAL], value => (
-                        <Select.Option key={value} value={value}>
-                          {I18N.get(`elip.status.${value}`)}
-                        </Select.Option>
-                      ))}
+                    : _.map(
+                        [
+                          ELIP_STATUS.DRAFT,
+                          ELIP_STATUS.CANCELLED,
+                          ELIP_STATUS.SUBMITTED_AS_PROPOSAL
+                        ],
+                        value => (
+                          <Select.Option key={value} value={value}>
+                            {I18N.get(`elip.status.${value}`)}
+                          </Select.Option>
+                        )
+                      )}
                 </Select>
               </FilterItem>
             </FilterContent>
