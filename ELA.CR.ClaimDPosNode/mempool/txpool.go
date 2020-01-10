@@ -29,8 +29,7 @@ type TxPool struct {
 
 	sync.RWMutex
 	txnList map[Uint256]*Transaction // transaction which have been verifyed will put into this map
-
-	txnListSize int
+	txFees  *txFeeOrderedList
 }
 
 //append transaction to txnpool when check ok.
@@ -84,7 +83,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 	}
 
 	size := tx.GetSize()
-	if mp.txnListSize+size > pact.MaxTxPoolSize {
+	if mp.txFees.OverSize(uint64(size)) {
 		log.Warn("TxPool check transactions size failed", tx.Hash())
 		return elaerr.Simple(elaerr.ErrTxPoolOverCapacity, nil)
 	}
@@ -95,8 +94,10 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 	}
 
 	// Add the transaction to mem pool
-	mp.txnList[txHash] = tx
-	mp.txnListSize += size
+	if err := mp.doAddTransaction(tx); err != nil {
+		mp.RemoveTx(tx)
+		return err
+	}
 
 	return nil
 }
@@ -403,17 +404,40 @@ func (mp *TxPool) RemoveTransaction(txn *Transaction) {
 	mp.Unlock()
 }
 
+func (mp *TxPool) doAddTransaction(tx *Transaction) elaerr.ELAError {
+	if err := mp.txFees.AddTx(tx); err != nil {
+		return err
+	}
+	mp.txnList[tx.Hash()] = tx
+	return nil
+}
+
 func (mp *TxPool) doRemoveTransaction(hash Uint256, txSize int) {
 	if _, exist := mp.txnList[hash]; exist {
 		delete(mp.txnList, hash)
-		mp.txnListSize -= txSize
+		mp.txFees.RemoveTx(hash, uint64(txSize))
 	}
 }
 
+func (mp *TxPool) onPopBack(hash Uint256) {
+	tx, ok := mp.txnList[hash]
+	if !ok {
+		log.Warnf("cannot find tx %s when try to delete", hash)
+		return
+	}
+	if err := mp.RemoveTx(tx); err != nil {
+		log.Warnf(err.Error())
+		return
+	}
+	delete(mp.txnList, hash)
+}
+
 func NewTxPool(params *config.Params) *TxPool {
-	return &TxPool{
+	rtn := &TxPool{
 		conflictManager: newConflictManager(),
 		chainParams:     params,
 		txnList:         make(map[Uint256]*Transaction),
 	}
+	rtn.txFees = newTxFeeOrderedList(rtn.onPopBack, pact.MaxTxPoolSize)
+	return rtn
 }
