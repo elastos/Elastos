@@ -117,10 +117,19 @@ export default class extends Base {
 
   public async create(param: any): Promise<Document> {
     try {
-      const db_elip = this.getDBModel('Elip')
       const { status } = param
-      const fields = [...BASE_FIELDS, 'elipType']
+      const isValidStatus = [
+        constant.ELIP_STATUS.PERSONAL_DRAFT,
+        constant.ELIP_STATUS.WAIT_FOR_REVIEW
+      ].includes(status)
+
+      if (!isValidStatus) {
+        throw `ElipService.create - not valid status`
+      }
+
       const doc: any = {}
+      doc.status = status
+      const fields = [...BASE_FIELDS, 'elipType']
       for (let i = 0; i < fields.length; i++) {
         const value = param[fields[i]]
         if (fields[i] === 'elipType' && !constant.ELIP_TYPE[value]) {
@@ -129,17 +138,10 @@ export default class extends Base {
           doc[fields[i]] = value
         }
       }
-      if (
-        [
-          constant.ELIP_STATUS.PERSONAL_DRAFT,
-          constant.ELIP_STATUS.WAIT_FOR_REVIEW
-        ].includes(status)
-      ) {
-        doc.status = status
-      }
       doc.createdBy = this.currentUser._id
 
-      const elip = await db_elip.save(doc)
+      const elip = await this.getDBModel('Elip').save(doc)
+
       if (status === constant.ELIP_STATUS.WAIT_FOR_REVIEW) {
         this.notifySecretaries(this.createMailTemplate(elip.title, elip._id))
       }
