@@ -56,8 +56,41 @@
 {% endblock servicetitle %}
 
 {% block description %}
-    The description of the Generate API Key service goes here.
+    The Generate API Key service is used to generate an API key to interact with other
+    <a href="https://github.com/cyber-republic/elastos-smartweb-service">Elastos Smartweb Service</a>
+    services. Here is how it currently works:
+    <ul style="margin-left: 15px;">
+        <li>
+            Takes two arguments:
+            <ul style="margin-left: 30px;">
+                <li>
+                    SHARED_SECRET_ADENINE: This is the same SHARED_SECRET_ADENINE that is used to run Elastos Smartweb Service
+                </li>
+                <li>
+                    DID: This is the DID to be used to generate an API Key for
+                </li>
+            </ul>
+        </li>
+        <li>
+            Elastos Smartweb Service generates an API Key and associates it with the DID that was passed in
+        </li>
+        <li>
+            Returns the API Key that can be used with other API services
+        </li>
+    </ul>
 {% endblock description %}
+{%  block grpc_server_url %}
+    https://github.com/cyber-republic/elastos-smartweb-service/blob/master/grpc_adenine/implementations/common.py
+{% endblock grpc_server_url %}
+{%  block grpc_client_url_python %}
+    https://github.com/cyber-republic/python-grpc-adenine/blob/master/elastos_adenine/common.py
+{% endblock grpc_client_url_python %}
+{%  block grpc_client_url_golang %}
+    #
+{% endblock grpc_client_url_golang %}
+{%  block grpc_client_url_elastOS %}
+    #
+{% endblock grpc_client_url_elastOS %}
 
 {% block service %}
     <form class="form-group" method="post" enctype="multipart/form-data">

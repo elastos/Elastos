@@ -73,9 +73,46 @@
                 Description
             </p>
             <div class="service-divider"></div>
-            <p style="font-family: 'Roboto';margin: 30px;">
+            <div style="font-family: 'Roboto';margin: 30px;">
                 {% block description %}{% endblock %}
-            </p>
+                <div class="service-divider" style="background-color: grey; width: 50%;"></div>
+                In order to use this API in your own program, you need to first do the following:
+                <ol style="margin-left: 15px;">
+                    <li>
+                        Either connect to an existing Elastos Private Net or run your own. Follow the instructions
+                        <a href="https://github.com/cyber-republic/elastos-privnet">here</a>
+                    </li>
+                    <li>
+                        Either connect to an existing Elastos Smartweb Service or run your own. Follow the instructions
+                        <a href="https://github.com/cyber-republic/elastos-smartweb-service">here</a>
+                    </li>
+                    <li>
+                        Install a language specific client library that helps you connect to Elastos Smartweb Service. Follow the instructions at:
+                        <ul style="margin-left: 30px;">
+                            <li><a href="https://github.com/cyber-republic/python-grpc-adenine">Python Client Library</a></li>
+                            <li><a href="#">Golang Client Library[COMING SOON]</a></li>
+                            <li><a href="#">elastOS Client Library[COMING SOON]</a></li>
+                        </ul>
+                        NOTE: The sample code below uses this library
+                    </li>
+                </ol>
+                <div class="service-divider" style="background-color: grey; width: 50%;"></div>
+                For server side implementation(Elastos Smartweb Service) of this method, check
+                <a href="{% block grpc_server_url %}{% endblock %}">here</a>.<br>
+                For client side implementation of this method, check:
+                <ul style="margin-left: 15px;">
+                    <li>
+                        <a href="{% block grpc_client_url_python %}{% endblock %}">Python</a>
+                    </li>
+                    <li>
+                        <a href="{% block grpc_client_url_golang %}{% endblock %}">Golang[COMING SOON]</a>
+                    </li>
+                    <li>
+                        <a href="{% block grpc_client_url_elastOS %}{% endblock %}">elastOS[COMING SOON]</a>
+                    </li>
+                </ul>
+                For sample code of the client side implementation on how you can use it in your own program, check out the code snippets below.
+            </div>
         </div><br>
 
         <!-- Code Snippet Card -->
@@ -83,8 +120,8 @@
             <div class="tabs">
                 <ul class="tab-links" style="margin: 30px;">
                     <li class="active"><a href="#python">Python</a></li>
-                    <li><a href="#golang">Golang</a></li>
-                    <li><a href="#elastOS">elastOS</a></li>
+                    <li><a href="#golang">Golang[COMING SOON]</a></li>
+                    <li><a href="#elastOS">elastOS[COMING SOON]</a></li>
                 </ul>
 
                 <div class="service-divider" style="margin-bottom: 30px;"></div>
