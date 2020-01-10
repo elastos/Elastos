@@ -208,11 +208,6 @@ namespace Elastos {
 		}
 
 		void SpvService::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
-
-			if (replace) {
-				_databaseManager->DeleteAllBlocks(ISO);
-			}
-
 			if (blocks.size() == 1) {
 				SPVLOG_INFO("{} checkpoint ====> [{}, \"{}\", {}, {}],",
 				           _peerManager->GetID(),
@@ -222,7 +217,7 @@ namespace Elastos {
 				           blocks[0]->GetTarget());
 			}
 
-			_databaseManager->PutMerkleBlocks(ISO, blocks);
+			_databaseManager->PutMerkleBlocks(ISO, replace, blocks);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &blocks](PeerManager::Listener *listener) {

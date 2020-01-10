@@ -25,7 +25,7 @@ namespace Elastos {
 			~MerkleBlockDataSource();
 
 			bool PutMerkleBlock(const std::string &iso, const MerkleBlockPtr &blockPtr);
-			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockPtr> &blocks);
+			bool PutMerkleBlocks(const std::string &iso, bool replace, const std::vector<MerkleBlockPtr> &blocks);
 			bool DeleteMerkleBlock(const std::string &iso, long id);
 			bool DeleteAllBlocks(const std::string &iso);
 			std::vector<MerkleBlockPtr> GetAllMerkleBlocks(const std::string &iso, const std::string &chainID) const;

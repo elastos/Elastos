@@ -140,8 +140,8 @@ namespace Elastos {
 			return _merkleBlockDataSource.PutMerkleBlock(iso, blockPtr);
 		}
 
-		bool DatabaseManager::PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockPtr> &blocks) {
-			return _merkleBlockDataSource.PutMerkleBlocks(iso, blocks);
+		bool DatabaseManager::PutMerkleBlocks(const std::string &iso, bool replace, const std::vector<MerkleBlockPtr> &blocks) {
+			return _merkleBlockDataSource.PutMerkleBlocks(iso, replace, blocks);
 		}
 
 		bool DatabaseManager::DeleteMerkleBlock(const std::string &iso, long id) {

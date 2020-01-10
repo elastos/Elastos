@@ -35,11 +35,21 @@ namespace Elastos {
 		}
 
 		bool MerkleBlockDataSource::PutMerkleBlocks(const std::string &iso,
+													bool replace,
 													const std::vector<MerkleBlockPtr> &blocks) {
 			if (blocks.empty())
 				return true;
 
-			return DoTransaction([&iso, &blocks, this]() {
+			return DoTransaction([&iso, &replace, &blocks, this]() {
+				if (replace) {
+					std::string sql = "DELETE FROM " + MB_TABLE_NAME + ";";
+
+					if (!_sqlite->exec(sql, nullptr, nullptr)) {
+						Log::error("exec sql: {}" + sql);
+						return false;
+					}
+				}
+
 				for (size_t i = 0; i < blocks.size(); ++i) {
 					if (blocks[i]->GetHeight() > 0) {
 						if (!this->PutMerkleBlockInternal(iso, blocks[i]))

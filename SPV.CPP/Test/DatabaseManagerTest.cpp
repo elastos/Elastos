@@ -117,7 +117,18 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Merkle Block save test") {
 			DatabaseManager *dbm = new DatabaseManager(DBFILE);
-			REQUIRE(dbm->PutMerkleBlocks(ISO, blocksToSave));
+			MerkleBlockPtr merkleBlock(Registry::Instance()->CreateMerkleBlock(pluginType));
+
+			merkleBlock->SetHeight(110);
+			merkleBlock->SetTimestamp(getRandUInt32());
+			merkleBlock->SetPrevBlockHash(uint256(getRandBytes(32)));
+			merkleBlock->SetTarget(getRandUInt32());
+			merkleBlock->SetNonce(getRandUInt32());
+
+			REQUIRE(dbm->PutMerkleBlock(ISO, merkleBlock));
+			REQUIRE(dbm->GetAllMerkleBlocks(ISO, pluginType).size() == 1);
+
+			REQUIRE(dbm->PutMerkleBlocks(ISO, true, blocksToSave));
 			delete dbm;
 		}
 
@@ -168,11 +179,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Merkle Block delete one by one test") {
 			DatabaseManager dbm(DBFILE);
 
-			std::vector<MerkleBlockPtr> blocksBeforeDelete = dbm.GetAllMerkleBlocks(ISO, pluginType);
-
-			for (int i = 0; i < blocksBeforeDelete.size(); ++i) {
-				REQUIRE(dbm.DeleteMerkleBlock(ISO, blocksBeforeDelete.size() + i + 1));
-			}
+			dbm.DeleteAllBlocks(ISO);
 
 			std::vector<MerkleBlockPtr> blocksAfterDelete = dbm.GetAllMerkleBlocks(ISO, pluginType);
 			REQUIRE(0 == blocksAfterDelete.size());
