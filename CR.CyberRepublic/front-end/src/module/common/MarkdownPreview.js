@@ -16,6 +16,7 @@ function MarkedPreview({ content, style }) {
 export default MarkedPreview
 
 const Wrapper = styled.div`
+  overflow-wrap: break-word;
   color: rgba(0, 0, 0, 0.75);
   font-size: 14px;
   font-family: 'Synthese', 'Montserrat', sans-serif;
