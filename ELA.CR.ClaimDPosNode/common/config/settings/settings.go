@@ -808,6 +808,20 @@ func NewSettings() *Settings {
 		ConfigPath:   "CRConfiguration.MaxProposalTrackingCount",
 		ParamName:    "MaxProposalTrackingCount"})
 
+	result.Add(&settingItem{
+		Flag:         nil,
+		DefaultValue: "",
+		ConfigPath:   "RPCServiceLevel",
+		ParamName:    "RPCServiceLevel",
+	})
+
+	result.Add(&settingItem{
+		Flag:         nil,
+		DefaultValue: "",
+		ConfigPath:   "NodeProfileStrategy",
+		ParamName:    "NodeProfileStrategy",
+	})
+
 	return result
 }
 
