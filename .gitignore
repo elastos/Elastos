@@ -11,8 +11,8 @@ build/
 .DS_Store
 /data_regt/*
 /data_test/*
-/Chain_UnitTest/*
-/glide.lock
+*/Chain_UnitTest/*
+/go.sum
 vendor/*
 /did
 *.json
