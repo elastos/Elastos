@@ -88,7 +88,8 @@ export default {
       isNaN: 'Please input valid amount',
       milestones: 'Milestones is empty',
       team: 'Implementation team is empty',
-      amount: 'The amount is more than 30% of the total budget'
+      amount: 'The amount is more than 30% of the total budget',
+      previousMilestoneDate: 'The date must be later than the previous milestone.'
     }
   },
   modal: {

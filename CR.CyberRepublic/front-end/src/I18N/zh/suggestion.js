@@ -88,7 +88,8 @@ export default {
       plan: '实施团队或里程碑为空',
       milestones: '里程碑为空',
       team: '实施团队为空',
-      amount: '金额大于总金额的30%'
+      amount: '金额大于总金额的30%',
+      previousMilestoneDate: '日期必须晚于前一个里程碑'
     }
   },
   modal: {
