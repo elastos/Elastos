@@ -145,7 +145,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 
 		if blockTx.IsNewSideChainPowTx() || blockTx.IsUpdateVersion() {
 			if _, ok := mp.txnList[blockTx.Hash()]; ok {
-				mp.doRemoveTransaction(blockTx.Hash(), blockTx.GetSize())
+				mp.doRemoveTransaction(blockTx)
 				deleteCount++
 			}
 			continue
@@ -176,7 +176,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 				}
 
 				//1.remove from txnList
-				mp.doRemoveTransaction(tx.Hash(), tx.GetSize())
+				mp.doRemoveTransaction(tx)
 
 				deleteCount++
 			}
@@ -321,7 +321,7 @@ func (mp *TxPool) verifyTransactionWithTxnPool(
 func (mp *TxPool) removeTransaction(tx *Transaction) {
 	//1.remove from txnList
 	if _, ok := mp.txnList[tx.Hash()]; ok {
-		mp.doRemoveTransaction(tx.Hash(), tx.GetSize())
+		mp.doRemoveTransaction(tx)
 	}
 }
 
@@ -358,12 +358,12 @@ func (mp *TxPool) replaceDuplicateSideChainPowTx(txn *Transaction) {
 
 // clean the sidechainpow tx pool
 func (mp *TxPool) cleanSideChainPowTx() {
-	for hash, txn := range mp.txnList {
+	for _, txn := range mp.txnList {
 		if txn.IsSideChainPowTx() {
 			arbiter := blockchain.DefaultLedger.Arbitrators.GetOnDutyCrossChainArbitrator()
 			if err := blockchain.CheckSideChainPowConsensus(txn, arbiter); err != nil {
 				// delete tx
-				mp.doRemoveTransaction(hash, txn.GetSize())
+				mp.doRemoveTransaction(txn)
 			}
 		}
 	}
@@ -412,10 +412,14 @@ func (mp *TxPool) doAddTransaction(tx *Transaction) elaerr.ELAError {
 	return nil
 }
 
-func (mp *TxPool) doRemoveTransaction(hash Uint256, txSize int) {
+func (mp *TxPool) doRemoveTransaction(tx *Transaction) {
+	hash := tx.Hash()
+	txSize := tx.GetSize()
+	feeRate := float64(tx.Fee) / float64(txSize)
+
 	if _, exist := mp.txnList[hash]; exist {
 		delete(mp.txnList, hash)
-		mp.txFees.RemoveTx(hash, uint64(txSize))
+		mp.txFees.RemoveTx(hash, uint64(txSize), feeRate)
 	}
 }
 
