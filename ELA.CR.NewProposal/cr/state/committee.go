@@ -221,8 +221,16 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 func (c *Committee) changeCommittee(height uint32) {
 	if c.shouldCleanHistory() {
-		c.HistoryMembers = make(map[uint64]map[common.Uint168]*CRMember)
-		c.state.HistoryCandidates = make(map[uint64]map[common.Uint168]*Candidate)
+		oriHistoryMembers := copyHistoryMembersMap(c.HistoryMembers)
+		oriHistoryCandidates := copyHistoryCandidateMap(c.state.HistoryCandidates)
+		c.lastHistory.Append(height, func() {
+			c.HistoryMembers = make(map[uint64]map[common.Uint168]*CRMember)
+			c.state.HistoryCandidates = make(map[uint64]map[common.Uint168]*Candidate)
+		}, func() {
+			c.HistoryMembers = oriHistoryMembers
+			c.state.HistoryCandidates = oriHistoryCandidates
+		})
+
 	}
 	err := c.changeCommitteeMembers(height)
 	if err != nil {
