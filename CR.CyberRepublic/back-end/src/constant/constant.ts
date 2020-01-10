@@ -318,13 +318,6 @@ export const ELIP_STATUS = create([
   'SUBMITTED_AS_PROPOSAL'
 ])
 
-export const ELIP_FILTER = create([
-  'ALL',
-  'DRAFT',
-  'SUBMITTED_BY_ME',
-  'WAIT_FOR_REVIEW'
-])
-
 export const ELIP_REVIEW_STATUS = create([
   'APPROVED',
   'REJECTED'

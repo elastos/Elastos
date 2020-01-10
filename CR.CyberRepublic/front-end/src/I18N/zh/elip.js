@@ -1,7 +1,6 @@
 import {
   ELIP_STATUS,
   ELIP_TYPE,
-  ELIP_FILTER,
   ELIP_DESC_MAX_WORDS
 } from '@/constant'
 
@@ -51,12 +50,6 @@ export default {
     [ELIP_STATUS.FINAL_REVIEW]: '终审'
   },
   show: '展示',
-  filter: {
-    [ELIP_FILTER.ALL]: '全部',
-    [ELIP_FILTER.DRAFT]: '草案',
-    [ELIP_FILTER.WAIT_FOR_REVIEW]: '等待审核',
-    [ELIP_FILTER.SUBMITTED_BY_ME]: '我提交的'
-  },
   button: {
     add: '添加 ELIP',
     cancel: '取消',

@@ -1,7 +1,6 @@
 import {
   ELIP_STATUS,
   ELIP_TYPE,
-  ELIP_FILTER,
   ELIP_DESC_MAX_WORDS
 } from '@/constant'
 
@@ -51,12 +50,6 @@ export default {
     [ELIP_STATUS.FINAL_REVIEW]: 'FINAL REVIEW'
   },
   show: 'Show',
-  filter: {
-    [ELIP_FILTER.ALL]: 'All',
-    [ELIP_FILTER.DRAFT]: 'Draft',
-    [ELIP_FILTER.WAIT_FOR_REVIEW]: 'Wait for review',
-    [ELIP_FILTER.SUBMITTED_BY_ME]: 'Submitted by me'
-  },
   button: {
     add: 'Add ELIP',
     cancel: 'Cancel',
