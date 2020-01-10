@@ -63,15 +63,35 @@ func (l *txFeeOrderedList) AddTx(tx *types.Transaction) errors.ELAError {
 	return nil
 }
 
-func (l *txFeeOrderedList) RemoveTx(hash common.Uint256, txSize uint64) {
-	for i, v := range l.list {
-		if v.Hash.IsEqual(hash) {
-			copy(l.list[i:], l.list[i+1:])
-			l.list = l.list[:len(l.list)-1]
-			l.totalSize -= txSize
-			return
+func (l *txFeeOrderedList) RemoveTx(hash common.Uint256, txSize uint64,
+	feeRate float64) bool {
+	index := sort.Search(len(l.list), func(i int) bool {
+		return l.list[i].FeeRate < feeRate
+	})
+
+	i := l.locate(index, hash)
+	if i < 0 {
+		return false
+	}
+
+	copy(l.list[i:], l.list[i+1:])
+	l.list = l.list[:len(l.list)-1]
+	l.totalSize -= txSize
+	return true
+}
+
+func (l *txFeeOrderedList) locate(givenIndex int, hash common.Uint256) int {
+	if givenIndex == len(l.list) {
+		// we assume givenIndex equals length of l.list means hit the last one
+		givenIndex -= 1
+	}
+
+	for i := givenIndex; i >= 0; i-- {
+		if hash.IsEqual(l.list[i].Hash) {
+			return i
 		}
 	}
+	return -1
 }
 
 func (l *txFeeOrderedList) GetSize() int {

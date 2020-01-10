@@ -56,7 +56,7 @@ func BenchmarkTxFeeOrderedList_RemoveTx(b *testing.B) {
 	orderedList := newTxFeeOrderedList(func(common.Uint256) {},
 		uint64(txSize*txCount))
 
-	hashList := make([]common.Uint256, 0, 100)
+	hashMap := make(map[common.Uint256]float64)
 	for i := 0; i < txCount; i++ {
 		tx := protoTx
 		tx.Attributes = []*types.Attribute{
@@ -68,12 +68,12 @@ func BenchmarkTxFeeOrderedList_RemoveTx(b *testing.B) {
 		tx.Fee = common.Fixed64(rand.Int63n(1000))
 		orderedList.AddTx(&tx)
 
-		hashList = append(hashList, tx.Hash())
+		hashMap[tx.Hash()] = float64(tx.Fee) / float64(txSize)
 	}
 
 	b.ResetTimer()
-	for _, v := range hashList {
-		orderedList.RemoveTx(v, uint64(txSize))
+	for k, v := range hashMap {
+		orderedList.RemoveTx(k, uint64(txSize), v)
 	}
 	b.StopTimer()
 }
