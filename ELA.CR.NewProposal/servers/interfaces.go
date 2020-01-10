@@ -227,6 +227,10 @@ func GetNodeState(param Params) map[string]interface{} {
 }
 
 func SetLogLevel(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.ConfigurationPermitted); rtn != nil {
+		return rtn
+	}
+
 	level, ok := param.Int("level")
 	if !ok || level < 0 {
 		return ResponsePack(InvalidParams, "level must be an integer in 0-6")
@@ -237,6 +241,10 @@ func SetLogLevel(param Params) map[string]interface{} {
 }
 
 func CreateAuxBlock(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.MiningPermitted); rtn != nil {
+		return rtn
+	}
+
 	payToAddr, ok := param.String("paytoaddress")
 	if !ok {
 		return ResponsePack(InvalidParams, "parameter paytoaddress not found")
@@ -268,6 +276,10 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 }
 
 func SubmitAuxBlock(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.MiningPermitted); rtn != nil {
+		return rtn
+	}
+
 	blockHashHex, ok := param.String("blockhash")
 	if !ok {
 		return ResponsePack(InvalidParams, "parameter blockhash not found")
@@ -300,6 +312,10 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 }
 
 func SubmitSidechainIllegalData(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.TransactionPermitted); rtn != nil {
+		return rtn
+	}
+
 	if Arbiter == nil {
 		return ResponsePack(InternalError, "arbiter disabled")
 	}
@@ -453,6 +469,10 @@ func GetMiningInfo(param Params) map[string]interface{} {
 }
 
 func ToggleMining(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.ConfigurationPermitted); rtn != nil {
+		return rtn
+	}
+
 	mining, ok := param.Bool("mining")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
@@ -471,6 +491,10 @@ func ToggleMining(param Params) map[string]interface{} {
 }
 
 func DiscreteMining(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.MiningPermitted); rtn != nil {
+		return rtn
+	}
+
 	if Pow == nil {
 		return ResponsePack(PowServiceNotStarted, "")
 	}
@@ -669,6 +693,10 @@ func GetConfirmByHash(param Params) map[string]interface{} {
 }
 
 func SendRawTransaction(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.TransactionPermitted); rtn != nil {
+		return rtn
+	}
+
 	str, ok := param.String("data")
 	if !ok {
 		return ResponsePack(InvalidParams, "need a string parameter named data")
@@ -881,6 +909,10 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 }
 
 func GetUTXOsByAmount(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.WalletPermitted); rtn != nil {
+		return rtn
+	}
+
 	bestHeight := Chain.GetHeight()
 
 	result := make([]UTXOInfo, 0)
@@ -955,6 +987,10 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 }
 
 func GetAmountByInputs(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.WalletPermitted); rtn != nil {
+		return rtn
+	}
+
 	inputStr, ok := param.String("inputs")
 	if !ok {
 		return ResponsePack(InvalidParams, "need a parameter named inputs!")
@@ -985,6 +1021,10 @@ func GetAmountByInputs(param Params) map[string]interface{} {
 }
 
 func ListUnspent(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.WalletPermitted); rtn != nil {
+		return rtn
+	}
+
 	bestHeight := Chain.GetHeight()
 
 	var result []UTXOInfo
@@ -1042,6 +1082,10 @@ func ListUnspent(param Params) map[string]interface{} {
 }
 
 func CreateRawTransaction(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.WalletPermitted); rtn != nil {
+		return rtn
+	}
+
 	inputsParam, ok := param.String("inputs")
 	if !ok {
 		return ResponsePack(InvalidParams, "need a parameter named inputs")
@@ -1131,6 +1175,10 @@ func CreateRawTransaction(param Params) map[string]interface{} {
 }
 
 func SignRawTransactionWithKey(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.WalletPermitted); rtn != nil {
+		return rtn
+	}
+
 	dataParam, ok := param.String("data")
 	if !ok {
 		return ResponsePack(InvalidParams, "need a parameter named data")
@@ -2018,6 +2066,10 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 }
 
 func EstimateSmartFee(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.TransactionPermitted); rtn != nil {
+		return rtn
+	}
+
 	confirm, ok := param.Int("confirmations")
 	if !ok {
 		return ResponsePack(InvalidParams, "need a param called confirmations")
@@ -2043,6 +2095,10 @@ func GetFeeRate(count int, confirm int) int {
 }
 
 func DecodeRawTransaction(param Params) map[string]interface{} {
+	if rtn := checkRPCServiceLevel(config.WalletPermitted); rtn != nil {
+		return rtn
+	}
+
 	dataParam, ok := param.String("data")
 	if !ok {
 		return ResponsePack(InvalidParams, "need a parameter named data")
@@ -2164,4 +2220,12 @@ func ResponsePack(errCode ServerErrCode, result interface{}) map[string]interfac
 		result = ErrMap[errCode]
 	}
 	return map[string]interface{}{"Result": result, "Error": errCode}
+}
+
+func checkRPCServiceLevel(level config.RPCServiceLevel) map[string]interface{} {
+	if level < config.RPCServiceLevelFromString(ChainParams.RPCServiceLevel) {
+		return ResponsePack(InvalidMethod,
+			"requesting method if out of service level")
+	}
+	return nil
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/config/settings"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -97,13 +98,14 @@ func setupNode() *cli.App {
 	}
 	app.Flags = append(app.Flags, appSettings.Flags()...)
 	app.Action = func(c *cli.Context) {
-		appSettings.SetContext(c)
-		appSettings.SetupConfig()
-		appSettings.InitParamsValue()
 		setupLog(c, appSettings)
 		startNode(c, appSettings)
 	}
 	app.Before = func(c *cli.Context) error {
+		appSettings.SetContext(c)
+		appSettings.SetupConfig()
+		appSettings.InitParamsValue()
+
 		// Use all processor cores.
 		runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -111,7 +113,10 @@ func setupNode() *cli.App {
 		// limits the garbage collector from excessively overallocating during
 		// bursts.  This value was arrived at with the help of profiling live
 		// usage.
-		debug.SetGCPercent(10)
+		if appSettings.Params().NodeProfileStrategy ==
+			config.MemoryFirst.String() {
+			debug.SetGCPercent(10)
+		}
 
 		return nil
 	}

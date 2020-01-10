@@ -80,6 +80,8 @@ type Configuration struct {
 	HistoryStartHeight          uint32            `json:"HistoryStartHeight"`
 	EnableUtxoDB                bool              `json:"EnableUtxoDB"`
 	WalletPath                  string            `json:"WalletPath"`
+	RPCServiceLevel             string            `json:"RPCServiceLevel"`
+	NodeProfileStrategy         string            `json:"NodeProfileStrategy"`
 }
 
 // DPoSConfiguration defines the DPoS consensus parameters.
@@ -112,4 +114,87 @@ type CRConfiguration struct {
 	MaxCommitteeProposalCount  uint32  `json:"MaxCommitteeProposalCount"`
 	SecretaryGeneral           string  `json:"SecretaryGeneral"`
 	MaxProposalTrackingCount   uint8   `json:"MaxProposalTrackingCount"`
+}
+
+type RPCServiceLevel byte
+
+const (
+	// Allowed  query transaction, and configuration related options.
+	ConfigurationPermitted RPCServiceLevel = iota
+
+	// Allowed mining from RPC.
+	MiningPermitted
+
+	// Allowed query and transaction (
+	//	such as sendrawtransaction) related options.
+	TransactionPermitted
+
+	// Allowed using wallet related function.
+	WalletPermitted
+
+	// Allowed only query related options.
+	QueryOnly
+)
+
+func (l RPCServiceLevel) String() string {
+	switch l {
+	case ConfigurationPermitted:
+		return "ConfigurationPermitted"
+	case MiningPermitted:
+		return "MiningPermitted"
+	case TransactionPermitted:
+		return "TransactionPermitted"
+	case WalletPermitted:
+		return "WalletPermitted"
+	case QueryOnly:
+		return "QueryOnly"
+	default:
+		return "Unknown"
+	}
+}
+
+func RPCServiceLevelFromString(str string) RPCServiceLevel {
+	switch str {
+	case "ConfigurationPermitted":
+		return ConfigurationPermitted
+	case "MiningPermitted":
+		return MiningPermitted
+	case "TransactionPermitted":
+		return TransactionPermitted
+	case "WalletPermitted":
+		return WalletPermitted
+	case "QueryOnly":
+		return QueryOnly
+	default:
+		return ConfigurationPermitted
+	}
+}
+
+type NodeProfileStrategy byte
+
+const (
+	// Node will balance usage of CPU and memory.
+	Balanced NodeProfileStrategy = iota
+
+	// Node will optimise the block processing procedure, super node strongly
+	//	recommended.
+	SpeedFirst
+
+	// Node will optimise the usage of memory usage, note this may slow down
+	//	block processing, do no use this if your memory is extremely low (
+	//	specifically small than 2G bytes).
+	MemoryFirst
+)
+
+func (s NodeProfileStrategy) String() string {
+	switch s {
+	case Balanced:
+		return "Balanced"
+	case SpeedFirst:
+		return "SpeedFirst"
+	case MemoryFirst:
+		return "MemoryFirst"
+	default:
+		return "Unknown"
+	}
 }
