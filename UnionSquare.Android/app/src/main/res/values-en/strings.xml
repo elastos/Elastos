@@ -183,6 +183,7 @@
     <string name="lack_of_balance">Insufficient balance</string>
     <string name="transfertype1001">Vote Transaction</string>
     <string name="transfertype1002">Vote Transaction</string><!--自定义的特殊的类型非sdk返回 会覆盖其他投票投票类型-->
+    <string name="transfertype1003">投票交易</string><!--自定义的特殊的类型非sdk返回 cr会覆盖其他投票投票类型-->
     <string name="transfertype0">Coinbase Transaction</string>
     <string name="transfertype1">Register Asset Transaction </string>
     <string name="transfertype2">Transfer Transaction</string>
@@ -595,6 +596,7 @@
     <string name="finish">已完成</string>
     <string name="abolished">已废止</string>
     <string name="notsufficientfundskeepornot">Previous vote is invalid due to insufficient balance. Continue?</string>
-    <string name="commonfailereason">交易失败</string>
-    <string name="specialvotesucessreason">特殊投票交易成功</string>
+    <string name="commonfailereason">交易错误，无法上链</string>
+    <string name="specialvotesucessreason">由于交易金额不足,您的%1$s投票已失效</string>
+    <string name="transactionfinish">交易完成</string>
 </resources>

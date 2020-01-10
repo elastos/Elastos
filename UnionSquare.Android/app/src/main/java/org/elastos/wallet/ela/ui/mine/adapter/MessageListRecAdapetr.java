@@ -56,7 +56,7 @@ public class MessageListRecAdapetr extends RecyclerView.Adapter<MessageListRecAd
         } catch (Exception e) {
             Log.i("transferTypeDes", e.getMessage());
         }
-        viewHolder.tvContent.setText(transferTypeDes + messageEntity.getReason() + ".");
+        viewHolder.tvContent.setText("["+transferTypeDes +"]"+ messageEntity.getReason() + ".");
         viewHolder.tvTime.setText(DateUtil.time(messageEntity.getTime(), context));
     }
 

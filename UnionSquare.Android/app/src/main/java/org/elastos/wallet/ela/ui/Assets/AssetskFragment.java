@@ -371,7 +371,14 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 return;
             }
             //1002是投票覆盖其他投票的特殊投票类型  在此成功时候给出提醒
-            if (!"1002".equals(transferType)) {
+            String reason;
+            if ("1002".equals(transferType)) {
+                reason = String.format(getString(R.string.specialvotesucessreason), getString(R.string.crcvote));
+
+            } else if ("1003".equals(transferType)) {
+                reason = String.format(getString(R.string.specialvotesucessreason), getString(R.string.supernode_election));
+
+            } else {
                 return;
             }
             //只需要一次成功的提醒
@@ -381,7 +388,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             String masterWalletID = jsonObject.getString("MasterWalletID");
             String transferTypeDes = getTransferDes(transferType, chainId);
             String walleName = realmUtil.queryUserWallet(masterWalletID).getWalletName();
-            String reason = getString(R.string.specialvotesucessreason);
             showNotification(reason, transferTypeDes, walleName);
             addToMessageCenter(hash, transferType, chainId, walleName, reason);
 
@@ -751,7 +757,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
         Notification notification = new NotificationCompat.Builder(getContext(), "default")
                 .setContentTitle(MyUtil.getAppName(getContext()))
-                .setContentText("【" + walleName + getString(R.string.wallet) + "】" + transferTypeDes + reason + ".")
+                .setContentText("【" + walleName + getString(R.string.wallet) + "】" + transferTypeDes + " - " + getString(R.string.transactionfinish)+", " + reason + ".")
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(R.mipmap.icon_ela)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.icon_ela))

@@ -414,7 +414,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
                 JSONObject attributesJson = JSON.parseObject(attributes);
                 String status = attributesJson.getString("DropVotes");
                 if (!TextUtils.isEmpty(status) && !status.equals("[]")) {
-                    transType = 1002;
+                    transType = 1003;
                     showOpenDraftWarm(attributes);
                     break;
                 }
