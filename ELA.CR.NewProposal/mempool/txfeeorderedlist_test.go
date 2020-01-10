@@ -115,6 +115,7 @@ func TestTxFeeOrderedList_RemoveTx(t *testing.T) {
 	for i, v := range hashList {
 		orderedList.RemoveTx(v, uint64(txSize))
 		assert.Equal(t, 100-i-1, orderedList.GetSize())
+		assert.True(t, isListDescendingOrder(orderedList))
 	}
 	assert.Equal(t, uint64(0), orderedList.totalSize)
 }
