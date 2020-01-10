@@ -93,8 +93,8 @@ function build_docker {
 }
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "ela" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "v0.4.0" "github.com/elastos/Elastos.ELA" "ela" \
-        "cyberrepublic/elastos-mainchain-node" "yes" "v0.4.0"
+    build_binary_and_docker "v0.4.1" "github.com/elastos/Elastos.ELA" "ela" \
+        "cyberrepublic/elastos-mainchain-node" "yes" "v0.4.1"
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "arbitrator" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
@@ -103,7 +103,7 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.did" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "release_v0.1.3" "github.com/elastos/Elastos.ELA.SideChain.ID" "sidechain.did" \
+    build_binary_and_docker "v0.1.3" "github.com/elastos/Elastos.ELA.SideChain.ID" "sidechain.did" \
         "cyberrepublic/elastos-sidechain-did-node" "yes" "v0.1.3"
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.token" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
