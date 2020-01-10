@@ -1195,3 +1195,32 @@ COMING SOON
   ```
   cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain && docker-compose down
   ```
+
+## How to run elastos private net in kubernetes
+Prerequisites: Install kubernetes and minikube
+```
+cd kubectl;
+sudo minikube start;
+sudo sudo chown -R $USER $HOME/.kube $HOME/.minikube;
+kubectl apply -R -f .;
+```
+NOTE: Kubernetes runs containers in a cluster but each "app"(eg. mainchain node, did sidechain node, etc) run in different IP addresses and different ports. View the services to check out their IPs and ports they run on.
+
+Check info about your kubernetes cluster:
+```
+minikube service list;
+kubectl describe services service_name;
+kubectl -n default get deployment;
+kubectl -n default get pods;
+kubectl get svc;
+kubectl logs -f pod_name;
+kubectl describe pod pod_name;
+kubectl exec -it pod_name sh
+```
+
+How to stop kubernetest cluster:
+```
+kubectl -n default delete pod,svc --all;
+mnikube stop
+minikube delete
+```

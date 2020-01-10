@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-arbitrator-origin-2
+  name: privnet-arbitrator-origin-2
+spec:
+  ports:
+  - name: "20534"
+    port: 20534
+    targetPort: 20534
+  - name: "20535"
+    port: 20535
+    targetPort: 20535
+  - name: "20536"
+    port: 20536
+    targetPort: 20536
+  - name: "20537"
+    port: 20537
+    targetPort: 20537
+  - name: "20538"
+    port: 20538
+    targetPort: 20538
+  selector:
+    app: privnet-arbitrator-origin-2
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-arbitrator-origin-2
+  name: privnet-arbitrator-origin-2
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: privnet-arbitrator-origin-2
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: privnet-arbitrator-origin-2
+    spec:
+      containers:
+      - image: cyberrepublic/elastos-arbitrator-node:privnet-v0.6
+        name: privnet-arbitrator-origin-2
+        ports:
+        - containerPort: 20534
+        - containerPort: 20535
+        - containerPort: 20536
+        - containerPort: 20537
+        - containerPort: 20538
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /arbiter/elastos_arbiter
+          name: privnet-arbitrator-origin-2-hostpath0
+        - mountPath: /arbiter/config.json
+          name: privnet-arbitrator-origin-2-hostpath1
+        - mountPath: /arbiter/keystore.dat
+          name: privnet-arbitrator-origin-2-hostpath2
+      restartPolicy: Always
+      volumes:
+      - hostPath:
+          path: /home/kpachhai/.volumes/elastos-privnet/arbitrator-origin-2
+        name: privnet-arbitrator-origin-2-hostpath0
+      - hostPath:
+          path: /home/kpachhai/dev/src/github.com/tuum-tech/elastos-privnet/blockchain/ela-arbitrator/node_origin/arbitrator-origin-2/config.json
+        name: privnet-arbitrator-origin-2-hostpath1
+      - hostPath:
+          path: /home/kpachhai/dev/src/github.com/tuum-tech/elastos-privnet/blockchain/ela-arbitrator/node_origin/arbitrator-origin-2/keystore.dat
+        name: privnet-arbitrator-origin-2-hostpath2
+status: {}
