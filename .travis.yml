@@ -1,4 +1,3 @@
-go_import_path: github.com/elastos/Elastos.ELA
 language: go
 go:
   - "1.13"
