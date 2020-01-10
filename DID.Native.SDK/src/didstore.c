@@ -262,7 +262,7 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
     if (create && test_path(file_root) < 0 && mkdir(file_root, S_IRWXU) == -1)
         return NULL;
 
-    if (type == DIDStore_CredentialRoot)
+    if (type == DIDStore_CredentialRoot || type == DIDStore_PrivateKey)
         return file_root;
 
     if (!fragment)
@@ -273,8 +273,6 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
         return NULL;
 
     strcat(file_root, file_suffix);
-    if (type == DIDStore_PrivateKey)
-        return file_root;
 
     if (create && test_path(file_root) < 0 && mkdir(file_root, S_IRWXU) == -1)
         return NULL;
@@ -296,8 +294,7 @@ static const char *get_file_path(DIDStore *store, DIDStore_Type type,
     if (!root)
         return NULL;
 
-    if (type == DIDStore_Root || type == DIDStore_PrivateKey
-            || type == DIDStore_CredentialRoot)
+    if (type == DIDStore_Root || type == DIDStore_CredentialRoot)
         return root;
 
     if (type == DIDStore_DID)
@@ -306,6 +303,14 @@ static const char *get_file_path(DIDStore *store, DIDStore_Type type,
     if (type == DIDStore_Doc || type == DIDStore_Rootkey || type == DIDStore_RootIndex ||
             type == DIDStore_RootMnemonic) {
         len = snprintf(file_path, sizeof(file_path), "%s/%s", root, methods[type]);
+        if (len < 0 || len > sizeof(file_path))
+            return NULL;
+
+        return file_path;
+    }
+
+    if (type == DIDStore_PrivateKey && fragment) {
+        len = snprintf(file_path, sizeof(file_path), "%s/%s", root, fragment);
         if (len < 0 || len > sizeof(file_path))
             return NULL;
 
@@ -503,7 +508,6 @@ int didstore_storedidmeta(DIDStore *store, DIDMeta *meta, DID *did)
 static int store_credmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
 {
     const char *path, *data;
-    bool iscontain;
     int rc;
 
     assert(store);
@@ -513,24 +517,38 @@ static int store_credmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
     if (CredentialMeta_IsEmpty(meta))
         return 0;
 
-    path = get_file_path(store, DIDStore_CredentialMeta, id->did.idstring, id->fragment, 1);
-    if (!path)
+    data = CredentialMeta_ToJson(meta);
+    if (!data)
         return -1;
 
-    if (test_path(path) == S_IFDIR) {
-        delete_file(path);
+    path = get_file_path(store, DIDStore_CredentialMeta, id->did.idstring, id->fragment, 1);
+    if (!path) {
+        free((char*)data);
         return -1;
     }
 
-    data = CredentialMeta_ToJson(meta);
-    if (!data) {
+    if (test_path(path) == S_IFDIR) {
+        free((char*)data);
         delete_file(path);
         return -1;
     }
 
     rc = store_file(path, data);
     free((char*)data);
-    return rc;
+    if (!rc)
+        return 0;
+
+    delete_file(path);
+
+    path = get_file_root(store, DIDStore_Credential, id->did.idstring, id->fragment, 0);
+    if (is_empty(path))
+        delete_file(path);
+
+    path = get_file_root(store, DIDStore_CredentialRoot, id->did.idstring, id->fragment, 0);
+    if (is_empty(path))
+        delete_file(path);
+
+    return -1;
 }
 
 static int load_credmeta(DIDStore *store, CredentialMeta *meta, const char *did,
@@ -958,6 +976,47 @@ static DIDDocument *create_document(DID *did, const char *key,
     return document;
 }
 
+static int store_credential(DIDStore *store, Credential *credential)
+{
+    const char *data, *path;
+    DIDURL *id;
+    int rc;
+
+    assert(store);
+    assert(credential);
+
+    id = Credential_GetId(credential);
+    if (!id)
+        return -1;
+
+    data = Credential_ToJson(credential, 1, 0);
+    if (!data)
+        return -1;
+
+    path = get_file_path(store, DIDStore_Credential, id->did.idstring, id->fragment, 1);
+    if (!path) {
+        free((char*)data);
+        return -1;
+    }
+
+    rc = store_file(path, data);
+    free((char*)data);
+    if (!rc)
+        return 0;
+
+    delete_file(path);
+
+    path = get_file_root(store, DIDStore_Credential, id->did.idstring, id->fragment, 0);
+    if (is_empty(path))
+        delete_file(path);
+
+    path = get_file_root(store, DIDStore_CredentialRoot, id->did.idstring, id->fragment, 0);
+    if (is_empty(path))
+        delete_file(path);
+
+    return -1;
+}
+
 /////////////////////////////////////////////////////////////////////////
 DIDStore* DIDStore_Initialize(const char *root, DIDAdapter *adapter)
 {
@@ -1013,6 +1072,7 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
 {
     const char *path, *data, *root;
     DIDMeta meta;
+    ssize_t count;
     int rc;
 
     if (!store || !document)
@@ -1039,8 +1099,16 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
     if (rc)
         goto errorExit;
 
-    if (!store_didmeta(store, &document->meta, &document->did))
-        return 0;
+    if (store_didmeta(store, &document->meta, &document->did) == -1)
+        goto errorExit;
+
+    count = DIDDocument_GetCredentialCount(document);
+    for (int i = 0; i < count; i++) {
+        Credential *cred = document->credentials.credentials[i];
+        store_credential(store, cred);
+    }
+
+    return 0;
 
 errorExit:
     delete_file(path);
@@ -1177,36 +1245,12 @@ int DIDStore_StoreCredential(DIDStore *store, Credential *credential, const char
         return -1;
 
     memcpy(&credential->meta, &meta, sizeof(CredentialMeta));
-    data = Credential_ToJson(credential, 1, 0);
-    if (!data)
+
+    if (store_credential(store, credential) == -1 ||
+            store_credmeta(store, &credential->meta, id) == -1)
         return -1;
 
-    path = get_file_path(store, DIDStore_Credential, id->did.idstring, id->fragment, 1);
-    if (!path) {
-        free((char*)data);
-        return -1;
-    }
-
-    rc = store_file(path, data);
-    free((char*)data);
-    if (rc)
-        goto errorExit;
-
-    if (!store_credmeta(store, &credential->meta, id))
-        return 0;
-
-errorExit:
-    delete_file(path);
-
-    root = get_file_root(store, DIDStore_Credential, id->did.idstring, id->fragment, 0);
-    if (is_empty(root))
-        delete_file(root);
-
-    root = get_file_root(store, DIDStore_CredentialRoot, id->did.idstring, id->fragment, 0);
-    if (is_empty(root))
-        delete_file(root);
-
-    return -1;
+    return 0;
 }
 
 Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *id)
@@ -1420,10 +1464,15 @@ int DIDStore_StorePrivateKey(DIDStore *store, DID *did, DIDURL *id,
     if (!path)
         return -1;
 
-    if (store_file(path, privatekey) == -1)
-        return -1;
+    if (!store_file(path, privatekey))
+        return 0;
 
-    return 0;
+    delete_file(path);
+    path = get_file_root(store, DIDStore_PrivateKey, did->idstring, fragment, 0);
+    if (is_empty(path))
+        delete_file(path);
+
+    return -1;
 }
 
 void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *id)

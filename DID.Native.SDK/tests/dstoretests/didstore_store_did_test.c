@@ -8,29 +8,49 @@
 #include <CUnit/Basic.h>
 #include <limits.h>
 
+#include "ela_did.h"
 #include "constant.h"
 #include "loader.h"
-#include "ela_did.h"
+#include "did.h"
 
 static DIDDocument *document;
 static DIDStore *store;
+static const char *storePath;
 
 static void test_didstore_store_did(void)
 {
+    const char *path;
+    char _path[PATH_MAX];
+    DID *did;
     int rc;
 
-    rc = DIDStore_StoreDID(store, document, "");
+    did = DIDDocument_GetSubject(document);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(did);
+
+    rc = DIDStore_StoreDID(store, document, "littlefish");
     CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    path = get_file_path(_path, PATH_MAX, 5, storePath, storedirroot, "/",
+            did->idstring, "/document");
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
+
+    path = get_file_path(_path, PATH_MAX, 7, storePath, storedirroot, "/",
+            did->idstring, "/credentials", "/email", "/credential");
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
+
+    path = get_file_path(_path, PATH_MAX, 7, storePath, storedirroot, "/",
+            did->idstring, "/credentials", "/profile", "/credential");
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
+
     rc = DIDStore_StoreDID(store, document, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
-    rc = DIDStore_StoreDID(store, document, "littlefish");
+    rc = DIDStore_StoreDID(store, document, "");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 
 static int didstore_storedid_test_suite_init(void)
 {
     char _path[PATH_MAX];
-    const char *storePath;
     int rc;
 
     storePath = get_store_path(_path, "/servet");
