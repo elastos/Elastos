@@ -9,6 +9,7 @@ def main():
     signature = "15FDD2752B686AF7CABE8DF72FCCC91AC25577C6AFB70A81A1D987DAACAE298621E227D585B7020100228AEF96D22AD0403612FFAEDCD7CA3A2070455418181C"
     file_hash = "QmZULkCELmmk5XNfCgTnCyFgAVxBRBXyDHGGMVoLFLiXEN"
     private_key = "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
+
     try:
         hive = Hive()
         # Verify and Show
@@ -21,10 +22,11 @@ def main():
             "private_key": private_key
         }
         response = hive.verify_and_show(api_key, request_input)
-        if response.status:
-            print('File Content:', response.output)
-        else:
-            print("Error Message: ", response.status_message)
+        if response.output:
+            json_output = json.loads(response.output)
+            print("Status Message :", response.status_message)
+            for i in json_output['result']:
+                print(i, ':', json_output['result'][i])
     except Exception as e:
         print(e)
     finally:
