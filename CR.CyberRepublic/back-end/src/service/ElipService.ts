@@ -150,12 +150,6 @@ export default class extends Base {
     }
   }
 
-  public async getNewVid() {
-    const db_elip = this.getDBModel('Elip')
-    const n = await db_elip.count({})
-    return n + 1
-  }
-
   private updateMailTemplate(title: string, id: string) {
     const subject = 'An ELIP updated'
     const body = `
