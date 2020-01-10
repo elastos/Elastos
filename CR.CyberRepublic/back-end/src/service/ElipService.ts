@@ -118,7 +118,6 @@ export default class extends Base {
   public async create(param: any): Promise<Document> {
     try {
       const db_elip = this.getDBModel('Elip')
-
       const { status } = param
       const fields = [...BASE_FIELDS, 'elipType']
       const doc: any = {}
@@ -130,7 +129,6 @@ export default class extends Base {
           doc[fields[i]] = value
         }
       }
-      
       if (
         [
           constant.ELIP_STATUS.PERSONAL_DRAFT,
