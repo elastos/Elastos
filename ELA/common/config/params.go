@@ -196,6 +196,8 @@ var DefaultParams = Params{
 	MaxCommitteeProposalCount:   128,
 	EnableUtxoDB:                true,
 	WalletPath:                  "keystore.dat",
+	RPCServiceLevel:             ConfigurationPermitted.String(),
+	NodeProfileStrategy:         Balanced.String(),
 	CkpManager: checkpoint.NewManager(&checkpoint.Config{
 		EnableHistory:      false,
 		HistoryStartHeight: uint32(0),
@@ -529,6 +531,12 @@ type Params struct {
 
 	// WalletPath defines the wallet path used by DPoS arbiters and CR members.
 	WalletPath string
+
+	// RPCServiceLevel defines level of service provide to client.
+	RPCServiceLevel string
+
+	// NodeProfileStrategy defines strategy about node profiling.
+	NodeProfileStrategy string
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time
