@@ -96,7 +96,7 @@ func TestTxFeeOrderedList_RemoveTx(t *testing.T) {
 		},
 	}
 	txSize := protoTx.GetSize()
-	hashList := make([]common.Uint256, 0, 100)
+	hashMap := make(map[common.Uint256]float64)
 	for i := 0; i < 100; i++ {
 		tx := protoTx
 		tx.Attributes = []*types.Attribute{
@@ -105,17 +105,19 @@ func TestTxFeeOrderedList_RemoveTx(t *testing.T) {
 				Data:  randomNonceData(),
 			},
 		}
-		tx.Fee = common.Fixed64(rand.Int63n(1000))
+		tx.Fee = common.Fixed64(rand.Int63n(1000) + 1)
 		assert.NoError(t, orderedList.AddTx(&tx))
-		hashList = append(hashList, tx.Hash())
+		hashMap[tx.Hash()] = float64(tx.Fee) / float64(txSize)
 
 		assert.Equal(t, i+1, orderedList.GetSize())
 	}
 
-	for i, v := range hashList {
-		orderedList.RemoveTx(v, uint64(txSize))
-		assert.Equal(t, 100-i-1, orderedList.GetSize())
+	i := 1
+	for k, v := range hashMap {
+		orderedList.RemoveTx(k, uint64(txSize), v)
+		assert.Equal(t, 100-i, orderedList.GetSize())
 		assert.True(t, isListDescendingOrder(orderedList))
+		i++
 	}
 	assert.Equal(t, uint64(0), orderedList.totalSize)
 }
