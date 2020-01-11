@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PRIVNET_TAG="privnet-v0.6"
+PRIVNET_TAG="privnet-v0.7"
 
 while getopts ":p:t:i:h" opt; do
   case $opt in
