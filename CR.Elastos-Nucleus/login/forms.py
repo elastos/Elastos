@@ -8,9 +8,9 @@ from .models import DIDUser
 
 class DIDUserCreationForm(UserCreationForm):
     checkbox = forms.BooleanField(help_text=mark_safe("By clicking the checkbox, you acknowledge that you accept our "
-                                                      "<a style=\"color: blue\" data-toggle=\"modal\" "
-                                                      "data-target=\"#termsAndConditions\">Privacy Policy</a> and "
-                                                      "Terms of Use."), required=True)
+                                                      "<a style=\"color: green\" data-toggle=\"modal\" "
+                                                      "data-target=\"#termsAndConditions\">Privacy Policy and "
+                                                      "Terms of Use</a>."), required=True)
 
     def __init__(self, *args, **kwargs):
         super(DIDUserCreationForm, self).__init__(*args, **kwargs)
