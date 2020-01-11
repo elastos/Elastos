@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.safestring import mark_safe
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.forms.widgets import HiddenInput
 
@@ -6,8 +7,10 @@ from .models import DIDUser
 
 
 class DIDUserCreationForm(UserCreationForm):
-    checkbox = forms.BooleanField(help_text="By clicking the checkbox, you acknowledge that you accept our Privacy "
-                                            "Policy and Terms of Use.", required=True)
+    checkbox = forms.BooleanField(help_text=mark_safe("By clicking the checkbox, you acknowledge that you accept our "
+                                                      "<a style=\"color: blue\" data-toggle=\"modal\" "
+                                                      "data-target=\"#termsAndConditions\">Privacy Policy</a> and "
+                                                      "Terms of Use."), required=True)
 
     def __init__(self, *args, **kwargs):
         super(DIDUserCreationForm, self).__init__(*args, **kwargs)
@@ -54,5 +57,3 @@ class DIDUserChangeForm(UserChangeForm):
     class Meta:
         model = DIDUser
         fields = ('email', 'name', 'did',)
-
-
