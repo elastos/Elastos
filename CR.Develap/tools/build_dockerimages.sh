@@ -133,7 +133,7 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.misc" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "6e7308f67294b9a24d30d87b453a6aefaf317672" "github.com/elastos/Elastos.ORG.API.Misc" "service.misc" \
+    build_binary_and_docker "ce343f7505af2a3145ca18a86ea10f78d3036f6b" "github.com/elastos/Elastos.ORG.API.Misc" "service.misc" \
         "cyberrepublic/elastos-api-misc-service" "yes" ""
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "elaphant" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
