@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-sidechain-did-node
+  name: privnet-sidechain-did-node
+spec:
+  ports:
+  - name: "20604"
+    port: 20604
+    targetPort: 20604
+  - name: "20605"
+    port: 20605
+    targetPort: 20605
+  - name: "20606"
+    port: 20606
+    targetPort: 20606
+  - name: "20607"
+    port: 20607
+    targetPort: 20607
+  - name: "20608"
+    port: 20608
+    targetPort: 20608
+  selector:
+    app: privnet-sidechain-did-node
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-sidechain-did-node
+  name: privnet-sidechain-did-node
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: privnet-sidechain-did-node
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: privnet-sidechain-did-node
+    spec:
+      containers:
+      - image: cyberrepublic/elastos-sidechain-did-node:privnet-v0.6
+        livenessProbe:
+          exec:
+            command:
+            - curl
+            - -H
+            - '''Content-Type:application/json'''
+            - -H
+            - '''Accept:application/json'''
+            - --data
+            - '''{"method":"getbestblockhash"}'''
+            - http://localhost:20606
+          failureThreshold: 5
+          periodSeconds: 30
+          timeoutSeconds: 120
+        name: privnet-sidechain-did-node
+        ports:
+        - containerPort: 20604
+        - containerPort: 20605
+        - containerPort: 20606
+        - containerPort: 20607
+        - containerPort: 20608
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /did/elastos_did
+          name: privnet-sidechain-did-node-hostpath0
+        - mountPath: /did/config.json
+          name: privnet-sidechain-did-node-hostpath1
+      restartPolicy: Always
+      volumes:
+      - hostPath:
+          path: /home/kpachhai/.volumes/elastos-privnet/did-node
+        name: privnet-sidechain-did-node-hostpath0
+      - hostPath:
+          path: /home/kpachhai/dev/src/github.com/tuum-tech/elastos-privnet/blockchain/ela-sidechain/did/did-node/config.json
+        name: privnet-sidechain-did-node-hostpath1
+status: {}

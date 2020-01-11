@@ -33,6 +33,7 @@ curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"
 ### Register your supernodes
 ```bash
 cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain
+```
 
 # Register supernode 1 using mainchain addr 1
 rm -f keystore.dat

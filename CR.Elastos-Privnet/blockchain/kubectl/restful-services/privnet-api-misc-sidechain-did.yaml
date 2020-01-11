@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-api-misc-sidechain-did
+  name: privnet-api-misc-sidechain-did
+spec:
+  ports:
+  - name: "8080"
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: privnet-api-misc-sidechain-did
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: privnet-api-misc-sidechain-did
+  name: privnet-api-misc-sidechain-did
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: privnet-api-misc-sidechain-did
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: privnet-api-misc-sidechain-did
+    spec:
+      containers:
+      - image: cyberrepublic/elastos-api-misc-service:privnet-v0.6
+        livenessProbe:
+          exec:
+            command:
+            - curl
+            - -f
+            - http://localhost:8080/api/1/history/checking/sync
+          failureThreshold: 5
+          periodSeconds: 30
+          timeoutSeconds: 120
+        name: privnet-api-misc-sidechain-did
+        ports:
+        - containerPort: 8080
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /home/elauser/config.json
+          name: privnet-api-misc-sidechain-did-hostpath0
+        - mountPath: /home/elauser/deploy.sh
+          name: privnet-api-misc-sidechain-did-hostpath1
+      restartPolicy: Always
+      volumes:
+      - hostPath:
+          path: /home/kpachhai/dev/src/github.com/tuum-tech/elastos-privnet/blockchain/restful-services/api-misc/sidechain/did/config.json
+        name: privnet-api-misc-sidechain-did-hostpath0
+      - hostPath:
+          path: /home/kpachhai/dev/src/github.com/tuum-tech/elastos-privnet/blockchain/restful-services/api-misc/sidechain/did/deploy.sh
+        name: privnet-api-misc-sidechain-did-hostpath1
+status: {}

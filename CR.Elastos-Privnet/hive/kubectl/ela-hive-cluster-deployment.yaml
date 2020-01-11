@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: ela-hive-cluster
+  name: ela-hive-cluster
+spec:
+  ports:
+  - name: "9094"
+    port: 9094
+    targetPort: 9094
+  - name: "9095"
+    port: 9095
+    targetPort: 9095
+  - name: "9096"
+    port: 9096
+    targetPort: 9096
+  selector:
+    app: ela-hive-cluster
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    app: ela-hive-cluster
+  name: ela-hive-cluster
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ela-hive-cluster
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ela-hive-cluster
+    spec:
+      containers:
+      - image: cyberrepublic/ela-hive-cluster:privnet-v0.6
+        name: ela-hive-cluster
+        ports:
+        - containerPort: 9094
+        - containerPort: 9095
+        - containerPort: 9096
+        resources: {}
+        tty: true
+      restartPolicy: Always
+status: {}

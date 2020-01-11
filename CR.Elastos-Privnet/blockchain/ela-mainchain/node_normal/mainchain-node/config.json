@@ -53,9 +53,17 @@
             "InactivePenalty": 0,
             "PreConnectOffset": 20
         },
+        "CRConfiguration": {
+            "MemberCount": 2,
+            "VotingPeriod": 21600,
+            "DutyPeriod": 262800
+        },
         "CheckAddressHeight": 101,
         "VoteStartHeight": 100,
         "CRCOnlyDPOSHeight": 200,
-        "PublicDPOSHeight": 500
+        "PublicDPOSHeight": 500,
+        "CRVotingStartHeight": 600,
+        "CRCommitteeStartHeight": 2000000,
+        "EnableUtxoDB": true
     }
 }
