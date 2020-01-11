@@ -6,9 +6,9 @@ services:
     image: cyberrepublic/elastos-mainchain-node:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-node:/ela/elastos
-      - ${PWD}/ela-mainchain/node_normal/mainchain-node/config.json:/ela/config.json
-      - ${PWD}/ela-mainchain/node_normal/mainchain-node/keystore.dat:/ela/keystore.dat
+      - /data/volumes/elastos-privnet/mainchain-node/elastos:/ela/elastos
+      - /data/volumes/elastos-privnet/mainchain-node/config.json:/ela/config.json
+      - /data/volumes/elastos-privnet/mainchain-node/keystore.dat:/ela/keystore.dat
     ports:
       - 10011-10017:20333-20339
     healthcheck:
@@ -25,9 +25,9 @@ services:
     image: cyberrepublic/elastos-mainchain-node:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-crc-1:/ela/elastos
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/config.json:/ela/config.json
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/keystore.dat:/ela/keystore.dat
+      - /data/volumes/elastos-privnet/mainchain-crc-1/elastos:/ela/elastos
+      - /data/volumes/elastos-privnet/mainchain-crc-1/config.json:/ela/config.json
+      - /data/volumes/elastos-privnet/mainchain-crc-1/keystore.dat:/ela/keystore.dat
     ports:
       - 10111-10117:20333-20339
     healthcheck:
@@ -44,9 +44,9 @@ services:
     image: cyberrepublic/elastos-mainchain-node:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-crc-2:/ela/elastos
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/config.json:/ela/config.json
-      - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/keystore.dat:/ela/keystore.dat
+      - /data/volumes/elastos-privnet/mainchain-crc-2/elastos:/ela/elastos
+      - /data/volumes/elastos-privnet/mainchain-crc-2/config.json:/ela/config.json
+      - /data/volumes/elastos-privnet/mainchain-crc-2/keystore.dat:/ela/keystore.dat
     ports:
       - 10211-10217:20333-20339
     healthcheck:
@@ -63,9 +63,9 @@ services:
     image: cyberrepublic/elastos-mainchain-node:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-dpos-1:/ela/elastos
-      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/config.json:/ela/config.json
-      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/keystore.dat:/ela/keystore.dat
+      - /data/volumes/elastos-privnet/mainchain-dpos-1/elastos:/ela/elastos
+      - /data/volumes/elastos-privnet/mainchain-dpos-1/config.json:/ela/config.json
+      - /data/volumes/elastos-privnet/mainchain-dpos-1/keystore.dat:/ela/keystore.dat
     ports:
       - 10511-10517:20333-20339
     healthcheck:
@@ -82,9 +82,9 @@ services:
     image: cyberrepublic/elastos-mainchain-node:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ~/.volumes/elastos-privnet/mainchain-dpos-2:/ela/elastos
-      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/config.json:/ela/config.json
-      - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/keystore.dat:/ela/keystore.dat
+      - /data/volumes/elastos-privnet/mainchain-dpos-2/elastos:/ela/elastos
+      - /data/volumes/elastos-privnet/mainchain-dpos-2/config.json:/ela/config.json
+      - /data/volumes/elastos-privnet/mainchain-dpos-2/keystore.dat:/ela/keystore.dat
     ports:
       - 10611-10617:20333-20339
     healthcheck:
@@ -103,9 +103,9 @@ services:
     depends_on:
       - privnet-mainchain-crc-1
     volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-crc-1:/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-1/config.json:/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-1/keystore.dat:/arbiter/keystore.dat
+      - /data/volumes/elastos-privnet/arbitrator-crc-1/elastos_arbiter:/arbiter/elastos_arbiter
+      - /data/volumes/elastos-privnet/arbitrator-crc-1/config.json:/arbiter/config.json
+      - /data/volumes/elastos-privnet/arbitrator-crc-1/keystore.dat:/arbiter/keystore.dat
     ports:
       - 50114-50118:20534-20538
     networks:
@@ -119,9 +119,9 @@ services:
     depends_on:
       - privnet-mainchain-crc-2
     volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-crc-2:/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-2/config.json:/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_crc/arbitrator-crc-2/keystore.dat:/arbiter/keystore.dat
+      - /data/volumes/elastos-privnet/arbitrator-crc-2/elastos_arbiter:/arbiter/elastos_arbiter
+      - /data/volumes/elastos-privnet/arbitrator-crc-2/config.json:/arbiter/config.json
+      - /data/volumes/elastos-privnet/arbitrator-crc-2/keystore.dat:/arbiter/keystore.dat
     ports:
       - 50214-50218:20534-20538
     networks:
@@ -135,9 +135,9 @@ services:
     depends_on:
       - privnet-mainchain-dpos-1
     volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-origin-1:/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-1/config.json:/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-1/keystore.dat:/arbiter/keystore.dat
+      - /data/volumes/elastos-privnet/arbitrator-origin-1/elastos_arbiter:/arbiter/elastos_arbiter
+      - /data/volumes/elastos-privnet/arbitrator-origin-1/config.json:/arbiter/config.json
+      - /data/volumes/elastos-privnet/arbitrator-origin-1/keystore.dat:/arbiter/keystore.dat
     ports:
       - 50514-50518:20534-20538
     networks:
@@ -151,9 +151,9 @@ services:
     depends_on:
       - privnet-mainchain-dpos-2
     volumes:
-      - ~/.volumes/elastos-privnet/arbitrator-origin-2:/arbiter/elastos_arbiter
-      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-2/config.json:/arbiter/config.json
-      - ${PWD}/ela-arbitrator/node_origin/arbitrator-origin-2/keystore.dat:/arbiter/keystore.dat
+      - /data/volumes/elastos-privnet/arbitrator-origin-2/elastos_arbiter:/arbiter/elastos_arbiter
+      - /data/volumes/elastos-privnet/arbitrator-origin-2/config.json:/arbiter/config.json
+      - /data/volumes/elastos-privnet/arbitrator-origin-2/keystore.dat:/arbiter/keystore.dat
     ports:
       - 50614-50618:20534-20538
     networks:
@@ -165,8 +165,8 @@ services:
     image: cyberrepublic/elastos-sidechain-did-node:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ~/.volumes/elastos-privnet/did-node:/did/elastos_did
-      - ${PWD}/ela-sidechain/did/did-node/config.json:/did/config.json
+      - /data/volumes/elastos-privnet/did-node/elastos_did:/did/elastos_did
+      - /data/volumes/elastos-privnet/did-node/config.json:/did/config.json
     ports:
       - 30111-30115:20604-20608
     healthcheck:
@@ -183,8 +183,8 @@ services:
     image: cyberrepublic/elastos-sidechain-token-node:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ~/.volumes/elastos-privnet/token-node:/token/elastos_token
-      - ${PWD}/ela-sidechain/token/token-node/config.json:/token/config.json
+      - /data/volumes/elastos-privnet/token-node/elastos_token:/token/elastos_token
+      - /data/volumes/elastos-privnet/token-node/config.json:/token/config.json
     ports:
       - 40111-40115:20614-20618
     healthcheck:
@@ -202,8 +202,8 @@ services:
     user: "${UID}:${GID}"
     entrypoint: /bin/sh -c "./geth --mine --datadir elastos_eth --syncmode 'full' --gcmode 'archive' --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcvhosts '*' --rpcport 20636 --rpcapi 'db,eth,net,web3,personal' --ws --wsaddr 0.0.0.0 --wsorigins '*' --wsport 20635 --wsapi 'db,eth,net,web3,personal' --unlock 0x961386e437294f9171040e2d56d4522c4f55187d --password ./eth-accounts-pass.txt"
     volumes:
-      - ~/.volumes/elastos-privnet/eth-node:/eth/elastos_eth
-      - ${PWD}/ela-sidechain/eth/eth-node/eth-accounts-pass.txt:/eth/eth-accounts-pass.txt
+      - /data/volumes/elastos-privnet/eth-node/elastos_eth:/eth/elastos_eth
+      - /data/volumes/elastos-privnet/eth-node/eth-accounts-pass.txt:/eth/eth-accounts-pass.txt
     ports:
       - 60111:20635
       - 60112:20636
@@ -234,7 +234,7 @@ services:
     image: cyberrepublic/elastos-wallet-service:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ${PWD}/restful-services/wallet/application-mainchain-did.properties:/home/elauser/application.properties
+      - /data/volumes/elastos-privnet/wallet-service/application-mainchain-did.properties:/home/elauser/application.properties
     depends_on:
       - privnet-mainchain-node
     ports:
@@ -253,7 +253,7 @@ services:
     image: cyberrepublic/elastos-wallet-service:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ${PWD}/restful-services/wallet/application-mainchain-token.properties:/home/elauser/application.properties
+      - /data/volumes/elastos-privnet/wallet-service/application-mainchain-token.properties:/home/elauser/application.properties
     depends_on:
       - privnet-mainchain-node
     ports:
@@ -289,9 +289,9 @@ services:
     image: cyberrepublic/elastos-api-misc-service:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ${PWD}/restful-services/api-misc/mainchain/config.json:/home/elauser/config.json
-      - ${PWD}/restful-services/api-misc/mainchain/erc20.json:/home/elauser/erc20.json
-      - ${PWD}/restful-services/api-misc/mainchain/deploy.sh:/home/elauser/deploy.sh
+      - /data/volumes/elastos-privnet/misc-service/mainchain/config.json:/home/elauser/config.json
+      - /data/volumes/elastos-privnet/misc-service/mainchain/erc20.json:/home/elauser/erc20.json
+      - /data/volumes/elastos-privnet/misc-service/mainchain/deploy.sh:/home/elauser/deploy.sh
     depends_on:
       - privnet-mysql
       - privnet-mainchain-node
@@ -311,8 +311,8 @@ services:
     image: cyberrepublic/elastos-api-misc-service:privnet-v0.6
     user: "${UID}:${GID}"
     volumes:
-      - ${PWD}/restful-services/api-misc/sidechain/did/config.json:/home/elauser/config.json
-      - ${PWD}/restful-services/api-misc/sidechain/did/deploy.sh:/home/elauser/deploy.sh
+      - /data/volumes/elastos-privnet/misc-service/sidechain/did/config.json:/home/elauser/config.json
+      - /data/volumes/elastos-privnet/misc-service/sidechain/did/deploy.sh:/home/elauser/deploy.sh
     depends_on:
       - privnet-mysql
       - privnet-sidechain-did-node

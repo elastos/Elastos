@@ -53,9 +53,9 @@ These are located in the `wallets` folder:
 - `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 100,000 DID ELA, 100,000 TOKEN ELA and 100,000 ETH ELA respectively
 
 ## Repos used to build 
-- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.9
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.4.1
 - [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): v0.1.2
-- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.SideChain.ID): release_v0.1.3 c161ef43a3084db4ebb3ac1af989fd230c6ce7f0
+- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.SideChain.ID): v0.1.3
 - [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): v0.1.2
 - [Elastos.ELA.SideChain.ETH](https://github.com/elastos/Elastos.ELA.SideChain.ETH): v0.0.2
 - [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): master
