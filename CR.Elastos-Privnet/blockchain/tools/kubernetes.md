@@ -31,7 +31,7 @@ kubectl apply -R -f .
 ```
 - Change something on all the files
 ```
-for i in $(find . -type f); do echo $i; sed -i 's#io.kompose.service#app#g' $i; done
+for i in $(find . -name '*.yaml*' -type f); do echo $i; sed -i 's#io.kompose.service#app#g' $i; done
 ```
 
 - List the services:
