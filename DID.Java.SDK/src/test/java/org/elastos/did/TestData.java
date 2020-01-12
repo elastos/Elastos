@@ -102,7 +102,7 @@ public final class TestData {
 		}
 
 		DIDBackend.initialize(adapter);
-    	deleteFile(new File(TestConfig.storeRoot));
+    	Utils.deleteFile(new File(TestConfig.storeRoot));
     	store = DIDStore.open("filesystem", TestConfig.storeRoot);
     	return store;
 	}
@@ -349,16 +349,6 @@ public final class TestData {
 			restoreMnemonic = loadText("mnemonic.restore");
 
 		return restoreMnemonic;
-	}
-
-	public static void deleteFile(File file) {
-		if (file.isDirectory()) {
-			File[] children = file.listFiles();
-			for (File child : children)
-				deleteFile(child);
-		}
-
-		file.delete();
 	}
 
 	public static synchronized HDKey.DerivedKey generateKeypair()

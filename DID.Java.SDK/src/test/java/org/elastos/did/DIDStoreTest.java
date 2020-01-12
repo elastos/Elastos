@@ -40,6 +40,7 @@ import org.elastos.did.adapter.DummyAdapter;
 import org.elastos.did.exception.DIDDeactivatedException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.WrongPasswordException;
 import org.elastos.did.meta.DIDMeta;
 import org.elastos.did.util.HDKey;
 import org.junit.Rule;
@@ -102,6 +103,44 @@ public class DIDStoreTest {
 
     	String exportedMnemonic = store.exportMnemonic(TestConfig.storePass);
     	assertEquals(mnemonic, exportedMnemonic);
+	}
+
+	@Test
+	public void testInitPrivateIdentityWithMnemonic() throws DIDException {
+		String expectedIDString = "iY4Ghz9tCuWvB5rNwvn4ngWvthZMNzEA7U";
+		String mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
+
+		TestData testData = new TestData();
+    	DIDStore store = testData.setupStore(true);
+    	assertFalse(store.containsPrivateIdentity());
+
+    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic, "", TestConfig.storePass);
+    	assertTrue(store.containsPrivateIdentity());
+
+    	File file = new File(TestConfig.storeRoot + File.separator + "private"
+    			+ File.separator + "key");
+    	assertTrue(file.exists());
+    	assertTrue(file.isFile());
+
+    	file = new File(TestConfig.storeRoot + File.separator + "private"
+    			+ File.separator + "index");
+    	assertTrue(file.exists());
+    	assertTrue(file.isFile());
+
+    	file = new File(TestConfig.storeRoot + File.separator + "private"
+    			+ File.separator + "mnemonic");
+    	assertTrue(file.exists());
+    	assertTrue(file.isFile());
+
+    	store = DIDStore.open("filesystem", TestConfig.storeRoot);
+    	assertTrue(store.containsPrivateIdentity());
+
+    	String exportedMnemonic = store.exportMnemonic(TestConfig.storePass);
+    	assertEquals(mnemonic, exportedMnemonic);
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertNotNull(doc);
+    	assertEquals(expectedIDString, doc.getSubject().getMethodSpecificId());
 	}
 
 	@Test
@@ -181,15 +220,11 @@ public class DIDStoreTest {
     	DIDDocument doc = store.newDid(TestConfig.storePass);
     	assertTrue(doc.isValid());
 
-    	System.out.println(doc.getTransactionId());
-
     	store.publishDid(doc.getSubject(), TestConfig.storePass);
 
     	DIDDocument resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
     	store.storeDid(resolved);
-
-    	System.out.println(resolved.getTransactionId());
 
     	// Update
     	DIDDocument.Builder db = resolved.edit();
@@ -832,7 +867,6 @@ public class DIDStoreTest {
 	public void testCompatibility() throws DIDException {
 		URL url = this.getClass().getResource("/teststore");
 		File dir = new File(url.getPath());
-		System.out.println(dir.getAbsolutePath());
 
 		DIDBackend.initialize(new DummyAdapter());
 		DIDStore store = DIDStore.open("filesystem", dir.getAbsolutePath());
@@ -865,11 +899,8 @@ public class DIDStoreTest {
        	}
 	}
 
-	@Test
+	@Test(expected = WrongPasswordException.class)
 	public void testCompatibilityNewDIDWithWrongPass() throws DIDException {
-		expectedEx.expect(DIDStoreException.class);
-		expectedEx.expectMessage("Decrypt private key error, maybe wrong store password.");
-
 		URL url = this.getClass().getResource("/teststore");
 		File dir = new File(url.getPath());
 
@@ -923,7 +954,7 @@ public class DIDStoreTest {
 	private void testStorePerformance(boolean cached) throws DIDException {
 		DIDBackend.initialize(new DummyAdapter());
 
-		TestData.deleteFile(new File(TestConfig.storeRoot));
+		Utils.deleteFile(new File(TestConfig.storeRoot));
 		DIDStore store = null;
     	if (cached)
     		store = DIDStore.open("filesystem", TestConfig.storeRoot);
@@ -974,7 +1005,7 @@ public class DIDStoreTest {
 		DIDDocument[] docs = new DIDDocument[10];
 
 		for (int i = 0; i < stores.length; i++) {
-			TestData.deleteFile(new File(TestConfig.storeRoot + i));
+			Utils.deleteFile(new File(TestConfig.storeRoot + i));
 			stores[i] = DIDStore.open("filesystem", TestConfig.storeRoot + i);
 			assertNotNull(stores[i]);
 			String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
@@ -991,5 +1022,84 @@ public class DIDStoreTest {
 			assertNotNull(doc);
 			assertEquals(docs[i].toString(true), doc.toString(true));
 		}
+	}
+
+	@Test
+	public void testExportAndImportDid() throws DIDException, IOException {
+		URL url = this.getClass().getResource("/teststore");
+		File storeDir = new File(url.getPath());
+
+		DIDBackend.initialize(new DummyAdapter());
+		DIDStore store = DIDStore.open("filesystem", storeDir.getAbsolutePath());
+
+		DID did = store.listDids(DIDStore.DID_ALL).get(0);
+
+		File tempDir = new File(TestConfig.tempDir);
+		tempDir.mkdirs();
+		File exportFile = new File(tempDir, "didexport.json");
+
+		store.exportDid(did, exportFile, "password", TestConfig.storePass);
+
+		File restoreDir = new File(tempDir, "restore");
+		Utils.deleteFile(restoreDir);
+		DIDStore store2 = DIDStore.open("filesystem", restoreDir.getAbsolutePath());
+		store2.importDid(exportFile, "password", TestConfig.storePass);
+
+		String path = "ids" + File.separator + did.getMethodSpecificId();
+		File didDir = new File(storeDir, path);
+		File reDidDir = new File(restoreDir, path);
+		assertTrue(didDir.exists());
+		assertTrue(reDidDir.exists());
+		assertTrue(Utils.equals(reDidDir, didDir));
+	}
+
+	@Test
+	public void testExportAndImportPrivateIdentity() throws DIDException, IOException {
+		URL url = this.getClass().getResource("/teststore");
+		File storeDir = new File(url.getPath());
+
+		DIDBackend.initialize(new DummyAdapter());
+		DIDStore store = DIDStore.open("filesystem", storeDir.getAbsolutePath());
+
+		File tempDir = new File(TestConfig.tempDir);
+		tempDir.mkdirs();
+		File exportFile = new File(tempDir, "idexport.json");
+
+		store.exportPrivateIdentity(exportFile, "password", TestConfig.storePass);
+
+		File restoreDir = new File(tempDir, "restore");
+		Utils.deleteFile(restoreDir);
+		DIDStore store2 = DIDStore.open("filesystem", restoreDir.getAbsolutePath());
+		store2.importPrivateIdentity(exportFile, "password", TestConfig.storePass);
+
+		File privateDir = new File(storeDir, "private");
+		File rePrivateDir = new File(restoreDir, "private");
+		assertTrue(privateDir.exists());
+		assertTrue(rePrivateDir.exists());
+		assertTrue(Utils.equals(rePrivateDir, privateDir));
+	}
+
+	@Test
+	public void testExportAndImportStore() throws DIDException, IOException {
+		URL url = this.getClass().getResource("/teststore");
+		File storeDir = new File(url.getPath());
+
+		DIDBackend.initialize(new DummyAdapter());
+		DIDStore store = DIDStore.open("filesystem", storeDir.getAbsolutePath());
+
+		File tempDir = new File(TestConfig.tempDir);
+		tempDir.mkdirs();
+		File exportFile = new File(tempDir, "storeexport.zip");
+
+		store.exportStore(exportFile, "password", TestConfig.storePass);
+
+		File restoreDir = new File(tempDir, "restore");
+		Utils.deleteFile(restoreDir);
+		DIDStore store2 = DIDStore.open("filesystem", restoreDir.getAbsolutePath());
+		store2.importStore(exportFile, "password", TestConfig.storePass);
+
+		assertTrue(storeDir.exists());
+		assertTrue(restoreDir.exists());
+		assertTrue(Utils.equals(restoreDir, storeDir));
 	}
 }

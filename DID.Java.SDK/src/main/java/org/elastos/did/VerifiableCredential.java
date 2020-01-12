@@ -603,6 +603,11 @@ public class VerifiableCredential extends DIDObject {
 		toJson(generator, ref, normalized, false);
 	}
 
+	protected void toJson(JsonGenerator generator, boolean normalized)
+			throws IOException {
+		toJson(generator, null, normalized);
+	}
+
 	/*
 	 * Normalized serialization order:
 	 *

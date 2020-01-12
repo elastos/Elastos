@@ -53,7 +53,7 @@ public class ResolverCache {
 		if (rootDir == null) {
 			String home = System.getProperty("user.home");
 
-			rootDir = new File(home + File.separator + ".did.elastos");
+			rootDir = new File(home + File.separator + ".cache.did.elastos");
 		}
 
 		if (!rootDir.exists())

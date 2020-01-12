@@ -943,36 +943,6 @@ public class DIDDocument {
 		return EcdsaSigner.verify(binkey, sig, data);
 	}
 
-	private void parse(Reader reader) throws MalformedDocumentException {
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			JsonNode node = mapper.readTree(reader);
-			parse(node);
-		} catch (IOException e) {
-			throw new MalformedDocumentException("Parse JSON document error.", e);
-		}
-	}
-
-	private void parse(InputStream in) throws MalformedDocumentException {
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			JsonNode node = mapper.readTree(in);
-			parse(node);
-		} catch (IOException e) {
-			throw new MalformedDocumentException("Parse JSON document error.", e);
-		}
-	}
-
-	private void parse(String json) throws MalformedDocumentException {
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			JsonNode node = mapper.readTree(json);
-			parse(node);
-		} catch (IOException e) {
-			throw new MalformedDocumentException("Parse JSON document error.", e);
-		}
-	}
-
 	private void parse(JsonNode doc) throws MalformedDocumentException {
 		Class<MalformedDocumentException> clazz = MalformedDocumentException.class;
 
@@ -1137,7 +1107,13 @@ public class DIDDocument {
 			throw new IllegalArgumentException();
 
 		DIDDocument doc = new DIDDocument();
-		doc.parse(reader);
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JsonNode node = mapper.readTree(reader);
+			doc.parse(node);
+		} catch (IOException e) {
+			throw new MalformedDocumentException("Parse JSON document error.", e);
+		}
 
 		return doc;
 	}
@@ -1148,7 +1124,13 @@ public class DIDDocument {
 			throw new IllegalArgumentException();
 
 		DIDDocument doc = new DIDDocument();
-		doc.parse(in);
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JsonNode node = mapper.readTree(in);
+			doc.parse(node);
+		} catch (IOException e) {
+			throw new MalformedDocumentException("Parse JSON document error.", e);
+		}
 
 		return doc;
 	}
@@ -1159,8 +1141,21 @@ public class DIDDocument {
 			throw new IllegalArgumentException();
 
 		DIDDocument doc = new DIDDocument();
-		doc.parse(json);
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JsonNode node = mapper.readTree(json);
+			doc.parse(node);
+		} catch (IOException e) {
+			throw new MalformedDocumentException("Parse JSON document error.", e);
+		}
 
+		return doc;
+	}
+
+	protected static DIDDocument fromJson(JsonNode node)
+			throws MalformedDocumentException {
+		DIDDocument doc = new DIDDocument();
+		doc.parse(node);
 		return doc;
 	}
 
@@ -1192,11 +1187,8 @@ public class DIDDocument {
 	 *   - creator
 	 *   - signatureValue
 	 */
-	protected void toJson(Writer out, boolean normalized, boolean forSign)
-			throws IOException {
-		JsonFactory factory = new JsonFactory();
-		JsonGenerator generator = factory.createGenerator(out);
-
+	private void toJson(JsonGenerator generator, boolean normalized,
+			boolean forSign) throws IOException {
 		generator.writeStartObject();
 
 		// subject
@@ -1273,6 +1265,18 @@ public class DIDDocument {
 		}
 
 		generator.writeEndObject();
+	}
+
+	protected void toJson(JsonGenerator generator, boolean normalized)
+			throws IOException {
+		toJson(generator, normalized, false);
+	}
+
+	private void toJson(Writer out, boolean normalized, boolean forSign)
+			throws IOException {
+		JsonFactory factory = new JsonFactory();
+		JsonGenerator generator = factory.createGenerator(out);
+		toJson(generator, normalized, forSign);
 		generator.close();
 	}
 

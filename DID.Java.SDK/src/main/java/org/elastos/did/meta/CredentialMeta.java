@@ -40,9 +40,9 @@ public class CredentialMeta extends Metadata {
 		return alias;
 	}
 
-	public static CredentialMeta fromString(String metadata)
+	public static CredentialMeta fromJson(String metadata)
 			throws MalformedMetaException {
-		return fromString(metadata, CredentialMeta.class);
+		return fromJson(metadata, CredentialMeta.class);
 	}
 
 	@Override

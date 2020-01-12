@@ -74,9 +74,9 @@ public class DIDMeta extends Metadata {
 		return deactivated;
 	}
 
-	public static DIDMeta fromString(String metadata)
+	public static DIDMeta fromJson(String metadata)
 			throws MalformedMetaException {
-		return fromString(metadata, DIDMeta.class);
+		return fromJson(metadata, DIDMeta.class);
 	}
 
 	@Override

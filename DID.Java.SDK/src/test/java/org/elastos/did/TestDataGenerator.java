@@ -58,7 +58,7 @@ public class TestDataGenerator {
 		ResolverCache.reset();
 		DIDBackend.initialize(adapter);
 
-		TestData.deleteFile(new File(storeRoot));
+		Utils.deleteFile(new File(storeRoot));
 		store = DIDStore.open("filesystem", storeRoot);
 
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
@@ -68,7 +68,6 @@ public class TestDataGenerator {
     	testDataDir = new File(TestConfig.tempDir + File.separator +
     			"DIDTestFiles" + File.separator + "testdata");
     	testDataDir.mkdirs();
-
 
     	return mnemonic;
 	}

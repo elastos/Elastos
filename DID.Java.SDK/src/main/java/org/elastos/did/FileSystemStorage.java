@@ -355,7 +355,7 @@ class FileSystemStorage implements DIDStorage {
 	public DIDMeta loadDidMeta(DID did) throws DIDStoreException {
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(), META_FILE);
-			return DIDMeta.fromString(readText(file));
+			return DIDMeta.fromJson(readText(file));
 		} catch (IOException e) {
 			throw new DIDStoreException("Read alias error.", e);
 		}
@@ -470,7 +470,7 @@ class FileSystemStorage implements DIDStorage {
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
-			return CredentialMeta.fromString(readText(file));
+			return CredentialMeta.fromJson(readText(file));
 		} catch (IOException e) {
 			throw new DIDStoreException("Read alias error.", e);
 		}

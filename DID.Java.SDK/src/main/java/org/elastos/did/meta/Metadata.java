@@ -23,9 +23,9 @@
 package org.elastos.did.meta;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.elastos.did.DIDStore;
 import org.elastos.did.exception.MalformedMetaException;
@@ -46,7 +46,7 @@ public abstract class Metadata {
 			return;
 
 		if (extra == null)
-			extra = new HashMap<String, String>(8);
+			extra = new TreeMap<String, String>();
 
 		extra.put(name, value);
 	}
@@ -83,7 +83,7 @@ public abstract class Metadata {
 
 	protected abstract void fromNode(JsonNode node) throws MalformedMetaException;
 
-	protected static <T extends Metadata> T fromString(String metadata,
+	public static <T extends Metadata> T fromJson(JsonNode node,
 			Class<T> clazz) throws MalformedMetaException {
 		T meta = null;
 		try {
@@ -93,17 +93,8 @@ public abstract class Metadata {
 			return null;
 		}
 
-		if (metadata == null || metadata.isEmpty())
+		if (node == null || node.size() == 0)
 			return meta;
-
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode node = null;
-
-		try {
-			node = mapper.readTree(metadata);
-		} catch (IOException e) {
-			throw new MalformedMetaException("Parse DID metadata error.", e);
-		}
 
 		meta.fromNode(node);
 
@@ -118,6 +109,23 @@ public abstract class Metadata {
 		}
 
 		return meta;
+	}
+
+	protected static <T extends Metadata> T fromJson(String metadata,
+			Class<T> clazz) throws MalformedMetaException {
+		JsonNode node = null;
+
+		if (metadata != null && !metadata.isEmpty()) {
+			ObjectMapper mapper = new ObjectMapper();
+
+			try {
+				node = mapper.readTree(metadata);
+			} catch (IOException e) {
+				throw new MalformedMetaException("Parse DID metadata error.", e);
+			}
+		}
+
+		return fromJson(node, clazz);
 	}
 
 	protected abstract void toNode(ObjectNode node);
