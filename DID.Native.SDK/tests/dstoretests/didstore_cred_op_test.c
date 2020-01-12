@@ -24,7 +24,7 @@ int get_cred(DIDURL *id, void *context)
     char _id[ELA_MAX_DIDURL_LEN];
 
     if(!id)
-        return -1;
+        return 0;
 
     printf("\ncredential: %s\n", DIDURL_ToString(id, _id, sizeof(_id), false));
     return 0;
@@ -74,7 +74,7 @@ static void test_didstore_delete_cred(void)
         DIDStore_DeleteCredential(store, &did, &(credential->id));
 
     bool rc = DIDStore_ContainsCredential(store, &did, &(credential->id));
-    CU_ASSERT_NOT_EQUAL(rc, true);
+    CU_ASSERT_FALSE(rc);
 }
 
 static int didstore_cred_op_test_suite_init(void)
