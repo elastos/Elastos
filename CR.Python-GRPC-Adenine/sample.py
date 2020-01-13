@@ -45,7 +45,7 @@ def main():
         try:
             common = Common()
             # Generate API Key
-            print("--> Generate Api Request")
+            print("--> Generate API Key")
             response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did_to_use)
             if response.status:
                 print("Api Key: " + response.api_key)
@@ -58,6 +58,8 @@ def main():
     elif service == "get_api_key":
         try:
             common = Common()
+            # Get API Key
+            print("--> Get API Key")
             response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did_to_use)
             if response.status:
                 print("Api Key: " + response.api_key)
