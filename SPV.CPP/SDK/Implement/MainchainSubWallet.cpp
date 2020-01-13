@@ -382,7 +382,7 @@ namespace Elastos {
 				return;
 			}
 
-			for (std::vector<VoteContent>::iterator it = voteContent.begin() + 1; it != voteContent.end(); ++it) {
+			for (std::vector<VoteContent>::iterator it = voteContent.begin(); it != voteContent.end();) {
 				std::string type = (*it).GetTypeString();
 
 				std::set<std::string> invalidList;
@@ -393,8 +393,9 @@ namespace Elastos {
 					}
 				}
 
-				if (invalidList.size() <= 0) {
-					return;
+				if (invalidList.empty()) {
+					++it;
+					continue;
 				}
 
 				std::vector<CandidateVotes> candidatesVotes = (*it).GetCandidateVotes();
@@ -412,7 +413,13 @@ namespace Elastos {
 						++i;
 					}
 				}
-				(*it).SetCandidateVotes(candidatesVotes);
+
+				if (candidatesVotes.empty()) {
+					it = voteContent.erase(it);
+				} else {
+					(*it).SetCandidateVotes(candidatesVotes);
+					++it;
+				}
 			}
 
 			pv->SetVoteContent(voteContent);
