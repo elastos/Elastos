@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.allen.library.SuperButton;
 
 import org.elastos.wallet.R;
@@ -26,6 +28,7 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
+import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
@@ -53,7 +56,7 @@ import butterknife.OnClick;
 /**
  * 选举管理  getRegisteredProducerInfo
  */
-public class ElectoralAffairsFragment extends BaseFragment implements NewBaseViewData {
+public class ElectoralAffairsFragment extends BaseFragment implements NewBaseViewData, RegisteredProducerInfoViewData {
 
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
@@ -139,11 +142,8 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
             ll_tq.setVisibility(View.VISIBLE);
             String nickname = curentNode.getNickname();
             tvQuit.setText(nickname + getString(R.string.hasquit));
-            if (curentNode.getCancelheight() >= 2160) {
-                //提取押金
-                presenter.getDepositcoin(curentNode.getOwnerpublickey(), this);
-               // new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), MyWallet.ELA, this);
-            }
+            //获取deposit状态
+            new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), MyWallet.ELA, this);
         } else {
             //未注销展示选举信息
             onJustRegistered(curentNode);
@@ -302,5 +302,18 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
                 }
             });
         }
+    }
+
+    @Override
+    public void onGetRegisteredProducerInfo(String data) {
+
+        JSONObject jsonObject = JSON.parseObject(data);
+        String status = jsonObject.getString("Status");
+        JSONObject info = jsonObject.getJSONObject("Info");
+        if (!TextUtils.isEmpty(status) && status.equals("Canceled") && info.getLong("Confirms") >= 2160) {
+            //获取押金
+            presenter.getDepositcoin(curentNode.getOwnerpublickey(), this);
+        }
+
     }
 }
