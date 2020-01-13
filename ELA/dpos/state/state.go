@@ -739,7 +739,6 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 				activateProducerFromPending(key, producer)
 			}
 		}
-
 	}
 	if len(s.InactiveProducers) > 0 {
 		for key, producer := range s.InactiveProducers {
@@ -1170,14 +1169,14 @@ func (s *State) updateVersion(tx *types.Transaction, height uint32) {
 		return
 	}
 
-	start := p.StartHeight
-	end := p.EndHeight
+	oriVersionStartHeight := s.VersionStartHeight
+	oriVersionEndHeight := s.VersionEndHeight
 	s.history.Append(height, func() {
-		s.VersionStartHeight = start
-		s.VersionEndHeight = end
+		s.VersionStartHeight = p.StartHeight
+		s.VersionEndHeight = p.EndHeight
 	}, func() {
-		s.VersionStartHeight = 0
-		s.VersionEndHeight = 0
+		s.VersionStartHeight = oriVersionStartHeight
+		s.VersionEndHeight = oriVersionEndHeight
 	})
 }
 

@@ -261,7 +261,7 @@ func getCRCProposalWithdrawTx(proposalHash common.Uint256,
 	}
 }
 
-func committeeKeyFrameEqual(first *CommitteeKeyFrame, second *CommitteeKeyFrame) bool {
+func committeeKeyFrameEqual(first, second *CommitteeKeyFrame) bool {
 	return keyframeEqual(first.KeyFrame, second.KeyFrame) &&
 		stateKeyframeEqual(first.StateKeyFrame, second.StateKeyFrame) &&
 		proposalKeyFrameEqual(first.ProposalKeyFrame, second.ProposalKeyFrame)
