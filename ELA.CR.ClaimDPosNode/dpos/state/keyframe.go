@@ -552,3 +552,13 @@ func copyReward(src *RewardData) (dst *RewardData) {
 	}
 	return
 }
+
+func copyCRCArbitersMap(src map[common.Uint168]ArbiterMember) (dst map[common.Uint168]ArbiterMember) {
+	dst = make(map[common.Uint168]ArbiterMember)
+	for k, v := range src {
+		member := v.Clone()
+		dst[k] = member
+	}
+
+	return dst
+}

@@ -7,6 +7,7 @@ package state
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"math"
 
@@ -42,6 +43,8 @@ type CheckPoint struct {
 	CurrentCandidates          []ArbiterMember
 	CurrentReward              RewardData
 	NextReward                 RewardData
+	crcArbiters                map[common.Uint168]ArbiterMember
+	crcChangedHeight           uint32
 	accumulativeReward         common.Fixed64
 	finalRoundChange           common.Fixed64
 	clearingHeight             uint32
@@ -182,7 +185,86 @@ func (c *CheckPoint) Serialize(w io.Writer) (err error) {
 		return
 	}
 
+	if err = c.serializeCRCArbitersMap(w, c.crcArbiters); err != nil {
+		return
+	}
+
+	if err = common.WriteUint32(w, c.crcChangedHeight); err != nil {
+		return
+	}
+
+	if err = c.accumulativeReward.Serialize(w); err != nil {
+		return
+	}
+
+	if err = c.finalRoundChange.Serialize(w); err != nil {
+		return
+	}
+
+	if err = common.WriteUint32(w, c.clearingHeight); err != nil {
+		return
+	}
+
+	if err = c.serializeRoundRewardMap(w, c.arbitersRoundReward); err != nil {
+		return
+	}
+
+	if err = c.serializeIllegalPayloadHashesMap(w, c.illegalBlocksPayloadHashes); err != nil {
+		return
+	}
+
 	return c.StateKeyFrame.Serialize(w)
+}
+
+func (c *CheckPoint) serializeCRCArbitersMap(w io.Writer,
+	rmap map[common.Uint168]ArbiterMember) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(rmap))); err != nil {
+		return
+	}
+	for k, v := range rmap {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+
+		if err = common.WriteUint8(w, uint8(v.GetType())); err != nil {
+			return
+		}
+
+		if err = v.Serialize(w); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (c *CheckPoint) serializeRoundRewardMap(w io.Writer,
+	rmap map[common.Uint168]common.Fixed64) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(rmap))); err != nil {
+		return
+	}
+	for k, v := range rmap {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+
+		if err = v.Serialize(w); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (c *CheckPoint) serializeIllegalPayloadHashesMap(w io.Writer,
+	rmap map[common.Uint256]interface{}) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(rmap))); err != nil {
+		return
+	}
+	for k, _ := range rmap {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+	}
+	return
 }
 
 // Deserialize read data to reader
@@ -221,7 +303,121 @@ func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
+	if c.crcArbiters, err = c.deserializeCRCArbitersMap(r); err != nil {
+		return
+	}
+
+	if c.crcChangedHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if err = c.accumulativeReward.Deserialize(r); err != nil {
+		return
+	}
+
+	if err = c.finalRoundChange.Deserialize(r); err != nil {
+		return
+	}
+
+	if c.clearingHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if c.arbitersRoundReward, err = c.deserializeRoundRewardMap(r); err != nil {
+		return
+	}
+
+	c.illegalBlocksPayloadHashes, err = c.deserializeIllegalPayloadHashes(r)
+	if err != nil {
+		return
+	}
+
 	return c.StateKeyFrame.Deserialize(r)
+}
+
+
+func (c *CheckPoint) deserializeCRCArbitersMap(r io.Reader) (
+	rmap map[common.Uint168]ArbiterMember, err error) {
+
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	rmap = make(map[common.Uint168]ArbiterMember)
+	for i := uint64(0); i < count; i++ {
+		var k common.Uint168
+		if err = k.Deserialize(r); err != nil {
+			return
+		}
+
+		var arbiterType uint8
+		if arbiterType, err = common.ReadUint8(r); err != nil {
+			return
+		}
+		var am ArbiterMember
+		switch ArbiterType(arbiterType) {
+		case Origin:
+			am = &originArbiter{}
+		case DPoS:
+			am = &dposArbiter{
+				arType: DPoS,
+			}
+		case CROrigin:
+			am = &dposArbiter{
+				arType: CROrigin,
+			}
+		case CRC:
+			am = &crcArbiter{}
+		default:
+			err = errors.New("invalid arbiter type")
+			return
+		}
+		if err = am.Deserialize(r); err != nil {
+			return
+		}
+
+		rmap[k] = am
+	}
+	return
+}
+
+
+func (c *CheckPoint) deserializeIllegalPayloadHashes(
+	r io.Reader) (hmap map[common.Uint256]interface{}, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	hmap = make(map[common.Uint256]interface{})
+	for i := uint64(0); i < count; i++ {
+		var k common.Uint256
+		if err = k.Deserialize(r); err != nil {
+			return
+		}
+		hmap[k] = nil
+	}
+	return
+}
+
+func (c *CheckPoint) deserializeRoundRewardMap(
+	r io.Reader) (rmap map[common.Uint168]common.Fixed64, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	rmap = make(map[common.Uint168]common.Fixed64)
+	for i := uint64(0); i < count; i++ {
+		var k common.Uint168
+		if err = k.Deserialize(r); err != nil {
+			return
+		}
+		reward := common.Fixed64(0)
+		if err = reward.Deserialize(r); err != nil {
+			return
+		}
+		rmap[k] = reward
+	}
+	return
 }
 
 func (c *CheckPoint) writeArbiters(w io.Writer,

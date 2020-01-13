@@ -324,7 +324,7 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	switch changeType {
 	case updateNext:
 		if err := a.updateNextArbitrators(versionHeight, block.Height); err != nil {
-			panic(fmt.Sprintf("[IncreaseChainHeight] update next arbiters" +
+			panic(fmt.Sprintf("[IncreaseChainHeight] update next arbiters"+
 				" at height: %d, error: %s", block.Height, err))
 		}
 	case normalChange:
@@ -1104,6 +1104,8 @@ func (a *arbitrators) newCheckPoint(height uint32) *CheckPoint {
 		NextCandidates:             make([]ArbiterMember, 0),
 		CurrentReward:              *NewRewardData(),
 		NextReward:                 *NewRewardData(),
+		crcArbiters:                make(map[common.Uint168]ArbiterMember),
+		crcChangedHeight:           a.crcChangedHeight,
 		accumulativeReward:         a.accumulativeReward,
 		finalRoundChange:           a.finalRoundChange,
 		clearingHeight:             a.clearingHeight,
@@ -1118,6 +1120,7 @@ func (a *arbitrators) newCheckPoint(height uint32) *CheckPoint {
 	point.NextCandidates = copyByteList(a.nextCandidates)
 	point.CurrentReward = *copyReward(&a.CurrentReward)
 	point.NextReward = *copyReward(&a.NextReward)
+	point.crcArbiters = copyCRCArbitersMap(a.crcArbiters)
 	for k, v := range a.arbitersRoundReward {
 		point.arbitersRoundReward[k] = v
 	}
@@ -1126,6 +1129,9 @@ func (a *arbitrators) newCheckPoint(height uint32) *CheckPoint {
 	}
 
 	return point
+}
+func (a *arbitrators) Snapshot() *CheckPoint {
+	return a.newCheckPoint(0)
 }
 
 func (a *arbitrators) snapshot(height uint32) {

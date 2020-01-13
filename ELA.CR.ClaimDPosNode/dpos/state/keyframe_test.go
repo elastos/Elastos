@@ -116,6 +116,22 @@ func generateCheckPoint(height uint32) *CheckPoint {
 }
 
 func stateKeyFrameEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
+	if len(first.NodeOwnerKeys) != len(second.NodeOwnerKeys) ||
+		len(first.PendingProducers) != len(second.PendingProducers) ||
+		len(first.ActivityProducers) != len(second.ActivityProducers) ||
+		len(first.InactiveProducers) != len(second.InactiveProducers) ||
+		len(first.CanceledProducers) != len(second.CanceledProducers) ||
+		len(first.IllegalProducers) != len(second.IllegalProducers) ||
+		len(first.PendingCanceledProducers) != len(second.PendingCanceledProducers) ||
+		len(first.Votes) != len(second.Votes) ||
+		len(first.DepositOutputs) != len(second.DepositOutputs) ||
+		len(first.Nicknames) != len(second.Nicknames) ||
+		len(first.SpecialTxHashes) != len(second.SpecialTxHashes) ||
+		len(first.PreBlockArbiters) != len(second.PreBlockArbiters) ||
+		len(first.ProducerDepositMap) != len(second.ProducerDepositMap) ||
+		len(first.EmergencyInactiveArbiters) != len(second.EmergencyInactiveArbiters) {
+		return false
+	}
 
 	for k, vf := range first.NodeOwnerKeys {
 		vs, ok := second.NodeOwnerKeys[k]
@@ -222,6 +238,13 @@ func stateKeyFrameEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 		}
 	}
 
+	for k := range first.ProducerDepositMap {
+		_, ok := second.ProducerDepositMap[k]
+		if !ok {
+			return false
+		}
+	}
+
 	for k := range first.EmergencyInactiveArbiters {
 		_, ok := second.EmergencyInactiveArbiters[k]
 		if !ok {
@@ -247,6 +270,7 @@ func randomStateKeyFrame() *StateKeyFrame {
 		Nicknames:                 make(map[string]struct{}),
 		SpecialTxHashes:           make(map[common.Uint256]struct{}),
 		PreBlockArbiters:          make(map[string]struct{}),
+		ProducerDepositMap:        make(map[common.Uint168]struct{}),
 		EmergencyInactiveArbiters: make(map[string]struct{}),
 		VersionStartHeight:        rand.Uint32(),
 		VersionEndHeight:          rand.Uint32(),
@@ -265,6 +289,7 @@ func randomStateKeyFrame() *StateKeyFrame {
 		result.Nicknames[randomString()] = struct{}{}
 		result.SpecialTxHashes[*randomHash()] = struct{}{}
 		result.PreBlockArbiters[randomString()] = struct{}{}
+		result.ProducerDepositMap[*randomProgramHash()] = struct{}{}
 		result.EmergencyInactiveArbiters[randomString()] = struct{}{}
 	}
 	return result
@@ -431,10 +456,7 @@ func arrayEqual(first []ArbiterMember, second []ArbiterMember) bool {
 	for _, vf := range first {
 		found := false
 		for _, vs := range second {
-			if bytes.Equal(vf.GetNodePublicKey(), vs.GetNodePublicKey()) &&
-				bytes.Equal(vf.GetOwnerPublicKey(), vs.GetOwnerPublicKey()) &&
-				vf.GetType() == vs.GetType() &&
-				vf.GetOwnerProgramHash().IsEqual(vs.GetOwnerProgramHash()) {
+			if arbiterMemberEqual(vf, vs) {
 				found = true
 				break
 			}
@@ -444,4 +466,15 @@ func arrayEqual(first []ArbiterMember, second []ArbiterMember) bool {
 		}
 	}
 	return true
+}
+
+func arbiterMemberEqual(first ArbiterMember, second ArbiterMember) bool {
+	if bytes.Equal(first.GetNodePublicKey(), second.GetNodePublicKey()) &&
+		bytes.Equal(first.GetOwnerPublicKey(), second.GetOwnerPublicKey()) &&
+		first.GetType() == second.GetType() &&
+		first.GetOwnerProgramHash().IsEqual(second.GetOwnerProgramHash()) {
+		return true
+	}
+
+	return false
 }

@@ -633,33 +633,35 @@ func (c *Committee) processCurrentMembers(height uint32,
 		return
 	}
 
-	if _, ok := c.HistoryMembers[c.state.CurrentSession]; !ok {
-		currentSession := c.state.CurrentSession
-		c.lastHistory.Append(height, func() {
-			c.HistoryMembers[currentSession] =
-				make(map[common.Uint168]*CRMember)
-		}, func() {
-			delete(c.HistoryMembers, currentSession)
-		})
-	}
-
 	oriMembers := copyMembersMap(c.Members)
-	for _, m := range oriMembers {
-		member := *m
-		oriPenalty := c.state.depositInfo[m.Info.DID].Penalty
-		oriRefundable := c.state.depositInfo[m.Info.DID].Refundable
-		oriDepositAmount := c.state.depositInfo[m.Info.DID].DepositAmount
-		c.lastHistory.Append(height, func() {
-			c.state.depositInfo[m.Info.DID].Penalty = c.getMemberPenalty(height, m)
-			c.state.depositInfo[m.Info.DID].Refundable = true
-			c.state.depositInfo[m.Info.DID].DepositAmount -= MinDepositAmount
-			c.HistoryMembers[c.state.CurrentSession][m.Info.DID] = &member
-		}, func() {
-			c.state.depositInfo[m.Info.DID].Penalty = oriPenalty
-			c.state.depositInfo[m.Info.DID].Refundable = oriRefundable
-			c.state.depositInfo[m.Info.DID].DepositAmount -= oriDepositAmount
-			delete(c.HistoryMembers[c.state.CurrentSession], m.Info.DID)
-		})
+	if len(c.Members) != 0 {
+		if _, ok := c.HistoryMembers[c.state.CurrentSession]; !ok {
+			currentSession := c.state.CurrentSession
+			c.lastHistory.Append(height, func() {
+				c.HistoryMembers[currentSession] =
+					make(map[common.Uint168]*CRMember)
+			}, func() {
+				delete(c.HistoryMembers, currentSession)
+			})
+		}
+
+		for _, m := range oriMembers {
+			member := *m
+			oriPenalty := c.state.depositInfo[m.Info.DID].Penalty
+			oriRefundable := c.state.depositInfo[m.Info.DID].Refundable
+			oriDepositAmount := c.state.depositInfo[m.Info.DID].DepositAmount
+			c.lastHistory.Append(height, func() {
+				c.state.depositInfo[m.Info.DID].Penalty = c.getMemberPenalty(height, m)
+				c.state.depositInfo[m.Info.DID].Refundable = true
+				c.state.depositInfo[m.Info.DID].DepositAmount -= MinDepositAmount
+				c.HistoryMembers[c.state.CurrentSession][m.Info.DID] = &member
+			}, func() {
+				c.state.depositInfo[m.Info.DID].Penalty = oriPenalty
+				c.state.depositInfo[m.Info.DID].Refundable = oriRefundable
+				c.state.depositInfo[m.Info.DID].DepositAmount -= oriDepositAmount
+				delete(c.HistoryMembers[c.state.CurrentSession], m.Info.DID)
+			})
+		}
 	}
 
 	newMembers := make(map[common.Uint168]*CRMember, c.params.CRMemberCount)
