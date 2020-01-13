@@ -33,26 +33,28 @@ public class DID: NSObject {
         return meta.getExtra(name)
     }
 
-    public func setAlias(_ alias: String) throws {
-        meta.alias = alias
-        if meta.attachedStore() {
-            try meta.store!.storeDidMeta(self, meta)
+    public var aliasName: String {
+        get {
+            return meta.alias
+        }
+
+        set {
+            meta.alias = newValue
+            if meta.attachedStore() {
+                try? meta.store!.storeDidMeta(self, meta)
+            }
         }
     }
-    
-    public func getAlias() -> String {
-        return meta.alias
-    }
-    
-    public func getTransactionId() -> String {
+
+    public var transactionId: String? {
         return meta.transactionId
     }
-    
-    public func getUpdated() -> Date? {
+
+    public var updatedTimestamp: Date? {
         return meta.updated
     }
-    
-    public func isDeactivated() -> Bool {
+
+    public var isDeactivated: Bool {
         return meta.isDeactivated()
     }
     
