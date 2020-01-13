@@ -20,7 +20,7 @@ export default class extends Base {
       if (
         ![
           constant.ELIP_STATUS.WAIT_FOR_REVIEW,
-          constant.ELIP_STATUS.FINAL_REVIEW,
+          constant.ELIP_STATUS.FINAL_REVIEW
         ].includes(elip.status)
       ) {
         throw 'ElipReviewService.create - can not review this elip'
@@ -39,7 +39,7 @@ export default class extends Base {
       const isApproved = status === constant.ELIP_REVIEW_STATUS.APPROVED
       let elipStatus: string
       if (elip.status === constant.ELIP_STATUS.WAIT_FOR_REVIEW) {
-        let content: {subject: string, body: string}
+        let content: { subject: string; body: string }
         if (isRejected) {
           elipStatus = constant.ELIP_STATUS.REJECTED
           content = this.rejectedMailTemplate(elip, review)
@@ -48,10 +48,7 @@ export default class extends Base {
           elipStatus = constant.ELIP_STATUS.DRAFT
           content = this.approvedMailTemplate(elip)
         }
-        await db_elip.update(
-          { _id: elipId },
-          { status: elipStatus }
-        )
+        await db_elip.update({ _id: elipId }, { status: elipStatus })
         const author = {
           name: userUtil.formatUsername(elip.createdBy),
           mail: elip.createdBy.email
@@ -60,11 +57,8 @@ export default class extends Base {
       }
       if (elip.status === constant.ELIP_STATUS.FINAL_REVIEW) {
         if (isRejected) {
-          elipStatus = constant.ELIP_STATUS.DRAFT 
-          await db_elip.update(
-            { _id: elipId },
-            { status: elipStatus}
-          )
+          elipStatus = constant.ELIP_STATUS.DRAFT
+          await db_elip.update({ _id: elipId }, { status: elipStatus })
         }
         if (isApproved) {
           elipStatus = constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
@@ -74,7 +68,7 @@ export default class extends Base {
 
       const createdBy = {
         _id: user._id,
-        profile: { firstName: user.firstName, lastName: user.lastName},
+        profile: { firstName: user.firstName, lastName: user.lastName },
         username: user.username
       }
       return { ...review._doc, createdBy, elipStatus }
@@ -88,7 +82,6 @@ export default class extends Base {
     const subject = 'ELIP Rejected'
     const body = `
     <p>CR secretary has marked your ELIP <${elip.title}> as Rejected, ID <#${elip.vid}>.</p>
-    <br />
     <p>${review.comment}<p>
     <br />
     <p>Click this link to view more details:</p>
@@ -97,21 +90,20 @@ export default class extends Base {
     <p>Cyber Republic Team</p>
     <p>Thanks</p>
     `
-    return {subject, body}
+    return { subject, body }
   }
 
   private approvedMailTemplate(elip: any) {
     const subject = 'ELIP Approved'
     const body = `
     <p>CR secretary has marked your ELIP <${elip.title}> as Approved, ID <#${elip.vid}>.</p>
-    <br />
     <p>Click this link to view more details:</p>
     <p><a href="${process.env.SERVER_URL}/elips/${elip._id}">${process.env.SERVER_URL}/elips/${elip._id}</a></p>
     <br />
     <p>Cyber Republic Team</p>
     <p>Thanks</p>
     `
-    return {subject, body}
+    return { subject, body }
   }
 
   private proposedMailTemplate(elip: any, proposal: any) {
@@ -124,10 +116,13 @@ export default class extends Base {
     <p>Cyber Republic Team</p>
     <p>Thanks</p>
     `
-    return {subject, body}
+    return { subject, body }
   }
 
-  private async notifyElipCreator(author: {name: string, mail: string}, content: {subject: string, body: string}) {
+  private async notifyElipCreator(
+    author: { name: string; mail: string },
+    content: { subject: string; body: string }
+  ) {
     const mailObj = {
       to: author.mail,
       toName: author.name,
@@ -214,11 +209,7 @@ export default class extends Base {
       <br />
       <p>${cvote.title}</p>
       <br />
-      <p>Click this link to view more details: <a href="${
-        process.env.SERVER_URL
-      }/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${
-      cvote._id
-    }</a></p>
+      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
       <br /> <br />
       <p>Thanks</p>
       <p>Cyber Republic</p>

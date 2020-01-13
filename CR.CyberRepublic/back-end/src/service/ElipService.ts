@@ -21,9 +21,7 @@ export default class extends Base {
       const db_elip = this.getDBModel('Elip')
       const { _id, status } = param
       const elipStatus = constant.ELIP_STATUS
-      const elip = await db_elip
-        .getDBInstance()
-        .findOne({ _id })
+      const elip = await db_elip.getDBInstance().findOne({ _id })
       if (!elip) {
         throw 'ElipService.update - invalid elip id'
       }
@@ -46,10 +44,7 @@ export default class extends Base {
         throw `ElipService.update - can not change elip status to final review`
       }
 
-      if (
-        status === elipStatus.CANCELLED &&
-        elip.status === elipStatus.DRAFT
-      ) {
+      if (status === elipStatus.CANCELLED && elip.status === elipStatus.DRAFT) {
         const rs = await db_elip.update(
           { _id },
           { status: elipStatus.CANCELLED }
@@ -70,7 +65,7 @@ export default class extends Base {
           doc[fields[i]] = value
         }
       }
-      
+
       if (
         status === elipStatus.FINAL_REVIEW &&
         elip.status === elipStatus.DRAFT
@@ -78,16 +73,16 @@ export default class extends Base {
         doc.status = elipStatus.FINAL_REVIEW
         const rs = await db_elip.update({ _id }, doc)
         const author = userUtil.formatUsername(this.currentUser)
-        this.notifySecretaries(this.finalReviewMailTemplate(author, elip.vid, elip._id))
+        this.notifySecretaries(
+          this.finalReviewMailTemplate(author, elip.vid, elip._id)
+        )
         return rs
       }
 
       if (_.values(doc).length) {
         if (
           status === elipStatus.WAIT_FOR_REVIEW &&
-          [elipStatus.REJECTED, elipStatus.PERSONAL_DRAFT].includes(
-            elip.status
-          )
+          [elipStatus.REJECTED, elipStatus.PERSONAL_DRAFT].includes(elip.status)
         ) {
           doc.status = elipStatus.WAIT_FOR_REVIEW
           const rs = await db_elip.update({ _id }, doc)
@@ -163,7 +158,7 @@ export default class extends Base {
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
     `
-    return {subject, body}
+    return { subject, body }
   }
 
   private createMailTemplate(title: string, id: string) {
@@ -177,7 +172,7 @@ export default class extends Base {
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
     `
-    return {subject, body}
+    return { subject, body }
   }
 
   private finalReviewMailTemplate(author: string, vid: number, id: string) {
@@ -191,10 +186,10 @@ export default class extends Base {
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
-    return {subject, body}
+    return { subject, body }
   }
 
-  private async notifySecretaries(content: {subject: string, body: string}) {
+  private async notifySecretaries(content: { subject: string; body: string }) {
     const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
     const secretaries = await db_user.find({
@@ -205,7 +200,7 @@ export default class extends Base {
       user => !user._id.equals(currentUserId)
     )
     const toMails = _.map(toUsers, 'email')
-    
+
     const recVariables = _.zipObject(
       toMails,
       _.map(toUsers, user => {
@@ -254,7 +249,7 @@ export default class extends Base {
 
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
-    
+
     const status = constant.ELIP_STATUS
     const publicStatus = [
       status.DRAFT,
@@ -286,20 +281,20 @@ export default class extends Base {
     return { elip: rs, reviews }
   }
 
-  public async remove(_id : string): Promise<any> {
+  public async remove(_id: string): Promise<any> {
     const db_elip = this.getDBModel('Elip')
     const elip = await db_elip.getDBInstance().findById({ _id })
     if (!elip) {
       throw 'ElipService.remove - invalid elip id'
     }
     const userRole = _.get(this.currentUser, 'role')
-    if(userRole !== constant.USER_ROLE.ADMIN) {
+    if (userRole !== constant.USER_ROLE.ADMIN) {
       throw 'ElipService.remove - invalid user role'
     }
     if (elip.status !== constant.ELIP_STATUS.CANCELLED) {
       throw 'ElipService.remove - it is not a cancelled elip'
     }
-    
+
     const rs = await db_elip.remove({ _id })
     return rs
   }
@@ -314,7 +309,7 @@ export default class extends Base {
     if (param.filter && !_.values(status).includes(param.filter)) {
       return []
     }
-    
+
     const privateStatus = [
       status.REJECTED,
       status.WAIT_FOR_REVIEW,
@@ -406,14 +401,14 @@ export default class extends Base {
         query.createdBy = { $in: userIds }
       }
     }
-    
+
     // elipType
-    if(param.type && _.has(constant.ELIP_TYPE, param.type)){
+    if (param.type && _.has(constant.ELIP_TYPE, param.type)) {
       query.elipType = param.type
     }
 
     // startDate <  endDate
-    if(
+    if (
       !_.isEmpty(param.startDate) &&
       !_.isEmpty(param.endDate) &&
       moment(param.endDate).isSameOrAfter(param.startDate)
