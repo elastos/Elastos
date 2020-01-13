@@ -39,17 +39,24 @@ export default class extends Base {
       const isApproved = status === constant.ELIP_REVIEW_STATUS.APPROVED
       let elipStatus: string
       if (elip.status === constant.ELIP_STATUS.WAIT_FOR_REVIEW) {
+        let content: {subject: string, body: string}
         if (isRejected) {
           elipStatus = constant.ELIP_STATUS.REJECTED
+          content = this.rejectedMailTemplate(elip, review)
         }
         if (isApproved) {
           elipStatus = constant.ELIP_STATUS.DRAFT
+          content = this.approvedMailTemplate(elip)
         }
         await db_elip.update(
           { _id: elipId },
           { status: elipStatus }
         )
-        this.notifyElipCreator(review, elip, status)
+        const author = {
+          name: userUtil.formatUsername(elip.createdBy),
+          mail: elip.createdBy.email
+        }
+        this.notifyElipCreator(author, content)
       }
       if (elip.status === constant.ELIP_STATUS.FINAL_REVIEW) {
         if (isRejected) {
@@ -77,27 +84,55 @@ export default class extends Base {
     }
   }
 
-  private async notifyElipCreator(review: any, elip: any, status: string) {
-    const rejected = status === constant.ELIP_REVIEW_STATUS.REJECTED
-    const subject = rejected ? 'ELIP Rejected' : 'ELIP Approved'
+  private rejectedMailTemplate(elip: any, review: any) {
+    const subject = 'ELIP Rejected'
     const body = `
-      <p>CR secretary has marked your ELIP <${elip.title}> as "${rejected ? 'Rejected' : 'Approved'}", ID <#${elip.vid}>.</p>
-      <br />
-      ${rejected ? `<p>${review.comment}<p>` : ''}
-      <br />
-      <p>Click this link to view more details: <a href="${
-      process.env.SERVER_URL
-      }/elips/${elip._id}">${process.env.SERVER_URL}/elips/${elip._id}</a></p>
-      <br />
-      <p>Cyber Republic Team</p>
-      <p>Thanks</p>
+    <p>CR secretary has marked your ELIP <${elip.title}> as Rejected, ID <#${elip.vid}>.</p>
+    <br />
+    <p>${review.comment}<p>
+    <br />
+    <p>Click this link to view more details:</p>
+    <p><a href="${process.env.SERVER_URL}/elips/${elip._id}">${process.env.SERVER_URL}/elips/${elip._id}</a></p>
+    <br />
+    <p>Cyber Republic Team</p>
+    <p>Thanks</p>
     `
+    return {subject, body}
+  }
 
+  private approvedMailTemplate(elip: any) {
+    const subject = 'ELIP Approved'
+    const body = `
+    <p>CR secretary has marked your ELIP <${elip.title}> as Approved, ID <#${elip.vid}>.</p>
+    <br />
+    <p>Click this link to view more details:</p>
+    <p><a href="${process.env.SERVER_URL}/elips/${elip._id}">${process.env.SERVER_URL}/elips/${elip._id}</a></p>
+    <br />
+    <p>Cyber Republic Team</p>
+    <p>Thanks</p>
+    `
+    return {subject, body}
+  }
+
+  private proposedMailTemplate(elip: any, proposal: any) {
+    const subject = `[ELIP marked as proposal] ELIP #${elip.vid} Marked as proposal`
+    const body = `
+    <p>Secretary has marked ELIP #${elip.vid} as proposal #${proposal.vid}.</p>
+    <p>Click this link to view more details of the proposal:</p>
+    <p><a href="${process.env.SERVER_URL}/proposals/${proposal._id}">${process.env.SERVER_URL}/proposals/${proposal._id}</a></p>
+    <br />
+    <p>Cyber Republic Team</p>
+    <p>Thanks</p>
+    `
+    return {subject, body}
+  }
+
+  private async notifyElipCreator(author: {name: string, mail: string}, content: {subject: string, body: string}) {
     const mailObj = {
-      to: elip.createdBy.email,
-      toName: userUtil.formatUsername(elip.createdBy),
-      subject,
-      body
+      to: author.mail,
+      toName: author.name,
+      subject: content.subject,
+      body: content.body
     }
 
     mail.send(mailObj)
@@ -106,14 +141,15 @@ export default class extends Base {
   public async proposeElip(elip: any): Promise<Document> {
     const db_cvote = this.getDBModel('CVote')
     const db_elip = this.getDBModel('Elip')
-    
     const vid = await this.getNewCVoteVid()
+
+    const authorName = userUtil.formatUsername(elip.createdBy)
     const doc: any = {
       vid,
       type: constant.CVOTE_TYPE[elip.elipType],
       status: constant.CVOTE_STATUS.PROPOSED,
       published: true,
-      proposedBy: userUtil.formatUsername(elip.createdBy),
+      proposedBy: authorName,
       proposer: elip.createdBy._id,
       createdBy: this.currentUser._id,
       referenceElip: elip._id,
@@ -132,16 +168,22 @@ export default class extends Base {
     ]
     Object.assign(doc, _.pick(elip, BASE_FIELDS))
     try {
-      const res = await db_cvote.save(doc)
+      const proposal = await db_cvote.save(doc)
       await db_elip.update(
         { _id: elip._id },
         {
-          reference: res._id,
+          reference: proposal._id,
           status: constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
         }
       )
-      this.notifyCouncilAfterPropose(res)
-      return res
+      const content = this.proposedMailTemplate(elip, proposal)
+      const author = {
+        name: authorName,
+        mail: elip.createdBy.email
+      }
+      this.notifyElipCreator(author, content)
+      this.notifyCouncilAfterPropose(proposal)
+      return proposal
     } catch (error) {
       logger.error(error)
       return

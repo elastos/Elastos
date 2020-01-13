@@ -157,7 +157,8 @@ export default class extends Base {
     const body = `
       <p>This is ELIP ${title} updated and to be reviewed:</p>
       <br />
-      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
+      <p>Click this link to view more details:</p>
+      <p><a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
       <br />
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
@@ -170,7 +171,8 @@ export default class extends Base {
     const body = `
       <p>This is a new ELIP ${title} added and to be reviewed:</p>
       <br />
-      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
+      <p>Click this link to view more details:</p>
+      <p><a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
       <br />
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
@@ -183,7 +185,8 @@ export default class extends Base {
     const body = `
       <p>${author} has submitted ELIP #${vid} as proposal, please review it.</p>
       <br />
-      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
+      <p>Click this link to view more details:</p>
+      <p><a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
       <br />
       <p>Thanks</p>
       <p>Cyber Republic</p>
