@@ -373,7 +373,7 @@ public class DIDDocument: NSObject {
         return meta.alias
     }
     
-    public func getTransactionId() -> String {
+    public func getTransactionId() -> String? {
         return meta.transactionId
     }
     public func getUpdated() -> Date? {

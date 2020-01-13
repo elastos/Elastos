@@ -11,7 +11,7 @@ public class DIDMeta: Metadata {
 
     public var deactivated: Bool = false
     public var updated: Date?
-    public var transactionId: String = ""
+    public var transactionId: String?
     public var alias: String = ""
 
     public func isDeactivated() -> Bool {
