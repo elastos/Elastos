@@ -1,20 +1,17 @@
-
-
 import Foundation
 
 public class DIDMeta: Metadata {
-    
-    private let TXID: String = "txid"
-    private let TIMESTAMP: String = "timestamp"
-    private let ALIAS: String = "alias"
-    private let DEACTIVATED: String = "deactivated"
+    private static let TXID: String = "txid"
+    private static let TIMESTAMP: String = "timestamp"
+    private static let ALIAS: String = "alias"
+    private static let DEACTIVATED: String = "deactivated"
 
     public var deactivated: Bool = false
     public var updated: Date?
     public var transactionId: String?
     public var alias: String = ""
 
-    public func isDeactivated() -> Bool {
+    public var isDeactivated: Bool {
         return deactivated
     }
     
@@ -23,12 +20,12 @@ public class DIDMeta: Metadata {
     }
 
     override func fromJson(_ json: OrderedDictionary<String, Any>) throws {
-        var value = json[ALIAS] as? String ?? ""
+        var value = json[DIDMeta.ALIAS] as? String ?? ""
         if value != "" {
             self.alias = value
         }
         
-        value = json[DEACTIVATED] as? String ?? ""
+        value = json[DIDMeta.DEACTIVATED] as? String ?? ""
         if value != "" {
             if value != "0" {
                 self.deactivated = true
@@ -38,12 +35,12 @@ public class DIDMeta: Metadata {
             }
         }
         
-        value = json[TXID] as? String ?? ""
+        value = json[DIDMeta.TXID] as? String ?? ""
         if value != "" {
             self.transactionId = value
         }
         
-        value = json[TIMESTAMP] as? String ?? ""
+        value = json[DIDMeta.TIMESTAMP] as? String ?? ""
         if value != "" {
             let date = DateFormater.parseDate(value)
             self.updated = date
@@ -51,51 +48,49 @@ public class DIDMeta: Metadata {
     }
     
     override func toJson() -> String {
-        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
-        if alias != "" {
-            dic[ALIAS] = alias
+        var dict: OrderedDictionary<String, Any> = OrderedDictionary()
+
+        if !alias.isEmpty {
+            dict[DIDMeta.ALIAS] = alias
         }
-        
+
         if deactivated {
-            dic[DEACTIVATED] = true
+            dict[DIDMeta.DEACTIVATED] = true
+        }
+
+        if let _ = transactionId {
+            dict[DIDMeta.TXID] = transactionId
+        }
+
+        if let _ = updated {
+            dict[DIDMeta.TIMESTAMP] = DateFormater.format(updated!)
         }
         
-        if transactionId != "" {
-            dic[TXID] = transactionId
-        }
-        
-        if updated != nil {
-            dic[TIMESTAMP] = DateFormater.format(updated!)
-        }
-        
-        return JsonHelper.creatJsonString(dic: dic)
+        return JsonHelper.creatJsonString(dic: dict)
     }
     
     override public func merge(_ meta: Metadata) throws {
         guard meta is DIDMeta else {
             throw DIDError.failue("")
         }
-        
-        let m: DIDMeta = meta as! DIDMeta
-        if m.alias != "" {
-            alias = m.alias
+
+        let _meta = meta as! DIDMeta
+        if !_meta.alias.isEmpty {
+            alias = _meta.alias
         }
         
         if !deactivated {
-            deactivated = m.deactivated
+            deactivated = _meta.deactivated
         }
-        
-        if m.transactionId != "" {
-            transactionId = m.transactionId
-        }
-        
-        if (m.updated != nil){
-            updated = m.updated
-        }
-        try super.merge(meta)
-    }
 
-    public override var description: String {
-        return toJson()
+        if let _ = _meta.transactionId {
+            transactionId = _meta.transactionId
+        }
+
+        if let _ = _meta.updated {
+            updated = _meta.updated
+        }
+
+        try super.merge(meta)
     }
 }

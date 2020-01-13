@@ -55,7 +55,7 @@ public class DID: NSObject {
     }
 
     public var isDeactivated: Bool {
-        return meta.isDeactivated()
+        return meta.isDeactivated
     }
     
     public func resolve(_ force: Bool) throws -> DIDDocument? {

@@ -381,7 +381,7 @@ public class DIDDocument: NSObject {
     }
 
     public func isDeactivated() throws -> Bool {
-        return meta.isDeactivated()
+        return meta.isDeactivated
     }
     
     public func isExpired() -> Bool {
@@ -401,7 +401,7 @@ public class DIDDocument: NSObject {
             return false
         }
         
-        let json = try toJson(true, true)
+        let json = toJson(true, true)
         
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2

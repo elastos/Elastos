@@ -1,8 +1,6 @@
-
 import Foundation
 
 public class Metadata {
-    
     let EXTRA_PREFIX: String = "X-"
     public var store: DIDStore?
     var extra: OrderedDictionary<String, Any> = OrderedDictionary()
@@ -30,7 +28,6 @@ public class Metadata {
     func fromJson(_ json: OrderedDictionary<String, Any>) throws {}
     
     class func fromString<T: Metadata>(_ metadata: String, _ clazz: T.Type) throws -> T {
-        
         let meta = clazz.init()
         if metadata == "" {
             return meta
@@ -48,7 +45,7 @@ public class Metadata {
     }
     
     func toJson() -> String { return "" }
-    
+
     public func merge(_ meta: Metadata) throws {
         meta.extra.forEach { key, value in
             extra[key] = value
