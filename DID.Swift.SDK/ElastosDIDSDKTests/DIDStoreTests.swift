@@ -147,7 +147,7 @@ class DIDStoreTests: XCTestCase {
             XCTAssertEqual(2, newDoc.getPublicKeyCount())
             XCTAssertEqual(2, newDoc.getAuthenticationKeyCount())
             
-            print(newDoc.getTransactionId())
+            print(newDoc.getTransactionId() as Any)
             _ = try store.publishDid(newDoc.subject!, storePass)
             try store.storeDid(newDoc)
             
@@ -156,7 +156,7 @@ class DIDStoreTests: XCTestCase {
             resolved = try doc.subject!.resolve()!
             try store.storeDid(resolved!)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try newDoc.description(),try resolved?.description())
+            XCTAssertEqual(newDoc.description, resolved?.description)
             
             // Update again
             key = try TestData.generateKeypair()
@@ -169,7 +169,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try! doc.subject?.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try newDoc.description(), try resolved?.description())
+            XCTAssertEqual(newDoc.description, resolved?.description)
         } catch {
             XCTFail()
         }
@@ -705,7 +705,7 @@ class DIDStoreTests: XCTestCase {
         XCTAssertEqual(2, dids.count)
         
         for did in dids {
-            if did.getAlias() == "Issuer" {
+            if did.aliasName == "Issuer" {
                 let vcs: [DIDURL] = try! store.listCredentials(did)
                 XCTAssertEqual(1, vcs.count)
                 
@@ -713,7 +713,7 @@ class DIDStoreTests: XCTestCase {
                 XCTAssertEqual("Profile", id.getAlias())
                 
                 XCTAssertNotNil(try! store.loadCredential(did, id))
-            } else if did.getAlias() == "Test" {
+            } else if did.aliasName == "Test" {
                 let vcs: [DIDURL] = try! store.listCredentials(did)
                 XCTAssertEqual(4, vcs.count)
                 
