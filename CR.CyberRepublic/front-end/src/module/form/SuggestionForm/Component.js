@@ -8,6 +8,7 @@ import CircularProgressbar from '@/module/common/CircularProgressbar'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import PaymentSchedule from './PaymentSchedule'
 import ImplementationPlan from './ImplementationPlan'
+import { wordCounter } from '@/util'
 
 import { Container, TabPaneInner, Note, TabText, CirContainer } from './style'
 
@@ -164,11 +165,10 @@ class C extends BaseComponent {
   }
 
   validateAbstract = (rule, value, cb) => {
-    const { lang } = this.props
     let count = 0
     if (value) {
       const rs = value.replace(/\!\[image\]\(data:image\/.*\)/g, '')
-      count = lang === 'en' ? rs.split(' ').length : rs.length
+      count = wordCounter(rs)
     }
     return count > WORD_LIMIT ? cb(true) : cb()
   }
@@ -292,12 +292,12 @@ class C extends BaseComponent {
   }
 
   renderWordLimit() {
-    const { form, lang } = this.props
+    const { form } = this.props
     const value = form.getFieldValue('abstract')
     let count = 0
     if (value) {
       const rs = value.replace(/\!\[image\]\(data:image\/.*\)/g, '')
-      count = lang === 'en' ? rs.split(' ').length : rs.length
+      count = wordCounter(rs)
     }
     return (
       <CirContainer>
@@ -318,7 +318,9 @@ class C extends BaseComponent {
         {I18N.get('suggestion.form.button.saveDraft')}
       </Button>
     )
-    const cancelText = isEditMode ? I18N.get('suggestion.form.button.discardChanges') : I18N.get('suggestion.form.button.cancel')
+    const cancelText = isEditMode
+      ? I18N.get('suggestion.form.button.discardChanges')
+      : I18N.get('suggestion.form.button.cancel')
     const cancelBtn = (
       <Button
         onClick={this.props.onCancel}

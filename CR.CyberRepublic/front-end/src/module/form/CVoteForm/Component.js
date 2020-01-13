@@ -16,7 +16,7 @@ import _ from 'lodash'
 import { CVOTE_STATUS, ABSTRACT_MAX_WORDS } from '@/constant'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import CircularProgressbar from '@/module/common/CircularProgressbar'
-import { logger } from '@/util'
+import { logger, wordCounter } from '@/util'
 
 import {
   Container,
@@ -32,7 +32,6 @@ const WORD_LIMIT = ABSTRACT_MAX_WORDS
 
 const FormItem = Form.Item
 const { TabPane } = Tabs
-
 
 const renderTypeRadioGroup = (data, key, getFieldDecorator) => {
   const content = _.get(data, key, '1')
@@ -93,7 +92,6 @@ const renderRichEditor = (
   )
   return content_fn(content_el)
 }
-
 
 const activeKeys = [
   'type',
@@ -212,11 +210,10 @@ class C extends BaseComponent {
   }
 
   validateAbstract = (rule, value, cb) => {
-    const { lang } = this.props
     let count = 0
     if (value) {
       const rs = value.replace(/\!\[image\]\(data:image\/.*\)/g, '')
-      count = lang === 'en' ? rs.split(' ').length : rs.length
+      count = wordCounter(rs)
     }
     return count > WORD_LIMIT ? cb(true) : cb()
   }
@@ -386,12 +383,12 @@ class C extends BaseComponent {
   }
 
   renderWordLimit() {
-    const { form, lang } = this.props
+    const { form } = this.props
     const value = form.getFieldValue('abstract')
     let count = 0
     if (value) {
       const rs = value.replace(/\!\[image\]\(data:image\/.*\)/g, '')
-      count = lang === 'en' ? rs.split(' ').length : rs.length
+      count = wordCounter(rs)
     }
     return (
       <CirContainer>
