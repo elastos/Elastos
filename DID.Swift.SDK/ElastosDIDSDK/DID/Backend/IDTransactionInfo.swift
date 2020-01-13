@@ -27,7 +27,7 @@ public class IDTransactionInfo {
         return request.toJson(false)
     }
     
-    public func toJson() throws -> OrderedDictionary<String, Any> {
+    public func toJson() -> OrderedDictionary<String, Any> {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         dic[IDTransactionInfo.TXID] = transactionId
         dic[IDTransactionInfo.TIMESTAMP] = DateFormater.format(timestamp)

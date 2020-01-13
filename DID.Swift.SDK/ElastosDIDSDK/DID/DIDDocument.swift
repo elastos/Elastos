@@ -673,7 +673,7 @@ public class DIDDocument: NSObject {
      *   - creator
      *   - signatureValue
      */
-    public func toJson(path: String? = nil, _ normalized: Bool, _ forSign: Bool) throws -> String {
+    public func toJson(_ normalized: Bool, _ forSign: Bool) -> String {
            var dic: OrderedDictionary<String, Any> = OrderedDictionary()
            // subject
            dic[ID] = subject?.description
@@ -749,35 +749,17 @@ public class DIDDocument: NSObject {
            if !forSign {
                dic[PROOF] = proof.toJson_dc(normalized)
            }
-           
            let dicString = JsonHelper.creatJsonString(dic: dic)
-           
-           guard path != nil else {
-               return dicString
-           }
-           let data: Data = dicString.data(using: .utf8)!
-           // & Write to local
-           let dirPath: String = PathExtracter(path!).dirNamePart()
-           let fileM = FileManager.default
-           let re = fileM.fileExists(atPath: dirPath)
-           if !re {
-               try fileM.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
-           }
-           let dre = fileM.fileExists(atPath: path!)
-           if !dre {
-               fileM.createFile(atPath: path!, contents: nil, attributes: nil)
-           }
-           let writeHandle = FileHandle(forWritingAtPath: path!)
-           writeHandle?.write(data)
+
            return dicString
        }
 
-    public func description() throws -> String {
-        return try toJson(false, false)
+    public override var description: String {
+        return toJson(false, false)
     }
     
-    public func description(_ normalized: Bool) throws -> String {
-        return try toJson(normalized, false)
+    public func description(_ normalized: Bool) -> String {
+        return toJson(normalized, false)
     }
 
     // ----------------------------------------

@@ -302,7 +302,7 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertTrue(try resolved.isValid())
             XCTAssertEqual(try doc.description(true), try resolved.description(true))
             try store.storeDid(resolved)
-            var lastTxid: String = resolved.getTransactionId()
+            var lastTxid: String = resolved.getTransactionId()!
             print("Last transaction id: \(lastTxid)")
             
             // Update
@@ -355,7 +355,7 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertTrue(try resolved.isValid())
             XCTAssertEqual(try doc.description(true), try resolved.description(true))
             try store.storeDid(resolved)
-            lastTxid = resolved.getTransactionId()
+            lastTxid = resolved.getTransactionId()!
             print("Last transaction id: \(lastTxid)")
             
             // Update
@@ -412,7 +412,7 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertTrue(try resolved.isValid())
             XCTAssertEqual(try doc.description(true), try resolved.description(true))
             try store.storeDid(resolved)
-            lastTxid = resolved.getTransactionId()
+            lastTxid = resolved.getTransactionId()!
             print("Last transaction id: \(lastTxid)")
         } catch {
             XCTFail()

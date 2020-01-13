@@ -189,7 +189,22 @@ public class FileSystemStorage: DIDStorage {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + doc.subject!.methodSpecificId + "/" + FileSystemStorage.DOCUMENT_FILE
         _ = try getFile(true, path)
         _ = try exists(path)
-        _ = try doc.toJson(path: path, true, false)
+        let dicString = doc.toJson(true, false)
+        
+        let data: Data = dicString.data(using: .utf8)!
+        // & Write to local
+        let dirPath: String = PathExtracter(path).dirNamePart()
+        let fileM = FileManager.default
+        let re = fileM.fileExists(atPath: dirPath)
+        if !re {
+            try fileM.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
+        }
+        let dre = fileM.fileExists(atPath: path)
+        if !dre {
+            fileM.createFile(atPath: path, contents: nil, attributes: nil)
+        }
+        let writeHandle = FileHandle(forWritingAtPath: path)
+        writeHandle?.write(data)
     }
     
     public func loadDid(_ did: DID) throws -> DIDDocument {

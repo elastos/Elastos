@@ -35,5 +35,9 @@ public class CredentialMeta: Metadata {
         }
         try super.merge(meta)
     }
+    
+    public override var description: String {
+        return toJson()
+    }
 }
 
