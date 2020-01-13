@@ -341,7 +341,7 @@ class TestData: XCTestCase {
         var comps:DateComponents?
         
         comps = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: current)
-        comps?.year = Constants.MAX_VALID_YEARS
+        comps?.year = MAX_VALID_YEARS
         comps?.month = 0
         comps?.day = 0
         comps?.hour = 0

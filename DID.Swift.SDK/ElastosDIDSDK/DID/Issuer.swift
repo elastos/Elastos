@@ -59,7 +59,7 @@ public class Issuer {
         let date = DateFormater.currentDate()
         credential.issuanceDate = date
         if credential.expirationDate == nil {
-            let edate = DateFormater.currentDateToWantDate(Constants.MAX_VALID_YEARS)
+            let edate = DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
             credential.expirationDate = edate
         }
         credential.subject.addProperties(properties)
@@ -69,7 +69,7 @@ public class Issuer {
         let count: Int = inputs.count / 2
         let sig: String = try (didDocument?.sign(signKey, storepass, count, inputs))!
         
-        let proof = Proof.init(Constants.defaultPublicKeyType, signKey, sig)
+        let proof = Proof.init(DEFAULT_PUBLICKEY_TYPE, signKey, sig)
         credential.proof = proof
         return credential
     }

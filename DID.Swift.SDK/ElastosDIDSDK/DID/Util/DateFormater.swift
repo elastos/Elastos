@@ -23,8 +23,7 @@ public class DateFormater {
         }
         
         let formatter = Foundation.DateFormatter()
-        formatter.dateFormat = Constants.DATE_FORMAT
-        formatter.dateFormat = "YYYY-MM-dd'T'HH:mm:ss'Z'"
+        formatter.dateFormat = DATE_FORMAT
         formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
         let date: Date  = formatter.date(from: value) ?? Date()
         
@@ -33,8 +32,7 @@ public class DateFormater {
     
     public class func parseDate(_ timestamp: String) -> Date? {
         let formatter = Foundation.DateFormatter()
-        formatter.dateFormat = Constants.DATE_FORMAT
-        formatter.dateFormat = "YYYY-MM-dd'T'HH:mm:ss'Z'"
+        formatter.dateFormat = DATE_FORMAT
         formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
         let date = formatter.date(from: timestamp)
         
@@ -43,7 +41,7 @@ public class DateFormater {
     
     public class func format(_ date: Date) -> String{
         let formatter = Foundation.DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        formatter.dateFormat = DATE_FORMAT
         formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
         let localDate = formatter.string(from: date)
         return localDate
@@ -56,7 +54,7 @@ public class DateFormater {
         var comps:DateComponents?
         
         comps = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: current)
-        comps?.year = Constants.MAX_VALID_YEARS
+        comps?.year = MAX_VALID_YEARS
         comps?.month = 0
         comps?.day = 0
         comps?.hour = 0

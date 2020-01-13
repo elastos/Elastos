@@ -26,7 +26,7 @@ class DIDDoucumentTests: XCTestCase {
             
             for pk in pks {
                 XCTAssertEqual(doc.subject, pk.id.did)
-                XCTAssertEqual(Constants.defaultPublicKeyType, pk.type)
+                XCTAssertEqual("ECDSAsecp256r1", pk.type)
                 
                 if (pk.id.fragment == "recovery") {
                     XCTAssertNotEqual(doc.subject, pk.controller)
@@ -57,7 +57,7 @@ class DIDDoucumentTests: XCTestCase {
             
             // Selector
             id = doc.getDefaultPublicKey()
-            pks = try doc.selectPublicKeys(id: id, type: Constants.defaultPublicKeyType)
+            pks = try doc.selectPublicKeys(id: id, type: "ECDSAsecp256r1")
             XCTAssertEqual(1, pks.count);
             XCTAssertEqual(try DIDURL(doc.subject!, "primary"), pks[0].id)
             
@@ -65,10 +65,10 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "primary"), pks[0].id)
             
-            pks = try doc.selectPublicKeys(type: Constants.defaultPublicKeyType)
+            pks = try doc.selectPublicKeys(type: "ECDSAsecp256r1")
             XCTAssertEqual(4, pks.count)
             
-            pks = try doc.selectPublicKeys("key2", type: Constants.defaultPublicKeyType)
+            pks = try doc.selectPublicKeys("key2", type: "ECDSAsecp256r1")
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "key2"), pks[0].id)
             
@@ -194,7 +194,7 @@ class DIDDoucumentTests: XCTestCase {
             
             for pk in pks {
                 XCTAssertEqual(doc.subject, pk.id.did)
-                XCTAssertEqual(Constants.defaultPublicKeyType, pk.type)
+                XCTAssertEqual("ECDSAsecp256r1", pk.type)
                 XCTAssertEqual(doc.subject, pk.controller)
                 let re = pk.id.fragment == "primary" || pk.id.fragment == "key2" || pk.id.fragment == "key3"
                 XCTAssertTrue(re)
@@ -219,17 +219,17 @@ class DIDDoucumentTests: XCTestCase {
             
             // selector
             id = try DIDURL(doc.subject!, "key3")
-            pks = try doc.selectAuthenticationKeys(id: id, type: Constants.defaultPublicKeyType)
+            pks = try doc.selectAuthenticationKeys(id: id, type: "ECDSAsecp256r1")
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(id, pks[0].id)
             pks = try doc.selectAuthenticationKeys(id: id)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(id, pks[0].id)
             
-            pks = try doc.selectAuthenticationKeys(type: Constants.defaultPublicKeyType)
+            pks = try doc.selectAuthenticationKeys(type: "ECDSAsecp256r1")
             XCTAssertEqual(3, pks.count)
             
-            pks = try doc.selectAuthenticationKeys("key2", type: Constants.defaultPublicKeyType)
+            pks = try doc.selectAuthenticationKeys("key2", type: "ECDSAsecp256r1")
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(try DIDURL(doc.subject!, "key2"), pks[0].id)
             
@@ -401,7 +401,7 @@ class DIDDoucumentTests: XCTestCase {
             
             for pk in pks {
                 XCTAssertEqual(doc.subject, pk.id.did)
-                XCTAssertEqual(Constants.defaultPublicKeyType, pk.type)
+                XCTAssertEqual("ECDSAsecp256r1", pk.type)
                 
                 XCTAssertNotEqual(doc.subject, pk.controller)
                 XCTAssertTrue(pk.id.fragment == "recovery")
@@ -426,14 +426,14 @@ class DIDDoucumentTests: XCTestCase {
             
             // Selector
             id = try DIDURL(doc.subject!, "recovery")
-            pks = try doc.selectAuthorizationKeys(id: id, type: Constants.defaultPublicKeyType)
+            pks = try doc.selectAuthorizationKeys(id: id, type: "ECDSAsecp256r1")
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(id, pks[0].id)
             
             pks = try doc.selectAuthorizationKeys(id: id)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(id, pks[0].id)
-            pks = try doc.selectAuthorizationKeys(type: Constants.defaultPublicKeyType)
+            pks = try doc.selectAuthorizationKeys(type: "ECDSAsecp256r1")
             XCTAssertEqual(1, pks.count)
         } catch {
             print(error)

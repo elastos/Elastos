@@ -110,7 +110,7 @@ public class VerifiableCredential: DIDObject {
         }
         
         // Unsupported public key type;
-        if (proof!.type != Constants.defaultPublicKeyType){
+        if (proof!.type != DEFAULT_PUBLICKEY_TYPE){
             return false
         }
         let dic = toJson(true, true)
@@ -173,7 +173,7 @@ public class VerifiableCredential: DIDObject {
         else {
             value = "#" + id.fragment!
         }
-        dic[Constants.ID] = value
+        dic[ID] = value
         
         // type
         var strs: Array<String> = []
@@ -183,32 +183,32 @@ public class VerifiableCredential: DIDObject {
         types.forEach{ str in
             strs.append(str)
         }
-        dic[Constants.TYPE] = strs
+        dic[TYPE] = strs
         
         // issuer
         if normalized || issuer != subject.id {
-            dic[Constants.issuer] = issuer.description
+            dic[ISSUER] = issuer.description
         }
         
         // issuanceDate
         if (issuanceDate != nil) {
-            dic[Constants.issuanceDate] = DateFormater.format(issuanceDate!)
+            dic[ISSUANCE_DATE] = DateFormater.format(issuanceDate!)
         }
         
         // expirationDate
         if (expirationDate != nil) {
-            dic[Constants.expirationDate] = DateFormater.format(expirationDate!)
+            dic[EXPIRATION_DATE] = DateFormater.format(expirationDate!)
         }
         
         let credSubject = subject.toJson(ref, normalized)
         let orderCredSubject = DIDURLComparator.DIDOrderedDictionaryComparatorByKey(credSubject)
 
         // credentialSubject
-        dic[Constants.credentialSubject] = orderCredSubject
+        dic[CREDENTIAL_SUBJECT] = orderCredSubject
         
         // proof
         if !forSign {
-            dic[Constants.PROOF] = proof.toJson_vc(issuer, normalized)
+            dic[PROOF] = proof.toJson_vc(issuer, normalized)
         }
         return dic
     }
@@ -245,11 +245,11 @@ public class VerifiableCredential: DIDObject {
     
     func parse(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws {
         // id
-        let id: DIDURL = try JsonHelper.getDidUrl(json, Constants.ID, ref, "crendential id")!
+        let id: DIDURL = try JsonHelper.getDidUrl(json, ID, ref, "crendential id")!
         self.id = id
         
         // type
-        var value = json[Constants.TYPE]
+        var value = json[TYPE]
         guard (value is Array<Any>) else {
             throw MalformedCredentialError.failue("Invalid type, should be an array.")
         }
@@ -265,16 +265,16 @@ public class VerifiableCredential: DIDObject {
         }
         
         // issuer
-        issuer = try JsonHelper.getDid(json, Constants.issuer, true, ref, "crendential issuer")
+        issuer = try JsonHelper.getDid(json, ISSUER, true, ref, "crendential issuer")
         
         // issuanceDate
-        issuanceDate = try DateFormater.getDate(json, Constants.issuanceDate, false, nil, "credential issuanceDate")
+        issuanceDate = try DateFormater.getDate(json, ISSUANCE_DATE, false, nil, "credential issuanceDate")
         
         // expirationDate
-        expirationDate = try DateFormater.getDate(json, Constants.expirationDate, true, nil, "credential expirationDate")
+        expirationDate = try DateFormater.getDate(json, EXPIRATION_DATE, true, nil, "credential expirationDate")
         
         // credentialSubject
-        value = json[Constants.credentialSubject]
+        value = json[CREDENTIAL_SUBJECT]
         subject = try CredentialSubject.fromJson(value as! OrderedDictionary<String, Any>, ref)
         
         // IMPORTANT: help resolve full method in proof
@@ -283,7 +283,7 @@ public class VerifiableCredential: DIDObject {
         }
         
         // proof
-        value = json[Constants.PROOF]
+        value = json[PROOF]
         proof = try Proof.fromJson_vc(value as! OrderedDictionary<String, Any>, issuer)
         self.type = proof.type
     }

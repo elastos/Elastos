@@ -15,7 +15,7 @@ class VerifiablePresentationTest: XCTestCase {
             
             let vp: VerifiablePresentation = try testData.loadPresentation()
             
-            XCTAssertEqual(Constants.defaultPresentationType, vp.type)
+            XCTAssertEqual("VerifiablePresentation", vp.type)
             XCTAssertEqual(testDoc.subject, vp.getSigner())
             XCTAssertEqual(4, vp.getCredentialCount())
             let vcs: Array<VerifiableCredential> = vp.getCredentials()

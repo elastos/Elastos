@@ -1,24 +1,6 @@
 import Foundation
 
 public class DIDDocument: NSObject {
-    private let ID: String = "id"
-    private let PUBLICKEY: String = "publicKey"
-    private let TYPE: String = "type"
-    private let CONTROLLER: String = "controller"
-    private let PUBLICKEY_BASE58: String = "publicKeyBase58"
-    private let AUTHENTICATION: String = "authentication"
-    private let AUTHORIZATION: String = "authorization"
-    private let SERVICE: String = "service"
-    private let VERIFIABLE_CREDENTIAL:String = "verifiableCredential"
-    private let SERVICE_ENDPOINT: String = "serviceEndpoint"
-    private let EXPIRES: String = "expires"
-    private let PROOF: String = "proof"
-    private let CREATOR: String = "creator"
-    private let CREATED: String = "created"
-    private let SIGNATURE_VALUE: String = "signatureValue"
-    private let DEFAULT_PUBLICKEY_TYPE: String = Constants.DEFAULT_PUBLICKEY_TYPE
-    private let MAX_VALID_YEARS: Int = Constants.MAX_VALID_YEARS
-    
     public var subject: DID?
     public var publicKeys: OrderedDictionary<DIDURL, DIDPublicKey> = OrderedDictionary()
     public var authentications: OrderedDictionary<DIDURL, DIDPublicKey> = OrderedDictionary()
@@ -415,7 +397,7 @@ public class DIDDocument: NSObject {
         }
         
         // Unsupported public key type;
-        if (proof.type != Constants.defaultPublicKeyType){
+        if (proof.type != DEFAULT_PUBLICKEY_TYPE){
             return false
         }
         
@@ -498,7 +480,7 @@ public class DIDDocument: NSObject {
     }
     
     private func parse(_ json: OrderedDictionary<String, Any>) throws {
-        self.subject = try JsonHelper.getDid(json, Constants.ID, false, nil, "subject")
+        self.subject = try JsonHelper.getDid(json, ID, false, nil, "subject")
         
         try parsePublicKey(json)
         try parseAuthentication(json)
@@ -512,9 +494,9 @@ public class DIDDocument: NSObject {
         try parseAuthorization(json)
         try parseCredential(json)
         try parseService(json)
-        expires = try DateFormater.getDate(json, Constants.EXPIRES, true, nil, "expires")
+        expires = try DateFormater.getDate(json, EXPIRES, true, nil, "expires")
         
-        let poorf = json[Constants.PROOF] as! OrderedDictionary<String, Any>
+        let poorf = json[PROOF] as! OrderedDictionary<String, Any>
         if poorf.count == 0 {
             throw MalformedDocumentError.failue("Missing proof.")
         }
@@ -542,7 +524,7 @@ public class DIDDocument: NSObject {
     
     // MARK: parseAuthentication
     private func parseAuthentication(_ json: OrderedDictionary<String, Any>) throws {
-        let authentications = json[Constants.AUTHENTICATION] as? Array<Any>
+        let authentications = json[AUTHENTICATION] as? Array<Any>
         
         guard (authentications != nil) else {
             throw MalformedDocumentError.failue("Invalid authentication, should be an array.")
@@ -563,7 +545,7 @@ public class DIDDocument: NSObject {
                 let str: String = String(objString[..<index])
                 var didString: String = objString
                 if str == "#" {
-                    let id: String = json[Constants.ID] as! String
+                    let id: String = json[ID] as! String
                     didString = id + objString
                 }
                 let didUrl: DIDURL = try DIDURL(didString)
@@ -574,7 +556,7 @@ public class DIDDocument: NSObject {
     }
     
     private func parseAuthorization(_ json: OrderedDictionary<String, Any>) throws {
-        let aus = json[Constants.AUTHORIZATION]
+        let aus = json[AUTHORIZATION]
         guard (aus != nil) else {
             return
         }
@@ -600,7 +582,7 @@ public class DIDDocument: NSObject {
     
     // mode parse
     private func parseCredential(_ json: OrderedDictionary<String, Any>) throws {
-        let crs = json[Constants.credential]
+        let crs = json[VERIFIABLE_CREDENTIAL]
         guard (crs != nil) else {
             return
         }
@@ -618,7 +600,7 @@ public class DIDDocument: NSObject {
     }
     
     private func parseService(_ json: OrderedDictionary<String, Any>) throws {
-        let ses = json[Constants.SERVICE]
+        let ses = json[SERVICE]
         guard (ses != nil) else {
             return
         }
@@ -694,7 +676,7 @@ public class DIDDocument: NSObject {
     public func toJson(path: String? = nil, _ normalized: Bool, _ forSign: Bool) throws -> String {
            var dic: OrderedDictionary<String, Any> = OrderedDictionary()
            // subject
-           dic[Constants.ID] = subject?.description
+           dic[ID] = subject?.description
            
            // publicKey
            publicKeys = DIDURLComparator.DIDOrderedDictionaryComparator(publicKeys)
@@ -703,7 +685,7 @@ public class DIDDocument: NSObject {
                let dic = pk.toJson_dc(subject!, normalized)
                pks.append(dic)
            }
-           dic[Constants.PUBLICKEY] = pks
+           dic[PUBLICKEY] = pks
            
            // authentication
            authentications = DIDURLComparator.DIDOrderedDictionaryComparator(authentications)
@@ -718,7 +700,7 @@ public class DIDDocument: NSObject {
                }
                authenPKs.append(value)
            }
-           dic[Constants.AUTHENTICATION] = authenPKs
+           dic[AUTHENTICATION] = authenPKs
            
            // authorization
            if authorizations.count > 0 {
@@ -733,7 +715,7 @@ public class DIDDocument: NSObject {
                    }
                    authoriPks.append(value)
                }
-               dic[Constants.AUTHORIZATION] = authoriPks
+               dic[AUTHORIZATION] = authoriPks
            }
            
            // credential
@@ -744,7 +726,7 @@ public class DIDDocument: NSObject {
                    let dic = vc.toJson(subject!, normalized, false)
                    vcs.append(dic)
                }
-               dic[Constants.credential] = vcs
+               dic[VERIFIABLE_CREDENTIAL] = vcs
            }
            
            // service
@@ -755,17 +737,17 @@ public class DIDDocument: NSObject {
                    let dic = service.toJson(subject!, normalized)
                    ser_s.append(dic)
                }
-               dic[Constants.SERVICE] = ser_s
+               dic[SERVICE] = ser_s
            }
            
            // expires
            if expires != nil {
-               dic[Constants.EXPIRES] = DateFormater.format(expires!)
+               dic[EXPIRES] = DateFormater.format(expires!)
            }
            
            // proof
            if !forSign {
-               dic[Constants.PROOF] = proof.toJson_dc(normalized)
+               dic[PROOF] = proof.toJson_dc(normalized)
            }
            
            let dicString = JsonHelper.creatJsonString(dic: dic)
@@ -928,11 +910,11 @@ public class DIDDocument: NSObject {
     }
     
     public func setDefaultExpires() {
-        expires = DateFormater.currentDateToWantDate(Constants.MAX_VALID_YEARS)
+        expires = DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
     }
     
     public func setExpires(_ expiresDate: Date) -> Bool {
-        let MaxExpires = DateFormater.currentDateToWantDate(Constants.MAX_VALID_YEARS)
+        let MaxExpires = DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
         if DateFormater.comporsDate(expiresDate, MaxExpires) {
             self.expires = DateFormater.setExpires(expiresDate)
             return true

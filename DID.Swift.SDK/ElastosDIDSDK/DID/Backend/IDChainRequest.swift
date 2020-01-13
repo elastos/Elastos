@@ -9,10 +9,8 @@ public class IDChainRequest: NSObject {
     private static let OPERATION: String = "operation"
     private static let PREVIOUS_TXID: String  = "previousTxid"
     private static let PAYLOAD: String = "payload"
-    private static let PROOF: String = Constants.PROOF
-    private static let KEY_TYPE: String = Constants.TYPE
-    private static let KEY_ID: String = Constants.verificationMethod
-    private static let SIGNATURE: String = Constants.signature
+    private static let KEY_TYPE: String = TYPE
+    private static let KEY_ID: String = VERIFICATION_METHOD
     
     public enum Operation: Int {
         case CREATE = 0
@@ -155,7 +153,7 @@ public class IDChainRequest: NSObject {
         let count = inputs.count / 2
         self.signature = (try doc?.sign(signKey, storepass, count, inputs))!
         self.signKey = signKey
-        self.keyType = Constants.defaultPublicKeyType
+        self.keyType = DEFAULT_PUBLICKEY_TYPE
     }
     
     func seal(_ targetSignKey: DIDURL, _ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws {
@@ -180,7 +178,7 @@ public class IDChainRequest: NSObject {
         let count = inputs.count / 2
         self.signature = (try doc.sign(signKey, storepass, count, inputs))
         self.signKey = targetSignKey
-        self.keyType = Constants.DEFAULT_PUBLICKEY_TYPE
+        self.keyType = DEFAULT_PUBLICKEY_TYPE
     }
     
     public func isValid() throws -> Bool {
@@ -245,8 +243,8 @@ public class IDChainRequest: NSObject {
             keyId = "#" + signKey!.fragment
         }
         dic[IDChainRequest.KEY_ID] = keyId
-        dic[IDChainRequest.SIGNATURE] = signature
-        json[IDChainRequest.PROOF] = dic
+        dic[SIGNATURE] = signature
+        json[PROOF] = dic
         
         let jsonString: String = JsonHelper.creatJsonString(dic: json)
         return jsonString
@@ -284,8 +282,8 @@ public class IDChainRequest: NSObject {
         
         let proof = json[PROOF] as! OrderedDictionary<String, Any>
         let keyType = try JsonHelper.getString(proof, KEY_TYPE, true,
-                                               Constants.defaultPublicKeyType, KEY_TYPE)
-        guard (keyType == Constants.defaultPublicKeyType) else {
+                                               DEFAULT_PUBLICKEY_TYPE, KEY_TYPE)
+        guard (keyType == DEFAULT_PUBLICKEY_TYPE) else {
             throw DIDResolveError.failue("Unknown signature key type.")
         }
         let signKey = try JsonHelper.getDidUrl(proof, KEY_ID, request.did,

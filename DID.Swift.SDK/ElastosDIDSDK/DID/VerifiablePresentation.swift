@@ -8,7 +8,7 @@ public class VerifiablePresentation: NSObject{
    public var proof: Proof?
     
     override init() {
-        type = Constants.defaultPresentationType
+        type = DEFAULT_PRESENTTATION_TYPE
         created = DateFormater.currentDate()
         credentials = OrderedDictionary()
     }
@@ -45,7 +45,7 @@ public class VerifiablePresentation: NSObject{
             return false
         }
         // Unsupported public key type;
-        if (proof?.type != (Constants.defaultPublicKeyType)) {
+        if (proof?.type != (DEFAULT_PUBLICKEY_TYPE)) {
             return false
         }
         // Credential should signed by authentication key.
@@ -97,7 +97,7 @@ public class VerifiablePresentation: NSObject{
         }
 
         // Unsupported public key type;
-        if (proof!.type != (Constants.defaultPublicKeyType)){
+        if (proof!.type != (DEFAULT_PUBLICKEY_TYPE)){
             return false
         }
 
@@ -156,15 +156,15 @@ public class VerifiablePresentation: NSObject{
     
     func parse(_ presentation: OrderedDictionary<String, Any>) throws {
         
-        let type: String = try JsonHelper.getString(presentation, Constants.TYPE, false, nil, "presentation type")
-        guard type == Constants.defaultPresentationType else {
+        let type: String = try JsonHelper.getString(presentation, TYPE, false, nil, "presentation type")
+        guard type == DEFAULT_PRESENTTATION_TYPE else {
             throw MalformedCredentialError.failue("Unknown presentation type: \(type)")
         }
         self.type = type
-        let created: Date = try DateFormater.getDate(presentation, Constants.CREATED, false, nil, "presentation created date")!
+        let created: Date = try DateFormater.getDate(presentation, CREATED, false, nil, "presentation created date")!
         self.created = created
         
-        var d = presentation[Constants.VERIFIABLE_CREDENTIAL]
+        var d = presentation[VERIFIABLE_CREDENTIAL]
         guard d != nil else {
             throw MalformedCredentialError.failue("Missing credentials.")
         }
@@ -173,7 +173,7 @@ public class VerifiablePresentation: NSObject{
         }
         try parseCredential(d as! Array<OrderedDictionary<String, Any>>)
         
-        d = presentation[Constants.PROOF]
+        d = presentation[PROOF]
         guard d != nil else {
            throw MalformedCredentialError.failue("Missing credentials.")
         }
@@ -208,10 +208,10 @@ public class VerifiablePresentation: NSObject{
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
 
         // type
-        dic[Constants.TYPE] = type
+        dic[TYPE] = type
 
         // created
-        dic[Constants.CREATED] = DateFormater.format(created)
+        dic[CREATED] = DateFormater.format(created)
 
         // credentials
         var arr: Array<OrderedDictionary<String, Any>> = []
@@ -220,12 +220,12 @@ public class VerifiablePresentation: NSObject{
            let dic = vc.toJson(true)
             arr.append(dic)
         }
-        dic[Constants.VERIFIABLE_CREDENTIAL] = arr
+        dic[VERIFIABLE_CREDENTIAL] = arr
 
         // proof
         if (!forSign ) {
             let d = proof?.toJson_vp()
-            dic[Constants.PROOF] = d
+            dic[PROOF] = d
         }
         return dic
     }

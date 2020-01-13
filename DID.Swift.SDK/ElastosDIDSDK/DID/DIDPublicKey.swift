@@ -11,7 +11,7 @@ public class DIDPublicKey: DIDObject {
     }
 
     init(_ id: DIDURL, _ controller: DID, _ keyBase58: String) {
-        super.init(id, Constants.DEFAULT_PUBLICKEY_TYPE)
+        super.init(id, DEFAULT_PUBLICKEY_TYPE)
         self.controller = controller
         self.keyBase58 = keyBase58
     }
@@ -35,11 +35,11 @@ public class DIDPublicKey: DIDObject {
     class public func fromJson_dc(_ dic: OrderedDictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey {
         let id = try JsonHelper.getDidUrl(dic, "id",
         ref, "publicKey' id")
-        let type = try JsonHelper.getString(dic, Constants.TYPE, true,
-        Constants.DEFAULT_PUBLICKEY_TYPE, "publicKey' type")
-        let controller = try JsonHelper.getDid(dic, Constants.CONTROLLER,
+        let type = try JsonHelper.getString(dic, TYPE, true,
+        DEFAULT_PUBLICKEY_TYPE, "publicKey' type")
+        let controller = try JsonHelper.getDid(dic, CONTROLLER,
         true, ref, "publicKey' controller")
-        let keyBase58 = try JsonHelper.getString(dic, Constants.PUBLICKEY_BASE58,
+        let keyBase58 = try JsonHelper.getString(dic, PUBLICKEY_BASE58,
         false, nil, "publicKeyBase58")
             
         return DIDPublicKey(id!, type, controller!, keyBase58)
@@ -55,26 +55,26 @@ public class DIDPublicKey: DIDObject {
         } else {
             value = "#" + id.fragment!
         }
-        dict[Constants.ID] = value
+        dict[ID] = value
         
         // type
-        if normalized || type != Constants.defaultPublicKeyType {
-            dict[Constants.TYPE] = type
+        if normalized || type != DEFAULT_PUBLICKEY_TYPE {
+            dict[TYPE] = type
         }
         
         // controller
         if normalized || controller != ref {
-            dict[Constants.CONTROLLER] = controller.description
+            dict[CONTROLLER] = controller.description
         }
         
         // publicKeyBase58
-        dict[Constants.PUBLICKEY_BASE58] = keyBase58
+        dict[PUBLICKEY_BASE58] = keyBase58
         
         return dict
     }
 
     class public func fromJson(_ dict: OrderedDictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey {
-        var value = dict[Constants.CONTROLLER]
+        var value = dict[CONTROLLER]
         var controller: DID
         
         if let _ = value {
@@ -83,7 +83,7 @@ public class DIDPublicKey: DIDObject {
             controller = ref
         }
         
-        var frag = dict[Constants.ID] as! String
+        var frag = dict[ID] as! String
         var id: DIDURL
         let hashStr = frag.prefix(1)
 
@@ -94,16 +94,16 @@ public class DIDPublicKey: DIDObject {
             id = try DIDURL(frag)
         }
         
-        value = dict[Constants.TYPE]
+        value = dict[TYPE]
         var type: String
 
         if let _ = value {
             type = value as! String
         } else {
-            type = Constants.defaultPublicKeyType
+            type = DEFAULT_PUBLICKEY_TYPE
         }
 
-        let publicKeyBase58 = dict[Constants.PUBLICKEY_BASE58] as! String
+        let publicKeyBase58 = dict[PUBLICKEY_BASE58] as! String
         return DIDPublicKey(id, type, controller, publicKeyBase58)
     }
 
