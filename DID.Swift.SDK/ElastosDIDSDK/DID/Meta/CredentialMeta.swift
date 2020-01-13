@@ -1,8 +1,8 @@
-
 import Foundation
 
 public class CredentialMeta: Metadata {
-    private let ALIAS: String = "alias"
+    private static let ALIAS: String = "alias"
+
     var alias: String = ""
     
     public class func fromString(_ metadata: String) throws -> CredentialMeta {
@@ -10,34 +10,30 @@ public class CredentialMeta: Metadata {
     }
     
     override func fromJson(_ json: OrderedDictionary<String, Any>) throws {
-        let value = json[ALIAS] as? String ?? ""
-        if value != "" {
-            self.alias = value
+        let _alias = json[CredentialMeta.ALIAS] as? String ?? ""
+        if !_alias.isEmpty {
+            self.alias = _alias;
         }
     }
     
     override func toJson() -> String {
-        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
-        if alias != "" {
-            dic[ALIAS] = alias
+        var dict: OrderedDictionary<String, Any> = OrderedDictionary()
+        if !alias.isEmpty {
+            dict[CredentialMeta.ALIAS] = alias
         }
-        return JsonHelper.creatJsonString(dic: dic)
+        return JsonHelper.creatJsonString(dic: dict)
     }
     
    public override func merge(_ meta: Metadata) throws {
         guard meta is CredentialMeta else {
             throw DIDError.failue("")
         }
-        
-        let m: CredentialMeta = meta as! CredentialMeta
-        if m.alias != "" {
-            alias = m.alias
+
+        let _meta: CredentialMeta = meta as! CredentialMeta
+        if !_meta.alias.isEmpty {
+            alias = _meta.alias
         }
-        try super.merge(meta)
-    }
-    
-    public override var description: String {
-        return toJson()
+
+        try? super.merge(meta)
     }
 }
-

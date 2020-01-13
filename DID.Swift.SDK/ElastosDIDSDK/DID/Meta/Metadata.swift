@@ -43,11 +43,11 @@ public class Metadata {
         }
         return meta
     }
-    
+
     func toJson() -> String { return "" }
 
     public func merge(_ meta: Metadata) throws {
-        meta.extra.forEach { key, value in
+        meta.extra.forEach { (key, value) in
             extra[key] = value
         }
     }

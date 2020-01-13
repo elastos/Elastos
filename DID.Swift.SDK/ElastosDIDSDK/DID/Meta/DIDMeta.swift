@@ -20,29 +20,24 @@ public class DIDMeta: Metadata {
     }
 
     override func fromJson(_ json: OrderedDictionary<String, Any>) throws {
-        var value = json[DIDMeta.ALIAS] as? String ?? ""
-        if value != "" {
-            self.alias = value
+        let _alias = json[DIDMeta.ALIAS] as? String ?? ""
+        if !_alias.isEmpty {
+            self.alias = _alias
+        }
+
+        let _deactived = json[DIDMeta.DEACTIVATED] as? String
+        if _deactived != nil && _deactived!.count > 0 {
+            self.deactivated = true
         }
         
-        value = json[DIDMeta.DEACTIVATED] as? String ?? ""
-        if value != "" {
-            if value != "0" {
-                self.deactivated = true
-            }
-            else {
-                self.deactivated = false
-            }
+        let _transactionId = json[DIDMeta.TXID] as? String
+        if _transactionId != nil && _transactionId!.count > 0 {
+            self.transactionId = _transactionId
         }
-        
-        value = json[DIDMeta.TXID] as? String ?? ""
-        if value != "" {
-            self.transactionId = value
-        }
-        
-        value = json[DIDMeta.TIMESTAMP] as? String ?? ""
-        if value != "" {
-            let date = DateFormater.parseDate(value)
+
+        let _timestamp = json[DIDMeta.TIMESTAMP] as? String
+        if _timestamp != nil && _timestamp!.count > 0 {
+            let date = DateFormater.parseDate(_timestamp!)
             self.updated = date
         }
     }
