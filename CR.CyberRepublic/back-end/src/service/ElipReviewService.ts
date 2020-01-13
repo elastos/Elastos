@@ -83,7 +83,6 @@ export default class extends Base {
     const body = `
     <p>CR secretary has marked your ELIP <${elip.title}> as Rejected, ID <#${elip.vid}>.</p>
     <p>${review.comment}<p>
-    <br />
     <p>Click this link to view more details:</p>
     <p><a href="${process.env.SERVER_URL}/elips/${elip._id}">${process.env.SERVER_URL}/elips/${elip._id}</a></p>
     <br />
@@ -206,13 +205,13 @@ export default class extends Base {
     const subject = `New Proposal: ${cvote.title}`
     const body = `
       <p>There is a new proposal added:</p>
-      <br />
       <p>${cvote.title}</p>
+      <p>Click this link to view more details:</p>
+      <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
       <br />
-      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
-      <br /> <br />
-      <p>Thanks</p>
       <p>Cyber Republic</p>
+      <p>Thanks</p>
+      
     `
 
     const recVariables = _.zipObject(

@@ -151,7 +151,6 @@ export default class extends Base {
     const subject = 'An ELIP updated'
     const body = `
       <p>This is ELIP ${title} updated and to be reviewed:</p>
-      <br />
       <p>Click this link to view more details:</p>
       <p><a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
       <br />
@@ -165,7 +164,6 @@ export default class extends Base {
     const subject = 'New ELIP created'
     const body = `
       <p>This is a new ELIP ${title} added and to be reviewed:</p>
-      <br />
       <p>Click this link to view more details:</p>
       <p><a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
       <br />
@@ -179,12 +177,11 @@ export default class extends Base {
     const subject = `[Final review needed] ELIP #${vid} submitted as proposal`
     const body = `
       <p>${author} has submitted ELIP #${vid} as proposal, please review it.</p>
-      <br />
       <p>Click this link to view more details:</p>
       <p><a href="${process.env.SERVER_URL}/elips/${id}">${process.env.SERVER_URL}/elips/${id}</a></p>
       <br />
+      <p>Cyber Republic Team</p>
       <p>Thanks</p>
-      <p>Cyber Republic</p>
     `
     return { subject, body }
   }
