@@ -41,16 +41,15 @@ public class ResolveResult {
         idtxs.append(ti)
     }
     
-    public func toJson() throws -> OrderedDictionary<String, Any> {
+    public func toJson() -> OrderedDictionary<String, Any> {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         dic[ResolveResult.DID] = did.description
         dic[ResolveResult.STATUS] = status
-        
 
         if (status != ResolveResult.STATUS_NOT_FOUND) {
             var arr: Array<Any> = []
             for ti in idtxs {
-                let d = try ti.toJson()
+                let d = ti.toJson()
                 arr.append(d)
             }
             dic[ResolveResult.TRANSACTION] = arr
@@ -58,8 +57,8 @@ public class ResolveResult {
         return dic
     }
     
-    public func toJson() throws -> String {
-        let dic: OrderedDictionary<String, Any> = try toJson()
+    public func toJson() -> String {
+        let dic: OrderedDictionary<String, Any> = toJson()
         return JsonHelper.creatJsonString(dic: dic)
     }
     
@@ -98,9 +97,8 @@ public class ResolveResult {
         return try fromJson(re)
     }
     
-    public func description() throws -> String {
-        return try toJson()
+    public func description() -> String {
+        return toJson()
     }
 
 }
-

@@ -7,8 +7,7 @@ public class Metadata {
     public var store: DIDStore?
     var extra: OrderedDictionary<String, Any> = OrderedDictionary()
     
-    public required init() { }
-    
+    public required init() {}
     func setExtraInternal(_ name: String, _ value: String) {
         if !name.starts(with: EXTRA_PREFIX) {
             return
@@ -50,17 +49,15 @@ public class Metadata {
     
     func toJson() -> String { return "" }
     
-    func description() -> String {
-        if extra.count != 0 {
-            let json = JsonHelper.creatJsonString(dic: extra)
-            return json
-        }
-        return ""
-    }
-    
     public func merge(_ meta: Metadata) throws {
         meta.extra.forEach { key, value in
             extra[key] = value
         }
+    }
+}
+
+extension Metadata: CustomStringConvertible {
+   @objc public var description: String {
+        return toJson()
     }
 }
