@@ -1,7 +1,6 @@
 
 import Foundation
 
-
 public class LRUCache {
     
     public init(_ s: Int) {
@@ -56,7 +55,7 @@ public class LRUCache {
                 // Move the accessed key to the front of the cache queue
                 self.cacheQueue.remove(at: index!)
                 self.cacheQueue.append(key)
-                self.cacheItems.updateValue(data, forKey: key)
+                self.cacheItems.updateValue(data as Any, forKey: key)
             }
         }
     }

@@ -166,10 +166,10 @@ public class FileSystemStorage: DIDStorage {
 
     public func storeDidMeta(_ did: DID, _ meta: DIDMeta?) throws {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.META_FILE
-        try getFile(true, path)
+        _ = try getFile(true, path)
         let metadata: String = meta != nil ? meta!.toJson() : ""
         if metadata == "" {
-            try deleteFile(path)
+            _ = try deleteFile(path)
         }
         else {
             if metadata == "{}" {
@@ -392,7 +392,7 @@ public class FileSystemStorage: DIDStorage {
     public func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
         let path: String = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR + "/" + id.fragment
         let privateKeyPath = try getFile(path)
-        let re =  try exists(path)
+        _ =  try exists(path)
         let fileExists = FileManager.default.fileExists(atPath: privateKeyPath!, isDirectory: nil)
         
         if fileExists {

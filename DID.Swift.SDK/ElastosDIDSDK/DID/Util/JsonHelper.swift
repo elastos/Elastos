@@ -69,7 +69,7 @@ public class JsonHelper {
     }
     
     class func getInteger(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: Int, _ hint: String) throws -> Int {
-        let vn: String = dic[name] as! String
+        let vn: String? = dic[name] as? String
         if vn == nil {
             if optional {
                 return ref
@@ -78,7 +78,7 @@ public class JsonHelper {
                 throw DIDError.failue("Invalid " + hint + " value.")
             }
         }
-        return Int(vn)!
+        return Int(vn!)!
     }
     
     class public func creatJsonString(dic: OrderedDictionary<String, Any>) -> String {
@@ -160,6 +160,28 @@ public class JsonHelper {
         let value: String = checkAndRemoveFirstAndLastDoubleQuotes(String(string[valueStartIndex...valueEndIndex]))
         
         return (key, value)
+    }
+    
+    class public func preHandleString(_ jsongString: String) -> String {
+        let str = jsongString.replacingOccurrences(of: "\n", with: "")
+        var token: Bool = false
+        var string: String = ""
+
+        for (_, c) in str.enumerated() {
+            
+            if token {
+                string.append(c)
+            } else {
+                if c != " " && c != "\n"{
+                    string.append(c)
+                }
+            }
+            
+            if c == "\"" {
+                token = !token
+            }
+        }
+        return string
     }
     
     class public func handleString(_ jsonString: String) -> Any? {

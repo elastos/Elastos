@@ -65,7 +65,7 @@ public class ResolverCache {
         
         let jsonString = try readTextFromPath(path)
         let result = try ResolveResult.fromJson(jsonString)
-        cache.put(did.methodSpecificId, data: result)
+        cache.put(did.methodSpecificId, data: result as Any)
         return result
     }
     

@@ -149,7 +149,8 @@ public class VerifiablePresentation: NSObject{
     }
     
     func parse(_ jsonString: String) throws {
-        let dic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
+        let string = JsonHelper.preHandleString(jsonString)
+        let dic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         try parse(dic)
     }
     

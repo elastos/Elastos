@@ -98,7 +98,7 @@ class TestData: XCTestCase {
         if testIssuer == nil {
             testIssuer = try loadDIDDocument("issuer", "json")
             try importPrivateKey((testIssuer?.getDefaultPublicKey())!, "issuer.primary", "sk")
-            try store.publishDid(testIssuer!.subject!, storePass)
+            _ = try store.publishDid(testIssuer!.subject!, storePass)
         }
         return testIssuer!
     }
@@ -111,7 +111,7 @@ class TestData: XCTestCase {
         try importPrivateKey((testDocument?.getDefaultPublicKey())!, "document.primary", "sk")
         try importPrivateKey(testDocument!.getPublicKey("key2")!.id, "document.key2", "sk")
         try importPrivateKey(testDocument!.getPublicKey("key3")!.id, "document.key3", "sk")
-        try store.publishDid(testDocument!.subject!, storePass)
+        _ = try store.publishDid(testDocument!.subject!, storePass)
         return testDocument!
     }
     

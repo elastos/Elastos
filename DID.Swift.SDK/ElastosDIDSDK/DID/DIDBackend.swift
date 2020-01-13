@@ -53,10 +53,8 @@ public class DIDBackend: NSObject {
         let requestId = generateRequestId()
         
         let json = try adapter.resolve(requestId, did.description, false)
-        // TODO: unsafe
-        var jsonString = json.replacingOccurrences(of: " ", with: "")
-        jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
-        let resultJson = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
+        let string = JsonHelper.preHandleString(json)
+        let resultJson = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         let result: OrderedDictionary<String, Any> = resultJson[RESULT] as! OrderedDictionary<String, Any>
 
         guard result.count != 0 else {

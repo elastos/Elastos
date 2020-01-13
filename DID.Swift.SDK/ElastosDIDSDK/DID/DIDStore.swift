@@ -138,7 +138,7 @@ public class DIDStore: NSObject {
                 doc = try DIDBackend.shareInstance().resolve(did, true)
             } catch {
                 if error is DIDResolveError {
-                    blanks++
+                   blanks = blanks++
                 }
                 continue
             }

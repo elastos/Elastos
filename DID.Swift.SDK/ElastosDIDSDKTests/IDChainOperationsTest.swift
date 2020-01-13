@@ -68,7 +68,7 @@ class IDChainOperationsTest: XCTestCase {
             var adapter: SPVAdaptor? = nil
             //             need synchronize?
             adapter = (DIDBackend.shareInstance().adapter as? SPVAdaptor)
-            if adapter == nil {
+            if adapter != nil {
                 print("Waiting for wallet available to create DID")
                 while true {
                     wait(interval: 30)
@@ -442,7 +442,7 @@ class IDChainOperationsTest: XCTestCase {
             XCTAssertTrue(didStrings.contains(did))
         }
     }
-
+    
     func wait(interval: Double) {
         
         let lock = XCTestExpectation(description: "")

@@ -32,7 +32,8 @@ public class IDTransactionInfo {
         dic[IDTransactionInfo.TXID] = transactionId
         dic[IDTransactionInfo.TIMESTAMP] = DateFormater.format(timestamp)
         let jsonstr = request.toJson(false)
-        let json = JsonHelper.handleString(jsonstr) as! OrderedDictionary<String, Any>
+        let string = JsonHelper.preHandleString(jsonstr)
+        let json = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         dic[IDTransactionInfo.OPERATION] = json
 
         return dic

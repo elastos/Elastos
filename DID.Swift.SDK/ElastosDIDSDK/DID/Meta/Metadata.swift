@@ -37,7 +37,8 @@ public class Metadata {
             return meta
         }
         // check as! Dictionary<String, String>
-        let dic = JsonHelper.handleString(metadata) as! OrderedDictionary<String, Any>
+        let string = JsonHelper.preHandleString(metadata)
+        let dic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         
         try meta.fromJson(dic)
         dic.forEach { key, value in

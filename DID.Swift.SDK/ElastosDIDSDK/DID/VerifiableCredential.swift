@@ -217,18 +217,16 @@ public class VerifiableCredential: DIDObject {
         let vc: VerifiableCredential = VerifiableCredential()
         let url = URL(fileURLWithPath: path)
         let json = try! String(contentsOf: url)
-        var jsonString = json.replacingOccurrences(of: " ", with: "")
-        jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
-        let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
+        let string = JsonHelper.preHandleString(json)
+        let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         try vc.parse(ordDic, nil)
         return vc
     }
     
    public class func fromJson(_ json: String) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
-        var jsonString = json.replacingOccurrences(of: " ", with: "")
-        jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
-        let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
+        let string = JsonHelper.preHandleString(json)
+        let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         try vc.parse(ordDic, nil)
         return vc
     }

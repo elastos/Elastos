@@ -87,9 +87,8 @@ public class ResolveResult {
     }
     
     public class func fromJson(_ json: String) throws -> ResolveResult? {
-        var jsonString = json.replacingOccurrences(of: " ", with: "")
-        jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
-        let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
+        let string = JsonHelper.preHandleString(json)
+        let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         let result = ordDic["result"] as! Array<Any>
         
         if (result.count == 0) {

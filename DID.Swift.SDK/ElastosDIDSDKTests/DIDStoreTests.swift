@@ -99,7 +99,7 @@ class DIDStoreTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store: DIDStore = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             let doc: DIDDocument = try store.newDid(storePass)
             XCTAssertTrue(try doc.isValid())
@@ -107,7 +107,7 @@ class DIDStoreTests: XCTestCase {
             var resolved = try doc.subject?.resolve(true)
             XCTAssertNil(resolved)
             
-            try store.publishDid(doc.subject!, storePass)
+            _ = try store.publishDid(doc.subject!, storePass)
             var path = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/document"
             XCTAssertTrue(testData.existsFile(path))
             // todo isFile
@@ -160,12 +160,12 @@ class DIDStoreTests: XCTestCase {
             
             // Update again
             key = try TestData.generateKeypair()
-            try resolved?.addAuthenticationKey("key2", key.getPublicKeyBase58())
+            _ = try resolved?.addAuthenticationKey("key2", key.getPublicKeyBase58())
             newDoc = try! resolved!.seal(store, storePass)
             XCTAssertEqual(3, newDoc.getPublicKeyCount())
             XCTAssertEqual(3, newDoc.getAuthenticationKeyCount())
             try store.storeDid(newDoc)
-            try store.publishDid(newDoc.subject!, storePass)
+            _ = try store.publishDid(newDoc.subject!, storePass)
             
             resolved = try! doc.subject?.resolve(true)
             XCTAssertNotNil(resolved)
@@ -191,7 +191,7 @@ class DIDStoreTests: XCTestCase {
             try store.storeDidMeta(doc.subject!, meta)
 
             // Update will fail
-            try store.publishDid(doc.subject!, storePass)
+            _ = try store.publishDid(doc.subject!, storePass)
         } catch  {
             // todo:  Create ID transaction error.
             XCTAssertTrue(true)
@@ -513,7 +513,7 @@ class DIDStoreTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store: DIDStore = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             // Store test data into current store
             let issuer: DIDDocument = try testData.loadTestIssuer()
@@ -791,8 +791,8 @@ class DIDStoreTests: XCTestCase {
     
     func testStorePerformance(_ cached: Bool) {
         do {
-            let adapter: DIDAdapter = DummyAdapter()
-            let testData: TestData = TestData()
+            _ = DummyAdapter()
+            _ = TestData()
             TestData.deleteFile(storeRoot)
             var store: DIDStore
             if (cached){

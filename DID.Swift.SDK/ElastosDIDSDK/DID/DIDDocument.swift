@@ -485,48 +485,13 @@ public class DIDDocument: NSObject {
     
     private func parse(url: URL) throws {
         let json = try! String(contentsOf: url)
-        var string: String = ""
-        var token: Bool = false
-        
-        let str = json.replacingOccurrences(of: "\n", with: "")
-
-        for (_, c) in str.enumerated() {
-            
-            if token {
-                string.append(c)
-            } else {
-                if c != " " && c != "\n"{
-                    string.append(c)
-                }
-            }
-            
-            if c == "\"" {
-                token = !token
-            }
-        }
+        let string = JsonHelper.preHandleString(json)
         let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         return try parse(ordDic)
     }
     
     private func parse(json: String) throws {
-        var string: String = ""
-        var token: Bool = false
-        
-        let str = json.replacingOccurrences(of: "\n", with: "")
-        for (_, c) in str.enumerated() {
-            
-            if token {
-                string.append(c)
-            } else {
-                if c != " " && c != "\n"{
-                    string.append(c)
-                }
-            }
-            
-            if c == "\"" {
-                token = !token
-            }
-        }
+        let string = JsonHelper.preHandleString(json)
         let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         
         return try parse(ordDic)
@@ -929,10 +894,6 @@ public class DIDDocument: NSObject {
         }
         let pk: DIDPublicKey = DIDPublicKey(id, refPk!.type, controller, refPk!.keyBase58!)
         return try addAuthorizationKey(pk)
-    }
-    
-    public func authorizationDid(_ id: DIDURL, _ controller: DID) throws -> Bool {
-        return try authorizationDid(id, controller)
     }
     
     public func authorizationDid(_ id: String, _ controller: String, _ key: String?) throws -> Bool {

@@ -13,7 +13,7 @@ class DIDDoucumentTests: XCTestCase {
     func testGetPublicKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             
             let doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertTrue(try doc.isValid())
@@ -129,7 +129,7 @@ class DIDDoucumentTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -179,8 +179,8 @@ class DIDDoucumentTests: XCTestCase {
     func testGetAuthenticationKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.setupStore(true)
+            _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -247,7 +247,7 @@ class DIDDoucumentTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -323,7 +323,7 @@ class DIDDoucumentTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
         
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -386,8 +386,8 @@ class DIDDoucumentTests: XCTestCase {
     func testGetAuthorizationKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.setupStore(true)
+            _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -445,7 +445,7 @@ class DIDDoucumentTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             store = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -454,7 +454,7 @@ class DIDDoucumentTests: XCTestCase {
             // Add 2 public keys for test.
             let id: DIDURL = try DIDURL(doc.subject!, "test1")
             var key: DerivedKey = try TestData.generateKeypair()
-            var did = DID(DID.METHOD, DerivedKey.getIdString(try key.getPublicKeyBytes()))
+            let did = DID(DID.METHOD, DerivedKey.getIdString(try key.getPublicKeyBytes()))
             var success: Bool = try doc.addPublicKey(id, did, try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
@@ -522,7 +522,7 @@ class DIDDoucumentTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -580,8 +580,8 @@ class DIDDoucumentTests: XCTestCase {
     func testGetCredential() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.setupStore(true)
+            _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -637,7 +637,7 @@ class DIDDoucumentTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -681,7 +681,7 @@ class DIDDoucumentTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -730,8 +730,8 @@ class DIDDoucumentTests: XCTestCase {
     func testGetService() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.setupStore(true)
+            _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -792,7 +792,7 @@ class DIDDoucumentTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -833,7 +833,7 @@ class DIDDoucumentTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -869,9 +869,9 @@ class DIDDoucumentTests: XCTestCase {
     
     func testParseAndSerializeDocument() {
         do {
-            let testData: TestData = try TestData()
-            try testData.setupStore(true)
-            try testData.initIdentity()
+            let testData: TestData = TestData()
+            _ = try testData.setupStore(true)
+            _ = try testData.initIdentity()
             
             let compact: DIDDocument = try DIDDocument.fromJson(try testData.loadTestCompactJson())
             XCTAssertNotNil(compact)
@@ -915,8 +915,8 @@ class DIDDoucumentTests: XCTestCase {
     func test31SignAndVerify() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.setupStore(true)
+            _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
 
@@ -956,20 +956,12 @@ class DIDDoucumentTests: XCTestCase {
         }
     }
 
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-
-    // TODO
     func testSignAndVerifyNew() {
 
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.setupStore(true)
+            _ = try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)

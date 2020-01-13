@@ -298,7 +298,8 @@ public class IDChainRequest: NSObject {
     }
     
     class public func fromJson(_ json: String) throws -> IDChainRequest {
-        let dic: OrderedDictionary = JsonHelper.handleString(json) as! OrderedDictionary<String, Any>
+        let string = JsonHelper.preHandleString(json)
+        let dic: OrderedDictionary = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         return try fromJson(dic)
     }
 }
