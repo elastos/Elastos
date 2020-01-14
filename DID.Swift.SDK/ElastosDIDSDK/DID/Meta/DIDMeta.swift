@@ -88,4 +88,8 @@ public class DIDMeta: Metadata {
 
         try super.merge(meta)
     }
+
+    public override var description: String {
+        return toJson()
+    }
 }
