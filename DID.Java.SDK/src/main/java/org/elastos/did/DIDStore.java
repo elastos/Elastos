@@ -288,17 +288,27 @@ public final class DIDStore {
 		if (doc == null)
 			throw new DIDStoreException("Can not find the document for " + did);
 
+		if (doc.isDeactivated())
+			throw new DIDStoreException("DID already deactivated.");
+
+		DIDDocument resolvedDoc = did.resolve();
+		if (resolvedDoc != null) {
+			if (resolvedDoc.isDeactivated())
+				throw new DIDStoreException("DID already deactivated.");
+
+			String localTxid = doc.getTransactionId();
+			if (localTxid == null)
+				throw new DIDStoreException("DID document not up-to-date");
+
+			String resolvedTxid = resolvedDoc.getTransactionId();
+			if (!localTxid.equals(resolvedTxid))
+				throw new DIDStoreException("DID document not up-to-date");
+		}
+
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
 
 		String lastTxid = doc.getTransactionId();
-		if (lastTxid == null || lastTxid.isEmpty()) {
-			// TODO: check me!!!
-			DIDDocument resolved = did.resolve();
-			if (resolved != null)
-				lastTxid = resolved.getTransactionId();
-		}
-
 		if (lastTxid == null || lastTxid.isEmpty())
 			lastTxid = DIDBackend.getInstance().create(doc, signKey, storepass);
 		else
@@ -306,6 +316,7 @@ public final class DIDStore {
 					lastTxid, signKey, storepass);
 
 		if (lastTxid != null) {
+			// TODO: checkme!!! save txid?
 			doc.getMeta().setTransactionId(lastTxid);
 			storage.storeDidMeta(doc.getSubject(), doc.getMeta());
 		}
