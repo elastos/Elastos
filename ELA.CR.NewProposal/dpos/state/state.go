@@ -914,7 +914,11 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 			p, _ := output.Payload.(*outputpayload.VoteOutput)
 			if p.Version == outputpayload.VoteProducerVersion {
 				op := types.NewOutPoint(tx.Hash(), uint16(i))
-				s.Votes[op.ReferKey()] = struct{}{}
+				s.history.Append(height, func() {
+					s.Votes[op.ReferKey()] = struct{}{}
+				}, func() {
+					delete(s.Votes, op.ReferKey())
+				})
 				s.processVoteOutput(output, height)
 			} else {
 				var exist bool
@@ -926,7 +930,11 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 				}
 				if exist {
 					op := types.NewOutPoint(tx.Hash(), uint16(i))
-					s.Votes[op.ReferKey()] = struct{}{}
+					s.history.Append(height, func() {
+						s.Votes[op.ReferKey()] = struct{}{}
+					}, func() {
+						delete(s.Votes, op.ReferKey())
+					})
 					s.processVoteOutput(output, height)
 				}
 			}
