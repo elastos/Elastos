@@ -251,12 +251,12 @@ public class VerifiableCredential: DIDObject {
         // type
         var value = json[TYPE]
         guard (value is Array<Any>) else {
-            throw MalformedCredentialError.failue("Invalid type, should be an array.")
+            throw DIDError.malFormedDocumentError(_desc: "Invalid type, should be an array.")
         }
         
         let arr = value as! Array<Any>
         guard arr.count != 0 else {
-            throw MalformedCredentialError.failue("Invalid type, should be an array.")
+            throw DIDError.malformedCredentialError(_desc: "Invalid type, should be an array.")
         }
         
         arr.forEach { obj in

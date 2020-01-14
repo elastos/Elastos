@@ -63,12 +63,12 @@ public class DIDBackend: NSObject {
         let result: OrderedDictionary<String, Any> = resultJson[DIDBackend.RESULT] as! OrderedDictionary<String, Any>
 
         guard result.count != 0 else {
-            throw DIDResolveError.failue("Resolve DID error .")
+            throw DIDError.didResolveError(_desc: "Resolve DID error .")
         }
         // Check response id, should equals requestId
         let id = resultJson[DIDBackend.ID] as? String
         guard id == requestId else {
-            throw DIDResolveError.failue("Missmatched resolve result with request.")
+            throw DIDError.didResolveError(_desc: "Missmatched resolve result with request.")
         }
 
         let rr: ResolveResult = try ResolveResult.fromJson(result)
@@ -88,10 +88,10 @@ public class DIDBackend: NSObject {
         }
         switch rr!.status {
         case ResolveResult.STATUS_EXPIRED: do {
-            throw DIDExpiredError.failue("")
+            throw DIDError.didExpiredError(_desc: "")
             }
         case ResolveResult.STATUS_DEACTIVATED: do {
-            throw DIDDeactivatedError.failue("")
+            throw DIDError.didDeactivatedError(_desc: "")
             }
         case ResolveResult.STATUS_NOT_FOUND: do {
             return nil
@@ -140,7 +140,7 @@ public class DIDBackend: NSObject {
             return try _adapter.createIdTransaction(json, nil)
         }
         catch {
-            throw DIDStoreError.failue("Create ID transaction error.")
+            throw DIDError.didStoreError(_desc: "Create ID transaction error.")
         }
     }
     
@@ -151,7 +151,7 @@ public class DIDBackend: NSObject {
             return try _adapter.createIdTransaction(json, nil)
             }
         catch {
-            throw DIDStoreError.failue("Create ID transaction error.")
+            throw DIDError.didStoreError(_desc: "Create ID transaction error.") 
         }
     }
 }

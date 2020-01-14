@@ -55,7 +55,7 @@ public class FileSystemStorage: DIDStorage {
     
     public init(_ dir: String) throws {
         if dir.isEmpty {
-            throw DIDStoreError.failue("Invalid DIDStore root directory.")
+            throw DIDError.didStoreError(_desc: "Invalid DIDStore root directory.") 
         }
         self.storeRootPath = dir
 
@@ -87,7 +87,7 @@ public class FileSystemStorage: DIDStorage {
         var isDir: ObjCBool = false
         if fileManager.fileExists(atPath: storeRootPath, isDirectory:&isDir) {
             guard isDir.boolValue else {
-                throw DIDStoreError.failue("Store root \(storeRootPath ?? "") is a file.")
+                throw DIDError.didStoreError(_desc: "Store root \(storeRootPath ?? "") is a file.")
             }
         }
         
@@ -96,25 +96,25 @@ public class FileSystemStorage: DIDStorage {
         var tagFilePathIsDir: ObjCBool = false
         let tagFilePathExists: Bool = fileManager.fileExists(atPath: tagFilePath, isDirectory:&tagFilePathIsDir)
         guard !tagFilePathIsDir.boolValue || tagFilePathExists else {
-            throw DIDStoreError.failue("Directory \(tagFilePath) is not a DIDStore.")
+            throw DIDError.didStoreError(_desc: "Directory \(tagFilePath) is not a DIDStore.")
         }
         
         let localData = try Data(contentsOf: URL(fileURLWithPath: tagFilePath))
         let uInt8DataArray = [UInt8](localData)
         
         guard uInt8DataArray.count == FileSystemStorage.STORE_META_SIZE else {
-            throw DIDStoreError.failue("Directory \(tagFilePath) is not a DIDStore.")
+            throw DIDError.didStoreError(_desc: "Directory \(tagFilePath) is not a DIDStore.")
         }
         
         let magicArray = localData[0...3]
         let versionArray = localData[4...7]
         
         guard magicArray.elementsEqual(FileSystemStorage.STORE_MAGIC) else {
-            throw DIDStoreError.failue("Directory \(tagFilePath) is not a DIDStore.")
+            throw DIDError.didStoreError(_desc: "Directory \(tagFilePath) is not a DIDStore.")
         }
         
         guard versionArray.elementsEqual(FileSystemStorage.STORE_VERSION) else {
-            throw DIDStoreError.failue("Directory \(tagFilePath) unsupported version.")
+            throw DIDError.didStoreError(_desc: "Directory \(tagFilePath) unsupported version.") 
         }
     }
 
@@ -151,7 +151,7 @@ public class FileSystemStorage: DIDStorage {
             let path = try getFile(true, p)
             try writeTextToPath(path, mnemonic)
         } catch {
-            throw DIDStoreError.failue("Store mnemonic error.")
+            throw DIDError.didStoreError(_desc: "Store mnemonic error.")
         }
     }
     
@@ -160,7 +160,7 @@ public class FileSystemStorage: DIDStorage {
             let path = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.MNEMONIC_FILE
             return try readTextFromPath(path)
         } catch {
-            throw DIDStoreError.failue("Load mnemonic error.")
+            throw DIDError.didStoreError(_desc: "Load mnemonic error.")
         }
     }
 
@@ -211,7 +211,7 @@ public class FileSystemStorage: DIDStorage {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.DOCUMENT_FILE
         let exist = try exists(path)
         guard exist else {
-            throw DIDStoreError.failue("No did.")
+            throw DIDError.didStoreError(_desc: "No did.")
         }
         return try DIDDocument.fromJson(path: path)
     }
@@ -277,7 +277,7 @@ public class FileSystemStorage: DIDStorage {
             }
         }
         catch {
-            throw DIDStoreError.failue("Write alias error.")
+            throw DIDError.didStoreError(_desc: "Write alias error.")
         }
     }
 

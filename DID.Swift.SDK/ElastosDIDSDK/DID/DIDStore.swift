@@ -24,7 +24,7 @@ public class DIDStore: NSObject {
     
     public class func open(_ type: String, _ location: String, _ initialCacheCapacity: Int, _ maxCacheCapacity: Int) throws -> DIDStore {
         guard type == "filesystem" else {
-            throw DIDStoreError.failue("Unsupported store type:\(type)")
+            throw DIDError.didStoreError(_desc: "Unsupported store type:\(type)")
         }
         let storage = try FileSystemStorage(location)
         return DIDStore(initialCacheCapacity, maxCacheCapacity, storage)
@@ -45,7 +45,7 @@ public class DIDStore: NSObject {
         let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 4096)
           let re = encrypt_to_base64(base64url, passwd, cinput, input.count)
         guard re >= 0 else {
-            throw DIDStoreError.failue("encryptToBase64 error.")
+            throw DIDError.didStoreError(_desc: "encryptToBase64 error.")
         }
         var json: String = String(cString: base64url)
         let endIndex = json.index(json.startIndex, offsetBy: re)
@@ -57,7 +57,7 @@ public class DIDStore: NSObject {
         let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
-            throw DIDStoreError.failue("decryptFromBase64 error.")
+            throw DIDError.didStoreError(_desc: "decryptFromBase64 error.")
         }
         let temp = UnsafeRawPointer(plain)
         .bindMemory(to: UInt8.self, capacity: re)
@@ -72,7 +72,7 @@ public class DIDStore: NSObject {
         let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
-            throw DIDStoreError.failue("decryptFromBase64 error.")
+            throw DIDError.didStoreError(_desc: "decryptFromBase64 error.")
         }
         let temp = UnsafeRawPointer(plain)
         .bindMemory(to: UInt8.self, capacity: re)
@@ -87,7 +87,7 @@ public class DIDStore: NSObject {
         // TODO: CHECK mnemonic isValid
         
         if (try containsPrivateIdentity() && !force) {
-            throw DIDStoreError.failue("Already has private indentity.")
+            throw DIDError.didStoreError(_desc: "Already has private indentity.")
         }
         let privateIdentity: HDKey = try HDKey.fromMnemonic(mnemonic, passphrase)
 
@@ -116,7 +116,7 @@ public class DIDStore: NSObject {
     
     func loadPrivateIdentity(_ storepass: String) throws -> HDKey {
         guard try containsPrivateIdentity() else {
-            throw DIDStoreError.failue("DID Store not contains private identity.")
+            throw DIDError.didStoreError(_desc: "DID Store not contains private identity.")
         }
         let seed: Data = try decryptFromBase64(storepass, storage.loadPrivateIdentity())
         return HDKey.fromSeed(seed)
@@ -137,8 +137,14 @@ public class DIDStore: NSObject {
             do {
                 doc = try DIDBackend.shareInstance().resolve(did, true)
             } catch {
-                if error is DIDResolveError {
-                   blanks = blanks++
+                if error is DIDError {
+                    switch error as! DIDError {
+                    case .didResolveError: do{
+                        blanks = blanks++
+                        }
+                    default:
+                        break
+                    }
                 }
                 continue
             }
@@ -194,7 +200,7 @@ public class DIDStore: NSObject {
     public func publishDid(_ did: DID, signKey: DIDURL? = nil, _ storepass: String) throws -> String? {
         let doc = try loadDid(did)
         guard doc != nil else {
-            throw DIDStoreError.failue("Can not find the document for \(did)")
+            throw DIDError.didStoreError(_desc: "Can not find the document for \(did)")
         }
         var sigk = signKey
         if sigk == nil {
@@ -237,7 +243,7 @@ public class DIDStore: NSObject {
             // Fail-back: try to load document from local store
             doc = try loadDid(did)
             if doc == nil {
-                throw DIDStoreError.failue("Can not resolve DID document.")
+                throw DIDError.didStoreError(_desc: "Can not resolve DID document.")
             }
             else {
                 localCopy = true
@@ -275,7 +281,7 @@ public class DIDStore: NSObject {
            // Fail-back: try to load document from local store
             doc = try loadDid(did)
             if doc == nil {
-                throw DIDStoreError.failue("Can not resolve DID document.")
+                throw DIDError.didStoreError(_desc: "Can not resolve DID document.")
             }
         }
         else {
@@ -292,7 +298,7 @@ public class DIDStore: NSObject {
         
         let targetDoc = try DIDBackend.shareInstance().resolve(target)
         if targetDoc == nil {
-            throw DIDResolveError.failue("DID \(target) not exist.")
+            throw DIDError.didResolveError(_desc: "DID \(target) not exist.")
         }
         
         if targetDoc?.getAuthorizationKeyCount() == 0 {
@@ -641,7 +647,7 @@ public class DIDStore: NSObject {
         if id == nil {
             let doc = try loadDid(did)
             if doc == nil {
-                throw DIDStoreError.failue("Can not resolve DID document.")
+                throw DIDError.didStoreError(_desc: "Can not resolve DID document.") 
             }
             let id_1 = doc!.getDefaultPublicKey()
             privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id_1))
@@ -670,7 +676,7 @@ public class DIDStore: NSObject {
         // UnsafeMutablePointer(mutating: toPPointer)
         let re = ecdsa_sign_base64v(sig, UnsafeMutablePointer(mutating: toPPointer), Int32(count), c_inputs)
         guard re >= 0 else {
-            throw DIDStoreError.failue("sign error.")
+            throw DIDError.didStoreError(_desc: "sign error.")
         }
         let jsonStr: String = String(cString: sig)
         let endIndex = jsonStr.index(jsonStr.startIndex, offsetBy: re)

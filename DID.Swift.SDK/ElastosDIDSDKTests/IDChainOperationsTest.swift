@@ -12,7 +12,7 @@ class IDChainOperationsTest: XCTestCase {
             let store: DIDStore = try testData.setupStore(false)
             _ = try testData.initIdentity()
             var adapter: SPVAdaptor? = nil
-            adapter = (DIDBackend.shareInstance().adapter as? SPVAdaptor)
+            adapter = (DIDBackend.shareInstance().didAdapter as? SPVAdaptor)
             
             if adapter != nil {
                 while true {
@@ -67,7 +67,7 @@ class IDChainOperationsTest: XCTestCase {
             _ = try testData.initIdentity()
             var adapter: SPVAdaptor? = nil
             //             need synchronize?
-            adapter = (DIDBackend.shareInstance().adapter as? SPVAdaptor)
+            adapter = (DIDBackend.shareInstance().didAdapter as? SPVAdaptor)
             if adapter != nil {
                 print("Waiting for wallet available to create DID")
                 while true {
@@ -222,8 +222,8 @@ class IDChainOperationsTest: XCTestCase {
             var adapter: SPVAdaptor? = nil
 
             // need synchronize?
-            if DIDBackend.shareInstance().adapter is SPVAdaptor {
-                adapter = DIDBackend.shareInstance().adapter as? SPVAdaptor
+            if DIDBackend.shareInstance().didAdapter is SPVAdaptor {
+                adapter = DIDBackend.shareInstance().didAdapter as? SPVAdaptor
             }
 
             if (adapter != nil) {

@@ -284,7 +284,7 @@ public class IDChainRequest: NSObject {
         let keyType = try JsonHelper.getString(proof, KEY_TYPE, true,
                                                DEFAULT_PUBLICKEY_TYPE, KEY_TYPE)
         guard (keyType == DEFAULT_PUBLICKEY_TYPE) else {
-            throw DIDResolveError.failue("Unknown signature key type.")
+            throw DIDError.didResolveError(_desc: "Unknown signature key type.") 
         }
         let signKey = try JsonHelper.getDidUrl(proof, KEY_ID, request.did,
                                                KEY_ID)

@@ -218,8 +218,8 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertNil(resolvedNil)
         } catch  {
-            switch error {
-            case  DIDDeactivatedError.failue(""):
+            switch error as! DIDError{
+            case .didDeactivatedError(_desc: ""):
                 XCTAssertTrue(true)
             default:
                 XCTFail()
@@ -265,8 +265,8 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertNil(resolvedNil)
         } catch  {
-            switch error {
-            case  DIDDeactivatedError.failue(""):
+            switch error as! DIDError {
+            case .didDeactivatedError(_desc: ""):
                 XCTAssertTrue(true)
             default:
                 XCTFail()
@@ -309,8 +309,8 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertNil(resolvedNil)
         } catch  {
-            switch error {
-            case  DIDDeactivatedError.failue(""):
+            switch error as! DIDError {
+            case .didDeactivatedError(_desc: ""):
                 XCTAssertTrue(true)
             default:
                 XCTFail()
@@ -361,8 +361,8 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertNil(resolvedNil)
         } catch  {
-            switch error {
-            case  DIDDeactivatedError.failue(""):
+            switch error as! DIDError {
+            case .didDeactivatedError(_desc: ""):
                 XCTAssertTrue(true)
             default:
                 XCTFail()
@@ -414,8 +414,8 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertNil(resolved)
         } catch  {
-            switch error {
-            case  DIDDeactivatedError.failue(""):
+            switch error as! DIDError{
+            case .didDeactivatedError(_desc: ""):
                 XCTAssertTrue(true)
             default:
                 XCTFail()
@@ -739,10 +739,10 @@ class DIDStoreTests: XCTestCase {
 
             _ = try store.newDid("wrongpass");
         } catch {
-            if error is DIDStoreError {
-                let err = error as! DIDStoreError
+            if error is DIDError {
+                let err = error as! DIDError
                 switch err {
-                case  DIDStoreError.failue("decryptFromBase64 error."):
+                case .didStoreError(_desc: "decryptFromBase64 error."):
                     XCTAssertTrue(true)
                 default:
                     XCTFail()

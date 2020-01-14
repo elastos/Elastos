@@ -34,15 +34,15 @@ public class SPVAdaptor: DIDAdapter {
     public func createIdTransaction(_ payload: String, _ memo: String?) throws -> String {
         let password = passwordCallback!(walletDir, walletId)
         guard password != nil else {
-            throw DIDResolveError.failue("password is not nil.")
+            throw DIDError.didResolveError(_desc: "password is not nil.")
         }
         
         guard handle != nil else {
-            throw DIDResolveError.failue("Unkonw error.")
+            throw DIDError.didResolveError(_desc: "Unkonw error.")
         }
         let re = SPV.createIdTransaction(handle, password!, payload, memo)
         guard re != nil else {
-            throw DIDResolveError.failue("Unkonw error.")
+            throw DIDError.didResolveError(_desc: "Unkonw error.")
         }
         return re!
     }
@@ -50,7 +50,7 @@ public class SPVAdaptor: DIDAdapter {
     public func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String {
         let re = SPV.resolve(requestId, did, all)
         guard re != nil else {
-            throw DIDResolveError.failue("Unkonw error.")
+            throw DIDError.didResolveError(_desc: "Unkonw error.") 
         }
         return re!
     }

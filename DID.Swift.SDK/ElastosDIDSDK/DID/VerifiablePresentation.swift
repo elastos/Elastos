@@ -158,7 +158,7 @@ public class VerifiablePresentation: NSObject{
         
         let type: String = try JsonHelper.getString(presentation, TYPE, false, nil, "presentation type")
         guard type == DEFAULT_PRESENTTATION_TYPE else {
-            throw MalformedCredentialError.failue("Unknown presentation type: \(type)")
+            throw DIDError.malformedCredentialError(_desc: "Unknown presentation type: \(type)")
         }
         self.type = type
         let created: Date = try DateFormater.getDate(presentation, CREATED, false, nil, "presentation created date")!
@@ -166,16 +166,16 @@ public class VerifiablePresentation: NSObject{
         
         var d = presentation[VERIFIABLE_CREDENTIAL]
         guard d != nil else {
-            throw MalformedCredentialError.failue("Missing credentials.")
+            throw DIDError.malformedCredentialError(_desc: "Missing credentials.")
         }
         guard d is Array<Any> else {
-            throw MalformedCredentialError.failue("Invalid verifiableCredentia, should be an array.")
+            throw DIDError.malformedCredentialError(_desc: "Invalid verifiableCredentia, should be an array.")
         }
         try parseCredential(d as! Array<OrderedDictionary<String, Any>>)
         
         d = presentation[PROOF]
         guard d != nil else {
-           throw MalformedCredentialError.failue("Missing credentials.")
+            throw DIDError.malformedCredentialError(_desc: "Missing credentials.")
         }
         let proof: Proof = try Proof.fromJson_vp(d as! OrderedDictionary<String, Any>, nil)
         self.proof = proof
@@ -183,7 +183,7 @@ public class VerifiablePresentation: NSObject{
     
     func parseCredential(_ jsonArry: Array<OrderedDictionary<String, Any>>) throws {
         guard jsonArry.count != 0 else {
-            throw MalformedCredentialError.failue("Invalid verifiableCredentia, should not be an empty array.")
+            throw DIDError.malformedCredentialError(_desc: "Invalid verifiableCredentia, should not be an empty array.") 
         }
         try jsonArry.forEach { vc in
             let vc: VerifiableCredential = try VerifiableCredential.fromJson(vc)

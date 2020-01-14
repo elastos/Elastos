@@ -73,7 +73,7 @@ public class ResolveResult {
             let txs: Array<Any> = result[TRANSACTION] as! Array<Any>
             if (txs.count == 0)
             {
-                throw DIDResolveError.failue("Invalid resolve result, missing transaction.")
+                throw DIDError.didResolveError(_desc: "Invalid resolve result, missing transaction.")
             }
             for i in 0..<txs.count {
                 let ti: IDTransactionInfo = try IDTransactionInfo.fromJson(txs[i] as! OrderedDictionary<String, Any>)

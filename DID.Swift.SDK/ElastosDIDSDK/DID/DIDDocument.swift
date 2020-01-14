@@ -420,7 +420,7 @@ public class DIDDocument: NSObject {
     
     public func sign(_ id: DIDURL, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
         if (!meta.attachedStore()) {
-            throw DIDStoreError.failue("Not attached with DID store.")
+            throw DIDError.didStoreError(_desc: "Not attached with DID store.")
         }
         return try meta.store!.sign(subject!, id: id, storepass, count, inputs)
     }
@@ -498,7 +498,7 @@ public class DIDDocument: NSObject {
         
         let poorf = json[PROOF] as! OrderedDictionary<String, Any>
         if poorf.count == 0 {
-            throw MalformedDocumentError.failue("Missing proof.")
+            throw DIDError.malFormedDocumentError(_desc: "Missing proof.")
         }
         proof = try Proof.fromJson_dc(poorf, defaultPk)
     }
@@ -508,12 +508,12 @@ public class DIDDocument: NSObject {
         let publicKeys = json["publicKey"] as? Array<Any>
         
         guard publicKeys != nil else {
-            throw MalformedDocumentError.failue("Invalid publicKey, should be an array.")
+            throw DIDError.malFormedDocumentError(_desc: "Invalid publicKey, should be an array.")
         }
         
         let publicKeysArray: [OrderedDictionary<String, Any>] = publicKeys as! Array<OrderedDictionary<String, Any>>
         guard publicKeysArray.count != 0 else {
-            throw MalformedDocumentError.failue("Invalid publicKey, should not be an empty array.")
+            throw DIDError.malFormedDocumentError(_desc: "Invalid publicKey, should not be an empty array.")
         }
         
         for publicKey in publicKeysArray {
@@ -527,7 +527,7 @@ public class DIDDocument: NSObject {
         let authentications = json[AUTHENTICATION] as? Array<Any>
         
         guard (authentications != nil) else {
-            throw MalformedDocumentError.failue("Invalid authentication, should be an array.")
+            throw DIDError.malFormedDocumentError(_desc: "Invalid authentication, should be an array.")
         }
         
         guard authentications!.count != 0 else {
@@ -562,7 +562,7 @@ public class DIDDocument: NSObject {
         }
         let authorizations = aus as? Array<Any>
         guard (authorizations != nil) else {
-            throw MalformedDocumentError.failue("Invalid authorization, should be an array.")
+            throw DIDError.malFormedDocumentError(_desc: "Invalid authorization, should be an array.")
         }
         guard authorizations!.count != 0  else {
             return
@@ -588,7 +588,7 @@ public class DIDDocument: NSObject {
         }
         let cdentials = crs as? Array<OrderedDictionary<String, Any>>
         guard (cdentials != nil) else {
-            throw MalformedDocumentError.failue("Invalid credential, should be an array.")
+            throw DIDError.malFormedDocumentError(_desc: "Invalid credential, should be an array.")
         }
         guard cdentials!.count != 0  else {
             return
@@ -606,7 +606,7 @@ public class DIDDocument: NSObject {
         }
         let services = ses as? Array<OrderedDictionary<String, Any>>
         guard (services != nil) else {
-            throw MalformedDocumentError.failue("Invalid services, should be an array.")
+            throw DIDError.malFormedDocumentError(_desc: "Invalid services, should be an array.")
         }
         guard services!.count != 0  else {
             return
@@ -828,7 +828,7 @@ public class DIDDocument: NSObject {
     
     public func addAuthorizationKey(_ id: DIDURL, _ controller: DID, _ pk: String) throws -> Bool {
         guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
-            throw MalformedDocumentError.failue("Invalid public key.")
+            throw DIDError.malFormedDocumentError(_desc: "Invalid public key.") 
         }
         let key: DIDPublicKey = DIDPublicKey(id, controller, pk)
         return try addAuthorizationKey(key)
@@ -909,7 +909,7 @@ public class DIDDocument: NSObject {
         setDefaultExpires()
         meta.store = store
         let signKey: DIDURL = getDefaultPublicKey()
-        let json = try toJson(true, true)
+        let json = toJson(true, true)
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
         let sig = try sign(signKey, storepass, count, inputs)

@@ -136,7 +136,7 @@ class DummyAdapter: DIDAdapter {
             var arr: Array<OrderedDictionary<String, Any>> = [ ]
             for ti in reversedArr {
                 if ti.getDid() == target {
-                    let dic = try ti.toJson()
+                    let dic = ti.toJson()
                     arr.append(dic)
                     if (!all) {
                         break

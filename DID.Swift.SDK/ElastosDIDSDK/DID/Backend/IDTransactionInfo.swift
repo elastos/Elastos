@@ -45,7 +45,7 @@ public class IDTransactionInfo {
         
         let requjson = json[IDTransactionInfo.OPERATION] as? OrderedDictionary<String, Any>
         if (requjson == nil) {
-            throw DIDResolveError.failue("Missing ID operation.")
+            throw DIDError.didResolveError(_desc: "Missing ID operation.") 
         }
         
         let request = try IDChainRequest.fromJson(requjson!)
