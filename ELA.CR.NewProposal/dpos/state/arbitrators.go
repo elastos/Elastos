@@ -208,6 +208,7 @@ func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 
 func (a *arbitrators) RollbackTo(height uint32) error {
 	a.mtx.Lock()
+	a.history.RollbackTo(height)
 	a.degradation.RollbackTo(height)
 	err := a.State.RollbackTo(height)
 	a.mtx.Unlock()
