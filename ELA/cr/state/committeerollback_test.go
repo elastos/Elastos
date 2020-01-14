@@ -2060,3 +2060,552 @@ func getCRCImpeachmentTx(publicKeyStr string, did *common.Uint168,
 	}}
 	return txn
 }
+
+//
+//func TestCommitee_RollbackCRCBlendTxs(t *testing.T){
+//	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+//	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+//	did1 := getDIDByPublicKey(publicKeyStr1)
+//	address1Uint168, _ := getProgramHash(publicKeyStr1)
+//	nickName1 := "nickname 1"
+//
+//	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+//	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+//	did2 := getDIDByPublicKey(publicKeyStr2)
+//	nickName2 := "nickname 2"
+//
+//	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+//	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
+//	did3 := getDIDByPublicKey(publicKeyStr3)
+//	nickName3 := "nickname 3"
+//
+//	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+//	registerCRTxn2 := getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
+//	registerCRTxn3 := getRegisterCRTx(publicKeyStr3, privateKeyStr3, nickName3)
+//
+//	// set count of CR member
+//	cfg := &config.DefaultParams
+//	cfg.CRCArbiters = cfg.CRCArbiters[0:4]
+//	cfg.CRMemberCount = 2
+//
+//	// new committee
+//	committee := NewCommittee(cfg)
+//
+//	// avoid getting UTXOs from database
+//	currentHeight := config.DefaultParams.CRVotingStartHeight
+//	committee.recordBalanceHeight = currentHeight - 1
+//
+//	// blend 2 getRegisterCRTx
+//	{
+//		keyFrameA := committee.Snapshot()
+//		committee.ProcessBlock(&types.Block{
+//			Header: types.Header{
+//				Height: currentHeight,
+//			},
+//			Transactions: []*types.Transaction{
+//				registerCRTxn1,
+//				registerCRTxn2,
+//			},
+//		}, nil)
+//		assert.Equal(t, 2, len(committee.GetCandidates(Pending)))
+//		assert.Equal(t, 0, len(committee.GetCandidates(Active)))
+//		keyFrameB := committee.Snapshot()
+//
+//		currentHeight--
+//		err := committee.RollbackTo(currentHeight)
+//		assert.NoError(t, err)
+//		keyFrameA1 := committee.Snapshot()
+//
+//		committee.ProcessBlock(&types.Block{
+//			Header: types.Header{
+//				Height: currentHeight,
+//			},
+//			Transactions: []*types.Transaction{
+//				registerCRTxn1,
+//				registerCRTxn2,
+//			},
+//		}, nil)
+//		assert.Equal(t, 2, len(committee.GetCandidates(Pending)))
+//		assert.Equal(t, 0, len(committee.GetCandidates(Active)))
+//		keyFrameB1 := committee.Snapshot()
+//		checkResult(t, keyFrameA, keyFrameB, keyFrameA1, keyFrameB1)
+//	}
+//
+//
+//	// blend 2 getVoteCRTx
+//	{
+//		for i := 0; i < 6; i++ {
+//			currentHeight++
+//			committee.ProcessBlock(&types.Block{
+//				Header: types.Header{
+//					Height: currentHeight,
+//				},
+//			}, nil)
+//		}
+//		keyFrameC := committee.Snapshot()
+//
+//		voteCRTx1 := getVoteCRTx(6, []outputpayload.CandidateVotes{
+//			{did1.Bytes(), 3},
+//			{did2.Bytes(), 2},
+//			{did3.Bytes(), 1}})
+//		voteCRTx2 := getVoteCRTx(15, []outputpayload.CandidateVotes{
+//			{did1.Bytes(), 4},
+//			{did2.Bytes(), 5},
+//			{did3.Bytes(), 6}})
+//		currentHeight++
+//		committee.ProcessBlock(&types.Block{
+//			Header: types.Header{
+//				Height: currentHeight,
+//			},
+//			Transactions: []*types.Transaction{
+//				voteCRTx1,
+//				voteCRTx2,
+//			},
+//		}, nil)
+//		assert.Equal(t, common.Fixed64(7), committee.GetCandidate(*did1).votes)
+//		keyFrameD := committee.Snapshot()
+//
+//		currentHeight--
+//		err := committee.RollbackTo(currentHeight)
+//		assert.NoError(t, err)
+//		keyFrameC1 := committee.Snapshot()
+//
+//		currentHeight++
+//		committee.ProcessBlock(&types.Block{
+//			Header: types.Header{
+//				Height: currentHeight,
+//			},
+//			Transactions: []*types.Transaction{
+//				voteCRTx1,
+//				voteCRTx2,
+//			},
+//		}, nil)
+//		keyFrameD1 := committee.Snapshot()
+//		assert.Equal(t, common.Fixed64(7), committee.GetCandidate(*did1).votes)
+//		checkResult(t, keyFrameC, keyFrameD, keyFrameC1, keyFrameD1)
+//	}
+//
+//	//blend 1 getAppropriationTx | 1 getCRCImpeachmentTx | 3 getCRCProposalTx
+//	{
+//		currentHeight = cfg.CRCommitteeStartHeight - 1
+//		committee.ProcessBlock(&types.Block{
+//			Header: types.Header{Height: currentHeight}}, nil)
+//
+//		// process
+//		currentHeight++
+//		committee.ProcessBlock(&types.Block{
+//			Header: types.Header{Height: currentHeight}}, nil)
+//		keyFrameE := committee.Snapshot()
+//
+//		//process appropriation tx
+//		crcCommiteeAddressStr := "ESq12oQrvGqHfTkEDYJyR9MxZj1NMnonjo"
+//		crcCommiteeAddrHash, _ := common.Uint168FromAddress(crcCommiteeAddressStr)
+//		txAppropriate := getAppropriationTx(500.0, *crcCommiteeAddrHash)
+//		//generate impeachment tx
+//		impeachmentTx := getCRCImpeachmentTx(publicKeyStr1, did1, 3, *address1Uint168)
+//		elaAddress := "EZaqDYAPFsjynGpvHwbuiiiL4dEiHtX4gD"
+//		proposalTx1 := getCRCProposalTx(elaAddress, publicKeyStr1, privateKeyStr1,
+//			publicKeyStr2, privateKeyStr2)
+//		proposalTx2 := getCRCProposalTx(elaAddress, publicKeyStr1, privateKeyStr1,
+//			publicKeyStr2, privateKeyStr2)
+//		proposalTx3 := getCRCProposalTx(elaAddress, publicKeyStr1, privateKeyStr1,
+//			publicKeyStr2, privateKeyStr2)
+//
+//		//proposalHash := proposalTx.Payload.(*payload.CRCProposal).Hash()
+//
+//		currentHeight++
+//		committee.ProcessBlock(&types.Block{
+//			Header: types.Header{Height: currentHeight},
+//			Transactions: []*types.Transaction{
+//				txAppropriate,
+//				impeachmentTx,
+//				proposalTx1,
+//				proposalTx2,
+//				proposalTx3,
+//			},
+//		}, nil)
+//		keyFrameF := committee.Snapshot()
+//
+//		currentHeight--
+//		err := committee.RollbackTo(currentHeight)
+//		assert.NoError(t, err)
+//		keyFrameE1 := committee.Snapshot()
+//
+//		currentHeight++
+//		committee.ProcessBlock(&types.Block{
+//			Header: types.Header{Height: currentHeight},
+//			Transactions: []*types.Transaction{
+//				txAppropriate,
+//			},
+//		}, nil)
+//		keyFrameF1 := committee.Snapshot()
+//		checkResult(t, keyFrameE, keyFrameF, keyFrameE1, keyFrameF1)
+//	}
+//	//blend getCRCProposalTx | getCRCImpeachmentTx | getCRCProposalTrackingTx |
+//	//getCRCProposalReviewTx | getCRCProposalWithdrawTx
+//	{
+//		elaAddress := "EZaqDYAPFsjynGpvHwbuiiiL4dEiHtX4gD"
+//		proposalTx1 := getCRCProposalTx(elaAddress, publicKeyStr1, privateKeyStr1,
+//			publicKeyStr2, privateKeyStr2)
+//		//generate impeachment tx
+//		impeachmentTx := getCRCImpeachmentTx(publicKeyStr1, did1, 3, *address1Uint168)
+//
+//	}
+//
+//	// rollback
+//	currentHeight--
+//	err := committee.RollbackTo(currentHeight)
+//	assert.NoError(t, err)
+//	keyFrameC := committee.Snapshot()
+//
+//	// reprocess
+//	currentHeight++
+//	committee.ProcessBlock(&types.Block{
+//		Header: types.Header{Height: currentHeight}}, nil)
+//	keyFrameD := committee.Snapshot()
+//
+//	publicKeyStr4 := "027209c3a6bcb95e9ef766c81136bcd6f2338eee7f9caebf694825e411320bab12"
+//	privateKeyStr4 := "b3b1c16abd786c4994af9ee8c79d25457f66509731f74d6a9a9673ca872fa8fa"
+//	did4 := getDIDByPublicKey(publicKeyStr4)
+//	nickName4 := "nickname 4"
+//	registerCRTxn4 := getRegisterCRTx(publicKeyStr4, privateKeyStr4, nickName4)
+//
+//	// register
+//	currentHeight++
+//	committee.ProcessBlock(&types.Block{
+//		Header: types.Header{
+//			Height: currentHeight,
+//		},
+//		Transactions: []*types.Transaction{
+//			registerCRTxn4,
+//		},
+//	}, nil)
+//
+//	// vote cr
+//	for i := 0; i < 5; i++ {
+//		currentHeight++
+//		committee.ProcessBlock(&types.Block{
+//			Header: types.Header{
+//				Height: currentHeight,
+//			},
+//		}, nil)
+//	}
+//	voteCRTx2 := getVoteCRTx(6, []outputpayload.CandidateVotes{
+//		{did4.Bytes(), 4}})
+//
+//	currentHeight++
+//	committee.ProcessBlock(&types.Block{
+//		Header: types.Header{
+//			Height: currentHeight,
+//		},
+//		Transactions: []*types.Transaction{
+//			voteCRTx2,
+//		},
+//	}, nil)
+//
+//	// set current height to one block before ending voting period
+//	currentHeight = cfg.CRCommitteeStartHeight - 1 + cfg.CRVotingPeriod
+//	committee.ProcessBlock(&types.Block{
+//		Header: types.Header{Height: currentHeight}}, nil)
+//	keyFrameA2 := committee.Snapshot()
+//
+//	// process
+//	currentHeight++
+//	committee.ProcessBlock(&types.Block{
+//		Header: types.Header{Height: currentHeight}}, nil)
+//	assert.Equal(t, 4, len(committee.GetAllMembers()))
+//	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+//	keyFrameB2 := committee.Snapshot()
+//
+//	// rollback
+//	currentHeight--
+//	err = committee.RollbackTo(currentHeight)
+//	assert.NoError(t, err)
+//	keyFrameC2 := committee.Snapshot()
+//
+//	// reprocess
+//	currentHeight++
+//	committee.ProcessBlock(&types.Block{
+//		Header: types.Header{Height: currentHeight}}, nil)
+//	assert.Equal(t, 4, len(committee.GetAllMembers()))
+//	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+//	keyFrameD2 := committee.Snapshot()
+//
+//	checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
+//	checkResult(t, keyFrameA2, keyFrameB2, keyFrameC2, keyFrameD2)
+//}
+
+func TestCommitee_RollbackCRCBlendTx(t *testing.T) {
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+	did1 := getDIDByPublicKey(publicKeyStr1)
+	nickName1 := "nickname 1"
+	address1Uint168, _ := getProgramHash(publicKeyStr1)
+
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	did2 := getDIDByPublicKey(publicKeyStr2)
+	nickName2 := "nickname 2"
+
+	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
+	did3 := getDIDByPublicKey(publicKeyStr3)
+	nickName3 := "nickname 3"
+
+	//publicKeyStr4 := "027209c3a6bcb95e9ef766c81136bcd6f2338eee7f9caebf694825e411320bab12"
+	privateKeyStr4 := "b3b1c16abd786c4994af9ee8c79d25457f66509731f74d6a9a9673ca872fa8fa"
+	//did4 := getDIDByPublicKey(publicKeyStr4)
+	//nickName4 := "nickname 4"
+
+	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	registerCRTxn2 := getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
+	registerCRTxn3 := getRegisterCRTx(publicKeyStr3, privateKeyStr3, nickName3)
+
+	// new committee
+	committee := NewCommittee(&config.DefaultParams)
+	// set count of CR member
+	cfg := &config.DefaultParams
+	cfg.CRCArbiters = cfg.CRCArbiters[0:2]
+	cfg.CRMemberCount = 2
+	// avoid getting UTXOs from database
+
+	currentHeight := cfg.CRVotingStartHeight
+	committee.recordBalanceHeight = currentHeight - 1
+	// register cr
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			registerCRTxn1,
+			registerCRTxn2,
+			registerCRTxn3,
+		},
+	}, nil)
+	assert.Equal(t, 3, len(committee.GetCandidates(Pending)))
+
+	// vote cr
+	for i := 0; i < 5; i++ {
+		currentHeight++
+		committee.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: currentHeight,
+			},
+		}, nil)
+	}
+	voteCRTx := getVoteCRTx(6, []outputpayload.CandidateVotes{
+		{did1.Bytes(), 3},
+		{did2.Bytes(), 2},
+		{did3.Bytes(), 1}})
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			voteCRTx,
+		},
+	}, nil)
+	assert.Equal(t, common.Fixed64(3), committee.GetCandidate(*did1).votes)
+
+	elaAddress := "EZaqDYAPFsjynGpvHwbuiiiL4dEiHtX4gD"
+	proposalTxA := getCRCProposalTx(elaAddress, publicKeyStr1, privateKeyStr1,
+		publicKeyStr2, privateKeyStr2)
+	proposalAHash := proposalTxA.Payload.(*payload.CRCProposal).Hash()
+
+	proposalTxB := getCRCProposalTx(elaAddress, publicKeyStr1, privateKeyStr1,
+		publicKeyStr2, privateKeyStr2)
+	proposalBHash := proposalTxB.Payload.(*payload.CRCProposal).Hash()
+	proposalTxC := getCRCProposalTx(elaAddress, publicKeyStr1, privateKeyStr1,
+		publicKeyStr2, privateKeyStr2)
+	proposalCHash := proposalTxC.Payload.(*payload.CRCProposal).Hash()
+	proposalTxD := getCRCProposalTx(elaAddress, publicKeyStr1, privateKeyStr1,
+		publicKeyStr2, privateKeyStr2)
+	//proposalDHash := proposalTxD.Payload.(*payload.CRCProposal).Hash()
+
+	// end first voting period
+	currentHeight = cfg.CRCommitteeStartHeight
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			proposalTxA,
+			proposalTxB,
+			proposalTxC,
+		},
+	}, nil)
+	assert.Equal(t, 3, len(committee.GetProposals(Registered)))
+	assert.Equal(t, 2, len(committee.GetAllMembers()))
+
+	//
+	// set CR agreement count
+	committee.params.CRAgreementCount = 2
+	// review proposal
+	proposalReviewTxB1 := getCRCProposalReviewTx(proposalBHash, payload.Approve,
+		publicKeyStr1, privateKeyStr1)
+	proposalReviewTxB2 := getCRCProposalReviewTx(proposalBHash, payload.Approve,
+		publicKeyStr2, privateKeyStr2)
+	proposalReviewTxC1 := getCRCProposalReviewTx(proposalCHash, payload.Approve,
+		publicKeyStr1, privateKeyStr1)
+	proposalReviewTxC2 := getCRCProposalReviewTx(proposalCHash, payload.Approve,
+		publicKeyStr2, privateKeyStr2)
+
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			proposalReviewTxB1,
+			proposalReviewTxB2,
+			proposalReviewTxC1,
+			proposalReviewTxC2,
+		},
+	}, nil)
+	assert.Equal(t, Registered, committee.GetProposal(proposalBHash).Status)
+	assert.Equal(t, Registered, committee.GetProposal(proposalCHash).Status)
+
+	// change to CRAgreed
+	currentHeight += cfg.ProposalCRVotingPeriod
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, CRAgreed, committee.GetProposal(proposalBHash).Status)
+	assert.Equal(t, CRAgreed, committee.GetProposal(proposalCHash).Status)
+
+	// register cr again
+	currentHeight = config.DefaultParams.CRCommitteeStartHeight +
+		cfg.CRDutyPeriod - cfg.CRVotingPeriod
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			registerCRTxn1,
+		},
+	}, nil)
+	assert.Equal(t, 1, len(committee.GetCandidates(Pending)))
+	assert.Equal(t, 0, len(committee.GetCandidates(Active)))
+	keyFrameA := committee.Snapshot()
+
+	voteCRTx2 := getVoteCRTx(6, []outputpayload.CandidateVotes{
+		{did1.Bytes(), 1}})
+	//// review proposal
+	//proposalReviewTxA := getCRCProposalReviewTx(proposalAHash, payload.Approve,
+	//	publicKeyStr1, privateKeyStr1)
+	// proposal tracking of type progress
+	proposalTrackingBTx := getCRCProposalTrackingTx(
+		payload.Progress, proposalBHash, 1, publicKeyStr1, privateKeyStr1,
+		"", "", privateKeyStr4)
+	// proposal withdraw
+	withdrawCTx := getCRCProposalWithdrawTx(proposalCHash, publicKeyStr1,
+		privateKeyStr1, 1, []*types.Input{}, []*types.Output{})
+	//generate impeachment tx
+	impeachmentTx := getCRCImpeachmentTx(publicKeyStr1, did1, 3, *address1Uint168)
+
+	proposalReviewTxA1 := getCRCProposalReviewTx(proposalAHash, payload.Approve,
+		publicKeyStr1, privateKeyStr1)
+	proposalReviewTxA2 := getCRCProposalReviewTx(proposalAHash, payload.Approve,
+		publicKeyStr2, privateKeyStr2)
+
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			registerCRTxn2,
+			registerCRTxn3,
+			voteCRTx2,
+			proposalTxD,
+			proposalReviewTxA1,
+			proposalReviewTxA2,
+			proposalTrackingBTx,
+			withdrawCTx,
+			impeachmentTx,
+		},
+	}, nil)
+	assert.Equal(t, 3, len(committee.GetCandidates(Pending)))
+	assert.Equal(t, 0, len(committee.GetCandidates(Active)))
+	assert.Equal(t, common.Fixed64(1), committee.GetCandidate(*did1).votes)
+	assert.Equal(t, 1, len(committee.GetProposals(Registered)))
+	assert.Equal(t, 2, len(committee.GetProposal(proposalBHash).
+		WithdrawableBudgets))
+	assert.Equal(t, 1, len(committee.GetProposal(proposalCHash).
+		WithdrawnBudgets))
+	//assert.Equal(t, false , committee.InElectionPeriod)
+
+	keyFrameB := committee.Snapshot()
+
+	// rollback
+	currentHeight--
+	err := committee.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	//assert.Equal(t, common.Fixed64(1), committee.GetCandidate(*did1).votes)
+	keyFrameC := committee.Snapshot()
+
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			registerCRTxn2,
+			registerCRTxn3,
+			voteCRTx2,
+			proposalTxD,
+			proposalReviewTxA1,
+			proposalReviewTxA2,
+			proposalTrackingBTx,
+			withdrawCTx,
+			impeachmentTx,
+		},
+	}, nil)
+	keyFrameD := committee.Snapshot()
+	checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
+
+	//// vote cr again
+	//for i := 0; i < 5; i++ {
+	//	currentHeight++
+	//	committee.ProcessBlock(&types.Block{
+	//		Header: types.Header{
+	//			Height: currentHeight,
+	//		},
+	//	}, nil)
+	//}
+	//
+	//currentHeight++
+	//committee.ProcessBlock(&types.Block{
+	//	Header: types.Header{
+	//		Height: currentHeight,
+	//	},
+	//	//Transactions: []*types.Transaction{
+	//	//	voteCRTx2,
+	//	//},
+	//}, nil)
+	//assert.Equal(t, common.Fixed64(1), committee.GetCandidate(*did1).votes)
+	////keyFrameA := committee.Snapshot()
+	//
+	//// end second voting period
+	//currentHeight = cfg.CRCommitteeStartHeight + cfg.CRDutyPeriod
+	//committee.ProcessBlock(&types.Block{
+	//	Header: types.Header{Height: currentHeight}}, nil)
+	//assert.Equal(t, 2, len(committee.GetAllMembers()))
+	////keyFrameB := committee.Snapshot()
+	//
+	//// rollback
+	//currentHeight--
+	//err = committee.RollbackTo(currentHeight)
+	//assert.NoError(t, err)
+	//assert.Equal(t, common.Fixed64(1), committee.GetCandidate(*did1).votes)
+	////keyFrameC := committee.Snapshot()
+	//
+	//// reprocess
+	//currentHeight++
+	//committee.ProcessBlock(&types.Block{
+	//	Header: types.Header{Height: currentHeight}}, nil)
+	//assert.Equal(t, 2, len(committee.GetAllMembers()))
+	////keyFrameD := committee.Snapshot()
+	//
+	//checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
+}

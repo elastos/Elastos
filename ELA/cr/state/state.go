@@ -210,23 +210,23 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 	s.history.Append(height, func() {
 		if firstTimeRegister {
 			s.depositInfo[info.DID] = &DepositInfo{}
+			s.CodeDIDMap[code] = info.DID
+			s.DepositHashDIDMap[candidate.depositHash] = info.DID
 		}
+		s.Nicknames[nickname] = struct{}{}
+		s.Candidates[info.DID] = &candidate
 		s.depositInfo[info.DID].DepositAmount += MinDepositAmount
 		s.depositInfo[info.DID].TotalAmount += amount
-		s.Nicknames[nickname] = struct{}{}
-		s.CodeDIDMap[code] = info.DID
-		s.DepositHashDIDMap[candidate.depositHash] = info.DID
-		s.Candidates[info.DID] = &candidate
 	}, func() {
-		s.depositInfo[info.DID].DepositAmount -= MinDepositAmount
-		s.depositInfo[info.DID].TotalAmount -= amount
 		if firstTimeRegister {
 			delete(s.depositInfo, info.DID)
+			delete(s.CodeDIDMap, code)
+			delete(s.DepositHashDIDMap, candidate.depositHash)
 		}
-		delete(s.Nicknames, nickname)
-		delete(s.CodeDIDMap, code)
-		delete(s.DepositHashDIDMap, candidate.depositHash)
 		delete(s.Candidates, info.DID)
+		delete(s.Nicknames, nickname)
+		s.depositInfo[info.DID].DepositAmount -= MinDepositAmount
+		s.depositInfo[info.DID].TotalAmount -= amount
 	})
 }
 
