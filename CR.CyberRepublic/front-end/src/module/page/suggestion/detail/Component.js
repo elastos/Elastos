@@ -305,7 +305,11 @@ export default class extends StandardPage {
                 <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
                 <Paragraph>{detail.elaAddress}</Paragraph>
                 <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
-                <PaymentList list={detail.budget} editable={false} />
+                <PaymentList
+                  list={detail.budget}
+                  milestone={detail.plan.milestone}
+                  editable={false}
+                />
               </div>
             )
           }
