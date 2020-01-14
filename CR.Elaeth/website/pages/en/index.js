@@ -104,26 +104,11 @@ class Index extends React.Component {
     style={{textAlign: 'center'}}>
       <div className="wrapper">
         <MarkdownBlock>
-          ```
-          Elastos replaces the EVM's PoW consensus with its own DPoS consensus allowing
-          for much higher TPS. Our DPoS is backed by voting through our native PoW token (ELA) with over
-          40% of Bitcoin's hashpower. This is a separate chain from Ethereum but more performant and secure.
-          ```
-
+          ETH Task Force is setup in July 2019 which dedicated to initiatives involving Elastos and Ethereum. As the Elastos ETH Sidechain goes live, there is a need to start building up the developer documentation, tutorials, demo apps and business development with other Ethereum projects.
         </MarkdownBlock>
-        <a href="https://coinmarketcap.com/currencies/elastos" target="_blank">
-          Our Native Token (ELA)
-        </a>
         <MarkdownBlock>
-          ```
-          This puts Elastos' hourly cost for a 51% attack at over "3x" that of Ethereum,
-          without factoring in additional robustness guarantees through DPoS validators.
-          (BTC: 900k+, ELA: 300k+, ETH: 120k - USD/hour)
-          ```
+          Till now, ETH Task Force has built/port several key infrastructure services for ETH Sidechain. We are happy to see more developers get involved into the community and using our services.
         </MarkdownBlock>
-        <a href="https://www.noderators.org/elastossummary" target="_blank">
-          Elastos Hashrate Statistics - https://www.noderators.org/elastossummary
-        </a>
       </div>
     </div>
     );
@@ -133,29 +118,28 @@ class Index extends React.Component {
     className="productShowcaseSection elaBackground"
     style={{textAlign: 'center'}}>
       <img src="/img/Elastos_Logo_Horizontal_KO_RGB.png" style={{width: '30vw'}}/>
-      <br/>
-      ELA ETH Sidechain for Ethereum Developers
     </div>
     );
 
     const ElastosETH = () => (
-    <Block align="left" className="elastosETH elaBackground darkBackground">
+    <Block align="center" className="elastosETH elaBackground darkBackground">
       {[
         {
-          title: 'A familiar stack for Ethereum Developers',
-          content: `<span class="normal" style="font-size: 13px;">Elastos is building equivalent versions of your favorite tools</span>
+          title: 'The infomation of what we built',
+          content: `
+<span class="normal">Block Explorer</span> &#x27A1; use our testnet block explorer at <a href="https://testnet.elaeth.io" target="_blank">https://testnet.elaeth.io</a>
 
-<span class="normal">Block Explorer</span> &#x27A1; use our testnet block explorer at <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
+<span class="normal">Block Explorer</span> &#x27A1; use our mainnet block explorer at <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
 
-<span class="normal">MetaMask</span> &#x27A1; directly works on our new RPC port at <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>
+<span class="normal">MetaMask</span> &#x27A1; directly works on our new RPC port at <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>(testnet) and <a href="https://rpc.elaeth.io" target="_blank">https://mainrpc.elaeth.io</a>(mainnet)
 
 <span class="normal">Remix</span> &#x27A1; same as above, point it at our new RPC port
 
 <span class="normal">Myetherwallet</span> &#x27A1; accessible at <a href="https://wallet.elaeth.io" target="_blank">https://wallet.elaeth.io</a>
 
 <a target="_blank" class="button" href="https://elastosjs.com/docs/advanced/intro">View Our Advanced Tutorial for Ethereum Developers</a>`,
-          image: `${baseUrl}img/metamask-logo-eyes.png`,
-          imageAlign: 'right',
+          // image: `${baseUrl}img/metamask-logo-eyes.png`,
+          // imageAlign: 'right',
         },
       ]}
     </Block>
@@ -165,22 +149,22 @@ class Index extends React.Component {
       <Block className="elastosFeatures" layout="fourColumn">
         {[
           {
-            title: 'Secured By Bitcoin<br/>Through Merge Mining',
-            content: 'Elastos has over 40% of BTC\'s hashpower',
-            image: `${baseUrl}img/ela_hashrate.png`,
+            title: 'Blockchain Explorer',
+            content: 'Able to view information of transaction, block and smart contract',
+            image: `${baseUrl}img/explorer.png`,
             imageAlign: 'top',
           },
           {
-            title: '3x More Expensive to<br/>Attack Than Ethereum',
-            content: 'Our hybrid AuxPoW/DPoS Consensus',
-            image: `${baseUrl}img/bucket_eth_info_blk.png`,
+            title: 'Testnet Faucet',
+            content: 'Get free test token to facilitate your development',
+            image: `${baseUrl}img/faucet.png`,
             imageAlign: 'top',
 
           },
           {
-            title: 'Solidity Smart Contracts<br/>On Our Own Secure Chain',
-            content: 'Easy migrations, usable 400+ TPS speeds',
-            image: `${baseUrl}img/ethereum_logo.svg`,
+            title: 'ELA Metamask',
+            content: 'Modified Metamask that added sidechain rpc without need to add them by yourself',
+            image: `${baseUrl}img/metamask-logo-eyes.png`,
             imageAlign: 'top',
           }
         ]}

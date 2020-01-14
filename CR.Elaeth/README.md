@@ -10,4 +10,3 @@ This documentation site is built on [https://docusaurus.io](https://docusaurus.i
 We use grunt to concat/sass the SCSS files, currently it's the default task so just
 run `grunt` to process your SCSS files. You can also use `grunt watch` to keep your
 CSS up to date.
-
