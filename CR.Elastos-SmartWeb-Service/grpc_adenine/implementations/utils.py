@@ -56,6 +56,18 @@ def get_did_from_api(api_key):
         session.close()
         return None
 
+def get_api_from_did(did):
+    session_maker = sessionmaker(bind=db_engine)
+    session = session_maker()
+    user_data = session.query(Users).filter_by(did=did).first()
+    if user_data is not None:
+        result = session.query(UserApiRelations).filter_by(user_id=user_data.id).first()
+        session.close()
+        return result.api_key
+    else:
+        session.close()
+        return None
+
 
 def get_encrypt_key(key):
     encoded = key.encode()
