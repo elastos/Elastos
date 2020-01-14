@@ -1930,7 +1930,7 @@ DID_API void DIDStore_Deinitialize(void);
  * @return
  *      ture if it has identity, false if it has not.
  */
-DID_API bool DIDStore_HasPrivateIdentity(DIDStore *store);
+DID_API bool DIDStore_ContainsPrivateIdentity(DIDStore *store);
 
 /**
  * \~English
@@ -2184,7 +2184,7 @@ DID_API int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *credid
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDSotre_ContainPrivateKeys(DIDStore *store, DID *did);
+DID_API bool DIDSotre_ContainsPrivateKeys(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -2197,7 +2197,7 @@ DID_API bool DIDSotre_ContainPrivateKeys(DIDStore *store, DID *did);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainPrivateKey(DIDStore *store, DID *did, DIDURL *keyid);
+DID_API bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *keyid);
 
 /**
  * \~English
@@ -2233,7 +2233,7 @@ DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid)
  * @param
  *      store                    [in] The handle to DID Store.
  * @param
- *      document                 [in] The handle to DID Document.
+ *      did                      [in] The handle to DID.
  * @param
  *      signKey                  [in] The public key to sign.
   * @param
@@ -2241,24 +2241,8 @@ DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid)
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API const char *DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
-        DIDURL *signKey, const char *storepass);
-
-/**
- * \~English
- * Update a DID Document on the chain.
- *
- * @param
- *      document                 [in] The handle to DID Document.
- * @param
- *      signKey                  [in] The public key to sign.
-  * @param
- *      storepass                [in] Pass word to sign.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API const char *DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
-        DIDURL *signKey, const char *storepass);
+DID_API const char *DIDStore_PublishDID(DIDStore *store, DID *did, DIDURL *signKey,
+        const char *storepass);
 
 /**
  * \~English

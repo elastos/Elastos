@@ -123,7 +123,7 @@ static void test_openstore_file_exit(void)
     bool hasidentity;
     int rc;
 
-    hasidentity = DIDStore_HasPrivateIdentity(store);
+    hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_TRUE(hasidentity);
 
     path = get_file_path(_path, PATH_MAX, 2, teststore_path, privateindex);

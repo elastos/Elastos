@@ -193,13 +193,15 @@ static void delete_file(const char *path)
     rc = test_path(path);
     if (rc < 0)
         return;
-    else if (rc == S_IFDIR) {
+
+    if (rc == S_IFDIR) {
         list_dir(path, ".*", delete_file_helper, (void *)path);
 
         if (list_dir(path, "*", delete_file_helper, (void *)path) == 0)
             rmdir(path);
-    } else
+    } else {
         remove(path);
+    }
 }
 
 static int get_dirv(char *path, bool create, int count, va_list components)
@@ -208,7 +210,6 @@ static int get_dirv(char *path, bool create, int count, va_list components)
     int rc;
 
     assert(path);
-    assert(sizeof(path) < PATH_MAX);
     assert(count > 0);
 
     *path = 0;
@@ -218,15 +219,22 @@ static int get_dirv(char *path, bool create, int count, va_list components)
         strcat(path, component);
 
         rc = stat(path, &st);
-        if (rc < 0) {        //the path is not exist.
-            if (!create)
-                return -1;
+        if (!create && rc < 0)
+            return -1;
 
-            if (errno != ENOENT || (errno == ENOENT && mkdir(path, S_IRWXU) < 0))
-                return -1;
-        } else {            //the path is exist.
-            if (!S_ISDIR(st.st_mode) && (remove(path) < 0 || mkdir(path, S_IRWXU) < 0))
-                return -1;
+        if (create) {
+            if (rc < 0) {
+                if (errno != ENOENT || (errno == ENOENT && mkdir(path, S_IRWXU) < 0))
+                    return -1;
+            } else {
+                if (!S_ISDIR(st.st_mode)) {
+                    if (remove(path) < 0)
+                        return -1;
+
+                    if (mkdir(path, S_IRWXU) < 0)
+                        return -1;
+                }
+            }
         }
 
         if (i < (count - 1))
@@ -242,7 +250,6 @@ static int get_dir(char* path, bool create, int count, ...)
     int rc;
 
     assert(path);
-    assert(sizeof(path) < PATH_MAX);
     assert(count > 0);
 
     va_start(components, count);
@@ -259,7 +266,6 @@ static int get_file(char *path, bool create, int count, ...)
     int rc;
 
     assert(path);
-    assert(sizeof(path) < PATH_MAX);
     assert(count > 0);
 
     va_start(components, count);
@@ -278,7 +284,7 @@ static int get_file(char *path, bool create, int count, ...)
 static int store_file(const char *path, const char *string)
 {
     int fd;
-    size_t string_len, size;
+    size_t len, size;
 
     assert(path);
     assert(string);
@@ -287,9 +293,9 @@ static int store_file(const char *path, const char *string)
     if (fd == -1)
         return -1;
 
-    string_len = strlen(string);
-    size = write(fd, string, string_len);
-    if (size < string_len) {
+    len = strlen(string);
+    size = write(fd, string, len);
+    if (size < len) {
         close(fd);
         return -1;
     }
@@ -400,8 +406,8 @@ static int load_didmeta(DIDStore *store, DIDMeta *meta, const char *did)
     assert(did);
 
     memset(meta, 0, sizeof(DIDMeta));
-    if (get_file(path, 1, 4, store->root, DID_DIR, did, META_FILE) == -1)
-        return -1;
+    if (get_file(path, 0, 4, store->root, DID_DIR, did, META_FILE) == -1)
+        return 0;
 
     rc = test_path(path);
     if (rc < 0)
@@ -474,8 +480,7 @@ static int store_credmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
 
     if (test_path(path) == S_IFDIR) {
         free((char*)data);
-        delete_file(path);
-        return -1;
+        goto errorExit;
     }
 
     rc = store_file(path, data);
@@ -483,6 +488,7 @@ static int store_credmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
     if (!rc)
         return 0;
 
+errorExit:
     delete_file(path);
 
     if (get_dir(path, 0, 5, store->root, DID_DIR, id->did.idstring,
@@ -511,9 +517,10 @@ static int load_credmeta(DIDStore *store, CredentialMeta *meta, const char *did,
     assert(did);
     assert(fragment);
 
-    if (get_file(path, 1, 6, store->root, DID_DIR, did, CREDENTIALS_DIR,
+    memset(meta, 0, sizeof(CredentialMeta));
+    if (get_file(path, 0, 6, store->root, DID_DIR, did, CREDENTIALS_DIR,
             fragment, META_FILE) == -1)
-        return -1;
+        return 0;
 
     rc = test_path(path);
     if (rc < 0)
@@ -1213,10 +1220,8 @@ int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDCallback *callback,
 
 int DIDStore_StoreCredential(DIDStore *store, Credential *credential, const char *alias)
 {
-    const char *path, *data, *root;
     CredentialMeta meta;
     DIDURL *id;
-    int rc;
 
     if (!store || !credential)
         return -1;
@@ -1231,7 +1236,6 @@ int DIDStore_StoreCredential(DIDStore *store, Credential *credential, const char
         return -1;
 
     memcpy(&credential->meta, &meta, sizeof(CredentialMeta));
-
     if (store_credential(store, credential) == -1 ||
             store_credmeta(store, &credential->meta, id) == -1)
         return -1;
@@ -1420,7 +1424,7 @@ int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *id,
     return 0;
 }
 
-bool DIDSotre_ContainPrivateKeys(DIDStore *store, DID *did)
+bool DIDSotre_ContainsPrivateKeys(DIDStore *store, DID *did)
 {
     char path[PATH_MAX];
 
@@ -1433,7 +1437,7 @@ bool DIDSotre_ContainPrivateKeys(DIDStore *store, DID *did)
     return is_empty(path);
 }
 
-bool DIDStore_ContainPrivateKey(DIDStore *store, DID *did, DIDURL *id)
+bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *id)
 {
     char path[PATH_MAX];
 
@@ -1571,11 +1575,11 @@ static int refresh_did_fromchain(DIDStore *store, const char *storepass,
     return index;
 }
 
-bool DIDStore_HasPrivateIdentity(DIDStore *store)
+bool DIDStore_ContainsPrivateIdentity(DIDStore *store)
 {
     const char *seed;
     char path[PATH_MAX];
-    size_t len;
+    struct stat st;
 
     if (!store)
         return false;
@@ -1583,13 +1587,10 @@ bool DIDStore_HasPrivateIdentity(DIDStore *store)
     if (get_file(path, 0, 3, store->root, PRIVATE_DIR, HDKEY_FILE) == -1)
         return false;
 
-    seed = load_file(path);
-    if (!seed)
+    if (lstat(path, &st) < 0)
         return false;
 
-    len = strlen(seed);
-    free((char*)seed);
-    return len > 0;
+    return st.st_size > 0;
 }
 
 int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
@@ -1736,62 +1737,65 @@ int DIDStore_Sign(DIDStore *store, DID *did, DIDURL *key, const char *storepass,
 
 DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force)
 {
-    DIDDocument *document;
+    DIDDocument *doc;
     const char *json;
+    char alias[ELA_MAX_ALIAS_LEN];
 
     if (!store || !did)
         return NULL;
 
-    document = DIDBackend_Resolve(&store->backend, did);
-    if (document && DIDStore_StoreDID(store, document, "") == -1) {
-        DIDDocument_Destroy(document);
+    doc = DIDStore_LoadDID(store, did);
+    if (!doc || DIDDocument_GetAlias(doc, alias, sizeof(alias)) == -1)
+        *alias = 0;
+
+    doc = DIDBackend_Resolve(&store->backend, did);
+    if (doc && DIDStore_StoreDID(store, doc, alias) == -1) {
+        DIDDocument_Destroy(doc);
         return NULL;
     }
 
-    if (!document && !force)
-        document = DIDStore_LoadDID(store, did);
+    if (!doc && !force)
+        doc = DIDStore_LoadDID(store, did);
 
-    return document;
+    return doc;
 }
 
-const char *DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
-        DIDURL *signKey, const char *storepass)
+const char *DIDStore_PublishDID(DIDStore *store, DID *did, DIDURL *signKey,
+        const char *storepass)
 {
     char alias[ELA_MAX_ALIAS_LEN];
+    char txid[ELA_MAX_TXID_LEN], resolvetxid[ELA_MAX_TXID_LEN];
+    DIDDocument *doc, *resolvedoc;
 
-    if (!store || !document || !storepass || !*storepass)
+    if (!store || !did || !storepass || !*storepass)
         return NULL;
 
-    if (DIDDocument_GetAlias(document, alias, sizeof(alias)) == -1)
-        return NULL;
-
-    if (DIDStore_StoreDID(store, document, alias) == -1)
+    doc = DIDStore_LoadDID(store, did);
+    if (!doc || DIDDocument_IsDeactivated(doc))
         return NULL;
 
     if (!signKey)
-        signKey = DIDDocument_GetDefaultPublicKey(document);
+        signKey = DIDDocument_GetDefaultPublicKey(doc);
 
-    return DIDBackend_Create(&store->backend, document, signKey, storepass);
-}
+    resolvedoc = DIDStore_ResolveDID(store, did, true);
+    if (!resolvedoc)
+        return DIDBackend_Create(&store->backend, doc, signKey, storepass);
 
-const char *DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
-        DIDURL *signKey, const char *storepass)
-{
-    char alias[ELA_MAX_ALIAS_LEN];
+    if (DIDDocument_IsDeactivated(resolvedoc)) {
+        if (DIDDocument_GetAlias(doc, alias, sizeof(alias)) == -1)
+            *alias = 0;
+        DIDStore_StoreDID(store, resolvedoc, alias);
+        return NULL;
+    }
 
-    if (!store || !document || !signKey || !storepass || !*storepass)
+    if (DIDDocument_GetTxid(doc, txid, sizeof(txid)) == -1
+            || DIDDocument_GetTxid(resolvedoc, resolvetxid, sizeof(resolvetxid)) == -1)
         return NULL;
 
-    if (DIDDocument_GetAlias(document, alias, sizeof(alias)) == -1)
+    if (strcmp(txid, resolvetxid))
         return NULL;
 
-    if (DIDStore_StoreDID(store, document, alias) == -1)
-        return NULL;
-
-    if (!signKey)
-        signKey = DIDDocument_GetDefaultPublicKey(document);
-
-    return DIDBackend_Update(&store->backend, document, signKey, storepass);
+    return DIDBackend_Update(&store->backend, doc, signKey, storepass);
 }
 
 const char *DIDStore_DeactivateDID(DIDStore *store, DID *did, DIDURL *signKey,

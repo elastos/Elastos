@@ -38,7 +38,7 @@ static void test_didstore_newdid(void)
     path = get_file_path(_path, PATH_MAX, 2, storePath, storetag);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    hasidentity = DIDStore_HasPrivateIdentity(store);
+    hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
     const char *newmnemonic = Mnemonic_Generate(0);
@@ -46,7 +46,7 @@ static void test_didstore_newdid(void)
     Mnemonic_free((void*)newmnemonic);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
-    hasidentity = DIDStore_HasPrivateIdentity(store);
+    hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_TRUE_FATAL(hasidentity);
 
     path = get_file_path(_path, PATH_MAX, 2, storePath, privateindex);
@@ -104,7 +104,7 @@ static void test_didstore_newdid_withouAlias(void)
     path = get_file_path(_path, PATH_MAX, 2, storePath, storetag);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    hasidentity = DIDStore_HasPrivateIdentity(store);
+    hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
     const char *newmnemonic = Mnemonic_Generate(0);
@@ -112,7 +112,7 @@ static void test_didstore_newdid_withouAlias(void)
     Mnemonic_free((void*)newmnemonic);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
-    hasidentity = DIDStore_HasPrivateIdentity(store);
+    hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_TRUE_FATAL(hasidentity);
 
     path = get_file_path(_path, PATH_MAX, 2, storePath, privateindex);
@@ -134,7 +134,7 @@ static void test_didstore_newdid_withouAlias(void)
 
     path = get_file_path(_path, PATH_MAX, 5, storePath, storedirroot, "/",
             (char*)idstring, metastring);
-    CU_ASSERT_TRUE_FATAL(file_exist(path));
+    CU_ASSERT_FALSE(file_exist(path));
 
     rc = DIDDocument_GetAlias(doc, newalias, sizeof(newalias));
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -178,7 +178,7 @@ static void test_didstore_privateIdentity_error(void)
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     store = DIDStore_GetInstance();
-    hasidentity = DIDStore_HasPrivateIdentity(store);
+    hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
     rc = DIDStore_InitPrivateIdentity(store, "", "", storepass, 0, false);
@@ -187,7 +187,7 @@ static void test_didstore_privateIdentity_error(void)
     rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", "", 0, false);
     CU_ASSERT_EQUAL(rc, -1);
 
-    hasidentity = DIDStore_HasPrivateIdentity(store);
+    hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
     path = get_file_path(_temp, PATH_MAX, 2, storePath, privateindex);
@@ -212,7 +212,7 @@ static void test_didstore_newdid_emptystore(void)
     store = TestData_SetupStore(storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-    hasidentity = DIDStore_HasPrivateIdentity(store);
+    hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
     doc = DIDStore_NewDID(store, storepass, "little fish");

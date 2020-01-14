@@ -30,12 +30,12 @@ static void test_idchain_publishdid(void)
     signkey = DIDDocument_GetDefaultPublicKey(document);
     CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
 
-    txid = (char *)DIDStore_PublishDID(store, document, signkey, storepass);
-    CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
-    free(txid);
-
     did = DIDDocument_GetSubject(document);
     CU_ASSERT_PTR_NOT_NULL(did);
+
+    txid = (char *)DIDStore_PublishDID(store, did, signkey, storepass);
+    CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
+    free(txid);
 
     printf("\n#### begin to resolve(create) [%s]", did->idstring);
     while(!doc) {
@@ -61,7 +61,7 @@ static void test_idchain_publishdid(void)
     signkey = DIDDocument_GetDefaultPublicKey(doc);
     CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
 
-    txid = (char *)DIDStore_UpdateDID(store, doc, signkey, storepass);
+    txid = (char *)DIDStore_PublishDID(store, did, signkey, storepass);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
     free(txid);
 

@@ -57,7 +57,7 @@ Issuer *Issuer_Create(DID *did, DIDURL *signkey)
     }
 
     store = DIDStore_GetInstance();
-    if (!DIDStore_ContainPrivateKey(store, did, signkey)) {
+    if (!DIDStore_ContainsPrivateKey(store, did, signkey)) {
         DIDDocument_Destroy(doc);
         return NULL;
     }

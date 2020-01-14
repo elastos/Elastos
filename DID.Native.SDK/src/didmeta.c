@@ -239,7 +239,7 @@ bool DIDMeta_IsEmpty(DIDMeta *meta)
     if (!meta)
         return true;
 
-    if (*meta->alias && *meta->txid && !meta->deactived && !meta->timestamp)
+    if (!*meta->alias && !*meta->txid && !meta->deactived && !meta->timestamp)
         return true;
 
     return false;

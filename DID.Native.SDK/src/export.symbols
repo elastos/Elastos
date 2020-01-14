@@ -123,7 +123,7 @@ _Credential_GetAlias
 _DIDStore_GetInstance
 _DIDStore_Initialize
 _DIDStore_Deinitialize
-_DIDStore_HasPrivateIdentity
+_DIDStore_ContainsPrivateIdentity
 _DIDStore_InitPrivateIdentity
 _DIDStore_NewDID
 _DIDStore_Sign
@@ -141,12 +141,11 @@ _DIDStore_ContainsCredential
 _DIDStore_DeleteCredential
 _DIDStore_ListCredentials
 _DIDStore_SelectCredentials
-_DIDSotre_ContainPrivateKeys
-_DIDStore_ContainPrivateKey
+_DIDSotre_ContainsPrivateKeys
+_DIDStore_ContainsPrivateKey
 _DIDStore_StorePrivateKey
 _DIDStore_DeletePrivateKey
 _DIDStore_PublishDID
-_DIDStore_UpdateDID
 _DIDStore_DeactivateDID
 _DIDStore_ExportMnemonic
 
