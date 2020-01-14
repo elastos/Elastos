@@ -698,7 +698,7 @@ namespace Elastos {
 			std::map<std::string, BigInt>::iterator it;
 
 			std::map<std::string, BigInt> inputList;
-			for (InputArray::iterator in = _inputs.begin(); in != _inputs.end(); ++in) {
+			for (InputArray::iterator in = _inputs.begin(); in != _inputs.end() && (*in)->TxHash() != 0; ++in) {
 				TransactionPtr tx = wallet->TransactionForHash((*in)->TxHash());
 				if (tx) {
 					const OutputPtr o = tx->OutputOfIndex((*in)->Index());
@@ -715,23 +715,6 @@ namespace Elastos {
 						}
 
 						// sent or moved
-						direction = "Sent";
-						inputAmount += spentAmount;
-					}
-				} else {
-					UTXOPtr cb = wallet->CoinBaseTxForHash((*in)->TxHash());
-					if (cb && cb->Index() == (*in)->Index()) {
-						const BigInt &spentAmount = cb->Output()->Amount();
-						addr = cb->Output()->Addr()->String();
-
-						if (detail) {
-							if (inputList.find(addr) == inputList.end()) {
-								inputList[addr] = spentAmount;
-							} else {
-								inputList[addr] += spentAmount;
-							}
-						}
-
 						direction = "Sent";
 						inputAmount += spentAmount;
 					}
@@ -798,7 +781,7 @@ namespace Elastos {
 			}
 
 			summary["TxHash"] = GetHash().GetHex();
-			summary["Status"] = confirms <= 1 ? "Pending" : "Confirmed";
+			summary["Status"] = GetConfirmStatus(wallet->LastBlockHeight());
 			summary["ConfirmStatus"] = confirms;
 			summary["Timestamp"] = GetTimestamp();
 			summary["Direction"] = direction;
@@ -921,8 +904,8 @@ namespace Elastos {
 			_fee = f;
 		}
 
-		bool Transaction::IsEqual(const Transaction *tx) const {
-			return (tx == this || _txHash == tx->GetHash());
+		bool Transaction::IsEqual(const Transaction &tx) const {
+			return _txHash == tx.GetHash();
 		}
 
 		uint32_t Transaction::GetConfirms(uint32_t walletBlockHeight) const {
@@ -930,6 +913,19 @@ namespace Elastos {
 				return 0;
 
 			return walletBlockHeight >= _blockHeight ? walletBlockHeight - _blockHeight + 1 : 0;
+		}
+
+		std::string Transaction::GetConfirmStatus(uint32_t walletBlockHeight) const {
+			uint32_t confirm = GetConfirms(walletBlockHeight);
+
+			std::string status;
+			if (IsCoinBase()) {
+				status = confirm <= 100 ? "Pending" : "Confirmed";
+			} else {
+				status = confirm < 2 ? "Pending" : "Confirmed";
+			}
+
+			return status;
 		}
 
 	}

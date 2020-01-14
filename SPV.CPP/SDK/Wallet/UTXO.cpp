@@ -79,14 +79,6 @@ namespace Elastos {
 			_n = index;
 		}
 
-		bool UTXO::Spent() const {
-			return _spent;
-		}
-
-		void UTXO::SetSpent(bool status) {
-			_spent = status;
-		}
-
 		time_t UTXO::Timestamp() const {
 			return _timestamp;
 		}

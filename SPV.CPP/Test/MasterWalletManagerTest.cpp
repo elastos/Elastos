@@ -22,6 +22,7 @@
 #include <climits>
 #include <boost/scoped_ptr.hpp>
 #include <boost/filesystem.hpp>
+#include <Plugin/Transaction/Payload/CoinBase.h>
 
 #include "TestHelper.h"
 
@@ -198,6 +199,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	std::string xprv = ls.GetxPrivKey();
 	bytes_t bytes = AES::DecryptCCM(xprv, payPassword);
 	Key key = HDKeychain(bytes).getChild(keyPath);
+	Address addr(PrefixStandard, key.PubKey());
 
 	int txCount = 20;
 	std::vector<TransactionPtr> txlist;
@@ -205,7 +207,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		TransactionPtr tx(new Transaction());
 		tx->SetVersion(Transaction::TxVersion::Default);
 		tx->SetLockTime(getRandUInt32());
-		tx->SetBlockHeight(i + 1);
+		tx->SetBlockHeight(i + 100);
 		tx->SetTimestamp(getRandUInt32());
 		tx->SetPayloadVersion(getRandUInt8());
 		tx->SetFee(getRandUInt64());
@@ -223,8 +225,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		}
 
 		for (size_t i = 0; i < 20; ++i) {
-			Address toAddress(PrefixStandard, key.PubKey());
-			OutputPtr output(new TransactionOutput(10, toAddress));
+			OutputPtr output(new TransactionOutput(10, addr));
 			tx->AddOutput(output);
 		}
 		tx->FixIndex();
@@ -257,7 +258,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	TransactionPtr tx(new Transaction());
 	tx->SetVersion(Transaction::TxVersion::Default);
 	tx->SetLockTime(getRandUInt32());
-	tx->SetBlockHeight(getRandUInt32());
+	tx->SetBlockHeight(1000);
 	tx->SetTimestamp(getRandUInt32());
 	tx->SetPayloadVersion(getRandUInt8());
 	tx->SetFee(getRandUInt64());
@@ -289,8 +290,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	tx->AddOutput(output);
 	if (fee > 0) {
 		Address change(PrefixStandard, key.PubKey());
-		OutputPtr output(new TransactionOutput(fee, toAddress));
-		tx->AddOutput(output);
+		tx->AddOutput(OutputPtr(new TransactionOutput(fee, toAddress)));
 	}
 	tx->FixIndex();
 
@@ -314,13 +314,33 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 
 	//put coinbase tx
 	for (int i = 0; i < txCount; ++i) {
-		OutputPtr output(new TransactionOutput(10, Address(PrefixStandard, key.PubKey())));
-		UTXOPtr entity(
-			new UTXO(uint256(getRandBytes(32)), getRandUInt16(), getRandUInt32(), getRandUInt32(), output));
-
-		dm.PutCoinBase(entity);
+		TransactionPtr txn(new Transaction(Transaction::coinBase, PayloadPtr(new CoinBase())));
+		OutputPtr o(new TransactionOutput(10, Address(PrefixStandard, key.PubKey())));
+		txn->AddOutput(o);
+		txn->SetBlockHeight(4000 + i);
+		std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
+		txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
+		dm.PutCoinbase(txn);
 	}
-	REQUIRE(dm.GetAllCoinBase().size() == txCount);
+	REQUIRE(dm.GetCoinbaseTotalCount() == txCount);
+	for (int i = 0; i < txCount; ++i) {
+		TransactionPtr txn(new Transaction(Transaction::coinBase, PayloadPtr(new CoinBase())));
+		OutputPtr o(new TransactionOutput(10, Address(PrefixStandard, key.PubKey())));
+		txn->AddOutput(o);
+		txn->SetBlockHeight(4032 - 101 - i);
+		std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
+		txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
+		dm.PutCoinbase(txn);
+	}
+	REQUIRE(dm.GetCoinbaseTotalCount() == 2 * txCount);
+
+	// put merkle block
+	MerkleBlockPtr block = Registry::Instance()->CreateMerkleBlock("ELA");
+	block->SetHeight(4032);
+	block->SetHash(getRanduint256());
+	block->SetTimestamp(getRandUInt32());
+	block->SetTarget(getRandUInt32());
+	dm.PutMerkleBlock("ela1", block);
 	dm.flush();
 
 	// verify wallet balance
@@ -340,7 +360,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	ISubWallet *subWallet = subWallets[0];
 
 	std::string balance = subWallet->GetBalance();
-	REQUIRE(balance == "1990");
+	REQUIRE(balance == "2190");
 
 	nlohmann::json balanceInfo = subWallet->GetBalanceInfo();
 	REQUIRE(balanceInfo.size() == 1);

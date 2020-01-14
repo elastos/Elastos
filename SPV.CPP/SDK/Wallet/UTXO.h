@@ -40,10 +40,6 @@ namespace Elastos {
 
 			void SetIndex(uint16_t index);
 
-			bool Spent() const;
-
-			void SetSpent(bool status);
-
 			time_t Timestamp() const;
 
 			void SetTimestamp(time_t t);

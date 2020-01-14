@@ -32,15 +32,15 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidChainID, "invalid chain ID");
 			}
 
-			std::vector<TransactionPtr>  txs = loadTransactions(chainID);
-			std::vector<UTXOPtr> cbs = loadCoinBaseUTXOs();
+			std::vector<TransactionPtr> txs = loadTransactions(chainID);
+			std::vector<TransactionPtr> cbs = loadCoinBaseUTXOs();
 
 			std::sort(txs.begin(), txs.end(), [](const TransactionPtr &a, const TransactionPtr &b) {
 				return a->GetBlockHeight() < b->GetBlockHeight();
 			});
 
-			std::sort(cbs.begin(), cbs.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
-				return a->BlockHeight() < b->BlockHeight();
+			std::sort(cbs.begin(), cbs.end(), [](const TransactionPtr &a, const TransactionPtr &b) {
+				return a->GetBlockHeight() < b->GetBlockHeight();
 			});
 
 			if (_peerManager == nullptr) {
@@ -80,24 +80,20 @@ namespace Elastos {
 
 		}
 
-		void CoreSpvService::onCoinBaseTxAdded(const UTXOPtr &cb) {
+		void CoreSpvService::onCoinbaseTxAdded(const TransactionPtr &tx) {
 
 		}
 
-		void CoreSpvService::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
+		void CoreSpvService::onCoinbaseTxMove(const std::vector<TransactionPtr> &txns) {
 
 		}
 
-		void CoreSpvService::onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
+		void CoreSpvService::onCoinbaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
 												 time_t timestamp) {
 
 		}
 
-		void CoreSpvService::onCoinBaseSpent(const UTXOArray &spentUTXO) {
-
-		}
-
-		void CoreSpvService::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+		void CoreSpvService::onCoinbaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
 
 		}
 
@@ -160,8 +156,8 @@ namespace Elastos {
 
 		}
 
-		std::vector<UTXOPtr> CoreSpvService::loadCoinBaseUTXOs() {
-			return std::vector<UTXOPtr>();
+		std::vector<TransactionPtr> CoreSpvService::loadCoinBaseUTXOs() {
+			return std::vector<TransactionPtr>();
 		}
 
 		std::vector<TransactionPtr> CoreSpvService::loadTransactions(const std::string &chainID) {
@@ -207,7 +203,7 @@ namespace Elastos {
 			try {
 				_listener->syncStarted();
 			} catch (const std::exception &ex) {
-				Log::error("syncStarted exception: {}", ex.what());
+				Log::error("{} e: {}", GetFunName(), ex.what());
 			}
 		}
 
@@ -215,7 +211,7 @@ namespace Elastos {
 			try {
 				_listener->syncProgress(progress, lastBlockTime, bytesPerSecond, downloadPeer);
 			} catch (const std::exception &e) {
-				Log::error("syncProgress exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -223,7 +219,7 @@ namespace Elastos {
 			try {
 				_listener->syncStopped(error);
 			} catch (const std::exception &e) {
-				Log::error("syncStopped exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -231,7 +227,7 @@ namespace Elastos {
 			try {
 				_listener->txStatusUpdate();
 			} catch (const std::exception &e) {
-				Log::error("txStatusUpdate exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -240,7 +236,7 @@ namespace Elastos {
 			try {
 				_listener->saveBlocks(replace, blocks);
 			} catch (const std::exception &e) {
-				Log::error("saveBlocks exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -248,7 +244,7 @@ namespace Elastos {
 			try {
 				_listener->savePeers(replace, peers);
 			} catch (const std::exception &e) {
-				Log::error("savePeers exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -256,7 +252,7 @@ namespace Elastos {
 			try {
 				_listener->saveBlackPeer(peer);
 			} catch (const std::exception &e) {
-				Log::error("saveBlockPeer exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -264,7 +260,7 @@ namespace Elastos {
 			try {
 				return _listener->networkIsReachable();
 			} catch (const std::exception &e) {
-				Log::error("networkIsReachable exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 
 			return true;
@@ -274,7 +270,7 @@ namespace Elastos {
 			try {
 				_listener->txPublished(hash, result);
 			} catch (const std::exception &e) {
-				Log::error("txPublished exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -282,7 +278,7 @@ namespace Elastos {
 			try {
 				_listener->connectStatusChanged(status);
 			} catch (const std::exception &e) {
-				Log::error("connectStatusChanged exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -298,7 +294,7 @@ namespace Elastos {
 				try {
 					_listener->syncStarted();
 				} catch (const std::exception &e) {
-					Log::error("syncStarted exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -308,7 +304,7 @@ namespace Elastos {
 				try {
 					_listener->syncProgress(progress, lastBlockTime, bytesPerSecond, downloadPeer);
 				} catch (const std::exception &e) {
-					Log::error("syncProgress exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -318,7 +314,7 @@ namespace Elastos {
 				try {
 					_listener->syncStopped(error);
 				} catch (const std::exception &e) {
-					Log::error("syncStopped exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -328,7 +324,7 @@ namespace Elastos {
 				try {
 					_listener->txStatusUpdate();
 				} catch (const std::exception &e) {
-					Log::error("txStatusUpdate exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -338,7 +334,7 @@ namespace Elastos {
 				try {
 					_listener->saveBlocks(replace, blocks);
 				} catch (const std::exception &e) {
-					Log::error("saveBlocks exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -348,7 +344,7 @@ namespace Elastos {
 				try {
 					_listener->savePeers(replace, peers);
 				} catch (const std::exception &e) {
-					Log::error("savePeers exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -358,7 +354,7 @@ namespace Elastos {
 				try {
 					_listener->saveBlackPeer(peer);
 				} catch (const std::exception &e) {
-					Log::error("saveBlackPeer exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -369,7 +365,7 @@ namespace Elastos {
 				try {
 					_listener->networkIsReachable();
 				} catch (const std::exception &e) {
-					Log::error("networkIsReachable exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 			return result;
@@ -380,7 +376,7 @@ namespace Elastos {
 				try {
 					_listener->txPublished(hash, result);
 				} catch (const std::exception &e) {
-					Log::error("txPublished exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -390,7 +386,7 @@ namespace Elastos {
 				try {
 					_listener->connectStatusChanged(status);
 				} catch (const std::exception &e) {
-					Log::error("connectStatusChanged exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -403,50 +399,42 @@ namespace Elastos {
 			try {
 				_listener->balanceChanged(asset, balance);
 			} catch (const std::exception &e) {
-				Log::error("balanceChanged exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
-		void WrappedExceptionWalletListener::onCoinBaseTxAdded(const UTXOPtr &cb) {
+		void WrappedExceptionWalletListener::onCoinbaseTxAdded(const TransactionPtr &tx) {
 			try {
-				_listener->onCoinBaseTxAdded(cb);
+				_listener->onCoinbaseTxAdded(tx);
 			} catch (const std::exception &e) {
-				Log::error("onCoinBaseTxAdded exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
-		void WrappedExceptionWalletListener::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
+		void WrappedExceptionWalletListener::onCoinbaseTxMove(const std::vector<TransactionPtr> &txns) {
 			try {
-				_listener->onCoinBaseUpdatedAll(cbs);
+				_listener->onCoinbaseTxMove(txns);
 			} catch (const std::exception &e) {
-				Log::error("onCoinBaseUpdatedAll exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
-		void WrappedExceptionWalletListener::onCoinBaseTxUpdated(const std::vector<uint256> &hashes,
+		void WrappedExceptionWalletListener::onCoinbaseTxUpdated(const std::vector<uint256> &hashes,
 																 uint32_t blockHeight,
 																 time_t timestamp) {
 			try {
-				_listener->onCoinBaseTxUpdated(hashes, blockHeight, timestamp);
+				_listener->onCoinbaseTxUpdated(hashes, blockHeight, timestamp);
 			} catch (const std::exception &e) {
-				Log::error("onCoinBaseTxUpdated exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
-		void WrappedExceptionWalletListener::onCoinBaseSpent(const UTXOArray &spentUTXO) {
-			try {
-				_listener->onCoinBaseSpent(spentUTXO);
-			} catch (const std::exception &e) {
-				Log::error("onCoinBaseSpent exception: {}", e.what());
-			}
-		}
-
-		void WrappedExceptionWalletListener::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser,
+		void WrappedExceptionWalletListener::onCoinbaseTxDeleted(const uint256 &hash, bool notifyUser,
 																 bool recommendRescan) {
 			try {
-				_listener->onCoinBaseTxDeleted(hash, notifyUser, recommendRescan);
+				_listener->onCoinbaseTxDeleted(hash, notifyUser, recommendRescan);
 			} catch (const std::exception &e) {
-				Log::error("onCoinBaseTxDeleted exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -454,7 +442,7 @@ namespace Elastos {
 			try {
 				_listener->onTxAdded(transaction);
 			} catch (const std::exception &e) {
-				Log::error("onTxAdded exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -464,7 +452,7 @@ namespace Elastos {
 			try {
 				_listener->onTxUpdated(hashes, blockHeight, timeStamp);
 			} catch (const std::exception &e) {
-				Log::error("onTxUpdated exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -473,7 +461,7 @@ namespace Elastos {
 			try {
 				_listener->onTxDeleted(hash, notifyUser, recommendRescan);
 			} catch (const std::exception &e) {
-				Log::error("onTxDeleted exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -481,7 +469,7 @@ namespace Elastos {
 			try {
 				_listener->onTxUpdatedAll(txns);
 			} catch (const std::exception &e) {
-				Log::error("onTxUpdatedAll exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -491,7 +479,7 @@ namespace Elastos {
 			try {
 				_listener->onAssetRegistered(asset, amount, controller);
 			} catch (const std::exception &e) {
-				Log::error("onTxDeleted exception: {}", e.what());
+				Log::error("{} e: {}", GetFunName(), e.what());
 			}
 		}
 
@@ -507,60 +495,50 @@ namespace Elastos {
 				try {
 					_listener->balanceChanged(asset, balance);
 				} catch (const std::exception &e) {
-					Log::error("balanceChanged exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onCoinBaseTxAdded(const UTXOPtr &cb) {
-			_executor->Execute(Runnable([this, cb]() -> void {
+		void WrappedExecutorWalletListener::onCoinbaseTxAdded(const TransactionPtr &tx) {
+			_executor->Execute(Runnable([this, tx]() -> void {
 				try {
-					_listener->onCoinBaseTxAdded(cb);
+					_listener->onCoinbaseTxAdded(tx);
 				} catch (const std::exception &e) {
-					Log::error("onCoinBaseTxAdded exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
-			_executor->Execute(Runnable([this, cbs]() -> void {
+		void WrappedExecutorWalletListener::onCoinbaseTxMove(const std::vector<TransactionPtr> &txns) {
+			_executor->Execute(Runnable([this, txns]() -> void {
 				try {
-					_listener->onCoinBaseUpdatedAll(cbs);
+					_listener->onCoinbaseTxMove(txns);
 				} catch (const std::exception &e) {
-					Log::error("onCoinBaseUpdatedAll exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onCoinBaseTxUpdated(const std::vector<uint256> &hashes,
+		void WrappedExecutorWalletListener::onCoinbaseTxUpdated(const std::vector<uint256> &hashes,
 																uint32_t blockHeight,
 																time_t timestamp) {
 			_executor->Execute(Runnable([this, hashes, blockHeight, timestamp]() -> void {
 				try {
-					_listener->onCoinBaseTxUpdated(hashes, blockHeight, timestamp);
+					_listener->onCoinbaseTxUpdated(hashes, blockHeight, timestamp);
 				} catch (const std::exception &e) {
-					Log::error("onCoinBaseTxUpdated exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onCoinBaseSpent(const UTXOArray &spentUTXO) {
-			_executor->Execute(Runnable([this, spentUTXO]() -> void {
-				try {
-					_listener->onCoinBaseSpent(spentUTXO);
-				} catch (const std::exception &e) {
-					Log::error("onCoinBaseSpent exception: {}", e.what());
-				}
-			}));
-		}
-
-		void WrappedExecutorWalletListener::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser,
+		void WrappedExecutorWalletListener::onCoinbaseTxDeleted(const uint256 &hash, bool notifyUser,
 																bool recommendRescan) {
 			_executor->Execute(Runnable([this, hash, notifyUser, recommendRescan]() -> void {
 				try {
-					_listener->onCoinBaseTxDeleted(hash, notifyUser, recommendRescan);
+					_listener->onCoinbaseTxDeleted(hash, notifyUser, recommendRescan);
 				} catch (const std::exception &e) {
-					Log::error("onCoinBaseTxDeleted exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -570,7 +548,7 @@ namespace Elastos {
 				try {
 					_listener->onTxAdded(tx);
 				} catch (const std::exception &e) {
-					Log::error("onTxAdded exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -581,7 +559,7 @@ namespace Elastos {
 				try {
 					_listener->onTxUpdated(hashes, blockHeight, timeStamp);
 				} catch (const std::exception &e) {
-					Log::error("onTxUpdated exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -592,7 +570,7 @@ namespace Elastos {
 				try {
 					_listener->onTxDeleted(hash, notifyUser, recommendRescan);
 				} catch (const std::exception &e) {
-					Log::error("onTxDeleted exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -602,7 +580,7 @@ namespace Elastos {
 				try {
 					_listener->onTxUpdatedAll(txns);
 				} catch (const std::exception &e) {
-					Log::error("onTxUpdatedAll exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}
@@ -614,7 +592,7 @@ namespace Elastos {
 				try {
 					_listener->onAssetRegistered(asset, amount, controller);
 				} catch (const std::exception &e) {
-					Log::error("onAssetRegistered exception: {}", e.what());
+					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
 		}

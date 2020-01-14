@@ -10,7 +10,7 @@
 #include "PeerDataSource.h"
 #include "PeerBlackList.h"
 #include "AssetDataStore.h"
-#include "CoinBaseUTXODataStore.h"
+#include "TransactionCoinbase.h"
 #include "DIDDataStore.h"
 #include "Sqlite.h"
 
@@ -27,14 +27,13 @@ namespace Elastos {
 			~DatabaseManager();
 
 			// CoinBase UTXO database interface
-			bool PutCoinBase(const std::vector<UTXOPtr> &entitys);
-			bool PutCoinBase(const UTXOPtr &entity);
-			bool DeleteAllCoinBase();
-			size_t GetCoinBaseTotalCount() const;
-			std::vector<UTXOPtr> GetAllCoinBase() const;
-			bool UpdateCoinBase(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
-			bool UpdateSpentCoinBase(const UTXOArray &spentUTXO);
-			bool DeleteCoinBase(const uint256 &hash);
+			bool PutCoinbases(const std::vector<TransactionPtr> &entitys);
+			bool PutCoinbase(const TransactionPtr &entity);
+			bool DeleteAllCoinbase();
+			size_t GetCoinbaseTotalCount() const;
+			std::vector<TransactionPtr> GetAllCoinbase() const;
+			bool UpdateCoinbase(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
+			bool DeleteCoinbase(const uint256 &hash);
 
 			// Transaction's database interface
 			bool PutTransaction(const std::string &iso, const TransactionPtr &tx);
@@ -94,7 +93,7 @@ namespace Elastos {
 			Sqlite                	_sqlite;
 			PeerDataSource        	_peerDataSource;
 			PeerBlackList           _peerBlackList;
-			CoinBaseUTXODataStore   _coinbaseDataStore;
+			TransactionCoinbase     _coinbaseDataStore;
 			TransactionDataStore  	_transactionDataStore;
 			MerkleBlockDataSource 	_merkleBlockDataSource;
 			AssetDataStore          _assetDataStore;

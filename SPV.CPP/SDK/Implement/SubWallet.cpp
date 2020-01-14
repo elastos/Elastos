@@ -390,7 +390,7 @@ namespace Elastos {
 			if (!txid.empty()) {
 				uint256 txHash(txid);
 				TransactionPtr tx = wallet->TransactionForHash(txHash);
-				if (tx) {
+				if (tx && !tx->IsCoinBase()) {
 					confirms = tx->GetConfirms(wallet->LastBlockHeight());
 					jsonList.push_back(tx->GetSummary(wallet, confirms, true));
 					j["Transactions"] = jsonList;
@@ -418,65 +418,30 @@ namespace Elastos {
 			ArgInfo("txID: {}", txID);
 
 			nlohmann::json j;
+			uint32_t confirms = 0;
+			std::vector<nlohmann::json> jsonList;
 			const WalletPtr wallet = _walletManager->GetWallet();
-			std::vector<UTXOPtr> cbs = wallet->GetAllCoinBaseTransactions();
-			size_t maxCount = cbs.size();
-			size_t pageCount = count, realCount = 0;
 
-			if (start >= maxCount) {
-				j["Transactions"] = {};
-				j["MaxCount"] = maxCount;
-				ArgInfo("r => {}", j.dump());
-				return j;
-			}
+			j["MaxCount"] = wallet->GetAllCoinbaseTransactionCount();
 
-			if (maxCount < start + count)
-				pageCount = maxCount - start;
-
-			if (!txID.empty())
-				pageCount = 1;
-
-			std::vector<nlohmann::json> jcbs;
-			jcbs.reserve(pageCount);
-			for (size_t i = maxCount - start; i > 0 && realCount < pageCount; --i) {
-				const UTXOPtr &cbptr = cbs[i - 1];
-				nlohmann::json cb;
-
-				if (!txID.empty()) {
-					if (cbptr->Hash().GetHex() == txID) {
-						cb["TxHash"] = txID;
-						uint32_t confirms = cbptr->GetConfirms(_walletManager->GetWallet()->LastBlockHeight());
-						cb["Timestamp"] = cbptr->Timestamp();
-						cb["Amount"] = cbptr->Output()->Amount().getDec();
-						cb["Status"] = confirms <= 100 ? "Pending" : "Confirmed";
-						cb["Direction"] = "Received";
-
-						cb["ConfirmStatus"] = confirms;
-						cb["Height"] = cbptr->BlockHeight();
-						cb["Spent"] = cbptr->Spent();
-						cb["Address"] = cbptr->Output()->Addr()->String();
-						cb["Type"] = Transaction::coinBase;
-						jcbs.push_back(cb);
-						realCount++;
-						break;
-					}
+			if (!txID.empty()) {
+				uint256 txHash(txID);
+				TransactionPtr tx = wallet->TransactionForHash(txHash);
+				if (tx && tx->IsCoinBase()) {
+					confirms = tx->GetConfirms(wallet->LastBlockHeight());
+					jsonList.push_back(tx->GetSummary(wallet, confirms, true));
+					j["Transactions"] = jsonList;
 				} else {
-					nlohmann::json cb;
-
-					cb["TxHash"] = cbptr->Hash().GetHex();
-					uint32_t confirms = cbptr->GetConfirms(_walletManager->GetWallet()->LastBlockHeight());
-					cb["Timestamp"] = cbptr->Timestamp();
-					cb["Amount"] = cbptr->Output()->Amount().getDec();
-					cb["Status"] = confirms <= 100 ? "Pending" : "Confirmed";
-					cb["Direction"] = "Received";
-					cb["ConfirmStatus"] = confirms;
-
-					jcbs.push_back(cb);
-					realCount++;
+					j["Transactions"] = {};
 				}
+			} else {
+				std::vector<TransactionPtr> txns = wallet->GetAllCoinBaseTransactions(start, count);
+				for (size_t i = 0; i < txns.size(); ++i) {
+					confirms = txns[i]->GetConfirms(wallet->LastBlockHeight());
+					jsonList.push_back(txns[i]->GetSummary(wallet, confirms, false));
+				}
+				j["Transactions"] = jsonList;
 			}
-			j["Transactions"] = jcbs;
-			j["MaxCount"] = maxCount;
 
 			ArgInfo("r => {}", j.dump());
 			return j;
@@ -497,29 +462,21 @@ namespace Elastos {
 			}
 		}
 
-		void SubWallet::onCoinBaseTxAdded(const UTXOPtr &cb) {
-			ArgInfo("{} {} Hash:{}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), cb->Hash().GetHex());
+		void SubWallet::onCoinbaseTxAdded(const TransactionPtr &tx) {
+			ArgInfo("{} {} Hash:{}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), tx->GetHash().GetHex());
 		}
 
-		void SubWallet::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
-			ArgInfo("{} {} cnt: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), cbs.size());
+		void SubWallet::onCoinbaseTxMove(const std::vector<TransactionPtr> &txns) {
+			ArgInfo("{} {} cnt: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), txns.size());
 		}
 
-		void SubWallet::onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
+		void SubWallet::onCoinbaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
 			ArgInfo("{} {} size: {}, height: {}, timestamp: {}",
 					   _walletManager->GetWallet()->GetWalletID(), GetFunName(),
 					   hashes.size(), blockHeight, timestamp);
 		}
 
-		void SubWallet::onCoinBaseSpent(const UTXOArray &spentUTXO) {
-			ArgInfo("{} {} size: {}: [{},{} {}]",
-					   _walletManager->GetWallet()->GetWalletID(), GetFunName(),
-					   spentUTXO.size(), spentUTXO.front()->Hash().GetHex(),
-					   (spentUTXO.size() > 2 ? " ...," : ""),
-					   (spentUTXO.size() > 1 ? spentUTXO.back()->Hash().GetHex() : ""));
-		}
-
-		void SubWallet::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+		void SubWallet::onCoinbaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
 			ArgInfo("{} {} Hash: {}, notify: {}, rescan: {}",
 					_walletManager->GetWallet()->GetWalletID(), GetFunName(),
 					hash.GetHex(), notifyUser, recommendRescan);

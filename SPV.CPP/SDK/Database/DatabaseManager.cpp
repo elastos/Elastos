@@ -22,37 +22,33 @@ namespace Elastos {
 
 		DatabaseManager::~DatabaseManager() {}
 
-		bool DatabaseManager::PutCoinBase(const std::vector<UTXOPtr> &entitys) {
-			return _coinbaseDataStore.Put(entitys);
+		bool DatabaseManager::PutCoinbases(const std::vector<TransactionPtr> &entitys) {
+			return _coinbaseDataStore.PutTransactions("ela1", entitys);
 		}
 
-		bool DatabaseManager::PutCoinBase(const UTXOPtr &entity) {
-			return _coinbaseDataStore.Put(entity);
+		bool DatabaseManager::PutCoinbase(const TransactionPtr &entity) {
+			return _coinbaseDataStore.PutTransaction("ela1", entity);
 		}
 
-		bool DatabaseManager::DeleteAllCoinBase() {
-			return _coinbaseDataStore.DeleteAll();
+		bool DatabaseManager::DeleteAllCoinbase() {
+			return _coinbaseDataStore.DeleteAllTransactions();
 		}
 
-		size_t DatabaseManager::GetCoinBaseTotalCount() const {
-			return _coinbaseDataStore.GetTotalCount();
+		size_t DatabaseManager::GetCoinbaseTotalCount() const {
+			return _coinbaseDataStore.GetAllTransactionsCount();
 		}
 
-		std::vector<UTXOPtr> DatabaseManager::GetAllCoinBase() const {
-			return _coinbaseDataStore.GetAll();
+		std::vector<TransactionPtr> DatabaseManager::GetAllCoinbase() const {
+			return _coinbaseDataStore.GetAllTransactions("ELA");
 		}
 
-		bool DatabaseManager::UpdateCoinBase(const std::vector<uint256> &txHashes, uint32_t blockHeight,
+		bool DatabaseManager::UpdateCoinbase(const std::vector<uint256> &txHashes, uint32_t blockHeight,
 											 time_t timestamp) {
-			return _coinbaseDataStore.Update(txHashes, blockHeight, timestamp);
+			return _coinbaseDataStore.UpdateTransaction(txHashes, blockHeight, timestamp);
 		}
 
-		bool DatabaseManager::UpdateSpentCoinBase(const UTXOArray &spentUTXO) {
-			return _coinbaseDataStore.UpdateSpent(spentUTXO);
-		}
-
-		bool DatabaseManager::DeleteCoinBase(const uint256 &hash) {
-			return _coinbaseDataStore.Delete(hash);
+		bool DatabaseManager::DeleteCoinbase(const uint256 &hash) {
+			return _coinbaseDataStore.DeleteTxByHash(hash);
 		}
 
 		bool DatabaseManager::PutTransaction(const std::string &iso, const TransactionPtr &tx) {

@@ -4,7 +4,6 @@
 
 #include "TransactionDataStore.h"
 
-#include <Common/ErrorChecker.h>
 #include <Common/Log.h>
 #include <Common/uint256.h>
 #include <Plugin/Transaction/Transaction.h>
@@ -16,28 +15,56 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		TransactionDataStore::TransactionDataStore() :
+			TableBase(nullptr) {
+			Init();
+		}
+
 		TransactionDataStore::TransactionDataStore(Sqlite *sqlite) : TableBase(sqlite) {
-			InitializeTable(TX_DATABASE_CREATE);
+			Init();
+			InitializeTable(_tableCreation);
 		}
 
 		TransactionDataStore::TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite) :
 			TableBase(type, sqlite) {
-			InitializeTable(TX_DATABASE_CREATE);
+			Init();
+			InitializeTable(_tableCreation);
 		}
 
 		TransactionDataStore::~TransactionDataStore() {}
 
+		void TransactionDataStore::Init() {
+			_tableName = "transactionTable";
+			_txHash = "_id";
+			_buff = "transactionBuff";
+			_blockHeight = "transactionBlockHeight";
+			_timestamp = "transactionTimeStamp";
+			_iso = "transactionISO";
+			_remark = "transactionRemark";
+			_assetID = "assetID";
+
+			_tableCreation = "create table if not exists " +
+							 _tableName + "(" +
+							 _txHash + " text not null, " +
+							 _buff + " blob, " +
+							 _blockHeight + " integer, " +
+							 _timestamp + " integer, " +
+							 _remark + " text DEFAULT '', " +
+							 _assetID + " text not null, " +
+							 _iso + " text DEFAULT 'ELA');";
+		}
+
 		bool TransactionDataStore::PutTransactionInternal(const std::string &iso, const TransactionPtr &tx) {
 			std::string sql, txHash;
 
-			sql = "INSERT INTO " + TX_TABLE_NAME + "(" +
-				  TX_COLUMN_ID + "," +
-				  TX_BUFF + "," +
-				  TX_BLOCK_HEIGHT + "," +
-				  TX_TIME_STAMP + "," +
-				  TX_REMARK + "," +
-				  TX_ASSETID + "," +
-				  TX_ISO + ") VALUES (?, ?, ?, ?, ?, ?, ?);";
+			sql = "INSERT INTO " + _tableName + "(" +
+				  _txHash + "," +
+				  _buff + "," +
+				  _blockHeight + "," +
+				  _timestamp + "," +
+				  _remark + "," +
+				  _assetID + "," +
+				  _iso + ") VALUES (?, ?, ?, ?, ?, ?, ?);";
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -99,7 +126,7 @@ namespace Elastos {
 			return DoTransaction([this]() {
 				std::string sql;
 
-				sql = "DELETE FROM " + TX_TABLE_NAME + ";";
+				sql = "DELETE FROM " + _tableName + ";";
 
 				if (!_sqlite->exec(sql, nullptr, nullptr)) {
 					Log::error("exec sql: {}", sql);
@@ -115,7 +142,7 @@ namespace Elastos {
 
 			std::string sql;
 
-			sql = "SELECT COUNT(" + TX_COLUMN_ID + ") AS nums FROM " + TX_TABLE_NAME + ";";
+			sql = "SELECT COUNT(" + _txHash + ") AS nums FROM " + _tableName + ";";
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -145,12 +172,12 @@ namespace Elastos {
 			int r;
 
 			sql = "SELECT " +
-				  TX_COLUMN_ID + "," +
-				  TX_BUFF + "," +
-				  TX_BLOCK_HEIGHT + "," +
-				  TX_TIME_STAMP + "," +
-				  TX_ISO +
-				  " FROM " + TX_TABLE_NAME + /*" ORDER BY " + TX_BLOCK_HEIGHT + " ASC*/";";
+				  _txHash + "," +
+				  _buff + "," +
+				  _blockHeight + "," +
+				  _timestamp + "," +
+				  _iso +
+				  " FROM " + _tableName + ";";
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -204,10 +231,10 @@ namespace Elastos {
 
 				for (size_t i = 0; i < hashes.size(); ++i) {
 					hash = hashes[i].GetHex();
-					sql = "UPDATE " + TX_TABLE_NAME + " SET " +
-						  TX_BLOCK_HEIGHT + " = ?, " +
-						  TX_TIME_STAMP + " = ? " +
-						  " WHERE " + TX_COLUMN_ID + " = ?;";
+					sql = "UPDATE " + _tableName + " SET " +
+						  _blockHeight + " = ?, " +
+						  _timestamp + " = ? " +
+						  " WHERE " + _txHash + " = ?;";
 
 					sqlite3_stmt *stmt;
 					if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -239,7 +266,7 @@ namespace Elastos {
 				std::string sql;
 				std::string hashString = hash.GetHex();
 
-				sql = "DELETE FROM " + TX_TABLE_NAME + " WHERE " + TX_COLUMN_ID + " = ?;";
+				sql = "DELETE FROM " + _tableName + " WHERE " + _txHash + " = ?;";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -271,8 +298,8 @@ namespace Elastos {
 				std::string sql, hash;
 				for (size_t i = 0; i < hashes.size(); ++i) {
 					hash = hashes[i].GetHex();
-					sql = "DELETE FROM " + TX_TABLE_NAME +
-						  " WHERE " + TX_COLUMN_ID + " = ?;";
+					sql = "DELETE FROM " + _tableName +
+						  " WHERE " + _txHash + " = ?;";
 
 					sqlite3_stmt *stmt;
 					if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -306,13 +333,13 @@ namespace Elastos {
 			std::string sql;
 
 			sql = "SELECT " +
-				  TX_COLUMN_ID + "," +
-				  TX_BUFF + "," +
-				  TX_BLOCK_HEIGHT + "," +
-				  TX_TIME_STAMP + "," +
-				  TX_ISO +
-				  " FROM " + TX_TABLE_NAME +
-				  " WHERE " + TX_COLUMN_ID + " = ?;";
+				  _txHash + "," +
+				  _buff + "," +
+				  _blockHeight + "," +
+				  _timestamp + "," +
+				  _iso +
+				  " FROM " + _tableName +
+				  " WHERE " + _txHash + " = ?;";
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -367,9 +394,9 @@ namespace Elastos {
 			std::string sql;
 
 			sql = "SELECT " +
-				  TX_COLUMN_ID +
-				  " FROM " + TX_TABLE_NAME +
-				  " WHERE " + TX_COLUMN_ID + " = ?;";
+				  _txHash +
+				  " FROM " + _tableName +
+				  " WHERE " + _txHash + " = ?;";
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {

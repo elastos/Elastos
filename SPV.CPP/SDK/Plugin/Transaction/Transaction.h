@@ -191,9 +191,11 @@ namespace Elastos {
 
 			void Cleanup();
 
-			bool IsEqual(const Transaction *tx) const;
+			bool IsEqual(const Transaction &tx) const;
 
 			uint32_t GetConfirms(uint32_t walletBlockHeight) const;
+
+			std::string GetConfirmStatus(uint32_t walletBlockHeight) const;
 
 		public:
 			virtual PayloadPtr InitPayload(uint8_t type);

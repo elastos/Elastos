@@ -799,9 +799,6 @@ namespace Elastos {
 		}
 
 		bool GroupedAsset::AddCoinBaseUTXO(const UTXOPtr &o) {
-			if (o->Spent())
-				return false;
-
 			if (o->GetConfirms(_parent->_blockHeight) <= 100) {
 				if (!_utxosLocked.insert(o).second)
 					return false;
@@ -821,23 +818,21 @@ namespace Elastos {
 			return true;
 		}
 
-		bool GroupedAsset::RemoveSpentUTXO(const std::vector<InputPtr> &inputs, UTXOArray &spentCoinbase) {
+		bool GroupedAsset::RemoveUTXO(const std::vector<InputPtr> &inputs) {
 			bool removed = false;
 
 			for (InputArray::const_iterator in = inputs.cbegin(); in != inputs.cend(); ++in) {
-				if (RemoveSpentUTXO(UTXOPtr(new UTXO(*in)), spentCoinbase))
+				if (RemoveUTXO(UTXOPtr(new UTXO(*in))))
 					removed = true;
 			}
 
 			return removed;
 		}
 
-		bool GroupedAsset::RemoveSpentUTXO(const UTXOPtr &u, UTXOArray &spentCoinbase) {
+		bool GroupedAsset::RemoveUTXO(const UTXOPtr &u) {
 			UTXOSet::iterator it;
 
 			if ((it = _utxosCoinbase.find(u)) != _utxosCoinbase.end()) {
-				spentCoinbase.push_back(*it);
-				(*it)->SetSpent(true);
 				_balance -= (*it)->Output()->Amount();
 				SPVLOG_DEBUG("{} --- coinbase utxo {}:{}:{}:{} -> balance {}", _parent->_walletID,
 							 (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr()->String(),

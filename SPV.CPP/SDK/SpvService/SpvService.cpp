@@ -80,61 +80,56 @@ namespace Elastos {
 						  });
 		}
 
-		void SpvService::onCoinBaseTxAdded(const UTXOPtr &cb) {
+		void SpvService::onCoinbaseTxAdded(const TransactionPtr &tx) {
+			if (tx->IsCoinBase()) {
+				_databaseManager->PutCoinbase(tx);
 
-			_databaseManager->PutCoinBase(cb);
-
-			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&cb](Wallet::Listener *listener) {
-							  listener->onCoinBaseTxAdded(cb);
-						  });
+				std::for_each(_walletListeners.begin(), _walletListeners.end(),
+							  [&tx](Wallet::Listener *listener) {
+								  listener->onCoinbaseTxAdded(tx);
+							  });
+			}
 		}
 
-		void SpvService::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
+		void SpvService::onCoinbaseTxMove(const std::vector<TransactionPtr> &txns) {
 			std::vector<uint256> txHashes;
 
-			for (UTXOArray::const_iterator it = cbs.cbegin(); it != cbs.cend(); ++it)
-				txHashes.push_back((*it)->Hash());
+			for (const TransactionPtr &tx : txns)
+				txHashes.push_back(tx->GetHash());
 
 			_databaseManager->DeleteTxByHashes(txHashes);
-			_databaseManager->PutCoinBase(cbs);
+			_databaseManager->DeleteAllCoinbase();
+			_databaseManager->PutCoinbases(txns);
 		}
 
-		void SpvService::onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
+		void SpvService::onCoinbaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
 											 time_t timestamp) {
-			_databaseManager->UpdateCoinBase(hashes, blockHeight, timestamp);
+			_databaseManager->UpdateCoinbase(hashes, blockHeight, timestamp);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&hashes, &blockHeight, &timestamp](Wallet::Listener *listener) {
-							  listener->onCoinBaseTxUpdated(hashes, blockHeight, timestamp);
+							  listener->onCoinbaseTxUpdated(hashes, blockHeight, timestamp);
 						  });
 		}
 
-		void SpvService::onCoinBaseSpent(const UTXOArray &spentUTXO) {
-			_databaseManager->UpdateSpentCoinBase(spentUTXO);
-
-			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&spentUTXO](Wallet::Listener *listener) {
-							  listener->onCoinBaseSpent(spentUTXO);
-						  });
-		}
-
-		void SpvService::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			_databaseManager->DeleteCoinBase(hash);
+		void SpvService::onCoinbaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+			_databaseManager->DeleteCoinbase(hash);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&hash, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
-							  listener->onCoinBaseTxDeleted(hash, notifyUser, recommendRescan);
+							  listener->onCoinbaseTxDeleted(hash, notifyUser, recommendRescan);
 						  });
 		}
 
 		void SpvService::onTxAdded(const TransactionPtr &tx) {
-			_databaseManager->PutTransaction(ISO, tx);
+			if (!tx->IsCoinBase()) {
+				_databaseManager->PutTransaction(ISO, tx);
 
-			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&tx](Wallet::Listener *listener) {
-							  listener->onTxAdded(tx);
-						  });
+				std::for_each(_walletListeners.begin(), _walletListeners.end(),
+							  [&tx](Wallet::Listener *listener) {
+								  listener->onTxAdded(tx);
+							  });
+			}
 		}
 
 		void SpvService::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
@@ -309,8 +304,8 @@ namespace Elastos {
 			return _databaseManager->GetAllTransactionsCount();
 		}
 
-		std::vector<UTXOPtr> SpvService::loadCoinBaseUTXOs() {
-			return _databaseManager->GetAllCoinBase();
+		std::vector<TransactionPtr> SpvService::loadCoinBaseUTXOs() {
+			return _databaseManager->GetAllCoinbase();
 		}
 
 		// override protected methods

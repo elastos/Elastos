@@ -10,20 +10,14 @@
 #include "Message/GetDataMessage.h"
 #include "Message/InventoryMessage.h"
 
-#include <Plugin/Transaction/Asset.h>
-#include <Plugin/Transaction/Transaction.h>
-#include <Plugin/Transaction/TransactionInput.h>
 #include <Plugin/Transaction/TransactionOutput.h>
 #include <Plugin/Block/ELAMerkleBlock.h>
 #include <Plugin/Registry.h>
-#include <Plugin/Block/MerkleBlock.h>
 #include <Common/Utils.h>
 #include <Common/Log.h>
-#include <WalletCore/Base58.h>
 #include <WalletCore/BloomFilter.h>
 #include <WalletCore/HDKeychain.h>
 #include <Wallet/Wallet.h>
-#include <Wallet/UTXO.h>
 #include <P2P/ChainParams.h>
 
 #include <netdb.h>
@@ -840,7 +834,7 @@ namespace Elastos {
 		void PeerManager::AddTxToPublishList(const TransactionPtr &tx, const Peer::PeerPubTxCallback &callback) {
 			if (tx && tx->GetBlockHeight() == TX_UNCONFIRMED) {
 				for (size_t i = _publishedTx.size(); i > 0; i--) {
-					if (_publishedTx[i - 1].GetTransaction()->IsEqual(tx.get())) return;
+					if (_publishedTx[i - 1].GetTransaction()->IsEqual(*tx)) return;
 				}
 
 				_publishedTx.emplace_back(tx, callback);
@@ -1146,14 +1140,8 @@ namespace Elastos {
 
 				if (_syncStartHeight == 0 || _wallet->ContainsTransaction(tx)) {
 					isWalletTx = _wallet->RegisterTransaction(tx);
-					if (isWalletTx) {
-						if (tx->IsCoinBase()) {
-							coinBase = _wallet->CoinBaseTxForHash(tx->GetHash());
-							tx = nullptr;
-						} else {
-							tx = _wallet->TransactionForHash(tx->GetHash());
-						}
-					}
+					if (isWalletTx)
+						tx = _wallet->TransactionForHash(tx->GetHash());
 				} else {
 					tx = nullptr;
 				}
@@ -1334,8 +1322,7 @@ namespace Elastos {
 				// track the observed bloom filter false positive rate using a low pass filter to smooth out variance
 				if (peer == _downloadPeer && block->GetTransactionCount() > 0) {
 					for (i = 0; i < txHashes.size(); i++) { // wallet tx are not false-positives
-						if (_wallet->TransactionForHash(txHashes[i]) == nullptr &&
-							_wallet->CoinBaseTxForHash(txHashes[i]) == nullptr)
+						if (_wallet->TransactionForHash(txHashes[i]) == nullptr)
 							fpCount++;
 					}
 
@@ -2026,7 +2013,7 @@ namespace Elastos {
 					isPublishing = false;
 
 					for (size_t j = _publishedTx.size(); !isPublishing && j > 0; j--) {
-						if (_publishedTx[j - 1].GetTransaction()->IsEqual(tx[i - 1].get()) &&
+						if (_publishedTx[j - 1].GetTransaction()->IsEqual(*tx[i - 1]) &&
 							_publishedTx[j - 1].HasCallback())
 							isPublishing = true;
 						break;

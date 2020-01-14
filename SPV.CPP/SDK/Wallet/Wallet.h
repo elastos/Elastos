@@ -55,16 +55,14 @@ namespace Elastos {
 			public:
 				virtual void balanceChanged(const uint256 &asset, const BigInt &balance) = 0;
 
-				virtual void onCoinBaseTxAdded(const UTXOPtr &utxo) = 0;
+				virtual void onCoinbaseTxAdded(const TransactionPtr &tx) = 0;
 
-				virtual void onCoinBaseUpdatedAll(const UTXOArray &cbs) = 0;
+				virtual void onCoinbaseTxMove(const std::vector<TransactionPtr> &txns) = 0;
 
-				virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
+				virtual void onCoinbaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
 												 time_t timestamp) = 0;
 
-				virtual void onCoinBaseSpent(const UTXOArray &spentUTXO) = 0;
-
-				virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) = 0;
+				virtual void onCoinbaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) = 0;
 
 				virtual void onTxAdded(const TransactionPtr &tx) = 0;
 
@@ -84,7 +82,7 @@ namespace Elastos {
 				   const std::string &chainID,
 				   const std::vector<AssetPtr> &assetArray,
 				   const std::vector<TransactionPtr> &txns,
-				   const std::vector<UTXOPtr> &utxos,
+				   const std::vector<TransactionPtr> &txCoinbase,
 				   const SubAccountPtr &subAccount,
 				   const boost::shared_ptr<Wallet::Listener> &listener);
 
@@ -156,17 +154,17 @@ namespace Elastos {
 
 			void UpdateTransactions(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
 
-			TransactionPtr TransactionForHash(const uint256 &transactionHash);
+			TransactionPtr TransactionForHash(const uint256 &transactionHash) const;
 
 			size_t GetAllTransactionCount() const;
-
-			UTXOPtr CoinBaseTxForHash(const uint256 &txHash) const;
 
 			std::vector<TransactionPtr> GetAllTransactions(size_t start, size_t count) const;
 
 			std::vector<TransactionPtr> GetTransactions(const bytes_t &types) const;
 
-			std::vector<UTXOPtr> GetAllCoinBaseTransactions() const;
+			size_t GetAllCoinbaseTransactionCount() const;
+
+			std::vector<TransactionPtr> GetAllCoinBaseTransactions(size_t start, size_t count) const;
 
 			bool TransactionIsValid(const TransactionPtr &transaction);
 
@@ -216,11 +214,7 @@ namespace Elastos {
 
 			bool ContainsInput(const InputPtr &in) const;
 
-			UTXOPtr CoinBaseForHashInternal(const uint256 &txHash) const;
-
-			UTXOPtr RegisterCoinBaseTx(const TransactionPtr &tx);
-
-			bool InsertCoinbaseUTXO(const UTXOPtr &u);
+			bool RemoveTx(const TransactionPtr &tx);
 
 			void InsertTx(const TransactionPtr &tx);
 
@@ -232,7 +226,7 @@ namespace Elastos {
 
 			bool IsAssetUnique(const std::vector<OutputPtr> &outputs) const;
 
-			std::map<uint256, BigInt> BalanceAfterUpdatedTx(const TransactionPtr &tx, UTXOArray &spentCoinbase);
+			std::map<uint256, BigInt> BalanceAfterUpdatedTx(const TransactionPtr &tx);
 
 			void BalanceAfterRemoveTx(const TransactionPtr &tx);
 
@@ -249,15 +243,13 @@ namespace Elastos {
 		protected:
 			void balanceChanged(const uint256 &asset, const BigInt &balance);
 
-			void coinBaseTxAdded(const UTXOPtr &cb);
+			void coinbaseTxAdded(const TransactionPtr &tx);
 
-			void coinBaseUpdatedAll(const UTXOArray &cbs);
+			void coinbaseTxMove(const std::vector<TransactionPtr> &txns);
 
-			void coinBaseTxUpdated(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
+			void coinbaseTxUpdated(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
 
-			void coinBaseSpent(const UTXOArray &spentUTXO);
-
-			void coinBaseDeleted(const uint256 &txHash, bool notifyUser, bool recommendRescan);
+			void coinbaseTxDeleted(const uint256 &txHash, bool notifyUser, bool recommendRescan);
 
 			void txAdded(const TransactionPtr &tx);
 
@@ -280,12 +272,12 @@ namespace Elastos {
 			mutable GroupedAssetMap _groupedAssets;
 
 			typedef ElementSet<TransactionPtr> TransactionSet;
-			std::vector<TransactionPtr> _transactions;
+			std::vector<TransactionPtr> _transactions, _coinbaseTransactions;
 			TransactionSet _allTx;
 
 			UTXOSet _spendingOutputs;
-			UTXOArray _coinBaseUTXOs;
-			UTXOSet _allCoinbaseUTXOs;
+//			UTXOArray _coinBaseUTXOs;
+//			UTXOSet _allCoinbaseUTXOs;
 
 			uint64_t _feePerKb;
 

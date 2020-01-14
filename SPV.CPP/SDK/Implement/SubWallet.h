@@ -113,15 +113,13 @@ namespace Elastos {
 		protected: //implement Wallet::Listener
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
-			virtual void onCoinBaseTxAdded(const UTXOPtr &cb);
+			virtual void onCoinbaseTxAdded(const TransactionPtr &tx);
 
-			virtual void onCoinBaseUpdatedAll(const UTXOArray &cbs);
+			virtual void onCoinbaseTxMove(const std::vector<TransactionPtr> &txns);
 
-			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+			virtual void onCoinbaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			virtual void onCoinBaseSpent(const UTXOArray &spentUTXO);
-
-			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+			virtual void onCoinbaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 
