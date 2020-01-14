@@ -15,6 +15,7 @@ _DID_GetAlias
 _DID_GetTxid
 _DID_GetDeactived
 _DID_GetTimestamp
+_DID_CreateBuilder
 
 # DIDURL
 _DIDURL_FromString
@@ -52,6 +53,7 @@ _DIDDocumentBuilder_AddCredential
 _DIDDocumentBuilder_RemoveCredential
 _DIDDocumentBuilder_AddService
 _DIDDocumentBuilder_RemoveService
+_DIDDocumentBuilder_SetExpires
 _DIDDocument_GetSubject
 _DIDDocument_GetPublicKeyCount
 _DIDDocument_GetPublicKey
@@ -71,7 +73,6 @@ _DIDDocument_GetCredentials
 _DIDDocument_GetCredential
 _DIDDocument_SelectCredentials
 _DIDDocument_GetExpires
-_DIDDocument_SetExpires
 _DIDDocument_Sign
 _DIDDocument_Verify
 _DIDDocument_GetService

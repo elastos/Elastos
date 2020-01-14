@@ -1573,6 +1573,39 @@ int DIDDocumentBuilder_RemoveService(DIDDocumentBuilder *builder, DIDURL *servic
     return 0;
 }
 
+int DIDDocumentBuilder_SetExpires(DIDDocumentBuilder *builder, time_t expires)
+{
+    time_t max_expires;
+    struct tm *tm = NULL;
+    DIDDocument *document;
+
+    if (!builder || expires < 0)
+        return -1;
+
+    max_expires = time(NULL);
+    tm = gmtime(&max_expires);
+    tm->tm_year += MAX_EXPIRES;
+    max_expires = mktime(tm);
+
+    document = builder->document;
+    if (!document)
+        return -1;
+
+    if (expires == 0) {
+        document->expires = max_expires;
+        return 0;
+    }
+
+    tm = gmtime(&expires);
+    expires = mktime(tm);
+
+    if (expires > max_expires)
+        return -1;
+
+    document->expires = expires;
+    return 0;
+}
+
 //////////////////////////PublicKey//////////////////////////////////////////
 DID* DIDDocument_GetSubject(DIDDocument *document)
 {
@@ -2029,34 +2062,6 @@ time_t DIDDocument_GetExpires(DIDDocument *document)
         return 0;
 
     return document->expires;
-}
-
-int DIDDocument_SetExpires(DIDDocument *document, time_t expires)
-{
-    time_t max_expires;
-    struct tm *tm = NULL;
-
-    if (!document)
-        return -1;
-
-    max_expires = time(NULL);
-    tm = gmtime(&max_expires);
-    tm->tm_year += MAX_EXPIRES;
-    max_expires = mktime(tm);
-
-    if (expires == 0) {
-        document->expires = max_expires;
-        return 0;
-    }
-
-    tm = gmtime(&expires);
-    expires = mktime(tm);
-
-    if (expires > max_expires)
-        return -1;
-
-    document->expires = expires;
-    return 0;
 }
 
 int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass,

@@ -394,6 +394,18 @@ DID_API bool DID_GetDeactived(DID *did);
  */
 DID_API time_t DID_GetTimestamp(DID *did);
 
+/**
+ * \~English
+ * Create DIDDocument Builder for the did.
+ *
+ * @param
+ *      did             [in] A handle to DID.
+ * @return
+ *      If no error occurs, return a handle to Document.
+ *      Otherwise, return NULL.
+ */
+DID_API DIDDocumentBuilder* DID_CreateBuilder(DID *did);
+
 /******************************************************************************
  * DIDURL
  *****************************************************************************/
@@ -906,6 +918,19 @@ DID_API int DIDDocumentBuilder_RemoveService(DIDDocumentBuilder *builder,
 
 /**
  * \~English
+ * Set expire time about DID Document.
+ *
+ * @param
+ *      builder             [in] A handle to DIDDocument Builder.
+ * @param
+ *      expires             [in] time to expire.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocumentBuilder_SetExpires(DIDDocumentBuilder *builder, time_t expires);
+
+/**
+ * \~English
  * Get the count of public keys. A DID Document must include a publicKey property.
  *
  * @param
@@ -1265,17 +1290,6 @@ DID_API ssize_t DIDDocument_SelectServices(DIDDocument *document, const char *ty
  *      expire time on success, 0 if failed.
  */
 DID_API time_t DIDDocument_GetExpires(DIDDocument *document);
-
-/**
- * \~English
- * Set expire time about DID Document.
- *
- * @param
- *      time             [in] time to expire.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_SetExpires(DIDDocument *document, time_t expires);
 
 /**
  * \~English

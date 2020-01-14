@@ -921,20 +921,14 @@ static DIDDocument *create_document(DID *did, const char *key,
     assert(storepass);
     assert(*storepass);
 
-    strcpy((char*)controller.idstring, did->idstring);
-    strcpy((char*)id.did.idstring, did->idstring);
-    strcpy((char*)id.fragment, "primary");
-
-    builder = DIDDocument_Modify(NULL);
+    builder = DID_CreateBuilder(did);
     if (!builder)
         return NULL;
 
-    if (DID_Copy(&builder->document->did, did) == -1) {
-        DIDDocumentBuilder_Destroy(builder);
-        return NULL;
-    }
+    strcpy((char*)id.did.idstring, did->idstring);
+    strcpy((char*)id.fragment, "primary");
 
-    if (DIDDocumentBuilder_AddPublicKey(builder, &id, &controller, key) == -1) {
+    if (DIDDocumentBuilder_AddPublicKey(builder, &id, did, key) == -1) {
         DIDDocumentBuilder_Destroy(builder);
         return NULL;
     }
@@ -944,7 +938,11 @@ static DIDDocument *create_document(DID *did, const char *key,
         return NULL;
     }
 
-    DIDDocument_SetExpires(builder->document, 0);
+    if (DIDDocumentBuilder_SetExpires(builder, 0) == -1) {
+        DIDDocumentBuilder_Destroy(builder);
+        return NULL;
+    }
+
     document = DIDDocumentBuilder_Seal(builder, storepass);
     if (!document) {
         DIDDocumentBuilder_Destroy(builder);

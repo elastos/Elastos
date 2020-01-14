@@ -489,3 +489,26 @@ int DIDURL_GetAlias(DIDURL *id, char* alias, size_t size)
 
     return CredentialMeta_GetAlias(&meta, alias, size);
 }
+
+DIDDocumentBuilder* DID_CreateBuilder(DID *did)
+{
+    DIDDocumentBuilder *builder;
+
+    builder = (DIDDocumentBuilder*)calloc(1, sizeof(DIDDocumentBuilder));
+    if (!builder)
+        return NULL;
+
+    builder->document = (DIDDocument*)calloc(1, sizeof(DIDDocument));
+    if (!builder->document) {
+        free(builder);
+        return NULL;
+    }
+
+    if (DID_Copy(&builder->document->did, did) == -1) {
+        free(builder->document);
+        free(builder);
+        return NULL;
+    }
+
+    return builder;
+}
