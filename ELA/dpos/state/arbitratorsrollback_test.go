@@ -6,11 +6,15 @@
 package state
 
 import (
+	"errors"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -111,11 +115,19 @@ func checkResult(t *testing.T, A, B, C, D *CheckPoint) {
 }
 
 func getRegisterProducerTx(ownerPublicKey []byte, nodePublicKey []byte) *types.Transaction {
+	pk, _ := crypto.DecodePoint(ownerPublicKey)
+	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
 	return &types.Transaction{
 		TxType: types.RegisterProducer,
 		Payload: &payload.ProducerInfo{
 			OwnerPublicKey: ownerPublicKey,
 			NodePublicKey:  nodePublicKey,
+		},
+		Outputs: []*types.Output{
+			{
+				ProgramHash: *depositCont.ToProgramHash(),
+				Value:       common.Fixed64(5000 * 1e8),
+			},
 		},
 	}
 }
@@ -152,6 +164,22 @@ func getCancelProducer(publicKey []byte) *types.Transaction {
 		TxType:  types.CancelProducer,
 		Payload: &payload.ProcessProducer{
 			OwnerPublicKey: publicKey,
+		},
+	}
+}
+
+func getReturnProducerDeposit(publicKey []byte, amount common.Fixed64) *types.Transaction {
+	pk, _ := crypto.DecodePoint(publicKey)
+	code, _ := contract.CreateStandardRedeemScript(pk)
+
+	return &types.Transaction{
+		TxType:  types.ReturnDepositCoin,
+		Payload: &payload.ReturnDepositCoin{},
+		Programs: []*program.Program{
+			{Code: code},
+		},
+		Outputs: []*types.Output{
+			{Value: amount},
 		},
 	}
 }
@@ -354,6 +382,101 @@ func TestArbitrators_RollbackCancelProducer(t *testing.T) {
 		Transactions: []*types.Transaction{cancelProducerTx}}, nil)
 	arbiterStateD := abt.Snapshot()
 	assert.Equal(t, 3, len(abt.GetActiveProducers()))
+
+	checkResult(t, arbiterStateA, arbiterStateB, arbiterStateC, arbiterStateD)
+}
+
+func TestArbitrators_RollbackReturnProducerDeposit(t *testing.T) {
+	initArbiters()
+
+	currentHeight := abt.chainParams.VoteStartHeight
+	block1 := &types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			getRegisterProducerTx(abtList[0], abtList[0]),
+			getRegisterProducerTx(abtList[1], abtList[1]),
+			getRegisterProducerTx(abtList[2], abtList[2]),
+			getRegisterProducerTx(abtList[3], abtList[3]),
+		},
+	}
+
+	abt.ProcessBlock(block1, nil)
+
+	for i := uint32(0); i < 5; i++ {
+		currentHeight++
+		blockEx := &types.Block{Header: types.Header{Height: currentHeight}}
+		abt.ProcessBlock(blockEx, nil)
+	}
+	assert.Equal(t, 4, len(abt.ActivityProducers))
+
+	// vote producer
+	voteProducerTx := getVoteProducerTx(10,
+		[]outputpayload.CandidateVotes{
+			{Candidate: abtList[0], Votes: 5},
+			{Candidate: abtList[1], Votes: 4},
+			{Candidate: abtList[2], Votes: 3},
+			{Candidate: abtList[3], Votes: 2},
+		})
+
+	currentHeight++
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{voteProducerTx}}, nil)
+
+	// cancel producer
+	cancelProducerTx := getCancelProducer(abtList[0])
+
+	currentHeight++
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{cancelProducerTx}}, nil)
+	assert.Equal(t, 3, len(abt.GetActiveProducers()))
+
+	// set get producer deposit amount function
+	abt.getProducerDepositAmount = func(programHash common.Uint168) (
+		fixed64 common.Fixed64, err error) {
+		producers := abt.getAllProducers()
+		for _, v := range producers {
+			hash, _ := contract.PublicKeyToDepositProgramHash(
+				v.info.OwnerPublicKey)
+			if hash.IsEqual(programHash) {
+				return v.depositAmount, nil
+			}
+		}
+
+		return common.Fixed64(0), errors.New("not found producer")
+	}
+
+	// return deposit
+	returnDepositTx := getReturnProducerDeposit(abtList[0], 4999*1e8)
+	assert.Equal(t, common.Fixed64(5000*1e8), abt.GetProducer(abtList[0]).depositAmount)
+	arbiterStateA := abt.Snapshot()
+
+	// process
+	currentHeight = abt.chainParams.CRVotingStartHeight
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{returnDepositTx}}, nil)
+	assert.Equal(t, 1, len(abt.GetReturnedDepositProducers()))
+	assert.Equal(t, common.Fixed64(5000*1e8), abt.GetProducer(abtList[0]).depositAmount)
+	arbiterStateB := abt.Snapshot()
+
+	// rollback
+	currentHeight--
+	err := abt.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(abt.GetReturnedDepositProducers()))
+	arbiterStateC := abt.Snapshot()
+
+	// reprocess
+	currentHeight++
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{returnDepositTx}}, nil)
+	assert.Equal(t, 1, len(abt.GetReturnedDepositProducers()))
+	arbiterStateD := abt.Snapshot()
 
 	checkResult(t, arbiterStateA, arbiterStateB, arbiterStateC, arbiterStateD)
 }
