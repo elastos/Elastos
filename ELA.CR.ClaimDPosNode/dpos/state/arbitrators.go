@@ -351,10 +351,11 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	a.history.Commit(block.Height)
 
 	if snapshotVotes {
-		if err := a.snapshotVotesStates(); err != nil {
+		if err := a.snapshotVotesStates(block.Height); err != nil {
 			panic(fmt.Sprintf("snap shot votes states error:%s", err))
 		}
 	}
+	a.history.Commit(block.Height)
 
 	if block.Height > a.bestHeight()-MaxSnapshotLength {
 		a.snapshot(block.Height)
@@ -1015,9 +1016,11 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 	return a.getNormalArbitratorsDescV0()
 }
 
-func (a *arbitrators) snapshotVotesStates() error {
-	a.NextReward.OwnerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
-	a.NextReward.TotalVotesInRound = 0
+func (a *arbitrators) snapshotVotesStates(height uint32) error {
+	var nextReward RewardData
+
+	nextReward.OwnerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
+	nextReward.TotalVotesInRound = 0
 	for _, ar := range a.nextArbitrators {
 		if !a.isCRCArbitrator(ar.GetNodePublicKey()) {
 			producer := a.GetProducer(ar.GetNodePublicKey())
@@ -1029,8 +1032,8 @@ func (a *arbitrators) snapshotVotesStates() error {
 			if err != nil {
 				return err
 			}
-			a.NextReward.OwnerVotesInRound[*programHash] = producer.Votes()
-			a.NextReward.TotalVotesInRound += producer.Votes()
+			nextReward.OwnerVotesInRound[*programHash] = producer.Votes()
+			nextReward.TotalVotesInRound += producer.Votes()
 		}
 	}
 
@@ -1046,9 +1049,16 @@ func (a *arbitrators) snapshotVotesStates() error {
 		if err != nil {
 			return err
 		}
-		a.NextReward.OwnerVotesInRound[*programHash] = producer.Votes()
-		a.NextReward.TotalVotesInRound += producer.Votes()
+		nextReward.OwnerVotesInRound[*programHash] = producer.Votes()
+		nextReward.TotalVotesInRound += producer.Votes()
 	}
+
+	oriNextReward := a.NextReward
+	a.history.Append(height, func() {
+		a.NextReward = nextReward
+	}, func() {
+		a.NextReward = oriNextReward
+	})
 
 	return nil
 }
