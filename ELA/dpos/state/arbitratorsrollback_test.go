@@ -34,7 +34,10 @@ func initArbiters() {
 	}
 
 	activeNetParams := &config.DefaultParams
-	activeNetParams.CRCArbiters = arbitratorsStr
+	activeNetParams.CRCArbiters = []string{
+		"03e435ccd6073813917c2d841a0815d21301ec3286bc1412bb5b099178c68a10b6",
+		"038a1829b4b2bee784a99bebabbfecfec53f33dadeeeff21b460f8b4fc7c2ca771",
+	}
 	bestHeight := uint32(0)
 
 	abt, _ = NewArbitrators(activeNetParams,
@@ -139,6 +142,16 @@ func getVoteProducerTx(amount common.Fixed64,
 					},
 				},
 			},
+		},
+	}
+}
+
+func getCancelProducer(publicKey []byte) *types.Transaction {
+	return &types.Transaction{
+		Version: 0x09,
+		TxType:  types.CancelProducer,
+		Payload: &payload.ProcessProducer{
+			OwnerPublicKey: publicKey,
 		},
 	}
 }
@@ -248,12 +261,14 @@ func TestArbitrators_RollbackVoteProducer(t *testing.T) {
 		Header:       types.Header{Height: currentHeight},
 		Transactions: []*types.Transaction{voteProducerTx}}, nil)
 	arbiterStateB := abt.Snapshot()
+	assert.Equal(t, common.Fixed64(5), abt.getProducer(abtList[0]).votes)
 
 	// rollback
 	currentHeight--
 	err := abt.RollbackTo(currentHeight)
 	assert.NoError(t, err)
 	arbiterStateC := abt.Snapshot()
+	assert.Equal(t, common.Fixed64(0), abt.getProducer(abtList[0]).votes)
 
 	// reprocess
 	currentHeight++
@@ -261,6 +276,84 @@ func TestArbitrators_RollbackVoteProducer(t *testing.T) {
 		Header:       types.Header{Height: currentHeight},
 		Transactions: []*types.Transaction{voteProducerTx}}, nil)
 	arbiterStateD := abt.Snapshot()
+
+	checkResult(t, arbiterStateA, arbiterStateB, arbiterStateC, arbiterStateD)
+}
+
+func TestArbitrators_RollbackCancelProducer(t *testing.T) {
+	initArbiters()
+
+	currentHeight := abt.chainParams.VoteStartHeight
+	block1 := &types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			getRegisterProducerTx(abtList[0], abtList[0]),
+			getRegisterProducerTx(abtList[1], abtList[1]),
+			getRegisterProducerTx(abtList[2], abtList[2]),
+			getRegisterProducerTx(abtList[3], abtList[3]),
+		},
+	}
+
+	abt.ProcessBlock(block1, nil)
+
+	for i := uint32(0); i < 5; i++ {
+		currentHeight++
+		blockEx := &types.Block{Header: types.Header{Height: currentHeight}}
+		abt.ProcessBlock(blockEx, nil)
+	}
+	assert.Equal(t, 4, len(abt.ActivityProducers))
+
+	// vote producer
+	voteProducerTx := getVoteProducerTx(10,
+		[]outputpayload.CandidateVotes{
+			{Candidate: abtList[0], Votes: 5},
+			{Candidate: abtList[1], Votes: 4},
+			{Candidate: abtList[2], Votes: 3},
+			{Candidate: abtList[3], Votes: 2},
+		})
+
+	currentHeight++
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{voteProducerTx}}, nil)
+
+	//// set general arbiters count
+	//abt.chainParams.GeneralArbiters = 2
+	//
+	//// update next arbiters
+	//currentHeight = abt.chainParams.PublicDPOSHeight -
+	//	abt.chainParams.PreConnectOffset - 1
+	//abt.ProcessBlock(&types.Block{
+	//	Header: types.Header{Height: currentHeight}}, nil)
+
+	// cancel producer
+	cancelProducerTx := getCancelProducer(abtList[0])
+	arbiterStateA := abt.Snapshot()
+
+	// process
+	currentHeight++
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{cancelProducerTx}}, nil)
+	arbiterStateB := abt.Snapshot()
+	assert.Equal(t, 3, len(abt.GetActiveProducers()))
+
+	// rollback
+	currentHeight--
+	err := abt.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	arbiterStateC := abt.Snapshot()
+	assert.Equal(t, 4, len(abt.GetActiveProducers()))
+
+	// reprocess
+	currentHeight++
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{cancelProducerTx}}, nil)
+	arbiterStateD := abt.Snapshot()
+	assert.Equal(t, 3, len(abt.GetActiveProducers()))
 
 	checkResult(t, arbiterStateA, arbiterStateB, arbiterStateC, arbiterStateD)
 }
