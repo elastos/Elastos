@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package p2p
 
@@ -755,6 +755,7 @@ func (s *server) Stop() error {
 
 	// Signal the remaining goroutines to quit.
 	close(s.quit)
+	s.WaitForShutdown()
 	return nil
 }
 
