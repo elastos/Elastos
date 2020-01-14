@@ -384,20 +384,24 @@ func (a *AddrManager) savePeers() {
 		sam.Addresses = append(sam.Addresses, ska)
 	}
 	for i := range a.addrNew {
-		sam.NewBuckets[i] = make([]string, len(a.addrNew[i]))
-		j := 0
-		for k := range a.addrNew[i] {
-			sam.NewBuckets[i][j] = k
-			j++
+		sam.NewBuckets[i] = make([]string, 0, len(a.addrNew[i]))
+		for k, v := range a.addrNew[i] {
+			// Filter network address here to update address saved in peers.json.
+			if a.filter != nil && !a.filter.Filter(v.na) {
+				continue
+			}
+			sam.NewBuckets[i] = append(sam.NewBuckets[i], k)
 		}
 	}
 	for i := range a.addrTried {
-		sam.TriedBuckets[i] = make([]string, a.addrTried[i].Len())
-		j := 0
+		sam.TriedBuckets[i] = make([]string, 0, a.addrTried[i].Len())
 		for e := a.addrTried[i].Front(); e != nil; e = e.Next() {
 			ka := e.Value.(*KnownAddress)
-			sam.TriedBuckets[i][j] = NetAddressKey(ka.na)
-			j++
+			// Filter network address here to update address saved in peers.json.
+			if a.filter != nil && !a.filter.Filter(ka.na) {
+				continue
+			}
+			sam.TriedBuckets[i] = append(sam.TriedBuckets[i], NetAddressKey(ka.na))
 		}
 	}
 
