@@ -469,6 +469,7 @@ namespace Elastos {
 					cb["Amount"] = cbptr->Output()->Amount().getDec();
 					cb["Status"] = confirms <= 100 ? "Pending" : "Confirmed";
 					cb["Direction"] = "Received";
+					cb["ConfirmStatus"] = confirms;
 
 					jcbs.push_back(cb);
 					realCount++;

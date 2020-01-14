@@ -1626,12 +1626,19 @@ static int fixpeer(int argc, char *argv[]) {
 	return 0;
 }
 
-// tx [chainID]
+// tx chainID [coinbase]
 static int _tx(int argc, char *argv[]) {
-	checkParam(2);
+	if (argc != 2 && argc != 3) {
+		invalidCmdError();
+		return ERRNO_CMD;
+	}
 	checkCurrentWallet();
 
 	std::string chainID = argv[1];
+	bool isCoinbase = false;
+	if (argc == 3 && std::string(argv[2]) == "coinbase")
+		isCoinbase = true;
+
 	try {
 		ISubWallet *subWallet;
 		getSubWallet(subWallet, currentWallet, chainID);
@@ -1646,7 +1653,12 @@ static int _tx(int argc, char *argv[]) {
 		do {
 			if (show) {
 				start = cntPerPage * (curPage - 1);
-				nlohmann::json txJosn = subWallet->GetAllTransaction(start, cntPerPage, txHash);
+				nlohmann::json txJosn;
+				if (isCoinbase)
+					txJosn = subWallet->GetAllCoinBaseTransaction(start, cntPerPage, txHash);
+				else
+					txJosn = subWallet->GetAllTransaction(start, cntPerPage, txHash);
+
 				nlohmann::json tx = txJosn["Transactions"];
 				max = txJosn["MaxCount"];
 
@@ -1963,7 +1975,7 @@ struct command {
 	{"sync",       _sync,          "chainID (start | stop)                           Start or stop sync of wallet"},
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},
-	{"tx",         _tx,            "chainID                                          List all tx records."},
+	{"tx",         _tx,            "chainID [coinbase]                               List all tx/coinbase tx records."},
 	{"consolidate",consolidate,    "chainID                                          Consolidate fragmentary utxo"},
 	{"signtx",     signtx,         "chainID                                          Sign tx"},
 	{"publishtx",  publishtx,      "chainID                                          Publish tx"},
