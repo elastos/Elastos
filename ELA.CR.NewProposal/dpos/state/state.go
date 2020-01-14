@@ -813,11 +813,12 @@ func (s *State) registerProducer(tx *types.Transaction, height uint32) {
 		OwnerPublicKey)
 
 	amount := common.Fixed64(0)
+	depositOutputs := make(map[string]common.Fixed64)
 	for i, output := range tx.Outputs {
 		if output.ProgramHash.IsEqual(*programHash) {
 			amount += output.Value
 			op := types.NewOutPoint(tx.Hash(), uint16(i))
-			s.DepositOutputs[op.ReferKey()] = output.Value
+			depositOutputs[op.ReferKey()] = output.Value
 		}
 	}
 
@@ -838,11 +839,17 @@ func (s *State) registerProducer(tx *types.Transaction, height uint32) {
 		s.NodeOwnerKeys[nodeKey] = ownerKey
 		s.PendingProducers[ownerKey] = &producer
 		s.ProducerDepositMap[*programHash] = struct{}{}
+		for k, v := range depositOutputs {
+			s.DepositOutputs[k] = v
+		}
 	}, func() {
 		delete(s.Nicknames, nickname)
 		delete(s.NodeOwnerKeys, nodeKey)
 		delete(s.PendingProducers, ownerKey)
 		delete(s.ProducerDepositMap, *programHash)
+		for k := range depositOutputs {
+			delete(s.DepositOutputs, k)
+		}
 	})
 }
 
