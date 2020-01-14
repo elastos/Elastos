@@ -9,6 +9,9 @@ from grpc_adenine.database.user_api_relation import UserApiRelations
 from grpc_adenine.stubs import common_pb2
 from grpc_adenine.stubs import common_pb2_grpc
 from sqlalchemy.orm import sessionmaker
+from grpc_adenine import settings
+from grpc_adenine.implementations.utils import check_rate_limit
+from grpc_adenine.implementations.rate_limiter import RateLimiter
 
 
 class Common(common_pb2_grpc.CommonServicer):
@@ -16,6 +19,7 @@ class Common(common_pb2_grpc.CommonServicer):
     def __init__(self):
         session_maker = sessionmaker(bind=db_engine)
         self.session = session_maker()
+        self.rate_limiter = RateLimiter()
 
     def GenerateAPIRequest(self, request, context):
         string_length = 64
@@ -39,11 +43,18 @@ class Common(common_pb2_grpc.CommonServicer):
             # If did is already present replace the api key
             if result:
                 insert = self.session.query(UserApiRelations).filter_by(user_id=result.id).first()
+                # check rate limit
+                response = check_rate_limit(self.rate_limiter, settings.GENERATE_API_LIMIT, insert.api_key, self.GenerateAPIRequest.__name__)
+                if response:
+                    return common_pb2.Response(api_key='', status_message='Number of daily access limit exceeded', status=False)
+
+                # replace the new API Key
                 insert.api_key = api_key
                 self.session.commit()
                 self.session.close()
             # Else insert the did and api key into respective tables
             else:
+                # insert to Users table
                 user = Users(
                     did=check_did,
                     created_on=date_now,
@@ -51,6 +62,7 @@ class Common(common_pb2_grpc.CommonServicer):
                 )
                 self.session.add(user)
                 self.session.commit()
+                # insert to UserApiRelations table
                 insert = self.session.query(Users).filter_by(did=check_did).first()
                 user_api = UserApiRelations(
                     user_id=insert.id,
@@ -59,6 +71,8 @@ class Common(common_pb2_grpc.CommonServicer):
                 self.session.add(user_api)
                 self.session.commit()
                 self.session.close()
+                # insert into SERVICES LISTS table
+                rate_limiter.add_new_access_entry(api_key, self.GenerateAPIRequest.__name__)
             return common_pb2.Response(api_key=api_key, status_message='Success', status=True)
         else:
             return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
