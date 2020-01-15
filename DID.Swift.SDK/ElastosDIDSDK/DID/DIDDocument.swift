@@ -85,9 +85,9 @@ public class DIDDocument: NSObject {
     public func getDefaultPublicKey() -> DIDURL {
         var didurl: DIDURL?
         publicKeys.values.forEach{ pk in
-            if (pk.controller?.isEqual(self.subject))! {
+            if (pk.controller.isEqual(self.subject)) {
                 
-                let pks = pk.getPublicKeyBytes()
+                let pks = pk.publicKeyBytes
                 let idstring = DerivedKey.getIdString(pks)
                 if idstring == subject?.methodSpecificId {
                     didurl = pk.id
@@ -105,7 +105,7 @@ public class DIDDocument: NSObject {
             if key.id == pk.id {
                 return false
             }
-            if key.keyBase58 == pk.keyBase58 {
+            if key.publicKeyBase58 == pk.publicKeyBase58 {
                 return false
             }
         }
@@ -177,7 +177,7 @@ public class DIDDocument: NSObject {
     func addAuthenticationKey(_ pk: DIDPublicKey) throws -> Bool {
         var pk_ = pk
         // Check the controller is current DID subject
-        guard ((pk.controller?.isEqual(subject))!)  else {
+        guard (pk.controller.isEqual(subject))  else {
             return false
         }
         let key = try getPublicKey(pk.id)
@@ -245,7 +245,7 @@ public class DIDDocument: NSObject {
     public func addAuthorizationKey(_ pk: DIDPublicKey) throws -> Bool {
         var pk_ = pk
         // Can not authorize to self
-        if (pk.controller?.isEqual(subject))! { return false }
+        if pk.controller.isEqual(subject) { return false }
         let key = try getPublicKey(pk.id)
         if key == nil {
             // Add the new pk to PublicKeys if not exist.
@@ -453,7 +453,7 @@ public class DIDDocument: NSObject {
             }
         }
         let pk: DIDPublicKey = try getPublicKey(id)!
-        let pks: [UInt8] = pk.getPublicKeyBytes()
+        let pks: [UInt8] = pk.publicKeyBytes
         var pkData: Data = Data(bytes: pks, count: pks.count)
         let cpk: UnsafeMutablePointer<UInt8> = pkData.withUnsafeMutableBytes { (pk: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
             return pk
@@ -682,7 +682,7 @@ public class DIDDocument: NSObject {
            publicKeys = DIDURLComparator.DIDOrderedDictionaryComparator(publicKeys)
            var pks: Array<OrderedDictionary<String, Any>> = []
            publicKeys.forEach { (didUrl, pk) in
-               let dic = pk.toJson_dc(subject!, normalized)
+               let dic = pk.toJson(subject!, normalized)
                pks.append(dic)
            }
            dic[PUBLICKEY] = pks
@@ -853,10 +853,10 @@ public class DIDDocument: NSObject {
         let refPk = try doc!.getPublicKey(k)
         
         // The public key should belongs to controller
-        if (refPk!.controller! != controller) {
+        if (refPk!.controller != controller) {
             return false
         }
-        let pk: DIDPublicKey = DIDPublicKey(id, refPk!.type, controller, refPk!.keyBase58!)
+        let pk: DIDPublicKey = DIDPublicKey(id, refPk!.type, controller, refPk!.publicKeyBase58)
         return try addAuthorizationKey(pk)
     }
     

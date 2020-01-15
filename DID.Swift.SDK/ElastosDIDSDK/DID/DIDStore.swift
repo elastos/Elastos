@@ -311,7 +311,7 @@ public class DIDStore: NSObject {
         for targetPk in authorizationKeys {
             if targetPk.controller == did {
                 if signPk != nil {
-                    if targetPk.keyBase58 == signPk?.keyBase58 {
+                    if targetPk.publicKeyBase58 == signPk?.publicKeyBase58 {
                         targetSignKey = targetPk.id
                     }
                     break
@@ -319,7 +319,7 @@ public class DIDStore: NSObject {
                 else {
                     let pks: Array<DIDPublicKey> = doc!.getAuthenticationKeys()
                     pks.forEach { pk in
-                        if pk.keyBase58 == targetPk.keyBase58 {
+                        if pk.publicKeyBase58 == targetPk.publicKeyBase58 {
                             signPk = pk
                             sigk = signPk?.id
                             targetSignKey = targetPk.id
