@@ -1,24 +1,21 @@
 import Foundation
 
 public class DIDURL: NSObject {
-    
     public var did: DID!
-    public var parameters: OrderedDictionary<String, String>?
+    var _parameters: OrderedDictionary<String, String>?
     public var path: String?
-    public var query: OrderedDictionary<String, String>?
+    var _query: OrderedDictionary<String, String>?
     public var fragment: String!
-    private var listener: DURLListener?
-    private var url: String!
     public var meta: CredentialMeta = CredentialMeta()
 
     public init(_ id: DID, _ fragment: String) throws {
         super.init()
-        if (fragment.count > 4) {
+        if (fragment.count > 4) {  //TODO:  Why don't use fragment.hasPrefix("did:")
             let str = fragment.prefix(4)
             let prestr: String = String(str)
             if prestr == "did:" {            
-                self.listener = DURLListener(self)
-                try ParserHelper.parase(fragment, false, self.listener!)
+                let listener = DURLListener(self)
+                try ParserHelper.parase(fragment, false, listener)
                 if (did != id) {
                     throw DIDError.failue("Missmatched arguments")
                 }
@@ -32,9 +29,8 @@ public class DIDURL: NSObject {
     
     public init(_ url: String) throws {
         super.init()
-        self.listener = DURLListener(self)
-        try ParserHelper.parase(url, false, self.listener!)
-        self.url = url
+        let listener = DURLListener(self)
+        try ParserHelper.parase(url, false, listener)
     }
     
     public func mapToString(_ dictionary: OrderedDictionary<String, String>, sep: String) -> String {
@@ -57,86 +53,93 @@ public class DIDURL: NSObject {
         
         return result
     }
-    
-    public func getParameters() -> String? {
-        guard parameters != nil else {
-            return nil
+
+    public var parameters: String? {
+        get {
+            guard _parameters != nil else {
+                return nil
+            }
+            return mapToString(_parameters!, sep: ";")
         }
-        return mapToString(self.parameters!, sep: ";")
     }
-    
-    public func getParameter(_ name: String) -> String? {
-        return parameters![name]
+
+    public func parameter(ofKey: String) -> String? {
+        return _parameters![ofKey]
     }
-    
-    public func hasParameter(_ name: String) -> Bool {
+
+    public func hasParameter(forKey: String) -> Bool {
         guard parameters != nil else {
             return false
         }
-        return parameters!.keys.contains(name)
+        return _parameters!.keys.contains(forKey)
     }
-    
-    public func addParameter(_ key: String?, _ value: String?) {
-        return parameters![key!] = value ?? ""
+
+    public func append(newParameter: String?, forKey: String) {
+        return _parameters![forKey] = newParameter ?? ""
     }
-    
-    public func addQueryParameter(_ key: String?, _ value: String?) {
-        return query![key!] = value ?? ""
-    }
-    
-    public func getQuery() -> String {
-        guard query != nil else {
+
+    public var queryParameters: String {
+        guard _query != nil else {
             return ""
         }
-        return mapToString(self.query!, sep: "&")
+        return mapToString(_query!, sep: "&")
     }
-    
-    public func getQueryParameter(_ name: String) -> String? {
-        guard query == nil else {
-            return query![name]
+
+    public func queryParameter(ofKey: String) -> String? {
+        guard _query == nil else {
+            return _query![ofKey]
         }
         return nil
     }
-    
-    public func hasQueryParameter(_ name: String) -> Bool {
-        guard query == nil else {
-            return query!.keys.contains(name)
+
+    public func hasQueryParameter(forKey: String) -> Bool {
+        guard _query == nil else {
+            return _query!.keys.contains(forKey)
         }
         return false
+    }
+    
+    public func append(newQueryParameter: String?, forKey: String) {
+        return _query![forKey] = newQueryParameter ?? ""
     }
     
     public func setExtra(_ name: String, _ value: String) throws {
         meta.setExtra(name, value)
         if meta.attachedStore() {
-           try meta.store?.storeCredentialMeta(did, self, meta)
+            try meta.store?.storeCredentialMeta(did, self, meta)
         }
-    }
-    
-    public func getExtra(_ name: String) throws -> String? {
-        return meta.getExtra(name)
-    }
-    
-    public func setAlias(_ alias: String) throws {
-        meta.alias = alias
-        if (meta.attachedStore()) {
-               try meta.store?.storeCredentialMeta(did, self, meta)
-        }
-    }
-    
-    public func getAlias() -> String {
-        return meta.alias
     }
 
+    public func extraValue(ofKey: String) throws -> String? {
+        return meta.getExtra(ofKey)
+    }
+
+    public var aliasName: String {
+        get {
+            return meta.alias
+        }
+        set {
+            do {
+                meta.alias = newValue
+                if (meta.attachedStore()) {
+                    try meta.store?.storeCredentialMeta(did, self, meta)
+                }
+            } catch {
+                print(error)
+            }
+        }
+    }
+    
     public func toExternalForm() -> String {
         let testDID: String = self.did.description
         var params: String = ""
         if self.parameters != nil {
-            params = ";" + mapToString(self.parameters!, sep: ";")
+            params = ";" + mapToString(_parameters!, sep: ";")
         }
         let path = (self.path ?? "")
         var query: String = ""
-        if self.query != nil {
-            query = "?" + mapToString(self.query!, sep: "&")
+        if _query != nil {
+            query = "?" + mapToString(_query!, sep: "&")
         }
         var fragment = self.fragment ?? ""
         if self.fragment != nil {
@@ -150,7 +153,6 @@ public class DIDURL: NSObject {
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        
         if object is DIDURL {
             let url = object as! DIDURL
             let urlExternalForm = url.toExternalForm()
@@ -183,8 +185,8 @@ public class DIDURL: NSObject {
     }
     
     public override var hash: Int {
-        let param: String = (self.parameters != nil) ? mapToString(self.parameters!, sep: ";") : ""
-        let query: String = (self.query != nil) ? mapToString(self.query!, sep: "&") : ""
+        let param: String = (_parameters != nil) ? mapToString(_parameters!, sep: ";") : ""
+        let query: String = (_query != nil) ? mapToString(_query!, sep: "&") : ""
         let method: String = did.method
         let methodSpecificId: String = did.methodSpecificId
         let path: String = (self.path != nil) ? self.path! : ""
@@ -221,7 +223,7 @@ class DURLListener: DIDURLBaseListener {
     }
     
     override func enterParams(_ ctx: DIDURLParser.ParamsContext) {
-        self.didURL?.parameters = OrderedDictionary()
+        self.didURL?._parameters = OrderedDictionary()
     }
     
     override func exitParamMethod(_ ctx: DIDURLParser.ParamMethodContext) {
@@ -242,7 +244,7 @@ class DURLListener: DIDURLBaseListener {
     override func exitParam(_ ctx: DIDURLParser.ParamContext) {
         let name = self.name ?? ""
         let value = self.value ?? ""
-        self.didURL?.addParameter(name, value)
+        self.didURL?.append(newParameter: value, forKey: name)
         self.name = nil
         self.value = nil
     }
@@ -252,7 +254,7 @@ class DURLListener: DIDURLBaseListener {
     }
     
     override func enterQuery(_ ctx: DIDURLParser.QueryContext) {
-        self.didURL?.query = OrderedDictionary()
+        self.didURL?._query = OrderedDictionary()
     }
     
     override func exitQueryParamName(_ ctx: DIDURLParser.QueryParamNameContext) {
@@ -264,7 +266,7 @@ class DURLListener: DIDURLBaseListener {
     }
     
     override func exitQueryParam(_ ctx: DIDURLParser.QueryParamContext) {
-        self.didURL?.addQueryParameter(self.name, self.value)
+        self.didURL?.append(newQueryParameter: self.value, forKey: self.name!)
         self.name = nil
         self.value = nil
     }
@@ -274,14 +276,4 @@ class DURLListener: DIDURLBaseListener {
     }
 }
 
-extension Dictionary {
-    var queryString: String {
-        var output: String = ""
-        for (key,value) in self {
-            output +=  "\(key)=\(value)&"
-        }
-        output = String(output.dropLast())
-        return output
-    }
-}
 

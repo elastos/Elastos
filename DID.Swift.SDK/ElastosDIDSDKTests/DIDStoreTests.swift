@@ -622,7 +622,7 @@ class DIDStoreTests: XCTestCase {
                 var re = id.fragment == "profile" || id.fragment == "email" || id.fragment == "twitter" || id.fragment == "passport"
                 XCTAssertTrue(re)
                 
-                re = id.getAlias() == "MyProfile" || id.getAlias() == "Email" || id.getAlias() == "Twitter" || id.getAlias() == "Passport"
+                re = id.aliasName == "MyProfile" || id.aliasName == "Email" || id.aliasName == "Twitter" || id.aliasName == "Passport"
                 XCTAssertTrue(re)
             }
         } catch {
@@ -710,7 +710,7 @@ class DIDStoreTests: XCTestCase {
                 XCTAssertEqual(1, vcs.count)
                 
                 let id: DIDURL = vcs[0]
-                XCTAssertEqual("Profile", id.getAlias())
+                XCTAssertEqual("Profile", id.aliasName)
                 
                 XCTAssertNotNil(try! store.loadCredential(did, id))
             } else if did.aliasName == "Test" {
@@ -718,10 +718,10 @@ class DIDStoreTests: XCTestCase {
                 XCTAssertEqual(4, vcs.count)
                 
                 for id: DIDURL in vcs {
-                    XCTAssertTrue(id.getAlias() == "Profile"
-                    || id.getAlias() == "Email"
-                    || id.getAlias() == "Passport"
-                    || id.getAlias() == "Twitter")
+                    XCTAssertTrue(id.aliasName == "Profile"
+                    || id.aliasName == "Email"
+                    || id.aliasName == "Passport"
+                    || id.aliasName == "Twitter")
                     
                     XCTAssertNotNil(try! store.loadCredential(did, id))
                 }

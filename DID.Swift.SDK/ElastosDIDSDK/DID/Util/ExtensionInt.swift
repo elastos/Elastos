@@ -65,6 +65,15 @@ extension Dictionary {
             updateValue(v, forKey: k)
         }
     }
+    
+    var queryString: String {
+        var output: String = ""
+        for (key,value) in self {
+            output +=  "\(key)=\(value)&"
+        }
+        output = String(output.dropLast())
+        return output
+    }
 }
 
 extension Character {

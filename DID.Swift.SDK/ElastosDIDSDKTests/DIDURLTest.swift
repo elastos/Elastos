@@ -77,28 +77,28 @@ class DIDURLTest: XCTestCase {
     }
 
    func testGetParameters() {
-        XCTAssertEqual(params, url.getParameters())
+        XCTAssertEqual(params, url.parameters)
     }
 
     func testGetParameter() {
-        XCTAssertEqual("testvalue", url.getParameter("elastos:foo"))
-        XCTAssertNil(url.getParameter("foo"))
-        XCTAssertEqual("123", url.getParameter("bar"))
-        XCTAssertEqual("12345", url.getParameter("elastos:foobar"))
-        XCTAssertNil(url.getParameter("foobar"))
-        let re = url.getParameter("keyonly") == nil || url.getParameter("keyonly") == ""
+        XCTAssertEqual("testvalue", url.parameter(ofKey: "elastos:foo"))
+        XCTAssertNil(url.parameter(ofKey: "foo"))
+        XCTAssertEqual("123", url.parameter(ofKey: "bar"))
+        XCTAssertEqual("12345", url.parameter(ofKey: "elastos:foobar"))
+        XCTAssertNil(url.parameter(ofKey: "foobar"))
+        let re = url.parameter(ofKey: "keyonly") == nil || url.parameter(ofKey: "keyonly") == ""
         XCTAssertTrue(re)
     }
 
     func testHasParameter() {
-        XCTAssertTrue(url.hasParameter("elastos:foo"))
-        XCTAssertTrue(url.hasParameter("bar"))
-        XCTAssertTrue(url.hasParameter("elastos:foobar"))
-        XCTAssertTrue(url.hasParameter("keyonly"))
+        XCTAssertTrue(url.hasParameter(forKey: "elastos:foo"))
+        XCTAssertTrue(url.hasParameter(forKey: "bar"))
+        XCTAssertTrue(url.hasParameter(forKey: "elastos:foobar"))
+        XCTAssertTrue(url.hasParameter(forKey: "keyonly"))
 
-        XCTAssertFalse(url.hasParameter("notexist"))
-        XCTAssertFalse(url.hasParameter("foo"))
-        XCTAssertFalse(url.hasParameter("boobar"))
+        XCTAssertFalse(url.hasParameter(forKey: "notexist"))
+        XCTAssertFalse(url.hasParameter(forKey: "foo"))
+        XCTAssertFalse(url.hasParameter(forKey: "boobar"))
     }
 
    func testGetPath() {
@@ -106,22 +106,22 @@ class DIDURLTest: XCTestCase {
     }
 
     func testGetQuery() {
-        XCTAssertEqual(query, url.getQuery())
+        XCTAssertEqual(query, url.queryParameters)
     }
 
     func testGetQueryParameter() {
-        XCTAssertEqual("qvalue", url.getQueryParameter("qkey"))
-        XCTAssertEqual("true", url.getQueryParameter("test"))
-        let re = url.getQueryParameter("qkeyonly") == nil || url.getQueryParameter("qkeyonly") == ""
+        XCTAssertEqual("qvalue", url.queryParameter(ofKey: "qkey"))
+        XCTAssertEqual("true", url.queryParameter(ofKey: "test"))
+        let re = url.queryParameter(ofKey: "qkeyonly") == nil || url.queryParameter(ofKey: "qkeyonly") == ""
         XCTAssertTrue(re)
     }
     
     func testHasQueryParameter() {
-        XCTAssertTrue(url.hasQueryParameter("qkeyonly"))
-        XCTAssertTrue(url.hasQueryParameter("qkey"))
-        XCTAssertTrue(url.hasQueryParameter("test"))
+        XCTAssertTrue(url.hasQueryParameter(forKey: "qkeyonly"))
+        XCTAssertTrue(url.hasQueryParameter(forKey: "qkey"))
+        XCTAssertTrue(url.hasQueryParameter(forKey: "test"))
 
-        XCTAssertFalse(url.hasQueryParameter("notexist"));
+        XCTAssertFalse(url.hasQueryParameter(forKey: "notexist"));
     }
 
     func testGetFragment() {
