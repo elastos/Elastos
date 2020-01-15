@@ -97,7 +97,7 @@ These are located in the `wallets` folder:
     
     If you would like to reset the entire environment with fresh data, do the following. This basically removes all the blockchain data that may have been saved previously and resets it back to block height 510
     ```
-    mkdir -p ~/.volumes;
+    mkdir -p /data/volumes;
     tools/copy_freshdata_docker.sh;
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
@@ -107,7 +107,7 @@ These are located in the `wallets` folder:
     ```
     sudo tools/copy_freshdata_docker.sh;
     docker container prune;
-    sudo rm -rf ~/.volumes/elastos-privnet;
+    sudo rm -rf /data/volumes/elastos-privnet;
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
 
