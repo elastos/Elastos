@@ -161,6 +161,19 @@ export default class extends Base {
       'copyright'
     ]
     Object.assign(doc, _.pick(elip, BASE_FIELDS))
+    const db_user = this.getDBModel('User')
+    const councilMembers = await db_user.find({
+      role: constant.USER_ROLE.COUNCIL
+    })
+    const voteResult = []
+    _.each(councilMembers, user =>
+      voteResult.push({
+        votedBy: user._id,
+        value: constant.CVOTE_RESULT.UNDECIDED
+      })
+    )
+    doc.voteResult = voteResult
+    doc.voteHistory = voteResult
     try {
       const proposal = await db_cvote.save(doc)
       await db_elip.update(
