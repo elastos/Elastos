@@ -231,7 +231,8 @@ public final class DIDStore {
 			if (doc != null) {
 				// Save private key
 				storePrivateKey(did, doc.getDefaultPublicKey(),
-						key.serialize(),storepass);
+						key.serialize(), storepass);
+				key.wipe();
 
 				storeDid(doc);
 
@@ -240,7 +241,8 @@ public final class DIDStore {
 
 				blanks = 0;
 			} else {
-				blanks++;
+				if (i >= nextIndex)
+					blanks++;
 			}
 		}
 	}
