@@ -46,6 +46,8 @@ type AddrManager struct {
 	nNew           int
 	lamtx          sync.Mutex
 	localAddresses map[string]*localAddress
+
+	checkAddr func(addr string) error
 }
 
 type serializedKnownAddress struct {
@@ -100,6 +102,9 @@ const (
 	// dumpAddressInterval is the interval used to dump the address
 	// cache to disk for future use.
 	dumpAddressInterval = time.Minute * 10
+
+	// expireAddressInterval is the interval used to check the address.
+	expireAddressInterval = time.Hour * 2
 
 	// triedBucketSize is the maximum number of addresses in each
 	// tried address bucket.
@@ -161,6 +166,11 @@ const (
 	// serialisationVersion is the current version of the on-disk format.
 	serialisationVersion = 1
 )
+
+// SetCheckAddr used to set function to check address in addrManager.
+func (a *AddrManager) SetCheckAddr(checkAddr func(addr string) error) {
+	a.checkAddr = checkAddr
+}
 
 // updateAddress is a helper function to either update an address already known
 // to the address manager, or to add the address if not already known.
@@ -332,11 +342,17 @@ func (a *AddrManager) getTriedBucket(netAddr *p2p.NetAddress) int {
 func (a *AddrManager) addressHandler() {
 	dumpAddressTicker := time.NewTicker(dumpAddressInterval)
 	defer dumpAddressTicker.Stop()
+
+	expireAddressTicker := time.NewTicker(expireAddressInterval)
+	defer dumpAddressTicker.Stop()
 out:
 	for {
 		select {
 		case <-dumpAddressTicker.C:
 			a.savePeers()
+
+		case <-expireAddressTicker.C:
+			go a.expirePeers()
 
 		case <-a.quit:
 			break out
@@ -344,6 +360,41 @@ out:
 	}
 	a.savePeers()
 	a.wg.Done()
+}
+
+// expirePeers remove all the expired addresses.
+func (a *AddrManager) expirePeers() {
+	a.mtx.Lock()
+	addrList := a.copyAddrList()
+	a.mtx.Unlock()
+
+	log.Info("Start check addrList, count:", len(addrList))
+	removeList := make(map[string]struct{})
+	for k := range addrList {
+		if err := a.checkAddr(k); err != nil {
+			removeList[k] = struct{}{}
+		}
+	}
+	log.Infof("Check addrList finished, need to remove %d addr, "+
+		"%d addr is ok", len(removeList), len(addrList)-len(removeList))
+
+	a.mtx.Lock()
+	for k, _ := range removeList {
+		for i := 0; i < newBucketCount; i++ {
+			delete(a.addrNew[i], k)
+		}
+		delete(a.addrIndex, k)
+	}
+	a.mtx.Unlock()
+}
+
+func (a *AddrManager) copyAddrList() map[string]*KnownAddress {
+	addrList := make(map[string]*KnownAddress)
+	for k, v := range a.addrIndex {
+		p := *v
+		addrList[k] = &p
+	}
+	return addrList
 }
 
 // savePeers saves all the known addresses to a file so they can be read back

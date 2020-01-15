@@ -87,9 +87,10 @@ type MakeEmptyMessage func(command string) (Message, error)
 
 // ReadMessage reads, validates, and parse the Message from r for the
 // provided magic.
-func ReadMessage(r net.Conn, magic uint32, makeEmptyMessage MakeEmptyMessage) (Message, error) {
+func ReadMessage(r net.Conn, magic uint32, timeout time.Duration,
+	makeEmptyMessage MakeEmptyMessage) (Message, error) {
 	// Set read deadline
-	err := r.SetReadDeadline(time.Now().Add(ReadMessageTimeOut))
+	err := r.SetReadDeadline(time.Now().Add(timeout))
 	if err != nil {
 		return nil, fmt.Errorf("set read deadline failed %s", err.Error())
 	}
@@ -144,7 +145,8 @@ func ReadMessage(r net.Conn, magic uint32, makeEmptyMessage MakeEmptyMessage) (M
 
 // WriteMessage writes a Message to w including the necessary header
 // information.
-func WriteMessage(w net.Conn, magic uint32, msg Message, getDposBlock func(msg Message) (*types.DposBlock, bool)) error {
+func WriteMessage(w net.Conn, magic uint32, msg Message, timeout time.Duration,
+	getDposBlock func(msg Message) (*types.DposBlock, bool)) error {
 	// Serialize message
 	var payload []byte
 	mtx.Lock()
@@ -202,7 +204,7 @@ func WriteMessage(w net.Conn, magic uint32, msg Message, getDposBlock func(msg M
 	}
 
 	// Set write deadline
-	err = w.SetWriteDeadline(time.Now().Add(WriteMessageTimeOut))
+	err = w.SetWriteDeadline(time.Now().Add(timeout))
 	if err != nil {
 		return fmt.Errorf("set write deadline failed %s", err.Error())
 	}

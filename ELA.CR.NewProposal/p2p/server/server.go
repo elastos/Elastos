@@ -18,6 +18,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
@@ -357,6 +358,47 @@ func (sp *serverPeer) AddBanScore(persistent, transient uint32, reason string) {
 // interface implementation.
 func (sp *serverPeer) BanScore() uint32 {
 	return sp.banScore.Int()
+}
+
+// checkAddr check and remove invalid address in address manager.
+func (s *server) checkAddr(addr string) error {
+	makeEmptyMessage := func(cmd string) (p2p.Message, error) {
+		var message p2p.Message
+		switch cmd {
+		case p2p.CmdVersion:
+			message = &msg.Version{}
+
+		default:
+			return nil, errors.New("invalid message")
+		}
+		return message, nil
+	}
+
+	conn, err := net.DialTimeout("tcp", addr, time.Second)
+	if err != nil {
+		return err
+	}
+	versionMsg := msg.NewVersion(s.cfg.ProtocolVersion, s.cfg.DefaultPort,
+		s.cfg.Services, uint64(rand.Int63()), s.cfg.BestHeight(), s.cfg.DisableRelayTx)
+
+	err = p2p.WriteMessage(
+		conn, s.cfg.MagicNumber, versionMsg, time.Second*2,
+		func(m p2p.Message) (*types.DposBlock, bool) {
+			return nil, false
+		})
+	if err != nil {
+		return err
+	}
+	remoteMsg, err := p2p.ReadMessage(
+		conn, s.cfg.MagicNumber, time.Second*2, makeEmptyMessage)
+	if err != nil {
+		return err
+	}
+	_, ok := remoteMsg.(*msg.Version)
+	if !ok {
+		return errors.New("invalid message")
+	}
+	return nil
 }
 
 // handlePeerMsg deals with adding/removing and ban peer message.
@@ -1251,6 +1293,7 @@ func newServer(origCfg *Config) (*server, error) {
 		quit:        make(chan struct{}),
 		nat:         nat,
 	}
+	s.addrManager.SetCheckAddr(s.checkAddr)
 
 	// Create the DNS seeds provider.
 	seeds := newSeed(&cfg, amgr, s.OutboundGroupCount)
