@@ -144,15 +144,16 @@ class Index extends React.Component {
           title: 'A familiar stack for Ethereum Developers',
           content: `<span class="normal" style="font-size: 13px;">Elastos is building equivalent versions of your favorite tools</span>
 
-<span class="normal">Block Explorer</span> &#x27A1; use our testnet block explorer at <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
+<span class="normal">Block Explorer</span> &#x27A1; use our testnet block explorer at <a href="https://testnet.elaeth.io" target="_blank">https://testnet.elaeth.io</a>, mainet at <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
 
-<span class="normal">MetaMask</span> &#x27A1; directly works on our new RPC port at <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>
+<span class="normal">MetaMask</span> &#x27A1; directly works on our new RPC port at <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>(testnet) and <a href="https://rpc.elaeth.io" target="_blank">https://mainrpc.elaeth.io</a>(mainnet)
 
-<span class="normal">Remix</span> &#x27A1; same as above, point it at our new RPC port 
+<span class="normal">Remix</span> &#x27A1; same as above, point it at our new RPC port
 
 <span class="normal">Myetherwallet</span> &#x27A1; accessible at <a href="https://wallet.elaeth.io" target="_blank">https://wallet.elaeth.io</a>
 
-<a class="button" href=${docUrl('advanced.html')}>View Our Advanced Tutorial for Ethereum Developers</a>`,
+
+<a class="button" href=${docUrl('advanced/intro')}>View Our Advanced Tutorial for Ethereum Developers</a>`,
           image: `${baseUrl}img/metamask-logo-eyes.png`,
           imageAlign: 'right',
         },
