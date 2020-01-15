@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -29,6 +31,30 @@ type HttpService struct {
 	*service.HttpService
 	cfg   *Config
 	store *blockchain.IDChainStore
+}
+
+type DidDocState uint8
+
+const (
+	Valid = iota
+	Expired
+	Deactivated
+	NonExist
+)
+
+func (c DidDocState) String() string {
+	switch c {
+	case Valid:
+		return "Valid"
+	case Expired:
+		return "Expired"
+	case Deactivated:
+		return "Deactivated"
+	case NonExist:
+		return "NonExist"
+	default:
+		return "Unknown"
+	}
 }
 
 func NewHttpService(cfg *Config) *HttpService {
@@ -72,6 +98,148 @@ func (s *HttpService) GetNodeState(param http.Params) (interface{}, error) {
 		WSPort:    s.cfg.WSPort,
 		Neighbors: states,
 	}, nil
+}
+
+// payload of DID transaction
+type RpcPayloadDIDInfo struct {
+	DID        string                `json:"did"`
+	Status     int                   `json:"status"`
+	RpcTXDatas []RpcTranasactionData `json:"transaction,omitempty"`
+}
+
+type RpcOperation struct {
+	Header  id.DIDHeaderInfo `json:"header"`
+	Payload string           `json:"payload"`
+	Proof   id.DIDProofInfo  `json:"proof"`
+}
+
+type RpcTranasactionData struct {
+	TXID      string       `json:"txid"`
+	Timestamp string       `json:"timestamp"`
+	Operation RpcOperation `json:"operation"`
+}
+
+func (rpcTxData *RpcTranasactionData) FromTranasactionData(txData id.
+	TranasactionData) bool {
+	hash, err := common.Uint256FromHexString(txData.TXID)
+	if err != nil {
+		return false
+	}
+
+	rpcTxData.TXID = service.ToReversedString(*hash)
+	rpcTxData.Timestamp = txData.Timestamp
+	rpcTxData.Operation.Header = txData.Operation.Header
+	rpcTxData.Operation.Payload = txData.Operation.Payload
+	rpcTxData.Operation.Proof = txData.Operation.Proof
+	return true
+}
+
+func (s *HttpService) getTxTime(txid string) (error, uint32) {
+	hash, err := common.Uint256FromHexString(txid)
+	if err != nil {
+		return errors.New("txid error"), 0
+	}
+
+	var header interfaces.Header
+	_, height, err := s.cfg.Chain.GetTransaction(*hash)
+
+	bHash, err := s.cfg.Chain.GetBlockHash(height)
+	if err != nil {
+		return errors.New("unkown block"), 0
+	}
+	header, err = s.cfg.Chain.GetHeader(bHash)
+	if err != nil {
+		return errors.New("unkown block header"), 0
+
+	}
+	return nil, header.GetTimeStamp()
+}
+
+func (s *HttpService) ResolveDID(param http.Params) (interface{}, error) {
+	var didDocState DidDocState
+	didDocState = NonExist
+	idParam, ok := param.String("did")
+	if !ok {
+		return nil, http.NewError(int(service.InvalidParams), "did is null")
+	}
+
+	var did string
+	//remove DID_ELASTOS_PREFIX
+	if id.IsURIHasPrefix(idParam) {
+		did = id.GetDIDFromUri(idParam)
+	} else {
+		did = idParam
+	}
+
+	//check is valid address
+	_, err := common.Uint168FromAddress(did)
+	if err != nil {
+		return nil, http.NewError(int(service.InvalidParams), "invalid did")
+	}
+	isGetAll, ok := param.Bool("all")
+	if !ok {
+		return nil, http.NewError(int(service.InvalidParams), "all is null")
+	}
+
+	buf := new(bytes.Buffer)
+	buf.WriteString(did)
+
+	var rpcPayloadDid RpcPayloadDIDInfo
+
+	expiresHeight, err := s.store.GetExpiresHeight(buf.Bytes())
+	if err != nil {
+		rpcPayloadDid.DID = idParam
+		rpcPayloadDid.Status = NonExist
+		return rpcPayloadDid, nil
+
+	}
+
+	var txsData []id.TranasactionData
+	if isGetAll {
+		txsData, err = s.store.GetAllDIDTxTxData(buf.Bytes())
+		if err != nil {
+			return nil, http.NewError(int(service.InternalError),
+				"get did transaction failed")
+		}
+
+	} else {
+		txData, err := s.store.GetLastDIDTxData(buf.Bytes())
+		if err != nil {
+			return nil, http.NewError(int(service.InternalError),
+				"get did transactions failed")
+		}
+		if txData != nil {
+			txsData = append(txsData, *txData)
+		}
+	}
+	for index, txData := range txsData {
+		rpcPayloadDid.DID = txData.Operation.PayloadInfo.ID
+		err, timestamp := s.getTxTime(txData.TXID)
+		if err != nil {
+			continue
+		}
+		tempTXData := new(RpcTranasactionData)
+		succe := tempTXData.FromTranasactionData(txData)
+		if succe == false {
+			continue
+		}
+
+		tempTXData.Timestamp = time.Unix(int64(timestamp), 0).UTC().String()
+		rpcPayloadDid.RpcTXDatas = append(rpcPayloadDid.RpcTXDatas, *tempTXData)
+		if index == 0 {
+			if txData.Operation.Header.Operation == "deactivate" {
+				didDocState = Deactivated
+			} else {
+				didDocState = Valid
+				if s.store.ChainStore.GetHeight() > expiresHeight {
+					didDocState = Expired
+				}
+			}
+			rpcPayloadDid.Status = int(didDocState)
+		}
+	}
+	return rpcPayloadDid, nil
+
 }
 
 func (s *HttpService) GetIdentificationTxByIdAndPath(param http.Params) (interface{}, error) {
@@ -215,7 +383,7 @@ func GetTransactionInfoFromBytes(txInfoBytes []byte) (*service.TransactionInfo, 
 	return &txInfo, nil
 }
 
-func GetTransactionInfo(cfg *service.Config, header *types.Header, tx *types.Transaction) *service.TransactionInfo {
+func GetTransactionInfo(cfg *service.Config, header interfaces.Header, tx *types.Transaction) *service.TransactionInfo {
 	inputs := make([]service.InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
 		inputs[i].TxID = service.ToReversedString(v.Previous.TxID)
@@ -253,10 +421,10 @@ func GetTransactionInfo(cfg *service.Config, header *types.Header, tx *types.Tra
 	var time uint32
 	var blockTime uint32
 	if header != nil {
-		confirmations = cfg.Chain.GetBestHeight() - header.Height + 1
+		confirmations = cfg.Chain.GetBestHeight() - header.GetHeight() + 1
 		blockHash = service.ToReversedString(header.Hash())
-		time = header.Timestamp
-		blockTime = header.Timestamp
+		time = header.GetTimeStamp()
+		blockTime = header.GetTimeStamp()
 	}
 
 	return &service.TransactionInfo{
@@ -339,6 +507,12 @@ func GetPayloadInfo(p types.Payload, pVersion byte) service.PayloadInfo {
 		}
 		obj.Contents = contents
 		return obj
+	case *id.Operation:
+		operation := new(RpcOperation)
+		operation.Header = object.Header
+		operation.Payload = object.Payload
+		operation.Proof = object.Proof
+		return operation
 	}
 	return nil
 }

@@ -106,7 +106,7 @@ func main() {
 	}
 	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
 	mempoolCfg.FeeHelper = txFeeHelper
-	txValidator := mp.NewValidator(&mempoolCfg)
+	txValidator := mp.NewValidator(&mempoolCfg, idChainStore)
 	mempoolCfg.Validator = txValidator
 
 	chainCfg := blockchain.Config{
@@ -257,6 +257,7 @@ func newRPCServer(port uint16, service *sv.HttpService) *jsonrpc.Server {
 	s.RegisterAction("listunspent", service.ListUnspent, "addresses")
 	s.RegisterAction("getillegalevidencebyheight", service.GetIllegalEvidenceByHeight, "height")
 	s.RegisterAction("checkillegalevidence", service.CheckIllegalEvidence, "evidence")
+	s.RegisterAction("resolvedid", service.ResolveDID, "id", "all")
 
 	return s
 }
