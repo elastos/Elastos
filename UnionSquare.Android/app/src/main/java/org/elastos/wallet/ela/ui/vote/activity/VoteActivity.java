@@ -54,9 +54,8 @@ public class VoteActivity extends BaseActivity {
     protected void setExtraData(Intent data) {
         maxBalance = data.getStringExtra("maxBalance");
         //Double num = Double.parseDouble(fee) / MyWallet.RATE;
-        String num = NumberiUtil.maxNumberFormat(Arith.div(maxBalance, MyWallet.RATE_S), 12);
         tv_max.setOnClickListener(v -> etPwd.setText("MAX"));
-        tv_maxvote.setText(getString(R.string.maximum_voting_rights) + "  " + num);
+        tv_maxvote.setText(getString(R.string.maximum_voting_rights) + "  " + maxBalance);
         etPwd.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {

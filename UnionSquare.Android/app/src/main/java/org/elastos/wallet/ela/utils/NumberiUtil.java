@@ -41,7 +41,7 @@ public class NumberiUtil {
         return removeZero(b.setScale(wei, BigDecimal.ROUND_DOWN).toPlainString());
     }
 
-    private static String removeZero(String number) {
+    public static String removeZero(String number) {
         while ((number.endsWith("0") || number.endsWith(".")) && number.contains(".")) {
             number = number.substring(0, number.length() - 1);
         }
