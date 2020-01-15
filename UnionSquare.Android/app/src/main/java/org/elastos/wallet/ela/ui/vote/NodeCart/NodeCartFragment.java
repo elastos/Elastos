@@ -438,15 +438,15 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         Intent intent = new Intent(getContext(), VoteActivity.class);
         BigDecimal balance = Arith.div(Arith.sub(data.getBalance(), 1000000), MyWallet.RATE_S, 8);
         maxBalance = NumberiUtil.removeZero(balance.toPlainString());
-        if ((balance.compareTo(new BigDecimal(1)) < 0)) {
-            //小于1
-            if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
-                maxBalance = "0";
-            } else {
-                maxBalance = "< 1 ELA";
-            }
-        }
         intent.putExtra("maxBalance", maxBalance);
+
+        //小于1
+        if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
+            maxBalance = "0";
+        } else if ((balance.compareTo(new BigDecimal(1)) < 0)) {
+            intent.putExtra("maxBalance", "< 1 ELA");
+        }
+
         startActivity(intent);
     }
 
