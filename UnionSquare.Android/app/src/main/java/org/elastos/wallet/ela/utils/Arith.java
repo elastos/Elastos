@@ -123,6 +123,26 @@ public class Arith {
         return div(v1, v2, DEF_DIV_SCALE);
     }
 
+    public static BigDecimal div(Object v1, Object v2, int wei) {
+        BigDecimal b1;
+        if (v1 instanceof Integer) {
+            b1 = new BigDecimal((Integer) v1);
+        } else if (v1 instanceof BigDecimal) {
+            b1 = (BigDecimal) v1;
+        } else {
+            b1 = new BigDecimal(v1.toString());
+        }
+        BigDecimal b2;
+        if (v2 instanceof Integer) {
+            b2 = new BigDecimal((Integer) v2);
+        } else if (v2 instanceof BigDecimal) {
+            b2 = (BigDecimal) v2;
+        } else {
+            b2 = new BigDecimal(v2.toString());
+        }
+        return b1.divide(b2, wei, BigDecimal.ROUND_DOWN);
+    }
+
     /**
      * 提供（相对）精确的除法运算。当发生除不尽的情况时，由scale参数指
      * 定精度，以后的数字四舍五入。
