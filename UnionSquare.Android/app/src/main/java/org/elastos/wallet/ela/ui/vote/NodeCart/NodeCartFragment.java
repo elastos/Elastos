@@ -54,6 +54,7 @@ import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -121,7 +122,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     NodeCartPresenter presenter = new NodeCartPresenter();
     ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
     int curentPage = 0;//0 首页 1已选择 2未选择
-    private String maxBalance = "0";
+    private String maxBalance;
     private JSONArray otherUnActiveVote;
     private Dialog dialog;
     Runnable runable;
@@ -435,9 +436,17 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     @Override
     public void onBalance(BalanceEntity data) {
         Intent intent = new Intent(getContext(), VoteActivity.class);
-        maxBalance = data.getBalance();
-        maxBalance = Arith.sub(maxBalance, 1000000).toPlainString();
-        intent.putExtra("maxBalance",maxBalance);
+        BigDecimal balance = Arith.div(Arith.sub(data.getBalance(), 1000000), MyWallet.RATE_S, 8);
+        maxBalance = NumberiUtil.removeZero(balance.toPlainString());
+        if ((balance.compareTo(new BigDecimal(1)) < 0)) {
+            //小于1
+            if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
+                maxBalance = "0";
+            } else {
+                maxBalance = "< 1 ELA";
+            }
+        }
+        intent.putExtra("maxBalance", maxBalance);
         startActivity(intent);
     }
 
@@ -450,7 +459,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             num = result.getName();
             String amount;
             if ("MAX".equals(num)) {
-                amount =maxBalance;
+                amount = Arith.mulRemoveZero(maxBalance, MyWallet.RATE_S).toPlainString();
             } else {
                 amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
             }

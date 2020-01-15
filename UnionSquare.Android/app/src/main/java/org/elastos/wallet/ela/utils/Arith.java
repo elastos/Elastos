@@ -51,6 +51,26 @@ public class Arith {
         return b1.subtract(b2);
     }
 
+    public static BigDecimal sub(Object v1, Object v2) {
+        BigDecimal b1;
+        if (v1 instanceof Integer) {
+            b1 = new BigDecimal((Integer) v1);
+        } else if (v1 instanceof BigDecimal) {
+            b1 = (BigDecimal) v1;
+        } else {
+            b1 = new BigDecimal(v1.toString());
+        }
+        BigDecimal b2;
+        if (v2 instanceof Integer) {
+            b2 = new BigDecimal((Integer) v2);
+        } else if (v2 instanceof BigDecimal) {
+            b2 = (BigDecimal) v2;
+        } else {
+            b2 = new BigDecimal(v2.toString());
+        }
+        return b1.subtract(b2);
+    }
+
     /**
      * 提供精确的乘法运算。
      *

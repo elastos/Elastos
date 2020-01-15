@@ -109,7 +109,7 @@ public class DateUtil {
         int Language = new SPUtil(context).getLanguage();
         SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
         if (Language != 0) {
-            format = new SimpleDateFormat("MMM dd HH:mm:ss yyyy", Locale.ENGLISH);
+            format = new SimpleDateFormat("HH:mm:ss MMM dd yyyy", Locale.ENGLISH);
 
         }
         return format.format(gc.getTime());
@@ -123,7 +123,7 @@ public class DateUtil {
         int Language = new SPUtil(context).getLanguage();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (Language != 0) {
-            format = new SimpleDateFormat("MMM dd HH:mm:ss yyyy", Locale.ENGLISH);
+            format = new SimpleDateFormat("HH:mm:ss MMM dd yyyy", Locale.ENGLISH);
 
         }
         return format.format(gc.getTime());
