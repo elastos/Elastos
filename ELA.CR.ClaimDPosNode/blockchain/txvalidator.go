@@ -301,13 +301,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 	}
 
 	if txn.Version >= TxVersion09 {
-		producers := b.state.GetActiveProducers()
-		if blockHeight < b.chainParams.PublicDPOSHeight {
-			producers = append(producers, b.state.GetPendingCanceledProducers()...)
-		}
-		candidates := b.crCommittee.GetCandidates(crstate.Active)
-		err := b.checkVoteOutputs(blockHeight, txn.Outputs, references,
-			getProducerPublicKeysMap(producers), getCRDIDsMap(candidates))
+		err := b.checkVoteOutputs(blockHeight, txn.Outputs, references)
 		if err != nil {
 			log.Warn("[CheckVoteOutputs]", err)
 			return elaerr.Simple(elaerr.ErrTxInvalidOutput, err)
@@ -317,8 +311,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 	return nil
 }
 
-func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, references map[*Input]*Output,
-	pds map[string]struct{}, crs map[common.Uint168]struct{}) error {
+func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, references map[*Input]*Output) error {
 	programHashes := make(map[common.Uint168]struct{})
 	for _, output := range references {
 		programHashes[output.ProgramHash] = struct{}{}
@@ -339,13 +332,13 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 			switch content.VoteType {
 			case outputpayload.Delegate:
 				err := b.checkVoteProducerContent(
-					content, pds, votePayload.Version, o.Value)
+					content, votePayload.Version, o.Value)
 				if err != nil {
 					return err
 				}
 			case outputpayload.CRC:
 				err := b.checkVoteCRContent(blockHeight,
-					content, crs, votePayload.Version, o.Value)
+					content, votePayload.Version, o.Value)
 				if err != nil {
 					return err
 				}
@@ -378,11 +371,10 @@ func (b *BlockChain) checkCRImpeachmentContent(content outputpayload.VoteContent
 }
 
 func (b *BlockChain) checkVoteProducerContent(content outputpayload.VoteContent,
-	pds map[string]struct{}, payloadVersion byte, amount common.Fixed64) error {
+	payloadVersion byte, amount common.Fixed64) error {
 	for _, cv := range content.CandidateVotes {
-		if _, ok := pds[common.BytesToHexString(cv.Candidate)]; !ok {
-			return fmt.Errorf("invalid vote output payload "+
-				"producer candidate: %s", common.BytesToHexString(cv.Candidate))
+		if _, err := crypto.DecodePoint(cv.Candidate); err != nil {
+			return errors.New("invalid public key")
 		}
 	}
 	if payloadVersion >= outputpayload.VoteProducerAndCRVersion {
@@ -397,7 +389,7 @@ func (b *BlockChain) checkVoteProducerContent(content outputpayload.VoteContent,
 }
 
 func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayload.VoteContent,
-	crs map[common.Uint168]struct{}, payloadVersion byte, amount common.Fixed64) error {
+	payloadVersion byte, amount common.Fixed64) error {
 
 	if !b.crCommittee.IsInVotingPeriod(blockHeight) {
 		return errors.New("cr vote tx must during voting period")
@@ -407,14 +399,10 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayloa
 		return errors.New("payload VoteProducerVersion not support vote CR")
 	}
 	for _, cv := range content.CandidateVotes {
-		did, err := common.Uint168FromBytes(cv.Candidate)
+		_, err := common.Uint168FromBytes(cv.Candidate)
 		if err != nil {
 			return fmt.Errorf("invalid vote output payload " +
 				"Candidate can not change to proper did")
-		}
-		if _, ok := crs[*did]; !ok {
-			return fmt.Errorf("invalid vote output payload "+
-				"CR candidate: %s", did.String())
 		}
 	}
 	var totalVotes common.Fixed64
