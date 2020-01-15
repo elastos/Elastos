@@ -444,8 +444,9 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         //小于1
         if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
             maxBalance = "0";
+            intent.putExtra("maxBalance", maxBalance);
         } else if ((balance.compareTo(new BigDecimal(1)) < 0)) {
-            intent.putExtra("maxBalance", "< 1 ELA");
+            intent.putExtra("maxBalance", "< 1");
         }
 
         startActivity(intent);
