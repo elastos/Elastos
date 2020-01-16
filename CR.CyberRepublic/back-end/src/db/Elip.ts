@@ -17,8 +17,7 @@ export default class extends Base {
       startAt: 10,
     }
     // schema.plugin(autoIncrement, options)
-    // , vid: -1 })
-    schema.index({ status: -1 })
+    // schema.index({ status: -1, vid: -1 })
     return schema
   }
 }
