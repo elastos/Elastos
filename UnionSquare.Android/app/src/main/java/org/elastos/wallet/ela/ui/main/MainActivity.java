@@ -15,9 +15,11 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.FirstFragment;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseActivity;
+import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.main.presenter.MainPresenter;
 import org.elastos.wallet.ela.ui.main.viewdata.MainViewData;
+import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.StatusBarUtil;
@@ -35,6 +37,34 @@ import java.util.Locale;
 
 public class MainActivity extends BaseActivity implements MainViewData {
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+
+        getNotify(intent);
+        super.onNewIntent(intent);
+    }
+
+    /**
+     * 点击通知栏到主Activity时 会执行这个方法
+     *
+     * @param intent
+     */
+    private void getNotify(Intent intent) {
+        String value = intent.getStringExtra("toValue");
+        if (!TextUtils.isEmpty(value)) {
+            switch (value) {
+                //在进行判断需要做的操作
+                case "notice":
+                    if (getTopFragment().getClass() == MessageListFragment.class) {
+                        post(RxEnum.REFRESHMESSAGE.ordinal(), null, null);
+                        return;
+                    }
+                    ((BaseFragment) getTopFragment()).start(MessageListFragment.class);
+                    break;
+            }
+        }
+
+    }
 
     static {
         System.loadLibrary("spvsdk_jni");
@@ -52,6 +82,7 @@ public class MainActivity extends BaseActivity implements MainViewData {
     protected void initView() {
         //initJG();
         Intent mIntent = getIntent();
+        String toValue = mIntent.getStringExtra("toValue");
         String action = mIntent.getAction();
         if (TextUtils.equals(action, Intent.ACTION_VIEW)) {
             Uri uri = mIntent.getData();
@@ -62,7 +93,13 @@ public class MainActivity extends BaseActivity implements MainViewData {
         init();
         StatusBarUtil.setTranslucentForImageViewInFragment(this, 0, null);
         if (findFragment(FirstFragment.class) == null) {
-            loadRootFragment(R.id.mhoneframeLayout, FirstFragment.newInstance());
+            FirstFragment firstFragment = new FirstFragment();
+            if (!TextUtils.isEmpty(toValue)) {
+                Bundle bundle = new Bundle();
+                bundle.putString("toValue", toValue);
+                firstFragment.setArguments(bundle);
+            }
+            loadRootFragment(R.id.mhoneframeLayout, firstFragment);
         }
         flag = false;
         registReceiver();
@@ -136,7 +173,7 @@ public class MainActivity extends BaseActivity implements MainViewData {
     }
 
     private void init() {
-       // moveTestConfigFiles2RootPath(this);
+        // moveTestConfigFiles2RootPath(this);
     }
 
     private void setLanguage() {

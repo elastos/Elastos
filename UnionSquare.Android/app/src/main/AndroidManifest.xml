@@ -33,6 +33,7 @@
         android:theme="@style/AppTheme.NoActionBar"
         tools:replace="android:allowBackup,android:icon,android:roundIcon,android:theme">
         <activity
+            android:launchMode="singleTask"
             android:name="org.elastos.wallet.ela.ui.main.MainActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan">

@@ -79,7 +79,14 @@ android {
             commandLine 'git', 'rev-list', '--count', 'HEAD'
             standardOutput = stdout
         }
-        return stdout.toString().trim().toInteger()
+        def taskNames = gradle.startParameter.taskNames
+        for (def name : taskNames) {
+            if (name.toString().toLowerCase().contains('debug')) {
+                return 10000
+            } else {
+                return stdout.toString().trim().toInteger()
+            }
+        }
     }
 
     compileSdkVersion 28

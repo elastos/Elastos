@@ -9,11 +9,14 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
 import org.elastos.wallet.ela.ui.mine.adapter.MessageListRecAdapetr;
 import org.elastos.wallet.ela.ui.mine.bean.MessageEntity;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 
@@ -47,10 +50,16 @@ public class MessageListFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
+        registReceiver();
         tvTitle.setText(getString(R.string.messagecenter));
 
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.asset_wallet_setting);
+        setDate();
+
+    }
+
+    private void setDate() {
         unReadList = CacheUtil.getUnReadMessage();
         if (AssetskFragment.messageList != null && AssetskFragment.messageList.size() > 0) {
             unReadList.addAll(AssetskFragment.messageList);
@@ -72,7 +81,12 @@ public class MessageListFragment extends BaseFragment {
             llNomessage.setVisibility(View.VISIBLE);
 
         }
-
+        readList.addAll(unReadList);
+        CacheUtil.setReadMessage(readList);
+        CacheUtil.remove("unReadMessage");
+        if (AssetskFragment.messageList != null)
+            AssetskFragment.messageList.clear();
+        post(RxEnum.READNOTICE.ordinal(), null, null);
     }
 
     public void setRecycleView(RecyclerView rv, List<MessageEntity> list) {
@@ -81,16 +95,6 @@ public class MessageListFragment extends BaseFragment {
         rv.setAdapter(adapter);
     }
 
-    @Override
-    public void onDestroy() {
-        readList.addAll(unReadList);
-        CacheUtil.setReadMessage(readList);
-        CacheUtil.remove("unReadMessage");
-        if (AssetskFragment.messageList != null)
-            AssetskFragment.messageList.clear();
-        post(RxEnum.READNOTICE.ordinal(), null, null);
-        super.onDestroy();
-    }
 
     @OnClick({R.id.iv_title_right})
     public void onViewClicked(View view) {
@@ -99,6 +103,16 @@ public class MessageListFragment extends BaseFragment {
                 //设置
                 start(MessageSettingFragment.class);
                 break;
+        }
+
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int code = result.getCode();
+        if (code == RxEnum.REFRESHMESSAGE.ordinal()) {
+            //刷新数据
+            setDate();
         }
 
     }

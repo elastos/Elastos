@@ -48,7 +48,7 @@ public class FirstFragment extends BaseFragment implements CommmonObjectWithMeth
             // bundle.putStringArrayList("ids", (ArrayList<String>) data);
             //对比本地数据库并同步
             new RealmUtil().sync(data);
-            startWithPop(MainFragment.class, null);
+            startWithPop(MainFragment.class, getArguments());
         } else {
             startWithPop(HomeWalletFragment.class, null);
         }

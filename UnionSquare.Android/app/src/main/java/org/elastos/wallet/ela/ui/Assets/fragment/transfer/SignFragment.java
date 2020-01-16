@@ -195,7 +195,7 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", chainID);
                 intent.putExtra("attributes", signData);
-                intent.putExtra("type", 1);
+                intent.putExtra("onlySign", true);
                 intent.putExtra("transType", transType);
                 startActivity(intent);
                 registReceiver();

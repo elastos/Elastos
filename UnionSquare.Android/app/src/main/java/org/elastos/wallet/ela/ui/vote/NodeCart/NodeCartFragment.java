@@ -352,6 +352,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 nodelist.add(list.get(i).getOwnerpublickey());
             }
         }
+      //  nodelist.add("03d835419df96c76b4b7bd5e56b1ed9362c80186ce3b35cd962dec2232040b0f8m");
         if (nodelist.size() > 36) {
             showToast(getString(R.string.max36dot));
             return;
@@ -439,14 +440,14 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         Intent intent = new Intent(getContext(), VoteActivity.class);
         BigDecimal balance = Arith.div(Arith.sub(data.getBalance(), 1000000), MyWallet.RATE_S, 8);
         maxBalance = NumberiUtil.removeZero(balance.toPlainString());
-        intent.putExtra("maxBalance", maxBalance);
-
-        //小于1
+        //小于1 huo 0
         if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
             maxBalance = "0";
-            intent.putExtra("maxBalance", maxBalance);
+            intent.putExtra("maxBalance", "0");
         } else if ((balance.compareTo(new BigDecimal(1)) < 0)) {
             intent.putExtra("maxBalance", "< 1");
+        } else {
+            intent.putExtra("maxBalance", maxBalance);
         }
 
         startActivity(intent);

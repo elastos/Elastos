@@ -4,6 +4,7 @@ package org.elastos.wallet.ela.ui.Assets;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
@@ -47,7 +48,9 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.bean.MessageEntity;
+import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.Log;
@@ -110,6 +113,15 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         realmUtil.updateSubWalletDetial(listMap);
         CacheUtil.setUnReadMessage(messageList);
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void setExtraData(Bundle data) {
+        String toValue = data.getString("toValue");
+        if ("notice".equals(toValue)) {
+            ((BaseFragment) getParentFragment()).start(MessageListFragment.class);
+        }
+
     }
 
     @Override
@@ -365,6 +377,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
     public void OnTransactionStatusChanged(JSONObject jsonObject) {
         try {
+            int confirms = jsonObject.getInt("confirms");
+            if (confirms == 0) {
+                return;
+            }
             String hash = jsonObject.getString("txId");
             String transferType = transactionMap.get(hash);
             if (TextUtils.isEmpty(transferType)) {
@@ -747,8 +763,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         if (!sp.isOpenSendMsg()) {
             return;
         }
-        NotificationManager manager = (NotificationManager) getContext().getSystemService(NOTIFICATION_SERVICE);
+        Intent intent = new Intent(getContext(),
+                MainActivity.class);//代表fragment所绑定的activity，这个需要写全路径
+        intent.putExtra("toValue", "notice");//传递参数，然后根据参数进行判断需要跳转的fragment界面
 
+        PendingIntent pIntent = PendingIntent.getActivity(getContext(), 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationManager manager = (NotificationManager) getContext().getSystemService(NOTIFICATION_SERVICE);
         //需添加的代码
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String channelId = "default";
@@ -757,11 +778,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
         Notification notification = new NotificationCompat.Builder(getContext(), "default")
                 .setContentTitle(MyUtil.getAppName(getContext()))
-                .setContentText("【" + walleName + getString(R.string.wallet) + "】" + transferTypeDes + " - " + getString(R.string.transactionfinish)+", " + reason + ".")
+                .setContentText("【" + walleName + getString(R.string.wallet) + "】" + transferTypeDes + " - " + getString(R.string.transactionfinish) + ", " + reason + ".")
                 .setWhen(System.currentTimeMillis())
+                .setContentIntent(pIntent)
+                .setAutoCancel(true)
                 .setSmallIcon(R.mipmap.icon_ela)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.icon_ela))
                 .build();
-        manager.notify(1, notification);
+        manager.notify((int) System.currentTimeMillis(), notification);
     }
 }

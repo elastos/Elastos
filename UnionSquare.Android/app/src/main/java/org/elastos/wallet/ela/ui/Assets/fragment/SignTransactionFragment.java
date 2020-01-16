@@ -76,7 +76,7 @@ public class SignTransactionFragment extends BaseFragment {
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", radioButton.getText().toString().trim());
                 intent.putExtra("attributes", etTosign.getText().toString().trim());
-                intent.putExtra("type", 1);
+                intent.putExtra("onlySign", true);
                 startActivity(intent);
                 break;
         }

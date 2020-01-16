@@ -58,7 +58,9 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
     protected void initView(View view) {
         SupportFragment homeFragment = findFragment(AssetskFragment.class);
         if (homeFragment == null) {
-            mFragments[0] = AssetskFragment.newInstance();
+            AssetskFragment assetskFragment = new AssetskFragment();
+            assetskFragment.setArguments(getArguments());
+            mFragments[0] = assetskFragment;
             mFragments[1] = FindFragment.newInstance();
             mFragments[2] = MineFragment.newInstance();
             // mFragments[3] = MineFragment.newInstance();\

@@ -29,7 +29,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     private PwdPresenter presenter;
     private String attributes;
     private String pwd;
-    private int type;//为1时候只需要签名然后post出去
+    private boolean onlySign;//为1时候只需要签名然后post出去
     private int transType;
 
     @Override
@@ -54,7 +54,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
         chainId = data.getStringExtra("chainId");
         attributes = data.getStringExtra("attributes");
         wallet = data.getParcelableExtra("wallet");
-        type = data.getIntExtra("type", 0);//1签名成功不publish
+        onlySign = data.getBooleanExtra("onlySign", false);//onlySign签名成功不publish
         transType = data.getIntExtra("transType", 13);
 
 
@@ -85,7 +85,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     public void onGetCommonData(String methodname, String data) {
         switch (methodname) {
             case "signTransaction":
-                if (type == 1) {
+                if (onlySign) {
                     post(RxEnum.SIGNSUCCESS.ordinal(), "签名成功", data);
                     finish();
                     return;
