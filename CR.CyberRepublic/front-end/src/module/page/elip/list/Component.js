@@ -190,7 +190,7 @@ export default class extends BaseComponent {
             className="tableLink"
             onClick={this.toDetailPage.bind(this, item._id)}
           >
-            {`#${vid}`}
+            {vid && `#${vid}`}
           </a>
         )
       },
