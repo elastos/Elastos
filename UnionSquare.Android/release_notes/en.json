@@ -7,7 +7,7 @@
   "text7":"UI Display Optimization;",
   "text8":"Personalized icon fix for participant nodes.",
   "text9":"Official release of ELA Wallet;",
-  "text10":"Download the latest version v1.0.2",
+  "text10":"Download the latest version v 1.4.1",
   "text11":"July 22, 2019",
   "text12":"Fixed bugs.",
   "text13":"Optimized Supernode profit presentation.",
@@ -37,5 +37,13 @@
   "text34":"3. Optimized the DID Sidechain synchronization",
   "text35":"Notes:",
   "text36":"Please back up your wallet before upgrading to the new version. The election of CR Council members will be based on the participant's DID. Therefore, please make sure that the DID Sidechain is turned on before participating in the election.",
-  "text37":""
+  "text37":"",
+
+  "text38":"January 15, 2020",
+  "text39":"This edition of ELA Wallet contain the following upgrades:",
+  "text40":"1. Error-Fix for the QR code scans;",
+  "text41":"2. Adjustment for transaction confirmation quantity status.",
+  "text42":"Note:",
+  "text43":"Please make sure to back up your wallet before upgrading the ELA Wallet.",
+  "text44":""
 }
