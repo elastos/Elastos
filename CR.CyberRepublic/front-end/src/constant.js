@@ -405,17 +405,15 @@ export const SUGGESTION_BUDGET_TYPE = create([
 
 // elip
 export const ELIP_STATUS = create([
+  'PERSONAL_DRAFT',
   'WAIT_FOR_REVIEW',
   'REJECTED',
   'DRAFT',
+  'CANCELLED',
+  'FINAL_REVIEW',
   'SUBMITTED_AS_PROPOSAL'
 ])
-export const ELIP_FILTER = create([
-  'ALL',
-  'DRAFT',
-  'SUBMITTED_BY_ME',
-  'WAIT_FOR_REVIEW'
-])
+
 export const ELIP_REVIEW_STATUS = create(['APPROVED', 'REJECTED'])
 export const ELIP_VOTE_STATUS = create(['YES', 'OPPOSE', 'ABSTAIN'])
 export const ELIP_VOTE_STATUS_COLOR = {

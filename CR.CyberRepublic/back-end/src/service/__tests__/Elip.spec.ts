@@ -54,8 +54,7 @@ describe('Tests for ELIP', () => {
     })
     const rs: any = await elipService.create(global.DB.ELIP_1)
     expect(rs.createdBy.toString()).to.be.equal(user.member._id.toString())
-    expect(rs.status).to.be.equal(constant.ELIP_STATUS.WAIT_FOR_REVIEW)
-    await DB.getModel('Elip').remove({})
+    expect(rs.status).to.be.equal(constant.ELIP_STATUS.PERSONAL_DRAFT)
   })
 
   test('An ELIP is updated by its author', async () => {
@@ -69,7 +68,8 @@ describe('Tests for ELIP', () => {
     try {
       await elipService.update({
         _id: elip_2._id,
-        title: 'update elip'
+        title: 'update elip',
+        status: constant.ELIP_STATUS.WAIT_FOR_REVIEW
       })
     } catch (error) {
       expect(error).to.be.equal(
@@ -77,31 +77,30 @@ describe('Tests for ELIP', () => {
       )
     }
 
-    // An ELIP can not be updated If its status is REJECTED.
+    // An ELIP can be updated If its status is REJECTED.
     await DB.getModel('Elip').update(
       { _id: elip_2._id },
-      { status: constant.ELIP_STATUS.REJECTED }
+      { status: constant.ELIP_STATUS.REJECTED}
     )
     const rs: any = await elipService.update({
       _id: elip_2._id,
       title: 'update title',
-      description: 'update description'
+      status: constant.ELIP_STATUS.WAIT_FOR_REVIEW
     })
     expect(rs.nModified).to.be.equal(1)
     const rs1 = await DB.getModel('Elip').findOne({ _id: elip_2._id })
     expect(rs1.status).to.be.equal(constant.ELIP_STATUS.WAIT_FOR_REVIEW)
 
-    // The author of ELIP can change ELIP's status from DRAFT to SUBMITTED.
+    // The author of ELIP can change ELIP's status from DRAFT to FINAL REVIEW.
     await DB.getModel('Elip').update(
       { _id: elip_2._id },
       { status: constant.ELIP_STATUS.DRAFT }
     )
     const rs2: any = await elipService.update({
       _id: elip_2._id,
-      status: constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
+      status: constant.ELIP_STATUS.FINAL_REVIEW
     })
     expect(rs2.nModified).to.be.equal(1)
-    await DB.getModel('Elip').remove({})
   })
 
   test('Users with different roles get an ELIP', async () => {
@@ -109,22 +108,26 @@ describe('Tests for ELIP', () => {
     const elipService = new ElipService(DB, {
       user: user.member
     })
-    const elip_3: any = await elipService.create(global.DB.ELIP_3)
+    const elip_3: any = await elipService.create({
+      title: 'elip_3',
+      status: 'PERSONAL_DRAFT'
+    })
 
-    // The ELIP's author
+    // The ELIP's author can get this elip
     const rs = await elipService.getById(elip_3._id)
     expect(rs.elip._id.equals(elip_3._id)).to.be.equal(true)
 
-    // A secretary
+    // A secretary can not access this elip with PERSONAL DRAFT status
     const elipService1 = new ElipService(DB, { user: user.secretary })
     const rs1 = await elipService1.getById(elip_3._id)
-    expect(rs1.elip._id.equals(elip_3._id)).to.be.equal(true)
+    expect(rs1.elip.empty).to.be.equal(true)
 
-    // A guest
+    // A guest can not get this elip
     const elipService2 = new ElipService(DB, {})
     const rs2 = await elipService2.getById(elip_3._id)
     expect(rs2.elip.empty).to.be.equal(true)
 
+    // A guest can get elips with DRAFT status
     await DB.getModel('Elip').update(
       { _id: elip_3._id },
       { status: constant.ELIP_STATUS.DRAFT }
@@ -138,42 +141,40 @@ describe('Tests for ELIP', () => {
     const elipService = new ElipService(DB, {
       user: user.member
     })
-    for (let i = 0; i < 4; i++) {
+
+    for (const key in constant.ELIP_STATUS) {
       await elipService.create({
-        title: `title ${i}`,
-        description: `description ${i}`,
-        status: constant.ELIP_FILTER.WAIT_FOR_REVIEW
+        title: `title ${key}`,
+        status: key
       })
     }
+
     // ELIP's author
-    const rs = await elipService.list({
-      filter: constant.ELIP_FILTER.ALL
-    })
-    expect(rs.length).to.be.equal(4)
+    const rs = await elipService.list({})
+    expect(rs.length).to.be.equal(2)
+
     // A guest
     const elipService1 = new ElipService(DB, {})
-    const rs1 = await elipService1.list({
-      filter: constant.ELIP_FILTER.ALL
-    })
+    const rs1 = await elipService1.list({})
     expect(rs1.length).to.be.equal(0)
+
     // A secretary
     const elipService2 = new ElipService(DB, { user: user.secretary })
-    // TODO: optimize increment
-    // const rs2 = await elipService2.list({ $or: [{ vid: 2 }] })
-    // expect(rs2.length).to.be.equal(1)
     const rs2 = await elipService2.list({})
-    expect(rs2.length).to.be.equal(4)
+    expect(rs2.length).to.be.equal(1)
   })
 
   test('A secretary review an ELIP', async () => {
     await DB.getModel('Elip').remove({})
+    await DB.getModel('Elip_Review').remove({})
     const elipService = new ElipService(DB, {
       user: user.member
     })
     const elip = await elipService.create({
       title: 'title',
-      description: 'description'
+      status: constant.ELIP_STATUS.WAIT_FOR_REVIEW
     })
+
     const elipReviewService = new ElipReviewService(DB, {
       user: user.secretary
     })
@@ -182,8 +183,10 @@ describe('Tests for ELIP', () => {
       status: constant.ELIP_REVIEW_STATUS.REJECTED,
       comment: 'need more info'
     })
+
     const rs = await DB.getModel('Elip_Review').find({})
     expect(rs.length).to.be.equal(1)
+
     const rs1 = await elipService.getById(elip._id)
     expect(rs1.elip.status === constant.ELIP_STATUS.REJECTED).to.be.equal(true)
   })

@@ -65,15 +65,6 @@ export default class extends BaseService {
     return rs
   }
 
-  async submitAsPropose(param) {
-    const path = `${this.prefixPath}/${param.id}/propose`
-    const rs = await api_request({
-      path,
-      method: 'get'
-    })
-    return rs
-  }
-
   async updateFilters(filters) {
     this.dispatch(this.selfRedux.actions.filters_update(filters))
   }

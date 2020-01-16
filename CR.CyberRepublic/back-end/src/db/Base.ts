@@ -111,7 +111,6 @@ export default abstract class {
         return await this.db.remove(query)
     }
 
-
     private buildUpdateOptions(opts?: updateOptions): updateOptions{
         return _.extend({
             multi : false

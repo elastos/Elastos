@@ -57,7 +57,8 @@ export default {
       saveDraft: '保存草稿',
       save: '保存并发布',
       update: '更新',
-      create: '创建'
+      create: '创建',
+      discardChanges: '放弃修改'
     },
     fields: {
       title: '标题'
@@ -87,10 +88,8 @@ export default {
       plan: '实施团队或里程碑为空',
       milestones: '里程碑为空',
       team: '实施团队为空',
-      budget: '总金额、ELA 接收地址或者支出计划为空',
-      totalBudget: '总预算为空',
-      elaAddress: 'ELA 接收地址为空',
-      paymentSchedule: '支出计划为空'
+      amount: '金额大于总金额的30%',
+      previousMilestoneDate: '日期必须晚于前一个里程碑'
     }
   },
   modal: {
@@ -137,12 +136,12 @@ export default {
     criteria: '支付标准',
     action: '操作',
     desc: '请基于里程碑填写：',
-    schedule: '支出计划',
-    total: '总预算',
+    schedule: '支付计划',
+    total: '总金额',
     address: 'ELA 接收地址',
     tip: '请先添加里程碑',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: '预支付(小于总金额的30%)',
-    [SUGGESTION_BUDGET_TYPE.COMPLETION]: '提案完成支付',
+    [SUGGESTION_BUDGET_TYPE.COMPLETION]: '结项款',
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '阶段支付'
   },
   plan: {

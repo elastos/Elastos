@@ -63,8 +63,7 @@ export default class extends Base {
     const db_user = this.getDBModel('User')
     const { suggestionId } = param
 
-    const suggestion =
-      suggestionId && (await db_suggestion.findById(suggestionId))
+    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
     if (!suggestion) {
       throw 'cannot find suggestion'
     }

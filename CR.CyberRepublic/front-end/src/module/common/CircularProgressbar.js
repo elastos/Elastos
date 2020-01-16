@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import BaseComponent from '@/model/BaseComponent'
 import 'react-circular-progressbar/dist/styles.css'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
@@ -7,17 +6,28 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
 export default class Component extends BaseComponent {
   ord_render() {
     const { count, limit = 200 } = this.props
-    let percentage = 100 * count / limit
+    let percentage = (100 * count) / limit
     if (percentage > 100) percentage = 100
     let pathColor = '#1DE9B6'
     let text
     if (limit - count <= 20) {
-      text = <span style={{ color: 'rgba(3, 30, 40, 0.3)', position: 'absolute', right: 23, top: 2 }}>{limit - count}</span>
+      text = (
+        <span
+          style={{
+            color: 'rgba(3, 30, 40, 0.3)',
+            position: 'absolute',
+            right: 23,
+            top: 2
+          }}
+        >
+          {limit - count}
+        </span>
+      )
       pathColor = limit - count > 0 ? '#FF9518' : '#BE1313'
     }
 
     return (
-      <span >
+      <span>
         {text}
         <CircularProgressbar
           value={percentage}
@@ -41,7 +51,7 @@ export default class Component extends BaseComponent {
             // Colors
             pathColor,
             // textColor: '#f88',
-            trailColor: '#d6d6d6',
+            trailColor: '#d6d6d6'
             // backgroundColor: '#3e98c7',
           })}
         />

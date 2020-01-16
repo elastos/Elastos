@@ -79,9 +79,10 @@ export default class extends StandardPage {
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     super.componentDidMount()
-    this.refetch(true)
+    await this.refetch(true)
+    await this.props.getDraft(_.get(this.props, 'match.params.id'))
   }
 
   componentWillUnmount() {
@@ -485,15 +486,18 @@ export default class extends StandardPage {
   }
 
   renderOwnerActionsNode() {
-    const { detail, currentUserId, isAdmin } = this.props
+    const { detail, currentUserId, isAdmin, draft } = this.props
     const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
+    const editText = draft && draft.empty
+      ? I18N.get('suggestion.btnText.edit')
+      : I18N.get('suggestion.btnText.editDraft')
     const res = isOwner && (
       <StyledButton
         type="ebp"
         className="cr-btn cr-btn-default"
         onClick={this.showEditForm}
       >
-        {I18N.get('suggestion.btnText.edit')}
+        {editText}
       </StyledButton>
     )
     return res

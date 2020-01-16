@@ -57,7 +57,8 @@ export default {
       saveDraft: 'Save as Draft',
       save: 'Save & Post',
       update: 'Update',
-      create: 'Create'
+      create: 'Create',
+      discardChanges: 'Discard changes'
     },
     fields: {
       title: 'Title'
@@ -87,9 +88,8 @@ export default {
       isNaN: 'Please input valid amount',
       milestones: 'Milestones is empty',
       team: 'Implementation team is empty',
-      totalBudget: 'Total budget is empty',
-      elaAddress: 'ELA receive address is empty',
-      paymentSchedule: 'Payment Schedule is empty'
+      amount: 'The amount is more than 30% of the total budget',
+      previousMilestoneDate: 'The date must be later than the previous milestone.'
     }
   },
   modal: {
@@ -140,9 +140,9 @@ export default {
     total: 'Total Budget',
     address: 'ELA Receive Address',
     tip: 'Please add milestone first',
-    [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Advance payment (< 30% of total)',
-    [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Proposal completion payment',
-    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Phased payment'
+    [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Project Initiation Payment (< 30% of total)',
+    [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Project Completion Payment',
+    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Project Milestone Payment'
   },
   plan: {
     teamMember: 'Team Member',

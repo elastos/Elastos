@@ -298,6 +298,7 @@ const zh = {
 
   // Suggestion Button Text
   'suggestion.btnText.edit': '编辑',
+  'suggestion.btnText.editDraft': '编辑草案',
   'suggestion.btnText.consider': '考虑',
   'suggestion.btnText.markConsider': '考虑',
   'suggestion.btnText.needMoreInfo': '需要更多信息',

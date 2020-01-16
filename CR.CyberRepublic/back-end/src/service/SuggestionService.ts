@@ -1,5 +1,6 @@
 import Base from './Base'
 import * as _ from 'lodash'
+import {Document, Types} from 'mongoose'
 import { constant } from '../constant'
 import {
   validate,
@@ -9,6 +10,7 @@ import {
   logger
 } from '../utility'
 
+const ObjectId = Types.ObjectId
 const BASE_FIELDS = [
   'title',
   'type',
@@ -24,8 +26,10 @@ const BASE_FIELDS = [
 
 export default class extends Base {
   private model: any
+  private draftModel: any
   protected init() {
     this.model = this.getDBModel('Suggestion')
+    this.draftModel = this.getDBModel('SuggestionDraft')
   }
 
   public async create(param: any): Promise<Document> {
@@ -103,7 +107,7 @@ export default class extends Base {
     }
   }
 
-  public async update(param: any): Promise<Document> {
+  public async saveDraft(param: any): Promise<Document> {
     const { id, update } = param
     const userId = _.get(this.currentUser, '_id')
     const currDoc = await this.model.getDBInstance().findById(id)
@@ -120,8 +124,53 @@ export default class extends Base {
     }
 
     const doc = _.pick(param, BASE_FIELDS)
+    doc._id = ObjectId(id)
+    doc.createdBy = ObjectId(userId)
+
+    const currDraft = await this.draftModel.getDBInstance().findById(id)
+    if(currDraft) {
+      await this.draftModel.remove({ _id: ObjectId(id) })
+    }
 
     doc.descUpdatedAt = new Date()
+    let result = null
+    if (update) {
+      result = await this.draftModel.save(doc)
+      await this.getDBModel('Suggestion_Edit_History').save({
+        ...currDoc,
+        suggestion: id
+      })
+    } else {
+      result = await this.draftModel.save(doc)
+    }
+
+    return result
+  }
+
+  public async update(param: any): Promise<Document> {
+    const { id, update } = param
+    const userId = _.get(this.currentUser, '_id')
+    const currDoc = await this.model.getDBInstance().findById(id)
+
+    if (!currDoc) {
+      throw 'Current document does not exist'
+    }
+
+    if (
+      !userId.equals(_.get(currDoc, 'createdBy')) &&
+      !permissions.isAdmin(_.get(this.currentUser, 'role'))
+    ) {
+      throw 'Only owner can edit suggestion'
+    }
+
+    const currDraft = await this.draftModel.getDBInstance().findById(id)
+    if(currDraft) {
+      await this.draftModel.remove({ _id: ObjectId(id) })
+    }
+
+    const doc = _.pick(param, BASE_FIELDS)
+    doc.descUpdatedAt = new Date()
+    
     if (update) {
       await Promise.all([
         this.model.update({ _id: id }, { $set: doc }),
@@ -585,7 +634,7 @@ export default class extends Base {
     }
   }
 
-  public async show(param: any): Promise<any> {
+  public async showInModel(model: any, param: any): Promise<any> {
     const { id: _id, incViewsNum } = param
     // access suggestion info by reference number
     const isNumber = /^\d*$/.test(_id)
@@ -597,12 +646,12 @@ export default class extends Base {
     }
 
     if (incViewsNum === 'true') {
-      await this.model.findOneAndUpdate(query, {
+      await model.findOneAndUpdate(query, {
         $inc: { viewsNum: 1, activeness: 1 }
       })
     }
 
-    let doc = await this.model
+    let doc = await model
       .getDBInstance()
       .findOne(query)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
@@ -630,7 +679,7 @@ export default class extends Base {
     if (doc && doc.comments) {
       for (const comment of doc.comments) {
         for (const thread of comment) {
-          await this.model.getDBInstance().populate(thread, {
+          await model.getDBInstance().populate(thread, {
             path: 'createdBy',
             select: `${constant.DB_SELECTED_FIELDS.USER.NAME} profile.avatar`
           })
@@ -639,6 +688,12 @@ export default class extends Base {
     }
 
     return doc
+  }
+  public async show(param: any): Promise<any> {
+    return this.showInModel(this.model, param)
+  }
+  public async showDraft(param: any): Promise<any> {
+    return this.showInModel(this.draftModel, param)
   }
 
   public async editHistories(param: any): Promise<Document[]> {

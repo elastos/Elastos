@@ -193,6 +193,7 @@ class PaymentSchedule extends Component {
               onSubmit={this.handleSubmit}
               onCancel={this.hideModal}
               milestone={milestone}
+              total={total}
             />
           ) : null}
         </Modal>
