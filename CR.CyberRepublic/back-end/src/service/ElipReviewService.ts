@@ -5,6 +5,50 @@ import { constant } from '../constant'
 import { mail, logger, user as userUtil } from '../utility'
 
 export default class extends Base {
+  public async getVid() {
+    const db_elip = this.getDBModel('Elip')
+
+    // get last vid
+    let lastId: Number = 1
+
+    const elip = await db_elip
+      .getDBInstance()
+      .find({
+        status: {
+          $in: [
+            constant.ELIP_STATUS.DRAFT,
+            constant.ELIP_STATUS.CANCELLED,
+            constant.ELIP_STATUS.FINAL_REVIEW,
+            constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
+          ]
+        }
+      })
+      .sort({"vid": -1})
+      .limit(1)
+    if(elip.length > 0) {
+      lastId = elip[0].vid + 1
+    }
+
+    // get Vid last id
+    const db_vid = this.getDBModel('Vid')
+    const elip_vid = await db_vid
+      .getDBInstance()
+      .findOne({tableName: "elip"})
+
+    if(!elip_vid) {
+      await db_vid
+        .getDBInstance()
+        .save({tableName: "elip", vid: lastId})
+    }else{
+      const elip_vid = await db_vid
+        .getDBInstance()
+        .findOneAndUpdate({tableName: "elip"}, {$inc: {vid: 1}})
+      lastId = elip_vid.vid + 1
+    }
+
+    return lastId
+  }
+
   public async create(param: any): Promise<Document> {
     try {
       const db_elip_review = this.getDBModel('Elip_Review')
@@ -45,18 +89,36 @@ export default class extends Base {
         if (isApproved) {
           elipStatus = constant.ELIP_STATUS.DRAFT
         }
+
+        const doc: any = { status: elipStatus }
+        if (
+          elipStatus === constant.ELIP_STATUS.DRAFT &&
+          elip.status !== constant.ELIP_STATUS.DRAFT
+        ) {
+          doc.vid = await this.getVid()
+        }
+        
         await db_elip.update(
           { _id: elipId },
-          { status: elipStatus }
+          doc
         )
         this.notifyElipCreator(review, elip, status)
       }
       if (elip.status === constant.ELIP_STATUS.FINAL_REVIEW) {
         if (isRejected) {
-          elipStatus = constant.ELIP_STATUS.DRAFT 
+          elipStatus = constant.ELIP_STATUS.DRAFT
+
+          const doc: any = { status: elipStatus }
+          if (
+            elipStatus === constant.ELIP_STATUS.DRAFT &&
+            elip.status !== constant.ELIP_STATUS.DRAFT
+          ) {
+            doc.vid = await this.getVid()
+          }
+          
           await db_elip.update(
             { _id: elipId },
-            { status: elipStatus}
+            doc
           )
         }
         if (isApproved) {

@@ -9,8 +9,7 @@ export const Elip = {
     required: true
   },
   vid: {
-    type: Number,
-    required: true
+    type: Number
   },
   elipType: {
     type: String,

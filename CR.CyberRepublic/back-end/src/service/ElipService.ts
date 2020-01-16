@@ -16,6 +16,25 @@ const BASE_FIELDS = [
   'copyright'
 ]
 export default class extends Base {
+  public async unsetAbandonVid() {
+    const db_elip = this.getDBModel('Elip')
+    
+    // update old status vid
+    const ret = await db_elip
+      .getDBInstance()
+      .update({
+        status: {
+          $in: [
+            constant.ELIP_STATUS.PERSONAL_DRAFT,
+            constant.ELIP_STATUS.WAIT_FOR_REVIEW,
+            constant.ELIP_STATUS.REJECTED
+          ]
+        }
+      }, {
+        $unset: {vid: -1}
+      })
+  }
+  
   public async update(param: any): Promise<Document> {
     try {
       const db_elip = this.getDBModel('Elip')
@@ -302,6 +321,8 @@ export default class extends Base {
   }
 
   public async list(param: any): Promise<any> {
+    this.unsetAbandonVid()
+
     const db_elip = this.getDBModel('Elip')
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
