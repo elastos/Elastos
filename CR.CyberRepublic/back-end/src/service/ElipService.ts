@@ -455,7 +455,7 @@ export default class extends Base {
       .getDBInstance()
       .find(query, fields)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
-      .sort({ vid: -1 })
+      .sort({ createdAt: -1, vid: -1 })
       .limit(100)
 
     return list
