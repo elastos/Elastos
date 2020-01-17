@@ -170,7 +170,12 @@ def send_email(request, to_email, user):
         mail_subject, message, from_email='"Nucleus Console Support Team" <support@nucleusconsole.com>', to=[to_email]
     )
     email.content_subtype = 'html'
-    email.send()
+    try:
+        email.send()
+        return HttpResponse("Success")
+    except Exception as e:
+        logging.debug(f"Method: send_email Error: {e}")
+        return HttpResponse("Failure")
 
 
 def activate(request, uidb64, token):

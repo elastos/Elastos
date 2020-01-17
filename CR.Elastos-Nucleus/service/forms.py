@@ -221,15 +221,19 @@ class WatchETHContractForm(forms.Form):
 
         self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
 
+
 class SuggestServiceForm(forms.Form):
 
-    service_category = forms.ChoiceField(choices=CATEGORY , label="Category", initial='', widget=forms.Select() ,required=True)
-    service_name = forms.CharField(max_length=200 , widget=forms.Textarea)
-    service_description = forms.CharField(max_length=1000, widget=forms.Textarea)
-    service_reasoning = forms.CharField(max_length=3000, widget=forms.Textarea, label="Reason for service?")
+    service_category = forms.ChoiceField(choices=CATEGORY, label="Category", initial='', widget=forms.Select(),
+                                         required=True)
+    service_name = forms.CharField(max_length=200, widget=forms.Textarea)
+    service_description = forms.CharField(max_length=1000, widget=forms.Textarea, label="Description(Please be as "
+                                                                                        "specific as possible)")
+    service_reasoning = forms.CharField(max_length=3000, widget=forms.Textarea, label="Why do you think this service "
+                                                                                      "would be useful?")
 
-    def __init__(self , *args , **kwargs):
-        super(SuggestServiceForm , self).__init__(*args , **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(SuggestServiceForm, self).__init__(*args, **kwargs)
 
         self.fields['service_name'].widget.attrs['rows'] = 1
         self.fields['service_name'].widget.attrs['cols'] = 50

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import yaml
 
 from django.core import serializers
 from django.http import HttpResponse
@@ -9,6 +10,7 @@ from decouple import config
 from django.core.mail import EmailMessage
 from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 
 from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
@@ -20,7 +22,6 @@ from elastos_adenine.common import Common
 from elastos_adenine.hive import Hive
 from elastos_adenine.sidechain_eth import SidechainEth
 from elastos_adenine.wallet import Wallet
-
 
 from .forms import GenerateAPIKeyForm
 from .forms import UploadAndSignForm, VerifyAndShowForm
@@ -614,29 +615,31 @@ def run_eth_contract(request):
 
 @login_required
 def suggest_service(request):
+    did = request.session['did']
     if request.is_ajax():
         category = request.POST.get('category')
         title = request.POST.get('title')
         description = request.POST.get('description')
         reasoning = request.POST.get('reasoning')
-        content = {
-            'category':category,
-            'title':title,
-            'description':description,
-            'reasoning':reasoning
-        }
-        email = EmailMessage(subject="Suggested Service", body=content , from_email='"Nucleus Console Suggest Service" <support@nucleusconsole.com>"', to=['support@nucleusconsole.com'])
+        content = render_to_string('service/suggest_service_email.html', {
+            'service_category': category,
+            'service_name': title,
+            'service_description': description,
+            'service_reasoning': reasoning
+        })
+        email = EmailMessage(subject="Suggested Service",
+                             body=content,
+                             from_email='"Nucleus Console Support Team" <support@nucleusconsole.com>',
+                             to=['support@nucleusconsole.com'])
+        email.content_subtype = 'html'
         try:
             email.send()
-            return HttpResponse("success")
+            return HttpResponse("Success")
         except Exception as e:
-            print(e)
-            return HttpResponse("Failiure")
+            logging.debug(f"did={did} Method: suggest_service Error: {e}")
+            return HttpResponse("Failure")
 
     else:
-        did = request.session['did']
         track_page_visit(did, 'Suggest a new service', 'service:suggest_service', True)
         recent_services = get_recent_services(did)
         return render(request, "service/suggest_service.html", {'recent_services': recent_services})
-
-

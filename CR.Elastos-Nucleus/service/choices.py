@@ -12,5 +12,5 @@ CATEGORY = (
     ('hive', 'Elastos Hive'),
     ('eth_sidechain', "ETH Sidechain"),
     ('wallet', "Wallet"),
-    ('playground', "Playground"),
+    ('other', "Other")
 )
