@@ -33,9 +33,6 @@ www/
 elastos-nucleus.log*
 queries.log*
 
-# uploaded files
-documents/
-
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
