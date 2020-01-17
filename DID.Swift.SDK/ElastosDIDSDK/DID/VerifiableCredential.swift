@@ -6,7 +6,7 @@ public class VerifiableCredential: DIDObject {
     public var issuanceDate: Date?
     public var expirationDate: Date?
     public var subject: CredentialSubject!
-    public var proof: Proof!
+    public var proof: CredentialProof!
     var alias: String!
     
     private let  RULE_EXPIRE: Int = 1
@@ -208,7 +208,7 @@ public class VerifiableCredential: DIDObject {
         
         // proof
         if !forSign {
-            dic[PROOF] = proof.toJson_vc(issuer, normalized)
+            dic[PROOF] = proof.toJson(issuer, normalized)
         }
         return dic
     }
@@ -284,7 +284,7 @@ public class VerifiableCredential: DIDObject {
         
         // proof
         value = json[PROOF]
-        proof = try Proof.fromJson_vc(value as! OrderedDictionary<String, Any>, issuer)
+        proof = try CredentialProof.fromJson(value as! OrderedDictionary<String, Any>, issuer)
         self.type = proof.type
     }
     

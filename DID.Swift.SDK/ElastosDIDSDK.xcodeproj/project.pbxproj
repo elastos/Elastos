@@ -43,6 +43,10 @@
 		11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DA0796238B929F0066CC86 /* SPVAdaptor.swift */; };
 		11E09CBC23A8DB5A009B6A8D /* IssuerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E09CBB23A8DB5A009B6A8D /* IssuerTest.swift */; };
 		11E09CBE23A8E033009B6A8D /* TestDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E09CBD23A8E033009B6A8D /* TestDataGenerator.swift */; };
+		11E1D00A23D039630011DD65 /* DIDDocumentProof.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E1D00623D039630011DD65 /* DIDDocumentProof.swift */; };
+		11E1D00B23D039630011DD65 /* CredentialProof.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E1D00723D039630011DD65 /* CredentialProof.swift */; };
+		11E1D00C23D039630011DD65 /* PresentationProof.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E1D00823D039630011DD65 /* PresentationProof.swift */; };
+		11E1D00D23D039630011DD65 /* Proof.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E1D00923D039630011DD65 /* Proof.swift */; };
 		11E7519F23A7570A0022C592 /* TestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E7519E23A7570A0022C592 /* TestData.swift */; };
 		11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E751A423A75A120022C592 /* DummyAdapter.swift */; };
 		11E751C023A762000022C592 /* vc-profile.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751A623A761FC0022C592 /* vc-profile.json */; };
@@ -79,7 +83,6 @@
 		11E89FDC23A4C36000C81B3C /* VerifiablePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */; };
 		11E89FDD23A4C36000C81B3C /* EmbeddedCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAD23A4C36000C81B3C /* EmbeddedCredential.swift */; };
 		11E89FDE23A4C36000C81B3C /* Issuer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAE23A4C36000C81B3C /* Issuer.swift */; };
-		11E89FDF23A4C36000C81B3C /* Proof.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAF23A4C36000C81B3C /* Proof.swift */; };
 		11E89FE023A4C36000C81B3C /* CredentialSubject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB023A4C36000C81B3C /* CredentialSubject.swift */; };
 		11E89FE123A4C36000C81B3C /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB123A4C36000C81B3C /* Service.swift */; };
 		11E89FE223A4C36000C81B3C /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB323A4C36000C81B3C /* DerivedKey.swift */; };
@@ -262,6 +265,10 @@
 		11DA0796238B929F0066CC86 /* SPVAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SPVAdaptor.swift; sourceTree = "<group>"; };
 		11E09CBB23A8DB5A009B6A8D /* IssuerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssuerTest.swift; sourceTree = "<group>"; };
 		11E09CBD23A8E033009B6A8D /* TestDataGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestDataGenerator.swift; sourceTree = "<group>"; };
+		11E1D00623D039630011DD65 /* DIDDocumentProof.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDDocumentProof.swift; sourceTree = "<group>"; };
+		11E1D00723D039630011DD65 /* CredentialProof.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CredentialProof.swift; sourceTree = "<group>"; };
+		11E1D00823D039630011DD65 /* PresentationProof.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PresentationProof.swift; sourceTree = "<group>"; };
+		11E1D00923D039630011DD65 /* Proof.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Proof.swift; sourceTree = "<group>"; };
 		11E7519E23A7570A0022C592 /* TestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestData.swift; sourceTree = "<group>"; };
 		11E751A423A75A120022C592 /* DummyAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DummyAdapter.swift; sourceTree = "<group>"; };
 		11E751A623A761FC0022C592 /* vc-profile.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.json"; sourceTree = "<group>"; };
@@ -298,7 +305,6 @@
 		11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerifiablePresentation.swift; sourceTree = "<group>"; };
 		11E89FAD23A4C36000C81B3C /* EmbeddedCredential.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmbeddedCredential.swift; sourceTree = "<group>"; };
 		11E89FAE23A4C36000C81B3C /* Issuer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Issuer.swift; sourceTree = "<group>"; };
-		11E89FAF23A4C36000C81B3C /* Proof.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Proof.swift; sourceTree = "<group>"; };
 		11E89FB023A4C36000C81B3C /* CredentialSubject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CredentialSubject.swift; sourceTree = "<group>"; };
 		11E89FB123A4C36000C81B3C /* Service.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
 		11E89FB323A4C36000C81B3C /* DerivedKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DerivedKey.swift; sourceTree = "<group>"; };
@@ -533,6 +539,17 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		11E1D00523D039630011DD65 /* Proof */ = {
+			isa = PBXGroup;
+			children = (
+				11E1D00623D039630011DD65 /* DIDDocumentProof.swift */,
+				11E1D00723D039630011DD65 /* CredentialProof.swift */,
+				11E1D00823D039630011DD65 /* PresentationProof.swift */,
+				11E1D00923D039630011DD65 /* Proof.swift */,
+			);
+			path = Proof;
+			sourceTree = "<group>";
+		};
 		11E3F791233D121900EF35C3 /* Externals */ = {
 			isa = PBXGroup;
 			children = (
@@ -547,6 +564,7 @@
 		11E89FA623A4C36000C81B3C /* DID */ = {
 			isa = PBXGroup;
 			children = (
+				11E1D00523D039630011DD65 /* Proof */,
 				115DBD7C23B330DF00501983 /* Meta */,
 				11E89FC023A4C36000C81B3C /* Parser */,
 				11E89FD123A4C36000C81B3C /* Exception */,
@@ -567,7 +585,6 @@
 				11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */,
 				11E89FB123A4C36000C81B3C /* Service.swift */,
 				11E89FAD23A4C36000C81B3C /* EmbeddedCredential.swift */,
-				11E89FAF23A4C36000C81B3C /* Proof.swift */,
 				11E89FB023A4C36000C81B3C /* CredentialSubject.swift */,
 				11E89FCF23A4C36000C81B3C /* DIDPublicKey.swift */,
 			);
@@ -880,7 +897,6 @@
 				1125B582238234FB00D396B6 /* CHDKey.swift in Sources */,
 				115DBD8A23B492A600501983 /* ResolverCache.swift in Sources */,
 				11E89FEA23A4C36000C81B3C /* DIDAdapter.swift in Sources */,
-				11E89FDF23A4C36000C81B3C /* Proof.swift in Sources */,
 				11E89FE323A4C36000C81B3C /* DateFormater.swift in Sources */,
 				115DBD8223B3312600501983 /* Metadata.swift in Sources */,
 				116AC38A23A5FA410076BDC7 /* LRUCache.swift in Sources */,
@@ -893,11 +909,15 @@
 				11E89FFA23A4C36000C81B3C /* DIDURL.swift in Sources */,
 				11E89FD923A4C36000C81B3C /* DID.swift in Sources */,
 				11E8A00723A4DAF200C81B3C /* DIDStorage.swift in Sources */,
+				11E1D00A23D039630011DD65 /* DIDDocumentProof.swift in Sources */,
 				11E89FE123A4C36000C81B3C /* Service.swift in Sources */,
+				11E1D00B23D039630011DD65 /* CredentialProof.swift in Sources */,
 				11E89FDC23A4C36000C81B3C /* VerifiablePresentation.swift in Sources */,
 				115DBD8623B3316A00501983 /* CredentialMeta.swift in Sources */,
 				11E89FDB23A4C36000C81B3C /* VerifiableCredential.swift in Sources */,
 				11E89FE023A4C36000C81B3C /* CredentialSubject.swift in Sources */,
+				11E1D00C23D039630011DD65 /* PresentationProof.swift in Sources */,
+				11E1D00D23D039630011DD65 /* Proof.swift in Sources */,
 				11E89FEB23A4C36000C81B3C /* DIDObject.swift in Sources */,
 				110AD2FF234E44C8006578D6 /* Base58.swift in Sources */,
 				11E89FFC23A4C36000C81B3C /* DIDPublicKey.swift in Sources */,

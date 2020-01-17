@@ -8,7 +8,7 @@ public class DIDDocument: NSObject {
     public var credentials: OrderedDictionary<DIDURL, VerifiableCredential> = OrderedDictionary()
     public var services: OrderedDictionary<DIDURL, Service> = OrderedDictionary()
     public var expires: Date?
-    public var proof: Proof!
+    public var proof: DIDDocumentProof!
     public var meta: DIDMeta = DIDMeta()
     
     override init() {
@@ -500,7 +500,7 @@ public class DIDDocument: NSObject {
         if poorf.count == 0 {
             throw DIDError.malFormedDocumentError(_desc: "Missing proof.")
         }
-        proof = try Proof.fromJson_dc(poorf, defaultPk)
+        proof = try DIDDocumentProof.fromJson(poorf, defaultPk)
     }
     
     // 解析公钥
@@ -747,7 +747,7 @@ public class DIDDocument: NSObject {
            
            // proof
            if !forSign {
-               dic[PROOF] = proof.toJson_dc(normalized)
+               dic[PROOF] = proof.toJson(normalized)
            }
            let dicString = JsonHelper.creatJsonString(dic: dic)
 
@@ -915,7 +915,7 @@ public class DIDDocument: NSObject {
         let sig = try sign(signKey, storepass, count, inputs)
         _ = try verify(signKey, sig, count, inputs)
 
-        let proof = Proof(signKey, sig)
+        let proof = DIDDocumentProof(signKey, sig)
         self.proof = proof
         return self
     }

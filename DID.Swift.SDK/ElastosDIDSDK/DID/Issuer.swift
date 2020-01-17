@@ -69,7 +69,7 @@ public class Issuer {
         let count: Int = inputs.count / 2
         let sig: String = try (didDocument?.sign(signKey, storepass, count, inputs))!
         
-        let proof = Proof.init(DEFAULT_PUBLICKEY_TYPE, signKey, sig)
+        let proof = CredentialProof(DEFAULT_PUBLICKEY_TYPE, signKey, sig)
         credential.proof = proof
         return credential
     }

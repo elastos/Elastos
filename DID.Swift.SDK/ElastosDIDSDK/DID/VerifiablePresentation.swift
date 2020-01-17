@@ -5,7 +5,7 @@ public class VerifiablePresentation: NSObject{
    public var type: String!
    public var created: Date!
    public var credentials: OrderedDictionary<DIDURL, VerifiableCredential>!
-   public var proof: Proof?
+   public var proof: PresentationProof?
     
     override init() {
         type = DEFAULT_PRESENTTATION_TYPE
@@ -177,7 +177,7 @@ public class VerifiablePresentation: NSObject{
         guard d != nil else {
             throw DIDError.malformedCredentialError(_desc: "Missing credentials.")
         }
-        let proof: Proof = try Proof.fromJson_vp(d as! OrderedDictionary<String, Any>, nil)
+        let proof: PresentationProof = try PresentationProof.fromJson(d as! OrderedDictionary<String, Any>, nil)
         self.proof = proof
     }
     
@@ -224,7 +224,7 @@ public class VerifiablePresentation: NSObject{
 
         // proof
         if (!forSign ) {
-            let d = proof?.toJson_vp()
+            let d = proof?.toJson()
             dic[PROOF] = d
         }
         return dic
@@ -287,7 +287,7 @@ public class VerifiablePresentation: NSObject{
         
         let count = inputs.count / 2
         let sig = try signer?.sign(signK!, storepass, count, inputs)
-        let proof = Proof(signK!, realm, nonce, sig!)
+        let proof = PresentationProof(signK!, realm, nonce, sig!)
         presentation.proof = proof
         
         return presentation
