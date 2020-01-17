@@ -19,7 +19,7 @@ public class DID: NSObject {
 
     public init(_ did: String) throws {
         super.init()
-        try ParserHelper.parase(did, true, DListener(self))
+        try ParserHelper.parase(did, true, DID.Listener(self))
     }
     
     public func setExtra(_ name: String, _ value: String) throws {
@@ -33,7 +33,7 @@ public class DID: NSObject {
         return meta.getExtra(name)
     }
 
-    public var aliasName: String {
+    public var alias: String {
         get {
             return meta.alias
         }
@@ -50,7 +50,7 @@ public class DID: NSObject {
         return meta.transactionId
     }
 
-    public var updatedTimestamp: Date? {
+    public var updatedDate: Date? {
         return meta.updated
     }
 
@@ -60,11 +60,12 @@ public class DID: NSObject {
     
     public func resolve(_ force: Bool) throws -> DIDDocument? {
         let doc = try DIDBackend.shareInstance().resolve(self, force)
-        guard doc != nil else {  // TODO: can't make sure doc is not nil ?
-            return nil
-        }
 
-        meta = doc!.meta
+        // In case that no DID was found, "nil" value would return
+        // instread of throwing Error.
+        if (doc != nil) {
+            meta = doc!.meta
+        }
         return doc
     }
     
@@ -85,44 +86,44 @@ public class DID: NSObject {
             return false;
         }
 
-        guard !(object is DID) else {
+        if object is DID {
             let did = object as! DID
             return did.description == description
         }
 
-        guard !(object is String) else {
+        if object is String {
             let did = object as! String
             return did.isEqual(description)
         }
         
-        return super.isEqual(object)
+        return false
+    }
+
+    private class Listener: DIDURLBaseListener {
+        private var did: DID
+
+        init(_ did: DID) {
+            self.did = did
+            super.init()
+        }
+
+        public override func exitMethod(_ ctx: DIDURLParser.MethodContext) {
+            let method: String = ctx.getText()
+            if (method != DID.METHOD){
+                // can't throw , print...
+                print(DIDError.failue("Unknown method: \(method)"))
+            }
+            self.did.method = DID.METHOD
+        }
+
+        public override func exitMethodSpecificString(_ ctx: DIDURLParser.MethodSpecificStringContext) {
+            self.did.methodSpecificId = ctx.getText()
+        }
     }
 }
 
 extension DID: Comparable {
     public static func < (lhs: DID, rhs: DID) -> Bool {
         return lhs.isEqual(rhs)
-    }
-}
-
-class DListener: DIDURLBaseListener {
-    public var did: DID?
-
-    init(_ did: DID) {
-        super.init()
-        self.did = did
-    }
-    
-    public override func exitMethod(_ ctx: DIDURLParser.MethodContext) {
-        let method: String = ctx.getText()
-        if (method != DID.METHOD){
-            // can't throw , print...
-            print(DIDError.failue("Unknown method: \(method)"))
-        }
-        self.did!.method = DID.METHOD
-    }
-    
-    public override func exitMethodSpecificString(_ ctx: DIDURLParser.MethodSpecificStringContext) {
-        self.did!.methodSpecificId = ctx.getText()
     }
 }
