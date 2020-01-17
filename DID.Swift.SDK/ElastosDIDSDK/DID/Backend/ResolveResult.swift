@@ -1,4 +1,3 @@
-
 import Foundation
 
 public class ResolveResult {
@@ -11,8 +10,8 @@ public class ResolveResult {
     public static let STATUS_DEACTIVATED = 2
     public static let STATUS_NOT_FOUND = 3
 
-    public var did: DID!
-    public var status: Int!
+    public var did: DID
+    public var status: Int
     public var idtxs: Array<IDTransactionInfo> = []
     
     init(_ did: DID, _ status: Int) {
@@ -21,9 +20,7 @@ public class ResolveResult {
     }
 
     public var transactionCount: Int {
-        get {
-            return idtxs.count
-        }
+        return idtxs.count
     }
 
     public func transactionInfo(atIndex: Int) -> IDTransactionInfo? {
@@ -62,17 +59,13 @@ public class ResolveResult {
     }
     
     public class func fromJson(_ result: OrderedDictionary<String, Any>) throws -> ResolveResult {
-        
         let did: DID = try JsonHelper.getDid(result, DID, false, nil, "Resolved result DID")!
-        
         let status: Int = try JsonHelper.getInteger(result, STATUS, false, -1, "Resolved status")
-        
         let rr: ResolveResult = ResolveResult(did, status)
         
         if (status != ResolveResult.STATUS_NOT_FOUND) {
             let txs: Array<Any> = result[TRANSACTION] as! Array<Any>
-            if (txs.count == 0)
-            {
+            if (txs.count == 0) {
                 throw DIDError.didResolveError(_desc: "Invalid resolve result, missing transaction.")
             }
             for i in 0..<txs.count {
@@ -80,7 +73,7 @@ public class ResolveResult {
                 rr.append(newTransactionInfo: ti)
             }
         }
-        
+
         return rr
     }
     
@@ -88,8 +81,8 @@ public class ResolveResult {
         let string = JsonHelper.preHandleString(json)
         let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         let result = ordDic["result"] as! Array<Any>
-        
-        if (result.count == 0) {
+
+        guard result.count != 0 else {
             return nil
         }
         let re: OrderedDictionary<String, Any> = result[0] as! OrderedDictionary<String, Any>

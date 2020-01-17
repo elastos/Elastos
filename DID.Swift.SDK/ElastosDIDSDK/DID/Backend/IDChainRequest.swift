@@ -57,7 +57,7 @@ public class IDChainRequest: NSObject {
                        _ storepass: String) throws -> IDChainRequest {
 
         let request = IDChainRequest(Operation.CREATE)
-        try request.setPayload(doc)
+        request.setPayload(doc)
         try request.seal(signKey, storepass)
         return request
     }
@@ -96,13 +96,13 @@ public class IDChainRequest: NSObject {
         return request
     }
     
-    func setPayload(_ did: DID) {
+    private func setPayload(_ did: DID) {
         self.did = did
         self.doc = nil
         self.payload = did.description
     }
     
-    func setPayload(_ doc: DIDDocument) {
+    private func setPayload(_ doc: DIDDocument) {
         self.did = doc.subject
         self.doc = doc
         
@@ -123,7 +123,7 @@ public class IDChainRequest: NSObject {
         }
     }
     
-    func setPayload(_ payload: String) {
+    private func setPayload(_ payload: String) {
         if (operation != Operation.DEACTIVATE) {
             let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
             let cp = payload.toUnsafePointerInt8()
@@ -141,7 +141,7 @@ public class IDChainRequest: NSObject {
         self.payload = payload
     }
     
-    func setProof(_ keyType: String, _ signKey: DIDURL, _ signature: String) {
+    private func setProof(_ keyType: String, _ signKey: DIDURL, _ signature: String) {
         self.keyType = keyType
         self.signKey = signKey
         self.signature = signature

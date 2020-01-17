@@ -1,4 +1,3 @@
-
 import Foundation
 
 public class IDTransactionInfo {
@@ -14,16 +13,16 @@ public class IDTransactionInfo {
         self.timestamp = timestamp;
         self.request = request;
     }
-    
-    public func getDid() -> DID? {
+
+    public var did: DID? {
         return request.did
     }
-    
-    public func getOperation() -> IDChainRequest.Operation {
+
+    public var operation: IDChainRequest.Operation {
         return request.operation
     }
-    
-    public func getPayload() -> String {
+
+    public var payload: String {
         return request.toJson(false)
     }
     
