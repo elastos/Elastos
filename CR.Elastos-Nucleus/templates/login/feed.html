@@ -7,9 +7,30 @@
 
 {% block scripts %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
+    <script src="{% static 'javascript/SuggestService.js' %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block content %}
+    <!--Suggest Service Modal -->
+    <div class="modal fade" id="suggest_service_modal" tabindex="-1" role="dialog">
+     <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title">Suggest Service</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group-sm">
+                {{ suggest_form.as_p }}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="suggest_service()">Submit</button>
+                <button class="close btn btn-secondary" type="button"  data-dismiss="modal">Close</button>
+            </div>
+        </div>
+     </div>
+    </div>
+
     <!-- Carousel -->
     <div id="carouselExampleIndicators" class="carousel slide feed-carousel" data-ride="carousel" style="background-color: #14161c">
         <ol class="carousel-indicators">
@@ -294,6 +315,9 @@
                         Suggest a new service to be added to the Console
                     </a>
                 </p>
+                <button class="btn btn-secondary" style="background-color: #00dd62" id="id_suggest_service" data-toggle="modal" data-target="#suggest_service_modal">
+                    Suggest Service
+                </button>
             </div>
             <!-- Tutorials Row -->
             <div class="col-9  console-services">

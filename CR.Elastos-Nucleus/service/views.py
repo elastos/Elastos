@@ -6,6 +6,7 @@ from django.core import serializers
 from django.http import HttpResponse
 
 from decouple import config
+from django.core.mail import EmailMessage
 from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect
 from django.utils.crypto import get_random_string
@@ -19,6 +20,7 @@ from elastos_adenine.common import Common
 from elastos_adenine.hive import Hive
 from elastos_adenine.sidechain_eth import SidechainEth
 from elastos_adenine.wallet import Wallet
+
 
 from .forms import GenerateAPIKeyForm
 from .forms import UploadAndSignForm, VerifyAndShowForm
@@ -108,10 +110,10 @@ def upload_and_sign(request):
         if not request.session['upload_and_sign_submit']:
             # Purge old requests for housekeeping.
             UploadFile.objects.filter(did=did).delete()
-
             form = UploadAndSignForm(request.POST, request.FILES, initial={'did': did})
             if form.is_valid():
                 network = form.cleaned_data.get('network')
+                file_name = form.cleaned_data.get('file_name')
                 api_key = form.cleaned_data.get('api_key')
                 private_key = form.cleaned_data.get('private_key')
                 file_content = form.cleaned_data.get('file_content').encode()
@@ -136,7 +138,7 @@ def upload_and_sign(request):
                         signature = data['result']['sig']
                         file_hash = data['result']['hash']
                         if network == 'gmunet':
-                            SavedFileInformation.objects.update_or_create(did=did, file_name=temp_file.filename(),
+                            SavedFileInformation.objects.update_or_create(did=did, file_name=file_name,
                                                                           message_hash=message_hash,
                                                                           signature=signature, file_hash=file_hash)
                         return render(request, "service/upload_and_sign.html",
@@ -612,7 +614,29 @@ def run_eth_contract(request):
 
 @login_required
 def suggest_service(request):
-    did = request.session['did']
-    track_page_visit(did, 'Suggest a new service', 'service:suggest_service', True)
-    recent_services = get_recent_services(did)
-    return render(request, "service/suggest_service.html", {'recent_services': recent_services})
+    if request.is_ajax():
+        category = request.POST.get('category')
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        reasoning = request.POST.get('reasoning')
+        content = {
+            'category':category,
+            'title':title,
+            'description':description,
+            'reasoning':reasoning
+        }
+        email = EmailMessage(subject="Suggested Service", body=content , from_email='"Nucleus Console Suggest Service" <support@nucleusconsole.com>"', to=['support@nucleusconsole.com'])
+        try:
+            email.send()
+            return HttpResponse("success")
+        except Exception as e:
+            print(e)
+            return HttpResponse("Failiure")
+
+    else:
+        did = request.session['did']
+        track_page_visit(did, 'Suggest a new service', 'service:suggest_service', True)
+        recent_services = get_recent_services(did)
+        return render(request, "service/suggest_service.html", {'recent_services': recent_services})
+
+

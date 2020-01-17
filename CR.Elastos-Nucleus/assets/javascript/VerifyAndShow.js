@@ -21,7 +21,7 @@ function csrfSafeMethod(method) {
 
 $(function(ready) {
     $('#id_select_files').change(function () {
-        var fileName = $('#id_select_files option:selected').text()
+        var fileName = $('#id_select_files option:selected').text();
         var csrftoken = getCookie('csrftoken');
         $.ajaxSetup({
             beforeSend: function (xhr, settings) {
@@ -50,5 +50,5 @@ $(function(ready) {
             }
 
         })
-    })
-})
+    });
+});
