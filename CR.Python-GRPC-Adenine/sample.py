@@ -25,7 +25,7 @@ def main():
     service = results.service
 
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'HZjIK8GQH4Lp4Yua3PJhugomSrBg5Az1OyMouyPJ5iXRo0mM2DA9YETdM89EIrCa'
+    api_key_to_use = 'exPuOXNh6VCjI98ODLYguz7LDwEa7PKbQX3rwKG8mRpbbbNa6AgMY3iYJOLzLAQv'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
