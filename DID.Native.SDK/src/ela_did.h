@@ -1971,6 +1971,17 @@ DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
 
 /**
  * \~English
+ * Synchronize DIDStore.
+ *
+  * @param
+ *      store                  [in] THe handle to DIDStore.
+ * @param
+ *      storepass              [in] The pass word of DID holder.
+ */
+DID_API void DIDStore_Synchronize(DIDStore *store, const char *storepass);
+
+/**
+ * \~English
  * Create new DID Document and store in the DID Store.
  *
  * @param
@@ -2226,8 +2237,8 @@ DID_API bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *keyi
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StorePrivateKey(DIDStore *store, DID *did, DIDURL *id,
-        const char *privatekey);
+DID_API int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass,
+        DID *did, DIDURL *id, unsigned char *privatekey);
 
 /**
  * \~English

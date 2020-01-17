@@ -32,7 +32,7 @@
 
 const char *Mnemonic_Generate(int language)
 {
-    return HDkey_GenerateMnemonic(language);
+    return HDKey_GenerateMnemonic(language);
 }
 
 void Mnemonic_free(void *mnemonic)

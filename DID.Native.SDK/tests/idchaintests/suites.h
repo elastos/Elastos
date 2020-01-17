@@ -24,8 +24,10 @@
 #define __IDCHAIN_TEST_SUITES_H__
 
 DECL_TESTSUITE(idchain_operation_test);
+DECL_TESTSUITE(idchain_restore_test);
 
 #define DEFINE_IDCHAIN_TESTSUITES \
+    DEFINE_TESTSUITE(idchain_restore_test), \
     DEFINE_TESTSUITE(idchain_operation_test)
 
 #endif /* __IDCHAIN_TEST_SUITES_H__ */

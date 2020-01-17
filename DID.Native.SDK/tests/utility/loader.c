@@ -269,12 +269,11 @@ bool dir_exist(const char* path)
 }
 
 /////////////////////////////////////
-static int import_privatekey(DIDURL *id, const char *file)
+static int import_privatekey(DIDURL *id, const char *storepass, const char *file)
 {
     char *skbase;
     DIDStore *store;
     uint8_t privatekey[PRIVATEKEY_BYTES];
-    char privatekeybase64[MAX_PRIVATEKEY_BASE64];
 
     if (!id || !file || !*file)
         return -1;
@@ -288,12 +287,10 @@ static int import_privatekey(DIDURL *id, const char *file)
         return -1;
     }
 
+    free(skbase);
     store = DIDStore_GetInstance();
-    if (encrypt_to_base64((char *)privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
-        DIDStore_StorePrivateKey(store, DIDURL_GetDid(id), id, (const char *)privatekeybase64) == -1) {
-        free(skbase);
+    if (DIDStore_StorePrivateKey(store, storepass, DIDURL_GetDid(id), id, privatekey) == -1)
         return -1;
-    }
 
     return 0;
 }
@@ -492,19 +489,19 @@ DIDDocument *TestData_LoadDoc(void)
     subject = DIDDocument_GetSubject(testdata.doc);
 
     id = DIDURL_FromDid(subject, "key2");
-    rc = import_privatekey(id, "doc.key2.sk");
+    rc = import_privatekey(id, storepass, "doc.key2.sk");
     DIDURL_Destroy(id);
     if (rc)
         return NULL;
 
     id = DIDURL_FromDid(subject, "key3");
-    rc = import_privatekey(id, "doc.key3.sk");
+    rc = import_privatekey(id, storepass, "doc.key3.sk");
     DIDURL_Destroy(id);
     if (rc)
         return NULL;
 
     id = DIDURL_FromDid(subject, "primary");
-    rc = import_privatekey(id, "doc.primary.sk");
+    rc = import_privatekey(id, storepass, "doc.primary.sk");
     DIDURL_Destroy(id);
     if (rc)
         return NULL;
@@ -528,12 +525,20 @@ DIDDocument *TestData_LoadIssuerDoc(void)
     subject = DIDDocument_GetSubject(testdata.issuerdoc);
 
     id = DIDURL_FromDid(subject, "primary");
-    rc = import_privatekey(id, "issuer.primary.sk");
+    rc = import_privatekey(id, storepass, "issuer.primary.sk");
     DIDURL_Destroy(id);
     if (rc)
         return NULL;
 
     return testdata.issuerdoc;
+}
+
+const char *TestData_LoadRestoreMnemonic(void)
+{
+    if (!testdata.restoreMnemonic)
+        testdata.restoreMnemonic = load_file("mnemonic.restore");
+
+    return testdata.restoreMnemonic;
 }
 
 void TestData_Free(void)
@@ -606,7 +611,8 @@ const char *Generater_Publickey(char *publickeybase58, size_t size)
     const char *mnemonic;
     uint8_t seed[SEED_BYTES];
     uint8_t publickey[PUBLICKEY_BYTES];
-    MasterPublicKey _mk, *masterkey;
+    HDKey hk, *privateIdentity;
+    DerivedKey _derivedkey, *derivedkey;
 
     if (size < MAX_PUBLICKEY_BASE58)
         return NULL;
@@ -615,18 +621,18 @@ const char *Generater_Publickey(char *publickeybase58, size_t size)
     if (!mnemonic || !*mnemonic)
         return NULL;
 
-    if (!HDkey_GetSeedFromMnemonic(mnemonic, "", 0, seed)) {
+    if (!HDKey_GetSeedFromMnemonic(mnemonic, "", 0, seed)) {
         Mnemonic_free((char*)mnemonic);
         return NULL;
     }
 
-    masterkey = HDkey_GetMasterPublicKey(seed, 0, &_mk);
-    if (!masterkey) {
+    privateIdentity = HDKey_GetPrivateIdentity(seed, 0, &hk);
+    if (!privateIdentity) {
         Mnemonic_free((char*)mnemonic);
         return NULL;
     }
 
-    if (!HDkey_GetSubPublicKey(masterkey, 0, 0, publickey)) {
+    if (!HDKey_GetSubPublicKey(privateIdentity, 0, 0, publickey)) {
         Mnemonic_free((char*)mnemonic);
         return NULL;
     }

@@ -45,6 +45,11 @@ int parse_did(DID *did, const char *idstring);
 
 int parse_didurl(DIDURL *id, const char *idstring, DID *ref);
 
+//caller provide DIDURL object
+int init_didurl(DIDURL *id, DID *did, const char *fragment);
+
+int init_did(DID *did, const char *idstring);
+
 #ifdef __cplusplus
 }
 #endif

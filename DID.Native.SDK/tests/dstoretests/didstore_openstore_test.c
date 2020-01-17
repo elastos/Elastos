@@ -155,10 +155,13 @@ static void test_openstore_newdid(void)
 static void test_openstore_newdid_with_wrongpw(void)
 {
     DIDDocument *doc;
+    DID *did;
 
     doc = DIDStore_NewDID(store, "1234", "");
-    CU_ASSERT_PTR_NULL_FATAL(doc);
+    CU_ASSERT_PTR_NULL(doc);
 
+    did = DIDDocument_GetSubject(doc);
+    DIDStore_DeleteDID(store, did);
     DIDDocument_Destroy(doc);
 }
 

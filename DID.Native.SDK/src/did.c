@@ -99,6 +99,26 @@ int parse_didurl(DIDURL *id, const char *idstring, DID *ref)
     return parse_id_string(id->did.idstring, id->fragment, idstring, ref);
 }
 
+int init_didurl(DIDURL *id, DID *did, const char *fragment)
+{
+    if (!id || !did || !fragment || !fragment || strlen(fragment) >= sizeof(id->fragment))
+        return -1;
+
+    DID_Copy(&id->did, did);
+    strcpy(id->fragment, fragment);
+    return 0;
+}
+
+int init_did(DID *did, const char *idstring)
+{
+    if (!did || !did->idstring || !idstring || !*idstring
+            || strlen(idstring) >= sizeof(did->idstring))
+        return -1;
+
+    strcpy(did->idstring, idstring);
+    return 0;
+}
+
 DID *DID_FromString(const char *idstring)
 {
     DID *did;

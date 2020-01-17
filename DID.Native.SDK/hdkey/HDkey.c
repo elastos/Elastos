@@ -71,7 +71,7 @@ static const char **get_word_list(int language)
 }
 
 // need to free after use this function
-const char *HDkey_GenerateMnemonic(int language)
+const char *HDKey_GenerateMnemonic(int language)
 {
     unsigned char rand[16];
     const char **word_list;
@@ -96,7 +96,7 @@ const char *HDkey_GenerateMnemonic(int language)
     return (const char *)phrase;
 }
 
-uint8_t *HDkey_GetSeedFromMnemonic(const char *mmemonic,
+uint8_t *HDKey_GetSeedFromMnemonic(const char *mmemonic,
         const char* passphrase, int language, uint8_t *seed)
 {
     int len;
@@ -117,40 +117,48 @@ uint8_t *HDkey_GetSeedFromMnemonic(const char *mmemonic,
     return seed;
 }
 
-MasterPublicKey* HDkey_GetMasterPublicKey(const uint8_t *seed, int coinType,
-    MasterPublicKey *masterkey)
+HDKey *HDKey_GetPrivateIdentity(const uint8_t *seed, int coinType, HDKey *hdkey)
 {
-    char publicKey[33];
+    char publickey[33];
     UInt256 chainCode;
     BRKey key;
 
-    if (!seed || !masterkey)
+    if (!seed || !hdkey)
         return NULL;
 
     BRBIP32PrivKeyPath(&key, &chainCode, (const void *)seed, SEED_BYTES,
             3, 44 | BIP32_HARD, coinType | BIP32_HARD, 0 | BIP32_HARD);
 
-    getPubKeyFromPrivKey(publicKey, &(key.secret));
+    getPubKeyFromPrivKey(publickey, &(key.secret));
 
-    masterkey->fingerPrint = BRKeyHash160(&key).u32[0];
-    memcpy(masterkey->chainCode, (uint8_t*)&chainCode, sizeof(chainCode));
-    memcpy(masterkey->publicKey, publicKey, sizeof(publicKey));
+    hdkey->fingerPrint = BRKeyHash160(&key).u32[0];
+    memcpy(hdkey->chainCode, (uint8_t*)&chainCode, sizeof(chainCode));
+    memcpy(hdkey->publickey, publickey, sizeof(publickey));
+    memcpy(hdkey->seed, seed, SEED_BYTES);
 
     var_clean(&chainCode);
 
-    return masterkey;
+    return hdkey;
 }
 
-uint8_t *HDkey_GetSubPrivateKey(const uint8_t *seed, int coinType, int chain,
+void HDKey_Wipe(HDKey *privateIdentity)
+{
+    if (!privateIdentity)
+        return;
+
+    memset(privateIdentity, 0, sizeof(HDKey));
+}
+
+uint8_t *HDKey_GetSubPrivateKey(HDKey* privateIdentity, int coinType, int chain,
         int index, uint8_t *privatekey)
 {
     UInt256 chainCode;
     BRKey key;
 
-    if (!seed || !privatekey)
+    if (!privateIdentity || !privatekey)
         return NULL;
 
-    BRBIP32PrivKeyPath(&key, &chainCode, (const void *)seed, SEED_BYTES,
+    BRBIP32PrivKeyPath(&key, &chainCode, (const void *)privateIdentity->seed, SEED_BYTES,
             5, 44 | BIP32_HARD, coinType | BIP32_HARD,
             0 | BIP32_HARD, chain, index);
     var_clean(&chainCode);
@@ -161,19 +169,19 @@ uint8_t *HDkey_GetSubPrivateKey(const uint8_t *seed, int coinType, int chain,
     return privatekey;
 }
 
-uint8_t *HDkey_GetSubPublicKey(MasterPublicKey* masterkey, int chain,
-        int index, uint8_t *publickey)
+uint8_t *HDKey_GetSubPublicKey(HDKey* privateIdentity, int chain, int index,
+        uint8_t *publickey)
 {
-    if (!masterkey || !publickey)
+    if (!privateIdentity || !publickey)
         return NULL;
 
     BRMasterPubKey brPublicKey;
     memset(&brPublicKey, 0, sizeof(brPublicKey));
 
-    brPublicKey.fingerPrint = masterkey->fingerPrint;
-    memcpy((uint8_t*)&brPublicKey.chainCode, &masterkey->chainCode,
+    brPublicKey.fingerPrint = privateIdentity->fingerPrint;
+    memcpy((uint8_t*)&brPublicKey.chainCode, &privateIdentity->chainCode,
             sizeof(brPublicKey.chainCode));
-    memcpy(brPublicKey.pubKey, masterkey->publicKey, sizeof(brPublicKey.pubKey));
+    memcpy(brPublicKey.pubKey, privateIdentity->publickey, sizeof(brPublicKey.pubKey));
 
     assert(BRBIP32PubKey(NULL, 0, brPublicKey, chain, index) == PUBLICKEY_BYTES);
 
@@ -181,13 +189,13 @@ uint8_t *HDkey_GetSubPublicKey(MasterPublicKey* masterkey, int chain,
     return publickey;
 }
 
-char *HDkey_GetIdString(unsigned char *publickey, char *address, size_t len)
+char *HDKey_GetAddress(unsigned char *publickey, char *address, size_t len)
 {
     unsigned char redeem_script[35];
     unsigned int md32[32];
     unsigned char md20[20];
     unsigned char program_hash[21];
-    unsigned char bin_address[25];
+    unsigned char bin_idstring[25];
     size_t expected_len;
 
     if (!publickey || !address || !len)
@@ -203,13 +211,67 @@ char *HDkey_GetIdString(unsigned char *publickey, char *address, size_t len)
 
     BRSHA256_2(md32, program_hash, sizeof(program_hash));
 
-    memcpy(bin_address, program_hash, sizeof(program_hash));
-    memcpy(bin_address + sizeof(program_hash), md32, 4);
+    memcpy(bin_idstring, program_hash, sizeof(program_hash));
+    memcpy(bin_idstring + sizeof(program_hash), md32, 4);
 
-    expected_len = BRBase58Encode(NULL, 0, bin_address, sizeof(bin_address));
+    expected_len = BRBase58Encode(NULL, 0, bin_idstring, sizeof(bin_idstring));
     if (len < expected_len)
         return NULL;
 
-    BRBase58Encode(address, len, bin_address, sizeof(bin_address));
+    BRBase58Encode(address, len, bin_idstring, sizeof(bin_idstring));
     return address;
+}
+
+DerivedKey *HDKey_GetDerivedKey(HDKey* privateIdentity, DerivedKey *derivedkey,
+        int coinType, int chain, int index)
+{
+    uint8_t *pk, *sk, *idstring;
+    uint8_t publickey[PUBLICKEY_BYTES];
+    uint8_t privatekey[PRIVATEKEY_BYTES];
+    char address[ADDRESS_LEN];
+
+    if (!privateIdentity || !derivedkey)
+        return NULL;
+
+    pk = HDKey_GetSubPublicKey(privateIdentity, chain, index, publickey);
+    sk = HDKey_GetSubPrivateKey(privateIdentity, coinType, chain, index, privatekey);
+    idstring = HDKey_GetAddress(publickey, address, sizeof(address));
+
+    memcpy(derivedkey->publickey, pk, PUBLICKEY_BYTES);
+    memcpy(derivedkey->privatekey, sk, PRIVATEKEY_BYTES);
+    memcpy(derivedkey->address, idstring, ADDRESS_LEN);
+
+    return derivedkey;
+}
+
+uint8_t *DerivedKey_GetPublicKey(DerivedKey *derivedkey)
+{
+    if (!derivedkey)
+        return NULL;
+
+    return derivedkey->publickey;
+}
+
+uint8_t *DerivedKey_GetPrivateKey(DerivedKey *derivedkey)
+{
+    if (!derivedkey)
+        return NULL;
+
+    return derivedkey->privatekey;
+}
+
+char *DerivedKey_GetAddress(DerivedKey *derivedkey)
+{
+    if (!derivedkey)
+        return NULL;
+
+    return derivedkey->address;
+}
+
+void DerivedKey_Wipe(DerivedKey *derivedkey)
+{
+    if (!derivedkey)
+        return;
+
+    memset(derivedkey, 0, sizeof(DerivedKey));
 }

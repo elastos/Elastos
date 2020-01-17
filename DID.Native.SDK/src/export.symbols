@@ -149,6 +149,7 @@ _DIDStore_DeletePrivateKey
 _DIDStore_PublishDID
 _DIDStore_DeactivateDID
 _DIDStore_ExportMnemonic
+_DIDStore_Synchronize
 
 # Mnemonic
 _Mnemonic_Generate

@@ -737,24 +737,23 @@ static ssize_t load_mnemonic(DIDStore *store, const char *storepass,
     return len;
 }
 
-static int get_last_index(DIDStore *store)
+static int load_index(DIDStore *store)
 {
-    int index;
     char path[PATH_MAX];
-    const char *index_string;
+    const char *string;
+    int index;
 
     assert(store);
 
     if (get_file(path, 0, 3, store->root, PRIVATE_DIR, INDEX_FILE) == -1)
         return -1;
 
-    index_string = load_file(path);
-    if (!index_string)
-        index = 0;
-    else {
-        index = atoi(index_string);
-        free((char*)index_string);
-    }
+    string = load_file(path);
+    if (!string)
+        return -1;
+
+    index = atoi(string);
+    free((char*)string);
 
     return index;
 }
@@ -921,12 +920,12 @@ static DIDDocument *create_document(DID *did, const char *key,
     assert(storepass);
     assert(*storepass);
 
+    if (init_didurl(&id, did, "primary") == -1)
+        return NULL;
+
     builder = DID_CreateBuilder(did);
     if (!builder)
         return NULL;
-
-    strcpy((char*)id.did.idstring, did->idstring);
-    strcpy((char*)id.fragment, "primary");
 
     if (DIDDocumentBuilder_AddPublicKey(builder, &id, did, key) == -1) {
         DIDDocumentBuilder_Destroy(builder);
@@ -1438,7 +1437,6 @@ bool DIDSotre_ContainsPrivateKeys(DIDStore *store, DID *did)
 bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *id)
 {
     char path[PATH_MAX];
-
     int rc;
 
     if (!store || !did || !id)
@@ -1460,32 +1458,29 @@ bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *id)
     return true;
 }
 
-int DIDStore_StorePrivateKey(DIDStore *store, DID *did, DIDURL *id,
-        const char *privatekey)
+int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass, DID *did,
+        DIDURL *id, unsigned char *privatekey)
 {
     char path[PATH_MAX];
-    const char *fragment;
+    unsigned char base64[MAX_PRIVATEKEY_BASE64];
 
-    if (!store || !did || !id || !privatekey)
+    if (!store || !storepass || !*storepass || !did || !id || !privatekey)
         return -1;
 
     if (!DID_Equals(DIDURL_GetDid(id), did))
         return -1;
 
-    fragment = DIDURL_GetFragment(id);
-    if (get_file(path, 1, 5, store->root, DID_DIR, did->idstring,
-            PRIVATEKEYS_DIR, fragment) == -1)
+    if (encrypt_to_base64((char *)base64, storepass, privatekey, PRIVATEKEY_BYTES) == -1)
         return -1;
 
-    if (!store_file(path, privatekey))
+    if (get_file(path, 1, 5, store->root, DID_DIR, did->idstring,
+            PRIVATEKEYS_DIR, id->fragment) == -1)
+        return -1;
+
+    if (!store_file(path, base64))
         return 0;
 
     delete_file(path);
-    if (get_dir(path, 0, 4, store->root, DID_DIR, did->idstring, PRIVATEKEYS_DIR) == 0) {
-        if (is_empty(path))
-            delete_file(path);
-    }
-
     return -1;
 }
 
@@ -1506,71 +1501,101 @@ void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *id)
     return;
 }
 
-static int refresh_did_fromchain(DIDStore *store, const char *storepass,
-        uint8_t *seed, DID *did, uint8_t *publickey, size_t size)
+//caller provide HDKey object.
+static HDKey *load_privateIdentity(DIDStore *store, const char *storepass,
+        HDKey *privateIdentity)
 {
-    int index, last_index;
-    int rc;
-    DIDDocument *document;
-    uint8_t last_publickey[PUBLICKEY_BYTES];
-    uint8_t privatekey[PRIVATEKEY_BYTES];
-    char last_idstring[MAX_ID_SPECIFIC_STRING];
-    unsigned char privatekeybase64[PRIVATEKEY_BYTES * 2];
-    MasterPublicKey _mk, *masterkey;
-    DID last_did;
-
-    if (publickey)
-        assert(size >= PUBLICKEY_BYTES);
+    uint8_t seed[SEED_BYTES * 2];
+    HDKey *_privateIdentity;
+    ssize_t len;
 
     assert(store);
-    assert(storepass);
-    assert(*storepass);
-    assert(seed);
+    assert(storepass && *storepass);
+    assert(privateIdentity);
 
-    masterkey = HDkey_GetMasterPublicKey(seed, 0, &_mk);
-    if (!masterkey)
+    len = load_seed(store, seed, sizeof(seed), storepass);
+    if (len < 0)
+        return NULL;
+
+    _privateIdentity = HDKey_GetPrivateIdentity(seed, 0, privateIdentity);
+    memset(seed, 0, sizeof(seed));
+    return _privateIdentity;
+}
+
+static int store_default_privatekey(DIDStore *store, const char *storepass,
+        const char *idstring, uint8_t *privatekey)
+{
+    DID did;
+    DIDURL id;
+    int rc;
+
+    assert(store);
+    assert(storepass && *storepass);
+    assert(idstring && *idstring);
+    assert(privatekey && *privatekey);
+
+    if (init_did(&did, idstring) == -1 || init_didurl(&id, &did, "primary") == -1)
         return -1;
 
-    index = get_last_index(store);
-    last_index = index;
+    if (DIDStore_StorePrivateKey(store, storepass, &did, &id, (unsigned char *)privatekey) == -1)
+        return -1;
 
-    while (last_index - index <= 1) {
-        if (!HDkey_GetSubPublicKey(masterkey, 0, last_index, last_publickey))
-            return -1;
+    return 0;
+}
 
-        if (!HDkey_GetIdString(last_publickey, last_idstring, sizeof(last_idstring)))
-            return -1;
+void DIDStore_Synchronize(DIDStore *store, const char *storepass)
+{
+    int rc, nextindex, i = 0, blanks = 0;
+    DIDDocument *document;
+    HDKey _identity, *privateIdentity;
+    DerivedKey _derivedkey, *derivedkey;
+    DID did;
 
-        strcpy((char*)last_did.idstring, last_idstring);
-        if (did && publickey && last_index == index) {
-            strcpy(did->idstring, last_idstring);
-            memcpy(publickey, last_publickey, size);
-        }
+    if (!store || !storepass || !*storepass)
+        return;
 
-        document = DIDStore_ResolveDID(store, &last_did, true);
-        if (!document)
-            last_index++;
-        else {
-            rc = DIDStore_StoreDID(store, document, NULL);
-            if (rc < 0)
-                return -1;
+    privateIdentity = load_privateIdentity(store, storepass, &_identity);
+    if (!privateIdentity)
+        return;
 
-            DIDURL id;
-            DID_Copy(&id.did, &last_did);
-            strcpy(id.fragment, "primary");
-            if (!HDkey_GetSubPrivateKey(seed, 0, 0, last_index, privatekey) ||
-                encrypt_to_base64((char *)privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
-                DIDStore_StorePrivateKey(store, &last_did, &id, (const char *)privatekeybase64) == -1) {
-                DIDStore_DeleteDID(store, &last_did);
-                //TODO: check need destroy document
-                return -1;
-            }
-
-            index = ++last_index;
-        }
+    nextindex = load_index(store);
+    if (nextindex < 0) {
+        HDKey_Wipe(privateIdentity);
+        return;
     }
 
-    return index;
+    while (i < nextindex || blanks < 20) {
+        derivedkey = HDKey_GetDerivedKey(privateIdentity, &_derivedkey, 0, 0, i++);
+        if (!derivedkey)
+            continue;
+
+        if (init_did(&did, DerivedKey_GetAddress(derivedkey)) == 0) {
+            document = DIDStore_ResolveDID(store, &did, true);
+            if (document) {
+                if (DIDStore_StoreDID(store, document, "") == 0) {
+                    if (store_default_privatekey(store, storepass,
+                            DerivedKey_GetAddress(derivedkey),
+                            DerivedKey_GetPrivateKey(derivedkey)) == 0) {
+                        if (store_index(store, i) == -1)
+                            DIDStore_DeleteDID(store, &did);
+
+                    } else {
+                        DIDStore_DeleteDID(store, &did);
+                    }
+
+                } else {
+                    blanks = 0;
+                }
+                DIDDocument_Destroy(document);
+            } else {
+                if (i >= nextindex)
+                    blanks++;
+            }
+        }
+        DerivedKey_Wipe(derivedkey);
+    }
+
+    HDKey_Wipe(privateIdentity);
 }
 
 bool DIDStore_ContainsPrivateIdentity(DIDStore *store)
@@ -1585,7 +1610,7 @@ bool DIDStore_ContainsPrivateIdentity(DIDStore *store)
     if (get_file(path, 0, 3, store->root, PRIVATE_DIR, HDKEY_FILE) == -1)
         return false;
 
-    if (lstat(path, &st) < 0)
+    if (stat(path, &st) < 0)
         return false;
 
     return st.st_size > 0;
@@ -1594,9 +1619,7 @@ bool DIDStore_ContainsPrivateIdentity(DIDStore *store)
 int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
         const char *passphrase, const char *storepass, const int language, bool force)
 {
-    int index;
     uint8_t seed[SEED_BYTES];
-    const char *encrpted_seed;
     char path[PATH_MAX];
 
     if (!store || !mnemonic || !storepass || !*storepass)
@@ -1607,82 +1630,71 @@ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
 
     //check if DIDStore has existed private identity
     if (get_file(path, 0, 3, store->root, PRIVATE_DIR, HDKEY_FILE) == 0) {
-        encrpted_seed = load_file(path);
-        if (encrpted_seed && strlen(encrpted_seed) > 0 && !force) {
-            free((char*)encrpted_seed);
+        if (DIDStore_ContainsPrivateIdentity(store) && !force)
             return -1;
-        }
-        free((char*)encrpted_seed);
     }
 
-    if (!HDkey_GetSeedFromMnemonic(mnemonic, passphrase, language, seed) ||
+    if (!HDKey_GetSeedFromMnemonic(mnemonic, passphrase, language, seed) ||
         store_seed(store, seed, sizeof(seed), storepass) == -1)
         return -1;
 
     memset(seed, 0, sizeof(seed));
-
-    index = refresh_did_fromchain(store, storepass, seed, NULL, NULL, 0);
-    if (index < 0)
-        return -1;
-
     if (store_mnemonic(store, storepass, mnemonic) == -1)
         return -1;
 
-    return store_index(store, index);
+    return store_index(store, 0);
 }
 
 DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char *alias)
 {
     int index;
-    unsigned char privatekeybase64[MAX_PRIVATEKEY_BASE64];
-    uint8_t publickey[PUBLICKEY_BYTES];
-    uint8_t privatekey[PRIVATEKEY_BYTES];
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    uint8_t seed[SEED_BYTES * 2];
-    ssize_t len;
-    DID did;
+    HDKey _identity, *privateIdentity;
+    DerivedKey _derivedkey, *derivedkey;
     DIDDocument *document;
+    DID did;
 
     if (!store || !storepass || !*storepass)
         return NULL;
 
-    len = load_seed(store, seed, sizeof(seed), storepass);
-    if (len < 0)
+    index = load_index(store);
+    if (index < 0)
         return NULL;
 
-    index = refresh_did_fromchain(store, storepass, seed, &did, publickey, sizeof(publickey));
-    if (index < 0) {
-        memset(seed, 0, sizeof(seed));
+    privateIdentity = load_privateIdentity(store, storepass, &_identity);
+    if (!privateIdentity)
         return NULL;
-    }
 
-    DIDURL id;
-    DID_Copy(&id.did, &did);
-    strcpy(id.fragment, "primary");
-    if (!HDkey_GetSubPrivateKey(seed, 0, 0, index, privatekey) ||
-        encrypt_to_base64((char *)privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
-        DIDStore_StorePrivateKey(store, &did, &id, (const char *)privatekeybase64) == -1) {
-        memset(seed, 0, sizeof(seed));
+    derivedkey = HDKey_GetDerivedKey(privateIdentity, &_derivedkey, 0, 0, index);
+    HDKey_Wipe(privateIdentity);
+    if (!derivedkey)
+        return NULL;
+
+    if (init_did(&did, DerivedKey_GetAddress(derivedkey)) == -1) {
+        DerivedKey_Wipe(derivedkey);
         return NULL;
     }
 
-    base58_encode(publickeybase58, publickey, sizeof(publickey));
+    if (store_default_privatekey(store, storepass,
+        DerivedKey_GetAddress(derivedkey), DerivedKey_GetPrivateKey(derivedkey)) == -1) {
+        DerivedKey_Wipe(derivedkey);
+        return NULL;
+    }
+
+    base58_encode(publickeybase58, DerivedKey_GetPublicKey(derivedkey), PUBLICKEY_BYTES);
+    DerivedKey_Wipe(derivedkey);
+
     document = create_document(&did, publickeybase58, storepass, alias);
     if (!document) {
-        memset(seed, 0, sizeof(seed));
         DIDStore_DeleteDID(store, &did);
         return NULL;
     }
 
     if (DIDStore_StoreDID(store, document, alias) == -1) {
-        memset(seed, 0, sizeof(seed));
         DIDStore_DeleteDID(store, &did);
         DIDDocument_Destroy(document);
         return NULL;
     }
-
-    memset(seed, 0, sizeof(seed));
-    memset(privatekey, 0, sizeof(privatekey));
 
     return document;
 }

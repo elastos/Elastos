@@ -1709,7 +1709,7 @@ DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document)
             continue;
 
         base58_decode(binkey, pk->publicKeyBase58);
-        HDkey_GetIdString(binkey, idstring, sizeof(idstring));
+        HDKey_GetAddress(binkey, idstring, sizeof(idstring));
 
         if (!strcmp(idstring, pk->id.did.idstring))
             return &pk->id;

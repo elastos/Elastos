@@ -90,6 +90,8 @@ DIDDocument *TestData_LoadDoc(void);
 
 DIDDocument *TestData_LoadIssuerDoc(void);
 
+const char *TestData_LoadRestoreMnemonic(void);
+
 #ifdef __cplusplus
 }
 #endif
