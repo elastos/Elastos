@@ -10,17 +10,13 @@ public class DIDURL: NSObject {
 
     public init(_ id: DID, _ fragment: String) throws {
         super.init()
-        if (fragment.count > 4) {  //TODO:  Why don't use fragment.hasPrefix("did:")
-            let str = fragment.prefix(4)
-            let prestr: String = String(str)
-            if prestr == "did:" {            
-                let listener = DURLListener(self)
-                try ParserHelper.parase(fragment, false, listener)
-                if (did != id) {
-                    throw DIDError.failue("Missmatched arguments")
-                }
-                return
+        if (fragment.hasPrefix("did:")) {
+            let listener = DURLListener(self)
+            try ParserHelper.parase(fragment, false, listener)
+            if (did != id) {
+                throw DIDError.failue("Missmatched arguments")
             }
+            return
         }
         
         self.did = id
@@ -206,8 +202,11 @@ class DURLListener: DIDURLBaseListener {
     
     init(_ didURL: DIDURL) {
         self.didURL = didURL
-        self.didURL?.did = DID()
         super.init()
+    }
+    
+    override func enterDid(_ ctx: DIDURLParser.DidContext) {
+        self.didURL?.did = DID()
     }
     
     override func exitMethod(_ ctx: DIDURLParser.MethodContext) {

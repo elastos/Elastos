@@ -198,7 +198,6 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    // TODO:
     func testDeactivateSelfAfterCreate() {
         do {
             let testData: TestData = TestData()
@@ -254,7 +253,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try doc.subject!.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try newDoc.toJson(true, true),try resolved?.toJson(true, true))
+            XCTAssertEqual(newDoc.toJson(true, true), resolved?.toJson(true, true))
             try store.storeDid(resolved!)
             
             _ = try store.deactivateDid(newDoc.subject!, storePass)
@@ -287,7 +286,7 @@ class DIDStoreTests: XCTestCase {
             
             var resolved: DIDDocument! = try doc.subject!.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try doc.toJson(true, true),try resolved?.toJson(true, true))
+            XCTAssertEqual(doc.toJson(true, true), resolved?.toJson(true, true))
             
             var target = try store.newDid(storePass)
             _ = try target.authorizationDid("recovery", doc.subject!.description)
@@ -301,7 +300,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try target.subject!.resolve(true)!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try target.toJson(true, true),try resolved.toJson(true, true))
+            XCTAssertEqual(target.toJson(true, true), resolved.toJson(true, true))
             
             _ = try store.deactivateDid(target.subject!, doc.subject!, storePass)
             
@@ -338,7 +337,7 @@ class DIDStoreTests: XCTestCase {
             
             var resolved: DIDDocument = try doc.subject!.resolve(true)!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try doc.toJson(true, true),try resolved.toJson(true, true))
+            XCTAssertEqual(doc.toJson(true, true), resolved.toJson(true, true))
             
             var target: DIDDocument = try store.newDid(storePass)
             _ = try target.addAuthorizationKey("recovery", doc.subject!.description, key.getPublicKeyBase58())
@@ -353,7 +352,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try target.subject!.resolve()!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try target.toJson(true, true),try resolved.toJson(true, true))
+            XCTAssertEqual(target.toJson(true, true), resolved.toJson(true, true))
             
             _ = try store.deactivateDid(target.subject!, doc.subject!, signKey: id, storePass)
             
@@ -391,7 +390,7 @@ class DIDStoreTests: XCTestCase {
             
             var resolved: DIDDocument = try doc.subject!.resolve(true)!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try doc.toJson(true, true),try resolved.toJson(true, true))
+            XCTAssertEqual(doc.toJson(true, true), resolved.toJson(true, true))
             
             var target = try store.newDid(storePass)
             _ = try target.addAuthorizationKey("recovery", doc.subject!.description, try key.getPublicKeyBase58())
@@ -406,7 +405,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try target.subject!.resolve()!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(try target.toJson(true, true),try resolved.toJson(true, true))
+            XCTAssertEqual(target.toJson(true, true), resolved.toJson(true, true))
             
             _ = try store.deactivateDid(target.subject!, doc.subject!, storePass)
             
@@ -692,7 +691,6 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    // TODO:
     func testCompatibility() {
         let bundle = Bundle(for: type(of: self))
         let jsonPath: String = bundle.path(forResource: "teststore", ofType: "")!
@@ -705,7 +703,7 @@ class DIDStoreTests: XCTestCase {
         XCTAssertEqual(2, dids.count)
         
         for did in dids {
-            if did.aliasName == "Issuer" {
+            if did.alias == "Issuer" {
                 let vcs: [DIDURL] = try! store.listCredentials(did)
                 XCTAssertEqual(1, vcs.count)
                 
@@ -713,7 +711,7 @@ class DIDStoreTests: XCTestCase {
                 XCTAssertEqual("Profile", id.aliasName)
                 
                 XCTAssertNotNil(try! store.loadCredential(did, id))
-            } else if did.aliasName == "Test" {
+            } else if did.alias == "Test" {
                 let vcs: [DIDURL] = try! store.listCredentials(did)
                 XCTAssertEqual(4, vcs.count)
                 
@@ -729,7 +727,6 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    // TODO:
     func testCompatibilityNewDIDWithWrongPass() {
         do {
             DIDBackend.creatInstance(DummyAdapter())
@@ -751,7 +748,6 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    // TODO:
     func testCompatibilityNewDID() {
         
         DIDBackend.creatInstance(DummyAdapter())
@@ -868,7 +864,7 @@ class DIDStoreTests: XCTestCase {
             for i in 0..<10 {
                 let doc = try stores[i].loadDid(docs[i].subject!)
                 XCTAssertNotNil(doc)
-                XCTAssertEqual(try docs[i].toJson(true, true),try doc!.toJson(true, true))
+                XCTAssertEqual(docs[i].toJson(true, true), doc!.toJson(true, true))
             }
             
         } catch {
