@@ -59,9 +59,9 @@ public class DID: NSObject {
     }
     
     public func resolve(_ force: Bool) throws -> DIDDocument? {
-        let doc = try DIDBackend.shareInstance().resolve(self, force)
+        let doc = try DIDBackend.shareInstance()?.resolve(self, force)
 
-        // In case that no DID was found, "nil" value would return
+        // In case that no DID document was found, "nil" value would be returned
         // instread of throwing Error.
         if (doc != nil) {
             meta = doc!.meta

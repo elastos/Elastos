@@ -135,7 +135,7 @@ public class DIDStore: NSObject {
             let did: DID = DID(DID.METHOD, methodIdString)
             var doc: DIDDocument?
             do {
-                doc = try DIDBackend.shareInstance().resolve(did, true)
+                doc = try DIDBackend.shareInstance()!.resolve(did, true)
             } catch {
                 if error is DIDError {
                     switch error as! DIDError {
@@ -215,10 +215,10 @@ public class DIDStore: NSObject {
             }
         }
         if lastTxid == nil || lastTxid == "" {
-            lastTxid = try DIDBackend.shareInstance().create(doc!, sigk!, storepass)
+            lastTxid = try DIDBackend.shareInstance()?.create(doc!, sigk!, storepass)
         }
         else {
-            lastTxid = try DIDBackend.shareInstance().update(doc!, previousTxid: lastTxid, sigk!, storepass)
+            lastTxid = try DIDBackend.shareInstance()?.update(doc!, previousTxid: lastTxid, sigk!, storepass)
         }
         if lastTxid != nil {
             doc?.meta.transactionId = lastTxid!
@@ -238,7 +238,7 @@ public class DIDStore: NSObject {
         var localCopy = false
         var doc: DIDDocument?
         var sigk = signKey
-        doc = try DIDBackend.shareInstance().resolve(did)
+        doc = try DIDBackend.shareInstance()?.resolve(did)
         if doc == nil {
             // Fail-back: try to load document from local store
             doc = try loadDid(did)
@@ -256,7 +256,7 @@ public class DIDStore: NSObject {
         if sigk == nil {
             sigk = doc?.getDefaultPublicKey()
         }
-        let txid = try DIDBackend.shareInstance().deactivate(doc!, sigk!, storepass)
+        let txid = try DIDBackend.shareInstance()!.deactivate(doc!, sigk!, storepass)
         // Save deactivated status to DID metadata
         if localCopy {
             doc?.meta.deactivated = true
@@ -276,7 +276,7 @@ public class DIDStore: NSObject {
          // All documents should use the IDChain's copy
         var doc: DIDDocument?
         var sigk = signKey
-        doc = try DIDBackend.shareInstance().resolve(did)
+        doc = try DIDBackend.shareInstance()?.resolve(did)
         if doc == nil {
            // Fail-back: try to load document from local store
             doc = try loadDid(did)
@@ -296,7 +296,7 @@ public class DIDStore: NSObject {
             }
         }
         
-        let targetDoc = try DIDBackend.shareInstance().resolve(target)
+        let targetDoc = try DIDBackend.shareInstance()?.resolve(target)
         if targetDoc == nil {
             throw DIDError.didResolveError(_desc: "DID \(target) not exist.")
         }
@@ -331,7 +331,7 @@ public class DIDStore: NSObject {
         if (targetSignKey == nil) {
             throw DIDError.failue("No matched authorization key.")
         }
-        return try DIDBackend.shareInstance().deactivate(target, targetSignKey!, doc!, sigk!, storepass)
+        return try DIDBackend.shareInstance()!.deactivate(target, targetSignKey!, doc!, sigk!, storepass)
     }
     
     public func deactivateDid(_ target: String, _ did: String, signKey: String? = nil, _ storepass: String) throws -> String? {
@@ -341,7 +341,7 @@ public class DIDStore: NSObject {
     }
     
     public func resolveDid(_ did: DID, _ force: Bool) throws -> DIDDocument? {
-        var doc = try DIDBackend.shareInstance().resolve(did)
+        var doc = try DIDBackend.shareInstance()?.resolve(did)
         if doc !== nil {
             try storeDid(doc!)
         }

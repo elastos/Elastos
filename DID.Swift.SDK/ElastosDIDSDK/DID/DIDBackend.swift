@@ -19,20 +19,17 @@ public class DIDBackend: NSObject {
     }
     
     public static func creatInstance(_ adapter: DIDAdapter) {
-        if instance != nil {
-            return
+        if instance == nil {
+            instance = DIDBackend(adapter)
         }
-        instance = DIDBackend(adapter)
     }
     
-    public static func shareInstance() -> DIDBackend {
-        return instance!
+    public static func shareInstance() -> DIDBackend? {
+        return instance
     }
 
     public var didAdapter: DIDAdapter {
-        get {
-            return _adapter
-        }
+        return _adapter
     }
 
     public var ttl: Int {
@@ -56,19 +53,23 @@ public class DIDBackend: NSObject {
     
     private func resolveFromBackend(_ did: DID) throws -> ResolveResult {
         let requestId = generateRequestId()
-        
-        let json = try _adapter.resolve(requestId, did.description, false)
-        let string = JsonHelper.preHandleString(json)
+
+        let json = try? _adapter.resolve(requestId, did.description, false)
+        guard json != nil else {
+            throw DIDError.didResolveError(_desc: "Resolve DID error")
+        }
+
+        let string = JsonHelper.preHandleString(json!)
         let resultJson = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
         let result: OrderedDictionary<String, Any> = resultJson[DIDBackend.RESULT] as! OrderedDictionary<String, Any>
 
         guard result.count != 0 else {
-            throw DIDError.didResolveError(_desc: "Resolve DID error .")
+            throw DIDError.didResolveError(_desc: "Resolve DID error")
         }
-        // Check response id, should equals requestId
+        // Check response ID is matched with request ID
         let id = resultJson[DIDBackend.ID] as? String
         guard id == requestId else {
-            throw DIDError.didResolveError(_desc: "Missmatched resolve result with request.")
+            throw DIDError.didResolveError(_desc: "Mismatched resolve result with request")
         }
 
         let rr: ResolveResult = try ResolveResult.fromJson(result)
@@ -80,24 +81,25 @@ public class DIDBackend: NSObject {
     
     func resolve(_ did: DID, _ force: Bool) throws -> DIDDocument? {
         var rr: ResolveResult?
+
         if !force {
             rr = try ResolverCache.load(did, ttl)
         }
         if (rr == nil) {
             rr = try resolveFromBackend(did)
         }
+
         switch rr!.status {
-        case ResolveResult.STATUS_EXPIRED: do {
+        case ResolveResult.STATUS_EXPIRED:
             throw DIDError.didExpiredError(_desc: "")
-            }
-        case ResolveResult.STATUS_DEACTIVATED: do {
+
+        case ResolveResult.STATUS_DEACTIVATED:
             throw DIDError.didDeactivatedError(_desc: "")
-            }
-        case ResolveResult.STATUS_NOT_FOUND: do {
+
+        case ResolveResult.STATUS_NOT_FOUND:
             return nil
-            }
+
         default:
-            
             let ti: IDTransactionInfo = rr!.transactionInfo(atIndex:0)!
             let doc: DIDDocument = ti.request.doc!
             let meta: DIDMeta = DIDMeta()
@@ -114,10 +116,8 @@ public class DIDBackend: NSObject {
 
     func create(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> String {
         do {
-            let request: IDChainRequest = try IDChainRequest.create(doc, signKey, storepass)
-            let jsonString: String = request.toJson(true)
-            
-            return try _adapter.createIdTransaction(jsonString, nil)
+            let request = try IDChainRequest.create(doc, signKey, storepass)
+            return try _adapter.createIdTransaction(request.toJson(true), nil)
         } catch  {
             throw DIDError.failue("Create ID transaction error: \(error.localizedDescription).")
         }
@@ -125,33 +125,28 @@ public class DIDBackend: NSObject {
     
     func update(_ doc: DIDDocument, previousTxid: String? = nil, _ signKey: DIDURL, _ storepass: String) throws -> String {
         do {
-            let request: IDChainRequest = try IDChainRequest.update(doc, previousTxid: previousTxid, signKey, storepass)
-            let jsonStr: String = request.toJson(true)
-            return try _adapter.createIdTransaction(jsonStr, nil)
+            let request = try IDChainRequest.update(doc, previousTxid: previousTxid, signKey, storepass)
+            return try _adapter.createIdTransaction(request.toJson(true), nil)
         } catch {
-            throw  DIDError.failue("Create ID transaction error.")
+            throw  DIDError.failue("Update ID transaction error.")
         }
     }
     
     func deactivate(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> String {
         do {
             let request = try IDChainRequest.deactivate(doc, signKey, storepass)
-            let json = request.toJson(true)
-            return try _adapter.createIdTransaction(json, nil)
-        }
-        catch {
-            throw DIDError.didStoreError(_desc: "Create ID transaction error.")
+            return try _adapter.createIdTransaction(request.toJson(true), nil)
+        } catch {
+            throw DIDError.didStoreError(_desc: "Deactivate ID transaction error.")
         }
     }
     
     func deactivate(_ target: DID, _ targetSignKey: DIDURL, _ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> String {
         do {
-            let request: IDChainRequest = try IDChainRequest.deactivate(target, targetSignKey, doc, signKey, storepass)
-            let json = request.toJson(true)
-            return try _adapter.createIdTransaction(json, nil)
-            }
-        catch {
-            throw DIDError.didStoreError(_desc: "Create ID transaction error.") 
+            let request = try IDChainRequest.deactivate(target, targetSignKey, doc, signKey, storepass)
+            return try _adapter.createIdTransaction(request.toJson(true), nil)
+        } catch {
+            throw DIDError.didStoreError(_desc: "Deactivate ID transaction error.")
         }
     }
 }
