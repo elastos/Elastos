@@ -6,6 +6,7 @@ from decouple import config
 from grpc_adenine.database import db_engine
 from grpc_adenine.database.user import Users
 from grpc_adenine.database.user_api_relation import UserApiRelations
+from grpc_adenine.implementations import rate_limiter
 from grpc_adenine.stubs import common_pb2
 from grpc_adenine.stubs import common_pb2_grpc
 from sqlalchemy.orm import sessionmaker
@@ -72,7 +73,7 @@ class Common(common_pb2_grpc.CommonServicer):
                 self.session.commit()
                 self.session.close()
                 # insert into SERVICES LISTS table
-                rate_limiter.add_new_access_entry(api_key, self.GenerateAPIRequest.__name__)
+                self.rate_limiter.add_new_access_entry(api_key, self.GenerateAPIRequest.__name__)
             return common_pb2.Response(api_key=api_key, status_message='Success', status=True)
         else:
             return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
