@@ -218,15 +218,15 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 		s.depositInfo[info.DID].DepositAmount += MinDepositAmount
 		s.depositInfo[info.DID].TotalAmount += amount
 	}, func() {
+		delete(s.Candidates, info.DID)
+		delete(s.Nicknames, nickname)
+		s.depositInfo[info.DID].DepositAmount -= MinDepositAmount
+		s.depositInfo[info.DID].TotalAmount -= amount
 		if firstTimeRegister {
 			delete(s.depositInfo, info.DID)
 			delete(s.CodeDIDMap, code)
 			delete(s.DepositHashDIDMap, candidate.depositHash)
 		}
-		delete(s.Candidates, info.DID)
-		delete(s.Nicknames, nickname)
-		s.depositInfo[info.DID].DepositAmount -= MinDepositAmount
-		s.depositInfo[info.DID].TotalAmount -= amount
 	})
 }
 
@@ -337,9 +337,12 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 				}
 			}
 		}
-		if member := s.getHistoryMember(program.Code); member != nil {
-			returnMemberAction(member, member.MemberState)
+		if s.getHistoryMember != nil {
+			if member := s.getHistoryMember(program.Code); member != nil {
+				returnMemberAction(member, member.MemberState)
+			}
 		}
+
 		updateAmountAction(*did)
 	}
 }
