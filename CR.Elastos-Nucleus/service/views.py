@@ -7,7 +7,7 @@ from django.http import HttpResponse
 
 from decouple import config
 from django.core.mail import EmailMessage
-from django.core.files.base import ContentFile
+from django.core.files.base import ContentFile, File
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
@@ -118,9 +118,11 @@ def upload_and_sign(request):
                 private_key = form.cleaned_data.get('private_key')
                 file_content = form.cleaned_data.get('file_content').encode()
                 form.save()
+                obj, created = UploadFile.objects.update_or_create(defaults={'did': did})
                 if file_content:
-                    obj, created = UploadFile.objects.update_or_create(did=did)
                     obj.uploaded_file.save(get_random_string(length=32), ContentFile(file_content))
+                else:
+                    obj.uploaded_file.save(get_random_string(length=32), File(request.FILES['uploaded_file']))
                 try:
                     temp_file = UploadFile.objects.get(did=did)
                     file_path = temp_file.uploaded_file.path
@@ -504,8 +506,14 @@ def deploy_eth_contract(request):
                 eth_private_key = form.cleaned_data.get('eth_private_key')
                 eth_gas = form.cleaned_data.get('eth_gas')
                 form.save()
-                temp_file = UploadFile.objects.get(did=did)
-                file_path = temp_file.uploaded_file.path
+                obj, created = UploadFile.objects.update_or_create(defaults={'did': did})
+                obj.uploaded_file.save(get_random_string(length=32), File(request.FILES['uploaded_file']))
+                try:
+                    temp_file = UploadFile.objects.get(did=did)
+                    file_path = temp_file.uploaded_file.path
+                except Exception as e:
+                    messages.success(request, "Please upload a file or fill out the 'File content' field")
+                    return redirect(reverse('service:upload_and_sign'))
                 try:
                     sidechain_eth = SidechainEth()
                     response = sidechain_eth.deploy_eth_contract(api_key, eth_account_address, eth_private_key, eth_gas,

@@ -21,7 +21,7 @@ class UploadAndSignForm(forms.ModelForm):
     network = forms.ChoiceField(
         choices=NETWORK_GMU, label="", initial='', widget=forms.Select(), required=True)
     file_content = forms.CharField(widget=forms.Textarea, required=False)
-    file_name = forms.CharField(required= True , widget=forms.Textarea)
+    file_name = forms.CharField(required=True, widget=forms.Textarea)
     private_key = forms.CharField(max_length=300, widget=forms.Textarea)
     api_key = forms.CharField(max_length=64, widget=forms.Textarea)
 
