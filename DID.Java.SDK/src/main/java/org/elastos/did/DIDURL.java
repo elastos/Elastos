@@ -49,7 +49,7 @@ public class DIDURL implements Comparable<DIDURL> {
 			if (fragment.startsWith("did:")) {
 				ParserHelper.parse(fragment, false, new Listener());
 				if (!getDid().equals(id))
-					throw new IllegalArgumentException("Missmatched arguments");
+					throw new IllegalArgumentException("Mismatched arguments");
 
 				return;
 			}

@@ -118,7 +118,7 @@ public class DIDBackend {
 		JsonNode id = node.get(ID);
 		if (id == null || id.textValue() == null ||
 				!id.textValue().equals(requestId))
-			throw new DIDResolveException("Missmatched resolve result with request.");
+			throw new DIDResolveException("Mismatched resolve result with request.");
 
 		JsonNode result = node.get(RESULT);
 		if (result == null || result.isNull()) {
@@ -200,7 +200,7 @@ public class DIDBackend {
 		try {
 			return adapter.createIdTransaction(json, null);
 		} catch (DIDException e) {
-			throw new DIDStoreException("Create ID transaction error.", e);
+			throw new DIDStoreException("Update ID transaction error.", e);
 		}
 	}
 
@@ -212,7 +212,7 @@ public class DIDBackend {
 		try {
 			return adapter.createIdTransaction(json, null);
 		} catch (DIDException e) {
-			throw new DIDStoreException("Create ID transaction error.", e);
+			throw new DIDStoreException("deactivate ID transaction error.", e);
 		}
 	}
 
@@ -226,7 +226,7 @@ public class DIDBackend {
 		try {
 			return adapter.createIdTransaction(json, null);
 		} catch (DIDException e) {
-			throw new DIDStoreException("Create ID transaction error.", e);
+			throw new DIDStoreException("deactivate ID transaction error.", e);
 		}
 	}
 }
