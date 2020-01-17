@@ -29,4 +29,5 @@ urlpatterns = [
     url(r'^browser/', include('browser.urls'), name='browser'),
     url(r'^login/', include('login.urls'), name='login'),
     url(r'^qr_code/', include(qr_code_urls, namespace='qr_code')),
+    url(r'^privacy_policy_pdf', views.privacy_policy_pdf, name='privacy_policy_pdf'),
 ]

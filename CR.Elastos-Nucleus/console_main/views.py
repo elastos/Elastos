@@ -1,7 +1,9 @@
 import logging
+import os
 
 from django.contrib.auth import login
 from django.db.models import F
+from django.http import FileResponse, Http404
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
@@ -12,6 +14,7 @@ from django.db import models
 from .models import TrackUserPageVisits
 from login.models import DIDUser
 from service.models import UserServiceSessionVars
+from .settings import MEDIA_ROOT
 
 
 def login_required(function):
@@ -23,6 +26,14 @@ def login_required(function):
     wrapper.__doc__ = function.__doc__
     wrapper.__name__ = function.__name__
     return wrapper
+
+
+def privacy_policy_pdf(request):
+    try:
+        return FileResponse(open(os.path.join(MEDIA_ROOT, 'nucleus_privacy_policy.pdf'), 'rb'),
+                            content_type='application/pdf')
+    except FileNotFoundError:
+        raise Http404('not found')
 
 
 def landing(request):

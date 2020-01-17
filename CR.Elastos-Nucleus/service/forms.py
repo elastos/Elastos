@@ -243,8 +243,3 @@ class SuggestServiceForm(forms.Form):
 
         self.fields['service_reasoning'].widget.attrs['rows'] = 5
         self.fields['service_reasoning'].widget.attrs['cols'] = 50
-
-
-
-
-

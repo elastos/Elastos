@@ -23,18 +23,19 @@
                         {{ field }}
                         {% if field.help_text %}
                             <small style="color: grey">{{ field.help_text }}</small>
-                            <div class="modal fade" id="termsAndConditions" tabindex="-1" role="dialog" aria-labelledby="termsAndConditions" aria-hidden="true">
+                            <div class="modal fade" id="termsAndConditions" tabindex="-1" role="dialog"
+                                 aria-labelledby="termsAndConditions" aria-hidden="true" style="margin: 0 auto;">
                                 <div class="modal-dialog" role="document">
-                                    <div class="modal-content">
+                                    <div class="modal-content" style="width: 1100px;height:800px;">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalLabel">Terms and Conditions</h5>
+                                            <h5 class="modal-title" id="exampleModalLabel">Nucleus Privacy Policy</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
 
                                         <div class="modal-body">
-                                          ...
+                                            <embed src={% url 'privacy_policy_pdf' %}'#toolbar=0&navpanes=0&scrollbar=0' style="width: 1080px;height:700px;" frameborder="0">
                                         </div>
                                         
                                         <div class="modal-footer">
