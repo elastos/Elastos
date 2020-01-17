@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import yaml
 
 from django.core import serializers
 from django.http import HttpResponse
