@@ -10,6 +10,76 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+
+		Budget::Budget() {
+
+		}
+
+		Budget::Budget(BudgetType type, uint8_t stage, BigInt amount) : _type(type), _stage(stage), _amount(amount) {
+
+		}
+
+		Budget::~Budget() {
+
+		}
+
+		Budget::BudgetType Budget::GetType() const {
+			return _type;
+		}
+
+		uint8_t Budget::GetStage() const {
+			return _stage;
+		}
+
+		BigInt Budget::GetAmount() const {
+			return _amount;
+		}
+
+		void Budget::Serialize(ByteStream &ostream, uint8_t version) const {
+			ostream.WriteUint8(_type);
+			ostream.WriteUint8(_stage);
+			ostream.WriteUint64(_amount.getUint64());
+		}
+
+		bool Budget::Deserialize(const ByteStream &istream, uint8_t version) {
+			uint8_t type;
+			if (!istream.ReadUint8(type)) {
+				Log::error("Budget::Deserialize: read type key");
+				return false;
+			}
+			_type = (BudgetType) type;
+
+			if (!istream.ReadUint8(_stage)) {
+				Log::error("Budget::Deserialize: read stage key");
+				return false;
+			}
+
+			uint64_t amount;
+			if (!istream.ReadUint64(amount)) {
+				Log::error("Budget::Deserialize: read amount key");
+				return false;
+			}
+			_amount.setUint64(amount);
+
+			return true;
+		}
+
+		nlohmann::json Budget::ToJson(uint8_t version) const {
+			nlohmann::json j;
+			j["Type"] = _type;
+			j["Stage"] = _stage;
+			j["Amount"] = _amount.getDec();
+			return j;
+		}
+
+		void Budget::FromJson(const nlohmann::json &j, uint8_t version) {
+			uint8_t type = j["Type"].get<uint8_t>();
+			_type = (BudgetType) type;
+			_stage = j["Stage"].get<uint8_t>();
+			std::string amount = j["Amount"].get<std::string>();
+			_amount.setDec(amount);
+		}
+
 		CRCProposal::CRCProposal() {
 
 		}
@@ -24,6 +94,14 @@ namespace Elastos {
 
 		CRCProposal::CRCProposalType CRCProposal::GetType() const {
 			return _type;
+		}
+
+		void CRCProposal::SetCategoryData(const std::string &categoryData) {
+			_categoryData = categoryData;
+		}
+
+		const std::string &CRCProposal::GetCategoryData() const {
+			return _categoryData;
 		}
 
 		void CRCProposal::SetSponsorPublicKey(const bytes_t &publicKey) {
@@ -50,11 +128,11 @@ namespace Elastos {
 			return _draftHash;
 		}
 
-		void CRCProposal::SetBudgets(const std::vector<BigInt> &budgets) {
+		void CRCProposal::SetBudgets(const std::vector<Budget> &budgets) {
 			_budgets = budgets;
 		}
 
-		const std::vector<BigInt> &CRCProposal::GetBudgets() const {
+		const std::vector<Budget> &CRCProposal::GetBudgets() const {
 			return _budgets;
 		}
 
@@ -72,6 +150,14 @@ namespace Elastos {
 
 		const bytes_t &CRCProposal::GetSignature() const {
 			return _signature;
+		}
+
+		void CRCProposal::SetCROpinionHash(const uint256 &hash) {
+			_crOpinionHash = hash;
+		}
+
+		const uint256 &CRCProposal::GetCROpinionHash() const {
+			return _crOpinionHash;
 		}
 
 		void CRCProposal::SetCRSignature(const bytes_t &signature) {
@@ -92,7 +178,10 @@ namespace Elastos {
 			ByteStream stream;
 			size_t size = 0;
 
-			size += sizeof(uint8_t);
+			size += sizeof(uint16_t);
+
+			size += stream.WriteVarUint(_categoryData.size());
+			size += _categoryData.size();
 
 			size += stream.WriteVarUint(_sponsorPublicKey.size());
 			size += _sponsorPublicKey.size();
@@ -101,7 +190,11 @@ namespace Elastos {
 
 			size += stream.WriteVarUint(_budgets.size());
 
-			size += sizeof(uint64_t) * _budgets.size();
+			ByteStream byteStream;
+			for (size_t i = 0; i < _budgets.size(); ++i) {
+				_budgets[i].Serialize(byteStream, version);
+			}
+			size += byteStream.GetBytes().size();
 
 			size += _recipient.size();
 
@@ -110,6 +203,8 @@ namespace Elastos {
 
 			size += _crSponsorDID.size();
 
+			size += _crOpinionHash.size();
+
 			size += stream.WriteVarUint(_crSignature.size());
 			size += _crSignature.size();
 
@@ -117,23 +212,29 @@ namespace Elastos {
 		}
 
 		void CRCProposal::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.WriteUint8(_type);
+			ostream.WriteUint16(_type);
+			ostream.WriteVarString(_categoryData);
 			ostream.WriteVarBytes(_sponsorPublicKey);
 			ostream.WriteBytes(_draftHash);
 			ostream.WriteVarUint(_budgets.size());
 			for (size_t i = 0; i < _budgets.size(); ++i) {
-				ostream.WriteUint64(_budgets[i].getUint64());
+				_budgets[i].Serialize(ostream, version);
 			}
 			ostream.WriteBytes(_recipient);
 		}
 
 		bool CRCProposal::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
-			uint8_t type = 0;
-			if (!istream.ReadUint8(type)) {
+			uint16_t type = 0;
+			if (!istream.ReadUint16(type)) {
 				Log::error("CRCProposal DeserializeUnsigned: read type key");
 				return false;
 			}
 			_type = CRCProposalType(type);
+
+			if (!istream.ReadVarString(_categoryData)) {
+				Log::error("CRCProposal DeserializeUnsigned: read categoryData key");
+				return false;
+			}
 
 			if (!istream.ReadVarBytes(_sponsorPublicKey)) {
 				Log::error("CRCProposal DeserializeUnsigned: read sponsorPublicKey key");
@@ -152,12 +253,7 @@ namespace Elastos {
 			}
 			_budgets.resize(count);
 			for (size_t i = 0; i < count; ++i) {
-				uint64_t budgets = 0;
-				if (!istream.ReadUint64(budgets)) {
-					Log::error("CRCProposal DeserializeUnsigned: read _budgets");
-					return false;
-				}
-				_budgets[i].setUint64(budgets);
+				_budgets[i].Deserialize(istream, version);
 			}
 
 			if (!istream.ReadBytes(_recipient)) {
@@ -182,7 +278,7 @@ namespace Elastos {
 			}
 
 			if (!istream.ReadVarBytes(_signature)) {
-				Log::error("CRCProposal DeserializeUnsigned: read sponsorSignature key");
+				Log::error("CRCProposal DeserializeUnsigned: read signature key");
 				return false;
 			}
 			return true;
@@ -195,6 +291,8 @@ namespace Elastos {
 
 			ostream.WriteBytes(_crSponsorDID);
 
+			ostream.WriteBytes(_crOpinionHash);
+
 			ostream.WriteVarBytes(_crSignature);
 		}
 
@@ -205,6 +303,11 @@ namespace Elastos {
 
 			if (!istream.ReadBytes(_crSponsorDID)) {
 				Log::error("CRCProposal DeserializeUnsigned: read sponsorDID key");
+				return false;
+			}
+
+			if (!istream.ReadBytes(_crOpinionHash)) {
+				Log::error("CRCProposal DeserializeUnsigned: read crOpinionHash key");
 				return false;
 			}
 
@@ -220,13 +323,15 @@ namespace Elastos {
 			nlohmann::json j, budgets;
 			j["Type"] = _type;
 			j["SponsorPublicKey"] = _sponsorPublicKey.getHex();
+			j["CategoryData"] = _categoryData;
 			j["CRSponsorDID"] = _crSponsorDID.GetHex();
 			j["DraftHash"] = _draftHash.GetHex();
-			for (const BigInt &amount : _budgets) {
-				budgets.push_back(amount.getDec());
+			for (const Budget &budget : _budgets) {
+				budgets.push_back(budget.ToJson(version));
 			}
 			j["Budgets"] = budgets;
 			j["Recipient"] = _recipient.GetHex();
+			j["CROpinionHash"] = _crOpinionHash.GetHex();
 			j["Signature"] = _signature.getHex();
 			j["CRSignature"] = _crSignature.getHex();
 			return j;
@@ -239,14 +344,16 @@ namespace Elastos {
 			std::string publickey = j["SponsorPublicKey"].get<std::string>();
 			_sponsorPublicKey.setHex(publickey);
 
+			_categoryData = j["CategoryData"].get<std::string>();
+
 			std::string draftHash = j["DraftHash"].get<std::string>();
 			_draftHash.SetHex(draftHash);
 
 			nlohmann::json budgets = j["Budgets"];
 			for (nlohmann::json::iterator it = budgets.begin(); it != budgets.end(); ++it) {
-				BigInt amount;
-				amount.setDec((*it).get<std::string>());
-				_budgets.push_back(amount);
+				Budget budget;
+				budget.FromJson(*it, version);
+				_budgets.push_back(budget);
 			}
 
 			std::string recipient = j["Recipient"].get<std::string>();
@@ -254,6 +361,11 @@ namespace Elastos {
 
 			std::string signatue = j["Signature"].get<std::string>();
 			_signature.setHex(signatue);
+
+			if (j.find("CROpinionHash") != j.end()) {
+				std::string crOpinionHash = j["CROpinionHash"].get<std::string>();
+				_crOpinionHash.SetHex(crOpinionHash);
+			}
 
 			if (j.find("CRSponsorDID") != j.end()) {
 				std::string did = j["CRSponsorDID"].get<std::string>();

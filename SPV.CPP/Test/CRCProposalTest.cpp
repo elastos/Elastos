@@ -20,10 +20,11 @@ static void initCRCProposal(CRCProposal &crcProposal) {
 	crcProposal.SetCRSponsorDID(getRandUInt168());
 	crcProposal.SetDraftHash(getRanduint256());
 
-	std::vector<BigInt> budgets;
+	std::vector<Budget> budgets;
 	for (int i = 0; i < 4; ++i) {
-		BigInt amount = getRandBigInt();
-		budgets.push_back(amount);
+		Budget::BudgetType budgetType = Budget::BudgetType(getRandUInt8() % Budget::maxType);
+		Budget budget(budgetType, getRandUInt8(), getRandUInt64());
+		budgets.push_back(budget);
 	}
 
 	crcProposal.SetBudgets(budgets);
@@ -51,11 +52,13 @@ TEST_CASE("CRCProposal test", "[CRCProposal]") {
 		REQUIRE(crcProposal1.GetCRSponsorDID() == crcProposal2.GetCRSponsorDID());
 		REQUIRE(crcProposal1.GetDraftHash() == crcProposal2.GetDraftHash());
 
-		std::vector<BigInt> budgets1 = crcProposal1.GetBudgets();
-		std::vector<BigInt> budgets2 = crcProposal2.GetBudgets();
+		std::vector<Budget> budgets1 = crcProposal1.GetBudgets();
+		std::vector<Budget> budgets2 = crcProposal2.GetBudgets();
 		REQUIRE(budgets1.size() == budgets2.size());
 		for (size_t i = 0; i < budgets1.size(); ++i) {
-			REQUIRE(budgets1[i] == budgets2[i]);
+			REQUIRE(budgets1[i].GetType() == budgets2[i].GetType());
+			REQUIRE(budgets1[i].GetStage() == budgets2[i].GetStage());
+			REQUIRE(budgets1[i].GetAmount() == budgets2[i].GetAmount());
 		}
 
 		REQUIRE(crcProposal1.GetRecipient() == crcProposal2.GetRecipient());
@@ -78,11 +81,13 @@ TEST_CASE("CRCProposal test", "[CRCProposal]") {
 		REQUIRE(crcProposal1.GetCRSponsorDID() == crcProposal2.GetCRSponsorDID());
 		REQUIRE(crcProposal1.GetDraftHash() == crcProposal2.GetDraftHash());
 
-		std::vector<BigInt> budgets1 = crcProposal1.GetBudgets();
-		std::vector<BigInt> budgets2 = crcProposal2.GetBudgets();
+		std::vector<Budget> budgets1 = crcProposal1.GetBudgets();
+		std::vector<Budget> budgets2 = crcProposal2.GetBudgets();
 		REQUIRE(budgets1.size() == budgets2.size());
 		for (size_t i = 0; i < budgets1.size(); ++i) {
-			REQUIRE(budgets1[i] == budgets2[i]);
+			REQUIRE(budgets1[i].GetType() == budgets2[i].GetType());
+			REQUIRE(budgets1[i].GetStage() == budgets2[i].GetStage());
+			REQUIRE(budgets1[i].GetAmount() == budgets2[i].GetAmount());
 		}
 
 		REQUIRE(crcProposal1.GetRecipient() == crcProposal2.GetRecipient());

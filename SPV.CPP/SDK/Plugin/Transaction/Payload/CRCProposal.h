@@ -10,17 +10,57 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+		class Budget {
+		public:
+			enum BudgetType {
+				imprest = 0x00,
+				normalPayment = 0x01,
+				finalPayment = 0x02,
+				maxType
+			};
+			Budget();
+
+			Budget(BudgetType type, uint8_t stage, BigInt amount);
+
+			~Budget();
+
+			BudgetType GetType() const;
+
+			uint8_t GetStage() const;
+
+			BigInt GetAmount() const;
+
+			void Serialize(ByteStream &ostream, uint8_t version) const;
+
+			bool Deserialize(const ByteStream &istream, uint8_t version);
+
+			nlohmann::json ToJson(uint8_t version) const;
+
+			void FromJson(const nlohmann::json &j, uint8_t version);
+
+		private:
+			BudgetType _type;
+			uint8_t _stage;
+			BigInt _amount;
+		};
+
 		class CRCProposal : public IPayload {
 		public:
 			enum CRCProposalType {
-				normal = 0x00,
-				code = 0x01,
-				sideChain = 0x02,
-				changeSponsor = 0x03,
-				closeProposal = 0x04,
-				secretaCRCProposalryGeneral = 0x05,
+				normal = 0x0000,
+				elip = 0x0100,
+				flowElip = 0x0101,
+				infoElip = 0x0102,
+				mainChainUpgradeCode = 0x0200,
+				sideChainUpgradeCode = 0x0300,
+				registerSideChain = 0x0301,
+				secretaryGeneral = 0x0400,
+				changeSponsor = 0x0401,
+				closeProposal = 0x0402,
+				dappConsensus = 0x0500,
 				maxType
 			};
+
 			CRCProposal();
 
 			~CRCProposal();
@@ -28,6 +68,10 @@ namespace Elastos {
 			void SetTpye(CRCProposalType type);
 
 			CRCProposalType GetType() const;
+
+			void SetCategoryData(const std::string &categoryData);
+
+			const std::string &GetCategoryData() const;
 
 			void SetSponsorPublicKey(const bytes_t &publicKey);
 
@@ -41,9 +85,9 @@ namespace Elastos {
 
 			const uint256 &GetDraftHash() const;
 
-			void SetBudgets(const std::vector<BigInt> &budgets);
+			void SetBudgets(const std::vector <Budget> &budgets);
 
-			const std::vector<BigInt> &GetBudgets() const;
+			const std::vector <Budget> &GetBudgets() const;
 
 			void SetRecipient(const uint168 &recipient);
 
@@ -56,6 +100,10 @@ namespace Elastos {
 			void SetCRSignature(const bytes_t &signature);
 
 			const bytes_t &GetCRSignature() const;
+
+			void SetCROpinionHash(const uint256 &hash);
+
+			const uint256 &GetCROpinionHash() const;
 
 			uint256 Hash() const;
 
@@ -84,12 +132,14 @@ namespace Elastos {
 
 		private:
 			CRCProposalType _type;
+			std::string _categoryData;
 			bytes_t _sponsorPublicKey;
 			uint168 _crSponsorDID;
 			uint256 _draftHash;
-			std::vector<BigInt> _budgets;
+			std::vector <Budget> _budgets;
 			uint168 _recipient;
 			bytes_t _signature;
+			uint256 _crOpinionHash;
 			bytes_t _crSignature;
 		};
 	}

@@ -1231,6 +1231,7 @@ static int proposal(int argc, char *argv[]) {
 
 		if (what == "sponsor") {
 			int type = 0;
+			std::string categoryData;
 			std::string draftHash;
 			std::string budgetList;
 			std::string receiptAddress;
@@ -1242,21 +1243,26 @@ static int proposal(int argc, char *argv[]) {
 			std::string sponsorDID = idSubWallet->GetPublicKeyDID(sponsorPubKey);
 			std::cout << "sponsor DID: " << sponsorDID << std::endl;
 
+			std::cout << "Enter categoryData: ";
+			std::cin >> categoryData;
+
 			std::cout << "Enter proposal draft hash: ";
 			std::cin >> draftHash;
 
-			std::cout << "Enter budget list (eg: [100.2, 200.3, 300.4]): ";
+			std::cout << "Enter budget list (eg: [{\"Type\":0,\"Stage\":0,\"Amount\":100.2},{\"Type\":1,\"Stage\":1,\"Amount\":200.3},{\"Type\":2,\"Stage\":2,\"Amount\":300.4}]): \n";
 			std::cin >> budgetList;
 			nlohmann::json budgetJson = nlohmann::json::parse(budgetList);
 			std::vector<std::string> budgets;
-			for (nlohmann::json::iterator it = budgetJson.begin(); it != budgetJson.end(); ++it)
-				budgets.push_back(std::to_string((uint64_t)(*it).get<double>() * SELA_PER_ELA));
+			for (nlohmann::json::iterator it = budgetJson.begin(); it != budgetJson.end(); ++it) {
+				double amount = ((*it)["Amount"].get<double>() * double(SELA_PER_ELA));
+				(*it)["Amount"] = std::to_string(amount);
+			}
 
 			std::cout << "Enter receipt address: ";
 			std::cin >> receiptAddress;
 
-			nlohmann::json proposalJson = subWallet->SponsorProposalDigest(type, sponsorPubKey, draftHash, budgets,
-																					receiptAddress);
+			nlohmann::json proposalJson = subWallet->SponsorProposalDigest(type, categoryData, sponsorPubKey, draftHash,
+			                                                               budgetJson, receiptAddress);
 			std::string digest = proposalJson["Digest"].get<std::string>();
 
 			std::string password = getpass("Enter payment password: ");
@@ -1276,7 +1282,12 @@ static int proposal(int argc, char *argv[]) {
 			std::string crSponsorDID = idSubWallet->GetPublicKeyDID(crSponsorPubKey);
 			std::cout << "CR sponsor DID: " << crSponsorDID << std::endl;
 
-			nlohmann::json proposalJson = subWallet->CRSponsorProposalDigest(sponsorSignedProposal, crSponsorDID);
+			std::string CROpinionHash;
+			std::cout << "Enter cr opinion hash: " << std::endl;
+			std::cin >> CROpinionHash;
+
+			nlohmann::json proposalJson = subWallet->CRSponsorProposalDigest(sponsorSignedProposal, crSponsorDID,
+					CROpinionHash);
 			std::string digest = proposalJson["Digest"].get<std::string>();
 
 			std::string password = getpass("Enter payment password: ");
