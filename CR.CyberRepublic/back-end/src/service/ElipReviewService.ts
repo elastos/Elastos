@@ -37,7 +37,6 @@ export default class extends Base {
 
     if(!elip_vid) {
       await db_vid
-        .getDBInstance()
         .save({tableName: "elip", vid: lastId})
     }else{
       const elip_vid = await db_vid
