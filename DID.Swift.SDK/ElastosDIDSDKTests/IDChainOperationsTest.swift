@@ -54,7 +54,7 @@ class IDChainOperationsTest: XCTestCase {
             let resolved = try did!.resolve(true)
             XCTAssertEqual(did, resolved!.subject)
             XCTAssertTrue(try resolved!.isValid())
-            XCTAssertEqual(try doc.description(true), try resolved?.description(true))
+            XCTAssertEqual(doc.description(true), resolved?.description(true))
         } catch {
             XCTFail()
         }
@@ -116,10 +116,10 @@ class IDChainOperationsTest: XCTestCase {
             var resolved = try did!.resolve(true)
             XCTAssertEqual(did, resolved?.subject)
             XCTAssertTrue(try resolved!.isValid())
-            XCTAssertEqual(try doc.description(true), try resolved?.description(true))
+            XCTAssertEqual(doc.description(true), resolved?.description(true))
             try store.storeDid(resolved!)
             var lastTxid = resolved!.getTransactionId()
-            print("Last transaction id: \(lastTxid)")
+            print("Last transaction id: \(lastTxid ?? "")")
             // Update
             //            DIDDocument.Builder db = resolved.edit();
             var key = try TestData.generateKeypair()
@@ -160,10 +160,10 @@ class IDChainOperationsTest: XCTestCase {
             resolved = try did!.resolve(true)
             XCTAssertEqual(did, resolved?.subject)
             XCTAssertTrue(try resolved!.isValid())
-            XCTAssertEqual(try doc.description(true), try resolved?.description(true))
+            XCTAssertEqual(doc.description(true), resolved?.description(true))
             try store.storeDid(resolved!)
             lastTxid = resolved!.getTransactionId()
-            print("Last transaction id: \(lastTxid)")
+            print("Last transaction id: \(lastTxid ?? "")")
             // Update
             key = try TestData.generateKeypair()
             _ = try resolved!.addAuthenticationKey("key2", key.getPublicKeyBase58())
@@ -203,10 +203,10 @@ class IDChainOperationsTest: XCTestCase {
             resolved = try did!.resolve(true)
             XCTAssertEqual(did, resolved?.subject)
             XCTAssertTrue(try resolved!.isValid())
-            XCTAssertEqual(try doc.description(true), try resolved?.description(true))
+            XCTAssertEqual(doc.description(true), resolved?.description(true))
             
             lastTxid = resolved!.getTransactionId()
-            print("Last transaction id: \(lastTxid)")
+            print("Last transaction id: \(lastTxid ?? "")")
         }
         catch {
             
@@ -300,7 +300,7 @@ class IDChainOperationsTest: XCTestCase {
             var resolved: DIDDocument = try did.resolve(true)!
             XCTAssertEqual(did, resolved.subject)
             XCTAssertTrue(try resolved.isValid())
-            XCTAssertEqual(try doc.description(true), try resolved.description(true))
+            XCTAssertEqual(doc.description(true), resolved.description(true))
             try store.storeDid(resolved)
             var lastTxid: String = resolved.getTransactionId()!
             print("Last transaction id: \(lastTxid)")
@@ -353,7 +353,7 @@ class IDChainOperationsTest: XCTestCase {
             resolved = try did.resolve(true)!
             XCTAssertEqual(did, resolved.subject)
             XCTAssertTrue(try resolved.isValid())
-            XCTAssertEqual(try doc.description(true), try resolved.description(true))
+            XCTAssertEqual(doc.description(true), resolved.description(true))
             try store.storeDid(resolved)
             lastTxid = resolved.getTransactionId()!
             print("Last transaction id: \(lastTxid)")
@@ -410,7 +410,7 @@ class IDChainOperationsTest: XCTestCase {
             resolved = try did.resolve(true)!
             XCTAssertEqual(did, resolved.subject)
             XCTAssertTrue(try resolved.isValid())
-            XCTAssertEqual(try doc.description(true), try resolved.description(true))
+            XCTAssertEqual(doc.description(true), resolved.description(true))
             try store.storeDid(resolved)
             lastTxid = resolved.getTransactionId()!
             print("Last transaction id: \(lastTxid)")

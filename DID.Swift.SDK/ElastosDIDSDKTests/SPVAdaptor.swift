@@ -34,24 +34,56 @@ public class SPVAdaptor: DIDAdapter {
     public func createIdTransaction(_ payload: String, _ memo: String?) throws -> String {
         let password = passwordCallback!(walletDir, walletId)
         guard password != nil else {
-            throw DIDError.didResolveError(_desc: "password is not nil.")
+            throw DIDError.transactionError(_desc: "password is not nil.")
         }
         
         guard handle != nil else {
-            throw DIDError.didResolveError(_desc: "Unkonw error.")
+            throw DIDError.transactionError(_desc: "Unkonw error.")
         }
         let re = SPV.createIdTransaction(handle, password!, payload, memo)
         guard re != nil else {
-            throw DIDError.didResolveError(_desc: "Unkonw error.")
+            throw DIDError.transactionError(_desc: "Unkonw error.")
         }
         return re!
     }
     
     public func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String {
-        let re = SPV.resolve(requestId, did, all)
-        guard re != nil else {
+        var resuleString: String?
+        let url:URL! = URL(string: "http://api.elastos.io:21606")
+        var request:URLRequest! = URLRequest.init(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        let parameters: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "resolvedid",
+            "params": ["did":did, "all": all],
+            "id": requestId
+        ]
+        request.httpBody = try! JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
+        let semaphore = DispatchSemaphore(value: 0)
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data,
+                let response = response as? HTTPURLResponse,
+                error == nil else { // check for fundamental networking error
+                    semaphore.signal()
+                    return
+            }
+            guard (200 ... 299) ~= response.statusCode else { // check for http errors
+                semaphore.signal()
+                return
+            }
+            let responseString = String(data: data, encoding: .utf8)
+            print("responseString = \(String(describing: responseString))")
+            resuleString = responseString
+            semaphore.signal()
+        }
+        task.resume()
+        semaphore.wait()
+        
+        guard resuleString != nil else {
             throw DIDError.didResolveError(_desc: "Unkonw error.") 
         }
-        return re!
+        return resuleString!
     }
 }

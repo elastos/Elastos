@@ -10,7 +10,7 @@ public enum DIDError: Error {
     case didResolveError(_desc: String?)
     case didDeactivatedError(_desc: String?)
     case didExpiredError(_desc: String?)
-
+    case transactionError(_desc: String?)
 }
 
 extension DIDError {
@@ -33,6 +33,8 @@ extension DIDError {
         case .didDeactivatedError(let _desc):
             return _desc ?? "Operation failed"
         case .didExpiredError(let _desc):
+            return _desc ?? "Operation failed"
+        case .transactionError(let _desc):
             return _desc ?? "Operation failed"
         }
     }
