@@ -261,7 +261,7 @@ public class DIDStoreTest {
 	@Test
 	public void testUpdateNonExistedDid() throws DIDException {
 		expectedEx.expect(DIDStoreException.class);
-		expectedEx.expectMessage("Create ID transaction error.");
+		expectedEx.expectMessage("Update ID transaction error.");
 
 		TestData testData = new TestData();
     	DIDStore store = testData.setupStore(true);
@@ -868,7 +868,7 @@ public class DIDStoreTest {
 		URL url = this.getClass().getResource("/teststore");
 		File dir = new File(url.getPath());
 
-		DIDBackend.initialize(new DummyAdapter());
+		DIDBackend.initialize(new DummyAdapter(), TestData.getResolverCacheDir());
 		DIDStore store = DIDStore.open("filesystem", dir.getAbsolutePath());
 
        	List<DID> dids = store.listDids(DIDStore.DID_ALL);
@@ -904,7 +904,7 @@ public class DIDStoreTest {
 		URL url = this.getClass().getResource("/teststore");
 		File dir = new File(url.getPath());
 
-		DIDBackend.initialize(new DummyAdapter());
+		DIDBackend.initialize(new DummyAdapter(), TestData.getResolverCacheDir());
 		DIDStore store = DIDStore.open("filesystem", dir.getAbsolutePath());
 
        	DIDDocument doc = store.newDid("wrongpass");
@@ -917,7 +917,7 @@ public class DIDStoreTest {
 		URL url = this.getClass().getResource("/teststore");
 		File dir = new File(url.getPath());
 
-		DIDBackend.initialize(new DummyAdapter());
+		DIDBackend.initialize(new DummyAdapter(), TestData.getResolverCacheDir());
 		DIDStore store = DIDStore.open("filesystem", dir.getAbsolutePath());
 
        	DIDDocument doc = store.newDid(TestConfig.storePass);
@@ -952,7 +952,7 @@ public class DIDStoreTest {
 	}
 
 	private void testStorePerformance(boolean cached) throws DIDException {
-		DIDBackend.initialize(new DummyAdapter());
+		DIDBackend.initialize(new DummyAdapter(), TestData.getResolverCacheDir());
 
 		Utils.deleteFile(new File(TestConfig.storeRoot));
 		DIDStore store = null;
@@ -1029,7 +1029,7 @@ public class DIDStoreTest {
 		URL url = this.getClass().getResource("/teststore");
 		File storeDir = new File(url.getPath());
 
-		DIDBackend.initialize(new DummyAdapter());
+		DIDBackend.initialize(new DummyAdapter(), TestData.getResolverCacheDir());
 		DIDStore store = DIDStore.open("filesystem", storeDir.getAbsolutePath());
 
 		DID did = store.listDids(DIDStore.DID_ALL).get(0);
@@ -1058,7 +1058,7 @@ public class DIDStoreTest {
 		URL url = this.getClass().getResource("/teststore");
 		File storeDir = new File(url.getPath());
 
-		DIDBackend.initialize(new DummyAdapter());
+		DIDBackend.initialize(new DummyAdapter(), TestData.getResolverCacheDir());
 		DIDStore store = DIDStore.open("filesystem", storeDir.getAbsolutePath());
 
 		File tempDir = new File(TestConfig.tempDir);
@@ -1084,7 +1084,7 @@ public class DIDStoreTest {
 		URL url = this.getClass().getResource("/teststore");
 		File storeDir = new File(url.getPath());
 
-		DIDBackend.initialize(new DummyAdapter());
+		DIDBackend.initialize(new DummyAdapter(), TestData.getResolverCacheDir());
 		DIDStore store = DIDStore.open("filesystem", storeDir.getAbsolutePath());
 
 		File tempDir = new File(TestConfig.tempDir);

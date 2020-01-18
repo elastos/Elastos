@@ -309,7 +309,7 @@ class FileSystemStorage implements DIDStorage {
 		try {
 			File file = getFile(PRIVATE_DIR, INDEX_FILE);
 			return Integer.valueOf(readText(file));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new DIDStoreException("Load private identity error.", e);
 		}
 	}
@@ -418,8 +418,9 @@ class FileSystemStorage implements DIDStorage {
 					return false;
 
 				boolean hasPrivateKey = false;
+				DID did = new DID(DID.METHOD, file.getName());
 				try {
-					hasPrivateKey = containsPrivateKeys(file);
+					hasPrivateKey = containsPrivateKeys(did);
 				} catch (Exception ignore) {
 				}
 
@@ -538,6 +539,13 @@ class FileSystemStorage implements DIDStorage {
 				CREDENTIALS_DIR, id.getFragment());
 		if (dir.exists()) {
 			deleteFile(dir);
+
+			// Remove the credentials directory is no credential exists.
+			dir = getDir(DID_DIR, did.getMethodSpecificId(),
+					CREDENTIALS_DIR);
+			if (dir.list().length == 0)
+				dir.delete();
+
 			return true;
 		} else {
 			return false;
@@ -600,11 +608,6 @@ class FileSystemStorage implements DIDStorage {
 		}
 	}
 
-	private boolean containsPrivateKeys(File didDir) throws DIDStoreException {
-		DID did = new DID(DID.METHOD, didDir.getName());
-		return containsPrivateKeys(did);
-	}
-
 	@Override
 	public boolean containsPrivateKeys(DID did) throws DIDStoreException {
 		File dir = getDir(DID_DIR, did.getMethodSpecificId(), PRIVATEKEYS_DIR);
@@ -637,6 +640,13 @@ class FileSystemStorage implements DIDStorage {
 				PRIVATEKEYS_DIR, id.getFragment());
 		if (file.exists()) {
 			file.delete();
+
+			// Remove the privatekeys directory is no privatekey exists.
+			File dir = getDir(DID_DIR, did.getMethodSpecificId(),
+				PRIVATEKEYS_DIR);
+			if (dir.list().length == 0)
+				dir.delete();
+
 			return true;
 		} else {
 			return false;

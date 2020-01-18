@@ -76,10 +76,13 @@ public final class TestData {
 
 	private DIDStore store;
 
+	protected static File getResolverCacheDir() {
+		return new File(System.getProperty("user.home") +
+				File.separator + ".cache.did.elastos");
+	}
+
 	public DIDStore setupStore(boolean dummyBackend) throws DIDException {
 		DIDAdapter adapter;
-
-		ResolverCache.reset();
 
 		if (dummyBackend) {
 			if (TestData.dummyAdapter == null)
@@ -101,7 +104,8 @@ public final class TestData {
 			adapter = TestData.spvAdapter;
 		}
 
-		DIDBackend.initialize(adapter);
+		DIDBackend.initialize(adapter, getResolverCacheDir());
+		ResolverCache.reset();
     	Utils.deleteFile(new File(TestConfig.storeRoot));
     	store = DIDStore.open("filesystem", TestConfig.storeRoot);
     	return store;

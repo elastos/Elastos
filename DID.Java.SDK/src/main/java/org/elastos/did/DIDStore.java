@@ -199,7 +199,10 @@ public final class DIDStore {
 			return null;
 
 		byte[] seed = decryptFromBase64(storage.loadPrivateIdentity(), storepass);
-		return HDKey.fromSeed(seed);
+		HDKey privateIdentity = HDKey.fromSeed(seed);
+		Arrays.fill(seed, (byte)0);
+
+		return privateIdentity;
 	}
 
 	public void synchronize(String storepass)
@@ -207,43 +210,50 @@ public final class DIDStore {
 		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
 
+		int nextIndex = storage.loadPrivateIdentityIndex();
 		HDKey privateIdentity = loadPrivateIdentity(storepass);
 		if (privateIdentity == null)
 			throw new DIDStoreException("DID Store does not contains private identity.");
 
-		int nextIndex = storage.loadPrivateIdentityIndex();
-		int blanks = 0;
-		int i = 0;
+		try {
+			int blanks = 0;
+			int i = 0;
 
-		while (i < nextIndex || blanks < 20) {
-			HDKey.DerivedKey key = privateIdentity.derive(i++);
-			DID did = new DID(DID.METHOD, key.getAddress());
+			while (i < nextIndex || blanks < 20) {
+				HDKey.DerivedKey key = privateIdentity.derive(i++);
+				DID did = new DID(DID.METHOD, key.getAddress());
 
-			DIDDocument doc = null;
-			try {
-				doc = DIDBackend.getInstance().resolve(did, true);
-			} catch (DIDExpiredException e) {
-				continue;
-			} catch (DIDDeactivatedException e) {
-				continue;
+				try {
+					DIDDocument doc = null;
+					try {
+						doc = DIDBackend.getInstance().resolve(did, true);
+					} catch (DIDExpiredException e) {
+						continue;
+					} catch (DIDDeactivatedException e) {
+						continue;
+					}
+
+					if (doc != null) {
+						// Save private key
+						storePrivateKey(did, doc.getDefaultPublicKey(),
+								key.serialize(), storepass);
+
+						storeDid(doc);
+
+						if (i >= nextIndex)
+							storage.storePrivateIdentityIndex(i);
+
+						blanks = 0;
+					} else {
+						if (i >= nextIndex)
+							blanks++;
+					}
+				} finally {
+					key.wipe();
+				}
 			}
-
-			if (doc != null) {
-				// Save private key
-				storePrivateKey(did, doc.getDefaultPublicKey(),
-						key.serialize(), storepass);
-				key.wipe();
-
-				storeDid(doc);
-
-				if (i >= nextIndex)
-					storage.storePrivateIdentityIndex(i);
-
-				blanks = 0;
-			} else {
-				if (i >= nextIndex)
-					blanks++;
-			}
+		} finally {
+			privateIdentity.wipe();
 		}
 	}
 
@@ -252,29 +262,31 @@ public final class DIDStore {
 		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
 
+		int nextIndex = storage.loadPrivateIdentityIndex();
 		HDKey privateIdentity = loadPrivateIdentity(storepass);
 		if (privateIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
 
-		int nextIndex = storage.loadPrivateIdentityIndex();
-
 		HDKey.DerivedKey key = privateIdentity.derive(nextIndex++);
-		DID did = new DID(DID.METHOD, key.getAddress());
-		DIDURL id = new DIDURL(did, "primary");
+		try {
+			DID did = new DID(DID.METHOD, key.getAddress());
+			DIDURL id = new DIDURL(did, "primary");
 
-		storePrivateKey(did, id, key.serialize(), storepass);
+			storePrivateKey(did, id, key.serialize(), storepass);
 
-		DIDDocument.Builder db = new DIDDocument.Builder(did, this);
-		db.addAuthenticationKey(id, key.getPublicKeyBase58());
-		DIDDocument doc = db.seal(storepass);
-		doc.getMeta().setAlias(alias);
-		storeDid(doc);
+			DIDDocument.Builder db = new DIDDocument.Builder(did, this);
+			db.addAuthenticationKey(id, key.getPublicKeyBase58());
+			DIDDocument doc = db.seal(storepass);
+			doc.getMeta().setAlias(alias);
+			storeDid(doc);
 
-		storage.storePrivateIdentityIndex(nextIndex);
-		privateIdentity.wipe();
-		key.wipe();
+			storage.storePrivateIdentityIndex(nextIndex);
 
-		return doc;
+			return doc;
+		} finally {
+			privateIdentity.wipe();
+			key.wipe();
+		}
 	}
 
 	public DIDDocument newDid(String storepass) throws DIDStoreException {
@@ -895,6 +907,7 @@ public final class DIDStore {
 		byte[] sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), data);
 
 		key.wipe();
+		Arrays.fill(binKey, (byte)0);
 
 		return Base64.encodeToString(sig,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);

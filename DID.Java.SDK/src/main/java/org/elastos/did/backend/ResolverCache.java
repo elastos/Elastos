@@ -49,28 +49,29 @@ public class ResolverCache {
 	private static Map<DID, ResolveResult> cache = LRUCache.createInstance(
 			CACHE_INITIAL_CAPACITY, CACHE_MAX_CAPACITY);
 
-	private static File getRootDir() {
-		if (rootDir == null) {
-			String home = System.getProperty("user.home");
-
-			rootDir = new File(home + File.separator + ".cache.did.elastos");
-		}
+	public static void setCacheDir(File rootDir) {
+		ResolverCache.rootDir = rootDir;
 
 		if (!rootDir.exists())
 			rootDir.mkdirs();
+	}
+
+	private static File getCacheDir() {
+		if (rootDir == null)
+			throw new IllegalStateException("No cache dir specified for ResolverCache");
 
 		return rootDir;
 	}
 
 	private static File getFile(String id) {
-		String filename = getRootDir().getAbsolutePath() + File.separator + id;
+		String filename = getCacheDir().getAbsolutePath() + File.separator + id;
 		return new File(filename);
 	}
 
 	public static void reset() {
 		cache.clear();
 
-		File[] children = getRootDir().listFiles();
+		File[] children = getCacheDir().listFiles();
 		for (File child : children)
 			child.delete();
 	}

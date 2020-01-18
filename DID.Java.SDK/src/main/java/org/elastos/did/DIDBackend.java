@@ -22,6 +22,7 @@
 
 package org.elastos.did;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -57,15 +58,27 @@ public class DIDBackend {
 	private long ttl; // milliseconds
 	private DIDAdapter adapter;
 
-	private DIDBackend(DIDAdapter adapter) {
+	private DIDBackend(DIDAdapter adapter, File cacheDir) {
 		this.adapter = adapter;
 		this.random = new Random();
 		this.ttl = DEFAULT_TTL;
+		ResolverCache.setCacheDir(cacheDir);
 	}
 
-	public static void initialize(DIDAdapter adapter) {
+	/*
+	 * Recommendation for cache dir:
+	 * - Laptop/standard Java
+	 *   System.getProperty("user.home") + "/.cache.did.elastos"
+	 * - Android Java
+	 *   Context.getFilesDir() + "/.cache.did.elastos"
+	 */
+	public static void initialize(DIDAdapter adapter, File cacheDir) {
 		if (instance == null)
-			instance = new DIDBackend(adapter);
+			instance = new DIDBackend(adapter, cacheDir);
+	}
+
+	public static void initialize(DIDAdapter adapter, String cacheDir) {
+		initialize(adapter, new File(cacheDir));
 	}
 
 	public static DIDBackend getInstance() throws DIDException {

@@ -27,9 +27,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Utils {
+	private static String[] removeIgnoredFiles(String[] names) {
+		List<String> lst = new ArrayList<String>(Arrays.asList(names));
+		lst.remove(".DS_Store");
+		return lst.toArray(new String[0]);
+	}
+
 	public static boolean equals(File file1, File file2) throws IOException {
 		if (file1 == null && file2 == null)
 			return true;
@@ -50,26 +58,26 @@ public class Utils {
 			return false;
 
 		if (file1.isDirectory()) {
-			String[] names1 = file1.list();
-			String[] names2 = file2.list();
+			File dir1 = file1;
+			File dir2 = file2;
 
-			if (names1.length != names2.length)
+			String[] files1 = removeIgnoredFiles(dir1.list());
+			String[] files2 = removeIgnoredFiles(dir2.list());
+
+			if (files1.length != files2.length)
 				return false;
-
-			Arrays.sort(names1);
-			Arrays.sort(names2);
-			if (!Arrays.equals(names1, names2))
-				return false;
-
-
-			File[] files1 = file1.listFiles();
-			File[] files2 = file2.listFiles();
 
 			Arrays.sort(files1);
 			Arrays.sort(files2);
+			if (!Arrays.equals(files1, files2))
+				return false;
 
-			for (int i = 0; i < files1.length; i++) {
-				if (!equals(files1[i], files2[i]))
+			String[] files = files1;
+			for (int i = 0; i < files.length; i++) {
+				File f1 = new File(dir1, files[i]);
+				File f2 = new File(dir2, files[i]);
+
+				if (!equals(f1, f2))
 					return false;
 			}
 
