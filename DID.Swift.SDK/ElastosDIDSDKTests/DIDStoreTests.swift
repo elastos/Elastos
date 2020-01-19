@@ -776,7 +776,11 @@ class DIDStoreTests: XCTestCase {
                 let doc: DIDDocument = try store.newDid(storepass: storePass, alias: alias)
                 
                 let issuer: Issuer = try Issuer(doc)
-                let vc: VerifiableCredential = try issuer.seal(for: doc.subject!, "cred-1", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
+                let cb: CredentialBuilder = issuer.issueFor(did: doc.subject!)
+                let vc: VerifiableCredential = try cb.set(idString: "cred-1")
+                    .set(types: ["BasicProfileCredential", "InternetAccountCredential"])
+                    .set(properties: props)
+                    .seal(storepass: storePass)
                 try store.storeCredential(vc)
             }
         } catch {

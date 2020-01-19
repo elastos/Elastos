@@ -50,27 +50,98 @@ public class Issuer {
         return signKey
     }
     
-    public func seal(for did : DID, _ id: String, _ type: Array<String>, _ properties: OrderedDictionary<String, String>, _ storepass: String) throws -> VerifiableCredential {
-        let credential: VerifiableCredential = VerifiableCredential()
-        credential.issuer = didDocument?.subject
-        credential.subject = CredentialSubject(did)
-        credential.id = try DIDURL(did, id)
-        credential.types = type
-        let date = DateFormater.currentDate()
-        credential.issuanceDate = date
-        if credential.expirationDate == nil {
-            let edate = DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
-            credential.expirationDate = edate
+    public func issueFor(did: DID) -> CredentialBuilder{
+        return CredentialBuilder(did: did, doc: self.didDocument!, signKey: self.signKey);
+    }
+}
+
+
+public class CredentialBuilder {
+    
+    private var target: DID
+    private var credential: VerifiableCredential
+    private var signKey: DIDURL
+    private var document: DIDDocument
+
+    public init(did: DID, doc: DIDDocument, signKey:DIDURL) {
+        self.target = did
+        self.document = doc
+        self.signKey = signKey
+        self.credential = VerifiableCredential()
+        self.credential.issuer = doc.subject
+    }
+
+   public func set(id: DIDURL) throws -> CredentialBuilder {
+        self.credential.id = id
+        return self
+    }
+    
+    public func set(idString: String) throws -> CredentialBuilder {
+        return try self.set(id: DIDURL(target, idString))
+    }
+    
+   public func set(types: Array<String>) throws -> CredentialBuilder {
+        guard types.count != 0 else {
+            throw DIDError.illegalArgument("type is nil.")
         }
-        credential.subject.addProperties(properties)
-        let dic = credential.toJson(true, true)
+        
+        self.credential.types = types
+        return self
+    }
+    
+//    private func getMaxExpires() {
+//        var date: Date
+//        if credential?.issuanceDate != nil {
+//            date = self.credential!.issuanceDate!
+//        }
+//        return DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
+//
+//    }
+//
+    
+   public func set(expirationDate: Date) -> CredentialBuilder {
+        return self
+    }
+    
+   public func set(properties: OrderedDictionary<String, String>) throws -> CredentialBuilder {
+        guard properties.keys.count != 0 else {
+            throw DIDError.illegalArgument("properties count is 0.")
+        }
+        self.credential.subject = CredentialSubject(self.target)
+        self.credential.subject.addProperties(properties)
+        return self
+    }
+    
+    public func seal(storepass: String) throws -> VerifiableCredential {
+        guard !storepass.isEmpty else {
+            throw DIDError.illegalArgument("storepass is empty.")
+        }
+        
+        guard self.credential.id != nil else {
+            throw DIDError.illegalArgument("Missing id.")
+        }
+        
+        guard self.credential.subject != nil else {
+            throw DIDError.illegalArgument("Missing subject.")
+        }
+        
+        let date = DateFormater.currentDate()
+        self.credential.issuanceDate = date
+        
+        if credential.expirationDate == nil {
+            self.credential.expirationDate = DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
+            // TODO
+        }
+        
+        let dic = self.credential.toJson(true, true)
         let json = JsonHelper.creatJsonString(dic: dic)
         let inputs: [CVarArg] = [json, json.count]
         let count: Int = inputs.count / 2
-        let sig: String = try (didDocument?.sign(signKey, storepass, count, inputs))!
+        let sig: String = try (self.document.sign(signKey, storepass, count, inputs))
         
         let proof = CredentialProof(DEFAULT_PUBLICKEY_TYPE, signKey, sig)
-        credential.proof = proof
-        return credential
+        self.credential.proof = proof
+        
+        return self.credential
     }
 }

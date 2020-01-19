@@ -33,7 +33,7 @@ class DummyAdapter: DIDAdapter {
             let request: IDChainRequest = try IDChainRequest.fromJson(payload)
             
             if (verbose) {
-                print("ID Transaction: \(request.operation!)\(request.did!)")
+                print("ID Transaction: \(request.operation)\(request.did!)")
                 print("     \(request.toJson(false))\(request.did!)" )
             }
             

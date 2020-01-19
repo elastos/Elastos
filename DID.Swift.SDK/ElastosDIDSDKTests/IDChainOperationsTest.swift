@@ -242,22 +242,22 @@ class IDChainOperationsTest: XCTestCase {
             // Create new DID and publish to ID sidechain.
             var doc: DIDDocument = try store.newDid(storePass)
             let did: DID = doc.subject!
+            
+            var props: OrderedDictionary<String, String> = OrderedDictionary()
+            props["name"] = "John"
+            props["gender"] = "Male"
+            props["nation"] = "Singapore"
+            props["language"] = "English"
+            props["email"] = "john@example.com"
+            props["twitter"] = "@john"
 
-            var selfIssuer: Issuer = try Issuer(doc)
+            var selfIssuer = try Issuer(doc)
+            var cb: CredentialBuilder = selfIssuer.issueFor(did: did)
+            var vc: VerifiableCredential = try cb.set(idString: "profile")
+                .set(types: ["BasicProfileCredential", "InternetAccountCredential"])
+                .set(properties: props)
+                .seal(storepass: storePass)
 
-            var credential: VerifiableCredential = VerifiableCredential()
-            credential.id = try DIDURL(did, "profile")
-            credential.types = ["BasicProfileCredential", "SelfProclaimedCredential"]
-
-            var cs: CredentialSubject = CredentialSubject(did)
-            cs.addProperty("name", "John")
-            cs.addProperty("gender", "Male")
-            cs.addProperty("nation", "Singapore")
-            cs.addProperty("language", "English")
-            cs.addProperty("email", "john@example.com")
-            cs.addProperty("twitter", "@john")
-
-            var vc: VerifiableCredential = try selfIssuer.seal(for: did, "profile", credential.types, cs.properties, storePass)
             XCTAssertNotNil(vc)
             _ = doc.addCredential(vc)
             doc = try doc.seal(store, storePass)
@@ -307,14 +307,15 @@ class IDChainOperationsTest: XCTestCase {
             
             // Update
             selfIssuer = try Issuer(resolved)
-            credential = VerifiableCredential()
-            credential.id = try DIDURL(did, "passport")
-            credential.types = ["BasicProfileCredential", "SelfProclaimedCredential"]
-            
-            cs = CredentialSubject(resolved.subject!)
-            cs.addProperty("nation", "Singapore")
-            cs.addProperty("passport", "S653258Z07")
-            vc = try selfIssuer.seal(for: did, "passport", credential.types, cs.properties, storePass)
+            props.removeAll(keepCapacity: 0)
+            props["nation"] = "Singapore"
+            props["passport"] = "S653258Z07"
+
+            cb = selfIssuer.issueFor(did: did)
+            vc = try cb.set(idString: "passport")
+                .set(types: ["BasicProfileCredential", "SelfProclaimedCredential"])
+                .set(properties: props)
+                .seal(storepass: storePass)
             
             XCTAssertNotNil(vc)
             _ = resolved.addCredential(vc)
@@ -359,19 +360,19 @@ class IDChainOperationsTest: XCTestCase {
             print("Last transaction id: \(lastTxid)")
             
             // Update
-            selfIssuer = try Issuer(resolved);
-            credential = VerifiableCredential()
-            credential.id = try DIDURL(did, "test")
-            credential.types = ["TestCredential", "SelfProclaimedCredential"]
-            
-            cs = CredentialSubject(resolved.subject!)
-            cs.addProperty("Abc", "Abc")
-            cs.addProperty("abc", "abc")
-            cs.addProperty("Foobar", "Foobar")
-            cs.addProperty("foobar", "foobar")
-            cs.addProperty("zoo", "zoo")
-            cs.addProperty("Zoo", "Zoo")
-            vc = try selfIssuer.seal(for: did, "test", credential.types, cs.properties, storePass)
+            selfIssuer = try Issuer(resolved)
+            cb = selfIssuer.issueFor(did: did)
+            props.removeAll(keepCapacity: 0)
+            props["Abc"] = "Abc"
+            props["abc"] = "abc"
+            props["Foobar"] = "Foobar"
+            props["foobar"] = "foobar"
+            props["zoo"] = "zoo"
+            props["Zoo"] = "Zoo"
+            vc = try cb.set(idString: "test")
+                .set(types: ["TestCredential", "SelfProclaimedCredential"])
+                .set(properties: props)
+                .seal(storepass: storePass)
             
             XCTAssertNotNil(vc)
             _ = resolved.addCredential(vc)
@@ -424,7 +425,7 @@ class IDChainOperationsTest: XCTestCase {
         let store: DIDStore = try testData.setupStore(false)
         let mnemonic: String = try testData.loadRestoreMnemonic()
         try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
-        try store.synchronize(storePass)
+        try store.synchronize(storePass) //5 
         print("Synchronizing from IDChain...")
         print("OK")
         

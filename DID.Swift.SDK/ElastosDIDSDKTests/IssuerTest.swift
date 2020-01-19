@@ -101,10 +101,13 @@ class IssuerTest: XCTestCase {
             props["twitter"] = "@john"
             
             let issuer: Issuer =  try Issuer(issuerDoc)
-            let vc: VerifiableCredential = try issuer.seal(for: testDoc.subject!,"testCredential", ["BasicProfileCredential", "InternetAccountCredential"], props, storePass)
-            
+            let cb: CredentialBuilder = issuer.issueFor(did: testDoc.subject!)
+            let vc: VerifiableCredential = try cb.set(idString: "testCredential")
+                .set(types: ["BasicProfileCredential", "InternetAccountCredential"])
+                .set(properties: props)
+                .seal(storepass: storePass)
             let vcId: DIDURL = try DIDURL(testDoc.subject!, "testCredential")
-            
+
             XCTAssertEqual(vcId, vc.id)
             XCTAssertTrue(vc.types.contains("BasicProfileCredential"))
             XCTAssertTrue(vc.types.contains("InternetAccountCredential"))
@@ -142,7 +145,11 @@ class IssuerTest: XCTestCase {
             props["language"] = "English"
             props["email"] = "issuer@example.com"
             let issuer: Issuer =  try Issuer(issuerDoc)
-            let vc: VerifiableCredential = try issuer.seal(for: issuerDoc.subject!, "myCredential", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
+            let cb: CredentialBuilder = issuer.issueFor(did: issuerDoc.subject!)
+            let vc: VerifiableCredential = try cb.set(idString: "myCredential")
+                .set(types: ["BasicProfileCredential", "SelfProclaimedCredential"])
+                .set(properties: props)
+                .seal(storepass: storePass)
             
             let vcId: DIDURL = try DIDURL(issuerDoc.subject!, "myCredential")
             XCTAssertEqual(vcId, vc.id)
