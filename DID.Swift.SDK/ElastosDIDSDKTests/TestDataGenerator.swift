@@ -37,9 +37,10 @@ class TestDataGenerator: XCTestCase {
         props["email"] = "issuer@example.com"
         
         let cb: CredentialBuilder = selfIssuer.issueFor(did: doc.subject!)
-        let vc: VerifiableCredential = try cb.set(idString: "profile")
-            .set(types: ["BasicProfileCredential", "SelfProclaimedCredential"])
-            .set(properties: props).seal(storepass: storePass)
+        let vc: VerifiableCredential = try cb.idString("profile")
+            .types(["BasicProfileCredential", "SelfProclaimedCredential"])
+            .properties(props)
+            .seal(storepass: storePass)
         let db: DIDDocumentBuilder = doc.edit()
         _ = db.addCredential(vc)
         issuer = try db.seal(storepass: storePass)
@@ -94,17 +95,17 @@ class TestDataGenerator: XCTestCase {
         props["email"] = "john@example.com"
         props["twitter"] = "@john"
         let cb: CredentialBuilder = selfIssuer.issueFor(did: doc.subject!)
-        let vcProfile: VerifiableCredential = try cb.set(idString: "profile")
-            .set(types: ["BasicProfileCredential", "SelfProclaimedCredential"])
-            .set(properties: props)
+        let vcProfile: VerifiableCredential = try cb.idString("profile")
+            .types(["BasicProfileCredential", "SelfProclaimedCredential"])
+            .properties(props)
             .seal(storepass: storePass)
         _ = try Issuer(issuer)
         
         props = OrderedDictionary()
         props["email"] = "john@example.com"
-        let vcEmail: VerifiableCredential = try cb.set(idString: "email")
-            .set(types: ["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"])
-            .set(properties: props)
+        let vcEmail: VerifiableCredential = try cb.idString("email")
+            .types(["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"])
+            .properties(props)
             .seal(storepass: storePass)
         
         _ = db.addCredential(vcProfile)
@@ -159,9 +160,9 @@ class TestDataGenerator: XCTestCase {
         props["nation"] = "Singapore"
         props["passport"] = "S653258Z07"
         
-        let vcPassport = try cb.set(idString: "passport")
-            .set(types: ["BasicProfileCredential", "SelfProclaimedCredential"])
-            .set(properties: props)
+        let vcPassport = try cb.idString("passport")
+            .types(["BasicProfileCredential", "SelfProclaimedCredential"])
+            .properties(props)
             .seal(storepass: storePass)
         
         json = vcPassport.description(true)
@@ -180,9 +181,9 @@ class TestDataGenerator: XCTestCase {
         
         props = OrderedDictionary()
         props["twitter"] = "@john"
-        let vcTwitter = try cb.set(idString: "twitter")
-            .set(types: ["InternetAccountCredential", "TwitterCredential"])
-            .set(properties: props)
+        let vcTwitter = try cb.idString("twitter")
+            .types(["InternetAccountCredential", "TwitterCredential"])
+            .properties(props)
             .seal(storepass: storePass)
         
         json = vcTwitter.description(true)
@@ -270,34 +271,34 @@ class TestDataGenerator: XCTestCase {
                 cs.addProperty("email", "john@example.com")
                 
                 let cb: CredentialBuilder = selfIssuer.issueFor(did: did)
-                let vcProfile: VerifiableCredential = try cb.set(idString: "profile")
-                .set(types: ["BasicProfileCredential", "SelfProclaimedCredential"])
-                .set(properties: cs.properties)
+                let vcProfile: VerifiableCredential = try cb.idString("profile")
+                .types(["BasicProfileCredential", "SelfProclaimedCredential"])
+                .properties(cs.properties)
                 .seal(storepass: storePass)
                                     
                 cs.properties.removeAll(keepCapacity: 0)
                 cs.addProperty("email", "john@gmail.com")
                 
-                let vcEmail: VerifiableCredential = try cb.set(idString: "email")
-                .set(types: ["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"])
-                .set(properties: cs.properties)
+                let vcEmail: VerifiableCredential = try cb.idString("email")
+                .types(["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"])
+                .properties(cs.properties)
                 .seal(storepass: storePass)
                                     
                 cs.properties.removeAll(keepCapacity: 0)
                 cs.addProperty("nation", "Singapore")
                 cs.addProperty("passport", "S653258Z07")
 
-                let vcPassport: VerifiableCredential = try cb.set(idString: "passport")
-                .set(types: ["BasicProfileCredential", "SelfProclaimedCredential"])
-                .set(properties: cs.properties)
+                let vcPassport: VerifiableCredential = try cb.idString("passport")
+                .types(["BasicProfileCredential", "SelfProclaimedCredential"])
+                .properties(cs.properties)
                 .seal(storepass: storePass)
                     
                 cs.properties.removeAll(keepCapacity: 0)
                 cs.addProperty("twitter", "@john")
 
-                let vcTwitter: VerifiableCredential = try cb.set(idString: "twitter")
-                .set(types: ["InternetAccountCredential", "TwitterCredential"])
-                .set(properties: cs.properties)
+                let vcTwitter: VerifiableCredential = try cb.idString("twitter")
+                .types(["InternetAccountCredential", "TwitterCredential"])
+                .properties(cs.properties)
                 .seal(storepass: storePass)
                 
                 let db: DIDDocumentBuilder = doc.edit()

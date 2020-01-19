@@ -71,16 +71,16 @@ public class CredentialBuilder {
         self.credential.issuer = doc.subject
     }
     
-    public func set(id: DIDURL) throws -> CredentialBuilder {
+    public func id(_ id: DIDURL) throws -> CredentialBuilder {
         self.credential.id = id
         return self
     }
     
-    public func set(idString: String) throws -> CredentialBuilder {
-        return try self.set(id: DIDURL(target, idString))
+    public func idString(_ idString: String) throws -> CredentialBuilder {
+        return try self.id(DIDURL(target, idString))
     }
     
-    public func set(types: Array<String>) throws -> CredentialBuilder {
+    public func types(_ types: Array<String>) throws -> CredentialBuilder {
         guard types.count != 0 else {
             throw DIDError.illegalArgument("type is nil.")
         }
@@ -89,21 +89,30 @@ public class CredentialBuilder {
         return self
     }
     
-    //    private func getMaxExpires() {
-    //        var date: Date
-    //        if credential?.issuanceDate != nil {
-    //            date = self.credential!.issuanceDate!
-    //        }
-    //        return DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
-    //
-    //    }
-    //
+    private func getMaxExpires() -> Date {
+        var date: Date = Date()
+        if credential.issuanceDate != nil {
+            date = self.credential.issuanceDate!
+        }
+        return DateFormater.dateToWantDate(date, MAX_VALID_YEARS)
+    }
     
-    public func set(expirationDate: Date) -> CredentialBuilder {
+    public func defaultExpirationDate() {
+        credential.expirationDate = getMaxExpires()
+    }
+
+    public func expirationDate(_ expirationDate: Date) -> CredentialBuilder {
+        let maxExpires = getMaxExpires()
+        var date: Date = expirationDate
+        if DateFormater.comporsDate(expirationDate, maxExpires) {
+            date = maxExpires
+        }
+        credential.expirationDate = date
+        
         return self
     }
     
-    public func set(properties: OrderedDictionary<String, String>) throws -> CredentialBuilder {
+    public func properties(_ properties: OrderedDictionary<String, String>) throws -> CredentialBuilder {
         guard properties.keys.count != 0 else {
             throw DIDError.illegalArgument("properties count is 0.")
         }
@@ -129,8 +138,7 @@ public class CredentialBuilder {
         self.credential.issuanceDate = date
         
         if credential.expirationDate == nil {
-            self.credential.expirationDate = DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
-            // TODO
+            defaultExpirationDate()
         }
         
         let dic = self.credential.toJson(true, true)

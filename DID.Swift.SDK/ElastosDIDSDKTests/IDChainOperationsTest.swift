@@ -255,9 +255,9 @@ class IDChainOperationsTest: XCTestCase {
 
             var selfIssuer = try Issuer(doc)
             var cb: CredentialBuilder = selfIssuer.issueFor(did: did)
-            var vc: VerifiableCredential = try cb.set(idString: "profile")
-                .set(types: ["BasicProfileCredential", "InternetAccountCredential"])
-                .set(properties: props)
+            var vc: VerifiableCredential = try cb.idString("profile")
+                .types(["BasicProfileCredential", "InternetAccountCredential"])
+                .properties(props)
                 .seal(storepass: storePass)
 
             XCTAssertNotNil(vc)
@@ -315,9 +315,9 @@ class IDChainOperationsTest: XCTestCase {
             props["passport"] = "S653258Z07"
 
             cb = selfIssuer.issueFor(did: did)
-            vc = try cb.set(idString: "passport")
-                .set(types: ["BasicProfileCredential", "SelfProclaimedCredential"])
-                .set(properties: props)
+            vc = try cb.idString("passport")
+                .types(["BasicProfileCredential", "SelfProclaimedCredential"])
+                .properties(props)
                 .seal(storepass: storePass)
             
             XCTAssertNotNil(vc)
@@ -373,9 +373,9 @@ class IDChainOperationsTest: XCTestCase {
             props["foobar"] = "foobar"
             props["zoo"] = "zoo"
             props["Zoo"] = "Zoo"
-            vc = try cb.set(idString: "test")
-                .set(types: ["TestCredential", "SelfProclaimedCredential"])
-                .set(properties: props)
+            vc = try cb.idString("test")
+                .types(["TestCredential", "SelfProclaimedCredential"])
+                .properties(props)
                 .seal(storepass: storePass)
             
             XCTAssertNotNil(vc)

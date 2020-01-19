@@ -68,6 +68,27 @@ public class DateFormater {
         return useDate
     }
     
+    public class func dateToWantDate(_ date: Date, _ year: Int)-> Date {
+        
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone.current
+        var comps:DateComponents?
+        
+        comps = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
+        comps?.year = MAX_VALID_YEARS
+        comps?.month = 0
+        comps?.day = 0
+        comps?.hour = 0
+        comps?.minute = 0
+        comps?.second = 0
+        comps?.nanosecond = 0
+        let realDate = calendar.date(byAdding: comps!, to: date) ?? Date()
+        let hour = calendar.component(.hour, from: realDate)
+        let useDate = calendar.date(bySettingHour: hour, minute: 00, second: 00, of: realDate) ?? Date()
+        
+        return useDate
+    }
+    
    public class func currentDate()-> Date {
         let current = Date()
         var calendar = Calendar(identifier: .gregorian)

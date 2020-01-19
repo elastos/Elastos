@@ -103,9 +103,9 @@ class IssuerTest: XCTestCase {
             
             let issuer: Issuer =  try Issuer(issuerDoc)
             let cb: CredentialBuilder = issuer.issueFor(did: testDoc.subject!)
-            let vc: VerifiableCredential = try cb.set(idString: "testCredential")
-                .set(types: ["BasicProfileCredential", "InternetAccountCredential"])
-                .set(properties: props)
+            let vc: VerifiableCredential = try cb.idString("testCredential")
+                .types(["BasicProfileCredential", "InternetAccountCredential"])
+                .properties(props)
                 .seal(storepass: storePass)
             let vcId: DIDURL = try DIDURL(testDoc.subject!, "testCredential")
 
@@ -147,9 +147,9 @@ class IssuerTest: XCTestCase {
             props["email"] = "issuer@example.com"
             let issuer: Issuer =  try Issuer(issuerDoc)
             let cb: CredentialBuilder = issuer.issueFor(did: issuerDoc.subject!)
-            let vc: VerifiableCredential = try cb.set(idString: "myCredential")
-                .set(types: ["BasicProfileCredential", "SelfProclaimedCredential"])
-                .set(properties: props)
+            let vc: VerifiableCredential = try cb.idString("myCredential")
+                .types(["BasicProfileCredential", "SelfProclaimedCredential"])
+                .properties(props)
                 .seal(storepass: storePass)
             
             let vcId: DIDURL = try DIDURL(issuerDoc.subject!, "myCredential")
