@@ -41,7 +41,6 @@ class VerifiablePresentationTest: XCTestCase {
     
     func testBuild() {
         do {
-            // TODO
             let testData = TestData()
             let store = try testData.setupStore(true)
             // For integrity check
@@ -53,7 +52,12 @@ class VerifiablePresentationTest: XCTestCase {
                 try testData.loadEmailCredential(),
                 try testData.loadTwitterCredential(),
                 try testData.loadPassportCredential()!]
-            let vp = try VerifiablePresentation.seal(for: testDoc.subject!, store, arr, "https://example.com/", "873172f58701a9ee686f0630204fee59", storePass)
+            let pb = try VerifiablePresentation.createFor(testDoc.subject!, store)
+            let vp: VerifiablePresentation = try pb.credentials(arr)
+                .realm("https://example.com/")
+                .nonce("873172f58701a9ee686f0630204fee59")
+                .seal(storePass)
+
             XCTAssertNotNil(vp)
             XCTAssertEqual("VerifiablePresentation", vp.type)
             XCTAssertEqual(testDoc.subject!, vp.getSigner())

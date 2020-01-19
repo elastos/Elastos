@@ -250,46 +250,89 @@ public class VerifiablePresentation: NSObject{
         return toExternalForm()
     }
     
-    public class func seal(for did : DID, _ store: DIDStore, signKey: DIDURL? = nil, _ credentials: Array<VerifiableCredential>, _ realm: String, _ nonce: String, _ storepass: String) throws -> VerifiablePresentation {
-        var signK = signKey
-        let signer = try store.loadDid(did)
+    public class func createFor(_ did: DID, signKey: DIDURL? = nil, _ store: DIDStore) throws -> VerifiablePresentationBuilder {
+        var sigK: DIDURL? = signKey
+        let signer: DIDDocument? = try store.loadDid(did)
         guard signer != nil else {
-            throw DIDError.failue("Can not load DID.")
+            throw DIDError.illegalArgument("")
         }
-        if signK == nil {
-            signK = signer!.getDefaultPublicKey()
+        if sigK == nil {
+            sigK = signer!.getDefaultPublicKey()
         }
-        else {// isAuthenticationKey
-            guard try signer!.isAuthenticationKey(signK!) else {
-                throw DIDError.failue("Invalid sign key id.")
+        else {
+            guard try signer!.isAuthenticationKey(sigK!) else {
+                throw DIDError.didExpiredError(_desc: "Invalid sign key id.")
             }
         }
-        guard try signer!.hasPrivateKey(signK!) else {
-            throw DIDError.failue("No private key.")
+        guard try signer!.hasPrivateKey(sigK!) else {
+            throw DIDError.didExpiredError(_desc: "No private key.")
         }
+        return VerifiablePresentationBuilder(signer!, sigK!, store)
+    }
+}
+
+public class VerifiablePresentationBuilder {
+    var signer: DIDDocument
+    var signKey: DIDURL
+    var realm: String?
+    var nonce: String?
+    var presentation: VerifiablePresentation?
+    
+    init(_ signer: DIDDocument, _ signKey: DIDURL, _ store: DIDStore) {
+        self.signer = signer
+        self.signKey = signKey
+        self.presentation = VerifiablePresentation()
+    }
+    
+    
+    public func credentials(_ credentials: Array<VerifiableCredential>) throws -> VerifiablePresentationBuilder {
         
-        let presentation: VerifiablePresentation = VerifiablePresentation()
         for vc in credentials {
-            presentation.addCredential(vc)
+            guard vc.subject.id == signer.subject else {
+                throw DIDError.illegalArgument("Credential '\(vc.id!)' not match with requested did")
+            }
+            // TODO: integrity check?
+            presentation!.addCredential(vc)
         }
-        
-        let dic = presentation.toJson(true)
+        return self
+    }
+    
+    public func realm(_ realm: String) -> VerifiablePresentationBuilder {
+        self.realm = realm
+        return self
+    }
+    
+    public func nonce(_ nonce: String) -> VerifiablePresentationBuilder {
+        self.nonce = nonce
+        return self
+    }
+    
+    public func seal(_ storepass: String) throws -> VerifiablePresentation {
+
+        let dic = presentation!.toJson(true)
         let json = JsonHelper.creatJsonString(dic: dic)
         var inputs: [CVarArg] = []
         if json.count > 0 {
             inputs.append(json)
             inputs.append(json.count)
         }
-        inputs.append(realm)
-        inputs.append(realm.count)
-        inputs.append(nonce)
-        inputs.append(nonce.count)
+        if realm != nil && !realm!.isEmpty {
+            inputs.append(realm!)
+            inputs.append(realm!.count)
+        }
+        if nonce != nil && !nonce!.isEmpty {
+            inputs.append(nonce!)
+            inputs.append(nonce!.count)
+        }
         
         let count = inputs.count / 2
-        let sig = try signer?.sign(signK!, storepass, count, inputs)
-        let proof = PresentationProof(signK!, realm, nonce, sig!)
-        presentation.proof = proof
+        let sig = try signer.sign(signKey, storepass, count, inputs)
+        let proof = PresentationProof(signKey, realm!, nonce!, sig)
+        presentation!.proof = proof
+        let vp: VerifiablePresentation = presentation!
+        presentation = nil
         
-        return presentation
+        return vp
     }
 }
+
