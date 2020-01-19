@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Function;
 
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
@@ -77,8 +78,6 @@ public class DIDDocument {
 
 	private DID subject;
 	private Map<DIDURL, PublicKey> publicKeys;
-	private Map<DIDURL, PublicKey> authentications;
-	private Map<DIDURL, PublicKey> authorizations;
 	private Map<DIDURL, VerifiableCredential> credentials;
 	private Map<DIDURL, Service> services;
 	private Date expires;
@@ -89,6 +88,8 @@ public class DIDDocument {
 	public static class PublicKey extends DIDObject {
 		private DID controller;
 		private String keyBase58;
+		private boolean authenticationKey;
+		private boolean authorizationKey;
 
 		protected PublicKey(DIDURL id, String type, DID controller, String keyBase58) {
 			super(id, type);
@@ -110,6 +111,22 @@ public class DIDDocument {
 
 		public byte[] getPublicKeyBytes() {
 			return Base58.decode(keyBase58);
+		}
+
+		public boolean isAuthenticationKey() {
+			return authenticationKey;
+		}
+
+		private void setAuthenticationKey(boolean authenticationKey) {
+			this.authenticationKey = authenticationKey;
+		}
+
+		public boolean isAuthorizationKey() {
+			return authorizationKey;
+		}
+
+		private void setAuthorizationKey(boolean authorizationKey) {
+			this.authorizationKey = authorizationKey;
 		}
 
 		@Override
@@ -340,12 +357,6 @@ public class DIDDocument {
 		if (doc.publicKeys != null)
 			this.publicKeys = new TreeMap<DIDURL, PublicKey>(doc.publicKeys);
 
-		if (doc.authentications != null)
-			this.authentications = new TreeMap<DIDURL, PublicKey>(doc.authentications);
-
-		if (doc.authorizations != null)
-			this.authorizations = new TreeMap<DIDURL, PublicKey>(doc.authorizations);
-
 		if (doc.credentials != null)
 			this.credentials = new TreeMap<DIDURL, VerifiableCredential>(doc.credentials);
 
@@ -357,52 +368,48 @@ public class DIDDocument {
 		this.meta = doc.meta;
 	}
 
-	private <K, V extends DIDObject> int getEntryCount(Map<K, V> entries) {
+	private <K, V extends DIDObject> int getEntryCount(Map<K, V> entries,
+			Function<DIDObject, Boolean> filter) {
 		if (entries == null || entries.isEmpty())
 			return 0;
 
-		return entries.size();
+		if (filter == null) {
+			return entries.size();
+		} else {
+			int count = 0;
+			for (V entry : entries.values()) {
+				if (filter.apply(entry))
+					count++;
+			}
+
+			return count;
+		}
 	}
 
-	private <K, V extends DIDObject> List<V> getEntries(Map<K, V> entries) {
+	private <K, V extends DIDObject> int getEntryCount(Map<K, V> entries) {
+		return getEntryCount(entries, null);
+	}
+
+	private <K, V extends DIDObject> List<V> getEntries(Map<K, V> entries,
+			Function<DIDObject, Boolean> filter) {
 		List<V> lst = new ArrayList<V>(entries == null ? 0 : entries.size());
 
-		if (entries != null && !entries.isEmpty())
-			lst.addAll(entries.values());
-
-		return lst;
-	}
-
-	private <K, V extends DIDObject> List<V> selectEntry(
-			Map<K, V> entries, K id, String type) {
-		List<V> lst = new ArrayList<V>(entries.size());
-
-		if (entries == null || entries.isEmpty())
-			return lst;
-
-		for (V entry : entries.values()) {
-			if (id != null) {
-				if (!entry.getId().equals(id))
-					continue;
-			}
-
-			if (type != null) {
-				// Credential's type is a list.
-				if (entry instanceof VerifiableCredential) {
-					VerifiableCredential vc = (VerifiableCredential)entry;
-
-					if (!Arrays.asList(vc.getTypes()).contains(type))
-						continue;
-				} else {
-					if (!entry.getType().equals(type))
-						continue;
+		if (entries != null && !entries.isEmpty()) {
+			if (filter == null) {
+				lst.addAll(entries.values());
+			} else {
+				for (V entry : entries.values()) {
+					if (filter.apply(entry))
+						lst.add(entry);
 				}
 			}
-
-			lst.add(entry);
 		}
 
 		return lst;
+	}
+
+	private <K, V extends DIDObject> List<V> getEntries(Map<K, V> entries) {
+		return getEntries(entries, null);
 	}
 
 	private <K, V extends DIDObject> V getEntry(Map<K, V> entries, K id) {
@@ -435,20 +442,30 @@ public class DIDDocument {
 		return getEntries(publicKeys);
 	}
 
-	public List<PublicKey> selectPublicKeys(String id, String type)
-			throws MalformedDIDURLException {
-		return selectEntry(publicKeys, new DIDURL(getSubject(), id), type);
-	}
-
 	public List<PublicKey> selectPublicKeys(DIDURL id, String type) {
 		if (id == null && type == null)
 			throw new IllegalArgumentException();
 
-		return selectEntry(publicKeys, id, type);
+		return getEntries(publicKeys, (v) -> {
+			if (id != null && !v.getId().equals(id))
+				return false;
+
+			if (type != null && !v.getType().equals(type))
+				return false;
+
+			return true;
+		});
+	}
+
+	public List<PublicKey> selectPublicKeys(String id, String type)
+			throws MalformedDIDURLException {
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return selectPublicKeys(_id, type);
 	}
 
 	public PublicKey getPublicKey(String id) throws MalformedDIDURLException {
-		return getEntry(publicKeys, new DIDURL(getSubject(), id));
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return getPublicKey(_id);
 	}
 
 	public PublicKey getPublicKey(DIDURL id) {
@@ -466,7 +483,8 @@ public class DIDDocument {
 	}
 
 	public boolean hasPublicKey(String id) throws MalformedDIDURLException {
-		return hasPublicKey(new DIDURL(getSubject(), id));
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return hasPublicKey(_id);
 	}
 
 	public boolean hasPrivateKey(DIDURL id) throws DIDStoreException {
@@ -484,7 +502,8 @@ public class DIDDocument {
 
 	public boolean hasPrivateKey(String id)
 			throws MalformedDIDURLException, DIDStoreException {
-		return hasPrivateKey(new DIDURL(getSubject(), id));
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return hasPrivateKey(_id);
 	}
 
 	public DIDURL getDefaultPublicKey() {
@@ -522,15 +541,16 @@ public class DIDDocument {
 	}
 
 	protected boolean removePublicKey(DIDURL id, boolean force) {
+		PublicKey pk = getEntry(publicKeys, id);
+		if (pk == null)
+			return false;
+
 		// Can not remove default public key
 		if (getDefaultPublicKey().equals(id))
 			return false;
 
-		if (force) {
-			removeAuthenticationKey(id);
-			removeAuthorizationKey(id);
-		} else {
-			if (isAuthenticationKey(id) || isAuthorizationKey(id))
+		if (!force) {
+			if (pk.isAuthenticationKey() || pk.isAuthorizationKey())
 				return false;
 		}
 
@@ -548,41 +568,57 @@ public class DIDDocument {
 	}
 
 	public int getAuthenticationKeyCount() {
-		return getEntryCount(authentications);
+		return getEntryCount(publicKeys,
+				(v) -> ((PublicKey)v).isAuthenticationKey());
 	}
 
 	public List<PublicKey> getAuthenticationKeys() {
-		return getEntries(authentications);
+		return getEntries(publicKeys,
+				(v) -> ((PublicKey)v).isAuthenticationKey());
 	}
 
 	public List<PublicKey> selectAuthenticationKeys(DIDURL id, String type) {
 		if (id == null && type == null)
 			throw new IllegalArgumentException();
 
-		return selectEntry(authentications, id, type);
+		return getEntries(publicKeys, (v) -> {
+			if (!((PublicKey)v).isAuthenticationKey())
+				return false;
+
+			if (id != null && !v.getId().equals(id))
+				return false;
+
+			if (type != null && !v.getType().equals(type))
+				return false;
+
+			return true;
+		});
 	}
 
 	public List<PublicKey> selectAuthenticationKeys(String id, String type)
 			throws MalformedDIDURLException {
-		return selectEntry(authentications, new DIDURL(getSubject(), id), type);
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return selectAuthenticationKeys(_id, type);
 	}
 
 	public PublicKey getAuthenticationKey(DIDURL id) {
 		if (id == null)
 			throw new IllegalArgumentException();
 
-		return getEntry(authentications, id);
+		PublicKey pk = getEntry(publicKeys, id);
+		if (pk != null && pk.isAuthenticationKey())
+			return pk;
+		else
+			return null;
 	}
 
 	public PublicKey getAuthenticationKey(String id)
 			throws MalformedDIDURLException {
-		return getEntry(authentications, new DIDURL(getSubject(), id));
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return getAuthenticationKey(_id);
 	}
 
 	public boolean isAuthenticationKey(DIDURL id) {
-		if (id == null)
-			throw new IllegalArgumentException();
-
 		return getAuthenticationKey(id) != null;
 	}
 
@@ -607,67 +643,81 @@ public class DIDDocument {
 				pk = key;
 		}
 
-		if (authentications == null) {
-			authentications = new TreeMap<DIDURL, PublicKey>();
-		} else {
-			if (authentications.containsKey(pk.getId()))
-				return false;
-		}
-
-		authentications.put(pk.getId(), pk);
+		pk.setAuthenticationKey(true);
 		return true;
 	}
 
 	protected boolean removeAuthenticationKey(DIDURL id) {
+		PublicKey pk = getEntry(publicKeys, id);
+		if (pk == null)
+			return false;
+
 		// Can not remove default public key
 		if (getDefaultPublicKey().equals(id))
 			return false;
 
-		return removeEntry(authentications, id);
+		pk.setAuthenticationKey(false);
+		return true;
 	}
 
 	public int getAuthorizationKeyCount() {
-		return getEntryCount(authorizations);
+		return getEntryCount(publicKeys,
+				(v) -> ((PublicKey)v).isAuthorizationKey());
 	}
 
 	public List<PublicKey> getAuthorizationKeys() {
-		return getEntries(authorizations);
+		return getEntries(publicKeys,
+				(v) -> ((PublicKey)v).isAuthorizationKey());
 	}
 
 	public List<PublicKey> selectAuthorizationKeys(DIDURL id, String type) {
 		if (id == null && type == null)
 			throw new IllegalArgumentException();
 
-		return selectEntry(authorizations, id, type);
+		return getEntries(publicKeys, (v) -> {
+			if (!((PublicKey)v).isAuthorizationKey())
+				return false;
+
+			if (id != null && !v.getId().equals(id))
+				return false;
+
+			if (type != null && !v.getType().equals(type))
+				return false;
+
+			return true;
+		});
 	}
 
 	public List<PublicKey> selectAuthorizationKeys(String id, String type)
 			throws MalformedDIDURLException {
-		return selectEntry(authorizations, new DIDURL(getSubject(), id), type);
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return selectAuthorizationKeys(_id, type);
 	}
 
 	public PublicKey getAuthorizationKey(DIDURL id) {
 		if (id == null)
 			throw new IllegalArgumentException();
 
-		return getEntry(authorizations, id);
+		PublicKey pk = getEntry(publicKeys, id);
+		if (pk != null && pk.isAuthorizationKey())
+			return pk;
+		else
+			return null;
 	}
 
 	public PublicKey getAuthorizationKey(String id)
 			throws MalformedDIDURLException {
-		return getEntry(authorizations, new DIDURL(getSubject(), id));
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return getAuthorizationKey(_id);
 	}
 
 	public boolean isAuthorizationKey(DIDURL id) {
-		if (id == null)
-			throw new IllegalArgumentException();
-
 		return getAuthorizationKey(id) != null;
 	}
 
 	public boolean isAuthorizationKey(String id)
 			throws MalformedDIDURLException {
-		return isAuthorizationKey(new DIDURL(getSubject(), id));
+		return getAuthorizationKey(id) != null;
 	}
 
 	protected boolean addAuthorizationKey(PublicKey pk) {
@@ -686,19 +736,17 @@ public class DIDDocument {
 				pk = key;
 		}
 
-		if (authorizations == null) {
-			authorizations = new TreeMap<DIDURL, PublicKey>();
-		} else {
-			if (authorizations.containsKey(pk.getId()))
-				return false;
-		}
-
-		authorizations.put(pk.getId(), pk);
+		pk.setAuthorizationKey(true);
 		return true;
 	}
 
 	protected boolean removeAuthorizationKey(DIDURL id) {
-		return removeEntry(authorizations, id);
+		PublicKey pk = getEntry(publicKeys, id);
+		if (pk == null)
+			return false;
+
+		pk.setAuthorizationKey(false);
+		return true;
 	}
 
 	public int getCredentialCount() {
@@ -713,12 +761,25 @@ public class DIDDocument {
 		if (id == null && type == null)
 			throw new IllegalArgumentException();
 
-		return selectEntry(credentials, id, type);
+		return getEntries(credentials, (v) -> {
+			if (id != null && !v.getId().equals(id))
+				return false;
+
+			if (type != null) {
+				// Credential's type is a list.
+				VerifiableCredential vc = (VerifiableCredential)v;
+				if (!Arrays.asList(vc.getTypes()).contains(type))
+					return false;
+			}
+
+			return true;
+		});
 	}
 
 	public List<VerifiableCredential> selectCredentials(String id, String type)
 			throws MalformedDIDURLException {
-		return selectEntry(credentials, new DIDURL(getSubject(), id), type);
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return selectCredentials(_id, type);
 	}
 
 	public VerifiableCredential getCredential(DIDURL id) {
@@ -730,7 +791,8 @@ public class DIDDocument {
 
 	public VerifiableCredential getCredential(String id)
 			throws MalformedDIDURLException {
-		return getEntry(credentials, new DIDURL(getSubject(), id));
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return getCredential(_id);
 	}
 
 	protected boolean addCredential(VerifiableCredential vc) {
@@ -765,12 +827,21 @@ public class DIDDocument {
 		if (id == null && type == null)
 			throw new IllegalArgumentException();
 
-		return selectEntry(services, id, type);
+		return getEntries(services, (v) -> {
+			if (id != null && !v.getId().equals(id))
+				return false;
+
+			if (type != null && !v.getType().equals(type))
+				return false;
+
+			return true;
+		});
 	}
 
 	public List<Service> selectServices(String id, String type)
 			throws MalformedDIDURLException {
-		return selectEntry(services, new DIDURL(getSubject(), id), type);
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return selectServices(_id, type);
 	}
 
 	public Service getService(DIDURL id) {
@@ -781,7 +852,8 @@ public class DIDDocument {
 	}
 
 	public Service getService(String id) throws MalformedDIDURLException {
-		return getEntry(services, new DIDURL(getSubject(), id));
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return getService(_id);
 	}
 
 	protected boolean addService(Service svc) {
@@ -1205,8 +1277,11 @@ public class DIDDocument {
 		// authentication
 		generator.writeFieldName(AUTHENTICATION);
 		generator.writeStartArray();
-		for (PublicKey pk : authentications.values()) {
+		for (PublicKey pk : publicKeys.values()) {
 			String value;
+
+			if (!pk.isAuthenticationKey())
+				continue;
 
 			if (normalized || !pk.getId().getDid().equals(getSubject()))
 				value = pk.getId().toString();
@@ -1218,11 +1293,14 @@ public class DIDDocument {
 		generator.writeEndArray();
 
 		// authorization
-		if (authorizations != null && authorizations.size() != 0) {
+		if (getAuthorizationKeyCount() != 0) {
 			generator.writeFieldName(AUTHORIZATION);
 			generator.writeStartArray();
-			for (PublicKey pk : authorizations.values()) {
+			for (PublicKey pk : publicKeys.values()) {
 				String value;
+
+				if (!pk.isAuthorizationKey())
+					continue;
 
 				if (normalized || !pk.getId().getDid().equals(getSubject()))
 					value = pk.getId().toString();
