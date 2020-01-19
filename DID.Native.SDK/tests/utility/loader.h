@@ -31,6 +31,8 @@ extern "C" {
 
 const char *get_store_path(char* path, const char *dir);
 
+char *get_path(char *path, const char *file);
+
 char *get_file_path(char *path, size_t size, int count, ...);
 
 char *get_wallet_path(char* path, const char* dir);

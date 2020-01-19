@@ -694,20 +694,20 @@ static ssize_t load_seed(DIDStore *store, uint8_t *seed, size_t size, const char
 
 static int store_mnemonic(DIDStore *store, const char *storepass, const char *mnemonic)
 {
-    unsigned char base64[512];
+    char base64[512];
     char path[PATH_MAX];
 
     assert(store);
     assert(mnemonic);
     assert(*mnemonic);
 
-    if (encrypt_to_base64((char *)base64, storepass, mnemonic, strlen(mnemonic)) == -1)
+    if (encrypt_to_base64(base64, storepass, (const uint8_t*)mnemonic, strlen(mnemonic)) == -1)
         return -1;
 
     if (get_file(path, 1, 3, store->root, PRIVATE_DIR, MNEMONIC_FILE) == -1)
         return -1;
 
-    if (store_file(path, (const char *)base64) == -1)
+    if (store_file(path, base64) == -1)
         return -1;
 
     return 0;
@@ -731,7 +731,7 @@ static ssize_t load_mnemonic(DIDStore *store, const char *storepass,
     if (!encrpted_mnemonic)
         return -1;
 
-    len = decrypt_from_base64(mnemonic, storepass, encrpted_mnemonic);
+    len = decrypt_from_base64((uint8_t*)mnemonic, storepass, encrpted_mnemonic);
     free((char*)encrpted_mnemonic);
 
     return len;
@@ -1459,10 +1459,10 @@ bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *id)
 }
 
 int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *id, unsigned char *privatekey)
+        DIDURL *id, const uint8_t *privatekey)
 {
     char path[PATH_MAX];
-    unsigned char base64[MAX_PRIVATEKEY_BASE64];
+    char base64[MAX_PRIVATEKEY_BASE64];
 
     if (!store || !storepass || !*storepass || !did || !id || !privatekey)
         return -1;
@@ -1470,7 +1470,7 @@ int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass, DID *did,
     if (!DID_Equals(DIDURL_GetDid(id), did))
         return -1;
 
-    if (encrypt_to_base64((char *)base64, storepass, privatekey, PRIVATEKEY_BYTES) == -1)
+    if (encrypt_to_base64(base64, storepass, privatekey, PRIVATEKEY_BYTES) == -1)
         return -1;
 
     if (get_file(path, 1, 5, store->root, DID_DIR, did->idstring,
@@ -1543,7 +1543,7 @@ static int store_default_privatekey(DIDStore *store, const char *storepass,
     return 0;
 }
 
-void DIDStore_Synchronize(DIDStore *store, const char *storepass)
+int DIDStore_Synchronize(DIDStore *store, const char *storepass)
 {
     int rc, nextindex, i = 0, blanks = 0;
     DIDDocument *document;
@@ -1552,16 +1552,16 @@ void DIDStore_Synchronize(DIDStore *store, const char *storepass)
     DID did;
 
     if (!store || !storepass || !*storepass)
-        return;
+        return -1;
 
     privateIdentity = load_privateIdentity(store, storepass, &_identity);
     if (!privateIdentity)
-        return;
+        return -1;
 
     nextindex = load_index(store);
     if (nextindex < 0) {
         HDKey_Wipe(privateIdentity);
-        return;
+        return -1;
     }
 
     while (i < nextindex || blanks < 20) {
@@ -1596,6 +1596,7 @@ void DIDStore_Synchronize(DIDStore *store, const char *storepass)
     }
 
     HDKey_Wipe(privateIdentity);
+    return 0;
 }
 
 bool DIDStore_ContainsPrivateIdentity(DIDStore *store)

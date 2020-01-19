@@ -111,7 +111,7 @@ int init_didurl(DIDURL *id, DID *did, const char *fragment)
 
 int init_did(DID *did, const char *idstring)
 {
-    if (!did || !did->idstring || !idstring || !*idstring
+    if (!did || !idstring || !*idstring
             || strlen(idstring) >= sizeof(did->idstring))
         return -1;
 

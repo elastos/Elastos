@@ -186,6 +186,7 @@ static int didstore_openstore_test_suite_cleanup(void)
 {
     TestDIDAdapter_Destroy(adapter);
     DIDStore_Deinitialize();
+    return 0;
 }
 
 static CU_TestInfo cases[] = {

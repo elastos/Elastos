@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include <stdint.h>
 
 #if defined(__APPLE__)
 #pragma GCC diagnostic push
@@ -1977,8 +1978,10 @@ DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
  *      store                  [in] THe handle to DIDStore.
  * @param
  *      storepass              [in] The pass word of DID holder.
+ * @return
+ *      0 on success, -1 if an error occurred.
  */
-DID_API void DIDStore_Synchronize(DIDStore *store, const char *storepass);
+DID_API int DIDStore_Synchronize(DIDStore *store, const char *storepass);
 
 /**
  * \~English
@@ -2238,7 +2241,7 @@ DID_API bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *keyi
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass,
-        DID *did, DIDURL *id, unsigned char *privatekey);
+        DID *did, DIDURL *id, const uint8_t *privatekey);
 
 /**
  * \~English

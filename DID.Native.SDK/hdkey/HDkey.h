@@ -70,7 +70,7 @@ uint8_t *HDkey_GetSubPrivateKey(HDKey* privateIdentity, int coinType, int chain,
 uint8_t *HDKey_GetSubPublicKey(HDKey *privateIdentity, int chain, int index,
         uint8_t *publickey);
 
-char *HDKey_GetAddress(unsigned char *publickey, char *address, size_t len);
+char *HDKey_GetAddress(uint8_t *publickey, char *address, size_t len);
 
 DerivedKey *HDKey_GetDerivedKey(HDKey* privateIdentity, DerivedKey *derivedkey,
         int coinType, int chain, int index);

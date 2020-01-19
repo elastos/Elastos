@@ -89,10 +89,24 @@ const char *get_store_path(char* path, const char *dir)
     return path;
 }
 
+char *get_path(char *path, const char *file)
+{
+    size_t len;
+
+    assert(file);
+    assert(*file);
+
+    len = snprintf(path, PATH_MAX, "../etc/did/resources/testdata/%s", file);
+        if (len < 0 || len > PATH_MAX)
+            return NULL;
+
+    return path;
+}
+
 static char *load_file(const char *file)
 {
-    char path[PATH_MAX];
-    char *readstring = NULL;
+    char _path[PATH_MAX];
+    char *readstring = NULL, *path;
     size_t reclen, bufferlen;
     struct stat st;
     int fd;
@@ -100,9 +114,12 @@ static char *load_file(const char *file)
     assert(file);
     assert(*file);
 
-    reclen = snprintf(path, PATH_MAX, "../etc/did/resources/testdata/%s", file);
+    /*reclen = snprintf(path, PATH_MAX, "../etc/did/resources/testdata/%s", file);
         if (reclen < 0 || reclen > PATH_MAX)
-            return NULL;
+            return NULL;*/
+    path = get_path(_path, file);
+    if (!path)
+        return NULL;
 
     fd = open(path, O_RDONLY);
     if (fd == -1)

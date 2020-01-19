@@ -189,7 +189,7 @@ uint8_t *HDKey_GetSubPublicKey(HDKey* privateIdentity, int chain, int index,
     return publickey;
 }
 
-char *HDKey_GetAddress(unsigned char *publickey, char *address, size_t len)
+char *HDKey_GetAddress(uint8_t *publickey, char *address, size_t len)
 {
     unsigned char redeem_script[35];
     unsigned int md32[32];
@@ -225,7 +225,8 @@ char *HDKey_GetAddress(unsigned char *publickey, char *address, size_t len)
 DerivedKey *HDKey_GetDerivedKey(HDKey* privateIdentity, DerivedKey *derivedkey,
         int coinType, int chain, int index)
 {
-    uint8_t *pk, *sk, *idstring;
+    uint8_t *pk, *sk;
+    char *idstring;
     uint8_t publickey[PUBLICKEY_BYTES];
     uint8_t privatekey[PRIVATEKEY_BYTES];
     char address[ADDRESS_LEN];
