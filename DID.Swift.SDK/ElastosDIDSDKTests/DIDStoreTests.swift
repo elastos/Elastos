@@ -136,32 +136,32 @@ class DIDStoreTests: XCTestCase {
             XCTAssertTrue(try doc.isValid())
             _ = try store.publishDid(doc.subject!, storePass)
             
-            var resolved = try! store.resolveDid(doc.subject!, true)
-            try store.storeDid(resolved!)
+            var resolved = try doc.subject?.resolve(true)
             XCTAssertNotNil(resolved)
+            try store.storeDid(resolved!)
             
             // Update
+            var db: DIDDocumentBuilder = resolved!.edit()
             var key = try TestData.generateKeypair()
-            _ = try resolved?.addAuthenticationKey("key1", try key.getPublicKeyBase58())
-            var newDoc = try resolved!.seal(store, storePass)
+            _ = try db.addAuthenticationKey("key1", try key.getPublicKeyBase58())
+            var newDoc = try db.seal(storepass: storePass)
             XCTAssertEqual(2, newDoc.getPublicKeyCount())
             XCTAssertEqual(2, newDoc.getAuthenticationKeyCount())
-            
-            print(newDoc.getTransactionId() as Any)
-            _ = try store.publishDid(newDoc.subject!, storePass)
             try store.storeDid(newDoc)
             
-            resolved = try newDoc.subject!.resolve()!
+            _ = try store.publishDid(newDoc.subject!, storePass)
+            
+            resolved = try doc.subject!.resolve(true)!
 
-            resolved = try doc.subject!.resolve()!
-            try store.storeDid(resolved!)
             XCTAssertNotNil(resolved)
             XCTAssertEqual(newDoc.description, resolved?.description)
-            
+            try store.storeDid(resolved!)
+
             // Update again
+            db = resolved!.edit()
             key = try TestData.generateKeypair()
-            _ = try resolved?.addAuthenticationKey("key2", key.getPublicKeyBase58())
-            newDoc = try! resolved!.seal(store, storePass)
+            _ = try db.addAuthenticationKey("key2", key.getPublicKeyBase58())
+            newDoc = try! db.seal(storepass: storePass)
             XCTAssertEqual(3, newDoc.getPublicKeyCount())
             XCTAssertEqual(3, newDoc.getAuthenticationKeyCount())
             try store.storeDid(newDoc)
@@ -226,7 +226,6 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    // TODO:
     func testDeactivateSelfAfterUpdate() {
         do {
             let testData: TestData = TestData()
@@ -242,9 +241,11 @@ class DIDStoreTests: XCTestCase {
             XCTAssertNotNil(resolved)
             try store.storeDid(resolved!)
             
+            // update
+            let db: DIDDocumentBuilder = resolved.edit()
             let key = try TestData.generateKeypair()
-            _ = try resolved?.addAuthenticationKey("key2", key.getPublicKeyBase58())
-            let newDoc = try resolved!.seal(store, storePass)
+            _ = try db.addAuthenticationKey("key2", key.getPublicKeyBase58())
+            let newDoc = try db.seal(storepass: storePass)
             XCTAssertEqual(2, newDoc.getPublicKeyCount())
             XCTAssertEqual(2, newDoc.getAuthenticationKeyCount())
             try store.storeDid(newDoc)
@@ -289,23 +290,23 @@ class DIDStoreTests: XCTestCase {
             XCTAssertEqual(doc.toJson(true, true), resolved?.toJson(true, true))
             
             var target = try store.newDid(storePass)
-            _ = try target.authorizationDid("recovery", doc.subject!.description)
+            let db: DIDDocumentBuilder = target.edit()
+            _ = try db.authorizationDid("recovery", doc.subject!.description)
+            target = try db.seal(storepass: storePass)
             XCTAssertNotNil(target)
             XCTAssertEqual(1, target.getAuthorizationKeyCount())
             let controller = target.getAuthorizationKeys()[0].controller
             XCTAssertEqual(doc.subject, controller)
-            target = try target.seal(store, storePass)
-            
+            try store.storeDid(target)
+                        
             _ = try store.publishDid(target.subject!, storePass)
-            
-            resolved = try target.subject!.resolve(true)!
+            resolved = try target.subject!.resolve()
             XCTAssertNotNil(resolved)
             XCTAssertEqual(target.toJson(true, true), resolved.toJson(true, true))
             
             _ = try store.deactivateDid(target.subject!, doc.subject!, storePass)
             
             let resolvedNil: DIDDocument? = try target.subject!.resolve(true)
-            
             XCTAssertNil(resolvedNil)
         } catch  {
             switch error as! DIDError {
@@ -325,10 +326,11 @@ class DIDStoreTests: XCTestCase {
             
             var doc = try store.newDid(storePass)
             let key = try TestData.generateKeypair()
+            var db: DIDDocumentBuilder = doc.edit()
             let id = try DIDURL(doc.subject!, "key-2")
-            _ = try doc.addAuthenticationKey(id,try key.getPublicKeyBase58())
+            _ = try db.addAuthenticationKey(id,try key.getPublicKeyBase58())
             try store.storePrivateKey(doc.subject!, id, key.getPrivateKeyData(), storePass)
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertTrue(try doc.isValid())
             XCTAssertEqual(2, doc.getAuthenticationKeyCount())
             try store.storeDid(doc)
@@ -340,8 +342,9 @@ class DIDStoreTests: XCTestCase {
             XCTAssertEqual(doc.toJson(true, true), resolved.toJson(true, true))
             
             var target: DIDDocument = try store.newDid(storePass)
-            _ = try target.addAuthorizationKey("recovery", doc.subject!.description, key.getPublicKeyBase58())
-            target = try target.seal(store, storePass)
+            db = target.edit()
+            _ = try db.addAuthorizationKey("recovery", doc.subject!.description, key.getPublicKeyBase58())
+            target = try db.seal(storepass: storePass)
             XCTAssertNotNil(target)
             XCTAssertEqual(1, target.getAuthorizationKeyCount())
             let controller = target.getAuthorizationKeys()[0].controller
@@ -376,12 +379,14 @@ class DIDStoreTests: XCTestCase {
             _ = try testData.initIdentity()
             
             var doc = try store.newDid(storePass)
+            var db: DIDDocumentBuilder = doc.edit()
+            
             let key = try TestData.generateKeypair()
             let id: DIDURL = try DIDURL(doc.subject!, "key-2")
-            _ = try doc.addAuthenticationKey(id, key.getPublicKeyBase58())
+            _ = try db.addAuthenticationKey(id, key.getPublicKeyBase58())
             
             try store.storePrivateKey(doc.subject!, id, key.getPrivateKeyData(), storePass)
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertTrue(try doc.isValid())
             XCTAssertEqual(2, doc.getAuthenticationKeyCount())
             try store.storeDid(doc)
@@ -393,8 +398,9 @@ class DIDStoreTests: XCTestCase {
             XCTAssertEqual(doc.toJson(true, true), resolved.toJson(true, true))
             
             var target = try store.newDid(storePass)
-            _ = try target.addAuthorizationKey("recovery", doc.subject!.description, try key.getPublicKeyBase58())
-            target = try target.seal(store, storePass)
+            db = target.edit()
+            _ = try db.addAuthorizationKey("recovery", doc.subject!.description, try key.getPublicKeyBase58())
+            target = try db.seal(storepass: storePass)
             XCTAssertNotNil(target)
             XCTAssertEqual(1, target.getAuthorizationKeyCount())
             let controller = target.getAuthorizationKeys()[0].controller

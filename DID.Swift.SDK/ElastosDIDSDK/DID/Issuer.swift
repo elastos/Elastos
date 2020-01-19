@@ -5,21 +5,21 @@ public class Issuer {
     public var didDocument: DIDDocument?
     public var signKey: DIDURL!
     public var target: DID?
-
+    
     public init(_ doc: DIDDocument, signKey: DIDURL? = nil) throws {
-       self.didDocument = doc
-       self.signKey = signKey
-       if (signKey == nil) {
-           self.signKey = didDocument!.getDefaultPublicKey()
-       } else {
-           if (try !(didDocument!.isAuthenticationKey((self.signKey)))){
-               throw DIDError.failue("Invalid sign key id.")
-           }
-           
-           if (try !didDocument!.hasPrivateKey(self.signKey)){
-               throw DIDError.failue("No private key.")
-           }
-       }
+        self.didDocument = doc
+        self.signKey = signKey
+        if (signKey == nil) {
+            self.signKey = didDocument!.getDefaultPublicKey()
+        } else {
+            if (try !(didDocument!.isAuthenticationKey((self.signKey)))){
+                throw DIDError.failue("Invalid sign key id.")
+            }
+            
+            if (try !didDocument!.hasPrivateKey(self.signKey)){
+                throw DIDError.failue("No private key.")
+            }
+        }
     }
     
     public init(_ did: DID, signKey: DIDURL? = nil, _ store: DIDStore) throws {
@@ -45,7 +45,7 @@ public class Issuer {
     public func getDid() -> DID {
         return (didDocument?.subject!)!
     }
-
+    
     public func getSignKey() -> DIDURL {
         return signKey
     }
@@ -62,7 +62,7 @@ public class CredentialBuilder {
     private var credential: VerifiableCredential
     private var signKey: DIDURL
     private var document: DIDDocument
-
+    
     public init(did: DID, doc: DIDDocument, signKey:DIDURL) {
         self.target = did
         self.document = doc
@@ -70,8 +70,8 @@ public class CredentialBuilder {
         self.credential = VerifiableCredential()
         self.credential.issuer = doc.subject
     }
-
-   public func set(id: DIDURL) throws -> CredentialBuilder {
+    
+    public func set(id: DIDURL) throws -> CredentialBuilder {
         self.credential.id = id
         return self
     }
@@ -80,7 +80,7 @@ public class CredentialBuilder {
         return try self.set(id: DIDURL(target, idString))
     }
     
-   public func set(types: Array<String>) throws -> CredentialBuilder {
+    public func set(types: Array<String>) throws -> CredentialBuilder {
         guard types.count != 0 else {
             throw DIDError.illegalArgument("type is nil.")
         }
@@ -89,21 +89,21 @@ public class CredentialBuilder {
         return self
     }
     
-//    private func getMaxExpires() {
-//        var date: Date
-//        if credential?.issuanceDate != nil {
-//            date = self.credential!.issuanceDate!
-//        }
-//        return DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
-//
-//    }
-//
+    //    private func getMaxExpires() {
+    //        var date: Date
+    //        if credential?.issuanceDate != nil {
+    //            date = self.credential!.issuanceDate!
+    //        }
+    //        return DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
+    //
+    //    }
+    //
     
-   public func set(expirationDate: Date) -> CredentialBuilder {
+    public func set(expirationDate: Date) -> CredentialBuilder {
         return self
     }
     
-   public func set(properties: OrderedDictionary<String, String>) throws -> CredentialBuilder {
+    public func set(properties: OrderedDictionary<String, String>) throws -> CredentialBuilder {
         guard properties.keys.count != 0 else {
             throw DIDError.illegalArgument("properties count is 0.")
         }

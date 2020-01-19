@@ -59,7 +59,7 @@ class DummyAdapter: DIDAdapter {
                     throw TestError.failue("DID not exist.")
                 }
                 
-                guard ti!.getOperation() != IDChainRequest.Operation.DEACTIVATE else {
+                guard ti!.operation != IDChainRequest.Operation.DEACTIVATE else {
                     throw TestError.failue("DID already dactivated.")
                 }
                 
@@ -73,7 +73,7 @@ class DummyAdapter: DIDAdapter {
                     throw TestError.failue("DID not exist.")
                 }
                 
-                guard ti!.getOperation() != IDChainRequest.Operation.DEACTIVATE else {
+                guard ti!.operation != IDChainRequest.Operation.DEACTIVATE else {
                     throw TestError.failue("DID already dactivated.")
                 }
                 break
@@ -116,7 +116,7 @@ class DummyAdapter: DIDAdapter {
         let last = getLastTransaction(target)
         
         if last != nil {
-            if last!.getOperation() == IDChainRequest.Operation.DEACTIVATE {
+            if last!.operation == IDChainRequest.Operation.DEACTIVATE {
                 status = 2
             }
             else {
@@ -135,7 +135,7 @@ class DummyAdapter: DIDAdapter {
             let reversedArr: Array = idtxs.reversed()
             var arr: Array<OrderedDictionary<String, Any>> = [ ]
             for ti in reversedArr {
-                if ti.getDid() == target {
+                if ti.did == target {
                     let dic = ti.toJson()
                     arr.append(dic)
                     if (!all) {
@@ -161,7 +161,7 @@ class DummyAdapter: DIDAdapter {
     private func getLastTransaction(_ did: DID) -> IDTransactionInfo? {
         let reversedArr = idtxs.reversed()
         for ti in reversedArr {
-            if ti.getDid() == did {
+            if ti.did == did {
                 return ti
             }
         }

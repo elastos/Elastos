@@ -9,18 +9,18 @@ public class DIDDocument: NSObject {
     public var services: OrderedDictionary<DIDURL, Service> = OrderedDictionary()
     public var expires: Date?
     public var proof: DIDDocumentProof!
-    public var meta: DIDMeta = DIDMeta()
+    var meta: DIDMeta = DIDMeta()
     
     override init() {
         super.init()
     }
     
-    public init(_ subject: DID) {
+    init(_ subject: DID) {
         super.init()
         self.subject = subject
     }
-
-    public init(_ doc: DIDDocument) {
+    
+    init(_ doc: DIDDocument) {
         super.init()
         // Copy constructor
         self.subject = doc.subject
@@ -41,7 +41,7 @@ public class DIDDocument: NSObject {
     public func getPublicKeys() -> Array<DIDPublicKey> {
         return getEntries(publicKeys)
     }
-
+    
     public func selectPublicKeys(_ id: String, type: String? = nil) throws -> Array<DIDPublicKey> {
         let didurl = try DIDURL(subject!, id)
         return try selectEntry(publicKeys, didurl, type)
@@ -97,7 +97,7 @@ public class DIDDocument: NSObject {
         return didurl!
     }
     
-    public func addPublicKey(_ pk: DIDPublicKey) -> Bool {
+    func addPublicKey(_ pk: DIDPublicKey) -> Bool {
         guard publicKeys[pk.id] == nil else {
             return false
         }
@@ -114,7 +114,7 @@ public class DIDDocument: NSObject {
         return true
     }
     
-    public func removePublicKey(_ id: DIDURL, _ force: Bool) throws -> Bool {
+    func removePublicKey(_ id: DIDURL, _ force: Bool) throws -> Bool {
         
         // Cann't remove default public key
         if (getDefaultPublicKey().isEqual(id)) { return false }
@@ -157,7 +157,7 @@ public class DIDDocument: NSObject {
         let didurl = try DIDURL(subject!, id)
         return try selectEntry(authentications, didurl, type)
     }
-
+    
     public func getAuthenticationKey(_ id: DIDURL) throws -> DIDPublicKey? {
         return try getEntry(authentications, id)
     }
@@ -201,7 +201,7 @@ public class DIDDocument: NSObject {
         return true
     }
     
-    public func removeAuthenticationKey(_ id: DIDURL) -> Bool {
+    func removeAuthenticationKey(_ id: DIDURL) -> Bool {
         // Can not remove default public key
         if (getDefaultPublicKey().isEqual(id)) {
             return false
@@ -242,7 +242,7 @@ public class DIDDocument: NSObject {
         return try isAuthorizationKey(DIDURL(subject!, id))
     }
     
-    public func addAuthorizationKey(_ pk: DIDPublicKey) throws -> Bool {
+    func addAuthorizationKey(_ pk: DIDPublicKey) throws -> Bool {
         var pk_ = pk
         // Can not authorize to self
         if pk.controller.isEqual(subject) { return false }
@@ -268,7 +268,7 @@ public class DIDDocument: NSObject {
         return true
     }
     
-    public func removeAuthorizationKey(_ id: DIDURL) -> Bool {
+    func removeAuthorizationKey(_ id: DIDURL) -> Bool {
         return removeEntry("authorizations", id)
     }
     
@@ -297,7 +297,7 @@ public class DIDDocument: NSObject {
         return try getEntry(credentials, DIDURL(subject!, id))
     }
     
-    public func addCredential(_ vc: VerifiableCredential) -> Bool {
+    func addCredential(_ vc: VerifiableCredential) -> Bool {
         // Check the credential belongs to current DID.
         if vc.subject.id != subject {
             return false
@@ -310,7 +310,7 @@ public class DIDDocument: NSObject {
         return true
     }
     
-    public func removeCredential(_ id: DIDURL) -> Bool {
+    func removeCredential(_ id: DIDURL) -> Bool {
         return removeEntry("credentials", id)
     }
     
@@ -339,7 +339,7 @@ public class DIDDocument: NSObject {
         return try getEntry(services, DIDURL(subject!, id))
     }
     
-    public func addService(_ svc: Service) throws -> Bool {
+    func addService(_ svc: Service) throws -> Bool {
         guard services[svc.id] == nil else{
             return false
         }
@@ -347,7 +347,7 @@ public class DIDDocument: NSObject {
         return true
     }
     
-    public func removeService(_ id: DIDURL) -> Bool {
+    func removeService(_ id: DIDURL) -> Bool {
         return removeEntry("services", id)
     }
     
@@ -379,7 +379,7 @@ public class DIDDocument: NSObject {
     public func getUpdated() -> Date? {
         return meta.updated
     }
-
+    
     public func isDeactivated() throws -> Bool {
         return meta.isDeactivated
     }
@@ -387,7 +387,7 @@ public class DIDDocument: NSObject {
     public func isExpired() -> Bool {
         let now = DateFormater.currentDate()
         return DateFormater.comporsDate(expires!, now)
-
+        
     }
     
     public func isGenuine() throws -> Bool {
@@ -413,6 +413,10 @@ public class DIDDocument: NSObject {
         return try !isDeactivated() && !isExpired() && isGenuine()
     }
     
+    public func edit() -> DIDDocumentBuilder {
+        return DIDDocumentBuilder(doc: self)
+    }
+    
     public func sign(_ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
         let key: DIDURL = getDefaultPublicKey()
         return try sign(key, storepass, count, inputs)
@@ -426,7 +430,7 @@ public class DIDDocument: NSObject {
     }
     
     public func sign(_ id: String, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
-    
+        
         return try sign(DIDURL(subject!, id), storepass, count, inputs)
     }
     
@@ -674,86 +678,86 @@ public class DIDDocument: NSObject {
      *   - signatureValue
      */
     public func toJson(_ normalized: Bool, _ forSign: Bool) -> String {
-           var dic: OrderedDictionary<String, Any> = OrderedDictionary()
-           // subject
-           dic[ID] = subject?.description
-           
-           // publicKey
-           publicKeys = DIDURLComparator.DIDOrderedDictionaryComparator(publicKeys)
-           var pks: Array<OrderedDictionary<String, Any>> = []
-           publicKeys.forEach { (didUrl, pk) in
-               let dic = pk.toJson(subject!, normalized)
-               pks.append(dic)
-           }
-           dic[PUBLICKEY] = pks
-           
-           // authentication
-           authentications = DIDURLComparator.DIDOrderedDictionaryComparator(authentications)
-           var authenPKs: Array<String> = []
-           authentications.forEach { (didUrl, pk) in
-               var value: String
-               if normalized ||  pk.id.did != subject{
-                  value = pk.id.toExternalForm()
-               }
-               else {
+        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
+        // subject
+        dic[ID] = subject?.description
+        
+        // publicKey
+        publicKeys = DIDURLComparator.DIDOrderedDictionaryComparator(publicKeys)
+        var pks: Array<OrderedDictionary<String, Any>> = []
+        publicKeys.forEach { (didUrl, pk) in
+            let dic = pk.toJson(subject!, normalized)
+            pks.append(dic)
+        }
+        dic[PUBLICKEY] = pks
+        
+        // authentication
+        authentications = DIDURLComparator.DIDOrderedDictionaryComparator(authentications)
+        var authenPKs: Array<String> = []
+        authentications.forEach { (didUrl, pk) in
+            var value: String
+            if normalized ||  pk.id.did != subject{
+                value = pk.id.toExternalForm()
+            }
+            else {
+                value = "#" + pk.id.fragment!
+            }
+            authenPKs.append(value)
+        }
+        dic[AUTHENTICATION] = authenPKs
+        
+        // authorization
+        if authorizations.count > 0 {
+            authorizations = DIDURLComparator.DIDOrderedDictionaryComparator(authorizations)
+            var authoriPks: Array<String> = []
+            authorizations.forEach { (didUrl, pk) in
+                var value: String
+                if normalized || pk.id.did != subject {
+                    value = pk.id.toExternalForm()
+                }else {
                     value = "#" + pk.id.fragment!
-               }
-               authenPKs.append(value)
-           }
-           dic[AUTHENTICATION] = authenPKs
-           
-           // authorization
-           if authorizations.count > 0 {
-               authorizations = DIDURLComparator.DIDOrderedDictionaryComparator(authorizations)
-               var authoriPks: Array<String> = []
-               authorizations.forEach { (didUrl, pk) in
-                   var value: String
-                   if normalized || pk.id.did != subject {
-                       value = pk.id.toExternalForm()
-                   }else {
-                       value = "#" + pk.id.fragment!
-                   }
-                   authoriPks.append(value)
-               }
-               dic[AUTHORIZATION] = authoriPks
-           }
-           
-           // credential
-           if credentials.count > 0 {
-               credentials = DIDURLComparator.DIDOrderedDictionaryComparatorByVerifiableCredential(credentials)
-               var vcs: Array<OrderedDictionary<String, Any>> = []
-               credentials.forEach { (didUrl, vc) in
-                   let dic = vc.toJson(subject!, normalized, false)
-                   vcs.append(dic)
-               }
-               dic[VERIFIABLE_CREDENTIAL] = vcs
-           }
-           
-           // service
-           if services.count > 0 {
-               services = DIDURLComparator.DIDOrderedDictionaryComparatorByService(services)
-               var ser_s: Array<OrderedDictionary<String, Any>> = [ ]
-               services.forEach { (_, service) in
-                   let dic = service.toJson(subject!, normalized)
-                   ser_s.append(dic)
-               }
-               dic[SERVICE] = ser_s
-           }
-           
-           // expires
-           if expires != nil {
-               dic[EXPIRES] = DateFormater.format(expires!)
-           }
-           
-           // proof
-           if !forSign {
-               dic[PROOF] = proof.toJson(normalized)
-           }
-           let dicString = JsonHelper.creatJsonString(dic: dic)
-
-           return dicString
-       }
-
+                }
+                authoriPks.append(value)
+            }
+            dic[AUTHORIZATION] = authoriPks
+        }
+        
+        // credential
+        if credentials.count > 0 {
+            credentials = DIDURLComparator.DIDOrderedDictionaryComparatorByVerifiableCredential(credentials)
+            var vcs: Array<OrderedDictionary<String, Any>> = []
+            credentials.forEach { (didUrl, vc) in
+                let dic = vc.toJson(subject!, normalized, false)
+                vcs.append(dic)
+            }
+            dic[VERIFIABLE_CREDENTIAL] = vcs
+        }
+        
+        // service
+        if services.count > 0 {
+            services = DIDURLComparator.DIDOrderedDictionaryComparatorByService(services)
+            var ser_s: Array<OrderedDictionary<String, Any>> = [ ]
+            services.forEach { (_, service) in
+                let dic = service.toJson(subject!, normalized)
+                ser_s.append(dic)
+            }
+            dic[SERVICE] = ser_s
+        }
+        
+        // expires
+        if expires != nil {
+            dic[EXPIRES] = DateFormater.format(expires!)
+        }
+        
+        // proof
+        if !forSign {
+            dic[PROOF] = proof.toJson(normalized)
+        }
+        let dicString = JsonHelper.creatJsonString(dic: dic)
+        
+        return dicString
+    }
+    
     public override var description: String {
         return toJson(false, false)
     }
@@ -761,165 +765,7 @@ public class DIDDocument: NSObject {
     public func description(_ normalized: Bool) -> String {
         return toJson(normalized, false)
     }
-
-    // ----------------------------------------
-    public func addPublicKey(_ id: DIDURL, _ controller: DID, _ pk: String) throws -> Bool {
-        guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
-            throw DIDError.failue("Invalid public key.")
-        }
-        let key: DIDPublicKey = DIDPublicKey(id, controller, pk)
-        return addPublicKey(key)
-    }
     
-    public func addPublicKey(_ id: String, _ controller: String, _ pk: String) throws -> Bool {
-        return try addPublicKey(DIDURL(subject!, id), DID(controller), pk)
-    }
-    
-    public func removePublicKey(_ id: String, _ force: Bool) throws -> Bool {
-        return try removePublicKey(DIDURL(subject!, id), force)
-    }
-    
-    public func removePublicKey(_ id: DIDURL) throws -> Bool {
-        return try removePublicKey(id, false)
-    }
-    
-    public func removePublicKey(_ id: String) throws -> Bool {
-        return try removePublicKey(DIDURL(id), false)
-    }
-    public func addAuthenticationKey(_ id: DIDURL) throws -> Bool {
-        let pk = try getPublicKey(id)
-        guard pk != nil else {
-            return false
-        }
-        return try addAuthenticationKey(pk!)
-    }
-    
-    public func addAuthenticationKey(_ id: String) throws -> Bool {
-        return try addAuthenticationKey(DIDURL(subject!, id))
-    }
-    
-    public func addAuthenticationKey(_ id: DIDURL, _ pk: String) throws -> Bool {
-        guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
-            throw DIDError.failue("Invalid public key.")
-        }
-        let key: DIDPublicKey = DIDPublicKey(id, subject!, pk)
-        return try addAuthenticationKey(key)
-    }
-    
-    public func addAuthenticationKey(_ id: String, _ pk: String) throws -> Bool {
-        return try addAuthenticationKey(DIDURL(subject!, id), pk)
-    }
-    
-    public func removeAuthenticationKey(_ id: String) throws -> Bool {
-        return try removeAuthenticationKey(DIDURL(subject!, id))
-    }
-    
-    public func addAuthorizationKey(_ id: DIDURL) throws -> Bool {
-        let pk = try getPublicKey(id)
-        guard pk != nil else {
-            return false
-        }
-        return try addAuthorizationKey(pk!)
-    }
-    
-    public func addAuthorizationKey(_ id: String) throws -> Bool {
-       return try  addAuthorizationKey(DIDURL(subject!, id))
-    }
-    
-    public func addAuthorizationKey(_ id: DIDURL, _ controller: DID, _ pk: String) throws -> Bool {
-        guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
-            throw DIDError.malFormedDocumentError(_desc: "Invalid public key.") 
-        }
-        let key: DIDPublicKey = DIDPublicKey(id, controller, pk)
-        return try addAuthorizationKey(key)
-    }
-                
-    public func addAuthorizationKey(_ id: String, _ controller: String, _ pk: String) throws -> Bool {
-        return try addAuthorizationKey(DIDURL(subject!, id), DID(controller), pk)
-    }
-    
-    public func authorizationDid(_ id: DIDURL, _ controller: DID, key: DIDURL? = nil) throws -> Bool {
-        // Can not authorize to self
-        if controller.isEqual(subject) {
-            return false
-        }
-        let doc = try controller.resolve()
-        var k: DIDURL
-        if key == nil {
-            k = doc!.getDefaultPublicKey()
-        }else {
-            k = key!
-        }
-        let refPk = try doc!.getPublicKey(k)
-        
-        // The public key should belongs to controller
-        if (refPk!.controller != controller) {
-            return false
-        }
-        let pk: DIDPublicKey = DIDPublicKey(id, refPk!.type, controller, refPk!.publicKeyBase58)
-        return try addAuthorizationKey(pk)
-    }
-    
-    public func authorizationDid(_ id: String, _ controller: String, _ key: String?) throws -> Bool {
-        let controllerId: DID = try DID(controller)
-        let keyid = (key == nil ? nil : try DIDURL(controllerId, key!))
-        return try authorizationDid(DIDURL(subject!, id), controllerId, key: keyid)
-    }
-    
-    public func authorizationDid(_ id: String, _ controller: String) throws -> Bool {
-        return try authorizationDid(id, controller, nil)
-    }
-    
-    public func removeAuthorizationKey(_ id: String) throws -> Bool {
-        return try removeAuthorizationKey(DIDURL(subject!, id))
-    }
-
-    public func removeCredential(_ id: String) throws -> Bool {
-        return try removeCredential(DIDURL(subject!, id))
-    }
-    
-    public func addService(_ id: DIDURL, _ type: String, _ endpoint: String) throws -> Bool {
-        let svc: Service = Service(id, type, endpoint)
-        return try addService(svc)
-    }
-    
-    public func addService(_ id: String, _ type: String, _ endpoint: String) throws -> Bool {
-        return try addService(DIDURL(subject!, id), type, endpoint)
-    }
-    
-    public func removeService(_ id: String) throws -> Bool {
-        return try removeService(DIDURL(subject!, id))
-    }
-    
-    public func setDefaultExpires() {
-        expires = DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
-    }
-    
-    public func setExpires(_ expiresDate: Date) -> Bool {
-        let MaxExpires = DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
-        if DateFormater.comporsDate(expiresDate, MaxExpires) {
-            self.expires = DateFormater.setExpires(expiresDate)
-            return true
-        }
-        return false
-    }
-    
-    public func seal(_ store: DIDStore, _ storepass: String) throws -> DIDDocument {
-        
-        setDefaultExpires()
-        meta.store = store
-        let signKey: DIDURL = getDefaultPublicKey()
-        let json = toJson(true, true)
-        let inputs: [CVarArg] = [json, json.count]
-        let count = inputs.count / 2
-        let sig = try sign(signKey, storepass, count, inputs)
-        _ = try verify(signKey, sig, count, inputs)
-
-        let proof = DIDDocumentProof(signKey, sig)
-        self.proof = proof
-        return self
-    }
-
     private func selectEntry<T: DIDObject>(_ entries: OrderedDictionary<DIDURL, T>, _ id: DIDURL?, _ type: String?) throws -> Array<T>  {
         var list: Array<T> = []
         entries.values.forEach { entry in
@@ -980,3 +826,224 @@ public class DIDDocument: NSObject {
         }
     }
 }
+
+public class DIDDocumentBuilder {
+    var document: DIDDocument?
+    
+    var subject: DID? {
+        get {
+            return document!.subject
+        }
+    }
+    
+    init(did: DID, store: DIDStore) {
+        self.document = DIDDocument(did)
+        self.document!.meta.store = store
+    }
+    
+    init(doc: DIDDocument) {
+        // Make a copy.
+        self.document = DIDDocument(doc)
+    }
+    
+    // ----------------------------------------
+    public func addPublicKey(_ id: DIDURL, _ controller: DID, _ pk: String) throws -> Bool {
+        guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
+            throw DIDError.failue("Invalid public key.")
+        }
+        let key: DIDPublicKey = DIDPublicKey(id, controller, pk)
+        return document!.addPublicKey(key)
+    }
+    
+    public func addPublicKey(_ id: String, _ controller: String, _ pk: String) throws -> Bool {
+        return try addPublicKey(DIDURL(subject!, id), DID(controller), pk)
+    }
+    
+    public func removePublicKey(_ id: DIDURL, _ force: Bool) throws -> Bool {
+        return try document!.removePublicKey(id, force)
+    }
+    
+    public func removePublicKey(_ id: String, _ force: Bool) throws -> Bool {
+        return try removePublicKey(DIDURL(subject!, id), force)
+    }
+    
+    public func removePublicKey(_ id: DIDURL) throws -> Bool {
+        return try removePublicKey(id, false)
+    }
+    
+    public func removePublicKey(_ id: String) throws -> Bool {
+        return try removePublicKey(DIDURL(id), false)
+    }
+    
+    public func addAuthenticationKey(_ id: DIDURL) throws -> Bool {
+        let pk = try document!.getPublicKey(id)
+        guard pk != nil else {
+            return false
+        }
+        return try document!.addAuthenticationKey(pk!)
+    }
+    
+    public func addAuthenticationKey(_ id: String) throws -> Bool {
+        return try addAuthenticationKey(DIDURL(subject!, id))
+    }
+    
+    public func addAuthenticationKey(_ id: DIDURL, _ pk: String) throws -> Bool {
+        guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
+            throw DIDError.failue("Invalid public key.")
+        }
+        let key: DIDPublicKey = DIDPublicKey(id, subject!, pk)
+        return try document!.addAuthenticationKey(key)
+    }
+    
+    public func addAuthenticationKey(_ id: String, _ pk: String) throws -> Bool {
+        return try addAuthenticationKey(DIDURL(subject!, id), pk)
+    }
+    
+    public func removeAuthenticationKey(_ id: DIDURL) -> Bool {
+        return document!.removeAuthenticationKey(id)
+    }
+    
+    public func removeAuthenticationKey(_ id: String) throws -> Bool {
+        return try removeAuthenticationKey(DIDURL(subject!, id))
+    }
+    
+    public func addAuthorizationKey(_ id: DIDURL) throws -> Bool {
+        let pk = try document!.getPublicKey(id)
+        guard pk != nil else {
+            return false
+        }
+        return try document!.addAuthorizationKey(pk!)
+    }
+    
+    public func addAuthorizationKey(_ id: String) throws -> Bool {
+        return try  addAuthorizationKey(DIDURL(subject!, id))
+    }
+    
+    public func addAuthorizationKey(_ id: DIDURL, _ controller: DID, _ pk: String) throws -> Bool {
+        guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
+            throw DIDError.malFormedDocumentError(_desc: "Invalid public key.")
+        }
+        let key: DIDPublicKey = DIDPublicKey(id, controller, pk)
+        return try document!.addAuthorizationKey(key)
+    }
+    
+    public func addAuthorizationKey(_ id: String, _ controller: String, _ pk: String) throws -> Bool {
+        return try addAuthorizationKey(DIDURL(subject!, id), DID(controller), pk)
+    }
+    
+    public func authorizationDid(_ id: DIDURL, _ controller: DID, key: DIDURL? = nil) throws -> Bool {
+        let doc = try controller.resolve()
+        if doc == nil {
+            return false
+        }
+        
+        // Can not authorize to self
+        if controller.isEqual(subject) {
+            return false
+        }
+        var k: DIDURL
+        if key == nil {
+            k = doc!.getDefaultPublicKey()
+        }else {
+            k = key!
+        }
+        let targetPk = try doc!.getAuthenticationKey(k)
+        
+        // The public key should belongs to controller
+        if (targetPk == nil) {
+            return false
+        }
+        
+        let pk: DIDPublicKey = DIDPublicKey(id, targetPk!.type, controller, targetPk!.publicKeyBase58)
+        return try document!.addAuthorizationKey(pk)
+    }
+    
+    public func authorizationDid(_ id: String, _ controller: String, key: String? = nil) throws -> Bool {
+        let controllerId: DID = try DID(controller)
+        let keyid = (key == nil ? nil : try DIDURL(controllerId, key!))
+        return try authorizationDid(DIDURL(subject!, id), controllerId, key: keyid)
+    }
+    
+    public func removeAuthorizationKey(_ id: DIDURL) -> Bool {
+        return document!.removeAuthorizationKey(id)
+    }
+    
+    public func removeAuthorizationKey(_ id: String) throws -> Bool {
+        return try removeAuthorizationKey(DIDURL(subject!, id))
+    }
+    
+    public func addCredential(_ vc: VerifiableCredential) -> Bool {
+        return document!.addCredential(vc)
+    }
+    
+    public func removeCredential(_ id: DIDURL) -> Bool {
+        return document!.removeCredential(id)
+    }
+    
+    public func removeCredential(_ id: String) throws -> Bool {
+        return removeCredential(try DIDURL(subject!, id))
+    }
+    
+    public func addService(_ id: DIDURL, _ type: String, _ endpoint: String) throws -> Bool {
+        let svc: Service = Service(id, type, endpoint)
+        return try document!.addService(svc)
+    }
+    
+    public func addService(_ id: String, _ type: String, _ endpoint: String) throws -> Bool {
+        return try addService(DIDURL(subject!, id), type, endpoint)
+    }
+    
+    public func removeService(_ id: DIDURL) -> Bool {
+        return document!.removeService(id)
+    }
+    
+    public func removeService(_ id: String) throws -> Bool {
+        return removeService(try DIDURL(subject!, id))
+    }
+    
+    //    private func getMaxExpires() {
+    //        var date: Date
+    //        if credential?.issuanceDate != nil {
+    //            date = self.credential!.issuanceDate!
+    //        }
+    //        return DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
+    //
+    //    }
+    //
+    
+    public func setDefaultExpires() {
+        document!.expires = DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
+    }
+    
+    public func setExpires(_ expiresDate: Date) -> Bool {
+        let MaxExpires = DateFormater.currentDateToWantDate(MAX_VALID_YEARS)
+        if DateFormater.comporsDate(expiresDate, MaxExpires) {
+            document!.expires = DateFormater.setExpires(expiresDate)
+            return true
+        }
+        return false
+    }
+    
+    public func seal(storepass: String) throws -> DIDDocument {
+        
+        if document!.expires == nil {
+            setDefaultExpires()
+        }
+        
+        let signKey: DIDURL = document!.getDefaultPublicKey()
+        let json = document!.toJson(true, true)
+        let inputs: [CVarArg] = [json, json.count]
+        let count = inputs.count / 2
+        let sig = try document!.sign(signKey, storepass, count, inputs)
+        //        _ = try document!.verify(signKey, sig, count, inputs)
+        
+        let proof = DIDDocumentProof(signKey, sig)
+        document!.proof = proof
+        
+        // Invalidate builder
+        let doc: DIDDocument = document!
+        document = nil
+        return doc
+    }
+}
+

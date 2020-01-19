@@ -181,15 +181,14 @@ public class DIDStore: NSObject {
         let privatekeyData: Data = try key.getPrivateKeyData()
         // TODO: get real private key bytes
         try storePrivateKey(did, id, privatekeyData, storepass)
-        var doc: DIDDocument = DIDDocument(did)
         
-        _ = try doc.addAuthenticationKey(id, try key.getPublicKeyBase58())
-        
-        doc = try doc.seal(self, storepass)
+        let db: DIDDocumentBuilder = DIDDocumentBuilder(did: did, store: self)
+        _ = try db.addAuthenticationKey(id, try key.getPublicKeyBase58())
+        let doc: DIDDocument = try db.seal(storepass: storepass)
         doc.meta.alias = alias ?? ""
         try storeDid(doc)
         try storage.storePrivateIdentityIndex(nextIndex)
-        
+
         return doc
     }
     

@@ -92,19 +92,20 @@ class DIDDoucumentTests: XCTestCase {
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
+            let db: DIDDocumentBuilder = doc.edit()
             
             // Add 2 public keys
             let id: DIDURL = try DIDURL(doc.subject!, "test1")
             var key: DerivedKey = try TestData.generateKeypair()
-            var success: Bool = try doc.addPublicKey(id, doc.subject!, key.getPublicKeyBase58())
+            var success: Bool = try db.addPublicKey(id, doc.subject!, key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             key = try TestData.generateKeypair()
-            success = try doc.addPublicKey("test2", doc.subject!.description,
+            success = try db.addPublicKey("test2", doc.subject!.description,
                                            try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -137,27 +138,28 @@ class DIDDoucumentTests: XCTestCase {
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
+            let db: DIDDocumentBuilder = doc.edit()
             
             // recovery used by authorization, should failed.
             let id: DIDURL = try DIDURL(doc.subject!, "recovery")
-            var success: Bool = try doc.removePublicKey(id)
+            var success: Bool = try db.removePublicKey(id)
             XCTAssertFalse(success)
             
             // force remove public key, should success
-            success = try doc.removePublicKey(id, true)
+            success = try db.removePublicKey(id, true)
             XCTAssertTrue(success)
             
-            success = try doc.removePublicKey("key2", true)
+            success = try db.removePublicKey("key2", true)
             XCTAssertTrue(success)
             // Key not exist, should fail.
-            success = try doc.removePublicKey("notExistKey", true)
+            success = try db.removePublicKey("notExistKey", true)
             XCTAssertFalse(success)
             
             // Can not remove default publickey, should fail.
-            success = try doc.removePublicKey(doc.getDefaultPublicKey(), true)
+            success = try db.removePublicKey(doc.getDefaultPublicKey(), true)
             XCTAssertFalse(success)
             
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -249,49 +251,52 @@ class DIDDoucumentTests: XCTestCase {
     func testAddAuthenticationKey() {
         do {
             let testData: TestData = TestData()
-            let store = try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
+            
+            let db: DIDDocumentBuilder = doc.edit()
+            
             // Add 2 public keys for test.
             let id: DIDURL = try DIDURL(doc.subject!, "test1")
             var key: DerivedKey  = try TestData.generateKeypair()
-            var success: Bool = try doc.addPublicKey(id, doc.subject!,
+            var success: Bool = try db.addPublicKey(id, doc.subject!,
                                                      try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             key = try TestData.generateKeypair()
-            success = try doc.addPublicKey("test2", doc.subject!.description,
+            success = try db.addPublicKey("test2", doc.subject!.description,
                                            try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             // Add by reference
-            success = try doc.addAuthenticationKey(DIDURL(doc.subject!, "test1"))
+            success = try db.addAuthenticationKey(DIDURL(doc.subject!, "test1"))
             XCTAssertTrue(success)
             
-            success = try doc.addAuthenticationKey("test2")
+            success = try db.addAuthenticationKey("test2")
             XCTAssertTrue(success)
             
             // Add new keys
             key = try TestData.generateKeypair()
-            success = try doc.addAuthenticationKey(DIDURL(doc.subject!, "test3"),
+            success = try db.addAuthenticationKey(DIDURL(doc.subject!, "test3"),
                                                    try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             key = try TestData.generateKeypair()
-            success = try doc.addAuthenticationKey("test4", key.getPublicKeyBase58())
+            success = try db.addAuthenticationKey("test4", key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             // Try to add a non existing key, should fail.
-            success = try doc.addAuthenticationKey("notExistKey")
+            success = try db.addAuthenticationKey("notExistKey")
             XCTAssertFalse(success)
             
             // Try to add a key not owned by self, should fail.
-            success = try doc.addAuthenticationKey("recovery")
+            success = try db.addAuthenticationKey("recovery")
             XCTAssertFalse(success)
             
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -333,36 +338,38 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
+            let db: DIDDocumentBuilder = doc.edit()
+            
             // Add 2 public keys for test
             var key: DerivedKey  = try TestData.generateKeypair()
-            var success: Bool = try doc.addAuthenticationKey(
+            var success: Bool = try db.addAuthenticationKey(
                 try DIDURL(doc.subject!, "test1"), key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             key = try TestData.generateKeypair()
-            success = try doc.addAuthenticationKey("test2", key.getPublicKeyBase58())
+            success = try db.addAuthenticationKey("test2", key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             // Remote keys
-            success = doc.removeAuthenticationKey(try DIDURL(doc.subject!, "test1"))
+            success = db.removeAuthenticationKey(try DIDURL(doc.subject!, "test1"))
             XCTAssertTrue(success)
             
-            success = try doc.removeAuthenticationKey("test2")
+            success = try db.removeAuthenticationKey("test2")
             XCTAssertTrue(success)
             
-            success = try doc.removeAuthenticationKey("key2")
+            success = try db.removeAuthenticationKey("key2")
             XCTAssertTrue(success)
             
             // Key not exist, should fail.
-            success = try doc.removeAuthenticationKey("notExistKey")
+            success = try db.removeAuthenticationKey("notExistKey")
             XCTAssertFalse(success)
             
             
             // Default publickey, can not remove, should fail.
-            success = doc.removeAuthenticationKey(doc.getDefaultPublicKey())
+            success = db.removeAuthenticationKey(doc.getDefaultPublicKey())
             XCTAssertFalse(success)
             
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -454,45 +461,47 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
+            let db: DIDDocumentBuilder = doc.edit()
+            
             // Add 2 public keys for test.
             let id: DIDURL = try DIDURL(doc.subject!, "test1")
             var key: DerivedKey = try TestData.generateKeypair()
             let did = DID(DID.METHOD, DerivedKey.getIdString(try key.getPublicKeyBytes()))
-            var success: Bool = try doc.addPublicKey(id, did, try key.getPublicKeyBase58())
+            var success: Bool = try db.addPublicKey(id, did, try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             key = try TestData.generateKeypair();
-            success = try doc.addPublicKey("test2", did.description,
+            success = try db.addPublicKey("test2", did.description,
                                            try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             // Add by reference
-            success = try doc.addAuthorizationKey(DIDURL(doc.subject!, "test1"))
+            success = try db.addAuthorizationKey(DIDURL(doc.subject!, "test1"))
             XCTAssertTrue(success)
             
-            success = try doc.addAuthorizationKey("test2")
+            success = try db.addAuthorizationKey("test2")
             XCTAssertTrue(success)
             
             // Add new keys
             key = try TestData.generateKeypair()
-            success = try doc.addAuthorizationKey(try DIDURL(doc.subject!, "test3"),
+            success = try db.addAuthorizationKey(try DIDURL(doc.subject!, "test3"),
                                                   did, try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             key = try TestData.generateKeypair()
-            success = try doc.addAuthorizationKey("test4", did.description,
+            success = try db.addAuthorizationKey("test4", did.description,
                                                   try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             // Try to add a non existing key, should fail.
-            success = try doc.addAuthorizationKey("notExistKey")
+            success = try db.addAuthorizationKey("notExistKey")
             XCTAssertFalse(success)
             
             // Try to add key owned by self, should fail.
-            success = try doc.addAuthorizationKey("key2")
+            success = try db.addAuthorizationKey("key2")
             XCTAssertFalse(success)
             
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -524,39 +533,41 @@ class DIDDoucumentTests: XCTestCase {
     func testRemoveAuthorizationKey() {
         do {
             let testData: TestData = TestData()
-            let store = try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
+            let db: DIDDocumentBuilder = doc.edit()
+            
             // Add 2 keys for test.
             let id: DIDURL = try DIDURL(doc.subject!, "test1")
             var key: DerivedKey  = try TestData.generateKeypair()
             let did = DID(DID.METHOD, DerivedKey.getIdString(try key.getPublicKeyBytes()))
-            var success: Bool = try doc.addAuthorizationKey(id,
+            var success: Bool = try db.addAuthorizationKey(id,
                                                             did, try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             key = try TestData.generateKeypair()
-            success = try doc.addAuthorizationKey("test2",
+            success = try db.addAuthorizationKey("test2",
                                              did.description,
                                              try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
             // Remove keys.
-            success = doc.removeAuthorizationKey(try DIDURL(doc.subject!, "test1"))
+            success = db.removeAuthorizationKey(try DIDURL(doc.subject!, "test1"))
             XCTAssertTrue(success)
             
-            success = try doc.removeAuthorizationKey("recovery")
+            success = try db.removeAuthorizationKey("recovery")
             XCTAssertTrue(success)
             
             // Key not exist, should fail.
-            success = try doc.removeAuthorizationKey("notExistKey")
+            success = try db.removeAuthorizationKey("notExistKey")
             XCTAssertFalse(success)
             
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -639,26 +650,29 @@ class DIDDoucumentTests: XCTestCase {
     func testAddCredential() {
         do {
             let testData: TestData = TestData()
-            let store = try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
+            
+            let db: DIDDocumentBuilder = doc.edit()
+            
             // Add credentials.
             var vc = try testData.loadPassportCredential()
-            var success: Bool = doc.addCredential(vc!)
+            var success: Bool = db.addCredential(vc!)
             XCTAssertTrue(success)
             
             vc = try testData.loadTwitterCredential()
-            success = doc.addCredential(vc!)
+            success = db.addCredential(vc!)
             XCTAssertTrue(success)
             
             // Credential already exist, should fail.
-            success = doc.addCredential(vc!)
+            success = db.addCredential(vc!)
             XCTAssertFalse(success)
             
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -690,29 +704,31 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
+            let db: DIDDocumentBuilder = doc.edit()
+            
             // Add test credentials.
             var vc = try testData.loadPassportCredential()
-            var success: Bool = doc.addCredential(vc!)
+            var success: Bool = db.addCredential(vc!)
             XCTAssertTrue(success)
             
             vc = try testData.loadTwitterCredential()
-            success = doc.addCredential(vc!)
+            success = db.addCredential(vc!)
             XCTAssertTrue(success)
             // Remove credentials
-            success = try doc.removeCredential("profile")
+            success = try db.removeCredential("profile")
             XCTAssertTrue(success)
             
-            success = doc.removeCredential(try DIDURL(doc.subject!, "twitter"))
+            success = db.removeCredential(try DIDURL(doc.subject!, "twitter"))
             XCTAssertTrue(success)
             
             // Credential not exist, should fail.
-            success = try doc.removeCredential("notExistCredential")
+            success = try db.removeCredential("notExistCredential")
             XCTAssertFalse(success)
-            success = doc.removeCredential(try DIDURL(doc.subject!,
+            success = db.removeCredential(try DIDURL(doc.subject!,
                                                   "notExistCredential"))
             XCTAssertFalse(success)
             
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -794,27 +810,29 @@ class DIDDoucumentTests: XCTestCase {
     func testAddService() {
         do {
             let testData: TestData = TestData()
-            let store = try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
+            let db: DIDDocumentBuilder = doc.edit()
+            
             // Add services
-            var success: Bool = try doc.addService("test-svc-1",
+            var success: Bool = try db.addService("test-svc-1",
                                               "Service.Testing", "https://www.elastos.org/testing1")
             XCTAssertTrue(success)
             
-            success = try doc.addService(DIDURL(doc.subject!, "test-svc-2"),
+            success = try db.addService(DIDURL(doc.subject!, "test-svc-2"),
                                      "Service.Testing", "https://www.elastos.org/testing2")
             XCTAssertTrue(success)
             
             // Service id already exist, should failed.
-            success = try doc.addService("vcr", "test", "https://www.elastos.org/test")
+            success = try db.addService("vcr", "test", "https://www.elastos.org/test")
             XCTAssertFalse(success)
             
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -835,25 +853,27 @@ class DIDDoucumentTests: XCTestCase {
     func testRemoveService() {
         do {
             let testData: TestData = TestData()
-            let store = try testData.setupStore(true)
+            _ = try testData.setupStore(true)
             _ = try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
+            let db: DIDDocumentBuilder = doc.edit()
+            
             // remove services
-            var success: Bool = try doc.removeService("openid")
+            var success: Bool = try db.removeService("openid")
             XCTAssertTrue(success)
             
-            success = doc.removeService(try DIDURL(doc.subject!, "vcr"))
+            success = db.removeService(try DIDURL(doc.subject!, "vcr"))
             XCTAssertTrue(success)
             
             // Service not exist, should fail.
-            success = try doc.removeService("notExistService")
+            success = try db.removeService("notExistService")
             XCTAssertFalse(success)
             
-            doc = try doc.seal(store, storePass)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -902,13 +922,13 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
-            XCTAssertEqual(try testData.loadTestNormalizedJson(), try compact.description(true))
-            XCTAssertEqual(try testData.loadTestNormalizedJson(), try normalized.description(true))
-            XCTAssertEqual(try testData.loadTestNormalizedJson(), try doc.description(true))
+            XCTAssertEqual(try testData.loadTestNormalizedJson(), compact.description(true))
+            XCTAssertEqual(try testData.loadTestNormalizedJson(), normalized.description(true))
+            XCTAssertEqual(try testData.loadTestNormalizedJson(), doc.description(true))
             
-            XCTAssertEqual(try testData.loadTestCompactJson(), try compact.description(false))
-            XCTAssertEqual(try testData.loadTestCompactJson(), try normalized.description(false))
-            XCTAssertEqual(try testData.loadTestCompactJson(), try doc.description(false))
+            XCTAssertEqual(try testData.loadTestCompactJson(), compact.description(false))
+            XCTAssertEqual(try testData.loadTestCompactJson(), normalized.description(false))
+            XCTAssertEqual(try testData.loadTestCompactJson(), doc.description(false))
         } catch {
             print(error)
             XCTFail()
@@ -929,7 +949,7 @@ class DIDDoucumentTests: XCTestCase {
             let pkid: DIDURL = try DIDURL(doc.subject!, "primary")
             
             for _ in 0..<10 {
-                var json = try doc.description(false)
+                var json = doc.description(false)
                 var inputs: [CVarArg] = [json, json.count]
                 var count: Int = inputs.count / 2
                 var sig: String = try doc.sign(pkid, storePass, count, inputs)

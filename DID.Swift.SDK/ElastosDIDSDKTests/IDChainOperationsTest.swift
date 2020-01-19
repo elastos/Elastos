@@ -121,14 +121,15 @@ class IDChainOperationsTest: XCTestCase {
             var lastTxid = resolved!.getTransactionId()
             print("Last transaction id: \(lastTxid ?? "")")
             // Update
-            //            DIDDocument.Builder db = resolved.edit();
+            var db: DIDDocumentBuilder = resolved!.edit()
+            
             var key = try TestData.generateKeypair()
-            _ = try resolved?.addAuthenticationKey("key1", try key.getPublicKeyBase58())
-            doc = try resolved!.seal(store, storePass)
+            _ = try db.addAuthenticationKey("key1", try key.getPublicKeyBase58())
+            doc = try db.seal(storepass: storePass)
             XCTAssertEqual(2, doc.getPublicKeyCount())
             XCTAssertEqual(2, doc.getAuthenticationKeyCount())
             try store.storeDid(doc)
-            
+
             txid = try store.publishDid(did!, storePass)
             XCTAssertNotNil(txid)
             print("Updated DID: \(did!)")
@@ -165,9 +166,10 @@ class IDChainOperationsTest: XCTestCase {
             lastTxid = resolved!.getTransactionId()
             print("Last transaction id: \(lastTxid ?? "")")
             // Update
+            db = resolved!.edit()
             key = try TestData.generateKeypair()
-            _ = try resolved!.addAuthenticationKey("key2", key.getPublicKeyBase58())
-            doc = try resolved!.seal(store, storePass)
+            _ = try db.addAuthenticationKey("key2", key.getPublicKeyBase58())
+            doc = try db.seal(storepass: storePass)
             XCTAssertEqual(3, doc.getPublicKeyCount())
             XCTAssertEqual(3, doc.getAuthenticationKeyCount())
             try store.storeDid(doc);
@@ -259,8 +261,9 @@ class IDChainOperationsTest: XCTestCase {
                 .seal(storepass: storePass)
 
             XCTAssertNotNil(vc)
-            _ = doc.addCredential(vc)
-            doc = try doc.seal(store, storePass)
+            var db: DIDDocumentBuilder = doc.edit()
+            _ = db.addCredential(vc)
+            doc = try db.seal(storepass: storePass)
 
             XCTAssertNotNil(doc)
             XCTAssertEqual(1, doc.getCredentialCount())
@@ -318,8 +321,9 @@ class IDChainOperationsTest: XCTestCase {
                 .seal(storepass: storePass)
             
             XCTAssertNotNil(vc)
-            _ = resolved.addCredential(vc)
-            doc = try resolved.seal(store, storePass)
+            db = resolved.edit()
+            _ = db.addCredential(vc)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertEqual(2, doc.getCredentialCount())
             try store.storeDid(doc)
@@ -375,8 +379,9 @@ class IDChainOperationsTest: XCTestCase {
                 .seal(storepass: storePass)
             
             XCTAssertNotNil(vc)
-            _ = resolved.addCredential(vc)
-            doc = try resolved.seal(store, storePass)
+            db = resolved.edit()
+            _ = db.addCredential(vc)
+            doc = try db.seal(storepass: storePass)
             XCTAssertNotNil(doc)
             XCTAssertEqual(3, doc.getCredentialCount())
             try store.storeDid(doc)
