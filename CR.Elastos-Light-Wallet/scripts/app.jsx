@@ -385,9 +385,11 @@ const sendAmountToAddressErrorCallback = (error) => {
 }
 
 const sendAmountToAddressReadyCallback = (transactionJson) => {
+  mainConsole.log('sendAmountToAddressReadyCallback ' + JSON.stringify(transactionJson));
   sendToAddressStatuses.length = 0;
-  sendToAddressStatuses.push(JSON.stringify(transactionJson));
-  if (transactionJson.error == null) {
+  if (transactionJson.error) {
+    sendToAddressStatuses.push(transactionJson.error.message);
+  } else {
     const link = getTransactionHistoryLink(transactionJson.result);
     const elt = {};
     elt.txDetailsUrl = link;
