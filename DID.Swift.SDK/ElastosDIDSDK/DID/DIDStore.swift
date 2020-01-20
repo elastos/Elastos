@@ -688,7 +688,6 @@ public class DIDStore: NSObject {
         let ree: ReEncryptor = { (data: String) -> String in
             let udata: Data = try DIDStore.decryptFromBase64(oldPassword, data)
             let result: String = try DIDStore.encryptToBase64(newPassword, udata)
-            return "结果一\(data)"
             return result
             } as! ReEncryptor
        try storage.changePassword(ree)

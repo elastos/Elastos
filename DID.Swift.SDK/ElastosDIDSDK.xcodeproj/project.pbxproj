@@ -30,6 +30,9 @@
 		11641BC123B72AD00037016B /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 11641BBF23B72AD00037016B /* HDkey.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		116AC38A23A5FA410076BDC7 /* LRUCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116AC38523A5FA410076BDC7 /* LRUCache.swift */; };
 		11724A1B23D5558900DF5820 /* RegexHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11724A1A23D5558900DF5820 /* RegexHelper.swift */; };
+		11724A2123D5692C00DF5820 /* DIDDocumentBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11724A2023D5692C00DF5820 /* DIDDocumentBuilder.swift */; };
+		11724A2323D5696D00DF5820 /* VerifiablePresentationBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11724A2223D5696D00DF5820 /* VerifiablePresentationBuilder.swift */; };
+		11724A2523D569A400DF5820 /* CredentialBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11724A2423D569A400DF5820 /* CredentialBuilder.swift */; };
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
 		11A6B15B238FD79000D3C1F1 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B159238FD77E00D3C1F1 /* libcrypto.a */; };
 		11A6B15C238FD79000D3C1F1 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B15A238FD77E00D3C1F1 /* libhdkey.a */; };
@@ -221,6 +224,9 @@
 		11641BBF23B72AD00037016B /* HDkey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HDkey.h; sourceTree = "<group>"; };
 		116AC38523A5FA410076BDC7 /* LRUCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LRUCache.swift; sourceTree = "<group>"; };
 		11724A1A23D5558900DF5820 /* RegexHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegexHelper.swift; sourceTree = "<group>"; };
+		11724A2023D5692C00DF5820 /* DIDDocumentBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDDocumentBuilder.swift; sourceTree = "<group>"; };
+		11724A2223D5696D00DF5820 /* VerifiablePresentationBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifiablePresentationBuilder.swift; sourceTree = "<group>"; };
+		11724A2423D569A400DF5820 /* CredentialBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialBuilder.swift; sourceTree = "<group>"; };
 		119338DC237E4DB800C4998E /* TestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestConfig.swift; path = TestUtils/TestConfig.swift; sourceTree = "<group>"; };
 		119338E2237E622300C4998E /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E4237E623100C4998E /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
@@ -577,14 +583,17 @@
 				11E89FBB23A4C36000C81B3C /* DIDAdapter.swift */,
 				11E89FBE23A4C36000C81B3C /* DIDBackend.swift */,
 				11E89FCE23A4C36000C81B3C /* DIDDocument.swift */,
+				11724A2023D5692C00DF5820 /* DIDDocumentBuilder.swift */,
 				11E89FBC23A4C36000C81B3C /* DIDObject.swift */,
 				11E8A00623A4DAF100C81B3C /* DIDStorage.swift */,
 				11E89FA923A4C36000C81B3C /* DIDStore.swift */,
 				11E89FCD23A4C36000C81B3C /* DIDURL.swift */,
 				11E89FD023A4C36000C81B3C /* FileSystemStorage.swift */,
 				11E89FAE23A4C36000C81B3C /* Issuer.swift */,
+				11724A2423D569A400DF5820 /* CredentialBuilder.swift */,
 				11E89FAB23A4C36000C81B3C /* VerifiableCredential.swift */,
 				11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */,
+				11724A2223D5696D00DF5820 /* VerifiablePresentationBuilder.swift */,
 				11E89FB123A4C36000C81B3C /* Service.swift */,
 				11E89FAD23A4C36000C81B3C /* EmbeddedCredential.swift */,
 				11E89FB023A4C36000C81B3C /* CredentialSubject.swift */,
@@ -893,6 +902,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11724A2523D569A400DF5820 /* CredentialBuilder.swift in Sources */,
 				11E89FEC23A4C36000C81B3C /* DIDBackend.swift in Sources */,
 				11E89FFB23A4C36000C81B3C /* DIDDocument.swift in Sources */,
 				115DBD8423B3313D00501983 /* DIDMeta.swift in Sources */,
@@ -907,6 +917,7 @@
 				11E89FF023A4C36000C81B3C /* DIDURLBaseListener.swift in Sources */,
 				115DBD8E23B492DB00501983 /* IDTransactionInfo.swift in Sources */,
 				11E89FF723A4C36000C81B3C /* DIDURLParser.swift in Sources */,
+				11724A2323D5696D00DF5820 /* VerifiablePresentationBuilder.swift in Sources */,
 				11E89FDA23A4C36000C81B3C /* DIDStore.swift in Sources */,
 				11E89FE923A4C36000C81B3C /* PathExtracter.swift in Sources */,
 				11E89FFA23A4C36000C81B3C /* DIDURL.swift in Sources */,
@@ -914,6 +925,7 @@
 				11E8A00723A4DAF200C81B3C /* DIDStorage.swift in Sources */,
 				11E1D00A23D039630011DD65 /* DIDDocumentProof.swift in Sources */,
 				11E89FE123A4C36000C81B3C /* Service.swift in Sources */,
+				11724A2123D5692C00DF5820 /* DIDDocumentBuilder.swift in Sources */,
 				11E1D00B23D039630011DD65 /* CredentialProof.swift in Sources */,
 				11E89FDC23A4C36000C81B3C /* VerifiablePresentation.swift in Sources */,
 				11724A1B23D5558900DF5820 /* RegexHelper.swift in Sources */,
