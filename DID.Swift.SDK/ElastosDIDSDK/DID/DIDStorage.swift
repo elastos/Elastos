@@ -1,4 +1,8 @@
+
+typealias ReEncryptor = (String) -> String
+
 protocol DIDStorage {
+
     // Root private identity
     func containsPrivateIdentity() throws -> Bool
 
@@ -59,4 +63,6 @@ protocol DIDStorage {
     func containsPrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool
 
     func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool
+    
+    func changePassword(_ reEncryptor: ReEncryptor) throws
 }

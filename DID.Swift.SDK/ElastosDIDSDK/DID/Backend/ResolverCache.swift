@@ -32,7 +32,7 @@ public class ResolverCache {
     public class func store(_ rr: ResolveResult) throws {
         let id = rr.did.methodSpecificId
         let path = getFile(id)
-        let json: String = try rr.toJson()
+        let json: String = rr.toJson()
         let data: Data = json.data(using: .utf8)!
         let handle = FileHandle(forWritingAtPath:path)
         handle?.write(data)

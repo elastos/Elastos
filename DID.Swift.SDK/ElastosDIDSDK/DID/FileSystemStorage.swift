@@ -39,7 +39,7 @@ public class FileSystemStorage: DIDStorage {
     private static let PRIVATE_DIR = "private"
     private static let HDKEY_FILE = "key"
     private static let INDEX_FILE = "index"
-    private static let MNEMONIC_FILE = "mnemonic";
+    private static let MNEMONIC_FILE = "mnemonic"
 
     private static let DID_DIR = "ids"
     private static let DOCUMENT_FILE = "document"
@@ -48,10 +48,12 @@ public class FileSystemStorage: DIDStorage {
     private static let PRIVATEKEYS_DIR = "privatekeys"
 
     private static let META_FILE = ".meta"
+    private static let JOURNAL_SUFFIX = ".journal"
+    private static let DEPRECATED_SUFFIX = ".deprecated"
 
     private static let DEFAULT_CHARSET = "UTF-8"
     
-    private var storeRootPath: String!
+    private var storeRootPath: String
     
     public init(_ dir: String) throws {
         if dir.isEmpty {
@@ -87,7 +89,7 @@ public class FileSystemStorage: DIDStorage {
         var isDir: ObjCBool = false
         if fileManager.fileExists(atPath: storeRootPath, isDirectory:&isDir) {
             guard isDir.boolValue else {
-                throw DIDError.didStoreError(_desc: "Store root \(storeRootPath ?? "") is a file.")
+                throw DIDError.didStoreError(_desc: "Store root \(storeRootPath ) is a file.")
             }
         }
         
@@ -417,7 +419,6 @@ public class FileSystemStorage: DIDStorage {
         return false
     }
     
-    // -----------------------
     func exists(_ dirPath: String) throws -> Bool {
         let fileManager = FileManager.default
         var isDir : ObjCBool = false
@@ -506,6 +507,108 @@ public class FileSystemStorage: DIDStorage {
         }
         return true
     }
+    
+    private func needReencrypt(_ path: String) throws -> Bool {
+        let patterns: Array<String> = [
+            "(.+)\\" + "/" + FileSystemStorage.PRIVATE_DIR + "\\" + "/" + FileSystemStorage.HDKEY_FILE,
+            "(.+)\\" + "/" + FileSystemStorage.PRIVATE_DIR + "\\" + "/" + FileSystemStorage.MNEMONIC_FILE,
+            "(.+)\\" + "/" + FileSystemStorage.DID_DIR + "\\" + "/" + "(.+)" + "\\" + "/" + FileSystemStorage.PRIVATEKEYS_DIR + "\\" + "/" + "(.+)"]
+        for pattern in patterns {
+            let matcher: RegexHelper = try RegexHelper(pattern)
+            
+            if matcher.match(input: path)  { // if (path.matches(pattern))
+                return true
+            }
+        }
+        return false
+    }
+    
+    private func copy(_ src: String, _ dest: String, _ reEncryptor: ReEncryptor) throws {
+        if isDirectory(src) {
+            _ = try getFile(true, dest) // dest create if not
+            
+            let fileManager = FileManager.default
+            let enumerator = try fileManager.contentsOfDirectory(atPath: src)
+            for element: String in enumerator  {
+                // if !element.hasSuffix(".meta")
+                let srcFile = src + element
+                let destFile = dest + element
+                try copy(srcFile, destFile, reEncryptor)
+            }
+        }
+        else {
+            if try needReencrypt(src) {
+                let org: String = try readTextFromPath(src)
+                try writeTextToPath(dest, reEncryptor(org))
+            }
+            else {
+                let fileManager = FileManager.default
+                try fileManager.copyItem(atPath: src, toPath: dest)
+            }
+        }
+    }
+    
+    private func postChangePassword() throws {
+        let privateDir: String = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR
+        let privateDeprecated = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.JOURNAL_SUFFIX
+        let privateJournal = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/"  + FileSystemStorage.JOURNAL_SUFFIX
+        
+        let didDir = storeRootPath + "/" + FileSystemStorage.DID_DIR
+        let didDeprecated = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + FileSystemStorage.DEPRECATED_SUFFIX
+        let didJournal = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + FileSystemStorage.JOURNAL_SUFFIX
+        let stageFile = storeRootPath +  "/postChangePassword"
+
+        let fileManager = FileManager.default
+        if try exists(stageFile) {
+            if try exists(privateJournal) {
+                if try exists(privateDir) {
+                    try fileManager.moveItem(atPath: privateDir, toPath: privateDeprecated)
+                }
+                try fileManager.moveItem(atPath: privateJournal, toPath: privateDir)
+            }
+            if try exists(didJournal) {
+                if try exists(didDir) {
+                    try fileManager.moveItem(atPath: didDir, toPath: didDeprecated)
+                }
+                try fileManager.moveItem(atPath: didJournal, toPath: didDir)
+            }
+            
+            _ = try deleteFile(privateDeprecated)
+            _ = try deleteFile(didDeprecated)
+            _ = try deleteFile(stageFile)
+        }
+        else {
+            if try exists(privateJournal) {
+                _ = try deleteFile(privateJournal)
+            }
+            if try exists(didJournal) {
+                _ = try deleteFile(didJournal)
+            }
+        }
+    }
+    
+    func changePassword(_ reEncryptor: (String) -> String) throws {
+        let privateDir = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR
+        let privateJournal = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.JOURNAL_SUFFIX
+
+        let didDir = storeRootPath + "/" + FileSystemStorage.DID_DIR
+        let didJournal = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + FileSystemStorage.JOURNAL_SUFFIX
+        do {
+        try copy(privateDir, privateJournal, reEncryptor)
+        try copy(didDir, didJournal, reEncryptor)
+        }
+        catch {
+            throw DIDError.didStoreError(_desc: "Change store password failed.")
+        }
+        try postChangePassword()
+    }
+    
+    func isDirectory(_ path: String) -> Bool {
+        let fileManager = FileManager.default
+        var isDir : ObjCBool = false
+        _ = fileManager.fileExists(atPath: path, isDirectory:&isDir)
+        return isDir.boolValue
+    }
 }
 
 public class Entry<K, V> {
@@ -517,3 +620,4 @@ public class Entry<K, V> {
         self.value = value
     }
 }
+ 

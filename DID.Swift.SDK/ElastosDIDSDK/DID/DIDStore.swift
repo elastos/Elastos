@@ -38,7 +38,7 @@ public class DIDStore: NSObject {
         return try storage!.containsPrivateIdentity()
     }
 
-    func encryptToBase64(_ passwd: String ,_ input: Data) throws -> String {
+   class func encryptToBase64(_ passwd: String ,_ input: Data) throws -> String {
         let cinput: UnsafePointer<UInt8> = input.withUnsafeBytes{ (by: UnsafePointer<UInt8>) -> UnsafePointer<UInt8> in
             return by
         }
@@ -53,7 +53,7 @@ public class DIDStore: NSObject {
         return json
     }
     
-    public func decryptFromBase64(_ passwd: String ,_ input: String) throws -> [Int8] {
+    class func decryptFromBase64(_ passwd: String ,_ input: String) throws -> [Int8] {
         let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
@@ -68,7 +68,7 @@ public class DIDStore: NSObject {
         return intArray
     }
     
-    public func decryptFromBase64(_ passwd: String ,_ input: String) throws -> Data {
+    class func decryptFromBase64(_ passwd: String ,_ input: String) throws -> Data {
         let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
@@ -94,13 +94,13 @@ public class DIDStore: NSObject {
         // Save seed instead of root private key,
         // keep compatible with Native SDK
         let seedData = privateIdentity.getSeed()
-        let encryptedIdentity = try encryptToBase64(storepass, seedData)
+        let encryptedIdentity = try DIDStore.encryptToBase64(storepass, seedData)
         try storage!.storePrivateIdentity(encryptedIdentity)
         try storage!.storePrivateIdentityIndex(0)
         
         // Save mnemonic
         let mnemData = mnemonic.data(using: .utf8)
-        let encryptedMnemonic: String = try encryptToBase64(storepass, mnemData!)
+        let encryptedMnemonic: String = try DIDStore.encryptToBase64(storepass, mnemData!)
         try storage.storeMnemonic(encryptedMnemonic)
     }
     
@@ -110,7 +110,7 @@ public class DIDStore: NSObject {
     
     public func exportMnemonic(_ storepass: String) throws -> String {
         let encryptedMnemonic: String = try storage.loadMnemonic()
-        let re: Data = try decryptFromBase64(storepass, encryptedMnemonic)
+        let re: Data = try DIDStore.decryptFromBase64(storepass, encryptedMnemonic)
         return String(data: re, encoding: .utf8)!
     }
     
@@ -118,7 +118,7 @@ public class DIDStore: NSObject {
         guard try containsPrivateIdentity() else {
             throw DIDError.didStoreError(_desc: "DID Store not contains private identity.")
         }
-        let seed: Data = try decryptFromBase64(storepass, storage.loadPrivateIdentity())
+        let seed: Data = try DIDStore.decryptFromBase64(storepass, storage.loadPrivateIdentity())
         return HDKey.fromSeed(seed)
     }
 
@@ -155,7 +155,7 @@ public class DIDStore: NSObject {
                 
                 // Save private key
                 let privatekeyData: Data = try key.getPrivateKeyData()
-                let encryptedKey: String = try encryptToBase64(storepass, privatekeyData)
+                let encryptedKey: String = try DIDStore.encryptToBase64(storepass, privatekeyData)
                 let data = encryptedKey.data(using: .utf8)
                 try storePrivateKey(did, doc!.getDefaultPublicKey(), data!, storepass)
                 if (i >= nextIndex){
@@ -601,7 +601,7 @@ public class DIDStore: NSObject {
     }
     
     public func storePrivateKey(_ did: DID,_ id: DIDURL, _ privateKey: Data, _ storepass: String) throws {
-        let encryptedKey = try encryptToBase64(storepass, privateKey)
+        let encryptedKey = try DIDStore.encryptToBase64(storepass, privateKey)
         try storage.storePrivateKey(did, id, encryptedKey)
     }
     
@@ -649,10 +649,10 @@ public class DIDStore: NSObject {
                 throw DIDError.didStoreError(_desc: "Can not resolve DID document.") 
             }
             let id_1 = doc!.getDefaultPublicKey()
-            privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id_1))
+            privatekeys = try DIDStore.decryptFromBase64(storepass,try loadPrivateKey(did, id: id_1))
         }
         else {
-            privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id!))
+            privatekeys = try DIDStore.decryptFromBase64(storepass,try loadPrivateKey(did, id: id!))
         }
         
         var cinputs: [CVarArg] = []
@@ -681,6 +681,17 @@ public class DIDStore: NSObject {
         let endIndex = jsonStr.index(jsonStr.startIndex, offsetBy: re)
         let sig_ = String(jsonStr[jsonStr.startIndex..<endIndex])
         return sig_
+    }
+    
+    public func changePassword(_ oldPassword: String, _ newPassword: String) throws {
+        
+        let ree: ReEncryptor = { (data: String) -> String in
+            let udata: Data = try DIDStore.decryptFromBase64(oldPassword, data)
+            let result: String = try DIDStore.encryptToBase64(newPassword, udata)
+            return "结果一\(data)"
+            return result
+            } as! ReEncryptor
+       try storage.changePassword(ree)
     }
 }
 
