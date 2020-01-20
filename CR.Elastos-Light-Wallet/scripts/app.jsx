@@ -578,7 +578,16 @@ const toggleProducerSelection = (item) => {
 }
 
 const requestListOfCandidateVotesErrorCallback = (response) => {
-  candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
+  let displayRawError = true;
+  if(response.error) {
+    if(response.error.code == 45002) {
+      displayRawError = false;
+      candidateVoteListStatus = `Candidate Votes Error: ${response.message}`;
+    }
+  }
+  if(displayRawError) {
+    candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
+  }
   renderApp();
 }
 
@@ -641,6 +650,7 @@ const sendVoteTx = () => {
 
   mainConsole.log('sendVoteTx.useLedgerFlag ' + JSON.stringify(useLedgerFlag));
   mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
+  candidateVoteListStatus = `Voting for ${parsedProducerList.producersCandidateCount} candidates.`;
   if (useLedgerFlag) {
     if(unspentTransactionOutputs) {
       const tx = TxFactory.createUnsignedVoteTx(unspentTransactionOutputs, publicKey, feeAmountSats, candidates);
@@ -660,6 +670,7 @@ const sendVoteTx = () => {
         const encodedTx = TxSigner.addSignatureToTx(tx, publicKey, signature);
         sendVoteCallback(encodedTx);
       }
+      candidateVoteListStatus += ' please confirm tx on ledger.';
       LedgerComm.sign(encodedUnsignedTx, sendVoteLedgerCallback);
     } else {
       alert('please wait, UTXOs have not been retrieved yet.');
@@ -710,13 +721,10 @@ const senVoteErrorCallback = (error) => {
 
 const sendVoteReadyCallback = (transactionJson) => {
   mainConsole.log('sendVoteReadyCallback ' + JSON.stringify(transactionJson));
-  // sendToAddressStatuses.push(JSON.stringify(transactionJson));
-  if (transactionJson.error == null) {
-    // const link = getTransactionHistoryLink(transactionJson.result);
-    // const elt = {};
-    // elt.txDetailsUrl = link;
-    // elt.txHash = transactionJson.result;
-    // sendToAddressLinks.push(elt);
+  if (transactionJson.error) {
+    candidateVoteListStatus = `Vote Error: ${transactionJson.error.message}`;
+  } else {
+    candidateVoteListStatus = `Vote Success TX: ${transactionJson.result}`;
   }
   renderApp();
 }
