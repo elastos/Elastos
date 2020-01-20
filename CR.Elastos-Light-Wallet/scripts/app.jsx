@@ -855,6 +855,7 @@ const hideEverything = () => {
   clearButtonSelection('home');
   clearButtonSelection('receive');
   clearButtonSelection('transactions');
+  clearButtonSelection('voting');
   hide('private-key-entry');
   hide('cancel-confirm-transaction');
   hide('completed-transaction');
@@ -986,6 +987,9 @@ const showTransactions = () => {
 }
 
 const showVoting = () => {
+  if (!isLoggedIn) {
+    return;
+  }
   hideEverything();
   clearSendData();
   requestListOfProducers();
