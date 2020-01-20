@@ -145,6 +145,7 @@ var producerListStatus = 'No Producers Requested Yet';
 var parsedProducerList = {};
 parsedProducerList.totalvotes = '-';
 parsedProducerList.totalcounts = '-';
+parsedProducerList.producersCandidateCount = 0;
 parsedProducerList.producers = [];
 
 var candidateVoteListStatus = 'No Candidate Votes Requested Yet';
@@ -520,6 +521,7 @@ const requestListOfProducersReadyCallback = (response) => {
 
   // mainConsole.log('STARTED Producers Callback', response);
   parsedProducerList = {};
+  parsedProducerList.producersCandidateCount = 0;
   parsedProducerList.producers = [];
   if (response.error !== null) {
     producerListStatus = `Producers Error: ${JSON.stringify(response)}`;
@@ -564,6 +566,14 @@ const toggleProducerSelection = (item) => {
   // mainConsole.log('INTERIM[1] toggleProducerSelection isCandidate', parsedProducer.isCandidate);
   parsedProducer.isCandidate = !parsedProducer.isCandidate;
   // mainConsole.log('INTERIM[2] toggleProducerSelection isCandidate', parsedProducer.isCandidate);
+
+  parsedProducerList.producersCandidateCount = 0;
+  parsedProducerList.producers.forEach((parsedProducerElt) => {
+    if(parsedProducerElt.isCandidate) {
+      parsedProducerList.producersCandidateCount++;
+    }
+  })
+
   renderApp();
 }
 
@@ -630,25 +640,30 @@ const sendVoteTx = () => {
   var encodedTx;
 
   mainConsole.log('sendVoteTx.useLedgerFlag ' + JSON.stringify(useLedgerFlag));
+  mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
   if (useLedgerFlag) {
-    const tx = TxFactory.createUnsignedVoteTx(privateKey, unspentTransactionOutputs, feeAmountSats, candidates);
-    const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
-    const sendVoteLedgerCallback = (message) => {
-      if (LOG_LEDGER_POLLING) {
-        mainConsole.log(`sendVoteLedgerCallback ${JSON.stringify(message)}`);
+    if(unspentTransactionOutputs) {
+      const tx = TxFactory.createUnsignedVoteTx(unspentTransactionOutputs, publicKey, feeAmountSats, candidates);
+      const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
+      const sendVoteLedgerCallback = (message) => {
+        if (LOG_LEDGER_POLLING) {
+          mainConsole.log(`sendVoteLedgerCallback ${JSON.stringify(message)}`);
+        }
+        if (!message.success) {
+          // sendToAddressStatuses.length = 0;
+          // sendToAddressLinks.length = 0;
+          // sendToAddressStatuses.push(JSON.stringify(message));
+          renderApp();
+          return;
+        }
+        const signature = Buffer.from(message.signature, 'hex');
+        const encodedTx = TxSigner.addSignatureToTx(tx, publicKey, signature);
+        sendVoteCallback(encodedTx);
       }
-      if (!message.success) {
-        // sendToAddressStatuses.length = 0;
-        // sendToAddressLinks.length = 0;
-        // sendToAddressStatuses.push(JSON.stringify(message));
-        renderApp();
-        return;
-      }
-      const signature = Buffer.from(message.signature, 'hex');
-      const encodedTx = TxSigner.addSignatureToTx(tx, publicKey, signature);
-      sendVoteCallback(encodedTx);
+      LedgerComm.sign(encodedUnsignedTx, sendVoteLedgerCallback);
+    } else {
+      alert('please wait, UTXOs have not been retrieved yet.');
     }
-    LedgerComm.sign(encodedUnsignedTx, sendVoteLedgerCallback);
   } else {
     const privateKeyElt = document.getElementById('privateKey');
     const privateKey = privateKeyElt.value;
@@ -1441,6 +1456,9 @@ class App extends React.Component {
                       <div className="gray_on_white float_right display_inline_block">
                         <span className="padding_2px">{parsedProducerList.totalcounts}</span>
                         Counts</div>
+                      <div className="gray_on_white float_right display_inline_block">
+                        <span className="padding_2px">{parsedProducerList.producersCandidateCount}</span>
+                        Selected Candidates</div>
                       <div className="gray_on_white display_inline_block">
                         Candidates (
                         <span className="padding_2px">{parsedProducerList.producers.length}</span>
