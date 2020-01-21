@@ -650,3 +650,10 @@ def suggest_service(request):
         track_page_visit(did, 'Suggest a new service', 'service:suggest_service', True)
         recent_services = get_recent_services(did)
         return render(request, "service/suggest_service.html", {'recent_services': recent_services})
+
+
+
+
+
+
+

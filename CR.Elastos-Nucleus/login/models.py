@@ -24,9 +24,14 @@ class DIDUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+    @staticmethod
+    def user_name():
+        return 'User Identification Info'
+
 
 class DIDRequest(models.Model):
     state = models.CharField(max_length=20)
     data = JSONField()
     created_at = models.DateTimeField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
+

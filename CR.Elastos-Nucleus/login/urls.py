@@ -14,5 +14,6 @@ urlpatterns = [
         views.activate, name="activate"),
     path('sign_in', views.sign_in, name="sign_in"),
     path('feed', views.feed, name="feed"),
-    path('sign_out', views.sign_out, name="sign_out")
+    path('sign_out', views.sign_out, name="sign_out"),
+    path('get_user_data' , views.get_user_data , name = 'get_user_data'),
 ]

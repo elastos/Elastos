@@ -6,6 +6,8 @@ from django.db import models
 from console_main import settings
 
 
+
+
 class UploadFile(models.Model):
     did = models.CharField(max_length=64)
     uploaded_file = models.FileField(upload_to='user_files', blank=True)
@@ -17,6 +19,8 @@ class UploadFile(models.Model):
     def filename(self):
         name_list = self.uploaded_file.name.split('/')
         return name_list[-1]
+
+
 
 
 class UserServiceSessionVars(models.Model):
@@ -36,6 +40,10 @@ class UserServiceSessionVars(models.Model):
     address_eth = models.CharField(max_length=64)
     private_key_eth = models.CharField(max_length=300)
 
+    @staticmethod
+    def user_name():
+        return 'User BlockChain Wallet Information '
+
 
 class SavedFileInformation(models.Model):
     did = models.CharField(max_length= 64 ,  null=False)
@@ -46,5 +54,9 @@ class SavedFileInformation(models.Model):
 
     def __str__(self):
         return self.file_name
+
+    @staticmethod
+    def user_name():
+        return 'Uploaded File Information'
 
 

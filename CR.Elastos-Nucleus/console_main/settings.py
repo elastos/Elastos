@@ -324,3 +324,10 @@ QR_CODE_URL_PROTECTION = {
     # a boolean value used for any user, or a callable that takes a user as parameter. Defaults to False (nobody can
     # access the URL without the security token).
 }
+
+#all application names
+ALL_APPS = [
+    'console_main',
+    'login',
+    'service'
+]
