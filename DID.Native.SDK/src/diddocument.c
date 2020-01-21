@@ -939,9 +939,9 @@ bool DIDDocument_IsValid(DIDDocument *document)
 
 static int publickeys_copy(DIDDocument *doc, PublicKey **pks, size_t size, KeyType keytype)
 {
-    PublicKey **pk_array;
+    PublicKey **pk_array = NULL;
     size_t *psize;
-    int i;
+    int i, j;
 
     assert(doc);
     assert(pks);
@@ -954,30 +954,86 @@ static int publickeys_copy(DIDDocument *doc, PublicKey **pks, size_t size, KeyTy
     if (!pk_array)
         return -1;
 
+    for (i = 0; i < size; i++) {
+        pk_array[i] = (PublicKey*)calloc(1, sizeof(PublicKey));
+        if (!pk_array[i])
+            goto errorExit;
+
+        memcpy(pk_array[i], pks[i], sizeof(PublicKey));
+    }
+
     switch (keytype) {
         case KeyType_Authentication:
             doc->authentication.pks = pk_array;
-            psize = &doc->authentication.size;
+            doc->authentication.size = i;
             break;
         case KeyType_Authorization:
             doc->authorization.pks = pk_array;
-            psize = &doc->authorization.size;
+            doc->authorization.size = i;
             break;
         case KeyType_PublicKey:
             doc->publickeys.pks = pk_array;
-            psize = &doc->publickeys.size;
+            doc->publickeys.size = i;
             break;
         default:
-            return -1;
+            goto errorExit;
     }
 
-    for (i = 0; i < size; i++) {
-        PublicKey *pk = (PublicKey*)calloc(1, sizeof(PublicKey));
-        if (!pk)
-            return -1;
+    return 0;
 
-        memcpy(pk_array[(*psize)++], pks[i], sizeof(PublicKey));
+errorExit:
+    for (j = 0; j < i; j++)
+        if (pk_array[j])
+            free(pk_array[j]);
+
+    if (pk_array)
+        free(pk_array);
+
+    return -1;
+}
+
+static int credential_copy(Credential *cred1, Credential *cred2)
+{
+    int rc, i;
+
+    assert(cred1);
+    assert(cred2);
+
+    if (DIDURL_Copy(&cred1->id, &cred2->id) == -1)
+        return -1;
+
+    cred1->type.types = (char**)calloc(cred2->type.size, sizeof(char*));
+    if (!cred1->type.types)
+        return -1;
+
+    for (i = 0; i < cred2->type.size; i++)
+        cred1->type.types[i] = strdup(cred2->type.types[i]);
+    cred1->type.size = cred2->type.size;
+
+    if (DID_Copy(&cred1->issuer, &cred2->issuer) == -1)
+        return -1;
+
+    cred1->issuanceDate = cred2->issuanceDate;
+    cred1->expirationDate = cred2->expirationDate;
+
+    if (DID_Copy(&cred1->subject.id, &cred2->subject.id) == -1)
+        return -1;
+
+    cred1->subject.infos.properties = (Property*)calloc(cred2->subject.infos.size, sizeof(Property));
+    if (!cred1->subject.infos.properties)
+        return -1;
+
+    for (i = 0; i < cred2->subject.infos.size; i++) {
+        cred1->subject.infos.properties[i].key =
+                strdup(cred2->subject.infos.properties[i].key);
+        cred1->subject.infos.properties[i].value =
+                strdup(cred2->subject.infos.properties[i].value);
     }
+    cred1->subject.infos.size = cred2->subject.infos.size;
+
+    memcpy(&cred1->proof, &cred2->proof, sizeof(CredentialProof));
+    memcpy(&cred1->meta, &cred2->meta, sizeof(CredentialMeta));
+
     return 0;
 }
 
@@ -998,32 +1054,16 @@ static int credentials_copy(DIDDocument *doc, Credential **creds, size_t size)
         return -1;
 
     for (i = 0; i < size; i++) {
-        Credential *ccred;
-        size_t typesize;
-        Credential *cred = (Credential*)calloc(1, sizeof(Credential));
-        if (!cred)
+        doc->credentials.credentials[i] = (Credential*)calloc(1, sizeof(Credential));
+        if (!doc->credentials.credentials[i])
             return -1;
 
-        ccred = creds[i];
-        memcpy(cred, ccred, sizeof(Credential));
-        typesize = ccred->type.size;
-        if (typesize == 0)
-            continue;
-
-        cred->type.types = calloc(typesize, sizeof(char*));
-        if (!cred->type.types)
+        if (credential_copy(doc->credentials.credentials[i], creds[i]) == -1) {
+            Credential_Destroy(doc->credentials.credentials[i]);
+            doc->credentials.credentials[i] = NULL;
             return -1;
-
-        for (j = 0; j < typesize; j++) {
-            char *type = ccred->type.types[j];
-            size_t len = strlen(type) + 1;
-            cred->type.types[j] = calloc(len, 1);
-            if (!cred->type.types[j])
-                return -1;
-
-            strcpy(cred->type.types[j], type);
-            cred->type.size = j + 1;
         }
+
         doc->credentials.size = i + 1;
     }
 
@@ -1067,18 +1107,25 @@ static int DIDDocument_Copy(DIDDocument *doc, DIDDocument *document)
     DID_Copy(&doc->did, &document->did);
 
     if (publickeys_copy(doc, document->publickeys.pks, document->publickeys.size,
-            KeyType_PublicKey) == -1 || publickeys_copy(doc,
+            KeyType_PublicKey) == -1)
+        return -1;
+
+    if (document->authentication.size != 0 && publickeys_copy(doc,
             document->authentication.pks, document->authentication.size,
-            KeyType_Authentication) == -1 || publickeys_copy(doc,
+            KeyType_Authentication) == -1)
+        return -1;
+
+    if (document->authorization.size != 0 && publickeys_copy(doc,
             document->authorization.pks, document->authorization.size,
             KeyType_Authorization) == -1)
         return -1;
 
-    if (credentials_copy(doc, document->credentials.credentials,
-            document->credentials.size) == -1)
+    if (document->credentials.size != 0  && credentials_copy(doc,
+            document->credentials.credentials, document->credentials.size) == -1)
         return -1;
 
-    if (services_copy(doc, document->services.services, document->services.size) == -1)
+    if (document->services.size != 0 && services_copy(doc,
+            document->services.services, document->services.size) == -1)
         return -1;
 
     doc->expires = document->expires;
@@ -1135,24 +1182,18 @@ DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder, const char *st
 
     doc = builder->document;
     key = DIDDocument_GetDefaultPublicKey(doc);
-    if (!key) {
-       //DIDDocumentBuilder_Destroy(builder);
+    if (!key)
         return NULL;
-    }
 
     data = DIDDocument_ToJson(doc, 0, 1);
-    if (!data) {
-        //DIDDocumentBuilder_Destroy(builder);
+    if (!data)
         return NULL;
-    }
 
     rc = DIDDocument_Sign(doc, key, storepass, signature, 1,
             (unsigned char*)data, strlen(data));
     free((char*)data);
-    if (rc) {
-        //sDIDDocumentBuilder_Destroy(builder);
+    if (rc)
         return NULL;
-    }
 
     strcpy(doc->proof.type, ProofType);
     time(&doc->proof.created);

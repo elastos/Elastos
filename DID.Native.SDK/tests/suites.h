@@ -52,13 +52,15 @@ typedef struct TestSuite {
 #include "doctests/suites.h"
 #include "idchaintests/suites.h"
 #include "dstoretests/suites.h"
+#include "issuertests/suites.h"
 
 TestSuite suites[] = {
     DEFINE_DID_TESTSUITES,
     DEFINE_DSTORE_TESTSUITES,
-    DEFINE_IDCHAIN_TESTSUITES,
     DEFINE_DOC_TESTSUITES,
     DEFINE_VC_TESTSUITES,
+    DEFINE_ISSUER_TESTSUITES,
+    DEFINE_IDCHAIN_TESTSUITES,
     DEFINE_TESTSUITE_NULL
 };
 

@@ -46,7 +46,7 @@ typedef struct CredentialSubject {
     DID id;
 
     struct {
-        Property **properties;
+        Property *properties;
         size_t size;
     } infos;
 } CredentialSubject;

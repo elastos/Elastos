@@ -46,7 +46,7 @@ file(GLOB DOC-TESTS "doctests/*.c")
 file(GLOB IDCHAIN-TESTS "idchaintests/*.c")
 file(GLOB DSTORE-TESTS "dstoretests/*.c")
 #file(GLOB VP-TESTS "vptests/*.c")
-#file(GLOB ISSUER-TESTS "issuertests/*.c")
+file(GLOB ISSUER-TESTS "issuertests/*.c")
 
 set(SRC
     tests.c
@@ -57,7 +57,7 @@ set(SRC
     ${IDCHAIN-TESTS}
     ${DSTORE-TESTS}
     #${VP-TESTS}
-    #${ISSUER-TESTS}
+    ${ISSUER-TESTS}
     )
 
 add_definitions(-DLIBCONFIG_STATIC)

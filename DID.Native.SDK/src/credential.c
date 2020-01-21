@@ -35,45 +35,35 @@
 #include "credential.h"
 #include "crypto.h"
 
-#define PROPERTY_SIZE      50
-#define TEMP_SIZE          50
-
-typedef struct DIDStore     DIDStore;
-
 static const char *PresentationsType = "VerifiablePresentation";
 extern const char *ProofType;
 
 static void free_subject(Credential *cred)
 {
-    Property **props;
+    Property *prop;
     size_t i;
 
     assert(cred);
 
-    props = cred->subject.infos.properties;
-    if (!props)
+    prop = cred->subject.infos.properties;
+    if (!prop)
         return;
 
-    for (i = 0; i < cred->subject.infos.size; i++) {
-        Property *prop = props[i];
-        if (!prop) // CHECK: ??
-            continue;
+    for (i = 0; i < cred->subject.infos.size; i++, prop++) {
         if (prop->key)
             free(prop->key);
         if (prop->value)
             free(prop->value);
-        free(prop);
     }
 
-    free(props);
+    free(cred->subject.infos.properties);
 }
 
 static int parser_subject(cJSON *json, Credential *credential)
 {
     cJSON *element = NULL;
-    char *elem_key = NULL, *elem_value = NULL;
-    int i = 0, size;
-    Property **properties;
+    int i = 0, j, size;
+    Property *properties;
 
     assert(json);
     assert(credential);
@@ -82,52 +72,44 @@ static int parser_subject(cJSON *json, Credential *credential)
     if (size < 1)
         return -1;
 
-    properties = (Property**)calloc(size, sizeof(Property*));
+    properties = (Property*)calloc(size, sizeof(Property));
     if (!properties)
         return -1;
 
     cJSON_ArrayForEach(element, json)
     {
-        Property *pro = (Property*)calloc(1, sizeof(Property));
-        if (!pro)
+        Property pro;
+        if (!element->string || !element->valuestring)
             continue;
 
-        elem_key = element->string;
-        if (!elem_key) {
-            free(pro);
-            continue;
-        }
+        pro.key = strdup(element->string);
+        if (!pro.key)
+            goto errorExit;
 
-        elem_value = element->valuestring;
-        if (!elem_value) {
-            free(pro);
-            continue;
-        }
+        pro.value = strdup(element->valuestring);
+        if (!pro.value)
+            goto errorExit;
 
-        char *key = (char*)calloc(1, strlen(elem_key) + 1);
-        if (!key) {
-            free(pro);
-            continue;
-        }
-        strcpy(key, elem_key);
-        pro->key = key;
-
-        char *value = (char*)calloc(1, strlen(elem_value) + 1);
-        if (!value) {
-            free((char*)pro->key);
-            free(pro);
-            continue;
-        }
-        strcpy(value, elem_value);
-        pro->value = value;
-
-        properties[i++] = pro;
+        memcpy(&properties[i++], &pro, sizeof(Property));
     }
 
     credential->subject.infos.properties = properties;
     credential->subject.infos.size = i;
-
     return 0;
+
+errorExit:
+    if (properties) {
+        for (j = 0; j < i; j++) {
+            if (properties[j].key)
+                free(properties[j].key);
+            if (properties[j].value)
+                free(properties[j].value);
+        }
+        free(properties);
+    }
+
+    return -1;
+
 }
 static void free_types(Credential *credential)
 {
@@ -184,14 +166,15 @@ static int parser_types(cJSON *json, Credential *credential)
     credential->type.types = types;
     credential->type.size = index;
     return 0;
+
 }
 
 static int type_compr(const void *a, const void *b)
 {
-    const char* typea = (const char*)a;
-    const char *typeb = (const char*)b;
+    const char *typea = *(const char**)a;
+    const char *typeb = *(const char**)b;
 
-    return strcasecmp(typea, typeb);
+    return strcmp(typea, typeb);
 }
 
 static int types_toJson(JsonGenerator *generator, Credential *cred)
@@ -220,13 +203,12 @@ static int property_compr(const void *a, const void *b)
     Property *proa = (Property*)a;
     Property *prob = (Property*)b;
 
-    return strcasecmp(proa->key, prob->key);
+    return strcmp(proa->key, prob->key);
 }
 
 static int subject_toJson(JsonGenerator *generator, Credential *cred, int compact)
 {
-    Property *temp;
-    Property **properties;
+    Property *properties;
     size_t i, size;
     char id[ELA_MAX_DID_LEN];
 
@@ -237,7 +219,7 @@ static int subject_toJson(JsonGenerator *generator, Credential *cred, int compac
     properties = cred->subject.infos.properties;
     size = cred->subject.infos.size;
 
-    qsort(properties, size, sizeof(Property*), property_compr);
+    qsort(properties, size, sizeof(Property), property_compr);
 
     CHECK(JsonGenerator_WriteStartObject(generator));
     if (!compact)
@@ -245,9 +227,9 @@ static int subject_toJson(JsonGenerator *generator, Credential *cred, int compac
                 DID_ToString(&cred->subject.id, id, sizeof(id))));
 
     for (i = 0; i < size; i++) {
-        if (strcmp(properties[i]->key, "id") == 0)
+        if (strcmp(properties[i].key, "id") == 0)
             continue;
-        CHECK(JsonGenerator_WriteStringField(generator, properties[i]->key, properties[i]->value));
+        CHECK(JsonGenerator_WriteStringField(generator, properties[i].key, properties[i].value));
     }
 
     CHECK(JsonGenerator_WriteEndObject(generator));
@@ -299,6 +281,9 @@ static int Credential_ToJson_Internal(JsonGenerator *gen,  Credential *cred,
     }
     CHECK(JsonGenerator_WriteStringField(gen, "issuanceDate",
         get_time_string(_timestring, sizeof(_timestring), &cred->issuanceDate)));
+    if (cred->expirationDate != 0)
+        CHECK(JsonGenerator_WriteStringField(gen, "expirationDate",
+                get_time_string(_timestring, sizeof(_timestring), &cred->expirationDate)));
     CHECK(JsonGenerator_WriteFieldName(gen, "credentialSubject"));
     CHECK(subject_toJson(gen, cred, compact));
     if (!forsign) {
@@ -425,7 +410,7 @@ ssize_t Credential_GetPropertyCount(Credential *cred)
     return (ssize_t)cred->subject.infos.size;
 }
 
-ssize_t Credential_GetProperties(Credential *cred, Property **properties,
+ssize_t Credential_GetProperties(Credential *cred, Property *properties,
                                  size_t size)
 {
     size_t actual_size;
@@ -437,7 +422,7 @@ ssize_t Credential_GetProperties(Credential *cred, Property **properties,
     if (actual_size > size)
         return -1;
 
-    memcpy(properties, cred->subject.infos.properties, sizeof(Property*) * actual_size);
+    memcpy(properties, cred->subject.infos.properties, sizeof(Property) * actual_size);
     return (ssize_t)actual_size;
 }
 
@@ -449,8 +434,9 @@ const char *Credential_GetProperty(Credential *cred, const char *name)
     if (!cred || !name || !*name)
         return NULL;
 
-    for (i = 0; i < cred->subject.infos.size; i++) {
-        property = cred->subject.infos.properties[i];
+    property = cred->subject.infos.properties;
+
+    for (i = 0; i < cred->subject.infos.size; i++, property++) {
         if (!strcmp(name, property->key))
             return property->value;
     }
@@ -715,8 +701,8 @@ int Credential_SetExpirationDate(Credential *cred, time_t time)
 
 int Credential_AddProperty(Credential *cred, const char *name, const char *value)
 {
-    Property **prop_array;
-    Property *prop;
+    Property *prop_array;
+    Property prop, *pro;
     char *pvalue;
     char *pkey;
     size_t size;
@@ -729,11 +715,11 @@ int Credential_AddProperty(Credential *cred, const char *name, const char *value
     if (!pvalue)
         return -1;
 
+    pro = cred->subject.infos.properties;
     size = cred->subject.infos.size;
-    for (i = 0; i < size; i++) {
-        prop = cred->subject.infos.properties[i];
-        if (!strcmp(prop->key, name)) {
-            prop->value = pvalue;
+    for (i = 0; i < size; i++, pro++) {
+        if (!strcmp(pro->key, name)) {
+            pro->value = pvalue;
             return 0;
         }
     }
@@ -744,30 +730,22 @@ int Credential_AddProperty(Credential *cred, const char *name, const char *value
         return -1;
     }
 
-    prop = (Property*)calloc(1, sizeof(Property));
-    if (!prop) {
-        free(pvalue);
-        free(pkey);
-        return -1;
-    }
-
-    prop->key = pkey;
-    prop->value = pvalue;
+    prop.key = pkey;
+    prop.value = pvalue;
 
     if (size)
-        prop_array = (Property **)realloc(cred->subject.infos.properties,
-                                         (size + 1) * sizeof(Property *));
+        prop_array = (Property*)realloc(cred->subject.infos.properties,
+                (size + 1) * sizeof(Property));
     else
-        prop_array = (Property **)calloc(1, sizeof(Property*));
+        prop_array = (Property*)calloc(1, sizeof(Property));
 
     if (!prop_array) {
         free(pvalue);
         free(pkey);
-        free(prop);
         return -1;
     }
 
-    prop_array[cred->subject.infos.size++] = prop;
+    memcpy(&(prop_array[cred->subject.infos.size++]), &prop, sizeof(Property));
     cred->subject.infos.properties = prop_array;
 
     return (ssize_t)cred->subject.infos.size;

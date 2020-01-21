@@ -97,7 +97,7 @@ DIDURL *Issuer_GetSignKey(Issuer *issuer)
 }
 
 Credential *Issuer_CreateCredential(DID *did, const char *fragment, Issuer *issuer,
-        const char **types, size_t typesize, Property **properties, int propsize,
+        const char **types, size_t typesize, Property *properties, int propsize,
         time_t expires, const char *storepass)
 {
     Credential *cred;
@@ -119,16 +119,16 @@ Credential *Issuer_CreateCredential(DID *did, const char *fragment, Issuer *issu
     if (!cred)
         return NULL;
 
-    //set id
-    strcpy(cred->id.did.idstring, did->idstring);
-    strcpy(cred->id.fragment, fragment);
+    if (init_didurl(&cred->id, did, fragment) == -1)
+        goto errorExit;
 
     //set type
     cred->type.size = typesize;
     cred->type.types = (char**)calloc(typesize, sizeof(char*));
     if (!cred->type.types)
         goto errorExit;
-    memcpy(cred->type.types, types, typesize);
+    for (i = 0; i < typesize; i++)
+        cred->type.types[i] = strdup(types[i]);
 
     //set issuer
     DID_Copy(&cred->issuer, &issuer->signer);
@@ -141,10 +141,14 @@ Credential *Issuer_CreateCredential(DID *did, const char *fragment, Issuer *issu
     strcpy(cred->subject.id.idstring, did->idstring);
 
     cred->subject.infos.size = propsize;
-    cred->subject.infos.properties = (Property**)calloc(propsize, sizeof(Property*));
+    cred->subject.infos.properties = (Property*)calloc(propsize, sizeof(Property));
     if (!cred->subject.infos.properties)
         goto errorExit;
-    memcpy(cred->subject.infos.properties, properties, sizeof(Property*) * propsize);
+    for (i = 0; i < propsize; i++) {
+        Property *pro = &(properties[i]);
+        cred->subject.infos.properties[i].key = strdup(pro->key);
+        cred->subject.infos.properties[i].value = strdup(pro->value);
+    }
 
     //proof
     data = Credential_ToJson(cred, 0, 1);

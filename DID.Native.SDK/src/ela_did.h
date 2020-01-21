@@ -1649,7 +1649,7 @@ DID_API ssize_t Credential_GetPropertyCount(Credential *cred);
  * @return
  *      size of subject porperties on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_GetProperties(Credential *cred, Property **properties, size_t size);
+DID_API ssize_t Credential_GetProperties(Credential *cred, Property *properties, size_t size);
 
 /**
  * \~English
@@ -1878,7 +1878,7 @@ DID_API void Issuer_Destroy(Issuer *issuer);
  *      Otherwise, return NULL.
  */
 DID_API Credential *Issuer_CreateCredential(DID *did, const char *fragment, Issuer *issuer,
-        const char **types, size_t typesize, Property **properties, int size,
+        const char **types, size_t typesize, Property *properties, int size,
         time_t expires, const char *storepass);
 
 /**

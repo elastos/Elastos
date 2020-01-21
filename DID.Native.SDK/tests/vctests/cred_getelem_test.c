@@ -9,6 +9,7 @@
 #include "loader.h"
 #include "ela_did.h"
 #include "constant.h"
+#include "credential.h"
 
 static Credential *credential;
 
@@ -71,7 +72,7 @@ static void test_cred_get_property_count(void)
 
 static void test_cred_get_properties(void)
 {
-    Property *properties[2];
+    Property properties[2];
 
     ssize_t size = Credential_GetPropertyCount(credential);
     CU_ASSERT_EQUAL(size, 2);
