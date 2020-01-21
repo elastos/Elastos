@@ -1571,6 +1571,7 @@ const zh = {
       general: '秘书长',
       staff: '秘书处成员',
       positions: {
+        open: '查看职位',
         title: '秘书处 — 开放职位',
         jobDesc: '工作职责描述',
         toastMsg: '委员会和秘书处正在长期招聘哦。',

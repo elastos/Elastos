@@ -1628,6 +1628,7 @@ const en = {
       general: 'SECRETARIAT GENERAL',
       staff: 'SECRETARIAT STAFF',
       positions: {
+        open: 'View Open Positions',
         title: 'SECRETARIAT - OPEN POSITIONS',
         jobDesc: 'JOB DESCRIPTION',
         toastMsg: 'We are now hiring for Council and Secretariat positions.',

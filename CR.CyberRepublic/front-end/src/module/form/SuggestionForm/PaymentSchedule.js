@@ -175,6 +175,7 @@ class PaymentSchedule extends Component {
         {paymentItems.length ? (
           <PaymentList
             list={paymentItems}
+            milestone={milestone}
             onDelete={this.handleDelete}
             onEdit={this.handleEdit}
           />

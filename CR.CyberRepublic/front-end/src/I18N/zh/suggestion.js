@@ -142,7 +142,9 @@ export default {
     tip: '请先添加里程碑',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: '预支付(小于总金额的30%)',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: '结项款',
-    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '阶段支付'
+    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '阶段支付',
+    goal: '目标',
+    milestone: '里程碑'
   },
   plan: {
     teamMember: '团队成员',
@@ -158,7 +160,8 @@ export default {
     goal: '目标',
     showDetail: '显示详细信息',
     hideDetail: '隐藏详细信息',
-    selectDate: '选择日期'
+    selectDate: '选择日期',
+    milestone: '里程碑'
   },
   label: {
     hasMadeIntoProposal: '已经将此建议发布为'

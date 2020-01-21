@@ -1,5 +1,5 @@
 import React from 'react'
-import { Col, Row, Avatar, Tabs } from 'antd'
+import { Col, Row, Avatar, Tabs, Button } from 'antd'
 import styled from 'styled-components'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
@@ -9,7 +9,6 @@ import BGImg from './BGImg'
 import { text, border } from '@/constants/color'
 import { breakPoint } from '@/constants/breakPoint'
 import Toast from '@/module/common/Toast'
-
 import './style.scss'
 
 const {TabPane} = Tabs
@@ -28,11 +27,25 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
+    const toastMsg = (
+      <div>
+        {I18N.get('cs.secretariat.positions.toastMsg')}
+        <Button
+          className="btn-view-open"
+          onClick={async () => {
+            this.tabChange('SECRETARIAT')
+            window.scrollTo(0, document.getElementById('open-positions').offsetTop)
+          }}
+        >
+          {I18N.get('cs.secretariat.positions.open')}
+        </Button>
+      </div>
+    )
     return (
       <div className="p_cs">
         <Toast
           storageKey="openPositions"
-          message={I18N.get('cs.secretariat.positions.toastMsg')}
+          message={toastMsg}
           defaultDisplay={false}
         />
 
@@ -45,11 +58,11 @@ export default class extends StandardPage {
             <h3 className="title">{I18N.get('cs.rule.tile')}</h3>
             <span className="view-rule">
               {I18N.get('cs.rule.show.click')}
-{' '}
+              {' '}
               <span className="click-here" onClick={this.linkToRule.bind(this)}>
                 {I18N.get('cs.rule.show.here')}
               </span>
-{' '}
+              {' '}
               {I18N.get('cs.rule.show.view')}
             </span>
           </div>
@@ -84,8 +97,8 @@ export default class extends StandardPage {
                   <Email>
                     {I18N.get('cs.contact')}
 :
-{' '}
-{I18N.get(`cs.no${item}.email`)}
+                    {' '}
+                    {I18N.get(`cs.no${item}.email`)}
                   </Email>
                 </div>
               </div>
@@ -126,7 +139,7 @@ export default class extends StandardPage {
 
   buildPositions() {
     return (
-      <div className="positions">
+      <div id="open-positions" className="positions">
         <div className="title">
           {I18N.get('cs.secretariat.positions.title')}
         </div>
@@ -169,6 +182,7 @@ export default class extends StandardPage {
               <TabPane
                 tab={<TabTitle>{I18N.get('cs.secretariat.title')}</TabTitle>}
                 key="SECRETARIAT"
+                forceRender={true}
               >
                 {this.buildSecretariat()}
               </TabPane>

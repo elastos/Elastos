@@ -115,7 +115,16 @@ class Milestones extends Component {
   }
 
   renderSquare(item, index, isBigSquare = false, isAutoLink = false) {
-    const date = <div>{moment(item.date).format('MMM D, YYYY')}</div>
+    const number = (
+      <div className="square-number">
+        <span>{`#${index + 1}`}</span>
+      </div>
+    )
+    const date = (
+      <div className="square-date">
+        {moment(item.date).format('MMM D, YYYY')}
+      </div>
+    )
     const version = (
       <div className="square-content">
         {isAutoLink ? (
@@ -133,7 +142,7 @@ class Milestones extends Component {
       <Button
         type="link"
         onClick={() => this.handleClickSwitchChange(index)}
-        style={{ margin: '8px 0 16px' }}
+        style={{ margin: '4px 0 16px 0' }}
       >
         {this.getMilestoneTrigger(index).clickedSwitch
           ? I18N.get('suggestion.plan.hideDetail')
@@ -141,14 +150,9 @@ class Milestones extends Component {
       </Button>
     )
 
-    return isBigSquare ? (
-      <BigSquare>
-        {date}
-        {version}
-        {moreBtn}
-      </BigSquare>
-    ) : (
-      <Square>
+    return (
+      <Square className={isBigSquare ? 'big-square' : ''}>
+        {number}
         {date}
         {version}
         {moreBtn}
@@ -183,6 +187,7 @@ class Milestones extends Component {
                       <Popover
                         content={
                           <MilestoneForm
+                            index={index + 1}
                             preItemDate={
                               milestones[index - 1] &&
                               moment(milestones[index - 1].date, 'YYYY-MM-DD')
@@ -242,6 +247,7 @@ class Milestones extends Component {
               <Popover
                 content={
                   <MilestoneForm
+                    index={_.size(milestones) + 1}
                     preItemDate={
                       _.last(milestones) &&
                       moment(_.last(milestones).date, 'YYYY-MM-DD')
@@ -298,8 +304,6 @@ const MilestoneItem = styled.div`
 `
 const Square = styled.div`
   position: absolute;
-  width: 100%;
-  bottom: 12px;
   background: #0f2631;
   color: #fff;
   display: flex;
@@ -307,9 +311,30 @@ const Square = styled.div`
   align-items: center;
   justify-content: center;
   line-height: 20px;
+  width: 100%;
+  bottom: 12px;
   > div {
     margin-top: 4px;
-    &:first-child {
+    &.square-number {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      height: 24px;
+      min-width: 28px;
+      margin-top: 0px;
+      padding: 3px 7px 4px 7px;
+      background-color: rgba(255, 255, 255, 0.2);
+      > span {
+        font-family: Synthese;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 17px;
+        text-align: center;
+        color: #ffffff;
+      }
+    }
+    &.square-date {
       margin-top: 14px;
     }
     &.square-content {
@@ -340,49 +365,18 @@ const Square = styled.div`
       line-height: 17px;
     }
   }
-`
-const BigSquare = styled.div`
-  position: absolute;
-  width: 295px;
-  left: -135.5px;
-  bottom: 5px;
-  background: #0f2631;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 20px;
-  > div {
-    margin-top: 4px;
-    &:first-child {
-      margin-top: 20px;
-    }
-    &.square-content {
-      width: 100%;
-      padding: 0 20px;
-      > p {
-        padding: 0;
-        text-align: center;
+  &.big-square {
+    width: 295px;
+    left: -135.5px;
+    bottom: 5px;
+    > div {
+      &.square-date {
+        margin-top: 20px;
+      }
+      &.square-content > p {
         overflow-wrap: break-word;
         white-space: normal;
       }
-    }
-  }
-  > button.ant-btn {
-    display: inline-block;
-    color: #1de9b6;
-    background-color: transparent;
-    border-color: transparent;
-    box-shadow: none;
-    height: 17px;
-    flex: 17px;
-    margin: 0 0 13px 0;
-    > span {
-      vertical-align: top;
-      font-family: Synthese;
-      font-size: 12px;
-      line-height: 17px;
     }
   }
 `

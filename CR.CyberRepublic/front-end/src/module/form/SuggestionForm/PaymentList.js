@@ -1,6 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import { Popover } from 'antd'
+import moment from 'moment'
+import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
@@ -16,8 +19,31 @@ class PaymentList extends BaseComponent {
     this.props.onEdit(index)
   }
 
+  renderMilestone = (item) => {
+    const date = (
+      <div className="square-date">
+        {moment(item.date).format('MMM D, YYYY')}
+      </div>
+    )
+    const version = (
+      <div className="square-content">
+        <p
+          dangerouslySetInnerHTML={{
+            __html: linkifyStr(item.version)
+          }}
+        />
+      </div>
+    )
+    return (
+      <Square>
+        {date}
+        {version}
+      </Square>
+    )
+  }
+
   ord_render() {
-    const { list, editable } = this.props
+    const { list, editable, milestone } = this.props
     const visible = editable === false ? editable : true
     return (
       <StyledTable>
@@ -25,8 +51,12 @@ class PaymentList extends BaseComponent {
           <StyledRow>
             <th>{I18N.get('suggestion.budget.payment')}#</th>
             <th>{I18N.get('suggestion.budget.type')}</th>
-            <th>{I18N.get('suggestion.budget.amount')}(ELA)</th>
+            <th>
+              {I18N.get('suggestion.budget.amount')}
+              (ELA)
+            </th>
             <th>{I18N.get('suggestion.budget.reasons')}</th>
+            <th>{I18N.get('suggestion.budget.goal')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
             {visible && (
               <th style={{ width: 110 }}>
@@ -49,6 +79,17 @@ class PaymentList extends BaseComponent {
                     content={item.reasons ? item.reasons : ''}
                     style={{ p: { margin: '1em 0' } }}
                   />
+                </td>
+                <td>
+                  <Popover
+                    content={this.renderMilestone(milestone[item.milestoneKey])}
+                  >
+                    <a>
+                      {`${I18N.get('suggestion.budget.milestone')} #${Number(
+                        item.milestoneKey
+                      ) + 1}`}
+                    </a>
+                  </Popover>
                 </td>
                 <td>
                   <MarkdownPreview
@@ -113,6 +154,31 @@ const StyledRow = styled.tr`
     overflow-wrap: break-word;
     > button {
       margin: 0 4px;
+    }
+  }
+`
+const Square = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 20px;
+  width: 295px;
+  > div {
+    margin-top: 4px;
+    &.square-date {
+      margin-top: 20px;
+    }
+    &.square-content {
+      width: 100%;
+      margin-bottom: 27px;
+      padding: 0 22px;
+      > p {
+        padding: 0;
+        text-align: center;
+        overflow-wrap: break-word;
+        white-space: normal;
+      }
     }
   }
 `

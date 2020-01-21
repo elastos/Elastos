@@ -142,7 +142,9 @@ export default {
     tip: 'Please add milestone first',
     [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Project Initiation Payment (< 30% of total)',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Project Completion Payment',
-    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Project Milestone Payment'
+    [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Project Milestone Payment',
+    goal: 'Goal',
+    milestone: 'milestone'
   },
   plan: {
     teamMember: 'Team Member',
@@ -158,7 +160,8 @@ export default {
     goal: 'Goal',
     showDetail: 'Show Detail',
     hideDetail: 'Hide Detail',
-    selectDate: 'Select date'
+    selectDate: 'Select date',
+    milestone: 'Milestone'
   },
   label: {
     hasMadeIntoProposal: 'has made it into'

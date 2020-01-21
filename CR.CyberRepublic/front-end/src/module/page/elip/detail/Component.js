@@ -316,12 +316,16 @@ class C extends StandardPage {
     const deleteElip = this.renderDeleteElipButton()
 
     return (
-      <Row type="flex" justify="start" gutter={25.5}>
+      <Row type="flex" justify="space-between" gutter={25.5}>
         {status}
-        {edit}
-        {this.renderCancelledButton()}
-        {submittedProposal}
-        {deleteElip}
+        <Col>
+          <Row type="flex" justify="end" gutter={10}>
+            {edit}
+            {this.renderCancelledButton()}
+            {submittedProposal}
+            {deleteElip}
+          </Row>
+        </Col>
       </Row>
     )
   }

@@ -9,6 +9,14 @@ $maxWithContent: 888px;
   background: #ffffff;
   text-align: left;
 
+  .btn-view-open.ant-btn {
+    margin-left: 10px;
+    background: $cr_btn_primary;
+    border: 0;
+    color: white;
+    cursor: pointer;
+  }
+  
   /*
   ************************************************************************
   Sections / General

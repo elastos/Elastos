@@ -37,7 +37,7 @@ class MilestoneForm extends BaseComponent {
 
   ord_render() {
     const { getFieldDecorator } = this.props.form
-    const { item, hidePopover } = this.props
+    const { item, hidePopover, index } = this.props
     const formItemLayout = {
       labelCol: {
         span: 24
@@ -52,6 +52,7 @@ class MilestoneForm extends BaseComponent {
         <StyledIcon>
           <CloseIcon onClick={hidePopover} />
         </StyledIcon>
+        <Title>{`${I18N.get('suggestion.plan.milestone')} #${index}`}</Title>
         <Form style={{ width: 330, paddingTop: 24 }}>
           <FormItem
             label={I18N.get('suggestion.plan.publishDate')}
@@ -110,6 +111,15 @@ MilestoneForm.propTypes = {
 
 export default Form.create()(MilestoneForm)
 
+
+const Title = styled.div`
+  color: #000000;
+  font-family: Synthese;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 17px;
+  line-height: 24px;
+`
 const Actions = styled.div`
   display: flex;
   justify-content: center;
