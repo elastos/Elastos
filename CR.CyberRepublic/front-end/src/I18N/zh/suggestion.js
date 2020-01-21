@@ -140,7 +140,7 @@ export default {
     total: '总金额',
     address: 'ELA 接收地址',
     tip: '请先添加里程碑',
-    [SUGGESTION_BUDGET_TYPE.ADVANCE]: '预支付(小于总金额的30%)',
+    [SUGGESTION_BUDGET_TYPE.ADVANCE]: '预支付',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: '结项款',
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: '阶段支付',
     goal: '目标',

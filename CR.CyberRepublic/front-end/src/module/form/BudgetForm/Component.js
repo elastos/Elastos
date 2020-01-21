@@ -38,19 +38,8 @@ class BudgetForm extends Component {
     const isNumber = !isNaN(value) && reg.test(value)
     if (!isNumber) {
       return cb(I18N.get('suggestion.form.error.isNaN'))
-    } else {
-      const { total, form } = this.props
-      const type = form.getFieldValue('type')
-      if (type && type === SUGGESTION_BUDGET_TYPE.ADVANCE) {
-        const validTotal = total && !isNaN(total) && reg.test(total)
-        if (validTotal && Number(value) < Number(total) * 0.3) {
-          return cb()
-        } else {
-          return cb(I18N.get('suggestion.form.error.amount'))
-        }
-      }
-      return cb()
-    }
+    } 
+    return cb()
   }
 
   handleTabChange = activeKey => {

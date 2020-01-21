@@ -140,7 +140,7 @@ export default {
     total: 'Total Budget',
     address: 'ELA Receive Address',
     tip: 'Please add milestone first',
-    [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Project Initiation Payment (< 30% of total)',
+    [SUGGESTION_BUDGET_TYPE.ADVANCE]: 'Project Initiation Payment',
     [SUGGESTION_BUDGET_TYPE.COMPLETION]: 'Project Completion Payment',
     [SUGGESTION_BUDGET_TYPE.CONDITIONED]: 'Project Milestone Payment',
     goal: 'Goal',
