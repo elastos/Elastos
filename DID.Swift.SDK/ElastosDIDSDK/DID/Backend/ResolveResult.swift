@@ -59,7 +59,7 @@ public class ResolveResult {
     }
     
     public class func fromJson(_ result: OrderedDictionary<String, Any>) throws -> ResolveResult {
-        let did: DID = try JsonHelper.getDid(result, DID, false, nil, "Resolved result DID")!
+        let did: DID = try JsonHelper.getDid(result, DID, false, "Resolved result DID")!
         let status: Int = try JsonHelper.getInteger(result, STATUS, false, -1, "Resolved status")
         let rr: ResolveResult = ResolveResult(did, status)
         

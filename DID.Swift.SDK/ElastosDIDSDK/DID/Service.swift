@@ -8,10 +8,10 @@ public class Service: DIDObject {
         self.endpoint = endpoint
     }
     
-    class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID) throws -> Service {
-        let id = try JsonHelper.getDidUrl(json, ID, ref, "service' id")
-        let type = try JsonHelper.getString(json,TYPE, false, nil, "service' type")
-        let endpoint = try JsonHelper.getString(json,SERVICE_ENDPOINT, false, nil, "service' endpoint")
+    class func fromJson(_ json: Dictionary<String, Any>, _ ref: DID) throws -> Service {
+        let id = try JsonHelper.getDidUrl(json, ID, ref: ref, "service' id")
+        let type = try JsonHelper.getString(json,TYPE, false, "service' type")
+        let endpoint = try JsonHelper.getString(json,SERVICE_ENDPOINT, false, "service' endpoint")
         return Service(id!, type, endpoint)
     }
     

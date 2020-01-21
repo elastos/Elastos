@@ -267,11 +267,11 @@ public class IDChainRequest: NSObject {
     
     public class func fromJson(_ json: OrderedDictionary<String, Any>) throws -> IDChainRequest {
         let header = json[HEADER] as! OrderedDictionary<String, Any>
-        let spec: String = try JsonHelper.getString(header, SPECIFICATION, false, nil, SPECIFICATION)
+        let spec: String = try JsonHelper.getString(header, SPECIFICATION, false, SPECIFICATION)
         guard (spec == CURRENT_SPECIFICATION) else {
             throw DIDError.failue("Unknown DID specifiction.")
         }
-        var opstr: String = try JsonHelper.getString(header, OPERATION, false, nil, OPERATION)
+        var opstr: String = try JsonHelper.getString(header, OPERATION, false, OPERATION)
         opstr = opstr.uppercased()
         var op: Operation = .CREATE
         switch opstr {
@@ -289,22 +289,21 @@ public class IDChainRequest: NSObject {
         }
         let request: IDChainRequest = IDChainRequest(op)
         if (op == Operation.UPDATE) {
-            let txid = try JsonHelper.getString(header, PREVIOUS_TXID, false, nil, PREVIOUS_TXID)
+            let txid = try JsonHelper.getString(header, PREVIOUS_TXID, false, PREVIOUS_TXID)
             request.previousTxid = txid
         }
-        let payload: String = try JsonHelper.getString(json, PAYLOAD, false, nil, PAYLOAD)
+        let payload: String = try JsonHelper.getString(json, PAYLOAD, false, PAYLOAD)
         request.setPayload(payload)
         
         let proof = json[PROOF] as! OrderedDictionary<String, Any>
         let keyType = try JsonHelper.getString(proof, KEY_TYPE, true,
-                                               DEFAULT_PUBLICKEY_TYPE, KEY_TYPE)
+                                               ref: DEFAULT_PUBLICKEY_TYPE, KEY_TYPE)
         guard (keyType == DEFAULT_PUBLICKEY_TYPE) else {
             throw DIDError.didResolveError(_desc: "Unknown signature key type.") 
         }
-        let signKey = try JsonHelper.getDidUrl(proof, VERIFICATION_METHOD, request.did,
+        let signKey = try JsonHelper.getDidUrl(proof, VERIFICATION_METHOD, ref: request.did,
                                                VERIFICATION_METHOD)
-        let sig = try JsonHelper.getString(proof, SIGNATURE, false,
-                                           nil, SIGNATURE)
+        let sig = try JsonHelper.getString(proof, SIGNATURE, false, SIGNATURE)
         request.setProof(keyType, signKey!, sig)
         
         return request

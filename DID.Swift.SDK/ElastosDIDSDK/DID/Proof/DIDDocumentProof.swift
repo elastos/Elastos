@@ -21,17 +21,17 @@ public class DIDDocumentProof: Proof {
         self.signature = signature
     }
     
-    class func fromJson(_ json: OrderedDictionary<String, Any>, _ refSignKey: DIDURL) throws -> DIDDocumentProof {
-        let type: String = try JsonHelper.getString(json, TYPE, true, DEFAULT_PUBLICKEY_TYPE, "document proof type")
+    class func fromJson(_ json: Dictionary<String, Any>, _ refSignKey: DIDURL) throws -> DIDDocumentProof {
+        let type: String = try JsonHelper.getString(json, TYPE, true, ref: DEFAULT_PUBLICKEY_TYPE, "document proof type")
         
-        let created: Date = try DateFormater.getDate(json, CREATED, true, nil, "")!
+        let created: Date = try JsonHelper.getDate(json, CREATED, true, "")!
         
-        let creator = try JsonHelper.getDidUrl(json, CREATOR, true, refSignKey.did, "document proof creator")
+        let creator = try JsonHelper.getDidUrl(json, CREATOR, true, ref: refSignKey.did, "document proof creator")
         var c = creator
         if creator == nil {
             c = refSignKey
         }
-        let signature: String = try JsonHelper.getString(json, SIGNATURE_VALUE, false, nil, "document proof signature")
+        let signature: String = try JsonHelper.getString(json, SIGNATURE_VALUE, false, "document proof signature")
         
         return DIDDocumentProof(type, created, c!, signature)
     }

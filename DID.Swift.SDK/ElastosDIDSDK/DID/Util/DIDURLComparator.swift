@@ -44,7 +44,7 @@ class DIDURLComparator {
     }
     
     // OrderDictionary order
-    class func DIDOrderedDictionaryComparator(_ source: OrderedDictionary<DIDURL, DIDPublicKey>) -> OrderedDictionary<DIDURL, DIDPublicKey> {
+    class func DIDOrderedDictionaryComparator(_ source: Dictionary<DIDURL, DIDPublicKey>) -> OrderedDictionary<DIDURL, DIDPublicKey> {
         
         var sortArray: Array<(DIDURL, DIDPublicKey)> = Array()
         for (key, value) in source {
@@ -65,7 +65,7 @@ class DIDURLComparator {
         return result
     }
     
-    class func DIDOrderedDictionaryComparatorByVerifiableCredential(_ source: OrderedDictionary<DIDURL, VerifiableCredential>) -> OrderedDictionary<DIDURL, VerifiableCredential> {
+    class func DIDOrderedDictionaryComparatorByVerifiableCredential(_ source: Dictionary<DIDURL, VerifiableCredential>) -> OrderedDictionary<DIDURL, VerifiableCredential> {
         
         var sortArray: Array<(DIDURL, VerifiableCredential)> = Array()
         for (key, value) in source {
@@ -86,7 +86,7 @@ class DIDURLComparator {
         return result
     }
     
-    class func DIDOrderedDictionaryComparatorByService(_ source: OrderedDictionary<DIDURL, Service>) -> OrderedDictionary<DIDURL, Service> {
+    class func DIDOrderedDictionaryComparatorByService(_ source: Dictionary<DIDURL, Service>) -> OrderedDictionary<DIDURL, Service> {
         
         var sortArray: Array<(DIDURL, Service)> = Array()
         for (key, value) in source {

@@ -85,7 +85,6 @@
 		11E89FDA23A4C36000C81B3C /* DIDStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FA923A4C36000C81B3C /* DIDStore.swift */; };
 		11E89FDB23A4C36000C81B3C /* VerifiableCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAB23A4C36000C81B3C /* VerifiableCredential.swift */; };
 		11E89FDC23A4C36000C81B3C /* VerifiablePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */; };
-		11E89FDD23A4C36000C81B3C /* EmbeddedCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAD23A4C36000C81B3C /* EmbeddedCredential.swift */; };
 		11E89FDE23A4C36000C81B3C /* Issuer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAE23A4C36000C81B3C /* Issuer.swift */; };
 		11E89FE023A4C36000C81B3C /* CredentialSubject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB023A4C36000C81B3C /* CredentialSubject.swift */; };
 		11E89FE123A4C36000C81B3C /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB123A4C36000C81B3C /* Service.swift */; };
@@ -311,7 +310,6 @@
 		11E89FA923A4C36000C81B3C /* DIDStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDStore.swift; sourceTree = "<group>"; };
 		11E89FAB23A4C36000C81B3C /* VerifiableCredential.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerifiableCredential.swift; sourceTree = "<group>"; };
 		11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerifiablePresentation.swift; sourceTree = "<group>"; };
-		11E89FAD23A4C36000C81B3C /* EmbeddedCredential.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmbeddedCredential.swift; sourceTree = "<group>"; };
 		11E89FAE23A4C36000C81B3C /* Issuer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Issuer.swift; sourceTree = "<group>"; };
 		11E89FB023A4C36000C81B3C /* CredentialSubject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CredentialSubject.swift; sourceTree = "<group>"; };
 		11E89FB123A4C36000C81B3C /* Service.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
@@ -595,7 +593,6 @@
 				11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */,
 				11724A2223D5696D00DF5820 /* VerifiablePresentationBuilder.swift */,
 				11E89FB123A4C36000C81B3C /* Service.swift */,
-				11E89FAD23A4C36000C81B3C /* EmbeddedCredential.swift */,
 				11E89FB023A4C36000C81B3C /* CredentialSubject.swift */,
 				11E89FCF23A4C36000C81B3C /* DIDPublicKey.swift */,
 			);
@@ -906,7 +903,6 @@
 				11E89FEC23A4C36000C81B3C /* DIDBackend.swift in Sources */,
 				11E89FFB23A4C36000C81B3C /* DIDDocument.swift in Sources */,
 				115DBD8423B3313D00501983 /* DIDMeta.swift in Sources */,
-				11E89FDD23A4C36000C81B3C /* EmbeddedCredential.swift in Sources */,
 				1125B582238234FB00D396B6 /* CHDKey.swift in Sources */,
 				115DBD8A23B492A600501983 /* ResolverCache.swift in Sources */,
 				11E89FEA23A4C36000C81B3C /* DIDAdapter.swift in Sources */,

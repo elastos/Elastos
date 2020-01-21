@@ -191,7 +191,7 @@ public class FileSystemStorage: DIDStorage {
         let path = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + doc.subject!.methodSpecificId + "/" + FileSystemStorage.DOCUMENT_FILE
         _ = try getFile(true, path)
         _ = try exists(path)
-        let dicString = doc.toJson(true, false)
+        let dicString = doc.toJson(true, forSign: false)
         
         let data: Data = dicString.data(using: .utf8)!
         // & Write to local

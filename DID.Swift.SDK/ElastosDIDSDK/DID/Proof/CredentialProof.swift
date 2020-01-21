@@ -11,12 +11,12 @@ public class CredentialProof: Proof {
         self.signature = signature
     }
     
-    class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws -> CredentialProof {
-        let type: String = try JsonHelper.getString(json, TYPE, true, DEFAULT_PUBLICKEY_TYPE, "crendential proof type")
+    class func fromJson(_ json: Dictionary<String, Any>, _ ref: DID?) throws -> CredentialProof {
+        let type: String = try JsonHelper.getString(json, TYPE, true, ref: DEFAULT_PUBLICKEY_TYPE, "crendential proof type")
         
-        let method: DIDURL = try JsonHelper.getDidUrl(json, VERIFICATION_METHOD, ref, "crendential proof verificationMethod")!
+        let method: DIDURL = try JsonHelper.getDidUrl(json, VERIFICATION_METHOD, ref: ref, "crendential proof verificationMethod")!
         
-        let signature: String = try JsonHelper.getString(json, SIGNATURE, false, nil, "crendential proof signature")
+        let signature: String = try JsonHelper.getString(json, SIGNATURE, false, "crendential proof signature")
         
         return CredentialProof(type, method, signature)
     }

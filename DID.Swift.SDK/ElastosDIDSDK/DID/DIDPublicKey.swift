@@ -46,18 +46,18 @@ public class DIDPublicKey: DIDObject {
         return json
     }
 
-    class public func fromJson(_ dic: OrderedDictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey {
+    class public func fromJson(_ dic: Dictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey {
         // id
-        let id = try JsonHelper.getDidUrl(dic, "id", ref, "publicKey' id")
+        let id = try JsonHelper.getDidUrl(dic, "id", ref: ref, "publicKey' id")
         
         // type
-        let type = try JsonHelper.getString(dic, TYPE, true, DEFAULT_PUBLICKEY_TYPE, "publicKey' type")
+        let type = try JsonHelper.getString(dic, TYPE, true, ref: DEFAULT_PUBLICKEY_TYPE, "publicKey' type")
         
         // controller
-        let controller = try JsonHelper.getDid(dic, CONTROLLER, true, ref, "publicKey' controller")
+        let controller = try JsonHelper.getDid(dic, CONTROLLER, true, ref: ref, "publicKey' controller")
         
         // publicKeyBase58
-        let keyBase58 = try JsonHelper.getString(dic, PUBLICKEY_BASE58, false, nil, "publicKeyBase58")
+        let keyBase58 = try JsonHelper.getString(dic, PUBLICKEY_BASE58, false, "publicKeyBase58")
             
         return DIDPublicKey(id!, type, controller!, keyBase58)
     }

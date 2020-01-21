@@ -4,25 +4,28 @@ import Foundation
 public class VerifiablePresentation: NSObject{
    public var type: String!
    public var created: Date!
-   public var credentials: OrderedDictionary<DIDURL, VerifiableCredential>!
+    public var credentials: Dictionary<DIDURL, VerifiableCredential> = [: ]
    public var proof: PresentationProof?
     
     override init() {
         type = DEFAULT_PRESENTTATION_TYPE
         created = DateFormater.currentDate()
-        credentials = OrderedDictionary()
     }
     
     public func getCredentials() -> Array<VerifiableCredential> {
-        return credentials!.values
+        var arr: Array<VerifiableCredential> = []
+        for vc in credentials.values {
+            arr.append(vc)
+        }
+        return arr
     }
     
     public func addCredential(_ credential: VerifiableCredential) {
-        credentials![credential.id] = credential
+        credentials[credential.id] = credential
     }
     
     public func getCredential(_ id: DIDURL) throws -> VerifiableCredential? {
-        return credentials![id]
+        return credentials[id]
     }
     
     public func getCredential(_ id: String) throws -> VerifiableCredential? {
@@ -54,8 +57,7 @@ public class VerifiablePresentation: NSObject{
         }
         
         // All credentials should owned by signer
-        for i in 0..<credentials.values.count {
-            let vc = credentials.values[i]
+        for vc in credentials.values {
             if vc.subject.id != signer {
                 return false
             }
@@ -108,8 +110,7 @@ public class VerifiablePresentation: NSObject{
 
         // All credentials should owned by signer
         
-        for _ in 0..<credentials.values.count {
-            let vc = credentials.values[0]
+        for vc in credentials.values {
             if (vc.subject.id != signer) {
                 return false
             }
@@ -150,18 +151,18 @@ public class VerifiablePresentation: NSObject{
     
     func parse(_ jsonString: String) throws {
         let string = JsonHelper.preHandleString(jsonString)
-        let dic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
+        let dic = JsonHelper.handleString(jsonString: string) as! Dictionary<String, Any>
         try parse(dic)
     }
     
-    func parse(_ presentation: OrderedDictionary<String, Any>) throws {
+    func parse(_ presentation: Dictionary<String, Any>) throws {
         
-        let type: String = try JsonHelper.getString(presentation, TYPE, false, nil, "presentation type")
+        let type: String = try JsonHelper.getString(presentation, TYPE, false, "presentation type")
         guard type == DEFAULT_PRESENTTATION_TYPE else {
             throw DIDError.malformedCredentialError(_desc: "Unknown presentation type: \(type)")
         }
         self.type = type
-        let created: Date = try DateFormater.getDate(presentation, CREATED, false, nil, "presentation created date")!
+        let created: Date = try JsonHelper.getDate(presentation, CREATED, false, "presentation created date")!
         self.created = created
         
         var d = presentation[VERIFIABLE_CREDENTIAL]
@@ -171,17 +172,17 @@ public class VerifiablePresentation: NSObject{
         guard d is Array<Any> else {
             throw DIDError.malformedCredentialError(_desc: "Invalid verifiableCredentia, should be an array.")
         }
-        try parseCredential(d as! Array<OrderedDictionary<String, Any>>)
+        try parseCredential(d as! Array<Dictionary<String, Any>>)
         
         d = presentation[PROOF]
         guard d != nil else {
             throw DIDError.malformedCredentialError(_desc: "Missing credentials.")
         }
-        let proof: PresentationProof = try PresentationProof.fromJson(d as! OrderedDictionary<String, Any>, nil)
+        let proof: PresentationProof = try PresentationProof.fromJson(d as! Dictionary<String, Any>, nil)
         self.proof = proof
     }
     
-    func parseCredential(_ jsonArry: Array<OrderedDictionary<String, Any>>) throws {
+    func parseCredential(_ jsonArry: Array<Dictionary<String, Any>>) throws {
         guard jsonArry.count != 0 else {
             throw DIDError.malformedCredentialError(_desc: "Invalid verifiableCredentia, should not be an empty array.") 
         }
@@ -215,8 +216,8 @@ public class VerifiablePresentation: NSObject{
 
         // credentials
         var arr: Array<OrderedDictionary<String, Any>> = []
-        credentials = DIDURLComparator.DIDOrderedDictionaryComparatorByVerifiableCredential(credentials)
-        credentials.values.forEach { vc in
+        let _credentials = DIDURLComparator.DIDOrderedDictionaryComparatorByVerifiableCredential(credentials)
+        _credentials.values.forEach { vc in
            let dic = vc.toJson(true)
             arr.append(dic)
         }

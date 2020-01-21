@@ -92,4 +92,11 @@ public class DIDMeta: Metadata {
     public override var description: String {
         return toJson()
     }
+    
+    public override func isEmpty() -> Bool {
+        if alias != "" || deactivated || transactionId != nil || transactionId != "" || updated != nil {
+            return false
+        }
+        return super.isEmpty()
+    }
 }

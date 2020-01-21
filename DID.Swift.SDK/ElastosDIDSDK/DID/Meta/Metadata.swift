@@ -51,6 +51,13 @@ public class Metadata {
             extra[key] = value
         }
     }
+    
+    public func isEmpty() -> Bool {
+        if (extra.count == 0) {
+            return true
+        }
+        return false
+    }
 }
 
 extension Metadata: CustomStringConvertible {

@@ -39,8 +39,8 @@ public class IDTransactionInfo {
     }
     
     public class func fromJson(_ json: OrderedDictionary<String, Any>) throws -> IDTransactionInfo {
-        let txid = try JsonHelper.getString(json, IDTransactionInfo.TXID, false, nil, "transaction id")
-        let timestamp = try DateFormater.getDate(json, IDTransactionInfo.TIMESTAMP, false, nil, "transaction timestamp")
+        let txid = try JsonHelper.getString(json, IDTransactionInfo.TXID, false, "transaction id")
+        let timestamp = try JsonHelper.getDate(json, IDTransactionInfo.TIMESTAMP, false, "transaction timestamp")
         
         let requjson = json[IDTransactionInfo.OPERATION] as? OrderedDictionary<String, Any>
         if (requjson == nil) {

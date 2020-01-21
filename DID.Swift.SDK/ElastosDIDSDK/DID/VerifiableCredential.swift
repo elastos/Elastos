@@ -218,7 +218,7 @@ public class VerifiableCredential: DIDObject {
         let url = URL(fileURLWithPath: path)
         let json = try! String(contentsOf: url)
         let string = JsonHelper.preHandleString(json)
-        let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
+        let ordDic = JsonHelper.handleString(jsonString: string) as! Dictionary<String, Any>
         try vc.parse(ordDic, nil)
         return vc
     }
@@ -226,26 +226,33 @@ public class VerifiableCredential: DIDObject {
    public class func fromJson(_ json: String) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
         let string = JsonHelper.preHandleString(json)
-        let ordDic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
+        let ordDic = JsonHelper.handleString(jsonString: string) as! Dictionary<String, Any>
         try vc.parse(ordDic, nil)
         return vc
     }
     
-   public class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID) throws -> VerifiableCredential {
+   public class func fromJson(_ json: Dictionary<String, Any>, _ ref: DID) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
         try vc.parse(json, ref)
         return vc
     }
 
-   public class func fromJson(_ json: OrderedDictionary<String, Any>) throws -> VerifiableCredential {
+   public class func fromJson(_ json: Dictionary<String, Any>) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
         try vc.parse(json, nil)
         return vc
     }
     
-    func parse(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws {
+   class func fromJson(json: Dictionary<String, Any>, _ ref: DID) throws -> VerifiableCredential {
+        let vc: VerifiableCredential = VerifiableCredential()
+        try vc.parse(json, ref)
+        
+        return vc
+    }
+    
+    func parse(_ json: Dictionary<String, Any>, _ ref: DID?) throws {
         // id
-        let id: DIDURL = try JsonHelper.getDidUrl(json, ID, ref, "crendential id")!
+        let id: DIDURL = try JsonHelper.getDidUrl(json, ID, ref: ref, "crendential id")!
         self.id = id
         
         // type
@@ -265,17 +272,17 @@ public class VerifiableCredential: DIDObject {
         }
         
         // issuer
-        issuer = try JsonHelper.getDid(json, ISSUER, true, ref, "crendential issuer")
+        issuer = try JsonHelper.getDid(json, ISSUER, true, ref: ref, "crendential issuer")
         
         // issuanceDate
-        issuanceDate = try DateFormater.getDate(json, ISSUANCE_DATE, false, nil, "credential issuanceDate")
+        issuanceDate = try JsonHelper.getDate(json, ISSUANCE_DATE, false, "credential issuanceDate")
         
         // expirationDate
-        expirationDate = try DateFormater.getDate(json, EXPIRATION_DATE, true, nil, "credential expirationDate")
+        expirationDate = try JsonHelper.getDate(json, EXPIRATION_DATE, true, "credential expirationDate")
         
         // credentialSubject
         value = json[CREDENTIAL_SUBJECT]
-        subject = try CredentialSubject.fromJson(value as! OrderedDictionary<String, Any>, ref)
+        subject = try CredentialSubject.fromJson(value as! Dictionary<String, Any>, ref)
         
         // IMPORTANT: help resolve full method in proof
         if (issuer == nil) {
@@ -284,7 +291,7 @@ public class VerifiableCredential: DIDObject {
         
         // proof
         value = json[PROOF]
-        proof = try CredentialProof.fromJson(value as! OrderedDictionary<String, Any>, issuer)
+        proof = try CredentialProof.fromJson(value as! Dictionary<String, Any>, issuer)
         self.type = proof.type
     }
     

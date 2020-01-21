@@ -40,4 +40,11 @@ public class CredentialMeta: Metadata {
     public override var description: String {
         return toJson()
     }
+    
+    public override func isEmpty() -> Bool {
+        if alias != "" {
+            return false
+        }
+        return super.isEmpty()
+    }
 }

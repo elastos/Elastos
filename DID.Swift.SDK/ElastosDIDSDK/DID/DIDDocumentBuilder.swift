@@ -202,7 +202,7 @@ public class DIDDocumentBuilder {
         }
         
         let signKey: DIDURL = document!.getDefaultPublicKey()
-        let json = document!.toJson(true, true)
+        let json = document!.toJson(true, forSign: true)
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
         let sig = try document!.sign(signKey, storepass, count, inputs)

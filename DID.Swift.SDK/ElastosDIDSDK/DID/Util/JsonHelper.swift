@@ -1,7 +1,24 @@
 import Foundation
 
 public class JsonHelper {
-    class func getDid(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: DID?, _ hint: String) throws -> DID? {
+    class func getDid(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, ref: DID? = nil, _ hint: String) throws -> DID? {
+
+        let vn = dic[name]
+        if vn == nil {
+            if (optional) { return ref }
+            else {
+                throw DIDError.failue("Missing " + hint + ".")
+            }
+        }
+        let value: String = vn as? String ?? ""
+        guard value != "" else {
+            throw DIDError.failue("Invalid " + hint + " value.")
+        }
+
+        return try DID(value)
+    }
+    
+    class func getDid(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, ref: DID? = nil, _ hint: String) throws -> DID? {
 
         let vn = dic[name]
         if vn == nil {
@@ -18,11 +35,90 @@ public class JsonHelper {
         return try DID(value)
     }
     
-    class func getDidUrl(_ dic: OrderedDictionary<String, Any>, _ name: String, _ ref: DID?, _ hint: String) throws -> DIDURL? {
+    class func getDate(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, ref: Date? = nil, _ hint: String) throws -> Date? {
+        let vn = dic[name]
+        if vn == nil {
+            if optional {
+                return ref
+            }
+            else {
+                throw DIDError.failue("Missing \(hint).")
+            }
+        }
+        if !(vn is String) {
+            throw DIDError.failue("Invalid \(hint) value.")
+        }
+        let value: String = String("\(vn as! String)")
+
+        if value == "" {
+            throw DIDError.failue("Invalid \(hint) value.")
+        }
+
+        let formatter = Foundation.DateFormatter()
+        formatter.dateFormat = DATE_FORMAT
+        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
+        let date: Date  = formatter.date(from: value) ?? Date()
+
+        return date
+    }
+    
+    class func getDate(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, ref: Date? = nil, _ hint: String) throws -> Date? {
+        let vn = dic[name]
+        if vn == nil {
+            if optional {
+                return ref
+            }
+            else {
+                throw DIDError.failue("Missing \(hint).")
+            }
+        }
+        if !(vn is String) {
+            throw DIDError.failue("Invalid \(hint) value.")
+        }
+        let value: String = String("\(vn as! String)")
+        
+        if value == "" {
+            throw DIDError.failue("Invalid \(hint) value.")
+        }
+        
+        let formatter = Foundation.DateFormatter()
+        formatter.dateFormat = DATE_FORMAT
+        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
+        let date: Date  = formatter.date(from: value) ?? Date()
+        
+        return date
+    }
+    
+    class func getDidUrl(_ dic: OrderedDictionary<String, Any>, _ name: String, ref: DID? = nil, _ hint: String) throws -> DIDURL? {
         return try getDidUrl(dic, name, false, ref, hint)
     }
     
+    class func getDidUrl(_ dic: Dictionary<String, Any>, _ name: String, ref: DID? = nil, _ hint: String) throws -> DIDURL? {
+        return try getDidUrl(dic, name, false, ref: ref, hint)
+    }
+    
     class func getDidUrl(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: DID?, _ hint: String) throws -> DIDURL? {
+        let vn = dic[name]
+        if vn == nil {
+            if optional {
+                return nil
+            }
+            throw DIDError.failue("Invalid " + hint + " value.")
+        }
+        var value: String = vn as? String ?? ""
+
+        guard !value.isEmpty else {
+            throw DIDError.failue("Invalid " + hint + " value.")
+        }
+        let fragment: String = String(value.prefix(1))
+        if ref != nil && fragment == "#" {
+            value = String(value.suffix(value.count - 1))
+            return try DIDURL(ref!, value)
+        }
+        return try DIDURL(value)
+    }
+
+    class func getDidUrl(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, ref: DID? = nil, _ hint: String) throws -> DIDURL? {
         let vn = dic[name]
         if vn == nil {
             if optional {
@@ -53,7 +149,21 @@ public class JsonHelper {
         return try DIDURL(value)
     }
     
-    class func getString(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: String?, _ hint: String) throws -> String {
+    class func getString(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, ref: String? = nil, _ hint: String) throws -> String {
+        let vn = dic[name]
+        if vn == nil {
+            if (optional) { return ref! }
+        }
+
+        let value: String = vn as? String ?? ""
+
+        guard value != "" else {
+            throw DIDError.failue("Invalid " + hint + " value.")
+        }
+        return value
+    }
+
+    class func getString(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, ref: String? = nil, _ hint: String) throws -> String {
         let vn = dic[name]
         if vn == nil {
             if (optional) { return ref! }
@@ -68,6 +178,19 @@ public class JsonHelper {
     }
     
     class func getInteger(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: Int, _ hint: String) throws -> Int {
+        let vn: String? = dic[name] as? String
+        if vn == nil {
+            if optional {
+                return ref
+            }
+            else {
+                throw DIDError.failue("Invalid " + hint + " value.")
+            }
+        }
+        return Int(vn!)!
+    }
+    
+    class func getInteger(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: Int, _ hint: String) throws -> Int {
         let vn: String? = dic[name] as? String
         if vn == nil {
             if optional {
@@ -265,6 +388,101 @@ public class JsonHelper {
                         resultArray.append(self.handleString(tempStr!) as Any)
                     } else if isArrayJsonString(tempStr ?? "") {
                         resultArray.append(self.handleString(tempStr!) as Any)
+                    } else {
+                        resultArray.append(checkAndRemoveFirstAndLastDoubleQuotes(String(tempStr ?? "")))
+                    }
+                    tempStr = nil
+                } else {
+                    tempStr = (tempStr ?? "") + String(char)
+                }
+            }
+            return resultArray
+        }
+        return nil
+    }
+    
+    class public func handleString(jsonString: String) -> Any? {
+
+        if isDictionaryJsonString(jsonString) {
+            
+            var orderDictionary: Dictionary<String, Any>
+            var keys: Array = [String]()
+            var tempStr: String?
+            var level: Int = 0
+            
+            let content = checkAndRemoveFirstAndLastBrackets(jsonString)
+            
+            orderDictionary = Dictionary<String, Any>()
+            
+            for (index, char) in content.enumerated() {
+                
+                if char == "{" || char == "["{
+                    level = level + 1
+                }
+                if char == "}" || char == "]"{
+                    level = level - 1
+                }
+                
+                if (level == 0 && char == ",") || (level == 0 && index == String(content).count - 1) {
+                    
+                    if (level == 0 && index == String(content).count - 1) {
+                        tempStr = (tempStr ?? "") + String(char)
+                    }
+                    
+                    if tempStr?.count ?? 0 >= 0 {
+                        keys.append(String(tempStr!))
+                        tempStr = nil
+                    }
+                } else {
+                    tempStr = (tempStr ?? "") + String(char)
+                }
+            }
+            
+            for content: String in keys {
+                
+                let keyAndValue: (String, String) = getKeyAndValueFromString(content)
+                let key: String = keyAndValue.0
+                let value: String = keyAndValue.1
+                
+                if isDictionaryJsonString(value) {
+                    orderDictionary[key] = self.handleString(jsonString: String(value))
+                } else if isArrayJsonString(value) {
+                    orderDictionary[key] = self.handleString(jsonString: String(value))
+                } else {
+                    orderDictionary[key] = value
+                }
+            }
+            
+            return orderDictionary;
+        }
+        
+        if isArrayJsonString(jsonString) {
+            
+            var resultArray: Array = Array<Any>()
+            var tempStr: String?
+            var level: Int = 0
+            
+            let content = checkAndRemoveFirstAndLastBrackets(jsonString)
+            
+            for (index, char) in content.enumerated() {
+                
+                if char == "{" || char == "["{
+                    level = level + 1
+                }
+                if char == "}" || char == "]"{
+                    level = level - 1
+                }
+                
+                if (level == 0 && char == ",") || (level == 0 && index == String(content).count - 1) {
+                    if (level == 0 && index == String(content).count - 1) {
+                        tempStr = (tempStr ?? "") + String(char)
+                    }
+                    if tempStr == "[]" {
+                        return resultArray
+                    } else if isDictionaryJsonString(tempStr ?? "") {
+                        resultArray.append(self.handleString(jsonString: tempStr!) as Any)
+                    } else if isArrayJsonString(tempStr ?? "") {
+                        resultArray.append(self.handleString(jsonString: tempStr!) as Any)
                     } else {
                         resultArray.append(checkAndRemoveFirstAndLastDoubleQuotes(String(tempStr ?? "")))
                     }

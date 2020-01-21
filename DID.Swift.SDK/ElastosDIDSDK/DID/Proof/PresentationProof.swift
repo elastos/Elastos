@@ -24,16 +24,16 @@ public class PresentationProof: Proof {
         self.signature = signature
     }
     
-    class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws -> PresentationProof {
-        let type: String = try JsonHelper.getString(json, TYPE, true, DEFAULT_PUBLICKEY_TYPE, "crendential proof type")
+    class func fromJson(_ json: Dictionary<String, Any>, _ ref: DID?) throws -> PresentationProof {
+        let type: String = try JsonHelper.getString(json, TYPE, true, ref: DEFAULT_PUBLICKEY_TYPE, "crendential proof type")
         
-        let method: DIDURL = try JsonHelper.getDidUrl(json, VERIFICATION_METHOD, ref, "presentation proof verificationMethod")!
+        let method: DIDURL = try JsonHelper.getDidUrl(json, VERIFICATION_METHOD, ref: ref, "presentation proof verificationMethod")!
         
-         let realm: String = try JsonHelper.getString(json, REALM, false, nil, "presentation proof realm")
+         let realm: String = try JsonHelper.getString(json, REALM, false, "presentation proof realm")
         
-         let nonce: String = try JsonHelper.getString(json, NONCE, false, nil, "presentation proof nonce")
+         let nonce: String = try JsonHelper.getString(json, NONCE, false, "presentation proof nonce")
         
-        let signature: String = try JsonHelper.getString(json, SIGNATURE, false, nil, "presentation proof signature")
+        let signature: String = try JsonHelper.getString(json, SIGNATURE, false, "presentation proof signature")
         
         return PresentationProof(type, method, realm, nonce, signature)
     }

@@ -254,7 +254,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try doc.subject!.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(newDoc.toJson(true, true), resolved?.toJson(true, true))
+            XCTAssertEqual(newDoc.toJson(true, forSign: true), resolved?.toJson(true, forSign: true))
             try store.storeDid(resolved!)
             
             _ = try store.deactivateDid(newDoc.subject!, storePass)
@@ -287,7 +287,7 @@ class DIDStoreTests: XCTestCase {
             
             var resolved: DIDDocument! = try doc.subject!.resolve(true)
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toJson(true, true), resolved?.toJson(true, true))
+            XCTAssertEqual(doc.toJson(true, forSign: true), resolved?.toJson(true, forSign: true))
             
             var target = try store.newDid(storePass)
             let db: DIDDocumentBuilder = target.edit()
@@ -302,7 +302,7 @@ class DIDStoreTests: XCTestCase {
             _ = try store.publishDid(target.subject!, storePass)
             resolved = try target.subject!.resolve()
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(target.toJson(true, true), resolved.toJson(true, true))
+            XCTAssertEqual(target.toJson(true, forSign: true), resolved.toJson(true, forSign: true))
             
             _ = try store.deactivateDid(target.subject!, doc.subject!, storePass)
             
@@ -339,7 +339,7 @@ class DIDStoreTests: XCTestCase {
             
             var resolved: DIDDocument = try doc.subject!.resolve(true)!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toJson(true, true), resolved.toJson(true, true))
+            XCTAssertEqual(doc.toJson(true, forSign: true), resolved.toJson(true, forSign: true))
             
             var target: DIDDocument = try store.newDid(storePass)
             db = target.edit()
@@ -355,7 +355,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try target.subject!.resolve()!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(target.toJson(true, true), resolved.toJson(true, true))
+            XCTAssertEqual(target.toJson(true, forSign: true), resolved.toJson(true, forSign: true))
             
             _ = try store.deactivateDid(target.subject!, doc.subject!, signKey: id, storePass)
             
@@ -395,7 +395,7 @@ class DIDStoreTests: XCTestCase {
             
             var resolved: DIDDocument = try doc.subject!.resolve(true)!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(doc.toJson(true, true), resolved.toJson(true, true))
+            XCTAssertEqual(doc.toJson(true, forSign: true), resolved.toJson(true, forSign: true))
             
             var target = try store.newDid(storePass)
             db = target.edit()
@@ -411,7 +411,7 @@ class DIDStoreTests: XCTestCase {
             
             resolved = try target.subject!.resolve()!
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(target.toJson(true, true), resolved.toJson(true, true))
+            XCTAssertEqual(target.toJson(true, forSign: true), resolved.toJson(true, forSign: true))
             
             _ = try store.deactivateDid(target.subject!, doc.subject!, storePass)
             
@@ -874,7 +874,7 @@ class DIDStoreTests: XCTestCase {
             for i in 0..<10 {
                 let doc = try stores[i].loadDid(docs[i].subject!)
                 XCTAssertNotNil(doc)
-                XCTAssertEqual(docs[i].toJson(true, true), doc!.toJson(true, true))
+                XCTAssertEqual(docs[i].toJson(true, forSign: true), doc!.toJson(true, forSign: true))
             }
             
         } catch {

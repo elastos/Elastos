@@ -49,7 +49,7 @@ class TestDataGenerator: XCTestCase {
         
         let id: DIDURL = issuer.getDefaultPublicKey()
         let sk: String = try store.loadPrivateKey(issuer.subject!, id: id)
-        let data: Data = try store.decryptFromBase64(storePass, sk)
+        let data: Data = try DIDStore.decryptFromBase64(storePass, sk)
         let binSk: [UInt8] = [UInt8](data)
         writeTo("issuer." + id.fragment + ".sk", Base58.base58FromBytes(binSk))
         
@@ -115,7 +115,7 @@ class TestDataGenerator: XCTestCase {
         
         var id = test.getDefaultPublicKey()
         let sk = try store.loadPrivateKey(test.subject!, id: id)
-        let data: Data = try store.decryptFromBase64(storePass, sk)
+        let data: Data = try DIDStore.decryptFromBase64(storePass, sk)
         let binSk = [UInt8](data)
         writeTo("document." + id.fragment + ".sk", Base58.base58FromBytes(binSk))
         

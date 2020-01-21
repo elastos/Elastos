@@ -7,7 +7,7 @@ public class DIDStore: NSObject {
     public static let DID_HAS_PRIVATEKEY = 0
     public static let DID_NO_PRIVATEKEY = 1
     public static let DID_ALL = 2
-    
+    private static let DID_EXPORT = "did.elastos.export/1.0"
     private var didCache: LRUCache?
     private var vcCache: LRUCache?
     
@@ -53,7 +53,7 @@ public class DIDStore: NSObject {
         return json
     }
     
-    class func decryptFromBase64(_ passwd: String ,_ input: String) throws -> [Int8] {
+   public class func decryptFromBase64(_ passwd: String ,_ input: String) throws -> [Int8] {
         let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
@@ -68,7 +68,7 @@ public class DIDStore: NSObject {
         return intArray
     }
     
-    class func decryptFromBase64(_ passwd: String ,_ input: String) throws -> Data {
+   public class func decryptFromBase64(_ passwd: String ,_ input: String) throws -> Data {
         let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
@@ -96,12 +96,13 @@ public class DIDStore: NSObject {
         let seedData = privateIdentity.getSeed()
         let encryptedIdentity = try DIDStore.encryptToBase64(storepass, seedData)
         try storage!.storePrivateIdentity(encryptedIdentity)
-        try storage!.storePrivateIdentityIndex(0)
         
         // Save mnemonic
         let mnemData = mnemonic.data(using: .utf8)
         let encryptedMnemonic: String = try DIDStore.encryptToBase64(storepass, mnemData!)
         try storage.storeMnemonic(encryptedMnemonic)
+        // Save index
+        try storage.storePrivateIdentityIndex(0)
     }
     
     func initPrivateIdentity(_ language: Int, _ mnemonic: String, _ passphrase: String, _ storepass: String) throws -> Void {
@@ -348,6 +349,11 @@ public class DIDStore: NSObject {
                 doc = try loadDid(did)
             }
         return doc
+    }
+    
+    public func storeDid(_ doc: DIDDocument, _ alias: String) throws {
+        doc.meta.alias = alias
+        try storeDid(doc)
     }
     
     public func storeDid(_ doc: DIDDocument) throws {
@@ -639,7 +645,7 @@ public class DIDStore: NSObject {
         let _did: DID = try DID(did)
         return try deletePrivateKey(_did, DIDURL(_did, id))
     }
-
+    
     public func sign(_ did: DID, id: DIDURL? = nil, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
         let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 4096)
         var privatekeys: Data
@@ -668,7 +674,7 @@ public class DIDStore: NSObject {
                 cinputs.append(count)
             }
         }
-
+        
         let toPPointer = privatekeys.toPointer()
         
         let c_inputs = getVaList(cinputs)
@@ -690,7 +696,249 @@ public class DIDStore: NSObject {
             let result: String = try DIDStore.encryptToBase64(newPassword, udata)
             return result
             } as! ReEncryptor
-       try storage.changePassword(ree)
+        try storage.changePassword(ree)
+    }
+    
+    private func exportDid(did: DID, _ password: String, _ storepass: String) throws -> String {
+        // All objects should load directly from storage,
+        // avoid affects the cached objects.
+        
+        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
+        var doc: DIDDocument? = nil
+        do {
+            doc = try storage.loadDid(did)
+        } catch {
+            throw DIDError.didStoreError(_desc: "Export DID \(did)failed.\(error)")
+        }
+        guard doc != nil else {
+            throw DIDError.didStoreError(_desc: "Export DID \(did) failed, not exist.")
+        }
+        
+        // Type
+        dic["type"] = DIDStore.DID_EXPORT
+        
+        // DID
+        var value: String = did.description
+        dic["id"] = value
+        
+        // Create
+        let now = DateFormater.currentDate()
+        value = DateFormater.format(now)
+        dic["created"] = value
+        
+        // Document
+        let dstr = doc?.toJson(false)
+        let ddic = JsonHelper.handleString(dstr!)
+        dic["document"] = ddic
+        
+        var didMeta: DIDMeta? = try storage.loadDidMeta(did)
+        if didMeta!.isEmpty() {
+            didMeta = nil
+        }
+        
+        // Credential
+        var vcarr: Array<OrderedDictionary<String, Any>> = []
+        var vcMetas: OrderedDictionary<DIDURL, CredentialMeta> = OrderedDictionary()
+        if try storage.containsCredentials(did) {
+            let ids = try listCredentials(did)
+            for id in ids {
+                var vc: VerifiableCredential? = nil
+                do {
+                    vc = try storage.loadCredential(did, id)
+                } catch {
+                    throw DIDError.didStoreError(_desc: "Export DID \(did) failed.\(error)")
+                }
+                let vcdic = vc!.toJson(false)
+                vcarr.append(vcdic)
+                let meta = try storage.loadCredentialMeta(did, id)
+                if !meta.isEmpty() {
+                    vcMetas[id] = meta
+                }
+            }
+        }
+        dic["credential"] = vcarr
+        
+        // Private key
+        vcarr.remove(at: 0)
+        if try storage.containsPrivateKeys(did) {
+            let list: Array<DIDPublicKey> = doc!.getPublicKeys()
+            for pk in list {
+                let id = pk.id
+                if try storage.containsPrivateKey(did, id!) {
+                    var csk: String = try storage.loadPrivateKey(did, id!)
+                    
+                    let cskData: Data = try DIDStore.decryptFromBase64(storepass, csk)
+                    csk = try DIDStore.encryptToBase64(password, cskData)
+                    
+                    var dic: OrderedDictionary<String, Any> = OrderedDictionary()
+                    let value = id!.description
+                    dic["id"] = value
+                    dic["key"] = csk
+                    vcarr.append(dic)
+                }
+            }
+            dic["privatekey"] = vcarr
+        }
+        
+        // Metadata
+        if didMeta != nil || vcMetas.count != 0 {
+            var metaDic: OrderedDictionary<String, Any> = OrderedDictionary()
+            
+            if didMeta != nil {
+                metaDic["document"] = didMeta!.description
+                
+            }
+            
+            if vcMetas.count != 0 {
+                var arr: Array<OrderedDictionary<String, Any>> = []
+                
+                vcMetas.forEach { (key, value) in
+                    var v = key.description
+                    var dic: OrderedDictionary<String, Any> = OrderedDictionary()
+                    dic["id"] = v
+                    v = value.description
+                    dic["metadata"] = v
+                    arr.append(dic)
+                }
+                metaDic["credential"] = arr
+            }
+            dic["metadata"] = metaDic
+        }
+        
+        // Fingerprint
+        // TODO: SHA256Digest
+        
+        let str = JsonHelper.creatJsonString(dic: dic)
+        return str
+    }
+    
+    public func exportDid(_ did: DID, _ password: String, _ storepass: String) throws -> String {
+        return try exportDid(did: did, password, storepass)
+    }
+    
+    public func exportDid(_ did: String, _ password: String, _ storepass: String) throws -> String {
+        return try exportDid(did: DID(did), password, storepass)
+    }
+    
+    private func importDid(_ json: Dictionary<String, Any>, _ password: String, _ storepass: String)  throws {
+        // TODO: sha256
+        
+        // Type
+        let type = try JsonHelper.getString(json, "type", false, "export type")
+        guard type == DIDStore.DID_EXPORT else {
+            throw DIDError.didStoreError(_desc: "Invalid export data, unknown type.")
+        }
+        
+        // DID
+        let did = try JsonHelper.getDid(json, "id", false, "DID subject")
+        
+        // Created
+        let created = try JsonHelper.getDate(json, "created", true, "export date")
+        
+        // Document
+        let jsonDoc: String? = json["document"] as? String
+        guard jsonDoc != nil else {
+            throw DIDError.didStoreError(_desc: "Missing DID document in the export data")
+        }
+        
+        var doc: DIDDocument? = nil
+        do {
+            doc = try DIDDocument.fromJson(jsonDoc!)
+        } catch  {
+            throw DIDError.didStoreError(_desc: "Invalid export data.\(error)")
+        }
+        guard doc!.subject == did else {
+            throw DIDError.didStoreError(_desc: "Invalid DID document in the export data.")
+        }
+        
+        // Credential
+        var vcs: Dictionary<DIDURL, VerifiableCredential>? = nil
+        var re = json["credential"]
+        if re != nil {
+            guard re is Array<Any> else {
+                throw DIDError.didStoreError(_desc: "Invalid export data, wrong credential data.")
+            }
+            var vcs: Dictionary<DIDURL, VerifiableCredential> = [: ]
+            for dic in re as! Array<Dictionary<String, Any>> {
+                var vc: VerifiableCredential? = nil
+                do {
+                    vc = try VerifiableCredential.fromJson(dic, did!)
+                } catch {
+                    throw DIDError.didExpiredError(_desc: "Invalid export data.\(error)")
+                }
+                guard vc?.subject.id == did else {
+                    throw DIDError.didStoreError(_desc: "Invalid credential in the export data.")
+                }
+                vcs[vc!.id] = vc
+            }
+        }
+        
+        // Private key
+        var sks: Dictionary<DIDURL, String> = [: ]
+        re = json["privatekey"]
+        if re != nil {
+            guard re is Array<Any> else {
+                throw DIDError.didStoreError(_desc: "Invalid export data, wrong privatekey data.")
+            }
+            for dic in re as! Array<Dictionary<String, Any>> {
+                let id = try JsonHelper.getDidUrl(dic, "id", ref: did, "privatekey id")
+                let csk = try JsonHelper.getString(dic, "key", false, "privatekey")
+                sks[id!] = csk
+            }
+        }
+        
+        // Metadata
+        re = json["metadata"]
+        if re != nil {
+            let redic = re as! Dictionary<String, Any>
+            var m = redic["document"]
+            if m != nil {
+                let meta: DIDMeta = try DIDMeta.fromString(m as! String, DIDMeta.self)
+                doc?.meta = meta
+            }
+            
+            m = redic["credential"] as! String
+            if re != nil {
+                if m != nil {
+                    guard m is Array<Any> else {
+                        throw DIDError.didStoreError(_desc: "Invalid export data, wrong metadata.")
+                    }
+                    for dic in m as! Array<Dictionary<String, Any>>{
+                        let id = try JsonHelper.getDidUrl(dic, "id", false, "credential id")
+                        let meta: CredentialMeta = try CredentialMeta.fromString(dic["metadata"] as! String, CredentialMeta.self)
+                        let vc: VerifiableCredential? = vcs![id!]
+                        if vc != nil {
+                            vc?.meta = meta
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Fingerprint: TODO: =======================
+        
+        // All objects should load directly from storage,
+        // avoid affects the cached objects.
+        try storage.storeDid(doc!)
+        try storage.storeDidMeta(doc!.subject!, doc?.meta)
+        
+        for vc in vcs!.values {
+            try storage.storeCredential(vc)
+            try storage.storeCredentialMeta(did!, vc.id, vc.meta)
+        }
+        
+        try sks.forEach { (key, value) in
+            try storage.storePrivateKey(did!, key, value)
+        }
+    }
+    
+    public func importDid(file: String, _ password: String, _ storepass: String) throws {
+        let dic: Dictionary<String, Any> = JsonHelper.handleString(jsonString: file) as! Dictionary<String, Any>
+       try importDid(dic, password, storepass)
+    }
+    
+    public func importDid(json: Dictionary<String, Any>, _ password: String, _ storepass: String) throws {
+       try importDid(json, password, storepass)
     }
 }
 
