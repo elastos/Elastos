@@ -3,7 +3,7 @@ version : "3"
 services:
   mainnet-mainchain-node:
     container_name: mainnet-mainchain-node
-    image: cyberrepublic/elastos-mainchain-node:v0.4.0
+    image: cyberrepublic/elastos-mainchain-node:v0.4.1
     user: "${UID}:${GID}"
     volumes:
       - ~/.data/docker/volumes/development-services/mainnet/mainchain-data:/ela/elastos
