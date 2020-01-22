@@ -33,6 +33,7 @@
 		11724A2123D5692C00DF5820 /* DIDDocumentBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11724A2023D5692C00DF5820 /* DIDDocumentBuilder.swift */; };
 		11724A2323D5696D00DF5820 /* VerifiablePresentationBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11724A2223D5696D00DF5820 /* VerifiablePresentationBuilder.swift */; };
 		11724A2523D569A400DF5820 /* CredentialBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11724A2423D569A400DF5820 /* CredentialBuilder.swift */; };
+		11724A2D23D82B0700DF5820 /* SHA256Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11724A2C23D82B0700DF5820 /* SHA256Helper.swift */; };
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
 		11A6B15B238FD79000D3C1F1 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B159238FD77E00D3C1F1 /* libcrypto.a */; };
 		11A6B15C238FD79000D3C1F1 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B15A238FD77E00D3C1F1 /* libhdkey.a */; };
@@ -226,6 +227,7 @@
 		11724A2023D5692C00DF5820 /* DIDDocumentBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDDocumentBuilder.swift; sourceTree = "<group>"; };
 		11724A2223D5696D00DF5820 /* VerifiablePresentationBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifiablePresentationBuilder.swift; sourceTree = "<group>"; };
 		11724A2423D569A400DF5820 /* CredentialBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialBuilder.swift; sourceTree = "<group>"; };
+		11724A2C23D82B0700DF5820 /* SHA256Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SHA256Helper.swift; sourceTree = "<group>"; };
 		119338DC237E4DB800C4998E /* TestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestConfig.swift; path = TestUtils/TestConfig.swift; sourceTree = "<group>"; };
 		119338E2237E622300C4998E /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E4237E623100C4998E /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
@@ -612,6 +614,7 @@
 				11E89FB923A4C36000C81B3C /* OrderedDictionary.swift */,
 				11E89FBA23A4C36000C81B3C /* PathExtracter.swift */,
 				11724A1A23D5558900DF5820 /* RegexHelper.swift */,
+				11724A2C23D82B0700DF5820 /* SHA256Helper.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -935,6 +938,7 @@
 				11E89FFC23A4C36000C81B3C /* DIDPublicKey.swift in Sources */,
 				11E8A00123A4C36000C81B3C /* DIDError.swift in Sources */,
 				11E89FE523A4C36000C81B3C /* HDKey.swift in Sources */,
+				11724A2D23D82B0700DF5820 /* SHA256Helper.swift in Sources */,
 				11E89FED23A4C36000C81B3C /* IDChainRequest.swift in Sources */,
 				11E89FF423A4C36000C81B3C /* ParserHelper.swift in Sources */,
 				11E89FE223A4C36000C81B3C /* DerivedKey.swift in Sources */,
