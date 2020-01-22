@@ -769,7 +769,7 @@ class DIDStoreTests: XCTestCase {
 
     func createDataForPerformanceTest(_ store: DIDStore) {
         do {
-            var props: OrderedDictionary<String, String> = OrderedDictionary()
+            var props: Dictionary<String, String> = [: ]
             props["name"] = "John"
             props["gender"] = "Male"
             props["nation"] = "Singapore"

@@ -2,12 +2,11 @@ import Foundation
 
 public class CredentialSubject {
     
-    public var id: DID!
-    public var properties: OrderedDictionary<String, String>!
+    public var id: DID
+    public var properties: Dictionary<String, String> = [: ]
     
     public init(_ id: DID) {
         self.id = id
-        properties = OrderedDictionary()
     }
     
     public func getPropertyCount() -> Int {
@@ -22,7 +21,7 @@ public class CredentialSubject {
         properties[name] = value
     }
 
-    public func addProperties(_ dic: OrderedDictionary<String, String> ) {
+    public func addProperties(_ dic: Dictionary<String, String> ) {
         dic.forEach { (key, value) in
             properties[key] = value
         }

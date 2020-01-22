@@ -55,7 +55,7 @@ public class CredentialBuilder {
         return self
     }
     
-    public func properties(_ properties: OrderedDictionary<String, String>) throws -> CredentialBuilder {
+    public func properties(_ properties: Dictionary<String, String>) throws -> CredentialBuilder {
         guard properties.keys.count != 0 else {
             throw DIDError.illegalArgument("properties count is 0.")
         }

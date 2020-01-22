@@ -3,7 +3,7 @@ import Foundation
 public class Metadata {
     let EXTRA_PREFIX: String = "X-"
     public var store: DIDStore?
-    var extra: OrderedDictionary<String, Any> = OrderedDictionary()
+    var extra: Dictionary<String, Any> = [: ]
     
     public required init() {}
     func setExtraInternal(_ name: String, _ value: String) {
@@ -25,7 +25,7 @@ public class Metadata {
         return extra[EXTRA_PREFIX + name] as? String
     }
     
-    func fromJson(_ json: OrderedDictionary<String, Any>) throws {}
+    func fromJson(_ json: Dictionary<String, Any>) throws {}
     
     class func fromString<T: Metadata>(_ metadata: String, _ clazz: T.Type) throws -> T {
         let meta = clazz.init()
@@ -34,7 +34,7 @@ public class Metadata {
         }
         // check as! Dictionary<String, String>
         let string = JsonHelper.preHandleString(metadata)
-        let dic = JsonHelper.handleString(string) as! OrderedDictionary<String, Any>
+        let dic = JsonHelper.handleString(jsonString: string) as! Dictionary<String, Any>
         
         try meta.fromJson(dic)
         dic.forEach { key, value in

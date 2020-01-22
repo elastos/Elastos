@@ -9,7 +9,7 @@ public class CredentialMeta: Metadata {
         return try fromString(metadata, CredentialMeta.self)
     }
     
-    override func fromJson(_ json: OrderedDictionary<String, Any>) throws {
+    override func fromJson(_ json: Dictionary<String, Any>) throws {
         let _alias = json[CredentialMeta.ALIAS] as? String ?? ""
         if !_alias.isEmpty {
             self.alias = _alias;

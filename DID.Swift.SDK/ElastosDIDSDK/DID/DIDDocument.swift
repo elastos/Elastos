@@ -572,7 +572,7 @@ public class DIDDocument: NSObject {
         }
         try authorizations!.forEach { (obj) in
             var pk: DIDPublicKey
-            if obj is OrderedDictionary<String, Any> {
+            if obj is Dictionary<String, Any> {
                 let object: Dictionary<String, Any> = obj as! Dictionary<String, Any>
                 pk = try DIDPublicKey.fromJson(object, subject!)
             }else {

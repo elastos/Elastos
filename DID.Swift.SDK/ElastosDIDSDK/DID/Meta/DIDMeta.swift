@@ -19,7 +19,7 @@ public class DIDMeta: Metadata {
         return try fromString(metadata, DIDMeta.self)
     }
 
-    override func fromJson(_ json: OrderedDictionary<String, Any>) throws {
+    override func fromJson(_ json: Dictionary<String, Any>) throws {
         let _alias = json[DIDMeta.ALIAS] as? String ?? ""
         if !_alias.isEmpty {
             self.alias = _alias

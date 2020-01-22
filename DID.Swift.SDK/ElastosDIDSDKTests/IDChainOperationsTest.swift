@@ -245,7 +245,7 @@ class IDChainOperationsTest: XCTestCase {
             var doc: DIDDocument = try store.newDid(storePass)
             let did: DID = doc.subject!
             
-            var props: OrderedDictionary<String, String> = OrderedDictionary()
+            var props: Dictionary<String, String> = [: ]
             props["name"] = "John"
             props["gender"] = "Male"
             props["nation"] = "Singapore"
@@ -310,7 +310,7 @@ class IDChainOperationsTest: XCTestCase {
             
             // Update
             selfIssuer = try Issuer(resolved)
-            props.removeAll(keepCapacity: 0)
+            props.removeAll()
             props["nation"] = "Singapore"
             props["passport"] = "S653258Z07"
 
@@ -366,7 +366,7 @@ class IDChainOperationsTest: XCTestCase {
             // Update
             selfIssuer = try Issuer(resolved)
             cb = selfIssuer.issueFor(did: did)
-            props.removeAll(keepCapacity: 0)
+            props.removeAll()
             props["Abc"] = "Abc"
             props["abc"] = "abc"
             props["Foobar"] = "Foobar"

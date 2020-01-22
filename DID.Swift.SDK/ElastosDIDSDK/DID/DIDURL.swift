@@ -78,6 +78,7 @@ public class DIDURL: NSObject {
         guard _query != nil else {
             return ""
         }
+
         return mapToString(_query!, sep: "&")
     }
 
@@ -165,7 +166,7 @@ public class DIDURL: NSObject {
         return super.isEqual(object);
     }
     
-    private func dictionaryHashCode(_ dictionary: OrderedDictionary<String, String>?) -> Int {
+    private func dictionaryHashCode(_ dictionary: Dictionary<String, String>?) -> Int {
         var hash: Int = 0
         
         if dictionary == nil {
@@ -181,14 +182,14 @@ public class DIDURL: NSObject {
     }
     
     public override var hash: Int {
-        let param: String = (_parameters != nil) ? mapToString(_parameters!, sep: ";") : ""
+        let params: String = (_parameters != nil) ? mapToString(_parameters!, sep: ";") : ""
         let query: String = (_query != nil) ? mapToString(_query!, sep: "&") : ""
         let method: String = did.method
         let methodSpecificId: String = did.methodSpecificId
         let path: String = (self.path != nil) ? self.path! : ""
         let fragment: String = (self.fragment != nil) ? self.fragment! : ""
         
-        let hash: Int = String(method + methodSpecificId + param + query + path + fragment).hash
+        let hash: Int = String(method + methodSpecificId + params + query + path + fragment).hash
         
         return hash
     }

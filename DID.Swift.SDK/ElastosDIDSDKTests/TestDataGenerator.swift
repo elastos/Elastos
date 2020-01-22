@@ -30,7 +30,7 @@ class TestDataGenerator: XCTestCase {
         let doc: DIDDocument = try store.newDid(storePass)
         print("Generate issuer DID: \(doc.subject!)...")
         let selfIssuer = try Issuer(doc)
-        var props: OrderedDictionary<String, String> = OrderedDictionary()
+        var props: Dictionary<String, String> = [: ]
         props["name"] = "Test Issuer"
         props["nation"] = "Singapore"
         props["language"] = "English"
@@ -87,7 +87,7 @@ class TestDataGenerator: XCTestCase {
         _ = try db.addService("carrier", "CarrierAddress", "carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d");
         
         let selfIssuer = try Issuer(doc)
-        var props: OrderedDictionary<String, String> = OrderedDictionary()
+        var props: Dictionary<String, String> = [: ]
         props["name"] = "John"
         props["gender"] = "Male"
         props["nation"] = "Singapore"
@@ -101,7 +101,7 @@ class TestDataGenerator: XCTestCase {
             .seal(storepass: storePass)
         _ = try Issuer(issuer)
         
-        props = OrderedDictionary()
+        props = [: ]
         props["email"] = "john@example.com"
         let vcEmail: VerifiableCredential = try cb.idString("email")
             .types(["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"])
@@ -156,7 +156,7 @@ class TestDataGenerator: XCTestCase {
         // Passport credential
         id = try DIDURL(test.subject!, "passport")
         print("Generate credential:  \(id)...")
-        props = OrderedDictionary()
+        props = [: ]
         props["nation"] = "Singapore"
         props["passport"] = "S653258Z07"
         
@@ -179,7 +179,7 @@ class TestDataGenerator: XCTestCase {
         id = try DIDURL(test.subject!, "twitter")
         print("Generate credential:  \(id)...")
         
-        props = OrderedDictionary()
+        props = [: ]
         props["twitter"] = "@john"
         let vcTwitter = try cb.idString("twitter")
             .types(["InternetAccountCredential", "TwitterCredential"])
@@ -276,7 +276,7 @@ class TestDataGenerator: XCTestCase {
                 .properties(cs.properties)
                 .seal(storepass: storePass)
                                     
-                cs.properties.removeAll(keepCapacity: 0)
+                cs.properties.removeAll()
                 cs.addProperty("email", "john@gmail.com")
                 
                 let vcEmail: VerifiableCredential = try cb.idString("email")
@@ -284,7 +284,7 @@ class TestDataGenerator: XCTestCase {
                 .properties(cs.properties)
                 .seal(storepass: storePass)
                                     
-                cs.properties.removeAll(keepCapacity: 0)
+                cs.properties.removeAll()
                 cs.addProperty("nation", "Singapore")
                 cs.addProperty("passport", "S653258Z07")
 
@@ -293,7 +293,7 @@ class TestDataGenerator: XCTestCase {
                 .properties(cs.properties)
                 .seal(storepass: storePass)
                     
-                cs.properties.removeAll(keepCapacity: 0)
+                cs.properties.removeAll()
                 cs.addProperty("twitter", "@john")
 
                 let vcTwitter: VerifiableCredential = try cb.idString("twitter")
