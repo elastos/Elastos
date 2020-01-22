@@ -26,8 +26,7 @@ WalletAddressesETH = set()
 
 
 def create_wallet_mainchain(session):
-    create_wallet_url = config('PRIVATE_NET_IP_ADDRESS') + config(
-        'WALLET_SERVICE_URL') + settings.WALLET_API_CREATE_WALLET
+    create_wallet_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_CREATE_WALLET
     response = session.get(create_wallet_url, timeout=REQUEST_TIMEOUT)
     data = json.loads(response.text)['result']
     return data['address'], data['privateKey']
@@ -71,17 +70,15 @@ def cronjob_send_ela():
                 addrs_for_token[address] = (new_address, new_private_key)
 
     # Transfer from mainchain to mainchain
-    transfer_ela_url = config('PRIVATE_NET_IP_ADDRESS') + config(
-        'WALLET_SERVICE_URL') + settings.WALLET_API_TRANSFER
+    transfer_ela_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_TRANSFER
     response = session.post(transfer_ela_url, data=json.dumps(req_data_mainchain), timeout=REQUEST_TIMEOUT)
     tx_hash = json.loads(response.text)['result']
     logging.debug("Transferred 10 ELA. Tx Hash: {0}".format(tx_hash))
 
     # Wait for transaction to have one confirmation
     done = False
-    while done != True:
-        tx_url = config('PRIVATE_NET_IP_ADDRESS') + config(
-            'WALLET_SERVICE_URL') + settings.WALLET_API_GET_TRANSACTION + tx_hash
+    while not done:
+        tx_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_GET_TRANSACTION + tx_hash
         response = session.get(tx_url, timeout=REQUEST_TIMEOUT)
         confirmation_times = json.loads(response.text)['result']['confirmations']
         if confirmation_times >= 1:
@@ -101,8 +98,7 @@ def cronjob_send_ela():
                 "amount": "5"
             }]
         }
-        transfer_ela_url = config('PRIVATE_NET_IP_ADDRESS') + config(
-            'WALLET_SERVICE_URL') + settings.WALLET_API_CROSSCHAIN_TRANSFER
+        transfer_ela_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_CROSSCHAIN_TRANSFER
         response = session.post(transfer_ela_url, data=json.dumps(req_data), timeout=REQUEST_TIMEOUT)
         tx_hash = json.loads(response.text)['result']
         logging.debug("Transferred ELA/DIDSC. Tx Hash: {0}".format(tx_hash))
@@ -119,8 +115,8 @@ def cronjob_send_ela():
                 "amount": "5"
             }]
         }
-        transfer_ela_url = config('PRIVATE_NET_IP_ADDRESS') + config(
-            'WALLET_SERVICE_TOKENSIDECHAIN_URL') + settings.WALLET_API_CROSSCHAIN_TRANSFER_TOKENSIDECHAIN
+        transfer_ela_url = config('PRIVATE_NET_WALLET_SERVICE_TOKENSIDECHAIN_URL') + \
+                           settings.WALLET_API_CROSSCHAIN_TRANSFER_TOKENSIDECHAIN
         response = session.post(transfer_ela_url, data=json.dumps(req_data), timeout=REQUEST_TIMEOUT)
         tx_hash = json.loads(response.text)['result']
         logging.debug("Transferred ELA/TOKENSC. Tx Hash: {0}".format(tx_hash))
@@ -135,7 +131,7 @@ def cronjob_send_ela_ethsc():
         return
 
     web3 = Web3(
-        HTTPProvider("{0}{1}".format(config('PRIVATE_NET_IP_ADDRESS'), config('SIDECHAIN_ETH_RPC_PORT')),
+        HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
                      request_kwargs={'timeout': 60}))
     web3.middleware_onion.inject(geth_poa_middleware, layer=0)
     amount = web3.toWei(5, 'ether')

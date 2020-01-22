@@ -25,17 +25,12 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         }
         self.session = Session()
         self.session.headers.update(headers)
-        # web3.py instance
-        self.web3 = Web3(
-            HTTPProvider("{0}{1}".format(config('PRIVATE_NET_IP_ADDRESS'), config('SIDECHAIN_ETH_RPC_PORT')),
-                         request_kwargs={'timeout': 60}))
-        # We need this since our eth sidechain is POA
-        self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
         self.rate_limiter = RateLimiter()
 
     def CreateWallet(self, request, context):
 
         api_key = request.api_key
+        network = request.network
         did = get_did_from_api(api_key)
 
         # Validate the API Key
@@ -46,31 +41,33 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                     'API_Key': api_key
                 }
             }
-            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified', status=False)
+            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified',
+                                       status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        response = check_rate_limit(self.rate_limiter, settings.CREATE_WALLET_LIMIT, api_key, self.CreateWallet.__name__)
+        response = check_rate_limit(self.rate_limiter, settings.CREATE_WALLET_LIMIT, api_key,
+                                    self.CreateWallet.__name__)
         if response:
             return wallet_pb2.Response(output=json.dumps(response),
                                        status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
                                        status=False)
 
         # Create wallets
-        wallet_mainchain = create_wallet_mainchain(self.session)
+        wallet_mainchain = create_wallet_mainchain(self.session, network)
         if wallet_mainchain is None:
             status_message = 'Error: Mainchain wallet could not created'
             logging.debug(f"{did} : {api_key} : {status_message}")
             return wallet_pb2.Response(output="", status_message=status_message, status=False)
 
-        wallet_sidechain_did = create_wallet_sidechain_did(self.session)
+        wallet_sidechain_did = create_wallet_sidechain_did(self.session, network)
         if wallet_sidechain_did is None:
             status_message = 'Error: DID Sidechain wallet could not created'
             logging.debug(f"{did} : {api_key} : {status_message}")
             return wallet_pb2.Response(output="", status_message=status_message, status=False)
 
         wallet_sidechain_token = wallet_mainchain
-        
-        wallet_sidechain_eth = create_wallet_sidechain_eth(self.web3)
+
+        wallet_sidechain_eth = create_wallet_sidechain_eth(network)
         if wallet_sidechain_eth is None:
             status_message = 'Error: Eth Sidechain wallet could not created'
             logging.debug(f"{did} : {api_key} : {status_message}")
@@ -113,6 +110,8 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
     def ViewWallet(self, request, context):
 
         api_key = request.api_key
+        network = request.network
+
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
@@ -121,7 +120,8 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                     'API_Key': api_key
                 }
             }
-            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified', status=False)
+            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified',
+                                       status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = check_rate_limit(self.rate_limiter, settings.VIEW_WALLET_LIMIT, api_key, self.ViewWallet.__name__)
@@ -134,9 +134,9 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         chain = request_input['chain']
         address = request_input['address']
         if chain == "eth":
-            balance = view_wallet_eth(self.web3, address)
+            balance = view_wallet_eth(network, address)
         else:
-            balance = view_wallet_general(self.session, chain, address)
+            balance = view_wallet_general(self.session, network, chain, address)
 
         response = {
             'result': {
@@ -152,6 +152,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
     def RequestELA(self, request, context):
 
         api_key = request.api_key
+
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
@@ -160,7 +161,8 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                     'API_Key': api_key
                 }
             }
-            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified', status=False)
+            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified',
+                                       status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = check_rate_limit(self.rate_limiter, settings.REQUEST_ELA_LIMIT, api_key, self.RequestELA.__name__)
@@ -208,19 +210,20 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         return wallet_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)
 
 
-def create_wallet_mainchain(session):
+def create_wallet_mainchain(session, network):
     result = {}
     # Generate mnemonics
-    generate_mnemonics_url = config('PRIVATE_NET_IP_ADDRESS') + config(
-        'WALLET_SERVICE_URL') + settings.WALLET_API_GENERATE_MNEMONIC
+    if network == "testnet":
+        generate_mnemonics_url = config('TEST_NET_WALLET_SERVICE_URL') + settings.WALLET_API_GENERATE_MNEMONIC
+    else:
+        generate_mnemonics_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_GENERATE_MNEMONIC
     response = session.get(generate_mnemonics_url, timeout=REQUEST_TIMEOUT)
     data = json.loads(response.text)
     mnemonic = data['result']
     result['mnemonic'] = mnemonic
 
     # Retrieve wallet from mnemonics
-    retrieve_wallet_url = config('PRIVATE_NET_IP_ADDRESS') + config(
-        'WALLET_SERVICE_URL') + settings.WALLET_API_RETRIEVE_WALLET_FROM_MNEMONIC
+    retrieve_wallet_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_RETRIEVE_WALLET_FROM_MNEMONIC
     req_data = {
         "mnemonic": mnemonic,
         "index": 1
@@ -233,10 +236,13 @@ def create_wallet_mainchain(session):
     return result
 
 
-def create_wallet_sidechain_did(session):
+def create_wallet_sidechain_did(session, network):
     result = {}
     # Create DID
-    create_did_url = config('PRIVATE_NET_IP_ADDRESS') + config('DID_SERVICE_URL') + settings.DID_SERVICE_API_CREATE_DID
+    if network == "testnet":
+        create_did_url = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_CREATE_DID
+    else:
+        create_did_url = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_CREATE_DID
     response = session.get(create_did_url, timeout=REQUEST_TIMEOUT)
     data = json.loads(response.text)['result']
     result['mnemonic'] = ''
@@ -247,18 +253,30 @@ def create_wallet_sidechain_did(session):
     return result
 
 
-def create_wallet_sidechain_eth(w3):
+def create_wallet_sidechain_eth(network):
     result = {}
     # Create account
-    account = w3.eth.account.create(secrets.token_hex(32))
+    # web3.py instance
+    if network == "testnet":
+        web3 = Web3(HTTPProvider(config('TEST_NET_SIDECHAIN_ETH_RPC_PORT'),
+                                 request_kwargs={'timeout': 60}))
+    else:
+        web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
+                                 request_kwargs={'timeout': 60}))
+    # We need this since our eth sidechain is POA
+    web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    account = web3.eth.account.create(secrets.token_hex(32))
     result['address'] = account.address
     result['private_key'] = account.privateKey.hex()
     return result
 
 
-def view_wallet_general(session, chain, address):
+def view_wallet_general(session, network, chain, address):
     if chain == "mainchain":
-        get_balance_url = config('PRIVATE_NET_IP_ADDRESS') + config('MAINCHAIN_RPC_PORT')
+        if network == "testnet":
+            get_balance_url = config('TEST_NET_MAINCHAIN_RPC_PORT')
+        else:
+            get_balance_url = config('PRIVATE_NET_MAINCHAIN_RPC_PORT')
         d = {
             "method": settings.MAINCHAIN_RPC_GET_BALANCE,
             "params": {
@@ -266,7 +284,10 @@ def view_wallet_general(session, chain, address):
             }
         }
     elif chain == "did":
-        get_balance_url = config('PRIVATE_NET_IP_ADDRESS') + config('SIDECHAIN_DID_RPC_PORT')
+        if network == "testnet":
+            get_balance_url = config('TEST_NET_SIDECHAIN_DID_RPC_PORT')
+        else:
+            get_balance_url = config('PRIVATE_NET_SIDECHAIN_DID_RPC_PORT')
         d = {
             "method": settings.DID_SIDECHAIN_RPC_GET_BALANCE,
             "params": {
@@ -274,7 +295,10 @@ def view_wallet_general(session, chain, address):
             }
         }
     elif chain == "token":
-        get_balance_url = config('PRIVATE_NET_IP_ADDRESS') + config('SIDECHAIN_TOKEN_RPC_PORT')
+        if network == "testnet":
+            get_balance_url = config('TEST_NET_SIDECHAIN_TOKEN_RPC_PORT')
+        else:
+            get_balance_url = config('PRIVATE_NET_SIDECHAIN_TOKEN_RPC_PORT')
         d = {
             "method": settings.TOKEN_SIDECHAIN_RPC_GET_BALANCE,
             "params": {
@@ -283,16 +307,25 @@ def view_wallet_general(session, chain, address):
         }
     response = session.post(get_balance_url, data=json.dumps(d), timeout=REQUEST_TIMEOUT)
     if response is None:
-            status_message = 'Error: Wallet balance could not retrieved'
-            return wallet_pb2.Response(output="", status_message=status_message, status=False)
+        status_message = 'Error: Wallet balance could not retrieved'
+        return wallet_pb2.Response(output="", status_message=status_message, status=False)
 
     data = json.loads(response.text)
     balance = data['result']
     return balance
 
 
-def view_wallet_eth(w3, address):
-    address = w3.toChecksumAddress(address)
-    balance = w3.eth.getBalance(address)
-    balance = w3.fromWei(balance, 'ether')
+def view_wallet_eth(network, address):
+    # web3.py instance
+    if network == "testnet":
+        web3 = Web3(HTTPProvider(config('TEST_NET_SIDECHAIN_ETH_RPC_PORT'),
+                                 request_kwargs={'timeout': 60}))
+    else:
+        web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
+                                 request_kwargs={'timeout': 60}))
+    # We need this since our eth sidechain is POA
+    web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    address = web3.toChecksumAddress(address)
+    balance = web3.eth.getBalance(address)
+    balance = web3.fromWei(balance, 'ether')
     return str(balance)

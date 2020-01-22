@@ -12,7 +12,8 @@ service Wallet {
 // The request message
 message Request {
   string api_key = 1;
-  string input = 2;
+  string network = 2;
+  string input = 3;
 }
 
 // The response message

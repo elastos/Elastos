@@ -30,6 +30,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
     def UploadAndSign(self, request, context):
 
         api_key = request.api_key
+        network = request.network
         did = get_did_from_api(api_key)
 
         # Validate the API Key
@@ -61,7 +62,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         encrypted_message = fernet.encrypt(file_contents)
 
         # upload file to hive
-        api_url_base = config('PRIVATE_NET_IP_ADDRESS') + config('HIVE_PORT') + settings.HIVE_API_ADD_FILE
+        api_url_base = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_ADD_FILE
         response = self.session.get(api_url_base, files={'file': encrypted_message}, headers=self.headers['hive'],
                                     timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
@@ -74,7 +75,10 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         # signing the hash key
         private_key = request_input['private_key']
-        did_api_url = config('PRIVATE_NET_IP_ADDRESS') + config('DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
+        if network == "testnet":
+            did_api_url = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
+        else:
+            did_api_url = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
         req_data = {
             "privateKey": private_key,
             "msg": file_hash
@@ -101,6 +105,8 @@ class Hive(hive_pb2_grpc.HiveServicer):
     def VerifyAndShow(self, request, context):
 
         api_key = request.api_key
+        network = request.network
+
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
@@ -127,7 +133,10 @@ class Hive(hive_pb2_grpc.HiveServicer):
             "pub": request_input['pub'],
             "sig": request_input['sig']
         }
-        api_url_base = config('PRIVATE_NET_IP_ADDRESS') + config('DID_SERVICE_URL') + settings.DID_SERVICE_API_VERIFY
+        if network == "testnet":
+            api_url_base = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_VERIFY
+        else:
+            api_url_base = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_VERIFY
         response = self.session.post(api_url_base, data=json.dumps(json_data), headers=self.headers['general'],
                                      timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
@@ -135,7 +144,10 @@ class Hive(hive_pb2_grpc.HiveServicer):
             return hive_pb2.Response(output="", status_message='Hash key could not be verified', status=False)
 
         # verify the given input message using private key
-        api_url_base = config('PRIVATE_NET_IP_ADDRESS') + config('DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
+        if network == "testnet":
+            api_url_base = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
+        else:
+            api_url_base = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
         req_data = {
             "privateKey": request_input['private_key'],
             "msg": request_input['hash']
@@ -152,7 +164,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
                                      status=False)
 
         # show content
-        api_url_base = config('PRIVATE_NET_IP_ADDRESS') + config('HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
+        api_url_base = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
         response = self.session.get(api_url_base.format(request_input['hash']), timeout=REQUEST_TIMEOUT)
 
         # decrypt message
@@ -166,4 +178,5 @@ class Hive(hive_pb2_grpc.HiveServicer):
             }
         }
 
-        return hive_pb2.Response(output=json.dumps(response), status_message='Successfully retrieved file from Elastos Hive', status=True)
+        return hive_pb2.Response(output=json.dumps(response), status_message='Successfully retrieved file from '
+                                                                             'Elastos Hive', status=True)
