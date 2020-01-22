@@ -25,7 +25,7 @@ def main():
     service = results.service
 
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'exPuOXNh6VCjI98ODLYguz7LDwEa7PKbQX3rwKG8mRpbbbNa6AgMY3iYJOLzLAQv'
+    api_key_to_use = 'mNwrY4G2L5tD4oLy0Z6lHg2Z3D3JD13zgwICEeDTl9ypYMNfn7lpGylQ69z8HXf1'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -90,10 +90,10 @@ def main():
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D507843635862756668654B7A6D61387A5271624463326668657437736F53697378357533546559317A74744D",
+                "msg": "516D5576706A746A685462386D705153476B734D583454737151574B764D765662736F716566724454454A586D64",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "4CFB575857F56B984A241A1CC49F7E4D6B2E7CDCD35AAD7FF680F581C1E77AE63EEB4A1275FAA5CE2523266A9504C0129B1529804DB7DE5A145D4878544D2737",
-                "hash": "QmPxCcXbufheKzma8zRqbDc2fhet7soSisx5u3TeY1zttM",
+                "sig": "68AB268DD2B920F1FD2CDB7B885A79363128667EC9B4944908F9482EEC8B9C07BE421807F8E7531FEB3910D0CF567CDBEE4E21F279A2D4E1D024C0CB3581EBB1",
+                "hash": "QmUvpjtjhTb8mpQSGksMX4TsqQWKvMvVbsoqefrDTEJXmd",
                 "private_key": private_key_to_use
             }
             response = hive.verify_and_show(api_key_to_use, request_input)
