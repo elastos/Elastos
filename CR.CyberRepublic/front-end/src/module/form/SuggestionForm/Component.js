@@ -183,10 +183,6 @@ class C extends BaseComponent {
     return cb()
   }
 
-  validateBudget = (rule, value, cb) => {
-    return value && value.error ? cb(true) : cb()
-  }
-
   getTextarea(id) {
     const initialValues = _.isEmpty(this.props.initialValues)
       ? { type: '1' }
@@ -248,10 +244,6 @@ class C extends BaseComponent {
       ((initialValues.budget && typeof initialValues.budget !== 'string') ||
         !initialValues.budget)
     ) {
-      rules.push({
-        validator: this.validateBudget
-      })
-
       const initialBudget = initialValues.budget && {
         budgetAmount: initialValues.budgetAmount,
         elaAddress: initialValues.elaAddress,
@@ -259,7 +251,6 @@ class C extends BaseComponent {
       }
 
       return getFieldDecorator('budget', {
-        rules,
         initialValue: initialBudget
       })(
         <PaymentSchedule
@@ -286,7 +277,7 @@ class C extends BaseComponent {
     const hasError = _.has(this.state.errorKeys, id)
     return (
       <TabText hasErr={hasError}>
-        {I18N.get(`suggestion.fields.${id}`)}*
+        {I18N.get(`suggestion.fields.${id}`)}{id !== 'budget' ? '*' : ''}
       </TabText>
     )
   }

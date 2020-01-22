@@ -28,7 +28,6 @@ class PaymentSchedule extends Component {
   passDataToParent() {
     const { total, address, paymentItems, errors } = this.state
     if (!total || errors.total || !address || !paymentItems.length) {
-      this.changeValue({ error: true })
       return
     }
     this.changeValue({
