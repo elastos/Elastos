@@ -6,8 +6,7 @@ from decouple import config
 from grpc_adenine.database import db_engine
 from grpc_adenine.database.user import Users
 from grpc_adenine.database.user_api_relation import UserApiRelations
-from grpc_adenine.stubs import common_pb2
-from grpc_adenine.stubs import common_pb2_grpc
+from grpc_adenine.stubs.python import common_pb2, common_pb2_grpc
 from sqlalchemy.orm import sessionmaker
 from grpc_adenine import settings
 from grpc_adenine.implementations.utils import check_rate_limit, get_info_from_mnemonics

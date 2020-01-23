@@ -11,8 +11,7 @@ from grpc_adenine import settings
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit, get_did_from_api
 from grpc_adenine.settings import REQUEST_TIMEOUT
-from grpc_adenine.stubs import sidechain_eth_pb2
-from grpc_adenine.stubs import sidechain_eth_pb2_grpc
+from grpc_adenine.stubs.python import sidechain_eth_pb2, sidechain_eth_pb2_grpc
 
 
 class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):

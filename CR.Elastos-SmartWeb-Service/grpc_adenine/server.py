@@ -4,11 +4,11 @@ from decouple import config
 import grpc
 import logging
 
-from grpc_adenine.stubs import health_check_pb2, health_check_pb2_grpc
-from grpc_adenine.stubs import common_pb2_grpc
-from grpc_adenine.stubs import wallet_pb2_grpc
-from grpc_adenine.stubs import hive_pb2_grpc
-from grpc_adenine.stubs import sidechain_eth_pb2_grpc
+from grpc_adenine.stubs.python import health_check_pb2, health_check_pb2_grpc
+from grpc_adenine.stubs.python import common_pb2_grpc
+from grpc_adenine.stubs.python import wallet_pb2_grpc
+from grpc_adenine.stubs.python import hive_pb2_grpc
+from grpc_adenine.stubs.python import sidechain_eth_pb2_grpc
 
 from grpc_adenine.implementations.health_check import HealthServicer
 from grpc_adenine.implementations.common import Common

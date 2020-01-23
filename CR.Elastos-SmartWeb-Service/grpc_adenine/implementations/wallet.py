@@ -12,8 +12,7 @@ from grpc_adenine.implementations import WalletAddresses, WalletAddressesETH
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit, get_did_from_api
 from grpc_adenine.settings import REQUEST_TIMEOUT
-from grpc_adenine.stubs import wallet_pb2
-from grpc_adenine.stubs import wallet_pb2_grpc
+from grpc_adenine.stubs.python import wallet_pb2, wallet_pb2_grpc
 
 
 class Wallet(wallet_pb2_grpc.WalletServicer):

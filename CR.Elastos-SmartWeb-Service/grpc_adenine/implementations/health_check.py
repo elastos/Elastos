@@ -18,8 +18,7 @@ import threading
 
 import grpc
 
-from grpc_adenine.stubs import health_check_pb2
-from grpc_adenine.stubs import health_check_pb2_grpc
+from grpc_adenine.stubs.python import health_check_pb2, health_check_pb2_grpc
 
 SERVICE_NAME = health_check_pb2.DESCRIPTOR.services_by_name['Health'].full_name
 

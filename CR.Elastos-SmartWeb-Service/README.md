@@ -91,8 +91,23 @@ python3 grpc_adenine/server.py
 
 ## Additional Info:
 Command to build protocol buffer files:
-```
-python3 -m grpc_tools.protoc --include_imports --include_source_info --proto_path=grpc_adenine/definitions --descriptor_set_out=api_descriptor.pb --python_out=grpc_adenine/stubs --grpc_python_out=grpc_adenine/stubs grpc_adenine/definitions/*.proto
+- For generating python client code
+    ```
+    python3 -m grpc_tools.protoc --proto_path=grpc_adenine/definitions --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/health_check.proto;
+    python3 -m grpc_tools.protoc --proto_path=grpc_adenine/definitions --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/common.proto;
+    python3 -m grpc_tools.protoc --proto_path=grpc_adenine/definitions --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/hive.proto;
+    python3 -m grpc_tools.protoc --proto_path=grpc_adenine/definitions --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/wallet.proto;
+    python3 -m grpc_tools.protoc --proto_path=grpc_adenine/definitions --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/sidechain_eth.proto;
+    ```
+- For generating golang client code
+    ```
+    protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/health_check.proto;
+    protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/common.proto;
+    protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/hive.proto;
+    protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/wallet.proto;
+    protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/sidechain_eth.proto;
+    ```
+
 ```
 
 ## Debugging and Development Tools:
