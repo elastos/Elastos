@@ -101,6 +101,8 @@ Command to build protocol buffer files:
     ```
 - For generating golang client code
     ```
+    # Install protocol compiler: https://github.com/protocolbuffers/protobuf/blob/master/README.md#protocol-compiler-installation
+    # Install protoc-gen-go
     go get -u github.com/golang/protobuf/protoc-gen-go;
     export PATH=$PATH:$GOPATH/bin;
     protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/health_check.proto;
