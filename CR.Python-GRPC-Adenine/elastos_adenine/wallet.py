@@ -2,8 +2,7 @@ import json
 import grpc
 from decouple import config
 
-from .stubs import wallet_pb2
-from .stubs import wallet_pb2_grpc
+from .stubs import wallet_pb2, wallet_pb2_grpc
 from elastos_adenine.settings import REQUEST_TIMEOUT
 
 

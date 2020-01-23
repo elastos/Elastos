@@ -2,8 +2,7 @@ import json
 import grpc
 from decouple import config
 
-from .stubs import hive_pb2
-from .stubs import hive_pb2_grpc
+from .stubs import hive_pb2, hive_pb2_grpc
 from elastos_adenine.settings import REQUEST_TIMEOUT
 
 

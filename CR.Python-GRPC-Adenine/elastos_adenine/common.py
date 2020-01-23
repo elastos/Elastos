@@ -3,8 +3,7 @@ from __future__ import print_function
 import grpc
 from decouple import config
 
-from .stubs import common_pb2
-from .stubs import common_pb2_grpc
+from .stubs import common_pb2, common_pb2_grpc
 from elastos_adenine.settings import REQUEST_TIMEOUT
 
 

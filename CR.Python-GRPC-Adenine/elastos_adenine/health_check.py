@@ -3,8 +3,7 @@ from __future__ import print_function
 import grpc
 from decouple import config
 
-from .stubs import health_check_pb2
-from .stubs import health_check_pb2_grpc
+from .stubs import health_check_pb2, health_check_pb2_grpc
 
 
 class HealthCheck:

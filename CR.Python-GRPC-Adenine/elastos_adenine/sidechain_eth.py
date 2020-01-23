@@ -4,8 +4,7 @@ from decouple import config
 
 from solidity_parser import parser
 
-from .stubs import sidechain_eth_pb2
-from .stubs import sidechain_eth_pb2_grpc
+from .stubs import sidechain_eth_pb2, sidechain_eth_pb2_grpc
 from elastos_adenine.settings import REQUEST_TIMEOUT
 
 
