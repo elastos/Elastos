@@ -24,8 +24,9 @@ def main():
     results = parser.parse_args()
     service = results.service
 
+    mnemonic_to_use = 'obtain pill nest sample caution stone candy habit silk husband give net'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'mNwrY4G2L5tD4oLy0Z6lHg2Z3D3JD13zgwICEeDTl9ypYMNfn7lpGylQ69z8HXf1'
+    api_key_to_use = 'H3wCNbQQRmi3MMajnYZr2eLZ0BnKKUWiyeocW6T7CdJ1WkBpFiPPR1ywVRNC59sN'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -45,8 +46,14 @@ def main():
         try:
             common = Common()
             # Generate API Key
-            print("--> Generate API Key")
+            print("--> Generate API Key - SHARED_SECRET_ADENINE")
             response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did_to_use)
+            if response.status:
+                print("Api Key: " + response.api_key)
+            else:
+                print("Error Message: " + response.status_message)
+            print("--> Generate API Key - MNEMONICS")
+            response = common.generate_api_request_mnemonic(mnemonic_to_use)
             if response.status:
                 print("Api Key: " + response.api_key)
             else:
@@ -59,8 +66,14 @@ def main():
         try:
             common = Common()
             # Get API Key
-            print("--> Get API Key")
+            print("--> Get API Key - SHARED_SECRET_ADENINE")
             response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did_to_use)
+            if response.status:
+                print("Api Key: " + response.api_key)
+            else:
+                print("Error Message: " + response.status_message)
+            print("--> Get API Key - MNEMONICS")
+            response = common.get_api_request_mnemonic(mnemonic_to_use)
             if response.status:
                 print("Api Key: " + response.api_key)
             else:
@@ -90,10 +103,10 @@ def main():
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D5576706A746A685462386D705153476B734D583454737151574B764D765662736F716566724454454A586D64",
+                "msg": "516D5666706D5977704B4375635570776773564141366936424459454B4A3271365058377A355234437A4C62746E",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "68AB268DD2B920F1FD2CDB7B885A79363128667EC9B4944908F9482EEC8B9C07BE421807F8E7531FEB3910D0CF567CDBEE4E21F279A2D4E1D024C0CB3581EBB1",
-                "hash": "QmUvpjtjhTb8mpQSGksMX4TsqQWKvMvVbsoqefrDTEJXmd",
+                "sig": "569F046EDF421EC9EBE7E1EA33B181DE62A3F31AF433F3D34761B624A5E9753959711E0B9CB7E9E4FDC8CEF43388C73C2BF866EBDDF66B38AA8B1BA65BA90377",
+                "hash": "QmVfpmYwpKCucUpwgsVAA6i6BDYEKJ2q6PX7z5R4CzLbtn",
                 "private_key": private_key_to_use
             }
             response = hive.verify_and_show(api_key_to_use, request_input)
@@ -223,7 +236,7 @@ def main():
             sidechain_eth = SidechainEth()
             print("\n--> Watch ETH Contract")
             response = sidechain_eth.watch_eth_contract(api_key_to_use,
-                                                        '0x099E99A9f9668Cc6176c27F73da0b11B7DF42705', 'HelloWorld',
+                                                        '0x02D283dbBC6Fa60B45EC1029672029229C95Be4C', 'HelloWorld',
                                                         'QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd')
             if response.output:
                 json_output = json.loads(response.output)

@@ -24,8 +24,16 @@ class Common:
     def close(self):
         self._channel.close()
 
+    def generate_api_request_mnemonic(self, mnemonic):
+        response = self.stub.GenerateAPIRequestMnemonic(common_pb2.RequestMnemonic(mnemonic=mnemonic), timeout=REQUEST_TIMEOUT)
+        return response
+
     def generate_api_request(self, secret_key, did):
         response = self.stub.GenerateAPIRequest(common_pb2.Request(secret_key=secret_key, did=did), timeout=REQUEST_TIMEOUT)
+        return response
+
+    def get_api_request_mnemonic(self, mnemonic):
+        response = self.stub.GetAPIKeyMnemonic(common_pb2.RequestMnemonic(mnemonic=mnemonic), timeout=REQUEST_TIMEOUT)
         return response
 
     def get_api_key_request(self, secret_key, did):

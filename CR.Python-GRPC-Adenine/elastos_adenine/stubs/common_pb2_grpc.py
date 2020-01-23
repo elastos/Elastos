@@ -14,9 +14,19 @@ class CommonStub(object):
     Args:
       channel: A grpc.Channel.
     """
+    self.GenerateAPIRequestMnemonic = channel.unary_unary(
+        '/common.Common/GenerateAPIRequestMnemonic',
+        request_serializer=common__pb2.RequestMnemonic.SerializeToString,
+        response_deserializer=common__pb2.Response.FromString,
+        )
     self.GenerateAPIRequest = channel.unary_unary(
         '/common.Common/GenerateAPIRequest',
         request_serializer=common__pb2.Request.SerializeToString,
+        response_deserializer=common__pb2.Response.FromString,
+        )
+    self.GetAPIKeyMnemonic = channel.unary_unary(
+        '/common.Common/GetAPIKeyMnemonic',
+        request_serializer=common__pb2.RequestMnemonic.SerializeToString,
         response_deserializer=common__pb2.Response.FromString,
         )
     self.GetAPIKey = channel.unary_unary(
@@ -30,7 +40,21 @@ class CommonServicer(object):
   """The common service definition.
   """
 
+  def GenerateAPIRequestMnemonic(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def GenerateAPIRequest(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetAPIKeyMnemonic(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -47,9 +71,19 @@ class CommonServicer(object):
 
 def add_CommonServicer_to_server(servicer, server):
   rpc_method_handlers = {
+      'GenerateAPIRequestMnemonic': grpc.unary_unary_rpc_method_handler(
+          servicer.GenerateAPIRequestMnemonic,
+          request_deserializer=common__pb2.RequestMnemonic.FromString,
+          response_serializer=common__pb2.Response.SerializeToString,
+      ),
       'GenerateAPIRequest': grpc.unary_unary_rpc_method_handler(
           servicer.GenerateAPIRequest,
           request_deserializer=common__pb2.Request.FromString,
+          response_serializer=common__pb2.Response.SerializeToString,
+      ),
+      'GetAPIKeyMnemonic': grpc.unary_unary_rpc_method_handler(
+          servicer.GetAPIKeyMnemonic,
+          request_deserializer=common__pb2.RequestMnemonic.FromString,
           response_serializer=common__pb2.Response.SerializeToString,
       ),
       'GetAPIKey': grpc.unary_unary_rpc_method_handler(
