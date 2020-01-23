@@ -4,8 +4,12 @@
 package sidechain_eth
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -156,4 +160,120 @@ var fileDescriptor_21eaa0627d5e5698 = []byte{
 	0x93, 0x4e, 0xb7, 0x82, 0x8b, 0xd5, 0xb4, 0x81, 0xb4, 0xe9, 0xe5, 0xf2, 0x9f, 0x8f, 0xd3, 0x56,
 	0x7b, 0x58, 0xc3, 0xe9, 0xab, 0x96, 0xd6, 0xec, 0x16, 0xf3, 0x96, 0x8f, 0x65, 0xdf, 0xfd, 0x05,
 	0x00, 0x00, 0xff, 0xff, 0x97, 0x3d, 0x37, 0x3b, 0x83, 0x01, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// SidechainEthClient is the client API for SidechainEth service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type SidechainEthClient interface {
+	DeployEthContract(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	WatchEthContract(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+}
+
+type sidechainEthClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewSidechainEthClient(cc *grpc.ClientConn) SidechainEthClient {
+	return &sidechainEthClient{cc}
+}
+
+func (c *sidechainEthClient) DeployEthContract(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/sidechain_eth.SidechainEth/DeployEthContract", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sidechainEthClient) WatchEthContract(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/sidechain_eth.SidechainEth/WatchEthContract", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SidechainEthServer is the server API for SidechainEth service.
+type SidechainEthServer interface {
+	DeployEthContract(context.Context, *Request) (*Response, error)
+	WatchEthContract(context.Context, *Request) (*Response, error)
+}
+
+// UnimplementedSidechainEthServer can be embedded to have forward compatible implementations.
+type UnimplementedSidechainEthServer struct {
+}
+
+func (*UnimplementedSidechainEthServer) DeployEthContract(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeployEthContract not implemented")
+}
+func (*UnimplementedSidechainEthServer) WatchEthContract(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WatchEthContract not implemented")
+}
+
+func RegisterSidechainEthServer(s *grpc.Server, srv SidechainEthServer) {
+	s.RegisterService(&_SidechainEth_serviceDesc, srv)
+}
+
+func _SidechainEth_DeployEthContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SidechainEthServer).DeployEthContract(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sidechain_eth.SidechainEth/DeployEthContract",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SidechainEthServer).DeployEthContract(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SidechainEth_WatchEthContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SidechainEthServer).WatchEthContract(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sidechain_eth.SidechainEth/WatchEthContract",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SidechainEthServer).WatchEthContract(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _SidechainEth_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "sidechain_eth.SidechainEth",
+	HandlerType: (*SidechainEthServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "DeployEthContract",
+			Handler:    _SidechainEth_DeployEthContract_Handler,
+		},
+		{
+			MethodName: "WatchEthContract",
+			Handler:    _SidechainEth_WatchEthContract_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "sidechain_eth.proto",
 }

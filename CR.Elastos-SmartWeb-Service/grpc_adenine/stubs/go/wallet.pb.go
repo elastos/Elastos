@@ -4,8 +4,12 @@
 package wallet
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -155,4 +159,156 @@ var fileDescriptor_b88fd140af4deb6f = []byte{
 	0x3e, 0x6e, 0x73, 0xd1, 0xdc, 0xeb, 0xe2, 0xe4, 0x57, 0xa4, 0x47, 0x35, 0x3b, 0x78, 0x03, 0xf0,
 	0x62, 0x68, 0xf9, 0x67, 0x24, 0x8f, 0x1f, 0x9e, 0xee, 0xfe, 0x14, 0x79, 0x13, 0xf1, 0xaf, 0xbb,
 	0xef, 0x00, 0x00, 0x00, 0xff, 0xff, 0x26, 0xd9, 0x5b, 0x4f, 0x7b, 0x01, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// WalletClient is the client API for Wallet service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type WalletClient interface {
+	CreateWallet(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	ViewWallet(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	RequestELA(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+}
+
+type walletClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewWalletClient(cc *grpc.ClientConn) WalletClient {
+	return &walletClient{cc}
+}
+
+func (c *walletClient) CreateWallet(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/wallet.Wallet/CreateWallet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletClient) ViewWallet(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/wallet.Wallet/ViewWallet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletClient) RequestELA(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/wallet.Wallet/RequestELA", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// WalletServer is the server API for Wallet service.
+type WalletServer interface {
+	CreateWallet(context.Context, *Request) (*Response, error)
+	ViewWallet(context.Context, *Request) (*Response, error)
+	RequestELA(context.Context, *Request) (*Response, error)
+}
+
+// UnimplementedWalletServer can be embedded to have forward compatible implementations.
+type UnimplementedWalletServer struct {
+}
+
+func (*UnimplementedWalletServer) CreateWallet(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateWallet not implemented")
+}
+func (*UnimplementedWalletServer) ViewWallet(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ViewWallet not implemented")
+}
+func (*UnimplementedWalletServer) RequestELA(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RequestELA not implemented")
+}
+
+func RegisterWalletServer(s *grpc.Server, srv WalletServer) {
+	s.RegisterService(&_Wallet_serviceDesc, srv)
+}
+
+func _Wallet_CreateWallet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServer).CreateWallet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wallet.Wallet/CreateWallet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServer).CreateWallet(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Wallet_ViewWallet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServer).ViewWallet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wallet.Wallet/ViewWallet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServer).ViewWallet(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Wallet_RequestELA_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServer).RequestELA(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wallet.Wallet/RequestELA",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServer).RequestELA(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Wallet_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "wallet.Wallet",
+	HandlerType: (*WalletServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateWallet",
+			Handler:    _Wallet_CreateWallet_Handler,
+		},
+		{
+			MethodName: "ViewWallet",
+			Handler:    _Wallet_ViewWallet_Handler,
+		},
+		{
+			MethodName: "RequestELA",
+			Handler:    _Wallet_RequestELA_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "wallet.proto",
 }

@@ -101,11 +101,13 @@ Command to build protocol buffer files:
     ```
 - For generating golang client code
     ```
-    protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/health_check.proto;
-    protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/common.proto;
-    protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/hive.proto;
-    protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/wallet.proto;
-    protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/sidechain_eth.proto;
+    go get -u github.com/golang/protobuf/protoc-gen-go;
+    export PATH=$PATH:$GOPATH/bin;
+    protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/health_check.proto;
+    protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/common.proto;
+    protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/hive.proto;
+    protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/wallet.proto;
+    protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/sidechain_eth.proto;
     ```
 
 ## Debugging and Development Tools:

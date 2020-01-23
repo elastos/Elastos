@@ -4,8 +4,12 @@
 package common
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -191,4 +195,192 @@ var fileDescriptor_555bd8c177793206 = []byte{
 	0x5a, 0x5f, 0xe0, 0x6a, 0x41, 0x76, 0xbe, 0xce, 0x96, 0xd4, 0x9c, 0xb6, 0xfc, 0x1e, 0xa2, 0x63,
 	0xc2, 0xbf, 0x76, 0x6e, 0x45, 0xfb, 0xc4, 0x8f, 0x5f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x94, 0x82,
 	0x36, 0x59, 0xf2, 0x01, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// CommonClient is the client API for Common service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type CommonClient interface {
+	GenerateAPIRequestMnemonic(ctx context.Context, in *RequestMnemonic, opts ...grpc.CallOption) (*Response, error)
+	GenerateAPIRequest(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	GetAPIKeyMnemonic(ctx context.Context, in *RequestMnemonic, opts ...grpc.CallOption) (*Response, error)
+	GetAPIKey(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+}
+
+type commonClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewCommonClient(cc *grpc.ClientConn) CommonClient {
+	return &commonClient{cc}
+}
+
+func (c *commonClient) GenerateAPIRequestMnemonic(ctx context.Context, in *RequestMnemonic, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/common.Common/GenerateAPIRequestMnemonic", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *commonClient) GenerateAPIRequest(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/common.Common/GenerateAPIRequest", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *commonClient) GetAPIKeyMnemonic(ctx context.Context, in *RequestMnemonic, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/common.Common/GetAPIKeyMnemonic", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *commonClient) GetAPIKey(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/common.Common/GetAPIKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CommonServer is the server API for Common service.
+type CommonServer interface {
+	GenerateAPIRequestMnemonic(context.Context, *RequestMnemonic) (*Response, error)
+	GenerateAPIRequest(context.Context, *Request) (*Response, error)
+	GetAPIKeyMnemonic(context.Context, *RequestMnemonic) (*Response, error)
+	GetAPIKey(context.Context, *Request) (*Response, error)
+}
+
+// UnimplementedCommonServer can be embedded to have forward compatible implementations.
+type UnimplementedCommonServer struct {
+}
+
+func (*UnimplementedCommonServer) GenerateAPIRequestMnemonic(ctx context.Context, req *RequestMnemonic) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateAPIRequestMnemonic not implemented")
+}
+func (*UnimplementedCommonServer) GenerateAPIRequest(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateAPIRequest not implemented")
+}
+func (*UnimplementedCommonServer) GetAPIKeyMnemonic(ctx context.Context, req *RequestMnemonic) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAPIKeyMnemonic not implemented")
+}
+func (*UnimplementedCommonServer) GetAPIKey(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAPIKey not implemented")
+}
+
+func RegisterCommonServer(s *grpc.Server, srv CommonServer) {
+	s.RegisterService(&_Common_serviceDesc, srv)
+}
+
+func _Common_GenerateAPIRequestMnemonic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestMnemonic)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommonServer).GenerateAPIRequestMnemonic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/common.Common/GenerateAPIRequestMnemonic",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommonServer).GenerateAPIRequestMnemonic(ctx, req.(*RequestMnemonic))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Common_GenerateAPIRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommonServer).GenerateAPIRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/common.Common/GenerateAPIRequest",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommonServer).GenerateAPIRequest(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Common_GetAPIKeyMnemonic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestMnemonic)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommonServer).GetAPIKeyMnemonic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/common.Common/GetAPIKeyMnemonic",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommonServer).GetAPIKeyMnemonic(ctx, req.(*RequestMnemonic))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Common_GetAPIKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommonServer).GetAPIKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/common.Common/GetAPIKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommonServer).GetAPIKey(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Common_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "common.Common",
+	HandlerType: (*CommonServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GenerateAPIRequestMnemonic",
+			Handler:    _Common_GenerateAPIRequestMnemonic_Handler,
+		},
+		{
+			MethodName: "GenerateAPIRequest",
+			Handler:    _Common_GenerateAPIRequest_Handler,
+		},
+		{
+			MethodName: "GetAPIKeyMnemonic",
+			Handler:    _Common_GetAPIKeyMnemonic_Handler,
+		},
+		{
+			MethodName: "GetAPIKey",
+			Handler:    _Common_GetAPIKey_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "common.proto",
 }

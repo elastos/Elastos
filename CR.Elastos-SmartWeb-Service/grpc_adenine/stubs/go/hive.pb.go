@@ -4,8 +4,12 @@
 package hive
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -155,4 +159,120 @@ var fileDescriptor_d635d1ead41ba02c = []byte{
 	0xb5, 0xaf, 0xb2, 0x53, 0x58, 0x1d, 0x62, 0xc5, 0xdc, 0xe9, 0x6a, 0xbf, 0x62, 0x7a, 0x4e, 0x7d,
 	0x14, 0x8c, 0x77, 0x1a, 0xe5, 0xe7, 0x12, 0x8c, 0x5e, 0xcf, 0xff, 0x1a, 0x1f, 0x45, 0xfc, 0xaf,
 	0x87, 0xbf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x50, 0x11, 0x24, 0x76, 0x3d, 0x01, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// HiveClient is the client API for Hive service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type HiveClient interface {
+	UploadAndSign(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	VerifyAndShow(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+}
+
+type hiveClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewHiveClient(cc *grpc.ClientConn) HiveClient {
+	return &hiveClient{cc}
+}
+
+func (c *hiveClient) UploadAndSign(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/hive.Hive/UploadAndSign", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hiveClient) VerifyAndShow(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/hive.Hive/VerifyAndShow", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// HiveServer is the server API for Hive service.
+type HiveServer interface {
+	UploadAndSign(context.Context, *Request) (*Response, error)
+	VerifyAndShow(context.Context, *Request) (*Response, error)
+}
+
+// UnimplementedHiveServer can be embedded to have forward compatible implementations.
+type UnimplementedHiveServer struct {
+}
+
+func (*UnimplementedHiveServer) UploadAndSign(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UploadAndSign not implemented")
+}
+func (*UnimplementedHiveServer) VerifyAndShow(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyAndShow not implemented")
+}
+
+func RegisterHiveServer(s *grpc.Server, srv HiveServer) {
+	s.RegisterService(&_Hive_serviceDesc, srv)
+}
+
+func _Hive_UploadAndSign_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HiveServer).UploadAndSign(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/hive.Hive/UploadAndSign",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HiveServer).UploadAndSign(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hive_VerifyAndShow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HiveServer).VerifyAndShow(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/hive.Hive/VerifyAndShow",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HiveServer).VerifyAndShow(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Hive_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "hive.Hive",
+	HandlerType: (*HiveServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "UploadAndSign",
+			Handler:    _Hive_UploadAndSign_Handler,
+		},
+		{
+			MethodName: "VerifyAndShow",
+			Handler:    _Hive_VerifyAndShow_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "hive.proto",
 }
