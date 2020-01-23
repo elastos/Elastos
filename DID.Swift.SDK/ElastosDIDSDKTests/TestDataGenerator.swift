@@ -9,21 +9,21 @@ class TestDataGenerator: XCTestCase {
     private var issuer: DIDDocument!
     private var test: DIDDocument!
     private var store: DIDStore!
-
+    
     func create(_ storeRoot: String) throws -> String {
-            let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return walletPassword})
-            adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
-            //        TestUtils.deleteFile(storeRoot)
-            store = try DIDStore.open("filesystem", storeRoot)
-            DIDBackend.creatInstance(adapter)
-            TestData.deleteFile(storeRoot)
-            store = try DIDStore.open("filesystem", storeRoot)
-            
-            let mnemonic: String = HDKey.generateMnemonic(0)
-            try store!.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
-            outputDir = tempDir + "/" + "DIDTestFiles"
-            
-            return mnemonic
+        let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return walletPassword})
+        adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
+        //        TestUtils.deleteFile(storeRoot)
+        store = try DIDStore.open("filesystem", storeRoot)
+        try DIDBackend.creatInstance(adapter, TestData.getResolverCacheDir())
+        TestData.deleteFile(storeRoot)
+        store = try DIDStore.open("filesystem", storeRoot)
+        
+        let mnemonic: String = HDKey.generateMnemonic(0)
+        try store!.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
+        outputDir = tempDir + "/" + "DIDTestFiles"
+        
+        return mnemonic
     }
     
     func createTestIssuer() throws {
@@ -199,7 +199,7 @@ class TestDataGenerator: XCTestCase {
         
         // Presentation with above credentials
         print("Generate presentation...")
-
+        
         let pb: VerifiablePresentationBuilder = try VerifiablePresentation.createFor(test.subject!, store)
         let vp: VerifiablePresentation = try pb.credentials([vcProfile, vcEmail, vcPassport, vcTwitter])
             .realm("https://example.com/")
@@ -272,34 +272,34 @@ class TestDataGenerator: XCTestCase {
                 
                 let cb: CredentialBuilder = selfIssuer.issueFor(did: did)
                 let vcProfile: VerifiableCredential = try cb.idString("profile")
-                .types(["BasicProfileCredential", "SelfProclaimedCredential"])
-                .properties(cs.properties)
-                .seal(storepass: storePass)
-                                    
+                    .types(["BasicProfileCredential", "SelfProclaimedCredential"])
+                    .properties(cs.properties)
+                    .seal(storepass: storePass)
+                
                 cs.properties.removeAll()
                 cs.addProperty("email", "john@gmail.com")
                 
                 let vcEmail: VerifiableCredential = try cb.idString("email")
-                .types(["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"])
-                .properties(cs.properties)
-                .seal(storepass: storePass)
-                                    
+                    .types(["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"])
+                    .properties(cs.properties)
+                    .seal(storepass: storePass)
+                
                 cs.properties.removeAll()
                 cs.addProperty("nation", "Singapore")
                 cs.addProperty("passport", "S653258Z07")
-
+                
                 let vcPassport: VerifiableCredential = try cb.idString("passport")
-                .types(["BasicProfileCredential", "SelfProclaimedCredential"])
-                .properties(cs.properties)
-                .seal(storepass: storePass)
-                    
+                    .types(["BasicProfileCredential", "SelfProclaimedCredential"])
+                    .properties(cs.properties)
+                    .seal(storepass: storePass)
+                
                 cs.properties.removeAll()
                 cs.addProperty("twitter", "@john")
-
+                
                 let vcTwitter: VerifiableCredential = try cb.idString("twitter")
-                .types(["InternetAccountCredential", "TwitterCredential"])
-                .properties(cs.properties)
-                .seal(storepass: storePass)
+                    .types(["InternetAccountCredential", "TwitterCredential"])
+                    .properties(cs.properties)
+                    .seal(storepass: storePass)
                 
                 let db: DIDDocumentBuilder = doc.edit()
                 _ = db.addCredential(vcProfile)

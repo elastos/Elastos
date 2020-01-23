@@ -241,7 +241,8 @@ public class FileSystemStorage: DIDStorage {
         let enumerator = try fileManager.contentsOfDirectory(atPath: path)
         for element: String in enumerator {
             var hasPrivateKey: Bool = false
-            hasPrivateKey = try containsPrivateKeys(element)
+            let did = DID(DID.METHOD, element)
+            hasPrivateKey = try containsPrivateKeys(did)
             
             if filter == DIDStore.DID_HAS_PRIVATEKEY {
                 
@@ -326,11 +327,15 @@ public class FileSystemStorage: DIDStorage {
         return try exists(targetPath)
     }
     
-    func deleteCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
+    public func deleteCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
         let targetPath = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR + "/" + id.fragment
         let path = try getFile(targetPath)
         if try exists_dir(path!) {
-            return try deleteFile(path!)
+            _ = try deleteFile(path!)
+            
+            // Remove the credentials directory is no credential exists.
+            // TODO:
+            return true
         }
         return false
     }

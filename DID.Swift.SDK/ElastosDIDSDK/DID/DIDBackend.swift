@@ -12,15 +12,16 @@ public class DIDBackend: NSObject {
     private var _ttl: Int // milliseconds
     private var _adapter: DIDAdapter
     
-    init(_ adapter: DIDAdapter){
+    init(_ adapter: DIDAdapter, _ cacheDir: String) throws {
         self._adapter = adapter
         self._ttl = DIDBackend.DEFAULT_TTL
+        try ResolverCache.setCacheDir(cacheDir)
         super.init()
     }
-    
-    public static func creatInstance(_ adapter: DIDAdapter) {
+
+    public static func creatInstance(_ adapter: DIDAdapter, _ cacheDir: String) throws {
         if instance == nil {
-            instance = DIDBackend(adapter)
+            instance = try DIDBackend(adapter, cacheDir)
         }
     }
     

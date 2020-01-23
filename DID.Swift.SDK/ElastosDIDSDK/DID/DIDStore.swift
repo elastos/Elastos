@@ -115,17 +115,20 @@ public class DIDStore: NSObject {
         return String(data: re, encoding: .utf8)!
     }
     
+    // initialized from saved private identity from DIDStore.
     func loadPrivateIdentity(_ storepass: String) throws -> HDKey {
         guard try containsPrivateIdentity() else {
             throw DIDError.didStoreError(_desc: "DID Store not contains private identity.")
         }
         let seed: Data = try DIDStore.decryptFromBase64(storepass, storage.loadPrivateIdentity())
-        return HDKey.fromSeed(seed)
+        let privateIdentity: HDKey = HDKey.fromSeed(seed)
+        
+        return privateIdentity
     }
 
     public func synchronize(_ storepass: String) throws {
+        let nextIndex = try storage.loadPrivateIdentityIndex()
         let privateIdentity: HDKey = try loadPrivateIdentity(storepass)
-        let nextIndex: Int = try storage.loadPrivateIdentityIndex()
         var blanks: Int = 0
         var i: Int = 0
         
@@ -1162,6 +1165,7 @@ public class DIDStore: NSObject {
     public func importPrivateIdentity(_ json: Dictionary<String, Any>, _ password: String, _ storepass: String) throws {
         try importPrivateIdentity(json: json, password: password, storepass)
     }
+
 }
 
 

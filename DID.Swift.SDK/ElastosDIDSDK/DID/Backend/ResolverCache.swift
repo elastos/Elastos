@@ -4,34 +4,39 @@ import Foundation
 public class ResolverCache {
     private static let CACHE_INITIAL_CAPACITY = 16
     private static let CACHE_MAX_CAPACITY = 32
-    private static let root: String = "\(NSHomeDirectory())/Library/Caches"
-    private static var rootDir: String = "\(root)/home"
+    private static var rootDir: String = ""
     private static var cache: LRUCache = LRUCache(CACHE_MAX_CAPACITY)
 
-    private class func getRootDir() throws -> String {
-        // todo:
-        let path = rootDir + "/" + ".did.elastos"
-        if try !exists_dir(path) {
+    public class func setCacheDir(_ rootDir: String) throws {
+        ResolverCache.rootDir = rootDir
+        if try !exists_dir(rootDir) {
             let fileManager = FileManager.default
-            try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
+            try fileManager.createDirectory(atPath: rootDir, withIntermediateDirectories: true, attributes: nil)
         }
-        
-        return path
     }
     
-    private class func getFile(_ id: String) -> String {
-        return rootDir + "/" + ".did.elastos" + "/" + id
+    private class func getCacheDir() throws -> String {
+        if rootDir == "" {
+            throw DIDError.illegalArgument("No cache dir specified for ResolverCache")
+        }
+        return rootDir
+    }
+
+    private class func getFile(_ id: String) throws -> String {
+        let root = try getCacheDir()
+//        return root + "/" + ".did.elastos" + "/" + id
+        return root + "/" + id
     }
     
     public class func reset() throws {
         cache.clear()
         
-        deleteFile(try getRootDir())
+        deleteFile(try getCacheDir())
     }
     
     public class func store(_ rr: ResolveResult) throws {
         let id = rr.did.methodSpecificId
-        let path = getFile(id)
+        let path = try getFile(id)
         let json: String = rr.toJson()
         let data: Data = json.data(using: .utf8)!
         let handle = FileHandle(forWritingAtPath:path)
@@ -41,7 +46,7 @@ public class ResolverCache {
     }
 
     public class func load(_ did: DID, _ ttl: Int) throws -> ResolveResult? {
-        let path = getFile(did.methodSpecificId)
+        let path = try getFile(did.methodSpecificId)
         
         if try exists(path) {
             return nil

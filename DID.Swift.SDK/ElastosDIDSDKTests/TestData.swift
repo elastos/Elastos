@@ -33,10 +33,12 @@ class TestData: XCTestCase {
     
     private var store: DIDStore!
 
-
+    class func getResolverCacheDir() -> String {
+        return "\(NSHomeDirectory())/Library/Caches/.cache.did.elastos"
+    }
+        
     public func setupStore(_ dummyBackend: Bool) throws -> DIDStore {
         var adapter: DIDAdapter = DummyAdapter()
-        try ResolverCache.reset()
         
         if dummyBackend {
             if TestData.dummyAdapter == nil {
@@ -55,7 +57,8 @@ class TestData: XCTestCase {
             }
             adapter = TestData.spvAdapter!
         }
-        DIDBackend.creatInstance(adapter)
+        try DIDBackend.creatInstance(adapter, TestData.getResolverCacheDir())
+        try ResolverCache.reset()
         TestData.deleteFile(storeRoot)
         store = try DIDStore.open("filesystem", storeRoot)
         return store
