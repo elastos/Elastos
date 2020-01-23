@@ -108,8 +108,6 @@ Command to build protocol buffer files:
     protoc -I=grpc_adenine/definitions --go_out=grpc_adenine/stubs/go grpc_adenine/definitions/sidechain_eth.proto;
     ```
 
-```
-
 ## Debugging and Development Tools:
 Build docker image:
 ```
