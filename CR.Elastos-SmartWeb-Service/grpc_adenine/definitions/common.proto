@@ -4,8 +4,15 @@ package common;
 
 // The common service definition.
 service Common {
+  rpc GenerateAPIRequestMnemonic (RequestMnemonic) returns (Response) {}
   rpc GenerateAPIRequest (Request) returns (Response) {}
+  rpc GetAPIKeyMnemonic (RequestMnemonic) returns (Response) {}
   rpc GetAPIKey (Request) returns (Response) {}
+}
+
+// The request message.
+message RequestMnemonic {
+  string mnemonic = 1;
 }
 
 // The request message.

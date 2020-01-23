@@ -1,14 +1,12 @@
 import datetime
-from grpc_adenine.database import db_engine
+from grpc_adenine.database import session_maker
 from grpc_adenine.database.user_api_relation import UserApiRelations
 from grpc_adenine.database.services_list import ServicesLists
-from sqlalchemy.orm import sessionmaker
 
 
 class RateLimiter:
     def __init__(self):
         self.date_format = '%Y-%m-%d %H:%M:%S.%f'
-        session_maker = sessionmaker(bind=db_engine)
         self.session = session_maker()
 
     def get_last_access_count(self, api_key, service_name):
@@ -31,7 +29,6 @@ class RateLimiter:
                 'diff': diff_seconds
             }
 
-            self.session.close()
             return lists
         else:
             return False
@@ -49,9 +46,7 @@ class RateLimiter:
             service_list_data.last_access = date_now
         
         self.session.add(service_list_data)
-
         self.session.commit()
-        self.session.close()
         return True
 
     def add_new_access_entry(self, api_key, service_name):
@@ -66,6 +61,4 @@ class RateLimiter:
         )
         self.session.add(services_lists)
         self.session.commit()
-
-        self.session.close()
         return True
