@@ -37,8 +37,8 @@ brew install openssl
 First, clone the repository into the current directory:
 
 ```
-git clone https://github.com/cyber-republic/elastos-console.git
-cd elastos-console
+git clone https://github.com/cyber-republic/elastos-nucleus.git
+cd elastos-nucleus
 ```
 
 Copy the environment example file
