@@ -42,7 +42,7 @@ optional arguments:
 	network := "gmunet"
 	mnemonicToUse := "obtain pill nest sample caution stone candy habit silk husband give net"
 	didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
-	apiKeyToUse := "vtBX52Sr9tE4vgpgkLN9ZYOt5mw4d1d3y4JvbQNVG9VF1kJecQ9BA98bUjb4YnXO"
+	apiKeyToUse := "Oq8S979ZopXgULCfDgfw5vzGy1jsf7vQxkVVLbq7YCrHFIMdaQPf3mMgQ0dO23tH"
 
 	healthCheckTest(grpcServerHost, grpcServerPort, production)
 
@@ -63,7 +63,7 @@ optional arguments:
 	} else if *service == "deploy_eth_contract" {
 		deployETHContractDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
 	} else if *service == "watch_eth_contract" {
-		watchETHContractDemo()
+		watchETHContractDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
 	}
 }
 
@@ -267,6 +267,22 @@ func deployETHContractDemo(grpcServerHost string, grpcServerPort int, production
 	}
 }
 
-func watchETHContractDemo() {
+func watchETHContractDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network string) {
 	log.Println("--> Watch ETH Contract")
+	sidechainEth := elastosadenine.NewSidechainEth(grpcServerHost, grpcServerPort, production)
+	defer sidechainEth.Close()
+	var (
+		contractAddress = "0xC0fEA177ac85Be7156EAF839D5117156917091AF"
+		contractName = "HelloWorld"
+		contractCodeHash = "QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd"
+	)
+	response := sidechainEth.WatchEthContract(apiKeyToUse, network, contractAddress, contractName, contractCodeHash)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
 }

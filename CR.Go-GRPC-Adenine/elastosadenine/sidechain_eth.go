@@ -25,6 +25,12 @@ type InputSidechainEthDeploy struct {
 	ContractName string `json:"contract_name"`
 }
 
+type InputSidechainEthWatch struct {
+	ContractAddress string `json:"contract_address"`
+	ContractName string `json:"contract_name"`
+	ContractCodeHash string `json:"contract_code_hash"`
+}
+
 type SolidityListener struct {
 	*parser.BaseSolidityListener
 	ContractName string
@@ -75,6 +81,26 @@ func (e *SidechainEth) DeployEthContract(apiKey, network, address, privateKey st
 	})
 	if err != nil {
 		log.Fatalf("Failed to execute 'DeployEthContract' method: %v", err)
+	}
+	return response
+}
+
+func (e *SidechainEth) WatchEthContract(apiKey, network, contractAddress, contractName, contractCodeHash string) *sidechain_eth.Response {
+	client := sidechain_eth.NewSidechainEthClient(e.Connection)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	defer cancel()
+	reqData, _ := json.Marshal(InputSidechainEthWatch{
+		ContractAddress:  contractAddress,
+		ContractName:     contractName,
+		ContractCodeHash: contractCodeHash,
+	})
+	response, err := client.WatchEthContract(ctx, &sidechain_eth.Request{
+		ApiKey:               apiKey,
+		Network:              network,
+		Input:                string(reqData),
+	})
+	if err != nil {
+		log.Fatalf("Failed to execute 'WatchEthContract' method: %v", err)
 	}
 	return response
 }
