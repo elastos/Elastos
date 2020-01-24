@@ -2,8 +2,8 @@ package elastosadenine
 
 import (
 	"fmt"
-	"log"
 	"google.golang.org/grpc"
+	"log"
 )
 
 type SidechainEth struct {

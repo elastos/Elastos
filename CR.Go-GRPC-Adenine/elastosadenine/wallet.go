@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/wallet"
-	"log"
 	"google.golang.org/grpc"
+	"log"
 )
 
 type Wallet struct {

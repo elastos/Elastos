@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
-	"flag"
 
 	"github.com/joho/godotenv"
 
