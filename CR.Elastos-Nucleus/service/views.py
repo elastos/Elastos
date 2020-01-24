@@ -132,7 +132,7 @@ def upload_and_sign(request):
                     return redirect(reverse('service:upload_and_sign'))
                 try:
                     hive = Hive()
-                    response = hive.upload_and_sign(api_key, private_key, file_path)
+                    response = hive.upload_and_sign(api_key, network, private_key, file_path)
                     data = json.loads(response.output)
                     if response.status:
                         request.session['upload_and_sign_submit'] = True
@@ -203,7 +203,7 @@ def verify_and_show(request):
                 }
                 try:
                     hive = Hive()
-                    response = hive.verify_and_show(api_key, request_input)
+                    response = hive.verify_and_show(api_key, network, request_input)
                     if response.status:
                         request.session['verify_and_show_submit'] = True
                         content = json.loads(response.output)["result"]["output"]
@@ -249,7 +249,7 @@ def create_wallet(request):
                 api_key = form.cleaned_data.get('api_key')
                 try:
                     wallet = Wallet()
-                    response = wallet.create_wallet(api_key)
+                    response = wallet.create_wallet(api_key, network)
                     if response.status:
                         request.session['create_wallet_submit'] = True
                         content = json.loads(response.output)['result']
@@ -372,7 +372,7 @@ def view_wallet(request):
             addr = form.cleaned_data.get('address')
             try:
                 wallet = Wallet()
-                response = wallet.view_wallet(api_key, chain, addr)
+                response = wallet.view_wallet(api_key, network, chain, addr)
                 if response.status:
                     output[chain] = True
                     content = json.loads(response.output)['result']
@@ -517,7 +517,7 @@ def deploy_eth_contract(request):
                     return redirect(reverse('service:upload_and_sign'))
                 try:
                     sidechain_eth = SidechainEth()
-                    response = sidechain_eth.deploy_eth_contract(api_key, eth_account_address, eth_private_key, eth_gas,
+                    response = sidechain_eth.deploy_eth_contract(api_key, network, eth_account_address, eth_private_key, eth_gas,
                                                                  file_path)
                     data = json.loads(response.output)
                     if response.status:
@@ -574,7 +574,7 @@ def watch_eth_contract(request):
                 contract_code_hash = form.cleaned_data.get('contract_code_hash')
                 try:
                     sidechain_eth = SidechainEth()
-                    response = sidechain_eth.watch_eth_contract(api_key, contract_address, contract_name,
+                    response = sidechain_eth.watch_eth_contract(api_key, network, contract_address, contract_name,
                                                                 contract_code_hash)
                     data = json.loads(response.output)
                     if response.status:
