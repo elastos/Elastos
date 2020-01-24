@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="elastos_adenine",
-    version="1.0.0",
+    version="1.0.1",
     license='MIT',
     author="Kiran Pachhai",
     author_email="kiran@tuum.tech",
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/cyber-republic/python-grpc-adenine",
-    keywords = ['elastos', 'smartweb-service', 'adenine'],   # Keywords that define your package best
+    keywords=['elastos', 'smartweb-service', 'adenine'],   # Keywords that define your package best
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

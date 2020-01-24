@@ -24,7 +24,7 @@ class SidechainEth:
     def close(self):
         self._channel.close()
 
-    def deploy_eth_contract(self, api_key, eth_account_address, eth_private_key, eth_gas, filename):
+    def deploy_eth_contract(self, api_key, network, eth_account_address, eth_private_key, eth_gas, filename):
         with open(filename, 'r') as myfile:
             contract_source = myfile.read()
         contract_metadata = parser.parse_file(filename)
@@ -35,14 +35,14 @@ class SidechainEth:
             'contract_source': contract_source,
             'contract_metadata': contract_metadata,
         }
-        response = self.stub.DeployEthContract(sidechain_eth_pb2.Request(api_key=api_key, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
+        response = self.stub.DeployEthContract(sidechain_eth_pb2.Request(api_key=api_key, network=network, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
         return response
 
-    def watch_eth_contract(self, api_key, contract_address, contract_name, contract_code_hash):
+    def watch_eth_contract(self, api_key, network, contract_address, contract_name, contract_code_hash):
         req_data = {
             'contract_address': contract_address,
             'contract_name': contract_name,
             'contract_code_hash': contract_code_hash,
         }
-        response = self.stub.WatchEthContract(sidechain_eth_pb2.Request(api_key=api_key, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
+        response = self.stub.WatchEthContract(sidechain_eth_pb2.Request(api_key=api_key, network=network, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
         return response

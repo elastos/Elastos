@@ -24,9 +24,10 @@ def main():
     results = parser.parse_args()
     service = results.service
 
+    network = "gmunet"
     mnemonic_to_use = 'obtain pill nest sample caution stone candy habit silk husband give net'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'z4NApzf52CemOqNySpQfyfrqv3Jk3k0gLAzEgKRiRoCNIGfpgik9OaAZt3Ny4Zei'
+    api_key_to_use = 'lBVwdmOhKT7czkUX0kHbnyxJnC1yyHkIcIospwv4yOIDsTtF1ygmgl06CAhlMxS0'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -87,7 +88,7 @@ def main():
             hive = Hive()
             # Upload and Sign
             print("\n--> Upload and Sign")
-            response = hive.upload_and_sign(api_key_to_use, private_key_to_use, 'test/sample.txt')
+            response = hive.upload_and_sign(api_key_to_use, network, private_key_to_use, 'test/sample.txt')
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -109,7 +110,7 @@ def main():
                 "hash": "QmVfpmYwpKCucUpwgsVAA6i6BDYEKJ2q6PX7z5R4CzLbtn",
                 "private_key": private_key_to_use
             }
-            response = hive.verify_and_show(api_key_to_use, request_input)
+            response = hive.verify_and_show(api_key_to_use, network, request_input)
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -123,7 +124,7 @@ def main():
         try:
             wallet = Wallet()
             print("\n--> Create Wallet")
-            response = wallet.create_wallet(api_key_to_use)
+            response = wallet.create_wallet(api_key_to_use, network)
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -138,7 +139,7 @@ def main():
             wallet = Wallet()
             print("\n--> View Wallet")
             # Mainchain
-            response = wallet.view_wallet(api_key_to_use, 'mainchain', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
+            response = wallet.view_wallet(api_key_to_use, network, 'mainchain', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -146,7 +147,7 @@ def main():
                     print(i, ':', json_output['result'][i])
 
             # DID sidechain
-            response = wallet.view_wallet(api_key_to_use, 'did', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
+            response = wallet.view_wallet(api_key_to_use, network, 'did', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -154,7 +155,7 @@ def main():
                     print(i, ':', json_output['result'][i])
 
             # Token sidechain
-            response = wallet.view_wallet(api_key_to_use, 'token', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
+            response = wallet.view_wallet(api_key_to_use, network, 'token', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -162,7 +163,7 @@ def main():
                     print(i, ':', json_output['result'][i])
 
             # Eth sidechain
-            response = wallet.view_wallet(api_key_to_use, 'eth', '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e')
+            response = wallet.view_wallet(api_key_to_use, network, 'eth', '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e')
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -219,7 +220,7 @@ def main():
             # you must first run https://github.com/cyber-republic/elastos-privnet locally
             # For production GMUnet, this won't work
             print("\n--> Deploy ETH Contract")
-            response = sidechain_eth.deploy_eth_contract(api_key_to_use, '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e',
+            response = sidechain_eth.deploy_eth_contract(api_key_to_use, network, '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e',
                                                          '0x35a12175385b24b2f906d6027d440aac7bd31e1097311fa8e3cf21ceac7c4809',
                                                          2000000, 'test/HelloWorld.sol')
             if response.output:
@@ -235,7 +236,7 @@ def main():
         try:
             sidechain_eth = SidechainEth()
             print("\n--> Watch ETH Contract")
-            response = sidechain_eth.watch_eth_contract(api_key_to_use,
+            response = sidechain_eth.watch_eth_contract(api_key_to_use, network,
                                                         '0x02D283dbBC6Fa60B45EC1029672029229C95Be4C', 'HelloWorld',
                                                         'QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd')
             if response.output:

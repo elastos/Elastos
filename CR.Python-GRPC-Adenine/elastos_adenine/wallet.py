@@ -22,16 +22,16 @@ class Wallet:
     def close(self):
         self._channel.close()
 
-    def create_wallet(self, api_key):
-        response = self.stub.CreateWallet(wallet_pb2.Request(api_key=api_key), timeout=REQUEST_TIMEOUT)
+    def create_wallet(self, api_key, network):
+        response = self.stub.CreateWallet(wallet_pb2.Request(api_key=api_key, network=network), timeout=REQUEST_TIMEOUT)
         return response
 
-    def view_wallet(self, api_key, chain, address):
+    def view_wallet(self, api_key, network, chain, address):
         req_data = {
             'address': address,
             'chain': chain
         }
-        response = self.stub.ViewWallet(wallet_pb2.Request(api_key=api_key, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
+        response = self.stub.ViewWallet(wallet_pb2.Request(api_key=api_key, network=network, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
         return response
 
     def request_ela(self, api_key, chain, address):

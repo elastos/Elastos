@@ -30,16 +30,16 @@ class Hive:
         response = self.stub.Sign(hive_pb2.Request(api_key=api_key, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
         return response
 
-    def upload_and_sign(self, api_key, private_key, filename):
+    def upload_and_sign(self, api_key, network, private_key, filename):
         with open(filename, 'rb') as myfile:
             file_contents = myfile.read().decode('utf-8')
         req_data = {
             'private_key': private_key,
             'file': file_contents
         }
-        response = self.stub.UploadAndSign(hive_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
+        response = self.stub.UploadAndSign(hive_pb2.Request(api_key=api_key, network=network, input=json.dumps(req_data)))
         return response
 
-    def verify_and_show(self, api_key, request_input):
-        response = self.stub.VerifyAndShow(hive_pb2.Request(api_key=api_key, input=json.dumps(request_input)), timeout=REQUEST_TIMEOUT)
+    def verify_and_show(self, api_key, network, request_input):
+        response = self.stub.VerifyAndShow(hive_pb2.Request(api_key=api_key, network=network, input=json.dumps(request_input)), timeout=REQUEST_TIMEOUT)
         return response
