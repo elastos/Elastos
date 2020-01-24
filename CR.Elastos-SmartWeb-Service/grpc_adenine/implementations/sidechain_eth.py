@@ -54,7 +54,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         eth_account_address = request_input['eth_account_address']
         eth_gas = request_input['eth_gas']
         eth_private_key = request_input['eth_private_key']
-        contract_metadata = request_input['contract_metadata']
+        contract_name = request_input['contract_name']
         contract_source = request_input['contract_source']
 
         # upload smart contract code to hive
@@ -82,7 +82,6 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             status = False
             return sidechain_eth_pb2.Response(output="", status_message=status_message, status=status)
 
-        contract_name = contract_metadata['children'][1]['name']
         compiled_sol = compile_standard({
             "language": "Solidity",
             "sources": {
