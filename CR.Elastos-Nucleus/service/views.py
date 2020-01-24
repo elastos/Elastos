@@ -6,6 +6,7 @@ from django.core import serializers
 from django.http import HttpResponse
 
 from decouple import config
+
 from django.core.mail import EmailMessage
 from django.core.files.base import ContentFile, File
 from django.shortcuts import render, redirect

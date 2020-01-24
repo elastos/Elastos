@@ -297,3 +297,19 @@ def get_user_data(request):
 
     return response
 
+def remove_user_data(request):
+    all_apps = settings.ALL_APPS
+    for items in all_apps:
+        app_models = apps.get_app_config(items).get_models()
+        for model in app_models:
+            try:
+                model.objects.filter(did=request.session['did']).delete()
+            except Exception as e:
+                continue
+
+    request.session.clear()
+    messages.success(request, "You have been logged out!")
+    return redirect(reverse('landing'))
+
+
+
