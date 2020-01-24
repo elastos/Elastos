@@ -3,7 +3,7 @@ package elastosadenine
 import (
 	"context"
 	"fmt"
-	common "github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/common"
+	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/common"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -32,7 +32,9 @@ func (c *Common) GenerateAPIRequestMnemonic(mnemonic string) *common.Response {
 	client := common.NewCommonClient(c.Connection)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
-	response, err := client.GenerateAPIRequestMnemonic(ctx, &common.RequestMnemonic{Mnemonic: mnemonic})
+	response, err := client.GenerateAPIRequestMnemonic(ctx, &common.RequestMnemonic{
+		Mnemonic: mnemonic,
+	})
 	if err != nil {
 		log.Fatalf("Failed to execute 'GenerateAPIRequestMnemonic' method: %v", err)
 	}

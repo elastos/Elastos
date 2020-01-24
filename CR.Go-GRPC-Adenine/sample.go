@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -38,8 +39,10 @@ optional arguments:
 	grpcServerPort, _ := strconv.Atoi(os.Getenv("GRPC_SERVER_PORT"))
 	production, _ := strconv.ParseBool(os.Getenv("PRODUCTION"))
 
+	network := "gmunet"
 	mnemonicToUse := "obtain pill nest sample caution stone candy habit silk husband give net"
 	didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
+	apiKeyToUse := "MNdtMMhJjiwc4eKUrLbzcZtmjHGAGzEf0rEk0VV5kkdGNtdxEUpUus5uE5Ua2lMe"
 
 	healthCheckTest(grpcServerHost, grpcServerPort, production)
 
@@ -52,11 +55,11 @@ optional arguments:
 	} else if *service == "verify_and_show" {
 		verifyAndShowDemo()
 	} else if *service == "create_wallet" {
-		createWalletDemo()
+		createWalletDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
 	} else if *service == "view_wallet" {
-		viewWalletDemo()
+		viewWalletDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
 	} else if *service == "request_ela" {
-		requestELADemo()
+		requestELADemo(grpcServerHost, grpcServerPort, production, apiKeyToUse)
 	} else if *service == "deploy_eth_contract" {
 		deployETHContractDemo()
 	} else if *service == "watch_eth_contract" {
@@ -128,16 +131,119 @@ func verifyAndShowDemo() {
 	log.Println("--> Verify and Show")
 }
 
-func createWalletDemo() {
+func createWalletDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network string) {
 	log.Println("--> Create Wallet")
+	wallet := elastosadenine.NewWallet(grpcServerHost, grpcServerPort, production)
+	defer wallet.Close()
+	response := wallet.CreateWallet(apiKeyToUse, network)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
 }
 
-func viewWalletDemo() {
+func viewWalletDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network string) {
 	log.Println("--> View Wallet")
+	wallet := elastosadenine.NewWallet(grpcServerHost, grpcServerPort, production)
+	defer wallet.Close()
+	var (
+		address = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"
+		address_eth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
+	)
+	// Mainchain
+	response := wallet.ViewWallet(apiKeyToUse, network, "mainchain", address)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
+	// DID Sidechain
+	response = wallet.ViewWallet(apiKeyToUse, network, "did", address)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
+	// Token Sidechain
+	response = wallet.ViewWallet(apiKeyToUse, network, "token", address)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
+	// Eth Sidechain
+	response = wallet.ViewWallet(apiKeyToUse, network, "eth", address_eth)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
 }
 
-func requestELADemo() {
+func requestELADemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse string) {
 	log.Println("\n--> Request ELA")
+	wallet := elastosadenine.NewWallet(grpcServerHost, grpcServerPort, production)
+	defer wallet.Close()
+	var (
+		address = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"
+		address_eth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
+	)
+	// Mainchain
+	response := wallet.RequestELA(apiKeyToUse, "mainchain", address)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
+	// DID Sidechain
+	response = wallet.RequestELA(apiKeyToUse, "did", address)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
+	// Token Sidechain
+	response = wallet.RequestELA(apiKeyToUse, "token", address)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
+	// Eth Sidechain
+	response = wallet.RequestELA(apiKeyToUse, "eth", address_eth)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
 }
 
 func deployETHContractDemo() {

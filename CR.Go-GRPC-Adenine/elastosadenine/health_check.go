@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 	"log"
 
-	health_check "github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/health_check"
+	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/health_check"
 )
 
 type HealthCheck struct {
