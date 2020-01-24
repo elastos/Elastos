@@ -27,7 +27,7 @@ def main():
     network = "gmunet"
     mnemonic_to_use = 'obtain pill nest sample caution stone candy habit silk husband give net'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'lBVwdmOhKT7czkUX0kHbnyxJnC1yyHkIcIospwv4yOIDsTtF1ygmgl06CAhlMxS0'
+    api_key_to_use = 'vtBX52Sr9tE4vgpgkLN9ZYOt5mw4d1d3y4JvbQNVG9VF1kJecQ9BA98bUjb4YnXO'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first

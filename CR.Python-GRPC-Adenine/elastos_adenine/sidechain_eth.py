@@ -28,12 +28,13 @@ class SidechainEth:
         with open(filename, 'r') as myfile:
             contract_source = myfile.read()
         contract_metadata = parser.parse_file(filename)
+        contract_name = contract_metadata['children'][1]['name']
         req_data = {
             'eth_account_address': eth_account_address,
             'eth_private_key': eth_private_key,
             'eth_gas': eth_gas,
             'contract_source': contract_source,
-            'contract_metadata': contract_metadata,
+            'contract_name': contract_name,
         }
         response = self.stub.DeployEthContract(sidechain_eth_pb2.Request(api_key=api_key, network=network, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
         return response
