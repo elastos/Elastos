@@ -39,7 +39,7 @@ static void test_issuer_issuevc(void)
     ssize_t size;
     int rc;
 
-    doc = DIDDocument_FromJson(TestData_LoadDocJson());
+    doc = TestData_LoadDoc();
     store = DIDStore_GetInstance();
     rc = DIDStore_StoreDID(store, doc, "credential doc");
     CU_ASSERT_NOT_EQUAL(rc, -1);

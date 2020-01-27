@@ -162,6 +162,7 @@ _Presentation_Verify
 _Presentation_ToJson
 _Presentation_FromJson
 _Presentation_GetSigner
+_Presentation_GetCredentialCount
 _Presentation_GetCredentials
 _Presentation_GetCredential
 _Presentation_GetType
@@ -169,6 +170,8 @@ _Presentation_GetCreatedTime
 _Presentation_GetVerificationMethod
 _Presentation_GetNonce
 _Presentation_GetRealm
+_Presentation_IsGenuine
+_Presentation_IsValid
 
 # Issuer
 _Issuer_CreateCredential

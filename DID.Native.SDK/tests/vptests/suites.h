@@ -20,50 +20,13 @@
  * SOFTWARE.
  */
 
-#ifndef __TEST_SUITES_H__
-#define __TEST_SUITES_H__
+#ifndef __VP_TEST_SUITES_H__
+#define __VP_TEST_SUITES_H__
 
-#include <CUnit/Basic.h>
+DECL_TESTSUITE(vp_test);
 
-typedef CU_SuiteInfo* (*SuiteInfoFunc)(void);
+#define DEFINE_VP_TESTSUITES \
+    DEFINE_TESTSUITE(vp_test)
 
-typedef struct TestSuite {
-    const char* fileName;
-    SuiteInfoFunc getSuiteInfo;
-} TestSuite;
+#endif /* __VP_TEST_SUITES_H__ */
 
-#define DECL_TESTSUITE(mod) \
-    CU_SuiteInfo* mod##_suite_info(void);
-
-#define DEFINE_TESTSUITE(mod) \
-    { \
-        .fileName     = #mod".c", \
-        .getSuiteInfo = mod##_suite_info \
-    }
-
-#define DEFINE_TESTSUITE_NULL \
-    { \
-        .fileName = NULL, \
-        .getSuiteInfo  = NULL\
-    }
-
-#include "vctests/suites.h"
-#include "didtests/suites.h"
-#include "doctests/suites.h"
-#include "idchaintests/suites.h"
-#include "dstoretests/suites.h"
-#include "issuertests/suites.h"
-#include "vptests/suites.h"
-
-TestSuite suites[] = {
-    DEFINE_DID_TESTSUITES,
-    DEFINE_DSTORE_TESTSUITES,
-    DEFINE_DOC_TESTSUITES,
-    DEFINE_VC_TESTSUITES,
-    DEFINE_ISSUER_TESTSUITES,
-    DEFINE_VP_TESTSUITES,
-    DEFINE_IDCHAIN_TESTSUITES,
-    DEFINE_TESTSUITE_NULL
-};
-
-#endif /* __TEST_SUITES_H__ */

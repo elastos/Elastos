@@ -45,7 +45,7 @@ file(GLOB DID-TESTS "didtests/*.c")
 file(GLOB DOC-TESTS "doctests/*.c")
 file(GLOB IDCHAIN-TESTS "idchaintests/*.c")
 file(GLOB DSTORE-TESTS "dstoretests/*.c")
-#file(GLOB VP-TESTS "vptests/*.c")
+file(GLOB VP-TESTS "vptests/*.c")
 file(GLOB ISSUER-TESTS "issuertests/*.c")
 
 set(SRC
@@ -56,7 +56,7 @@ set(SRC
     ${DOC-TESTS}
     ${IDCHAIN-TESTS}
     ${DSTORE-TESTS}
-    #${VP-TESTS}
+    ${VP-TESTS}
     ${ISSUER-TESTS}
     )
 

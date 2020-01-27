@@ -60,31 +60,31 @@ const char *TestData_LoadDocCompJson(void);
 
 const char *TestData_LoadDocNormJson(void);
 
-const char *TestData_LoadVcProfileJson(void);
+Credential *TestData_LoadProfileVc(void);
 
 const char *TestData_LoadVcProfileCompJson(void);
 
 const char *TestData_LoadVcProfileNormJson(void);
 
-const char *TestData_LoadVcEmailJson(void);
+Credential *TestData_LoadEmailVc(void);
 
 const char *TestData_LoadVcEmailCompJson(void);
 
 const char *TestData_LoadVcEmailNormJson(void);
 
-const char *TestData_LoadVcPassportJson(void);
+Credential *TestData_LoadPassportVc(void);
 
 const char *TestData_LoadVcPassportCompJson(void);
 
 const char *TestData_LoadVcPassportNormJson(void);
 
-const char *TestData_LoadVcTwitterJson(void);
+Credential *TestData_LoadTwitterVc(void);
 
 const char *TestData_LoadVcTwitterCompJson(void);
 
 const char *TestData_LoadVcTwitterNormJson(void);
 
-const char *TestData_LoadVpJson(void);
+Presentation *TestData_LoadVp(void);
 
 const char *TestData_LoadVpNormJson(void);
 

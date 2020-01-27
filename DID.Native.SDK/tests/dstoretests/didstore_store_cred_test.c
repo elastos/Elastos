@@ -48,8 +48,8 @@ static int didstore_storecred_test_suite_init(void)
 
     DID_Copy(&did, DIDDocument_GetSubject(doc));
     DIDDocument_Destroy(doc);
-
-    credential = Credential_FromJson(TestData_LoadVcEmailJson(), &did);
+    
+    credential = TestData_LoadEmailVc();
     if(!credential)
         return -1;
 
@@ -58,7 +58,6 @@ static int didstore_storecred_test_suite_init(void)
 
 static int didstore_storecred_test_suite_cleanup(void)
 {
-    Credential_Destroy(credential);
     TestData_Free();
     return 0;
 }

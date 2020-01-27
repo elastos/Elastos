@@ -546,10 +546,29 @@ Credential *Parser_Credential(cJSON *json, DID *did)
     }
 
     //subject
-    strncpy((char*)credential->subject.id.idstring, did->idstring, sizeof(did->idstring));
     item = cJSON_GetObjectItem(json, "credentialSubject");
     if (!item || !cJSON_IsObject(item)|| parser_subject(item, credential) == -1)
          goto errorExit;
+
+    field = cJSON_GetObjectItem(item, "id");
+    if (!field) {
+        if (!did)
+            goto errorExit;
+        strncpy((char*)credential->subject.id.idstring, did->idstring, sizeof(did->idstring));
+    } else {
+        DID subjectdid;
+        if (parse_did(&subjectdid, field->valuestring) == -1)
+            goto errorExit;
+
+        if (!did) {
+            if (DID_Copy(&credential->subject.id, &subjectdid) == -1)
+                goto errorExit;
+        } else {
+            if (!DID_Equals(&subjectdid, did))
+                goto errorExit;
+            strncpy((char*)credential->subject.id.idstring, did->idstring, sizeof(did->idstring));
+        }
+    }
 
     //type
     item = cJSON_GetObjectItem(json, "type");
@@ -642,7 +661,7 @@ Credential *Credential_FromJson(const char *json, DID *did)
     cJSON *root;
     Credential *cred;
 
-    if (!json || !did)
+    if (!json)
         return NULL;
 
     root = cJSON_Parse(json);

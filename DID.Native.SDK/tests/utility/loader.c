@@ -27,6 +27,7 @@
 #include "did.h"
 #include "diddocument.h"
 #include "didstore.h"
+#include "ela_did.h"
 
 typedef struct TestData {
     DIDStore *store;
@@ -42,24 +43,25 @@ typedef struct TestData {
     char *docCompactJson;
     char *docNormalizedJson;
 
-    char *profileVcJson;
+    Credential *profileVc;
     char *profileVcCompactJson;
     char *profileVcNormalizedJson;
 
-    char *emailVcJson;
+    Credential *emailVc;
     char *emailVcCompactJson;
     char *emailVcNormalizedJson;
 
-    char *passportVcJson;
+    Credential *passportVc;
     char *passportVcCompactJson;
     char *passportVcNormalizedJson;
 
-    char *twitterVcJson;
+    Credential *twitterVc;
     char *twitterVcCompactJson;
     char *twitterVcNormalizedJson;
 
-    char *vpJson;
+    Presentation *vp;
     char *vpNormalizedJson;
+
     char *restoreMnemonic;
 } TestData;
 
@@ -114,9 +116,6 @@ static char *load_file(const char *file)
     assert(file);
     assert(*file);
 
-    /*reclen = snprintf(path, PATH_MAX, "../etc/did/resources/testdata/%s", file);
-        if (reclen < 0 || reclen > PATH_MAX)
-            return NULL;*/
     path = get_path(_path, file);
     if (!path)
         return NULL;
@@ -160,6 +159,7 @@ char *get_file_path(char *path, size_t size, int count, ...)
     va_start(list, count);
     for (int i = 0; i < count; i++) {
         const char *suffix = va_arg(list, const char*);
+        assert(suffix);
         int len = strlen(suffix);
         totalsize = totalsize + len;
         if (totalsize > size)
@@ -275,6 +275,54 @@ static void delete_file(const char *path)
         remove(path);
 }
 
+static Credential *store_credential(const char *file, const char *alias)
+{
+    Credential *cred;
+    const char *data;
+    DIDStore *store;
+
+    data = load_file(file);
+    if (!data)
+        return NULL;
+
+    cred = Credential_FromJson(data, NULL);
+    free((char*)data);
+    if (!cred)
+        return NULL;
+
+    store = DIDStore_GetInstance();
+    if (DIDStore_StoreCredential(store, cred, alias) == -1) {
+        Credential_Destroy(cred);
+        return NULL;
+    }
+
+    return cred;
+}
+
+static DIDDocument *store_document(const char *file, const char *alias)
+{
+    DIDDocument *doc;
+    const char *string;
+    DIDStore *store;
+
+    string = load_file(file);
+    if (!string)
+        return NULL;
+
+    doc = DIDDocument_FromJson(string);
+    free((char*)string);
+    if (!doc)
+        return NULL;
+
+    store = DIDStore_GetInstance();
+    if (DIDStore_StoreDID(store, doc, alias) == -1) {
+        DIDDocument_Destroy(doc);
+        return NULL;
+    }
+
+    return doc;
+}
+
 bool file_exist(const char *path)
 {
     return test_path(path) == S_IFREG;
@@ -378,15 +426,15 @@ const char *TestData_LoadDocNormJson(void)
     return testdata.docNormalizedJson;
 }
 
-const char *TestData_LoadVcProfileJson(void)
+Credential *TestData_LoadProfileVc(void)
 {
-    if (!testdata.profileVcJson)
-        testdata.profileVcJson = load_file("vc-profile.json");
+    if (!testdata.profileVc)
+        testdata.profileVc = store_credential("vc-profile.json", "profile vc");
 
-    return testdata.profileVcJson;
+    return testdata.profileVc;
 }
 
-const char *TestData_LoadVcProfileCompJson(void)
+const char *TestData_LoadProfileVcCompJson(void)
 {
     if (!testdata.profileVcCompactJson)
         testdata.profileVcCompactJson = load_file("vc-profile.compact.json");
@@ -394,7 +442,7 @@ const char *TestData_LoadVcProfileCompJson(void)
     return testdata.profileVcCompactJson;
 }
 
-const char *TestData_LoadVcProfileNormJson(void)
+const char *TestData_LoadProfileVcNormJson(void)
 {
     if (!testdata.profileVcNormalizedJson)
         testdata.profileVcNormalizedJson = load_file("vc-profile.normalized.json");
@@ -402,15 +450,15 @@ const char *TestData_LoadVcProfileNormJson(void)
     return testdata.profileVcNormalizedJson;
 }
 
-const char *TestData_LoadVcEmailJson(void)
+Credential *TestData_LoadEmailVc(void)
 {
-    if (!testdata.emailVcJson)
-        testdata.emailVcJson = load_file("vc-email.json");
+    if (!testdata.emailVc)
+        testdata.emailVc = store_credential("vc-email.json", "email vc");
 
-    return testdata.emailVcJson;
+    return testdata.emailVc;
 }
 
-const char *TestData_LoadVcEmailCompJson(void)
+const char *TestData_LoadEmailVcCompJson(void)
 {
     if (!testdata.emailVcCompactJson)
         testdata.emailVcCompactJson = load_file("vc-email.compact.json");
@@ -418,7 +466,7 @@ const char *TestData_LoadVcEmailCompJson(void)
     return testdata.emailVcCompactJson;
 }
 
-const char *TestData_LoadVcEmailNormJson(void)
+const char *TestData_LoadEmailVcNormJson(void)
 {
     if (!testdata.emailVcNormalizedJson)
         testdata.emailVcNormalizedJson = load_file("vc-email.normalized.json");
@@ -426,12 +474,12 @@ const char *TestData_LoadVcEmailNormJson(void)
     return testdata.emailVcNormalizedJson;
 }
 
-const char *TestData_LoadVcPassportJson(void)
+Credential *TestData_LoadPassportVc(void)
 {
-    if (!testdata.passportVcJson)
-        testdata.passportVcJson = load_file("vc-passport.json");
+    if (!testdata.passportVc)
+        testdata.passportVc = store_credential("vc-passport.json", "passport vc");
 
-    return testdata.passportVcJson;
+    return testdata.passportVc;
 }
 
 const char *TestData_LoadVcPassportCompJson(void)
@@ -450,12 +498,12 @@ const char *TestData_LoadVcPassportNormJson(void)
     return testdata.passportVcNormalizedJson;
 }
 
-const char *TestData_LoadVcTwitterJson(void)
+Credential *TestData_LoadTwitterVc(void)
 {
-    if (!testdata.twitterVcJson)
-        testdata.twitterVcJson = load_file("vc-twitter.json");
+    if (!testdata.twitterVc)
+        testdata.twitterVc = store_credential("vc-twitter.json", "twitter vc");
 
-    return testdata.twitterVcJson;
+    return testdata.twitterVc;
 }
 
 const char *TestData_LoadVcTwitterCompJson(void)
@@ -474,12 +522,15 @@ const char *TestData_LoadVcTwitterNormJson(void)
     return testdata.twitterVcNormalizedJson;
 }
 
-const char *TestData_LoadVpJson(void)
+Presentation *TestData_LoadVp(void)
 {
-    if (!testdata.vpJson)
-        testdata.vpJson = load_file("vp.json");
+    const char *data = load_file("vp.json");
+    if (!data)
+        return NULL;
 
-    return testdata.vpJson;
+    testdata.vp = Presentation_FromJson(data);
+    free((char*)data);
+    return testdata.vp;
 }
 
 const char *TestData_LoadVpNormJson(void)
@@ -496,29 +547,24 @@ DIDDocument *TestData_LoadDoc(void)
     DID *subject;
     int rc;
 
-    const char *docstring = TestData_LoadDocJson();
-    if (!docstring || !*docstring)
-        return NULL;
-
-    testdata.doc = DIDDocument_FromJson(docstring);
     if (!testdata.doc)
-        return NULL;
-    subject = DIDDocument_GetSubject(testdata.doc);
+       testdata.doc = store_document("document.json", "doc test");
 
+    subject = DIDDocument_GetSubject(testdata.doc);
     id = DIDURL_FromDid(subject, "key2");
-    rc = import_privatekey(id, storepass, "doc.key2.sk");
+    rc = import_privatekey(id, storepass, "document.key2.sk");
     DIDURL_Destroy(id);
     if (rc)
         return NULL;
 
     id = DIDURL_FromDid(subject, "key3");
-    rc = import_privatekey(id, storepass, "doc.key3.sk");
+    rc = import_privatekey(id, storepass, "document.key3.sk");
     DIDURL_Destroy(id);
     if (rc)
         return NULL;
 
     id = DIDURL_FromDid(subject, "primary");
-    rc = import_privatekey(id, storepass, "doc.primary.sk");
+    rc = import_privatekey(id, storepass, "document.primary.sk");
     DIDURL_Destroy(id);
     if (rc)
         return NULL;
@@ -532,15 +578,10 @@ DIDDocument *TestData_LoadIssuerDoc(void)
     DID *subject;
     int rc;
 
-    const char *docstring = TestData_LoadIssuerJson();
-    if (!docstring || !*docstring)
-        return NULL;
-
-    testdata.issuerdoc = DIDDocument_FromJson(docstring);
     if (!testdata.issuerdoc)
-        return NULL;
-    subject = DIDDocument_GetSubject(testdata.issuerdoc);
+        testdata.issuerdoc = store_document("issuer.json", "issuer test");
 
+    subject = DIDDocument_GetSubject(testdata.issuerdoc);
     id = DIDURL_FromDid(subject, "primary");
     rc = import_privatekey(id, storepass, "issuer.primary.sk");
     DIDURL_Destroy(id);
@@ -583,36 +624,36 @@ void TestData_Free(void)
     if (testdata.docNormalizedJson)
         free(testdata.docNormalizedJson);
 
-    if (testdata.profileVcJson)
-        free(testdata.profileVcJson);
+    if (testdata.profileVc)
+        Credential_Destroy(testdata.profileVc);
     if (testdata.profileVcCompactJson)
         free(testdata.profileVcCompactJson);
     if (testdata.profileVcNormalizedJson)
         free(testdata.profileVcNormalizedJson);
 
-    if (testdata.emailVcJson)
-        free(testdata.emailVcJson);
+    if (testdata.emailVc)
+        Credential_Destroy(testdata.emailVc);
     if (testdata.emailVcCompactJson)
         free(testdata.emailVcCompactJson);
     if (testdata.emailVcNormalizedJson)
         free(testdata.emailVcNormalizedJson);
 
-    if (testdata.passportVcJson)
-        free(testdata.passportVcJson);
+    if (testdata.passportVc)
+        Credential_Destroy(testdata.passportVc);
     if (testdata.passportVcCompactJson)
         free(testdata.passportVcCompactJson);
     if (testdata.passportVcNormalizedJson)
         free(testdata.passportVcNormalizedJson);
 
-    if (testdata.twitterVcJson)
-        free(testdata.twitterVcJson);
+    if (testdata.twitterVc)
+        Credential_Destroy(testdata.twitterVc);
     if (testdata.twitterVcCompactJson)
         free(testdata.twitterVcCompactJson);
     if (testdata.twitterVcNormalizedJson)
         free(testdata.twitterVcNormalizedJson);
 
-    if (testdata.vpJson)
-        free(testdata.vpJson);
+    if (testdata.vp)
+        Presentation_Destroy(testdata.vp);
     if (testdata.vpNormalizedJson)
         free(testdata.vpNormalizedJson);
 

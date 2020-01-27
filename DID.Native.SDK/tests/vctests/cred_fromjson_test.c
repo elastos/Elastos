@@ -3,6 +3,7 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <limits.h>
 
 #include <CUnit/Basic.h>
 #include "ela_did.h"
@@ -13,13 +14,21 @@ static DID *did;
 
 static void test_cred_fromjson(void)
 {
-    Credential *credential = Credential_FromJson(TestData_LoadVcEmailJson(), did);
+    Credential *credential = TestData_LoadEmailVc();
     CU_ASSERT_PTR_NOT_NULL_FATAL(credential);
-    Credential_Destroy(credential);
 }
 
 static int cred_fromjson_test_suite_init(void)
 {
+    char _path[PATH_MAX];
+    const char *storePath;
+    DIDStore *store;
+
+    storePath = get_store_path(_path, "/servet");
+    store = TestData_SetupStore(storePath);
+    if (!store)
+        return -1;
+
     doc = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!doc)
         return -1;

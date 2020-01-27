@@ -90,6 +90,12 @@ static void test_idchain_publishdid(void)
     DIDDocument_Destroy(updatedoc);
 }
 
+static void test_idchain_publishdid_with_credential(void)
+{
+    //todo
+    return;
+}
+
 static int idchain_operation_test_suite_init(void)
 {
     int rc;
@@ -123,8 +129,9 @@ static int idchain_operation_test_suite_cleanup(void)
 }
 
 static CU_TestInfo cases[] = {
-    {   "test_idchain_publishdid",           test_idchain_publishdid      },
-    {   NULL,                                NULL                         }
+    { "test_idchain_publishdid",                 test_idchain_publishdid                   },
+    { "test_idchain_publishdid_with_credential", test_idchain_publishdid_with_credential   },
+    {  NULL,                                     NULL                                      }
 };
 
 static CU_SuiteInfo suite[] = {

@@ -2423,6 +2423,18 @@ DID_API DID *Presentation_GetSigner(Presentation *pre);
 
 /**
  * \~English
+ * Get Credential count in Presentation.
+ *
+ * @param
+ *      pre                   [in] The handle to Presentation.
+ * @return
+ *      If no error occurs, return the count of Credential.
+ *      Otherwise, return -1.
+ */
+DID_API ssize_t Presentation_GetCredentialCount(Presentation *pre);
+
+/**
+ * \~English
  * Get Credential list for signing the Presentation.
  *
  * @param

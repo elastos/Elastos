@@ -51,8 +51,8 @@ static int proof_toJson(JsonGenerator *gen, Presentation *pre, int compact)
         CHECK(JsonGenerator_WriteStringField(gen, "type", pre->proof.type));
     CHECK(JsonGenerator_WriteStringField(gen, "verificationMethod",
         DIDURL_ToString(&pre->proof.verificationMethod, id, sizeof(id), compact)));
-    CHECK(JsonGenerator_WriteStringField(gen, "nonce", pre->proof.nonce));
     CHECK(JsonGenerator_WriteStringField(gen, "realm", pre->proof.realm));
+    CHECK(JsonGenerator_WriteStringField(gen, "nonce", pre->proof.nonce));
     CHECK(JsonGenerator_WriteStringField(gen, "signature", pre->proof.signatureValue));
     CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
@@ -131,9 +131,13 @@ static int parse_proof(DID *signer, Presentation *pre, cJSON *json)
     if (!keyid)
         return -1;
 
-    DIDURL_Copy(&pre->proof.verificationMethod, keyid);
-    DIDURL_Destroy(keyid);
+    if (DIDURL_Copy(&pre->proof.verificationMethod, keyid) == -1 ||
+            DID_Copy(signer, &keyid->did) == -1) {
+        DIDURL_Destroy(keyid);
+        return -1;
+    }
 
+    DIDURL_Destroy(keyid);
     item = cJSON_GetObjectItem(json, "nonce");
     if (!item || !cJSON_IsString(item))
         return -1;
@@ -211,8 +215,8 @@ static int add_credential(Credential **creds, int index, Credential *cred)
     creds[index] = cred;
     return 0;
 }
-////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////
 Presentation *Presentation_Create(DID *did, DIDURL *signkey, const char *storepass,
         const char *nonce, const char *realm, int count, ...)
 {
@@ -220,17 +224,22 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, const char *storepa
     Credential *cred;
     Presentation *pre = NULL;
     DIDDocument *doc;
+    DIDStore *store;
     const char *data;
     char signature[SIGNATURE_BYTES * 2 + 16];
     int rc;
 
-    if (!did || !signkey || !storepass || !*storepass || !nonce || !*nonce ||
+    if (!did || !storepass || !*storepass || !nonce || !*nonce ||
             !realm || !*realm || count <= 0)
         return NULL;
 
-    doc = DID_Resolve(did);
+    store = DIDStore_GetInstance();
+    doc = DIDStore_LoadDID(store, did);
     if (!doc)
         return NULL;
+
+    if (!signkey)
+        signkey = DIDDocument_GetDefaultPublicKey(doc);
 
     if (!DIDDocument_IsAuthenticationKey(doc, signkey))
         goto errorExit;
@@ -403,6 +412,14 @@ DID *Presentation_GetSigner(Presentation *pre)
 
 }
 
+ssize_t Presentation_GetCredentialCount(Presentation *pre)
+{
+    if (!pre)
+        return -1;
+
+    return pre->credentials.size;
+}
+
 ssize_t Presentation_GetCredentials(Presentation *pre, Credential **creds, size_t size)
 {
     size_t actual_size;
@@ -484,7 +501,7 @@ bool Presentation_IsGenuine(Presentation *pre)
     if (!pre)
         return false;
 
-    if (strcmp(pre->proof.type, PresentationType))
+    if (strcmp(pre->type, PresentationType))
         return false;
 
     signer = Presentation_GetSigner(pre);
@@ -510,7 +527,7 @@ bool Presentation_IsGenuine(Presentation *pre)
 
     rc = Presentation_Verify(pre);
     DIDDocument_Destroy(doc);
-    return rc;
+    return rc == 0;
 
 errorExit:
     DIDDocument_Destroy(doc);
@@ -526,7 +543,7 @@ bool Presentation_IsValid(Presentation *pre)
     if (!pre)
         return false;
 
-    if (strcmp(pre->proof.type, PresentationType))
+    if (strcmp(pre->type, PresentationType))
         return false;
 
     signer = Presentation_GetSigner(pre);
@@ -552,7 +569,7 @@ bool Presentation_IsValid(Presentation *pre)
 
     rc = Presentation_Verify(pre);
     DIDDocument_Destroy(doc);
-    return rc;
+    return rc == 0;
 
 errorExit:
     DIDDocument_Destroy(doc);

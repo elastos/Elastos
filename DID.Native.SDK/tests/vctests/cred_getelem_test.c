@@ -137,8 +137,7 @@ static int cred_getelem_test_suite_init(void)
         return -1;
     }
 
-    credential = Credential_FromJson(TestData_LoadVcEmailJson(),
-            DIDDocument_GetSubject(document));
+    credential = TestData_LoadEmailVc();
     DIDDocument_Destroy(document);
     if(!credential)
         return -1;
@@ -148,7 +147,6 @@ static int cred_getelem_test_suite_init(void)
 
 static int cred_getelem_test_suite_cleanup(void)
 {
-    Credential_Destroy(credential);
     TestData_Free();
     return 0;
 }
