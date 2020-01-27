@@ -1,5 +1,5 @@
 
-# CR Consensus - Bitwork Council Commitee
+# CR Consensus - Bitwork Council Committee
 
 ![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/council-committee.jpg ':size=800')
 
@@ -16,54 +16,46 @@ Elastos與Cyber Republic將加速發展業務，持續成長。
 
 ## 理事會委員會
 
-All three members will run as one CR Council candidate and draw on our extensive experience to collaborate and vote on proposals.
+現時三名成員將同時合伙為一名CR委員會候選人參加競選，運用我們豐富的經驗合作，並就提案表決。
 
-### Andy Cheung - CEO of Bitwork, ex-COO of OKex Exchange
+### 張江耀先生 - Bitwork首席執行官，前OKEx交易所的首席運營官
 
-    Andy brings his vast experience from OKex, Alibaba, Groupon HK and many other startups to
-    Bitwork. As the new CEO of Bitwork he will use his extensive network and work with Cyber Republic to accelerate
-    blockchain projects throughout the region.
+    張先生將OKEx、阿里巴巴、Groupon HK及許多其他初創公司所累積的豐富經驗帶到Bitwork。他將利用自己廣闊的人脈和經驗知識與Cyber Republic合作，協助區塊鏈項目發展。
+
 
     https://twitter.com/AndyC0125
 
-### Raymond Chan - COO/Co-Founder of Bitwork
+### 陳少華先生 - Bitwork首席運營官/聯合創始人
 
-    As the Co-Founder of Bitwork HK, Raymond has been integral in helping Elastos expand in the Asia region. Bitwork
-    was one of the first CR Regions and provided valuable business expertise, connections and community growth to
-    the Elastos ecosystem.
+    作為Bitwork的聯合創辦人，陳少華先生一直是在Elastos亞洲拓展計劃中不可
+    或缺的人物。 Bitwork是其中之一個最早期的CR社區，為Elastos生態系統提供了寶貴的專業知識和網絡，加强了社區發展。
 
     https://twitter.com/bitworkasia
+    https://www.linkedin.com/in/raymond-chan-31b817158
 
-### Clarence Liu - VP of Development of Elastos
+### Mr. Clarence Liu - Elastos 開發副總裁
 
-    Both a software engineer by training and now the VP of Development for Elastos, Clarence has been the primary
-    business development lead besides Feng Han, Co-Founder of Elastos. Since joining Elastos in May of 2018 he has
-    attended dozens of conferences, hosted many meetups and done extensive networking throughout the blockchain industry.
+    Clarence既是資深軟件工程師，亦是Elastos的業務發展副總裁，他跟Feng Han同是 Elastos的聯合創辦人及主要業務發展的負責人。
+    自2018年5月加入Elastos以來，他參加了無數會議，主持了許多聚會，連結了整個區 塊鏈行業。
 
     https://twitter.com/ClarenceLiu86
 
 
-## Founding Principles
+## 創辦理念
 
-Bitwork has first-hand experience working with the original CR Suggestion & Proposal process, along with Clarence we
-believe that even if we are decentralized, Elastos needs strong leadership to succeed in the competitive and fast
-moving blockchain space, especially in Asia. Together we believe we can bring strong business and blockchain acumen to
-Cyber Republic and be a prominent force in the Elastos ecosystem.
+Bitwork與CR團隊有第一手的合作經驗，熟悉其提案流程。我們與Clarence相信，即使是去中心化的模式，Elastos也需要一個團隊帶領，才能在競爭激烈的區
+塊鏈領域(尤其亞洲)取得成功。我們亦相信，我們可以為Cyber Republic帶來強大的業務經驗，並成為帶動Elastos生態圈發展的一支重要力量。
 
-### Active Business Development
+### 積極的業務發展
 
-Bitwork and Clarence already actively work in the blockchain business development space and will continually explore,
-find and bring new projects to the Elastos ecosystem and Cyber Republic for potential funding, incubation and acceleration.
+Bitwork和Clarence一直於區塊鏈業務發展和積極開發其領域的工作，並將會繼續探索，尋找更多有潛力的新項目，並將其引入Elastos生態系統和Cyber
+Republic，協助其融資、孵化及發展。
 
-### Agile and Data-Driven Marketing
+### 富彈性的數據營銷
 
-We believe in a dynamic and consistent marketing effort where our strategies are constantly examined based on real-data
-feedback to allow us to achieve the greatest effect with minimal costs. We understand that the CR funds are a finite
-resource and we must make smart decisions on marketing. Real growth will only be achieved if we can exponentially
-grow the community and exposure of Elastos.
+我們採用彈性的策略，根據實際數據反饋，不斷改善營銷手段，務求以最小的成本，獲得最大的效果。我們知道，CR資金是一種有限的資源，我們必須在營銷方面
+做出明智的決策。我們必須好好地發展Elastos的社區和增加曝光率，才能實現真正的增長。
 
-### Proper Balance of Funding and Liquidity
+### 資金和流動性的平衡
 
-The selling pressure caused by CRC will undoubtedly be a major concern. With our business experience and technical
-know how we will closely monitor the market and projects to ensure additional sources of liquidity or demand accompany
-any expenditures.
+CRC帶來的拋售壓力無疑將是一個主要問題。憑藉我們的業務經驗和技術知識，我們會密切留意市場和有潛力的項目，以確保獲取額外的流動性，或要求平衡支出。

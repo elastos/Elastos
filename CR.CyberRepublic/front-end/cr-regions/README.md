@@ -1,5 +1,5 @@
 
-# CR Consensus - Bitwork Council Commitee
+# CR Consensus - Bitwork Council Committee
 
 ![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/council-committee.jpg ':size=800')
 
