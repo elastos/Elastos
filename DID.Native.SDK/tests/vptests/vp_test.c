@@ -22,7 +22,8 @@ static void test_vp_getelem(void)
     bool isEqual;
     ssize_t size;
     Credential *creds[4], **cred;
-    DIDURL id;
+    DIDURL*id;
+    DID *signer;
 
     vp = TestData_LoadVp();
     CU_ASSERT_PTR_NOT_NULL_FATAL(vp);
@@ -49,7 +50,33 @@ static void test_vp_getelem(void)
                  !strcmp(fragment, "twitter") || !strcmp(fragment, "passport"));
     }
 
-    // todo: four credentials testcase
+    signer = Presentation_GetSigner(vp);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(signer);
+
+    id = DIDURL_FromDid(signer, "profile");
+    CU_ASSERT_PTR_NOT_NULL_FATAL(id);
+    CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
+    DIDURL_Destroy(id);
+
+    id = DIDURL_FromDid(signer, "email");
+    CU_ASSERT_PTR_NOT_NULL_FATAL(id);
+    CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
+    DIDURL_Destroy(id);
+
+    id = DIDURL_FromDid(signer, "twitter");
+    CU_ASSERT_PTR_NOT_NULL_FATAL(id);
+    CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
+    DIDURL_Destroy(id);
+
+    id = DIDURL_FromDid(signer, "passport");
+    CU_ASSERT_PTR_NOT_NULL_FATAL(id);
+    CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
+    DIDURL_Destroy(id);
+
+    id = DIDURL_FromDid(signer, "notexist");
+    CU_ASSERT_PTR_NOT_NULL_FATAL(id);
+    CU_ASSERT_PTR_NULL(Presentation_GetCredential(vp, id));
+    DIDURL_Destroy(id);
 
     CU_ASSERT_TRUE(Presentation_IsGenuine(vp));
     CU_ASSERT_TRUE(Presentation_IsValid(vp));
@@ -82,6 +109,8 @@ static void test_vp_create(void)
     Credential *creds[4], **cred;
     bool isEqual;
     ssize_t size;
+    DIDURL *id;
+    DID *signer;
 
     did = DIDDocument_GetSubject(testdoc);
     CU_ASSERT_PTR_NOT_NULL_FATAL(did);
@@ -113,7 +142,33 @@ static void test_vp_create(void)
                  !strcmp(fragment, "twitter") || !strcmp(fragment, "passport"));
     }
 
-    // todo: four credentials testcase
+    signer = Presentation_GetSigner(vp);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(signer);
+
+    id = DIDURL_FromDid(signer, "profile");
+    CU_ASSERT_PTR_NOT_NULL_FATAL(id);
+    CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
+    DIDURL_Destroy(id);
+
+    id = DIDURL_FromDid(signer, "email");
+    CU_ASSERT_PTR_NOT_NULL_FATAL(id);
+    CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
+    DIDURL_Destroy(id);
+
+    id = DIDURL_FromDid(signer, "twitter");
+    CU_ASSERT_PTR_NOT_NULL_FATAL(id);
+    CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
+    DIDURL_Destroy(id);
+
+    id = DIDURL_FromDid(signer, "passport");
+    CU_ASSERT_PTR_NOT_NULL_FATAL(id);
+    CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
+    DIDURL_Destroy(id);
+
+    id = DIDURL_FromDid(signer, "notexist");
+    CU_ASSERT_PTR_NOT_NULL_FATAL(id);
+    CU_ASSERT_PTR_NULL(Presentation_GetCredential(vp, id));
+    DIDURL_Destroy(id);
 
     CU_ASSERT_TRUE(Presentation_IsGenuine(vp));
     CU_ASSERT_TRUE(Presentation_IsValid(vp));

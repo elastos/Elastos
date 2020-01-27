@@ -67,18 +67,18 @@ static void test_cred_get_expirate_data(void)
 static void test_cred_get_property_count(void)
 {
     ssize_t size = Credential_GetPropertyCount(credential);
-    CU_ASSERT_EQUAL(size, 2);
+    CU_ASSERT_EQUAL(size, 1);
 }
 
 static void test_cred_get_properties(void)
 {
-    Property properties[2];
+    Property properties[1];
 
     ssize_t size = Credential_GetPropertyCount(credential);
-    CU_ASSERT_EQUAL(size, 2);
+    CU_ASSERT_EQUAL(size, 1);
 
     size = Credential_GetProperties(credential, properties, size);
-    CU_ASSERT_EQUAL(size, 2);
+    CU_ASSERT_EQUAL(size, 1);
     return;
 }
 
@@ -91,7 +91,7 @@ static void test_cred_get_property(void)
 static void test_cred_add_property(void)
 {
     ssize_t size = Credential_AddProperty(credential, "phone", "13188673423");
-    CU_ASSERT_EQUAL(size, 3);
+    CU_ASSERT_EQUAL(size, 2);
 }
 
 static void test_cred_get_proof_method(void)

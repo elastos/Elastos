@@ -59,7 +59,7 @@ static void free_subject(Credential *cred)
     free(cred->subject.infos.properties);
 }
 
-static int parser_subject(cJSON *json, Credential *credential)
+static int parse_subject(cJSON *json, Credential *credential)
 {
     cJSON *element = NULL;
     int i = 0, j, size;
@@ -79,7 +79,7 @@ static int parser_subject(cJSON *json, Credential *credential)
     cJSON_ArrayForEach(element, json)
     {
         Property pro;
-        if (!element->string || !element->valuestring)
+        if (!element->string || !element->valuestring || !strcmp(element->string, "id"))
             continue;
 
         pro.key = strdup(element->string);
@@ -226,12 +226,8 @@ static int subject_toJson(JsonGenerator *generator, Credential *cred, int compac
         CHECK(JsonGenerator_WriteStringField(generator, "id",
                 DID_ToString(&cred->subject.id, id, sizeof(id))));
 
-    for (i = 0; i < size; i++) {
-        if (strcmp(properties[i].key, "id") == 0)
-            continue;
+    for (i = 0; i < size; i++)
         CHECK(JsonGenerator_WriteStringField(generator, properties[i].key, properties[i].value));
-    }
-
     CHECK(JsonGenerator_WriteEndObject(generator));
     return 0;
 }
@@ -547,28 +543,23 @@ Credential *Parser_Credential(cJSON *json, DID *did)
 
     //subject
     item = cJSON_GetObjectItem(json, "credentialSubject");
-    if (!item || !cJSON_IsObject(item)|| parser_subject(item, credential) == -1)
+    if (!item || !cJSON_IsObject(item))
          goto errorExit;
 
     field = cJSON_GetObjectItem(item, "id");
     if (!field) {
-        if (!did)
+        if (!did || DID_Copy(&credential->subject.id, did) == -1)
             goto errorExit;
-        strncpy((char*)credential->subject.id.idstring, did->idstring, sizeof(did->idstring));
     } else {
-        DID subjectdid;
-        if (parse_did(&subjectdid, field->valuestring) == -1)
+        if (parse_did(&credential->subject.id, field->valuestring) == -1)
             goto errorExit;
 
-        if (!did) {
-            if (DID_Copy(&credential->subject.id, &subjectdid) == -1)
-                goto errorExit;
-        } else {
-            if (!DID_Equals(&subjectdid, did))
-                goto errorExit;
-            strncpy((char*)credential->subject.id.idstring, did->idstring, sizeof(did->idstring));
-        }
+        if (did && !DID_Equals(&credential->subject.id, did))
+            goto errorExit;
     }
+
+    if (parse_subject(item, credential) == -1)
+        goto errorExit;
 
     //type
     item = cJSON_GetObjectItem(json, "type");

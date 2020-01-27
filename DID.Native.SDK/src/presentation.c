@@ -445,7 +445,7 @@ Credential *Presentation_GetCredential(Presentation *pre, DIDURL *credid)
 
     for (i = 0; i < pre->credentials.size; i++) {
         cred = pre->credentials.credentials[i];
-        if (!DIDURL_Equals(Credential_GetId(cred), credid))
+        if (DIDURL_Equals(Credential_GetId(cred), credid))
             return cred;
     }
 
