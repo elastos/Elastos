@@ -1,54 +1,70 @@
 
+# CR Consensus - Bitwork Council Commitee
 
-# Welcome to the CR Regions Website
+![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/council-committee.jpg ':size=800')
 
-![](https://s3.amazonaws.com/elastosjs.com/img/bitwork-ela-wall.jpg ':size=800')
 
-?> CR Regions are the primary vehicle to grow the Elastos ecosystem in the real world.
+## Creating a New Base of Operations for CR in Asia
 
-## Key Goals
+The year 2020 will be a pivotal year where Elastos and Cyber Republic can grow exponentially with the launch of the
+Cyber Republic Consensus project and a new CR Council of 12 elected representatives for the Elastos community.
 
-### 1. Reach out and engage projects/businesses interested in exploring blockchain
+To spur growth of Elastos, Cyber Republic, and blockchain technology in Asia and beyond, Clarence Liu from Elastos and
+Bitwork will join forces to create a strong council committee, which focuses on driving the development and marketing of
+cryptocurrency exchanges and blockchain communities.
 
-Our CR Region Teams have full freedom to engage in marketing, business development and act independently 
-to do what they think will be best for the Elastos Ecosystem. Each team is actively encouraged
-to go out and find more projects and do marketing to generate inbound leads.
 
-### 2. Create strategies to adapt to each region 
+## The Council Committee
 
-Through our CR Regions initiative we empower each regional team to create their own
-strategies to spread the goals and ideals of Elastos and Cyber Republic.
+All three members will run as one CR Council candidate and draw on our extensive experience to collaborate and vote on
+proposals.
 
-We believe this will bring exponential growth to the Elastos ecosystem, we'll do this
-through meetups, events, workshops, happy hours, media and more. 
+### Andy Cheung - CEO of Bitwork, ex-COO of OKex Exchange
 
-### 3. Engage in blockchain education, community development and cooperate with other blockchain projects
+    Andy brings his vast experience from OKEx, Alibaba, Groupon HK, and many other startups to Bitwork. As the new CEO
+    of Bitwork, he will use his extensive network to collaborate with Cyber Republic to accelerate projects throughout
+    the region.
 
-The goals of Elastos are a betterment to all, we believe in a future of data ownership, security and the right
-to monetization and control our own data as we see fit. 
+    https://twitter.com/AndyC0125
 
-However these goals are not ours alone and are shared by many projects in the blockchain space. Although our teams 
-cannot repurpose funds for non-Elastos related activities, they are free to cooperate with other projects. We believe
-that through joint-meetups, co-sponsorship and participation in conferences and blockchain events is an effective
-way to grow.   
+### Raymond Chan - COO/Co-Founder of Bitwork
 
-!> Read our internal strategy document [here!](https://docs.google.com/document/d/1E1YH_ygXBjDEf0Y8SGfn9JXbTVqy9qLYwMOKyh44FcI)
+    As the Co-Founder of Bitwork, Raymond has been integral in helping Elastos expand in Asia. Bitwork was one of the
+    first CR Regions and provided valuable business expertise, connections and community growth solutions to the Elastos
+    ecosystem.
 
-## Vote for our Global Fund Supernode! 
+    https://twitter.com/bitworkasia
 
-### Hosted by&nbsp;[Clarence Liu - VP of Development](/main/clarence-about.md)
+### Clarence Liu - VP Development of Elastos
 
-All funds from our CR Regions Global Fund supernode are used to fund our regional teams 
-and events that we believe will bring the most people to our community.
+    Being both a software engineer by training and the VP of Development for Elastos, Clarence has been the primary
+    business development lead besides Feng Han, Co-Founder of Elastos. Since joining Elastos in May of 2018, he has
+    attended dozens of conferences, hosted many meetups and done extensive networking throughout the blockchain industry.
 
-[All Budgets and Expenditures are fully transparent - you can view the log here](/supernodes/global-fund/budget.md)
+    https://twitter.com/ClarenceLiu86
 
-Although our CR Region Teams receive funding from Cyber Republic, our goal is to transition 
-to be fully self-sufficient and self-funded. Therefore this and our other supernodes are
-critical to our growth, if you have ELA follow this [voting guide](/main/voting-guide.md) to vote.
 
-## Start a CR Region Team!
+## Founding Principles
 
-![](https://s3.amazonaws.com/elastosjs.com/img/region-map.2f917b00.png ':size=800')
+Bitwork has first-hand experience working with the original CR Suggestion & Proposal process, along with Clarence, we
+believe that even if we are decentralized, Elastos needs strong leadership to succeed in the competitive and fast-moving
+blockchain space, especially in Asia. Together we believe we can bring strong business and blockchain acumen to Cyber
+Republic and be a prominent force in the Elastos ecosystem.
 
-### We are always looking for new teams to start new CR Region Teams in new regions, email us at [cyberrepublic@elastos.org](mailto:cyberrepublic@elastos.org) and get in touch!   
+### Active Business Development
+
+Bitwork and Clarence already actively work in the blockchain business development space and will continually explore,
+find and bring new projects to the Elastos ecosystem and Cyber Republic for potential funding, incubation and acceleration.
+
+### Agile and Data-Driven Marketing
+
+We believe in a dynamic and consistent marketing effort where our strategies are constantly examined based on real-data
+feedback to allow us to achieve the greatest effect with minimal costs. We understand that the CR funds are a finite
+resource and we must make smart decisions on marketing. Real growth will only be achieved if we can exponentially grow
+the community and exposure of Elastos.
+
+### Proper Balance of Funding and Liquidity
+
+The selling pressure caused by CRC will undoubtedly be a major concern. With our business experience and technical know
+how, we will closely monitor the market and projects to ensure additional sources of liquidity or demand accompany any
+expenditures.

@@ -6,6 +6,7 @@
 
 - SUPERNODES
     - [CR Regions Global Fund](/supernodes/cr-regions-fund.md)
+        - [Clarence Liu](/supernodes/clarence.md)
     - [BitWork (CR Region HK)](/supernodes/bitwork.md)
     - [elaHorse @ 亦乐马 (Malaysia)](/supernodes/elaHorse.md)
 

@@ -14,7 +14,7 @@ grow the Elastos ecosystem.
 !> Only download the wallet from our official&nbsp;[https://www.elastos.org](https://www.elastos.org) website!
 
 
-##### 2. You vote with ELA so next you need to transfer the ELA you want to vote with to this wallet. 
+##### 2. You vote with ELA so next you need to transfer the ELA you want to vote with to this wallet.
 
 ?> Make sure you properly back up your mnemonic phrase and test it out before you send ELA there!
 
@@ -22,23 +22,23 @@ grow the Elastos ecosystem.
 
 1. Click the "Community" link at the bottom bar
 
-  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-1.png ':size=300')   
+  ![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/howtovote-1.png ':size=300')
 
 2. Select our CR Region supernodes from the list
 
-  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-2.png ':size=300')
-  
+  ![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/howtovote-2.png ':size=300')
+
 3. Add the node to the Candidate List
 
-  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-3.png ':size=300')
-  
+  ![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/howtovote-3.png ':size=300')
+
 4. Click the Vote Button
 
-  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-4.png ':size=300')
-  
+  ![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/howtovote-4.png ':size=300')
+
 5. Enter the amount of ELA to vote with and then your wallet password to vote
 
-  ![](https://www.cyberrepublic.org/cr-regions/images/howtovote-5.png ':size=300')
+  ![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/howtovote-5.png ':size=300')
 
 ?> If you did everything correctly you should see a new transaction for 0 ELA for your wallet
 
@@ -49,6 +49,6 @@ grow the Elastos ecosystem.
 From your CR Region teams
 
 
- 
+
 
 

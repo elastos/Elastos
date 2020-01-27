@@ -2,6 +2,7 @@
 
 - [BITWORK COUNCIL COMMITTEE](/main/cr-council.md)
 - [GROWTH ROADMAP](/main/roadmap.md)
+- [MAJOR PARTNERS](/main/partners.md)
 - [MARKETING INITIATIVES](/main/marketing.md)
 
 - SUPERNODES
@@ -15,6 +16,9 @@
     - [Planned Events](/regions/planning.md)
 
 - FAQ & CONTACT
+    - [FAQ](/main/faq.md)
     - [Voting Guide](/main/voting-guide.md)
+    - [CR Proposal Guide](/main/proposal-guide.md)
     - [Telegram](https://t.me/elastosbitwork)
     - [Contact Us](/main/contact.md)
+    - [Exchange Contact](/main/exchange-contact.md)
