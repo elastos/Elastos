@@ -55,12 +55,16 @@ class Hive(hive_pb2_grpc.HiveServicer):
         # reading the file content
         file_contents = request.file_content
 
+        #reading input data
+        request_input = json.loads(request.input)
+        private_key = request_input['privateKey']
+
         #checking file size
         if sys.getsizeof(file_contents)>settings.FILE_UPLOAD_SIZE_LIMIT:
             return hive_pb2.Response(output="", status_message="File size limit exceeded", status=False)
-        
+
         # encoding and encrypting
-        key = get_encrypt_key(request.private_key)
+        key = get_encrypt_key(private_key)
         fernet = Fernet(key)
         encrypted_message = fernet.encrypt(file_contents)
 
@@ -77,7 +81,6 @@ class Hive(hive_pb2_grpc.HiveServicer):
             return hive_pb2.Response(output="", status_message=status_message, status=status)
 
         # signing the hash key
-        private_key = request.private_key
         if network == "testnet":
             did_api_url = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
         else:

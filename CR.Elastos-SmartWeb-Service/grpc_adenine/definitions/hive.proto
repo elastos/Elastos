@@ -12,9 +12,8 @@ service Hive {
 message Request {
   string api_key = 1;
   string network = 2;
-  string private_key = 3;
-  string input = 4;
-  bytes file_content = 5;
+  string input = 3;
+  bytes file_content = 4;
 }
 
 // The response message
