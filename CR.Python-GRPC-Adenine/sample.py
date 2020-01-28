@@ -27,7 +27,7 @@ def main():
     network = "gmunet"
     mnemonic_to_use = 'obtain pill nest sample caution stone candy habit silk husband give net'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'aIquWlMrf4RPoSELmInazEEHLTvgk0JNhDAtnBxtDD9llUUq1bKC4vHg9MRWUjAe'
+    api_key_to_use = '6yqSVZOrJWx4hQ3LqgaegetVB66wgNxZ5CeMCWRkiDzN3po6C4YtBHzYddw0afym'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -106,20 +106,19 @@ def main():
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D654642583145394C506666477A7156646B56326B374B637135567761316B4832317243537738703964574E61",
+                "msg": "516D555258426E347A6170444A486970434745614641477A3859745A45467165745A706746707979426662377258",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "3BCC498034942CCBB43F1F66CAE61C68FEAEDAE47C3DE6446DD084B849DD78DC7EDD8F23A045A3F48068609AFA91051E0AE5E6F3A7178717A76A032BBEDDF83D",
-                "hash": "QmeFBX1E9LPffGzqVdkV2k7Kcq5Vwa1kH21rCSw8p9dWNa",
+                "sig": "086954F6FECD4745E614310912AD2BB268D7413DC868439E78151361217B06611A3198974034C50E2EED3F1501AB0B7A59F47A110244D02C250DF4B2879B4686",
+                "hash": "QmURXBn4zapDJHipCGEaFAGz8YtZEFqetZpgFpyyBfb7rX",
                 "private_key": private_key_to_use
             }
             response = hive.verify_and_show(api_key_to_use, network, request_input)
             if response.output:
                 download_path = 'test/sample_from_hive.txt'
                 print("Status Message :", response.status_message)
-                print("File Path :",download_path)
-                file = open(download_path, 'wb')
-                file.write(response.file_content)
-                file.close()
+                print("File Path :", download_path)
+                with open(download_path, 'wb') as file:
+                    file.write(response.file_content)
         except Exception as e:
             print(e)
         finally:
@@ -224,7 +223,8 @@ def main():
             # you must first run https://github.com/cyber-republic/elastos-privnet locally
             # For production GMUnet, this won't work
             print("\n--> Deploy ETH Contract")
-            response = sidechain_eth.deploy_eth_contract(api_key_to_use, network, '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e',
+            response = sidechain_eth.deploy_eth_contract(api_key_to_use, network,
+                                                         '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e',
                                                          '0x35a12175385b24b2f906d6027d440aac7bd31e1097311fa8e3cf21ceac7c4809',
                                                          2000000, 'test/HelloWorld.sol')
             if response.output:
