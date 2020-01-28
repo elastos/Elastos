@@ -43,7 +43,7 @@ Developers are a critical component of Elastos' growth and the best way we belie
 or meetups with prizes or bounties. We will work with all active and inactive CR Regions to jumpstart them again with
 more stable funding, provide developer mentorship and organize events with other projects in our network.
 
-## Exchange Listing Campaign
+## Exchange Strategy & Listing Campaign
 
 Bitwork has extensive connections with exchanges and will leverage those to connect with exchanges that can work
 within the strict rules of Cyber Republic - transparent listing fees, CR Proposal funding channels, genuine volume
@@ -51,4 +51,5 @@ within the strict rules of Cyber Republic - transparent listing fees, CR Proposa
 
 *It is important to note that many prominent exchange listing fees are exorbitant and nor does Bitwork have the legal
 authority or lawyers to approach exchanges in more regulated regions such as the US, Japan and others. Therefore
-although the effort will be made we would like to advise that expectations are kept reasonable.*
+
+
