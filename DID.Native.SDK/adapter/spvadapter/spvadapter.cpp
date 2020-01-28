@@ -14,6 +14,8 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 
 #include "spvadapter.h"
 
@@ -32,18 +34,58 @@ struct SpvDidAdapter {
     char *resolver;
 };
 
+enum TransactionStatus { DELETED, ADDED, UPDATED };
+
+class TransactionCallback {
+private:
+    TransactionStatus status;
+    bool confirm;
+    SpvTransactionCallback *callback;
+    void *context;
+
+public:
+    ~TransactionCallback() {}
+    TransactionCallback() :
+        status(DELETED), confirm(false), callback(NULL),  context(NULL) {}
+    TransactionCallback(bool _confirm, SpvTransactionCallback *_callback, void *_context) :
+        status(DELETED), confirm(_confirm), callback(_callback), context(_context) {}
+
+    bool needConfirm() {
+        return confirm;
+    }
+
+    void setStatus(TransactionStatus _status) {
+        status = _status;
+    }
+
+    TransactionStatus getStatus(void) {
+        return status;
+    }
+
+    void success(const std::string txid) {
+        callback(txid.c_str(), 0, NULL, context);
+    }
+
+    void failed(const std::string txid, int status, std::string &msg) {
+        callback(txid.c_str(), status, msg.c_str(), context);
+    }
+};
+
 class SubWalletCallback : public ISubWalletCallback {
 private:
     SpvDidAdapter *adapter;
+    std::map<const std::string, TransactionCallback> txCallbacks;
+
+    void RemoveTransactionCallback(const std::string &tx) {
+        txCallbacks.erase(tx);
+    }
 
 public:
-    ~SubWalletCallback() {}
-    SubWalletCallback(SpvDidAdapter *_adapter) : adapter(_adapter) {}
-
-    virtual void OnTransactionStatusChanged(
-        const std::string &txid,const std::string &status,
-        const nlohmann::json &desc,uint32_t confirms) {
+    ~SubWalletCallback() {
+        txCallbacks.clear();
     }
+
+    SubWalletCallback(SpvDidAdapter *_adapter) : adapter(_adapter) {}
 
     virtual void OnBlockSyncStarted() {
     }
@@ -56,21 +98,87 @@ public:
     virtual void OnBlockSyncStopped() {
     }
 
-    virtual void OnBalanceChanged(const std::string &asset, const std::string &balance) {
+    virtual void OnBalanceChanged(const std::string &asset,
+            const std::string &balance) {
     }
 
-    virtual void OnTxPublished(const std::string &hash, const nlohmann::json &result) {
+    virtual void OnTransactionStatusChanged(
+            const std::string &txid, const std::string &status,
+            const nlohmann::json &desc, uint32_t confirms) {
+        if (txCallbacks.find(txid) == txCallbacks.end())
+            return;
+
+        // Ignore the other status except Updated when first confirm.
+        TransactionCallback &callback = txCallbacks[txid];
+
+        if (status.compare("Updated") == 0) {
+            if (callback.needConfirm() && confirms == 1) {
+                callback.success(txid);
+                RemoveTransactionCallback(txid);
+            } else {
+                callback.setStatus(UPDATED);
+            }
+        }
     }
 
-    virtual void OnAssetRegistered(const std::string &asset, const nlohmann::json &info) {
+    virtual void OnTxPublished(const std::string &txid,
+            const nlohmann::json &result) {
+        if (txCallbacks.find(txid) == txCallbacks.end())
+            return;
+
+        TransactionCallback &callback = txCallbacks[txid];
+        int rc = result["Code"];
+        if (rc == 0) {
+            if (callback.getStatus() == UPDATED && !callback.needConfirm()) {
+                callback.success(txid);
+                RemoveTransactionCallback(txid);
+            }
+        } else {
+            std::string msg = result["Reason"];
+            callback.failed(txid, rc, msg);
+            RemoveTransactionCallback(txid);
+        }
+    }
+
+    virtual void OnAssetRegistered(const std::string &asset,
+            const nlohmann::json &info) {
     }
 
     virtual void OnConnectStatusChanged(const std::string &status) {
     }
+
+    void RegisterTransactionCallback(const std::string &tx, bool confirm,
+            SpvTransactionCallback *callback, void *context) {
+        TransactionCallback txCallback(confirm, callback, context);
+        txCallbacks[tx] = txCallback;
+    }
 };
 
-static
-void SyncStart(SpvDidAdapter *adapter)
+class Semaphore {
+public:
+    Semaphore (int _count = 0) : count(_count) {}
+
+    inline void notify() {
+        std::unique_lock<std::mutex> lock(mtx);
+        count++;
+        cv.notify_one();
+    }
+
+    inline void wait() {
+        std::unique_lock<std::mutex> lock(mtx);
+        while (count == 0)
+            cv.wait(lock);
+
+        count--;
+    }
+
+private:
+    std::mutex mtx;
+    std::condition_variable cv;
+    int count;
+};
+
+static void SyncStart(SpvDidAdapter *adapter)
 {
     auto subWallets = adapter->masterWallet->GetAllSubWallets();
     for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
@@ -90,8 +198,7 @@ void SyncStart(SpvDidAdapter *adapter)
 
 }
 
-static
-void SyncStop(SpvDidAdapter *adapter)
+static void SyncStop(SpvDidAdapter *adapter)
 {
     auto subWallets = adapter->masterWallet->GetAllSubWallets();
     for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
@@ -238,11 +345,85 @@ int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter)
     return 0;
 }
 
-const char * SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
+class TransactionResult {
+private:
+    char txid[128];
+    int status;
+    char message[256];
+    Semaphore sem;
+
+public:
+    TransactionResult() : status(0) {
+        *txid = 0;
+        *message = 0;
+    }
+
+    const char *getTxid(void) {
+        return txid;
+    }
+
+    int getStatus(void) {
+        return status;
+    }
+
+    const char *getMessage(void) {
+        return message;
+    }
+
+    void update(const char *_txid, int _status, const char *_message) {
+        status = _status;
+
+        if (_txid)
+            strcpy(txid, _txid);
+
+        if (_message)
+            strcpy(message, _message);
+
+        sem.notify();
+    }
+
+    void wait(void) {
+        sem.wait();
+    }
+};
+
+static void TransactionCallback(const char *txid, int status,
+        const char *msg, void *context)
+{
+    TransactionResult *tr = (TransactionResult *)context;
+    tr->update(txid, status, msg);
+}
+
+const char *SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         const char *payload, const char *memo, const char *password)
 {
     if (!adapter || !payload || !password)
         return NULL;
+
+    if (!memo)
+        memo = "";
+
+    TransactionResult tr;
+
+    int rc = SpvDidAdapter_CreateIdTransactionEx(adapter, payload, memo, 0,
+        TransactionCallback, &tr, password);
+    if (rc < 0)
+        return NULL;
+
+    tr.wait();
+    if (tr.getStatus() < 0)
+        return NULL;
+    else
+        return strdup(tr.getTxid());
+}
+
+int SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
+        const char *payload, const char *memo, int confirm,
+        SpvTransactionCallback *txCallback, void *context,
+        const char *password)
+{
+    if (!adapter || !payload || !password)
+        return -1;
 
     if (!memo)
         memo = "";
@@ -254,12 +435,15 @@ const char * SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         tx = adapter->idWallet->SignTransaction(tx, password);
         tx = adapter->idWallet->PublishTransaction(tx);
         std::string txid = tx["TxHash"];
-        return strdup(txid.c_str());
+        adapter->callback->RegisterTransactionCallback(txid,
+                confirm, txCallback, context);
+        return 0;
     } catch (...) {
-        return NULL;
+        txCallback(NULL, -1, "SPV adapter internal error.", context);
+        return -1;
     }
 
-    return NULL;
+    return -1;
 }
 
 typedef struct HttpResponseBody {
