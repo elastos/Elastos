@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='hive',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\nhive.proto\x12\x04hive\":\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\x0f\n\x07network\x18\x02 \x01(\t\x12\r\n\x05input\x18\x03 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32j\n\x04Hive\x12\x30\n\rUploadAndSign\x12\r.hive.Request\x1a\x0e.hive.Response\"\x00\x12\x30\n\rVerifyAndShow\x12\r.hive.Request\x1a\x0e.hive.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\nhive.proto\x12\x04hive\"e\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\x0f\n\x07network\x18\x02 \x01(\t\x12\x13\n\x0bprivate_key\x18\x03 \x01(\t\x12\r\n\x05input\x18\x04 \x01(\t\x12\x14\n\x0c\x66ile_content\x18\x05 \x01(\x0c\"X\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x12\x14\n\x0c\x66ile_content\x18\x04 \x01(\x0c\x32j\n\x04Hive\x12\x30\n\rUploadAndSign\x12\r.hive.Request\x1a\x0e.hive.Response\"\x00\x12\x30\n\rVerifyAndShow\x12\r.hive.Request\x1a\x0e.hive.Response\"\x00\x62\x06proto3')
 )
 
 
@@ -48,9 +48,23 @@ _REQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='input', full_name='hive.Request.input', index=2,
+      name='private_key', full_name='hive.Request.private_key', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='input', full_name='hive.Request.input', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='file_content', full_name='hive.Request.file_content', index=4,
+      number=5, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -67,7 +81,7 @@ _REQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=20,
-  serialized_end=78,
+  serialized_end=121,
 )
 
 
@@ -99,6 +113,13 @@ _RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='file_content', full_name='hive.Response.file_content', index=3,
+      number=4, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -111,8 +132,8 @@ _RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=80,
-  serialized_end=146,
+  serialized_start=123,
+  serialized_end=211,
 )
 
 DESCRIPTOR.message_types_by_name['Request'] = _REQUEST
@@ -141,8 +162,8 @@ _HIVE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=148,
-  serialized_end=254,
+  serialized_start=213,
+  serialized_end=319,
   methods=[
   _descriptor.MethodDescriptor(
     name='UploadAndSign',

@@ -2,6 +2,7 @@ import json
 from decouple import config
 from requests import Session
 import logging
+import sys
 from grpc_adenine import settings
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs.python import hive_pb2, hive_pb2_grpc
@@ -52,11 +53,14 @@ class Hive(hive_pb2_grpc.HiveServicer):
                                      status=False)
 
         # reading the file content
-        request_input = json.loads(request.input)
+        file_contents = request.file_content
 
+        #checking file size
+        if sys.getsizeof(file_contents)>settings.FILE_UPLOAD_SIZE_LIMIT:
+            return hive_pb2.Response(output="", status_message="File size limit exceeded", status=False)
+        
         # encoding and encrypting
-        key = get_encrypt_key(request_input['private_key'])
-        file_contents = request_input['file'].encode()
+        key = get_encrypt_key(request.private_key)
         fernet = Fernet(key)
         encrypted_message = fernet.encrypt(file_contents)
 
@@ -73,7 +77,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
             return hive_pb2.Response(output="", status_message=status_message, status=status)
 
         # signing the hash key
-        private_key = request_input['private_key']
+        private_key = request.private_key
         if network == "testnet":
             did_api_url = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
         else:
@@ -171,11 +175,4 @@ class Hive(hive_pb2_grpc.HiveServicer):
         fernet = Fernet(key)
         decrypted_message = fernet.decrypt(response.text.encode())
 
-        response = {
-            'result': {
-                'output': decrypted_message.decode()
-            }
-        }
-
-        return hive_pb2.Response(output=json.dumps(response), status_message='Successfully retrieved file from '
-                                                                             'Elastos Hive', status=True)
+        return hive_pb2.Response(output="Success", file_content = decrypted_message, status_message='Successfully retrieved file from Elastos Hive', status=True)
