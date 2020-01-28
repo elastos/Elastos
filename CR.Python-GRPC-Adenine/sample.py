@@ -27,7 +27,7 @@ def main():
     network = "gmunet"
     mnemonic_to_use = 'obtain pill nest sample caution stone candy habit silk husband give net'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'vtBX52Sr9tE4vgpgkLN9ZYOt5mw4d1d3y4JvbQNVG9VF1kJecQ9BA98bUjb4YnXO'
+    api_key_to_use = 'sU3sUvo4pDy2Ks3iRbGOc0UvmE5KeyjjadxcOmZS3o9p7mlB3nh00mgxOJK8GrGs'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -94,6 +94,8 @@ def main():
                 print("Status Message :", response.status_message)
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Status Message :", response.status_message)
         except Exception as e:
             print(e)
         finally:
@@ -104,18 +106,20 @@ def main():
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D5666706D5977704B4375635570776773564141366936424459454B4A3271365058377A355234437A4C62746E",
+                "msg": "516D64564E577233356B37434A366D354A67656B4E537059697162423939424C6F773545723542656D4B79443471",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "569F046EDF421EC9EBE7E1EA33B181DE62A3F31AF433F3D34761B624A5E9753959711E0B9CB7E9E4FDC8CEF43388C73C2BF866EBDDF66B38AA8B1BA65BA90377",
-                "hash": "QmVfpmYwpKCucUpwgsVAA6i6BDYEKJ2q6PX7z5R4CzLbtn",
+                "sig": "644886B6570C53D932EC0DB2BEA5BFBC59B935C3BAB1902DF8E8C7858A2F7057277BBE7BCB48F98030EE249C02ABAFB3ABF3BEEBD97BBA9BCA7855E87DE5E53F",
+                "hash": "QmdVNWr35k7CJ6m5JgekNSpYiqbB99BLow5Er5BemKyD4q",
                 "private_key": private_key_to_use
             }
             response = hive.verify_and_show(api_key_to_use, network, request_input)
             if response.output:
-                json_output = json.loads(response.output)
+                download_path = 'test/sample_from_hive.txt'
                 print("Status Message :", response.status_message)
-                for i in json_output['result']:
-                    print(i, ':', json_output['result'][i])
+                print("File Path :",download_path)
+                file = open(download_path, 'wb')
+                file.write(response.file_content)
+                file.close()
         except Exception as e:
             print(e)
         finally:

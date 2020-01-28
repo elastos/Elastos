@@ -32,12 +32,9 @@ class Hive:
 
     def upload_and_sign(self, api_key, network, private_key, filename):
         with open(filename, 'rb') as myfile:
-            file_contents = myfile.read().decode('utf-8')
-        req_data = {
-            'private_key': private_key,
-            'file': file_contents
-        }
-        response = self.stub.UploadAndSign(hive_pb2.Request(api_key=api_key, network=network, input=json.dumps(req_data)))
+            file_contents = myfile.read()
+
+        response = self.stub.UploadAndSign(hive_pb2.Request(api_key=api_key, network=network, private_key=private_key, file_content=file_contents))
         return response
 
     def verify_and_show(self, api_key, network, request_input):
