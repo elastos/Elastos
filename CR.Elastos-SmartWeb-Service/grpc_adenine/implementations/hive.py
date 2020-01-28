@@ -46,7 +46,8 @@ class Hive(hive_pb2_grpc.HiveServicer):
             return hive_pb2.Response(output=json.dumps(response), status_message=status_message, status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        response = check_rate_limit(self.rate_limiter, settings.UPLOAD_AND_SIGN_LIMIT, api_key, self.UploadAndSign.__name__)
+        response = check_rate_limit(self.rate_limiter, settings.UPLOAD_AND_SIGN_LIMIT, api_key,
+                                    self.UploadAndSign.__name__)
         if response:
             return hive_pb2.Response(output=json.dumps(response),
                                      status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
@@ -55,12 +56,12 @@ class Hive(hive_pb2_grpc.HiveServicer):
         # reading the file content
         file_contents = request.file_content
 
-        #reading input data
+        # reading input data
         request_input = json.loads(request.input)
         private_key = request_input['privateKey']
 
-        #checking file size
-        if sys.getsizeof(file_contents)>settings.FILE_UPLOAD_SIZE_LIMIT:
+        # checking file size
+        if sys.getsizeof(file_contents) > settings.FILE_UPLOAD_SIZE_LIMIT:
             return hive_pb2.Response(output="", status_message="File size limit exceeded", status=False)
 
         # encoding and encrypting
@@ -121,10 +122,12 @@ class Hive(hive_pb2_grpc.HiveServicer):
                     'API_Key': api_key
                 }
             }
-            return hive_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified', status=False)
+            return hive_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified',
+                                     status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        response = check_rate_limit(self.rate_limiter, settings.VERIFY_AND_SHOW_LIMIT, api_key, self.VerifyAndShow.__name__)
+        response = check_rate_limit(self.rate_limiter, settings.VERIFY_AND_SHOW_LIMIT, api_key,
+                                    self.VerifyAndShow.__name__)
         if response:
             return hive_pb2.Response(output=json.dumps(response),
                                      status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
@@ -155,7 +158,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         else:
             api_url_base = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
         req_data = {
-            "privateKey": request_input['private_key'],
+            "privateKey": request_input['privateKey'],
             "msg": request_input['hash']
         }
         response = self.session.post(api_url_base, data=json.dumps(req_data), headers=self.headers['general'],
@@ -178,4 +181,5 @@ class Hive(hive_pb2_grpc.HiveServicer):
         fernet = Fernet(key)
         decrypted_message = fernet.decrypt(response.text.encode())
 
-        return hive_pb2.Response(output="Success", file_content = decrypted_message, status_message='Successfully retrieved file from Elastos Hive', status=True)
+        return hive_pb2.Response(output="Success", file_content=decrypted_message,
+                                 status_message='Successfully retrieved file from Elastos Hive', status=True)
