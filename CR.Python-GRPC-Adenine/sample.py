@@ -27,7 +27,7 @@ def main():
     network = "gmunet"
     mnemonic_to_use = 'obtain pill nest sample caution stone candy habit silk husband give net'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'sU3sUvo4pDy2Ks3iRbGOc0UvmE5KeyjjadxcOmZS3o9p7mlB3nh00mgxOJK8GrGs'
+    api_key_to_use = 'aIquWlMrf4RPoSELmInazEEHLTvgk0JNhDAtnBxtDD9llUUq1bKC4vHg9MRWUjAe'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -106,10 +106,10 @@ def main():
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D64564E577233356B37434A366D354A67656B4E537059697162423939424C6F773545723542656D4B79443471",
+                "msg": "516D654642583145394C506666477A7156646B56326B374B637135567761316B4832317243537738703964574E61",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "644886B6570C53D932EC0DB2BEA5BFBC59B935C3BAB1902DF8E8C7858A2F7057277BBE7BCB48F98030EE249C02ABAFB3ABF3BEEBD97BBA9BCA7855E87DE5E53F",
-                "hash": "QmdVNWr35k7CJ6m5JgekNSpYiqbB99BLow5Er5BemKyD4q",
+                "sig": "3BCC498034942CCBB43F1F66CAE61C68FEAEDAE47C3DE6446DD084B849DD78DC7EDD8F23A045A3F48068609AFA91051E0AE5E6F3A7178717A76A032BBEDDF83D",
+                "hash": "QmeFBX1E9LPffGzqVdkV2k7Kcq5Vwa1kH21rCSw8p9dWNa",
                 "private_key": private_key_to_use
             }
             response = hive.verify_and_show(api_key_to_use, network, request_input)
