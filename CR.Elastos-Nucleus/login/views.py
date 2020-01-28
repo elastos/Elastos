@@ -3,7 +3,6 @@ import gc
 import logging
 import secrets
 
-
 import csv
 from django.apps import apps
 from django.conf import settings
@@ -244,7 +243,8 @@ def feed(request):
     recent_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-last_visited')[:5]
     most_visited_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-number_visits')[:5]
 
-    return render(request, 'login/feed.html', {'recent_pages': recent_pages, 'recent_services': recent_services, 'most_visited_pages': most_visited_pages , 'suggest_form':suggest_form})
+    return render(request, 'login/feed.html', {'recent_pages': recent_pages, 'recent_services': recent_services,
+                                               'most_visited_pages': most_visited_pages, 'suggest_form': suggest_form})
 
 
 def sign_out(request):
@@ -258,6 +258,7 @@ def sign_out(request):
         messages.success(request, "You have been logged out!")
     return redirect(reverse('landing'))
 
+
 @login_required
 def get_user_data(request):
     exempt_fields = ['password']
@@ -269,34 +270,36 @@ def get_user_data(request):
         app_models = apps.get_app_config(items).get_models()
         for model in app_models:
             try:
-                model.objects.filter(did = request.session['did']) # ahead to check if theres any entry with
+                model.objects.filter(did=request.session['did'])  # ahead to check if there's any entry with
                 # the given did
                 writer.writerow([model.user_name()])
                 fields = [f.name for f in model._meta.get_fields()]
                 writer.writerow(fields)
-                user_objects = model.objects.filter(did = request.session['did'])
+                user_objects = model.objects.filter(did=request.session['did'])
                 for obj in user_objects:
-                    list = []
+                    l = []
                     for field in model._meta.get_fields():
                         val = str(field.value_from_object(obj))
                         if val not in exempt_fields:
-                            list.append(val)
+                            l.append(val)
                         else:
-                            list.append('N/A')
-                    writer.writerow(list)
+                            l.append('N/A')
+                    writer.writerow(l)
                 writer.writerow([])
             except Exception as e:
                 continue
 
-    exemt_cookies = ['_auth_user_id','_auth_user_backend','_auth_user_hash']
+    exempt_cookies = ['_auth_user_id', '_auth_user_backend', '_auth_user_hash']
     writer.writerow(['Tracked Cookies'])
-    writer.writerow(['tracked info',':', 'tracked value'])
-    for key , value in request.session.items():
-        if key not in exemt_cookies:
+    writer.writerow(['tracked info', ':', 'tracked value'])
+    for key, value in request.session.items():
+        if key not in exempt_cookies:
             writer.writerow([key, ':', value])
 
     return response
 
+
+@login_required
 def remove_user_data(request):
     all_apps = settings.ALL_APPS
     for items in all_apps:
@@ -310,6 +313,3 @@ def remove_user_data(request):
     request.session.clear()
     messages.success(request, "You have been logged out!")
     return redirect(reverse('landing'))
-
-
-
