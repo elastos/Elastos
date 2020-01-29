@@ -39,19 +39,19 @@ enum TransactionStatus { DELETED, ADDED, UPDATED };
 class TransactionCallback {
 private:
     TransactionStatus status;
-    bool confirm;
+    int confirms;
     SpvTransactionCallback *callback;
     void *context;
 
 public:
     ~TransactionCallback() {}
     TransactionCallback() :
-        status(DELETED), confirm(false), callback(NULL),  context(NULL) {}
-    TransactionCallback(bool _confirm, SpvTransactionCallback *_callback, void *_context) :
-        status(DELETED), confirm(_confirm), callback(_callback), context(_context) {}
+        status(DELETED), confirms(0), callback(NULL),  context(NULL) {}
+    TransactionCallback(int _confirms, SpvTransactionCallback *_callback, void *_context) :
+        status(DELETED), confirms(_confirms), callback(_callback), context(_context) {}
 
-    bool needConfirm() {
-        return confirm;
+    int getConfirms() {
+        return confirms;
     }
 
     void setStatus(TransactionStatus _status) {
@@ -112,7 +112,7 @@ public:
         TransactionCallback &callback = txCallbacks[txid];
 
         if (status.compare("Updated") == 0) {
-            if (callback.needConfirm() && confirms == 1) {
+            if (callback.getConfirms() > 0 && callback.getConfirms() == confirms) {
                 callback.success(txid);
                 RemoveTransactionCallback(txid);
             } else {
@@ -129,7 +129,7 @@ public:
         TransactionCallback &callback = txCallbacks[txid];
         int rc = result["Code"];
         if (rc == 0) {
-            if (callback.getStatus() == UPDATED && !callback.needConfirm()) {
+            if (callback.getStatus() == UPDATED && callback.getConfirms() <= 0) {
                 callback.success(txid);
                 RemoveTransactionCallback(txid);
             }
@@ -147,9 +147,9 @@ public:
     virtual void OnConnectStatusChanged(const std::string &status) {
     }
 
-    void RegisterTransactionCallback(const std::string &tx, bool confirm,
+    void RegisterTransactionCallback(const std::string &tx, int confirms,
             SpvTransactionCallback *callback, void *context) {
-        TransactionCallback txCallback(confirm, callback, context);
+        TransactionCallback txCallback(confirms, callback, context);
         txCallbacks[tx] = txCallback;
     }
 };
@@ -418,7 +418,7 @@ const char *SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
 }
 
 int SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
-        const char *payload, const char *memo, int confirm,
+        const char *payload, const char *memo, int confirms,
         SpvTransactionCallback *txCallback, void *context,
         const char *password)
 {
@@ -436,7 +436,7 @@ int SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
         tx = adapter->idWallet->PublishTransaction(tx);
         std::string txid = tx["TxHash"];
         adapter->callback->RegisterTransactionCallback(txid,
-                confirm, txCallback, context);
+                confirms, txCallback, context);
         return 0;
     } catch (...) {
         txCallback(NULL, -1, "SPV adapter internal error.", context);

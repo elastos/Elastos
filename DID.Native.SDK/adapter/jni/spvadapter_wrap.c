@@ -287,7 +287,7 @@ static void TransactionCallbackWrapper(const char *txid, int status,
 
 JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransactionEx(
         JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jPayload,
-        jstring jMemo, jboolean jConfirm, jobject jCallback, jstring jPassword)
+        jstring jMemo, jint jConfirms, jobject jCallback, jstring jPassword)
 {
     SpvDidAdapter *handle = (SpvDidAdapter *)jHandle;
     JavaMethodContext *ctx = NULL;
@@ -349,7 +349,7 @@ JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTran
     }
 
     rc = SpvDidAdapter_CreateIdTransactionEx(handle, payload, memo,
-            (int)jConfirm, TransactionCallbackWrapper, ctx, password);
+            (int)jConfirms, TransactionCallbackWrapper, ctx, password);
 
     if (memo) (*jenv)->ReleaseStringUTFChars(jenv, jMemo, memo);
     (*jenv)->ReleaseStringUTFChars(jenv, jPassword, password);
