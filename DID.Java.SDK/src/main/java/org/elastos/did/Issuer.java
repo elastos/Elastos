@@ -155,11 +155,13 @@ public class Issuer {
 			return cal;
 		}
 
-		public void defaultExpirationDate() {
+		public CredentialBuilder defaultExpirationDate() {
 			if (credential == null)
 				throw new IllegalStateException("Credential already sealed.");
 
 			credential.setExpirationDate(getMaxExpires().getTime());
+
+			return this;
 		}
 
 		public CredentialBuilder expirationDate(Date expirationDate) {

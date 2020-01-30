@@ -34,6 +34,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
@@ -404,6 +406,18 @@ public class VerifiableCredential extends DIDObject {
 		return checkExpired();
 	}
 
+	public CompletableFuture<Boolean> isExpiredAsync() {
+		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return isExpired();
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
 	private boolean checkGenuine() throws DIDException {
 		DIDDocument issuerDoc = issuer.resolve();
 
@@ -428,11 +442,35 @@ public class VerifiableCredential extends DIDObject {
 		return checkGenuine();
 	}
 
+	public CompletableFuture<Boolean> isGenuineAsync() {
+		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return isGenuine();
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
 	public boolean isValid() throws DIDException {
 		if (!traceCheck(RULE_VALID))
 			return false;
 
 		return !checkExpired() && checkGenuine();
+	}
+
+	public CompletableFuture<Boolean> isValidAsync() {
+		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return isValid();
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
 	}
 
 	protected void setExpirationDate(Date expirationDate) {

@@ -140,6 +140,19 @@ public class DummyAdapter implements DIDAdapter {
 	}
 
 	@Override
+	public boolean createIdTransaction(String payload, String memo,
+			int confirms, TransactionCallback callback) {
+		try {
+			String txid = createIdTransaction(payload, memo);
+			callback.accept(txid, 0, null);
+			return true;
+		} catch (Exception e) {
+			callback.accept(null, -1, e.getMessage());
+			return false;
+		}
+	}
+
+	@Override
 	public InputStream resolve(String requestId, String did, boolean all)
 			throws DIDResolveException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream(4096);

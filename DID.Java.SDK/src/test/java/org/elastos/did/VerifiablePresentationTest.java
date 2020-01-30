@@ -37,7 +37,7 @@ public class VerifiablePresentationTest {
 	@Test
 	public void testReadPresentation() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 
 		// For integrity check
 		testData.loadTestIssuer();
@@ -72,7 +72,7 @@ public class VerifiablePresentationTest {
 	@Test
 	public void testBuild() throws DIDException, IOException {
 		TestData testData = new TestData();
-		DIDStore store = testData.setupStore(true);
+		DIDStore store = testData.setup(true);
 
 		// For integrity check
 		testData.loadTestIssuer();
@@ -118,7 +118,7 @@ public class VerifiablePresentationTest {
 	@Test
 	public void testParseAndSerialize() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 
 		// For integrity check
 		testData.loadTestIssuer();

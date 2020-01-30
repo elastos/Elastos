@@ -20,25 +20,24 @@
  * SOFTWARE.
  */
 
-package org.elastos.did;
+package org.elastos.did.exception;
 
-import java.io.InputStream;
+public class DIDBackendException extends DIDException {
+	private static final long serialVersionUID = -5520759922075837222L;
 
-import org.elastos.did.exception.DIDException;
-import org.elastos.did.exception.DIDResolveException;
+	public DIDBackendException() {
+        super();
+    }
 
-public interface DIDAdapter {
-	@FunctionalInterface
-	public interface TransactionCallback {
-	    void accept(String txid, int status, String msg);
-	}
+    public DIDBackendException(String message) {
+        super(message);
+    }
 
-	public String createIdTransaction(String payload, String memo)
-			throws DIDException;
+    public DIDBackendException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public boolean createIdTransaction(String payload, String memo,
-			int confirms, TransactionCallback callback);
-
-	public InputStream resolve(String requestId, String did, boolean all)
-			throws DIDResolveException;
+    public DIDBackendException(Throwable cause) {
+        super(cause);
+    }
 }

@@ -81,7 +81,7 @@ public final class TestData {
 				File.separator + ".cache.did.elastos");
 	}
 
-	public DIDStore setupStore(boolean dummyBackend) throws DIDException {
+	public DIDStore setup(boolean dummyBackend) throws DIDException {
 		DIDAdapter adapter;
 
 		if (dummyBackend) {
@@ -109,6 +109,31 @@ public final class TestData {
     	Utils.deleteFile(new File(TestConfig.storeRoot));
     	store = DIDStore.open("filesystem", TestConfig.storeRoot);
     	return store;
+	}
+
+	public void waitForWalletAvaliable() throws DIDException {
+		SPVAdapter adapter = null;
+
+		// need synchronize?
+		if (DIDBackend.getInstance().getAdapter() instanceof SPVAdapter)
+			adapter = (SPVAdapter)DIDBackend.getInstance().getAdapter();
+
+		if (adapter != null) {
+			System.out.print("Waiting for wallet available");
+			while (true) {
+				if (adapter.isAvailable()) {
+					System.out.println(".OK");
+					break;
+				} else {
+					System.out.print(".");
+				}
+
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+			}
+		}
 	}
 
 	public String initIdentity() throws DIDException {

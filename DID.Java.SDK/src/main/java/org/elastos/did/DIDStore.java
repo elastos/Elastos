@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -257,6 +259,18 @@ public final class DIDStore {
 		}
 	}
 
+	public CompletableFuture<Void> synchronizeAsync(String storepass) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			try {
+				synchronize(storepass);
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
 	public DIDDocument newDid(String alias, String storepass)
 			throws DIDStoreException {
 		if (storepass == null || storepass.isEmpty())
@@ -293,7 +307,8 @@ public final class DIDStore {
 		return newDid(null, storepass);
 	}
 
-	public String publishDid(DID did, DIDURL signKey, String storepass)
+	public String publishDid(DID did, int confirms,
+			DIDURL signKey, String storepass)
 			throws DIDStoreException, DIDException {
 		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
@@ -324,13 +339,13 @@ public final class DIDStore {
 
 		String lastTxid = doc.getTransactionId();
 		if (lastTxid == null || lastTxid.isEmpty())
-			lastTxid = DIDBackend.getInstance().create(doc, signKey, storepass);
+			lastTxid = DIDBackend.getInstance().create(doc, confirms,
+					signKey, storepass);
 		else
-			lastTxid = DIDBackend.getInstance().update(doc,
-					lastTxid, signKey, storepass);
+			lastTxid = DIDBackend.getInstance().update(doc, lastTxid, confirms,
+					signKey, storepass);
 
 		if (lastTxid != null) {
-			// TODO: checkme!!! save txid?
 			doc.getMeta().setTransactionId(lastTxid);
 			storage.storeDidMeta(doc.getSubject(), doc.getMeta());
 		}
@@ -338,25 +353,101 @@ public final class DIDStore {
 		return lastTxid;
 	}
 
-	public String publishDid(String did, String signKey, String storepass)
+	public String publishDid(String did, int confirms,
+			String signKey, String storepass)
 			throws MalformedDIDURLException, DIDStoreException, DIDException {
 		DID _did = new DID(did);
 		DIDURL _signKey = signKey == null ? null : new DIDURL(_did, signKey);
-		return publishDid(_did, _signKey, storepass);
+		return publishDid(_did, confirms, _signKey, storepass);
+	}
+
+	public String publishDid(DID did, DIDURL signKey, String storepass)
+			throws DIDStoreException, DIDException {
+		return publishDid(did, 0, signKey, storepass);
+	}
+
+	public String publishDid(String did, String signKey, String storepass)
+			throws MalformedDIDURLException, DIDStoreException, DIDException {
+		return publishDid(did, 0, signKey, storepass);
+	}
+
+	public String publishDid(DID did, int confirms, String storepass)
+			throws DIDStoreException, DIDException {
+		return publishDid(did, confirms, null, storepass);
+	}
+
+	public String publishDid(String did, int confirms, String storepass)
+			throws DIDStoreException, DIDException {
+		return publishDid(did, confirms, null, storepass);
 	}
 
 	public String publishDid(DID did, String storepass)
 			throws DIDStoreException, DIDException {
-		return publishDid(did, (DIDURL)null, storepass);
+		return publishDid(did, 0, null, storepass);
 	}
 
 	public String publishDid(String did, String storepass)
 			throws DIDStoreException, DIDException {
-		return publishDid(did, (String)null, storepass);
+		return publishDid(did, 0, null, storepass);
+	}
+
+	public CompletableFuture<String> publishDidAsync(DID did, int confirms,
+			DIDURL signKey, String storepass) {
+		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return publishDid(did, confirms, signKey, storepass);
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
+	public CompletableFuture<String> publishDidAsync(String did, int confirms,
+			String signKey, String storepass) {
+		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return publishDid(did, confirms, signKey, storepass);
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
+	public CompletableFuture<String> publishDidAsync(DID did,
+			DIDURL signKey, String storepass) {
+		return publishDidAsync(did, 0, signKey, storepass);
+	}
+
+	public CompletableFuture<String> publishDidAsync(String did,
+			String signKey, String storepass) {
+		return publishDidAsync(did, 0, signKey, storepass);
+	}
+
+	public CompletableFuture<String> publishDidAsync(DID did,
+			int confirms, String storepass) {
+		return publishDidAsync(did, confirms, null, storepass);
+	}
+
+	public CompletableFuture<String> publishDidAsync(String did,
+			int confirms, String storepass) {
+		return publishDidAsync(did, confirms, null, storepass);
+	}
+
+	public CompletableFuture<String> publishDidAsync(DID did, String storepass) {
+		return publishDidAsync(did, 0, null, storepass);
+	}
+
+	public CompletableFuture<String> publishDidAsync(String did, String storepass) {
+		return publishDidAsync(did, 0, null, storepass);
 	}
 
 	// Deactivate self use authentication keys
-	public String deactivateDid(DID did, DIDURL signKey, String storepass)
+	public String deactivateDid(DID did, int confirms,
+			DIDURL signKey, String storepass)
 			throws DIDStoreException, DIDException {
 		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
@@ -384,7 +475,8 @@ public final class DIDStore {
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
 
-		String txid = DIDBackend.getInstance().deactivate(doc, signKey, storepass);
+		String txid = DIDBackend.getInstance().deactivate(doc,
+				confirms, signKey, storepass);
 
 		// Save deactivated status to DID metadata
 		if (localCopy) {
@@ -395,25 +487,102 @@ public final class DIDStore {
 		return txid;
 	}
 
-	public String deactivateDid(String did, String signKey, String storepass)
+	public String deactivateDid(String did, int confirms,
+			String signKey, String storepass)
 			throws MalformedDIDURLException, DIDStoreException, DIDException {
 		DID _did = new DID(did);
 		DIDURL _signKey = signKey == null ? null : new DIDURL(_did, signKey);
-		return deactivateDid(_did, _signKey, storepass);
+		return deactivateDid(_did, confirms, _signKey, storepass);
+	}
+
+	public String deactivateDid(DID did, DIDURL signKey, String storepass)
+			throws DIDStoreException, DIDException {
+		return deactivateDid(did, 0, signKey, storepass);
+	}
+
+	public String deactivateDid(String did, String signKey, String storepass)
+			throws MalformedDIDURLException, DIDStoreException, DIDException {
+		return deactivateDid(did, 0, signKey, storepass);
+	}
+
+	public String deactivateDid(DID did, int confirms, String storepass)
+			throws DIDStoreException, DIDException {
+		return deactivateDid(did, confirms, null, storepass);
+	}
+
+	public String deactivateDid(String did, int confirms, String storepass)
+			throws MalformedDIDURLException, DIDStoreException, DIDException {
+		return deactivateDid(did, confirms, null, storepass);
 	}
 
 	public String deactivateDid(DID did, String storepass)
 			throws DIDStoreException, DIDException {
-		return deactivateDid(did, (DIDURL)null, storepass);
+		return deactivateDid(did, 0, null, storepass);
 	}
 
 	public String deactivateDid(String did, String storepass)
 			throws DIDStoreException, DIDException {
-		return deactivateDid(did, (String)null, storepass);
+		return deactivateDid(did, 0, null, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(DID did,
+			int confirms, DIDURL signKey, String storepass) {
+		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return deactivateDid(did, confirms, signKey, storepass);
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(String did,
+			int confirms, String signKey, String storepass) {
+		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return deactivateDid(did, confirms, signKey, storepass);
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(DID did,
+			DIDURL signKey, String storepass) {
+		return deactivateDidAsync(did, 0, signKey, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(String did,
+			String signKey, String storepass) {
+		return deactivateDidAsync(did, 0, signKey, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(DID did,
+			int confirms, String storepass) {
+		return deactivateDidAsync(did, confirms, null, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(String did,
+			int confirms, String storepass) {
+		return deactivateDidAsync(did, confirms, null, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(DID did,
+			String storepass) {
+		return deactivateDidAsync(did, 0, null, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(String did,
+			String storepass) {
+		return deactivateDidAsync(did, 0, null, storepass);
 	}
 
 	// Deactivate target DID with authorization
-	public String deactivateDid(DID target, DID did, DIDURL signKey,
+	public String deactivateDid(DID target, DID did, int confirms, DIDURL signKey,
 			String storepass) throws DIDStoreException, DIDException {
 		if (target == null || did == null ||
 				storepass == null || storepass.isEmpty())
@@ -481,19 +650,91 @@ public final class DIDStore {
 			throw new DIDException("No matched authorization key.");
 
 		return DIDBackend.getInstance().deactivate(target, targetSignKey,
-				doc, signKey, storepass);
+				doc, confirms, signKey, storepass);
+	}
+
+	public String deactivateDid(String target, String did, int confirms,
+			String signKey, String storepass)
+			throws DIDStoreException, DIDException {
+		DID _did = new DID(did);
+		DIDURL _signKey = signKey == null ? null : new DIDURL(_did, signKey);
+		return deactivateDid(new DID(target), _did, confirms, _signKey, storepass);
+	}
+
+	public String deactivateDid(DID target, DID did, DIDURL signKey,
+			String storepass) throws DIDStoreException, DIDException {
+		return deactivateDid(target, did, 0, signKey, storepass);
 	}
 
 	public String deactivateDid(String target, String did, String signKey,
 			String storepass) throws DIDStoreException, DIDException {
-		DID _did = new DID(did);
-		DIDURL _signKey = signKey == null ? null : new DIDURL(_did, signKey);
-		return deactivateDid(new DID(target), _did, _signKey, storepass);
+		return deactivateDid(target, did, 0, signKey, storepass);
+	}
+
+	public String deactivateDid(DID target, DID did, int confirms,
+			String storepass) throws DIDStoreException, DIDException {
+		return deactivateDid(target, did, confirms, null, storepass);
+	}
+
+	public String deactivateDid(String target, String did, int confirms,
+			String storepass) throws DIDStoreException, DIDException {
+		return deactivateDid(target, did, confirms, null, storepass);
 	}
 
 	public String deactivateDid(DID target, DID did, String storepass)
 			throws DIDStoreException, DIDException {
-		return deactivateDid(target, did, null, storepass);
+		return deactivateDid(target, did, 0, null, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(DID target, DID did,
+			int confirms, DIDURL signKey, String storepass) {
+		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return deactivateDid(target, did, confirms, signKey, storepass);
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(String target,
+			String did, int confirms, String signKey, String storepass) {
+		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return deactivateDid(target, did, confirms, signKey, storepass);
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(DID target, DID did,
+			DIDURL signKey, String storepass) {
+		return deactivateDidAsync(target, did, 0, signKey, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(String target,
+			String did, String signKey, String storepass) {
+		return deactivateDidAsync(target, did, 0, signKey, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(DID target, DID did,
+			int confirms, String storepass) {
+		return deactivateDidAsync(target, did, confirms, null, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(String target,
+			String did, int confirms, String storepass) {
+		return deactivateDidAsync(target, did, confirms, null, storepass);
+	}
+
+	public CompletableFuture<String> deactivateDidAsync(DID target,
+			DID did, String storepass) {
+		return deactivateDidAsync(target, did, 0, null, storepass);
 	}
 
 	public void storeDid(DIDDocument doc, String alias)

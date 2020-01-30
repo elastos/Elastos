@@ -39,7 +39,7 @@ public class VerifiableCredentialTest {
 		TestData testData = new TestData();
 
 		// for integrity check
-		testData.setupStore(true);
+		testData.setup(true);
 		DIDDocument issuer = testData.loadTestIssuer();
 		DIDDocument test = testData.loadTestDocument();
 
@@ -69,7 +69,7 @@ public class VerifiableCredentialTest {
 		TestData testData = new TestData();
 
 		// for integrity check
-		testData.setupStore(true);
+		testData.setup(true);
 		DIDDocument test = testData.loadTestDocument();
 
 		VerifiableCredential vc = testData.loadProfileCredential();

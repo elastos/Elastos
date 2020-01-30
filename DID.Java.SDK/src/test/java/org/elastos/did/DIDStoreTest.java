@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.elastos.did.adapter.DummyAdapter;
+import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDDeactivatedException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
@@ -54,7 +55,7 @@ public class DIDStoreTest {
 	@Test
 	public void testCreateEmptyStore() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
 
     	File file = new File(TestConfig.storeRoot);
     	assertTrue(file.exists());
@@ -70,14 +71,14 @@ public class DIDStoreTest {
 	@Test(expected = DIDStoreException.class)
 	public void testCreateDidInEmptyStore() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	store.newDid("this will be fail", TestConfig.storePass);
 	}
 
 	@Test
 	public void testInitPrivateIdentity() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	assertFalse(store.containsPrivateIdentity());
 
     	String mnemonic = testData.initIdentity();
@@ -111,7 +112,7 @@ public class DIDStoreTest {
 		String mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
 
 		TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	assertFalse(store.containsPrivateIdentity());
 
     	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic, "", TestConfig.storePass);
@@ -146,7 +147,7 @@ public class DIDStoreTest {
 	@Test
 	public void testCreateDIDWithAlias() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	String alias = "my first did";
@@ -185,7 +186,7 @@ public class DIDStoreTest {
 	@Test
 	public void tesCreateDIDWithoutAlias() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
@@ -214,7 +215,7 @@ public class DIDStoreTest {
 	@Test
 	public void testUpdateDid() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
@@ -260,11 +261,11 @@ public class DIDStoreTest {
 
 	@Test
 	public void testUpdateNonExistedDid() throws DIDException {
-		expectedEx.expect(DIDStoreException.class);
-		expectedEx.expectMessage("Update ID transaction error.");
+		expectedEx.expect(DIDBackendException.class);
+		//expectedEx.expectMessage("Update ID transaction error.");
 
 		TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
@@ -282,7 +283,7 @@ public class DIDStoreTest {
 	@Test(expected = DIDDeactivatedException.class)
 	public void testDeactivateSelfAfterCreate() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
@@ -303,7 +304,7 @@ public class DIDStoreTest {
 	@Test(expected = DIDDeactivatedException.class)
 	public void testDeactivateSelfAfterUpdate() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
@@ -341,7 +342,7 @@ public class DIDStoreTest {
 	@Test(expected = DIDDeactivatedException.class)
 	public void testDeactivateWithAuthorization1() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
@@ -378,7 +379,7 @@ public class DIDStoreTest {
 	@Test(expected = DIDDeactivatedException.class)
 	public void testDeactivateWithAuthorization2() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
@@ -425,7 +426,7 @@ public class DIDStoreTest {
 	@Test(expected = DIDDeactivatedException.class)
 	public void testDeactivateWithAuthorization3() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
@@ -472,7 +473,7 @@ public class DIDStoreTest {
 	@Test
 	public void testBulkCreate() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
 		for (int i = 0; i < 100; i++) {
@@ -521,7 +522,7 @@ public class DIDStoreTest {
 	@Test
 	public void testDeleteDID() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	// Create test DIDs
@@ -564,7 +565,7 @@ public class DIDStoreTest {
 	@Test
 	public void testStoreAndLoadDID() throws DIDException, IOException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	// Store test data into current store
@@ -594,7 +595,7 @@ public class DIDStoreTest {
 	@Test
 	public void testLoadCredentials() throws DIDException, IOException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	// Store test data into current store
@@ -645,7 +646,7 @@ public class DIDStoreTest {
 	@Test
 	public void testListCredentials() throws DIDException, IOException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	// Store test data into current store
@@ -679,7 +680,7 @@ public class DIDStoreTest {
 	@Test
 	public void testDeleteCredential() throws DIDException, IOException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
     	// Store test data into current store
@@ -748,7 +749,7 @@ public class DIDStoreTest {
 	@Test
 	public void testChangePassword() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
 		for (int i = 0; i < 10; i++) {
@@ -811,7 +812,7 @@ public class DIDStoreTest {
 	@Test(expected = DIDStoreException.class)
 	public void testChangePasswordWithWrongPassword() throws DIDException {
     	TestData testData = new TestData();
-    	DIDStore store = testData.setupStore(true);
+    	DIDStore store = testData.setup(true);
     	testData.initIdentity();
 
 		for (int i = 0; i < 10; i++) {

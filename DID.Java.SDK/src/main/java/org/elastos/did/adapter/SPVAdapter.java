@@ -68,6 +68,10 @@ public class SPVAdapter extends AbstractAdapter {
 	private final static native String createIdTransaction(long handle,
 			String payload, String memo, String password);
 
+	private final static native boolean createIdTransactionEx(long handle,
+			String payload, String memo, int confirms,
+			TransactionCallback callback, String password);
+
 	private final static native String resolve(long handle,
 			String did, boolean all);
 
@@ -83,5 +87,16 @@ public class SPVAdapter extends AbstractAdapter {
 			password = "";
 
 		return createIdTransaction(handle, payload, memo, password);
+	}
+
+	@Override
+	public boolean createIdTransaction(String payload, String memo,
+			int confirms, TransactionCallback callback) {
+		String password = passwordCallback.getPassword(walletDir, walletId);
+		if (password == null)
+			password = "";
+
+		return createIdTransactionEx(handle, payload, memo, confirms,
+				callback, password);
 	}
 }

@@ -28,11 +28,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.Random;
+import java.util.concurrent.CompletionException;
 
 import org.elastos.did.backend.IDChainRequest;
 import org.elastos.did.backend.IDTransactionInfo;
 import org.elastos.did.backend.ResolveResult;
 import org.elastos.did.backend.ResolverCache;
+import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDDeactivatedException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDExpiredException;
@@ -57,6 +59,47 @@ public class DIDBackend {
 	private Random random;
 	private long ttl; // milliseconds
 	private DIDAdapter adapter;
+
+	class TransactionResult {
+		private String txid;
+		private int status;
+		private String message;
+		private boolean filled;
+
+		public TransactionResult() {
+		}
+
+		public void update(String txid, int status, String message) {
+			this.txid = txid;
+			this.status = status;
+			this.message = message;
+			this.filled = true;
+
+			synchronized(this) {
+				notifyAll();
+			}
+		}
+
+		public void update(String txid) {
+			update(txid, 0, null);
+		}
+
+		public String getTxid() {
+			return txid;
+		}
+
+		public int getStatus() {
+			return status;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public boolean isEmpty() {
+			return !filled;
+		}
+	}
 
 	private DIDBackend(DIDAdapter adapter, File cacheDir) {
 		this.adapter = adapter;
@@ -157,8 +200,6 @@ public class DIDBackend {
 
 	protected DIDDocument resolve(DID did, boolean force)
 			throws DIDResolveException {
-		if (did == null)
-			throw new IllegalArgumentException();
 
 		ResolveResult rr = null;
 		if (!force)
@@ -188,58 +229,92 @@ public class DIDBackend {
 		}
 	}
 
-	public DIDDocument resolve(DID did) throws DIDResolveException {
+	protected DIDDocument resolve(DID did) throws DIDResolveException {
 		return resolve(did, false);
 	}
 
+	private String createTransaction(String payload, String memo, int confirms)
+			throws DIDBackendException {
+		TransactionResult tr = new TransactionResult();
+
+		boolean success = adapter.createIdTransaction(payload, memo, confirms,
+				(txid, status, message) -> {
+					tr.update(txid, status, message);
+				});
+
+		if (!success)
+			throw new DIDBackendException("Create transaction failed, unknown error.");
+
+		synchronized(tr) {
+			if (tr.isEmpty()) {
+				try {
+					tr.wait();
+				} catch (InterruptedException e) {
+					throw new DIDBackendException(e);
+				}
+			}
+		}
+
+		if (tr.getStatus() != 0)
+			throw new CompletionException(new DIDBackendException(
+					"Create transaction failed(" + tr.getStatus() + "): "
+					+ tr.getMessage()));
+
+		return tr.getTxid();
+	}
+
 	protected String create(DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDStoreException {
+			throws DIDBackendException, DIDStoreException {
+		return create(doc, 0, signKey, storepass);
+	}
+
+	protected String create(DIDDocument doc, int confirms, DIDURL signKey,
+			String storepass) throws DIDBackendException, DIDStoreException {
 		IDChainRequest request = IDChainRequest.create(doc, signKey, storepass);
 		String json = request.toJson(true);
-
-		try {
-			return adapter.createIdTransaction(json, null);
-		} catch (DIDException e) {
-			throw new DIDStoreException("Create ID transaction error.", e);
-		}
+		return createTransaction(json, null, confirms);
 	}
 
 	protected String update(DIDDocument doc, String previousTxid,
-			DIDURL signKey, String storepass) throws DIDStoreException {
-		IDChainRequest request = IDChainRequest.update(doc,
-				previousTxid, signKey, storepass);
-		String json = request.toJson(true);
+			DIDURL signKey, String storepass)
+			throws DIDBackendException, DIDStoreException {
+		return update(doc, previousTxid, 0, signKey, storepass);
+	}
 
-		try {
-			return adapter.createIdTransaction(json, null);
-		} catch (DIDException e) {
-			throw new DIDStoreException("Update ID transaction error.", e);
-		}
+	protected String update(DIDDocument doc, String previousTxid, int confirms,
+			DIDURL signKey, String storepass)
+			throws DIDBackendException, DIDStoreException {
+		IDChainRequest request = IDChainRequest.update(doc, previousTxid,
+				signKey, storepass);
+		String json = request.toJson(true);
+		return createTransaction(json, null, confirms);
 	}
 
 	protected String deactivate(DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDStoreException {
+			throws DIDBackendException, DIDStoreException {
+		return deactivate(doc, 0, signKey, storepass);
+	}
+
+	protected String deactivate(DIDDocument doc, int confirms,
+			DIDURL signKey, String storepass)
+			throws DIDBackendException, DIDStoreException {
 		IDChainRequest request = IDChainRequest.deactivate(doc, signKey, storepass);
 		String json = request.toJson(true);
-
-		try {
-			return adapter.createIdTransaction(json, null);
-		} catch (DIDException e) {
-			throw new DIDStoreException("deactivate ID transaction error.", e);
-		}
+		return createTransaction(json, null, confirms);
 	}
 
 	protected String deactivate(DID target, DIDURL targetSignKey,
 			DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDStoreException {
+			throws DIDBackendException, DIDStoreException {
+		return deactivate(target, targetSignKey, doc, 0, signKey, storepass);
+	}
+
+	protected String deactivate(DID target, DIDURL targetSignKey,
+			DIDDocument doc, int confirms, DIDURL signKey, String storepass)
+			throws DIDBackendException, DIDStoreException {
 		IDChainRequest request = IDChainRequest.deactivate(target,
 				targetSignKey, doc, signKey, storepass);
 		String json = request.toJson(true);
-
-		try {
-			return adapter.createIdTransaction(json, null);
-		} catch (DIDException e) {
-			throw new DIDStoreException("deactivate ID transaction error.", e);
-		}
+		return createTransaction(json, null, confirms);
 	}
 }

@@ -35,6 +35,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.MalformedCredentialException;
@@ -244,6 +246,18 @@ public class VerifiablePresentation {
 				proof.getRealm().getBytes(), proof.getNonce().getBytes());
 	}
 
+	public CompletableFuture<Boolean> isGenuineAsync() {
+		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return isGenuine();
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
 	public boolean isValid() throws DIDException {
 		DID signer = getSigner();
 		DIDDocument signerDoc = signer.resolve();
@@ -273,6 +287,18 @@ public class VerifiablePresentation {
 		return signerDoc.verify(proof.getVerificationMethod(),
 				proof.getSignature(), json.getBytes(),
 				proof.getRealm().getBytes(), proof.getNonce().getBytes());
+	}
+
+	public CompletableFuture<Boolean> isValidAsync() {
+		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return isValid();
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
 	}
 
 	public Proof getProof() {
@@ -500,7 +526,7 @@ public class VerifiablePresentation {
 		if (!signer.hasPrivateKey(signKey))
 			throw new DIDException("No private key.");
 
-		return new Builder(signer, signKey, store);
+		return new Builder(signer, signKey);
 	}
 
 	public static Builder createFor(DID did, DIDStore store) throws DIDException {
@@ -514,7 +540,7 @@ public class VerifiablePresentation {
 		private String nonce;
 		private VerifiablePresentation presentation;
 
-		protected Builder(DIDDocument signer, DIDURL signKey, DIDStore store)
+		protected Builder(DIDDocument signer, DIDURL signKey)
 				throws DIDException {
 			this.signer = signer;
 			this.signKey = signKey;

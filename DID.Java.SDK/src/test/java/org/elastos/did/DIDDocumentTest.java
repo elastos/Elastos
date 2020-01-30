@@ -43,7 +43,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testGetPublicKey() throws IOException, DIDException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 
 		DIDDocument doc = testData.loadTestDocument();
 		assertNotNull(doc);
@@ -120,7 +120,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testAddPublicKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -163,7 +163,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testRemovePublicKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -212,7 +212,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testGetAuthenticationKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -282,7 +282,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testAddAuthenticationKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -359,7 +359,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testRemoveAuthenticationKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -421,7 +421,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testGetAuthorizationKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -479,7 +479,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testAddAuthorizationKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -559,7 +559,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testRemoveAuthorizationKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -617,7 +617,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testGetCredential() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -675,7 +675,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testAddCredential() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -718,7 +718,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testRemoveCredential() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -769,7 +769,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testGetService() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -831,7 +831,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testAddService() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -871,7 +871,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testRemoveService() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();
@@ -909,7 +909,7 @@ public class DIDDocumentTest {
 	public void testParseAndSerializeDocument()
 			throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument compact = DIDDocument
@@ -954,7 +954,7 @@ public class DIDDocumentTest {
 	@Test
 	public void testSignAndVerify() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 		testData.initIdentity();
 
 		DIDDocument doc = testData.loadTestDocument();

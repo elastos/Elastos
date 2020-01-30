@@ -23,6 +23,8 @@
 package org.elastos.did;
 
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
@@ -136,6 +138,23 @@ public class DID implements Comparable<DID> {
 
 	public DIDDocument resolve() throws DIDException {
 		return resolve(false);
+	}
+
+
+	protected CompletableFuture<DIDDocument> resolveAsync(boolean force) {
+		CompletableFuture<DIDDocument> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return resolve(force);
+			} catch (DIDException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
+	}
+
+	public CompletableFuture<DIDDocument> resolveAsync(DID did) {
+		return resolveAsync(false);
 	}
 
 	@Override

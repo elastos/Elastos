@@ -45,7 +45,7 @@ public class IssuerTest {
 	@Test
 	public void newIssuerTestWithSignKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		DIDStore store = testData.setupStore(true);
+		DIDStore store = testData.setup(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 
@@ -60,7 +60,7 @@ public class IssuerTest {
 	@Test
 	public void newIssuerTestWithoutSignKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		DIDStore store = testData.setupStore(true);
+		DIDStore store = testData.setup(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 
@@ -76,7 +76,7 @@ public class IssuerTest {
 		expectedEx.expectMessage("No private key.");
 
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 		DIDDocument.Builder db = issuerDoc.edit();
@@ -100,7 +100,7 @@ public class IssuerTest {
 		expectedEx.expectMessage("Invalid sign key id.");
 
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 		DIDURL signKey = new DIDURL(issuerDoc.getSubject(), "recovery");
@@ -114,7 +114,7 @@ public class IssuerTest {
 	@Test
 	public void IssueKycCredentialTest() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 		DIDDocument testDoc = testData.loadTestDocument();
@@ -161,7 +161,7 @@ public class IssuerTest {
 	@Test
 	public void IssueSelfProclaimedCredentialTest() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 
@@ -204,7 +204,7 @@ public class IssuerTest {
 	public void IssueJsonPropsCredentialTest()
 			throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		testData.setup(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 
