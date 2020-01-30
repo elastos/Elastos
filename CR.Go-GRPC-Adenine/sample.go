@@ -42,7 +42,8 @@ optional arguments:
 	network := "gmunet"
 	mnemonicToUse := "obtain pill nest sample caution stone candy habit silk husband give net"
 	didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
-	apiKeyToUse := "Oq8S979ZopXgULCfDgfw5vzGy1jsf7vQxkVVLbq7YCrHFIMdaQPf3mMgQ0dO23tH"
+	apiKeyToUse := "O2Fjcsk43uUFHqe7ygWbq0tTFj0W5gkiXxoyq1wHIQpJT8MkdKFW2LcJqBTr6AIf"
+	privateKeyToUse := "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
 
 	healthCheckTest(grpcServerHost, grpcServerPort, production)
 
@@ -51,9 +52,9 @@ optional arguments:
 	} else if *service == "get_api_key" {
 		getAPIKeyDemo(grpcServerHost, grpcServerPort, production, mnemonicToUse, didToUse)
 	} else if *service == "upload_and_sign" {
-		uploadAndSignDemo()
+		uploadAndSignDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network, privateKeyToUse)
 	} else if *service == "verify_and_show" {
-		verifyAndShowDemo()
+		verifyAndShowDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network, privateKeyToUse)
 	} else if *service == "create_wallet" {
 		createWalletDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
 	} else if *service == "view_wallet" {
@@ -123,12 +124,52 @@ func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, m
 	}
 }
 
-func uploadAndSignDemo() {
+func uploadAndSignDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network, privateKeyToUse string) {
 	log.Println("--> Upload and Sign")
+	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
+	defer hive.Close()
+	response := hive.UploadAndSign(apiKeyToUse, network, privateKeyToUse, "test/sample.txt")
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
 }
 
-func verifyAndShowDemo() {
+func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network, privateKeyToUse string) {
 	log.Println("--> Verify and Show")
+	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
+	defer hive.Close()
+	response := hive.VerifyAndShow(apiKeyToUse, network, privateKeyToUse, "516D5958474C636D366B646A75475150585971576E626956643569765844737339585A5174314253484B665A7555",
+                						"022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
+                						"8BB91FADFA2CD50999E06EEA5827DA419D47DC87B837D9110BF6132E6F62F0EBF732345669B6964F51C21B0516CEA241275C326D1E07152BFAFE7C42B5D0A6DC",
+                						"QmYXGLcm6kdjuGQPXYqWnbiVd5ivXDss9XZQt1BSHKfZuU")
+	if response.Output != "" {
+		download_path := "test/sample_from_hive.txt"
+		log.Printf("Status Message : %s", response.StatusMessage)
+		log.Printf("Download Path : %s", download_path)
+		// Open a new file for writing only
+    	file, err := os.OpenFile(
+        	download_path,
+        	os.O_WRONLY|os.O_TRUNC|os.O_CREATE,
+        	0666,
+    	)
+    	if err != nil {
+        	log.Fatal(err)
+    	}
+    	defer file.Close()
+
+    	// Write bytes to file
+    	byteSlice := response.FileContent
+    	bytesWritten, err := file.Write(byteSlice)
+    	if err != nil {
+        	log.Fatal(err)
+    	}
+    	log.Printf("Wrote %d bytes.\n", bytesWritten)
+	}
 }
 
 func createWalletDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network string) {
