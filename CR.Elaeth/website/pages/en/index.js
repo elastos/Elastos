@@ -125,13 +125,13 @@ class Index extends React.Component {
     <Block align="center" className="elastosETH elaBackground darkBackground">
       {[
         {
-          title: 'The infomation of what we built',
+          title: 'What we built',
           content: `
-<span class="normal">Block Explorer</span> &#x27A1; use our testnet block explorer at <a href="https://testnet.elaeth.io" target="_blank">https://testnet.elaeth.io</a>
+<span class="normal">Block Explorer</span> &#x27A1; Testnet: <a href="https://testnet.elaeth.io" target="_blank">https://testnet.elaeth.io</a>, Mainnet: <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
 
-<span class="normal">Block Explorer</span> &#x27A1; use our mainnet block explorer at <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
+<span class="normal">JSON RPC</span> &#x27A1; Testnet: <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>, Mainnet: <a href="https://rpc.elaeth.io" target="_blank">https://mainrpc.elaeth.io</a>
 
-<span class="normal">MetaMask</span> &#x27A1; directly works on our new RPC port at <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>(testnet) and <a href="https://rpc.elaeth.io" target="_blank">https://mainrpc.elaeth.io</a>(mainnet)
+<span class="normal">MetaMask</span> &#x27A1; Brings Ethereum to your browser. <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-chrome-7.7.0.zip" target="_blank">Chrome</a> / <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-firefox-7.7.0.zip" target="_blank">Firefox</a> / <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-opera-7.7.0.zip" target="_blank">Opera</a>
 
 <span class="normal">Remix</span> &#x27A1; same as above, point it at our new RPC port
 
