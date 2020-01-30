@@ -199,14 +199,14 @@ def verify_and_show(request):
                     "pub": form.cleaned_data.get('public_key'),
                     "sig": form.cleaned_data.get('signature'),
                     "hash": form.cleaned_data.get('file_hash'),
-                    "private_key": form.cleaned_data.get('private_key')
+                    "privateKey": form.cleaned_data.get('private_key')
                 }
                 try:
                     hive = Hive()
                     response = hive.verify_and_show(api_key, network, request_input)
                     if response.status:
                         request.session['verify_and_show_submit'] = True
-                        content = json.loads(response.output)["result"]["output"]
+                        content = response.file_content.decode()
                         return render(request, 'service/verify_and_show.html',
                                       {'output': True, 'content': content, 'sample_code': sample_code,
                                        'recent_services': recent_services})
