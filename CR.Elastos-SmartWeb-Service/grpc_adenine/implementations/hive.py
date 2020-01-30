@@ -177,7 +177,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         response = self.session.get(api_url_base.format(request_input['hash']), timeout=REQUEST_TIMEOUT)
 
         # decrypt message
-        key = get_encrypt_key(request_input['private_key'])
+        key = get_encrypt_key(request_input['privateKey'])
         fernet = Fernet(key)
         decrypted_message = fernet.decrypt(response.text.encode())
 
