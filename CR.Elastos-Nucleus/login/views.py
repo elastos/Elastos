@@ -267,7 +267,7 @@ def get_elastos_sign_in_url(request, random):
 
     url_params = {
         'appid': random,
-        'Iss': 'did:elastos:iWsK3X8aBpLqFVXAd2KUpMpFGJYEYyfjUi#primary',
+        'Iss': config('DIDLOGIN_ELASTOS_REQUESTER'),
         'exp': exp,
         'callbackurl': config('DIDLOGIN_APP_URL') + '/login/did_callback_elastos',
         'claims': {
