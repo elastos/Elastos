@@ -22,14 +22,6 @@ class Hive:
     def close(self):
         self._channel.close()
 
-    def sign(self, api_key, private_key, message):
-        req_data = {
-            "privateKey": private_key,
-            "msg": message
-        }
-        response = self.stub.Sign(hive_pb2.Request(api_key=api_key, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
-        return response
-
     def upload_and_sign(self, api_key, network, private_key, filename):
         req_data = {
             "privateKey": private_key

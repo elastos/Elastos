@@ -106,11 +106,11 @@ def main():
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D555258426E347A6170444A486970434745614641477A3859745A45467165745A706746707979426662377258",
+                "msg": "516D5A537153675171347566324C50425466417471344177314E314D75756447716472524863414E334A51635178",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "086954F6FECD4745E614310912AD2BB268D7413DC868439E78151361217B06611A3198974034C50E2EED3F1501AB0B7A59F47A110244D02C250DF4B2879B4686",
-                "hash": "QmURXBn4zapDJHipCGEaFAGz8YtZEFqetZpgFpyyBfb7rX",
-                "private_key": private_key_to_use
+                "sig": "AE62B72871721BCB917F190FA93FDB4C948F25D88979EBDA04A5CF20F68F385E9B74834A27299463373D937EB6DB5CE6208DFBD23B7727F83A0B78E7711A1DA2",
+                "hash": "QmZSqSgQq4uf2LPBTfAtq4Aw1N1MuudGqdrRHcAN3JQcQx",
+                "privateKey": private_key_to_use
             }
             response = hive.verify_and_show(api_key_to_use, network, request_input)
             if response.output:
