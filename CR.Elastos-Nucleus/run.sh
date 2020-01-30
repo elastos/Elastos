@@ -17,11 +17,12 @@ sleep 7
 
 # Migrate the database
 # Collect all static content
-rm -rf www/
+sudo rm -rf www/
 python3 manage.py collectstatic --no-input
 
 python3 manage.py makemigrations
 python3 manage.py migrate
 
 # Finally, run the Django server
+
 python3 manage.py runserver 0.0.0.0:8000

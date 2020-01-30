@@ -331,3 +331,4 @@ ALL_APPS = [
     'login',
     'service'
 ]
+
