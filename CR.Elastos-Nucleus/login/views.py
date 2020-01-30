@@ -2,12 +2,15 @@ import json
 import gc
 import logging
 import secrets
+import time
 
 import csv
+import urllib
+
 from django.apps import apps
 from django.conf import settings
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.contrib.auth import login
 from django.utils import timezone
@@ -21,7 +24,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-from django.utils.http import urlencode, urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.shortcuts import render, redirect
@@ -80,8 +83,8 @@ def check_ela_auth(request):
 def did_callback(request):
     if request.method == 'POST':
         response = json.loads(request.body)
-        if request.content_type == "application/json" or 'Data' not in response.keys():
-            HttpResponse(status=400)
+        if 'Data' not in response.keys():
+            return HttpResponse(status=400)
         data = json.loads(response['Data'])
         sig = response['Sign']
         client_public_key = data['PublicKey']
@@ -101,6 +104,43 @@ def did_callback(request):
             DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
         except Exception as e:
             logging.debug(f" Method: did_callback Error: {e}")
+            JsonResponse({'error': str(e)}, status=404)
+
+    return JsonResponse({'result': True}, status=200)
+
+
+# TODO: DOES NOT WORK YET
+@csrf_exempt
+def did_callback_elastos(request):
+    if request.method == 'POST':
+        response = urllib.parse.unquote(request.body.decode())
+        if 'result=' not in response:
+            return JsonResponse({'error': 'Could not parse response'}, status=400)
+
+        result = response.replace('result=', '')
+        data = json.loads(result)
+
+        did = data['did']
+        data['DID'] = did
+        credentials = data['presentation']['verifiableCredential']
+        for cred in credentials:
+            if did + "#name" == cred['credentialId']:
+                data['Nickname'] = cred['credentialSubject']['name']
+            elif did + "#email" == cred['credentialId']:
+                data['Email'] = cred['credentialSubject']['email']
+            exp_time = urllib.parse.unquote(cred['expirationDate'])
+            data['RandomNumber'] = int(time.mktime(datetime.strptime(exp_time, "%Y-%m-%dT%H:%M:%S.000Z").timetuple()))
+
+        try:
+            recently_created_time = timezone.now() - timedelta(minutes=1)
+            did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
+                                                              created_at__gte=recently_created_time)
+            if not did_request_query_result:
+                return JsonResponse({'message': 'Unauthorized'}, status=401)
+            data["auth"] = True
+            DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
+        except Exception as e:
+            logging.debug(f"Method: did_callback Error: {e}")
             JsonResponse({'error': str(e)}, status=404)
 
     return JsonResponse({'result': True}, status=200)
@@ -200,16 +240,55 @@ def activate(request, uidb64, token):
 
 
 def sign_in(request):
-    public_key = config('ELA_PUBLIC_KEY')
-    did = config('ELA_DID')
-    app_id = config('ELA_APP_ID')
-    app_name = config('ELA_APP_NAME')
-
     random = secrets.randbelow(999999999999)
     request.session['elaState'] = random
 
+    elephant_url = get_elaphant_sign_in_url(request, random)
+    elastos_url = get_elastos_sign_in_url(request, random)
+
+    request.session['elephant_url'] = elephant_url
+    request.session['elastos_url'] = elastos_url
+
+    # Purge old requests for housekeeping. If the time denoted by 'created_by'
+    # is more than 2 minutes old, delete the row
+    stale_time = timezone.now() - timedelta(minutes=2)
+    DIDRequest.objects.filter(created_at__lte=stale_time).delete()
+
+    # Save token to the database didauth_requests
+    token = {'state': random, 'data': {'auth': False}}
+    DIDRequest.objects.create(state=token['state'], data=json.dumps(token['data']))
+
+    return render(request, 'login/sign_in.html')
+
+
+# TODO: DOES NOT WORK YET
+def get_elastos_sign_in_url(request, random):
+    exp = int(round(time.time() + 300))
+
     url_params = {
-        'CallbackUrl': config('APP_URL') + '/login/did_callback',
+        'appid': random,
+        'Iss': 'did:elastos:iWsK3X8aBpLqFVXAd2KUpMpFGJYEYyfjUi#primary',
+        'exp': exp,
+        'callbackurl': config('DIDLOGIN_APP_URL') + '/login/did_callback_elastos',
+        'claims': {
+            'name': True,
+            'email': True
+        }
+    }
+
+    url = 'elastos://credaccess?' + urllib.parse.urlencode(url_params)
+
+    return url
+
+
+def get_elaphant_sign_in_url(request, random):
+    did = config('DIDLOGIN_ELAPHANT_DID')
+    app_id = config('DIDLOGIN_ELAPHANT_APP_ID')
+    public_key = config('DIDLOGIN_ELAPHANT_PUBLIC_KEY')
+    app_name = config('DIDLOGIN_ELAPHANT_APP_NAME')
+
+    url_params = {
+        'CallbackUrl': config('DIDLOGIN_APP_URL') + '/login/did_callback',
         'Description': 'Elastos DID Authentication',
         'AppID': app_id,
         'PublicKey': public_key,
@@ -219,20 +298,9 @@ def sign_in(request):
         'RequestInfo': 'Nickname,Email'
     }
 
-    elephant_url = 'elaphant://identity?' + urlencode(url_params)
+    url = 'elaphant://identity?' + urllib.parse.urlencode(url_params)
 
-    # Save token to the database didauth_requests
-    token = {'state': random, 'data': {'auth': False}}
-
-    DIDRequest.objects.create(state=token['state'], data=json.dumps(token['data']))
-    # Purge old requests for housekeeping. If the time denoted by 'created_by'
-    # is more than 2 minutes old, delete the row
-    stale_time = timezone.now() - timedelta(minutes=2)
-    DIDRequest.objects.filter(created_at__lte=stale_time).delete()
-
-    request.session['elephant_url'] = elephant_url
-
-    return render(request, 'login/sign_in.html')
+    return url
 
 
 @login_required
