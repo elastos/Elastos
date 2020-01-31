@@ -29,6 +29,7 @@ Pillow==6.2.1
 protobuf==3.11.1
 psycopg2-binary==2.8.4
 pycodestyle==2.5.0
+PyJWT==1.7.1
 pylint==2.4.3
 pytest-runner==5.2
 python-decouple==3.1

@@ -57,3 +57,8 @@ class DIDUserChangeForm(UserChangeForm):
     class Meta:
         model = DIDUser
         fields = ('email', 'name', 'did',)
+        widgets = {
+            'email': forms.Textarea(attrs={'rows': 1, 'cols': 64}),
+            'name': forms.Textarea(attrs={'rows': 1, 'cols': 64}),
+            'did': forms.Textarea(attrs={'rows': 1, 'cols': 64}),
+        }

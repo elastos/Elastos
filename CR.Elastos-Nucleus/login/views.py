@@ -7,6 +7,7 @@ import time
 import csv
 import urllib
 
+import jwt
 from django.apps import apps
 from django.conf import settings
 
@@ -32,6 +33,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.core.mail import EmailMessage
 from django.utils.encoding import force_bytes, force_text
 
+from console_main.settings import SECRET_KEY
 from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
     get_recent_services
 from console_main.models import TrackUserPageVisits
@@ -104,23 +106,28 @@ def did_callback(request):
             DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
         except Exception as e:
             logging.debug(f" Method: did_callback Error: {e}")
-            JsonResponse({'error': str(e)}, status=404)
+            return JsonResponse({'error': str(e)}, status=404)
 
     return JsonResponse({'result': True}, status=200)
 
 
-# TODO: DOES NOT WORK YET
 @csrf_exempt
 def did_callback_elastos(request):
     if request.method == 'POST':
-        response = urllib.parse.unquote(request.body.decode())
-        if 'result=' not in response:
+        response = request.body.decode()
+        if 'jwt=' not in response:
             return JsonResponse({'error': 'Could not parse response'}, status=400)
 
-        result = response.replace('result=', '')
-        data = json.loads(result)
+        jwt_result = response.replace('jwt=', '')
+        try:
+            #data = jwt.decode(jwt_result, 'secret', algorithms=['HS256'])
+            data = jwt.decode(jwt_result, verify=False)
+        except Exception as e:
+            logging.debug(f"Method: did_callback_elastos Error: {e}")
+            return JsonResponse({'error': str(e)}, status=404)
 
-        did = data['did']
+        did = data['presentation']['proof']['verificationMethod'].split("#", 1)[0]
+
         data['DID'] = did
         credentials = data['presentation']['verifiableCredential']
         for cred in credentials:
@@ -128,8 +135,9 @@ def did_callback_elastos(request):
                 data['Nickname'] = cred['credentialSubject']['name']
             elif did + "#email" == cred['credentialId']:
                 data['Email'] = cred['credentialSubject']['email']
-            exp_time = urllib.parse.unquote(cred['expirationDate'])
-            data['RandomNumber'] = int(time.mktime(datetime.strptime(exp_time, "%Y-%m-%dT%H:%M:%S.000Z").timetuple()))
+            data["exp_time"] = cred['expirationDate']
+
+        data['RandomNumber'] = data["req"]
 
         try:
             recently_created_time = timezone.now() - timedelta(minutes=1)
@@ -140,8 +148,8 @@ def did_callback_elastos(request):
             data["auth"] = True
             DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
         except Exception as e:
-            logging.debug(f"Method: did_callback Error: {e}")
-            JsonResponse({'error': str(e)}, status=404)
+            logging.debug(f"Method: did_callback_elastos Error: {e}")
+            return JsonResponse({'error': str(e)}, status=404)
 
     return JsonResponse({'result': True}, status=200)
 
@@ -239,6 +247,7 @@ def activate(request, uidb64, token):
         return HttpResponse('Activation link is invalid!')
 
 
+
 def sign_in(request):
     random = secrets.randbelow(999999999999)
     request.session['elaState'] = random
@@ -261,22 +270,21 @@ def sign_in(request):
     return render(request, 'login/sign_in.html')
 
 
-# TODO: DOES NOT WORK YET
 def get_elastos_sign_in_url(request, random):
-    exp = int(round(time.time() + 300))
-
-    url_params = {
+    jwt_claims = {
         'appid': random,
-        'Iss': config('DIDLOGIN_ELASTOS_REQUESTER'),
-        'exp': exp,
+        'iss': config('DIDLOGIN_ELASTOS_REQUESTER'),
+        'iat': int(round(time.time())),
+        'exp': int(round(time.time() + 300)),
         'callbackurl': config('DIDLOGIN_APP_URL') + '/login/did_callback_elastos',
         'claims': {
             'name': True,
             'email': True
         }
     }
+    jwt_token = jwt.encode(jwt_claims, SECRET_KEY, algorithm='HS256')
 
-    url = 'elastos://credaccess?' + urllib.parse.urlencode(url_params)
+    url = 'elastos://credaccess/' + jwt_token.decode()
 
     return url
 
