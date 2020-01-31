@@ -43,7 +43,7 @@ services:
     image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
     user: "${UID}:${GID}"
     volumes:
-      - ~/.data/docker/volumes/development-services/mainnet/sidechain-token-data:/did/elastos_token
+      - ~/.data/docker/volumes/development-services/mainnet/sidechain-token-data:/token/elastos_token
       - ${PWD}/token/config.json:/token/config.json
     ports:
       - 20614-20618:20614-20618
