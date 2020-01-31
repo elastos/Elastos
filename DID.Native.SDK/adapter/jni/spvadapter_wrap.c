@@ -69,7 +69,8 @@ typedef enum {
     JavaDirectorPureVirtual,
     JavaClassNotFoundException,
     JavaUnknownError,
-    DIDStoreException,
+    DIDBackendException,
+    DIDTransactionException,
     DIDResolveException
 } JavaExceptionCodes;
 
@@ -95,7 +96,8 @@ static void JavaThrowException(JNIEnv *jenv, JavaExceptionCodes code,
         { JavaDirectorPureVirtual, "java/lang/RuntimeException" },
         { JavaClassNotFoundException, "java/lang/ClassNotFoundException"},
         { JavaUnknownError,  "java/lang/UnknownError" },
-        { DIDStoreException, "org/elastos/did/exception/DIDStoreException" },
+        { DIDBackendException, "org/elastos/did/exception/DIDBackendException" },
+        { DIDTransactionException, "org/elastos/did/exception/DIDTransactionException" },
         { DIDResolveException, "org/elastos/did/exception/DIDResolveException" },
         { (JavaExceptionCodes)0,  "java/lang/UnknownError" }
     };
@@ -170,7 +172,7 @@ JNI_EXPORT jlong JNICALL Java_org_elastos_did_adapter_SPVAdapter_create(
     (*jenv)->ReleaseStringUTFChars(jenv, jWalletDir, walletDir);
 
     if (result == 0) {
-        JavaThrowException(jenv, DIDStoreException, "DID adapter initialize SPV wallet failed.");
+        JavaThrowException(jenv, DIDBackendException, "DID adapter initialize SPV wallet failed.");
         return 0;
     }
 
@@ -248,7 +250,7 @@ JNI_EXPORT jstring JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTrans
         SpvDidAdapter_FreeMemory(handle, (void *)txid);
         return jTxid;
     } else {
-        JavaThrowException(jenv, DIDStoreException, "DID adapter create ID teansaction failed.");
+        JavaThrowException(jenv, DIDTransactionException, "Unknown error.");
         return 0;
     }
 }
@@ -384,7 +386,7 @@ JNI_EXPORT jstring JNICALL Java_org_elastos_did_adapter_SPVAdapter_resolve(
         SpvDidAdapter_FreeMemory(handle, (void *)result);
         return jresult;
     } else {
-        JavaThrowException(jenv, DIDResolveException, "DID adapter try to resolve DID failed.");
+        JavaThrowException(jenv, DIDResolveException, "Resolve DID failed.");
         return 0;
     }
 }

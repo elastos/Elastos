@@ -112,7 +112,11 @@ public:
         TransactionCallback &callback = txCallbacks[txid];
 
         if (status.compare("Updated") == 0) {
-            if (callback.getConfirms() > 0 && callback.getConfirms() == confirms) {
+            // TODO: bug in SPV SDK
+            if (confirms > 1000)
+                return;
+
+            if (callback.getConfirms() > 0 && confirms >= callback.getConfirms()) {
                 callback.success(txid);
                 RemoveTransactionCallback(txid);
             } else {
