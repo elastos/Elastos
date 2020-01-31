@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.Random;
-import java.util.concurrent.CompletionException;
 
 import org.elastos.did.backend.IDChainRequest;
 import org.elastos.did.backend.IDTransactionInfo;
@@ -36,10 +35,12 @@ import org.elastos.did.backend.ResolveResult;
 import org.elastos.did.backend.ResolverCache;
 import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDDeactivatedException;
-import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDExpiredException;
 import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.DIDTransactionException;
+import org.elastos.did.exception.InvalidKeyException;
+import org.elastos.did.exception.MalformedResolveResultException;
 import org.elastos.did.meta.DIDMeta;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -124,9 +125,9 @@ public class DIDBackend {
 		initialize(adapter, new File(cacheDir));
 	}
 
-	public static DIDBackend getInstance() throws DIDException {
+	public static DIDBackend getInstance() throws DIDBackendException {
 		if (instance == null)
-			throw new DIDException("DID backend not initialized.");
+			throw new DIDBackendException("DID backend not initialized.");
 
 		return instance;
 	}
@@ -174,7 +175,7 @@ public class DIDBackend {
 		JsonNode id = node.get(ID);
 		if (id == null || id.textValue() == null ||
 				!id.textValue().equals(requestId))
-			throw new DIDResolveException("Mismatched resolve result with request.");
+			throw new MalformedResolveResultException("Mismatched resolve result with request.");
 
 		JsonNode result = node.get(RESULT);
 		if (result == null || result.isNull()) {
@@ -234,7 +235,7 @@ public class DIDBackend {
 	}
 
 	private String createTransaction(String payload, String memo, int confirms)
-			throws DIDBackendException {
+			throws DIDTransactionException {
 		TransactionResult tr = new TransactionResult();
 
 		boolean success = adapter.createIdTransaction(payload, memo, confirms,
@@ -243,33 +244,34 @@ public class DIDBackend {
 				});
 
 		if (!success)
-			throw new DIDBackendException("Create transaction failed, unknown error.");
+			throw new DIDTransactionException("Create transaction failed, unknown error.");
 
 		synchronized(tr) {
 			if (tr.isEmpty()) {
 				try {
 					tr.wait();
 				} catch (InterruptedException e) {
-					throw new DIDBackendException(e);
+					throw new DIDTransactionException(e);
 				}
 			}
 		}
 
 		if (tr.getStatus() != 0)
-			throw new CompletionException(new DIDBackendException(
+			throw new DIDTransactionException(
 					"Create transaction failed(" + tr.getStatus() + "): "
-					+ tr.getMessage()));
+					+ tr.getMessage());
 
 		return tr.getTxid();
 	}
 
 	protected String create(DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDBackendException, DIDStoreException {
+			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		return create(doc, 0, signKey, storepass);
 	}
 
 	protected String create(DIDDocument doc, int confirms, DIDURL signKey,
-			String storepass) throws DIDBackendException, DIDStoreException {
+			String storepass)
+			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		IDChainRequest request = IDChainRequest.create(doc, signKey, storepass);
 		String json = request.toJson(true);
 		return createTransaction(json, null, confirms);
@@ -277,13 +279,13 @@ public class DIDBackend {
 
 	protected String update(DIDDocument doc, String previousTxid,
 			DIDURL signKey, String storepass)
-			throws DIDBackendException, DIDStoreException {
+			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		return update(doc, previousTxid, 0, signKey, storepass);
 	}
 
 	protected String update(DIDDocument doc, String previousTxid, int confirms,
 			DIDURL signKey, String storepass)
-			throws DIDBackendException, DIDStoreException {
+			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		IDChainRequest request = IDChainRequest.update(doc, previousTxid,
 				signKey, storepass);
 		String json = request.toJson(true);
@@ -291,13 +293,13 @@ public class DIDBackend {
 	}
 
 	protected String deactivate(DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDBackendException, DIDStoreException {
+			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		return deactivate(doc, 0, signKey, storepass);
 	}
 
 	protected String deactivate(DIDDocument doc, int confirms,
 			DIDURL signKey, String storepass)
-			throws DIDBackendException, DIDStoreException {
+			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		IDChainRequest request = IDChainRequest.deactivate(doc, signKey, storepass);
 		String json = request.toJson(true);
 		return createTransaction(json, null, confirms);
@@ -305,13 +307,13 @@ public class DIDBackend {
 
 	protected String deactivate(DID target, DIDURL targetSignKey,
 			DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDBackendException, DIDStoreException {
+			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		return deactivate(target, targetSignKey, doc, 0, signKey, storepass);
 	}
 
 	protected String deactivate(DID target, DIDURL targetSignKey,
 			DIDDocument doc, int confirms, DIDURL signKey, String storepass)
-			throws DIDBackendException, DIDStoreException {
+			throws DIDTransactionException, DIDStoreException, InvalidKeyException {
 		IDChainRequest request = IDChainRequest.deactivate(target,
 				targetSignKey, doc, signKey, storepass);
 		String json = request.toJson(true);

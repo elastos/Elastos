@@ -36,9 +36,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.elastos.did.exception.DIDStorageException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDocumentException;
+import org.elastos.did.exception.MalformedMetaException;
 import org.elastos.did.meta.CredentialMeta;
 import org.elastos.did.meta.DIDMeta;
 
@@ -97,7 +99,7 @@ class FileSystemStorage implements DIDStorage {
 
 	private File storeRoot;
 
-	FileSystemStorage(String dir) throws DIDStoreException {
+	FileSystemStorage(String dir) throws DIDStorageException {
 		if (dir == null)
 			throw new IllegalArgumentException();
 
@@ -109,7 +111,7 @@ class FileSystemStorage implements DIDStorage {
 			initializeStore();
 	}
 
-	private void initializeStore() throws DIDStoreException {
+	private void initializeStore() throws DIDStorageException {
 		try {
 			storeRoot.mkdirs();
 
@@ -121,23 +123,19 @@ class FileSystemStorage implements DIDStorage {
 			out.write(STORE_VERSION);
 			out.close();
 		} catch (IOException e) {
-			throw new DIDStoreException("Initialize DIDStore \""
+			throw new DIDStorageException("Initialize DIDStore \""
 					+ storeRoot.getAbsolutePath() + "\" error.", e);
 		}
 	}
 
-	private void checkStore() throws DIDStoreException {
+	private void checkStore() throws DIDStorageException {
 		if (storeRoot.isFile())
-			throw new DIDStoreException("Store root \""
+			throw new DIDStorageException("Store root \""
 					+ storeRoot.getAbsolutePath() + "\" is a file.");
 
 		File file = getFile(META_FILE);
-		if (!file.exists() || !file.isFile())
-			throw new DIDStoreException("Directory \""
-					+ storeRoot.getAbsolutePath() + "\" is not a DIDStore.");
-
-		if (file.length() != STORE_META_SIZE)
-			throw new DIDStoreException("Directory \""
+		if (!file.exists() || !file.isFile() || file.length() != STORE_META_SIZE)
+			throw new DIDStorageException("Directory \""
 					+ storeRoot.getAbsolutePath() + "\" is not a DIDStore.");
 
 		InputStream in = null;
@@ -150,16 +148,16 @@ class FileSystemStorage implements DIDStorage {
 			in.read(version);
 			in.close();
 		} catch (IOException e) {
-			throw new DIDStoreException("Check DIDStore \""
+			throw new DIDStorageException("Check DIDStore \""
 					+ storeRoot.getAbsolutePath() + "\" error.", e);
 		}
 
 		if (!Arrays.equals(STORE_MAGIC, magic))
-			throw new DIDStoreException("Directory \""
+			throw new DIDStorageException("Directory \""
 					+ storeRoot.getAbsolutePath() + "\" is not a DIDStore.");
 
 		if (!Arrays.equals(STORE_VERSION, version))
-			throw new DIDStoreException("DIDStore \""
+			throw new DIDStorageException("DIDStore \""
 					+ storeRoot.getAbsolutePath() + "\", unsupported version.");
 
 		postChangePassword();
@@ -275,68 +273,68 @@ class FileSystemStorage implements DIDStorage {
 	}
 
 	@Override
-	public void storePrivateIdentity(String key) throws DIDStoreException {
+	public void storePrivateIdentity(String key) throws DIDStorageException {
 		try {
 			File file = getHDPrivateKeyFile(true);
 			writeText(file, key);
 		} catch (IOException e) {
-			throw new DIDStoreException("Store private identity error.", e);
+			throw new DIDStorageException("Store private identity error.", e);
 		}
 	}
 
 	@Override
-	public String loadPrivateIdentity() throws DIDStoreException {
+	public String loadPrivateIdentity() throws DIDStorageException {
 		try {
 			File file = getHDPrivateKeyFile();
 			return readText(file);
 		} catch (IOException e) {
-			throw new DIDStoreException("Load private identity error.", e);
+			throw new DIDStorageException("Load private identity error.", e);
 		}
 	}
 
 	@Override
-	public void storePrivateIdentityIndex(int index) throws DIDStoreException {
+	public void storePrivateIdentityIndex(int index) throws DIDStorageException {
 		try {
 			File file = getFile(true, PRIVATE_DIR, INDEX_FILE);
 			writeText(file, Integer.toString(index));
 		} catch (IOException e) {
-			throw new DIDStoreException("Store private identity index error.", e);
+			throw new DIDStorageException("Store private identity index error.", e);
 		}
 	}
 
 	@Override
-	public int loadPrivateIdentityIndex() throws DIDStoreException {
+	public int loadPrivateIdentityIndex() throws DIDStorageException {
 		try {
 			File file = getFile(PRIVATE_DIR, INDEX_FILE);
 			return Integer.valueOf(readText(file));
 		} catch (Exception e) {
-			throw new DIDStoreException("Load private identity error.", e);
+			throw new DIDStorageException("Load private identity error.", e);
 		}
 	}
 
 	@Override
-	public void storeMnemonic(String mnemonic) throws DIDStoreException {
+	public void storeMnemonic(String mnemonic) throws DIDStorageException {
 		try {
 			File file = getFile(true, PRIVATE_DIR, MNEMONIC_FILE);
 			writeText(file, mnemonic);
 		} catch (IOException e) {
-			throw new DIDStoreException("Store mnemonic error.", e);
+			throw new DIDStorageException("Store mnemonic error.", e);
 		}
 	}
 
 	@Override
-	public String loadMnemonic() throws DIDStoreException {
+	public String loadMnemonic() throws DIDStorageException {
 		try {
 			File file = getFile(PRIVATE_DIR, MNEMONIC_FILE);
 			return readText(file);
 		} catch (IOException e) {
-			throw new DIDStoreException("Load mnemonic error.", e);
+			throw new DIDStorageException("Load mnemonic error.", e);
 		}
 	}
 
 
 	@Override
-	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStoreException {
+	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStorageException {
 		try {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(), META_FILE);
 			String metadata = (meta != null && !meta.isEmpty()) ?
@@ -347,34 +345,34 @@ class FileSystemStorage implements DIDStorage {
 			else
 				writeText(file, metadata);
 		} catch (IOException e) {
-			throw new DIDStoreException("Write alias error.", e);
+			throw new DIDStorageException("Store DID metadata error.", e);
 		}
 	}
 
 	@Override
-	public DIDMeta loadDidMeta(DID did) throws DIDStoreException {
+	public DIDMeta loadDidMeta(DID did) throws DIDStorageException {
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(), META_FILE);
 			return DIDMeta.fromJson(readText(file));
-		} catch (IOException e) {
-			throw new DIDStoreException("Read alias error.", e);
+		} catch (MalformedMetaException | IOException e) {
+			throw new DIDStorageException("Load DID metadata error.", e);
 		}
 	}
 
 	@Override
-	public void storeDid(DIDDocument doc) throws DIDStoreException {
+	public void storeDid(DIDDocument doc) throws DIDStorageException {
 		try {
 			File file = getFile(true, DID_DIR,
 					doc.getSubject().getMethodSpecificId(), DOCUMENT_FILE);
 
 			doc.toJson(new FileOutputStream(file), DEFAULT_CHARSET, true);
 		} catch (IOException e) {
-			throw new DIDStoreException("Store DIDDocument error.", e);
+			throw new DIDStorageException("Store DIDDocument error.", e);
 		}
 	}
 
 	@Override
-	public DIDDocument loadDid(DID did) throws MalformedDocumentException, DIDStoreException {
+	public DIDDocument loadDid(DID did) throws DIDStorageException {
 		try {
 			File file = getFile(DID_DIR,
 					did.getMethodSpecificId(), DOCUMENT_FILE);
@@ -382,8 +380,8 @@ class FileSystemStorage implements DIDStorage {
 				return null;
 
 			return DIDDocument.fromJson(new FileInputStream(file));
-		} catch (IOException e) {
-			throw new DIDStoreException("Load DIDDocument error.", e);
+		} catch (MalformedDocumentException | IOException e) {
+			throw new DIDStorageException("Load DIDDocument error.", e);
 		}
 	}
 
@@ -395,7 +393,7 @@ class FileSystemStorage implements DIDStorage {
 	}
 
 	@Override
-	public boolean deleteDid(DID did) throws DIDStoreException {
+	public boolean deleteDid(DID did) {
 		File dir = getDir(DID_DIR, did.getMethodSpecificId());
 		if (dir.exists()) {
 			deleteFile(dir);
@@ -449,7 +447,7 @@ class FileSystemStorage implements DIDStorage {
 
 	@Override
 	public void storeCredentialMeta(DID did, DIDURL id, CredentialMeta meta)
-			throws DIDStoreException {
+			throws DIDStorageException {
 		try {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
@@ -461,25 +459,25 @@ class FileSystemStorage implements DIDStorage {
 			else
 				writeText(file, metadata);
 		} catch (IOException e) {
-			throw new DIDStoreException("Write alias error.", e);
+			throw new DIDStorageException("Store credential metadata error.", e);
 		}
 	}
 
 	@Override
 	public CredentialMeta loadCredentialMeta(DID did, DIDURL id)
-			throws DIDStoreException {
+			throws DIDStorageException {
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
 			return CredentialMeta.fromJson(readText(file));
-		} catch (IOException e) {
-			throw new DIDStoreException("Read alias error.", e);
+		} catch (MalformedMetaException | IOException e) {
+			throw new DIDStorageException("Load credential metadata error.", e);
 		}
 	}
 
 	@Override
 	public void storeCredential(VerifiableCredential credential)
-			throws DIDStoreException {
+			throws DIDStorageException {
 		try {
 			File file = getFile(true, DID_DIR,
 					credential.getSubject().getId().getMethodSpecificId(),
@@ -488,13 +486,13 @@ class FileSystemStorage implements DIDStorage {
 
 			credential.toJson(new FileOutputStream(file), true);
 		} catch (IOException e) {
-			throw new DIDStoreException("Store credential error.", e);
+			throw new DIDStorageException("Store credential error.", e);
 		}
 	}
 
 	@Override
 	public VerifiableCredential loadCredential(DID did, DIDURL id)
-			throws MalformedCredentialException, DIDStoreException {
+			throws DIDStorageException {
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), CREDENTIAL_FILE);
@@ -502,13 +500,13 @@ class FileSystemStorage implements DIDStorage {
 				return null;
 
 			return VerifiableCredential.fromJson(new FileInputStream(file));
-		} catch (IOException e) {
-			throw new DIDStoreException("Load VerifiableCredential error.", e);
+		} catch (MalformedCredentialException | IOException e) {
+			throw new DIDStorageException("Load VerifiableCredential error.", e);
 		}
 	}
 
 	@Override
-	public boolean containsCredentials(DID did) throws DIDStoreException {
+	public boolean containsCredentials(DID did) {
 		File dir = getDir(DID_DIR, did.getMethodSpecificId(), CREDENTIALS_DIR);
 		if (!dir.exists())
 			return false;
@@ -527,14 +525,14 @@ class FileSystemStorage implements DIDStorage {
 	}
 
 	@Override
-	public boolean containsCredential(DID did, DIDURL id) throws DIDStoreException {
+	public boolean containsCredential(DID did, DIDURL id) {
 		File file = getFile(DID_DIR, did.getMethodSpecificId(),
 				CREDENTIALS_DIR, id.getFragment(), CREDENTIAL_FILE);
 		return file.exists();
 	}
 
 	@Override
-	public boolean deleteCredential(DID did, DIDURL id) throws DIDStoreException {
+	public boolean deleteCredential(DID did, DIDURL id) {
 		File dir = getDir(DID_DIR, did.getMethodSpecificId(),
 				CREDENTIALS_DIR, id.getFragment());
 		if (dir.exists()) {
@@ -553,7 +551,7 @@ class FileSystemStorage implements DIDStorage {
 	}
 
 	@Override
-	public List<DIDURL> listCredentials(DID did) throws DIDStoreException {
+	public List<DIDURL> listCredentials(DID did) {
 		File dir = getDir(DID_DIR, did.getMethodSpecificId(), CREDENTIALS_DIR);
 		if (!dir.exists())
 			return new ArrayList<DIDURL>(0);
@@ -581,35 +579,36 @@ class FileSystemStorage implements DIDStorage {
 
 	@Override
 	public List<DIDURL> selectCredentials(DID did, DIDURL id, String[] type)
-			throws DIDStoreException {
+			throws DIDStorageException {
 		// TODO:
 		return null;
 	}
 
 	@Override
-	public void storePrivateKey(DID did, DIDURL id, String privateKey) throws DIDStoreException {
+	public void storePrivateKey(DID did, DIDURL id, String privateKey)
+			throws DIDStorageException {
 		try {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(),
 					PRIVATEKEYS_DIR, id.getFragment());
 			writeText(file, privateKey);
 		} catch (IOException e) {
-			throw new DIDStoreException("Store private key error.", e);
+			throw new DIDStorageException("Store private key error.", e);
 		}
 	}
 
 	@Override
-	public String loadPrivateKey(DID did, DIDURL id) throws DIDStoreException {
+	public String loadPrivateKey(DID did, DIDURL id) throws DIDStorageException {
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
 					PRIVATEKEYS_DIR, id.getFragment());
 			return readText(file);
 		} catch (Exception e) {
-			throw new DIDStoreException("Load private key error.", e);
+			throw new DIDStorageException("Load private key error.", e);
 		}
 	}
 
 	@Override
-	public boolean containsPrivateKeys(DID did) throws DIDStoreException {
+	public boolean containsPrivateKeys(DID did) {
 		File dir = getDir(DID_DIR, did.getMethodSpecificId(), PRIVATEKEYS_DIR);
 		if (!dir.exists())
 			return false;
@@ -628,14 +627,14 @@ class FileSystemStorage implements DIDStorage {
 	}
 
 	@Override
-	public boolean containsPrivateKey(DID did, DIDURL id) throws DIDStoreException {
+	public boolean containsPrivateKey(DID did, DIDURL id) {
 		File file = getFile(DID_DIR, did.getMethodSpecificId(),
 				PRIVATEKEYS_DIR, id.getFragment());
 		return file.exists();
 	}
 
 	@Override
-	public boolean deletePrivateKey(DID did, DIDURL id) throws DIDStoreException {
+	public boolean deletePrivateKey(DID did, DIDURL id) {
 		File file = getFile(DID_DIR, did.getMethodSpecificId(),
 				PRIVATEKEYS_DIR, id.getFragment());
 		if (file.exists()) {
@@ -696,7 +695,8 @@ class FileSystemStorage implements DIDStorage {
 			    try {
 			        in = new FileInputStream(src);
 			        out = new FileOutputStream(dest);
-			        out.getChannel().transferFrom(in.getChannel(), 0, in.getChannel().size());
+			        out.getChannel().transferFrom(in.getChannel(), 0,
+			        		in.getChannel().size());
 				} finally {
 					if (in != null)
 						in.close();
@@ -748,7 +748,7 @@ class FileSystemStorage implements DIDStorage {
 
 	@Override
 	public void changePassword(ReEncryptor reEncryptor)
-			throws DIDStoreException {
+			throws DIDStorageException {
 		try {
 			File privateDir = getDir(PRIVATE_DIR);
 			File privateJournal = getDir(PRIVATE_DIR + JOURNAL_SUFFIX);
@@ -761,8 +761,8 @@ class FileSystemStorage implements DIDStorage {
 
 			@SuppressWarnings("unused")
 			File stageFile = getFile(true, "postChangePassword");
-		} catch (Exception e) {
-			throw new DIDStoreException("Change store password failed.");
+		} catch (DIDStoreException | IOException e) {
+			throw new DIDStorageException("Change store password failed.");
 		} finally {
 			postChangePassword();
 		}

@@ -30,7 +30,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.elastos.did.DID;
-import org.elastos.did.exception.DIDResolveException;
+import org.elastos.did.exception.DIDTransactionException;
+import org.elastos.did.exception.MalformedResolveResultException;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -116,11 +117,11 @@ public class ResolveResult {
 	}
 
 	public static ResolveResult fromJson(JsonNode result)
-			throws DIDResolveException {
-		Class<DIDResolveException> exceptionClass = DIDResolveException.class;
+			throws MalformedResolveResultException {
+		Class<MalformedResolveResultException> exceptionClass = MalformedResolveResultException.class;
 
 		if (result == null || result.size() == 0)
-			throw new DIDResolveException("Empty resolve result.");
+			throw new MalformedResolveResultException("Empty resolve result.");
 
 		DID did = JsonHelper.getDid(result, DID, false, null,
 				"Resolved result DID", exceptionClass);
@@ -133,11 +134,15 @@ public class ResolveResult {
 		if (status != STATUS_NOT_FOUND) {
 			JsonNode txs = result.get(TRANSACTION);
 			if (txs == null || !txs.isArray() || txs.size() == 0)
-				throw new DIDResolveException("Invalid resolve result, missing transaction.");
+				throw new MalformedResolveResultException("Invalid resolve result, missing transaction.");
 
 			for (int i = 0; i < txs.size(); i++) {
-				IDTransactionInfo ti = IDTransactionInfo.fromJson(txs.get(i));
-				rr.addTransactionInfo(ti);
+				try {
+					IDTransactionInfo ti = IDTransactionInfo.fromJson(txs.get(i));
+					rr.addTransactionInfo(ti);
+				} catch (DIDTransactionException e) {
+					new MalformedResolveResultException(e);
+				}
 			}
 		}
 
@@ -145,7 +150,7 @@ public class ResolveResult {
 	}
 
 	public static ResolveResult fromJson(String json)
-			throws DIDResolveException {
+			throws MalformedResolveResultException {
 		if (json == null || json.isEmpty())
 			throw new IllegalArgumentException();
 
@@ -154,12 +159,12 @@ public class ResolveResult {
 			JsonNode result = mapper.readTree(json);
 			return fromJson(result);
 		} catch (IOException e) {
-			throw new DIDResolveException("Parse resolve result error.", e);
+			throw new MalformedResolveResultException("Parse resolve result error.", e);
 		}
 	}
 
 	public static ResolveResult fromJson(Reader in)
-			throws DIDResolveException {
+			throws MalformedResolveResultException {
 		if (in == null)
 			throw new IllegalArgumentException();
 
@@ -168,7 +173,7 @@ public class ResolveResult {
 			JsonNode result = mapper.readTree(in);
 			return fromJson(result);
 		} catch (IOException e) {
-			throw new DIDResolveException("Parse resolve result error.", e);
+			throw new MalformedResolveResultException("Parse resolve result error.", e);
 		}
 	}
 

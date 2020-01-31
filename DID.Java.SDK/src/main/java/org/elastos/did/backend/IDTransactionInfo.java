@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.elastos.did.DID;
-import org.elastos.did.exception.DIDResolveException;
+import org.elastos.did.exception.DIDTransactionException;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -82,8 +82,8 @@ public class IDTransactionInfo {
 	}
 
 	public static IDTransactionInfo fromJson(JsonNode node)
-			throws DIDResolveException {
-		Class<DIDResolveException> exceptionClass = DIDResolveException.class;
+			throws DIDTransactionException {
+		Class<DIDTransactionException> exceptionClass = DIDTransactionException.class;
 
 		if (node == null || node.size() == 0)
 			return null;
@@ -96,7 +96,7 @@ public class IDTransactionInfo {
 
 		JsonNode reqNode = node.get(OPERATION);
 		if (reqNode == null)
-			throw new DIDResolveException("Missing ID operation.");
+			throw new DIDTransactionException("Missing ID operation.");
 
 		IDChainRequest request = IDChainRequest.fromJson(reqNode);
 

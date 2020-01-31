@@ -27,8 +27,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
-import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.InvalidKeyException;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDIDException;
 
@@ -43,45 +43,49 @@ public class Issuer {
 	private DIDDocument self;
 	private DIDURL signKey;
 
-	public Issuer(DIDDocument doc, DIDURL signKey) throws DIDException {
+	public Issuer(DIDDocument doc, DIDURL signKey)
+			throws DIDStoreException, InvalidKeyException {
 		if (doc == null)
 			throw new IllegalArgumentException();
 
 		init(doc, signKey);
 	}
 
-	public Issuer(DIDDocument doc) throws DIDException {
+	public Issuer(DIDDocument doc)
+			throws DIDStoreException, InvalidKeyException {
 		this(doc, null);
 	}
 
-	public Issuer(DID did, DIDURL signKey, DIDStore store) throws DIDException {
+	public Issuer(DID did, DIDURL signKey, DIDStore store)
+			throws DIDStoreException, InvalidKeyException {
 		if (did == null || store == null)
 			throw new IllegalArgumentException();
 
 		DIDDocument doc = store.loadDid(did);
 		if (doc == null)
-			throw new DIDException("Can not resolve DID.");
+			throw new DIDStoreException("Can not load DID.");
 
 		init(doc, signKey);
 	}
 
-	public Issuer(DID did, DIDStore store) throws DIDException {
+	public Issuer(DID did, DIDStore store)
+			throws DIDStoreException, InvalidKeyException {
 		this(did, null, store);
 	}
 
 	private void init(DIDDocument doc, DIDURL signKey)
-			throws DIDException {
+			throws DIDStoreException, InvalidKeyException {
 		this.self = doc;
 
 		if (signKey == null) {
 			signKey = self.getDefaultPublicKey();
 		} else {
 			if (!self.isAuthenticationKey(signKey))
-				throw new DIDException("Invalid sign key id.");
+				throw new InvalidKeyException("Not an authentication key.");
 		}
 
 		if (!doc.hasPrivateKey(signKey))
-			throw new DIDException("No private key.");
+			throw new InvalidKeyException("No private key.");
 
 		this.signKey = signKey;
 
@@ -102,8 +106,15 @@ public class Issuer {
 		return new CredentialBuilder(did);
 	}
 
-	public CredentialBuilder issueFor(String did) throws MalformedDIDException {
-		return issueFor(new DID(did));
+	public CredentialBuilder issueFor(String did) {
+		DID _did = null;
+		try {
+			_did = new DID(did);
+		} catch (MalformedDIDException e) {
+			throw new IllegalArgumentException(e);
+		}
+
+		return issueFor(_did);
 	}
 
 	public class CredentialBuilder {
@@ -199,7 +210,7 @@ public class Issuer {
 			return properties(node);
 		}
 
-		public CredentialBuilder properties(String json) throws DIDException {
+		public CredentialBuilder properties(String json) {
 			if (credential == null)
 				throw new IllegalStateException("Credential already sealed.");
 
@@ -211,7 +222,7 @@ public class Issuer {
 			try {
 				node = mapper.readTree(json);
 			} catch (IOException e) {
-				throw new DIDException("Credential properties is invalid.", e);
+				throw new IllegalArgumentException(e);
 			}
 
 			return properties(node);
@@ -231,7 +242,6 @@ public class Issuer {
 
 			return this;
 		}
-
 
 		public VerifiableCredential seal(String storepass)
 				throws MalformedCredentialException, DIDStoreException {

@@ -22,7 +22,7 @@
 
 package org.elastos.did.exception;
 
-public class MalformedCredentialException extends DIDException {
+public class MalformedCredentialException extends DIDSyntaxException {
 	private static final long serialVersionUID = -1775184934700973122L;
 
 	public MalformedCredentialException() {

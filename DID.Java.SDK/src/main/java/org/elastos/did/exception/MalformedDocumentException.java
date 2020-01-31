@@ -22,7 +22,7 @@
 
 package org.elastos.did.exception;
 
-public class MalformedDocumentException extends DIDException {
+public class MalformedDocumentException extends DIDSyntaxException {
 	private static final long serialVersionUID = -3025679208429246910L;
 
 	public MalformedDocumentException() {

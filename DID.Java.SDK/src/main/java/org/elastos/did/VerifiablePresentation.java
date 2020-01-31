@@ -38,7 +38,10 @@ import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDBackendException;
+import org.elastos.did.exception.DIDResolveException;
+import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.InvalidKeyException;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedPresentationException;
 import org.elastos.did.util.JsonHelper;
@@ -213,7 +216,8 @@ public class VerifiablePresentation {
 		return proof.getVerificationMethod().getDid();
 	}
 
-	public boolean isGenuine() throws DIDException {
+	public boolean isGenuine()
+			throws DIDResolveException, DIDBackendException {
 		DID signer = getSigner();
 		DIDDocument signerDoc = signer.resolve();
 		if (signerDoc == null)
@@ -250,7 +254,7 @@ public class VerifiablePresentation {
 		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
 			try {
 				return isGenuine();
-			} catch (DIDException e) {
+			} catch (DIDBackendException e) {
 				throw new CompletionException(e);
 			}
 		});
@@ -258,7 +262,7 @@ public class VerifiablePresentation {
 		return future;
 	}
 
-	public boolean isValid() throws DIDException {
+	public boolean isValid() throws DIDResolveException, DIDBackendException {
 		DID signer = getSigner();
 		DIDDocument signerDoc = signer.resolve();
 
@@ -293,7 +297,7 @@ public class VerifiablePresentation {
 		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
 			try {
 				return isValid();
-			} catch (DIDException e) {
+			} catch (DIDBackendException e) {
 				throw new CompletionException(e);
 			}
 		});
@@ -508,28 +512,29 @@ public class VerifiablePresentation {
 	}
 
 	public static Builder createFor(DID did, DIDURL signKey, DIDStore store)
-			throws DIDException {
+			throws DIDStoreException, InvalidKeyException {
 		if (did == null || store == null)
 			throw new IllegalArgumentException();
 
 		DIDDocument signer = store.loadDid(did);
 		if (signer == null)
-			throw new DIDException("Can not load DID.");
+			throw new DIDStoreException("Can not load DID.");
 
 		if (signKey == null) {
 			signKey = signer.getDefaultPublicKey();
 		} else {
 			if (!signer.isAuthenticationKey(signKey))
-				throw new DIDException("Invalid sign key id.");
+				throw new InvalidKeyException("Not an authentication key.");
 		}
 
 		if (!signer.hasPrivateKey(signKey))
-			throw new DIDException("No private key.");
+			throw new InvalidKeyException("No private key.");
 
 		return new Builder(signer, signKey);
 	}
 
-	public static Builder createFor(DID did, DIDStore store) throws DIDException {
+	public static Builder createFor(DID did, DIDStore store)
+			throws DIDStoreException, InvalidKeyException {
 		return createFor(did, null, store);
 	}
 
@@ -540,15 +545,13 @@ public class VerifiablePresentation {
 		private String nonce;
 		private VerifiablePresentation presentation;
 
-		protected Builder(DIDDocument signer, DIDURL signKey)
-				throws DIDException {
+		protected Builder(DIDDocument signer, DIDURL signKey) {
 			this.signer = signer;
 			this.signKey = signKey;
 			this.presentation = new VerifiablePresentation();
 		}
 
-		public Builder credentials(VerifiableCredential ... credentials)
-				throws DIDException {
+		public Builder credentials(VerifiableCredential ... credentials) {
 			if (presentation == null)
 				throw new IllegalStateException("Presentation already sealed.");
 
@@ -591,7 +594,7 @@ public class VerifiablePresentation {
 		}
 
 		public VerifiablePresentation seal(String storepass)
-				throws DIDException {
+				throws DIDStoreException {
 			if (presentation == null)
 				throw new IllegalStateException("Presentation already sealed.");
 

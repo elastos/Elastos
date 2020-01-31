@@ -22,7 +22,7 @@
 
 package org.elastos.did.exception;
 
-public class DIDResolveException extends DIDException {
+public class DIDResolveException extends DIDBackendException {
 	private static final long serialVersionUID = 8679582737929676981L;
 
 	public DIDResolveException() {

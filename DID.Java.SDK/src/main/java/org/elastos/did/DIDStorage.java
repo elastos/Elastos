@@ -24,9 +24,8 @@ package org.elastos.did;
 
 import java.util.List;
 
+import org.elastos.did.exception.DIDStorageException;
 import org.elastos.did.exception.DIDStoreException;
-import org.elastos.did.exception.MalformedCredentialException;
-import org.elastos.did.exception.MalformedDocumentException;
 import org.elastos.did.meta.CredentialMeta;
 import org.elastos.did.meta.DIDMeta;
 
@@ -36,77 +35,76 @@ public interface DIDStorage {
 	};
 
 	// Root private identity
-	public boolean containsPrivateIdentity() throws DIDStoreException;
+	public boolean containsPrivateIdentity() throws DIDStorageException;
 
-	public void storePrivateIdentity(String key) throws DIDStoreException;
+	public void storePrivateIdentity(String key) throws DIDStorageException;
 
-	public String loadPrivateIdentity() throws DIDStoreException;
+	public String loadPrivateIdentity() throws DIDStorageException;
 
-	public void storePrivateIdentityIndex(int index) throws DIDStoreException;
+	public void storePrivateIdentityIndex(int index) throws DIDStorageException;
 
-	public int loadPrivateIdentityIndex() throws DIDStoreException;
+	public int loadPrivateIdentityIndex() throws DIDStorageException;
 
-	public void storeMnemonic(String mnemonic) throws DIDStoreException;
+	public void storeMnemonic(String mnemonic) throws DIDStorageException;
 
-	public String loadMnemonic() throws DIDStoreException;
+	public String loadMnemonic() throws DIDStorageException;
 
 	// DIDs
-	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStoreException;
+	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStorageException;
 
-	public DIDMeta loadDidMeta(DID did) throws DIDStoreException;
+	public DIDMeta loadDidMeta(DID did) throws DIDStorageException;
 
-	public void storeDid(DIDDocument doc) throws DIDStoreException;
+	public void storeDid(DIDDocument doc) throws DIDStorageException;
 
-	public DIDDocument loadDid(DID did)
-			throws MalformedDocumentException, DIDStoreException;
+	public DIDDocument loadDid(DID did) throws DIDStorageException;
 
-	public boolean containsDid(DID did) throws DIDStoreException;
+	public boolean containsDid(DID did) throws DIDStorageException;
 
-	public boolean deleteDid(DID did) throws DIDStoreException;
+	public boolean deleteDid(DID did) throws DIDStorageException;
 
-	public List<DID> listDids(int filter) throws DIDStoreException;
+	public List<DID> listDids(int filter) throws DIDStorageException;
 
 	// Credentials
 	public void storeCredentialMeta(DID did, DIDURL id, CredentialMeta meta)
-			throws DIDStoreException;
+			throws DIDStorageException;
 
 	public CredentialMeta loadCredentialMeta(DID did, DIDURL id)
-			throws DIDStoreException;
+			throws DIDStorageException;
 
 	public void storeCredential(VerifiableCredential credential)
-			throws DIDStoreException;
+			throws DIDStorageException;
 
 	public VerifiableCredential loadCredential(DID did, DIDURL id)
-			throws MalformedCredentialException, DIDStoreException;
+			throws DIDStorageException;
 
-	public boolean containsCredentials(DID did) throws DIDStoreException;
+	public boolean containsCredentials(DID did) throws DIDStorageException;
 
 	public boolean containsCredential(DID did, DIDURL id)
-			throws DIDStoreException;
+			throws DIDStorageException;
 
 	public boolean deleteCredential(DID did, DIDURL id)
-			throws DIDStoreException;
+			throws DIDStorageException;
 
-	public List<DIDURL> listCredentials(DID did) throws DIDStoreException;
+	public List<DIDURL> listCredentials(DID did) throws DIDStorageException;
 
 	public List<DIDURL> selectCredentials(DID did, DIDURL id, String[] type)
-			throws DIDStoreException;
+			throws DIDStorageException;
 
 	// Private keys
 	public void storePrivateKey(DID did, DIDURL id, String privateKey)
-			throws DIDStoreException;
+			throws DIDStorageException;
 
 	public String loadPrivateKey(DID did, DIDURL id)
-			throws DIDStoreException;
+			throws DIDStorageException;
 
-	public boolean containsPrivateKeys(DID did) throws DIDStoreException;
+	public boolean containsPrivateKeys(DID did) throws DIDStorageException;
 
 	public boolean containsPrivateKey(DID did, DIDURL id)
-			throws DIDStoreException;
+			throws DIDStorageException;
 
 	public boolean deletePrivateKey(DID did, DIDURL id)
-			throws DIDStoreException;
+			throws DIDStorageException;
 
 	public void changePassword(ReEncryptor reEncryptor)
-			throws DIDStoreException;
+			throws DIDStorageException;
 }

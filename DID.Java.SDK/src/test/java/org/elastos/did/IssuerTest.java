@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.InvalidKeyException;
 import org.elastos.did.util.HDKey;
 import org.junit.Rule;
 import org.junit.Test;
@@ -96,8 +97,8 @@ public class IssuerTest {
 
 	@Test
 	public void newIssuerTestWithInvalidKey2() throws DIDException, IOException {
-		expectedEx.expect(DIDException.class);
-		expectedEx.expectMessage("Invalid sign key id.");
+		expectedEx.expect(InvalidKeyException.class);
+		expectedEx.expectMessage("Not an authentication key.");
 
 		TestData testData = new TestData();
 		testData.setup(true);

@@ -37,10 +37,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.elastos.did.adapter.DummyAdapter;
-import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDDeactivatedException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.DIDTransactionException;
 import org.elastos.did.exception.WrongPasswordException;
 import org.elastos.did.meta.DIDMeta;
 import org.elastos.did.util.HDKey;
@@ -261,7 +261,7 @@ public class DIDStoreTest {
 
 	@Test
 	public void testUpdateNonExistedDid() throws DIDException {
-		expectedEx.expect(DIDBackendException.class);
+		expectedEx.expect(DIDTransactionException.class);
 		//expectedEx.expectMessage("Update ID transaction error.");
 
 		TestData testData = new TestData();

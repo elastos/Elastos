@@ -31,6 +31,7 @@ import java.net.URL;
 
 import org.elastos.did.DIDAdapter;
 import org.elastos.did.exception.DIDResolveException;
+import org.elastos.did.exception.NetworkException;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -84,7 +85,7 @@ public abstract class AbstractAdapter implements DIDAdapter {
 
 			return connection.getInputStream();
 		} catch (IOException e) {
-			throw new DIDResolveException("Network error.", e);
+			throw new NetworkException("Network error.", e);
 		}
 	}
 }

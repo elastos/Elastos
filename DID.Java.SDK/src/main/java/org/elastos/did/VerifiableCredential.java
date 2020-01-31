@@ -37,7 +37,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDBackendException;
+import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.meta.CredentialMeta;
@@ -341,7 +342,8 @@ public class VerifiableCredential extends DIDObject {
 	private static final int RULE_GENUINE = 2;
 	private static final int RULE_VALID = 3;
 
-	private boolean traceCheck(int rule) throws DIDException {
+	private boolean traceCheck(int rule)
+			throws DIDResolveException, DIDBackendException {
 		DIDDocument controllerDoc = subject.id.resolve();
 		if (controllerDoc == null)
 			return false;
@@ -386,7 +388,7 @@ public class VerifiableCredential extends DIDObject {
 		return rule != RULE_EXPIRE;
 	}
 
-	private boolean checkExpired() throws DIDException {
+	private boolean checkExpired() {
 		if (expirationDate != null) {
 			Calendar now = Calendar.getInstance(Constants.UTC);
 
@@ -399,7 +401,7 @@ public class VerifiableCredential extends DIDObject {
 		return false;
 	}
 
-	public boolean isExpired() throws DIDException {
+	public boolean isExpired() throws DIDResolveException, DIDBackendException {
 		if (traceCheck(RULE_EXPIRE))
 			return true;
 
@@ -410,7 +412,7 @@ public class VerifiableCredential extends DIDObject {
 		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
 			try {
 				return isExpired();
-			} catch (DIDException e) {
+			} catch (DIDBackendException e) {
 				throw new CompletionException(e);
 			}
 		});
@@ -418,7 +420,7 @@ public class VerifiableCredential extends DIDObject {
 		return future;
 	}
 
-	private boolean checkGenuine() throws DIDException {
+	private boolean checkGenuine() throws DIDResolveException, DIDBackendException {
 		DIDDocument issuerDoc = issuer.resolve();
 
 		// Credential should signed by authentication key.
@@ -435,7 +437,7 @@ public class VerifiableCredential extends DIDObject {
 				proof.getSignature(), json.getBytes());
 	}
 
-	public boolean isGenuine() throws DIDException {
+	public boolean isGenuine() throws DIDResolveException, DIDBackendException {
 		if (!traceCheck(RULE_GENUINE))
 			return false;
 
@@ -446,7 +448,7 @@ public class VerifiableCredential extends DIDObject {
 		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
 			try {
 				return isGenuine();
-			} catch (DIDException e) {
+			} catch (DIDBackendException e) {
 				throw new CompletionException(e);
 			}
 		});
@@ -454,7 +456,7 @@ public class VerifiableCredential extends DIDObject {
 		return future;
 	}
 
-	public boolean isValid() throws DIDException {
+	public boolean isValid() throws DIDResolveException, DIDBackendException {
 		if (!traceCheck(RULE_VALID))
 			return false;
 
@@ -465,7 +467,7 @@ public class VerifiableCredential extends DIDObject {
 		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
 			try {
 				return isValid();
-			} catch (DIDException e) {
+			} catch (DIDBackendException e) {
 				throw new CompletionException(e);
 			}
 		});
@@ -522,22 +524,6 @@ public class VerifiableCredential extends DIDObject {
 			throw new MalformedCredentialException("Parse JSON document error.", e);
 		}
 	}
-
-	/*
-	private void parse(Reader reader, DID ref) throws MalformedCredentialException {
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			JsonNode node = mapper.readTree(reader);
-			parse(node, ref);
-		} catch (IOException e) {
-			throw new MalformedCredentialException("Parse JSON document error.", e);
-		}
-	}
-
-	private void parse(JsonNode node) throws MalformedCredentialException {
-		parse(node, null);
-	}
-	*/
 
 	private void parse(JsonNode node, DID ref) throws MalformedCredentialException {
 		Class<MalformedCredentialException> clazz = MalformedCredentialException.class;
@@ -719,7 +705,8 @@ public class VerifiableCredential extends DIDObject {
 		toJson(out, normalized, false);
 	}
 
-	protected void toJson(Writer out, boolean normalized, boolean forSign) throws IOException {
+	protected void toJson(Writer out, boolean normalized, boolean forSign)
+			throws IOException {
 		if (out == null)
 			throw new IllegalArgumentException();
 
