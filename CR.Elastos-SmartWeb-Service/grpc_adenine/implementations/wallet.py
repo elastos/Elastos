@@ -222,7 +222,10 @@ def create_wallet_mainchain(session, network):
     result['mnemonic'] = mnemonic
 
     # Retrieve wallet from mnemonics
-    retrieve_wallet_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_RETRIEVE_WALLET_FROM_MNEMONIC
+    if network == "testnet":
+        retrieve_wallet_url = config('TEST_NET_WALLET_SERVICE_URL') + settings.WALLET_API_RETRIEVE_WALLET_FROM_MNEMONIC
+    else:
+        retrieve_wallet_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_RETRIEVE_WALLET_FROM_MNEMONIC
     req_data = {
         "mnemonic": mnemonic,
         "index": 1
