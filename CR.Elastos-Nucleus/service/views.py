@@ -206,7 +206,12 @@ def verify_and_show(request):
                     response = hive.verify_and_show(api_key, network, request_input)
                     if response.status:
                         request.session['verify_and_show_submit'] = True
-                        content = response.file_content.decode()
+                        try:
+                            content = response.file_content.decode()
+                        except UnicodeDecodeError:
+                            response = HttpResponse(response.file_content, content_type='application/octet-stream')
+                            response['Content-Disposition'] = 'attachment; filename=file_from_hive'
+                            return response
                         return render(request, 'service/verify_and_show.html',
                                       {'output': True, 'content': content, 'sample_code': sample_code,
                                        'recent_services': recent_services})
