@@ -13,6 +13,7 @@ from django.conf import settings
 from datetime import timedelta, datetime
 
 from django.contrib.auth import login
+from django.core.mail import EmailMessage
 from django.utils import timezone
 from fastecdsa.encoding.sec1 import SEC1Encoder
 from fastecdsa import ecdsa, curve
@@ -38,116 +39,6 @@ from .models import DIDUser
 from .forms import DIDUserCreationForm, DIDUserChangeForm
 from service.forms import SuggestServiceForm
 from .tokens import account_activation_token
-
-
-def check_ela_auth(request):
-    if 'elaState' not in request.session.keys():
-        return JsonResponse({'authenticated': False}, status=403)
-    state = request.session['elaState']
-    try:
-        recently_created_time = timezone.now() - timedelta(minutes=1)
-        did_request_query_result = DIDRequest.objects.get(state=state, created_at__gte=recently_created_time)
-        data = json.loads(did_request_query_result.data)
-        if not data["auth"]:
-            return JsonResponse({'authenticated': False}, status=403)
-        request.session['name'] = data['Nickname']
-        request.session['email'] = data['Email']
-        request.session['did'] = data['DID']
-        if DIDUser.objects.filter(did=data["DID"]).exists() is False:
-            redirect_url = "/login/register"
-            request.session['redirect_success'] = True
-        else:
-            user = DIDUser.objects.get(did=data["DID"])
-            request.session['name'] = user.name
-            request.session['email'] = user.email
-            request.session['did'] = user.did
-            if user.is_active is False:
-                redirect_url = "/"
-                send_email(request, user.email, user)
-                messages.success(request,
-                                 "The email '%s' needs to be verified. Please check your email for confirmation link" % user.email)
-            else:
-                redirect_url = "/login/feed"
-                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                request.session['logged_in'] = True
-                populate_session_vars_from_database(request, request.session['did'])
-                messages.success(request, "Logged in successfully!")
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
-    return JsonResponse({'redirect': redirect_url}, status=200)
-
-
-@csrf_exempt
-def did_callback(request):
-    if request.method == 'POST':
-        response = json.loads(request.body)
-        if 'Data' not in response.keys():
-            return HttpResponse(status=400)
-        data = json.loads(response['Data'])
-        sig = response['Sign']
-        client_public_key = data['PublicKey']
-
-        r, s = int(sig[:64], 16), int(sig[64:], 16)
-        public_key = SEC1Encoder.decode_public_key(unhexlify(client_public_key), curve.P256)
-        valid = ecdsa.verify((r, s), response['Data'], public_key)
-        if not valid:
-            return JsonResponse({'message': 'Unauthorized'}, status=401)
-        try:
-            recently_created_time = timezone.now() - timedelta(minutes=1)
-            did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
-                                                              created_at__gte=recently_created_time)
-            if not did_request_query_result:
-                return JsonResponse({'message': 'Unauthorized'}, status=401)
-            data["auth"] = True
-            DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
-        except Exception as e:
-            logging.debug(f" Method: did_callback Error: {e}")
-            return JsonResponse({'error': str(e)}, status=404)
-
-    return JsonResponse({'result': True}, status=200)
-
-
-@csrf_exempt
-def did_callback_elastos(request):
-    if request.method == 'POST':
-        response = request.body.decode()
-        if 'jwt=' not in response:
-            return JsonResponse({'error': 'Could not parse response'}, status=400)
-
-        jwt_result = response.replace('jwt=', '')
-        try:
-            #data = jwt.decode(jwt_result, 'secret', algorithms=['HS256'])
-            data = jwt.decode(jwt_result, verify=False)
-        except Exception as e:
-            logging.debug(f"Method: did_callback_elastos Error: {e}")
-            return JsonResponse({'error': str(e)}, status=404)
-
-        did = data['presentation']['proof']['verificationMethod'].split("#", 1)[0]
-
-        data['DID'] = did
-        credentials = data['presentation']['verifiableCredential']
-        for cred in credentials:
-            if did + "#name" == cred['credentialId']:
-                data['Nickname'] = cred['credentialSubject']['name']
-            elif did + "#email" == cred['credentialId']:
-                data['Email'] = cred['credentialSubject']['email']
-            data["exp_time"] = cred['expirationDate']
-
-        data['RandomNumber'] = data["req"]
-
-        try:
-            recently_created_time = timezone.now() - timedelta(minutes=1)
-            did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
-                                                              created_at__gte=recently_created_time)
-            if not did_request_query_result:
-                return JsonResponse({'message': 'Unauthorized'}, status=401)
-            data["auth"] = True
-            DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
-        except Exception as e:
-            logging.debug(f"Method: did_callback_elastos Error: {e}")
-            return JsonResponse({'error': str(e)}, status=404)
-
-    return JsonResponse({'result': True}, status=200)
 
 
 def register(request):
@@ -222,69 +113,6 @@ def activate(request, uidb64, token):
         return HttpResponse('Activation link is invalid!')
 
 
-def sign_in(request):
-    random = secrets.randbelow(999999999999)
-    request.session['elaState'] = random
-
-    elephant_url = get_elaphant_sign_in_url(request, random)
-    elastos_url = get_elastos_sign_in_url(request, random)
-
-    request.session['elephant_url'] = elephant_url
-    request.session['elastos_url'] = elastos_url
-
-    # Purge old requests for housekeeping. If the time denoted by 'created_by'
-    # is more than 2 minutes old, delete the row
-    stale_time = timezone.now() - timedelta(minutes=2)
-    DIDRequest.objects.filter(created_at__lte=stale_time).delete()
-
-    # Save token to the database didauth_requests
-    token = {'state': random, 'data': {'auth': False}}
-    DIDRequest.objects.create(state=token['state'], data=json.dumps(token['data']))
-
-    return render(request, 'login/sign_in.html')
-
-
-def get_elastos_sign_in_url(request, random):
-    jwt_claims = {
-        'appid': random,
-        'iss': config('DIDLOGIN_ELASTOS_REQUESTER'),
-        'iat': int(round(time.time())),
-        'exp': int(round(time.time() + 300)),
-        'callbackurl': config('DIDLOGIN_APP_URL') + '/login/did_callback_elastos',
-        'claims': {
-            'name': True,
-            'email': True
-        }
-    }
-    jwt_token = jwt.encode(jwt_claims, SECRET_KEY, algorithm='HS256')
-
-    url = 'elastos://credaccess/' + jwt_token.decode()
-
-    return url
-
-
-def get_elaphant_sign_in_url(request, random):
-    did = config('DIDLOGIN_ELAPHANT_DID')
-    app_id = config('DIDLOGIN_ELAPHANT_APP_ID')
-    public_key = config('DIDLOGIN_ELAPHANT_PUBLIC_KEY')
-    app_name = config('DIDLOGIN_ELAPHANT_APP_NAME')
-
-    url_params = {
-        'CallbackUrl': config('DIDLOGIN_APP_URL') + '/login/did_callback',
-        'Description': 'Elastos DID Authentication',
-        'AppID': app_id,
-        'PublicKey': public_key,
-        'DID': did,
-        'RandomNumber': random,
-        'AppName': app_name,
-        'RequestInfo': 'Nickname,Email'
-    }
-
-    url = 'elaphant://identity?' + urllib.parse.urlencode(url_params)
-
-    return url
-
-
 @login_required
 def feed(request):
     suggest_form = SuggestServiceForm()
@@ -297,6 +125,7 @@ def feed(request):
                                                'most_visited_pages': most_visited_pages, 'suggest_form': suggest_form})
 
 
+@login_required
 def sign_out(request):
     request.session.clear()
     gc.collect()

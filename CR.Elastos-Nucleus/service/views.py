@@ -13,6 +13,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 
+from console_main.settings import MEDIA_ROOT
 from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
     get_recent_services
 from django.contrib import messages
@@ -121,9 +122,10 @@ def upload_and_sign(request):
                 form.save()
                 obj, created = UploadFile.objects.update_or_create(defaults={'did': did})
                 if file_content:
-                    obj.uploaded_file.save(get_random_string(length=32), ContentFile(file_content))
+                    user_uploaded_file = ContentFile(file_content)
                 else:
-                    obj.uploaded_file.save(get_random_string(length=32), File(request.FILES['uploaded_file']))
+                    user_uploaded_file = File(request.FILES['uploaded_file'])
+                obj.uploaded_file.save(get_random_string(length=32), user_uploaded_file)
                 try:
                     temp_file = UploadFile.objects.get(did=did)
                     file_path = temp_file.uploaded_file.path
@@ -157,6 +159,7 @@ def upload_and_sign(request):
                     return redirect(reverse('service:upload_and_sign'))
                 finally:
                     temp_file.delete()
+                    os.remove(os.path.join(MEDIA_ROOT + '/user_files/', user_uploaded_file.name))
                     hive.close()
         else:
             return redirect(reverse('service:upload_and_sign'))
@@ -624,7 +627,6 @@ def run_eth_contract(request):
         sample_code['go'] = myfile.read()
     return render(request, "service/run_eth_contract.html",
                   {'sample_code': sample_code, 'recent_services': recent_services})
-
 
 
 

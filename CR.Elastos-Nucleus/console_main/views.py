@@ -2,10 +2,13 @@ import json
 import logging
 import os
 import secrets
+import time
+import urllib
 from binascii import unhexlify
 from datetime import timedelta
 from urllib.parse import urlencode
 
+import jwt
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.sites.shortcuts import get_current_site
@@ -29,7 +32,7 @@ from login.tokens import account_activation_token
 from .models import TrackUserPageVisits
 from login.models import DIDUser, DIDRequest
 from service.models import UserServiceSessionVars
-from .settings import MEDIA_ROOT
+from .settings import MEDIA_ROOT, SECRET_KEY
 
 
 def login_required(function):
@@ -77,6 +80,49 @@ def did_callback(request):
         except Exception as e:
             logging.debug(f" Method: did_callback Error: {e}")
             JsonResponse({'error': str(e)}, status=404)
+
+    return JsonResponse({'result': True}, status=200)
+
+
+@csrf_exempt
+def did_callback_elastos(request):
+    if request.method == 'POST':
+        response = request.body.decode()
+        if 'jwt=' not in response:
+            return JsonResponse({'error': 'Could not parse response'}, status=400)
+
+        jwt_result = response.replace('jwt=', '')
+        try:
+            #data = jwt.decode(jwt_result, 'secret', algorithms=['HS256'])
+            data = jwt.decode(jwt_result, verify=False)
+        except Exception as e:
+            logging.debug(f"Method: did_callback_elastos Error: {e}")
+            return JsonResponse({'error': str(e)}, status=404)
+
+        did = data['presentation']['proof']['verificationMethod'].split("#", 1)[0]
+
+        data['DID'] = did
+        credentials = data['presentation']['verifiableCredential']
+        for cred in credentials:
+            if did + "#name" == cred['credentialId']:
+                data['Nickname'] = cred['credentialSubject']['name']
+            elif did + "#email" == cred['credentialId']:
+                data['Email'] = cred['credentialSubject']['email']
+            data["exp_time"] = cred['expirationDate']
+
+        data['RandomNumber'] = data["req"]
+
+        try:
+            recently_created_time = timezone.now() - timedelta(minutes=1)
+            did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
+                                                              created_at__gte=recently_created_time)
+            if not did_request_query_result:
+                return JsonResponse({'message': 'Unauthorized'}, status=401)
+            data["auth"] = True
+            DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
+        except Exception as e:
+            logging.debug(f"Method: did_callback_elastos Error: {e}")
+            return JsonResponse({'error': str(e)}, status=404)
 
     return JsonResponse({'result': True}, status=200)
 
@@ -165,38 +211,65 @@ def landing(request):
         populate_session_vars_from_database(request, user.did)
         recent_services = get_recent_services(user.did)
     else:
-        public_key = config('ELA_PUBLIC_KEY')
-        did = config('ELA_DID')
-        app_id = config('ELA_APP_ID')
-        app_name = config('ELA_APP_NAME')
-
         random = secrets.randbelow(999999999999)
         request.session['elaState'] = random
 
-        url_params = {
-            'CallbackUrl': config('APP_URL') + '/did_callback',
-            'Description': 'Elastos DID Authentication',
-            'AppID': app_id,
-            'PublicKey': public_key,
-            'DID': did,
-            'RandomNumber': random,
-            'AppName': app_name,
-            'RequestInfo': 'Nickname,Email'
-        }
+        elephant_url = get_elaphant_sign_in_url(request, random)
+        elastos_url = get_elastos_sign_in_url(request, random)
 
-        elephant_url = 'elaphant://identity?' + urlencode(url_params)
+        request.session['elephant_url'] = elephant_url
+        request.session['elastos_url'] = elastos_url
 
-        # Save token to the database didauth_requests
-        token = {'state': random, 'data': {'auth': False}}
-
-        DIDRequest.objects.create(state=token['state'], data=json.dumps(token['data']))
         # Purge old requests for housekeeping. If the time denoted by 'created_by'
         # is more than 2 minutes old, delete the row
         stale_time = timezone.now() - timedelta(minutes=2)
         DIDRequest.objects.filter(created_at__lte=stale_time).delete()
 
-        request.session['elephant_url'] = elephant_url
+        # Save token to the database didauth_requests
+        token = {'state': random, 'data': {'auth': False}}
+        DIDRequest.objects.create(state=token['state'], data=json.dumps(token['data']))
     return render(request, 'landing.html', {'recent_services': recent_services})
+
+
+def get_elastos_sign_in_url(request, random):
+    jwt_claims = {
+        'appid': random,
+        'iss': config('DIDLOGIN_ELASTOS_REQUESTER'),
+        'iat': int(round(time.time())),
+        'exp': int(round(time.time() + 300)),
+        'callbackurl': config('DIDLOGIN_APP_URL') + '/login/did_callback_elastos',
+        'claims': {
+            'name': True,
+            'email': True
+        }
+    }
+    jwt_token = jwt.encode(jwt_claims, SECRET_KEY, algorithm='HS256')
+
+    url = 'elastos://credaccess/' + jwt_token.decode()
+
+    return url
+
+
+def get_elaphant_sign_in_url(request, random):
+    did = config('DIDLOGIN_ELAPHANT_DID')
+    app_id = config('DIDLOGIN_ELAPHANT_APP_ID')
+    public_key = config('DIDLOGIN_ELAPHANT_PUBLIC_KEY')
+    app_name = config('DIDLOGIN_ELAPHANT_APP_NAME')
+
+    url_params = {
+        'CallbackUrl': config('DIDLOGIN_APP_URL') + '/did_callback',
+        'Description': 'Elastos DID Authentication',
+        'AppID': app_id,
+        'PublicKey': public_key,
+        'DID': did,
+        'RandomNumber': random,
+        'AppName': app_name,
+        'RequestInfo': 'Nickname,Email'
+    }
+
+    url = 'elaphant://identity?' + urllib.parse.urlencode(url_params)
+
+    return url
 
 
 def populate_session_vars_from_database(request, did):
