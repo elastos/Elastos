@@ -1,0 +1,11 @@
+.elastos-trinity {
+  background-color: #181b22;
+  color: #ffffff;
+}
+
+.elastos-trinity-content {
+  border-radius: 4px;
+  background-color: #242a37;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  padding: 10px;
+}

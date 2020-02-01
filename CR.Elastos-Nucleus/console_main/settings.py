@@ -86,7 +86,8 @@ INSTALLED_APPS = [
     'console_main.apps.ConsoleMainConfig',
     'login.apps.LoginConfig',
     'service.apps.ServiceConfig',
-    'browser.apps.BrowserConfig'
+    'browser.apps.BrowserConfig',
+    'elastos_trinity.apps.ElastosTrinityConfig'
 ]
 
 MIDDLEWARE = [

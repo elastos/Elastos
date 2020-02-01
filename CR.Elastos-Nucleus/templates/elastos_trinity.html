@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block scripts %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/elastos_trinity.css' %}" />
+    {% block scripts_elastos_trinity %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div class="row flex-xl-nowrap elastos-trinity">
+      <div class="col-12 col-xl-12 bd-content" role="main">
+          <div class="elastos-trinity-content">
+              <h2 style="font-family: 'Overpass';color: #8ea2cf; margin: 35px 30px 30px 0px; text-align: center;">
+                  {% block elastos_trinity_title %}{% endblock %}
+              </h2>
+              <div style="margin: 0px 30px 30px 30px">
+                  {% block elastos_trinity %}{% endblock %}
+              </div>
+          </div>
+      </div>
+    </div>
+{% endblock content %}
