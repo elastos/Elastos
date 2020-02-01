@@ -13,7 +13,7 @@ function suggest_service() {
         });
         $.ajax({
             method: "POST",
-            url: "/service/suggest_service",
+            url: "/login/suggest_service",
             data:{
                 'category':category,
                 'title':title,

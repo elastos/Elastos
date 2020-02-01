@@ -18,4 +18,5 @@ urlpatterns = [
     path('sign_out', views.sign_out, name="sign_out"),
     path('get_user_data', views.get_user_data, name='get_user_data'),
     path('remove_user_data', views.remove_user_data, name='remove_user_data'),
+    path('suggest_service', views.suggest_service, name="suggest_service")
 ]

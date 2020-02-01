@@ -336,6 +336,35 @@ def sign_out(request):
 
 
 @login_required
+def suggest_service(request):
+    did = request.session['did']
+    if request.is_ajax():
+        category = request.POST.get('category')
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        reasoning = request.POST.get('reasoning')
+        content = render_to_string('service/suggest_service_email.html', {
+            'service_category': category,
+            'service_name': title,
+            'service_description': description,
+            'service_reasoning': reasoning
+        })
+        email = EmailMessage(subject="Suggested Service",
+                             body=content,
+                             from_email='"Nucleus Console Support Team" <support@nucleusconsole.com>',
+                             to=['support@nucleusconsole.com'])
+        email.content_subtype = 'html'
+        try:
+            email.send()
+            messages.success(request, "Service suggestion was submitted")
+        except Exception as e:
+            logging.debug(f"did={did} Method: suggest_service Error: {e}")
+            messages.success(request, "Service suggestion could not be submitted at this time. Please try again")
+        finally:
+            return redirect(reverse('login:feed'))
+
+
+@login_required
 def get_user_data(request):
     exempt_fields = ['password']
     response = HttpResponse(content_type='text/csv')
