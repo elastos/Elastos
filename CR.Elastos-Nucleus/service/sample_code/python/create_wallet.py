@@ -4,11 +4,12 @@ from elastos_adenine.wallet import Wallet
 
 def main():
     api_key = "9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU"
+    network = "gmunet"
 
     try:
         wallet = Wallet()
         print("\n--> Create Wallet")
-        response = wallet.create_wallet(api_key)
+        response = wallet.create_wallet(api_key, network)
         if response.output:
             json_output = json.loads(response.output)
             print("Status Message :", response.status_message)

@@ -1,14 +1,21 @@
 from elastos_adenine.common import Common
 
-SHARED_SECRET_ADENINE = "7XDnFBdHafpPyIC4nrtuJ5EUYVqdEKjW"
-DID = 'iHdasfhasdflkHdasfasdfD'
+shared_secret_adenine = "7XDnFBdHafpPyIC4nrtuJ5EUYVqdEKjW"
+did = 'iHdasfhasdflkHdasfasdfD'
+mnemonic = 'obtain pill nest sample caution stone candy habit silk husband give net'
 
 def generate_api_key():
     try:
         common = Common()
-        # Get API Key
-        print("--> Get API Key")
-        response = common.get_api_key_request(SHARED_SECRET_ADENINE, DID)
+        # Generate API Key
+        print("--> Generate API Key - SHARED_SECRET_ADENINE")
+        response = common.generate_api_request(shared_secret_adenine, did)
+        if response.status:
+            print("Api Key: " + response.api_key)
+        else:
+            print("Error Message: " + response.status_message)
+        print("--> Generate API Key - MNEMONICS")
+        response = common.generate_api_request_mnemonic(mnemonic)
         if response.status:
             print("Api Key: " + response.api_key)
         else:
@@ -21,9 +28,15 @@ def generate_api_key():
 def get_api_key():
     try:
         common = Common()
-        # Generate API Key
-        print("--> Generate API Key")
-        response = common.generate_api_request(SHARED_SECRET_ADENINE, DID)
+        # Get API Key
+        print("--> Get API Key - SHARED_SECRET_ADENINE")
+        response = common.get_api_key_request(shared_secret_adenine, did)
+        if response.status:
+            print("Api Key: " + response.api_key)
+        else:
+            print("Error Message: " + response.status_message)
+        print("--> Get API Key - MNEMONICS")
+        response = common.get_api_request_mnemonic(mnemonic)
         if response.status:
             print("Api Key: " + response.api_key)
         else:
