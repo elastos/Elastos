@@ -47,9 +47,7 @@
             <div class="col-md px-2">
                 {% if request.session.logged_in != True %}
                     <button class="login-button" data-toggle="modal" data-target="#myModal">
-                        
                             Login with Elastos DID
-                        
                     </button>
                 {% endif %}
             </div>
@@ -61,7 +59,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Login with Elastos DID</h5>
                     <button type="button" class="btn btn-outline-info" data-target="#MyModal" data-toggle="modal">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -70,7 +68,7 @@
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item active">
                             <a class="nav-link active" href="#AAA" data-toggle="tab">
-                                ElastOS
+                                elastOS
                             </a>
                         </li>
                         <li>
@@ -83,16 +81,17 @@
                         <div class="tab-pane active" id="AAA">
                             <div class="row align-items-center justify-content-center">
                                 <div class="col-md-12 text-center">
-                                    <h4 class="login-header">Scan the code with ElastOS</h4>
+                                    <h4 class="login-header">Scan the code with elastOS</h4>
                                 </div>
                                 <div class="col-md-12 text-center">
                                     <p class="scan-qr-text">
-                                        You can download the app on both Android and iOS devices. For more info, go to the
-                                        <a href="https://elephantwallet.app/#footer" target="blank">Official ElastOS App Website</a>
+                                        You can download the app on both Android and iOS devices(COMING SOON). For more info, download it from
+                                        App Store or go to
+                                        <a href="https://www.elastos.org/" target="blank">Official ElastOS Website</a>
                                     </p>
                                 </div>
                                 <div class="col-md-12 text-center">
-                                    <img src="{% qr_url_from_text request.session.elephant_url error_correction='Q' size=3 version=10 image_format='png' %}"/>
+                                    <img src="{% qr_url_from_text request.session.elastos_url error_correction='Q' size=3 version=10 image_format='png' %}"/>
                                 </div>
                                 <div class="col-md-12 text-center">
                                     <p class="scan-qr-wait">
@@ -104,7 +103,7 @@
                         <div class="tab-pane" id="BBB">
                             <div class="row align-items-center justify-content-center">
                                 <div class="col-md-12 text-center">
-                                    <h4 class="login-header">Scan the code with Elephant Wallet</h4>
+                                    <h4 class="login-header">Scan the code with Elaphant Wallet</h4>
                                 </div>
                                 <div class="col-md-12 text-center">
                                     <p class="scan-qr-text">

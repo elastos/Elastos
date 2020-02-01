@@ -137,14 +137,20 @@ def check_ela_auth(request):
         data = json.loads(did_request_query_result.data)
         if not data["auth"]:
             return JsonResponse({'authenticated': False}, status=403)
+
+        # Workaround to handle the same DID because elephant wallet doesn't conform to w3c DID yet
+        did_to_use = data["DID"]
+        if not did_to_use.startswith("did:elastos:"):
+            did_to_use = f"did:elastos:{did_to_use}"
+
         request.session['name'] = data['Nickname']
         request.session['email'] = data['Email']
-        request.session['did'] = data['DID']
-        if DIDUser.objects.filter(did=data["DID"]).exists() is False:
+        request.session['did'] = did_to_use
+        if DIDUser.objects.filter(did=did_to_use).exists() is False:
             redirect_url = "/login/register"
             request.session['redirect_success'] = True
         else:
-            user = DIDUser.objects.get(did=data["DID"])
+            user = DIDUser.objects.get(did=did_to_use)
             request.session['name'] = user.name
             request.session['email'] = user.email
             request.session['did'] = user.did
@@ -231,13 +237,14 @@ def landing(request):
     return render(request, 'landing.html', {'recent_services': recent_services})
 
 
+
 def get_elastos_sign_in_url(request, random):
     jwt_claims = {
         'appid': random,
         'iss': config('DIDLOGIN_ELASTOS_REQUESTER'),
         'iat': int(round(time.time())),
         'exp': int(round(time.time() + 300)),
-        'callbackurl': config('DIDLOGIN_APP_URL') + '/login/did_callback_elastos',
+        'callbackurl': config('DIDLOGIN_APP_URL') + '/did_callback_elastos',
         'claims': {
             'name': True,
             'email': True
