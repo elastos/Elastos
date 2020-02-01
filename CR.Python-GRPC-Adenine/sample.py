@@ -24,15 +24,19 @@ def main():
     results = parser.parse_args()
     service = results.service
 
+    host = config('GRPC_SERVER_HOST')
+    port = config('GRPC_SERVER_PORT')
+    production = config('PRODUCTION', default=False, cast=bool)
+
     network = "gmunet"
     mnemonic_to_use = 'obtain pill nest sample caution stone candy habit silk husband give net'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = '6yqSVZOrJWx4hQ3LqgaegetVB66wgNxZ5CeMCWRkiDzN3po6C4YtBHzYddw0afym'
+    api_key_to_use = 'TxEiQVAVwraMQMB82qMARHu5AxY0rfvfpoxkuefbZLI0OVAgiNWUCo6QUpOKqYY3'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
     try:
-        health_check = HealthCheck()
+        health_check = HealthCheck(host, port, production)
         print("--> Checking the health status of grpc server")
         response = health_check.check()
         if response.status != health_check_pb2.HealthCheckResponse.SERVING:
@@ -45,7 +49,7 @@ def main():
 
     if service == "generate_api_key":
         try:
-            common = Common()
+            common = Common(host, port, production)
             # Generate API Key
             print("--> Generate API Key - SHARED_SECRET_ADENINE")
             response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did_to_use)
@@ -65,7 +69,7 @@ def main():
             common.close()
     elif service == "get_api_key":
         try:
-            common = Common()
+            common = Common(host, port, production)
             # Get API Key
             print("--> Get API Key - SHARED_SECRET_ADENINE")
             response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did_to_use)
@@ -85,7 +89,7 @@ def main():
             common.close()
     elif service == "upload_and_sign":
         try:
-            hive = Hive()
+            hive = Hive(host, port, production)
             # Upload and Sign
             print("\n--> Upload and Sign")
             response = hive.upload_and_sign(api_key_to_use, network, private_key_to_use, 'test/sample.txt')
@@ -102,14 +106,14 @@ def main():
             hive.close()
     elif service == "verify_and_show":
         try:
-            hive = Hive()
+            hive = Hive(host, port, production)
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D5A537153675171347566324C50425466417471344177314E314D75756447716472524863414E334A51635178",
+                "msg": "516D56663975624D6B6B61374478556B4539327A65316663466166755169466A5664663345377A32737359736E43",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "AE62B72871721BCB917F190FA93FDB4C948F25D88979EBDA04A5CF20F68F385E9B74834A27299463373D937EB6DB5CE6208DFBD23B7727F83A0B78E7711A1DA2",
-                "hash": "QmZSqSgQq4uf2LPBTfAtq4Aw1N1MuudGqdrRHcAN3JQcQx",
+                "sig": "2AD102BEE15190CEF4578D1322FACAA618F1C4E73D2B2194CFFA573396FD8C77692C50CD38CF77DB990994F9D92C58C7FC082400A6C8D8DAA4EF42AFB0C72CED",
+                "hash": "QmVf9ubMkka7DxUkE92ze1fcFafuQiFjVdf3E7z2ssYsnC",
                 "privateKey": private_key_to_use
             }
             response = hive.verify_and_show(api_key_to_use, network, request_input)
@@ -125,7 +129,7 @@ def main():
             hive.close()
     elif service == "create_wallet":
         try:
-            wallet = Wallet()
+            wallet = Wallet(host, port, production)
             print("\n--> Create Wallet")
             response = wallet.create_wallet(api_key_to_use, network)
             if response.output:
@@ -139,7 +143,7 @@ def main():
             wallet.close()
     elif service == "view_wallet":
         try:
-            wallet = Wallet()
+            wallet = Wallet(host, port, production)
             print("\n--> View Wallet")
             # Mainchain
             response = wallet.view_wallet(api_key_to_use, network, 'mainchain', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
@@ -178,7 +182,7 @@ def main():
             wallet.close()
     elif service == "request_ela":
         try:
-            wallet = Wallet()
+            wallet = Wallet(host, port, production)
             print("\n--> Request ELA")
             # Mainchain
             response = wallet.request_ela(api_key_to_use, 'mainchain', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
@@ -217,7 +221,7 @@ def main():
             wallet.close()
     elif service == "deploy_eth_contract":
         try:
-            sidechain_eth = SidechainEth()
+            sidechain_eth = SidechainEth(host, port, production)
             # Deploy ETH Contract
             # The eth account addresses below is used from that of privatenet. In order to test this,
             # you must first run https://github.com/cyber-republic/elastos-privnet locally
@@ -238,10 +242,10 @@ def main():
             sidechain_eth.close()
     elif service == "watch_eth_contract":
         try:
-            sidechain_eth = SidechainEth()
+            sidechain_eth = SidechainEth(host, port, production)
             print("\n--> Watch ETH Contract")
             response = sidechain_eth.watch_eth_contract(api_key_to_use, network,
-                                                        '0x02D283dbBC6Fa60B45EC1029672029229C95Be4C', 'HelloWorld',
+                                                        '0xc0ba7D9CF73c0410FfC9FB5b768F5257906B13c1', 'HelloWorld',
                                                         'QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd')
             if response.output:
                 json_output = json.loads(response.output)

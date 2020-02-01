@@ -1,7 +1,4 @@
-from __future__ import print_function
-
 import grpc
-from decouple import config
 
 from .stubs import common_pb2, common_pb2_grpc
 from elastos_adenine.settings import REQUEST_TIMEOUT
@@ -9,10 +6,7 @@ from elastos_adenine.settings import REQUEST_TIMEOUT
 
 class Common:
 
-    def __init__(self):
-        host = config('GRPC_SERVER_HOST')
-        port = config('GRPC_SERVER_PORT')
-        production = config('PRODUCTION', default=False, cast=bool)
+    def __init__(self, host, port, production):
         if not production:
             self._channel = grpc.insecure_channel('{}:{}'.format(host, port))
         else:
