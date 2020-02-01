@@ -27,7 +27,7 @@ urlpatterns = [
     url(r'^at/', include('admin_tools.urls')),
     url(r'^$', views.landing, name="landing"),
     path('check_ela_auth', views.check_ela_auth, name="check_ela_auth"),
-    path('did_callback', views.did_callback, name="did_callback"),
+    path('did_callback_elaphant', views.did_callback_elaphant, name="did_callback_elaphant"),
     path('did_callback_elastos', views.did_callback_elastos, name="did_callback_elastos"),
     url(r'^qr_code/', include(qr_code_urls, namespace='qr_code')),
     url(r'^privacy_policy_pdf', views.privacy_policy_pdf, name='privacy_policy_pdf'),

@@ -55,7 +55,7 @@ def privacy_policy_pdf(request):
 
 
 @csrf_exempt
-def did_callback(request):
+def did_callback_elaphant(request):
     if request.method == 'POST':
         response = json.loads(request.body)
         if request.content_type == "application/json" or 'Data' not in response.keys():
@@ -78,7 +78,7 @@ def did_callback(request):
             data["auth"] = True
             DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
         except Exception as e:
-            logging.debug(f" Method: did_callback Error: {e}")
+            logging.debug(f" Method: did_callback_elaphant Error: {e}")
             JsonResponse({'error': str(e)}, status=404)
 
     return JsonResponse({'result': True}, status=200)
@@ -237,7 +237,6 @@ def landing(request):
     return render(request, 'landing.html', {'recent_services': recent_services})
 
 
-
 def get_elastos_sign_in_url(request, random):
     jwt_claims = {
         'appid': random,
@@ -264,7 +263,7 @@ def get_elaphant_sign_in_url(request, random):
     app_name = config('DIDLOGIN_ELAPHANT_APP_NAME')
 
     url_params = {
-        'CallbackUrl': config('DIDLOGIN_APP_URL') + '/did_callback',
+        'CallbackUrl': config('DIDLOGIN_APP_URL') + '/did_callback_elaphant',
         'Description': 'Elastos DID Authentication',
         'AppID': app_id,
         'PublicKey': public_key,
