@@ -326,10 +326,11 @@ QR_CODE_URL_PROTECTION = {
     # access the URL without the security token).
 }
 
-#all application names
+# all application names
 ALL_APPS = [
     'console_main',
     'login',
-    'service'
+    'service',
+    'browser',
+    'elastos_trinity'
 ]
-
