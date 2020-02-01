@@ -22,11 +22,14 @@
             }
         };
     </script>
+    <script src="{% static '/javascript/elaauth.js' %}"></script>
 {% endblock %} 
+
+{% load qr_code %} 
 
 {% block content %}
   <!-- Jumbotron -->
-  <main class="bd-masthead" role="main" style="background-color: #181b22;">
+<main class="bd-masthead" role="main" style="background-color: #181b22;">
     <div class="container">
       <div class="row align-items-center">
         <div class="col-6 mx-auto col-md-6 order-md-2">
@@ -43,10 +46,10 @@
           <div class="row mx-n2" style="margin-top: 45px;">
             <div class="col-md px-2">
                 {% if request.session.logged_in != True %}
-                    <button class="login-button">
-                        <a class="login-text" href="{%  url 'login:sign_in' %}">
+                    <button class="login-button" data-toggle="modal" data-target="#myModal">
+                        
                             Login with Elastos DID
-                        </a>
+                        
                     </button>
                 {% endif %}
             </div>
@@ -54,7 +57,80 @@
         </div>
       </div>
     </div>
-  </main>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="btn btn-outline-info" data-target="#MyModal" data-toggle="modal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item active">
+                            <a class="nav-link active" href="#AAA" data-toggle="tab">
+                                ElastOS
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link" href="#BBB" data-toggle="tab">
+                                Elephant Wallet
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="AAA">
+                            <div class="row align-items-center justify-content-center">
+                                <div class="col-md-12 text-center">
+                                    <h4 class="login-header">Scan the code with ElastOS</h4>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <p class="scan-qr-text">
+                                        You can download the app on both Android and iOS devices. For more info, go to the
+                                        <a href="https://elephantwallet.app/#footer" target="blank">Official ElastOS App Website</a>
+                                    </p>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <img src="{% qr_url_from_text request.session.elephant_url error_correction='Q' size=3 version=10 image_format='png' %}"/>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <p class="scan-qr-wait">
+                                        Waiting for phone authentication...
+                                    </p>
+                                </div>
+                            </div>
+                        </div> 
+                        <div class="tab-pane" id="BBB">
+                            <div class="row align-items-center justify-content-center">
+                                <div class="col-md-12 text-center">
+                                    <h4 class="login-header">Scan the code with Elephant Wallet</h4>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <p class="scan-qr-text">
+                                        You can download the app on both Android and iOS devices. For more info, go to the
+                                        <a href="https://elephantwallet.app/#footer" target="blank">Official Elephant Wallet App Website</a>
+                                    </p>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <img src="{% qr_url_from_text request.session.elephant_url error_correction='Q' size=3 version=10 image_format='png' %}"/>
+                                </div>
+                                <div class="col-md-12 text-center">
+                                    <p class="scan-qr-wait">
+                                        Waiting for phone authentication...
+                                    </p>
+                                </div>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
 
   <!-- Our Mission Row -->
   <main class="bd-masthead" role="main" style="background-color: #242a37;">

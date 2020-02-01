@@ -9,8 +9,10 @@ class DIDUserAdmin(UserAdmin):
     add_form = DIDUserCreationForm
     form = DIDUserChangeForm
     model = DIDUser
-    list_display = ('email', 'name', 'did', 'date_joined', 'is_superuser', 'is_staff', 'is_active',)
-    list_filter = ('email', 'name', 'did', 'date_joined', 'is_superuser', 'is_staff', 'is_active',)
+    list_display = ('email', 'name', 'did', 'date_joined',
+                    'is_superuser', 'is_staff', 'is_active',)
+    list_filter = ('email', 'name', 'did', 'date_joined',
+                   'is_superuser', 'is_staff', 'is_active',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Permissions', {'fields': ('is_superuser', 'is_staff', 'is_active')}),

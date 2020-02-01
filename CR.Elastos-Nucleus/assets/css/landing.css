@@ -99,3 +99,10 @@
   object-fit: contain;
   margin: 40px;
 }
+
+.scan-qr-box {
+  width: 496px;
+  height: 700px;
+  border-radius: 8px;
+  box-shadow: 0 2px 120px 0 rgba(0, 0, 0, 0.5);
+}

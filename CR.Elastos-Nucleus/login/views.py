@@ -1,4 +1,3 @@
-import json
 import gc
 import logging
 import secrets
@@ -21,7 +20,6 @@ from binascii import unhexlify
 from decouple import config
 
 from django.contrib import messages
-from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.template.loader import render_to_string
@@ -29,16 +27,14 @@ from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.shortcuts import render, redirect
-from django.utils.http import urlsafe_base64_encode
-from django.core.mail import EmailMessage
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_text
 
 from console_main.settings import SECRET_KEY
 from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
-    get_recent_services
+    get_recent_services, send_email
 from console_main.models import TrackUserPageVisits
 
-from .models import DIDUser, DIDRequest
+from .models import DIDUser
 from .forms import DIDUserCreationForm, DIDUserChangeForm
 from service.forms import SuggestServiceForm
 from .tokens import account_activation_token
@@ -209,27 +205,6 @@ def edit_profile(request):
     return render(request, 'login/edit_profile.html', {'form': form, 'recent_services': recent_services})
 
 
-def send_email(request, to_email, user):
-    current_site = get_current_site(request)
-    mail_subject = 'Activate your Nucleus Console account'
-    message = render_to_string('login/account_activation_email.html', {
-        'user': user,
-        'domain': current_site.domain,
-        'uid': urlsafe_base64_encode(force_bytes(user.did)),
-        'token': account_activation_token.make_token(user),
-    })
-    email = EmailMessage(
-        mail_subject, message, from_email='"Nucleus Console Support Team" <support@nucleusconsole.com>', to=[to_email]
-    )
-    email.content_subtype = 'html'
-    try:
-        email.send()
-        return HttpResponse("Success")
-    except Exception as e:
-        logging.debug(f"Method: send_email Error: {e}")
-        return HttpResponse("Failure")
-
-
 def activate(request, uidb64, token):
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
@@ -245,7 +220,6 @@ def activate(request, uidb64, token):
         return redirect(reverse('login:feed'))
     else:
         return HttpResponse('Activation link is invalid!')
-
 
 
 def sign_in(request):

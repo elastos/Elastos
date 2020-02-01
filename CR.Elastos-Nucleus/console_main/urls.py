@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include
+from django.urls import path
 from django.conf.urls import url
 from qr_code import urls as qr_code_urls
 from . import views
