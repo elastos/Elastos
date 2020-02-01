@@ -122,8 +122,10 @@ def upload_and_sign(request):
                 form.save()
                 obj, created = UploadFile.objects.update_or_create(defaults={'did': did})
                 if file_content:
+                    remove_uploaded_file = False
                     user_uploaded_file = ContentFile(file_content)
                 else:
+                    remove_uploaded_file = True
                     user_uploaded_file = File(request.FILES['uploaded_file'])
                 obj.uploaded_file.save(get_random_string(length=32), user_uploaded_file)
                 try:
@@ -159,7 +161,8 @@ def upload_and_sign(request):
                     return redirect(reverse('service:upload_and_sign'))
                 finally:
                     temp_file.delete()
-                    os.remove(os.path.join(MEDIA_ROOT + '/user_files/', user_uploaded_file.name))
+                    if remove_uploaded_file:
+                        os.remove(os.path.join(MEDIA_ROOT + '/user_files/', user_uploaded_file.name))
                     hive.close()
         else:
             return redirect(reverse('service:upload_and_sign'))
