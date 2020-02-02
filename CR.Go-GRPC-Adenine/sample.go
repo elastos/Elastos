@@ -148,12 +148,12 @@ func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production boo
                 						"BD9A127246D655F462DA6168409C395827850EA86E549D3479A4AD1D5450A8DDFC4765B12B48D217217E480A677C30D936EAF942FAF61E9BAF31428B3F73782E",
                 						"QmYV94hXZhiZ6h2zb8ktXM6u2i48Sg3fg1KX2yWrXMR2r4")
 	if response.Output != "" {
-		download_path := "test/sample_from_hive.txt"
+		downloadPath := "test/sample_from_hive.txt"
 		log.Printf("Status Message : %s", response.StatusMessage)
-		log.Printf("Download Path : %s", download_path)
+		log.Printf("Download Path : %s", downloadPath)
 		// Open a new file for writing only
     	file, err := os.OpenFile(
-        	download_path,
+			downloadPath,
         	os.O_WRONLY|os.O_TRUNC|os.O_CREATE,
         	0666,
     	)
@@ -193,7 +193,7 @@ func viewWalletDemo(grpcServerHost string, grpcServerPort int, production bool, 
 	defer wallet.Close()
 	var (
 		address = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"
-		address_eth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
+		addressEth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
 	)
 	// Mainchain
 	response := wallet.ViewWallet(apiKeyToUse, network, "mainchain", address)
@@ -226,7 +226,7 @@ func viewWalletDemo(grpcServerHost string, grpcServerPort int, production bool, 
 		log.Printf(string(result))
 	}
 	// Eth Sidechain
-	response = wallet.ViewWallet(apiKeyToUse, network, "eth", address_eth)
+	response = wallet.ViewWallet(apiKeyToUse, network, "eth", addressEth)
 	if response.Output != "" {
 		output := []byte(response.Output)
 		var jsonOutput map[string]interface{}
@@ -243,7 +243,7 @@ func requestELADemo(grpcServerHost string, grpcServerPort int, production bool, 
 	defer wallet.Close()
 	var (
 		address = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"
-		address_eth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
+		addressEth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
 	)
 	// Mainchain
 	response := wallet.RequestELA(apiKeyToUse, "mainchain", address)
@@ -276,7 +276,7 @@ func requestELADemo(grpcServerHost string, grpcServerPort int, production bool, 
 		log.Printf(string(result))
 	}
 	// Eth Sidechain
-	response = wallet.RequestELA(apiKeyToUse, "eth", address_eth)
+	response = wallet.RequestELA(apiKeyToUse, "eth", addressEth)
 	if response.Output != "" {
 		output := []byte(response.Output)
 		var jsonOutput map[string]interface{}
@@ -313,7 +313,7 @@ func watchETHContractDemo(grpcServerHost string, grpcServerPort int, production 
 	sidechainEth := elastosadenine.NewSidechainEth(grpcServerHost, grpcServerPort, production)
 	defer sidechainEth.Close()
 	var (
-		contractAddress = "0xC0fEA177ac85Be7156EAF839D5117156917091AF"
+		contractAddress = "0xb185Ef1509d82dC163fB0EB727E77A07a3DEd256"
 		contractName = "HelloWorld"
 		contractCodeHash = "QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd"
 	)

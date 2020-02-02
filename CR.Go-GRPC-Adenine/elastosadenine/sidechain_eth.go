@@ -1,13 +1,14 @@
 package elastosadenine
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"strings"
 
-	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/susmit/Solidity-Go-Parser/parser"
 	"google.golang.org/grpc"
 
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/sidechain_eth"
@@ -31,15 +32,6 @@ type InputSidechainEthWatch struct {
 	ContractCodeHash string `json:"contract_code_hash"`
 }
 
-type SolidityListener struct {
-	*parser.BaseSolidityListener
-	ContractName string
-}
-
-func (s *SolidityListener) EnterContractDefinition(ctx *parser.ContractDefinitionContext) {
-	s.ContractName = fmt.Sprint(ctx.GetChildren()[1].GetChildren()[0])
-}
-
 func NewSidechainEth(host string, port int, production bool) *SidechainEth {
 	address := fmt.Sprintf("%s:%d", host, port)
 	opts := []grpc.DialOption{
@@ -60,19 +52,28 @@ func (e *SidechainEth) DeployEthContract(apiKey, network, address, privateKey st
 	client := sidechain_eth.NewSidechainEthClient(e.Connection)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
-	// Parse the solidity smart contract
-	contractSource, _ := antlr.NewFileStream(fileName)
-	lexer := parser.NewSolidityLexer(contractSource)
-	stream := antlr.NewCommonTokenStream(lexer,0)
-	p := parser.NewSolidityParser(stream)
-	solidityListener := SolidityListener{}
-	antlr.ParseTreeWalkerDefault.Walk(&solidityListener, p.SourceUnit())
+	// Read smart contract code file
+	fileContentBytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		log.Fatalf("Failed to read file during 'DeployEthContract' method: %v", err)
+	}
+	fileContentString := string(fileContentBytes)
+	// Parse the solidity smart contract to get contract name
+	var contractName string
+	scanner := bufio.NewScanner(strings.NewReader(fileContentString))
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, "contract") {
+			idx := strings.Index(line, "contract ")
+			contractName = strings.Split(line[idx+9:], " ")[0]
+		}
+	}
 	reqData, _ := json.Marshal(InputSidechainEthDeploy{
 		Address: address,
 		PrivateKey: privateKey,
 		Gas: gas,
-		ContractSource: fmt.Sprint(contractSource),
-		ContractName: solidityListener.ContractName,
+		ContractSource: fileContentString,
+		ContractName: contractName,
 	})
 	response, err := client.DeployEthContract(ctx, &sidechain_eth.Request{
 		ApiKey:               apiKey,

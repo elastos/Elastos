@@ -13,13 +13,8 @@ type Wallet struct {
 	Connection *grpc.ClientConn
 }
 
-type InputViewWallet struct {
+type InputWallet struct {
 	Address string `json:"address"`
-	Chain string	`json:"chain"`
-}
-
-type InputRequestWallet struct {
-	Address string	`json:"address"`
 	Chain string	`json:"chain"`
 }
 
@@ -57,7 +52,7 @@ func (w *Wallet) ViewWallet(apiKey, network, chain, address string) *wallet.Resp
 	client := wallet.NewWalletClient(w.Connection)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
-	reqData, _ := json.Marshal(InputViewWallet{
+	reqData, _ := json.Marshal(InputWallet{
 		Address: address,
 		Chain: chain,
 	})
@@ -76,7 +71,7 @@ func (w *Wallet) RequestELA(apiKey, chain, address string) *wallet.Response {
 	client := wallet.NewWalletClient(w.Connection)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
-	reqData, _ := json.Marshal(InputRequestWallet{
+	reqData, _ := json.Marshal(InputWallet{
 		Address: address,
 		Chain: chain,
 	})
