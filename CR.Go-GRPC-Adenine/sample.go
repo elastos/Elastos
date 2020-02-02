@@ -42,7 +42,7 @@ optional arguments:
 	network := "gmunet"
 	mnemonicToUse := "obtain pill nest sample caution stone candy habit silk husband give net"
 	didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
-	apiKeyToUse := "O2Fjcsk43uUFHqe7ygWbq0tTFj0W5gkiXxoyq1wHIQpJT8MkdKFW2LcJqBTr6AIf"
+	apiKeyToUse := "TxEiQVAVwraMQMB82qMARHu5AxY0rfvfpoxkuefbZLI0OVAgiNWUCo6QUpOKqYY3"
 	privateKeyToUse := "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
 
 	healthCheckTest(grpcServerHost, grpcServerPort, production)
@@ -143,10 +143,10 @@ func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production boo
 	log.Println("--> Verify and Show")
 	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
 	defer hive.Close()
-	response := hive.VerifyAndShow(apiKeyToUse, network, privateKeyToUse, "516D5958474C636D366B646A75475150585971576E626956643569765844737339585A5174314253484B665A7555",
+	response := hive.VerifyAndShow(apiKeyToUse, network, privateKeyToUse, "516D5956393468585A68695A3668327A62386B74584D3675326934385367336667314B5832795772584D52327234",
                 						"022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                						"8BB91FADFA2CD50999E06EEA5827DA419D47DC87B837D9110BF6132E6F62F0EBF732345669B6964F51C21B0516CEA241275C326D1E07152BFAFE7C42B5D0A6DC",
-                						"QmYXGLcm6kdjuGQPXYqWnbiVd5ivXDss9XZQt1BSHKfZuU")
+                						"BD9A127246D655F462DA6168409C395827850EA86E549D3479A4AD1D5450A8DDFC4765B12B48D217217E480A677C30D936EAF942FAF61E9BAF31428B3F73782E",
+                						"QmYV94hXZhiZ6h2zb8ktXM6u2i48Sg3fg1KX2yWrXMR2r4")
 	if response.Output != "" {
 		download_path := "test/sample_from_hive.txt"
 		log.Printf("Status Message : %s", response.StatusMessage)
