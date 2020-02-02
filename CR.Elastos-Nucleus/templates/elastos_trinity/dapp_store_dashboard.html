@@ -19,7 +19,7 @@ elastOS - dApp Store Dashboard
             <h2>{{ dapp.appName }}</h2>
             <p>{{ dapp.appDescription }}</p>
             <div class="card" style="width:100%">
-                <img class="card-img-top" src="{% static 'images/common/logo-converted.svg' %}" alt="Card image" style="width:100%">
+                <img class="card-img-top" src="https://dapp-store.elastos.org/apps/{{ dapp.id }}/icon" alt="Card image" style="width:25%;margin: 40px;">
                 <div class="card-body" style="color:black;">
                     <p class="card-text">Category: {{ dapp.category }}</p>
                     <p class="card-text">Version: {{ dapp.versionName }}</p>
@@ -30,7 +30,7 @@ elastOS - dApp Store Dashboard
                     <a class="btn btn-primary">{{ dapp.downloadsCount }} downloads</a>
                 </div>
             </div>
-        </div><br>
+        </div>
     {% endfor %}
     </div>
 {% endblock elastos_trinity %}
