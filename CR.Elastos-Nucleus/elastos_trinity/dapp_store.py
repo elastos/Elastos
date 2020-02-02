@@ -16,7 +16,7 @@ class DAppStore:
         self.timeout = 30
 
     def get_apps_list(self):
-        url = config('ELASTOS_TRINITY_DAPPSTORE_URL')
+        url = config('ELASTOS_TRINITY_DAPPSTORE_URL') + "/apps/list"
         response = self.session.get(url, timeout=self.timeout)
         data = json.loads(response.text)
         return data

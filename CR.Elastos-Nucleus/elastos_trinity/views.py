@@ -1,3 +1,4 @@
+from decouple import config
 from django.shortcuts import render
 
 from console_main.views import login_required, track_page_visit, get_recent_services
@@ -12,7 +13,10 @@ def dapp_store_dashboard(request):
     context['recent_services'] = get_recent_services(did)
     dapp_store = DAppStore()
     dapps_list = dapp_store.get_apps_list()
+    dapp_store_url = config('ELASTOS_TRINITY_DAPPSTORE_URL')
     for dapp in dapps_list:
-        dapp["id"] = dapp["_id"]
+        id = dapp["_id"]
+        dapp["id"] = id
+        dapp["icon_url"] = f"{dapp_store_url}/apps/{id}/icon"
     context['dapps_list'] = dapps_list
     return render(request, "elastos_trinity/dapp_store_dashboard.html", context)
