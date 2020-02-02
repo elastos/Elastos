@@ -92,3 +92,17 @@ Push to pypi repo:
   ```
   python3 -m twine upload dist/*
   ```
+
+## Unit Testing
+
+Requires pytest version 5.3.5. Included as part of requirements.txt
+
+If pytest is not installed. Run the following command:
+```
+$pip install pytest==5.3.5
+```
+
+To run the pytest:
+```
+$py.test test/py_test.py
+```
