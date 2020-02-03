@@ -753,33 +753,33 @@ int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc,
 
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "id",
-        DID_ToString(&doc->did, id, sizeof(id))));
+            DID_ToString(&doc->did, id, sizeof(id))));
     CHECK(JsonGenerator_WriteFieldName(gen, "publicKey"));
     CHECK(PublicKeyArray_ToJson(gen, doc->publickeys.pks, doc->publickeys.size,
-                                 compact, 0));
+            compact, 0));
 
     if (doc->authentication.size > 0) {
         CHECK(JsonGenerator_WriteFieldName(gen, "authentication"));
         CHECK(PublicKeyArray_ToJson(gen, doc->authentication.pks,
-                                doc->authentication.size, compact, 1));
+                doc->authentication.size, compact, 1));
     }
 
     if (doc->authorization.size > 0) {
         CHECK(JsonGenerator_WriteFieldName(gen, "authorization"));
         CHECK(PublicKeyArray_ToJson(gen, doc->authorization.pks,
-                                doc->authorization.size, compact, 1));
+                doc->authorization.size, compact, 1));
     }
 
     if (doc->credentials.size > 0) {
         CHECK(JsonGenerator_WriteFieldName(gen, "verifiableCredential"));
         CHECK(CredentialArray_ToJson(gen, doc->credentials.credentials,
-                                 doc->credentials.size, compact));
+                doc->credentials.size, &doc->did, compact));
     }
 
     if (doc->services.size > 0) {
         CHECK(JsonGenerator_WriteFieldName(gen, "service"));
         CHECK(ServiceArray_ToJson(gen, doc->services.services,
-                                doc->services.size, compact));
+                doc->services.size, compact));
     }
 
     CHECK(JsonGenerator_WriteStringField(gen, "expires",

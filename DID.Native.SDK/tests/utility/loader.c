@@ -59,6 +59,10 @@ typedef struct TestData {
     char *twitterVcCompactJson;
     char *twitterVcNormalizedJson;
 
+    Credential *Vc;
+    char *VcCompactJson;
+    char *VcNormalizedJson;
+
     Presentation *vp;
     char *vpNormalizedJson;
 
@@ -378,6 +382,18 @@ DIDStore *TestData_SetupStore(const char *root)
     return testdata.store;
 }
 
+int TestData_InitIdentity(DIDStore *store)
+{
+    const char *mnemonic;
+    int rc;
+
+    mnemonic = Mnemonic_Generate(0);
+    rc = DIDStore_InitPrivateIdentity(store, mnemonic, passphase, storepass, 0, false);
+    Mnemonic_free((void*)mnemonic);
+
+    return rc;
+}
+
 const char *TestData_LoadIssuerJson(void)
 {
     if (!testdata.issuerJson)
@@ -482,7 +498,7 @@ Credential *TestData_LoadPassportVc(void)
     return testdata.passportVc;
 }
 
-const char *TestData_LoadVcPassportCompJson(void)
+const char *TestData_LoadPassportVcCompJson(void)
 {
     if (!testdata.passportVcCompactJson)
         testdata.passportVcCompactJson = load_file("vc-passport.compact.json");
@@ -490,7 +506,7 @@ const char *TestData_LoadVcPassportCompJson(void)
     return testdata.passportVcCompactJson;
 }
 
-const char *TestData_LoadVcPassportNormJson(void)
+const char *TestData_LoadPassportVcNormJson(void)
 {
     if (!testdata.passportVcNormalizedJson)
         testdata.passportVcNormalizedJson = load_file("vc-passport.normalized.json");
@@ -506,7 +522,7 @@ Credential *TestData_LoadTwitterVc(void)
     return testdata.twitterVc;
 }
 
-const char *TestData_LoadVcTwitterCompJson(void)
+const char *TestData_LoadTwitterVcCompJson(void)
 {
     if (!testdata.twitterVcCompactJson)
         testdata.twitterVcCompactJson = load_file("vc-twitter.compact.json");
@@ -514,12 +530,36 @@ const char *TestData_LoadVcTwitterCompJson(void)
     return testdata.twitterVcCompactJson;
 }
 
-const char *TestData_LoadVcTwitterNormJson(void)
+const char *TestData_LoadTwitterVcNormJson(void)
 {
     if (!testdata.twitterVcNormalizedJson)
         testdata.twitterVcNormalizedJson = load_file("vc-twitter.normalized.json");
 
     return testdata.twitterVcNormalizedJson;
+}
+
+Credential *TestData_LoadVc(void)
+{
+    if (!testdata.Vc)
+        testdata.Vc = store_credential("vc-json.json", "test vc");
+
+    return testdata.twitterVc;
+}
+
+const char *TestData_LoadVcCompJson(void)
+{
+    if (!testdata.VcCompactJson)
+        testdata.VcCompactJson = load_file("vc-json.compact.json");
+
+    return testdata.VcCompactJson;
+}
+
+const char *TestData_LoadVcNormJson(void)
+{
+    if (!testdata.VcNormalizedJson)
+        testdata.VcNormalizedJson = load_file("vc-json.normalized.json");
+
+    return testdata.VcNormalizedJson;
 }
 
 Presentation *TestData_LoadVp(void)
@@ -651,6 +691,13 @@ void TestData_Free(void)
         free(testdata.twitterVcCompactJson);
     if (testdata.twitterVcNormalizedJson)
         free(testdata.twitterVcNormalizedJson);
+
+    if (testdata.Vc)
+        Credential_Destroy(testdata.Vc);
+    if (testdata.VcCompactJson)
+        free(testdata.VcCompactJson);
+    if (testdata.VcNormalizedJson)
+        free(testdata.VcNormalizedJson);
 
     if (testdata.vp)
         Presentation_Destroy(testdata.vp);

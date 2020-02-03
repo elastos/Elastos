@@ -23,12 +23,10 @@
 #ifndef __VC_TEST_SUITES_H__
 #define __VC_TEST_SUITES_H__
 
-DECL_TESTSUITE(cred_fromjson_test);
-DECL_TESTSUITE(cred_getelem_test);
+DECL_TESTSUITE(vc_test);
 
 #define DEFINE_VC_TESTSUITES \
-    DEFINE_TESTSUITE(cred_fromjson_test), \
-    DEFINE_TESTSUITE(cred_getelem_test)
+    DEFINE_TESTSUITE(vc_test)
 
 #endif /* __VC_TEST_SUITES_H__ */
 

@@ -7,6 +7,7 @@ const char *network;
 const char *resolver;
 const char *walletpass;
 const char *storepass;
+const char *passphase;
 
 const char *type;
 const char *service_type;

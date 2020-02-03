@@ -48,6 +48,8 @@ DIDStore *TestData_SetupStore(const char *root);
 
 void TestData_Free(void);
 
+int TestData_InitIdentity(DIDStore *store);
+
 const char *TestData_LoadIssuerJson(void);
 
 const char *TestData_LoadIssuerCompJson(void);
@@ -62,27 +64,33 @@ const char *TestData_LoadDocNormJson(void);
 
 Credential *TestData_LoadProfileVc(void);
 
-const char *TestData_LoadVcProfileCompJson(void);
+const char *TestData_LoadProfileVcCompJson(void);
 
-const char *TestData_LoadVcProfileNormJson(void);
+const char *TestData_LoadProfileVcNormJson(void);
 
 Credential *TestData_LoadEmailVc(void);
 
-const char *TestData_LoadVcEmailCompJson(void);
+const char *TestData_LoadEmailVcCompJson(void);
 
-const char *TestData_LoadVcEmailNormJson(void);
+const char *TestData_LoadEmailVcNormJson(void);
 
 Credential *TestData_LoadPassportVc(void);
 
-const char *TestData_LoadVcPassportCompJson(void);
+const char *TestData_LoadPassportVcCompJson(void);
 
-const char *TestData_LoadVcPassportNormJson(void);
+const char *TestData_LoadPassportVcNormJson(void);
 
 Credential *TestData_LoadTwitterVc(void);
 
-const char *TestData_LoadVcTwitterCompJson(void);
+const char *TestData_LoadTwitterVcCompJson(void);
 
-const char *TestData_LoadVcTwitterNormJson(void);
+const char *TestData_LoadTwitterVcNormJson(void);
+
+Credential *TestData_LoadVc(void);
+
+const char *TestData_LoadVcCompJson(void);
+
+const char *TestData_LoadVcNormJson(void);
 
 Presentation *TestData_LoadVp(void);
 

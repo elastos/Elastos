@@ -206,7 +206,7 @@ static int property_compr(const void *a, const void *b)
     return strcmp(proa->key, prob->key);
 }
 
-static int subject_toJson(JsonGenerator *generator, Credential *cred, int compact)
+static int subject_toJson(JsonGenerator *generator, Credential *cred, DID *did, int compact)
 {
     Property *properties;
     size_t i, size;
@@ -222,7 +222,7 @@ static int subject_toJson(JsonGenerator *generator, Credential *cred, int compac
     qsort(properties, size, sizeof(Property), property_compr);
 
     CHECK(JsonGenerator_WriteStartObject(generator));
-    if (!compact)
+    if (!compact || !did)
         CHECK(JsonGenerator_WriteStringField(generator, "id",
                 DID_ToString(&cred->subject.id, id, sizeof(id))));
 
@@ -250,7 +250,7 @@ static int proof_toJson(JsonGenerator *generator, Credential *cred, int compact)
     return 0;
 }
 
-static int Credential_ToJson_Internal(JsonGenerator *gen,  Credential *cred,
+static int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, DID *did,
         int compact, int forsign)
 {
     char id[ELA_MAX_DIDURL_LEN];
@@ -260,7 +260,10 @@ static int Credential_ToJson_Internal(JsonGenerator *gen,  Credential *cred,
     assert(gen->buffer);
     assert(cred);
 
-    DIDURL_ToString(&cred->id, id, sizeof(id), compact);
+    if (!did)
+        DIDURL_ToString(&cred->id, id, sizeof(id), false);
+    else
+        DIDURL_ToString(&cred->id, id, sizeof(id), compact);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "id", id));
@@ -281,7 +284,7 @@ static int Credential_ToJson_Internal(JsonGenerator *gen,  Credential *cred,
         CHECK(JsonGenerator_WriteStringField(gen, "expirationDate",
                 get_time_string(_timestring, sizeof(_timestring), &cred->expirationDate)));
     CHECK(JsonGenerator_WriteFieldName(gen, "credentialSubject"));
-    CHECK(subject_toJson(gen, cred, compact));
+    CHECK(subject_toJson(gen, cred, did, compact));
     if (!forsign) {
         CHECK(JsonGenerator_WriteFieldName(gen, "proof"));
         CHECK(proof_toJson(gen, cred, compact));
@@ -488,7 +491,7 @@ Credential *Parser_Credential(cJSON *json, DID *did)
 
     //issuer
     item = cJSON_GetObjectItem(json, "issuer");
-    if (item && parse_did(&credential->issuer, item->valuestring) < 0)
+    if (item && (!cJSON_IsString(item) || parse_did(&credential->issuer, item->valuestring) < 0))
         goto errorExit;
     if (!item) {
         if (!did)
@@ -528,7 +531,8 @@ Credential *Parser_Credential(cJSON *json, DID *did)
 
     field = cJSON_GetObjectItem(item, "verificationMethod");
     if (!field || !cJSON_IsString(field) ||
-            parse_didurl(&credential->proof.verificationMethod, field->valuestring, did) < 0)
+            parse_didurl(&credential->proof.verificationMethod,
+            field->valuestring, &credential->issuer) < 0)
         goto errorExit;
 
     field = cJSON_GetObjectItem(item, "signature");
@@ -608,8 +612,8 @@ static int didurl_func(const void *a, const void *b)
     return strcmp(stringa, stringb);
 }
 
-int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds,
-                           size_t size, int compact)
+int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds, size_t size,
+        DID *did, int compact)
 {
     size_t i;
 
@@ -621,7 +625,7 @@ int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds,
 
     CHECK(JsonGenerator_WriteStartArray(gen));
     for ( i = 0; i < size; i++ )
-        CHECK(Credential_ToJson_Internal(gen, creds[i], compact, 0));
+        CHECK(Credential_ToJson_Internal(gen, creds[i], did, compact, 0));
     CHECK(JsonGenerator_WriteEndArray(gen));
 
     return 0;
@@ -639,7 +643,7 @@ const char* Credential_ToJson(Credential *cred, int compact, int forsign)
     if (!gen)
         return NULL;
 
-    if (Credential_ToJson_Internal(gen, cred, compact, forsign) < 0) {
+    if (Credential_ToJson_Internal(gen, cred, NULL, compact, forsign) < 0) {
         JsonGenerator_Destroy(gen);
         return NULL;
     }

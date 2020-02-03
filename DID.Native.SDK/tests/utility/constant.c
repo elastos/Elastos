@@ -24,6 +24,7 @@ const char *resolver = "http://api.elastos.io:21606";
 const char *walletpass = "12345678";
 
 const char *storepass = "123456";
+const char *passphase = "";
 const char *type = "ECDSAsecp256r1";
 const char *service_type = "CarrierAddress";
 

@@ -75,7 +75,7 @@ static int Presentation_ToJson_Internal(JsonGenerator *gen, Presentation *pre,
             get_time_string(_timestring, sizeof(_timestring), &pre->created)));
     CHECK(JsonGenerator_WriteFieldName(gen, "verifiableCredential"));
     CredentialArray_ToJson(gen, pre->credentials.credentials,
-            pre->credentials.size, compact);
+            pre->credentials.size, Presentation_GetSigner(pre), compact);
     if (!forsign) {
         CHECK(JsonGenerator_WriteFieldName(gen, "proof"));
         CHECK(proof_toJson(gen, pre, compact));
@@ -281,13 +281,13 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, const char *storepa
     if (rc)
         goto errorExit;
 
-    DIDDocument_Destroy(doc);
     strcpy(pre->proof.type, ProofType);
     DIDURL_Copy(&pre->proof.verificationMethod, signkey);
     strcpy(pre->proof.nonce, nonce);
     strcpy(pre->proof.realm, realm);
     strcpy(pre->proof.signatureValue, signature);
 
+    DIDDocument_Destroy(doc);
     return pre;
 
 errorExit:
