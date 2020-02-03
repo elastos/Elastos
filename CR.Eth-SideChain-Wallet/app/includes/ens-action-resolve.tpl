@@ -47,7 +47,7 @@
         Go to the contracts tab.
       </li>
       <li>
-        Choose <code>ENS - Registry:</code> <code>0x314159265dD8dbb310642f98f50C066173C1259b</code>. Click "Access".
+        Choose <code>ENS - Registry:</code> <code>0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e</code>. Click "Access".
       </li>
       <li>
         Select <code>setResolver</code>.
