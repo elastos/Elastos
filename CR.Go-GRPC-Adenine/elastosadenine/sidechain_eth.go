@@ -2,8 +2,10 @@ package elastosadenine
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"google.golang.org/grpc/credentials"
 	"log"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
@@ -42,8 +44,18 @@ func (s *SolidityListener) EnterContractDefinition(ctx *parser.ContractDefinitio
 
 func NewSidechainEth(host string, port int, production bool) *SidechainEth {
 	address := fmt.Sprintf("%s:%d", host, port)
-	opts := []grpc.DialOption{
-		grpc.WithInsecure(),
+	var opts []grpc.DialOption
+	if production == false {
+		opts = []grpc.DialOption{
+			grpc.WithInsecure(),
+		}
+	} else {
+		config := &tls.Config{
+			InsecureSkipVerify: true,
+		}
+		opts = []grpc.DialOption{
+			grpc.WithTransportCredentials(credentials.NewTLS(config)),
+		}
 	}
 	conn, err := grpc.Dial(address, opts...)
 	if err != nil {

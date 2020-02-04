@@ -2,10 +2,12 @@ package elastosadenine
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/hive"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"log"
 	"os"
 	"io/ioutil"
@@ -29,8 +31,18 @@ type InputVerifyAndShow struct {
 
 func NewHive(host string, port int, production bool) *Hive {
 	address := fmt.Sprintf("%s:%d", host, port)
-	opts := []grpc.DialOption{
-		grpc.WithInsecure(),
+	var opts []grpc.DialOption
+	if production == false {
+		opts = []grpc.DialOption{
+			grpc.WithInsecure(),
+		}
+	} else {
+		config := &tls.Config{
+			InsecureSkipVerify: true,
+		}
+		opts = []grpc.DialOption{
+			grpc.WithTransportCredentials(credentials.NewTLS(config)),
+		}
 	}
 	conn, err := grpc.Dial(address, opts...)
 	if err != nil {
