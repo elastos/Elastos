@@ -11,7 +11,7 @@
 - .env
 
 ## How to connect to testnet
-- `docker-compose up --remove-orphans --build --force-recreate -d`
+- `./prepare_docker.sh; docker-compose up --remove-orphans --build --force-recreate -d`
 
 ## How to interact with testnet
 - Get current height of Main chain
