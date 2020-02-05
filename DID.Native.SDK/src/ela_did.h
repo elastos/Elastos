@@ -1395,6 +1395,58 @@ DID_API time_t DIDDocument_GetTimestamp(DIDDocument *document);
 
 /**
  * \~English
+ * Get the type property of embedded proof.
+ *
+ * @param
+ *      document                 [in] A handle to DIDocument.
+ * @return
+ *      If no error occurs, return type string.
+ *      Otherwise, return NULL.
+ */
+DID_API const char *DIDDocument_GetProofType(DIDDocument *document);
+
+/**
+ * \~English
+ * Get verification method identifier of DIDDocument.
+ * The verification Method property specifies the public key
+ * that can be used to verify the digital signature.
+ *
+ * @param
+ *      document                 [in] A handle to DIDDocument.
+ * @return
+ *      If no error occurs, return the handle to identifier of public key.
+ *      Otherwise, return NULL.
+ */
+DID_API DIDURL *DIDDocument_GetProofCreater(DIDDocument *document);
+
+/**
+ * \~English
+ * Get time of create DIDDocument proof.
+ *
+ * @param
+ *      document                 [in] A handle to DIDDocument.
+ * @return
+ *      If no error occurs, return 0.
+ *      Otherwise, return time.
+ */
+DID_API time_t DIDDocument_GetProofCreatedTime(DIDDocument *document);
+
+/**
+ * \~English
+ * Get signature of DIDDocument.
+ * A signature that can be later used to verify the authenticity and
+ * integrity of a linked data document.
+ *
+ * @param
+ *      document                 [in] A handle to DIDDocument.
+ * @return
+ *      If no error occurs, return signature string.
+ *      Otherwise, return NULL.
+ */
+DID_API const char *DIDDocument_GetProofSignature(DIDDocument *document);
+
+/**
+ * \~English
  * Get identifier of public key.
  *
  * @param
@@ -2084,9 +2136,9 @@ DID_API bool DIDStore_ContainsDID(DIDStore *store, DID *did);
  * @param
  *      did                     [in] The handle to DID.
  * @return
- *      0 on success, -1 if an error occurred.
+ *      true on success, false if an error occurred.
  */
-DID_API void DIDStore_DeleteDID(DIDStore *store, DID *did);
+DID_API bool DIDStore_DeleteDID(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -2097,12 +2149,15 @@ DID_API void DIDStore_DeleteDID(DIDStore *store, DID *did);
  * @param
  *      callback    [in] a pointer to DIDStore_GetDIDCallback function.
  * @param
+ *      filer       [in] DID filer. 0: all did; 1: did has privatekeys;
+ *                                  2: did has no privatekeys.
+ * @param
  *      context     [in] the application defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDCallback *callback,
-        void *context);
+        int filer, void *context);
 
 /**
  * \~English
@@ -2164,8 +2219,10 @@ DID_API bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *cred
  *      did                     [in] The handle to DID.
  * @param
  *      id                      [in] The identifier of credential.
+ * @return
+ *      true on success, false if an error occurred.
  */
-DID_API void DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
+DID_API bool DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
 
 /**
  * \~English

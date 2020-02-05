@@ -83,6 +83,10 @@ _DIDDocument_SetAlias
 _DIDDocument_GetAlias
 _DIDDocument_GetTxid
 _DIDDocument_GetTimestamp
+_DIDDocument_GetProofType
+_DIDDocument_GetProofCreater
+_DIDDocument_GetProofCreatedTime
+_DIDDocument_GetProofSignature
 
 _PublicKey_GetId
 _PublicKey_GetController

@@ -19,15 +19,17 @@ const char *method_specific_string;
 const char *fragment;
 const char *compact_idstring;
 
-const char *storetag;
-const char *docstring;
+const char *PATH_STEP;
+const char *PRIVATE_DIR;
+const char *HDKEY_FILE;
+const char *INDEX_FILE;
+const char *MNEMONIC_FILE;
 
-const char *privateindex;
-const char *privatekey;
-const char *privatemnemonic;
-const char *storedirroot;
-const char *metastring;
-
-const char *teststore_path;
+const char *DID_DIR;
+const char *DOCUMENT_FILE;
+const char *CREDENTIALS_DIR;
+const char *CREDENTIAL_FILE;
+const char *PRIVATEKEYS_DIR;
+const char *META_FILE;
 
 #endif /* __CONTANTS_H__ */

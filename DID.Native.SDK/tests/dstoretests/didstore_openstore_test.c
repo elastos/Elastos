@@ -126,13 +126,15 @@ static void test_openstore_file_exit(void)
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_TRUE(hasidentity);
 
-    path = get_file_path(_path, PATH_MAX, 2, teststore_path, privateindex);
+    path = get_file_path(_path, PATH_MAX, 13, "..", PATH_STEP, "etc", PATH_STEP,
+            "did", PATH_STEP, "resources", PATH_STEP, "teststore", PATH_STEP,
+            PRIVATE_DIR, PATH_STEP, INDEX_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     rc = DIDStore_ExportMnemonic(store, password, mnemonic, sizeof(mnemonic));
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
-    rc = DIDStore_ListDID(store, get_did, NULL);
+    rc = DIDStore_ListDID(store, get_did, 0, NULL);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 }
 
@@ -140,6 +142,7 @@ static void test_openstore_newdid(void)
 {
     DIDDocument *doc;
     DID *did;
+    bool isDeleted;
     int rc;
 
     doc = DIDStore_NewDID(store, password, "");
@@ -148,7 +151,9 @@ static void test_openstore_newdid(void)
     did = DIDDocument_GetSubject(doc);
     CU_ASSERT_PTR_NOT_NULL_FATAL(did);
 
-    DIDStore_DeleteDID(store, did);
+    isDeleted = DIDStore_DeleteDID(store, did);
+    CU_ASSERT_TRUE(isDeleted);
+
     DIDDocument_Destroy(doc);
 }
 
@@ -156,26 +161,31 @@ static void test_openstore_newdid_with_wrongpw(void)
 {
     DIDDocument *doc;
     DID *did;
+    bool isDeleted;
 
     doc = DIDStore_NewDID(store, "1234", "");
     CU_ASSERT_PTR_NULL(doc);
 
     did = DIDDocument_GetSubject(doc);
-    DIDStore_DeleteDID(store, did);
+    isDeleted = DIDStore_DeleteDID(store, did);
+    CU_ASSERT_FALSE(isDeleted);
+
     DIDDocument_Destroy(doc);
 }
 
 static int didstore_openstore_test_suite_init(void)
 {
     char _path[PATH_MAX];
-    const char *walletDir;
+    const char *walletDir, *path;
 
     walletDir = get_wallet_path(_path, walletdir);
     adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
     if (!adapter)
         return -1;
 
-    store = DIDStore_Initialize(teststore_path, adapter);
+    path = get_file_path(_path, PATH_MAX, 9, "..", PATH_STEP, "etc", PATH_STEP,
+            "did", PATH_STEP, "resources", PATH_STEP, "teststore");
+    store = DIDStore_Initialize(path, adapter);
     if (!store)
         return -1;
 

@@ -8,107 +8,226 @@
 #include <CUnit/Basic.h>
 #include <limits.h>
 
-#include "loader.h"
 #include "constant.h"
+#include "loader.h"
 #include "ela_did.h"
 #include "did.h"
+#include "didmeta.h"
 #include "didstore.h"
 
-static DIDDocument *document;
-static DID *did;
 static DIDStore *store;
 
-int get_did(DID *did, void *context)
+static int get_did(DID *did, void *context)
 {
-    char _did[ELA_MAX_DID_LEN];
+    int *count = (int*)context;
 
-    if(!did)
+    if (!did)
         return 0;
 
-    printf("\n did: %s\n", DID_ToString(did, _did, sizeof(_did)));
+    (*count)++;
     return 0;
 }
 
-static void test_didstore_contain_did(void)
+static void test_didstore_bulk_newdid(void)
 {
-    bool rc;
+    char alias[ELA_MAX_ALIAS_LEN], gAlias[ELA_MAX_ALIAS_LEN], _path[PATH_MAX];
+    const char *storePath;
+    DIDStore *store;
+    int rc, count = 0;
 
-    rc = DIDStore_ContainsDID(store, did);
-    CU_ASSERT_NOT_EQUAL(rc, false);
-}
+    storePath = get_store_path(_path, "/servet");
+    store = TestData_SetupStore(storePath);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-static void test_didstore_list_did(void)
-{
-    int rc;
-
-    rc = DIDStore_ListDID(store, get_did, NULL);
+    rc = TestData_InitIdentity(store);
     CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    for (int i = 0; i < 100; i++) {
+        int size = snprintf(alias, sizeof(alias), "my did %d", i);
+        if (size < 0 || size > sizeof(alias))
+            continue;
+
+        DIDDocument *doc = DIDStore_NewDID(store, storepass, alias);
+        if (!doc)
+            continue;
+        CU_ASSERT_TRUE(DIDDocument_IsValid(doc));
+
+        DID *did = DIDDocument_GetSubject(doc);
+        CU_ASSERT_PTR_NOT_NULL(did);
+
+        char *path = get_file_path(_path, PATH_MAX, 7, store->root, PATH_STEP,
+                DID_DIR, PATH_STEP, did->idstring, PATH_STEP, DOCUMENT_FILE);
+        CU_ASSERT_TRUE(file_exist(path));
+
+        path = get_file_path(_path, PATH_MAX, 7, store->root, PATH_STEP, DID_DIR,
+                PATH_STEP, did->idstring, PATH_STEP, META_FILE);
+        CU_ASSERT_TRUE(file_exist(path));
+
+        DIDDocument *loaddoc = DIDStore_LoadDID(store, did);
+        CU_ASSERT_PTR_NOT_NULL(loaddoc);
+        CU_ASSERT_TRUE(DIDDocument_IsValid(loaddoc));
+
+        rc = DIDDocument_GetAlias(loaddoc, gAlias, sizeof(gAlias));
+        CU_ASSERT_NOT_EQUAL(rc, -1);
+
+        CU_ASSERT_STRING_EQUAL(alias, gAlias);
+        CU_ASSERT_STRING_EQUAL(DIDDocument_GetProofSignature(doc),
+                DIDDocument_GetProofSignature(loaddoc));
+
+        bool isEquals = DID_Equals(did, DIDDocument_GetSubject(loaddoc));
+        CU_ASSERT_TRUE(isEquals);
+
+        DIDDocument_Destroy(doc);
+        DIDDocument_Destroy(loaddoc);
+    }
+
+    rc = DIDStore_ListDID(store, get_did, 0, (void*)&count);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    CU_ASSERT_EQUAL(count, 100);
+
+    count = 0;
+    rc = DIDStore_ListDID(store, get_did, 1, (void*)&count);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    CU_ASSERT_EQUAL(count, 100);
+
+    count = 0;
+    rc = DIDStore_ListDID(store, get_did, 2, (void*)&count);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    CU_ASSERT_EQUAL(count, 0);
+
+    TestData_Free();
 }
 
-static void test_didstore_load_did(void)
+static void test_didstore_op_deletedid(void)
 {
-    DIDDocument *doc;
+    DID dids[100];
+    char alias[ELA_MAX_ALIAS_LEN], _path[PATH_MAX];
+    const char *storePath;
+    int rc, count = 0;
 
-    doc = DIDStore_LoadDID(store, did);
-    CU_ASSERT_PTR_NOT_NULL(doc);
+    storePath = get_store_path(_path, "/servet");
+    store = TestData_SetupStore(storePath);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-    DIDDocument_Destroy(doc);
+    rc = TestData_InitIdentity(store);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    for(int i = 0; i < 100; i++) {
+        int size = snprintf(alias, sizeof(alias), "my did %d", i);
+        if (size < 0 || size > sizeof(alias))
+            continue;
+
+        DIDDocument *doc = DIDStore_NewDID(store, storepass, alias);
+        CU_ASSERT_PTR_NOT_NULL(doc);
+
+        DID *did = DIDDocument_GetSubject(doc);
+        CU_ASSERT_PTR_NOT_NULL(did);
+
+        rc = DID_Copy(&dids[i], did);
+        CU_ASSERT_NOT_EQUAL(rc, -1);
+
+        DIDDocument_Destroy(doc);
+    }
+
+    for (int i = 0; i < 100; i++) {
+        if (i % 5 != 0)
+            continue;
+
+        bool isDeleted = DIDStore_DeleteDID(store, &dids[i]);
+        CU_ASSERT_TRUE(isDeleted);
+
+        char *path = get_file_path(_path, PATH_MAX, 5, store->root, PATH_STEP,
+                DID_DIR, PATH_STEP, dids[i].idstring);
+        CU_ASSERT_FALSE_FATAL(file_exist(path));
+    }
+
+    rc = DIDStore_ListDID(store, get_did, 0, (void*)&count);
+    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    CU_ASSERT_EQUAL(count, 80);
+
+    count = 0;
+    rc = DIDStore_ListDID(store, get_did, 1, (void*)&count);
+
+    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    CU_ASSERT_EQUAL(count, 80);
+
+    count = 0;
+    rc = DIDStore_ListDID(store, get_did, 2, (void*)&count);
+    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    CU_ASSERT_EQUAL(count, 0);
+
+    TestData_Free();
 }
 
-static void test_didstore_delete_did(void)
+static void test_didstore_op_store_load_did(void)
 {
-    if(DIDStore_ContainsDID(store, did))
-        DIDStore_DeleteDID(store, did);
+    DIDDocument *issuerdoc, *doc, *loaddoc;
+    char _path[PATH_MAX];
+    const char *storePath;
+    bool isEquals;
+    int rc, count = 0;
 
-    bool rc = DIDStore_ContainsDID(store, did);
-    CU_ASSERT_NOT_EQUAL(rc, true);
+    storePath = get_store_path(_path, "/servet");
+    store = TestData_SetupStore(storePath);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(store);
+
+    rc = TestData_InitIdentity(store);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    issuerdoc = TestData_LoadIssuerDoc();
+    doc = TestData_LoadDoc();
+
+    loaddoc = DIDStore_LoadDID(store, DIDDocument_GetSubject(issuerdoc));
+    isEquals = DID_Equals(DIDDocument_GetSubject(issuerdoc), DIDDocument_GetSubject(loaddoc));
+    CU_ASSERT_TRUE(isEquals);
+    CU_ASSERT_STRING_EQUAL(DIDDocument_GetProofSignature(issuerdoc), DIDDocument_GetProofSignature(loaddoc));
+    CU_ASSERT_TRUE(DIDDocument_IsValid(loaddoc));
+    DIDDocument_Destroy(loaddoc);
+
+    loaddoc = DIDStore_LoadDID(store, DIDDocument_GetSubject(doc));
+    isEquals = DID_Equals(DIDDocument_GetSubject(doc), DIDDocument_GetSubject(loaddoc));
+    CU_ASSERT_TRUE(isEquals);
+    CU_ASSERT_STRING_EQUAL(DIDDocument_GetProofSignature(doc), DIDDocument_GetProofSignature(loaddoc));
+    CU_ASSERT_TRUE(DIDDocument_IsValid(loaddoc));
+    DIDDocument_Destroy(loaddoc);
+
+    rc = DIDStore_ListDID(store, get_did, 0, (void*)&count);
+    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    CU_ASSERT_EQUAL(count, 2);
+
+    count = 0;
+    rc = DIDStore_ListDID(store, get_did, 1, (void*)&count);
+    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    CU_ASSERT_EQUAL(count, 2);
+
+    count = 0;
+    rc = DIDStore_ListDID(store, get_did, 2, (void*)&count);
+    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    CU_ASSERT_EQUAL(count, 0);
+
+    TestData_Free();
 }
 
 static int didstore_did_op_test_suite_init(void)
 {
-    char _path[PATH_MAX];
-    const char *storePath;
-    int rc;
-
-    storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(storePath);
-    if (!store)
-        return -1;
-
-    document = DIDDocument_FromJson(TestData_LoadDocJson());
-    if(!document) {
-        TestData_Free();
-        return -1;
-    }
-
-    did = DIDDocument_GetSubject(document);
-    if (!did) {
-        DIDDocument_Destroy(document);
-        TestData_Free();
-        return -1;
-    }
-
-    return DIDStore_StoreDID(store, document, "littlefish");
+    return 0;
 }
 
 static int didstore_did_op_test_suite_cleanup(void)
 {
-    DIDDocument_Destroy(document);
-    TestData_Free();
     return 0;
 }
 
 static CU_TestInfo cases[] = {
-    {   "test_didstore_contain_did",       test_didstore_contain_did     },
-    {   "test_didstore_list_did",          test_didstore_list_did        },
-    {   "test_didstore_load_did",          test_didstore_load_did        },
-    {   "test_didstore_delete_did",        test_didstore_delete_did      },
-    {   NULL,                              NULL                          }
+    {  "test_didstore_bulk_newdid",       test_didstore_bulk_newdid          },
+    {  "test_didstore_op_deletedid",      test_didstore_op_deletedid         },
+    {  "test_didstore_op_store_load_did", test_didstore_op_store_load_did    },
+    {  NULL,                              NULL                               }
 };
 
 static CU_SuiteInfo suite[] = {
-    {   "didstore did op test",    didstore_did_op_test_suite_init,    didstore_did_op_test_suite_cleanup,      NULL, NULL, cases },
-    {    NULL,                  NULL,                         NULL,                            NULL, NULL, NULL  }
+    { "didstore did operation test", didstore_did_op_test_suite_init, didstore_did_op_test_suite_cleanup, NULL, NULL, cases },
+    {  NULL,                        NULL,                                 NULL,                                    NULL, NULL, NULL  }
 };
 
 CU_SuiteInfo* didstore_did_op_test_suite_info(void)

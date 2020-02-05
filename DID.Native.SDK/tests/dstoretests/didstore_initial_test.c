@@ -13,6 +13,7 @@
 #include "ela_did.h"
 #include "diddocument.h"
 #include "didtest_adapter.h"
+#include "didstore.h"
 
 static const char *alias = "littlefish";
 
@@ -23,7 +24,7 @@ static const char *getpassword(const char *walletDir, const char *walletId)
 
 static void test_didstore_newdid(void)
 {
-    char _storepath[PATH_MAX], _path[PATH_MAX], newalias[ELA_MAX_ALIAS_LEN];
+    char _path[PATH_MAX], newalias[ELA_MAX_ALIAS_LEN];
     const char *storePath;
     char *path;
     DIDDocument *doc, *loaddoc;
@@ -31,11 +32,11 @@ static void test_didstore_newdid(void)
     bool hasidentity, isEquals;
     int rc;
 
-    storePath = get_store_path(_storepath, "/servet");
+    storePath = get_store_path(_path, "/servet");
     store = TestData_SetupStore(storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, storetag);
+    path = get_file_path(_path, PATH_MAX, 3, store->root, PATH_STEP, META_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
@@ -49,10 +50,12 @@ static void test_didstore_newdid(void)
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_TRUE_FATAL(hasidentity);
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, privateindex);
+    path = get_file_path(_path, PATH_MAX, 5, store->root, PATH_STEP, PRIVATE_DIR,
+            PATH_STEP, INDEX_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, privatekey);
+    path = get_file_path(_path, PATH_MAX, 5, store->root, PATH_STEP, PRIVATE_DIR,
+            PATH_STEP, HDKEY_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     doc = DIDStore_NewDID(store, storepass, alias);
@@ -62,12 +65,12 @@ static void test_didstore_newdid(void)
     DID *did = DIDDocument_GetSubject(doc);
     const char *idstring = DID_GetMethodSpecificId(did);
 
-    path = get_file_path(_path, PATH_MAX, 5, storePath, storedirroot, "/",
-            (char*)idstring, docstring);
+    path = get_file_path(_path, PATH_MAX, 7, store->root, PATH_STEP, DID_DIR,
+            PATH_STEP, (char*)idstring, PATH_STEP, DOCUMENT_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    path = get_file_path(_path, PATH_MAX, 5, storePath, storedirroot, "/",
-            (char*)idstring, metastring);
+    path = get_file_path(_path, PATH_MAX, 7, store->root, PATH_STEP, DID_DIR,
+            PATH_STEP, (char*)idstring, PATH_STEP, META_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     rc = DIDDocument_GetAlias(doc, newalias, sizeof(newalias));
@@ -101,7 +104,7 @@ static void test_didstore_newdid_withouAlias(void)
     store = TestData_SetupStore(storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, storetag);
+    path = get_file_path(_path, PATH_MAX, 3, storePath, PATH_STEP, META_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
@@ -115,10 +118,12 @@ static void test_didstore_newdid_withouAlias(void)
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_TRUE_FATAL(hasidentity);
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, privateindex);
+    path = get_file_path(_path, PATH_MAX, 5, storePath, PATH_STEP, PRIVATE_DIR,
+            PATH_STEP, INDEX_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, privatekey);
+    path = get_file_path(_path, PATH_MAX, 5, storePath, PATH_STEP, PRIVATE_DIR,
+            PATH_STEP, HDKEY_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     doc = DIDStore_NewDID(store, storepass, NULL);
@@ -128,12 +133,12 @@ static void test_didstore_newdid_withouAlias(void)
     DID *did = DIDDocument_GetSubject(doc);
     const char *idstring = DID_GetMethodSpecificId(did);
 
-    path = get_file_path(_path, PATH_MAX, 5, storePath, storedirroot, "/",
-            (char*)idstring, docstring);
+    path = get_file_path(_path, PATH_MAX, 7, storePath, PATH_STEP, DID_DIR,
+            PATH_STEP, (char*)idstring, PATH_STEP, DOCUMENT_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    path = get_file_path(_path, PATH_MAX, 5, storePath, storedirroot, "/",
-            (char*)idstring, metastring);
+    path = get_file_path(_path, PATH_MAX, 7, storePath, PATH_STEP, DID_DIR,
+            PATH_STEP, (char*)idstring, PATH_STEP, META_FILE);
     CU_ASSERT_FALSE(file_exist(path));
 
     rc = DIDDocument_GetAlias(doc, newalias, sizeof(newalias));
@@ -190,10 +195,12 @@ static void test_didstore_privateIdentity_error(void)
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
-    path = get_file_path(_temp, PATH_MAX, 2, storePath, privateindex);
+    path = get_file_path(_temp, PATH_MAX, 5, storePath, PATH_STEP, PRIVATE_DIR,
+            PATH_STEP, INDEX_FILE);
     CU_ASSERT_FALSE(file_exist(path));
 
-    path = get_file_path(_temp, PATH_MAX, 2, storePath, privatekey);
+    path = get_file_path(_temp, PATH_MAX, 5, storePath, PATH_STEP, PRIVATE_DIR,
+            PATH_STEP, HDKEY_FILE);
     CU_ASSERT_FALSE(file_exist(path));
 
     TestData_Free();

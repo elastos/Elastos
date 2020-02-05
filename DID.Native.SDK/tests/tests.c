@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
         return CU_get_error();
     }
 
+    TestData_Init();
     for (ts = suites; ts->fileName != NULL; ts++) {
         CU_SuiteInfo *si = ts->getSuiteInfo();
         rc = CU_register_nsuites(1, si);
@@ -78,6 +79,7 @@ int main(int argc, char *argv[])
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
 
+    TestData_Deinit();
     CU_cleanup_registry();
 
     return CU_get_error();

@@ -85,6 +85,7 @@ typedef struct DID_List_Helper {
     DIDStore *store;
     DIDStore_GetDIDCallback *cb;
     void *context;
+    int filter;
 } DID_List_Helper;
 
 typedef struct Cred_List_Helper {
@@ -801,7 +802,11 @@ static int list_did_helper(const char *path, void *context)
     }
 
     strcpy(did.idstring, path);
-    return dh->cb(&did, dh->context);
+    if (dh->filter == 0 || (dh->filter == 1 && DIDSotre_ContainsPrivateKeys(dh->store, &did)) ||
+            (dh->filter == 2 && !DIDSotre_ContainsPrivateKeys(dh->store, &did)))
+        return dh->cb(&did, dh->context);
+
+    return 0;
 }
 
 static bool has_type(DID *did, const char *path, const char *type)
@@ -1170,23 +1175,27 @@ bool DIDStore_ContainsDID(DIDStore *store, DID *did)
     return true;
 }
 
-void DIDStore_DeleteDID(DIDStore *store, DID *did)
+bool DIDStore_DeleteDID(DIDStore *store, DID *did)
 {
     char path[PATH_MAX];
     int rc;
 
     if (!store || !did)
-        return;
+        return false;
 
     if (get_dir(path, 0, 3, store->root, DID_DIR, did->idstring) == -1)
-        return;
+        return false;
 
-    if (test_path(path) > 0)
+    if (test_path(path) > 0) {
         delete_file(path);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDCallback *callback,
-        void *context)
+        int filter, void *context)
 {
     char path[PATH_MAX];
     DID_List_Helper dh;
@@ -1208,6 +1217,7 @@ int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDCallback *callback,
     dh.store = store;
     dh.cb = callback;
     dh.context = context;
+    dh.filter = filter;
 
     if (list_dir(path, "*", list_did_helper, (void*)&dh) == -1)
         return -1;
@@ -1269,6 +1279,13 @@ Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *id)
 
     credential = Credential_FromJson(data, did);
     free((char*)data);
+    if (!credential)
+        return NULL;
+
+    if (didstore_loadcredmeta(store, &credential->meta, id) == -1) {
+        Credential_Destroy(credential);
+        return NULL;
+    }
     return credential;
 }
 
@@ -1319,24 +1336,26 @@ bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *id)
     return true;
 }
 
-void DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id)
+bool DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id)
 {
     char path[PATH_MAX];
 
     if (!store || !did || !id)
-        return;
+        return false;
 
     if (get_dir(path, 0, 5, store->root, DID_DIR, did->idstring,
             CREDENTIALS_DIR, id->fragment) == -1)
-        return;
+        return false;
 
-    if (!is_empty(path))
-        delete_file(path);
+    if (is_empty(path))
+        return false;
 
+    delete_file(path);
     if (get_dir(path, 0, 4, store->root, DID_DIR, did->idstring, CREDENTIALS_DIR) == 0) {
         if (is_empty(path))
             delete_file(path);
     }
+    return true;
 }
 
 int DIDStore_ListCredentials(DIDStore *store, DID *did,
@@ -1431,7 +1450,7 @@ bool DIDSotre_ContainsPrivateKeys(DIDStore *store, DID *did)
     if (get_dir(path, 0, 4, store->root, DID_DIR, did->idstring, PRIVATEKEYS_DIR) == -1)
         return -1;
 
-    return is_empty(path);
+    return !is_empty(path);
 }
 
 bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *id)
@@ -1532,7 +1551,7 @@ static int store_default_privatekey(DIDStore *store, const char *storepass,
     assert(store);
     assert(storepass && *storepass);
     assert(idstring && *idstring);
-    assert(privatekey && *privatekey);
+    assert(privatekey);
 
     if (init_did(&did, idstring) == -1 || init_didurl(&id, &did, "primary") == -1)
         return -1;
@@ -1654,6 +1673,7 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
     DerivedKey _derivedkey, *derivedkey;
     DIDDocument *document;
     DID did;
+    int rc;
 
     if (!store || !storepass || !*storepass)
         return NULL;
@@ -1666,7 +1686,7 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
     if (!privateIdentity)
         return NULL;
 
-    derivedkey = HDKey_GetDerivedKey(privateIdentity, &_derivedkey, 0, 0, index);
+    derivedkey = HDKey_GetDerivedKey(privateIdentity, &_derivedkey, 0, 0, index++);
     HDKey_Wipe(privateIdentity);
     if (!derivedkey)
         return NULL;
@@ -1692,6 +1712,13 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
     }
 
     if (DIDStore_StoreDID(store, document, alias) == -1) {
+        DIDStore_DeleteDID(store, &did);
+        DIDDocument_Destroy(document);
+        return NULL;
+    }
+
+    rc = store_index(store, index);
+    if (rc < 0) {
         DIDStore_DeleteDID(store, &did);
         DIDDocument_Destroy(document);
         return NULL;

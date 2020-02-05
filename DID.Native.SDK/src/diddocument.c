@@ -885,6 +885,38 @@ time_t DIDDocument_GetTimestamp(DIDDocument *document)
     return DIDMeta_GetTimestamp(&document->meta);
 }
 
+const char *DIDDocument_GetProofType(DIDDocument *document)
+{
+    if (!document)
+        return NULL;
+
+    return document->proof.type;
+}
+
+DIDURL *DIDDocument_GetProofCreater(DIDDocument *document)
+{
+    if (!document)
+        return NULL;
+
+    return &document->proof.creater;
+}
+
+time_t DIDDocument_GetProofCreatedTime(DIDDocument *document)
+{
+    if (!document)
+        return 0;
+
+    return document->proof.created;
+}
+
+const char *DIDDocument_GetProofSignature(DIDDocument *document)
+{
+    if (!document)
+        return NULL;
+
+    return document->proof.signatureValue;
+}
+
 bool DIDDocument_IsDeactivated(DIDDocument *document)
 {
     if (!document)

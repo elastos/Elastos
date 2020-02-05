@@ -36,13 +36,15 @@ const char *method_specific_string = "iYpQMwheDxySqivocSJaoprcoDTqQsDYAu";
 const char *fragment = "default";
 const char *compact_idstring = "#default";
 
-const char *storetag = "/.meta";
-const char *docstring = "/document";
+const char *PATH_STEP = "/";
+const char *PRIVATE_DIR = "private";
+const char *HDKEY_FILE = "key";
+const char *INDEX_FILE = "index";
+const char *MNEMONIC_FILE = "mnemonic";
 
-const char *privateindex = "/private/index";
-const char *privatekey = "/private/key";
-const char *privatemnemonic = "/private/mnemonic";
-const char *storedirroot = "/ids";
-const char *metastring = "/.meta";
-
-const char *teststore_path = "../etc/did/resources/teststore";
+const char *DID_DIR = "ids";
+const char *DOCUMENT_FILE = "document";
+const char *CREDENTIALS_DIR = "credentials";
+const char *CREDENTIAL_FILE = "credential";
+const char *PRIVATEKEYS_DIR = "privatekeys";
+const char *META_FILE = ".meta";

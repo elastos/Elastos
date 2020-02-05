@@ -106,7 +106,7 @@ static void test_idchain_restore(void)
     printf("OK!\n");
 
     memset(&dids, 0, sizeof(DIDs));
-    rc = DIDStore_ListDID(store, get_did, (void*)&dids);
+    rc = DIDStore_ListDID(store, get_did, 0, (void*)&dids);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(dids.index, 5);
 

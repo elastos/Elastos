@@ -31,7 +31,6 @@
 
 typedef struct TestData {
     DIDStore *store;
-    DIDAdapter *adapter;
 
     DIDDocument *issuerdoc;
     char *issuerJson;
@@ -70,6 +69,8 @@ typedef struct TestData {
 } TestData;
 
 TestData testdata;
+
+static DIDAdapter *adapter;
 
 char *get_wallet_path(char* path, const char* dir)
 {
@@ -337,7 +338,6 @@ bool dir_exist(const char* path)
     return test_path(path) == S_IFDIR;
 }
 
-/////////////////////////////////////
 static int import_privatekey(DIDURL *id, const char *storepass, const char *file)
 {
     char *skbase;
@@ -364,21 +364,28 @@ static int import_privatekey(DIDURL *id, const char *storepass, const char *file
     return 0;
 }
 
+/////////////////////////////////////
+void TestData_Init(void)
+{
+    char _dir[PATH_MAX];
+    char *walletDir;
+
+    walletDir = get_wallet_path(_dir, walletdir);
+    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+}
+
+void TestData_Deinit(void)
+{
+     TestDIDAdapter_Destroy(adapter);
+}
+
 DIDStore *TestData_SetupStore(const char *root)
 {
-    char _dir[PATH_MAX],_path[PATH_MAX];
-    char *walletDir, *storePath;
-
     if (!root || !*root)
         return NULL;
 
-    if (!testdata.adapter) {
-        walletDir = get_wallet_path(_dir, walletdir);
-        testdata.adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
-    }
-
     delete_file(root);
-    testdata.store = DIDStore_Initialize(root, testdata.adapter);
+    testdata.store = DIDStore_Initialize(root, adapter);
     return testdata.store;
 }
 
@@ -642,9 +649,6 @@ const char *TestData_LoadRestoreMnemonic(void)
 void TestData_Free(void)
 {
     DIDStore_Deinitialize();
-
-    if (testdata.adapter)
-        TestDIDAdapter_Destroy(testdata.adapter);
 
     if (testdata.issuerdoc)
         DIDDocument_Destroy(testdata.issuerdoc);

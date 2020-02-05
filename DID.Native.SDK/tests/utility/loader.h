@@ -44,6 +44,10 @@ bool dir_exist(const char* path);
 const char *Generater_Publickey(char *publickeybase58, size_t size);
 
 ////////////////////////////////////////
+void TestData_Init(void);
+
+void TestData_Deinit(void);
+
 DIDStore *TestData_SetupStore(const char *root);
 
 void TestData_Free(void);
