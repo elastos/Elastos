@@ -18,18 +18,16 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/elanet/pact"
 	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 )
 
 type TxPool struct {
 	conflictManager
+	*txPoolCheckpoint
 	chainParams *config.Params
 
 	sync.RWMutex
-	txnList map[Uint256]*Transaction // transaction which have been verifyed will put into this map
-	txFees  *txFeeOrderedList
 }
 
 //append transaction to txnpool when check ok.
@@ -124,7 +122,7 @@ func (mp *TxPool) GetTxsInPool() []*Transaction {
 	return txs
 }
 
-//clean the trasaction Pool with committed block.
+//clean the transaction Pool with committed block.
 func (mp *TxPool) CleanSubmittedTransactions(block *Block) {
 	mp.Lock()
 	mp.cleanTransactions(block.Transactions)
@@ -440,8 +438,15 @@ func NewTxPool(params *config.Params) *TxPool {
 	rtn := &TxPool{
 		conflictManager: newConflictManager(),
 		chainParams:     params,
-		txnList:         make(map[Uint256]*Transaction),
 	}
-	rtn.txFees = newTxFeeOrderedList(rtn.onPopBack, pact.MaxTxPoolSize)
+	rtn.txPoolCheckpoint = newTxPoolCheckpoint(
+		rtn.onPopBack, func(m map[Uint256]*Transaction) {
+			for _, v := range m {
+				if err := rtn.conflictManager.AppendTx(v); err != nil {
+					return
+				}
+			}
+		})
+	params.CkpManager.Register(rtn.txPoolCheckpoint)
 	return rtn
 }
