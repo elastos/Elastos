@@ -81,6 +81,7 @@ namespace Elastos {
 
 		public:
 			static SPVModulePtr Create(const std::string &genesis_hash, const std::string &root_path) {
+				Log::registerMultiLogger(root_path);
 				Config cfg(root_path);
 				ChainConfigPtr chain_cfg = cfg.GetChainConfig(CHAINID_MAINCHAIN);
 				std::string db_path = root_path + "/spv_module.db";

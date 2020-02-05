@@ -17,7 +17,8 @@ namespace Elastos {
 			}
 			data.push_back(0xAF); // The cross chain op code.
 
-			side_address->SetRedeemScript(PrefixCrossChain, data);
+            side_address = AddressPtr(new Address());
+            side_address->SetRedeemScript(PrefixCrossChain, data);
 		}
 
 		SideAccount::~SideAccount() {

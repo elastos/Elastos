@@ -15,7 +15,9 @@ namespace Elastos {
 			InitializeTable(NOTIFY_QUEUE_TABLE_CREATE);
 		}
 
-		NotifyQueue::~NotifyQueue() {}
+		NotifyQueue::~NotifyQueue() {
+		    delete(this->_sqlite);
+		}
 
 		bool NotifyQueue::Upsert(const RecordPtr &record) {
 			return DoTransaction([&record, this]() {
