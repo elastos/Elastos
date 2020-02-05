@@ -184,14 +184,19 @@ func (sp *serverPeer) pushAddrMsg(addresses []*p2p.NetAddress) {
 
 // AssociateConnection associates the given conn to the peer.   Calling this
 // function when the peer is already connected will have no effect.
-func (sp *serverPeer) AssociateConnection(conn net.Conn) {
+func (sp *serverPeer) AssociateConnection(conn net.Conn) bool {
 	// Notify the new peer before starting the protocol negotiate, so the upper
 	// layer can receive version message and deal with it.
+	isSuceess := false
 	if sp.server.cfg.OnNewPeer != nil {
-		sp.server.cfg.OnNewPeer(sp)
+		isSuceess = sp.server.cfg.OnNewPeer(sp)
 	}
-
-	sp.Peer.AssociateConnection(conn)
+	if isSuceess {
+		sp.Peer.AssociateConnection(conn)
+	} else {
+		conn.Close()
+	}
+	return isSuceess
 }
 
 // OnVersion is invoked when a peer receives a version message and is
@@ -819,8 +824,11 @@ func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp := newServerPeer(s, false)
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
-	sp.AssociateConnection(conn)
-	go s.peerDoneHandler(sp)
+	sp.Peer.SetNA(conn.RemoteAddr())
+	sp.Peer.SetAddr(conn.RemoteAddr().String())
+	if sp.AssociateConnection(conn) {
+		go s.peerDoneHandler(sp)
+	}
 }
 
 // outboundPeerConnected is invoked by the connection manager when a new

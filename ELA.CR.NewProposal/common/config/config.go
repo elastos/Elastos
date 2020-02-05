@@ -83,6 +83,7 @@ type Configuration struct {
 	RPCServiceLevel             string            `json:"RPCServiceLevel"`
 	NodeProfileStrategy         string            `json:"NodeProfileStrategy"`
 	TxCacheVolume               uint32            `json:"TxCacheVolume"`
+	MaxNodePerHost              uint32            `json:"MaxNodePerHost"`
 }
 
 // DPoSConfiguration defines the DPoS consensus parameters.

@@ -47,7 +47,7 @@ type Server interface {
 	Services() pact.ServiceFlag
 
 	// NewPeer adds a new peer that has already been connected to the server.
-	NewPeer(p svr.IPeer)
+	NewPeer(p svr.IPeer)(bool)
 
 	// DonePeer removes a peer that has already been connected to the server by ip.
 	DonePeer(p svr.IPeer)

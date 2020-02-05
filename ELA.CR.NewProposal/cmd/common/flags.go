@@ -234,6 +234,10 @@ var (
 		Name:  "maxcommitteeproposalcount",
 		Usage: "defines max count of the proposal that one cr can proposal",
 	}
+	MaxNodePerHost = cli.StringFlag{
+		Name:  "maxnodeperhost",
+		Usage: "defines max nodes that one host can establish",
+	}
 	VoteStatisticsHeightFlag = cli.StringFlag{
 		Name:  "votestatisticsheight",
 		Usage: "defines the height to fix vote statistics error",

@@ -51,7 +51,7 @@ func (f *naFilter) Filter(na *p2p.NetAddress) bool {
 // newPeerMsg represent a new connected peer.
 type newPeerMsg struct {
 	svr.IPeer
-	reply chan struct{}
+	reply chan bool
 }
 
 // donePeerMsg represent a disconnected peer.
@@ -852,6 +852,32 @@ cleanup:
 	}
 }
 
+func (s *server) isOverMaxNodePerHost(peers map[svr.IPeer]*serverPeer,
+	sp *serverPeer) bool {
+	hostNodeCount := uint32(1)
+	for _, peer := range peers {
+
+		var peerNa, spNa *p2p.NetAddress
+		if peerNa = peer.NA(); peerNa == nil {
+			continue
+		}
+		if spNa = sp.NA(); spNa == nil {
+			return true
+		}
+		if peer.NA().IP.String() == sp.NA().IP.String() {
+			hostNodeCount++
+		}
+	}
+	if hostNodeCount > s.chainParams.MaxNodePerHost {
+		log.Infof("New peer %s ignored, "+
+			"hostNodeCount %d is more than  MaxNodePerHost %d ",
+			sp, hostNodeCount, s.chainParams.MaxNodePerHost)
+		sp.Disconnect()
+		return true
+	}
+	return false
+}
+
 // handlePeerMsg deals with adding and removing peers.
 func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 	switch p := p.(type) {
@@ -874,9 +900,12 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 			OnDAddr:        s.routes.QueueDAddr,
 		})
 
-		peers[p.IPeer] = sp
-		p.reply <- struct{}{}
-
+		if s.isOverMaxNodePerHost(peers, sp) {
+			p.reply <- false
+		} else {
+			peers[p.IPeer] = sp
+			p.reply <- true
+		}
 	case donePeerMsg:
 		delete(peers, p.IPeer)
 		p.reply <- struct{}{}
@@ -898,10 +927,10 @@ func (s *server) Services() pact.ServiceFlag {
 }
 
 // NewPeer adds a new peer that has already been connected to the server.
-func (s *server) NewPeer(p svr.IPeer) {
-	reply := make(chan struct{})
+func (s *server) NewPeer(p svr.IPeer) bool {
+	reply := make(chan bool)
 	s.peerQueue <- newPeerMsg{p, reply}
-	<-reply
+	return <-reply
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.

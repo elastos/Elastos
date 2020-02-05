@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package server
 
@@ -63,6 +63,8 @@ type Config struct {
 	// Max number of inbound and outbound peers.
 	MaxPeers int
 
+	MaxNodePerHost uint32
+
 	// Disable banning of misbehaving peers.
 	DisableBanning bool
 
@@ -82,7 +84,7 @@ type Config struct {
 	TargetOutbound int
 
 	// OnNewPeer will be invoked when a new peer connected.
-	OnNewPeer func(IPeer)
+	OnNewPeer func(IPeer) bool
 
 	// OnDonePeer will be invoked when a peer disconnected.
 	OnDonePeer func(IPeer)
@@ -188,7 +190,7 @@ func NewDefaultConfig(
 	services uint64,
 	defaultPort uint16,
 	seeds, listenAddrs []string,
-	onNewPeer func(IPeer),
+	onNewPeer func(IPeer) bool,
 	onDonePeer func(IPeer),
 	makeEmptyMessage func(string) (p2p.Message, error),
 	bestHeight func() uint64) *Config {

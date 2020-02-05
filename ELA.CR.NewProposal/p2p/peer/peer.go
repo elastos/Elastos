@@ -289,6 +289,20 @@ func (p *Peer) NA() *p2p.NetAddress {
 	return na
 }
 
+func (p *Peer) SetNA(addr net.Addr) bool {
+	na, err := newNetAddress(addr, p.services)
+	if err != nil {
+		log.Errorf("Cannot create remote net address: %v", err)
+		p.Disconnect()
+		return false
+	}
+	p.flagsMtx.Lock()
+	p.na = na
+	p.flagsMtx.Unlock()
+
+	return true
+}
+
 // Addr returns the peer address.
 //
 // This function is safe for concurrent access.
@@ -296,6 +310,20 @@ func (p *Peer) Addr() string {
 	// The address doesn't change after initialization, therefore it is not
 	// protected by a mutex.
 	return p.addr
+}
+
+func (p *Peer) Host() (string, error) {
+	host, _, err := net.SplitHostPort(p.addr)
+	if err != nil {
+		return "", err
+	}
+	return host, nil
+}
+
+func (p *Peer) SetAddr(addr string) {
+	// The address doesn't change after initialization, therefore it is not
+	// protected by a mutex.
+	p.addr = addr
 }
 
 // Inbound returns whether the peer is inbound.
@@ -1091,22 +1119,6 @@ func (p *Peer) AssociateConnection(conn net.Conn) {
 
 	p.conn = conn
 	p.timeConnected = time.Now()
-
-	if p.inbound {
-		p.addr = p.conn.RemoteAddr().String()
-
-		// Set up a NetAddress for the peer to be used with AddrManager.  We
-		// only do this inbound because outbound set this up at connection time
-		// and no point recomputing.
-		na, err := newNetAddress(p.conn.RemoteAddr(), p.services)
-		if err != nil {
-			log.Errorf("Cannot create remote net address: %v", err)
-			p.Disconnect()
-			return
-		}
-		p.na = na
-	}
-
 	go func() {
 		if err := p.start(); err != nil {
 			log.Debugf("Cannot negotiate peer %v: %v", p, err)
