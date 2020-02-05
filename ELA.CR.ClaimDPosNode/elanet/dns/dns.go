@@ -55,9 +55,10 @@ func makeMessage(cmd string) (p2p.Message, error) {
 func bestHeight() uint64 { return 0 }
 
 // onNewPeer handles the new connected peer.
-func onNewPeer(p server.IPeer) {
+func onNewPeer(p server.IPeer)(bool) {
 	log.Infof("New peer %s connected", p)
 	go handlePeer(p.ToPeer())
+	return true
 }
 
 // handlePeer waits the peer to finish request addresses and disconnect it.
