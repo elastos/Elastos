@@ -622,6 +622,10 @@ public class DIDDocument {
 		return getAuthenticationKey(id) != null;
 	}
 
+	// Check whether this publicKey already is one of DIDDocument publicKeys
+	// if not, just add it. Otherwise, need to check whether it is the same
+	// public key. If does, we prefer to reference public key in DIDDocument
+	// publicKeys. If not, then would be conflicted and should keep untouched.
 	protected boolean addAuthenticationKey(PublicKey pk) {
 		// Check the controller is current DID subject
 		if (!pk.getController().equals(getSubject()))
@@ -634,7 +638,7 @@ public class DIDDocument {
 		} else {
 			if (!key.equals(pk)) // Key conflict.
 				return false;
-			else // Already has this key.
+			else // Already has this key
 				pk = key;
 		}
 
@@ -712,6 +716,7 @@ public class DIDDocument {
 		return getAuthorizationKey(id) != null;
 	}
 
+	// same comments as "addAuthenticationKey" method.
 	protected boolean addAuthorizationKey(PublicKey pk) {
 		// Can not authorize to self
 		if (pk.getController().equals(getSubject()))

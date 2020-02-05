@@ -308,7 +308,7 @@ class FileSystemStorage implements DIDStorage {
 			File file = getFile(PRIVATE_DIR, INDEX_FILE);
 			return Integer.valueOf(readText(file));
 		} catch (Exception e) {
-			throw new DIDStorageException("Load private identity error.", e);
+			throw new DIDStorageException("Load private identity index error.", e);
 		}
 	}
 

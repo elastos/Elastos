@@ -192,12 +192,12 @@ public class DIDURL implements Comparable<DIDURL> {
 		return getMeta().getExtra(name);
 	}
 
+	// when alias is null value, mean to clean alias
 	public void setAlias(String alias) throws DIDStoreException {
 		getMeta().setAlias(alias);
 
 		if (getMeta().attachedStore())
-			if (getMeta().attachedStore())
-				getMeta().getStore().storeCredentialMeta(this.getDid(), this, meta);
+			getMeta().getStore().storeCredentialMeta(this.getDid(), this, meta);
 	}
 
 	public String getAlias() {
