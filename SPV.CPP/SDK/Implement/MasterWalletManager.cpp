@@ -60,7 +60,7 @@ namespace Elastos {
 					boost::filesystem::create_directory(_dataPath);
 			}
 
-			Load();
+			LoadMasterWalletID();
 		}
 
 		MasterWalletManager::MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath,
@@ -92,7 +92,7 @@ namespace Elastos {
 			if (_config->GetNetType() != CONFIG_MAINNET)
 				_dataPath = _dataPath + "/" + _config->GetNetType();
 
-			Load();
+			LoadMasterWalletID();
 		}
 
 		MasterWalletManager::~MasterWalletManager() {
@@ -111,7 +111,7 @@ namespace Elastos {
 			_config = nullptr;
 		}
 
-		void MasterWalletManager::Load() {
+		void MasterWalletManager::LoadMasterWalletID() {
 			directory_iterator it{_dataPath};
 			while (it != directory_iterator{}) {
 
@@ -123,17 +123,35 @@ namespace Elastos {
 
 				std::string masterWalletID = temp.filename().string();
 				if (exists((*it) / LOCAL_STORE_FILE) || exists((*it) / MASTER_WALLET_STORE_FILE)) {
-					Log::info("loading {}", masterWalletID);
-					MasterWallet *masterWallet = new MasterWallet(masterWalletID, ConfigPtr(new Config(*_config)),
-																  _dataPath, _p2pEnable,
-																  ImportFromLocalStore);
-
-					//checkRedundant(masterWallet);
-					_masterWalletMap[masterWalletID] = masterWallet;
-					masterWallet->InitSubWallets();
+					_masterWalletMap[masterWalletID] = nullptr;
 				}
 				++it;
 			}
+		}
+
+		IMasterWallet *MasterWalletManager::LoadMasterWallet(const std::string &masterWalletID) const {
+			boost::filesystem::path walletStore(_dataPath);
+
+			walletStore /= masterWalletID;
+			if (!exists(walletStore / LOCAL_STORE_FILE) && !exists(walletStore / MASTER_WALLET_STORE_FILE)) {
+				Log::error("load master wallet '{}' failed: not exist", masterWalletID);
+				return nullptr;
+			}
+
+			Log::info("loading wallet: {} ...", masterWalletID);
+			MasterWallet *masterWallet;
+			try {
+				masterWallet = new MasterWallet(masterWalletID, ConfigPtr(new Config(*_config)),
+															  _dataPath, _p2pEnable,
+															  ImportFromLocalStore);
+				masterWallet->InitSubWallets();
+				_masterWalletMap[masterWalletID] = masterWallet;
+			} catch (const std::exception &e) {
+				Log::error("load master wallet '{}' failed: {}", masterWalletID, e.what());
+				masterWallet = nullptr;
+			}
+
+			return masterWallet;
 		}
 
 		std::string MasterWalletManager::GenerateMnemonic(const std::string &language, int wordCount) const {
@@ -149,38 +167,38 @@ namespace Elastos {
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMasterWallet(
-			const std::string &masterWalletId,
+			const std::string &masterWalletID,
 			const std::string &mnemonic,
 			const std::string &phrasePassword,
 			const std::string &payPassword,
 			bool singleAddress) {
 
 			ArgInfo("{}", GetFunName());
-			ArgInfo("masterWalletID: {}", masterWalletId);
+			ArgInfo("masterWalletID: {}", masterWalletID);
 			ArgInfo("mnemonic: *");
 			ArgInfo("passphrase: *, empty: {}", phrasePassword.empty());
 			ArgInfo("payPasswd: *");
 			ArgInfo("singleAddress: {}", singleAddress);
 
-			ErrorChecker::CheckParamNotEmpty(masterWalletId, "Master wallet ID");
+			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckParamNotEmpty(mnemonic, "mnemonic");
 			ErrorChecker::CheckPassword(payPassword, "Pay");
 			ErrorChecker::CheckPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end()) {
+			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
 				ArgInfo("r => already exist");
-				return _masterWalletMap[masterWalletId];
+				return _masterWalletMap[masterWalletID];
 			}
 
 			Mnemonic m(_rootPath);
 			ErrorChecker::CheckLogic(!m.Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
 
 			time_t now = time(NULL);
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
+			MasterWallet *masterWallet = new MasterWallet(masterWalletID, mnemonic, phrasePassword, payPassword,
 														  singleAddress, _p2pEnable, ConfigPtr(new Config(*_config)),
 														  _dataPath, now, CreateNormal);
 			checkRedundant(masterWallet);
-			_masterWalletMap[masterWalletId] = masterWallet;
+			_masterWalletMap[masterWalletID] = masterWallet;
 
 			ArgInfo("r => create master wallet");
 
@@ -360,7 +378,11 @@ namespace Elastos {
 
 			std::vector<IMasterWallet *> result;
 			for (MasterWalletMap::const_iterator it = _masterWalletMap.cbegin(); it != _masterWalletMap.cend(); ++it) {
-				result.push_back(it->second);
+				if (it->second) {
+					result.push_back(it->second);
+				} else {
+					result.push_back(LoadMasterWallet(it->first));
+				}
 			}
 
 			ArgInfo("r => all master wallet count: {}", result.size());
@@ -421,37 +443,37 @@ namespace Elastos {
 			return masterWallet;
 		}
 
-		IMasterWallet *MasterWalletManager::ImportWalletWithMnemonic(const std::string &masterWalletId,
+		IMasterWallet *MasterWalletManager::ImportWalletWithMnemonic(const std::string &masterWalletID,
 																	 const std::string &mnemonic,
 																	 const std::string &phrasePassword,
 																	 const std::string &payPassword,
 																	 bool singleAddress, time_t timestamp) {
 			ArgInfo("{}", GetFunName());
-			ArgInfo("masterWalletID: {}", masterWalletId);
+			ArgInfo("masterWalletID: {}", masterWalletID);
 			ArgInfo("mnemonic: *");
 			ArgInfo("passphrase: *, empty: {}", phrasePassword.empty());
 			ArgInfo("payPasswd: *");
 			ArgInfo("singleAddr: {}", singleAddress);
 			ArgInfo("timestamp: {}", timestamp);
 
-			ErrorChecker::CheckParamNotEmpty(masterWalletId, "Master wallet ID");
+			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckParamNotEmpty(mnemonic, "Mnemonic");
 			ErrorChecker::CheckPasswordWithNullLegal(phrasePassword, "Phrase");
 			ErrorChecker::CheckPassword(payPassword, "Pay");
 
-			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end()) {
+			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
 				ArgInfo("r => already exist");
-				return _masterWalletMap[masterWalletId];
+				return _masterWalletMap[masterWalletID];
 			}
 
 			Mnemonic m(_rootPath);
 			ErrorChecker::CheckLogic(!m.Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
+			MasterWallet *masterWallet = new MasterWallet(masterWalletID, mnemonic, phrasePassword, payPassword,
 														  singleAddress, _p2pEnable, ConfigPtr(new Config(*_config)),
 														  _dataPath, timestamp, ImportFromMnemonic);
 			checkRedundant(masterWallet);
-			_masterWalletMap[masterWalletId] = masterWallet;
+			_masterWalletMap[masterWalletID] = masterWallet;
 
 			ArgInfo("r => import with mnemonic");
 
@@ -517,30 +539,16 @@ namespace Elastos {
 			return result;
 		}
 
-		IMasterWallet *MasterWalletManager::GetMasterWallet(const std::string &masterWalletId) const {
+		IMasterWallet *MasterWalletManager::GetMasterWallet(const std::string &masterWalletID) const {
 			ArgInfo("{}", GetFunName());
-			ArgInfo("masterWalletID: {}", masterWalletId);
+			ArgInfo("masterWalletID: {}", masterWalletID);
 
-			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.cend() &&
-				_masterWalletMap[masterWalletId] != nullptr) {
-				return _masterWalletMap[masterWalletId];
+			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.cend() &&
+				_masterWalletMap[masterWalletID] != nullptr) {
+				return _masterWalletMap[masterWalletID];
 			}
 
-			MasterWallet *masterWallet = nullptr;
-			try {
-				masterWallet = new MasterWallet(masterWalletId, ConfigPtr(new Config(*_config)),
-												_dataPath,
-												_p2pEnable,
-												ImportFromLocalStore);
-
-				checkRedundant(masterWallet);
-				_masterWalletMap[masterWalletId] = masterWallet;
-				masterWallet->InitSubWallets();
-			} catch (const std::exception &e) {
-				return nullptr;
-			}
-
-			return masterWallet;
+			return LoadMasterWallet(masterWalletID);
 		}
 
 		void MasterWalletManager::checkRedundant(IMasterWallet *wallet) const {

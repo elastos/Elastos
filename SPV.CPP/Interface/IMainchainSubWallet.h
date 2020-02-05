@@ -420,6 +420,20 @@ namespace Elastos {
 			 *Sponsor generate proposal digest for sponsor signature.
 			 *
 			 * @param type             Proposal type, value is [0-5]
+			 * 	enum type {
+			 *		normal = 0x0000,
+			 *		elip = 0x0100,
+			 *		flowElip = 0x0101,
+			 *		infoElip = 0x0102,
+			 *		mainChainUpgradeCode = 0x0200,
+			 *		sideChainUpgradeCode = 0x0300,
+			 *		registerSideChain = 0x0301,
+			 *		secretaryGeneral = 0x0400,
+			 *		changeSponsor = 0x0401,
+			 *		closeProposal = 0x0402,
+			 *		dappConsensus = 0x0500,
+			 *		maxType
+			 * };
 			 * @param categoryData     Used to store category data with a length limit not exceeding 4096 characters
 			 * @param sponsorPublicKey Public key of sponsor
 			 * @param draftHash        The hash of draft proposal
@@ -442,7 +456,7 @@ namespace Elastos {
 			 *    "Signature":""
 			 * }
 			 */
-			virtual nlohmann::json SponsorProposalDigest(uint8_t type,
+			virtual nlohmann::json SponsorProposalDigest(uint16_t type,
 			                                             const std::string &categoryData,
 			                                             const std::string &sponsorPublicKey,
 			                                             const std::string &draftHash,

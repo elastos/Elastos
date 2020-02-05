@@ -114,7 +114,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GetVoteInfo(const std::string &type) const;
 
-			virtual nlohmann::json SponsorProposalDigest(uint8_t type,
+			virtual nlohmann::json SponsorProposalDigest(uint16_t type,
 			                                             const std::string &categoryData,
 			                                             const std::string &sponsorPublicKey,
 			                                             const std::string &draftHash,
@@ -169,7 +169,7 @@ namespace Elastos {
 			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
 		private:
-			PayloadPtr GenerateCRCProposalPayload(uint8_t type,
+			PayloadPtr GenerateCRCProposalPayload(uint16_t type,
 			                                      const std::string &categoryData,
 			                                      const std::string &sponsorPublicKey,
 			                                      const std::string &crSponsorDID,

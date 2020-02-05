@@ -1018,7 +1018,7 @@ namespace Elastos {
 			return jinfo;
 		}
 
-		nlohmann::json MainchainSubWallet::SponsorProposalDigest(uint8_t type,
+		nlohmann::json MainchainSubWallet::SponsorProposalDigest(uint16_t type,
 		                                                         const std::string &categoryData,
 		                                                         const std::string &sponsorPublicKey,
 		                                                         const std::string &draftHash,
@@ -1123,7 +1123,7 @@ namespace Elastos {
 			return result;
 		}
 
-		PayloadPtr MainchainSubWallet::GenerateCRCProposalPayload(uint8_t type,
+		PayloadPtr MainchainSubWallet::GenerateCRCProposalPayload(uint16_t type,
 		                                                          const std::string &categoryData,
 		                                                          const std::string &sponsorPublicKey,
 		                                                          const std::string &crSponsorDID,
