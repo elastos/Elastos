@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine"
-	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/health_check"
 )
 
 func main() {
