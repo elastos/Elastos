@@ -7,6 +7,7 @@ package state
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -1547,4 +1548,515 @@ func TestCommittee_RollbackTempStartVotingPeriod(t *testing.T) {
 	keyFrameD := committee.Snapshot()
 
 	checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
+}
+
+func TestCommittee_RollbackCRCAppropriationTx(t *testing.T) {
+
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+	did1 := getDIDByPublicKey(publicKeyStr1)
+	nickName1 := "nickname 1"
+
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	did2 := getDIDByPublicKey(publicKeyStr2)
+	nickName2 := "nickname 2"
+
+	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
+	did3 := getDIDByPublicKey(publicKeyStr3)
+	nickName3 := "nickname 3"
+
+	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	registerCRTxn2 := getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
+	registerCRTxn3 := getRegisterCRTx(publicKeyStr3, privateKeyStr3, nickName3)
+
+	CRCFoundationAddr := "ERyUmNH51roR9qfru37Kqkaok2NghR7L5U"
+	crcFoundationUint168, _ := common.Uint168FromAddress(CRCFoundationAddr)
+	CRCFoundationPbkey := "02ca89a5fe6213da1b51046733529a84f0265abac59005f6c16f62330d20f02aeb"
+	txFoundation := getTransferAssetTx(CRCFoundationPbkey, 5000.0, *crcFoundationUint168)
+
+	// set count of CR member
+	cfg := &config.DefaultParams
+	cfg.CRCArbiters = cfg.CRCArbiters[0:2]
+	cfg.CRMemberCount = 2
+
+	// new committee
+	committee := NewCommittee(cfg)
+
+	// avoid getting UTXOs from database
+	currentHeight := config.DefaultParams.CRVotingStartHeight
+	committee.recordBalanceHeight = currentHeight - 1
+
+	// register cr
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			registerCRTxn1,
+			registerCRTxn2,
+			registerCRTxn3,
+			txFoundation,
+		},
+	}, nil)
+	assert.Equal(t, 3, len(committee.GetCandidates(Pending)))
+	assert.Equal(t, 0, len(committee.GetCandidates(Active)))
+
+	// vote cr
+	for i := 0; i < 5; i++ {
+		currentHeight++
+		committee.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: currentHeight,
+			},
+		}, nil)
+	}
+	voteCRTx := getVoteCRTx(6, []outputpayload.CandidateVotes{
+		{did1.Bytes(), 3},
+		{did2.Bytes(), 2},
+		{did3.Bytes(), 1}})
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			voteCRTx,
+		},
+	}, nil)
+
+	//currentHeight to before CRCommitteeStartHeight
+	currentHeight = cfg.CRCommitteeStartHeight - 1
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, 0, len(committee.GetAllMembers()))
+	assert.Equal(t, 3, len(committee.GetAllCandidates()))
+
+	// process here change committee
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+	}, nil)
+	keyFrameA := committee.Snapshot()
+
+	//process appropriation tx
+	crcCommiteeAddressStr := "ESq12oQrvGqHfTkEDYJyR9MxZj1NMnonjo"
+	crcCommiteeAddrHash, _ := common.Uint168FromAddress(crcCommiteeAddressStr)
+	txAppropriate := getAppropriationTx(500.0, *crcCommiteeAddrHash)
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			txAppropriate,
+		},
+	}, nil)
+	keyFrameB := committee.Snapshot()
+
+	// rollback appropriation tx
+	currentHeight--
+	err := committee.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	keyFrameC := committee.Snapshot()
+
+	// reprocess txAppropriate
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			txAppropriate,
+		},
+	}, nil)
+	assert.Equal(t, 2, len(committee.GetAllMembers()))
+	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+	keyFrameD := committee.Snapshot()
+
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
+}
+
+func getProgramHash(publicKeyHexStr string) (*common.Uint168, error) {
+	pkBytes, _ := common.HexStringToBytes(publicKeyHexStr)
+	return contract.PublicKeyToStandardProgramHash(pkBytes)
+}
+
+func getAddress(publicKeyHexStr string) (string, error) {
+	address1Uint168, _ := getProgramHash(publicKeyHexStr)
+	return address1Uint168.ToAddress()
+}
+
+func getTransferAssetTx(publicKeyStr string, value common.Fixed64, outPutAddr common.Uint168) *types.
+	Transaction {
+	txn := &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.TransferAsset,
+		Payload:    &payload.TransferAsset{},
+		Attributes: nil,
+		Inputs:     nil,
+		Programs:   nil,
+		LockTime:   0,
+	}
+
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCodeByPubKeyStr(publicKeyStr),
+		Parameter: nil,
+	}}
+
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       value,
+		OutputLock:  0,
+		ProgramHash: outPutAddr,
+		Type:        0,
+		Payload:     new(outputpayload.DefaultOutput),
+	}}
+	return txn
+}
+func getAppropriationTx(value common.Fixed64, outPutAddr common.Uint168) *types.
+	Transaction {
+	crcAppropriationPayload := &payload.CRCAppropriation{}
+
+	txn := &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.CRCAppropriation,
+		Payload:    crcAppropriationPayload,
+		Attributes: []*types.Attribute{},
+		Inputs:     nil,
+		Programs:   []*program.Program{},
+		LockTime:   0,
+	}
+	txn.Outputs = []*types.Output{&types.Output{
+		AssetID:     common.Uint256{},
+		Value:       value,
+		OutputLock:  0,
+		ProgramHash: outPutAddr,
+		Type:        0,
+		Payload:     new(outputpayload.DefaultOutput),
+	}}
+	return txn
+}
+
+func getDIDStrByPublicKey(publicKey string) (string, error) {
+	code1 := getCodeByPubKeyStr(publicKey)
+	ct1, _ := contract.CreateCRDIDContractByCode(code1)
+	return ct1.ToProgramHash().ToAddress()
+}
+
+func TestCommittee_RollbackCRCImpeachmentTx(t *testing.T) {
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+	did1 := getDIDByPublicKey(publicKeyStr1)
+	address1Uint168, _ := getProgramHash(publicKeyStr1)
+	did1Str, _ := getDIDStrByPublicKey(publicKeyStr1)
+	fmt.Println("did1", did1Str)
+
+	nickName1 := "nickname 1"
+
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	did2 := getDIDByPublicKey(publicKeyStr2)
+	nickName2 := "nickname 2"
+	did2Str, _ := getDIDStrByPublicKey(publicKeyStr2)
+	fmt.Println("did2", did2Str)
+
+	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
+	did3 := getDIDByPublicKey(publicKeyStr3)
+	nickName3 := "nickname 3"
+	did3Str, _ := getDIDStrByPublicKey(publicKeyStr3)
+	fmt.Println("did3", did3Str)
+
+	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	registerCRTxn2 := getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
+	registerCRTxn3 := getRegisterCRTx(publicKeyStr3, privateKeyStr3, nickName3)
+
+	// set count of CR member
+	cfg := &config.DefaultParams
+	cfg.CRCArbiters = cfg.CRCArbiters[0:2]
+	cfg.CRMemberCount = 2
+
+	// new committee
+	committee := NewCommittee(cfg)
+
+	// avoid getting UTXOs from database
+	currentHeight := config.DefaultParams.CRVotingStartHeight
+	committee.recordBalanceHeight = currentHeight - 1
+
+	// register cr
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			registerCRTxn1,
+			registerCRTxn2,
+			registerCRTxn3,
+		},
+	}, nil)
+	assert.Equal(t, 3, len(committee.GetCandidates(Pending)))
+	assert.Equal(t, 0, len(committee.GetCandidates(Active)))
+
+	// vote cr
+	for i := 0; i < 5; i++ {
+		currentHeight++
+		committee.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: currentHeight,
+			},
+		}, nil)
+	}
+	voteCRTx := getVoteCRTx(6, []outputpayload.CandidateVotes{
+		{did1.Bytes(), 3},
+		{did2.Bytes(), 2},
+		{did3.Bytes(), 1}})
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			voteCRTx,
+		},
+	}, nil)
+
+	currentHeight = cfg.CRCommitteeStartHeight - 1
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, 0, len(committee.GetAllMembers()))
+	assert.Equal(t, 3, len(committee.GetAllCandidates()))
+	// process
+
+	//here change committee
+	committee.params.CRAgreementCount = 2
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, 2, len(committee.GetAllMembers()))
+	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+	committee.state.depositInfo = make(map[common.Uint168]*DepositInfo)
+	committee.state.depositInfo[*did1] = &DepositInfo{
+		Refundable:    false,
+		DepositAmount: 5000 * 1e8,
+		TotalAmount:   5000 * 1e8,
+		Penalty:       12,
+	}
+	keyFrameA := committee.Snapshot()
+
+	//here process impeachment
+	//generate impeachment tx
+	impeachmentTx := getCRCImpeachmentTx(publicKeyStr1, did1, 3, *address1Uint168)
+
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			impeachmentTx,
+		},
+	}, nil)
+	keyFrameB := committee.Snapshot()
+
+	// rollback
+	currentHeight--
+	err := committee.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	keyFrameC := committee.Snapshot()
+
+	// reprocess
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			impeachmentTx,
+		},
+	}, nil)
+	keyFrameD := committee.Snapshot()
+
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
+
+}
+
+func TestCommittee_RollbackCRCImpeachmentAndReelectionTx(t *testing.T) {
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+	did1 := getDIDByPublicKey(publicKeyStr1)
+	address1Uint168, _ := getProgramHash(publicKeyStr1)
+	did1Str, _ := getDIDStrByPublicKey(publicKeyStr1)
+	fmt.Println("did1", did1Str)
+
+	nickName1 := "nickname 1"
+
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	did2 := getDIDByPublicKey(publicKeyStr2)
+	nickName2 := "nickname 2"
+	did2Str, _ := getDIDStrByPublicKey(publicKeyStr2)
+	fmt.Println("did2", did2Str)
+
+	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
+	did3 := getDIDByPublicKey(publicKeyStr3)
+	nickName3 := "nickname 3"
+	did3Str, _ := getDIDStrByPublicKey(publicKeyStr3)
+	fmt.Println("did3", did3Str)
+
+	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	registerCRTxn2 := getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
+	registerCRTxn3 := getRegisterCRTx(publicKeyStr3, privateKeyStr3, nickName3)
+
+	// set count of CR member
+	cfg := &config.DefaultParams
+	cfg.CRCArbiters = cfg.CRCArbiters[0:2]
+	cfg.CRMemberCount = 2
+
+	// new committee
+	committee := NewCommittee(cfg)
+
+	// avoid getting UTXOs from database
+	currentHeight := config.DefaultParams.CRVotingStartHeight
+	committee.recordBalanceHeight = currentHeight - 1
+
+	// register cr
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			registerCRTxn1,
+			registerCRTxn2,
+			registerCRTxn3,
+		},
+	}, nil)
+	assert.Equal(t, 3, len(committee.GetCandidates(Pending)))
+	assert.Equal(t, 0, len(committee.GetCandidates(Active)))
+
+	// vote cr
+	for i := 0; i < 5; i++ {
+		currentHeight++
+		committee.ProcessBlock(&types.Block{
+			Header: types.Header{
+				Height: currentHeight,
+			},
+		}, nil)
+	}
+	voteCRTx := getVoteCRTx(6, []outputpayload.CandidateVotes{
+		{did1.Bytes(), 3},
+		{did2.Bytes(), 2},
+		{did3.Bytes(), 1}})
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			voteCRTx,
+		},
+	}, nil)
+
+	currentHeight = cfg.CRCommitteeStartHeight - 1
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, 0, len(committee.GetAllMembers()))
+	assert.Equal(t, 3, len(committee.GetAllCandidates()))
+	// process
+
+	//here change committee
+	committee.params.CRAgreementCount = 3
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight}}, nil)
+	assert.Equal(t, 2, len(committee.GetAllMembers()))
+	assert.Equal(t, 0, len(committee.GetAllCandidates()))
+	committee.state.depositInfo = make(map[common.Uint168]*DepositInfo)
+	committee.state.depositInfo[*did1] = &DepositInfo{
+		Refundable:    false,
+		DepositAmount: 5000 * 1e8,
+		TotalAmount:   5000 * 1e8,
+		Penalty:       12,
+	}
+	keyFrameA := committee.Snapshot()
+
+	//here process impeachment
+	//generate impeachment tx
+	impeachValue := committee.CirculationAmount*common.Fixed64(committee.params.
+		VoterRejectPercentage/100.0) + 1
+	impeachmentTx := getCRCImpeachmentTx(publicKeyStr1, did1, impeachValue, *address1Uint168)
+
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			impeachmentTx,
+		},
+	}, nil)
+	assert.Equal(t, false, committee.InElectionPeriod)
+	keyFrameB := committee.Snapshot()
+
+	// rollback
+	currentHeight--
+	err := committee.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	assert.Equal(t, committee.InElectionPeriod, true)
+
+	keyFrameC := committee.Snapshot()
+
+	// reprocess
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{
+			impeachmentTx,
+		},
+	}, nil)
+	assert.Equal(t, committee.InElectionPeriod, false)
+
+	keyFrameD := committee.Snapshot()
+
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameA, keyFrameC))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameA, keyFrameB))
+	assert.Equal(t, true, committeeKeyFrameEqual(keyFrameB, keyFrameD))
+	assert.Equal(t, false, committeeKeyFrameEqual(keyFrameB, keyFrameC))
+
+}
+
+func getCRCImpeachmentTx(publicKeyStr string, did *common.Uint168,
+	value common.Fixed64, outPutAddr common.Uint168) *types.Transaction {
+	outputs := []*types.Output{}
+	outputs = append(outputs, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: outPutAddr,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRCImpeachment,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{did.Bytes(), value},
+					},
+				},
+			},
+		},
+	})
+
+	txn := &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.TransferAsset,
+		Payload:    &payload.TransferAsset{},
+		Attributes: nil,
+		Inputs:     nil,
+		Outputs:    outputs,
+		Programs:   nil,
+		LockTime:   0,
+	}
+
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCodeByPubKeyStr(publicKeyStr),
+		Parameter: nil,
+	}}
+	return txn
 }
