@@ -414,6 +414,9 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 			break
 		}
 	}
+	if crMember == nil {
+		return
+	}
 	oriPenalty := c.state.depositInfo[crMember.Info.DID].Penalty
 	oriMemberState := crMember.MemberState
 	penalty := c.getMemberPenalty(height, crMember)
