@@ -1,6 +1,7 @@
 package mempool
 
 import (
+	"bytes"
 	"math/rand"
 	"testing"
 
@@ -120,6 +121,49 @@ func TestTxFeeOrderedList_RemoveTx(t *testing.T) {
 		i++
 	}
 	assert.Equal(t, uint64(0), orderedList.totalSize)
+}
+
+func TestTxFeeOrderedList_Deserialize(t *testing.T) {
+	list := txFeeOrderedList{
+		totalSize: rand.Uint64(),
+	}
+	for i := 0; i < 5; i++ {
+		list.list = append(list.list, *randomTxItem())
+	}
+
+	buf := bytes.Buffer{}
+	assert.NoError(t, list.Serialize(&buf))
+
+	var list2 txFeeOrderedList
+	assert.NoError(t, list2.Deserialize(&buf))
+
+	for i := 0; i < 5; i++ {
+		assert.True(t, txItemsEqual(&list.list[i], &list2.list[i]))
+	}
+}
+
+func TestTxItem_Deserialize(t *testing.T) {
+	item := randomTxItem()
+	buf := bytes.Buffer{}
+	assert.NoError(t, item.Serialize(&buf))
+
+	var item2 txItem
+	assert.NoError(t, item2.Deserialize(&buf))
+
+	assert.True(t, txItemsEqual(item, &item2))
+}
+
+func randomTxItem() *txItem {
+	return &txItem{
+		Hash:    *randomHash(),
+		FeeRate: rand.Float64(),
+		Size:    rand.Uint32(),
+	}
+}
+
+func txItemsEqual(item, item2 *txItem) bool {
+	return item.Hash.IsEqual(item2.Hash) && item.FeeRate == item2.FeeRate &&
+		item.Size == item2.Size
 }
 
 func isListDescendingOrder(l *txFeeOrderedList) bool {

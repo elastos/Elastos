@@ -2,6 +2,7 @@ package mempool
 
 import (
 	"fmt"
+	"io"
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -20,7 +21,7 @@ var (
 type txItem struct {
 	Hash    common.Uint256
 	FeeRate float64
-	Size    int
+	Size    uint32
 }
 
 // txFeeOrderedList maintains a list of tx hashes order
@@ -32,7 +33,7 @@ type txFeeOrderedList struct {
 }
 
 func (l *txFeeOrderedList) AddTx(tx *types.Transaction) errors.ELAError {
-	size := tx.GetSize()
+	size := uint32(tx.GetSize())
 	if size <= 0 {
 		return errors.SimpleWithMessage(errors.ErrTxPoolFailure, nil,
 			fmt.Sprintf("tx %s got illegal size", tx.Hash().String()))
@@ -102,6 +103,36 @@ func (l *txFeeOrderedList) OverSize(size uint64) bool {
 	return l.totalSize+size > l.maxSize
 }
 
+func (l *txFeeOrderedList) Serialize(w io.Writer) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(l.list))); err != nil {
+		return
+	}
+	for _, v := range l.list {
+		if err = v.Serialize(w); err != nil {
+			return
+		}
+	}
+
+	return common.WriteElements(w, l.totalSize)
+}
+
+func (l *txFeeOrderedList) Deserialize(r io.Reader) (err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	l.list = make([]txItem, 0, count)
+	for i := uint64(0); i < count; i++ {
+		item := txItem{}
+		if err = item.Deserialize(r); err != nil {
+			return
+		}
+		l.list = append(l.list, item)
+	}
+
+	return common.ReadElements(r, &l.totalSize)
+}
+
 func (l *txFeeOrderedList) compareAndInsert(item txItem) {
 	index := sort.Search(len(l.list), func(i int) bool {
 		return l.list[i].FeeRate < item.FeeRate
@@ -127,4 +158,20 @@ func newTxFeeOrderedList(onPopBack PopBackEvent,
 		onPopBack: onPopBack,
 		maxSize:   maxSize,
 	}
+}
+
+func (i *txItem) Serialize(w io.Writer) error {
+	if err := i.Hash.Serialize(w); err != nil {
+		return err
+	}
+
+	return common.WriteElements(w, i.FeeRate, i.Size)
+}
+
+func (i *txItem) Deserialize(r io.Reader) error {
+	if err := i.Hash.Deserialize(r); err != nil {
+		return err
+	}
+
+	return common.ReadElements(r, &i.FeeRate, &i.Size)
 }
