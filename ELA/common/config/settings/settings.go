@@ -56,6 +56,7 @@ type settingItem struct {
 
 func (s *settingItem) TryInitValue(params *config.Params,
 	conf *config.Configuration, c *cli.Context) error {
+
 	if s.Flag != nil && c.IsSet(GetFullCommandName(s.Flag)) {
 		value, err := s.getCliValue(c)
 		if err != nil {
@@ -496,6 +497,12 @@ func NewSettings() *Settings {
 		DefaultValue: uint32(0),
 		ConfigPath:   "MaxCommitteeProposalCount",
 		ParamName:    "MaxCommitteeProposalCount"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.MaxNodePerHost,
+		DefaultValue: uint32(0),
+		ConfigPath:   "MaxNodePerHost",
+		ParamName:    "MaxNodePerHost"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.VoteStatisticsHeightFlag,
