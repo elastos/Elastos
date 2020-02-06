@@ -49,4 +49,17 @@ var (
 		Usage: "specify count of addresses need to be generated",
 		Value: 500,
 	}
+	BlockSizeFlag = cli.UintFlag{
+		Name:  "size",
+		Usage: "block size in unit of Megabit",
+		Value: 8,
+	}
+	TxFormatFlag = cli.UintFlag{
+		Name:  "txformat",
+		Value: 1,
+		Usage: "specify which kind of tx to fill the whole block:\n" +
+			"\t1: means tx with single input and output\n" +
+			"\t2: means single tx with as many inputs as the block can contain\n" +
+			"\t",
+	}
 )

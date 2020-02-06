@@ -29,6 +29,7 @@ dns:
 
 tools:
 	$(BUILD) -o ela-datagen benchmark/tools/generator/main.go
+	$(BUILD) -o ela-inputcounter benchmark/tools/inputcounter/main.go
 
 format:
 	go fmt ./*
