@@ -21,5 +21,3 @@ class LandingPageCase(LiveServerTestCase):
         landing_title = selenium.find_elements_by_tag_name('h1')
         assert len(landing_title) > 0
 
-
-

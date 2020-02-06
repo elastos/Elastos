@@ -15,10 +15,8 @@ class DIDUser(AbstractBaseUser, PermissionsMixin):
     did = models.CharField(max_length=64)
     date_joined = models.DateTimeField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
-
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-
     objects = DIDUserManager()
 
     def __str__(self):
