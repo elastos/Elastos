@@ -9,8 +9,8 @@ import (
 	"path"
 	"testing"
 
-	genchain "github.com/elastos/Elastos.ELA/benchmark/generator/chain"
 	"github.com/elastos/Elastos.ELA/benchmark/profile"
+	genchain "github.com/elastos/Elastos.ELA/benchmark/tools/generator/chain"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
