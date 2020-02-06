@@ -97,6 +97,8 @@ namespace Elastos {
 
 			virtual std::vector<std::string> GetAllMasterWalletID() const;
 
+			virtual bool WalletLoaded(const std::string &masterWalletID) const;
+
 			virtual IMasterWallet *GetMasterWallet(
 				const std::string &masterWalletID) const;
 

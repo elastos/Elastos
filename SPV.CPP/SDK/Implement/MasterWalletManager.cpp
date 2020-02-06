@@ -98,14 +98,18 @@ namespace Elastos {
 		MasterWalletManager::~MasterWalletManager() {
 			for (MasterWalletMap::iterator it = _masterWalletMap.begin(); it != _masterWalletMap.end();) {
 				MasterWallet *masterWallet = static_cast<MasterWallet *>(it->second);
-				std::string id = masterWallet->GetID();
-				Log::info("closing master wallet (ID = {})...", id);
-				masterWallet->CloseAllSubWallets();
-				it = _masterWalletMap.erase(it);
+				if (masterWallet != nullptr) {
+					std::string id = masterWallet->GetID();
+					Log::info("closing master wallet (ID = {})...", id);
+					masterWallet->CloseAllSubWallets();
+					it = _masterWalletMap.erase(it);
 
-				delete masterWallet;
-				masterWallet = nullptr;
-				Log::info("closed master wallet (ID = {})", id);
+					delete masterWallet;
+					masterWallet = nullptr;
+					Log::info("closed master wallet (ID = {})", id);
+				} else {
+					++it;
+				}
 			}
 			delete _config;
 			_config = nullptr;
@@ -396,11 +400,13 @@ namespace Elastos {
 
 			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
 				MasterWallet *masterWallet = static_cast<MasterWallet *>(_masterWalletMap[masterWalletID]);
-				masterWallet->RemoveLocalStore();
+				if (masterWallet) {
+					masterWallet->RemoveLocalStore();
 
-				masterWallet->CloseAllSubWallets();
-				_masterWalletMap.erase(masterWallet->GetWalletID());
-				delete masterWallet;
+					masterWallet->CloseAllSubWallets();
+					_masterWalletMap.erase(masterWallet->GetWalletID());
+					delete masterWallet;
+				}
 				masterWallet = nullptr;
 			} else {
 				Log::warn("Master wallet is not exist");
@@ -537,6 +543,18 @@ namespace Elastos {
 			ArgInfo("r => {}: {}", GetFunName(), chainID);
 
 			return result;
+		}
+
+		bool MasterWalletManager::WalletLoaded(const std::string &masterWalletID) const {
+			ArgInfo("{}", GetFunName());
+			ArgInfo("masterWalletID: {}", masterWalletID);
+
+			if (_masterWalletMap.find(masterWalletID) == _masterWalletMap.end()) {
+				Log::error("master wallet {} not found", masterWalletID);
+				return false;
+			}
+
+			return _masterWalletMap[masterWalletID] != nullptr;
 		}
 
 		IMasterWallet *MasterWalletManager::GetMasterWallet(const std::string &masterWalletID) const {

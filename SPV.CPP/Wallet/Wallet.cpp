@@ -308,24 +308,26 @@ static void subWalletClose(IMasterWallet *masterWallet, ISubWallet *subWallet) {
 }
 
 static void walletInit(void) {
-	auto masterWallets = manager->GetAllMasterWallets();
-	for (IMasterWallet *masterWallet : masterWallets) {
-		if (!currentWallet)
-			currentWallet = masterWallet;
+	auto masterWalletIDs = manager->GetAllMasterWalletID();
+	if (!currentWallet && !masterWalletIDs.empty()) {
+		currentWallet = manager->GetMasterWallet(masterWalletIDs[0]);
 
-		auto subWallets = masterWallet->GetAllSubWallets();
+		auto subWallets = currentWallet->GetAllSubWallets();
 		for (ISubWallet *subWallet : subWallets) {
-			subWalletOpen(masterWallet, subWallet);
+			subWalletOpen(currentWallet, subWallet);
 		}
 	}
 }
 
 static void walletCleanup(void) {
-	auto masterWallets = manager->GetAllMasterWallets();
-	for (IMasterWallet *masterWallet : masterWallets) {
-		auto subWallets = masterWallet->GetAllSubWallets();
-		for (ISubWallet *subWallet : subWallets) {
-			subWalletClose(masterWallet, subWallet);
+	auto masterWalletIDs = manager->GetAllMasterWalletID();
+	for (const std::string &masterWalletID : masterWalletIDs) {
+		if (manager->WalletLoaded(masterWalletID)) {
+			IMasterWallet *masterWallet = manager->GetMasterWallet(masterWalletID);
+			auto subWallets = masterWallet->GetAllSubWallets();
+			for (ISubWallet *subWallet : subWallets) {
+				subWalletClose(masterWallet, subWallet);
+			}
 		}
 	}
 
@@ -554,11 +556,11 @@ static int remove(int argc, char *argv[]) {
 		std::cout << "Wallet '" << walletName << "' removed." << std::endl;
 
 		if (needUpdate)  {
-			auto masterWallets = manager->GetAllMasterWallets();
-			if (!masterWallets.empty()) {
-				currentWallet = masterWallets[0];
-			} else {
+			auto masterWalletIDs = manager->GetAllMasterWalletID();
+			if (masterWalletIDs.empty()) {
 				currentWallet = nullptr;
+			} else {
+				currentWallet = manager->GetMasterWallet(masterWalletIDs[0]);
 			}
 		}
 	} catch (const std::exception &e) {
@@ -581,15 +583,16 @@ static int list(int argc, char *argv[]) {
 	}
 
 	try {
-		auto masterWallets = manager->GetAllMasterWallets();
-		printf("%-20s", "WalletName");
-		for (const std::string &chainID : subWalletIDList)
-			printf("%50s", chainID.c_str());
-		printf("\n%s\n", SplitLine);
-
-		for (IMasterWallet *masterWallet : masterWallets) {
-			if (argc == 1 && currentWallet != masterWallet)
-				continue;
+		if (argc >= 2) {
+			auto masterWalletIDs = manager->GetAllMasterWalletID();
+			for (const std::string &masterWalletID : masterWalletIDs) {
+				printf(" %c %-17s\n", currentWallet != nullptr && currentWallet->GetID() == masterWalletID ? '*' : ' ', masterWalletID.c_str());
+			}
+		} else {
+			printf("%-20s", "WalletName");
+			for (const std::string &chainID : subWalletIDList)
+				printf("%50s", chainID.c_str());
+			printf("\n%s\n", SplitLine);
 
 			struct tm tm;
 			time_t lastBlockTime;
@@ -599,14 +602,14 @@ static int list(int argc, char *argv[]) {
 			char info[256];
 			char buf[100] = {0};
 
-			printf(" %c %-17s", masterWallet == currentWallet ? '*' : ' ', masterWallet->GetID().c_str());
-			for (const std::string& chainID: subWalletIDList) {
-				subWallet = masterWallet->GetSubWallet(chainID);
+			printf("   %-17s", currentWallet->GetID().c_str());
+			for (const std::string &chainID: subWalletIDList) {
+				subWallet = currentWallet->GetSubWallet(chainID);
 				if (subWallet) {
 					balance = std::stod(subWallet->GetBalance()) / SELA_PER_ELA;
 
-					lastBlockTime = masterWalletData[masterWallet->GetID()][chainID].GetLastBlockTime();
-					progress = masterWalletData[masterWallet->GetID()][chainID].GetSyncProgress();
+					lastBlockTime = masterWalletData[currentWallet->GetID()][chainID].GetLastBlockTime();
+					progress = masterWalletData[currentWallet->GetID()][chainID].GetSyncProgress();
 					localtime_r(&lastBlockTime, &tm);
 					strftime(buf, sizeof(buf), "%F %T", &tm);
 
@@ -633,6 +636,7 @@ static int _switch(int argc, char *argv[]) {
 
 	const std::string walletName = argv[1];
 	try {
+		bool loaded = manager->WalletLoaded(walletName);
 		auto masterWallet = manager->GetMasterWallet(walletName);
 		if (masterWallet == nullptr) {
 			std::cerr << walletName << " not found" << std::endl;
@@ -640,6 +644,12 @@ static int _switch(int argc, char *argv[]) {
 		}
 
 		currentWallet = masterWallet;
+		if (!loaded) {
+			auto subWallets = currentWallet->GetAllSubWallets();
+			for (ISubWallet *subWallet : subWallets) {
+				subWalletOpen(currentWallet, subWallet);
+			}
+		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
