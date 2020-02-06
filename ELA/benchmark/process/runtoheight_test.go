@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	genchain "github.com/elastos/Elastos.ELA/benchmark/generator/chain"
+	genchain "github.com/elastos/Elastos.ELA/benchmark/tools/generator/chain"
 	"github.com/elastos/Elastos.ELA/utils/signal"
 )
 

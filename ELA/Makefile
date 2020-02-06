@@ -27,8 +27,8 @@ cli:
 dns:
 	$(BUILD) -o ela-dns elanet/dns/main/main.go
 
-datagen:
-	$(BUILD) -o ela-datagen benchmark/generator/main.go
+tools:
+	$(BUILD) -o ela-datagen benchmark/tools/generator/main.go
 
 format:
 	go fmt ./*
