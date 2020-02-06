@@ -5,7 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/elastos/Elastos.ELA/account"
-	"github.com/elastos/Elastos.ELA/benchmark/generator/tx"
+	"github.com/elastos/Elastos.ELA/benchmark/common/tx"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"

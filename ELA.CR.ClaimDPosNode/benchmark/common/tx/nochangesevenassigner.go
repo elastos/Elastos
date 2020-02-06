@@ -2,7 +2,7 @@ package tx
 
 import (
 	"github.com/elastos/Elastos.ELA/account"
-	"github.com/elastos/Elastos.ELA/benchmark/generator/utils"
+	"github.com/elastos/Elastos.ELA/benchmark/common/utils"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 )

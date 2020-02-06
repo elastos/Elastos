@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/elastos/Elastos.ELA/benchmark/generator/chain"
-	bencli "github.com/elastos/Elastos.ELA/benchmark/generator/cli"
+	bencli "github.com/elastos/Elastos.ELA/benchmark/common/cli"
+	"github.com/elastos/Elastos.ELA/benchmark/tools/generator/chain"
 	"github.com/elastos/Elastos.ELA/utils/signal"
 
 	"github.com/urfave/cli"
