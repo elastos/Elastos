@@ -409,10 +409,8 @@ const char *SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
 
     TransactionResult tr;
 
-    int rc = SpvDidAdapter_CreateIdTransactionEx(adapter, payload, memo, 0,
+    SpvDidAdapter_CreateIdTransactionEx(adapter, payload, memo, 0,
         TransactionCallback, &tr, password);
-    if (rc < 0)
-        return NULL;
 
     tr.wait();
     if (tr.getStatus() < 0)
@@ -421,14 +419,11 @@ const char *SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         return strdup(tr.getTxid());
 }
 
-int SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
+void SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
         const char *payload, const char *memo, int confirms,
         SpvTransactionCallback *txCallback, void *context,
         const char *password)
 {
-    if (!adapter || !payload || !password)
-        return -1;
-
     if (!memo)
         memo = "";
 
@@ -441,13 +436,9 @@ int SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
         std::string txid = tx["TxHash"];
         adapter->callback->RegisterTransactionCallback(txid,
                 confirms, txCallback, context);
-        return 0;
     } catch (...) {
         txCallback(NULL, -1, "SPV adapter internal error.", context);
-        return -1;
     }
-
-    return -1;
 }
 
 typedef struct HttpResponseBody {

@@ -207,54 +207,6 @@ JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_isAvailable(
     return (jboolean)(result != 0);
 }
 
-JNI_EXPORT jstring JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransaction(
-        JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jPayload,
-        jstring jMemo, jstring jPassword)
-{
-    SpvDidAdapter *handle = (SpvDidAdapter *)jHandle;
-    const char *payload = NULL;
-    const char *memo = NULL;
-    const char *password = NULL;
-    const char *txid;
-
-    (void)jcls;
-
-    if (jPayload)
-        payload = (*jenv)->GetStringUTFChars(jenv, jPayload, 0);
-
-    if (!payload) {
-        JavaThrowException(jenv, JavaIllegalArgumentException, "Invalid DID transaction payload.");
-        return 0;
-    }
-
-    if (jPassword)
-        password = (*jenv)->GetStringUTFChars(jenv, jPassword, 0);
-
-    if (!password) {
-        (*jenv)->ReleaseStringUTFChars(jenv, jPayload, payload);
-        JavaThrowException(jenv, JavaIllegalArgumentException, "Invalid payment password.");
-        return 0;
-    }
-
-    if (jMemo)
-        memo = (*jenv)->GetStringUTFChars(jenv, jMemo, 0);
-
-    txid = SpvDidAdapter_CreateIdTransaction(handle, payload, memo, password);
-
-    if (memo) (*jenv)->ReleaseStringUTFChars(jenv, jMemo, memo);
-    (*jenv)->ReleaseStringUTFChars(jenv, jPassword, password);
-    (*jenv)->ReleaseStringUTFChars(jenv, jPayload, payload);
-
-    if (txid) {
-        jstring jTxid = (*jenv)->NewStringUTF(jenv, txid);
-        SpvDidAdapter_FreeMemory(handle, (void *)txid);
-        return jTxid;
-    } else {
-        JavaThrowException(jenv, DIDTransactionException, "Unknown error.");
-        return 0;
-    }
-}
-
 typedef struct {
     JNIEnv *env;
     jobject obj;
@@ -287,7 +239,7 @@ static void TransactionCallbackWrapper(const char *txid, int status,
     free(context);
 }
 
-JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransactionEx(
+JNI_EXPORT void JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransaction(
         JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jPayload,
         jstring jMemo, jint jConfirms, jobject jCallback, jstring jPassword)
 {
@@ -296,7 +248,6 @@ JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTran
     const char *payload = NULL;
     const char *memo = NULL;
     const char *password = NULL;
-    int rc;
 
     (void)jcls;
 
@@ -305,7 +256,7 @@ JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTran
 
     if (!payload) {
         JavaThrowException(jenv, JavaIllegalArgumentException, "Invalid DID transaction payload.");
-        return JNI_FALSE;
+        return;
     }
 
     if (jPassword)
@@ -314,7 +265,7 @@ JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTran
     if (!password) {
         (*jenv)->ReleaseStringUTFChars(jenv, jPayload, payload);
         JavaThrowException(jenv, JavaIllegalArgumentException, "Invalid payment password.");
-        return JNI_FALSE;
+        return;
     }
 
     if (jMemo)
@@ -329,7 +280,7 @@ JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTran
             (*jenv)->ReleaseStringUTFChars(jenv, jPayload, payload);
 
             JavaThrowException(jenv, JavaClassNotFoundException, "Can not find TransactionCallback class");
-            return JNI_FALSE;
+            return;
         }
 
         jmethodID method = (*jenv)->GetMethodID(jenv, cls, "accept",
@@ -342,7 +293,7 @@ JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTran
             (*jenv)->ReleaseStringUTFChars(jenv, jPayload, payload);
 
             JavaThrowException(jenv, JavaOutOfMemoryError, "Out of memory");
-            return JNI_FALSE;
+            return;
         }
 
         ctx->env = jenv;
@@ -350,14 +301,12 @@ JNI_EXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTran
         ctx->method = method;
     }
 
-    rc = SpvDidAdapter_CreateIdTransactionEx(handle, payload, memo,
+    SpvDidAdapter_CreateIdTransactionEx(handle, payload, memo,
             (int)jConfirms, TransactionCallbackWrapper, ctx, password);
 
     if (memo) (*jenv)->ReleaseStringUTFChars(jenv, jMemo, memo);
     (*jenv)->ReleaseStringUTFChars(jenv, jPassword, password);
     (*jenv)->ReleaseStringUTFChars(jenv, jPayload, payload);
-
-    return (jboolean)(rc == 0);
 }
 
 
