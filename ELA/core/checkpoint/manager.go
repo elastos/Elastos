@@ -199,7 +199,7 @@ func (m *Manager) Restore() (err error) {
 
 	sortedPoints := m.getOrderedCheckpoints()
 	for _, v := range sortedPoints {
-		// Skip 'dpos' and 'cr' checkpoint
+		// fixme: Skip 'dpos' and 'cr' checkpoint temporary
 		if v.Key() == "dpos" || v.Key() == "cr" {
 			continue
 		}
