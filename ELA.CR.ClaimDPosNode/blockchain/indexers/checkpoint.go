@@ -8,6 +8,7 @@ package indexers
 import (
 	"bytes"
 	"io"
+	"math"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -45,20 +46,7 @@ func (c *Checkpoint) Key() string {
 }
 
 func (c *Checkpoint) Snapshot() checkpoint.ICheckPoint {
-	buf := new(bytes.Buffer)
-	if err := c.Serialize(buf); err != nil {
-		c.LogError(err)
-		return nil
-	}
-	result := &Checkpoint{
-		height:  uint32(0),
-		txCache: NewTxCache(),
-	}
-	if err := result.Deserialize(buf); err != nil {
-		c.LogError(err)
-		return nil
-	}
-	return result
+	return c
 }
 
 func (c *Checkpoint) GetHeight() uint32 {
@@ -111,7 +99,7 @@ func (c *Checkpoint) OnInit() {
 }
 
 func (c *Checkpoint) StartHeight() uint32 {
-	return 500000
+	return math.MaxInt32
 }
 
 func (c *Checkpoint) Serialize(w io.Writer) (err error) {
