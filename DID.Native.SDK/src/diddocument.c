@@ -613,8 +613,7 @@ static int remove_publickey(DIDDocument *document, DIDURL *keyid, KeyType keytyp
             continue;
 
         if (i != size - 1)
-            memmove(pks + sizeof(PublicKey*) * i, pks + sizeof(PublicKey*) * (i + 1),
-                    size - i - 1);
+            memmove(pks + i, pks + i + 1, sizeof(PublicKey*) * (size - i - 1));
 
         pks[size - 1] = NULL;
         (*pk_size)--;
@@ -1392,8 +1391,7 @@ int DIDDocumentBuilder_RemoveAuthenticationKey(DIDDocumentBuilder *builder, DIDU
     if (DIDURL_Equals(key, keyid))
         return -1;
 
-    remove_publickey(document, keyid, KeyType_Authentication);
-    return 0;
+    return remove_publickey(document, keyid, KeyType_Authentication);
 }
 
 bool DIDDocument_IsAuthenticationKey(DIDDocument *document, DIDURL *keyid)
@@ -1497,9 +1495,7 @@ int DIDDocumentBuilder_RemoveAuthorizationKey(DIDDocumentBuilder *builder, DIDUR
     if (DIDURL_Equals(key, keyid))
         return -1;
 
-    remove_publickey(document, keyid, KeyType_Authorization);
-
-    return 0;
+    return remove_publickey(document, keyid, KeyType_Authorization);
 }
 
 int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder, Credential *credential)
@@ -1564,16 +1560,16 @@ int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder, DIDURL *cre
         Credential_Destroy(cred);
 
         if (i != size - 1)
-            memmove(document->credentials.credentials + sizeof(Credential*) * i,
-                    document->credentials.credentials + sizeof(Credential*) * (i + 1),
-                    size - i - 1);
+            memmove(document->credentials.credentials + i,
+                    document->credentials.credentials + i + 1,
+                    sizeof(Credential*) * (size - i - 1));
 
         document->credentials.credentials[size - 1] = NULL;
         document->credentials.size--;
         return 0;
     }
 
-    return 0;
+    return -1;
 }
 
 int DIDDocumentBuilder_AddService(DIDDocumentBuilder *builder, DIDURL *serviceid,
@@ -1644,9 +1640,9 @@ int DIDDocumentBuilder_RemoveService(DIDDocumentBuilder *builder, DIDURL *servic
         Service_Destroy(service);
 
         if (i != size - 1)
-            memmove(document->services.services + sizeof(Service*) * i,
-                    document->services.services + sizeof(Service*) * (i + 1),
-                    size - i - 1);
+            memmove(document->services.services + i,
+                    document->services.services + i + 1,
+                    sizeof(Service*) * (size - i - 1));
 
         document->services.services[size - 1] = NULL;
         document->services.size--;

@@ -650,7 +650,9 @@ static void test_diddoc_remove_authorization_key(void)
     DIDDocument *sealeddoc;
     DIDDocumentBuilder *builder;
     char publickeybase58[MAX_PUBLICKEY_BASE58];
-    const char *keybase;
+    DerivedKey _dkey, *dkey;
+    const char *keybase, *idstring;
+    DID controller;
     int rc;
 
     builder = DIDDocument_Modify(doc);
@@ -659,16 +661,26 @@ static void test_diddoc_remove_authorization_key(void)
     // Add 2 public keys
     DIDURL *id1 = DIDURL_FromDid(did, "test1");
     CU_ASSERT_PTR_NOT_NULL(id1);
-    keybase = Generater_Publickey(publickeybase58, sizeof(publickeybase58));
+    dkey = Generater_KeyPair(&_dkey);
+    keybase = DerivedKey_GetPublicKeyBase(dkey, publickeybase58,
+            sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
-    rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id1, did, keybase);
+    idstring = DerivedKey_GetAddress(dkey);
+    CU_ASSERT_PTR_NOT_NULL(idstring);
+    strncpy(controller.idstring, idstring, sizeof(controller.idstring));
+    rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id1, &controller, keybase);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     DIDURL *id2 = DIDURL_FromDid(did, "test2");
     CU_ASSERT_PTR_NOT_NULL(id2);
-    keybase = Generater_Publickey(publickeybase58, sizeof(publickeybase58));
+    dkey = Generater_KeyPair(&_dkey);
+    keybase = DerivedKey_GetPublicKeyBase(dkey, publickeybase58,
+            sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
-    rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id2, did, keybase);
+    idstring = DerivedKey_GetAddress(dkey);
+    CU_ASSERT_PTR_NOT_NULL(idstring);
+    strncpy(controller.idstring, idstring, sizeof(controller.idstring));
+    rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id2, &controller, keybase);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     // Remote keys
@@ -879,7 +891,7 @@ static void test_diddoc_remove_credential(void)
     DIDURL_Destroy(profileid);
 
     vc = DIDDocument_GetCredential(sealeddoc, twitterid);
-    CU_ASSERT_PTR_NOT_NULL(vc);
+    CU_ASSERT_PTR_NULL(vc);
     DIDURL_Destroy(twitterid);
 
     // Check the final count.
@@ -1107,19 +1119,19 @@ static int diddoc_elem_test_suite_cleanup(void)
 static CU_TestInfo cases[] = {
     { "test_diddoc_get_publickey",                 test_diddoc_get_publickey             },
     { "test_diddoc_add_publickey",                 test_diddoc_add_publickey             },
-    //{ "test_diddoc_remove_publickey",              test_diddoc_remove_publickey          },
+    { "test_diddoc_remove_publickey",              test_diddoc_remove_publickey          },
     { "test_diddoc_get_authentication_key",        test_diddoc_get_authentication_key    },
     { "test_diddoc_add_authentication_key",        test_diddoc_add_authentication_key    },
-    //{ "test_diddoc_remove_authentication_key",     test_diddoc_remove_authentication_key },
+    { "test_diddoc_remove_authentication_key",     test_diddoc_remove_authentication_key },
     { "test_diddoc_get_authorization_key",         test_diddoc_get_authorization_key     },
     { "test_diddoc_add_authorization_key",         test_diddoc_add_authorization_key     },
-    //{ "test_diddoc_remove_authorization_key",      test_diddoc_remove_authorization_key  },
+    { "test_diddoc_remove_authorization_key",      test_diddoc_remove_authorization_key  },
     { "test_diddoc_get_credential",                test_diddoc_get_credential            },
     { "test_diddoc_add_credential",                test_diddoc_add_credential            },
-    //{ "test_diddoc_remove_credential",             test_diddoc_remove_credential         },
+    { "test_diddoc_remove_credential",             test_diddoc_remove_credential         },
     { "test_diddoc_get_service",                   test_diddoc_get_service               },
     { "test_diddoc_add_service",                   test_diddoc_add_service               },
-    //{ "test_diddoc_remove_service",                test_diddoc_remove_service            },
+    { "test_diddoc_remove_service",                test_diddoc_remove_service            },
     { NULL,                                        NULL                                  }
 };
 
