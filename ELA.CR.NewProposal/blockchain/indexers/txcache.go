@@ -12,6 +12,14 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 )
 
+const (
+	// TxCacheVolume is the default volume of the TxCache.
+	TxCacheVolume = 100000
+
+	// TrimmingTrigger is the trigger number for TxCache trimming.
+	TrimmingTrigger = 110000
+)
+
 type TxInfo struct {
 	blockHeight uint32
 	txn         *types.Transaction
@@ -92,8 +100,21 @@ func (t *TxCache) getTxn(hash common.Uint256) *TxInfo {
 	return t.txns[hash]
 }
 
+func (t *TxCache) trim() {
+	if len(t.txns) > TrimmingTrigger {
+		extra := len(t.txns) - TxCacheVolume
+		for k := range t.txns {
+			delete(t.txns, k)
+			extra--
+			if extra < 0 {
+				break
+			}
+		}
+	}
+}
+
 func NewTxCache() *TxCache {
 	return &TxCache{
-		txns: make(map[common.Uint256]*TxInfo),
+		txns: make(map[common.Uint256]*TxInfo, TxCacheVolume),
 	}
 }

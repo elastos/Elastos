@@ -131,6 +131,10 @@ func (idx *UnspentIndex) Create(dbTx database.Tx) error {
 // This is part of the Indexer interface.
 func (idx *UnspentIndex) ConnectBlock(dbTx database.Tx, block *types.Block) error {
 	unspents := make(map[common.Uint256][]uint16)
+	// Trim the cache before connect block so the extra txns can be stored at least
+	// one block.
+	idx.txCache.trim()
+
 	for _, txn := range block.Transactions {
 		if txn.TxType == types.RegisterAsset {
 			continue
