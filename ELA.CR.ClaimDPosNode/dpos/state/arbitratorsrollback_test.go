@@ -296,6 +296,68 @@ func TestArbitrators_RollbackVoteProducer(t *testing.T) {
 		[]outputpayload.CandidateVotes{
 			{Candidate: abtList[0], Votes: 5},
 		})
+
+	// process
+	currentHeight++
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{voteProducerTx}}, nil)
+	arbiterStateA := abt.Snapshot()
+	assert.Equal(t, common.Fixed64(5), abt.getProducer(abtList[0]).votes)
+
+	currentHeight++
+	updateProducerTx := getUpdateProducerTx(abtList[1], abtList[1], "node1")
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{updateProducerTx}}, nil)
+	arbiterStateB := abt.Snapshot()
+
+	// rollback
+	currentHeight--
+	err := abt.RollbackTo(currentHeight)
+	assert.NoError(t, err)
+	arbiterStateC := abt.Snapshot()
+
+	// reprocess
+	currentHeight++
+	abt.ProcessBlock(&types.Block{
+		Header:       types.Header{Height: currentHeight},
+		Transactions: []*types.Transaction{updateProducerTx}}, nil)
+	arbiterStateD := abt.Snapshot()
+
+	checkResult(t, arbiterStateA, arbiterStateB, arbiterStateC, arbiterStateD)
+}
+
+func TestArbitrators_RollbackUpdateProducer(t *testing.T) {
+	initArbiters()
+
+	currentHeight := abt.chainParams.VoteStartHeight
+	block1 := &types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{
+			getRegisterProducerTx(abtList[0], abtList[0], "p1"),
+			getRegisterProducerTx(abtList[1], abtList[1], "p2"),
+			getRegisterProducerTx(abtList[2], abtList[2], "p3"),
+			getRegisterProducerTx(abtList[3], abtList[3], "p4"),
+		},
+	}
+
+	abt.ProcessBlock(block1, nil)
+
+	for i := uint32(0); i < 5; i++ {
+		currentHeight++
+		blockEx := &types.Block{Header: types.Header{Height: currentHeight}}
+		abt.ProcessBlock(blockEx, nil)
+	}
+	assert.Equal(t, 4, len(abt.ActivityProducers))
+
+	// vote producer
+	voteProducerTx := getVoteProducerTx(10,
+		[]outputpayload.CandidateVotes{
+			{Candidate: abtList[0], Votes: 5},
+		})
 	arbiterStateA := abt.Snapshot()
 
 	// process
