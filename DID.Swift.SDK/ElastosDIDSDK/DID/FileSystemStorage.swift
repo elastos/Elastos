@@ -461,6 +461,17 @@ public class FileSystemStorage: DIDStorage {
         return relPath
     }
     
+    func createDir(_ create: Bool, _ path: String) throws {
+        let fileManager = FileManager.default
+        if create {
+            var isDirectory = ObjCBool.init(false)
+            let fileExists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
+            if !fileExists {
+                try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
+            }
+        }
+    }
+    
     func deleteFile(_ path: String) throws -> Bool {
         let fileManager = FileManager.default
         var isDir = ObjCBool.init(false)
@@ -530,14 +541,14 @@ public class FileSystemStorage: DIDStorage {
     
     private func copy(_ src: String, _ dest: String, _ reEncryptor: ReEncryptor) throws {
         if isDirectory(src) {
-            _ = try getFile(true, dest) // dest create if not
+            try createDir(true, dest) // dest create if not
             
             let fileManager = FileManager.default
             let enumerator = try fileManager.contentsOfDirectory(atPath: src)
             for element: String in enumerator  {
                 // if !element.hasSuffix(".meta")
-                let srcFile = src + element
-                let destFile = dest + element
+                let srcFile = src + "/" + element
+                let destFile = dest + "/" + element
                 try copy(srcFile, destFile, reEncryptor)
             }
         }
@@ -555,24 +566,24 @@ public class FileSystemStorage: DIDStorage {
     
     private func postChangePassword() throws {
         let privateDir: String = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR
-        let privateDeprecated = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.JOURNAL_SUFFIX
-        let privateJournal = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/"  + FileSystemStorage.JOURNAL_SUFFIX
+        let privateDeprecated = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + FileSystemStorage.DEPRECATED_SUFFIX
+        let privateJournal = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + FileSystemStorage.JOURNAL_SUFFIX
         
         let didDir = storeRootPath + "/" + FileSystemStorage.DID_DIR
-        let didDeprecated = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + FileSystemStorage.DEPRECATED_SUFFIX
-        let didJournal = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + FileSystemStorage.JOURNAL_SUFFIX
+        let didDeprecated = storeRootPath + "/" + FileSystemStorage.DID_DIR + FileSystemStorage.DEPRECATED_SUFFIX
+        let didJournal = storeRootPath + "/" + FileSystemStorage.DID_DIR + FileSystemStorage.JOURNAL_SUFFIX
         let stageFile = storeRootPath +  "/postChangePassword"
 
         let fileManager = FileManager.default
-        if try exists(stageFile) {
-            if try exists(privateJournal) {
-                if try exists(privateDir) {
+        if fileManager.fileExists(atPath: stageFile) {
+            if try exists_dir(privateJournal) {
+                if try exists_dir(privateDir) {
                     try fileManager.moveItem(atPath: privateDir, toPath: privateDeprecated)
                 }
                 try fileManager.moveItem(atPath: privateJournal, toPath: privateDir)
             }
-            if try exists(didJournal) {
-                if try exists(didDir) {
+            if try exists_dir(didJournal) {
+                if try exists_dir(didDir) {
                     try fileManager.moveItem(atPath: didDir, toPath: didDeprecated)
                 }
                 try fileManager.moveItem(atPath: didJournal, toPath: didDir)
@@ -583,10 +594,10 @@ public class FileSystemStorage: DIDStorage {
             _ = try deleteFile(stageFile)
         }
         else {
-            if try exists(privateJournal) {
+            if try exists_dir(privateJournal) {
                 _ = try deleteFile(privateJournal)
             }
-            if try exists(didJournal) {
+            if try exists_dir(didJournal) {
                 _ = try deleteFile(didJournal)
             }
         }
@@ -594,10 +605,10 @@ public class FileSystemStorage: DIDStorage {
 
     func changePassword(_ reEncryptor: (String) throws -> String) throws {
         let privateDir = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR
-        let privateJournal = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.JOURNAL_SUFFIX
+        let privateJournal = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + FileSystemStorage.JOURNAL_SUFFIX
 
         let didDir = storeRootPath + "/" + FileSystemStorage.DID_DIR
-        let didJournal = storeRootPath + "/" + FileSystemStorage.DID_DIR + "/" + FileSystemStorage.JOURNAL_SUFFIX
+        let didJournal = storeRootPath + "/" + FileSystemStorage.DID_DIR + FileSystemStorage.JOURNAL_SUFFIX
         do {
         try copy(privateDir, privateJournal, reEncryptor)
         try copy(didDir, didJournal, reEncryptor)
@@ -605,6 +616,7 @@ public class FileSystemStorage: DIDStorage {
         catch {
             throw DIDError.didStoreError(_desc: "Change store password failed.")
         }
+        _ = try getFile(true, "\(storeRootPath)/postChangePassword")
         try postChangePassword()
     }
     

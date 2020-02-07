@@ -884,5 +884,111 @@ class DIDStoreTests: XCTestCase {
 
     }
     
+    func testChangePassword() {
+        do {
+            let testData: TestData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+            
+            for i in 0..<10 {
+                let alias: String = "my did \(i)"
+                let doc = try store.newDid(storepass: storePass, alias: alias)
+                XCTAssertTrue(try doc.isValid())
+                var resolved = try doc.subject!.resolve(true)
+                XCTAssertNil(resolved)
+                _ = try store.publishDid(doc.subject!, storePass)
+                var path: String = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/document"
+                XCTAssertTrue(testData.existsFile(path))
+                
+                path = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
+                XCTAssertTrue(testData.existsFile(path))
+                resolved = try doc.subject!.resolve(true)
+                XCTAssertNotNil(resolved)
+                try store.storeDid(resolved!)
+                XCTAssertEqual(alias, try resolved!.getAlias())
+                XCTAssertEqual(doc.subject, resolved?.subject)
+                XCTAssertEqual(doc.proof.signature, resolved?.proof.signature)
+                XCTAssertTrue(try resolved!.isValid())
+            }
+            var dids = try store.listDids(DIDStore.DID_ALL)
+            XCTAssertEqual(10, dids.count)
+
+            dids = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+            XCTAssertEqual(10, dids.count)
+
+            dids = try store.listDids(DIDStore.DID_NO_PRIVATEKEY);
+            XCTAssertEqual(0, dids.count)
+
+            try store.changePassword(storePass, "newpasswd")
+
+            dids = try store.listDids(DIDStore.DID_ALL)
+            XCTAssertEqual(10, dids.count)
+
+            dids = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
+            XCTAssertEqual(10, dids.count)
+
+            dids = try store.listDids(DIDStore.DID_NO_PRIVATEKEY)
+            XCTAssertEqual(0, dids.count)
+
+            let doc = try store.newDid("newpasswd")
+            XCTAssertNotNil(doc)
+        } catch {
+            print(error)
+            XCTFail()
+        }
+    }
+    
+    func testChangePasswordWithWrongPassword() {
+        do {
+            let testData: TestData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+            for i in 0..<10 {
+                let alias = "my did \(i)"
+                let doc = try store.newDid(storepass: storePass, alias: alias)
+                XCTAssertTrue(try doc.isValid())
+                var resolved = try doc.subject!.resolve(true)
+                XCTAssertNil(resolved)
+                _ = try store.publishDid(doc.subject!, storePass)
+                var path: String = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/document"
+                XCTAssertTrue(testData.existsFile(path))
+                
+                path = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
+                XCTAssertTrue(testData.existsFile(path))
+                resolved = try doc.subject!.resolve(true)
+                XCTAssertNotNil(resolved)
+                try store.storeDid(resolved!)
+                XCTAssertEqual(alias, try resolved?.getAlias())
+                XCTAssertEqual(doc.subject, resolved?.subject)
+                XCTAssertEqual(doc.proof.signature, resolved?.proof.signature)
+                XCTAssertTrue(try resolved!.isValid())
+            }
+            var dids = try store.listDids(DIDStore.DID_ALL)
+            XCTAssertEqual(10, dids.count)
+
+            dids = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
+            XCTAssertEqual(10, dids.count)
+
+            dids = try store.listDids(DIDStore.DID_NO_PRIVATEKEY)
+            XCTAssertEqual(0, dids.count)
+
+            try store.changePassword("wrongpasswd", "newpasswd")
+
+            // Dead code
+            let doc = try store.newDid("newpasswd")
+            XCTAssertNotNil(doc)
+        } catch {
+            if error is DIDError {
+                let err = error as! DIDError
+                switch err {
+                case .didStoreError(_desc: "Change store password failed."):
+                    XCTAssertTrue(true)
+                default:
+                    XCTFail()
+                }
+            }
+        }
+    }
+    
 }
 
