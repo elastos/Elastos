@@ -749,3 +749,27 @@ const char *Generater_Publickey(char *publickeybase58, size_t size)
     base58_encode(publickeybase58, publickey, sizeof(publickey));
     return publickeybase58;
 }
+
+DerivedKey *Generater_KeyPair(DerivedKey *dkey)
+{
+    const char *mnemonic;
+    uint8_t seed[SEED_BYTES];
+    HDKey hk, *privateIdentity;
+
+    mnemonic = Mnemonic_Generate(0);
+    if (!mnemonic || !*mnemonic)
+        return NULL;
+
+    if (!HDKey_GetSeedFromMnemonic(mnemonic, "", 0, seed)) {
+        Mnemonic_free((char*)mnemonic);
+        return NULL;
+    }
+
+    privateIdentity = HDKey_GetPrivateIdentity(seed, 0, &hk);
+    if (!privateIdentity) {
+        Mnemonic_free((char*)mnemonic);
+        return NULL;
+    }
+
+    return HDKey_GetDerivedKey(privateIdentity, dkey, 0, 0, 0);
+}

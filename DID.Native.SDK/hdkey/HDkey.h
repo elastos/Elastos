@@ -77,6 +77,8 @@ DerivedKey *HDKey_GetDerivedKey(HDKey* privateIdentity, DerivedKey *derivedkey,
 
 uint8_t *DerivedKey_GetPublicKey(DerivedKey *derivedkey);
 
+const char *DerivedKey_GetPublicKeyBase(DerivedKey *derivedkey, char *base, size_t size);
+
 uint8_t *DerivedKey_GetPrivateKey(DerivedKey *derivedkey);
 
 char *DerivedKey_GetAddress(DerivedKey *derivedkey);

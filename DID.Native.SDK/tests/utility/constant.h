@@ -9,7 +9,7 @@ const char *walletpass;
 const char *storepass;
 const char *passphase;
 
-const char *type;
+const char *default_type;
 const char *service_type;
 const char *mnemonic;
 

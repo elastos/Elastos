@@ -44,6 +44,8 @@
 static unsigned char PADDING_IDENTITY = 0x67;
 static unsigned char PADDING_STANDARD = 0xAD;
 
+#define MAX_PUBLICKEY_BASE58 64
+
 static const char **get_word_list(int language)
 {
     switch (language) {
@@ -251,6 +253,20 @@ uint8_t *DerivedKey_GetPublicKey(DerivedKey *derivedkey)
         return NULL;
 
     return derivedkey->publickey;
+}
+
+const char *DerivedKey_GetPublicKeyBase(DerivedKey *derivedkey, char *base, size_t size)
+{
+    size_t len;
+
+    if (!derivedkey || !base || size < MAX_PUBLICKEY_BASE58)
+        return NULL;
+
+    len = BRBase58Encode(NULL, 0, derivedkey->publickey,
+            sizeof(derivedkey->publickey));
+
+    BRBase58Encode(base, len, derivedkey->publickey, sizeof(derivedkey->publickey));
+    return base;
 }
 
 uint8_t *DerivedKey_GetPrivateKey(DerivedKey *derivedkey)

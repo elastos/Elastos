@@ -24,6 +24,7 @@
 #define __TEST_LOADER_H__
 
 #include "ela_did.h"
+#include "HDkey.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,6 +43,8 @@ bool file_exist(const char *path);
 bool dir_exist(const char* path);
 
 const char *Generater_Publickey(char *publickeybase58, size_t size);
+
+DerivedKey *Generater_KeyPair(DerivedKey *dkey);
 
 ////////////////////////////////////////
 void TestData_Init(void);

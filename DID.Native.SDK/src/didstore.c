@@ -975,7 +975,7 @@ static int store_credential(DIDStore *store, Credential *credential)
     if (!id)
         return -1;
 
-    data = Credential_ToJson(credential, 1, 0);
+    data = Credential_ToJson(credential, 0, 0);
     if (!data)
         return -1;
 
@@ -1195,7 +1195,7 @@ bool DIDStore_DeleteDID(DIDStore *store, DID *did)
 }
 
 int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDCallback *callback,
-        int filter, void *context)
+        ELA_DID_FILTER filter, void *context)
 {
     char path[PATH_MAX];
     DID_List_Helper dh;

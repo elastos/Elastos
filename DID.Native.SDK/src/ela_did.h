@@ -87,6 +87,12 @@ typedef ptrdiff_t       ssize_t;
  */
 #define ELA_MAX_MNEMONIC_LEN            128
 
+typedef enum {
+    DID_FILTER_ALL,
+    DID_FILTER_HAS_PRIVATEKEY,
+    DID_FILTER_NO_PRIVATEKEY
+} ELA_DID_FILTER;
+
 /**
  * \~English
  * DID is a globally unique identifier that does not require
@@ -2157,7 +2163,7 @@ DID_API bool DIDStore_DeleteDID(DIDStore *store, DID *did);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDCallback *callback,
-        int filer, void *context);
+        ELA_DID_FILTER filer, void *context);
 
 /**
  * \~English

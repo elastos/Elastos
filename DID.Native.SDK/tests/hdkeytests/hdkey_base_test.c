@@ -304,12 +304,12 @@ static void test_encrypt_decrypt(void)
     CU_ASSERT_NSTRING_EQUAL(data, plain, strlen(plain));
 }
 
-static int diddoc_base_test_suite_init(void)
+static int hdkey_base_test_suite_init(void)
 {
     return 0;
 }
 
-static int diddoc_base_test_suite_cleanup(void)
+static int hdkey_base_test_suite_cleanup(void)
 {
     return 0;
 }
@@ -322,11 +322,11 @@ static CU_TestInfo cases[] = {
 };
 
 static CU_SuiteInfo suite[] = {
-    {   "diddoc base test",    diddoc_base_test_suite_init,   diddoc_base_test_suite_cleanup,   NULL, NULL, cases },
-    {    NULL,                 NULL,                          NULL,                             NULL, NULL, NULL  }
+    { "hdkey base test",  hdkey_base_test_suite_init,  hdkey_base_test_suite_cleanup, NULL, NULL, cases },
+    { NULL,               NULL,                        NULL,                          NULL, NULL, NULL  }
 };
 
-CU_SuiteInfo* diddoc_base_test_suite_info(void)
+CU_SuiteInfo* hdkey_base_test_suite_info(void)
 {
     return suite;
 }

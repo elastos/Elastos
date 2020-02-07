@@ -25,7 +25,7 @@ const char *walletpass = "12345678";
 
 const char *storepass = "123456";
 const char *passphase = "";
-const char *type = "ECDSAsecp256r1";
+const char *default_type = "ECDSAsecp256r1";
 const char *service_type = "CarrierAddress";
 
 const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
