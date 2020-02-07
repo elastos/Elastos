@@ -24,7 +24,6 @@ package org.elastos.did.adapter;
 
 import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDResolveException;
-import org.elastos.did.exception.DIDTransactionException;
 
 public class SPVAdapter extends AbstractAdapter {
 	private String walletDir;
@@ -66,10 +65,7 @@ public class SPVAdapter extends AbstractAdapter {
 
 	private final static native boolean isAvailable(long handle);
 
-	private final static native String createIdTransaction(long handle,
-			String payload, String memo, String password);
-
-	private final static native boolean createIdTransactionEx(long handle,
+	private final static native void createIdTransaction(long handle,
 			String payload, String memo, int confirms,
 			TransactionCallback callback, String password);
 
@@ -81,23 +77,17 @@ public class SPVAdapter extends AbstractAdapter {
 	}
 
 	@Override
-	public String createIdTransaction(String payload, String memo)
-			throws DIDTransactionException {
-		String password = passwordCallback.getPassword(walletDir, walletId);
-		if (password == null)
-			password = "";
-
-		return createIdTransaction(handle, payload, memo, password);
-	}
-
-	@Override
-	public boolean createIdTransaction(String payload, String memo,
+	public void createIdTransaction(String payload, String memo,
 			int confirms, TransactionCallback callback) {
 		String password = passwordCallback.getPassword(walletDir, walletId);
 		if (password == null)
 			password = "";
 
-		return createIdTransactionEx(handle, payload, memo, confirms,
-				callback, password);
+		if (confirms < 0)
+			confirms = 0;
+		else if (confirms > 1)
+			confirms = 1;
+
+		createIdTransaction(handle, payload, memo, confirms, callback, password);
 	}
 }

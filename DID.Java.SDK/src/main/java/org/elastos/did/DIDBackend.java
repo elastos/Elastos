@@ -238,13 +238,10 @@ public class DIDBackend {
 			throws DIDTransactionException {
 		TransactionResult tr = new TransactionResult();
 
-		boolean success = adapter.createIdTransaction(payload, memo, confirms,
+		adapter.createIdTransaction(payload, memo, confirms,
 				(txid, status, message) -> {
 					tr.update(txid, status, message);
 				});
-
-		if (!success)
-			throw new DIDTransactionException("Create transaction failed, unknown error.");
 
 		synchronized(tr) {
 			if (tr.isEmpty()) {

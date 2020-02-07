@@ -25,7 +25,6 @@ package org.elastos.did;
 import java.io.InputStream;
 
 import org.elastos.did.exception.DIDResolveException;
-import org.elastos.did.exception.DIDTransactionException;
 
 public interface DIDAdapter {
 	@FunctionalInterface
@@ -33,10 +32,7 @@ public interface DIDAdapter {
 	    void accept(String txid, int status, String msg);
 	}
 
-	public String createIdTransaction(String payload, String memo)
-			throws DIDTransactionException;
-
-	public boolean createIdTransaction(String payload, String memo,
+	public void createIdTransaction(String payload, String memo,
 			int confirms, TransactionCallback callback);
 
 	public InputStream resolve(String requestId, String did, boolean all)

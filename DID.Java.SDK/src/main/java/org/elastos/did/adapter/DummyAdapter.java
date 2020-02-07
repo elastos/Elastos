@@ -75,8 +75,7 @@ public class DummyAdapter implements DIDAdapter {
 		return null;
 	}
 
-	@Override
-	public String createIdTransaction(String payload, String memo)
+	private String createIdTransaction(String payload, String memo)
 			throws DIDTransactionException {
 		IDChainRequest request = IDChainRequest.fromJson(payload);
 
@@ -136,15 +135,13 @@ public class DummyAdapter implements DIDAdapter {
 	}
 
 	@Override
-	public boolean createIdTransaction(String payload, String memo,
+	public void createIdTransaction(String payload, String memo,
 			int confirms, TransactionCallback callback) {
 		try {
 			String txid = createIdTransaction(payload, memo);
 			callback.accept(txid, 0, null);
-			return true;
 		} catch (Exception e) {
 			callback.accept(null, -1, e.getMessage());
-			return true;
 		}
 	}
 
