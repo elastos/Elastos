@@ -591,8 +591,8 @@ public class FileSystemStorage: DIDStorage {
             }
         }
     }
-    
-    func changePassword(_ reEncryptor: (String) -> String) throws {
+
+    func changePassword(_ reEncryptor: (String) throws -> String) throws {
         let privateDir = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR
         let privateJournal = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.JOURNAL_SUFFIX
 

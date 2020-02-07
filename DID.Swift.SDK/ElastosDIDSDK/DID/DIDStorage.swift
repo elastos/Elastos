@@ -1,5 +1,5 @@
 
-typealias ReEncryptor = (String) -> String
+typealias ReEncryptor = (String) throws -> String
 
 protocol DIDStorage {
 
