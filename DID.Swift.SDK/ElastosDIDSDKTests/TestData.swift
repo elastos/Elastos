@@ -29,6 +29,11 @@ class TestData: XCTestCase {
     private var testVp: VerifiablePresentation?
     private var testVpNormalizedJson: String?
     private var restoreMnemonic: String?
+    
+    private var jsonVc: VerifiableCredential?
+    private var jsonVcCompactJson: String?
+    private var jsonVcNormalizedJson: String?
+
     let verbose: Bool = true
     
     private var store: DIDStore!
@@ -156,6 +161,13 @@ class TestData: XCTestCase {
         }
         return twitterVc!
     }
+   
+    public func loadJsonCredential() throws -> VerifiableCredential {
+        if jsonVc == nil {
+            jsonVc = try loadCredential("vc-json", "json")
+        }
+        return jsonVc!
+    }
     
     public func loadPresentation() throws -> VerifiablePresentation {
         if testVp == nil {
@@ -262,6 +274,20 @@ class TestData: XCTestCase {
         return twitterVcNormalizedJson!
     }
     
+    public func loadJsonVcCompactJson() throws -> String {
+        if jsonVcCompactJson == nil {
+            jsonVcCompactJson = try loadText("vc-json.compact", "json")
+        }
+        return jsonVcCompactJson!
+    }
+    
+    public func loadJsonVcNormalizedJson() throws -> String {
+        if jsonVcNormalizedJson == nil {
+            jsonVcNormalizedJson = try loadText("vc-json.normalized", "json")
+        }
+        return jsonVcNormalizedJson!
+    }
+
     public func loadPresentationNormalizedJson() throws -> String {
         if testVpNormalizedJson == nil {
             testVpNormalizedJson = try loadText("vp.normalized", "json")

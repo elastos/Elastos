@@ -94,13 +94,15 @@ class TestDataGenerator: XCTestCase {
         props["language"] = "English"
         props["email"] = "john@example.com"
         props["twitter"] = "@john"
-        let cb: CredentialBuilder = selfIssuer.issueFor(did: doc.subject!)
+        var cb: CredentialBuilder = selfIssuer.issueFor(did: doc.subject!)
         let vcProfile: VerifiableCredential = try cb.idString("profile")
             .types(["BasicProfileCredential", "SelfProclaimedCredential"])
             .properties(props)
             .seal(storepass: storePass)
         _ = try Issuer(issuer)
         
+        let kycIssuer = try Issuer(issuer)
+        cb = kycIssuer.issueFor(did: doc.subject!)
         props = [: ]
         props["email"] = "john@example.com"
         let vcEmail: VerifiableCredential = try cb.idString("email")
@@ -196,12 +198,36 @@ class TestDataGenerator: XCTestCase {
         writeTo("vc-twitter.compact.json", json)
         
         print(try vcPassport.isValid())
+        //
+        print("OK")
         
+        // Json format credential
+        id = try DIDURL(test.subject!, "json")
+        print("Generate credential: \(id)...")
+        
+        cb = kycIssuer.issueFor(did: doc.subject!)
+        let jsonProps: String = "{\"name\":\"Jay Holtslander\",\"alternateName\":\"Jason Holtslander\",\"booleanValue\":true,\"numberValue\":1234,\"doubleValue\":9.5,\"nationality\":\"Canadian\",\"birthPlace\":{\"type\":\"Place\",\"address\":{\"type\":\"PostalAddress\",\"addressLocality\":\"Vancouver\",\"addressRegion\":\"BC\",\"addressCountry\":\"Canada\"}},\"affiliation\":[{\"type\":\"Organization\",\"name\":\"Futurpreneur\",\"sameAs\":[\"https://twitter.com/futurpreneur\",\"https://www.facebook.com/futurpreneur/\",\"https://www.linkedin.com/company-beta/100369/\",\"https://www.youtube.com/user/CYBF\"]}],\"alumniOf\":[{\"type\":\"CollegeOrUniversity\",\"name\":\"Vancouver Film School\",\"sameAs\":\"https://en.wikipedia.org/wiki/Vancouver_Film_School\",\"year\":2000},{\"type\":\"CollegeOrUniversity\",\"name\":\"CodeCore Bootcamp\"}],\"gender\":\"Male\",\"Description\":\"Technologist\",\"disambiguatingDescription\":\"Co-founder of CodeCore Bootcamp\",\"jobTitle\":\"Technical Director\",\"worksFor\":[{\"type\":\"Organization\",\"name\":\"Skunkworks Creative Group Inc.\",\"sameAs\":[\"https://twitter.com/skunkworks_ca\",\"https://www.facebook.com/skunkworks.ca\",\"https://www.linkedin.com/company/skunkworks-creative-group-inc-\",\"https://plus.google.com/+SkunkworksCa\"]}],\"url\":\"https://jay.holtslander.ca\",\"image\":\"https://s.gravatar.com/avatar/961997eb7fd5c22b3e12fb3c8ca14e11?s=512&r=g\",\"address\":{\"type\":\"PostalAddress\",\"addressLocality\":\"Vancouver\",\"addressRegion\":\"BC\",\"addressCountry\":\"Canada\"},\"sameAs\":[\"https://twitter.com/j_holtslander\",\"https://pinterest.com/j_holtslander\",\"https://instagram.com/j_holtslander\",\"https://www.facebook.com/jay.holtslander\",\"https://ca.linkedin.com/in/holtslander/en\",\"https://plus.google.com/+JayHoltslander\",\"https://www.youtube.com/user/jasonh1234\",\"https://github.com/JayHoltslander\",\"https://profiles.wordpress.org/jasonh1234\",\"https://angel.co/j_holtslander\",\"https://www.foursquare.com/user/184843\",\"https://jholtslander.yelp.ca\",\"https://codepen.io/j_holtslander/\",\"https://stackoverflow.com/users/751570/jay\",\"https://dribbble.com/j_holtslander\",\"http://jasonh1234.deviantart.com/\",\"https://www.behance.net/j_holtslander\",\"https://www.flickr.com/people/jasonh1234/\",\"https://medium.com/@j_holtslander\"]}"
+        let vcJson = try cb.id(id)
+            .types(["InternetAccountCredential", "TwitterCredential"])
+            .properties(properties: jsonProps)
+            .seal(storepass: storePass)
+        try store.storeCredential(vcTwitter, "json")
+        json = vcJson.description(true)
+        writeTo("vc-json.normalized.json", json)
+        
+        json = try formatJson(json)
+        writeTo("vc-json.json", json)
+
+        json = vcJson.description(false)
+        writeTo("vc-json.compact.json", json)
+        
+        print("OK")
+
         // Presentation with above credentials
         print("Generate presentation...")
         
-        let pb: VerifiablePresentationBuilder = try VerifiablePresentation.createFor(test.subject!, store)
-        let vp: VerifiablePresentation = try pb.credentials([vcProfile, vcEmail, vcPassport, vcTwitter])
+        let pb = try VerifiablePresentation.createFor(test.subject!, store)
+        let vp = try pb.credentials([vcProfile, vcEmail, vcPassport, vcTwitter])
             .realm("https://example.com/")
             .nonce("873172f58701a9ee686f0630204fee59")
             .seal(storePass)
@@ -264,41 +290,36 @@ class TestDataGenerator: XCTestCase {
                 let selfIssuer: Issuer = try Issuer(doc)
                 
                 let did: DID = doc.subject!
-                let cs: CredentialSubject = CredentialSubject(did)
-                cs.addProperty("name", "John")
-                cs.addProperty("nation", "Singapore")
-                cs.addProperty("language", "English")
-                cs.addProperty("email", "john@example.com")
+                var properties: Dictionary<String, String> = ["name": "John", "nation": "Singapore", "language": "English", "email": "john@example.com"]
                 
                 let cb: CredentialBuilder = selfIssuer.issueFor(did: did)
                 let vcProfile: VerifiableCredential = try cb.idString("profile")
                     .types(["BasicProfileCredential", "SelfProclaimedCredential"])
-                    .properties(cs.properties)
+                    .properties(properties)
                     .seal(storepass: storePass)
                 
-                cs.properties.removeAll()
-                cs.addProperty("email", "john@gmail.com")
+                properties.removeAll()
+                properties = ["email": "john@gmail.com"]
                 
                 let vcEmail: VerifiableCredential = try cb.idString("email")
                     .types(["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"])
-                    .properties(cs.properties)
+                    .properties(properties)
                     .seal(storepass: storePass)
                 
-                cs.properties.removeAll()
-                cs.addProperty("nation", "Singapore")
-                cs.addProperty("passport", "S653258Z07")
+                properties.removeAll()
+                properties = ["nation": "Singapore", "passport": "S653258Z07"]
                 
                 let vcPassport: VerifiableCredential = try cb.idString("passport")
                     .types(["BasicProfileCredential", "SelfProclaimedCredential"])
-                    .properties(cs.properties)
+                    .properties(properties)
                     .seal(storepass: storePass)
                 
-                cs.properties.removeAll()
-                cs.addProperty("twitter", "@john")
+                properties.removeAll()
+                properties = ["twitter": "@john"]
                 
                 let vcTwitter: VerifiableCredential = try cb.idString("twitter")
                     .types(["InternetAccountCredential", "TwitterCredential"])
-                    .properties(cs.properties)
+                    .properties(properties)
                     .seal(storepass: storePass)
                 
                 let db: DIDDocumentBuilder = doc.edit()

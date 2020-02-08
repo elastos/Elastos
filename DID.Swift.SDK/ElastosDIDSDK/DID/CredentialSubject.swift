@@ -3,7 +3,7 @@ import Foundation
 public class CredentialSubject {
     
     public var id: DID
-    public var properties: Dictionary<String, String> = [: ]
+    public var properties: Dictionary<String, Any> = [: ]
     
     public init(_ id: DID) {
         self.id = id
@@ -13,15 +13,15 @@ public class CredentialSubject {
         return properties.count
     }
     
-    public func getProperty(_ name: String) -> String? {
+    public func getProperty(_ name: String) -> Any? {
         return properties[name]
     }
     
-    public func addProperty(_ name: String, _ value: String) {
+    public func addProperty(_ name: String, _ value: Any) {
         properties[name] = value
     }
 
-    public func addProperties(_ dic: Dictionary<String, String> ) {
+    public func addProperties(_ dic: Dictionary<String, Any> ) {
         dic.forEach { (key, value) in
             properties[key] = value
         }
@@ -35,7 +35,8 @@ public class CredentialSubject {
         }
         
         // Properties
-        properties.forEach { (key, value) in
+        let d = DIDURLComparator.DIDOrderedDictionaryComparatorByKey(source: properties)
+        d.forEach { (key, value) in
             dic[key] = value
         }
         return dic
@@ -49,7 +50,7 @@ public class CredentialSubject {
         json.forEach { key, value in
             if key != ID {
                 if key != "" {
-                    cs.addProperty(key, value as! String)
+                    cs.addProperty(key, value)
                 }
             }
         }

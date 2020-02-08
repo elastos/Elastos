@@ -22,7 +22,7 @@ class VerifiableCredentialTest: XCTestCase {
             
             XCTAssertEqual(issuer.subject, vc.issuer)
             XCTAssertEqual(test.subject, vc.subject.id)
-            XCTAssertEqual("john@example.com", vc.subject.getProperty("email"))
+            XCTAssertEqual("john@example.com", vc.subject.getProperty("email") as! String)
             
             XCTAssertNotNil(vc.issuanceDate)
             XCTAssertNotNil(vc.expirationDate)
@@ -53,12 +53,12 @@ class VerifiableCredentialTest: XCTestCase {
             XCTAssertEqual(test.subject, vc!.issuer)
             XCTAssertEqual(test.subject, vc!.subject.id)
             
-            XCTAssertEqual("John", vc!.subject.getProperty("name"))
-            XCTAssertEqual("Male", vc!.subject.getProperty("gender"))
-            XCTAssertEqual("Singapore", vc!.subject.getProperty("nation"))
-            XCTAssertEqual("English", vc!.subject.getProperty("language"))
-            XCTAssertEqual("john@example.com", vc!.subject.getProperty("email"))
-            XCTAssertEqual("@john", vc!.subject.getProperty("twitter"))
+            XCTAssertEqual("John", vc!.subject.getProperty("name") as! String)
+            XCTAssertEqual("Male", vc!.subject.getProperty("gender") as! String)
+            XCTAssertEqual("Singapore", vc!.subject.getProperty("nation") as! String)
+            XCTAssertEqual("English", vc!.subject.getProperty("language") as! String)
+            XCTAssertEqual("john@example.com", vc!.subject.getProperty("email") as! String)
+            XCTAssertEqual("@john", vc!.subject.getProperty("twitter") as! String)
             XCTAssertNotNil(vc!.issuanceDate)
             XCTAssertNotNil(vc!.expirationDate)
             
@@ -121,5 +121,24 @@ class VerifiableCredentialTest: XCTestCase {
             XCTFail()
         }
     }
+    
+    func testParseAndSerializeJsonCredential() {
+        do {
+            let testData = TestData()
+            var json = try testData.loadJsonVcNormalizedJson()
+            let normalized = try VerifiableCredential.fromJson(json)
+            json = try testData.loadJsonVcCompactJson()
+            let compact = try VerifiableCredential.fromJson(json)
+            let vc = try testData.loadJsonCredential()
+            XCTAssertEqual(try testData.loadJsonVcNormalizedJson(), normalized.description(true))
+            XCTAssertEqual(try testData.loadJsonVcNormalizedJson(), compact.description(true))
+            XCTAssertEqual(try testData.loadJsonVcNormalizedJson(), vc.description(true))
 
+            XCTAssertEqual(try testData.loadJsonVcCompactJson(), normalized.description(false))
+            XCTAssertEqual(try testData.loadJsonVcCompactJson(), compact.description(false))
+            XCTAssertEqual(try testData.loadJsonVcCompactJson(), vc.description(false))
+        } catch {
+            XCTFail()
+        }
+    }
 }

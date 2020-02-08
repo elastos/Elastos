@@ -31,7 +31,56 @@ class DIDURLComparator {
             result[ID] = did
         }
         for obj in sortArray {
-            result[obj.0] = obj.1
+            if obj.1 is Dictionary<String, Any> {
+                result[obj.0] = DIDOrderedDictionaryComparatorByKey(source: obj.1 as! Dictionary<String, Any>)
+            } else {
+                result[obj.0] = obj.1
+            }
+        }
+        return result
+    }
+    
+    class func DIDOrderedDictionaryComparatorByKey(source: Dictionary<String, Any>) -> OrderedDictionary<String, Any> {
+        
+        var sortArray: Array<(String, Any)> = Array()
+        var did: String = ""
+        for (key, value) in source {
+            if key == ID {
+                did = String("\(value)")
+            }
+            else {
+                sortArray.append((key, value))
+            }
+        }
+        
+        sortArray.sort { (a, b) -> Bool in
+            let strA: String = a.0
+            let strB: String = b.0
+            return DIDStringComparator(strA, strB)
+        }
+        
+        var result: OrderedDictionary<String, Any> = OrderedDictionary<String, Any>()
+        if did != "" {
+            result[ID] = did
+        }
+        for obj in sortArray {
+            if obj.1 is Dictionary<String, Any> {
+                result[obj.0] = DIDOrderedDictionaryComparatorByKey(source: obj.1 as! Dictionary<String, Any>)
+            } else if obj.1 is [Any] {
+                let array = obj.1 as! [Any]
+                var temp = [Any]()
+                for ob in array {
+                    if ob is Dictionary<String, Any> {
+                        temp.append(DIDOrderedDictionaryComparatorByKey(source: ob as! Dictionary<String, Any>))
+                    } else {
+                        temp.append(ob)
+                    }
+                }
+                result[obj.0] = temp
+            }
+            else {
+                result[obj.0] = obj.1
+            }
         }
         return result
     }

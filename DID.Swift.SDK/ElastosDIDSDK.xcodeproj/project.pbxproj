@@ -10,6 +10,35 @@
 		11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1C239D1B31008A4500 /* DIDURLTest.swift */; };
 		11054F1F239D2088008A4500 /* DIDTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1E239D2088008A4500 /* DIDTest.swift */; };
 		110AD2FF234E44C8006578D6 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
+		111215C023ED63BD009B068C /* document.key2.sk in Resources */ = {isa = PBXBuildFile; fileRef = 111215B423ED63BA009B068C /* document.key2.sk */; };
+		111215C123ED63BD009B068C /* document.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215B523ED63BA009B068C /* document.json */; };
+		111215C223ED63BD009B068C /* document.key3.sk in Resources */ = {isa = PBXBuildFile; fileRef = 111215B623ED63BB009B068C /* document.key3.sk */; };
+		111215C323ED63BD009B068C /* document.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215B723ED63BB009B068C /* document.normalized.json */; };
+		111215C423ED63BD009B068C /* dids.restore in Resources */ = {isa = PBXBuildFile; fileRef = 111215B823ED63BB009B068C /* dids.restore */; };
+		111215C523ED63BD009B068C /* issuer.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215B923ED63BB009B068C /* issuer.normalized.json */; };
+		111215C623ED63BD009B068C /* issuer.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215BA23ED63BB009B068C /* issuer.compact.json */; };
+		111215C723ED63BD009B068C /* document.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215BB23ED63BB009B068C /* document.compact.json */; };
+		111215C823ED63BD009B068C /* document.primary.sk in Resources */ = {isa = PBXBuildFile; fileRef = 111215BC23ED63BB009B068C /* document.primary.sk */; };
+		111215C923ED63BD009B068C /* issuer.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215BD23ED63BC009B068C /* issuer.json */; };
+		111215CA23ED63BD009B068C /* issuer.primary.sk in Resources */ = {isa = PBXBuildFile; fileRef = 111215BE23ED63BC009B068C /* issuer.primary.sk */; };
+		111215CB23ED63BD009B068C /* mnemonic.restore in Resources */ = {isa = PBXBuildFile; fileRef = 111215BF23ED63BC009B068C /* mnemonic.restore */; };
+		111215DD23ED63CF009B068C /* vc-email.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215CC23ED63C7009B068C /* vc-email.json */; };
+		111215DE23ED63CF009B068C /* vc-passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215CD23ED63C8009B068C /* vc-passport.json */; };
+		111215DF23ED63CF009B068C /* vc-json.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215CE23ED63C8009B068C /* vc-json.json */; };
+		111215E023ED63CF009B068C /* vc-profile.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215CF23ED63C8009B068C /* vc-profile.json */; };
+		111215E123ED63CF009B068C /* vp.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215D023ED63C9009B068C /* vp.json */; };
+		111215E223ED63CF009B068C /* vc-json.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215D123ED63CA009B068C /* vc-json.compact.json */; };
+		111215E323ED63CF009B068C /* vc-json.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215D223ED63CA009B068C /* vc-json.normalized.json */; };
+		111215E423ED63CF009B068C /* vc-email.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215D323ED63CB009B068C /* vc-email.compact.json */; };
+		111215E523ED63CF009B068C /* vc-passport.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215D423ED63CB009B068C /* vc-passport.compact.json */; };
+		111215E623ED63CF009B068C /* vc-twitter.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215D523ED63CC009B068C /* vc-twitter.normalized.json */; };
+		111215E723ED63CF009B068C /* vc-email.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215D623ED63CD009B068C /* vc-email.normalized.json */; };
+		111215E823ED63CF009B068C /* vc-twitter.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215D723ED63CD009B068C /* vc-twitter.compact.json */; };
+		111215E923ED63CF009B068C /* vc-profile.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215D823ED63CE009B068C /* vc-profile.compact.json */; };
+		111215EA23ED63CF009B068C /* vc-passport.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215D923ED63CE009B068C /* vc-passport.normalized.json */; };
+		111215EB23ED63CF009B068C /* vp.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215DA23ED63CE009B068C /* vp.normalized.json */; };
+		111215EC23ED63CF009B068C /* vc-profile.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215DB23ED63CF009B068C /* vc-profile.normalized.json */; };
+		111215ED23ED63CF009B068C /* vc-twitter.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215DC23ED63CF009B068C /* vc-twitter.json */; };
 		11133F5C23C48C3200BFDA3E /* SPVWrapper.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11133F5923C48B4600BFDA3E /* SPVWrapper.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		111BF480235467880043D570 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; };
 		111BF481235467880043D570 /* Antlr4.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -54,32 +83,6 @@
 		11E1D00D23D039630011DD65 /* Proof.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E1D00923D039630011DD65 /* Proof.swift */; };
 		11E7519F23A7570A0022C592 /* TestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E7519E23A7570A0022C592 /* TestData.swift */; };
 		11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E751A423A75A120022C592 /* DummyAdapter.swift */; };
-		11E751C023A762000022C592 /* vc-profile.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751A623A761FC0022C592 /* vc-profile.json */; };
-		11E751C123A762000022C592 /* document.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751A723A761FD0022C592 /* document.json */; };
-		11E751C223A762000022C592 /* vc-email.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751A823A761FD0022C592 /* vc-email.json */; };
-		11E751C323A762000022C592 /* vc-twitter.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751A923A761FD0022C592 /* vc-twitter.compact.json */; };
-		11E751C423A762000022C592 /* vp.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AA23A761FD0022C592 /* vp.normalized.json */; };
-		11E751C523A762000022C592 /* vp.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AB23A761FD0022C592 /* vp.json */; };
-		11E751C623A762000022C592 /* document.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AC23A761FD0022C592 /* document.normalized.json */; };
-		11E751C723A762000022C592 /* document.primary.sk in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AD23A761FD0022C592 /* document.primary.sk */; };
-		11E751C823A762000022C592 /* vc-email.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AE23A761FD0022C592 /* vc-email.normalized.json */; };
-		11E751C923A762000022C592 /* vc-passport.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AF23A761FD0022C592 /* vc-passport.compact.json */; };
-		11E751CA23A762000022C592 /* vc-profile.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B023A761FE0022C592 /* vc-profile.compact.json */; };
-		11E751CB23A762000022C592 /* dids.restore in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B123A761FE0022C592 /* dids.restore */; };
-		11E751CC23A762000022C592 /* document.key3.sk in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B223A761FE0022C592 /* document.key3.sk */; };
-		11E751CD23A762000022C592 /* vc-profile.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B323A761FF0022C592 /* vc-profile.normalized.json */; };
-		11E751CE23A762000022C592 /* vc-passport.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B423A761FF0022C592 /* vc-passport.normalized.json */; };
-		11E751CF23A762000022C592 /* issuer.primary.sk in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B523A761FF0022C592 /* issuer.primary.sk */; };
-		11E751D023A762000022C592 /* document.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B623A761FF0022C592 /* document.compact.json */; };
-		11E751D123A762000022C592 /* issuer.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B723A761FF0022C592 /* issuer.normalized.json */; };
-		11E751D223A762000022C592 /* issuer.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B823A761FF0022C592 /* issuer.compact.json */; };
-		11E751D323A762000022C592 /* vc-twitter.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B923A761FF0022C592 /* vc-twitter.normalized.json */; };
-		11E751D423A762000022C592 /* vc-email.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BA23A761FF0022C592 /* vc-email.compact.json */; };
-		11E751D523A762000022C592 /* issuer.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BB23A761FF0022C592 /* issuer.json */; };
-		11E751D623A762000022C592 /* vc-passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BC23A762000022C592 /* vc-passport.json */; };
-		11E751D723A762000022C592 /* vc-twitter.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BD23A762000022C592 /* vc-twitter.json */; };
-		11E751D823A762000022C592 /* document.key2.sk in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BE23A762000022C592 /* document.key2.sk */; };
-		11E751D923A762000022C592 /* mnemonic.restore in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BF23A762000022C592 /* mnemonic.restore */; };
 		11E751DB23A774DD0022C592 /* IDChainOperationsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E751DA23A774DD0022C592 /* IDChainOperationsTest.swift */; };
 		11E89FD823A4C36000C81B3C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FA723A4C36000C81B3C /* Constants.swift */; };
 		11E89FD923A4C36000C81B3C /* DID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FA823A4C36000C81B3C /* DID.swift */; };
@@ -191,6 +194,35 @@
 		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
 		110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Antlr4.xcodeproj; path = Antlr4/Antlr4.xcodeproj; sourceTree = "<group>"; };
 		110AD2FE234E44C8006578D6 /* Base58.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
+		111215B423ED63BA009B068C /* document.key2.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = document.key2.sk; sourceTree = "<group>"; };
+		111215B523ED63BA009B068C /* document.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = document.json; sourceTree = "<group>"; };
+		111215B623ED63BB009B068C /* document.key3.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = document.key3.sk; sourceTree = "<group>"; };
+		111215B723ED63BB009B068C /* document.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = document.normalized.json; sourceTree = "<group>"; };
+		111215B823ED63BB009B068C /* dids.restore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dids.restore; sourceTree = "<group>"; };
+		111215B923ED63BB009B068C /* issuer.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = issuer.normalized.json; sourceTree = "<group>"; };
+		111215BA23ED63BB009B068C /* issuer.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = issuer.compact.json; sourceTree = "<group>"; };
+		111215BB23ED63BB009B068C /* document.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = document.compact.json; sourceTree = "<group>"; };
+		111215BC23ED63BB009B068C /* document.primary.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = document.primary.sk; sourceTree = "<group>"; };
+		111215BD23ED63BC009B068C /* issuer.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = issuer.json; sourceTree = "<group>"; };
+		111215BE23ED63BC009B068C /* issuer.primary.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = issuer.primary.sk; sourceTree = "<group>"; };
+		111215BF23ED63BC009B068C /* mnemonic.restore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = mnemonic.restore; sourceTree = "<group>"; };
+		111215CC23ED63C7009B068C /* vc-email.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-email.json"; sourceTree = "<group>"; };
+		111215CD23ED63C8009B068C /* vc-passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-passport.json"; sourceTree = "<group>"; };
+		111215CE23ED63C8009B068C /* vc-json.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-json.json"; sourceTree = "<group>"; };
+		111215CF23ED63C8009B068C /* vc-profile.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.json"; sourceTree = "<group>"; };
+		111215D023ED63C9009B068C /* vp.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = vp.json; sourceTree = "<group>"; };
+		111215D123ED63CA009B068C /* vc-json.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-json.compact.json"; sourceTree = "<group>"; };
+		111215D223ED63CA009B068C /* vc-json.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-json.normalized.json"; sourceTree = "<group>"; };
+		111215D323ED63CB009B068C /* vc-email.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-email.compact.json"; sourceTree = "<group>"; };
+		111215D423ED63CB009B068C /* vc-passport.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-passport.compact.json"; sourceTree = "<group>"; };
+		111215D523ED63CC009B068C /* vc-twitter.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-twitter.normalized.json"; sourceTree = "<group>"; };
+		111215D623ED63CD009B068C /* vc-email.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-email.normalized.json"; sourceTree = "<group>"; };
+		111215D723ED63CD009B068C /* vc-twitter.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-twitter.compact.json"; sourceTree = "<group>"; };
+		111215D823ED63CE009B068C /* vc-profile.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.compact.json"; sourceTree = "<group>"; };
+		111215D923ED63CE009B068C /* vc-passport.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-passport.normalized.json"; sourceTree = "<group>"; };
+		111215DA23ED63CE009B068C /* vp.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = vp.normalized.json; sourceTree = "<group>"; };
+		111215DB23ED63CF009B068C /* vc-profile.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.normalized.json"; sourceTree = "<group>"; };
+		111215DC23ED63CF009B068C /* vc-twitter.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-twitter.json"; sourceTree = "<group>"; };
 		11133F5423C48B4600BFDA3E /* SPVWrapper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SPVWrapper.xcodeproj; path = SPVWrapper/SPVWrapper.xcodeproj; sourceTree = "<group>"; };
 		1125B5752382302800D396B6 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
 		1125B57D238234FB00D396B6 /* CHDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CHDKey.swift; path = include/CHDKey.swift; sourceTree = "<group>"; };
@@ -280,32 +312,6 @@
 		11E1D00923D039630011DD65 /* Proof.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Proof.swift; sourceTree = "<group>"; };
 		11E7519E23A7570A0022C592 /* TestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestData.swift; sourceTree = "<group>"; };
 		11E751A423A75A120022C592 /* DummyAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DummyAdapter.swift; sourceTree = "<group>"; };
-		11E751A623A761FC0022C592 /* vc-profile.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.json"; sourceTree = "<group>"; };
-		11E751A723A761FD0022C592 /* document.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = document.json; sourceTree = "<group>"; };
-		11E751A823A761FD0022C592 /* vc-email.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-email.json"; sourceTree = "<group>"; };
-		11E751A923A761FD0022C592 /* vc-twitter.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-twitter.compact.json"; sourceTree = "<group>"; };
-		11E751AA23A761FD0022C592 /* vp.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = vp.normalized.json; sourceTree = "<group>"; };
-		11E751AB23A761FD0022C592 /* vp.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = vp.json; sourceTree = "<group>"; };
-		11E751AC23A761FD0022C592 /* document.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = document.normalized.json; sourceTree = "<group>"; };
-		11E751AD23A761FD0022C592 /* document.primary.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = document.primary.sk; sourceTree = "<group>"; };
-		11E751AE23A761FD0022C592 /* vc-email.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-email.normalized.json"; sourceTree = "<group>"; };
-		11E751AF23A761FD0022C592 /* vc-passport.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-passport.compact.json"; sourceTree = "<group>"; };
-		11E751B023A761FE0022C592 /* vc-profile.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.compact.json"; sourceTree = "<group>"; };
-		11E751B123A761FE0022C592 /* dids.restore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dids.restore; sourceTree = "<group>"; };
-		11E751B223A761FE0022C592 /* document.key3.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = document.key3.sk; sourceTree = "<group>"; };
-		11E751B323A761FF0022C592 /* vc-profile.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.normalized.json"; sourceTree = "<group>"; };
-		11E751B423A761FF0022C592 /* vc-passport.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-passport.normalized.json"; sourceTree = "<group>"; };
-		11E751B523A761FF0022C592 /* issuer.primary.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = issuer.primary.sk; sourceTree = "<group>"; };
-		11E751B623A761FF0022C592 /* document.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = document.compact.json; sourceTree = "<group>"; };
-		11E751B723A761FF0022C592 /* issuer.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = issuer.normalized.json; sourceTree = "<group>"; };
-		11E751B823A761FF0022C592 /* issuer.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = issuer.compact.json; sourceTree = "<group>"; };
-		11E751B923A761FF0022C592 /* vc-twitter.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-twitter.normalized.json"; sourceTree = "<group>"; };
-		11E751BA23A761FF0022C592 /* vc-email.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-email.compact.json"; sourceTree = "<group>"; };
-		11E751BB23A761FF0022C592 /* issuer.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = issuer.json; sourceTree = "<group>"; };
-		11E751BC23A762000022C592 /* vc-passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-passport.json"; sourceTree = "<group>"; };
-		11E751BD23A762000022C592 /* vc-twitter.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-twitter.json"; sourceTree = "<group>"; };
-		11E751BE23A762000022C592 /* document.key2.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = document.key2.sk; sourceTree = "<group>"; };
-		11E751BF23A762000022C592 /* mnemonic.restore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = mnemonic.restore; sourceTree = "<group>"; };
 		11E751DA23A774DD0022C592 /* IDChainOperationsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDChainOperationsTest.swift; sourceTree = "<group>"; };
 		11E89FA723A4C36000C81B3C /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		11E89FA823A4C36000C81B3C /* DID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DID.swift; sourceTree = "<group>"; };
@@ -516,33 +522,36 @@
 		11CA74D1235E131B006E66F7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				111215D323ED63CB009B068C /* vc-email.compact.json */,
+				111215CC23ED63C7009B068C /* vc-email.json */,
+				111215D623ED63CD009B068C /* vc-email.normalized.json */,
+				111215D123ED63CA009B068C /* vc-json.compact.json */,
+				111215CE23ED63C8009B068C /* vc-json.json */,
+				111215D223ED63CA009B068C /* vc-json.normalized.json */,
+				111215D423ED63CB009B068C /* vc-passport.compact.json */,
+				111215CD23ED63C8009B068C /* vc-passport.json */,
+				111215D923ED63CE009B068C /* vc-passport.normalized.json */,
+				111215D823ED63CE009B068C /* vc-profile.compact.json */,
+				111215CF23ED63C8009B068C /* vc-profile.json */,
+				111215DB23ED63CF009B068C /* vc-profile.normalized.json */,
+				111215D723ED63CD009B068C /* vc-twitter.compact.json */,
+				111215DC23ED63CF009B068C /* vc-twitter.json */,
+				111215D523ED63CC009B068C /* vc-twitter.normalized.json */,
+				111215D023ED63C9009B068C /* vp.json */,
+				111215DA23ED63CE009B068C /* vp.normalized.json */,
+				111215B823ED63BB009B068C /* dids.restore */,
+				111215BB23ED63BB009B068C /* document.compact.json */,
+				111215B523ED63BA009B068C /* document.json */,
+				111215B423ED63BA009B068C /* document.key2.sk */,
+				111215B623ED63BB009B068C /* document.key3.sk */,
+				111215B723ED63BB009B068C /* document.normalized.json */,
+				111215BC23ED63BB009B068C /* document.primary.sk */,
+				111215BA23ED63BB009B068C /* issuer.compact.json */,
+				111215BD23ED63BC009B068C /* issuer.json */,
+				111215B923ED63BB009B068C /* issuer.normalized.json */,
+				111215BE23ED63BC009B068C /* issuer.primary.sk */,
+				111215BF23ED63BC009B068C /* mnemonic.restore */,
 				11D67C6523BF3BF400FF7B8E /* teststore */,
-				11E751B123A761FE0022C592 /* dids.restore */,
-				11E751B623A761FF0022C592 /* document.compact.json */,
-				11E751A723A761FD0022C592 /* document.json */,
-				11E751BE23A762000022C592 /* document.key2.sk */,
-				11E751B223A761FE0022C592 /* document.key3.sk */,
-				11E751AC23A761FD0022C592 /* document.normalized.json */,
-				11E751AD23A761FD0022C592 /* document.primary.sk */,
-				11E751B823A761FF0022C592 /* issuer.compact.json */,
-				11E751BB23A761FF0022C592 /* issuer.json */,
-				11E751B723A761FF0022C592 /* issuer.normalized.json */,
-				11E751B523A761FF0022C592 /* issuer.primary.sk */,
-				11E751BF23A762000022C592 /* mnemonic.restore */,
-				11E751BA23A761FF0022C592 /* vc-email.compact.json */,
-				11E751A823A761FD0022C592 /* vc-email.json */,
-				11E751AE23A761FD0022C592 /* vc-email.normalized.json */,
-				11E751AF23A761FD0022C592 /* vc-passport.compact.json */,
-				11E751BC23A762000022C592 /* vc-passport.json */,
-				11E751B423A761FF0022C592 /* vc-passport.normalized.json */,
-				11E751B023A761FE0022C592 /* vc-profile.compact.json */,
-				11E751A623A761FC0022C592 /* vc-profile.json */,
-				11E751B323A761FF0022C592 /* vc-profile.normalized.json */,
-				11E751A923A761FD0022C592 /* vc-twitter.compact.json */,
-				11E751BD23A762000022C592 /* vc-twitter.json */,
-				11E751B923A761FF0022C592 /* vc-twitter.normalized.json */,
-				11E751AB23A761FD0022C592 /* vp.json */,
-				11E751AA23A761FD0022C592 /* vp.normalized.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -828,33 +837,36 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11E751D723A762000022C592 /* vc-twitter.json in Resources */,
-				11E751C723A762000022C592 /* document.primary.sk in Resources */,
-				11E751C223A762000022C592 /* vc-email.json in Resources */,
-				11E751D423A762000022C592 /* vc-email.compact.json in Resources */,
-				11E751CD23A762000022C592 /* vc-profile.normalized.json in Resources */,
-				11E751CC23A762000022C592 /* document.key3.sk in Resources */,
-				11E751D623A762000022C592 /* vc-passport.json in Resources */,
-				11E751C323A762000022C592 /* vc-twitter.compact.json in Resources */,
+				111215C023ED63BD009B068C /* document.key2.sk in Resources */,
+				111215E723ED63CF009B068C /* vc-email.normalized.json in Resources */,
+				111215C523ED63BD009B068C /* issuer.normalized.json in Resources */,
+				111215E923ED63CF009B068C /* vc-profile.compact.json in Resources */,
+				111215EA23ED63CF009B068C /* vc-passport.normalized.json in Resources */,
+				111215E423ED63CF009B068C /* vc-email.compact.json in Resources */,
+				111215EC23ED63CF009B068C /* vc-profile.normalized.json in Resources */,
+				111215C223ED63BD009B068C /* document.key3.sk in Resources */,
+				111215EB23ED63CF009B068C /* vp.normalized.json in Resources */,
+				111215C623ED63BD009B068C /* issuer.compact.json in Resources */,
+				111215DF23ED63CF009B068C /* vc-json.json in Resources */,
 				11D67C6A23BF3BF500FF7B8E /* teststore in Resources */,
-				11E751D523A762000022C592 /* issuer.json in Resources */,
-				11E751C123A762000022C592 /* document.json in Resources */,
-				11E751D323A762000022C592 /* vc-twitter.normalized.json in Resources */,
-				11E751C823A762000022C592 /* vc-email.normalized.json in Resources */,
-				11E751C923A762000022C592 /* vc-passport.compact.json in Resources */,
-				11E751CA23A762000022C592 /* vc-profile.compact.json in Resources */,
-				11E751D223A762000022C592 /* issuer.compact.json in Resources */,
-				11E751C523A762000022C592 /* vp.json in Resources */,
-				11E751CF23A762000022C592 /* issuer.primary.sk in Resources */,
-				11E751CE23A762000022C592 /* vc-passport.normalized.json in Resources */,
-				11E751D123A762000022C592 /* issuer.normalized.json in Resources */,
-				11E751C623A762000022C592 /* document.normalized.json in Resources */,
-				11E751D923A762000022C592 /* mnemonic.restore in Resources */,
-				11E751C023A762000022C592 /* vc-profile.json in Resources */,
-				11E751CB23A762000022C592 /* dids.restore in Resources */,
-				11E751D823A762000022C592 /* document.key2.sk in Resources */,
-				11E751D023A762000022C592 /* document.compact.json in Resources */,
-				11E751C423A762000022C592 /* vp.normalized.json in Resources */,
+				111215ED23ED63CF009B068C /* vc-twitter.json in Resources */,
+				111215E023ED63CF009B068C /* vc-profile.json in Resources */,
+				111215C123ED63BD009B068C /* document.json in Resources */,
+				111215CA23ED63BD009B068C /* issuer.primary.sk in Resources */,
+				111215E223ED63CF009B068C /* vc-json.compact.json in Resources */,
+				111215E123ED63CF009B068C /* vp.json in Resources */,
+				111215DD23ED63CF009B068C /* vc-email.json in Resources */,
+				111215CB23ED63BD009B068C /* mnemonic.restore in Resources */,
+				111215E823ED63CF009B068C /* vc-twitter.compact.json in Resources */,
+				111215C923ED63BD009B068C /* issuer.json in Resources */,
+				111215E523ED63CF009B068C /* vc-passport.compact.json in Resources */,
+				111215E323ED63CF009B068C /* vc-json.normalized.json in Resources */,
+				111215C423ED63BD009B068C /* dids.restore in Resources */,
+				111215DE23ED63CF009B068C /* vc-passport.json in Resources */,
+				111215C723ED63BD009B068C /* document.compact.json in Resources */,
+				111215E623ED63CF009B068C /* vc-twitter.normalized.json in Resources */,
+				111215C823ED63BD009B068C /* document.primary.sk in Resources */,
+				111215C323ED63BD009B068C /* document.normalized.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

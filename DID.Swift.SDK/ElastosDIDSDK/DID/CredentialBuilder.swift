@@ -55,13 +55,37 @@ public class CredentialBuilder {
         return self
     }
     
-    public func properties(_ properties: Dictionary<String, String>) throws -> CredentialBuilder {
+    public func properties(_ properties: Dictionary<String, Any>) throws -> CredentialBuilder {
         guard properties.keys.count != 0 else {
             throw DIDError.illegalArgument("properties count is 0.")
         }
         self.credential.subject = CredentialSubject(self.target)
         self.credential.subject.addProperties(properties)
         return self
+    }
+    
+    public func properties(properties: String) throws -> CredentialBuilder {
+        
+        if let data = properties.data(using: String.Encoding.utf8) {
+            do {
+                let dic = try JSONSerialization.jsonObject(with: data, options: [JSONSerialization.ReadingOptions.init(rawValue: 0)]) as? Dictionary<String, Any>
+                if dic != nil {
+                    var dict: Dictionary<String, Any> = [: ]
+                    dic?.forEach{ (key, va) in
+                        dict[key] = va
+                    }
+                    return try self.properties(dict)
+                }
+                else {
+                  throw DIDError.didExpiredError(_desc: "Credential properties is invalid.")
+                }
+            } catch {
+               throw DIDError.didExpiredError(_desc: "Credential properties is invalid.")
+            }
+        }
+        else {
+            throw DIDError.didExpiredError(_desc: "Credential properties is invalid.")
+        }
     }
     
     public func seal(storepass: String) throws -> VerifiableCredential {

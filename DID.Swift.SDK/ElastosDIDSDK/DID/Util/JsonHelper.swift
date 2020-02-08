@@ -221,8 +221,19 @@ public class JsonHelper {
                 }
                 let st = subName.joined(separator: ",")
                 namedPaird.append("\"\(key)\":[\(st)]")
-            }else{
-                namedPaird.append("\"\(key)\":\"\(value)\"")
+            } else {
+                if value is Bool {
+                    let v = value as! Bool
+                    if v {
+                        namedPaird.append("\"\(key)\":true")
+                    } else {
+                        namedPaird.append("\"\(key)\":false")
+                    }
+                } else if !(value is String) {
+                    namedPaird.append("\"\(key)\":\(value)")
+                } else {
+                    namedPaird.append("\"\(key)\":\"\(value)\"")
+                }
             }
         }
         let returnString = namedPaird.joined(separator:",")
@@ -238,7 +249,26 @@ public class JsonHelper {
         return jsonString.first == "{" && jsonString.last == "}"
     }
     
-    class public func checkAndRemoveFirstAndLastDoubleQuotes(_ string: String) -> String {
+    class public func checkAndRemoveFirstAndLastDoubleQuotes(_ string: String) -> Any {
+        
+        if !string.contains("\"") {
+            if string == "true"  {
+                return true
+            }
+            if string == "false"  {
+                return false
+            }
+            
+            if string.contains(".") {
+                if let value = string.float {
+                    return value
+                }
+            } else {
+                if let value = string.integer {
+                    return value
+                }
+            }
+        }
         
         var startIndex: String.Index
         var endIndex: String.Index
@@ -268,7 +298,7 @@ public class JsonHelper {
         return string
     }
     
-    class public func getKeyAndValueFromString(_ string: String) -> (String, String) {
+    class public func getKeyAndValueFromString(_ string: String) -> (String, Any) {
         if string == "{}" {
             return ("", "")
         }
@@ -278,8 +308,8 @@ public class JsonHelper {
         let valueStartIndex = string.index(colonStringIndex, offsetBy:1)
         let valueEndIndex = string.index(string.endIndex, offsetBy:-1)
         
-        let key: String = checkAndRemoveFirstAndLastDoubleQuotes(String(string[keyStartIndex...keyEndIndex]))
-        let value: String = checkAndRemoveFirstAndLastDoubleQuotes(String(string[valueStartIndex...valueEndIndex]))
+        let key: String = checkAndRemoveFirstAndLastDoubleQuotes(String(string[keyStartIndex...keyEndIndex])) as! String
+        let value: Any = checkAndRemoveFirstAndLastDoubleQuotes(String(string[valueStartIndex...valueEndIndex]))
         
         return (key, value)
     }
@@ -345,17 +375,22 @@ public class JsonHelper {
             
             for content: String in keys {
                 
-                let keyAndValue: (String, String) = getKeyAndValueFromString(content)
+                let keyAndValue: (String, Any) = getKeyAndValueFromString(content)
                 let key: String = keyAndValue.0
-                let value: String = keyAndValue.1
+                let value: Any = keyAndValue.1
                 
-                if isDictionaryJsonString(value) {
-                    orderDictionary[key] = self.handleString(String(value))
-                } else if isArrayJsonString(value) {
-                    orderDictionary[key] = self.handleString(String(value))
+                if value is String {
+                    if isDictionaryJsonString(value as! String) {
+                        orderDictionary[key] = self.handleString(String(value as! String))
+                    } else if isArrayJsonString(value as! String) {
+                        orderDictionary[key] = self.handleString(String(value as! String))
+                    } else {
+                        orderDictionary[key] = value
+                    }
                 } else {
                     orderDictionary[key] = value
                 }
+
             }
             
             return orderDictionary;
@@ -440,17 +475,22 @@ public class JsonHelper {
             
             for content: String in keys {
                 
-                let keyAndValue: (String, String) = getKeyAndValueFromString(content)
+                let keyAndValue: (String, Any) = getKeyAndValueFromString(content)
                 let key: String = keyAndValue.0
-                let value: String = keyAndValue.1
+                let value: Any = keyAndValue.1
                 
-                if isDictionaryJsonString(value) {
-                    orderDictionary[key] = self.handleString(jsonString: String(value))
-                } else if isArrayJsonString(value) {
-                    orderDictionary[key] = self.handleString(jsonString: String(value))
+                if value is String {
+                    if isDictionaryJsonString(value as! String) {
+                        orderDictionary[key] = self.handleString(jsonString: String(value as! String))
+                    } else if isArrayJsonString(value as! String) {
+                        orderDictionary[key] = self.handleString(jsonString: String(value as! String))
+                    } else {
+                        orderDictionary[key] = value
+                    }
                 } else {
                     orderDictionary[key] = value
                 }
+
             }
             
             return orderDictionary;
@@ -495,4 +535,10 @@ public class JsonHelper {
         }
         return nil
     }
+}
+
+extension StringProtocol {
+    var double: Double? { Double(self) }
+    var float: Float? { Float(self) }
+    var integer: Int? { Int(self) }
 }
