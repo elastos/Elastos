@@ -68,12 +68,6 @@ header .navigationSlider .slidingNav > ul.nav-site {
   font-weight: 400;
   font-size: 1.2rem; }
 
-.mainContainer .explainer .section-title {
-  font-size: 32px;
-  font-weight: 200;
-  text-align: center;
-  margin-bottom: 30px; }
-
 .mainContainer .explainer .center {
   text-align: center; }
 
@@ -122,6 +116,15 @@ header .navigationSlider .slidingNav > ul.nav-site {
   border-color: white; }
   .promoRow .button:hover {
     background-color: #0b687c; }
+
+.section-title {
+  font-size: 30px;
+  font-weight: 200;
+  text-align: center;
+  margin-bottom: 30px; }
+
+.light-bg {
+  background-color: #f8f9fa; }
 
 @media only screen and (max-width: 736px) {
   .elastosFeatures.container {

@@ -1,8 +1,4 @@
 
-  // .elaBackground {
-  //   background-image: url('/img/footer_bg.png');
-  // }
-
 .homeContainer {
   background-color: $background_white;
   background-image: url('/img/footer_bg.png');
@@ -40,12 +36,6 @@
       line-height: 2;
       font-weight: 400;
       font-size: 1.2rem;
-    }
-    .section-title {
-      font-size: 32px;
-      font-weight: 200;
-      text-align: center;
-      margin-bottom: 30px;
     }
 
     .center {
@@ -142,4 +132,15 @@
       background-color: $primary_color;
     }
   }
+}
+
+.section-title {
+  font-size: 30px;
+  font-weight: 200;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.light-bg {
+  background-color: #f8f9fa;
 }

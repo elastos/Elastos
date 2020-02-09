@@ -44,14 +44,14 @@ class Index extends React.Component {
       <div className="wrapper">
         <h3 className="section-title">Tools we have</h3>
         <p className="center">
-          <span class="normal">Block Explorer</span> &#x27A1; Testnet: <a href="https://testnet.elaeth.io" target="_blank">https://testnet.elaeth.io</a>, Mainnet: <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
+          <span className="normal">Block Explorer</span> &#x27A1; Testnet: <a href="https://testnet.elaeth.io" target="_blank">https://testnet.elaeth.io</a>, Mainnet: <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
         </p>
         <p className="center">
-          <span class="normal">JSON RPC</span> &#x27A1; Testnet: <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>, Mainnet: <a href="https://rpc.elaeth.io" target="_blank">https://mainrpc.elaeth.io</a>
+          <span className="normal">JSON RPC</span> &#x27A1; Testnet: <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>, Mainnet: <a href="https://rpc.elaeth.io" target="_blank">https://mainrpc.elaeth.io</a>
         </p>
 
         <p className="center">
-          <span class="normal">MetaMask</span> &#x27A1; Brings Ethereum to your browser. <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-chrome-7.7.0.zip" target="_blank">Chrome</a> / <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-firefox-7.7.0.zip" target="_blank">Firefox</a> / <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-opera-7.7.0.zip" target="_blank">Opera</a>
+          <span className="normal">MetaMask</span> &#x27A1; Brings Ethereum to your browser. <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-chrome-7.7.0.zip" target="_blank">Chrome</a> / <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-firefox-7.7.0.zip" target="_blank">Firefox</a> / <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-opera-7.7.0.zip" target="_blank">Opera</a>
         </p>
 
         <p className="center">
@@ -65,36 +65,34 @@ class Index extends React.Component {
     </div>
     );
 
-    const ElastosETHHeader = () => (
-    <div
-    className="productShowcaseSection elaBackground"
-    style={{textAlign: 'center'}}>
-      <img src="/img/Elastos_Logo_Horizontal_KO_RGB.png" style={{width: '30vw'}}/>
-    </div>
-    );
-
     const ElastosETH = () => (
-    <Block align="center" className="elastosETH elaBackground darkBackground">
-      {[
-        {
-          title: 'What we built',
-          content: `
-<span class="normal">Block Explorer</span> &#x27A1; Testnet: <a href="https://testnet.elaeth.io" target="_blank">https://testnet.elaeth.io</a>, Mainnet: <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
-
-<span class="normal">JSON RPC</span> &#x27A1; Testnet: <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>, Mainnet: <a href="https://rpc.elaeth.io" target="_blank">https://mainrpc.elaeth.io</a>
-
-<span class="normal">MetaMask</span> &#x27A1; Brings Ethereum to your browser. <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-chrome-7.7.0.zip" target="_blank">Chrome</a> / <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-firefox-7.7.0.zip" target="_blank">Firefox</a> / <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-opera-7.7.0.zip" target="_blank">Opera</a>
-
-<span class="normal">Remix</span> &#x27A1; same as above, point it at our new RPC port
-
-<span class="normal">Myetherwallet</span> &#x27A1; accessible at <a href="https://wallet.elaeth.io" target="_blank">https://wallet.elaeth.io</a>
-
-<a target="_blank" class="button" href="https://elastosjs.com/docs/advanced/intro">View Our Advanced Tutorial for Ethereum Developers</a>`,
-          // image: `${baseUrl}img/metamask-logo-eyes.png`,
-          // imageAlign: 'right',
-        },
-      ]}
-    </Block>
+      <Container
+        padding={['top']}
+        background="light">
+        <h3 className="section-title">Learn How To Build Dapps</h3>
+        <Block align="center" className="elastosETH" layout="threeColumn">
+          {[
+            {
+              title: 'Elastosjs.com',
+              content: `<a href="http://elastosjs.com" target="_blank"> Go > </a>`,
+              // image: `${baseUrl}img/elastosJS.svg`,
+              // imageAlign: 'right',
+            },
+            {
+              title: 'Elastos Academy',
+              content: `<a href="https://elastos.academy" target="_blank"> Go > </a>`,
+              // image: `${baseUrl}img/metamask-logo-eyes.png`,
+              // imageAlign: 'right',
+            },
+            {
+              title: 'Elastos Developer Site',
+              content: `<a href="https://developer.elastos.org" target="_blank"> Go > </a>`,
+              // image: `${baseUrl}img/metamask-logo-eyes.png`,
+              // imageAlign: 'right',
+            },
+          ]}
+        </Block>
+      </Container>
     );
 
     const Features = () => (
@@ -151,7 +149,7 @@ class Index extends React.Component {
         <div className="mainContainer">
           <Explainer />
           <Features />
-          <ElastosETHHeader />
+          {/* <ElastosETHHeader /> */}
           <ElastosETH />
           <ElastosBlockchain />
         </div>
