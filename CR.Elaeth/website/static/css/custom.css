@@ -68,11 +68,17 @@ header .navigationSlider .slidingNav > ul.nav-site {
   font-weight: 400;
   font-size: 1.2rem; }
 
+.mainContainer .explainer .section-title {
+  font-size: 32px;
+  font-weight: 200;
+  text-align: center;
+  margin-bottom: 30px; }
+
+.mainContainer .explainer .center {
+  text-align: center; }
+
 .mainContainer .explainer a {
-  display: block;
-  font-size: 1.4rem;
-  color: #4f789c;
-  padding-bottom: 1vh; }
+  color: #4f789c; }
 
 .mainContainer .elastosETH {
   text-align: left; }

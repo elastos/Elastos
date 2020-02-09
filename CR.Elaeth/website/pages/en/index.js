@@ -42,12 +42,25 @@ class Index extends React.Component {
     className="explainer paddingBottom"
     style={{textAlign: 'center'}}>
       <div className="wrapper">
-        <MarkdownBlock>
-          ETH Task Force is setup in July 2019 which dedicated to initiatives involving Elastos and Ethereum. As the Elastos ETH Sidechain goes live, there is a need to start building up the developer documentation, tutorials, demo apps and business development with other Ethereum projects.
-        </MarkdownBlock>
-        <MarkdownBlock>
-          Till now, ETH Task Force has built/port several key infrastructure services for ETH Sidechain. We are happy to see more developers get involved into the community and using our services.
-        </MarkdownBlock>
+        <h3 className="section-title">Tools we have</h3>
+        <p className="center">
+          <span class="normal">Block Explorer</span> &#x27A1; Testnet: <a href="https://testnet.elaeth.io" target="_blank">https://testnet.elaeth.io</a>, Mainnet: <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
+        </p>
+        <p className="center">
+          <span class="normal">JSON RPC</span> &#x27A1; Testnet: <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>, Mainnet: <a href="https://rpc.elaeth.io" target="_blank">https://mainrpc.elaeth.io</a>
+        </p>
+
+        <p className="center">
+          <span class="normal">MetaMask</span> &#x27A1; Brings Ethereum to your browser. <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-chrome-7.7.0.zip" target="_blank">Chrome</a> / <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-firefox-7.7.0.zip" target="_blank">Firefox</a> / <a href="https://s3-ap-southeast-1.amazonaws.com/elaeth.io/ela+metamask/metamask-opera-7.7.0.zip" target="_blank">Opera</a>
+        </p>
+
+        <p className="center">
+        <span class="normal">Remix</span> &#x27A1; same as above, point it at our new RPC port
+        </p>
+
+        <p className="center">
+          <span class="normal">Myetherwallet</span> &#x27A1; accessible at <a href="https://wallet.elaeth.io" target="_blank">https://wallet.elaeth.io</a>
+        </p>
       </div>
     </div>
     );

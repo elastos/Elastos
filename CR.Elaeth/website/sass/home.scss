@@ -41,12 +41,22 @@
       font-weight: 400;
       font-size: 1.2rem;
     }
+    .section-title {
+      font-size: 32px;
+      font-weight: 200;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .center {
+      text-align: center;
+    }
 
     a {
-      display: block;
-      font-size: 1.4rem;
+      // display: block;
+      // font-size: 1.4rem;
       color: $tertiary_color;
-      padding-bottom: 1vh;
+      // padding-bottom: 1vh;
     }
   }
 
