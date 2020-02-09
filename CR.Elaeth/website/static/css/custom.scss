@@ -96,17 +96,20 @@ header {
 }
 
 
+  // .elaBackground {
+  //   background-image: url('/img/footer_bg.png');
+  // }
 
 .homeContainer {
   background-color: $background_white;
+  background-image: url('/img/footer_bg.png');
 
   .projectTitle {
-    > img {
-      padding-left: 25px;
-    }
+    color: white;
+    font-weight: 200;
 
     > small {
-      color: $tertiary_color;
+      // color: $tertiary_color;
     }
   }
 }
@@ -219,11 +222,11 @@ header {
 .promoRow {
 
   .button {
-    color: $text_default_color;
-    border-color: $primary_color;
+    color: white;
+    border-color: white;
 
     &:hover {
-      background-color: #efefef;
+      background-color: $primary_color;
     }
   }
 }

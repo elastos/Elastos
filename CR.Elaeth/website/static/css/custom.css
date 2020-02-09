@@ -46,11 +46,11 @@ header .navigationSlider .slidingNav > ul.nav-site {
     font-weight: 500; }
 
 .homeContainer {
-  background-color: #ffffff; }
-  .homeContainer .projectTitle > img {
-    padding-left: 25px; }
-  .homeContainer .projectTitle > small {
-    color: #4f789c; }
+  background-color: #ffffff;
+  background-image: url("/img/footer_bg.png"); }
+  .homeContainer .projectTitle {
+    color: white;
+    font-weight: 200; }
 
 .mainContainer .productShowcaseSection {
   padding-top: 5vh;
@@ -112,10 +112,10 @@ header .navigationSlider .slidingNav > ul.nav-site {
     max-height: 100px; }
 
 .promoRow .button {
-  color: #333;
-  border-color: #0b687c; }
+  color: white;
+  border-color: white; }
   .promoRow .button:hover {
-    background-color: #efefef; }
+    background-color: #0b687c; }
 
 @media only screen and (max-width: 736px) {
   .elastosFeatures.container {

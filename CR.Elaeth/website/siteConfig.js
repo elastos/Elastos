@@ -23,8 +23,8 @@ const users = [
  */
 
 const siteConfig = {
-  title: 'CyberRepublic ETH Task Force', // Title for your website.
-  tagline: 'Team for building Elastos Ethereum Sidechain Ecosystem',
+  title: 'elaeth.io', // Title for your website.
+  tagline: 'Build Decentralized Apps for the future',
   url: 'https://elaeth.io', // Your website URL
   baseUrl: '/', // Base URL for your project */
   // For github.io type URLs, you would set the url and baseUrl like:

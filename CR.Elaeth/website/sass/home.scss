@@ -1,13 +1,15 @@
 
+  // .elaBackground {
+  //   background-image: url('/img/footer_bg.png');
+  // }
 
 .homeContainer {
   background-color: $background_white;
+  background-image: url('/img/footer_bg.png');
 
   .projectTitle {
-    color: $tertiary_color;
-    > img {
-      padding-left: 25px;
-    }
+    color: white;
+    font-weight: 200;
 
     > small {
       // color: $tertiary_color;
@@ -123,11 +125,11 @@
 .promoRow {
 
   .button {
-    color: $text_default_color;
-    border-color: $primary_color;
+    color: white;
+    border-color: white;
 
     &:hover {
-      background-color: #efefef;
+      background-color: $primary_color;
     }
   }
 }
