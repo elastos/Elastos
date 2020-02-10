@@ -305,23 +305,75 @@ public class VerifiableCredential: DIDObject {
     }
 
     private func parse(_ json: String) throws {
-        // TODO:
+        do {
+            let node = try JsonNode.fromText(json)
+            try parse(node, nil)
+        } catch {
+            throw DIDError.malformedCredential("Parse JSON credential error")
+        }
     }
 
-    private func parse(_ node: JsonNode, _ ref: DID) throws {
+    private func parse(_ node: JsonNode, _ ref: DID?) throws {
+        let errorGenerator = { (desc: String) -> DIDError in
+            return DIDError.malformedDocument(desc)
+        }
+
+        var valueNode = node.getItem(Constants.TYPE)
+        guard let _ = valueNode else {
+            throw DIDError.malformedCredential("Missing credential type.")
+        }
+        guard valueNode!.isArray && valueNode!.size > 0 else {
+            throw DIDError.malformedCredential("Invalid credential, should be an array.")
+        }
+
         // TODO:
+
+        self._issuer = try JsonHelper.getDid(node, Constants.ISSUER, true, ref,
+                                           "credential issuer", errorGenerator)
+        self._issuanceDate = try JsonHelper.getDate(node, Constants.ISSUANCE_DATE, false, nil,
+                                           "credential expirationDate", errorGenerator)
+        valueNode = node.getItem(Constants.CREDENTIAL_SUBJECT)
+        guard let _ = valueNode else {
+            throw DIDError.malformedCredential("Missing credential subject.")
+        }
+        self._subject = try VerifiableCredentialSubject.fromJson(node, ref)
+
+        let id = try JsonHelper.getDidUrl(node, Constants.ID,
+                                          ref != nil ? ref : self.subject.did,
+                                          "credential id", errorGenerator)
+        setId(id!)
+
+        // IMPORTANT: help resolve full method in proof.
+        if let _ = self.getIssuer() {
+            self.setIssuer(subject.did)
+        }
+
+        // proof
+        valueNode = node.getItem(Constants.PROOF)
+        guard let _ = valueNode else {
+            throw DIDError.malformedCredential("Missing credential proof.")
+        }
+        self.setProof(try VerifiableCredentialProof.fromJson(valueNode!, self.issuer))
     }
 
     public class func fromJson(_ json: String) throws -> VerifiableCredential {
-        // TODO:
+        guard !json.isEmpty else {
+            throw DIDError.illegalArgument()
+        }
+
+        let credential = VerifiableCredential()
+        try credential.parse(json)
+        return credential
     }
 
-    public class func fromJson(_ node: JsonNode, _ ref: DID) throws -> VerifiableCredential {
-        // TODO:
+    public class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredential {
+        let credential = VerifiableCredential()
+        try credential.parse(node, ref)
+        return credential
     }
 
     public class func fromJson(_ node: JsonNode) throws -> VerifiableCredential {
-        // TODO:
+        return try fromJson(node, nil)
     }
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {

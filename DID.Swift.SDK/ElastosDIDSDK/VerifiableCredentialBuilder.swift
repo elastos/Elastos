@@ -87,7 +87,7 @@ public class VerifiableCredentialBuilder {
         /*
         TODO:
         var subject = VerifiableCredentialSubject(self.target)
-        // subject.property(ofName:     )
+        // subject.property(ofName: )
         credential!.subject = subject
         */
         return self
