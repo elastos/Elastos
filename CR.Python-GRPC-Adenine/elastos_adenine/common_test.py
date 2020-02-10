@@ -7,9 +7,6 @@ import argparse
 from elastos_adenine.stubs import health_check_pb2
 from elastos_adenine.health_check import HealthCheck
 from elastos_adenine.common import Common
-from elastos_adenine.hive import Hive
-from elastos_adenine.sidechain_eth import SidechainEth
-from elastos_adenine.wallet import Wallet
 
 host = config('GRPC_SERVER_HOST')
 port = config('GRPC_SERVER_PORT')
@@ -31,8 +28,3 @@ def test_generate_api_key():
 	assert response.status==True,"Testing Generate API Key Failed"
 	assert len(response.api_key) == 64,"Testing API Key length Failed"
 
-def test_upload_and_sign():
-	# Upload And Sign
-	hive = Hive(host, port, production)
-	response = hive.upload_and_sign(api_key_to_use, network, private_key_to_use, 'test/sample.txt')
-	assert response.status==True,"Testing Upload And Sign Failed"
