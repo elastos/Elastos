@@ -40,28 +40,48 @@ extern "C" {
 #define PUBLICKEY_BYTES                 33
 #define PRIVATEKEY_BYTES                32
 #define SEED_BYTES                      64
+#define ADDRESS_LEN                     48
 
-typedef struct MasterPublicKey {
+typedef struct HDKey {
     uint32_t fingerPrint;
-    uint8_t chainCode[32];
-    uint8_t publicKey[33];
-} MasterPublicKey;
+    uint8_t chainCode[PRIVATEKEY_BYTES];
+    uint8_t publickey[PUBLICKEY_BYTES];
+    uint8_t seed[SEED_BYTES];
+} HDKey;
 
-const char *HDkey_GenerateMnemonic(int language);
+typedef struct DerivedKey {
+    uint8_t publickey[PUBLICKEY_BYTES];
+    uint8_t privatekey[PRIVATEKEY_BYTES];
+    char address[ADDRESS_LEN];
+} DerivedKey;
 
-uint8_t *HDkey_GetSeedFromMnemonic(const char *mmemonic,
+const char *HDKey_GenerateMnemonic(int language);
+
+uint8_t *HDKey_GetSeedFromMnemonic(const char *mmemonic,
         const char *mnemonicPassword, int language, uint8_t *seed);
 
-MasterPublicKey* HDkey_GetMasterPublicKey(const uint8_t *seed, int coinType,
-        MasterPublicKey *key);
+HDKey *HDKey_GetPrivateIdentity(const uint8_t *seed, int coinType, HDKey *hdkey);
 
-uint8_t *HDkey_GetSubPrivateKey(const uint8_t *seed, int coinType, int chain,
+void HDKey_Wipe(HDKey *privateIdentity);
+
+uint8_t *HDkey_GetSubPrivateKey(HDKey* privateIdentity, int coinType, int chain,
         int index, uint8_t *privatekey);
 
-uint8_t *HDkey_GetSubPublicKey(MasterPublicKey *master, int chain,
-        int index, uint8_t *publickey);
+uint8_t *HDKey_GetSubPublicKey(HDKey *privateIdentity, int chain, int index,
+        uint8_t *publickey);
 
-char *HDkey_GetIdString(unsigned char *publickey, char *address, size_t len);
+char *HDKey_GetAddress(uint8_t *publickey, char *address, size_t len);
+
+DerivedKey *HDKey_GetDerivedKey(HDKey* privateIdentity, DerivedKey *derivedkey,
+        int coinType, int chain, int index);
+
+uint8_t *DerivedKey_GetPublicKey(DerivedKey *derivedkey);
+
+uint8_t *DerivedKey_GetPrivateKey(DerivedKey *derivedkey);
+
+char *DerivedKey_GetAddress(DerivedKey *derivedkey);
+
+void DerivedKey_Wipe(DerivedKey *derivedkey);
 
 #ifdef __cplusplus
 }

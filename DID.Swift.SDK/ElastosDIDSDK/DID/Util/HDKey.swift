@@ -10,7 +10,7 @@ public class HDKey: NSObject {
     }
     
     public class func generateMnemonic(_ language: Int) -> String {
-        let newmnemonic: UnsafePointer<Int8> = HDkey_GenerateMnemonic(Int32(language))
+        let newmnemonic: UnsafePointer<Int8> = HDKey_GenerateMnemonic(Int32(language))
         return (String(cString: newmnemonic))
     }
     
@@ -21,7 +21,7 @@ public class HDKey: NSObject {
         let passphrasebase58Pointer = passph.toUnsafePointerInt8()
         
         var seedPinter: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
-        seedPinter = HDkey_GetSeedFromMnemonic(mpointer, passphrasebase58Pointer!, 0, seedPinter)
+        seedPinter = HDKey_GetSeedFromMnemonic(mpointer, passphrasebase58Pointer!, 0, seedPinter)
         let seedPointToArry: UnsafeBufferPointer<Int8> = UnsafeBufferPointer(start: seedPinter, count: 64)
         let seedData: Data = Data(buffer: seedPointToArry)
         print(seedData.hexEncodedString())
