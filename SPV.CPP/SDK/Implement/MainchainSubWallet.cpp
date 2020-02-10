@@ -40,40 +40,9 @@ namespace Elastos {
 											   MasterWallet *parent,
 											   const std::string &netType) :
 				SubWallet(info, config, parent, netType) {
-			InitData();
 		}
 
 		MainchainSubWallet::~MainchainSubWallet() {
-			_crList.clear();
-		}
-
-		void MainchainSubWallet::InitData() {
-			bytes_t types;
-
-			types.push_back(Transaction::registerCR);
-			types.push_back(Transaction::unregisterCR);
-			types.push_back(Transaction::updateCR);
-			types.push_back(Transaction::returnCRDepositCoin);
-			types.push_back(Transaction::registerProducer);
-			types.push_back(Transaction::cancelProducer);
-			types.push_back(Transaction::updateProducer);
-			types.push_back(Transaction::returnDepositCoin);
-
-			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetTransactions(types);
-
-			for (std::vector<TransactionPtr>::iterator it = list.begin(); it != list.end(); ++it) {
-				TransactionPtr tx = *it;
-				uint8_t type = tx->GetTransactionType();
-				if (type == Transaction::registerCR || type == Transaction::unregisterCR ||
-				    type == Transaction::updateCR || type == Transaction::returnCRDepositCoin) {
-					_crList.push_back(tx);
-				} else if (type == Transaction::registerProducer || type == Transaction::cancelProducer ||
-				           type == Transaction::updateProducer || type == Transaction::returnDepositCoin) {
-					_producerList.push_back(tx);
-				} else {
-					Log::warn("contains tx we don't want");
-				}
-			}
 		}
 
 		nlohmann::json MainchainSubWallet::CreateDepositTransaction(const std::string &fromAddress,
@@ -543,14 +512,20 @@ namespace Elastos {
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 
 			nlohmann::json j, info;
+			bytes_t types;
+
+			types.push_back(Transaction::registerProducer);
+			types.push_back(Transaction::cancelProducer);
+			types.push_back(Transaction::updateProducer);
+			types.push_back(Transaction::returnDepositCoin);
+
+			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetTransactions(types);
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
-			for (std::vector<TransactionPtr>::const_iterator it = _producerList.cbegin(); it != _producerList.cend(); ++it) {
-				TransactionPtr tx = (*it);
-				if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
+			for (const TransactionPtr &tx : list) {
+				if (tx->GetBlockHeight() == TX_UNCONFIRMED)
 					continue;
-				}
 
 				if (tx->GetTransactionType() == Transaction::registerProducer ||
 				    tx->GetTransactionType() == Transaction::updateProducer) {
@@ -911,11 +886,18 @@ namespace Elastos {
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 
 			nlohmann::json j, info;
+			bytes_t types;
+
+			types.push_back(Transaction::registerCR);
+			types.push_back(Transaction::unregisterCR);
+			types.push_back(Transaction::updateCR);
+			types.push_back(Transaction::returnCRDepositCoin);
+
+			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetTransactions(types);
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
-			for (std::vector<TransactionPtr>::const_iterator it = _crList.cbegin(); it != _crList.cend(); ++it) {
-				TransactionPtr tx = *it;
+			for (const TransactionPtr &tx : list) {
 				if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
 					continue;
 				}
@@ -1506,52 +1488,6 @@ namespace Elastos {
 			EncodeTx(result, tx);
 			ArgInfo("r => {}", result.dump());
 			return result;
-		}
-
-		void MainchainSubWallet::onTxAdded(const TransactionPtr &tx) {
-			uint8_t type = tx->GetTransactionType();
-			Lock();
-			if (type == Transaction::registerCR ||
-			    type == Transaction::unregisterCR ||
-			    type == Transaction::updateCR ||
-			    type == Transaction::returnCRDepositCoin) {
-				_crList.push_back(tx);
-			} else if (type == Transaction::registerProducer ||
-			           type == Transaction::cancelProducer ||
-			           type == Transaction::updateProducer ||
-			           type == Transaction::returnDepositCoin ||
-			           type == Transaction::activateProducer) {
-				_producerList.push_back(tx);
-			}
-			Unlock();
-			SubWallet::onTxAdded(tx);
-		}
-
-		void MainchainSubWallet::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			bool found = false;
-			Lock();
-			for (std::vector<TransactionPtr>::iterator it = _crList.begin(); it != _crList.end();) {
-				if ((*it)->GetHash().GetHex() == hash.GetHex()) {
-					it = _crList.erase(it);
-					found = true;
-					break;
-				} else {
-					++it;
-				}
-			}
-
-			for (std::vector<TransactionPtr>::iterator it = _producerList.begin(); !found && it != _producerList.end();) {
-				if ((*it)->GetHash().GetHex() == hash.GetHex()) {
-					it = _producerList.erase(it);
-					break;
-				} else {
-					++it;
-				}
-			}
-
-			Unlock();
-
-			SubWallet::onTxDeleted(hash, notifyUser, recommendRescan);
 		}
 
 	}

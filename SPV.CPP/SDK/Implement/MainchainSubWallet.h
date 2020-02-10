@@ -163,11 +163,6 @@ namespace Elastos {
 			CreateProposalTrackingTransaction(const nlohmann::json &SecretaryGeneralSignedPayload,
 			                                  const std::string &memo);
 
-		protected:
-			virtual void onTxAdded(const TransactionPtr &tx);
-
-			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
-
 		private:
 			PayloadPtr GenerateCRCProposalPayload(uint16_t type,
 			                                      const std::string &categoryData,
@@ -176,7 +171,6 @@ namespace Elastos {
 			                                      const std::string &draftHash,
 			                                      const nlohmann::json &budgets,
 			                                      const std::string &recipient) const;
-			void InitData();
 
 			void FilterVoteCandidates(TransactionPtr &tx, const nlohmann::json &invalidCandidates) const;
 		protected:
@@ -189,10 +183,6 @@ namespace Elastos {
 
 			TransactionPtr CreateVoteTx(const VoteContent &voteContent, const std::string &memo, bool max,
 			                            VoteContentArray &dropedVotes);
-
-		private:
-			std::vector<TransactionPtr> _crList;
-			std::vector<TransactionPtr> _producerList;
 		};
 
 	}
