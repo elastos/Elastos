@@ -40,3 +40,8 @@ void Mnemonic_free(void *mnemonic)
     if (mnemonic)
         free(mnemonic);
 }
+
+bool Mnemonic_IsValid(const char *mnemonic, int language)
+{
+    return HDKey_MnemonicIsValid(mnemonic, language);
+}

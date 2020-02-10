@@ -2395,6 +2395,23 @@ DID_API const char *Mnemonic_Generate(int language);
  */
 DID_API void Mnemonic_free(void *mnemonic);
 
+/**
+ * \~English
+ * Check mnemonic.
+ *
+ * @param
+ *      mnemonic               [in] mnemonic buffter.
+ * @param
+ *      language               [in] The language for DID.
+ *                             0: English; 1: French; 2: Spanish;
+ *                             3: Chinese_simplified;
+ *                             4: Chinese_traditional;
+ *                             5: Japanese.
+ * @return
+ *      true, if mnemonic is valid. or else, return false.
+ */
+DID_API bool Mnemonic_IsValid(const char *mnemonic, int language);
+
 /******************************************************************************
  * Presentation
  *****************************************************************************/

@@ -158,6 +158,7 @@ _DIDStore_Synchronize
 # Mnemonic
 _Mnemonic_Generate
 _Mnemonic_free
+_Mnemonic_IsValid
 
 # Presentation
 _Presentation_Create

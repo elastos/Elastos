@@ -98,25 +98,39 @@ const char *HDKey_GenerateMnemonic(int language)
     return (const char *)phrase;
 }
 
-uint8_t *HDKey_GetSeedFromMnemonic(const char *mmemonic,
+uint8_t *HDKey_GetSeedFromMnemonic(const char *mnemonic,
         const char* passphrase, int language, uint8_t *seed)
 {
     int len;
     const char **word_list;
 
-    if (!mmemonic || !seed)
+    if (!mnemonic || !seed)
         return NULL;
 
     word_list = get_word_list(language);
     if (!word_list)
         return NULL;
 
-    if (!BRBIP39PhraseIsValid(word_list, mmemonic))
+    if (!BRBIP39PhraseIsValid(word_list, mnemonic))
         return NULL;
 
-    BRBIP39DeriveKey((UInt512 *)seed, mmemonic, passphrase);
+    BRBIP39DeriveKey((UInt512 *)seed, mnemonic, passphrase);
 
     return seed;
+}
+
+bool HDKey_MnemonicIsValid(const char *mnemonic, int language)
+{
+    const char **word_list;
+
+    if (!mnemonic)
+        return false;
+
+    word_list = get_word_list(language);
+    if (!word_list)
+        return false;
+
+    return (BRBIP39PhraseIsValid(word_list, mnemonic) != 0);
 }
 
 HDKey *HDKey_GetPrivateIdentity(const uint8_t *seed, int coinType, HDKey *hdkey)
