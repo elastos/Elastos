@@ -7,7 +7,7 @@
 {% endblock title %}
 
 {% block scripts %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/landing.css' %}"/>
+    <link href="{% static 'css/landing.css' %}" rel="stylesheet" type="text/css"/>
     <script>
         function myFunction() {
             document.getElementById("myDropdown").classList.toggle("show");
@@ -58,36 +58,32 @@
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Login with Elastos DID</h5>
-                    <button type="button" class="btn btn-outline-info" data-target="#MyModal" data-toggle="modal">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
                 <div class="modal-body">
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item active">
-                            <a class="nav-link active" href="#AAA" data-toggle="tab">
+                            <a class="nav-link active text-center" href="#elastOS" data-toggle="tab">
                                 elastOS
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link" href="#BBB" data-toggle="tab">
+                            <a class="nav-link text-center" href="#elephantWallet" data-toggle="tab">
                                 Elephant Wallet
                             </a>
                         </li>
                     </ul>
                     <div class="tab-content">
-                        <div class="tab-pane active" id="AAA">
+                        <div class="tab-pane active" id="elastOS">
                             <div class="row align-items-center justify-content-center">
                                 <div class="col-md-12 text-center">
-                                    <h4 class="login-header">Scan the code with elastOS</h4>
+                                    <h4 class="login-header">
+                                        Scan the code with elastOS
+                                    </h4>
                                 </div>
                                 <div class="col-md-12 text-center">
                                     <p class="scan-qr-text">
                                         You can download the app on both Android and iOS devices(COMING SOON). For more info, download it from
                                         App Store or go to
-                                        <a href="https://www.elastos.org/" target="blank">Official ElastOS Website</a>
+                                        <a href="https://www.elastos.org/" target="blank" style="color: #f48424;">Official ElastOS Website</a>
                                     </p>
                                 </div>
                                 <div class="col-md-12 text-center">
@@ -100,31 +96,30 @@
                                 </div>
                             </div>
                         </div> 
-                        <div class="tab-pane" id="BBB">
+                        <div class="tab-pane" id="elephantWallet">
                             <div class="row align-items-center justify-content-center">
                                 <div class="col-md-12 text-center">
-                                    <h4 class="login-header">Scan the code with Elaphant Wallet</h4>
+                                    <h4 class="login-header">
+                                        Scan the code with Elephant Wallet
+                                    </h4>
                                 </div>
                                 <div class="col-md-12 text-center">
                                     <p class="scan-qr-text">
                                         You can download the app on both Android and iOS devices. For more info, go to the
-                                        <a href="https://elephantwallet.app/#footer" target="blank">Official Elephant Wallet App Website</a>
+                                        <a href="https://elephantwallet.app/#footer" target="blank" style="color: #f48424;">Official Elephant Wallet App Website</a>
                                     </p>
                                 </div>
                                 <div class="col-md-12 text-center">
                                     <img src="{% qr_url_from_text request.session.elephant_url error_correction='Q' size=3 version=10 image_format='png' %}"/>
                                 </div>
                                 <div class="col-md-12 text-center">
-                                    <p class="scan-qr-wait">
+                                    <p class="scan-qr-wait text-center">
                                         Waiting for phone authentication...
                                     </p>
                                 </div>
                             </div>
                         </div> 
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
