@@ -34,7 +34,6 @@ namespace Elastos {
 			*this->_output = *u._output;
 			this->_timestamp = u._timestamp;
 			this->_blockHeight = u._blockHeight;
-			this->_spent = u._spent;
 			return *this;
 		}
 
@@ -43,14 +42,12 @@ namespace Elastos {
 			_n(i),
 			_timestamp(t),
 			_blockHeight(h),
-			_output(o),
-			_spent(false) {
+			_output(o) {
 		}
 
 		UTXO::UTXO(const InputPtr &input) :
 			_timestamp(0),
 			_blockHeight(0),
-			_spent(true),
 			_output(nullptr) {
 			_hash = input->TxHash();
 			_n = input->Index();

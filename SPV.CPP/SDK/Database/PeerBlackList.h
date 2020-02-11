@@ -34,8 +34,6 @@ namespace Elastos {
 
 			std::vector<PeerEntity> GetAllPeers() const;
 
-			void flush();
-
 		private:
 			bool Contain(const PeerEntity &entity) const;
 

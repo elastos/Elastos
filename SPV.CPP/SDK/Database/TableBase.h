@@ -22,6 +22,8 @@ namespace Elastos {
 
 			virtual ~TableBase();
 
+			void flush();
+
 		protected:
 			void InitializeTable(const std::string &constructScript);
 

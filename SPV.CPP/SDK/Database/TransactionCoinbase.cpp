@@ -49,29 +49,27 @@ namespace Elastos {
 		}
 
 		bool TransactionCoinbase::ContainOldData() const {
-			return DoTransaction([this]() {
-				std::string sql;
-				int count = 0;
+			std::string sql;
+			int count = 0;
 
-				sql = "select count(*)  from sqlite_master where type='table' and name = '" + _tableNameOld + "';";
+			sql = "select count(*)  from sqlite_master where type='table' and name = '" + _tableNameOld + "';";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}", sql);
-					return false;
-				}
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return false;
+			}
 
-				if (SQLITE_ROW == _sqlite->Step(stmt)) {
-					count = _sqlite->ColumnInt(stmt, 0);
-				}
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
+				count = _sqlite->ColumnInt(stmt, 0);
+			}
 
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("Coinbase update finalize");
-					return false;
-				}
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Coinbase update finalize");
+				return false;
+			}
 
-				return count > 0;
-			});
+			return count > 0;
 		}
 
 		void TransactionCoinbase::ConvertFromOldData() {

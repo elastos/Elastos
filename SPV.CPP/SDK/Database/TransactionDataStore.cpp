@@ -182,6 +182,7 @@ namespace Elastos {
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}", sql);
+				return txns;
 			}
 
 			while (SQLITE_ROW == (r = _sqlite->Step(stmt))) {
@@ -324,8 +325,6 @@ namespace Elastos {
 				return true;
 			});
 		}
-
-		void TransactionDataStore::flush() { _sqlite->flush(); }
 
 		TransactionPtr TransactionDataStore::SelectTxByHash(const std::string &hash, const std::string &chainID) const {
 			TransactionPtr tx = nullptr;

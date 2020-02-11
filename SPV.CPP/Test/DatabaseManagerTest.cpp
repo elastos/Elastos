@@ -520,4 +520,70 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 	}
 
+	SECTION("UTXO Store Test") {
+		if (boost::filesystem::exists(DBFILE) && boost::filesystem::is_regular_file(DBFILE)) {
+			boost::filesystem::remove(DBFILE);
+		}
+
+		REQUIRE(!boost::filesystem::exists(DBFILE));
+#define TEST_UTXO_RECORD_CNT DEFAULT_RECORD_CNT
+		std::vector<UTXOEntity> utxoToSave;
+
+		// prepare data
+		for (int i = 0; i < TEST_UTXO_RECORD_CNT; ++i) {
+			std::string hash = getRanduint256().GetHex();
+			uint16_t index = getRandUInt16();
+
+			UTXOEntity entity(hash, index);
+			utxoToSave.push_back(entity);
+		}
+
+		// save
+		DatabaseManager *dbm = new DatabaseManager(DBFILE);
+
+		REQUIRE(!dbm->ExistUTXOTable());
+		REQUIRE(dbm->PutUTXOs(utxoToSave));
+
+		// read & verify
+		std::vector<UTXOEntity> entitys = dbm->GetUTXOs();
+		REQUIRE(TEST_UTXO_RECORD_CNT == entitys.size());
+		for (int i = 0; i < TEST_UTXO_RECORD_CNT; ++i) {
+			REQUIRE(utxoToSave[i].Hash() == entitys[i].Hash());
+			REQUIRE(utxoToSave[i].Index() == entitys[i].Index());
+		}
+
+		// delete
+		std::vector<UTXOEntity> deleteEntitys;
+		for (int i = 0; i < TEST_UTXO_RECORD_CNT; ++i) {
+			if (i % 2 == 0) {
+				deleteEntitys.push_back(utxoToSave[i]);
+			}
+		}
+		REQUIRE(dbm->DeleteUTXOs(deleteEntitys));
+
+		// read & verify
+		entitys = dbm->GetUTXOs();
+		REQUIRE(utxoToSave.size() - deleteEntitys.size() == entitys.size());
+		for (int i = 0; i < deleteEntitys.size(); ++i) {
+			bool found = false;
+			for (int j = 0; j < entitys.size(); ++j) {
+				if (deleteEntitys[i] == entitys[j]) {
+					found = true;
+					break;
+				}
+			}
+			REQUIRE(!found);
+		}
+
+		// delete all
+		REQUIRE(dbm->DeleteAllUTXOs());
+		REQUIRE(dbm->GetUTXOs().empty());
+
+		delete dbm;
+
+		DatabaseManager *dbmNew = new DatabaseManager(DBFILE);
+		REQUIRE(dbmNew->ExistUTXOTable());
+		delete dbmNew;
+	}
 }
+

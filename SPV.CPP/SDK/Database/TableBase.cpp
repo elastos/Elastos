@@ -23,6 +23,10 @@ namespace Elastos {
 
 		}
 
+		void TableBase::flush() {
+			_sqlite->flush();
+		}
+
 		bool TableBase::DoTransaction(const boost::function<bool()> &fun) const {
 
 			bool result;

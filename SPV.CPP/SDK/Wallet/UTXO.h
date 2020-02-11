@@ -59,7 +59,6 @@ namespace Elastos {
 		protected:
 			time_t _timestamp;
 			uint32_t _blockHeight;
-			bool _spent;
 			OutputPtr _output;
 
 			uint256 _hash;

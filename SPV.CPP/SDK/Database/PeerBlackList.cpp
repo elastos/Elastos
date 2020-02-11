@@ -197,10 +197,6 @@ namespace Elastos {
 			return peers;
 		}
 
-		void PeerBlackList::flush() {
-			_sqlite->flush();
-		}
-
 		size_t PeerBlackList::GetAllPeersCount() const {
 			size_t count = 0;
 

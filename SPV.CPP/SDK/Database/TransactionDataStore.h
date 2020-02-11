@@ -45,8 +45,6 @@ namespace Elastos {
 
 			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
 
-			void flush();
-
 		private:
 			TransactionPtr SelectTxByHash(const std::string &hash, const std::string &chainID) const;
 

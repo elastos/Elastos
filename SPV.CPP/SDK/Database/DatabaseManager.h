@@ -12,7 +12,7 @@
 #include "AssetDataStore.h"
 #include "TransactionCoinbase.h"
 #include "DIDDataStore.h"
-#include "Sqlite.h"
+#include "UTXOStore.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -84,6 +84,13 @@ namespace Elastos {
 			std::vector<DIDEntity> GetAllDID() const;
 			bool DeleteAllDID();
 
+			// UTXO store
+			bool PutUTXOs(const std::vector<UTXOEntity> entitys);
+			std::vector<UTXOEntity> GetUTXOs() const;
+			bool DeleteAllUTXOs();
+			bool DeleteUTXOs(const std::vector<UTXOEntity> &entitys);
+			bool ExistUTXOTable() const;
+
 			const boost::filesystem::path &GetPath() const;
 
 			void flush();
@@ -98,6 +105,7 @@ namespace Elastos {
 			MerkleBlockDataSource 	_merkleBlockDataSource;
 			AssetDataStore          _assetDataStore;
 			DIDDataStore            _didDataStore;
+			UTXOStore               _utxoStore;
 		};
 
 	}

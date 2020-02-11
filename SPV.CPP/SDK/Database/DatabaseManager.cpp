@@ -16,7 +16,9 @@ namespace Elastos {
 			_transactionDataStore(&_sqlite),
 			_assetDataStore(&_sqlite),
 			_merkleBlockDataSource(&_sqlite),
-			_didDataStore(&_sqlite){}
+			_didDataStore(&_sqlite),
+			_utxoStore(&_sqlite)
+			{}
 
 		DatabaseManager::DatabaseManager() : DatabaseManager("spv_wallet.db") {}
 
@@ -209,6 +211,26 @@ namespace Elastos {
 			return _didDataStore.DeleteAllDID();
 		}
 
+		bool DatabaseManager::PutUTXOs(const std::vector<UTXOEntity> entitys) {
+			return _utxoStore.Puts(entitys);
+		}
+
+		std::vector<UTXOEntity> DatabaseManager::GetUTXOs() const {
+			return _utxoStore.Gets();
+		}
+
+		bool DatabaseManager::DeleteAllUTXOs() {
+			return _utxoStore.DeleteAll();
+		}
+
+		bool DatabaseManager::DeleteUTXOs(const std::vector<UTXOEntity> &entitys) {
+			return _utxoStore.Delete(entitys);
+		}
+
+		bool DatabaseManager::ExistUTXOTable() const {
+			return _utxoStore.TableExist();
+		}
+
 		void DatabaseManager::flush() {
 			_transactionDataStore.flush();
 			_coinbaseDataStore.flush();
@@ -216,6 +238,7 @@ namespace Elastos {
 			_peerDataSource.flush();
 			_assetDataStore.flush();
 			_didDataStore.flush();
+			_utxoStore.flush();
 		}
 
 	} // namespace ElaWallet

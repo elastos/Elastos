@@ -197,10 +197,6 @@ namespace Elastos {
 			return peers;
 		}
 
-		void PeerDataSource::flush() {
-			_sqlite->flush();
-		}
-
 		size_t PeerDataSource::GetAllPeersCount() const {
 			size_t count = 0;
 

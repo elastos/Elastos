@@ -123,10 +123,6 @@ namespace Elastos {
 			return assets;
 		}
 
-		void AssetDataStore::flush() {
-			_sqlite->flush();
-		}
-
 		bool AssetDataStore::SelectAsset(const std::string &assetID, AssetEntity &asset) const {
 			bool found = false;
 			std::string sql;

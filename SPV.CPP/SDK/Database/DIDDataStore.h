@@ -58,8 +58,6 @@ namespace Elastos {
 
 			bool GetDIDDetails(const std::string &did, DIDEntity &didEntity) const;
 
-			void flush();
-
 		private:
 			bool SelectDID(const std::string &did, DIDEntity &didEntity) const;
 

@@ -364,8 +364,5 @@ namespace Elastos {
 			return contain;
 		}
 
-		void DIDDataStore::flush() {
-			_sqlite->flush();
-		}
 	}
 }
