@@ -202,6 +202,7 @@ var DefaultParams = Params{
 		EnableHistory:      false,
 		HistoryStartHeight: uint32(0),
 	}),
+	TxCacheVolume: 300000,
 }
 
 // TestNet returns the network parameters for the test network.
@@ -537,6 +538,9 @@ type Params struct {
 
 	// NodeProfileStrategy defines strategy about node profiling.
 	NodeProfileStrategy string
+
+	// TxCacheVolume defines the default volume of the transaction cache.
+	TxCacheVolume uint32
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time
