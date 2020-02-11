@@ -82,6 +82,7 @@ type Configuration struct {
 	WalletPath                  string            `json:"WalletPath"`
 	RPCServiceLevel             string            `json:"RPCServiceLevel"`
 	NodeProfileStrategy         string            `json:"NodeProfileStrategy"`
+	TxCacheVolume               uint32            `json:"TxCacheVolume"`
 }
 
 // DPoSConfiguration defines the DPoS consensus parameters.

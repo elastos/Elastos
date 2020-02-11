@@ -283,7 +283,7 @@ func dbFetchHeightByHash(dbTx database.Tx, hash *common.Uint256) (uint32, error)
 func NewUnspentIndex(db database.DB, params *config.Params) *UnspentIndex {
 	unspentIndex := &UnspentIndex{
 		db:      db,
-		txCache: NewTxCache(),
+		txCache: NewTxCache(params),
 	}
 	params.CkpManager.Register(NewCheckpoint(unspentIndex))
 	return unspentIndex

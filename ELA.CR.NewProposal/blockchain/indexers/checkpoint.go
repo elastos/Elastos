@@ -6,9 +6,9 @@
 package indexers
 
 import (
-	"bytes"
 	"io"
 	"math"
+	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -24,13 +24,14 @@ const (
 	checkpointExtension = ".txcp"
 
 	// checkpointHeight defines interval height between two neighbor check points.
-	checkpointHeight = uint32(720)
+	checkpointHeight = uint32(2160)
 )
 
 // Checkpoint hold all unspent txn cache to recover from scratch.
 type Checkpoint struct {
 	height  uint32
 	txCache *TxCache
+	sync.Mutex
 }
 
 func (c *Checkpoint) OnBlockSaved(block *types.DposBlock) {
@@ -71,18 +72,7 @@ func (c *Checkpoint) DataExtension() string {
 
 func (c *Checkpoint) Generator() func(buf []byte) checkpoint.ICheckPoint {
 	return func(buf []byte) checkpoint.ICheckPoint {
-		stream := new(bytes.Buffer)
-		stream.Write(buf)
-
-		result := &Checkpoint{
-			height:  uint32(0),
-			txCache: NewTxCache(),
-		}
-		if err := result.Deserialize(stream); err != nil {
-			c.LogError(err)
-			return nil
-		}
-		return result
+		return c
 	}
 }
 
@@ -111,6 +101,9 @@ func (c *Checkpoint) Serialize(w io.Writer) (err error) {
 }
 
 func (c *Checkpoint) Deserialize(r io.Reader) (err error) {
+	c.Lock()
+	defer c.Unlock()
+
 	c.height, err = common.ReadUint32(r)
 	if err != nil {
 		return

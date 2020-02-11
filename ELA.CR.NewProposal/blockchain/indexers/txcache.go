@@ -7,17 +7,16 @@ package indexers
 
 import (
 	"io"
+	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 )
 
 const (
-	// TxCacheVolume is the default volume of the TxCache.
-	TxCacheVolume = 100000
-
-	// TrimmingTrigger is the trigger number for TxCache trimming.
-	TrimmingTrigger = 110000
+	// TrimmingInterval is the interval number for each cache trimming.
+	TrimmingInterval = 10000
 )
 
 type TxInfo struct {
@@ -48,10 +47,15 @@ func (t *TxInfo) Deserialize(r io.Reader) (err error) {
 }
 
 type TxCache struct {
-	txns map[common.Uint256]*TxInfo
+	txns          map[common.Uint256]*TxInfo
+	txCacheVolume uint32
+	sync.RWMutex
 }
 
 func (t *TxCache) Serialize(w io.Writer) (err error) {
+	t.RLock()
+	defer t.RUnlock()
+
 	count := uint64(len(t.txns))
 	err = common.WriteVarUint(w, count)
 	if err != nil {
@@ -86,6 +90,9 @@ func (t *TxCache) Deserialize(r io.Reader) (err error) {
 }
 
 func (t *TxCache) setTxn(height uint32, txn *types.Transaction) {
+	t.Lock()
+	defer t.Unlock()
+
 	t.txns[txn.Hash()] = &TxInfo{
 		blockHeight: height,
 		txn:         txn,
@@ -93,16 +100,29 @@ func (t *TxCache) setTxn(height uint32, txn *types.Transaction) {
 }
 
 func (t *TxCache) deleteTxn(hash common.Uint256) {
+	t.Lock()
+	defer t.Unlock()
+
 	delete(t.txns, hash)
 }
 
 func (t *TxCache) getTxn(hash common.Uint256) *TxInfo {
+	t.RLock()
+	defer t.RUnlock()
+
 	return t.txns[hash]
 }
 
 func (t *TxCache) trim() {
-	if len(t.txns) > TrimmingTrigger {
-		extra := len(t.txns) - TxCacheVolume
+	t.Lock()
+	defer t.Unlock()
+
+	trigger := t.txCacheVolume + TrimmingInterval
+	//fmt.Println("cache volume:", t.txCacheVolume)
+	//fmt.Println("trigger:", trigger)
+
+	if len(t.txns) > int(trigger) {
+		extra := len(t.txns) - int(t.txCacheVolume)
 		for k := range t.txns {
 			delete(t.txns, k)
 			extra--
@@ -113,8 +133,10 @@ func (t *TxCache) trim() {
 	}
 }
 
-func NewTxCache() *TxCache {
+func NewTxCache(params *config.Params) *TxCache {
 	return &TxCache{
-		txns: make(map[common.Uint256]*TxInfo, TxCacheVolume),
+		txns: make(map[common.Uint256]*TxInfo, params.TxCacheVolume+
+			TrimmingInterval),
+		txCacheVolume: params.TxCacheVolume,
 	}
 }
