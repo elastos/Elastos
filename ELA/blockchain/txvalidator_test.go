@@ -2220,7 +2220,10 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 	// ok
 	txn := s.getCRCProposalReviewTx(publicKeyStr1, privateKeyStr1)
 	crcProposalReview, _ := txn.Payload.(*payload.CRCProposalReview)
-	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalReview.ProposalHash] = nil
+	manager := s.Chain.crCommittee.GetProposalManager()
+	manager.Proposals[crcProposalReview.ProposalHash] = &crstate.ProposalState{
+		Status: crstate.Registered,
+	}
 	err := s.Chain.checkCRCProposalReviewTransaction(txn, tenureHeight)
 	s.NoError(err)
 
@@ -2232,20 +2235,30 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 	// invalid content type
 	txn = s.getCRCProposalReviewTx(publicKeyStr1, privateKeyStr1)
 	txn.Payload.(*payload.CRCProposalReview).VoteResult = 0x10
+	crcProposalReview2, _ := txn.Payload.(*payload.CRCProposalReview)
+	manager.Proposals[crcProposalReview2.ProposalHash] = &crstate.ProposalState{
+		Status: crstate.Registered,
+	}
 	err = s.Chain.checkCRCProposalReviewTransaction(txn, tenureHeight)
 	s.EqualError(err, "VoteResult should be known")
 
 	// proposal reviewer is not CR member
 	txn = s.getCRCProposalReviewTx(publicKeyStr2, privateKeyStr2)
+	crcProposalReview3, _ := txn.Payload.(*payload.CRCProposalReview)
+	manager.Proposals[crcProposalReview3.ProposalHash] = &crstate.ProposalState{
+		Status: crstate.Registered,
+	}
 	err = s.Chain.checkCRCProposalReviewTransaction(txn, tenureHeight)
 	s.EqualError(err, "did correspond crMember not exists")
 
-	delete(s.Chain.crCommittee.GetProposalManager().Proposals, crcProposalReview.ProposalHash)
+	delete(manager.Proposals, crcProposalReview.ProposalHash)
 	// invalid CR proposal reviewer signature
 	txn = s.getCRCProposalReviewTx(publicKeyStr1, privateKeyStr1)
 	txn.Payload.(*payload.CRCProposalReview).Sign = []byte{}
 	crcProposalReview, _ = txn.Payload.(*payload.CRCProposalReview)
-	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalReview.ProposalHash] = nil
+	manager.Proposals[crcProposalReview.ProposalHash] = &crstate.ProposalState{
+		Status: crstate.Registered,
+	}
 	err = s.Chain.checkCRCProposalReviewTransaction(txn, tenureHeight)
 	s.EqualError(err, "invalid signature length")
 	delete(s.Chain.crCommittee.GetProposalManager().Proposals, crcProposalReview.ProposalHash)

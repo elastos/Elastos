@@ -36,6 +36,9 @@ const (
 	// Category Data length limit not exceeding 4096 characters
 	MaxCategoryDataStringLength = 4096
 
+	// MaxBudgetsCount indicates max budgets count of one proposal.
+	MaxBudgetsCount = 128
+
 	// ELIPBudgetsCount indicates budgets count of ELIP.
 	ELIPBudgetsCount = 2
 
@@ -1667,6 +1670,14 @@ func (b *BlockChain) checkCRCProposalReviewTransaction(txn *Transaction,
 	if !ok {
 		return errors.New("invalid payload")
 	}
+	// Check if the proposal exist.
+	proposalState := b.crCommittee.GetProposal(crcProposalReview.ProposalHash)
+	if proposalState == nil {
+		return errors.New("proposal not exist")
+	}
+	if proposalState.Status != crstate.Registered {
+		return errors.New("proposal status is not Registered")
+	}
 
 	if crcProposalReview.VoteResult < payload.Approve ||
 		(crcProposalReview.VoteResult > payload.Abstain) {
@@ -1838,8 +1849,8 @@ func (b *BlockChain) checkCRCProposalCommonTracking(
 func (b *BlockChain) checkCRCProposalProgressTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
-	if _, ok := pState.WithdrawnBudgets[cptPayload.Stage]; ok {
-		return errors.New("invalid budgets with withdrawn budget")
+	if _, ok := pState.WithdrawableBudgets[cptPayload.Stage]; ok {
+		return errors.New("invalid budgets with tracking budget")
 	}
 
 	for _, budget := range pState.Proposal.Budgets {
@@ -2048,7 +2059,11 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	}
 
 	if len(proposal.CategoryData) > MaxCategoryDataStringLength {
-		return errors.New("The Proposal category data cannot be more than 4096 characters")
+		return errors.New("the Proposal category data cannot be more than 4096 characters")
+	}
+
+	if len(proposal.Budgets) > MaxBudgetsCount {
+		return errors.New("budgets exceeded the maximum limit")
 	}
 
 	if proposal.ProposalType == payload.ELIP &&

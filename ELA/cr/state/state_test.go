@@ -580,7 +580,7 @@ func generateReturnCRDeposit(code []byte) *types.Transaction {
 
 func registerFuncs(state *State) {
 	state.registerFunctions(&FunctionsConfig{
-		GetHistoryMember: func(code []byte) *CRMember { return nil },
+		GetHistoryMember: func(code []byte) []*CRMember { return nil },
 		GetTxReference: func(tx *types.Transaction) (
 			map[*types.Input]*types.Output, error) {
 			return make(map[*types.Input]*types.Output), nil

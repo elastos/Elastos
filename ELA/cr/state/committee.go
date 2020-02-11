@@ -512,22 +512,16 @@ func (c *Committee) GetAvailableDepositAmount(did common.Uint168) common.Fixed64
 	return c.state.getAvailableDepositAmount(did, currentHeight, inVoting)
 }
 
-func (c *Committee) GetHistoryMember(code []byte) *CRMember {
-	c.mtx.RLock()
-	defer c.mtx.RUnlock()
-
-	return c.getHistoryMember(code)
-}
-
-func (c *Committee) getHistoryMember(code []byte) *CRMember {
+func (c *Committee) getHistoryMember(code []byte) []*CRMember {
+	members := make([]*CRMember, 0)
 	for _, v := range c.HistoryMembers {
 		for _, m := range v {
 			if bytes.Equal(m.Info.Code, code) {
-				return m
+				members = append(members, m)
 			}
 		}
 	}
-	return nil
+	return members
 }
 
 func (c *Committee) RollbackTo(height uint32) error {
