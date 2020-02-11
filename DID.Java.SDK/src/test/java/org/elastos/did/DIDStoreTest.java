@@ -145,6 +145,40 @@ public class DIDStoreTest {
 	}
 
 	@Test
+	public void testInitPrivateIdentityWithRootKey() throws DIDException {
+		String expectedIDString = "iYbPqEA98rwvDyA5YT6a3mu8UZy87DLEMR";
+		String rootKey = "xprv9s21ZrQH143K4biiQbUq8369meTb1R8KnstYFAKtfwk3vF8uvFd1EC2s49bMQsbdbmdJxUWRkuC48CXPutFfynYFVGnoeq8LJZhfd9QjvUt";
+
+		TestData testData = new TestData();
+    	DIDStore store = testData.setup(true);
+    	assertFalse(store.containsPrivateIdentity());
+
+    	store.initPrivateIdentity(rootKey, TestConfig.storePass);
+    	assertTrue(store.containsPrivateIdentity());
+
+    	File file = new File(TestConfig.storeRoot + File.separator + "private"
+    			+ File.separator + "key");
+    	assertTrue(file.exists());
+    	assertTrue(file.isFile());
+
+    	file = new File(TestConfig.storeRoot + File.separator + "private"
+    			+ File.separator + "index");
+    	assertTrue(file.exists());
+    	assertTrue(file.isFile());
+
+    	file = new File(TestConfig.storeRoot + File.separator + "private"
+    			+ File.separator + "mnemonic");
+    	assertFalse(file.exists());
+
+    	store = DIDStore.open("filesystem", TestConfig.storeRoot);
+    	assertTrue(store.containsPrivateIdentity());
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertNotNull(doc);
+    	assertEquals(expectedIDString, doc.getSubject().getMethodSpecificId());
+	}
+
+	@Test
 	public void testCreateDIDWithAlias() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setup(true);

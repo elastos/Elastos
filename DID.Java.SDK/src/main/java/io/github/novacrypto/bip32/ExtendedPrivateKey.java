@@ -71,13 +71,13 @@ public final class ExtendedPrivateKey implements
 
     private ExtendedPrivateKey(final Network network, final byte[] key, final byte[] chainCode) {
         this(new HdKey.Builder()
-                // .network(network)
-                // .neutered(false)
+                .network(network)
+                .neutered(false)
                 .key(key)
                 .chainCode(chainCode)
-                // .depth(0)
-                // .childNumber(0)
-                // .parentFingerprint(0)
+                .depth(0)
+                .childNumber(0)
+                .parentFingerprint(0)
                 .build());
     }
 
@@ -114,11 +114,11 @@ public final class ExtendedPrivateKey implements
 
     @Override
     public ExtendedPrivateKey toNetwork(final Network otherNetwork) {
-        // if (otherNetwork == network())
-        //     return this;
+        if (otherNetwork == network())
+            return this;
         return new ExtendedPrivateKey(
                 hdKey.toBuilder()
-                        // .network(otherNetwork)
+                        .network(otherNetwork)
                         .build());
     }
 
@@ -157,13 +157,13 @@ public final class ExtendedPrivateKey implements
         ser256(Il, ki);
 
         return new ExtendedPrivateKey(new HdKey.Builder()
-                // .network(hdKey.getNetwork())
-                // .neutered(false)
+                .network(hdKey.getNetwork())
+                .neutered(false)
                 .key(Il)
                 .chainCode(Ir)
-                // .depth(hdKey.depth() + 1)
+                .depth(hdKey.depth() + 1)
                 .childNumber(index)
-                // .parentFingerprint(hdKey.calculateFingerPrint())
+                .parentFingerprint(hdKey.calculateFingerPrint())
                 .build());
     }
 
@@ -198,10 +198,10 @@ public final class ExtendedPrivateKey implements
         return new CkdFunctionDerive<>(ckdFunction, this);
     }
 
-    // @Override
-    // public Network network() {
-    //     return hdKey.getNetwork();
-    // }
+    @Override
+    public Network network() {
+        return hdKey.getNetwork();
+    }
 
     @Override
     public int depth() {

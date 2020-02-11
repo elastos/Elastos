@@ -21,12 +21,12 @@
 
 package io.github.novacrypto.bip32;
 
-import static io.github.novacrypto.base58.Base58.base58Decode;
-import static io.github.novacrypto.bip32.Checksum.confirmExtendedKeyChecksum;
+import io.github.novacrypto.bip32.networks.DefaultNetworks;
 
 import java.util.Arrays;
 
-import io.github.novacrypto.bip32.networks.DefaultNetworks;
+import static io.github.novacrypto.base58.Base58.base58Decode;
+import static io.github.novacrypto.bip32.Checksum.confirmExtendedKeyChecksum;
 
 final class ExtendedPrivateKeyDeserializer implements Deserializer<ExtendedPrivateKey> {
 

@@ -65,7 +65,7 @@ public final class ExtendedPublicKey implements
 
     static ExtendedPublicKey from(final HdKey hdKey) {
         return new ExtendedPublicKey(new HdKey.Builder()
-                // .network(hdKey.getNetwork())
+                .network(hdKey.getNetwork())
                 .neutered(true)
                 .key(hdKey.getPoint())
                 .parentFingerprint(hdKey.getParentFingerprint())
@@ -108,7 +108,7 @@ public final class ExtendedPublicKey implements
         final byte[] key = pointSerP(ki);
 
         return new ExtendedPublicKey(new HdKey.Builder()
-                // .network(parent.getNetwork())
+                .network(parent.getNetwork())
                 .neutered(true)
                 .depth(parent.depth() + 1)
                 .parentFingerprint(parent.calculateFingerPrint())
@@ -129,11 +129,11 @@ public final class ExtendedPublicKey implements
 
     @Override
     public ExtendedPublicKey toNetwork(final Network otherNetwork) {
-        // if (otherNetwork == network())
-        //     return this;
+        if (otherNetwork == network())
+            return this;
         return new ExtendedPublicKey(
                 hdKey.toBuilder()
-                        // .network(otherNetwork)
+                        .network(otherNetwork)
                         .build());
     }
 
@@ -183,10 +183,10 @@ public final class ExtendedPublicKey implements
         return new CkdFunctionDerive<>(ckdFunction, this);
     }
 
-    // @Override
-    // public Network network() {
-    //     return hdKey.getNetwork();
-    // }
+    @Override
+    public Network network() {
+        return hdKey.getNetwork();
+    }
 
     @Override
     public int depth() {

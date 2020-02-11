@@ -22,6 +22,7 @@
 package io.github.novacrypto.bip32;
 
 import static io.github.novacrypto.bip32.Checksum.checksum;
+import static io.github.novacrypto.hashing.Sha256.sha256Twice;
 
 final class Serializer {
 
@@ -72,8 +73,7 @@ final class Serializer {
     }
 
     private int getVersion() {
-        // return neutered ? network.getPublicVersion() : network.getPrivateVersion();
-    	return 0;
+        return neutered ? network.getPublicVersion() : network.getPrivateVersion();
     }
 
     static class Builder {

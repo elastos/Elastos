@@ -35,6 +35,7 @@ import org.spongycastle.math.ec.FixedPointCombMultiplier;
 import org.spongycastle.math.ec.FixedPointUtil;
 
 import io.github.novacrypto.bip32.ExtendedPrivateKey;
+import io.github.novacrypto.bip32.networks.Elastos;
 import io.github.novacrypto.bip39.SeedCalculator;
 import io.github.novacrypto.bip44.AddressIndex;
 import io.github.novacrypto.bip44.BIP44;
@@ -43,6 +44,8 @@ import io.github.novacrypto.hashing.Sha256;
 public class HDKey {
 	public static final int PUBLICKEY_BYTES = 33;
 	public static final int PRIVATEKEY_BYTES = 32;
+	public static final int SEED_BYTES = 64;
+	public static final int EXTENDED_PRIVATE_BYTES = 82;
 
 	protected static final String CURVE_ALGORITHM = "secp256r1";
 	protected static X9ECParameters CURVE_PARAMS;
@@ -51,7 +54,6 @@ public class HDKey {
     private final static byte PADDING_IDENTITY	= 0x67;
     private final static byte PADDING_STANDARD	= (byte)0xAD;
 
-    private byte[] seed;
 	private ExtendedPrivateKey rootPrivateKey;
 
 	static {
@@ -63,9 +65,8 @@ public class HDKey {
 				CURVE_PARAMS.getH());
 	}
 
-	private HDKey(byte[] seed) {
-		this.seed = seed;
-		rootPrivateKey = ExtendedPrivateKey.fromSeed(seed, null);
+	private HDKey(ExtendedPrivateKey key) {
+		rootPrivateKey = key;
 	}
 
 	public static HDKey fromMnemonic(String mnemonic, String passphrase) {
@@ -73,19 +74,25 @@ public class HDKey {
 				// .withWordsFromWordList(English.INSTANCE)
 				.calculateSeed(mnemonic, passphrase);
 
-		return new HDKey(seed);
+		return fromSeed(seed);
 	}
 
 	public static HDKey fromSeed(byte[] seed) {
-		return new HDKey(seed);
-	}
-
-	public byte[] getSeed() {
-		return seed;
+		ExtendedPrivateKey key = ExtendedPrivateKey.fromSeed(seed, Elastos.MAIN_NET);
+		return new HDKey(key);
 	}
 
 	public byte[] getKeyBytes() {
+		return rootPrivateKey.getKeyBytes();
+	}
+
+	public byte[] serialize() {
 		return rootPrivateKey.extendedKeyByteArray();
+	}
+
+	public static HDKey deserialize(byte[] keyData) {
+		ExtendedPrivateKey key = ExtendedPrivateKey.deserializer().deserialize(keyData);
+		return new HDKey(key);
 	}
 
 	public DerivedKey derive(int index) {
@@ -103,7 +110,6 @@ public class HDKey {
 	}
 
 	public void wipe() {
-		Arrays.fill(seed, (byte)0);
 		Arrays.fill(rootPrivateKey.getKeyBytes(), (byte)0);
 	}
 
@@ -131,6 +137,13 @@ public class HDKey {
 
 		public static DerivedKey deserialize(byte[] privateKeyBytes) {
 			byte[] extendedPrivateKeyBytes = new byte[82];
+
+			int version = Elastos.MAIN_NET.getPrivateVersion();
+			extendedPrivateKeyBytes[0] = (byte)((version >> 24) & 0xFF);
+			extendedPrivateKeyBytes[1] = (byte)((version >> 16) & 0xFF);
+			extendedPrivateKeyBytes[2] = (byte)((version >> 8) & 0xFF);
+			extendedPrivateKeyBytes[3] = (byte)(version & 0xFF);
+
 			System.arraycopy(privateKeyBytes, 0,
 					extendedPrivateKeyBytes, 46, 32);
 

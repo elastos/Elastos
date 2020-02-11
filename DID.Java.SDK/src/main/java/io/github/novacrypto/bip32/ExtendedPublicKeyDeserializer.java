@@ -54,7 +54,7 @@ final class ExtendedPublicKeyDeserializer implements Deserializer<ExtendedPublic
         final ByteArrayReader reader = new ByteArrayReader(extendedKeyData);
         return new ExtendedPublicKey(new HdKey
                 .Builder()
-                // .network(networks.findByPublicVersion(reader.readSer32()))
+                .network(networks.findByPublicVersion(reader.readSer32()))
                 .depth(reader.read())
                 .parentFingerprint(reader.readSer32())
                 .childNumber(reader.readSer32())

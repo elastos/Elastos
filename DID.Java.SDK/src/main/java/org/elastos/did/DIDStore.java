@@ -60,6 +60,7 @@ import org.elastos.did.exception.WrongPasswordException;
 import org.elastos.did.meta.CredentialMeta;
 import org.elastos.did.meta.DIDMeta;
 import org.elastos.did.util.Aes256cbc;
+import org.elastos.did.util.Base58;
 import org.elastos.did.util.Base64;
 import org.elastos.did.util.EcdsaSigner;
 import org.elastos.did.util.HDKey;
@@ -149,8 +150,8 @@ public final class DIDStore {
 	// Initialize & create new private identity and save it to DIDStore.
 	public void initPrivateIdentity(int language, String mnemonic,
 			String passphrase, String storepass, boolean force)
-					throws DIDStoreException {
-		if (!Mnemonic.isValid(language, mnemonic))
+			throws DIDStoreException {
+		if (mnemonic == null || !Mnemonic.isValid(language, mnemonic))
 			throw new IllegalArgumentException("Invalid mnemonic.");
 
 		if (storepass == null || storepass.isEmpty())
@@ -164,26 +165,51 @@ public final class DIDStore {
 
 		HDKey privateIdentity = HDKey.fromMnemonic(mnemonic, passphrase);
 
-		// Save seed instead of root private key,
-		// keep compatible with Native SDK
-		String encryptedIdentity = encryptToBase64(
-				privateIdentity.getSeed(), storepass);
-		storage.storePrivateIdentity(encryptedIdentity);
+		initPrivateIdentity(privateIdentity, storepass);
 
 		// Save mnemonic
 		String encryptedMnemonic = encryptToBase64(
 				mnemonic.getBytes(), storepass);
 		storage.storeMnemonic(encryptedMnemonic);
 
-		// Save index
-		storage.storePrivateIdentityIndex(0);
-
-		privateIdentity.wipe();
 	}
 
 	public void initPrivateIdentity(int language, String mnemonic,
 			String passphrase, String storepass) throws DIDStoreException {
 		initPrivateIdentity(language, mnemonic, passphrase, storepass, false);
+	}
+
+	public void initPrivateIdentity(String extentedPrivateKey, String storepass,
+			boolean force) throws DIDStoreException {
+		if (extentedPrivateKey == null || extentedPrivateKey.isEmpty())
+			throw new IllegalArgumentException("Invalid extended private key.");
+
+		if (storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException("Invalid password.");
+
+		if (containsPrivateIdentity() && !force)
+			throw new DIDStoreException("Already has private indentity.");
+
+		HDKey privateIdentity = HDKey.deserialize(Base58.decode(extentedPrivateKey));
+		initPrivateIdentity(privateIdentity, storepass);
+	}
+
+	public void initPrivateIdentity(String extentedPrivateKey, String storepass)
+			throws DIDStoreException {
+		initPrivateIdentity(extentedPrivateKey, storepass, false);
+	}
+
+	private void initPrivateIdentity(HDKey privateIdentity, String storepass)
+			throws DIDStoreException {
+		// Save extended root private key
+		String encryptedIdentity = encryptToBase64(
+				privateIdentity.serialize(), storepass);
+		storage.storePrivateIdentity(encryptedIdentity);
+
+		// Save index
+		storage.storePrivateIdentityIndex(0);
+
+		privateIdentity.wipe();
 	}
 
 	public String exportMnemonic(String storepass) throws DIDStoreException {
@@ -200,9 +226,23 @@ public final class DIDStore {
 		if (!containsPrivateIdentity())
 			return null;
 
-		byte[] seed = decryptFromBase64(storage.loadPrivateIdentity(), storepass);
-		HDKey privateIdentity = HDKey.fromSeed(seed);
-		Arrays.fill(seed, (byte)0);
+		HDKey privateIdentity = null;
+
+		byte[] keyData = decryptFromBase64(storage.loadPrivateIdentity(), storepass);
+		if (keyData.length == HDKey.SEED_BYTES) {
+			privateIdentity = HDKey.fromSeed(keyData);
+
+			// convert to extended root private key
+			String encryptedIdentity = encryptToBase64(
+					privateIdentity.serialize(), storepass);
+			storage.storePrivateIdentity(encryptedIdentity);
+		} else if (keyData.length == HDKey.EXTENDED_PRIVATE_BYTES){
+			privateIdentity = HDKey.deserialize(keyData);
+		} else {
+			throw new DIDStoreException("Invalid private identity.");
+		}
+
+		Arrays.fill(keyData, (byte)0);
 
 		return privateIdentity;
 	}

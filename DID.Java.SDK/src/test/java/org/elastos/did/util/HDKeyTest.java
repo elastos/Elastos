@@ -22,13 +22,15 @@
 
 package org.elastos.did.util;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 public class HDKeyTest {
 	/*
-	private static void dumpHex(byte[] bytes) {
+	private static void dumpHex(String prompt, byte[] bytes) {
+		System.out.print(prompt + "[" + bytes.length + "]: ");
 		for (byte b : bytes)
 			System.out.print(String.format("%02x", b));
 		System.out.println();
@@ -50,7 +52,7 @@ public class HDKeyTest {
 
 
 	@Test
-	public void testAbc() {
+	public void test1() {
 		String expectedIDString = "iW3HU8fTmwkENeVT9UCEvvg3ddUD5oCxYA";
 		String mnemonic = "service illegal blossom voice three eagle grace agent service average knock round";
 
@@ -60,4 +62,19 @@ public class HDKeyTest {
 		assertEquals(expectedIDString, key.getAddress());
 	}
 
+	@Test
+	public void test2() {
+		String mnemonic = "pact reject sick voyage foster fence warm luggage cabbage any subject carbon";
+		String passphrase = "helloworld";
+		// String seed = "98b9dde6ea5edba3c7808b8a342377bc8b08e8004667bb4be2a229f3bcda8e73b750101f3993272d971a4f50914a91d7221c9bbed964e4778081d9f4523b4525";
+		String key = "xprv9s21ZrQH143K4biiQbUq8369meTb1R8KnstYFAKtfwk3vF8uvFd1EC2s49bMQsbdbmdJxUWRkuC48CXPutFfynYFVGnoeq8LJZhfd9QjvUt";
+
+		HDKey root = HDKey.fromMnemonic(mnemonic, passphrase);
+		assertEquals(key, Base58.encode(root.serialize()));
+		byte[] keyBytes = root.getKeyBytes();
+
+		root = HDKey.deserialize(Base58.decode(key));
+		assertEquals(key, Base58.encode(root.serialize()));
+		assertArrayEquals(keyBytes, root.getKeyBytes());
+	}
 }

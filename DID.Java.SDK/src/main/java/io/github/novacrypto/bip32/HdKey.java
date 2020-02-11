@@ -28,7 +28,7 @@ import static io.github.novacrypto.hashing.Hash160.hash160;
 final class HdKey {
 
     private final boolean neutered;
-    // private final Network network;
+    private final Network network;
     private final byte[] chainCode;
     private final byte[] key;
     private final Serializer serializer;
@@ -38,14 +38,14 @@ final class HdKey {
 
     private HdKey(final Builder builder) {
         neutered = builder.neutered;
-        // network = builder.network;
+        network = builder.network;
         key = builder.key;
         parentFingerprint = builder.parentFingerprint;
         childNumber = builder.childNumber;
         chainCode = builder.chainCode;
         depth = builder.depth;
         serializer = new Serializer.Builder()
-                // .network(builder.network)
+                .network(builder.network)
                 .neutered(builder.neutered)
                 .depth(builder.depth)
                 .childNumber(builder.childNumber)
@@ -86,9 +86,9 @@ final class HdKey {
         return depth;
     }
 
-    // Network getNetwork() {
-    //     return network;
-    // }
+    Network getNetwork() {
+        return network;
+    }
 
     byte[] getChainCode() {
         return chainCode;
@@ -110,7 +110,7 @@ final class HdKey {
 
     static class Builder {
 
-        // private Network network;
+        private Network network;
         private boolean neutered;
         private byte[] chainCode;
         private byte[] key;
@@ -119,8 +119,8 @@ final class HdKey {
         private int parentFingerprint;
 
         Builder network(final Network network) {
-        //     this.network = network;
-             return this;
+            this.network = network;
+            return this;
         }
 
         Builder neutered(final boolean neutered) {

@@ -38,6 +38,7 @@ import java.util.List;
 
 import org.elastos.did.exception.DIDStorageException;
 import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.DIDStoreVersionMismatch;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDocumentException;
 import org.elastos.did.exception.MalformedMetaException;
@@ -76,7 +77,7 @@ import org.elastos.did.meta.DIDMeta;
  */
 class FileSystemStorage implements DIDStorage {
 	private static final byte[] STORE_MAGIC = { 0x00, 0x0D, 0x01, 0x0D };
-	private static final byte[] STORE_VERSION = { 0x00, 0x00, 0x00, 0x02 };
+	protected static final int STORE_VERSION = 2;
 	private static final int STORE_META_SIZE = 8;
 
 	private static final String PRIVATE_DIR = "private";
@@ -120,7 +121,14 @@ class FileSystemStorage implements DIDStorage {
 
 			OutputStream out = new FileOutputStream(file);
 			out.write(STORE_MAGIC);
-			out.write(STORE_VERSION);
+
+			byte[] version = new byte[4];
+			version[0] = (byte)((STORE_VERSION >> 24) & 0xFF);
+			version[1] = (byte)((STORE_VERSION >> 16) & 0xFF);
+			version[2] = (byte)((STORE_VERSION >> 8) & 0xFF);
+			version[3] = (byte)(STORE_VERSION & 0xFF);
+
+			out.write(version);
 			out.close();
 		} catch (IOException e) {
 			throw new DIDStorageException("Initialize DIDStore \""
@@ -156,9 +164,12 @@ class FileSystemStorage implements DIDStorage {
 			throw new DIDStorageException("Directory \""
 					+ storeRoot.getAbsolutePath() + "\" is not a DIDStore.");
 
-		if (!Arrays.equals(STORE_VERSION, version))
-			throw new DIDStorageException("DIDStore \""
-					+ storeRoot.getAbsolutePath() + "\", unsupported version.");
+		int v = (0xFF & version[0]) << 24 |
+				(0xFF & version[1]) << 16 |
+				(0xFF & version[2]) << 8  |
+				(0xFF & version[3]) << 0;
+		if (v != STORE_VERSION)
+			throw new DIDStoreVersionMismatch("Version: " + v);
 
 		postChangePassword();
 	}

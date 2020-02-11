@@ -28,7 +28,7 @@ public interface ExtendedKey {
      *
      * @return The network of this extended key
      */
-    // Network network();
+    Network network();
 
     /**
      * 1 byte: 0 for master nodes, 1 for level-1 derived keys, etc.
