@@ -2806,6 +2806,7 @@ func TestCommitee_RollbackCRCBlendTxCRVert(t *testing.T) {
 
 	// new committee
 	committee := NewCommittee(&config.DefaultParams)
+	registerFuncs(committee.state)
 
 	// set count of CR member
 	cfg := &config.DefaultParams
