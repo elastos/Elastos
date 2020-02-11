@@ -822,6 +822,13 @@ func NewSettings() *Settings {
 		ParamName:    "NodeProfileStrategy",
 	})
 
+	result.Add(&settingItem{
+		Flag:         nil,
+		DefaultValue: uint32(0),
+		ConfigPath:   "TxCacheVolume",
+		ParamName:    "TxCacheVolume",
+	})
+
 	return result
 }
 
