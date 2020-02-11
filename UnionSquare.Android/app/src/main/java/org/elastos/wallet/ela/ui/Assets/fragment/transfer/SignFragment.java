@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -88,8 +89,8 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
         }
 
         try {
-            JsonObject JsonAttribute = new JsonParser().parse(signData).getAsJsonObject();
-            chainID = JsonAttribute.get("ChainID").getAsString();
+            com.alibaba.fastjson.JSONObject JsonAttribute = JSON.parseObject(signData);
+            chainID = JsonAttribute.getString("ChainID");
             //判断签名状态
             presenter = new PwdPresenter();
             presenter.getTransactionSignedInfo(wallet.getWalletId(), chainID, signData, this);
@@ -235,8 +236,8 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
             return;
         }
         try {
-            JsonObject JsonAttribute = new JsonParser().parse(data).getAsJsonObject();
-            String msg = String.format(getString(R.string.onlyid), JsonAttribute.get("ID").getAsString());
+            com.alibaba.fastjson.JSONObject JsonAttribute = JSON.parseObject(data);
+            String msg = String.format(getString(R.string.onlyid), JsonAttribute.getString("ID"));
             tvOnlycode.setText(msg);
             tvOnlycode.setVisibility(View.VISIBLE);
             tvMultip.setVisibility(View.VISIBLE);

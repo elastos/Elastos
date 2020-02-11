@@ -8,8 +8,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -85,7 +85,7 @@ public class ToSignFragment extends BaseFragment {
     public void setData(String data) {
         //encodeTransaction  加密后的结果
         List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 250)
-                , ScreenUtil.dp2px(getContext(), 250), Constant.SIGN,-1);
+                , ScreenUtil.dp2px(getContext(), 250), Constant.SIGN, -1);
         if (images.size() == 1) {
             ivQr.setVisibility(View.VISIBLE);
             llVp.setVisibility(View.GONE);
@@ -96,8 +96,8 @@ public class ToSignFragment extends BaseFragment {
             return;
         }
         try {
-            JsonObject JsonAttribute = new JsonParser().parse(data).getAsJsonObject();
-            String msg = String.format(getString(R.string.onlyid), JsonAttribute.get("ID").getAsString());
+            JSONObject JsonAttribute = JSON.parseObject(data);
+            String msg = String.format(getString(R.string.onlyid), JsonAttribute.getString("ID"));
             tvOnlycode.setText(msg);
             tvOnlycode.setVisibility(View.VISIBLE);
             tvMultip.setVisibility(View.VISIBLE);

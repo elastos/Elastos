@@ -6,8 +6,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.gson.JsonObject;
-
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.table.Wallet;
@@ -49,7 +47,7 @@ public class ExportReadOnlyFragment extends BaseFragment implements CommmonStrin
 
     @Override
     public void onGetCommonData(String methodname, String data) {
-        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 240), ScreenUtil.dp2px(getContext(), 240), Constant.CREATEREADONLY,null,-1);
+        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 240), ScreenUtil.dp2px(getContext(), 240), Constant.CREATEREADONLY, null, -1);
         ivQr.setImageBitmap(mBitmap);
     }
 }

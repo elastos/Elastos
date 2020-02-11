@@ -10,8 +10,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -114,8 +114,8 @@ public class OutportMnemonicFragment extends BaseFragment implements NewBaseView
                 break;
             case "getMasterWalletBasicInfo":
                 String data = ((CommmonStringEntity) baseEntity).getData();
-                JsonObject jsonData = new JsonParser().parse(data).getAsJsonObject();
-                hasPassPhrase = jsonData.get("HasPassPhrase").getAsBoolean();
+                JSONObject jsonData = JSON.parseObject(data);
+                hasPassPhrase = jsonData.getBoolean("HasPassPhrase");
                 if (hasPassPhrase) {
                     llPwd.setVisibility(View.VISIBLE);
                 }

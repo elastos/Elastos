@@ -8,8 +8,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -100,13 +98,13 @@ public class CreateSignReadOnlyWalletFragment extends BaseFragment implements Co
     @Override
     public void onGetCommonData(String methodname, String data) {
         if (data != null) {
-            new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this,null);
+            new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this, null);
         }
 
     }
 
     @Override
-    public void onCreateSubWallet(String data,Object view) {
+    public void onCreateSubWallet(String data, Object view) {
         if (data != null) {
             //创建Mainchain子钱包
             RealmUtil realmUtil = new RealmUtil();

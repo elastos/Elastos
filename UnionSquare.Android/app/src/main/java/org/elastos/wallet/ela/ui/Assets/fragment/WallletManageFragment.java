@@ -8,8 +8,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -261,15 +261,15 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         switch (methodName) {
             case "getPubKeyInfo":
                 String pubKeyInfo = ((CommmonStringEntity) baseEntity).getData();
-                JsonObject pubKeyInfoJsonData = new JsonParser().parse(pubKeyInfo).getAsJsonObject();
-                String derivationStrategy = pubKeyInfoJsonData.get("derivationStrategy").getAsString();
-                int n = pubKeyInfoJsonData.get("n").getAsInt();
+                JSONObject pubKeyInfoJsonData = JSON.parseObject(pubKeyInfo);
+                String derivationStrategy = pubKeyInfoJsonData.getString("derivationStrategy");
+                int n = pubKeyInfoJsonData.getIntValue("n");
                 String requestPubKey;
                 if ("BIP44".equals(derivationStrategy) && n > 1) {
-                    requestPubKey = pubKeyInfoJsonData.get("xPubKey").getAsString();
+                    requestPubKey = pubKeyInfoJsonData.getString("xPubKey");
 
                 } else {
-                    requestPubKey = pubKeyInfoJsonData.get("xPubKeyHDPM").getAsString();
+                    requestPubKey = pubKeyInfoJsonData.getString("xPubKeyHDPM");
                 }
                 if (!TextUtils.isEmpty(requestPubKey)) {
                     Bundle bundle = new Bundle();
@@ -310,8 +310,8 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
                     return;
                 }*/
                 String data = ((CommmonStringEntity) baseEntity).getData();
-                JsonObject jsonData = new JsonParser().parse(data).getAsJsonObject();
-                boolean hasPassPhrase = jsonData.get("HasPassPhrase").getAsBoolean();
+                JSONObject jsonData = JSON.parseObject(data);
+                boolean hasPassPhrase = jsonData.getBoolean("HasPassPhrase");
                 if (hasPassPhrase) {
                     dialog = dialogUtil.showWarmPromptInput3(getBaseActivity(), null, null, new WarmPromptListener2() {
                         @Override

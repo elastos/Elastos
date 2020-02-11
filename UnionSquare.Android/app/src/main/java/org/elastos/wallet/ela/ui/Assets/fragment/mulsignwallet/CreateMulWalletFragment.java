@@ -14,9 +14,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import org.elastos.wallet.R;
@@ -90,8 +89,8 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
         super.setExtraData(data);
         String result = data.getString("result");
         try {
-            JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
-            publicKey = jsonObject.get("data").getAsString();
+            JSONObject jsonObject = JSON.parseObject(result);
+            publicKey = jsonObject.getString("data");
         } catch (Exception e) {
             publicKey = result;
         }
@@ -283,13 +282,13 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
 
         //无论何种createMultiSignMasterWallet方式创建的多签钱包都到这里
         if (data != null) {
-            new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this,null);
+            new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this, null);
         }
 
     }
 
     @Override
-    public void onCreateSubWallet(String data,Object o) {
+    public void onCreateSubWallet(String data, Object o) {
         if (data != null) {
             //创建Mainchain子钱包
             RealmUtil realmUtil = new RealmUtil();

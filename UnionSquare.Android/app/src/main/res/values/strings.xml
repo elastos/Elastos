@@ -604,4 +604,9 @@
     <string name="commonfailereason">交易错误，无法上链</string>
     <string name="specialvotesucessreason">由于交易金额不足,您的%1$s投票已失效</string>
     <string name="transactionfinish">交易完成</string>
+    <string name="tipdidauthorization">申请使用您的DID信息（包括但不限于存储、展示等用途）：</string>
+    <string name="didbaseinfo">- DID基本信息</string>
+    <string name="personalinfo">- 个人信息</string>
+    <string name="personalintro_">- 个人简介</string>
+    <string name="socialaccount_">- 社交账号</string>
 </resources>
