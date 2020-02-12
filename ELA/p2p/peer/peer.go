@@ -292,8 +292,7 @@ func (p *Peer) NA() *p2p.NetAddress {
 func (p *Peer) SetNA(addr net.Addr) bool {
 	na, err := newNetAddress(addr, p.services)
 	if err != nil {
-		log.Errorf("Cannot create remote net address: %v", err)
-		p.Disconnect()
+		log.Errorf("SetNA Cannot create remote net address: %v", err)
 		return false
 	}
 	p.flagsMtx.Lock()
@@ -557,7 +556,7 @@ func (p *Peer) makeEmptyMessage(cmd string) (p2p.Message, error) {
 
 func (p *Peer) readMessage() (p2p.Message, error) {
 	msg, err := p2p.ReadMessage(
-		p.conn, p.cfg.Magic,p2p.ReadMessageTimeOut, p.makeEmptyMessage)
+		p.conn, p.cfg.Magic, p2p.ReadMessageTimeOut, p.makeEmptyMessage)
 	// Use closures to log expensive operations so they are only run when
 	// the logging level requires it.
 	log.Debugf("%v", newLogClosure(func() string {

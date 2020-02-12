@@ -300,10 +300,8 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 	returnCandidateAction := func(candidate *Candidate, originState CandidateState) {
 		s.history.Append(height, func() {
 			candidate.state = Returned
-			delete(s.Nicknames, candidate.info.NickName)
 		}, func() {
 			candidate.state = originState
-			s.Nicknames[candidate.info.NickName] = struct{}{}
 		})
 	}
 
