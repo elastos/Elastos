@@ -514,6 +514,7 @@ func NewSettings() *Settings {
 		params.CkpManager = checkpoint.NewManager(&checkpoint.Config{
 			EnableHistory:      conf.EnableHistory,
 			HistoryStartHeight: conf.HistoryStartHeight,
+			NeedSave:           false,
 		})
 		return nil
 	}

@@ -109,6 +109,10 @@ type Config struct {
 
 	// DataPath defines root directory path of all checkpoint related files.
 	DataPath string
+
+	// NeedSave indicate whether or not manager should save checkpoints when
+	//	reached a save point.
+	NeedSave bool
 }
 
 // Manager holds checkpoints save automatically.
@@ -251,6 +255,11 @@ func (m *Manager) SetDataPath(path string) {
 	m.cfg.DataPath = path
 }
 
+// RegisterNeedSave register the need save function.
+func (m *Manager) SetNeedSave(needSave bool) {
+	m.cfg.NeedSave = needSave
+}
+
 func (m *Manager) getOrderedCheckpoints() []ICheckPoint {
 	sortedPoints := make([]ICheckPoint, 0, len(m.checkpoints))
 	for _, v := range m.checkpoints {
@@ -264,6 +273,7 @@ func (m *Manager) getOrderedCheckpoints() []ICheckPoint {
 
 func (m *Manager) onBlockSaved(block *types.DposBlock,
 	filter func(point ICheckPoint) bool, async bool) {
+
 	sortedPoints := m.getOrderedCheckpoints()
 	for _, v := range sortedPoints {
 		if filter != nil && !filter(v) {
@@ -274,6 +284,10 @@ func (m *Manager) onBlockSaved(block *types.DposBlock,
 			continue
 		}
 		v.OnBlockSaved(block)
+
+		if !m.cfg.NeedSave {
+			continue
+		}
 
 		originalHeight := v.GetHeight()
 		if originalHeight > 0 &&

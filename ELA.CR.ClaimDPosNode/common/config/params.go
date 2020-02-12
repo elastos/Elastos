@@ -201,6 +201,7 @@ var DefaultParams = Params{
 	CkpManager: checkpoint.NewManager(&checkpoint.Config{
 		EnableHistory:      false,
 		HistoryStartHeight: uint32(0),
+		NeedSave:           false,
 	}),
 	TxCacheVolume: 300000,
 }
