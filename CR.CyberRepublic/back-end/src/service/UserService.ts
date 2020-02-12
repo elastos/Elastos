@@ -6,6 +6,7 @@ import {geo} from '../utility/geo'
 import * as uuid from 'uuid'
 import { validate, utilCrypto, mail, permissions } from '../utility'
 import CommunityService from './CommunityService'
+import * as jwt from 'jsonwebtoken'
 
 const selectFields = '-salt -password -elaBudget -elaOwed -votePower -resetToken'
 const strictSelectFields = selectFields + ' -email -profile.walletAddress'
@@ -638,5 +639,25 @@ export default class extends Base {
         }
 
         return { isExist: false }
+    }
+
+    public async getElaUrl() {
+        const jwtClaims = {
+            iss: process.env.APP_DID,
+            email: 'a@a.com',
+            callbackurl: `${process.env.SERVER_URL}/api/user/did_callback_ela`,
+            claims: {}
+        }
+        const jwtToken = jwt.sign(
+            jwtClaims, 
+            process.env.APP_PRIVATE_KEY, 
+            { expiresIn: 60 * 5, algorithm: 'HS256' }
+        )
+        const url = `elastos://credaccess/${jwtToken}`
+        return { success: true, url }
+    }
+
+    public async didCallbackEla() {
+        // verify response data from ela wallet
     }
 }

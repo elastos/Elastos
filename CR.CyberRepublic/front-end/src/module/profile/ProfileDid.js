@@ -1,22 +1,41 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover } from 'antd'
+import { Popover, Spin } from 'antd'
 import I18N from '@/I18N'
 import QRCode from 'qrcode.react'
 
 class ProfileDid extends Component {
-  elaQrCode() {
+  constructor(props) {
+    super(props)
+    this.state = {
+      url: ''
+    }
+  }
+
+  elaQrCode = () => {
+    const { url } = this.state
     return (
       <Content>
-        <QRCode value={window.location.href} size={145} />
+        {url ? <QRCode value={url} size={145} /> : <Spin />}
         <Tip>{I18N.get('profile.qrcodeTip')}</Tip>
       </Content>
     )
   }
 
+  componentDidMount = async () => {
+    const rs = await this.props.getElaUrl()
+    if (rs && rs.success) {
+      this.setState({ url: rs.url })
+    }
+  }
+
   render() {
     return (
-      <Popover content={this.elaQrCode()} trigger="click" placement="top">
+      <Popover
+        content={this.elaQrCode()}
+        trigger="click"
+        placement="top"
+      >
         <Button>{I18N.get('profile.associateDid')}</Button>
       </Popover>
     )

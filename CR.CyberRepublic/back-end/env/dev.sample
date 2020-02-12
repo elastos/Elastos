@@ -1,4 +1,5 @@
 # SERVER
+SERVER_URL=http://localhost:3001
 SERVER_PORT=3000
 
 # DB
@@ -9,6 +10,8 @@ DB_URL=mongodb://localhost:27017/EBP
 
 # APP
 APP_SECRET=elastos
+APP_PRIVATE_KEY=test
+APP_DID=did
 
 # AWS
 AWS_ACCESS_KEY=YOUR_AWS_KEY
