@@ -853,10 +853,10 @@ cleanup:
 }
 
 func (s *server) isOverMaxNodePerHost(peers map[svr.IPeer]*serverPeer,
-	sp *serverPeer) bool {
+	orgPeer svr.IPeer) bool {
+	sp := orgPeer.ToPeer()
 	hostNodeCount := uint32(1)
 	for _, peer := range peers {
-
 		var peerNa, spNa *p2p.NetAddress
 		if peerNa = peer.NA(); peerNa == nil {
 			continue
@@ -872,7 +872,6 @@ func (s *server) isOverMaxNodePerHost(peers map[svr.IPeer]*serverPeer,
 		log.Infof("New peer %s ignored, "+
 			"hostNodeCount %d is more than  MaxNodePerHost %d ",
 			sp, hostNodeCount, s.chainParams.MaxNodePerHost)
-		sp.Disconnect()
 		return true
 	}
 	return false
@@ -883,6 +882,10 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 	switch p := p.(type) {
 	case newPeerMsg:
 		sp := newServerPeer(s)
+		if s.isOverMaxNodePerHost(peers, p) {
+			p.reply <- false
+			return
+		}
 		sp.Peer = peer.New(p, &peer.Listeners{
 			OnVersion:      sp.OnVersion,
 			OnMemPool:      sp.OnMemPool,
@@ -899,13 +902,8 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 			OnReject:       sp.OnReject,
 			OnDAddr:        s.routes.QueueDAddr,
 		})
-
-		if s.isOverMaxNodePerHost(peers, sp) {
-			p.reply <- false
-		} else {
-			peers[p.IPeer] = sp
-			p.reply <- true
-		}
+		peers[p.IPeer] = sp
+		p.reply <- true
 	case donePeerMsg:
 		delete(peers, p.IPeer)
 		p.reply <- struct{}{}
