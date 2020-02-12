@@ -989,6 +989,9 @@ const zh = {
   'role.admin.mode': '管理员模式',
 
   // Profile
+  'profile.associateDid': '绑定 DID',
+  'profile.qrcodeTip': '打开 ELA 钱包扫码',
+  'profile.reassociateDid': '重新绑定 DID',
   'profile.thanksForCompleting': '感谢更新您的个人档案！',
   'profile.skillsets': '我的技能',
   'profile.completeProfile': '请完成您的个人档案',
