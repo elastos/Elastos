@@ -89,34 +89,38 @@ public final class DIDStore {
 	private Map<DIDURL, VerifiableCredential> vcCache;
 
 	private DIDStorage storage;
+	private DIDBackend backend;
 
 	private DIDStore(int initialCacheCapacity, int maxCacheCapacity,
-			DIDStorage storage) {
+			DIDAdapter adapter, DIDStorage storage) {
 		if (maxCacheCapacity > 0) {
 			this.didCache = LRUCache.createInstance(initialCacheCapacity, maxCacheCapacity);
 			this.vcCache = LRUCache.createInstance(initialCacheCapacity, maxCacheCapacity);
 		}
 
+		this.backend = DIDBackend.getInstance(adapter);
 		this.storage = storage;
 	}
 
 	public static DIDStore open(String type, String location,
-			int initialCacheCapacity, int maxCacheCapacity)
-			throws DIDStoreException {
+			int initialCacheCapacity, int maxCacheCapacity,
+			DIDAdapter adapter) throws DIDStoreException {
 		if (type == null || location == null || location.isEmpty() ||
-				maxCacheCapacity < initialCacheCapacity)
+				maxCacheCapacity < initialCacheCapacity || adapter == null)
 			throw new IllegalArgumentException();
 
 		if (!type.equals("filesystem"))
 			throw new DIDStoreException("Unsupported store type: " + type);
 
 		DIDStorage storage = new FileSystemStorage(location);
-		return new DIDStore(initialCacheCapacity, maxCacheCapacity, storage);
+		return new DIDStore(initialCacheCapacity, maxCacheCapacity,
+				adapter, storage);
 	}
 
-	public static DIDStore open(String type, String location)
+	public static DIDStore open(String type, String location, DIDAdapter adapter)
 			throws DIDStoreException {
-		return open(type, location, CACHE_INITIAL_CAPACITY, CACHE_MAX_CAPACITY);
+		return open(type, location, CACHE_INITIAL_CAPACITY,
+				CACHE_MAX_CAPACITY, adapter);
 	}
 
 	public boolean containsPrivateIdentity() throws DIDStoreException {
@@ -268,7 +272,7 @@ public final class DIDStore {
 				try {
 					DIDDocument doc = null;
 					try {
-						doc = DIDBackend.getInstance().resolve(did, true);
+						doc = DIDBackend.resolve(did, true);
 					} catch (DIDExpiredException | DIDDeactivatedException e) {
 						continue;
 					}
@@ -377,10 +381,10 @@ public final class DIDStore {
 
 		String lastTxid = doc.getTransactionId();
 		if (lastTxid == null || lastTxid.isEmpty())
-			lastTxid = DIDBackend.getInstance().create(doc, confirms,
+			lastTxid = backend.create(doc, confirms,
 					signKey, storepass);
 		else
-			lastTxid = DIDBackend.getInstance().update(doc, lastTxid, confirms,
+			lastTxid = backend.update(doc, lastTxid, confirms,
 					signKey, storepass);
 
 		if (lastTxid != null) {
@@ -516,7 +520,7 @@ public final class DIDStore {
 
 		// Document should use the IDChain's copy
 		boolean localCopy = false;
-		DIDDocument doc = DIDBackend.getInstance().resolve(did);
+		DIDDocument doc = DIDBackend.resolve(did);
 		if (doc == null) {
 			// Fail-back: try to load document from local store
 			doc = loadDid(did);
@@ -535,7 +539,7 @@ public final class DIDStore {
 				throw new InvalidKeyException("Not an authentication key.");
 		}
 
-		String txid = DIDBackend.getInstance().deactivate(doc,
+		String txid = backend.deactivate(doc,
 				confirms, signKey, storepass);
 
 		// Save deactivated status to DID metadata
@@ -673,7 +677,7 @@ public final class DIDStore {
 			throw new IllegalArgumentException();
 
 		// All documents should use the IDChain's copy
-		DIDDocument doc = DIDBackend.getInstance().resolve(did);
+		DIDDocument doc = DIDBackend.resolve(did);
 		if (doc == null) {
 			// Fail-back: try to load document from local store
 			doc = loadDid(did);
@@ -690,7 +694,7 @@ public final class DIDStore {
 				throw new InvalidKeyException("Not an authentication key.");
 		}
 
-		DIDDocument targetDoc = DIDBackend.getInstance().resolve(target);
+		DIDDocument targetDoc = DIDBackend.resolve(target);
 		if (targetDoc == null)
 			throw new DIDNotFoundException(target.toString());
 
@@ -727,7 +731,7 @@ public final class DIDStore {
 		if (targetSignKey == null)
 			throw new InvalidKeyException("No matched authorization key.");
 
-		return DIDBackend.getInstance().deactivate(target, targetSignKey,
+		return backend.deactivate(target, targetSignKey,
 				doc, confirms, signKey, storepass);
 	}
 

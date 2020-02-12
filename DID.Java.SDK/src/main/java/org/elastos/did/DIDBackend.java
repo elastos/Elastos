@@ -26,6 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Random;
 
@@ -33,7 +37,6 @@ import org.elastos.did.backend.IDChainRequest;
 import org.elastos.did.backend.IDTransactionInfo;
 import org.elastos.did.backend.ResolveResult;
 import org.elastos.did.backend.ResolverCache;
-import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDDeactivatedException;
 import org.elastos.did.exception.DIDExpiredException;
 import org.elastos.did.exception.DIDResolveException;
@@ -41,8 +44,12 @@ import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.DIDTransactionException;
 import org.elastos.did.exception.InvalidKeyException;
 import org.elastos.did.exception.MalformedResolveResultException;
+import org.elastos.did.exception.NetworkException;
 import org.elastos.did.meta.DIDMeta;
 
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,10 +62,11 @@ public class DIDBackend {
 
 	private static final long DEFAULT_TTL = 24 * 60 * 60 * 1000;
 	private static final Charset utf8 = Charset.forName("UTF-8");
-	private static DIDBackend instance;
+	private static DIDResolver resolver;
 
-	private Random random;
-	private long ttl; // milliseconds
+	private static Random random = new Random();
+	private static long ttl = DEFAULT_TTL; // milliseconds
+
 	private DIDAdapter adapter;
 
 	class TransactionResult {
@@ -102,11 +110,61 @@ public class DIDBackend {
 		}
 	}
 
-	private DIDBackend(DIDAdapter adapter, File cacheDir) {
+	static class DefaultResolver implements DIDResolver {
+		private URL url;
+
+		public DefaultResolver(String resolver) throws DIDResolveException {
+			if (resolver == null || resolver.isEmpty())
+				throw new IllegalArgumentException();
+
+			try {
+				this.url = new URL(resolver);
+			} catch (MalformedURLException e) {
+				throw new DIDResolveException(e);
+			}
+		}
+
+		@Override
+		public InputStream resolve(String requestId, String did, boolean all)
+				throws DIDResolveException {
+			try {
+				HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+				connection.setRequestMethod("POST");
+				connection.setRequestProperty("User-Agent",
+						"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
+				connection.setRequestProperty("Content-Type", "application/json");
+				connection.setRequestProperty("Accept", "application/json");
+				connection.setDoOutput(true);
+				connection.connect();
+
+				OutputStream os = connection.getOutputStream();
+				JsonFactory factory = new JsonFactory();
+				JsonGenerator generator = factory.createGenerator(os, JsonEncoding.UTF8);
+				generator.writeStartObject();
+				generator.writeStringField("id", requestId);
+				generator.writeStringField("method", "resolvedid");
+				generator.writeFieldName("params");
+				generator.writeStartObject();
+				generator.writeStringField("did", did);
+				generator.writeBooleanField("all", all);
+				generator.writeEndObject();
+				generator.writeEndObject();
+				generator.close();
+				os.close();
+
+				int code = connection.getResponseCode();
+				if (code != 200)
+					return null;
+
+				return connection.getInputStream();
+			} catch (IOException e) {
+				throw new NetworkException("Network error.", e);
+			}
+		}
+	}
+
+	private DIDBackend(DIDAdapter adapter) {
 		this.adapter = adapter;
-		this.random = new Random();
-		this.ttl = DEFAULT_TTL;
-		ResolverCache.setCacheDir(cacheDir);
 	}
 
 	/*
@@ -116,36 +174,52 @@ public class DIDBackend {
 	 * - Android Java
 	 *   Context.getFilesDir() + "/.cache.did.elastos"
 	 */
-	public static void initialize(DIDAdapter adapter, File cacheDir) {
-		if (instance == null)
-			instance = new DIDBackend(adapter, cacheDir);
+	public static void initialize(String resolverURL, File cacheDir)
+			throws DIDResolveException {
+		if (resolverURL == null || resolverURL.isEmpty() || cacheDir == null)
+			throw new IllegalArgumentException();
+
+		initialize(new DefaultResolver(resolverURL), cacheDir);
 	}
 
-	public static void initialize(DIDAdapter adapter, String cacheDir) {
-		initialize(adapter, new File(cacheDir));
+	public static void initialize(String resolverURL, String cacheDir)
+			throws DIDResolveException {
+		if (resolverURL == null || resolverURL.isEmpty() ||
+				cacheDir == null || cacheDir.isEmpty())
+			throw new IllegalArgumentException();
+
+		initialize(resolverURL, new File(cacheDir));
 	}
 
-	public static DIDBackend getInstance() throws DIDBackendException {
-		if (instance == null)
-			throw new DIDBackendException("DID backend not initialized.");
+	public static void initialize(DIDResolver resolver, File cacheDir) {
+		if (resolver == null || cacheDir == null)
+			throw new IllegalArgumentException();
 
-		return instance;
+		DIDBackend.resolver = resolver;
+		ResolverCache.setCacheDir(cacheDir);
 	}
 
-	public DIDAdapter getAdapter() {
-		return adapter;
+	public static void initialize(DIDResolver resolver, String cacheDir) {
+		if (resolver == null || cacheDir == null || cacheDir.isEmpty())
+			throw new IllegalArgumentException();
+
+		initialize(resolver, new File(cacheDir));
+	}
+
+	protected static DIDBackend getInstance(DIDAdapter adapter) {
+		return new DIDBackend(adapter);
 	}
 
 	// Time to live in minutes
-	public void setTTL(long ttl) {
-		this.ttl = ttl > 0 ? (ttl * 60 * 1000) : 0;
+	public static void setTTL(long ttl) {
+		ttl = ttl > 0 ? (ttl * 60 * 1000) : 0;
 	}
 
-	public long getTTL() {
+	public static long getTTL() {
 		return ttl != 0 ? (ttl / 60 / 1000) : 0;
 	}
 
-	private String generateRequestId() {
+	private static String generateRequestId() {
 		StringBuffer sb = new StringBuffer();
 
 		while(sb.length() < 16)
@@ -154,11 +228,14 @@ public class DIDBackend {
 		return sb.toString();
 	}
 
-	private ResolveResult resolveFromBackend(DID did)
+	private static ResolveResult resolveFromBackend(DID did)
 			throws DIDResolveException {
 		String requestId = generateRequestId();
 
-		InputStream is = adapter.resolve(requestId, did.toString(), false);
+		if (resolver == null)
+			throw new DIDResolveException("DID resolver not initialized.");
+
+		InputStream is = resolver.resolve(requestId, did.toString(), false);
 		if (is == null)
 			throw new DIDResolveException("Unknown error.");
 
@@ -199,7 +276,7 @@ public class DIDBackend {
 		return rr;
 	}
 
-	protected DIDDocument resolve(DID did, boolean force)
+	protected static DIDDocument resolve(DID did, boolean force)
 			throws DIDResolveException {
 
 		ResolveResult rr = null;
@@ -230,8 +307,12 @@ public class DIDBackend {
 		}
 	}
 
-	protected DIDDocument resolve(DID did) throws DIDResolveException {
+	protected static DIDDocument resolve(DID did) throws DIDResolveException {
 		return resolve(did, false);
+	}
+
+	protected DIDAdapter getAdapter() {
+		return adapter;
 	}
 
 	private String createTransaction(String payload, String memo, int confirms)

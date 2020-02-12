@@ -22,10 +22,11 @@
 
 package org.elastos.did.adapter;
 
+import org.elastos.did.DIDAdapter;
 import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDResolveException;
 
-public class SPVAdapter extends AbstractAdapter {
+public class SPVAdapter implements DIDAdapter {
 	private String walletDir;
 	private String walletId;
 	private String network;
@@ -42,10 +43,8 @@ public class SPVAdapter extends AbstractAdapter {
 	}
 
 	public SPVAdapter(String walletDir, String walletId, String network,
-			String resolver, PasswordCallback passwordCallback)
+			PasswordCallback passwordCallback)
 			throws DIDBackendException, DIDResolveException {
-		super(resolver);
-
 		handle = create(walletDir, walletId, network, "");
 		this.walletDir = walletDir;
 		this.walletId = walletId;
@@ -68,9 +67,6 @@ public class SPVAdapter extends AbstractAdapter {
 	private final static native void createIdTransaction(long handle,
 			String payload, String memo, int confirms,
 			TransactionCallback callback, String password);
-
-	private final static native String resolve(long handle,
-			String did, boolean all);
 
 	public boolean isAvailable() {
 		return isAvailable(handle);

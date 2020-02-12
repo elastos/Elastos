@@ -32,6 +32,7 @@ import java.util.Random;
 import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.DIDAdapter;
+import org.elastos.did.DIDResolver;
 import org.elastos.did.backend.IDChainRequest;
 import org.elastos.did.backend.IDTransactionInfo;
 import org.elastos.did.exception.DIDResolveException;
@@ -41,7 +42,7 @@ import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 
-public class DummyAdapter implements DIDAdapter {
+public class DummyAdapter implements DIDAdapter, DIDResolver {
 	private static Random random = new Random();
 
 	private boolean verbose;
