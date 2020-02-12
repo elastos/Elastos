@@ -74,9 +74,9 @@ namespace Elastos {
 
 			bool AddCoinBaseUTXO(const UTXOPtr &o);
 
-			bool RemoveUTXO(const std::vector<InputPtr> &inputs);
+			UTXOArray RemoveUTXO(const std::vector<InputPtr> &inputs);
 
-			bool RemoveUTXO(const UTXOPtr &u);
+			UTXOPtr RemoveUTXO(const UTXOPtr &u);
 
 			bool UpdateLockedBalance();
 

@@ -73,10 +73,30 @@ namespace Elastos {
 		}
 
 		//override Wallet listener
-		void SpvService::balanceChanged(const uint256 &asset, const BigInt &balance) {
+		void SpvService::onUTXODeleted(const UTXOArray &utxo) {
+			std::vector<UTXOEntity> entities;
+
+			entities.reserve(utxo.size());
+			for (const UTXOPtr &u : utxo)
+				entities.emplace_back(u->Hash().GetHex(), u->Index());
+
+			_databaseManager->DeleteUTXOs(entities);
+		}
+
+		void SpvService::onUTXOAdded(const UTXOArray &utxo) {
+			std::vector<UTXOEntity> entities;
+
+			entities.reserve(utxo.size());
+			for (const UTXOPtr &u : utxo)
+				entities.emplace_back(u->Hash().GetHex(), u->Index());
+
+			_databaseManager->PutUTXOs(entities);
+		}
+
+		void SpvService::onBalanceChanged(const uint256 &asset, const BigInt &balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&asset, &balance](Wallet::Listener *listener) {
-							  listener->balanceChanged(asset, balance);
+							  listener->onBalanceChanged(asset, balance);
 						  });
 		}
 
@@ -304,7 +324,23 @@ namespace Elastos {
 			return _databaseManager->GetAllTransactionsCount();
 		}
 
-		std::vector<TransactionPtr> SpvService::loadCoinBaseUTXOs() {
+		bool SpvService::ExistUTXOTable() const {
+			return _databaseManager->ExistUTXOTable();
+		}
+
+		std::vector<UTXOPtr> SpvService::LoadUTXOs() const {
+			std::vector<UTXOEntity> entities = _databaseManager->GetUTXOs();
+			std::vector<UTXOPtr> allUTXOs;
+
+			for (UTXOEntity &entity : entities) {
+				UTXOPtr u(new UTXO(uint256(entity.Hash()), entity.Index()));
+				allUTXOs.push_back(u);
+			}
+
+			return allUTXOs;
+		}
+
+		std::vector<TransactionPtr> SpvService::loadCoinbaseTransactions() {
 			return _databaseManager->GetAllCoinbase();
 		}
 

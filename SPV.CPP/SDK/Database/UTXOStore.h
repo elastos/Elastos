@@ -21,13 +21,13 @@ namespace Elastos {
 
 			~UTXOStore();
 
-			bool Puts(const std::vector<UTXOEntity> &entitys);
+			bool Puts(const std::vector<UTXOEntity> &entities);
 
 			std::vector<UTXOEntity> Gets() const;
 
 			bool DeleteAll();
 
-			bool Delete(const std::vector<UTXOEntity> &entitys);
+			bool Delete(const std::vector<UTXOEntity> &entities);
 
 			bool TableExist() const;
 

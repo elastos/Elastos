@@ -53,7 +53,11 @@ namespace Elastos {
 		public:
 			class Listener {
 			public:
-				virtual void balanceChanged(const uint256 &asset, const BigInt &balance) = 0;
+				virtual void onUTXODeleted(const UTXOArray &utxo) = 0;
+
+				virtual void onUTXOAdded(const UTXOArray &utxo) = 0;
+
+				virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance) = 0;
 
 				virtual void onCoinbaseTxAdded(const TransactionPtr &tx) = 0;
 
@@ -78,8 +82,10 @@ namespace Elastos {
 		public:
 
 			Wallet(uint32_t lastBlockHeight,
+				   bool existUTXOTable,
 				   const std::string &walletID,
 				   const std::string &chainID,
+				   const std::vector<UTXOPtr> &utxo,
 				   const std::vector<AssetPtr> &assetArray,
 				   const std::vector<TransactionPtr> &txns,
 				   const std::vector<TransactionPtr> &txCoinbase,
@@ -131,8 +137,6 @@ namespace Elastos {
 			uint64_t GetFeePerKb() const;
 
 			void SetFeePerKb(uint64_t fee);
-
-			uint64_t GetDefaultFeePerKb();
 
 			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo, bool max,
 			                    VoteContentArray &dropedVotes);
@@ -208,6 +212,8 @@ namespace Elastos {
 			bool AssetNameExist(const std::string &name) const;
 
 		private:
+			GroupedAssetPtr GetGroupedAsset(const uint256 &assetID) const;
+
 			bool ContainsAsset(const uint256 &assetID) const;
 
 			bool ContainsTx(const TransactionPtr &tx) const;
@@ -226,7 +232,7 @@ namespace Elastos {
 
 			bool IsAssetUnique(const std::vector<OutputPtr> &outputs) const;
 
-			std::map<uint256, BigInt> BalanceAfterUpdatedTx(const TransactionPtr &tx);
+			std::map<uint256, BigInt> BalanceAfterUpdatedTx(const TransactionPtr &tx, UTXOArray &deleted, UTXOArray &added);
 
 			void BalanceAfterRemoveTx(const TransactionPtr &tx);
 
@@ -241,6 +247,10 @@ namespace Elastos {
 			bool IsUTXOSpending(const UTXOPtr &utxo) const;
 
 		protected:
+			void UTXODeleted(const UTXOArray &utxo);
+
+			void UTXOAdded(const UTXOArray &utxo);
+
 			void balanceChanged(const uint256 &asset, const BigInt &balance);
 
 			void coinbaseTxAdded(const TransactionPtr &tx);
@@ -276,8 +286,6 @@ namespace Elastos {
 			TransactionSet _allTx;
 
 			UTXOSet _spendingOutputs;
-//			UTXOArray _coinBaseUTXOs;
-//			UTXOSet _allCoinbaseUTXOs;
 
 			uint64_t _feePerKb;
 

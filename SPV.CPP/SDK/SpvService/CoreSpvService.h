@@ -41,7 +41,11 @@ namespace Elastos {
 			virtual const PeerManagerPtr &GetPeerManager() const;
 
 		public: //override from Wallet
-			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
+			virtual void onUTXODeleted(const UTXOArray &utxo);
+
+			virtual void onUTXOAdded(const UTXOArray &utxo);
+
+			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
 
 			virtual void onCoinbaseTxAdded(const TransactionPtr &tx);
 
@@ -83,7 +87,11 @@ namespace Elastos {
 			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
-			virtual std::vector<TransactionPtr> loadCoinBaseUTXOs();
+			virtual bool ExistUTXOTable() const;
+
+			virtual UTXOArray LoadUTXOs() const;
+
+			virtual std::vector<TransactionPtr> loadCoinbaseTransactions();
 
 			virtual std::vector<TransactionPtr> loadTransactions(const std::string &chainID);
 
@@ -182,7 +190,11 @@ namespace Elastos {
 		public:
 			WrappedExceptionWalletListener(Wallet::Listener *listener);
 
-			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
+			virtual void onUTXODeleted(const UTXOArray &utxo);
+
+			virtual void onUTXOAdded(const UTXOArray &utxo);
+
+			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
 
 			virtual void onCoinbaseTxAdded(const TransactionPtr &tx);
 
@@ -210,7 +222,11 @@ namespace Elastos {
 		public:
 			WrappedExecutorWalletListener(Wallet::Listener *listener, Executor *executor);
 
-			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
+			virtual void onUTXODeleted(const UTXOArray &utxo);
+
+			virtual void onUTXOAdded(const UTXOArray &utxo);
+
+			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
 
 			virtual void onCoinbaseTxAdded(const TransactionPtr &tx);
 

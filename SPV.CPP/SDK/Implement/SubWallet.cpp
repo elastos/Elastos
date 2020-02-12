@@ -451,7 +451,7 @@ namespace Elastos {
 			_walletManager->PublishTransaction(tx);
 		}
 
-		void SubWallet::balanceChanged(const uint256 &assetID, const BigInt &balance) {
+		void SubWallet::onBalanceChanged(const uint256 &assetID, const BigInt &balance) {
 			ArgInfo("{} {} Balance: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), balance.getDec());
 			boost::mutex::scoped_lock scoped_lock(lock);
 

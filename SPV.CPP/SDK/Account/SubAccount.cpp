@@ -76,11 +76,7 @@ namespace Elastos {
 		}
 
 		bool SubAccount::AddUsedAddrs(const AddressPtr &address) {
-			if (_allAddrs.find(address) != _allAddrs.end()) {
-				_usedAddrs.insert(address);
-				return true;
-			}
-			return false;
+			return _usedAddrs.insert(address).second;
 		}
 
 		size_t SubAccount::GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const {

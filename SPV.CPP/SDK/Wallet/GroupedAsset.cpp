@@ -818,64 +818,71 @@ namespace Elastos {
 			return true;
 		}
 
-		bool GroupedAsset::RemoveUTXO(const std::vector<InputPtr> &inputs) {
-			bool removed = false;
+		UTXOArray GroupedAsset::RemoveUTXO(const std::vector<InputPtr> &inputs) {
+			UTXOArray deleted;
 
 			for (InputArray::const_iterator in = inputs.cbegin(); in != inputs.cend(); ++in) {
-				if (RemoveUTXO(UTXOPtr(new UTXO(*in))))
-					removed = true;
+				UTXOPtr u = RemoveUTXO(UTXOPtr(new UTXO(*in)));
+				if (u)
+					deleted.push_back(u);
 			}
 
-			return removed;
+			return deleted;
 		}
 
-		bool GroupedAsset::RemoveUTXO(const UTXOPtr &u) {
+		UTXOPtr GroupedAsset::RemoveUTXO(const UTXOPtr &u) {
+			UTXOPtr deleted;
 			UTXOSet::iterator it;
 
 			if ((it = _utxosCoinbase.find(u)) != _utxosCoinbase.end()) {
+				deleted = *it;
 				_balance -= (*it)->Output()->Amount();
 				SPVLOG_DEBUG("{} --- coinbase utxo {}:{}:{}:{} -> balance {}", _parent->_walletID,
 							 (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr()->String(),
 							 (*it)->Output()->Amount().getDec(), _balance.getDec());
 				_utxosCoinbase.erase(it);
-				return true;
+				return deleted;
 			}
 
 			if ((it = _utxosVote.find(u)) != _utxosVote.end()) {
+				deleted = *it;
 				_balanceVote -= (*it)->Output()->Amount();
 				_balance -= (*it)->Output()->Amount();
 				SPVLOG_DEBUG("{} --- vote utxo {}:{}:{}:{} -> vote balance {} balance {}", _parent->_walletID,
 							 (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr()->String(),
 							 (*it)->Output()->Amount().getDec(), _balanceVote.getDec(), _balance.getDec());
 				_utxosVote.erase(it);
-				return true;
+				return deleted;
 			}
 
 			if ((it = _utxos.find(u)) != _utxos.end()) {
+				deleted = *it;
 				_balance -= (*it)->Output()->Amount();
 				SPVLOG_DEBUG("{} --- utxo {}:{}:{}:{} -> balance {}", _parent->_walletID, (*it)->Hash().GetHex(),
 							 (*it)->Index(), (*it)->Output()->Addr()->String(), (*it)->Output()->Amount().getDec(),
 							 _balance.getDec());
 				_utxos.erase(it);
-				return true;
+				return deleted;
 			}
 
 			if ((it = _utxosDeposit.find(u)) != _utxosDeposit.end()) {
+				deleted = *it;
 				_balanceDeposit -= (*it)->Output()->Amount();
 				SPVLOG_DEBUG("{} --- deposit utxo {}:{}:{}:{} -> deposit balance {}", _parent->_walletID,
 							 (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr()->String(),
 							 (*it)->Output()->Amount().getDec(), _balanceDeposit.getDec());
 				_utxosDeposit.erase(it);
-				return true;
+				return deleted;
 			}
 
 			if ((it = _utxosLocked.find(u)) != _utxosLocked.end()) {
+				deleted = *it;
 				_balanceLocked -= (*it)->Output()->Amount();
 				_utxosLocked.erase(it);
-				return true;
+				return deleted;
 			}
 
-			return false;
+			return nullptr;
 		}
 
 		bool GroupedAsset::UpdateLockedBalance() {

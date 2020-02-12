@@ -24,7 +24,7 @@ namespace Elastos {
 
 			UTXO &operator=(const UTXO &u);
 
-			UTXO(const uint256 &hash, uint16_t i, time_t t, uint32_t h, const OutputPtr &o);
+			UTXO(const uint256 &hash, uint16_t i, time_t t = 0, uint32_t h = 0, const OutputPtr &o = nullptr);
 
 			UTXO(const InputPtr &input);
 
@@ -49,6 +49,8 @@ namespace Elastos {
 			void SetBlockHeight(uint32_t h);
 
 			const OutputPtr &Output() const;
+
+			void SetOutput(const OutputPtr &o);
 
 			uint32_t GetConfirms(uint32_t lastBlockHeight) const;
 

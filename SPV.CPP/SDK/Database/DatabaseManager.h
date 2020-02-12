@@ -85,10 +85,10 @@ namespace Elastos {
 			bool DeleteAllDID();
 
 			// UTXO store
-			bool PutUTXOs(const std::vector<UTXOEntity> entitys);
+			bool PutUTXOs(const std::vector<UTXOEntity> entities);
 			std::vector<UTXOEntity> GetUTXOs() const;
 			bool DeleteAllUTXOs();
-			bool DeleteUTXOs(const std::vector<UTXOEntity> &entitys);
+			bool DeleteUTXOs(const std::vector<UTXOEntity> &entities);
 			bool ExistUTXOTable() const;
 
 			const boost::filesystem::path &GetPath() const;

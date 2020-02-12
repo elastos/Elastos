@@ -54,13 +54,13 @@ namespace Elastos {
 			return true;
 		}
 
-		bool UTXOStore::Puts(const std::vector<UTXOEntity> &entitys) {
-			if (entitys.empty())
+		bool UTXOStore::Puts(const std::vector<UTXOEntity> &entities) {
+			if (entities.empty())
 				return true;
 
-			return DoTransaction([&entitys, this]() {
-				for (size_t i = 0; i < entitys.size(); ++i) {
-					if (!this->PutInternal(entitys[i]))
+			return DoTransaction([&entities, this]() {
+				for (size_t i = 0; i < entities.size(); ++i) {
+					if (!this->PutInternal(entities[i]))
 						return false;
 				}
 
@@ -134,9 +134,9 @@ namespace Elastos {
 			return true;
 		}
 
-		bool UTXOStore::Delete(const std::vector<UTXOEntity> &entitys) {
-			return DoTransaction([&entitys, this]() {
-				for (const UTXOEntity &entity : entitys) {
+		bool UTXOStore::Delete(const std::vector<UTXOEntity> &entities) {
+			return DoTransaction([&entities, this]() {
+				for (const UTXOEntity &entity : entities) {
 					if (!this->DeleteInternal(entity))
 						return false;
 				}

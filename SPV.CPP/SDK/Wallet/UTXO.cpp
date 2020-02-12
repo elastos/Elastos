@@ -96,6 +96,10 @@ namespace Elastos {
 			return _output;
 		}
 
+		void UTXO::SetOutput(const OutputPtr &o) {
+			_output = o;
+		}
+
 		uint32_t UTXO::GetConfirms(uint32_t lastBlockHeight) const {
 			if (_blockHeight == TX_UNCONFIRMED)
 				return 0;

@@ -211,8 +211,8 @@ namespace Elastos {
 			return _didDataStore.DeleteAllDID();
 		}
 
-		bool DatabaseManager::PutUTXOs(const std::vector<UTXOEntity> entitys) {
-			return _utxoStore.Puts(entitys);
+		bool DatabaseManager::PutUTXOs(const std::vector<UTXOEntity> entities) {
+			return _utxoStore.Puts(entities);
 		}
 
 		std::vector<UTXOEntity> DatabaseManager::GetUTXOs() const {
@@ -223,8 +223,8 @@ namespace Elastos {
 			return _utxoStore.DeleteAll();
 		}
 
-		bool DatabaseManager::DeleteUTXOs(const std::vector<UTXOEntity> &entitys) {
-			return _utxoStore.Delete(entitys);
+		bool DatabaseManager::DeleteUTXOs(const std::vector<UTXOEntity> &entities) {
+			return _utxoStore.Delete(entities);
 		}
 
 		bool DatabaseManager::ExistUTXOTable() const {

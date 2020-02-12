@@ -111,7 +111,11 @@ namespace Elastos {
 			virtual void SyncStop();
 
 		protected: //implement Wallet::Listener
-			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
+			virtual void onUTXODeleted(const UTXOArray &utxo) {}
+
+			virtual void onUTXOAdded(const UTXOArray &utxo) {}
+
+			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
 
 			virtual void onCoinbaseTxAdded(const TransactionPtr &tx);
 
@@ -149,8 +153,6 @@ namespace Elastos {
 			virtual bool networkIsReachable() { return true; }
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
-
-			virtual void syncIsInactive(uint32_t time) {}
 
 			virtual void connectStatusChanged(const std::string &status);
 

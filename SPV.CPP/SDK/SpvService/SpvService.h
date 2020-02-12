@@ -56,7 +56,11 @@ namespace Elastos {
 			void DatabaseFlush();
 
 		public:
-			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
+			virtual void onUTXODeleted(const UTXOArray &utxo);
+
+			virtual void onUTXOAdded(const UTXOArray &utxo);
+
+			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
 
 			virtual void onCoinbaseTxAdded(const TransactionPtr &tx);
 
@@ -108,7 +112,11 @@ namespace Elastos {
 			virtual std::vector<DIDEntity> loadDIDList()  const;
 
 		protected:
-			virtual std::vector<TransactionPtr> loadCoinBaseUTXOs();
+			virtual bool ExistUTXOTable() const;
+
+			virtual std::vector<UTXOPtr> LoadUTXOs() const;
+
+			virtual std::vector<TransactionPtr> loadCoinbaseTransactions();
 
 			virtual std::vector<TransactionPtr> loadTransactions(const std::string &chainID);
 
