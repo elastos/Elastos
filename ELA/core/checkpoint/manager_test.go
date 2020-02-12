@@ -138,6 +138,7 @@ func TestManager_SaveAndRestore(t *testing.T) {
 
 	manager := NewManager(&Config{
 		EnableHistory: false,
+		NeedSave:      true,
 	})
 	manager.Register(pt)
 
@@ -215,6 +216,7 @@ func TestManager_GetCheckpoint_EnableHistory(t *testing.T) {
 	manager := NewManager(&Config{
 		EnableHistory:      true,
 		HistoryStartHeight: currentHeight,
+		NeedSave:           true,
 	})
 	manager.Register(pt)
 

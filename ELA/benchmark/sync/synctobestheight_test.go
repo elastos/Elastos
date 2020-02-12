@@ -79,6 +79,7 @@ func startDstNode() {
 	dataDir := filepath.Join(flagDataDir, dataPath)
 	dstSettings.Params().CkpManager.SetDataPath(
 		filepath.Join(dataDir, checkpointPath))
+	dstSettings.Params().CkpManager.SetNeedSave(true)
 
 	var interrupt = signal.NewInterrupt()
 
