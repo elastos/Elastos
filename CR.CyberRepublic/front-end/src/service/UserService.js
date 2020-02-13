@@ -318,4 +318,11 @@ export default class extends BaseService {
     })
     return rs
   }
+
+  async getDid() {
+    const rs = await api_request({
+      path: '/api/user/did'
+    })
+    return rs
+  }
 }
