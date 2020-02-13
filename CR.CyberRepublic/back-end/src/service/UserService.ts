@@ -644,14 +644,14 @@ export default class extends Base {
     public async getElaUrl() {
         const jwtClaims = {
             iss: process.env.APP_DID,
-            email: 'a@a.com',
-            callbackurl: `${process.env.SERVER_URL}/api/user/did_callback_ela`,
+            userId: this.currentUser._id,
+            callbackurl: `${process.env.SERVER_URL}/api/user/did-callback-ela`,
             claims: {}
         }
         const jwtToken = jwt.sign(
             jwtClaims, 
             process.env.APP_PRIVATE_KEY, 
-            { expiresIn: 60 * 5, algorithm: 'HS256' }
+            { expiresIn: '1d', algorithm: 'HS256' }
         )
         const url = `elastos://credaccess/${jwtToken}`
         return { success: true, url }
