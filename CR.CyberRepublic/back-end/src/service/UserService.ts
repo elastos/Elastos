@@ -669,6 +669,16 @@ export default class extends Base {
                 return { status: 200 }
             }
         })
-        
+    }
+
+    public async getDid() {
+        const userId = this.currentUser._id
+        const db_user = this.getDBModel('User')
+        const user = await db_user.findById({_id: userId})
+        if (user && user.did) {
+            return { success: true, did: user.did }
+        } else {
+            return { success: false }
+        }
     }
 }

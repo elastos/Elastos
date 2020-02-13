@@ -78,6 +78,7 @@ export const VotePower = {
 }
 
 export const User = {
+    did: String,
     username : {
         type : String,
         required: true,
