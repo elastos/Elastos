@@ -9,3 +9,4 @@ web3==5.4.0
 py-solc==3.2.0
 cryptography==2.8
 pg8000==1.13.2
+pytest==5.3.5
