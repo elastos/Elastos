@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import {constant} from '../constant'
 import {geo} from '../utility/geo'
 import * as uuid from 'uuid'
-import { validate, utilCrypto, mail, permissions } from '../utility'
+import { validate, utilCrypto, mail, permissions, getDidPublicKey } from '../utility'
 import CommunityService from './CommunityService'
 import * as jwt from 'jsonwebtoken'
 
@@ -657,7 +657,18 @@ export default class extends Base {
         return { success: true, url }
     }
 
-    public async didCallbackEla() {
+    public async didCallbackEla(param: any) {
+        const jwtToken = param.jwtToken
+        const decoded: any = jwt.decode(jwtToken)
+        const publicKey = await getDidPublicKey(decoded.iss)
+
         // verify response data from ela wallet
+        jwt.verify(jwtToken, publicKey, (err: any, decoded: any) => {
+            if (!err) {
+                // get user id to find the specific user and save DID
+                return { status: 200 }
+            }
+        })
+        
     }
 }
