@@ -2022,11 +2022,16 @@ DID_API bool DIDStore_ContainsPrivateIdentity(DIDStore *store);
  *                             0: English; 1: French; 2: Spanish;
  *                             3: Japanese; 4: Chinese_simplified;
  *                             5: Chinese_traditional;
+ * @param
+ *      extendedkey            [in] Extendedkey string.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
         const char *passphrase, const char *storepass, const int language, bool force);
+
+DID_API int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store,
+        const char *extendedkey, const char *storepass, bool force);
 
 /**
  * \~English
@@ -2393,7 +2398,7 @@ DID_API const char *Mnemonic_Generate(int language);
  * @param
  *      mnemonic               [in] mnemonic buffter.
  */
-DID_API void Mnemonic_free(void *mnemonic);
+DID_API void Mnemonic_Free(void *mnemonic);
 
 /**
  * \~English

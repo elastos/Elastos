@@ -65,7 +65,7 @@ DIDStore *storeInstance = NULL;
 
 static const char *META_FILE = ".meta";
 static char MAGIC[] = { 0x00, 0x0D, 0x01, 0x0D };
-static char VERSION[] = { 0x00, 0x00, 0x00, 0x01 };
+static char VERSION[] = { 0x00, 0x00, 0x00, 0x02 };
 
 static const char *PATH_SEP = "/";
 static const char *PRIVATE_DIR = "private";
@@ -646,17 +646,18 @@ static int check_store(DIDStore *store)
     return 0;
 }
 
-static int store_seed(DIDStore *store, uint8_t *seed, size_t size, const char *storepass)
+static int store_extendedkey(DIDStore *store, uint8_t *extendedkey,
+        size_t size, const char *storepass)
 {
     unsigned char base64[512];
     char path[PATH_MAX];
 
     assert(store);
-    assert(seed);
+    assert(extendedkey && size > 0);
     assert(storepass);
     assert(*storepass);
 
-    if (encrypt_to_base64((char *)base64, storepass, seed, size) == -1)
+    if (encrypt_to_base64((char *)base64, storepass, extendedkey, size) == -1)
         return -1;
 
     if (get_file(path, 1, 3, store->root, PRIVATE_DIR, HDKEY_FILE) == -1)
@@ -668,29 +669,52 @@ static int store_seed(DIDStore *store, uint8_t *seed, size_t size, const char *s
     return 0;
 }
 
-static ssize_t load_seed(DIDStore *store, uint8_t *seed, size_t size, const char *storepass)
+static ssize_t load_extendedkey(DIDStore *store, uint8_t *extendedkey, size_t size,
+        const char *storepass)
 {
-    const char *encrpted_seed;
+    const char *string;
+    uint8_t *key;
     char path[PATH_MAX];
     ssize_t len;
 
     assert(store);
-    assert(seed);
+    assert(extendedkey && size >= PRIVATEKEY_BYTES);
     assert(storepass);
     assert(*storepass);
-    assert(size > SEED_BYTES);
 
     if (get_file(path, 0, 3, store->root, PRIVATE_DIR, HDKEY_FILE) == -1)
         return -1;
 
-    encrpted_seed = load_file(path);
-    if (!encrpted_seed)
+    string = load_file(path);
+    if (!string)
         return -1;
 
-    len = decrypt_from_base64(seed, storepass, encrpted_seed);
-    free((char*)encrpted_seed);
+    key = (uint8_t*)alloca(size * 2);
+    if (!key)
+        return -1;
 
-    return len;
+    len = decrypt_from_base64(key, storepass, string);
+    free((char*)string);
+
+    if (len == EXTENDEDKEY_BYTES) {
+        memcpy(extendedkey, key, len);
+        return len;
+    }
+
+    if (len == SEED_BYTES) {
+    	size_t nsize = len;
+        len = HDKey_GetExtendedkeyFromSeed(extendedkey, EXTENDEDKEY_BYTES,
+                key, nsize);
+        if (len == -1)
+            return -1;
+
+        if (store_extendedkey(store, extendedkey, len, storepass) == -1)
+            return -1;
+
+        return len;
+    }
+
+    return -1;
 }
 
 static int store_mnemonic(DIDStore *store, const char *storepass, const char *mnemonic)
@@ -1524,20 +1548,20 @@ void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *id)
 static HDKey *load_privateIdentity(DIDStore *store, const char *storepass,
         HDKey *privateIdentity)
 {
-    uint8_t seed[SEED_BYTES * 2];
+    uint8_t extendedkey[EXTENDEDKEY_BYTES];
     HDKey *_privateIdentity;
-    ssize_t len;
+    ssize_t size;
 
     assert(store);
     assert(storepass && *storepass);
     assert(privateIdentity);
 
-    len = load_seed(store, seed, sizeof(seed), storepass);
-    if (len < 0)
+    size = load_extendedkey(store, extendedkey, sizeof(extendedkey), storepass);
+    if (size == -1)
         return NULL;
 
-    _privateIdentity = HDKey_GetPrivateIdentity(seed, 0, privateIdentity);
-    memset(seed, 0, sizeof(seed));
+    _privateIdentity = HDKey_GetPrivateIdentity(extendedkey, size, 0, privateIdentity);
+    memset(extendedkey, 0, sizeof(extendedkey));
     return _privateIdentity;
 }
 
@@ -1639,10 +1663,11 @@ bool DIDStore_ContainsPrivateIdentity(DIDStore *store)
 int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
         const char *passphrase, const char *storepass, const int language, bool force)
 {
-    uint8_t seed[SEED_BYTES];
+    uint8_t extendedkey[EXTENDEDKEY_BYTES];
     char path[PATH_MAX];
+    ssize_t size;
 
-    if (!store || !mnemonic || !storepass || !*storepass)
+    if (!store || !mnemonic || !*mnemonic || !storepass || !*storepass)
         return -1;
 
     if (!passphrase)
@@ -1654,13 +1679,46 @@ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
             return -1;
     }
 
-    if (!HDKey_GetSeedFromMnemonic(mnemonic, passphrase, language, seed) ||
-        store_seed(store, seed, sizeof(seed), storepass) == -1)
+    size = HDKey_GetExtendedkeyFromMnemonic(mnemonic, passphrase, language,
+            extendedkey, sizeof(extendedkey));
+    if (size == -1)
         return -1;
 
-    memset(seed, 0, sizeof(seed));
+    if (store_extendedkey(store, extendedkey, sizeof(extendedkey), storepass) == -1)
+        return -1;
+
+    memset(extendedkey, 0, sizeof(extendedkey));
     if (store_mnemonic(store, storepass, mnemonic) == -1)
         return -1;
+
+    return store_index(store, 0);
+}
+
+int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *extendedkey,
+        const char *storepass, bool force)
+{
+    uint8_t seed[SEED_BYTES];
+    uint8_t key[EXTENDEDKEY_BYTES];
+    char path[PATH_MAX];
+    ssize_t size;
+
+    if (!store || !extendedkey || !storepass || !*storepass)
+        return -1;
+
+    //check if DIDStore has existed private identity
+    if (get_file(path, 0, 3, store->root, PRIVATE_DIR, HDKEY_FILE) == 0) {
+        if (DIDStore_ContainsPrivateIdentity(store) && !force)
+            return -1;
+    }
+
+    size = base58_decode(key, extendedkey);
+    if (size == -1)
+        return -1;
+
+    if (store_extendedkey(store, key, size, storepass) == -1)
+        return -1;
+
+    memset(key, 0, sizeof(key));
 
     return store_index(store, 0);
 }

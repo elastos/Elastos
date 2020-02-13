@@ -40,14 +40,17 @@ extern "C" {
 
 #define PUBLICKEY_BYTES                 33
 #define PRIVATEKEY_BYTES                32
-#define SEED_BYTES                      64
 #define ADDRESS_LEN                     48
+#define CHAINCODE_BYTES                 32
+#define EXTENDEDKEY_BYTES               82
+#define SEED_BYTES                      64
 
 typedef struct HDKey {
     uint32_t fingerPrint;
-    uint8_t chainCode[PRIVATEKEY_BYTES];
+    uint8_t chainCodeForSk[CHAINCODE_BYTES];
+    uint8_t privatekey[PRIVATEKEY_BYTES];
+    uint8_t chainCodeForPk[CHAINCODE_BYTES];
     uint8_t publickey[PUBLICKEY_BYTES];
-    uint8_t seed[SEED_BYTES];
 } HDKey;
 
 typedef struct DerivedKey {
@@ -58,12 +61,21 @@ typedef struct DerivedKey {
 
 const char *HDKey_GenerateMnemonic(int language);
 
+void HDKey_FreeMnemonic(void *mnemonic);
+
 uint8_t *HDKey_GetSeedFromMnemonic(const char *mnemonic,
         const char *mnemonicPassword, int language, uint8_t *seed);
 
+ssize_t HDKey_GetExtendedkeyFromSeed(uint8_t *extendedkey, size_t size,
+        uint8_t *seed, size_t seedLen);
+
+ssize_t HDKey_GetExtendedkeyFromMnemonic(const char *mnemonic,
+        const char* passphrase, int language, uint8_t *extendedkey, size_t size);
+
 bool HDKey_MnemonicIsValid(const char *mnemonic, int language);
 
-HDKey *HDKey_GetPrivateIdentity(const uint8_t *seed, int coinType, HDKey *hdkey);
+HDKey *HDKey_GetPrivateIdentity(const uint8_t *extendedkey, size_t size,
+        int coinType, HDKey *privateIdentity);
 
 void HDKey_Wipe(HDKey *privateIdentity);
 

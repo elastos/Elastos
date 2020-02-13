@@ -944,6 +944,7 @@ bool DIDDocument_IsGenuine(DIDDocument *document)
 
     rc = DIDDocument_Verify(document, NULL, document->proof.signatureValue, 1,
             (unsigned char*)data, strlen(data));
+    free((char*)data);
     return rc == 0 ? true : false;
 }
 

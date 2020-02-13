@@ -96,6 +96,31 @@ static void test_idchain_publishdid_with_credential(void)
     return;
 }
 
+static void test_idchain_update_nonexistedid(void)
+{
+    //todo: refer to java-testUpdateNonExistedDid
+    return;
+}
+
+static void test_idchain_deactivedid_after_create(void)
+{
+    //todo: refer to java-testDeactivateSelfAfterCreate
+    return;
+}
+
+static void test_idchain_deactivedid_after_update(void)
+{
+    //todo: refer to java-testDeactivateSelfAfterUpdate
+    return;
+}
+
+static void test_idchain_deactivedid_with_authorization(void)
+{
+    //todo: refer to java-testDeactivateWithAuthorization1/
+    //testDeactivateWithAuthorization2/testDeactivateWithAuthorization3
+    return;
+}
+
 static int idchain_operation_test_suite_init(void)
 {
     int rc;
@@ -110,7 +135,7 @@ static int idchain_operation_test_suite_init(void)
     mnemonic = Mnemonic_Generate(0);
     printf("\n#### mnemonic: %s", mnemonic);
     rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", storepass, 0, true);
-    Mnemonic_free((char*)mnemonic);
+    Mnemonic_Free((char*)mnemonic);
     if (rc < 0)
         return -1;
 
@@ -129,9 +154,13 @@ static int idchain_operation_test_suite_cleanup(void)
 }
 
 static CU_TestInfo cases[] = {
-    { "test_idchain_publishdid",                 test_idchain_publishdid                   },
-    { "test_idchain_publishdid_with_credential", test_idchain_publishdid_with_credential   },
-    {  NULL,                                     NULL                                      }
+    { "test_idchain_publishdid",                     test_idchain_publishdid                      },
+    { "test_idchain_publishdid_with_credential",     test_idchain_publishdid_with_credential      },
+    { "test_idchain_update_nonexistedid",            test_idchain_update_nonexistedid             },
+    { "test_idchain_deactivedid_after_create",       test_idchain_deactivedid_after_create        },
+    { "test_idchain_deactivedid_after_update",       test_idchain_deactivedid_after_update        },
+    { "test_idchain_deactivedid_with_authorization", test_idchain_deactivedid_with_authorization  },
+    {  NULL,                                         NULL                                         }
 };
 
 static CU_SuiteInfo suite[] = {

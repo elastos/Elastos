@@ -44,6 +44,8 @@
 static unsigned char PADDING_IDENTITY = 0x67;
 static unsigned char PADDING_STANDARD = 0xAD;
 
+static uint32_t VersionCode = 0x0488ade4;
+
 #define MAX_PUBLICKEY_BASE58 64
 
 static const char **get_word_list(int language)
@@ -98,6 +100,12 @@ const char *HDKey_GenerateMnemonic(int language)
     return (const char *)phrase;
 }
 
+void HDKey_FreeMnemonic(void *mnemonic)
+{
+    if (mnemonic)
+        free(mnemonic);
+}
+
 uint8_t *HDKey_GetSeedFromMnemonic(const char *mnemonic,
         const char* passphrase, int language, uint8_t *seed)
 {
@@ -119,6 +127,73 @@ uint8_t *HDKey_GetSeedFromMnemonic(const char *mnemonic,
     return seed;
 }
 
+ssize_t HDKey_GetExtendedkeyFromMnemonic(const char *mnemonic,
+        const char* passphrase, int language, uint8_t *extendedkey, size_t size)
+{
+    int len;
+    const char **word_list;
+    uint8_t seed[SEED_BYTES];
+
+    if (!mnemonic || !*mnemonic || !seed)
+        return -1;
+
+    word_list = get_word_list(language);
+    if (!word_list)
+        return -1;
+
+    if (!BRBIP39PhraseIsValid(word_list, mnemonic))
+        return -1;
+
+    BRBIP39DeriveKey((UInt512 *)seed, mnemonic, passphrase);
+
+    return HDKey_GetExtendedkeyFromSeed(extendedkey, size, seed, sizeof(seed));
+}
+
+ssize_t HDKey_GetExtendedkeyFromSeed(uint8_t *extendedkey, size_t size,
+        uint8_t *seed, size_t seedLen)
+{
+    UInt256 chaincode, secret;
+    uint8_t version[4];
+    unsigned int md32[32];
+    uint8_t privatekey[33];
+    size_t tsize = 0;
+
+    if (size < EXTENDEDKEY_BYTES)
+        return -1;
+
+    BRBIP32vRootFromSeed(&secret, &chaincode, (const void *)seed, seedLen);
+
+    privatekey[0] = 0;
+    memcpy(privatekey + 1, secret.u8, PRIVATEKEY_BYTES);
+
+    version[0] = (uint8_t)((VersionCode >> 24) & 0xFF);
+    version[1] = (uint8_t)((VersionCode >> 16) & 0xFF);
+    version[2] = (uint8_t)((VersionCode >> 8) & 0xFF);
+    version[3] = (uint8_t)(VersionCode & 0xFF);
+
+    memset(extendedkey, 0, size);
+    //version
+    memcpy(extendedkey, version, sizeof(version));
+    tsize += sizeof(version);
+    // 1 bytes--depth: 0x00 for master nodes
+    // 4 bytes--the fingerprint of the parent's key (0x00000000 if master key)
+    // 4 bytes--child number. (0x00000000 if master key)
+    tsize += 9;
+    // chaincoid
+    memcpy(extendedkey + tsize, chaincode.u8, CHAINCODE_BYTES);
+    tsize += CHAINCODE_BYTES;
+    // private key
+    memcpy(extendedkey + tsize, privatekey, sizeof(privatekey));
+    tsize += sizeof(privatekey);
+
+    BRSHA256_2(md32, version, sizeof(version));
+    memcpy(extendedkey + tsize, md32, 4);
+    tsize += 4;
+
+    assert(tsize == size);
+    return tsize;
+}
+
 bool HDKey_MnemonicIsValid(const char *mnemonic, int language)
 {
     const char **word_list;
@@ -133,28 +208,55 @@ bool HDKey_MnemonicIsValid(const char *mnemonic, int language)
     return (BRBIP39PhraseIsValid(word_list, mnemonic) != 0);
 }
 
-HDKey *HDKey_GetPrivateIdentity(const uint8_t *seed, int coinType, HDKey *hdkey)
+static int parse_extendedkey(uint8_t *extendedkey, size_t len, UInt256 *chaincode,
+        UInt256 *secret)
 {
-    char publickey[33];
-    UInt256 chainCode;
+    size_t size;
+
+    assert(extendedkey && len > 0);
+    assert(secret);
+    assert(chaincode);
+
+    size = 13;
+    if (size + sizeof(chaincode->u8) > len)
+        return -1;
+
+    memcpy(chaincode->u8, extendedkey + size, sizeof(chaincode->u8));
+    size += sizeof(chaincode->u8) + 1;
+    if (size + sizeof(secret->u8) > len)
+        return -1;
+
+    memcpy(secret->u8, extendedkey + size, sizeof(secret->u8));
+    return 0;
+}
+
+HDKey *HDKey_GetPrivateIdentity(const uint8_t *extendedkey, size_t size,
+        int coinType, HDKey *privateIdentity)
+{
+    char publickey[PUBLICKEY_BYTES];
+    UInt256 chaincode, secret;
     BRKey key;
 
-    if (!seed || !hdkey)
+    if (!extendedkey || size <= 0 || !privateIdentity)
         return NULL;
 
-    BRBIP32PrivKeyPath(&key, &chainCode, (const void *)seed, SEED_BYTES,
-            3, 44 | BIP32_HARD, coinType | BIP32_HARD, 0 | BIP32_HARD);
+    if (parse_extendedkey((uint8_t*)extendedkey, size, &chaincode, &secret) == -1)
+        return NULL;
+
+    memcpy(privateIdentity->chainCodeForPk, chaincode.u8, sizeof(privateIdentity->chainCodeForPk));
+    memcpy(privateIdentity->chainCodeForSk, chaincode.u8, sizeof(privateIdentity->chainCodeForSk));
+    memcpy(privateIdentity->privatekey, secret.u8, sizeof(privateIdentity->privatekey));
+
+    BRBIP32PrivKeyPathFromRoot(&key, (UInt256*)privateIdentity->chainCodeForPk,
+            &secret, 3, 44 | BIP32_HARD, coinType | BIP32_HARD, 0 | BIP32_HARD);
 
     getPubKeyFromPrivKey(publickey, &(key.secret));
+    privateIdentity->fingerPrint = BRKeyHash160(&key).u32[0];
+    memcpy(privateIdentity->publickey, publickey, sizeof(publickey));
 
-    hdkey->fingerPrint = BRKeyHash160(&key).u32[0];
-    memcpy(hdkey->chainCode, (uint8_t*)&chainCode, sizeof(chainCode));
-    memcpy(hdkey->publickey, publickey, sizeof(publickey));
-    memcpy(hdkey->seed, seed, SEED_BYTES);
-
-    var_clean(&chainCode);
-
-    return hdkey;
+    var_clean(&chaincode);
+    var_clean(&secret);
+    return privateIdentity;
 }
 
 void HDKey_Wipe(HDKey *privateIdentity)
@@ -168,20 +270,24 @@ void HDKey_Wipe(HDKey *privateIdentity)
 uint8_t *HDKey_GetSubPrivateKey(HDKey* privateIdentity, int coinType, int chain,
         int index, uint8_t *privatekey)
 {
-    UInt256 chainCode;
     BRKey key;
+    UInt256 chaincode, secret;
 
     if (!privateIdentity || !privatekey)
         return NULL;
 
-    BRBIP32PrivKeyPath(&key, &chainCode, (const void *)privateIdentity->seed, SEED_BYTES,
+    memcpy(chaincode.u8, privateIdentity->chainCodeForSk, sizeof(chaincode.u8));
+    memcpy(secret.u8, privateIdentity->privatekey, sizeof(secret.u8));
+
+    BRBIP32PrivKeyPathFromRoot(&key, &chaincode, &secret,
             5, 44 | BIP32_HARD, coinType | BIP32_HARD,
             0 | BIP32_HARD, chain, index);
-    var_clean(&chainCode);
-
     assert(sizeof(key.secret.u8) == PRIVATEKEY_BYTES);
 
     memcpy(privatekey, key.secret.u8, PRIVATEKEY_BYTES);
+
+    var_clean(&chaincode);
+    var_clean(&secret);
     return privatekey;
 }
 
@@ -195,7 +301,7 @@ uint8_t *HDKey_GetSubPublicKey(HDKey* privateIdentity, int chain, int index,
     memset(&brPublicKey, 0, sizeof(brPublicKey));
 
     brPublicKey.fingerPrint = privateIdentity->fingerPrint;
-    memcpy((uint8_t*)&brPublicKey.chainCode, &privateIdentity->chainCode,
+    memcpy((uint8_t*)&brPublicKey.chainCode, &privateIdentity->chainCodeForPk,
             sizeof(brPublicKey.chainCode));
     memcpy(brPublicKey.pubKey, privateIdentity->publickey, sizeof(brPublicKey.pubKey));
 

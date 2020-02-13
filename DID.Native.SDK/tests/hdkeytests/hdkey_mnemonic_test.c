@@ -27,7 +27,7 @@ static void test_build_wordlist(void)
         strcat(wmnemonic, "z");
         CU_ASSERT_FALSE(Mnemonic_IsValid(wmnemonic, i));
 
-        Mnemonic_free((void*)mnemonic);
+        Mnemonic_Free((void*)mnemonic);
     }
 }
 

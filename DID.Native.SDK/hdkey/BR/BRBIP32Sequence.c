@@ -447,6 +447,51 @@ size_t BRBIP32vPubKeyPath(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk,
     return (!pubKey || sizeof(BRECPoint) <= pubKeyLen) ? sizeof(BRECPoint) : 0;
 }
 
+void BRBIP32vRootFromSeed(UInt256 *secret, UInt256 *chaincode, const void *seed,
+        size_t seedLen)
+{
+    UInt512 I;
+
+    assert(secret);
+    assert(chaincode);
+    assert(seed != NULL || seedLen == 0);
+
+    BRHMAC(&I, BRSHA512, sizeof(UInt512), BIP32_SEED_KEY,
+            strlen(BIP32_SEED_KEY), seed, seedLen);
+
+    *secret = *(UInt256 *)&I;
+    *chaincode = *(UInt256 *)&I.u8[sizeof(UInt256)];
+
+    var_clean(&I);
+}
+
+void BRBIP32PrivKeyPathFromRoot(BRKey *key, UInt256 *chainCode, UInt256 *secret,
+        int depth, ...)
+{
+    va_list ap;
+
+    va_start(ap, depth);
+    BRBIP32vPrivKeyPathFromRoot(key, chainCode, secret, depth, ap);
+    va_end(ap);
+}
+
+void BRBIP32vPrivKeyPathFromRoot(BRKey *key, UInt256 *chainCode, UInt256 *secret,
+        int depth, va_list vlist)
+{
+    assert(key != NULL);
+    assert(chainCode != NULL);
+    assert(secret != NULL);
+    assert(depth >= 0);
+
+    if (key) {
+        for (int i = 0; i < depth; i++) {
+            _CKDpriv(secret, chainCode, va_arg(vlist, uint32_t));
+        }
+
+        BRKeySetSecret(key, secret, 1);
+    }
+}
+
 // sets the private key for the specified path to key
 // depth is the number of arguments used to specify the path
 void BRBIP32PrivKeyPath(BRKey *key, UInt256 *chainCode, const void *seed, size_t seedLen, int depth, ...)

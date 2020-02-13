@@ -129,6 +129,7 @@ _DIDStore_GetInstance
 _DIDStore_Initialize
 _DIDStore_Deinitialize
 _DIDStore_ContainsPrivateIdentity
+_DIDStore_InitPrivateIdentityFromRootKey
 _DIDStore_InitPrivateIdentity
 _DIDStore_NewDID
 _DIDStore_Sign
@@ -157,7 +158,7 @@ _DIDStore_Synchronize
 
 # Mnemonic
 _Mnemonic_Generate
-_Mnemonic_free
+_Mnemonic_Free
 _Mnemonic_IsValid
 
 # Presentation

@@ -25,9 +25,12 @@
 
 DECL_TESTSUITE(hdkey_base_test);
 DECL_TESTSUITE(hdkey_mnemonic_test);
+DECL_TESTSUITE(hdkey_rootkey_test);
 
 #define DEFINE_HDKEY_TESTSUITES \
     DEFINE_TESTSUITE(hdkey_base_test), \
-    DEFINE_TESTSUITE(hdkey_mnemonic_test)
+    DEFINE_TESTSUITE(hdkey_mnemonic_test), \
+    DEFINE_TESTSUITE(hdkey_rootkey_test)
 
 #endif /* __DOC_TEST_SUITES_H__ */
+

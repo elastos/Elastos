@@ -35,10 +35,9 @@ const char *Mnemonic_Generate(int language)
     return HDKey_GenerateMnemonic(language);
 }
 
-void Mnemonic_free(void *mnemonic)
+void Mnemonic_Free(void *mnemonic)
 {
-    if (mnemonic)
-        free(mnemonic);
+    HDKey_FreeMnemonic(mnemonic);
 }
 
 bool Mnemonic_IsValid(const char *mnemonic, int language)

@@ -44,7 +44,7 @@ static void test_didstore_newdid(void)
 
     const char *newmnemonic = Mnemonic_Generate(0);
     rc = DIDStore_InitPrivateIdentity(store, newmnemonic, "", storepass, 0, false);
-    Mnemonic_free((void*)newmnemonic);
+    Mnemonic_Free((void*)newmnemonic);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
@@ -112,7 +112,7 @@ static void test_didstore_newdid_withouAlias(void)
 
     const char *newmnemonic = Mnemonic_Generate(0);
     rc = DIDStore_InitPrivateIdentity(store, newmnemonic, "", storepass, 0, false);
-    Mnemonic_free((void*)newmnemonic);
+    Mnemonic_Free((void*)newmnemonic);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
@@ -229,6 +229,50 @@ static void test_didstore_newdid_emptystore(void)
     TestData_Free();
 }
 
+static void test_didstore_privateidentity_compatibility(void)
+{
+    char _path[PATH_MAX];
+    char _temp[PATH_MAX];
+    const char *storePath;
+    char *path;
+    DIDStore *store;
+    bool isEquals;
+    DIDDocument *doc;
+    DID did;
+    int rc;
+
+    const char *mnemonic = "pact reject sick voyage foster fence warm luggage cabbage any subject carbon";
+    const char *ExtendedkeyBase = "xprv9s21ZrQH143K4biiQbUq8369meTb1R8KnstYFAKtfwk3vF8uvFd1EC2s49bMQsbdbmdJxUWRkuC48CXPutFfynYFVGnoeq8LJZhfd9QjvUt";
+    const char *passphrase = "helloworld";
+
+    storePath = get_store_path(_path, "/servet");
+    store = TestData_SetupStore(storePath);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(store);
+
+    rc = DIDStore_InitPrivateIdentity(store, mnemonic, passphrase, storepass,
+            0, false);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    doc = DIDStore_NewDID(store, storepass, "identity test1");
+    CU_ASSERT_PTR_NOT_NULL(doc);
+
+    DID_Copy(&did, &doc->did);
+    DIDDocument_Destroy(doc);
+
+    rc = DIDStore_InitPrivateIdentityFromRootKey(store, ExtendedkeyBase,
+            storepass, true);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    doc = DIDStore_NewDID(store, storepass, "identity test2");
+    CU_ASSERT_PTR_NOT_NULL(doc);
+
+    isEquals = DID_Equals(&did, &doc->did);
+    CU_ASSERT_TRUE(isEquals);
+    DIDDocument_Destroy(doc);
+
+    TestData_Free();
+}
+
 static int didstore_initial_test_suite_init(void)
 {
     return 0;
@@ -245,6 +289,7 @@ static CU_TestInfo cases[] = {
     {  "test_didstore_initial_error",         test_didstore_initial_error        },
     {  "test_didstore_privateIdentity_error", test_didstore_privateIdentity_error},
     {  "test_didstore_newdid_emptystore",     test_didstore_newdid_emptystore    },
+    { "test_didstore_privateidentity_compatibility", test_didstore_privateidentity_compatibility},
     {  NULL,                                  NULL                               }
 };
 

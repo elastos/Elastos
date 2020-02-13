@@ -116,7 +116,7 @@ static const char *getpassword(const char *walletDir, const char *walletId)
     return walletpass;
 }
 
-static void test_openstore_file_exit(void)
+static void test_openstore_file_exist(void)
 {
     char _path[PATH_MAX], mnemonic[ELA_MAX_MNEMONIC_LEN];
     char *path;
@@ -200,7 +200,7 @@ static int didstore_openstore_test_suite_cleanup(void)
 }
 
 static CU_TestInfo cases[] = {
-    { "test_openstore_file_exit",             test_openstore_file_exit           },
+    { "test_openstore_file_exist",            test_openstore_file_exist           },
     { "test_openstore_newdid_with_wrongpw",   test_openstore_newdid_with_wrongpw },
     { "test_openstore_newdid",                test_openstore_newdid              },
     { NULL,                                   NULL                               }
