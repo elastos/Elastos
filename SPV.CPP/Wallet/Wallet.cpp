@@ -1681,11 +1681,12 @@ static int _tx(int argc, char *argv[]) {
 						unsigned int confirm = (*it)["ConfirmStatus"];
 						time_t t = (*it)["Timestamp"];
 						std::string dir = (*it)["Direction"];
+						std::string status = (*it)["Status"];
 						double amount = std::stod((*it)["Amount"].get<std::string>()) / SELA_PER_ELA;
 
 						localtime_r(&t, &tm);
 						strftime(buf, sizeof(buf), "%F %T", &tm);
-						printf("%s  %8u  %8s  %s  %.8lf\n", txHash.c_str(), confirm, dir.c_str(), buf, amount);
+						printf("%s %8u %9s %8s %s %.8lf\n", txHash.c_str(), confirm, status.c_str(), dir.c_str(), buf, amount);
 					} else {
 						std::cout << (*it).dump(4) << std::endl;
 					}

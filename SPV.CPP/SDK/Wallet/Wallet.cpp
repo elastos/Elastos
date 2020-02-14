@@ -109,9 +109,9 @@ namespace Elastos {
 							u->SetBlockHeight(tx->GetBlockHeight());
 							u->SetTimestamp(tx->GetTimestamp());
 							if (tx->IsCoinBase()) {
-								groupedAsset->AddUTXO(u);
-							} else {
 								groupedAsset->AddCoinBaseUTXO(u);
+							} else {
+								groupedAsset->AddUTXO(u);
 							}
 						} else {
 							Log::error("asset {} not found", o->AssetID().GetHex());
