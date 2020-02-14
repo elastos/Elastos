@@ -126,31 +126,29 @@ public class DIDDocument {
     }
 
     public func containsPrivateKey(forId: DIDURL) throws -> Bool {
-        guard containsPublicKey(forId: forId) || getMeta().hasAttachedStore else {
+        guard containsPublicKey(forId: forId) else {
+            return false
+        }
+        guard getMeta().hasAttachedStore else {
             return false
         }
         return try getMeta().store!.containsPrivateKey(self.subject, forId)
     }
 
-    public var defaultPublicKey: DIDURL? {
-        guard let _ = self._publicKeys else {
-            return nil
-        }
-
+    public var defaultPublicKey: DIDURL {
         for publicKey in self._publicKeys!.values {
             if self.subject != publicKey.controller {
                 continue
             }
 
-            let address: String = DerivedKey.getAddress(publicKey.publicKeyBytes)
+            let address = DerivedKey.getAddress(publicKey.publicKeyBytes)
             guard address == self.subject.methodSpecificId else {
                 return publicKey.getId()
             }
         }
-        return nil
     }
 
-    func appendPublicKey(_ publicKey: PublicKey) -> Bool {
+    func appendPublicKey(_ publicKey: PublicKey) {
         if self._publicKeys == nil {
             self._publicKeys = Dictionary<DIDURL, PublicKey>()
         }
@@ -159,41 +157,33 @@ public class DIDDocument {
             // Check the existance, by both DIDURL (id) and keyBase58
             if key.getId() == publicKey.getId() ||
                key.publicKeyBase58 == publicKey.publicKeyBase58 {
-                return false
+                return
             }
         }
 
         self._publicKeys![publicKey.getId()] = publicKey
-        return true
     }
 
-    func removePublicKey(atId id: DIDURL, _ force: Bool) -> Bool {
+    func removePublicKey(atId id: DIDURL, _ force: Bool) throws {
         // Can not remove default public key
         guard self.defaultPublicKey != id else {
-            return false
+            throw DIDError.illegalArgument("Can be default public Key.")
         }
 
         if force {
-            _ = removeAuthenticationKey(atId: id)
-            _ = removeAuthorizationKey(atId: id)
+            _ = try removeAuthenticationKey(atId: id)
+            _ = try removeAuthorizationKey(atId: id)
         } else {
             if  containsAuthenticationKey(forId: id) ||
                 containsAuthorizationKey(forId: id) {
-                return false
+                throw DIDError.illegalArgument("id is being used.")
             }
         }
 
-        let publicKey = self._publicKeys?.removeValue(forKey: id)
-        if let _ = publicKey {
-            do {
-                if  getMeta().hasAttachedStore {
-                    _ = try getMeta().store?.deletePrivateKey(self.subject, id)
-                }
-            } catch {
-                // TODO: checkMe
-            }
+        let removedKey = self._publicKeys?.removeValue(forKey: id)
+        if  removedKey != nil && getMeta().hasAttachedStore {
+            _ = try getMeta().store!.deletePrivateKey(self.subject, id)
         }
-        return publicKey != nil
     }
 
     public var authenticationKeyCount: Int {
@@ -228,10 +218,10 @@ public class DIDDocument {
         return authenticationKey(ofId: forId) != nil
     }
 
-    func appendAuthenticationKey(_ publicKey: PublicKey) -> Bool {
+    func appendAuthenticationKey(_ publicKey: PublicKey) throws {
         // Make sure that controller should be current DID subject.
         guard publicKey.controller == self.subject else {
-            return false
+            throw DIDError.illegalArgument("Controller is not document subject.")
         }
 
         // Check whether this publicKey already is one of DIDDocument publicKeys
@@ -244,31 +234,30 @@ public class DIDDocument {
             _ = appendPublicKey(publicKey)
         } else if key! != publicKey {
             // Conflict happened, keep untouched
-            return false
+            throw DIDError.illegalArgument("PublicKey conflicted.")
         } else {
             // Prefer using publicKey of DIDDocument publicKeys.
             refKey = key!
         }
 
-        if self._authenticationKeys == nil {
+        if  self._authenticationKeys == nil {
             self._authenticationKeys = Dictionary<DIDURL, PublicKey>()
         }
 
         if containsAuthenticationKey(forId: refKey.getId()) {
-            return false
+            throw DIDError.illegalArgument("Already exist authentication Key with same Id.")
         }
 
         self._authenticationKeys![refKey.getId()] = refKey
-        return true
     }
 
-    func removeAuthenticationKey(atId publicKey: DIDURL) -> Bool {
+    func removeAuthenticationKey(atId publicKey: DIDURL) throws {
         // Can not remove default publicKey.
         guard defaultPublicKey != publicKey else {
-            return false
+            throw DIDError.illegalArgument("Can not remove default publicKey.")
         }
-        self._authenticationKeys?.removeValue(forKey: publicKey)
-        return true
+
+        _ = self._authenticationKeys?.removeValue(forKey: publicKey)
     }
 
     public var authorizationKeyCount: Int {
@@ -303,10 +292,10 @@ public class DIDDocument {
         return authenticationKey(ofId: forId) != nil
     }
 
-    func appendAuthorizationKey(_ publicKey: PublicKey) -> Bool {
+    func appendAuthorizationKey(_ publicKey: PublicKey) throws {
         // Make sure that controller should be current DID subject.
         guard publicKey.controller == self.subject else {
-            return false
+            throw DIDError.illegalArgument("Controller is not document subject.")
         }
 
         // Check whether this publicKey already is one of DIDDocument publicKeys
@@ -319,31 +308,30 @@ public class DIDDocument {
             _ = appendPublicKey(publicKey)
         } else if key! != publicKey {
             // Conflict happened, keep untouched
-            return false
+            throw DIDError.illegalArgument("PublicKey conflicted.")
         } else {
             // Prefer using publicKey of DIDDocument publicKeys.
             refKey = key!
         }
 
-        if self._authorizationKeys == nil {
+        if  self._authorizationKeys == nil {
             self._authorizationKeys = Dictionary<DIDURL, PublicKey>()
         }
 
         if containsAuthorizationKey(forId: refKey.getId()) {
-            return false
+            throw DIDError.illegalArgument("Already exist authorization Key with same Id.")
         }
 
         self._authorizationKeys![refKey.getId()] = refKey
-        return true
     }
 
-    func removeAuthorizationKey(atId: DIDURL) -> Bool {
+    func removeAuthorizationKey(atId: DIDURL) throws {
         // Can not remove default publicKey.
         guard defaultPublicKey != atId else {
-            return false
+            throw DIDError.illegalArgument("Can not remove default publicKey.")
         }
-        self._authorizationKeys!.removeValue(forKey: atId)
-        return true
+
+        _ = self._authorizationKeys!.removeValue(forKey: atId)
     }
 
     public var credentialCount: Int {
@@ -370,26 +358,25 @@ public class DIDDocument {
         return getEntry(self._credentials, ofId)
     }
 
-    func appendCredential(_ credential: VerifiableCredential) -> Bool {
+    func appendCredential(_ credential: VerifiableCredential) throws {
         // Make sure the verifiable credential must belong to current DID.
         guard credential.subject.did != self.subject else {
-            return false
+            throw DIDError.illegalArgument("Credential subject shoud be document subject.")
         }
 
-        if self._credentials == nil {
+        if  self._credentials == nil {
             self._credentials = Dictionary<DIDURL, VerifiableCredential>()
         }
 
         guard self._credentials!.keys.contains(credential.getId()) else {
-            return false
+            throw DIDError.illegalArgument("Already exist credential with same Id.")
         }
 
         self._credentials![credential.getId()] = credential
-        return true
     }
 
-    func removeCredential(atId: DIDURL) -> Bool {
-        return self._credentials?.removeValue(forKey: atId) != nil
+    func removeCredential(atId: DIDURL) {
+        _ = self._credentials?.removeValue(forKey: atId)
     }
 
     public var serviceCount: Int {
@@ -416,21 +403,20 @@ public class DIDDocument {
         return getEntry(self._services, ofId)
     }
 
-    func appendService(_ service: Service) -> Bool {
-        if self._services == nil {
+    func appendService(_ service: Service) throws {
+        if  self._services == nil {
             self._services = Dictionary<DIDURL, Service>()
         }
 
-        guard self._services!.keys.contains(service.getId()) else {
-            return false
+        guard self._services!.keys.contains(service.getId()) else { // TODO:
+            throw DIDError.illegalArgument("Already exist service with same Id.")
         }
 
         self._services![service.getId()] = service
-        return true
     }
 
-    func removeService(atId: DIDURL) -> Bool {
-        return self._services?.removeValue(forKey: atId) != nil
+    func removeService(atId: DIDURL) {
+        _ = self._services?.removeValue(forKey: atId)
     }
 
     public var expirationDate: Date? {
@@ -458,7 +444,7 @@ public class DIDDocument {
     }
 
     func getMeta() -> DIDMeta {
-        if self._meta == nil {
+        if  self._meta == nil {
             self._meta = DIDMeta()
         }
         return self._meta!
@@ -468,10 +454,14 @@ public class DIDDocument {
         self._meta = meta
     }
 
-    public func setExtra(value: String, forName: String) throws {
-        getMeta().setExtra(value, forName)
+    public func setExtra(value: String, forName name: String) throws {
+        guard !name.isEmpty else {
+            throw DIDError.illegalArgument()
+        }
+
+        getMeta().setExtra(value, name)
         if getMeta().hasAttachedStore {
-            try getMeta().store?.storeDidMeta(getMeta(), for: self.subject)
+            try getMeta().store!.storeDidMeta(getMeta(), for: self.subject)
         }
     }
 
@@ -479,11 +469,23 @@ public class DIDDocument {
         return getMeta().getExtra(forName)
     }
 
-    public func setAliasName(_ newValue: String) throws {
+    private func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
         if getMeta().hasAttachedStore {
-            try getMeta().store?.storeDidMeta(getMeta(), for: self.subject)
+            try getMeta().store!.storeDidMeta(getMeta(), for: self.subject)
         }
+    }
+
+    public func setAlias(_ newValue: String) throws {
+        guard !newValue.isEmpty else {
+            throw DIDError.illegalArgument()
+        }
+
+        try setAliasName(newValue)
+    }
+
+    public func unsetAlias() throws {
+        try setAliasName(nil)
     }
 
     public var aliasName: String {
@@ -503,16 +505,13 @@ public class DIDDocument {
     }
 
     public var isExpired: Bool {
-        /*
-        let now = DateFormater.currentDate()
-        return DateFormater.comporsDate(expires!, now)
-         */
+        // TODO:
         return false
     }
 
     public var isGenuine: Bool {
         // Document should be signed (only) by default public key.
-        guard self.proof.creator != self.defaultPublicKey! else {
+        guard self.proof.creator != self.defaultPublicKey else {
             return false
         }
         // Unsupported public key type;
@@ -540,7 +539,7 @@ public class DIDDocument {
     }
 
     public func sign(using storePass: String, _ data: Data...) throws -> String {
-        return try signEx(self.defaultPublicKey!, storePass, data)
+        return try signEx(self.defaultPublicKey, storePass, data)
     }
 
     public func sign(using id: String, storePass: String, _ data: Data...) throws -> String {
@@ -562,11 +561,11 @@ public class DIDDocument {
             throw DIDError.didStoreError("Not attached with DID store")
         }
 
-        return try getMeta().store!.sign(self.subject, id,  storePass, data)
+        return try getMeta().store!.signEx(self.subject, id, storePass, data)
     }
 
     public func verify(using signature: String, _ data: Data...) throws -> Bool {
-        return try verifyEx(self.defaultPublicKey!, signature, data)
+        return try verifyEx(self.defaultPublicKey, signature, data)
     }
 
     public func verify(using id: DIDURL, signature: String, _ data: Data...) throws -> Bool {
@@ -578,8 +577,19 @@ public class DIDDocument {
     }
 
     func verifyEx(_ id: DIDURL, _ sigature: String, _ data: [Data]) throws -> Bool {
-        // TODO
+        guard data.count > 0 else {
+            throw DIDError.illegalArgument()
+        }
+        guard !sigature.isEmpty else {
+            throw DIDError.illegalArgument()
+        }
 
+        let pubKey = publicKey(ofId: id)
+        guard let _ = pubKey else {
+            throw DIDError.illegalArgument()
+        }
+
+        // TODO:
         return false
     }
 
@@ -603,12 +613,8 @@ public class DIDDocument {
         }
 
         let defaultKey = self.defaultPublicKey
-        guard let _ = defaultKey else {
-            throw DIDError.malformedDocument("Missing default publicKey")
-        }
-
-        if containsAuthenticationKey(forId: defaultKey!) {
-            _ = appendAuthenticationKey(publicKey(ofId: defaultKey!)!)  // TODO:
+        if containsAuthenticationKey(forId: defaultKey) {
+            try appendAuthenticationKey(publicKey(ofId: defaultKey)!)  // TODO:
         }
 
         node = doc.getItem(Constants.AUTHORIZATION)
@@ -633,7 +639,7 @@ public class DIDDocument {
         guard let _ = node else {
             throw DIDError.malformedDocument("Missing proof")
         }
-        setProof(try DIDDocumentProof.fromJson(node!, defaultKey!))
+        setProof(try DIDDocumentProof.fromJson(node!, defaultKey))
     }
 
     private func parsePublicKeys(_ node: JsonNode) throws {
@@ -690,7 +696,7 @@ public class DIDDocument {
         // TODO
     }
 
-    public class func fromJson(_ json: String) throws -> DIDDocument {
+    public class func convertToDIDDocument(fromJson json: String) throws -> DIDDocument {
         guard !json.isEmpty else {
             throw DIDError.illegalArgument()
         }
@@ -700,15 +706,21 @@ public class DIDDocument {
             let node = try JsonNode.fromText(json)
             try doc.parse(node)
         } catch {
-            throw DIDError.malformedDocument("Parse JSON document error.")
+            throw DIDError.malformedDocument()
         }
         return doc
     }
 
-    class func fromJson(_ node: JsonNode) throws -> DIDDocument {
-        let doc = DIDDocument()
-        try doc.parse(node)
-        return doc
+    public class func convertToDIDDocument(fromData data: Data) throws -> DIDDocument {
+        return try convertToDIDDocument(fromJson: String(data: data, encoding: .utf8)!)
+    }
+
+    public class func convertToDIDDocument(fromFilePath path: String) throws -> DIDDocument {
+        return try convertToDIDDocument(fromJson: String(contentsOfFile: path, encoding: .utf8))
+    }
+
+    public class func convertToDIDDocument(fromUrl url: URL) throws -> DIDDocument {
+        return try convertToDIDDocument(fromJson: String(contentsOf: url, encoding: .utf8))
     }
 
     /*
@@ -824,14 +836,26 @@ public class DIDDocument {
         return try toJson(generator, normalized, false)
     }
 
-    public func toJson(_ normalized: Bool, _ forSign: Bool) throws -> String {
+    func toJson(_ normalized: Bool, _ forSign: Bool) throws -> String {
         // TODO
         return "TODO"
     }
 
-    public func toJson(_ normalized: Bool) throws -> String {
+    func toJson(_ normalized: Bool) throws -> String {
         return try toJson(normalized, false)
     }
+
+    public func convertFromDIDDocumentToJsonString(_ normalized: Bool) throws -> String {
+        // TODO:
+        return "TODO"
+    }
+
+    public func convertFromDIDDocumentToData(_ normalized: Bool) throws -> Data {
+        // TODO:
+        return Data()
+    }
+
+    // TODO:
 }
 
 extension DIDDocument: CustomStringConvertible {

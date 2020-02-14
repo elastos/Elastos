@@ -27,12 +27,11 @@ public class DIDDocumentBuilder {
         guard let _ = self._document else {
             throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
         }
-        guard Base58.bytesFromBase58(keyBase58).count == HDKey.PUBLICKEY_BYTES else { // TODO: checkMe.
+        guard Base58.bytesFromBase58(keyBase58).count == HDKey.PUBLICKEY_BYTES else {
             throw DIDError.illegalArgument()
         }
 
-        let publicKey = PublicKey(id, controller, keyBase58)
-        _ = self._document!.appendPublicKey(publicKey)
+        self._document!.appendPublicKey(PublicKey(id, controller, keyBase58))
         return self
     }
 
@@ -50,7 +49,7 @@ public class DIDDocumentBuilder {
             throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
         }
 
-        _ = self._document!.removePublicKey(atId: id, force)
+        try self._document!.removePublicKey(atId: id, force)
         return self
     }
 
@@ -79,7 +78,7 @@ public class DIDDocumentBuilder {
         }
 
         // use the ref "key" rather than parameter "id".
-        _ = self._document!.appendAuthenticationKey(key!)
+        try self._document!.appendAuthenticationKey(key!)
         return self
     }
 
@@ -93,12 +92,12 @@ public class DIDDocumentBuilder {
         guard let _ = self._document else {
             throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
         }
-        guard Base58.bytesFromBase58(keyBase58).count == HDKey.PUBLICKEY_BYTES else { //TODO: checkMe.
+        guard Base58.bytesFromBase58(keyBase58).count == HDKey.PUBLICKEY_BYTES else {
             throw DIDError.illegalArgument()
         }
 
         let publicKey = try PublicKey(id, getSubject(), keyBase58)
-        _ = self._document!.appendAuthorizationKey(publicKey)
+        try self._document!.appendAuthorizationKey(publicKey)
         return self
     }
 
@@ -112,7 +111,7 @@ public class DIDDocumentBuilder {
             throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
         }
 
-        _ = self._document!.removeAuthenticationKey(atId: id)
+        try self._document!.removeAuthenticationKey(atId: id)
         return self
     }
 
@@ -132,7 +131,7 @@ public class DIDDocumentBuilder {
         }
 
         // use the ref "key" rather than parameter "id".
-        _ = _document!.appendAuthorizationKey(key!)
+        try self._document!.appendAuthorizationKey(key!)
         return self
     }
 
@@ -153,7 +152,7 @@ public class DIDDocumentBuilder {
 
 
         let publicKey = PublicKey(id, controller, keyBase58)
-        _ = self._document!.appendAuthorizationKey(publicKey)
+        try self._document!.appendAuthorizationKey(publicKey)
         return self
     }
 
@@ -169,28 +168,50 @@ public class DIDDocumentBuilder {
         guard let _ = self._document else {
             throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
         }
+        guard try! controller != getSubject() else {
+            throw DIDError.illegalArgument()
+        }
 
-        //TODO:
+        let controllerDoc = try controller.resolve()
+        guard let _ = controllerDoc else {
+            throw DIDError.didResolveError("Can not resolve \(controller) DID.")
+        }
+
+        var usedKey: DIDURL? = key
+        if  usedKey == nil {
+            usedKey = controllerDoc!.defaultPublicKey
+        }
+
+        // Check the key should be a authentication key
+        let targetKey = controllerDoc!.authorizationKey(ofId: usedKey!)
+        guard let _ = targetKey else {
+            throw DIDError.illegalArgument()
+        }
+
+        let publicKey = PublicKey(id, targetKey!.getType(), controller,
+                                  targetKey!.publicKeyBase58)
+
+        try self._document!.appendAuthorizationKey(publicKey)
         return self
     }
 
-    public func authorizationDID(_ id: DIDURL,
+    public func authorizationDid(_ id: DIDURL,
                                  _ controller: DID) throws -> DIDDocumentBuilder {
-        // TODO
-        return self
+        return try authorizationDid(id, controller, nil)
     }
 
     public func authorizationDID(_ id: String,
                                  _ controller: String,
-                                 _ key: DIDURL?) throws -> DIDDocumentBuilder {
-        // TODO:
-        return self
+                                 _ key: String?) throws -> DIDDocumentBuilder {
+        let controllerId = try DID(controller)
+        let usedKey:DIDURL? = (key != nil ? try DIDURL(controllerId, key!) : nil)
+
+        return try authorizationDid(DIDURL(getSubject(), id), controllerId, usedKey)
     }
 
-    public func authorizationDID(_ id: String,
+    public func authorizationDid(_ id: String,
                                  _ controller: String) throws -> DIDDocumentBuilder {
-        // TODO:
-        return self
+        return try authorizationDID(id, controller, nil)
     }
 
     public func removeAuthorizationKey(_ id: DIDURL) throws -> DIDDocumentBuilder {
@@ -198,7 +219,7 @@ public class DIDDocumentBuilder {
             throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
         }
 
-        _ = self._document!.removeAuthorizationKey(atId: id)
+        try self._document!.removeAuthorizationKey(atId: id)
         return self
     }
 
@@ -212,7 +233,7 @@ public class DIDDocumentBuilder {
             throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
         }
 
-        _ = self._document!.appendCredential(credential)
+        try self._document!.appendCredential(credential)
         return self
     }
 
@@ -237,7 +258,7 @@ public class DIDDocumentBuilder {
             throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
         }
 
-        _ = self._document!.appendService(Service(id, type, endpoint))
+        try self._document!.appendService(Service(id, type, endpoint))
         return self
     }
 

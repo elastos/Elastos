@@ -225,7 +225,7 @@ public class VerifiablePresentation {
         // If no 'signKey' provided, use default public key. Otherwise,
         // need to check whether 'signKey' is authenticationKey or not.
         if signKey == nil {
-            useKey = signer.defaultPublicKey!
+            useKey = signer.defaultPublicKey
         } else {
             guard signer.containsAuthenticationKey(forId: signKey!) else {
                 throw DIDError.illegalArgument("Invalid sign key Id")

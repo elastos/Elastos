@@ -63,7 +63,7 @@ public class DIDDocumentProof {
         try generator.writeStartObject()
 
         // type
-        if normalized || self._type != Constants.DEFAULT_PUBLICKEY_TYPE {
+        if normalized || self.type != Constants.DEFAULT_PUBLICKEY_TYPE {
             try generator.writeFieldName(Constants.TYPE)
             try generator.writeString(self._type)
         }
@@ -81,7 +81,6 @@ public class DIDDocumentProof {
         // signature
         try generator.writeFieldName(Constants.SIGNATURE_VALUE)
         try generator.writeString(self.signature)
-
         try generator.writeEndObject()
     }
 }

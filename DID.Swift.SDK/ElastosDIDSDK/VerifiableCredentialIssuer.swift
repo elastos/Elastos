@@ -6,7 +6,7 @@ public class VerifiableCredentialIssuer {
 
     private init(_ doc: DIDDocument, _ signKey: DIDURL? = nil) throws {
         // use the default public key if no signKey provided.
-        let key = signKey != nil ? signKey! : doc.defaultPublicKey!
+        let key = signKey != nil ? signKey! : doc.defaultPublicKey
 
         // The key would be used to sign verifiable crendetial when using
         // builder to create a new verifiable credential. So,

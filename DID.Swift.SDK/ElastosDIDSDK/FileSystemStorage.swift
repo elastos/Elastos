@@ -219,7 +219,7 @@ public class FileSystemStorage: DIDStorage {
     func storeDidMeta(_ did: DID, _ alias: DIDMeta?) throws {
         do {
             let handle = try getFileHandle(true, Constants.DID_DIR,
-                                           did.methodSpecificId!, Constants.META_FILE)
+                                           did.methodSpecificId, Constants.META_FILE)
             handle.closeFile()
             // TODO
         } catch {
@@ -230,7 +230,7 @@ public class FileSystemStorage: DIDStorage {
     func loadDidMeta(_ did: DID) throws -> DIDMeta {
         do {
             let handle = try getFileHandle(false, Constants.DID_DIR,
-                                           did.methodSpecificId!, Constants.META_FILE)
+                                           did.methodSpecificId, Constants.META_FILE)
             handle.closeFile()
             // TODO
         } catch {
@@ -241,7 +241,7 @@ public class FileSystemStorage: DIDStorage {
     func storeDid(_ doc: DIDDocument) throws {
         do {
             let handle = try getFileHandle(true, Constants.DID_DIR,
-                                           doc.subject.methodSpecificId!, Constants.DOCUMENT_FILE)
+                                           doc.subject.methodSpecificId, Constants.DOCUMENT_FILE)
             handle.closeFile()
             // TODO
         } catch {
@@ -252,7 +252,7 @@ public class FileSystemStorage: DIDStorage {
     func loadDid(_ did: DID) throws -> DIDDocument {
         do {
             let handle = try getFileHandle(false, Constants.DID_DIR,
-                                           did.methodSpecificId!, Constants.DOCUMENT_FILE)
+                                           did.methodSpecificId, Constants.DOCUMENT_FILE)
             handle.closeFile()
             // TODO
         } catch {
@@ -263,7 +263,7 @@ public class FileSystemStorage: DIDStorage {
     func containsDid(_ did: DID) -> Bool {
         do {
             let handle = try getFileHandle(true, Constants.DID_DIR,
-                                           did.methodSpecificId!, Constants.DOCUMENT_FILE)
+                                           did.methodSpecificId, Constants.DOCUMENT_FILE)
             handle.closeFile()
             // TODO
             return true
@@ -284,8 +284,8 @@ public class FileSystemStorage: DIDStorage {
     func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta?) throws {
         do {
             let handle = try getFileHandle(true, Constants.DID_DIR,
-                                          did.methodSpecificId!, Constants.CREDENTIALS_DIR,
-                                          id.fragment, Constants.META_FILE)
+                                          did.methodSpecificId, Constants.CREDENTIALS_DIR,
+                                          id.fragment!, Constants.META_FILE)
             defer { handle.closeFile()}
             let metadata = (meta != nil && !meta!.isEmpty()) ? meta!.toString() : nil
             if  metadata?.isEmpty ?? false {

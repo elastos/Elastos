@@ -208,7 +208,7 @@ public class DIDStore: NSObject {
             }
         }
 
-        let _signKey = (signKey != nil) ? signKey! : doc.defaultPublicKey!
+        let _signKey = (signKey != nil) ? signKey! : doc.defaultPublicKey
         var lastTransactionId = doc.transactionId
         if  lastTransactionId == nil || lastTransactionId!.isEmpty {
             lastTransactionId = try DIDBackend.shareInstance()!.create(doc, _signKey, storePass)
@@ -267,7 +267,7 @@ public class DIDStore: NSObject {
             doc!.getMeta().setStore(self)
         }
 
-        let _signKey: DIDURL = (signKey != nil) ? signKey! : doc!.defaultPublicKey!
+        let _signKey: DIDURL = (signKey != nil) ? signKey! : doc!.defaultPublicKey
         let transactionId = try DIDBackend.shareInstance()?.deactivate(doc!, _signKey, storePass)
 
         // Save deactivated status to DID metadata
@@ -571,7 +571,7 @@ public class DIDStore: NSObject {
                 guard let _ = doc else {
                     throw DIDError.didStoreError("Can not resolve DID document")
                 }
-                useId = doc!.defaultPublicKey!
+                useId = doc!.defaultPublicKey
             } catch {
                 throw DIDError.didStoreError()
             }
@@ -581,5 +581,10 @@ public class DIDStore: NSObject {
 
         // let binKey = DIDStore.decryptFromBase64(try loadPrivateKey(did, id: useId), storePass))
         // TODO:
+    }
+
+    func signEx(_ did: DID, _ id: DIDURL, _ storePass: String, _ data: [Data]) throws -> String {
+        // TODO:
+        return "TODO"
     }
 }

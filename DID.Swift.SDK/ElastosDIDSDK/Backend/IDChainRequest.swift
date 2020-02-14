@@ -241,7 +241,7 @@ class IDChainRequest: NSObject {
             try generator.writeStringField(Constants.KEY_TYPE, self._keyType!)
             keyId = self._signKey!.description
         } else {
-            keyId = "#" + self._signKey!.fragment
+            keyId = "#" + self._signKey!.fragment!
         }
         try generator.writeStringField(Constants.VERIFICATION_METHOD, keyId)
         try generator.writeStringField(Constants.SIGNATURE, self._signature!)
