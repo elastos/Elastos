@@ -5,7 +5,6 @@
 #include "HDkey.h"
 #include "crypto.h"
 
-
 static void test_rootkey_with_diff_method(void)
 {
     uint8_t _seed[SEED_BYTES];
@@ -22,8 +21,10 @@ static void test_rootkey_with_diff_method(void)
     size = base58_decode(ExtendedKey, ExtendedkeyBase);
     CU_ASSERT_EQUAL(size, EXTENDEDKEY_BYTES);
 
-    size = HDKey_GetExtendedkeyFromMnemonic(mnemonic, passphrase, 0,
-            _ExtendedKey, sizeof(_ExtendedKey));
+    hdkey = HDKey_FromMnemonic(mnemonic, passphrase, 0, &_hdkey);
+    CU_ASSERT_PTR_NOT_NULL(hdkey);
+
+    size = HDKey_Serialize(hdkey, _ExtendedKey, sizeof(_ExtendedKey));
     CU_ASSERT_EQUAL(size, EXTENDEDKEY_BYTES);
     CU_ASSERT_NSTRING_EQUAL(ExtendedKey, _ExtendedKey, EXTENDEDKEY_BYTES - 4);
 }

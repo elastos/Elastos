@@ -731,21 +731,16 @@ const char *Generater_Publickey(char *publickeybase58, size_t size)
     if (!mnemonic || !*mnemonic)
         return NULL;
 
-    len = HDKey_GetExtendedkeyFromMnemonic(mnemonic, "", 0, extendedkey,
-            sizeof(extendedkey));
+    privateIdentity = HDKey_FromMnemonic(mnemonic, "", 0, &hk);
     Mnemonic_Free((char*)mnemonic);
-    if (len == -1)
-        return NULL;
-
-    privateIdentity = HDKey_GetPrivateIdentity(extendedkey, len, 0, &hk);
     if (!privateIdentity)
         return NULL;
 
-    if (!HDKey_GetSubPublicKey(privateIdentity, 0, 0, publickey))
+    derivedkey = HDKey_GetDerivedKey(privateIdentity, 0, &_derivedkey);
+    if (!derivedkey)
         return NULL;
 
-    base58_encode(publickeybase58, publickey, sizeof(publickey));
-    return publickeybase58;
+    return DerivedKey_GetPublicKeyBase58(derivedkey, publickeybase58, size);
 }
 
 DerivedKey *Generater_KeyPair(DerivedKey *dkey)
@@ -759,15 +754,10 @@ DerivedKey *Generater_KeyPair(DerivedKey *dkey)
     if (!mnemonic || !*mnemonic)
         return NULL;
 
-    size = HDKey_GetExtendedkeyFromMnemonic(mnemonic, "", 0, extendedkey,
-            sizeof(extendedkey));
+    privateIdentity = HDKey_FromMnemonic(mnemonic, "", 0, &hk);
     Mnemonic_Free((char*)mnemonic);
-    if (size == -1)
-        return NULL;
-
-    privateIdentity = HDKey_GetPrivateIdentity(extendedkey, size, 0, &hk);
     if (!privateIdentity)
         return NULL;
 
-    return HDKey_GetDerivedKey(privateIdentity, dkey, 0, 0, 0);
+    return HDKey_GetDerivedKey(privateIdentity, 0, dkey);
 }
