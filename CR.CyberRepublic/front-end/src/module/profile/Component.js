@@ -289,8 +289,8 @@ export default class extends BaseComponent {
   }
 
   renderDidBtn() {
-    const { getElaUrl, getDid } = this.props
-    return <ProfileDid getElaUrl={getElaUrl} getDid={getDid} />
+    const { getElaUrl, getDid, user } = this.props
+    return <ProfileDid getElaUrl={getElaUrl} getDid={getDid} did={user.did} />
   }
 
   renderFullName(isMobile) {

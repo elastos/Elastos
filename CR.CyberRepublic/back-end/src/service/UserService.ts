@@ -658,7 +658,7 @@ export default class extends Base {
     }
 
     public async didCallbackEla(param: any) {
-        const jwtToken = param.jwtToken
+        const jwtToken = param.jwt
         const decoded: any = jwt.decode(jwtToken)
         const publicKey = await getDidPublicKey(decoded.iss)
 
