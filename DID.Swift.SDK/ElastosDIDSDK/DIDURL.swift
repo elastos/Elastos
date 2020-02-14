@@ -1,7 +1,6 @@
 import Foundation
 
 public class DIDURL {
-    // The fields below would be filled in the contructors.
     private var _did: DID?
     private var _fragment: String?
 
@@ -11,30 +10,30 @@ public class DIDURL {
     private var _meta: CredentialMeta?
 
     public init(_ id: DID, _ fragment: String) throws {
-        self._did = id
-        self._fragment = fragment
-
         guard !fragment.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
+        var usedFragment = fragment
         if fragment.hasPrefix("did:") {
             do {
                 try ParserHelper.parse(fragment, false, DIDURL.Listener(self))
             } catch {
-                throw DIDError.malformedDID("Malformed DIDURL \(fragment)")
+                throw DIDError.malformedDIDURL(fragment)
             }
 
-            guard self._did == id else {
-                throw DIDError.illegalArgument("Mismatch arguments")
+            guard did == id else {
+                throw DIDError.illegalArgument("Mismatched arguments")
             }
         }
 
-        /* TODO:
-        if  fragment.hasPrefix("#") {
+        if fragment.hasPrefix("#") {
             // TODO:
+            usedFragment = ""
         }
-        */
+
+        self._did = id
+        self._fragment = usedFragment
     }
     
     public init(_ url: String) throws {
@@ -49,6 +48,7 @@ public class DIDURL {
         }
     }
 
+    // A valid didurl guaranteed containing valid did.
     public var did: DID {
         return self._did!
     }
@@ -57,8 +57,11 @@ public class DIDURL {
         self._did = newValue
     }
 
-    public var fragment: String {
-        return self._fragment!
+    // Regards to DIDs v1.0 specs:
+    // "DID URL: A DID plus an optional DID path, optional ? character followed
+    //  by a DID query, and optional # character followed by a DID fragment."
+    public var fragment: String? {
+        return self._fragment
     }
 
     func setFragment(_ newValue: String) {
@@ -105,7 +108,6 @@ public class DIDURL {
         self._parameters![forKey] = value
     }
 
-    // Path
     public var path: String? {
         return self._path
     }
@@ -114,9 +116,8 @@ public class DIDURL {
         self._path = newValue
     }
 
-    // QueryParameters
     public func queryParameters() -> String? {
-        return mapToString(self._queryParameters!, "&")
+        return mapToString(self._queryParameters, "&")
     }
 
     public func queryParameter(ofKey: String) -> String? {
@@ -134,7 +135,6 @@ public class DIDURL {
         self._queryParameters![forKey] = value
     }
 
-    // meta
     func getMeta() -> CredentialMeta {
         if  self._meta == nil {
             self._meta = CredentialMeta()
@@ -146,12 +146,12 @@ public class DIDURL {
         self._meta = meta
     }
 
-    public func setExtra(value: String, forName: String) throws {
-        guard !forName.isEmpty else {
+    public func setExtra(value: String?, forName name: String) throws {
+        guard !name.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
-        getMeta().setExtra(value, forName)
+        getMeta().setExtra(name, value)
         if getMeta().hasAttachedStore {
             try getMeta().store?.storeCredentialMeta(self.did, self, getMeta())
         }
@@ -165,12 +165,20 @@ public class DIDURL {
         return getMeta().aliasName
     }
 
-    // when alias value is nil, mean to clean alias.
-    public func setAlias(_ newValue: String?) throws {
+    // Clean alias Name when newValue is nil.
+    private func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
         if getMeta().hasAttachedStore {
             try getMeta().store?.storeCredentialMeta(did, self, getMeta())
         }
+    }
+
+    public func setAlias(_ newValue: String?) throws {
+        try setAliasName(newValue)
+    }
+
+    public func unsetAlias() throws {
+        try setAliasName(nil)
     }
 }
 
@@ -190,9 +198,10 @@ extension DIDURL: CustomStringConvertible {
             builder.append("?")
             builder.append(queryParameters()!)
         }
-        if !self.fragment.isEmpty {
+
+        if !(self.fragment?.isEmpty ?? true) {
             builder.append("#")
-            builder.append(self.fragment)
+            builder.append(self.fragment!)
         }
         return builder
     }
@@ -251,7 +260,8 @@ extension DIDURL {
             self.didURL?.did.setMethod(Constants.METHOD)
         }
 
-        override func exitMethodSpecificString(_ ctx: DIDURLParser.MethodSpecificStringContext) {
+        override func exitMethodSpecificString(
+                            _ ctx: DIDURLParser.MethodSpecificStringContext) {
             self.didURL?.did.setMethodSpecificId(ctx.getText())
         }
 

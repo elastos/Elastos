@@ -16,19 +16,19 @@ class Metadata {
         self._store = store
     }
 
-    private func setExtraInternal(_ name: String, _ value: String) {
+    private func fullName(_ name: String) -> String {
+        return Constants.EXTRA_PREFIX + name
+    }
+
+    func setExtra(_ name: String, _ value: String?) {
         if  self._extra == nil {
             self._extra = Dictionary<String, String>()
         }
-        self._extra?[name] = value
-    }
-
-    func setExtra(_ value: String, _ name: String) {
-        setExtraInternal(Constants.EXTRA_PREFIX + name, value)
+        self._extra![fullName(name)] = value
     }
 
     func getExtra(_ name: String) -> String? {
-        return self._extra?[Constants.EXTRA_PREFIX + name] ?? nil
+        return self._extra?[fullName(name)] ?? nil
     }
     
     class func fromNode(_ node: JsonNode) throws {} // abstract method

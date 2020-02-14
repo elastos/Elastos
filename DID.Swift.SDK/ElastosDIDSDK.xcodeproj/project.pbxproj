@@ -671,9 +671,9 @@
 		A31ACE5B23F19A3F008EC032 /* Meta */ = {
 			isa = PBXGroup;
 			children = (
-				A31ACE5D23F19A4E008EC032 /* CredentialMeta.swift */,
-				A31ACE5E23F19A4E008EC032 /* DIDMeta.swift */,
 				A31ACE5C23F19A4E008EC032 /* Metadata.swift */,
+				A31ACE5E23F19A4E008EC032 /* DIDMeta.swift */,
+				A31ACE5D23F19A4E008EC032 /* CredentialMeta.swift */,
 			);
 			name = Meta;
 			sourceTree = "<group>";

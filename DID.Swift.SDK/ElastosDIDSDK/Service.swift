@@ -31,19 +31,21 @@ public class Service: DIDObject {
         return Service(id!, type!, endPoint!)
     }
 
-    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
-        try generator.writeStartObject()
-        try generator.writeFieldName(Constants.ID)
-
+    private func computeIdValue(_ ref: DID?, _ normalized: Bool) -> String {
         let value: String
+
         if normalized || ref == nil || ref != getId().did {
             value = getId().toString()
         } else {
-            value = "#" + getId().fragment
+            // DIDObject always keeps not empty fragment.
+            value = "#" + getId().fragment!
         }
-        try generator.writeString(value)
+        return value
+    }
 
-        // type & endpoint
+    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
+        try generator.writeStartObject()
+        try generator.writeStringField(Constants.ID, computeIdValue(ref, normalized))
         try generator.writeStringField(Constants.TYPE, getType())
         try generator.writeStringField(Constants.SERVICE_ENDPOINT, self.endpoint)
         try generator.writeEndObject()

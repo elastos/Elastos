@@ -20,20 +20,20 @@ public class DID {
         do {
             try ParserHelper.parse(did, true, DID.Listener(self))
         } catch {
-            throw DIDError.malformedDID("Malformed did: \(did)")
+            throw DIDError.malformedDID(did)
         }
     }
 
-    public var method: String? {
-        return self._method
+    public var method: String {
+        return self._method!
     }
 
     func setMethod(_ method: String) {
         self._method = method
     }
 
-    public var methodSpecificId: String? {
-        return self._methodSpecificId
+    public var methodSpecificId: String {
+        return self._methodSpecificId!
     }
 
     func setMethodSpecificId(_ methodSpecificId: String) {
@@ -58,7 +58,7 @@ public class DID {
 
         getMeta().setExtra(value, name)
         if getMeta().hasAttachedStore {
-            try getMeta().store?.storeDidMeta(getMeta(), for: self)
+            try getMeta().store!.storeDidMeta(getMeta(), for: self)
         }
     }
 
@@ -70,12 +70,20 @@ public class DID {
         return self._meta?.aliasName ?? ""
     }
 
-    // when alias value is nil, mean to clean alias.
-    public func setAlias(_ newValue: String?) throws {
+    // Clean alias Name when newValue is nil.
+    private func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
         if getMeta().hasAttachedStore {
             try getMeta().store?.storeDidMeta(getMeta(), for: self)
         }
+    }
+
+    public func setAlias(_ newValue: String) throws {
+        try setAliasName(newValue)
+    }
+
+    public func unsetAlias() throws {
+        try setAliasName(nil)
     }
 
     public var transactionId: String? {

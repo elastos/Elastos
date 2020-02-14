@@ -57,17 +57,22 @@ public class PublicKey: DIDObject {
         return PublicKey(id!, type!, controller!, keyBase58!) // TODO:
     }
 
-    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
-        try generator.writeStartObject()
-        try generator.writeFieldName(Constants.ID)
-
+    private func computeIdValue(_ ref: DID?, _ normalized: Bool) -> String {
         let value: String
+
         if normalized || ref == nil || ref != getId().did {
             value = getId().toString()
         } else {
-            value = "#" + getId().fragment
+            // DIDObject always keeps not empty fragment.
+            value = "#" + getId().fragment!
         }
-        try generator.writeString(value)
+        return value
+    }
+
+    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
+        try generator.writeStartObject()
+        try generator.writeFieldName(Constants.ID)
+        try generator.writeString(computeIdValue(ref, normalized))
 
         // type
         if normalized || self.getType() != Constants.DEFAULT_PUBLICKEY_TYPE {

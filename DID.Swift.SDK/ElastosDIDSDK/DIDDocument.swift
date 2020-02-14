@@ -143,7 +143,7 @@ public class DIDDocument {
             }
 
             let address: String = DerivedKey.getAddress(publicKey.publicKeyBytes)
-            guard address == self.subject.methodSpecificId! else {
+            guard address == self.subject.methodSpecificId else {
                 return publicKey.getId()
             }
         }
@@ -762,7 +762,7 @@ public class DIDDocument {
             if normalized || pubKey.getId().did != self.subject {
                 value = pubKey.getId().toString()
             } else {
-                value = "#" + pubKey.getId().fragment
+                value = "#" + pubKey.getId().fragment!
             }
             try generator.writeString(value)
         }
@@ -778,7 +778,7 @@ public class DIDDocument {
                 if normalized || pubKey.getId().did != self.subject {
                     value = pubKey.getId().did.toString()
                 } else {
-                    value = "#" + pubKey.getId().fragment
+                    value = "#" + pubKey.getId().fragment!
                 }
                 try generator.writeString(value)
             }

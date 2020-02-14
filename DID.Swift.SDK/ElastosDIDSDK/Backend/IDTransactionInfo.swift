@@ -53,7 +53,7 @@ class IDTransactionInfo {
         }
 
         let request = try IDChainRequest.fromJson(reqNode!)
-        return try IDTransactionInfo(transactionId!, timestamp!, request)
+        return IDTransactionInfo(transactionId!, timestamp!, request)
     }
 
     func toJson(_ generator: JsonGenerator) throws {
