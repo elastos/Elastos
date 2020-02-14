@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,8 +58,10 @@ typedef struct DerivedKey {
 
 const char *HDKey_GenerateMnemonic(int language);
 
-uint8_t *HDKey_GetSeedFromMnemonic(const char *mmemonic,
+uint8_t *HDKey_GetSeedFromMnemonic(const char *mnemonic,
         const char *mnemonicPassword, int language, uint8_t *seed);
+
+bool HDKey_MnemonicIsValid(const char *mnemonic, int language);
 
 HDKey *HDKey_GetPrivateIdentity(const uint8_t *seed, int coinType, HDKey *hdkey);
 
@@ -76,6 +79,8 @@ DerivedKey *HDKey_GetDerivedKey(HDKey* privateIdentity, DerivedKey *derivedkey,
         int coinType, int chain, int index);
 
 uint8_t *DerivedKey_GetPublicKey(DerivedKey *derivedkey);
+
+const char *DerivedKey_GetPublicKeyBase(DerivedKey *derivedkey, char *base, size_t size);
 
 uint8_t *DerivedKey_GetPrivateKey(DerivedKey *derivedkey);
 

@@ -26,11 +26,14 @@ internal struct CDerivedKey {
 }
 
 @_silgen_name("HDKey_GenerateMnemonic")
-public func HDKey_GenerateMnemonic(_ language: Int32) -> UnsafePointer<Int8>!
+internal func HDKey_GenerateMnemonic(_ language: Int32) -> UnsafePointer<Int8>!
 
 @_silgen_name("HDKey_GetSeedFromMnemonic")
 internal func HDKey_GetSeedFromMnemonic(_ mmemonic: UnsafePointer<Int8>, _ mnemonicPasswordbase58: UnsafePointer<Int8>, _ language: Int8!,_ seed: UnsafeMutablePointer<Int8>!
     ) ->  UnsafeMutablePointer<Int8>
+
+@_silgen_name("HDKey_MnemonicIsValid")
+internal func HDKey_MnemonicIsValid(_ mnemonic: UnsafePointer<Int8>, _ language: Int32) -> Bool
 
 @_silgen_name("HDKey_GetPrivateIdentity")
 internal func HDKey_GetPrivateIdentity(_ seed: UnsafeMutablePointer<Int8>,

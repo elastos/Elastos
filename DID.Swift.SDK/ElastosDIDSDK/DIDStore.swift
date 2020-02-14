@@ -56,7 +56,9 @@ public class DIDStore: NSObject {
                                     _ passPhrase: String?,
                                     _ storePass: String,
                                     _ force: Bool ) throws {
-        // TODO: CHECK mnemonic isValid
+        if !(try Mnemonic.isValid(language, mnemonic)) {
+            throw DIDError.illegalArgument("Invalid mnemonic.")
+        }
 
         guard storePass.count > 0 else {
             throw DIDError.illegalArgument()
