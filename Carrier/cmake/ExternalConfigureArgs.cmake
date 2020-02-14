@@ -21,7 +21,7 @@ if(${CMAKE_CROSSCOMPILING})
         set(XDK_LD  "${XDK_TOOLCHAIN}/bin/clang")
         set(XDK_AR  "${XDK_TOOLCHAIN}/bin/llvm-ar")
         set(XDK_RANLIB "${XDK_TOOLCHAIN}/bin/${XDK_HOST}-ranlib")
-        set(XDK_STRIP "${XDK_TOOLCHAIN}/bin/${XDK_HOST}-ranlib")
+        set(XDK_STRIP "${XDK_TOOLCHAIN}/bin/${XDK_HOST}-strip")
 
         # Cross-compilation flags
         string(APPEND CMAKE_C_FLAGS
