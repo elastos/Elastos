@@ -301,6 +301,7 @@ public class DIDBackend {
 			DIDDocument doc = ti.getRequest().getDocument();
 			DIDMeta meta = new DIDMeta();
 			meta.setTransactionId(ti.getTransactionId());
+			meta.setSignature(doc.getProof().getSignature());
 			meta.setUpdated(ti.getTimestamp());
 			doc.setMeta(meta);
 			return doc;

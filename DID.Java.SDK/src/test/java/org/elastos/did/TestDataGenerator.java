@@ -55,8 +55,8 @@ public class TestDataGenerator {
 					}
 				});
 
-		ResolverCache.reset();
 		DIDBackend.initialize(TestConfig.resolver, TestData.getResolverCacheDir());
+		ResolverCache.reset();
 
 		Utils.deleteFile(new File(storeRoot));
 		store = DIDStore.open("filesystem", storeRoot, adapter);

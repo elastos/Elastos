@@ -91,6 +91,10 @@ public final class DIDStore {
 	private DIDStorage storage;
 	private DIDBackend backend;
 
+	public interface ConflictHandle {
+		DIDDocument merge(DIDDocument chainCopy, DIDDocument localCopy);
+	}
+
 	private DIDStore(int initialCacheCapacity, int maxCacheCapacity,
 			DIDAdapter adapter, DIDStorage storage) {
 		if (maxCacheCapacity > 0) {
@@ -251,10 +255,10 @@ public final class DIDStore {
 		return privateIdentity;
 	}
 
-	public void synchronize(String storepass)
+	public void synchronize(ConflictHandle handle, String storepass)
 			throws DIDBackendException, DIDStoreException {
-		if (storepass == null || storepass.isEmpty())
-			throw new IllegalArgumentException("Invalid password.");
+		if (handle == null || storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException();
 
 		int nextIndex = storage.loadPrivateIdentityIndex();
 		HDKey privateIdentity = loadPrivateIdentity(storepass);
@@ -270,19 +274,34 @@ public final class DIDStore {
 				DID did = new DID(DID.METHOD, key.getAddress());
 
 				try {
-					DIDDocument doc = null;
+					DIDDocument chainCopy = null;
 					try {
-						doc = DIDBackend.resolve(did, true);
+						chainCopy = DIDBackend.resolve(did, true);
 					} catch (DIDExpiredException | DIDDeactivatedException e) {
 						continue;
 					}
 
-					if (doc != null) {
+					if (chainCopy != null) {
+						DIDDocument finalCopy = chainCopy;
+
+						DIDDocument localCopy = loadDid(did);
+						if (localCopy != null) {
+							if (localCopy.getMeta().getSignature() == null ||
+									!localCopy.getProof().getSignature().equals(
+									localCopy.getMeta().getSignature())) {
+								// Local copy was modified
+								finalCopy = handle.merge(chainCopy, localCopy);
+
+								if (finalCopy == null || !finalCopy.getSubject().equals(did))
+									throw new DIDStoreException("deal with local modification error.");
+							}
+						}
+
 						// Save private key
-						storePrivateKey(did, doc.getDefaultPublicKey(),
+						storePrivateKey(did, finalCopy.getDefaultPublicKey(),
 								key.serialize(), storepass);
 
-						storeDid(doc);
+						storeDid(finalCopy);
 
 						if (i >= nextIndex)
 							storage.storePrivateIdentityIndex(i);
@@ -301,16 +320,29 @@ public final class DIDStore {
 		}
 	}
 
-	public CompletableFuture<Void> synchronizeAsync(String storepass) {
+	public void synchronize(String storepass)
+			throws DIDBackendException, DIDStoreException {
+		synchronize((c, l) -> l, storepass);
+	}
+
+	public CompletableFuture<Void> synchronizeAsync(
+			ConflictHandle handle, String storepass) {
+		if (handle == null || storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException();
+
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			try {
-				synchronize(storepass);
+				synchronize(handle, storepass);
 			} catch (DIDBackendException | DIDStoreException e) {
 				throw new CompletionException(e);
 			}
 		});
 
 		return future;
+	}
+
+	public CompletableFuture<Void> synchronizeAsync(String storepass) {
+		return synchronizeAsync((c, l) -> l, storepass);
 	}
 
 	public DIDDocument newDid(String alias, String storepass)
@@ -350,7 +382,7 @@ public final class DIDStore {
 	}
 
 	public String publishDid(DID did, int confirms,
-			DIDURL signKey, String storepass)
+			DIDURL signKey, boolean force, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
 		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
@@ -362,24 +394,35 @@ public final class DIDStore {
 		if (doc.isDeactivated())
 			throw new DIDStoreException("DID already deactivated.");
 
+		String lastTxid = null;
 		DIDDocument resolvedDoc = did.resolve();
 		if (resolvedDoc != null) {
 			if (resolvedDoc.isDeactivated())
 				throw new DIDStoreException("DID already deactivated.");
 
-			String localTxid = doc.getTransactionId();
-			if (localTxid == null)
-				throw new DIDStoreException("DID document not up-to-date");
+			if (!force) {
+				String localTxid = doc.getMeta().getTransactionId();
+				String localSignature = doc.getMeta().getSignature();
 
-			String resolvedTxid = resolvedDoc.getTransactionId();
-			if (!localTxid.equals(resolvedTxid))
-				throw new DIDStoreException("DID document not up-to-date");
+				String resolvedTxid = resolvedDoc.getTransactionId();
+				String reolvedSignautre = resolvedDoc.getProof().getSignature();
+
+				if (localTxid == null && localSignature == null)
+					throw new DIDStoreException("DID document not up-to-date");
+
+				if (localTxid != null && !localTxid.equals(resolvedTxid))
+					throw new DIDStoreException("DID document not up-to-date");
+
+				if (localSignature != null && !localSignature.equals(reolvedSignautre))
+					throw new DIDStoreException("DID document not up-to-date");
+			}
+
+			lastTxid = resolvedDoc.getTransactionId();
 		}
 
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
 
-		String lastTxid = doc.getTransactionId();
 		if (lastTxid == null || lastTxid.isEmpty())
 			lastTxid = backend.create(doc, confirms,
 					signKey, storepass);
@@ -387,16 +430,22 @@ public final class DIDStore {
 			lastTxid = backend.update(doc, lastTxid, confirms,
 					signKey, storepass);
 
-		if (lastTxid != null) {
+		if (lastTxid != null)
 			doc.getMeta().setTransactionId(lastTxid);
-			storage.storeDidMeta(doc.getSubject(), doc.getMeta());
-		}
+		doc.getMeta().setSignature(doc.getProof().getSignature());
+		storage.storeDidMeta(doc.getSubject(), doc.getMeta());
 
 		return lastTxid;
 	}
 
+	public String publishDid(DID did, int confirms,
+			DIDURL signKey, String storepass)
+			throws DIDBackendException, DIDStoreException, InvalidKeyException {
+		return publishDid(did, confirms, signKey, false, storepass);
+	}
+
 	public String publishDid(String did, int confirms,
-			String signKey, String storepass)
+			String signKey, boolean force, String storepass)
 			throws DIDBackendException, DIDStoreException, InvalidKeyException {
 		DID _did = null;
 		DIDURL _signKey = null;
@@ -408,7 +457,13 @@ public final class DIDStore {
 			throw new IllegalArgumentException(e);
 		}
 
-		return publishDid(_did, confirms, _signKey, storepass);
+		return publishDid(_did, confirms, _signKey, force, storepass);
+	}
+
+	public String publishDid(String did, int confirms,
+			String signKey, String storepass)
+			throws DIDBackendException, DIDStoreException, InvalidKeyException {
+		return publishDid(did, confirms, signKey, false, storepass);
 	}
 
 	public String publishDid(DID did, DIDURL signKey, String storepass)
@@ -458,10 +513,10 @@ public final class DIDStore {
 	}
 
 	public CompletableFuture<String> publishDidAsync(DID did, int confirms,
-			DIDURL signKey, String storepass) {
+			DIDURL signKey, boolean force, String storepass) {
 		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 			try {
-				return publishDid(did, confirms, signKey, storepass);
+				return publishDid(did, confirms, signKey, force, storepass);
 			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
 				throw new CompletionException(e);
 			}
@@ -471,16 +526,26 @@ public final class DIDStore {
 	}
 
 	public CompletableFuture<String> publishDidAsync(String did, int confirms,
-			String signKey, String storepass) {
+			String signKey, boolean force, String storepass) {
 		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 			try {
-				return publishDid(did, confirms, signKey, storepass);
+				return publishDid(did, confirms, signKey, force, storepass);
 			} catch (DIDBackendException | DIDStoreException | InvalidKeyException e) {
 				throw new CompletionException(e);
 			}
 		});
 
 		return future;
+	}
+
+	public CompletableFuture<String> publishDidAsync(DID did, int confirms,
+			DIDURL signKey, String storepass) {
+		return publishDidAsync(did, confirms, signKey, false, storepass);
+	}
+
+	public CompletableFuture<String> publishDidAsync(String did, int confirms,
+			String signKey, String storepass) {
+		return publishDidAsync(did, confirms, signKey, false, storepass);
 	}
 
 	public CompletableFuture<String> publishDidAsync(DID did,

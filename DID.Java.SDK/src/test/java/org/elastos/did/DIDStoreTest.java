@@ -40,9 +40,7 @@ import org.elastos.did.adapter.DummyAdapter;
 import org.elastos.did.exception.DIDDeactivatedException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
-import org.elastos.did.exception.DIDTransactionException;
 import org.elastos.did.exception.WrongPasswordException;
-import org.elastos.did.meta.DIDMeta;
 import org.elastos.did.util.HDKey;
 import org.junit.Rule;
 import org.junit.Test;
@@ -208,6 +206,8 @@ public class DIDStoreTest {
 
     	resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
+
+    	// test alias
     	store.storeDid(resolved);
     	assertEquals(alias, resolved.getAlias());
     	assertEquals(doc.getSubject(), resolved.getSubject());
@@ -259,44 +259,148 @@ public class DIDStoreTest {
 
     	DIDDocument resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
-    	store.storeDid(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
 
     	// Update
-    	DIDDocument.Builder db = resolved.edit();
+    	DIDDocument.Builder db = doc.edit();
     	HDKey.DerivedKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
-    	DIDDocument newDoc = db.seal(TestConfig.storePass);
-    	assertEquals(2, newDoc.getPublicKeyCount());
-    	assertEquals(2, newDoc.getAuthenticationKeyCount());
-    	store.storeDid(newDoc);
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(2, doc.getPublicKeyCount());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
 
-    	store.publishDid(newDoc.getSubject(), TestConfig.storePass);
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
-    	assertEquals(newDoc.toString(), resolved.toString());
-    	store.storeDid(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
 
     	// Update again
-    	db = resolved.edit();
+    	db = doc.edit();
     	key = TestData.generateKeypair();
     	db.addAuthenticationKey("key2", key.getPublicKeyBase58());
-    	newDoc = db.seal(TestConfig.storePass);
-    	assertEquals(3, newDoc.getPublicKeyCount());
-    	assertEquals(3, newDoc.getAuthenticationKeyCount());
-    	store.storeDid(newDoc);
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(3, doc.getPublicKeyCount());
+    	assertEquals(3, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
 
-    	store.publishDid(newDoc.getSubject(), TestConfig.storePass);
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
-    	assertEquals(newDoc.toString(), resolved.toString());
+    	assertEquals(doc.toString(), resolved.toString());
 	}
 
 	@Test
-	public void testUpdateNonExistedDid() throws DIDException {
-		expectedEx.expect(DIDTransactionException.class);
-		//expectedEx.expectMessage("Update ID transaction error.");
+	public void testUpdateDidWithoutTxid() throws DIDException {
+    	TestData testData = new TestData();
+    	DIDStore store = testData.setup(true);
+    	testData.initIdentity();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setTransactionId(null);
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update
+    	DIDDocument.Builder db = doc.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(2, doc.getPublicKeyCount());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setTransactionId(null);
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update again
+    	db = doc.edit();
+    	key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key2", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(3, doc.getPublicKeyCount());
+    	assertEquals(3, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+	}
+
+
+	@Test
+	public void testUpdateDidWithoutSignature() throws DIDException {
+    	TestData testData = new TestData();
+    	DIDStore store = testData.setup(true);
+    	testData.initIdentity();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setSignature(null);
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update
+    	DIDDocument.Builder db = doc.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(2, doc.getPublicKeyCount());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setSignature(null);
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update again
+    	db = doc.edit();
+    	key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key2", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(3, doc.getPublicKeyCount());
+    	assertEquals(3, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+	}
+
+	@Test
+	public void testUpdateDidWithoutTxidAndSignature() throws DIDException {
+		expectedEx.expect(DIDStoreException.class);
+		expectedEx.expectMessage("DID document not up-to-date");
 
 		TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
@@ -304,14 +408,211 @@ public class DIDStoreTest {
 
     	DIDDocument doc = store.newDid(TestConfig.storePass);
     	assertTrue(doc.isValid());
-    	// fake a txid
-    	DIDMeta meta = new DIDMeta();
-    	meta.setStore(store);
-    	meta.setTransactionId("12345678");
-    	store.storeDidMeta(doc.getSubject(), meta);
 
-    	// Update will fail
     	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setTransactionId(null);
+    	doc.getMeta().setSignature(null);
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update
+    	DIDDocument.Builder db = doc.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(2, doc.getPublicKeyCount());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+	}
+
+	@Test
+	public void testForceUpdateDidWithoutTxidAndSignature() throws DIDException {
+		TestData testData = new TestData();
+    	DIDStore store = testData.setup(true);
+    	testData.initIdentity();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setTransactionId(null);
+    	doc.getMeta().setSignature(null);
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update
+    	DIDDocument.Builder db = doc.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(2, doc.getPublicKeyCount());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), 1, doc.getDefaultPublicKey(),
+    			true, TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+	}
+
+	@Test
+	public void testUpdateDidWithWrongTxid() throws DIDException {
+		expectedEx.expect(DIDStoreException.class);
+		expectedEx.expectMessage("DID document not up-to-date");
+
+		TestData testData = new TestData();
+    	DIDStore store = testData.setup(true);
+    	testData.initIdentity();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setTransactionId("1234567890");
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update
+    	DIDDocument.Builder db = doc.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(2, doc.getPublicKeyCount());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+	}
+
+	@Test
+	public void testUpdateDidWithWrongSignature() throws DIDException {
+		expectedEx.expect(DIDStoreException.class);
+		expectedEx.expectMessage("DID document not up-to-date");
+
+		TestData testData = new TestData();
+    	DIDStore store = testData.setup(true);
+    	testData.initIdentity();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setSignature("1234567890");
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update
+    	DIDDocument.Builder db = doc.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(2, doc.getPublicKeyCount());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+	}
+
+	@Test
+	public void testForceUpdateDidWithWrongTxid() throws DIDException {
+		TestData testData = new TestData();
+    	DIDStore store = testData.setup(true);
+    	testData.initIdentity();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setTransactionId("1234567890");
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update
+    	DIDDocument.Builder db = doc.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(2, doc.getPublicKeyCount());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), 1, doc.getDefaultPublicKey(),
+    			true, TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+	}
+
+	@Test
+	public void testForceUpdateDidWithWrongSignature() throws DIDException {
+		TestData testData = new TestData();
+    	DIDStore store = testData.setup(true);
+    	testData.initIdentity();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	doc.getMeta().setSignature("1234567890");
+    	store.storeDidMeta(doc.getSubject(), doc.getMeta());
+
+    	// Update
+    	DIDDocument.Builder db = doc.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(2, doc.getPublicKeyCount());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), 1, doc.getDefaultPublicKey(),
+    			true, TestConfig.storePass);
+
+    	resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
 	}
 
 	@Test(expected = DIDDeactivatedException.class)
@@ -327,6 +628,7 @@ public class DIDStoreTest {
 
     	DIDDocument resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
 
     	store.deactivateDid(doc.getSubject(), TestConfig.storePass);
 
@@ -348,25 +650,24 @@ public class DIDStoreTest {
 
     	DIDDocument resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
-    	store.storeDid(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
 
     	// Update
-    	DIDDocument.Builder db = resolved.edit();
+    	DIDDocument.Builder db = doc.edit();
     	HDKey.DerivedKey key = TestData.generateKeypair();
     	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
-    	DIDDocument newDoc = db.seal(TestConfig.storePass);
-    	assertEquals(2, newDoc.getPublicKeyCount());
-    	assertEquals(2, newDoc.getAuthenticationKeyCount());
-    	store.storeDid(newDoc);
+    	doc = db.seal(TestConfig.storePass);
+    	assertEquals(2, doc.getPublicKeyCount());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
 
-    	store.publishDid(newDoc.getSubject(), TestConfig.storePass);
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
-    	assertEquals(newDoc.toString(), resolved.toString());
-    	store.storeDid(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
 
-    	store.deactivateDid(newDoc.getSubject(), TestConfig.storePass);
+    	store.deactivateDid(doc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
     	// dead code

@@ -42,7 +42,7 @@ public class DIDURL implements Comparable<DIDURL> {
 	private CredentialMeta meta;
 
 	public DIDURL(DID id, String fragment) {
-		if (id == null)
+		if (id == null || fragment == null || fragment.isEmpty())
 			throw new IllegalArgumentException();
 
 		if (fragment != null) {

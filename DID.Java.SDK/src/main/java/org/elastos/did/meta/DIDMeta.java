@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class DIDMeta extends Metadata {
 	private final static String TXID = "txid";
+	private final static String SIGNATURE = "signature";
 	private final static String TIMESTAMP = "timestamp";
 	private final static String ALIAS = "alias";
 	private final static String DEACTIVATED = "deactivated";
@@ -40,6 +41,7 @@ public class DIDMeta extends Metadata {
 	private boolean deactivated;
 	private Date updated;
 	private String txid;
+	private String signature;
 	private String alias;
 
 	public void setAlias(String alias) {
@@ -56,6 +58,14 @@ public class DIDMeta extends Metadata {
 
 	public String getTransactionId() {
 		return txid;
+	}
+
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
+
+	public String getSignature() {
+		return signature;
 	}
 
 	public void setUpdated(Date updated) {
@@ -93,6 +103,10 @@ public class DIDMeta extends Metadata {
 		if (value != null)
 			setTransactionId(value.asText());
 
+		value = node.get(SIGNATURE);
+		if (value != null)
+			setSignature(value.asText());
+
 		value = node.get(TIMESTAMP);
 		if (value != null) {
 			try {
@@ -113,6 +127,9 @@ public class DIDMeta extends Metadata {
 
 		if (txid != null)
 			node.put(TXID, txid);
+
+		if (signature != null)
+			node.put(SIGNATURE, signature);
 
 		if (updated != null)
 			node.put(TIMESTAMP, JsonHelper.formatDate(updated));
@@ -137,6 +154,9 @@ public class DIDMeta extends Metadata {
 		if (m.txid != null)
 			txid = m.txid;
 
+		if (m.signature != null)
+			signature = m.signature;
+
 		if (m.updated != null)
 			updated = m.updated;
 
@@ -145,7 +165,8 @@ public class DIDMeta extends Metadata {
 
 	@Override
 	public boolean isEmpty() {
-		if (alias != null || deactivated || txid != null || updated != null)
+		if (alias != null || deactivated || txid != null ||
+				signature != null || updated != null)
 			return false;
 
 		return super.isEmpty();

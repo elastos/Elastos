@@ -144,13 +144,12 @@ public class IDChainOperationsTest {
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
-		store.storeDid(resolved);
 
 		String lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update
-		DIDDocument.Builder db = resolved.edit();
+		DIDDocument.Builder db = doc.edit();
 		HDKey.DerivedKey key = TestData.generateKeypair();
 		db.addAuthenticationKey("key1", key.getPublicKeyBase58());
 		doc = db.seal(TestConfig.storePass);
@@ -165,17 +164,16 @@ public class IDChainOperationsTest {
 
 		testData.waitForWalletAvaliable();
 		resolved = did.resolve(true);
-		assertNotEquals(lastTxid, resolved.getMeta().getTransactionId());
+		assertNotEquals(lastTxid, resolved.getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
-		store.storeDid(resolved);
 
 		lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update again
-		db = resolved.edit();
+		db = doc.edit();
 		key = TestData.generateKeypair();
 		db.addAuthenticationKey("key2", key.getPublicKeyBase58());
 		doc = db.seal(TestConfig.storePass);
@@ -190,7 +188,7 @@ public class IDChainOperationsTest {
 
 		testData.waitForWalletAvaliable();
 		resolved = did.resolve(true);
-		assertNotEquals(lastTxid, resolved.getMeta().getTransactionId());
+		assertNotEquals(lastTxid, resolved.getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
@@ -225,13 +223,12 @@ public class IDChainOperationsTest {
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
-		store.storeDid(resolved);
 
 		String lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update
-		DIDDocument.Builder db = resolved.edit();
+		DIDDocument.Builder db = doc.edit();
 		HDKey.DerivedKey key = TestData.generateKeypair();
 		db.addAuthenticationKey("key1", key.getPublicKeyBase58());
 		doc = db.seal(TestConfig.storePass);
@@ -251,17 +248,16 @@ public class IDChainOperationsTest {
 		testData.waitForWalletAvaliable();
 		rf = did.resolveAsync(true);
 		resolved = rf.join();
-		assertNotEquals(lastTxid, resolved.getMeta().getTransactionId());
+		assertNotEquals(lastTxid, resolved.getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
-		store.storeDid(resolved);
 
 		lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update again
-		db = resolved.edit();
+		db = doc.edit();
 		key = TestData.generateKeypair();
 		db.addAuthenticationKey("key2", key.getPublicKeyBase58());
 		doc = db.seal(TestConfig.storePass);
@@ -281,7 +277,7 @@ public class IDChainOperationsTest {
 		testData.waitForWalletAvaliable();
 		rf = did.resolveAsync(true);
 		resolved = rf.join();
-		assertNotEquals(lastTxid, resolved.getMeta().getTransactionId());
+		assertNotEquals(lastTxid, resolved.getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
@@ -335,13 +331,12 @@ public class IDChainOperationsTest {
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
-		store.storeDid(resolved);
 
 		String lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update
-		selfIssuer = new Issuer(resolved);
+		selfIssuer = new Issuer(doc);
 		cb = selfIssuer.issueFor(did);
 
 		props.clear();
@@ -354,7 +349,7 @@ public class IDChainOperationsTest {
 				.seal(TestConfig.storePass);
 		assertNotNull(vc);
 
-		db = resolved.edit();
+		db = doc.edit();
 		db.addCredential(vc);
 		doc = db.seal(TestConfig.storePass);
 		assertNotNull(doc);
@@ -368,17 +363,16 @@ public class IDChainOperationsTest {
 
 		testData.waitForWalletAvaliable();
 		resolved = did.resolve(true);
-		assertNotEquals(lastTxid, resolved.getMeta().getTransactionId());
+		assertNotEquals(lastTxid, resolved.getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
-		store.storeDid(resolved);
 
 		lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update again
-		selfIssuer = new Issuer(resolved);
+		selfIssuer = new Issuer(doc);
 		cb = selfIssuer.issueFor(did);
 
 		props.clear();
@@ -395,7 +389,7 @@ public class IDChainOperationsTest {
 				.seal(TestConfig.storePass);
 		assertNotNull(vc);
 
-		db = resolved.edit();
+		db = doc.edit();
 		db.addCredential(vc);
 		doc = db.seal(TestConfig.storePass);
 		assertNotNull(doc);
@@ -409,7 +403,7 @@ public class IDChainOperationsTest {
 
 		testData.waitForWalletAvaliable();
 		resolved = did.resolve(true);
-		assertNotEquals(lastTxid, resolved.getMeta().getTransactionId());
+		assertNotEquals(lastTxid, resolved.getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
@@ -468,13 +462,12 @@ public class IDChainOperationsTest {
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
-		store.storeDid(resolved);
 
 		String lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update
-		selfIssuer = new Issuer(resolved);
+		selfIssuer = new Issuer(doc);
 		cb = selfIssuer.issueFor(did);
 
 		props.clear();
@@ -487,7 +480,7 @@ public class IDChainOperationsTest {
 				.seal(TestConfig.storePass);
 		assertNotNull(vc);
 
-		db = resolved.edit();
+		db = doc.edit();
 		db.addCredential(vc);
 		doc = db.seal(TestConfig.storePass);
 		assertNotNull(doc);
@@ -506,17 +499,16 @@ public class IDChainOperationsTest {
 		testData.waitForWalletAvaliable();
 		rf = did.resolveAsync(true);
 		resolved = rf.join();
-		assertNotEquals(lastTxid, resolved.getMeta().getTransactionId());
+		assertNotEquals(lastTxid, resolved.getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
-		store.storeDid(resolved);
 
 		lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
 
 		// Update again
-		selfIssuer = new Issuer(resolved);
+		selfIssuer = new Issuer(doc);
 		cb = selfIssuer.issueFor(did);
 
 		props.clear();
@@ -533,7 +525,7 @@ public class IDChainOperationsTest {
 				.seal(TestConfig.storePass);
 		assertNotNull(vc);
 
-		db = resolved.edit();
+		db = doc.edit();
 		db.addCredential(vc);
 		doc = db.seal(TestConfig.storePass);
 		assertNotNull(doc);
@@ -552,7 +544,7 @@ public class IDChainOperationsTest {
 		testData.waitForWalletAvaliable();
 		rf = did.resolveAsync(true);
 		resolved = rf.join();
-		assertNotEquals(lastTxid, resolved.getMeta().getTransactionId());
+		assertNotEquals(lastTxid, resolved.getTransactionId());
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
@@ -663,5 +655,305 @@ public class IDChainOperationsTest {
 		}
 
 		input.close();
+	}
+
+	@Test(timeout = 900000)
+	public void testSyncWithLocalModification1() throws DIDException, IOException {
+		if (DUMMY_TEST)
+			return;
+
+		TestData testData = new TestData();
+		DIDStore store = testData.setup(false);
+
+		String mnemonic = testData.loadRestoreMnemonic();
+
+		store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+				TestConfig.passphrase, TestConfig.storePass, true);
+
+		System.out.print("Synchronizing from IDChain...");
+		store.synchronize(TestConfig.storePass);
+		System.out.println("OK");
+
+		List<DID> dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(5, dids.size());
+
+		ArrayList<String> didStrings = new ArrayList<String>(dids.size());
+		for (DID id : dids)
+			didStrings.add(id.toString());
+
+		BufferedReader input = new BufferedReader(new InputStreamReader(
+				getClass().getClassLoader().getResourceAsStream("testdata/dids.restore")));
+
+		String didstr;
+		while ((didstr = input.readLine()) != null) {
+			assertTrue(didStrings.contains(didstr));
+
+			DID did = new DID(didstr);
+			DIDDocument d = store.loadDid(did);
+			assertNotNull(d);
+			assertEquals(did, d.getSubject());
+			assertEquals(4, d.getCredentialCount());
+
+			List<DIDURL> vcs = store.listCredentials(did);
+			assertEquals(4, vcs.size());
+
+			for (DIDURL id : vcs) {
+				VerifiableCredential vc = store.loadCredential(did, id);
+				assertNotNull(vc);
+				assertEquals(id, vc.getId());
+			}
+		}
+
+		input.close();
+
+		DID modifiedDid = dids.get(0);
+		DIDDocument doc = store.loadDid(modifiedDid);
+		DIDDocument.Builder db = doc.edit();
+		db.addService("test1", "TestType", "http://test.com/");
+		doc = db.seal(TestConfig.storePass);
+		store.storeDid(doc);
+		String modifiedSignature = doc.getProof().getSignature();
+
+		System.out.print("Synchronizing again from IDChain...");
+		store.synchronize(TestConfig.storePass);
+		System.out.println("OK");
+
+		dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(5, dids.size());
+
+		didStrings = new ArrayList<String>(dids.size());
+		for (DID id : dids)
+			didStrings.add(id.toString());
+
+		input = new BufferedReader(new InputStreamReader(
+				getClass().getClassLoader().getResourceAsStream("testdata/dids.restore")));
+
+		while ((didstr = input.readLine()) != null) {
+			assertTrue(didStrings.contains(didstr));
+
+			DID did = new DID(didstr);
+			DIDDocument d = store.loadDid(did);
+			assertNotNull(d);
+			assertEquals(did, d.getSubject());
+			assertEquals(4, d.getCredentialCount());
+
+			List<DIDURL> vcs = store.listCredentials(did);
+			assertEquals(4, vcs.size());
+
+			for (DIDURL id : vcs) {
+				VerifiableCredential vc = store.loadCredential(did, id);
+				assertNotNull(vc);
+				assertEquals(id, vc.getId());
+			}
+		}
+
+		input.close();
+
+		doc = store.loadDid(modifiedDid);
+		assertEquals(modifiedSignature, doc.getProof().getSignature());
+	}
+
+	@Test(timeout = 900000)
+	public void testSyncWithLocalModification2() throws DIDException, IOException {
+		if (DUMMY_TEST)
+			return;
+
+		TestData testData = new TestData();
+		DIDStore store = testData.setup(false);
+
+		String mnemonic = testData.loadRestoreMnemonic();
+
+		store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+				TestConfig.passphrase, TestConfig.storePass, true);
+
+		System.out.print("Synchronizing from IDChain...");
+		store.synchronize(TestConfig.storePass);
+		System.out.println("OK");
+
+		List<DID> dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(5, dids.size());
+
+		ArrayList<String> didStrings = new ArrayList<String>(dids.size());
+		for (DID id : dids)
+			didStrings.add(id.toString());
+
+		BufferedReader input = new BufferedReader(new InputStreamReader(
+				getClass().getClassLoader().getResourceAsStream("testdata/dids.restore")));
+
+		String didstr;
+		while ((didstr = input.readLine()) != null) {
+			assertTrue(didStrings.contains(didstr));
+
+			DID did = new DID(didstr);
+			DIDDocument d = store.loadDid(did);
+			assertNotNull(d);
+			assertEquals(did, d.getSubject());
+			assertEquals(4, d.getCredentialCount());
+
+			List<DIDURL> vcs = store.listCredentials(did);
+			assertEquals(4, vcs.size());
+
+			for (DIDURL id : vcs) {
+				VerifiableCredential vc = store.loadCredential(did, id);
+				assertNotNull(vc);
+				assertEquals(id, vc.getId());
+			}
+		}
+
+		input.close();
+
+		DID modifiedDid = dids.get(0);
+		DIDDocument doc = store.loadDid(modifiedDid);
+		String originSignature = doc.getProof().getSignature();
+
+		DIDDocument.Builder db = doc.edit();
+		db.addService("test1", "TestType", "http://test.com/");
+		doc = db.seal(TestConfig.storePass);
+		store.storeDid(doc);
+		assertNotEquals(originSignature, doc.getProof().getSignature());
+
+		System.out.print("Synchronizing again from IDChain...");
+		store.synchronize((c, l) -> c, TestConfig.storePass);
+		System.out.println("OK");
+
+		dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(5, dids.size());
+
+		didStrings = new ArrayList<String>(dids.size());
+		for (DID id : dids)
+			didStrings.add(id.toString());
+
+		input = new BufferedReader(new InputStreamReader(
+				getClass().getClassLoader().getResourceAsStream("testdata/dids.restore")));
+
+		while ((didstr = input.readLine()) != null) {
+			assertTrue(didStrings.contains(didstr));
+
+			DID did = new DID(didstr);
+			DIDDocument d = store.loadDid(did);
+			assertNotNull(d);
+			assertEquals(did, d.getSubject());
+			assertEquals(4, d.getCredentialCount());
+
+			List<DIDURL> vcs = store.listCredentials(did);
+			assertEquals(4, vcs.size());
+
+			for (DIDURL id : vcs) {
+				VerifiableCredential vc = store.loadCredential(did, id);
+				assertNotNull(vc);
+				assertEquals(id, vc.getId());
+			}
+		}
+
+		input.close();
+
+		doc = store.loadDid(modifiedDid);
+		assertEquals(originSignature, doc.getProof().getSignature());
+	}
+
+	@Test(timeout = 900000)
+	public void testSyncWithLocalModificationAsync() throws DIDException, IOException {
+		if (DUMMY_TEST)
+			return;
+
+		TestData testData = new TestData();
+		DIDStore store = testData.setup(false);
+
+		String mnemonic = testData.loadRestoreMnemonic();
+
+		store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+				TestConfig.passphrase, TestConfig.storePass, true);
+
+		System.out.print("Synchronizing from IDChain...");
+		CompletableFuture<Void> f = store.synchronizeAsync(TestConfig.storePass)
+				.thenRun(() -> {
+					System.out.println("OK");
+				});
+
+		f.join();
+
+		List<DID> dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(5, dids.size());
+
+		ArrayList<String> didStrings = new ArrayList<String>(dids.size());
+		for (DID id : dids)
+			didStrings.add(id.toString());
+
+		BufferedReader input = new BufferedReader(new InputStreamReader(
+				getClass().getClassLoader().getResourceAsStream("testdata/dids.restore")));
+
+		String didstr;
+		while ((didstr = input.readLine()) != null) {
+			assertTrue(didStrings.contains(didstr));
+
+			DID did = new DID(didstr);
+			DIDDocument d = store.loadDid(did);
+			assertNotNull(d);
+			assertEquals(did, d.getSubject());
+			assertEquals(4, d.getCredentialCount());
+
+			List<DIDURL> vcs = store.listCredentials(did);
+			assertEquals(4, vcs.size());
+
+			for (DIDURL id : vcs) {
+				VerifiableCredential vc = store.loadCredential(did, id);
+				assertNotNull(vc);
+				assertEquals(id, vc.getId());
+			}
+		}
+
+		input.close();
+
+		DID modifiedDid = dids.get(0);
+		DIDDocument doc = store.loadDid(modifiedDid);
+		String originSignature = doc.getProof().getSignature();
+
+		DIDDocument.Builder db = doc.edit();
+		db.addService("test1", "TestType", "http://test.com/");
+		doc = db.seal(TestConfig.storePass);
+		store.storeDid(doc);
+		assertNotEquals(originSignature, doc.getProof().getSignature());
+
+		System.out.print("Synchronizing again from IDChain...");
+		f = store.synchronizeAsync((c, l) -> c, TestConfig.storePass)
+				.thenRun(() -> {
+					System.out.println("OK");
+				});
+
+		f.join();
+
+		dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(5, dids.size());
+
+		didStrings = new ArrayList<String>(dids.size());
+		for (DID id : dids)
+			didStrings.add(id.toString());
+
+		input = new BufferedReader(new InputStreamReader(
+				getClass().getClassLoader().getResourceAsStream("testdata/dids.restore")));
+
+		while ((didstr = input.readLine()) != null) {
+			assertTrue(didStrings.contains(didstr));
+
+			DID did = new DID(didstr);
+			DIDDocument d = store.loadDid(did);
+			assertNotNull(d);
+			assertEquals(did, d.getSubject());
+			assertEquals(4, d.getCredentialCount());
+
+			List<DIDURL> vcs = store.listCredentials(did);
+			assertEquals(4, vcs.size());
+
+			for (DIDURL id : vcs) {
+				VerifiableCredential vc = store.loadCredential(did, id);
+				assertNotNull(vc);
+				assertEquals(id, vc.getId());
+			}
+		}
+
+		input.close();
+
+		doc = store.loadDid(modifiedDid);
+		assertEquals(originSignature, doc.getProof().getSignature());
 	}
 }
