@@ -1698,6 +1698,7 @@ int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *extende
     uint8_t key[EXTENDEDKEY_BYTES];
     char path[PATH_MAX];
     ssize_t size;
+    HDKey _privateIdentity, *privateIdentity;
 
     if (!store || !extendedkey || !storepass || !*storepass)
         return -1;
@@ -1709,6 +1710,14 @@ int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *extende
     }
 
     size = base58_decode(key, extendedkey);
+    if (size == -1)
+        return -1;
+
+    privateIdentity = HDKey_FromExtendedKey(key, size, &_privateIdentity);
+    if (!privateIdentity)
+        return -1;
+
+    size = HDKey_Serialize(privateIdentity, key, sizeof(key));
     if (size == -1)
         return -1;
 
