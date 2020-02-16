@@ -57,16 +57,6 @@ struct DIDDocument {
 
     struct {
         size_t size;
-        PublicKey **pks;
-    } authentication;
-
-    struct {
-        size_t size;
-        PublicKey **pks;
-    } authorization;
-
-    struct {
-        size_t size;
         Credential **credentials;
     } credentials;
 
@@ -86,6 +76,8 @@ struct PublicKey {
     char type[MAX_DOC_TYPE];
     DID controller;
     char publicKeyBase58[MAX_PUBLICKEY_BASE58];
+    bool authenticationKey;
+    bool authorizationKey;
 };
 
 struct Service {

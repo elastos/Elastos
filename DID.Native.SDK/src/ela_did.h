@@ -1501,6 +1501,30 @@ DID_API const char *PublicKey_GetType(PublicKey *publickey);
 
 /**
  * \~English
+ * Publickey is authentication key or not.
+ *
+ * @param
+ *      publickey             [in] A handle to public key.
+ * @return
+ *      If publickey is authentication key, return true.
+ *      Otherwise, return false.
+ */
+DID_API bool PublicKey_IsAuthenticationKey(PublicKey *publickey);
+
+/**
+ * \~English
+ * Publickey is authorization key or not.
+ *
+ * @param
+ *      publickey             [in] A handle to public key.
+ * @return
+ *      If publickey is authorization key, return true.
+ *      Otherwise, return false.
+ */
+DID_API bool PublicKey_IsAuthorizationKey(PublicKey *publickey);
+
+/**
+ * \~English
  * Get identifier of Service.
  *
  * @param

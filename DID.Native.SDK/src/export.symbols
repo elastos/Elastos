@@ -92,6 +92,8 @@ _PublicKey_GetId
 _PublicKey_GetController
 _PublicKey_GetPublicKeyBase58
 _PublicKey_GetType
+_PublicKey_IsAuthenticationKey
+_PublicKey_IsAuthorizationKey
 _Service_GetId
 _Service_GetEndpoint
 _Service_GetType

@@ -172,7 +172,7 @@ static int issuer_issuevc_test_suite_init(void)
 
     storePath = get_store_path(_path, "/idchain");
     store = TestData_SetupStore(storePath);
-    if (rc < 0)
+    if (!store)
         return -1;
 
     issuerdoc = TestData_LoadIssuerDoc();
