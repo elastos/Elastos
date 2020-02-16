@@ -39,8 +39,12 @@ import java.util.TreeMap;
 import java.util.function.Function;
 
 import org.elastos.did.exception.DIDBackendException;
+import org.elastos.did.exception.DIDNotFoundException;
+import org.elastos.did.exception.DIDObjectAlreadyExistException;
+import org.elastos.did.exception.DIDObjectNotExistException;
 import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.InvalidKeyException;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDIDException;
 import org.elastos.did.exception.MalformedDocumentException;
@@ -419,11 +423,11 @@ public class DIDDocument {
 		return entries.get(id);
 	}
 
-	private <K, V extends DIDObject> boolean removeEntry(Map<K, V> entries, K id) {
-		if (entries == null || entries.isEmpty())
-			return false;
+	private <K, V extends DIDObject> void removeEntry(Map<K, V> entries, K id) {
+		if (entries == null || entries.isEmpty() || !entries.containsKey(id))
+			throw new DIDObjectNotExistException(id.toString() + " not exists.");
 
-		return entries.remove(id) != null;
+		entries.remove(id);
 	}
 
 	public DID getSubject() {
@@ -517,52 +521,51 @@ public class DIDDocument {
 				return pk.getId();
 		}
 
-		return null;
+		throw new IllegalStateException("DID Document internal error.");
 	}
 
-	protected boolean addPublicKey(PublicKey pk) {
+	protected void addPublicKey(PublicKey pk) {
 		if (publicKeys == null) {
 			publicKeys = new TreeMap<DIDURL, PublicKey>();
 		} else {
 			// Check the existence, both id and keyBase58
 			for (PublicKey key : publicKeys.values()) {
 				if (key.getId().equals(pk.getId()))
-					return false;
+					throw new DIDObjectAlreadyExistException("PublicKey id '"
+							+ pk.getId() + "' already exist.");
 
 				if (key.getPublicKeyBase58().equals(pk.getPublicKeyBase58()))
-					return false;
+					throw new DIDObjectAlreadyExistException("PublicKey '"
+							+ pk.getPublicKeyBase58() + "' already exist.");
 			}
 		}
 
 		publicKeys.put(pk.getId(), pk);
-		return true;
 	}
 
-	protected boolean removePublicKey(DIDURL id, boolean force) {
+	protected void removePublicKey(DIDURL id, boolean force) {
 		PublicKey pk = getEntry(publicKeys, id);
 		if (pk == null)
-			return false;
+			throw new DIDObjectNotExistException("PublicKey id '"
+					+ id + "' not exist.");
 
 		// Can not remove default public key
 		if (getDefaultPublicKey().equals(id))
-			return false;
+			throw new UnsupportedOperationException(
+					"Cannot remove the default PublicKey.");
 
 		if (!force) {
 			if (pk.isAuthenticationKey() || pk.isAuthorizationKey())
-				return false;
+				throw new UnsupportedOperationException("Key has references.");
 		}
 
-		boolean removed = removeEntry(publicKeys, id);
-		if (removed) {
-			try {
-				if (getMeta().attachedStore())
-					getMeta().getStore().deletePrivateKey(getSubject(), id);
-			} catch (DIDStoreException ignore) {
-				// TODO: CHECKME!
-			}
+		removeEntry(publicKeys, id);
+		try {
+			if (getMeta().attachedStore())
+				getMeta().getStore().deletePrivateKey(getSubject(), id);
+		} catch (DIDStoreException ignore) {
+			// TODO: CHECKME!
 		}
-
-		return removed;
 	}
 
 	public int getAuthenticationKeyCount() {
@@ -622,41 +625,30 @@ public class DIDDocument {
 		return getAuthenticationKey(id) != null;
 	}
 
-	// Check whether this publicKey already is one of DIDDocument publicKeys
-	// if not, just add it. Otherwise, need to check whether it is the same
-	// public key. If does, we prefer to reference public key in DIDDocument
-	// publicKeys. If not, then would be conflicted and should keep untouched.
-	protected boolean addAuthenticationKey(PublicKey pk) {
+	protected void addAuthenticationKey(DIDURL id) {
+		PublicKey key = getPublicKey(id);
+		if (key == null)
+			throw new DIDObjectNotExistException("PublicKey '" + id + "' not exists.");
+
 		// Check the controller is current DID subject
-		if (!pk.getController().equals(getSubject()))
-			return false;
+		if (!key.getController().equals(getSubject()))
+			throw new UnsupportedOperationException("Key cannot used for authentication.");
 
-		PublicKey key = getPublicKey(pk.getId());
-		if (key == null) {
-			// Add the new pk to PublicKeys if not exist.
-			addPublicKey(pk);
-		} else {
-			if (!key.equals(pk)) // Key conflict.
-				return false;
-			else // Already has this key
-				pk = key;
-		}
-
-		pk.setAuthenticationKey(true);
-		return true;
+		key.setAuthenticationKey(true);
 	}
 
-	protected boolean removeAuthenticationKey(DIDURL id) {
+	protected void removeAuthenticationKey(DIDURL id) {
 		PublicKey pk = getEntry(publicKeys, id);
 		if (pk == null)
-			return false;
+			throw new DIDObjectNotExistException("PublicKey id '"
+					+ id + "' not exist.");
 
 		// Can not remove default public key
 		if (getDefaultPublicKey().equals(id))
-			return false;
+			throw new UnsupportedOperationException(
+					"Cannot remove the default PublicKey from authentication.");
 
 		pk.setAuthenticationKey(false);
-		return true;
 	}
 
 	public int getAuthorizationKeyCount() {
@@ -716,34 +708,25 @@ public class DIDDocument {
 		return getAuthorizationKey(id) != null;
 	}
 
-	// same comments as "addAuthenticationKey" method.
-	protected boolean addAuthorizationKey(PublicKey pk) {
+	protected void addAuthorizationKey(DIDURL id) {
+		PublicKey key = getPublicKey(id);
+		if (key == null)
+			throw new DIDObjectNotExistException("PublicKey '" + id + "' not exists.");
+
 		// Can not authorize to self
-		if (pk.getController().equals(getSubject()))
-			return false;
+		if (key.getController().equals(getSubject()))
+			throw new UnsupportedOperationException("Key cannot used for authorization.");
 
-		PublicKey key = getPublicKey(pk.getId());
-		if (key == null) {
-			// Add the new pk to PublicKeys if not exist.
-			addPublicKey(pk);
-		} else {
-			if (!key.equals(pk)) // Key conflict.
-				return false;
-			else // Already has this key.
-				pk = key;
-		}
-
-		pk.setAuthorizationKey(true);
-		return true;
+		key.setAuthorizationKey(true);
 	}
 
-	protected boolean removeAuthorizationKey(DIDURL id) {
+	protected void removeAuthorizationKey(DIDURL id) {
 		PublicKey pk = getEntry(publicKeys, id);
 		if (pk == null)
-			return false;
+			throw new DIDObjectNotExistException("PublicKey id '"
+					+ id + "' not exist.");
 
 		pk.setAuthorizationKey(false);
-		return true;
 	}
 
 	public int getCredentialCount() {
@@ -790,24 +773,24 @@ public class DIDDocument {
 		return getCredential(_id);
 	}
 
-	protected boolean addCredential(VerifiableCredential vc) {
+	protected void addCredential(VerifiableCredential vc) {
 		// Check the credential belongs to current DID.
 		if (!vc.getSubject().getId().equals(getSubject()))
-			return false;
+			throw new UnsupportedOperationException("Credential not owned by self.");
 
 		if (credentials == null) {
 			credentials = new TreeMap<DIDURL, VerifiableCredential>();
 		} else {
 			if (credentials.containsKey(vc.getId()))
-				return false;
+				throw new DIDObjectAlreadyExistException("Credential '"
+						+ vc.getId() + "' already exist.");
 		}
 
 		credentials.put(vc.getId(), vc);
-		return true;
 	}
 
-	protected boolean removeCredential(DIDURL id) {
-		return removeEntry(credentials, id);
+	protected void removeCredential(DIDURL id) {
+		removeEntry(credentials, id);
 	}
 
 	public int getServiceCount() {
@@ -850,20 +833,20 @@ public class DIDDocument {
 		return getService(_id);
 	}
 
-	protected boolean addService(Service svc) {
+	protected void addService(Service svc) {
 		if (services == null)
 			services = new TreeMap<DIDURL, Service>();
 		else {
 			if (services.containsKey(svc.getId()))
-				return false;
+				throw new DIDObjectAlreadyExistException("Service '"
+						+ svc.getId() + "' already exist.");
 		}
 
 		services.put(svc.getId(), svc);
-		return true;
 	}
 
-	protected boolean removeService(DIDURL id) {
-		return removeEntry(services, id);
+	protected void removeService(DIDURL id) {
+		removeEntry(services, id);
 	}
 
 	public Date getExpires() {
@@ -1028,7 +1011,7 @@ public class DIDDocument {
 
 		// Add default public key to authentication keys if needed.
 		if (isAuthenticationKey(defaultPk))
-			addAuthenticationKey(getPublicKey(defaultPk));
+			addAuthenticationKey(defaultPk);
 
 		node = doc.get(AUTHORIZATION);
 		if (node != null)
@@ -1094,7 +1077,7 @@ public class DIDDocument {
 				}
 			}
 
-			addAuthenticationKey(pk);
+			addAuthenticationKey(pk.getId());
 		}
 	}
 
@@ -1126,7 +1109,7 @@ public class DIDDocument {
 				}
 			}
 
-			addAuthorizationKey(pk);
+			addAuthorizationKey(pk.getId());
 		}
 	}
 
@@ -1416,7 +1399,7 @@ public class DIDDocument {
 			return document.getSubject();
 		}
 
-		public boolean addPublicKey(DIDURL id, DID controller, String pk) {
+		public Builder addPublicKey(DIDURL id, DID controller, String pk) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
@@ -1427,10 +1410,12 @@ public class DIDDocument {
 				throw new IllegalArgumentException("Invalid public key.");
 
 			PublicKey key = new PublicKey(id, controller, pk);
-			return document.addPublicKey(key);
+			document.addPublicKey(key);
+
+			return this;
 		}
 
-		public boolean addPublicKey(String id, String controller, String pk) {
+		public Builder addPublicKey(String id, String controller, String pk) {
 			DID _controller = null;
 			try {
 				_controller = new DID(controller);
@@ -1441,47 +1426,47 @@ public class DIDDocument {
 			return addPublicKey(new DIDURL(getSubject(), id), _controller, pk);
 		}
 
-		public boolean removePublicKey(DIDURL id, boolean force) {
+		public Builder removePublicKey(DIDURL id, boolean force) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			return document.removePublicKey(id, force);
+			document.removePublicKey(id, force);
+
+			return this;
 		}
 
-		public boolean removePublicKey(String id, boolean force) {
+		public Builder removePublicKey(String id, boolean force) {
 			return removePublicKey(new DIDURL(getSubject(), id), force);
 		}
 
-		public boolean removePublicKey(DIDURL id) {
+		public Builder removePublicKey(DIDURL id) {
 			return removePublicKey(id, false);
 		}
 
-		public boolean removePublicKey(String id) {
+		public Builder removePublicKey(String id) {
 			return removePublicKey(id, false);
 		}
 
-		public boolean addAuthenticationKey(DIDURL id) {
+		public Builder addAuthenticationKey(DIDURL id) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			PublicKey pk = document.getPublicKey(id);
-			if (pk == null)
-				return false;
+			document.addAuthenticationKey(id);
 
-			return document.addAuthenticationKey(pk);
+			return this;
 		}
 
-		public boolean addAuthenticationKey(String id) {
+		public Builder addAuthenticationKey(String id) {
 			return addAuthenticationKey(new DIDURL(getSubject(), id));
 		}
 
-		public boolean addAuthenticationKey(DIDURL id, String pk) {
+		public Builder addAuthenticationKey(DIDURL id, String pk) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
@@ -1492,60 +1477,70 @@ public class DIDDocument {
 				throw new IllegalArgumentException("Invalid public key.");
 
 			PublicKey key = new PublicKey(id, getSubject(), pk);
-			return document.addAuthenticationKey(key);
+			key.setAuthenticationKey(true);
+			document.addPublicKey(key);
+
+			return this;
 		}
 
-		public boolean addAuthenticationKey(String id, String pk) {
+		public Builder addAuthenticationKey(String id, String pk) {
 			return addAuthenticationKey(new DIDURL(getSubject(), id), pk);
 		}
 
-		public boolean removeAuthenticationKey(DIDURL id) {
+		public Builder removeAuthenticationKey(DIDURL id) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			return document.removeAuthenticationKey(id);
+			document.removeAuthenticationKey(id);
+
+			return this;
 		}
 
-		public boolean removeAuthenticationKey(String id) {
+		public Builder removeAuthenticationKey(String id) {
 			return removeAuthenticationKey(new DIDURL(getSubject(), id));
 		}
 
-		public boolean addAuthorizationKey(DIDURL id) {
+		public Builder addAuthorizationKey(DIDURL id) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			PublicKey pk = document.getPublicKey(id);
-			if (pk == null)
-				return false;
+			document.addAuthorizationKey(id);
 
-			return document.addAuthorizationKey(pk);
+			return this;
 		}
 
-		public boolean addAuthorizationKey(String id) {
+		public Builder addAuthorizationKey(String id) {
 			return addAuthorizationKey(new DIDURL(getSubject(), id));
 		}
 
-		public boolean addAuthorizationKey(DIDURL id, DID controller, String pk) {
+		public Builder addAuthorizationKey(DIDURL id, DID controller, String pk) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
 			if (id == null || controller == null || pk == null)
 				throw new IllegalArgumentException();
 
+			// Can not authorize to self
+			if (controller.equals(getSubject()))
+				throw new UnsupportedOperationException("Invalid controller.");
+
 			if (Base58.decode(pk).length != HDKey.PUBLICKEY_BYTES)
 				throw new IllegalArgumentException("Invalid public key.");
 
 			PublicKey key = new PublicKey(id, controller, pk);
-			return document.addAuthorizationKey(key);
+			key.setAuthorizationKey(true);
+			document.addPublicKey(key);
+
+			return this;
 		}
 
-		public boolean addAuthorizationKey(String id, String controller, String pk) {
+		public Builder addAuthorizationKey(String id, String controller, String pk) {
 			DID _controller = null;
 			try {
 				_controller = new DID(controller);
@@ -1557,8 +1552,8 @@ public class DIDDocument {
 					_controller, pk);
 		}
 
-		public boolean authorizationDid(DIDURL id, DID controller, DIDURL key)
-				throws DIDResolveException, DIDBackendException {
+		public Builder authorizationDid(DIDURL id, DID controller, DIDURL key)
+				throws DIDResolveException, DIDBackendException, InvalidKeyException {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
@@ -1567,11 +1562,11 @@ public class DIDDocument {
 
 			// Can not authorize to self
 			if (controller.equals(getSubject()))
-				return false;
+				throw new UnsupportedOperationException("Invalid controller.");
 
 			DIDDocument controllerDoc = controller.resolve();
 			if (controllerDoc == null)
-				return false;
+				throw new DIDNotFoundException(id.toString());
 
 			if (key == null)
 				key = controllerDoc.getDefaultPublicKey();
@@ -1579,21 +1574,23 @@ public class DIDDocument {
 			// Check the key should be a authentication key.
 			PublicKey targetPk = controllerDoc.getAuthenticationKey(key);
 			if (targetPk == null)
-				return false;
+				throw new InvalidKeyException(key.toString());
 
 			PublicKey pk = new PublicKey(id, targetPk.getType(),
 					controller, targetPk.getPublicKeyBase58());
+			pk.setAuthorizationKey(true);
+			document.addPublicKey(pk);
 
-			return document.addAuthorizationKey(pk);
+			return this;
 		}
 
-		public boolean authorizationDid(DIDURL id, DID controller)
-				throws DIDResolveException, DIDBackendException {
+		public Builder authorizationDid(DIDURL id, DID controller)
+				throws DIDResolveException, DIDBackendException, InvalidKeyException {
 			return authorizationDid(id, controller, null);
 		}
 
-		public boolean authorizationDid(String id, String controller, String key)
-				throws DIDResolveException, DIDBackendException {
+		public Builder authorizationDid(String id, String controller, String key)
+				throws DIDResolveException, DIDBackendException, InvalidKeyException {
 			DID controllerId = null;
 			try {
 				controllerId = new DID(controller);
@@ -1607,50 +1604,56 @@ public class DIDDocument {
 					controllerId, keyid);
 		}
 
-		public boolean authorizationDid(String id, String controller)
-				throws DIDResolveException, DIDBackendException {
+		public Builder authorizationDid(String id, String controller)
+				throws DIDResolveException, DIDBackendException, InvalidKeyException {
 			return authorizationDid(id, controller, null);
 		}
 
-		public boolean removeAuthorizationKey(DIDURL id) {
+		public Builder removeAuthorizationKey(DIDURL id) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			return document.removeAuthorizationKey(id);
+			document.removeAuthorizationKey(id);
+
+			return this;
 		}
 
-		public boolean removeAuthorizationKey(String id) {
+		public Builder removeAuthorizationKey(String id) {
 			return removeAuthorizationKey(new DIDURL(getSubject(), id));
 		}
 
-		public boolean addCredential(VerifiableCredential vc) {
+		public Builder addCredential(VerifiableCredential vc) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
 			if (vc == null)
 				throw new IllegalArgumentException();
 
-			return document.addCredential(vc);
+			document.addCredential(vc);
+
+			return this;
 		}
 
-		public boolean removeCredential(DIDURL id) {
+		public Builder removeCredential(DIDURL id) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			return document.removeCredential(id);
+			document.removeCredential(id);
+
+			return this;
 		}
 
-		public boolean removeCredential(String id) {
+		public Builder removeCredential(String id) {
 			return removeCredential(new DIDURL(getSubject(), id));
 		}
 
-		public boolean addService(DIDURL id, String type, String endpoint) {
+		public Builder addService(DIDURL id, String type, String endpoint) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
@@ -1659,24 +1662,28 @@ public class DIDDocument {
 				throw new IllegalArgumentException();
 
 			Service svc = new Service(id, type, endpoint);
-			return document.addService(svc);
+			document.addService(svc);
+
+			return this;
 		}
 
-		public boolean addService(String id, String type, String endpoint) {
+		public Builder addService(String id, String type, String endpoint) {
 			return addService(new DIDURL(getSubject(), id), type, endpoint);
 		}
 
-		public boolean removeService(DIDURL id) {
+		public Builder removeService(DIDURL id) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			return document.removeService(id);
+			document.removeService(id);
+
+			return this;
 		}
 
-		public boolean removeService(String id) {
+		public Builder removeService(String id) {
 			return removeService(new DIDURL(getSubject(), id));
 		}
 
@@ -1686,14 +1693,15 @@ public class DIDDocument {
 			return cal;
 		}
 
-		public void setDefaultExpires() {
+		public Builder setDefaultExpires() {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
 			document.setExpires(getMaxExpires().getTime());
+			return this;
 		}
 
-		public boolean setExpires(Date expires) {
+		public Builder setExpires(Date expires) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");
 
@@ -1704,10 +1712,10 @@ public class DIDDocument {
 			cal.setTime(expires);
 
 			if (cal.after(getMaxExpires()))
-				return false;
+				throw new IllegalArgumentException("Invalid date.");
 
 			document.setExpires(expires);
-			return true;
+			return this;
 		}
 
 		public DIDDocument seal(String storepass) throws DIDStoreException {

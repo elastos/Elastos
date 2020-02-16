@@ -22,15 +22,16 @@
 
 package org.elastos.did.wordlists;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import io.github.novacrypto.bip39.WordList;
 
@@ -76,16 +77,20 @@ public class UserDefinedWordListsTest {
 		assertNull(wl);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testLoadFromNonExistDir() throws IOException {
-		UserDefinedWordLists.initialize("/tmp/not-exist-dir");
+	@Test
+	public void testLoadFromNonExistDir() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			UserDefinedWordLists.initialize("/tmp/not-exist-dir");
+		});
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testLoadFromFile() throws IOException {
+	@Test
+	public void testLoadFromFile() {
 		URL url = this.getClass().getResource("/testdata/document.json");
 		File dir = new File(url.getPath());
 
-		UserDefinedWordLists.initialize(dir);
+		assertThrows(IllegalArgumentException.class, () -> {
+			UserDefinedWordLists.initialize(dir);
+		});
 	}
 }

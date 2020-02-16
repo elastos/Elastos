@@ -22,10 +22,10 @@
 
 package org.elastos.did;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,7 +38,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.util.HDKey;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 //@RunWith(Parameterized.class)
 public class IDChainOperationsTest {
@@ -553,7 +553,7 @@ public class IDChainOperationsTest {
 		System.out.println("Last transaction id: " + lastTxid);
 	}
 
-	@Test(timeout = 900000)
+	@Test
 	public void testRestore() throws DIDException, IOException {
 		if (DUMMY_TEST)
 			return;
@@ -603,7 +603,7 @@ public class IDChainOperationsTest {
 		input.close();
 	}
 
-	@Test(timeout = 900000)
+	@Test
 	public void testRestoreAsync() throws DIDException, IOException {
 		if (DUMMY_TEST)
 			return;
@@ -657,7 +657,7 @@ public class IDChainOperationsTest {
 		input.close();
 	}
 
-	@Test(timeout = 900000)
+	@Test
 	public void testSyncWithLocalModification1() throws DIDException, IOException {
 		if (DUMMY_TEST)
 			return;
@@ -753,7 +753,7 @@ public class IDChainOperationsTest {
 		assertEquals(modifiedSignature, doc.getProof().getSignature());
 	}
 
-	@Test(timeout = 900000)
+	@Test
 	public void testSyncWithLocalModification2() throws DIDException, IOException {
 		if (DUMMY_TEST)
 			return;
@@ -851,7 +851,7 @@ public class IDChainOperationsTest {
 		assertEquals(originSignature, doc.getProof().getSignature());
 	}
 
-	@Test(timeout = 900000)
+	@Test
 	public void testSyncWithLocalModificationAsync() throws DIDException, IOException {
 		if (DUMMY_TEST)
 			return;

@@ -22,11 +22,12 @@
 
 package org.elastos.did;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,14 +43,9 @@ import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.WrongPasswordException;
 import org.elastos.did.util.HDKey;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 public class DIDStoreTest {
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
-
 	@Test
 	public void testCreateEmptyStore() throws DIDException {
     	TestData testData = new TestData();
@@ -66,11 +62,14 @@ public class DIDStoreTest {
     	assertFalse(store.containsPrivateIdentity());
 	}
 
-	@Test(expected = DIDStoreException.class)
+	@Test
 	public void testCreateDidInEmptyStore() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
-    	store.newDid("this will be fail", TestConfig.storePass);
+
+    	assertThrows(DIDStoreException.class, () -> {
+    		store.newDid("this will be fail", TestConfig.storePass);
+    	});
 	}
 
 	@Test
@@ -399,9 +398,6 @@ public class DIDStoreTest {
 
 	@Test
 	public void testUpdateDidWithoutTxidAndSignature() throws DIDException {
-		expectedEx.expect(DIDStoreException.class);
-		expectedEx.expectMessage("DID document not up-to-date");
-
 		TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
     	testData.initIdentity();
@@ -428,11 +424,11 @@ public class DIDStoreTest {
     	assertEquals(2, doc.getAuthenticationKeyCount());
     	store.storeDid(doc);
 
-    	store.publishDid(doc.getSubject(), TestConfig.storePass);
-
-    	resolved = doc.getSubject().resolve(true);
-    	assertNotNull(resolved);
-    	assertEquals(doc.toString(), resolved.toString());
+    	DID did = doc.getSubject();
+    	Exception e = assertThrows(DIDStoreException.class, () -> {
+    		store.publishDid(did, TestConfig.storePass);
+    	});
+    	assertEquals("DID document not up-to-date", e.getMessage());
 	}
 
 	@Test
@@ -473,9 +469,6 @@ public class DIDStoreTest {
 
 	@Test
 	public void testUpdateDidWithWrongTxid() throws DIDException {
-		expectedEx.expect(DIDStoreException.class);
-		expectedEx.expectMessage("DID document not up-to-date");
-
 		TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
     	testData.initIdentity();
@@ -501,18 +494,15 @@ public class DIDStoreTest {
     	assertEquals(2, doc.getAuthenticationKeyCount());
     	store.storeDid(doc);
 
-    	store.publishDid(doc.getSubject(), TestConfig.storePass);
-
-    	resolved = doc.getSubject().resolve(true);
-    	assertNotNull(resolved);
-    	assertEquals(doc.toString(), resolved.toString());
+    	DID did = doc.getSubject();
+    	Exception e = assertThrows(DIDStoreException.class, () -> {
+    		store.publishDid(did, TestConfig.storePass);
+    	});
+    	assertEquals("DID document not up-to-date", e.getMessage());
 	}
 
 	@Test
 	public void testUpdateDidWithWrongSignature() throws DIDException {
-		expectedEx.expect(DIDStoreException.class);
-		expectedEx.expectMessage("DID document not up-to-date");
-
 		TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
     	testData.initIdentity();
@@ -538,11 +528,11 @@ public class DIDStoreTest {
     	assertEquals(2, doc.getAuthenticationKeyCount());
     	store.storeDid(doc);
 
-    	store.publishDid(doc.getSubject(), TestConfig.storePass);
-
-    	resolved = doc.getSubject().resolve(true);
-    	assertNotNull(resolved);
-    	assertEquals(doc.toString(), resolved.toString());
+    	DID did = doc.getSubject();
+    	Exception e = assertThrows(DIDStoreException.class, () -> {
+    		store.publishDid(did, TestConfig.storePass);
+    	});
+    	assertEquals("DID document not up-to-date", e.getMessage());
 	}
 
 	@Test
@@ -615,7 +605,7 @@ public class DIDStoreTest {
     	assertEquals(doc.toString(), resolved.toString());
 	}
 
-	@Test(expected = DIDDeactivatedException.class)
+	@Test
 	public void testDeactivateSelfAfterCreate() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
@@ -632,12 +622,12 @@ public class DIDStoreTest {
 
     	store.deactivateDid(doc.getSubject(), TestConfig.storePass);
 
-    	resolved = doc.getSubject().resolve(true);
-    	// Dead code
-    	assertNull(resolved);
+    	assertThrows(DIDDeactivatedException.class, () -> {
+    		doc.getSubject().resolve(true);
+    	});
 	}
 
-	@Test(expected = DIDDeactivatedException.class)
+	@Test
 	public void testDeactivateSelfAfterUpdate() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
@@ -669,12 +659,13 @@ public class DIDStoreTest {
 
     	store.deactivateDid(doc.getSubject(), TestConfig.storePass);
 
-    	resolved = doc.getSubject().resolve(true);
-    	// dead code
-    	assertNull(resolved);
+    	DID did = doc.getSubject();
+    	assertThrows(DIDDeactivatedException.class, () -> {
+    		did.resolve(true);
+    	});
 	}
 
-	@Test(expected = DIDDeactivatedException.class)
+	@Test
 	public void testDeactivateWithAuthorization1() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
@@ -706,12 +697,13 @@ public class DIDStoreTest {
 
     	store.deactivateDid(target.getSubject(), doc.getSubject(), TestConfig.storePass);
 
-    	resolved = target.getSubject().resolve(true);
-    	// Dead code
-    	assertNull(resolved);
+    	DID did = target.getSubject();
+    	assertThrows(DIDDeactivatedException.class, () -> {
+    		did.resolve(true);
+    	});
 	}
 
-	@Test(expected = DIDDeactivatedException.class)
+	@Test
 	public void testDeactivateWithAuthorization2() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
@@ -753,12 +745,13 @@ public class DIDStoreTest {
 
     	store.deactivateDid(target.getSubject(), doc.getSubject(), id, TestConfig.storePass);
 
-    	resolved = target.getSubject().resolve(true);
-    	// Dead code
-    	assertNull(resolved);
+    	DID did = target.getSubject();
+    	assertThrows(DIDDeactivatedException.class, () -> {
+    		did.resolve(true);
+    	});
 	}
 
-	@Test(expected = DIDDeactivatedException.class)
+	@Test
 	public void testDeactivateWithAuthorization3() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
@@ -800,9 +793,10 @@ public class DIDStoreTest {
 
     	store.deactivateDid(target.getSubject(), doc.getSubject(), TestConfig.storePass);
 
-    	resolved = target.getSubject().resolve(true);
-    	// Dead code
-    	assertNull(resolved);
+    	DID did = target.getSubject();
+    	assertThrows(DIDDeactivatedException.class, () -> {
+    		did.resolve(true);
+    	});
 	}
 
 	@Test
@@ -1144,7 +1138,7 @@ public class DIDStoreTest {
 		assertNotNull(doc);
 	}
 
-	@Test(expected = DIDStoreException.class)
+	@Test
 	public void testChangePasswordWithWrongPassword() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
@@ -1192,11 +1186,9 @@ public class DIDStoreTest {
 		dids = store.listDids(DIDStore.DID_NO_PRIVATEKEY);
 		assertEquals(0, dids.size());
 
-		store.changePassword("wrongpasswd", "newpasswd");
-
-		// Dead code
-		DIDDocument doc = store.newDid("newpasswd");
-		assertNotNull(doc);
+		assertThrows(DIDStoreException.class, () -> {
+			store.changePassword("wrongpasswd", "newpasswd");
+		});
 	}
 
 	@Test
@@ -1236,7 +1228,7 @@ public class DIDStoreTest {
        	}
 	}
 
-	@Test(expected = WrongPasswordException.class)
+	@Test
 	public void testCompatibilityNewDIDWithWrongPass() throws DIDException {
 		URL url = this.getClass().getResource("/teststore");
 		File dir = new File(url.getPath());
@@ -1245,9 +1237,9 @@ public class DIDStoreTest {
 		DIDBackend.initialize(adapter, TestData.getResolverCacheDir());
 		DIDStore store = DIDStore.open("filesystem", dir.getAbsolutePath(), adapter);
 
-       	DIDDocument doc = store.newDid("wrongpass");
-       	// Dead code
-       	assertNull(doc);
+		assertThrows(WrongPasswordException.class, () -> {
+			store.newDid("wrongpass");
+		});
 	}
 
 	@Test

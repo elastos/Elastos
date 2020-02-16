@@ -22,15 +22,16 @@
 
 package org.elastos.did;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.elastos.did.exception.MalformedDIDURLException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DIDURLTest {
 	private static final String testDID = "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN";
@@ -42,7 +43,7 @@ public class DIDURLTest {
 
 	private DIDURL url;
 
-    @Before
+    @BeforeEach
     public void setup() throws MalformedDIDURLException {
     	url = new DIDURL(testURL);
     }
@@ -98,34 +99,39 @@ public class DIDURLTest {
 		assertEquals(testURL, url.toString());
 	}
 
-	@Test(expected = MalformedDIDURLException.class)
-	public void testConstructorError1() throws MalformedDIDURLException {
-		@SuppressWarnings("unused")
-		DIDURL url = new DIDURL("id:elastos:1234567890" + ";" + params + path + "?" + query + "#" + fragment);
+	@Test
+	public void testConstructorError1() {
+		assertThrows(MalformedDIDURLException.class, () -> {
+			new DIDURL("id:elastos:1234567890" + ";" + params + path + "?" + query + "#" + fragment);
+		});
 	}
 
-	@Test(expected = MalformedDIDURLException.class)
-	public void testConstructorError2() throws MalformedDIDURLException {
-		@SuppressWarnings("unused")
-		DIDURL url = new DIDURL("did:example:1234567890" + ";" + params + path + "?" + query + "#" + fragment);
+	@Test
+	public void testConstructorError2() {
+		assertThrows(MalformedDIDURLException.class, () -> {
+			new DIDURL("did:example:1234567890" + ";" + params + path + "?" + query + "#" + fragment);
+		});
 	}
 
-	@Test(expected = MalformedDIDURLException.class)
-	public void testConstructorError3() throws MalformedDIDURLException {
-		@SuppressWarnings("unused")
-		DIDURL url = new DIDURL("did:elastos:1234567890" + ";" + path + "?" + query + "#" + fragment);
+	@Test
+	public void testConstructorError3() {
+		assertThrows(MalformedDIDURLException.class, () -> {
+			new DIDURL("did:elastos:1234567890" + ";" + path + "?" + query + "#" + fragment);
+		});
 	}
 
-	@Test(expected = MalformedDIDURLException.class)
-	public void testConstructorError4() throws MalformedDIDURLException {
-		@SuppressWarnings("unused")
-		DIDURL url = new DIDURL("did:example:1234567890" + ";" + params + path + "?" + "#" + fragment);
+	@Test
+	public void testConstructorError4() {
+		assertThrows(MalformedDIDURLException.class, () -> {
+			new DIDURL("did:example:1234567890" + ";" + params + path + "?" + "#" + fragment);
+		});
 	}
 
-	@Test(expected = MalformedDIDURLException.class)
-	public void testConstructorError5() throws MalformedDIDURLException {
-		@SuppressWarnings("unused")
-		DIDURL url = new DIDURL("did:example:1234567890" + ";" + params + path + "?" + query + "#");
+	@Test
+	public void testConstructorError5() {
+		assertThrows(MalformedDIDURLException.class, () -> {
+			new DIDURL("did:example:1234567890" + ";" + params + path + "?" + query + "#");
+		});
 	}
 
 	@Test

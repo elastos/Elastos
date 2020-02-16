@@ -22,10 +22,11 @@
 
 package org.elastos.did;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -35,14 +36,9 @@ import java.util.Map;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.InvalidKeyException;
 import org.elastos.did.util.HDKey;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 public class IssuerTest {
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
-
 	@Test
 	public void newIssuerTestWithSignKey() throws DIDException, IOException {
 		TestData testData = new TestData();
@@ -73,9 +69,6 @@ public class IssuerTest {
 
 	@Test
 	public void newIssuerTestWithInvalidKey() throws DIDException, IOException {
-		expectedEx.expect(DIDException.class);
-		expectedEx.expectMessage("No private key.");
-
 		TestData testData = new TestData();
 		testData.setup(true);
 
@@ -89,27 +82,26 @@ public class IssuerTest {
 		issuerDoc = db.seal(TestConfig.storePass);
 		assertTrue(issuerDoc.isValid());
 
-		Issuer issuer = new Issuer(issuerDoc, signKey);
-
-		// Dead code.
-		assertEquals(issuerDoc.getSubject(), issuer.getDid());
+		DIDDocument doc = issuerDoc;
+		Exception e = assertThrows(InvalidKeyException.class, () -> {
+			new Issuer(doc, signKey);
+		});
+		assertEquals("No private key.", e.getMessage());
 	}
 
 	@Test
 	public void newIssuerTestWithInvalidKey2() throws DIDException, IOException {
-		expectedEx.expect(InvalidKeyException.class);
-		expectedEx.expectMessage("Not an authentication key.");
-
 		TestData testData = new TestData();
 		testData.setup(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 		DIDURL signKey = new DIDURL(issuerDoc.getSubject(), "recovery");
-		Issuer issuer = new Issuer(issuerDoc, signKey);
 
-		// Dead code.
-		assertEquals(issuer.getDid(), issuer.getDid());
-
+		DIDDocument doc = issuerDoc;
+		Exception e = assertThrows(InvalidKeyException.class, () -> {
+			new Issuer(doc, signKey);
+		});
+		assertEquals("Not an authentication key.", e.getMessage());
 	}
 
 	@Test

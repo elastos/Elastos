@@ -22,14 +22,15 @@
 
 package org.elastos.did;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.elastos.did.exception.MalformedDIDException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DIDTest {
 	private static final String testMethodSpecificID = "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN";
@@ -37,7 +38,7 @@ public class DIDTest {
 
 	private DID did;
 
-    @Before
+    @BeforeEach
     public void setup() throws MalformedDIDException {
     	did = new DID(testDID);
     }
@@ -51,22 +52,25 @@ public class DIDTest {
 		assertEquals("did:elastos:1234567890", did.toString());
 	}
 
-	@Test(expected = MalformedDIDException.class)
-	public void testConstructorError1() throws MalformedDIDException {
-		@SuppressWarnings("unused")
-		DID did = new DID("id:elastos:1234567890");
+	@Test
+	public void testConstructorError1() {
+		assertThrows(MalformedDIDException.class, () -> {
+			new DID("id:elastos:1234567890");
+		});
 	}
 
-	@Test(expected = MalformedDIDException.class)
-	public void testConstructorError2() throws MalformedDIDException {
-		@SuppressWarnings("unused")
-		DID did = new DID("did:example:1234567890");
+	@Test
+	public void testConstructorError2() {
+		assertThrows(MalformedDIDException.class, () -> {
+			new DID("did:example:1234567890");
+		});
 	}
 
-	@Test(expected = MalformedDIDException.class)
-	public void testConstructorError3() throws MalformedDIDException {
-		@SuppressWarnings("unused")
-		DID did = new DID("did:elastos:");
+	@Test
+	public void testConstructorError3() {
+		assertThrows(MalformedDIDException.class, () -> {
+			new DID("did:elastos:");
+		});
 	}
 
 	@Test

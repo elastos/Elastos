@@ -22,16 +22,16 @@
 
 package org.elastos.did.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 
 import org.elastos.did.Mnemonic;
 import org.elastos.did.exception.DIDException;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class EcdsaSignerTest {
 	private static final String plain = "The quick brown fox jumps over the lazy dog.";
@@ -40,7 +40,7 @@ public class EcdsaSignerTest {
 	private static HDKey.DerivedKey key;
 	private static byte[] sig;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setup() throws DIDException {
 		String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
 
