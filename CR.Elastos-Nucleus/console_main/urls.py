@@ -31,6 +31,7 @@ urlpatterns = [
     path('did_callback_elastos', views.did_callback_elastos, name="did_callback_elastos"),
     url(r'^qr_code/', include(qr_code_urls, namespace='qr_code')),
     url(r'^privacy_policy_pdf', views.privacy_policy_pdf, name='privacy_policy_pdf'),
+    url(r'^terms_conditions_pdf', views.terms_conditions_pdf, name='terms_conditions_pdf'),
     url(r'^login/', include('login.urls'), name='login'),
     url(r'^service/', include('service.urls'), name='service'),
     url(r'^browser/', include('browser.urls'), name='browser'),

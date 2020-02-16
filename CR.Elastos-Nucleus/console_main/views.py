@@ -54,6 +54,14 @@ def privacy_policy_pdf(request):
         raise Http404('not found')
 
 
+def terms_conditions_pdf(request):
+    try:
+        return FileResponse(open(os.path.join(MEDIA_ROOT, 'nucleus_terms_conditions.pdf'), 'rb'),
+                            content_type='application/pdf')
+    except FileNotFoundError:
+        raise Http404('not found')
+
+
 @csrf_exempt
 def did_callback_elaphant(request):
     if request.method == 'POST':

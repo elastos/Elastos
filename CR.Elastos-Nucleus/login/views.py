@@ -1,36 +1,22 @@
 import gc
 import logging
-import secrets
-import time
 
 import csv
-import urllib
 
-import jwt
 from django.apps import apps
 from django.conf import settings
 
-from datetime import timedelta, datetime
-
-from django.contrib.auth import login
 from django.core.mail import EmailMessage
-from django.utils import timezone
-from fastecdsa.encoding.sec1 import SEC1Encoder
-from fastecdsa import ecdsa, curve
-from binascii import unhexlify
 from decouple import config
 
 from django.contrib import messages
 from django.http import HttpResponse
-from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode
-from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.shortcuts import render, redirect
 from django.utils.encoding import force_text
 
-from console_main.settings import SECRET_KEY
 from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
     get_recent_services, send_email
 from console_main.models import TrackUserPageVisits
@@ -39,6 +25,8 @@ from .models import DIDUser
 from .forms import DIDUserCreationForm, DIDUserChangeForm
 from service.forms import SuggestServiceForm
 from .tokens import account_activation_token
+from .your_activity_dict import get_activity_string
+from service.models import UserServiceSessionVars, SavedFileInformation
 
 
 def register(request):
@@ -120,9 +108,24 @@ def feed(request):
     recent_services = get_recent_services(did)
     recent_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-last_visited')[:5]
     most_visited_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-number_visits')[:5]
+    your_activity_list = []
+    for items in most_visited_pages:
+        view_name = items.view.split(':')[1]  # get the view name
+        your_activity_string = get_activity_string(view_name)
+        if your_activity_string == None:
+            your_activity_string = 'You just visited {0}'.format(items.name)
+
+        if view_name == 'upload_and_sign':
+            obj = SavedFileInformation.objects.filter(did=did).last()
+            if (obj == None):
+                print("no object")
+            else:
+                your_activity_string += ' {0}'.format(obj.file_name)
+        your_activity_list.append(your_activity_string)
 
     return render(request, 'login/feed.html', {'recent_pages': recent_pages, 'recent_services': recent_services,
-                                               'most_visited_pages': most_visited_pages, 'suggest_form': suggest_form})
+                                               'most_visited_pages': most_visited_pages, 'suggest_form': suggest_form,
+                                               'your_activity': your_activity_list})
 
 
 @login_required

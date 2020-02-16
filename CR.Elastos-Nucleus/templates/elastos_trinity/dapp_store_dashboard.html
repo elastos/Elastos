@@ -13,5 +13,24 @@ elastOS - dApp Store Dashboard
 {% endblock elastos_trinity_title %}
 
 {% block elastos_trinity %}
-    hello there
+    <div class="row">
+    {% for dapp in dapps_list %}
+        <div class="col-4 container">
+            <h2>{{ dapp.appName }}</h2>
+            <p>{{ dapp.appDescription }}</p>
+            <div class="card" style="width:100%">
+                <img class="card-img-top" src="{{ dapp.icon_url }}" alt="Card image" style="width:25%;margin: 40px;">
+                <div class="card-body" style="color:black;">
+                    <p class="card-text">Category: {{ dapp.category }}</p>
+                    <p class="card-text">Version: {{ dapp.versionName }}</p>
+                    <p class="card-text">Date Published: {{ dapp.createdAt }}</p>
+                    <p class="card-text">Author Name: {{ dapp.authorName }}</p>
+                    <p class="card-text">Author Email: {{ dapp.authorEmail }}</p>
+                    <p class="card-text">Author Website: {{ dapp.authorWebsite }}</p>
+                    <a class="btn btn-primary">{{ dapp.downloadsCount }} downloads</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
 {% endblock elastos_trinity %}

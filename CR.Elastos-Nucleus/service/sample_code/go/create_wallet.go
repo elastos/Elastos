@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine"
-	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/health_check"
 )
 
 func main() {
@@ -14,8 +13,18 @@ func main() {
     production := false
     
     network := "gmunet"
-    mnemonicToUse := "obtain pill nest sample caution stone candy habit silk husband give net"
-    didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
     apiKeyToUse := "O2Fjcsk43uUFHqe7ygWbq0tTFj0W5gkiXxoyq1wHIQpJT8MkdKFW2LcJqBTr6AIf"
-    privateKeyToUse := "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
+
+    log.Println("--> Create Wallet")
+	wallet := elastosadenine.NewWallet(grpcServerHost, grpcServerPort, production)
+	defer wallet.Close()
+	response := wallet.CreateWallet(apiKeyToUse, network)
+	if response.Output != "" {
+		output := []byte(response.Output)
+		var jsonOutput map[string]interface{}
+		json.Unmarshal(output, &jsonOutput)
+		log.Printf("Status Message : %s", response.StatusMessage)
+		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
+		log.Printf(string(result))
+	}
 }

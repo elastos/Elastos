@@ -23,19 +23,40 @@
                         {{ field }}
                         {% if field.help_text %}
                             <small style="color: grey">{{ field.help_text }}</small>
-                            <div class="modal fade" id="termsAndConditions" tabindex="-1" role="dialog"
-                                 aria-labelledby="termsAndConditions" aria-hidden="true" style="margin: 0 auto;">
+                            <div class="modal fade" id="privacyPolicy" tabindex="-1" role="dialog"
+                                 aria-labelledby="privacyPolicy" aria-hidden="true" style="margin: 0 auto;">
                                 <div class="modal-dialog" role="document">
-                                    <div class="modal-content" style="width: 1100px;height:800px;">
+                                    <div class="modal-content" style="width: 800px;height:800px;">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalLabel">Nucleus Privacy Policy</h5>
+                                            <h5 class="modal-title" id="privacyPolicyModalLabel">Nucleus Console Privacy Policy</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
 
                                         <div class="modal-body">
-                                            <embed src={% url 'privacy_policy_pdf' %}'#toolbar=0&navpanes=0&scrollbar=0' style="width: 1080px;height:700px;" frameborder="0">
+                                            <embed src={% url 'privacy_policy_pdf' %}'#toolbar=0&navpanes=0&scrollbar=0' style="width: 700px;height:700px;" frameborder="0">
+                                        </div>
+                                        
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="termsAndConditions" tabindex="-1" role="dialog"
+                                 aria-labelledby="termsAndConditions" aria-hidden="true" style="margin: 0 auto;">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content" style="width: 800px;height:800px;">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="termsConditionsModalLabel">Nucleus Console Terms & Conditions</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <embed src={% url 'terms_conditions_pdf' %}'#toolbar=0&navpanes=0&scrollbar=0' style="width: 700px;height:700px;" frameborder="0">
                                         </div>
                                         
                                         <div class="modal-footer">
