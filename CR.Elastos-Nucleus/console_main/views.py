@@ -112,9 +112,9 @@ def did_callback_elastos(request):
         data['DID'] = did
         credentials = data['presentation']['verifiableCredential']
         for cred in credentials:
-            if did + "#name" == cred['credentialId']:
+            if did + "#name" == cred['id']:
                 data['Nickname'] = cred['credentialSubject']['name']
-            elif did + "#email" == cred['credentialId']:
+            elif did + "#email" == cred['id']:
                 data['Email'] = cred['credentialSubject']['email']
             data["exp_time"] = cred['expirationDate']
 
