@@ -147,6 +147,10 @@ var (
 		Name:  "magic",
 		Usage: "magic number for node to initialize p2p connection",
 	}
+	PrintLevelFlag = cli.StringFlag{
+		Name:        "printlevel",
+		Usage:       "level to print log",
+	}
 	EnableDnsFlag = cli.StringFlag{
 		Name:  "dnsseed",
 		Usage: "enable dns seeds for node to initialize p2p connection",

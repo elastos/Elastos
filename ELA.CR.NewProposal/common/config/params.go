@@ -345,6 +345,9 @@ type Params struct {
 	// DefaultPort defines the default peer-to-peer port for the network.
 	DefaultPort uint16
 
+	// PrintLevel defines the level to print log.
+	PrintLevel uint32
+
 	// DNSSeeds defines a list of DNS seeds for the network to discover peers.
 	DNSSeeds []string
 
