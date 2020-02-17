@@ -23,23 +23,26 @@ public class VerifiableCredentialProof {
         return self._signature
     }
     
-    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> VerifiableCredentialProof {
-        let jsonDict = JsonSerializer(node)
-        let type = try jsonDict.getString(Constants.TYPE, JsonSerializer.Options<String>()
-                            .withOptional()
-                            .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
-                            .withHint("credential proof type"))
-        let method = try jsonDict.getDIDURL(Constants.VERIFICATION_METHOD, JsonSerializer.Options<DIDURL>()
-                            .withHint("credential proof verificationMethod"))
-        let signature = try jsonDict.getString(Constants.SIGNATURE, JsonSerializer.Options<String>()
-                            .withHint("credential proof signature"))
+    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws
+                        -> VerifiableCredentialProof {
+        let serializer = JsonSerializer(node)
+        let proofType = try serializer.getString(Constants.TYPE,
+                                JsonSerializer.Options<String>()
+                                    .withOptional()
+                                    .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
+                                    .withHint("credential proof type"))
+        let method    = try serializer.getDIDURL(Constants.VERIFICATION_METHOD,
+                                JsonSerializer.Options<DIDURL>()
+                                    .withHint("credential proof verificationMethod"))
+        let signature = try serializer.getString(Constants.SIGNATURE,
+                                JsonSerializer.Options<String>()
+                                    .withHint("credential proof signature"))
 
-        return VerifiableCredentialProof(type!, method!, signature!)
+        return VerifiableCredentialProof(proofType!, method!, signature!)
     }
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
         try generator.writeStartObject()
-        // type
         if normalized || self.type != Constants.DEFAULT_PUBLICKEY_TYPE {
             try generator.writeStringField(Constants.TYPE, self.type)
         }

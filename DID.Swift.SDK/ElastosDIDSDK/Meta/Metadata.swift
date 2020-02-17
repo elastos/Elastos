@@ -31,10 +31,10 @@ class Metadata {
         return self._extra?[fullName(name)] ?? nil
     }
     
-    class func fromNode(_ node: JsonNode) throws {} // abstract method
-    func toNode(_ node: JsonNode) {}                // abstract method
+    class func fromNode(_ node: Dictionary<String, Any>) throws {} // abstract method
+    func toNode(_ node: Dictionary<String, Any>) {}                // abstract method
 
-    class func fromJson<T: Metadata>(_ node: JsonNode, _ type: T.Type) throws -> T {
+    class func fromJson<T: Metadata>(_ node: Dictionary<String, Any>, _ type: T.Type) throws -> T {
         // TODO
     }
 

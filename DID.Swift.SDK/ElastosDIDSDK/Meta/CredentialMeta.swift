@@ -15,11 +15,11 @@ class CredentialMeta: Metadata {
         return try super.fromJson(metadata, CredentialMeta.self)
     }
 
-    override class func fromNode(_ node: JsonNode) throws {
+    override class func fromNode(_ node: Dictionary<String, Any>) throws {
         // TODO:
     }
 
-    override func toNode(_ node: JsonNode) {
+    override func toNode(_ node: Dictionary<String, Any>) {
         // TODO:
     }
 

@@ -2,11 +2,10 @@ import Foundation
 
 public class VerifiableCredentialSubject {
     private var _id: DID
-    private var _properties: ObjectNode
+    private var _properties: Dictionary<String, Any>?
     
     init(_ id: DID) {
         self._id = id
-        self._properties = ObjectNode()
     }
 
     public var did: DID {
@@ -14,15 +13,17 @@ public class VerifiableCredentialSubject {
     }
 
     public var propertyCount: Int {
-        return self._properties.size
+        return self._properties?.count ?? 0
     }
 
     public func getPropertiesInString() -> String {
-        return self._properties.toString()
+        // TODO:
+        return "TODO"
     }
 
-    public func getProperties() -> JsonNode {
-        return self._properties.deepCopy()
+    public func getProperties() -> Dictionary<String, Any>? {
+        // TODO:
+        return nil
     }
 
     public func getPropertyInString(ofName: String) -> String {
@@ -30,11 +31,12 @@ public class VerifiableCredentialSubject {
         return "TODO"
     }
 
-    public func getProperity(ofName: String) -> JsonNode {
+    public func getProperity(ofName: String) ->  Dictionary<String, Any>? {
         // TODO:
+        return nil
     }
 
-    func setProperties(_ props: JsonNode) {
+    func setProperties(_ props: Dictionary<String, Any>) {
         // TODO:
     }
 
@@ -44,7 +46,9 @@ public class VerifiableCredentialSubject {
                                 .withOptional()
                                 .withDefValue(ref)
                                 .withHint("credentialSubject id"))
-        return VerifiableCredentialSubject(did!) // TODO: setProperties(node)
+        let credential = VerifiableCredentialSubject(did!)
+        credential.setProperties(node)
+        return credential
     }
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {

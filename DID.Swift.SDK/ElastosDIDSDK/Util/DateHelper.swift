@@ -18,4 +18,9 @@ class DateHelper {
 
         return calendar.date(byAdding: comps!, to: current) ?? Date()
     }
+
+    class func formateDate(_ date: Date) -> String {
+        // TODO:
+        return "TODO"
+    }
 }

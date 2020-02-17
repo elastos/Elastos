@@ -105,13 +105,13 @@ public class VerifiableCredentialBuilder {
         return self
     }
 
-    public func withProperties(_ node: JsonNode) throws -> VerifiableCredentialBuilder {
+    public func withProperties(_ node: Dictionary<String, Any>) throws -> VerifiableCredentialBuilder {
         guard let _ = self._credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
-        guard node.size > 0 else {
+        /* guard node.count ?? 0 > 0 else {
             throw DIDError.illegalArgument()
-        }
+        } */
 
         let subject = VerifiableCredentialSubject(self._target)
         subject.setProperties(node)

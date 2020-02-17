@@ -115,7 +115,7 @@ class IDChainRequest: NSObject {
             if self._operation != .DEACTIVATE {
                 let json = payload.base64DecodedString  // TODO: checkMe
 
-                self._doc = try DIDDocument.fromJson(json!)
+                self._doc = try DIDDocument.convertToDIDDocument(fromJson: json!)
                 self._did = self._doc!.subject
             } else {
                 self._doc = nil

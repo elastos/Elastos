@@ -7,9 +7,7 @@ public class VerifiablePresentationProof {
     private let _nonce: String
     private let _signature: String
     
-    init(_ type: String, _ method: DIDURL, _ realm: String,
-        _ nonce: String, _ signature: String) {
-
+    init(_ type: String,  _ method: DIDURL, _ realm: String,  _ nonce: String, _ signature: String) {
         self._type = type
         self._verificationMethod = method
         self._realm = realm

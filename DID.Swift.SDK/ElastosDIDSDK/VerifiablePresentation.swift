@@ -183,7 +183,7 @@ public class VerifiablePresentation {
     func toJson(_ generator: JsonGenerator, _ forSign: Bool) throws {
         try generator.writeStartObject()
         try generator.writeStringField(Constants.TYPE, self.type)
-        try generator.writeStringField(Constants.CREATED, JsonHelper.fromDate(self.createdDate)!) // TOOD:
+        try generator.writeStringField(Constants.CREATED, DateHelper.formateDate(self.createdDate))
 
         // verifiable credentials
         try generator.writeFieldName(Constants.VERIFIABLE_CREDENTIAL)

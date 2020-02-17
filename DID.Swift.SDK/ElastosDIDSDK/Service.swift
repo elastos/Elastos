@@ -16,16 +16,13 @@ public class Service: DIDObject {
         let serializer = JsonSerializer(node)
 
         let id = try serializer.getDIDURL(Constants.ID,
-                        JsonSerializer.Options<DIDURL>()
-                            .withHint("serviceId"))
+                            JsonSerializer.Options<DIDURL>().withHint("serviceId"))
         let type = try serializer.getString(Constants.TYPE,
-                        JsonSerializer.Options<String>()
-                            .withHint("Service Type"))
+                            JsonSerializer.Options<String>().withHint("Service Type"))
         let endpoint = try serializer.getString(Constants.SERVICE_ENDPOINT,
-                        JsonSerializer.Options<String>()
-                            .withHint("Service Endpoint"))
+                            JsonSerializer.Options<String>().withHint("Service Endpoint"))
 
-        return  Service(id!, type!, endpoint!)
+        return Service(id!, type!, endpoint!)
     }
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {

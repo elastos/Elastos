@@ -32,7 +32,6 @@ public class PublicKey: DIDObject {
 
     class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> PublicKey {
         let serializer = JsonSerializer(node)
-
         let id = try serializer.getDIDURL(Constants.ID,
                             JsonSerializer.Options<DIDURL>()
                                 .withOptional()
