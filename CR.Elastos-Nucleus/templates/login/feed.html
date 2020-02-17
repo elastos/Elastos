@@ -72,7 +72,7 @@
     <main class="bd-masthead" role="main" style="background-color: #181b22;">
         <div class="row">
             <!-- Services Row -->
-            <div class="col-9 console-services">
+            <div class="col-8 console-services">
                 <p style="float: left; margin: 15px;">
                     <img src="{% static 'images/common/run-contract.svg' %}"/>
                 </p>
@@ -215,18 +215,32 @@
                 </div>
             </div>
             <!-- Most Viewed Row -->
-            <div class="col-2 console-services">
+            <div class="col-3 console-services">
                 <p style="float: left; margin: 15px;">
                     <img src="{% static 'images/common/show.svg' %}"/>
                 </p>
                 <p class="console-services-title" style="margin: 20px;">
                     MOST VIEWED PAGES
                 </p>
-                <div class="divider"></div>
+                <div class="divider" style="background-color: #000000"></div>
                 <p style="margin: 0px 20px 20px 20px;">
                     {% if most_visited_pages.exists %}
                     {% for item in most_visited_pages %}
-                        <a class="sidebar-content" href="{% url item.view %}">{{ item.name }}</a><br>
+                        <div class="container">
+                            <p class="console-services-image">
+                                <img src="{% static 'images/common/show.svg' %}" width="110%"/>
+                            </p>
+                            <div class="d-flex justify-content-between w-90" style="padding-left: 10px;">
+                                
+                                <p class="sidebar-content" href="{% url item.view %}">
+                                    {{ item.name }}
+                                </p> 
+                                <p class="sidebar-content">
+                                    {{ item.number_visits }} visits
+                                </p>
+                            </div>
+                        </div>
+                        <div class="divider" style="margin-top: 10px !important;"></div>
                     {% endfor %}
                 {% endif %}
                 </p>

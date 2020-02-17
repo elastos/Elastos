@@ -288,10 +288,12 @@
   }
 }
 
-.nav-link {
+.nav-item {
+  .nav-link {
   font-family: Roboto;
   font-weight: bold;
   color: #ffffff;
+  }
 }
 
 .nav-link.active {
