@@ -420,14 +420,34 @@ namespace Elastos {
 			 *Sponsor generate proposal digest for sponsor signature.
 			 *
 			 * @param type             Proposal type, value is [0-5]
+			 * 	enum type {
+			 *		normal = 0x0000,
+			 *		elip = 0x0100,
+			 *		flowElip = 0x0101,
+			 *		infoElip = 0x0102,
+			 *		mainChainUpgradeCode = 0x0200,
+			 *		sideChainUpgradeCode = 0x0300,
+			 *		registerSideChain = 0x0301,
+			 *		secretaryGeneral = 0x0400,
+			 *		changeSponsor = 0x0401,
+			 *		closeProposal = 0x0402,
+			 *		dappConsensus = 0x0500,
+			 *		maxType
+			 * };
+			 * @param categoryData     Used to store category data with a length limit not exceeding 4096 characters
 			 * @param sponsorPublicKey Public key of sponsor
 			 * @param draftHash        The hash of draft proposal
-			 * @param budgets          The budgets of proposal every stage. Such as ["300", "33", "344"]
+			 * @param budgets          The budgets of proposal every stage.  Such as [{"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}].
+			 * 						   Budget Type is :
+			 * 						   0 : imprest
+			 * 						   1 : normal payment
+			 * 						   2 : final payment
 			 * @param recipient        Address of budget payee. Such as "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"
 			 *
 			 * @return The proposal in JSON format contains the "Digest" field to be signed and then set the "Signature" field. Such as
 			 * {
-			 *    "Budgets":[324,266,234],
+			 *    "Budgets":[{"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}],
+			 *    "CategoryData":"testdata",
 			 *    "DraftHash":"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
 			 *    "Recipient":"cbcb4cc55dc3fc6cc6e4663f747d8b75e25d21db21",
 			 *    "SponsorPublicKey":"031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
@@ -436,7 +456,8 @@ namespace Elastos {
 			 *    "Signature":""
 			 * }
 			 */
-			virtual nlohmann::json SponsorProposalDigest(uint8_t type,
+			virtual nlohmann::json SponsorProposalDigest(uint16_t type,
+			                                             const std::string &categoryData,
 			                                             const std::string &sponsorPublicKey,
 			                                             const std::string &draftHash,
 			                                             const nlohmann::json &budgets,
@@ -447,10 +468,13 @@ namespace Elastos {
 			 *
 			 * @param  sponsorSignedProposal Sponsor signed proposal
 			 * @param  crSponsorDID     Did of sponsor. Such as "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+			 * @param  crOpinionHash    The hash of proposal opinion
 			 * @return The proposal in JSON format contains the "Digest" field to be signed and then set the "CRSignature" field. Such as
 			 * {
-			 * 	  "Budgets":[324,266,234],
+			 * 	  "Budgets":[{"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}],
 			 * 	  "CRSponsorDID":"cbcb4cc55dc3fc6cc6e4663f747d8b75e25d21db67",
+			 * 	  "CategoryData":"testdata",
+			 * 	  "CROpinionHash":"6418be20291bc857c9a01e5ba205445b85a0593d47cc0b576d55a55e464f31b3",
 			 * 	  "DraftHash":"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
 			 * 	  "Recipient":"cbcb4cc55dc3fc6cc6e4663f747d8b75e25d21db21",
 			 * 	  "Signature":"ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76",
@@ -461,7 +485,8 @@ namespace Elastos {
 			 * }
 			 */
 			virtual nlohmann::json CRSponsorProposalDigest(const nlohmann::json &sponsorSignedProposal,
-			                                               const std::string &crSponsorDID) const = 0;
+			                                               const std::string &crSponsorDID,
+			                                               const std::string &crOpinionHash) const = 0;
 
 			/**
 			 * Create CRC Proposal transaction.

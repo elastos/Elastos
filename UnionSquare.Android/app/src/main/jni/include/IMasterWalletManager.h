@@ -119,6 +119,12 @@ namespace Elastos {
 			virtual std::vector<std::string> GetAllMasterWalletID() const = 0;
 
 			/**
+			 * Get status indicating whether wallet loaded
+			 * @return return true or false
+			 */
+			 virtual bool WalletLoaded(const std::string &masterWalletID) const = 0;
+
+			/**
 			 * Get a master wallet object by id.
 			 * @param masterWalletID master wallet id.
 			 * @return master wallet object.
