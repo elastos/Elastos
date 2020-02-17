@@ -26,15 +26,15 @@ api_key_to_use = ''
 private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
 # Connect to the database
-db_name = 'test'
-db_user = 'gmu'
-db_password = 'gmu'
-db_host = 'localhost'
-db_port = '5434'
+db_name = config('TEST_DB_NAME')
+db_user = config('DB_USER')
+db_password = config('DB_PASSWORD')
+db_host = config('DB_HOST')
+db_port = config('TEST_DB_PORT')
 
 database_uri = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-create_scripts = "/Users/rahulguna/GIT/elastos-smartweb-service/grpc_adenine/database/scripts/create_table_scripts.sql"
-reset_scripts = "/Users/rahulguna/GIT/elastos-smartweb-service/grpc_adenine/database/scripts/reset_database.sql"
+create_scripts = "../database/scripts/create_table_scripts.sql"
+reset_scripts = "../database/scripts/reset_database.sql"
 
 def create_database_tables():
 	# Connect to the PostgreSQL database and create tables
@@ -66,7 +66,7 @@ class RunTest(unittest.TestCase):
 		db_engine = create_engine(database_uri)
 		session_maker = sessionmaker(bind=db_engine)
 		self.session = session_maker()
-		self.rate_limiter = RateLimiter()
+		self.rate_limiter = RateLimiter(self.session)
 
 	#testing Generate API Key with valid DID
 	def test_generate_api_key(self):

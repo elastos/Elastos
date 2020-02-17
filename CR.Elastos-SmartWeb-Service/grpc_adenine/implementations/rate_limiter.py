@@ -1,13 +1,12 @@
 import datetime
-from grpc_adenine.database import session_maker
 from grpc_adenine.database.user_api_relation import UserApiRelations
 from grpc_adenine.database.services_list import ServicesLists
 
 
 class RateLimiter:
-    def __init__(self):
+    def __init__(self, session):
         self.date_format = '%Y-%m-%d %H:%M:%S.%f'
-        self.session = session_maker()
+        self.session = session
 
     def get_last_access_count(self, api_key, service_name):
         api_key_data = self.session.query(UserApiRelations).filter_by(api_key=api_key).first()

@@ -22,7 +22,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         }
         self.session = Session()
         self.session.headers.update(headers)
-        self.rate_limiter = RateLimiter()
+        self.rate_limiter = RateLimiter(self.session)
 
     def DeployEthContract(self, request, context):
 

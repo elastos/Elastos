@@ -18,7 +18,7 @@ class Common(common_pb2_grpc.CommonServicer):
     def __init__(self):
         session_maker = sessionmaker(bind=db_engine)
         self.session = session_maker()
-        self.rate_limiter = RateLimiter()
+        self.rate_limiter = RateLimiter(self.session)
 
     def GenerateAPIRequestMnemonic(self, request, context):
         mnemonic = request.mnemonic

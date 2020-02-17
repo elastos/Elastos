@@ -24,7 +24,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         }
         self.session = Session()
         self.session.headers.update(headers)
-        self.rate_limiter = RateLimiter()
+        self.rate_limiter = RateLimiter(self.session)
 
     def CreateWallet(self, request, context):
 

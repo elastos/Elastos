@@ -25,7 +25,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
             "general": headers_general,
             "hive": headers_hive
         }
-        self.rate_limiter = RateLimiter()
+        self.rate_limiter = RateLimiter(self.session)
 
     def UploadAndSign(self, request, context):
 
