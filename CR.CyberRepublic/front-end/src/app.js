@@ -94,6 +94,7 @@ if (sessionStorage.getItem('api-token')) {
       store.dispatch(userRedux.actions.is_secretary_update(is_secretary))
 
       store.dispatch(userRedux.actions.is_login_update(true))
+      store.dispatch(userRedux.actions.did_update(data.did))
       store.dispatch(userRedux.actions.email_update(data.email))
       store.dispatch(userRedux.actions.username_update(data.username))
       store.dispatch(userRedux.actions.profile_update(data.profile))

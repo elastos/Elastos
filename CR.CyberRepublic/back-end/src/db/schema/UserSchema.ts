@@ -78,7 +78,7 @@ export const VotePower = {
 }
 
 const did = {
-    did: String,
+    id: String,
     expirationDate: Date,
     active: Boolean
 }

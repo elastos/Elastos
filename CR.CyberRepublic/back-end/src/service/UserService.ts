@@ -8,7 +8,7 @@ import { validate, utilCrypto, mail, permissions, getDidPublicKey } from '../uti
 import CommunityService from './CommunityService'
 import * as jwt from 'jsonwebtoken'
 
-const selectFields = '-salt -password -elaBudget -elaOwed -votePower -resetToken'
+const selectFields = '-logins -salt -password -elaBudget -elaOwed -votePower -resetToken'
 const strictSelectFields = selectFields + ' -email -profile.walletAddress'
 
 const restrictedFields = {
@@ -154,8 +154,11 @@ export default class extends Base {
                 })
             }
         }
-
-        return user
+        const did = user.dids && user.dids.find(el => el.active === true)
+        const temp = { ...user._doc }
+        delete temp.dids
+        temp.did = did
+        return temp
     }
 
     public async updateRole(param) {
@@ -677,17 +680,17 @@ export default class extends Base {
                     const user = await db_user.findById({ _id: decoded.userId })
                     if (user) { 
                         let dids: object[]
-                        const matched = user.dids.filter(el => el.did === decoded.iss)
+                        const matched = user.dids.filter(el => el.id === decoded.iss)
                         if (matched.length) {
                             dids = user.dids.map(el => {
-                                if (el.did === decoded.iss) {
+                                if (el.id === decoded.iss) {
                                     return { ...el, active: true, expirationDate: rs.expirationDate }
                                 }
                                 return { ...el, active: false }
                             })
                         } else {
                             const inactiveDids = user.dids.map(el => ({ ...el, active: false }))
-                            dids = [ ...inactiveDids, { did: decoded.iss, active: true, expirationDate: rs.expirationDate } ]
+                            dids = [ ...inactiveDids, { id: decoded.iss, active: true, expirationDate: rs.expirationDate } ]
                         }
                         await db_user.update(
                             { _id: decoded.userId }, 
@@ -708,8 +711,13 @@ export default class extends Base {
         const userId = this.currentUser._id
         const db_user = this.getDBModel('User')
         const user = await db_user.findById({_id: userId})
-        if (user && user.did) {
-            return { success: true, did: user.did }
+        if (user && user.dids) {
+            const did = user.dids.find(el => el.active === true)
+            if (did) {
+                return { success: true, did }
+            } else {
+                return { success: false }
+            }   
         } else {
             return { success: false }
         }

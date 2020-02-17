@@ -3,13 +3,14 @@ import styled from 'styled-components'
 import { Popover, Spin } from 'antd'
 import I18N from '@/I18N'
 import QRCode from 'qrcode.react'
+import ExternalLinkSvg from './ExternalLinkSvg'
 
 class ProfileDid extends Component {
   constructor(props) {
     super(props)
     this.state = {
       url: '',
-      did: props.did ? props.did : ''
+      did: props.didInfo ? props.didInfo : {}
     }
     this.timerDid = null
   }
@@ -21,7 +22,6 @@ class ProfileDid extends Component {
         {url ? <QRCode value={url} size={145} /> : <Spin />}
         <Tip>{I18N.get('profile.qrcodeTip')}</Tip>
       </Content>
-      
     )
   }
 
@@ -51,10 +51,22 @@ class ProfileDid extends Component {
 
   render() {
     const { did } = this.state
-    if (did) {
+    let domain
+    if (process.env.NODE_ENV === 'production')  {
+      domain = 'blockchain-did-mainnet'
+    } else {
+      domain = 'blockchain-did-testnet'
+    }
+    if (did && did.id) {
       return (
         <Did>
-          DID:<span>{did}</span>
+          <span>DID:</span>
+          <a
+            href={`https://${domain}.elastos.org/address/${did.id}`}
+            target="_blank"
+          >
+            {did.id} <ExternalLinkSvg />
+          </a>
         </Did>
       )
     } else {
@@ -92,9 +104,12 @@ const Tip = styled.div`
 `
 const Did = styled.div`
   line-height: 32px;
-  span {
+  a {
     color: #008d85;
     font-size: 13px;
     padding-left: 10px;
+    &:focus {
+      text-decoration: none;
+    }
   }
 `

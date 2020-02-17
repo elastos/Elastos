@@ -35,6 +35,7 @@ export default class extends BaseService {
     this.dispatch(userRedux.actions.login_form_reset())
     this.dispatch(userRedux.actions.is_login_update(true))
 
+    this.dispatch(userRedux.actions.did_update(res.user.did))
     this.dispatch(userRedux.actions.email_update(res.user.email))
     this.dispatch(userRedux.actions.username_update(res.user.username))
     this.dispatch(userRedux.actions.profile_update(res.user.profile))
@@ -125,6 +126,7 @@ export default class extends BaseService {
     this.dispatch(userRedux.actions.is_council_update(is_council))
     this.dispatch(userRedux.actions.is_secretary_update(is_secretary))
 
+    this.dispatch(userRedux.actions.did_update(data.did))
     this.dispatch(userRedux.actions.email_update(data.email))
     this.dispatch(userRedux.actions.username_update(data.username))
     this.dispatch(userRedux.actions.profile_reset())
@@ -219,6 +221,7 @@ export default class extends BaseService {
       this.dispatch(userRedux.actions.is_secretary_reset())
       this.dispatch(userRedux.actions.is_council_reset())
 
+      this.dispatch(userRedux.actions.did_reset())
       this.dispatch(userRedux.actions.email_reset())
       this.dispatch(userRedux.actions.username_reset())
       this.dispatch(userRedux.actions.profile_reset())
