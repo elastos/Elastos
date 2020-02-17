@@ -326,6 +326,11 @@ export default class extends BaseService {
     const rs = await api_request({
       path: '/api/user/did'
     })
+
+    if (rs && rs.success) {
+      const userRedux = this.store.getRedux('user')
+      this.dispatch(userRedux.actions.did_update(rs.did))
+    }
     return rs
   }
 }

@@ -9,8 +9,7 @@ class ProfileDid extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      url: '',
-      did: props.didInfo ? props.didInfo : {}
+      url: ''
     }
     this.timerDid = null
   }
@@ -26,13 +25,13 @@ class ProfileDid extends Component {
   }
 
   handleClick = () => {
-    if (this.timerDid || this.state.did) {
+    const { did } = this.props
+    if (this.timerDid || (did && did.id)) {
       return
     }
     this.timerDid = setInterval(async () => {
       const rs = await this.props.getDid()
       if (rs && rs.success) {
-        this.setState({ did: rs.did })
         clearInterval(this.timerDid)
       }
     }, 3000)
@@ -50,7 +49,7 @@ class ProfileDid extends Component {
   }
 
   render() {
-    const { did } = this.state
+    const { did } = this.props
     let domain
     if (process.env.NODE_ENV === 'production')  {
       domain = 'blockchain-did-mainnet'
