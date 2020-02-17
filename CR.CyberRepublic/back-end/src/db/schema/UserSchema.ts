@@ -77,8 +77,14 @@ export const VotePower = {
     expired: Date
 }
 
-export const User = {
+const did = {
     did: String,
+    expirationDate: Date,
+    active: Boolean
+}
+
+export const User = {
+    dids: [did],
     username : {
         type : String,
         required: true,

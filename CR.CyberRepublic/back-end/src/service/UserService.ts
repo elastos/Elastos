@@ -658,17 +658,50 @@ export default class extends Base {
     }
 
     public async didCallbackEla(param: any) {
-        const jwtToken = param.jwt
-        const decoded: any = jwt.decode(jwtToken)
-        const publicKey = await getDidPublicKey(decoded.iss)
+        try {
+            const jwtToken = param.jwt
+            const claims: any = jwt.decode(jwtToken)
 
-        // verify response data from ela wallet
-        jwt.verify(jwtToken, publicKey, (err: any, decoded: any) => {
-            if (!err) {
-                // get user id to find the specific user and save DID
-                return { status: 200 }
+            const rs: any = await getDidPublicKey(claims.iss)
+            if (!rs) {
+                return { code: 400 }
             }
-        })
+    
+            // verify response data from ela wallet
+            jwt.verify(jwtToken, rs.publicKey, async (err: any, decoded: any) => {
+                if (err) {
+                    return { code: 401 }
+                  } else {
+                    // get user id to find the specific user and save DID
+                    const db_user = this.getDBModel('User')
+                    const user = await db_user.findById({ _id: decoded.userId })
+                    if (user) { 
+                        let dids: object[]
+                        const matched = user.dids.filter(el => el.did === decoded.iss)
+                        if (matched.length) {
+                            dids = user.dids.map(el => {
+                                if (el.did === decoded.iss) {
+                                    return { ...el, active: true, expirationDate: rs.expirationDate }
+                                }
+                                return { ...el, active: false }
+                            })
+                        } else {
+                            const inactiveDids = user.dids.map(el => ({ ...el, active: false }))
+                            dids = [ ...inactiveDids, { did: decoded.iss, active: true, expirationDate: rs.expirationDate } ]
+                        }
+                        await db_user.update(
+                            { _id: decoded.userId }, 
+                            { $set: { dids } }
+                        )
+                        return { code: 200 }
+                    } else {
+                        return { code: 400 }
+                    }
+                  }
+            })
+        } catch(err) {
+            return { code: 500 }
+        }
     }
 
     public async getDid() {
