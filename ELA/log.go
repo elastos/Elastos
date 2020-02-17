@@ -174,18 +174,18 @@ func setupLog(c *cli.Context, s *settings.Settings) {
 	flagDataDir := c.String("datadir")
 	path := filepath.Join(flagDataDir, nodeLogPath)
 
-	logger = log.NewDefault(path, uint8(s.Config().PrintLevel),
+	logger = log.NewDefault(path, uint8(s.Params().PrintLevel),
 		s.Config().MaxPerLogSize, s.Config().MaxLogsSize)
 	pgBar = newProgress(logger.Writer())
 
 	admrlog := wrap(logger, elalog.LevelOff)
 	cmgrlog := wrap(logger, elalog.LevelOff)
-	synclog := wrap(logger, s.Config().PrintLevel)
-	peerlog := wrap(logger, s.Config().PrintLevel)
-	routlog := wrap(logger, s.Config().PrintLevel)
-	elanlog := wrap(logger, s.Config().PrintLevel)
-	statlog := wrap(logger, s.Config().PrintLevel)
-	crstatlog := wrap(logger, s.Config().PrintLevel)
+	synclog := wrap(logger, elalog.Level(s.Params().PrintLevel))
+	peerlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
+	routlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
+	elanlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
+	statlog := wrap(logger,elalog.Level(s.Params().PrintLevel))
+	crstatlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
 
 	addrmgr.UseLogger(admrlog)
 	connmgr.UseLogger(cmgrlog)

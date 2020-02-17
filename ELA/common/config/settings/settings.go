@@ -295,6 +295,12 @@ func NewSettings() *Settings {
 		ParamName:    "Magic"})
 
 	result.Add(&settingItem{
+		Flag:         cmdcom.PrintLevelFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "PrintLevel",
+		ParamName:    "PrintLevel"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.PortFlag,
 		DefaultValue: uint16(0),
 		ConfigPath:   "NodePort",
