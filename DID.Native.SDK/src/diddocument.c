@@ -105,13 +105,15 @@ static int didurl_func(const void *a, const void *b)
 
 static
 int PublicKeyArray_ToJson(JsonGenerator *gen, PublicKey **pks, size_t size,
-        int compact, int quoted, KeyType type)
+        int compact, KeyType type)
 {
     size_t i;
 
     assert(gen);
     assert(gen->buffer);
     assert(pks);
+    assert(type == KeyType_PublicKey || type == KeyType_Authentication ||
+            type == KeyType_Authorization);
 
     qsort(pks, size, sizeof(PublicKey*), didurl_func);
 
@@ -123,9 +125,9 @@ int PublicKeyArray_ToJson(JsonGenerator *gen, PublicKey **pks, size_t size,
             (type == KeyType_Authorization && !PublicKey_IsAuthorizationKey(pks[i])))
             continue;
 
-        if (!quoted)
+        if (type == KeyType_PublicKey)
             CHECK(PublicKey_ToJson(gen, pks[i], compact));
-        if (quoted)
+        else
             CHECK(JsonGenerator_WriteString(gen,
                 DIDURL_ToString(&pks[i]->id, id, sizeof(id), compact)));
     }
@@ -372,22 +374,6 @@ int Parser_Auth_PublicKeys(DIDDocument *document, cJSON *json, KeyType type)
     }
 
     return 0;
-}
-
-static int Parser_Authentication(DIDDocument *document, cJSON *json)
-{
-    if (!document || !json)
-        return -1;
-
-    return Parser_Auth_PublicKeys(document, json, KeyType_Authentication);
-}
-
-static int Parser_Authorization(DIDDocument *document, cJSON *json)
-{
-    if (!document || !json)
-        return -1;
-
-    return Parser_Auth_PublicKeys(document, json, KeyType_Authorization);
 }
 
 static int Parser_Services(DIDDocument *document, cJSON *json)
@@ -658,16 +644,16 @@ int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc,
             DID_ToString(&doc->did, id, sizeof(id))));
     CHECK(JsonGenerator_WriteFieldName(gen, "publicKey"));
     CHECK(PublicKeyArray_ToJson(gen, doc->publickeys.pks, doc->publickeys.size,
-            compact, 0, KeyType_PublicKey));
+            compact, KeyType_PublicKey));
 
     CHECK(JsonGenerator_WriteFieldName(gen, "authentication"));
     CHECK(PublicKeyArray_ToJson(gen, doc->publickeys.pks, doc->publickeys.size,
-            compact, 1, KeyType_Authentication));
+            compact, KeyType_Authentication));
 
     if (DIDDocument_GetAuthorizationCount(doc) > 0) {
         CHECK(JsonGenerator_WriteFieldName(gen, "authorization"));
         CHECK(PublicKeyArray_ToJson(gen, doc->publickeys.pks,
-                doc->publickeys.size, compact, 1, KeyType_Authorization));
+                doc->publickeys.size, compact, KeyType_Authorization));
     }
 
     if (doc->credentials.size > 0) {
