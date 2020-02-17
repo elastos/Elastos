@@ -27,7 +27,7 @@ class IDChainRequest: NSObject {
                       _ signKey: DIDURL,
                       _ storePass: String) throws -> IDChainRequest {
 
-        return try IDChainRequest(IDChainRequestOperation.CREATE)
+        return try IDChainRequest(.CREATE)
                 .setPayload(doc)
                 .seal(signKey, storePass)
     }
@@ -37,7 +37,7 @@ class IDChainRequest: NSObject {
                       _ signKey: DIDURL,
                       _ storePass: String) throws -> IDChainRequest {
 
-        return try IDChainRequest(IDChainRequestOperation.UPDATE)
+        return try IDChainRequest(.UPDATE)
                 .setPreviousTransactionId(previousTransactionId)
                 .setPayload(doc)
                 .seal(signKey, storePass)
@@ -47,7 +47,7 @@ class IDChainRequest: NSObject {
                       _ signKey: DIDURL,
                       _ storePass: String) throws -> IDChainRequest {
 
-        return try IDChainRequest(IDChainRequestOperation.DEACTIVATE)
+        return try IDChainRequest(.DEACTIVATE)
                 .setPayload(doc)
                 .seal(signKey, storePass)
     }
@@ -58,7 +58,7 @@ class IDChainRequest: NSObject {
                       _ signKey: DIDURL,
                       _ storePass: String) throws -> IDChainRequest {
 
-        return try IDChainRequest(IDChainRequestOperation.DEACTIVATE)
+        return try IDChainRequest(.DEACTIVATE)
                 .setPayload(target)
                 .seal(targetSignKey, doc, signKey, storePass)
     }
@@ -214,6 +214,79 @@ class IDChainRequest: NSObject {
         }
     }
 
+    class func fromJson(_ node: Dictionary<String, Any>) throws -> IDChainRequest {
+        guard !node.isEmpty else {
+            throw DIDError.illegalArgument()
+        }
+        let header = node[Constants.HEADER] as? Dictionary<String, Any>
+        guard let _ = header else {
+            throw DIDError.didResolveError("Missing header")
+        }
+
+        let headerDict = JsonSerializer(header!)
+        let specs = try headerDict.getString(Constants.SPECIFICATION,
+                            JsonSerializer.Options<String>()
+                                .withHint(Constants.SPECIFICATION))
+        guard specs! == IDChainRequest.CURRENT_SPECIFICATION else {
+            throw DIDError.didResolveError("Unkown DID specification.")
+        }
+
+        let opStr = try headerDict.getString(Constants.OPERATION,
+                            JsonSerializer.Options<String>()
+                                .withHint(Constants.OPERATION))
+        let operation = IDChainRequestOperation.valueOf(opStr!)
+
+        let request = IDChainRequest(IDChainRequestOperation.valueOf(opStr!))
+        if operation == .UPDATE {
+            let transactionId = try headerDict.getString(Constants.PREVIOUS_TXID,
+                            JsonSerializer.Options<String>().withHint(Constants.PREVIOUS_TXID))
+            _ = request.setPreviousTransactionId(transactionId!)
+        }
+
+
+        let nodeDict = JsonSerializer(node)
+        let payload = try nodeDict.getString(Constants.PAYLOAD, JsonSerializer.Options<String>()
+                                .withHint(Constants.PAYLOAD))
+        _  = try request.setPayload(payload!)
+
+        let proof = node[Constants.PROOF] as? Dictionary<String, Any>
+        let proofDict = JsonSerializer(proof!)
+        let keyType = try proofDict.getString(Constants.KEY_TYPE, JsonSerializer.Options<String>()
+                                .withOptional()
+                                .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
+                                .withHint(Constants.KEY_TYPE))
+        guard keyType! == Constants.DEFAULT_PUBLICKEY_TYPE else {
+            throw DIDError.didResolveError("Unkown signature key type")
+        }
+
+        let signKey = try proofDict.getDIDURL(Constants.VERIFICATION_METHOD,
+                            JsonSerializer.Options<DIDURL>()
+                                .withHint(Constants.VERIFICATION_METHOD))
+        let signature = try proofDict.getString(Constants.SIGNATURE,
+                            JsonSerializer.Options<String>()
+                                .withHint(Constants.SIGNATURE))
+        _ = request.setProof(keyType!, signKey!, signature!)
+        return request
+    }
+
+    class func fromJson(_ json: Data) throws -> IDChainRequest {
+        guard !json.isEmpty else {
+            throw DIDError.illegalArgument()
+        }
+
+        let node: Dictionary<String, Any>
+        do {
+            node = try JSONSerialization.jsonObject(with: json, options: []) as! Dictionary<String, Any>
+        } catch {
+            throw DIDError.didResolveError("Parse resolve result error")
+        }
+        return try fromJson(node)
+    }
+
+    class func fromJson(_ json: String) throws -> IDChainRequest {
+        return try fromJson(json.data(using: .utf8)!)
+    }
+
     func toJson(_ generator: JsonGenerator, _ normalized: Bool) throws {
         try generator.writeStartObject()
 
@@ -254,72 +327,5 @@ class IDChainRequest: NSObject {
     func toJson(_ normalized: Bool) -> String {
         // TODO
         return "TODO"
-    }
-
-    class func fromJson(_ node: JsonNode) throws -> IDChainRequest {
-        let errorGenerator = { (desc: String) -> DIDError in
-            return DIDError.malformedDocument(desc)
-        }
-
-        let header = node.getItem(Constants.HEADER)
-        guard let _ = header else {
-            throw DIDError.didResolveError("Missing header")
-        }
-
-        let spec = try JsonHelper.getString(header!, Constants.SPECIFICATION,
-                                            false, nil, Constants.SPECIFICATION,
-                                            errorGenerator)
-        guard spec! == IDChainRequest.CURRENT_SPECIFICATION else {
-            throw DIDError.didResolveError("Unknown DID specification")
-        }
-
-        let opString = try JsonHelper.getString(header!, Constants.OPERATION, false, nil,
-                                            Constants.OPERATION, errorGenerator)
-        let operation = IDChainRequestOperation.valueOf(opString!)
-
-        let request = IDChainRequest(operation)
-        if operation == .UPDATE {
-            let transactionId = try JsonHelper.getString(header!, Constants.PREVIOUS_TXID, false, nil,
-                                                Constants.PREVIOUS_TXID, errorGenerator)
-            _ = request.setPreviousTransactionId(transactionId!)
-        }
-
-        let payload = try JsonHelper.getString(node, Constants.PAYLOAD, false, nil,
-                                               Constants.PAYLOAD, errorGenerator)
-        _ = try request.setPayload(payload!)
-
-        let proof = node.getItem(Constants.PROOF)
-        guard let _ = proof else {
-            throw DIDError.didResolveError("Missing proof")
-        }
-
-        let keyType = try JsonHelper.getString(proof!, Constants.KEY_TYPE, true,
-                                              Constants.DEFAULT_PUBLICKEY_TYPE,
-                                              Constants.KEY_TYPE, errorGenerator)
-        guard keyType! == Constants.DEFAULT_PUBLICKEY_TYPE else {
-            throw DIDError.didResolveError("Unknown signature key type")
-        }
-
-        let signKey = try JsonHelper.getDidUrl(proof!, Constants.VERIFICATION_METHOD,
-                    request.did, Constants.VERIFICATION_METHOD, errorGenerator)
-
-        let signature = try JsonHelper.getString(proof!, Constants.SIGNATURE, false,
-                            nil, Constants.SIGNATURE, errorGenerator)
-
-        _ = request.setProof(keyType!, signKey!, signature!)
-        return request
-    }
-
-    class func fromJson(_ json: String) throws -> IDChainRequest {
-        guard !json.isEmpty else {
-            throw DIDError.illegalArgument()
-        }
-
-        do {
-            let node = try JsonNode.fromText(json)
-            return try fromJson(node)
-        } catch {
-            throw DIDError.didResolveError("Parse resolved result error")
-        }
     }
 }

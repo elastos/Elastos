@@ -41,32 +41,26 @@ public class VerifiablePresentationProof {
         return self._signature
     }
 
-    class func fromJson(_ node: JsonNode, _ ref: DID) throws -> VerifiablePresentationProof {
-        let type: String?
-        let method: DIDURL?
-        let realm: String?
-        let nonce: String?
-        let signature: String?
-        let errorGenerator = { (desc: String) -> DIDError in
-            return DIDError.malformedDocument(desc)
-        }
+    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> VerifiablePresentationProof {
+        let serializer = JsonSerializer(node)
 
-        type = try JsonHelper.getString(node, Constants.TYPE, true,
-                                        Constants.DEFAULT_PUBLICKEY_TYPE,
-                                        "presentation proof type",
-                                        errorGenerator)
-        method = try JsonHelper.getDidUrl(node, Constants.VERIFICATION_METHOD, ref,
-                                        "presentation proof verificationMethod",
-                                        errorGenerator)
-        realm = try JsonHelper.getString(node, Constants.REALM, false, nil,
-                                        "presentation proof realm",
-                                        errorGenerator)
-        nonce = try JsonHelper.getString(node, Constants.NONCE, false, nil,
-                                        "presentation proof nonce",
-                                        errorGenerator)
-        signature = try JsonHelper.getString(node, Constants.SIGNATURE, false, nil,
-                                        "presentation proof signature",
-                                        errorGenerator)
+        let type = try serializer.getString(Constants.TYPE,
+                            JsonSerializer.Options<String>()
+                                .withOptional()
+                                .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
+                                .withHint("presentation proof type"))
+        let method = try serializer.getDIDURL(Constants.VERIFICATION_METHOD,
+                            JsonSerializer.Options<DIDURL>()
+                                .withHint("presentation proof verificationMethod"))
+        let realm = try serializer.getString(Constants.REALM,
+                            JsonSerializer.Options<String>()
+                                .withHint("presentation proof realm"))
+        let nonce = try serializer.getString(Constants.NONCE,
+                            JsonSerializer.Options<String>()
+                                .withHint("presentation proof nonce"))
+        let signature = try serializer.getString(Constants.SIGNATURE,
+                            JsonSerializer.Options<String>()
+                                .withHint("presentation proof signature"))
 
         return VerifiablePresentationProof(type!, method!, realm!, nonce!, signature!)
     }

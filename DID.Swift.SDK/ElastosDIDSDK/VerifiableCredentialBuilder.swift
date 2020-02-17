@@ -140,7 +140,7 @@ public class VerifiableCredentialBuilder {
         }
         */
 
-        let date = DateFormater.currentDate()
+        let date = DateHelper.currentDate()
         self._credential!.setIssuanceDate(date)
 
         // let dict = _verifiableCredential?.toJson(true)

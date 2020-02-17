@@ -12,40 +12,25 @@ public class Service: DIDObject {
         return self._endpoint
     }
 
-    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> Service {
-        let id: DIDURL?
-        let type: String?
-        let endPoint: String?
-        let errorGenerator = { (desc: String) -> DIDError in
-            return DIDError.malformedDocument(desc)
-        }
+    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> Service {
+        let serializer = JsonSerializer(node)
 
-        id   = try JsonHelper.getDidUrl(node, Constants.ID, ref, "service id",
-                                        errorGenerator)
-        type = try JsonHelper.getString(node, Constants.TYPE, false, nil, "service type",
-                                        errorGenerator)
-        endPoint = try JsonHelper.getString(node, Constants.SERVICE_ENDPOINT,
-                                        false, nil, "service endpoint",
-                                        errorGenerator)
+        let id = try serializer.getDIDURL(Constants.ID,
+                        JsonSerializer.Options<DIDURL>()
+                            .withHint("serviceId"))
+        let type = try serializer.getString(Constants.TYPE,
+                        JsonSerializer.Options<String>()
+                            .withHint("Service Type"))
+        let endpoint = try serializer.getString(Constants.SERVICE_ENDPOINT,
+                        JsonSerializer.Options<String>()
+                            .withHint("Service Endpoint"))
 
-        return Service(id!, type!, endPoint!)
-    }
-
-    private func computeIdValue(_ ref: DID?, _ normalized: Bool) -> String {
-        let value: String
-
-        if normalized || ref == nil || ref != getId().did {
-            value = getId().toString()
-        } else {
-            // DIDObject always keeps not empty fragment.
-            value = "#" + getId().fragment!
-        }
-        return value
+        return  Service(id!, type!, endpoint!)
     }
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
         try generator.writeStartObject()
-        try generator.writeStringField(Constants.ID, computeIdValue(ref, normalized))
+        try generator.writeStringField(Constants.ID, IDGetter(getId(), ref).value(normalized))
         try generator.writeStringField(Constants.TYPE, getType())
         try generator.writeStringField(Constants.SERVICE_ENDPOINT, self.endpoint)
         try generator.writeEndObject()

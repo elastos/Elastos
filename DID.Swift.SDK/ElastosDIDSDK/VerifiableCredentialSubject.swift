@@ -38,17 +38,13 @@ public class VerifiableCredentialSubject {
         // TODO:
     }
 
-    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredentialSubject {
-        let errorGenerator = { (desc: String) -> DIDError in
-            return DIDError.malformedDocument(desc)
-        }
-
-        let did = try JsonHelper.getDid(node, Constants.ID, ref != nil, ref, "credentialSubject id",
-                                        errorGenerator)
-
-        let subject = VerifiableCredentialSubject(did!)
-        subject.setProperties(node)
-        return subject
+    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> VerifiableCredentialSubject {
+        let serializer = JsonSerializer(node)
+        let did = try serializer.getDID(Constants.ID, JsonSerializer.Options<DID>()
+                                .withOptional()
+                                .withDefValue(ref)
+                                .withHint("credentialSubject id"))
+        return VerifiableCredentialSubject(did!) // TODO: setProperties(node)
     }
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {

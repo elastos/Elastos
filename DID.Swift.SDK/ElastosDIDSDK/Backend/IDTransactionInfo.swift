@@ -35,25 +35,30 @@ class IDTransactionInfo {
         return self._request
     }
 
-    class func fromJson(_ node: JsonNode) throws -> IDTransactionInfo {
-        guard node.size > 0 else {
+    class func fromJson(_ node: Dictionary<String, Any>) throws -> IDTransactionInfo {
+        guard node.count > 0 else {
             throw DIDError.illegalArgument()
         }
 
-        let errorGenerator = { (desc: String) -> DIDError in
-            return DIDError.malformedDocument(desc)
+        let error = { (description: String) -> DIDError in
+            throw DIDError.didResolveError(description)
         }
-        let transactionId = try JsonHelper.getString(node, Constants.TXID, false, nil,
-                                                "transaction id", errorGenerator)
-        let timestamp = try JsonHelper.getDate(node, Constants.TIMESTAMP, false, nil,
-                                                "transaction timestamp", errorGenerator)
-        let reqNode = node.getItem(Constants.OPERATION)
+
+        let jsonDict = JsonSerializer(node)
+        let transactionId = try jsonDict.getString(Constants.TXID, JsonSerializer.Options<String>()
+                                    .withHint("transaction id")
+                                    .withError(error as! JsonSerializerErrorGenerator))
+        let timestamp = try jsonDict.getDate(Constants.TIMESTAMP, JsonSerializer.Options<Date>()
+                                    .withHint("transaction timestamp")
+                                    .withError(error as! JsonSerializerErrorGenerator))
+
+        let reqNode = node[Constants.OPERATION] as? Dictionary<String, Any>
         guard let _ = reqNode else {
             throw DIDError.didResolveError("Missing ID operation")
         }
 
         let request = try IDChainRequest.fromJson(reqNode!)
-        return IDTransactionInfo(transactionId!, timestamp!, request)
+        return IDTransactionInfo(transactionId!, timestamp, request)
     }
 
     func toJson(_ generator: JsonGenerator) throws {

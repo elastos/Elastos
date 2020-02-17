@@ -30,49 +30,37 @@ public class PublicKey: DIDObject {
         return self._keyBase58.data(using: .utf8)!
     }
 
-    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> PublicKey {
-        let id: DIDURL?
-        let type: String?
-        let controller: DID?
-        let keyBase58: String?
-        let errorGenerator = { (desc: String) -> DIDError in
-            return DIDError.malformedDocument(desc)
-        }
+    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> PublicKey {
+        let serializer = JsonSerializer(node)
 
-        id   = try JsonHelper.getDidUrl(node, Constants.ID, ref, "publicKey id",
-                                        errorGenerator)
+        let id = try serializer.getDIDURL(Constants.ID,
+                            JsonSerializer.Options<DIDURL>()
+                                .withOptional()
+                                .withHint("publicKey id"))
 
-        type = try JsonHelper.getString(node, Constants.TYPE, true,
-                                        Constants.DEFAULT_PUBLICKEY_TYPE, "publicKey type",
-                                        errorGenerator)
+        let type = try serializer.getString(Constants.TYPE,
+                            JsonSerializer.Options<String>()
+                                .withOptional()
+                                .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
+                                .withHint("publicKey type"))
 
-        controller = try JsonHelper.getDid(node, Constants.CONTROLLER, true,
-                                        ref, "publicKey controller",
-                                        errorGenerator)
+        let controller = try serializer.getDID(Constants.CONTROLLER,
+                            JsonSerializer.Options<DID>()
+                                .withOptional()
+                                .withDefValue(ref)
+                                .withHint("publicKey controller"))
 
-        keyBase58  = try JsonHelper.getString(node, Constants.PUBLICKEY_BASE58,
-                                        false, nil, "publicKeyBase58",
-                                        errorGenerator)
+        let keybase58 = try serializer.getString(Constants.PUBLICKEY_BASE58,
+                            JsonSerializer.Options<String>()
+                                .withHint("pulbicKeyBase58"))
 
-        return PublicKey(id!, type!, controller!, keyBase58!) // TODO:
-    }
-
-    private func computeIdValue(_ ref: DID?, _ normalized: Bool) -> String {
-        let value: String
-
-        if normalized || ref == nil || ref != getId().did {
-            value = getId().toString()
-        } else {
-            // DIDObject always keeps not empty fragment.
-            value = "#" + getId().fragment!
-        }
-        return value
+        return PublicKey(id!, type!, controller!, keybase58!)
     }
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
         try generator.writeStartObject()
         try generator.writeFieldName(Constants.ID)
-        try generator.writeString(computeIdValue(ref, normalized))
+        try generator.writeString(IDGetter(getId(), ref).value(normalized))
 
         // type
         if normalized || self.getType() != Constants.DEFAULT_PUBLICKEY_TYPE {
@@ -87,7 +75,7 @@ public class PublicKey: DIDObject {
 
         // publicKeyBase58
         try generator.writeFieldName(Constants.PUBLICKEY_BASE58)
-        try generator.writeString(self._keyBase58)
+        try generator.writeString(self.publicKeyBase58)
         try generator.writeEndObject()
     }
 

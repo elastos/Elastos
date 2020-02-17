@@ -1,10 +1,6 @@
 import Foundation
 
 enum ResolveResultStatus: Int, CustomStringConvertible {
-    var description: String {
-        return toString()
-    }
-
     case STATUS_VALID = 0
     case STATUS_EXPIRED = 1
     case STATUS_DEACTIVATED = 2
@@ -25,5 +21,9 @@ enum ResolveResultStatus: Int, CustomStringConvertible {
             desc = "notfound"
         }
         return desc;
+    }
+
+    var description: String {
+        return toString()
     }
 }

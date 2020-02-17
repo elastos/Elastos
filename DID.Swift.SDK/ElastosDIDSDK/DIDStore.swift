@@ -129,7 +129,7 @@ public class DIDStore: NSObject {
             let doc: DIDDocument?
 
             do {
-                doc = DIDBackend.shareInstance()?.resolve(did, true)
+                doc = try DIDBackend.shareInstance()?.resolve(did, true)
             } catch {
                 // TODO:
                 continue

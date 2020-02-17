@@ -593,21 +593,19 @@ public class DIDDocument {
         return false
     }
 
-    private func parse(_ doc: JsonNode) throws {
-        let errorGenerator = { (desc: String) -> DIDError in
-            return DIDError.malformedDocument(desc)
-        }
-
-        let did = try JsonHelper.getDid(doc, Constants.ID, false, nil, "subject", errorGenerator)
+    private func parse(_ doc: Dictionary<String, Any>) throws {
+        let jsonDict = JsonSerializer(doc)
+        let did = try jsonDict.getDID(Constants.ID, JsonSerializer.Options<DID>()
+                                    .withHint("subject"))
         setSubject(did!)
 
-        var node = doc.getItem(Constants.PUBLICKEY)
+        var node = doc[Constants.PUBLICKEY] as? Dictionary<String, Any>
         guard let _ = node else {
-            throw DIDError.malformedDocument("Missing publicKey")
+            throw DIDError.malformedDocument("missing publicKey")
         }
         try parsePublicKeys(node!)
 
-        node = doc.getItem(Constants.AUTHORIZATION)
+        node = doc[Constants.AUTHENTICATION] as? Dictionary<String, Any>
         if let _ = node {
             try parseAuthenticationKeys(node!)
         }
@@ -617,102 +615,71 @@ public class DIDDocument {
             try appendAuthenticationKey(publicKey(ofId: defaultKey)!)  // TODO:
         }
 
-        node = doc.getItem(Constants.AUTHORIZATION)
-        guard let _ = node else {
+        node = doc[Constants.AUTHORIZATION] as? Dictionary<String, Any>
+        if let _ = node {
             try parseAuthorizationKeys(node!)
         }
 
-        node = doc.getItem(Constants.VERIFICATION_METHOD)
+        node = doc[Constants.VERIFIABLE_CREDENTIAL] as? Dictionary<String, Any>
         guard let _ = node else {
             try parseCredential(node!)
         }
 
-        node = doc.getItem(Constants.SERVICE)
+        node = doc[Constants.SERVICE] as? Dictionary<String, Any>
         guard let _ = node else {
             try parseService(node!)
         }
 
-        self._expirationDate = try JsonHelper.getDate(doc, Constants.EXPIRES, true, nil, "expires",
-                                errorGenerator)
+        let expirationDate = try jsonDict.getDate(Constants.EXPIRES,
+                                    JsonSerializer.Options<Date>()
+                                        .withOptional()
+                                        .withHint("expires"))
+        self.setExpirationDate(expirationDate)
 
-        node = doc.getItem(Constants.PROOF)
+        node = doc[Constants.PROOF] as? Dictionary<String, Any>
         guard let _ = node else {
             throw DIDError.malformedDocument("Missing proof")
         }
         setProof(try DIDDocumentProof.fromJson(node!, defaultKey))
     }
 
-    private func parsePublicKeys(_ node: JsonNode) throws {
-        guard !node.isArray else {
-            throw DIDError.malformedDocument("Invalid publicKeys, should be an array")
-        }
-        guard node.size > 0 else {
-            return
-        }
-
+    private func parsePublicKeys(_ node: Dictionary<String, Any>) throws {
         // TODO:
     }
 
-    private func parseAuthenticationKeys(_ node: JsonNode) throws {
-        guard !node.isArray else {
-            throw DIDError.malformedDocument("Invalid authenticationKeys, should be an array")
-        }
-        guard node.size > 0 else {
-            return
-        }
+    private func parseAuthenticationKeys(_ node: Dictionary<String, Any>) throws {
         // TODO:
     }
 
-    private func parseAuthorizationKeys(_ node: JsonNode) throws {
-        guard !node.isArray else {
-            throw DIDError.malformedDocument("Invalid authorizationKeys, should be an array")
-        }
-        guard node.size > 0 else {
-            return
-        }
-
+    private func parseAuthorizationKeys(_ node: Dictionary<String, Any>) throws {
         // TODO
     }
 
-    private func parseCredential(_ node: JsonNode) throws {
-        guard !node.isArray else {
-            throw DIDError.malformedDocument("Invalid credential, should be an array")
-        }
-        guard node.size > 0 else {
-            return
-        }
-
+    private func parseCredential(_ node: Dictionary<String, Any>) throws {
         // TODO
     }
 
-    private func parseService(_ node: JsonNode) throws {
-        guard !node.isArray else {
-            throw DIDError.malformedDocument("Invalid service, should be an array.")
-        }
-        guard node.size > 0 else {
-            return
-        }
-
+    private func parseService(_ node: Dictionary<String, Any>) throws {
         // TODO
     }
 
-    public class func convertToDIDDocument(fromJson json: String) throws -> DIDDocument {
-        guard !json.isEmpty else {
+    public class func convertToDIDDocument(fromData data: Data) throws -> DIDDocument {
+        guard !data.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
         let doc = DIDDocument()
+        let node: Dictionary<String, Any>?
         do {
-            let node = try JsonNode.fromText(json)
-            try doc.parse(node)
+            node = try JSONSerialization.jsonObject(with: data, options: []) as? Dictionary<String, Any>
         } catch {
             throw DIDError.malformedDocument()
         }
-        return doc
+        try doc.parse(node!)
     }
 
-    public class func convertToDIDDocument(fromData data: Data) throws -> DIDDocument {
-        return try convertToDIDDocument(fromJson: String(data: data, encoding: .utf8)!)
+    public class func convertToDIDDocument(fromJson json: String) throws -> DIDDocument {
+        return try  convertToDIDDocument(fromData: json.data(using: .utf8)!)
     }
 
     public class func convertToDIDDocument(fromFilePath path: String) throws -> DIDDocument {

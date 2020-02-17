@@ -23,37 +23,28 @@ public class VerifiableCredentialProof {
         return self._signature
     }
     
-    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredentialProof {
-        let errorGenerator = { (desc: String) -> DIDError in
-            return DIDError.malformedDocument(desc)
-        }
-        let type = try JsonHelper.getString(node, Constants.TYPE, true,
-                                            Constants.DEFAULT_PUBLICKEY_TYPE, "credential proof type",
-                                            errorGenerator)
-        let method = try JsonHelper.getDidUrl(node, Constants.VERIFICATION_METHOD, ref,
-                                            "credential proof verficationMethod",
-                                            errorGenerator)
-        let signature = try JsonHelper.getString(node, Constants.SIGNATURE, false, nil,
-                                            "credential proof signature", errorGenerator)
+    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> VerifiableCredentialProof {
+        let jsonDict = JsonSerializer(node)
+        let type = try jsonDict.getString(Constants.TYPE, JsonSerializer.Options<String>()
+                            .withOptional()
+                            .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
+                            .withHint("credential proof type"))
+        let method = try jsonDict.getDIDURL(Constants.VERIFICATION_METHOD, JsonSerializer.Options<DIDURL>()
+                            .withHint("credential proof verificationMethod"))
+        let signature = try jsonDict.getString(Constants.SIGNATURE, JsonSerializer.Options<String>()
+                            .withHint("credential proof signature"))
 
         return VerifiableCredentialProof(type!, method!, signature!)
     }
 
-    func toJson(_ generator: JsonGenerator, _ ref: DID? = nil, _ normalized: Bool) throws {
+    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
         try generator.writeStartObject()
         // type
         if normalized || self.type != Constants.DEFAULT_PUBLICKEY_TYPE {
             try generator.writeStringField(Constants.TYPE, self.type)
         }
 
-        let value: String
-        if normalized || ref != nil || ref != self.verificationMethod.did {
-            value = verificationMethod.toString()
-        } else {
-            value = "#" + verificationMethod.fragment
-        }
-
-        try generator.writeStringField(Constants.VERIFICATION_METHOD, value)
+        try generator.writeStringField(Constants.VERIFICATION_METHOD, IDGetter(verificationMethod, ref).value(normalized))
         try generator.writeStringField(Constants.SIGNATURE, self.signature)
         try generator.writeEndObject()
     }

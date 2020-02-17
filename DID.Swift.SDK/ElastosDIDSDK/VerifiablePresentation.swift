@@ -8,7 +8,7 @@ public class VerifiablePresentation {
     
     init() {
         self._type = Constants.DEFAULT_PRESENTATION_TYPE
-        self._createdDate = DateFormater.currentDate()
+        self._createdDate = DateHelper.currentDate()
         self._verifiableCredentials = Dictionary<DIDURL, VerifiableCredential>()
     }
 

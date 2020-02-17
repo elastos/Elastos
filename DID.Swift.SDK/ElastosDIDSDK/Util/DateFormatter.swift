@@ -1,7 +1,23 @@
-
 import Foundation
 
-public class DateFormater {
+extension DateFormatter {
+    class func convertToUTCDateFromString(_ dateToConvert: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        return formatter.date(from: dateToConvert)
+    }
+
+    class func convertToUTCStringFromDate(_ dateToConvert: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        return formatter.string(from: dateToConvert)
+    }
+}
+
+/*
+public class DateFormatterHelper {
     class func getDate(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: Date?, _ hint: String) throws -> Date? {
         let vn = dic[name]
         if vn == nil {
@@ -27,23 +43,6 @@ public class DateFormater {
         let date: Date  = formatter.date(from: value) ?? Date()
         
         return date
-    }
-    
-    public class func parseDate(_ timestamp: String) -> Date? {
-        let formatter = Foundation.DateFormatter()
-        // formatter.dateFormat = DATE_FORMAT
-        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
-        let date = formatter.date(from: timestamp)
-        
-        return date
-    }
-    
-    public class func format(_ date: Date) -> String{
-        let formatter = Foundation.DateFormatter()
-        // formatter.dateFormat = DATE_FORMAT
-        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
-        let localDate = formatter.string(from: date)
-        return localDate
     }
     
     public class func currentDateToWantDate(_ year: Int)-> Date {
@@ -88,24 +87,7 @@ public class DateFormater {
         return useDate
     }
     
-   public class func currentDate()-> Date {
-        let current = Date()
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(abbreviation: "UTC")!
-        var comps:DateComponents?
-        
-        comps = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: current)
-        comps?.year = 0
-        comps?.month = 0
-        comps?.day = 0
-        comps?.hour = 0
-        comps?.minute = 0
-        comps?.second = 0
-        comps?.nanosecond = 0
-        let realDate = calendar.date(byAdding: comps!, to: current) ?? Date()
-        
-        return realDate
-    }
+   
     
   public class func setExpires(_ expire: Date) -> Date {
         
@@ -121,3 +103,4 @@ public class DateFormater {
         return  defaultDate > expireDate
     }
 }
+*/

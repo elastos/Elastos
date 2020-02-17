@@ -33,46 +33,52 @@ class ResolveResult {
         self._idtransactionInfos!.append(info)
     }
 
-    class func fromJson(_ result: JsonNode) throws -> ResolveResult {
-        let errorGenerator = { (desc: String) -> DIDError in
-            return DIDError.malformedDocument(desc)
-        }
-
-        guard result.size > 0 else {
+    class func fromJson(_ node: Dictionary<String, Any>) throws -> ResolveResult {
+        guard node.count > 0 else {
             throw DIDError.illegalArgument()
         }
+        let error = { (description: String) -> DIDError in
+            return DIDError.didResolveError(description)
+        }
+        let jsonDict = JsonSerializer(node)
+        let did = try jsonDict.getDID(Constants.DID, JsonSerializer.Options<DID>()
+                            .withHint("resolved result did")
+                            .withError(error))
+        let status = try jsonDict.getInteger(Constants.STATUS, JsonSerializer.Options<Int>()
+                            .withDefValue(-1)
+                            .withHint("resolved status")
+                            .withError(error))
 
-        let did = try JsonHelper.getDid(result, Constants.DID, false, nil, "Resolved result DID",
-                                        errorGenerator)
-        let status = try JsonHelper.getInteger(result, Constants.STATUS, false, -1, "Resolved status",
-                                        errorGenerator)
-
-        let resolveResult = ResolveResult(did!, status)
+        let result = ResolveResult(did!, status)
         if status != ResolveResultStatus.STATUS_NOT_FOUND.rawValue {
-            let transactions = result.getItem(Constants.TRANSACTION)
-            guard transactions?.isArray ?? false else {
-                throw DIDError.didResolveError("Invalid resolve result.")
+            let transactions = node[Constants.TRANSACTION] as? [Dictionary<String, Any>]
+            guard transactions?.count ?? 0 > 0 else {
+                throw DIDError.didResolveError("invalid resolve result.")
             }
-            guard transactions?.size ?? 0 > 0 else {
-                throw DIDError.didResolveError("Invalid resolve result")
+            for transaction in transactions! {
+                result.appendTransactionInfo(try IDTransactionInfo.fromJson(transaction))
             }
-            // TODO:
         }
 
-        return resolveResult
+        return result
     }
 
-    class func fromJson(_ json: String) throws -> ResolveResult {
+    class func fromJson(_ json: Data) throws -> ResolveResult {
         guard !json.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
+        let node: Dictionary<String, Any>
         do {
-            let node: JsonNode = try JsonNode.fromText(json)
-            return try fromJson(node)
+            node = try JSONSerialization.jsonObject(with: json, options: []) as! Dictionary<String, Any>
         } catch {
-            throw DIDError.didResolveError("Parse resolve result error.")
+            throw DIDError.didResolveError("Parse resolve result error")
         }
+        return try fromJson(node)
+    }
+
+    class func fromJson(_ json: String) throws -> ResolveResult {
+        return try fromJson(json.data(using: .utf8)!)
     }
 
     private func toJson(_ generator: JsonGenerator) throws {

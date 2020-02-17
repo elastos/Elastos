@@ -14,7 +14,7 @@ public class DIDDocumentProof {
     }
     
     convenience init(_ creator: DIDURL, _ signature: String) {
-        self.init(Constants.DEFAULT_PUBLICKEY_TYPE, DateFormater.currentDate(), creator, signature)
+        self.init(Constants.DEFAULT_PUBLICKEY_TYPE, DateHelper.currentDate(), creator, signature)
     }
 
     public var type: String {
@@ -33,30 +33,27 @@ public class DIDDocumentProof {
         return self._signature
     }
 
-    class func fromJson(_ node: JsonNode, _ refSignkey: DIDURL) throws -> DIDDocumentProof {
-        let type: String?
-        let created: Date?
-        let creator: DIDURL?
-        let signature: String?
-        let errorGenerator = { (desc: String) -> DIDError in
-            return DIDError.malformedDocument(desc)
-        }
+    class func fromJson(_ node: Dictionary<String, Any>, _ refSginKey: DIDURL) throws -> DIDDocumentProof {
+        let serializer = JsonSerializer(node)
 
-        type = try JsonHelper.getString(node, Constants.TYPE, true,
-                                        Constants.DEFAULT_PUBLICKEY_TYPE,
-                                        "document proof type",
-                                        errorGenerator)
-        created = try JsonHelper.getDate(node, Constants.CREATED, true, nil,
-                                        "document proof created date",
-                                        errorGenerator)
-        creator = try JsonHelper.getDidUrl(node, Constants.CREATOR, true,
-                                        refSignkey.did, "document proof creator",
-                                        errorGenerator)
-        signature = try JsonHelper.getString(node, Constants.SIGNATURE_VALUE,
-                                        false, nil, "document signature",
-                                        errorGenerator)
+        let type = try serializer.getString(Constants.TYPE,
+                            JsonSerializer.Options<String>()
+                            .withOptional()
+                            .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
+                            .withHint("document proof type"))
+        let created = try serializer.getDate(Constants.CREATED,
+                            JsonSerializer.Options<Date>()
+                            .withOptional()
+                            .withHint("document proof created date"))
+        let creator = try serializer.getDIDURL(Constants.CREATOR,
+                            JsonSerializer.Options<DIDURL>()
+                            .withOptional()
+                            .withHint("document proof creator"))
+        let signature = try serializer.getString(Constants.SIGNATURE_VALUE,
+                            JsonSerializer.Options<String>()
+                            .withHint("document signature"))
 
-        return DIDDocumentProof(type!, created!, creator!, signature!)
+        return DIDDocumentProof(type!, created, creator!, signature!)
     }
 
     func toJson(_ generator: JsonGenerator, _ normalized: Bool) throws {
@@ -81,6 +78,7 @@ public class DIDDocumentProof {
         // signature
         try generator.writeFieldName(Constants.SIGNATURE_VALUE)
         try generator.writeString(self.signature)
+
         try generator.writeEndObject()
     }
 }
