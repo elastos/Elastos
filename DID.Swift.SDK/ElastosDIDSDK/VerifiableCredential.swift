@@ -15,7 +15,9 @@ public class VerifiableCredential: DIDObject {
 
     private var meta: CredentialMeta?
 
-    init() {}
+    override init() {
+        super.init()
+    }
 
     init(_ credential: VerifiableCredential) {
         super.init(credential.getId(), credential.getType())
@@ -214,9 +216,7 @@ public class VerifiableCredential: DIDObject {
         guard let _ = self._expirationDate else {
             return false
         }
-
-        let date = DateHelper.currentDate()   // TODO:
-        return DateFormater.comporsDate(self.expirationDate, date)
+        return DateHelper.isExipired(self._expirationDate!)
     }
 
     public var isExpired: Bool {

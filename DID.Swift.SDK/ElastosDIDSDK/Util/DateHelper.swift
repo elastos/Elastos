@@ -23,4 +23,13 @@ class DateHelper {
         // TODO:
         return "TODO"
     }
+
+    class func isExipired(_ date: Date) -> Bool {
+        return isExpired(date, DateHelper.currentDate())
+    }
+
+    class func isExpired(_ date: Date, _ expirateDate: Date) -> Bool {
+        // TODO
+        return false
+    }
 }

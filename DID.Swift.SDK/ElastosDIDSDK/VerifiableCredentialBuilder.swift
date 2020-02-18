@@ -69,7 +69,7 @@ public class VerifiableCredentialBuilder {
 
         var date: Date = expirationDate
         let maxExpirationDate = getMaxExpires()
-        if DateFormater.comporsDate(expirationDate, maxExpirationDate) {
+        if DateHelper.isExpired(expirationDate, maxExpirationDate) {
             date = maxExpirationDate
         }
         self._credential!.setExpirationDate(date)

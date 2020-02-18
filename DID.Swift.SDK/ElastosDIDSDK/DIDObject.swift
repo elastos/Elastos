@@ -4,6 +4,8 @@ public class DIDObject {
     private var _id: DIDURL?
     private var _type: String?
 
+    init() {}
+
     init(_ id: DIDURL, _ type: String) {
         self._id = id
         self._type = type
