@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package contract
 
@@ -15,6 +15,9 @@ import (
 )
 
 func CreateStandardRedeemScript(pubKey *crypto.PublicKey) ([]byte, error) {
+	if nil == pubKey {
+		return nil, errors.New("public Key is nil")
+	}
 	temp, err := pubKey.EncodePoint(true)
 	if err != nil {
 		return nil, errors.New("create standard redeem script, encode public key failed")
