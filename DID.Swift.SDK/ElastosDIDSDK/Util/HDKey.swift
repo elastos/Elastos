@@ -12,7 +12,7 @@ class HDKey: NSObject {
 
     class func fromMnemonic(_ mnemonic: String, _ passphrase: String) throws -> HDKey {
         var seedPinter = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
-        seedPinter = HDkey_GetSeedFromMnemonic(mnemonic.toUnsafePointerInt8()!,
+        seedPinter = HDKey_GetSeedFromMnemonic(mnemonic.toUnsafePointerInt8()!,
                                                passphrase.toUnsafePointerInt8()!,
                                                0,
                                                seedPinter)

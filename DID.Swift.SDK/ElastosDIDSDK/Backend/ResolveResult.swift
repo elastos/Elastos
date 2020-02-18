@@ -73,13 +73,13 @@ class ResolveResult {
             throw DIDError.illegalArgument()
         }
 
-        let node: Dictionary<String, Any>
+        let node: Dictionary<String, Any>?
         do {
-            node = try JSONSerialization.jsonObject(with: json, options: []) as! Dictionary<String, Any>
+            node = try JSONSerialization.jsonObject(with: json, options: []) as? Dictionary<String, Any>
         } catch {
             throw DIDError.didResolveError("Parse resolve result error")
         }
-        return try fromJson(node)
+        return try fromJson(JsonNode(node!))
     }
 
     class func fromJson(_ json: String) throws -> ResolveResult {
