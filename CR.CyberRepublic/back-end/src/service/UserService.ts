@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import {constant} from '../constant'
 import {geo} from '../utility/geo'
 import * as uuid from 'uuid'
-import { validate, utilCrypto, mail, permissions, getDidPublicKey } from '../utility'
+import { validate, utilCrypto, mail, permissions, getDidPublicKey, logger } from '../utility'
 import CommunityService from './CommunityService'
 import * as jwt from 'jsonwebtoken'
 
@@ -645,6 +645,33 @@ export default class extends Base {
     }
 
     public async getElaUrl() {
+        try {
+            const userId = _.get(this.currentUser, '_id')
+            const db_user = this.getDBModel('User')
+            const user = await db_user.findById({ _id: userId })
+            if (!user) {
+                return { success: false }
+            }
+            // for reassociating DID
+            if (user) {
+                const dids = user.dids.map(el => {
+                    // the mark field will be removed after associate DID 
+                    if (el.active === true) {
+                        return {
+                            id: el.id,
+                            expirationDate: el.expirationDate,
+                            active: true,
+                            mark: true
+                        }
+                    }
+                    return el
+                })
+                await db_user.update({ _id: userId }, { $set: { dids } })
+            }
+        } catch(err) {
+            logger.error(err)
+        }
+
         const jwtClaims = {
             iss: process.env.APP_DID,
             userId: this.currentUser._id,
@@ -654,7 +681,7 @@ export default class extends Base {
         const jwtToken = jwt.sign(
             jwtClaims, 
             process.env.APP_PRIVATE_KEY, 
-            { expiresIn: '1d', algorithm: 'HS256' }
+            { expiresIn: '1d', algorithm: 'ES256' }
         )
         const url = `elastos://credaccess/${jwtToken}`
         return { success: true, url }
@@ -681,15 +708,34 @@ export default class extends Base {
                     if (user) { 
                         let dids: object[]
                         const matched = user.dids.filter(el => el.id === decoded.iss)
+                        // associate the same DID
                         if (matched.length) {
                             dids = user.dids.map(el => {
                                 if (el.id === decoded.iss) {
-                                    return { ...el, active: true, expirationDate: rs.expirationDate }
+                                    return {
+                                        id: el.id,
+                                        active: true,
+                                        expirationDate: rs.expirationDate
+                                    }
                                 }
-                                return { ...el, active: false }
+                                return {
+                                    id: el.id,
+                                    expirationDate: el.expirationDate,
+                                    active: false
+                                }
                             })
                         } else {
-                            const inactiveDids = user.dids.map(el => ({ ...el, active: false }))
+                            // associate different DID
+                            const inactiveDids = user.dids.map(el => {
+                                if (el.active === true) {
+                                    return {
+                                        id: el.id,
+                                        expirationDate: el.expirationDate,
+                                        active: false
+                                    }
+                                }
+                                return el
+                            })
                             dids = [ ...inactiveDids, { id: decoded.iss, active: true, expirationDate: rs.expirationDate } ]
                         }
                         await db_user.update(
@@ -703,6 +749,7 @@ export default class extends Base {
                   }
             })
         } catch(err) {
+            logger.error(err)
             return { code: 500 }
         }
     }
@@ -713,7 +760,7 @@ export default class extends Base {
         const user = await db_user.findById({_id: userId})
         if (user && user.dids) {
             const did = user.dids.find(el => el.active === true)
-            if (did) {
+            if (did && !did.mark) {
                 return { success: true, did }
             } else {
                 return { success: false }

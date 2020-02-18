@@ -38,8 +38,8 @@ export default createContainer(
         return await userService.getElaUrl()
       },
 
-      async getDid() {
-        return await userService.getDid()
+      async getNewActiveDid() {
+        return await userService.getNewActiveDid()
       }
     }
   }

@@ -24,17 +24,40 @@ class ProfileDid extends Component {
     )
   }
 
-  handleClick = () => {
-    const { did } = this.props
-    if (this.timerDid || (did && did.id)) {
-      return
-    }
+  pollingDid = () => {
     this.timerDid = setInterval(async () => {
-      const rs = await this.props.getDid()
+      const rs = await this.props.getNewActiveDid()
       if (rs && rs.success) {
         clearInterval(this.timerDid)
+        this.timerDid = null
+        this.setState({ url: '' })
       }
     }, 3000)
+  }
+
+  handleReassociate = async () => {
+    const { url } = this.state
+    if (url) {
+      if (this.timerDid) {
+        return
+      } else {
+        this.pollingDid()
+      }
+    } else {
+      const rs = await this.props.getElaUrl()
+      if (rs && rs.success) {
+        this.setState({ url: rs.url }, () => {
+          this.pollingDid()
+        })
+      }
+    }
+  }
+
+  handleAssociate = async () => {
+    if (this.timerDid) {
+      return
+    }
+    this.pollingDid()
   }
 
   componentDidMount = async () => {
@@ -50,8 +73,9 @@ class ProfileDid extends Component {
 
   render() {
     const { did } = this.props
+    const { visible } = this.state
     let domain
-    if (process.env.NODE_ENV === 'production')  {
+    if (process.env.NODE_ENV === 'production') {
       domain = 'blockchain-did-mainnet'
     } else {
       domain = 'blockchain-did-testnet'
@@ -66,12 +90,17 @@ class ProfileDid extends Component {
           >
             {did.id} <ExternalLinkSvg />
           </a>
+          <Popover content={this.elaQrCode()} trigger="click" placement="top">
+            <Reassociate onClick={this.handleReassociate}>
+              {I18N.get('profile.reassociateDid')}
+            </Reassociate>
+          </Popover>
         </Did>
       )
     } else {
       return (
         <Popover content={this.elaQrCode()} trigger="click" placement="top">
-          <Button onClick={this.handleClick}>
+          <Button onClick={this.handleAssociate}>
             {I18N.get('profile.associateDid')}
           </Button>
         </Popover>
@@ -111,4 +140,10 @@ const Did = styled.div`
       text-decoration: none;
     }
   }
+`
+const Reassociate = styled.span`
+  font-size: 13px;
+  color: #008d85;
+  padding-left: 32px;
+  cursor: pointer;
 `
