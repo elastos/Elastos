@@ -81,23 +81,23 @@ class ResolveResult {
         return try fromJson(json.data(using: .utf8)!)
     }
 
-    private func toJson(_ generator: JsonGenerator) throws {
-        try generator.writeStartObject()
+    private func toJson(_ generator: JsonGenerator) {
+        generator.writeStartObject()
 
-        try generator.writeStringField(Constants.DID,    self.did.toString())
-        try generator.writeNumberField(Constants.STATUS, self.status.rawValue)
+        generator.writeStringField(Constants.DID,    self.did.toString())
+        generator.writeNumberField(Constants.STATUS, self.status.rawValue)
 
         if (self._status != .STATUS_NOT_FOUND) {
-            try generator.writeFieldName(Constants.TRANSACTION)
-            try generator.writeStartArray()
+            generator.writeFieldName(Constants.TRANSACTION)
+            generator.writeStartArray()
 
             for txInfo in self._idtransactionInfos! {
                 try txInfo.toJson(generator)
             }
-            try generator.writeEndArray()
+            generator.writeEndArray()
         }
 
-        try generator.writeEndObject()
+        generator.writeEndObject()
     }
 
     func toJson() throws -> String {

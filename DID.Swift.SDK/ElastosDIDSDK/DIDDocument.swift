@@ -719,23 +719,23 @@ public class DIDDocument {
     *   - signatureValue
     */
     private func toJson(_ generator: JsonGenerator, _ normalized: Bool, _ forSign: Bool) throws {
-        try generator.writeStartObject()
+        generator.writeStartObject()
 
         // subject/id
-        try generator.writeFieldName(Constants.ID)
-        try generator.writeString(self.subject.toString())
+        generator.writeFieldName(Constants.ID)
+        generator.writeString(self.subject.toString())
 
         // publicKey
-        try generator.writeFieldName(Constants.PUBLICKEY)
-        try generator.writeStartArray()
+        generator.writeFieldName(Constants.PUBLICKEY)
+        generator.writeStartArray()
         for pubKey in self._publicKeys!.values {
-            try pubKey.toJson(generator, self.subject, normalized)
+            pubKey.toJson(generator, self.subject, normalized)
         }
-        try generator.writeEndArray()
+        generator.writeEndArray()
 
         // authentication
-        try generator.writeFieldName(Constants.AUTHENTICATION)
-        try generator.writeStartArray()
+        generator.writeFieldName(Constants.AUTHENTICATION)
+        generator.writeStartArray()
         for pubKey in self._authenticationKeys!.values {
             var value: String
             if normalized || pubKey.getId().did != self.subject {
@@ -743,14 +743,14 @@ public class DIDDocument {
             } else {
                 value = "#" + pubKey.getId().fragment!
             }
-            try generator.writeString(value)
+            generator.writeString(value)
         }
-        try generator.writeEndArray()
+        generator.writeEndArray()
 
         // authorization
         if self.authorizationKeyCount > 0 {
-            try generator.writeFieldName(Constants.AUTHORIZATION)
-            try generator.writeStartArray()
+            generator.writeFieldName(Constants.AUTHORIZATION)
+            generator.writeStartArray()
 
             for pubKey in self._authorizationKeys!.values {
                 var value: String
@@ -759,44 +759,44 @@ public class DIDDocument {
                 } else {
                     value = "#" + pubKey.getId().fragment!
                 }
-                try generator.writeString(value)
+                generator.writeString(value)
             }
-            try generator.writeEndArray()
+            generator.writeEndArray()
         }
 
         // verifiable credential
         if self.credentialCount > 0 {
-            try generator.writeFieldName(Constants.VERIFIABLE_CREDENTIAL)
-            try generator.writeStartArray()
+            generator.writeFieldName(Constants.VERIFIABLE_CREDENTIAL)
+            generator.writeStartArray()
             for credential in self._credentials!.values {
-                try credential.toJson(generator, self.subject, normalized)
+                credential.toJson(generator, self.subject, normalized)
             }
-            try generator.writeEndArray()
+            generator.writeEndArray()
         }
 
         // service
         if self.serviceCount > 0 {
-            try generator.writeFieldName(Constants.SERVICE)
-            try generator.writeStartArray()
+            generator.writeFieldName(Constants.SERVICE)
+            generator.writeStartArray()
             for service in self._services!.values {
-                try service.toJson(generator, self.subject, normalized)
+                service.toJson(generator, self.subject, normalized)
             }
-            try generator.writeEndArray()
+            generator.writeEndArray()
         }
 
         // expires
         if let _ = self.expirationDate {
-            try generator.writeFieldName(Constants.EXPIRES)
+            generator.writeFieldName(Constants.EXPIRES)
             // TODO: try generator.writeString(JsonHelper.format)
         }
 
         // proof
         if !forSign { // TODO: check
-            try generator.writeFieldName(Constants.PROOF)
-            try proof.toJson(generator, normalized)
+            generator.writeFieldName(Constants.PROOF)
+            proof.toJson(generator, normalized)
         }
 
-        try generator.writeEndObject()
+        generator.writeEndObject()
     }
 
     func toJson(_ generator: JsonGenerator, _ normalized: Bool) throws {

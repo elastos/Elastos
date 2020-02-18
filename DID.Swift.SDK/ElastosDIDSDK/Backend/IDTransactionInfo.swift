@@ -61,14 +61,14 @@ class IDTransactionInfo {
         return IDTransactionInfo(transactionId!, timestamp, request)
     }
 
-    func toJson(_ generator: JsonGenerator) throws {
-        try generator.writeStartObject()
-        try generator.writeStringField(Constants.TXID, self.transactionId)
-        try generator.writeStringField(Constants.TIMESTAMP, self.timestamp.description)
+    func toJson(_ generator: JsonGenerator) {
+        generator.writeStartObject()
+        generator.writeStringField(Constants.TXID, self.transactionId)
+        generator.writeStringField(Constants.TIMESTAMP, self.timestamp.description)
 
         // Operation
-        try generator.writeFieldName(Constants.OPERATION)
-        try self._request.toJson(generator, false)
-        try generator.writeEndObject()
+        generator.writeFieldName(Constants.OPERATION)
+        self._request.toJson(generator, false)
+        generator.writeEndObject()
     }
 }

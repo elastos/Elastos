@@ -56,26 +56,26 @@ public class PublicKey: DIDObject {
         return PublicKey(id!, type!, controller!, keybase58!)
     }
 
-    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
-        try generator.writeStartObject()
-        try generator.writeFieldName(Constants.ID)
-        try generator.writeString(IDGetter(getId(), ref).value(normalized))
+    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) {
+        generator.writeStartObject()
+        generator.writeFieldName(Constants.ID)
+        generator.writeString(IDGetter(getId(), ref).value(normalized))
 
         // type
-        if normalized || self.getType() != Constants.DEFAULT_PUBLICKEY_TYPE {
-            try generator.writeStringField(Constants.TYPE, self.getType())
+        if normalized || !isDefType() {
+            generator.writeStringField(Constants.TYPE, getType())
         }
 
         // controller
         if normalized || ref == nil || ref != self.controller {
-            try generator.writeFieldName(Constants.CONTROLLER);
-            try generator.writeString(self.controller.toString())
+            generator.writeFieldName(Constants.CONTROLLER);
+            generator.writeString(self.controller.toString())
         }
 
         // publicKeyBase58
-        try generator.writeFieldName(Constants.PUBLICKEY_BASE58)
-        try generator.writeString(self.publicKeyBase58)
-        try generator.writeEndObject()
+        generator.writeFieldName(Constants.PUBLICKEY_BASE58)
+        generator.writeString(self.publicKeyBase58)
+        generator.writeEndObject()
     }
 
     override func equalsTo(_ other: DIDObject) -> Bool {

@@ -63,13 +63,13 @@ public class VerifiablePresentationProof {
         return VerifiablePresentationProof(type!, method!, realm!, nonce!, signature!)
     }
 
-    func toJson(_ generator: JsonGenerator) throws {
-        try generator.writeStartObject()
-        try generator.writeStringField(Constants.TYPE, self.type)
-        try generator.writeStringField(Constants.VERIFICATION_METHOD, self.verificationMethod.toString())
-        try generator.writeStringField(Constants.REALM, self.realm)
-        try generator.writeStringField(Constants.NONCE, self.nonce)
-        try generator.writeStringField(Constants.SIGNATURE, self.signature)
-        try generator.writeEndObject()
+    func toJson(_ generator: JsonGenerator) {
+        generator.writeStartObject()
+        generator.writeStringField(Constants.TYPE, self.type)
+        generator.writeStringField(Constants.VERIFICATION_METHOD, self.verificationMethod.toString())
+        generator.writeStringField(Constants.REALM, self.realm)
+        generator.writeStringField(Constants.NONCE, self.nonce)
+        generator.writeStringField(Constants.SIGNATURE, self.signature)
+        generator.writeEndObject()
     }
 }

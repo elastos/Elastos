@@ -25,12 +25,12 @@ public class Service: DIDObject {
         return Service(id!, type!, endpoint!)
     }
 
-    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
-        try generator.writeStartObject()
-        try generator.writeStringField(Constants.ID, IDGetter(getId(), ref).value(normalized))
-        try generator.writeStringField(Constants.TYPE, getType())
-        try generator.writeStringField(Constants.SERVICE_ENDPOINT, self.endpoint)
-        try generator.writeEndObject()
+    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) {
+        generator.writeStartObject()
+        generator.writeStringField(Constants.ID, IDGetter(getId(), ref).value(normalized))
+        generator.writeStringField(Constants.TYPE, getType())
+        generator.writeStringField(Constants.SERVICE_ENDPOINT, self.endpoint)
+        generator.writeEndObject()
     }
 
     override func equalsTo(_ other: DIDObject) -> Bool {

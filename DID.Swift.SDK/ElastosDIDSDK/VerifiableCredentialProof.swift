@@ -41,14 +41,14 @@ public class VerifiableCredentialProof {
         return VerifiableCredentialProof(proofType!, method!, signature!)
     }
 
-    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
-        try generator.writeStartObject()
+    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) {
+        generator.writeStartObject()
         if normalized || self.type != Constants.DEFAULT_PUBLICKEY_TYPE {
-            try generator.writeStringField(Constants.TYPE, self.type)
+            generator.writeStringField(Constants.TYPE, self.type)
         }
 
-        try generator.writeStringField(Constants.VERIFICATION_METHOD, IDGetter(verificationMethod, ref).value(normalized))
-        try generator.writeStringField(Constants.SIGNATURE, self.signature)
-        try generator.writeEndObject()
+        generator.writeStringField(Constants.VERIFICATION_METHOD, IDGetter(verificationMethod, ref).value(normalized))
+        generator.writeStringField(Constants.SIGNATURE, self.signature)
+        generator.writeEndObject()
     }
 }

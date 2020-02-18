@@ -287,41 +287,41 @@ class IDChainRequest: NSObject {
         return try fromJson(json.data(using: .utf8)!)
     }
 
-    func toJson(_ generator: JsonGenerator, _ normalized: Bool) throws {
-        try generator.writeStartObject()
+    func toJson(_ generator: JsonGenerator, _ normalized: Bool) {
+        generator.writeStartObject()
 
         // header
-        try generator.writeFieldName(Constants.HEADER)
+        generator.writeFieldName(Constants.HEADER)
 
-        try generator.writeStartObject()
-        try generator.writeStringField(Constants.SPECIFICATION, self._specification)
-        try generator.writeStringField(Constants.OPERATION, self.operation.toString())
+        generator.writeStartObject()
+        generator.writeStringField(Constants.SPECIFICATION, self._specification)
+        generator.writeStringField(Constants.OPERATION, self.operation.toString())
         if self._operation == .UPDATE {
-            try generator.writeFieldName(Constants.PREVIOUS_TXID)
-            try generator.writeString(self.previousTransactionId!)
+            generator.writeFieldName(Constants.PREVIOUS_TXID)
+            generator.writeString(self.previousTransactionId!)
         }
-        try generator.writeEndObject() // end of header.
+        generator.writeEndObject() // end of header.
 
         // payload
-        try generator.writeStringField(Constants.PAYLOAD, self.payload!)
+        generator.writeStringField(Constants.PAYLOAD, self.payload!)
 
         // signature
-        try generator.writeFieldName(Constants.PROOF)
-        try generator.writeStartObject()
+        generator.writeFieldName(Constants.PROOF)
+        generator.writeStartObject()
 
         var keyId: String
         if normalized {
-            try generator.writeStringField(Constants.KEY_TYPE, self._keyType!)
+            generator.writeStringField(Constants.KEY_TYPE, self._keyType!)
             keyId = self._signKey!.description
         } else {
             keyId = "#" + self._signKey!.fragment!
         }
-        try generator.writeStringField(Constants.VERIFICATION_METHOD, keyId)
-        try generator.writeStringField(Constants.SIGNATURE, self._signature!)
+        generator.writeStringField(Constants.VERIFICATION_METHOD, keyId)
+        generator.writeStringField(Constants.SIGNATURE, self._signature!)
 
-        try generator.writeEndObject()  // end of signature.
+        generator.writeEndObject()  // end of signature.
 
-        try generator.writeEndObject()
+        generator.writeEndObject()
     }
 
     func toJson(_ normalized: Bool) -> String {

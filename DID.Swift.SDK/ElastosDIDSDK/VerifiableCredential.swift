@@ -361,12 +361,12 @@ public class VerifiableCredential: DIDObject {
         return try fromJson(json.data(using: .utf8)!)
     }
 
-    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
-        try toJson(generator, ref, normalized, false)
+    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) {
+        toJson(generator, ref, normalized, false)
     }
 
-    func toJson(_ generator: JsonGenerator, _ normalized: Bool) throws {
-        try toJson(generator, nil, normalized)
+    func toJson(_ generator: JsonGenerator, _ normalized: Bool) {
+        toJson(generator, nil, normalized)
     }
 
     /*
@@ -385,46 +385,46 @@ public class VerifiableCredential: DIDObject {
     *   - method
     *   - signature
     */
-    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool, _ forSign: Bool) throws {
-        try generator.writeStartObject()
+    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool, _ forSign: Bool) {
+        generator.writeStartObject()
 
         // id
-         try generator.writeStringField(Constants.ID, IDGetter(getId(), ref).value(normalized))
+        generator.writeStringField(Constants.ID, IDGetter(getId(), ref).value(normalized))
 
         // type
-        try generator.writeFieldName(Constants.TYPE)
-        try generator.writeStartArray()
+        generator.writeFieldName(Constants.TYPE)
+        generator.writeStartArray()
         for type in self._types! {
-            try generator.writeString(type)
+            generator.writeString(type)
         }
-        try generator.writeEndArray()
+        generator.writeEndArray()
 
         // issuer
         if normalized || self.issuer != self.subject.did {
-            try generator.writeStringField(Constants.ISSUER, self.issuer.toString())
+            generator.writeStringField(Constants.ISSUER, self.issuer.toString())
         }
 
         // issuanceDate
-        try generator.writeFieldName(Constants.ISSUANCE_DATE)
-        try generator.writeString(DateFormatter.convertToUTCStringFromDate(self.issuanceDate))
+        generator.writeFieldName(Constants.ISSUANCE_DATE)
+        generator.writeString(DateFormatter.convertToUTCStringFromDate(self.issuanceDate))
 
         // expirationDate
         if let _ = self.getExpirationDate() {
-            try generator.writeFieldName(Constants.EXPIRATION_DATE)
-            try generator.writeString(DateFormatter.convertToUTCStringFromDate(self.expirationDate))
+            generator.writeFieldName(Constants.EXPIRATION_DATE)
+            generator.writeString(DateFormatter.convertToUTCStringFromDate(self.expirationDate))
         }
 
         // credenitalSubject
-        try generator.writeFieldName(Constants.CREDENTIAL_SUBJECT)
-        try self.subject.toJson(generator, ref, normalized)
+        generator.writeFieldName(Constants.CREDENTIAL_SUBJECT)
+        self.subject.toJson(generator, ref, normalized)
 
         // proof
         if !forSign {
-            try generator.writeFieldName(Constants.PROOF)
-            try proof.toJson(generator, issuer, normalized)
+            generator.writeFieldName(Constants.PROOF)
+            proof.toJson(generator, issuer, normalized)
         }
 
-        try generator.writeEndObject()
+        generator.writeEndObject()
     }
 
     func toJson(_ normalized: Bool, _ forSign: Bool) -> String {

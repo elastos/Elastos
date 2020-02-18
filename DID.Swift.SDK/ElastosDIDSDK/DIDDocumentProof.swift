@@ -51,29 +51,29 @@ public class DIDDocumentProof {
         return DIDDocumentProof(proofType!, created, creator!, signature!)
     }
 
-    func toJson(_ generator: JsonGenerator, _ normalized: Bool) throws {
-        try generator.writeStartObject()
+    func toJson(_ generator: JsonGenerator, _ normalized: Bool) {
+        generator.writeStartObject()
 
         // type
         if normalized || self.type != Constants.DEFAULT_PUBLICKEY_TYPE {
-            try generator.writeFieldName(Constants.TYPE)
-            try generator.writeString(self._type)
+            generator.writeFieldName(Constants.TYPE)
+            generator.writeString(self._type)
         }
 
         // createdDate
-        try generator.writeFieldName(Constants.CREATED)
-        try generator.writeString(DateHelper.formateDate(self.createdDate))
+        generator.writeFieldName(Constants.CREATED)
+        generator.writeString(DateHelper.formateDate(self.createdDate))
 
         // creator
         if normalized {
-            try generator.writeFieldName(Constants.CREATOR)
-            try generator.writeString(self.creator.toString())
+            generator.writeFieldName(Constants.CREATOR)
+            generator.writeString(self.creator.toString())
         }
 
         // signature
-        try generator.writeFieldName(Constants.SIGNATURE_VALUE)
-        try generator.writeString(self.signature)
+        generator.writeFieldName(Constants.SIGNATURE_VALUE)
+        generator.writeString(self.signature)
 
-        try generator.writeEndObject()
+        generator.writeEndObject()
     }
 }

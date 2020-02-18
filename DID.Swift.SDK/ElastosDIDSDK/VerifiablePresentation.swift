@@ -181,24 +181,24 @@ public class VerifiablePresentation {
      *   - signature
      */
     func toJson(_ generator: JsonGenerator, _ forSign: Bool) throws {
-        try generator.writeStartObject()
-        try generator.writeStringField(Constants.TYPE, self.type)
-        try generator.writeStringField(Constants.CREATED, DateHelper.formateDate(self.createdDate))
+        generator.writeStartObject()
+        generator.writeStringField(Constants.TYPE, self.type)
+        generator.writeStringField(Constants.CREATED, DateHelper.formateDate(self.createdDate))
 
         // verifiable credentials
-        try generator.writeFieldName(Constants.VERIFIABLE_CREDENTIAL)
-        try generator.writeStartArray()
+        generator.writeFieldName(Constants.VERIFIABLE_CREDENTIAL)
+        generator.writeStartArray()
         for credential in self._verifiableCredentials.values {
             try credential.toJson(generator, nil, true)
         }
-        try generator.writeEndArray()
+        generator.writeEndArray()
 
         // Proof
         if !forSign {
-            try generator.writeFieldName(Constants.PROOF)
-            try self._proof!.toJson(generator)
+            generator.writeFieldName(Constants.PROOF)
+            self._proof!.toJson(generator)
         }
-        try generator.writeEndObject()
+        generator.writeEndObject()
     }
 
     func toJson(_ forSign: Bool) -> String {

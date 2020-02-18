@@ -51,17 +51,17 @@ public class VerifiableCredentialSubject {
         return credential
     }
 
-    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) throws {
-        try generator.writeStartObject()
+    func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) {
+        generator.writeStartObject()
 
         if normalized || ref == nil || self.did != ref {
-            try generator.writeStringField(Constants.ID, self.did.toString())
+            generator.writeStringField(Constants.ID, self.did.toString())
         }
 
         if self.propertyCount > 0 {
             //TODO: JsonHelper.toJson(generator, self._properties, true)
         }
 
-        try generator.writeEndObject()
+        generator.writeEndObject()
     }
 }

@@ -25,6 +25,10 @@ public class DIDObject {
         self._type = type
     }
 
+    func isDefType() -> Bool {
+        return self._type == Constants.DEFAULT_PUBLICKEY_TYPE
+    }
+
     func equalsTo(_ other: DIDObject) -> Bool {
         return self.getId() == other.getId() &&
                self.getType() == other.getType()
