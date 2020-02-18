@@ -21,15 +21,19 @@ dependencies {
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     api 'org.apache.commons:commons-math3:3.6.1'
 
+	compile 'org.bouncycastle:bcprov-jdk15to18:1.64'
+	
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:26.0-jre'
     implementation 'org.antlr:antlr4-runtime:4.7.1'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.9'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
     implementation 'com.madgag.spongycastle:core:1.58.0.0'
+    implementation 'org.slf4j:slf4j-api:1.7.30'
 
     // Use JUnit test framework
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'    
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0' 
+    testImplementation 'org.slf4j:slf4j-jdk14:1.7.30'   
 }
 
 test {
