@@ -124,6 +124,7 @@
 		A31ACE6B23F19A66008EC032 /* IDChainRequestOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE6623F19A66008EC032 /* IDChainRequestOperation.swift */; };
 		A31ACE6C23F19A66008EC032 /* IDChainRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE6723F19A66008EC032 /* IDChainRequest.swift */; };
 		A34D732923FA758900B4CB3E /* IDGetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A34D732823FA758900B4CB3E /* IDGetter.swift */; };
+		A34D732B23FBCD1000B4CB3E /* JsonNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A34D732A23FBCD1000B4CB3E /* JsonNode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -358,6 +359,7 @@
 		A31ACE6623F19A66008EC032 /* IDChainRequestOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IDChainRequestOperation.swift; path = Backend/IDChainRequestOperation.swift; sourceTree = "<group>"; };
 		A31ACE6723F19A66008EC032 /* IDChainRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IDChainRequest.swift; path = Backend/IDChainRequest.swift; sourceTree = "<group>"; };
 		A34D732823FA758900B4CB3E /* IDGetter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IDGetter.swift; path = Util/IDGetter.swift; sourceTree = "<group>"; };
+		A34D732A23FBCD1000B4CB3E /* JsonNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JsonNode.swift; path = Util/JsonNode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -639,6 +641,7 @@
 				A31ACE2C23F19A22008EC032 /* DerivedKey.swift */,
 				A31ACE2B23F19A22008EC032 /* ExtensionInt.swift */,
 				A31ACE3023F19A22008EC032 /* HDKey.swift */,
+				A34D732A23FBCD1000B4CB3E /* JsonNode.swift */,
 				A31ACE2A23F19A22008EC032 /* JsonGenerator.swift */,
 				A31ACE3523F19A22008EC032 /* PathExtracter.swift */,
 				A31ACE3223F19A22008EC032 /* String.swift */,
@@ -945,6 +948,7 @@
 				A31ACE3723F19A22008EC032 /* ExtensionInt.swift in Sources */,
 				A31ACE1123F199AE008EC032 /* DIDObject.swift in Sources */,
 				A31ACE3C23F19A22008EC032 /* HDKey.swift in Sources */,
+				A34D732B23FBCD1000B4CB3E /* JsonNode.swift in Sources */,
 				A31ACE5823F19A3A008EC032 /* ParserHelper.swift in Sources */,
 				A31ACE2123F199BA008EC032 /* VerifiableCredentialSubject.swift in Sources */,
 				A31ACE2023F199BA008EC032 /* VerifiableCredentialIssuer.swift in Sources */,

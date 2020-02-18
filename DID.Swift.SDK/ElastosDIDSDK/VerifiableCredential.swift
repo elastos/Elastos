@@ -134,7 +134,7 @@ public class VerifiableCredential: DIDObject {
         }
 
         getMeta().setExtra(value, forName)
-        if getMeta().hasAttachedStore {
+        if getMeta().attachedStore {
             try getMeta().store?.storeCredentialMeta(self.subject.did, self.getId(), getMeta())
         }
     }
@@ -149,7 +149,7 @@ public class VerifiableCredential: DIDObject {
 
     public func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
-        if getMeta().hasAttachedStore {
+        if getMeta().attachedStore {
             try getMeta().store?.storeCredentialMeta(self.subject.did, self.getId(), getMeta())
         }
     }

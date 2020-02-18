@@ -129,7 +129,7 @@ public class DIDDocument {
         guard containsPublicKey(forId: forId) else {
             return false
         }
-        guard getMeta().hasAttachedStore else {
+        guard getMeta().attachedStore else {
             return false
         }
         return try getMeta().store!.containsPrivateKey(self.subject, forId)
@@ -181,7 +181,7 @@ public class DIDDocument {
         }
 
         let removedKey = self._publicKeys?.removeValue(forKey: id)
-        if  removedKey != nil && getMeta().hasAttachedStore {
+        if  removedKey != nil && getMeta().attachedStore {
             _ = try getMeta().store!.deletePrivateKey(self.subject, id)
         }
     }
@@ -460,7 +460,7 @@ public class DIDDocument {
         }
 
         getMeta().setExtra(value, name)
-        if getMeta().hasAttachedStore {
+        if getMeta().attachedStore {
             try getMeta().store!.storeDidMeta(getMeta(), for: self.subject)
         }
     }
@@ -471,7 +471,7 @@ public class DIDDocument {
 
     private func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
-        if getMeta().hasAttachedStore {
+        if getMeta().attachedStore {
             try getMeta().store!.storeDidMeta(getMeta(), for: self.subject)
         }
     }
@@ -557,7 +557,7 @@ public class DIDDocument {
         guard !storePass.isEmpty else {
             throw DIDError.illegalArgument()
         }
-        guard getMeta().hasAttachedStore else {
+        guard getMeta().attachedStore else {
             throw DIDError.didStoreError("Not attached with DID store")
         }
 

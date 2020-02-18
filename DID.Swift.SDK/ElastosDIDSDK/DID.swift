@@ -57,7 +57,7 @@ public class DID {
         }
 
         getMeta().setExtra(value, name)
-        if getMeta().hasAttachedStore {
+        if getMeta().attachedStore {
             try getMeta().store!.storeDidMeta(getMeta(), for: self)
         }
     }
@@ -73,7 +73,7 @@ public class DID {
     // Clean alias Name when newValue is nil.
     private func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
-        if getMeta().hasAttachedStore {
+        if getMeta().attachedStore {
             try getMeta().store?.storeDidMeta(getMeta(), for: self)
         }
     }

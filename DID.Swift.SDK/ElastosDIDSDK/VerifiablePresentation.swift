@@ -180,7 +180,7 @@ public class VerifiablePresentation {
      *   - nonce
      *   - signature
      */
-    func toJson(_ generator: JsonGenerator, _ forSign: Bool) throws {
+    func toJson(_ generator: JsonGenerator, _ forSign: Bool) {
         generator.writeStartObject()
         generator.writeStringField(Constants.TYPE, self.type)
         generator.writeStringField(Constants.CREATED, DateHelper.formateDate(self.createdDate))
@@ -189,7 +189,7 @@ public class VerifiablePresentation {
         generator.writeFieldName(Constants.VERIFIABLE_CREDENTIAL)
         generator.writeStartArray()
         for credential in self._verifiableCredentials.values {
-            try credential.toJson(generator, nil, true)
+            credential.toJson(generator, nil, true)
         }
         generator.writeEndArray()
 

@@ -15,12 +15,17 @@ class CredentialMeta: Metadata {
         return try super.fromJson(metadata, CredentialMeta.self)
     }
 
-    override class func fromNode(_ node: Dictionary<String, Any>) throws {
-        // TODO:
+    override func fromNode(_ node: JsonNode) throws {
+        let value = node.getValue(Constants.ALIAS)
+        if  value != nil {
+            setAlias(value!)
+        }
     }
 
-    override func toNode(_ node: Dictionary<String, Any>) {
-        // TODO:
+    override func toNode(_ node: JsonNode) {
+        if self._aliasName != nil {
+            node.setValue(Constants.ALIAS, self._aliasName!)
+        }
     }
 
     override func merge(_ other: Metadata) throws {

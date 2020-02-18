@@ -15,6 +15,7 @@ public class Mnemonic {
         guard !mnemonic.isEmpty else {
             throw DIDError.illegalArgument()
         }
+
         return HDKey_MnemonicIsValid(mnemonic.toUnsafePointerInt8()!, Int32(language))
     }
 }

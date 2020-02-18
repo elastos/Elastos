@@ -152,7 +152,7 @@ public class DIDURL {
         }
 
         getMeta().setExtra(name, value)
-        if getMeta().hasAttachedStore {
+        if getMeta().attachedStore {
             try getMeta().store?.storeCredentialMeta(self.did, self, getMeta())
         }
     }
@@ -168,7 +168,7 @@ public class DIDURL {
     // Clean alias Name when newValue is nil.
     private func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
-        if getMeta().hasAttachedStore {
+        if getMeta().attachedStore {
             try getMeta().store?.storeCredentialMeta(did, self, getMeta())
         }
     }

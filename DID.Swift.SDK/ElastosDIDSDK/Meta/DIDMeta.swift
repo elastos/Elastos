@@ -42,12 +42,46 @@ class DIDMeta: Metadata {
         return try super.fromJson(metadata, DIDMeta.self)
     }
 
-    override class func fromNode(_ node: Dictionary<String, Any>) throws {
-        // TODO:
+    override func fromNode(_ node: JsonNode) throws {
+        var value: String?
+
+        value = node.getValue(Constants.ALIAS)
+        if value != nil {
+            setAlias(value!)
+        }
+
+        value = node.getValue(Constants.DEACTIVATED)
+        if value != nil {
+            setDeactivated(Bool(value!) ?? true)
+        }
+
+        value = node.getValue(Constants.TXID)
+        if value != nil {
+            setTransactionId(value!)
+        }
+
+        value = node.getValue(Constants.TIMESTAMP)
+        if value != nil {
+            setUpdatedDate(DateFormatter.convertToUTCDateFromString(value!))
+        }
     }
     
-    override func toNode(_ node: Dictionary<String, Any>) {
-        // TODO
+    override func toNode(_ node: JsonNode) {
+        if self._aliasName != nil {
+            node.setValue(Constants.ALIAS, self._aliasName!)
+        }
+
+        if self._deactivated {
+            node.setValue(Constants.DEACTIVATED, self._deactivated)
+        }
+
+        if self._transactionId != nil {
+            node.setValue(Constants.TXID, self._transactionId!)
+        }
+
+        if self.updatedDate != nil {
+            node.setValue(Constants.TIMESTAMP, DateHelper.formateDate(self._updatedDate!))
+        }
     }
 
     override func merge(_ other: Metadata) throws {
