@@ -15,6 +15,9 @@ import (
 )
 
 func CreateDepositContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) {
+	if nil == pubkey {
+		return nil, errors.New("public key is nil")
+	}
 	temp, err := pubkey.EncodePoint(true)
 	if err != nil {
 		return nil, errors.New("[Contract],CreateDepositContractByPubKey failed.")
