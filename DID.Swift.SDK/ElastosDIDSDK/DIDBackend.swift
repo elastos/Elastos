@@ -43,12 +43,40 @@ public class DIDBackend {
     }
     
     private func resolveFromBackend(_ did: DID) throws -> ResolveResult {
-        let json = try? self._adapter.resolve(generateRequestId(), did.description, false)
-        guard json != nil else {
-            throw DIDError.didResolveError("Resolve DID error")
+        let requestId = generateRequestId()
+        let json = try self._adapter.resolve(requestId, did.toString(), false)
+
+        let data: Dictionary<String, Any>?
+        do {
+            data = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: [])
+                        as? Dictionary<String, Any>
+        } catch {
+            throw DIDError.didResolveError("parse resolved json error.")
         }
 
-        // TODO:
+        let node = JsonNode(data!)
+        let id = node.getValue(Constants.ID)
+        guard let _ = id else {
+            throw DIDError.didResolveError("missing resolved result id")
+        }
+        guard id! == requestId else {
+            throw DIDError.didResolveError("mismatched request Id for resolved result")
+        }
+
+        let resultNode = node.getNode(Constants.RESULT)
+        if  resultNode == nil || resultNode!.isEmpty {
+            let errorNode = node.getNode(Constants.ERROR)!
+            let errorCode = errorNode.getValue(Constants.ERROR_CODE) ?? "<null>"
+            let errorMsg  = errorNode.getValue(Constants.ERROR_MESSAGE) ?? "<null>"
+
+            throw DIDError.didResolveError("resolve DID error(\(errorCode)):\(errorMsg)")
+        }
+
+        let result = try ResolveResult.fromJson(resultNode!)
+        if result.status != ResolveResultStatus.STATUS_NOT_FOUND {
+            // TODO: Cache.
+        }
+        return result
     }
     
     func resolve(_ did: DID, _ force: Bool) throws -> DIDDocument? {
