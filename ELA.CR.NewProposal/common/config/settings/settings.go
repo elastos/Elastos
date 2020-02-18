@@ -41,7 +41,7 @@ const (
 var (
 	// defaultConfig defines the default parameters to running a ELA node.
 	defaultConfig = config.Configuration{
-		PrintLevel: elalog.LevelInfo,
+		PrintLevel: uint32(elalog.LevelInfo),
 	}
 )
 

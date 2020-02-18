@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 var (
@@ -48,7 +47,7 @@ type Configuration struct {
 	HttpJsonPort                int               `json:"HttpJsonPort"`
 	EnableRPC                   bool              `json:"EnableRPC"`
 	NodePort                    uint16            `json:"NodePort"`
-	PrintLevel                  elalog.Level      `json:"PrintLevel"`
+	PrintLevel                  uint32            `json:"PrintLevel"`
 	MaxLogsSize                 int64             `json:"MaxLogsSize"`
 	MaxPerLogSize               int64             `json:"MaxPerLogSize"`
 	RestCertPath                string            `json:"RestCertPath"`
