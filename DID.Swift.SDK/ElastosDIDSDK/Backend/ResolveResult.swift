@@ -33,25 +33,31 @@ class ResolveResult {
         self._idtransactionInfos!.append(info)
     }
 
-    class func fromJson(_ node: Dictionary<String, Any>) throws -> ResolveResult {
-        guard node.count > 0 else {
+    class func fromJson(_ node: JsonNode) throws -> ResolveResult {
+        guard !node.isEmpty else {
             throw DIDError.illegalArgument()
         }
-        let error = { (description: String) -> DIDError in
-            return DIDError.didResolveError(description)
-        }
-        let jsonDict = JsonSerializer(node)
-        let did = try jsonDict.getDID(Constants.DID, JsonSerializer.Options<DID>()
-                            .withHint("resolved result did")
-                            .withError(error))
-        let status = try jsonDict.getInteger(Constants.STATUS, JsonSerializer.Options<Int>()
-                            .withDefValue(-1)
-                            .withHint("resolved status")
-                            .withError(error))
 
-        let result = ResolveResult(did!, status)
+        let error = { (des: String) -> DIDError in
+            return DIDError.didResolveError(des)
+        }
+        let serializer = JsonSerializer(node)
+        var options: JsonSerializer.Options
+
+        options = JsonSerializer.Options()
+                                .withHint("resolved result did")
+                                .withError(error)
+        let did = try serializer.getDID(Constants.DID, options)
+
+        options = JsonSerializer.Options()
+                                .withRef(-1)
+                                .withHint("resolved status")
+                                .withError(error)
+        let status = try serializer.getInteger(Constants.STATUS, options)
+
+        let result = ResolveResult(did, status)
         if status != ResolveResultStatus.STATUS_NOT_FOUND.rawValue {
-            let transactions = node[Constants.TRANSACTION] as? [Dictionary<String, Any>]
+            let transactions = node.getNodeArray(Constants.TRANSACTION)
             guard transactions?.count ?? 0 > 0 else {
                 throw DIDError.didResolveError("invalid resolve result.")
             }
@@ -59,7 +65,6 @@ class ResolveResult {
                 result.appendTransactionInfo(try IDTransactionInfo.fromJson(transaction))
             }
         }
-
         return result
     }
 
@@ -84,7 +89,7 @@ class ResolveResult {
     private func toJson(_ generator: JsonGenerator) {
         generator.writeStartObject()
 
-        generator.writeStringField(Constants.DID,    self.did.toString())
+        generator.writeStringField(Constants.DID, self.did.toString())
         generator.writeNumberField(Constants.STATUS, self.status.rawValue)
 
         if (self._status != .STATUS_NOT_FOUND) {
@@ -92,7 +97,7 @@ class ResolveResult {
             generator.writeStartArray()
 
             for txInfo in self._idtransactionInfos! {
-                try txInfo.toJson(generator)
+                txInfo.toJson(generator)
             }
             generator.writeEndArray()
         }

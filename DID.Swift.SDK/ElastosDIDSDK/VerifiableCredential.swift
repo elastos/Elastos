@@ -304,42 +304,48 @@ public class VerifiableCredential: DIDObject {
         self._proof = newProof
     }
 
-    private class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> VerifiableCredential {
-        let credential = VerifiableCredential()
-        let nodeDict = JsonSerializer(node)
-        let issuer = try nodeDict.getDID(Constants.ISSUER, JsonSerializer.Options<DID>()
-                                    .withOptional()
-                                    .withDefValue(ref)
-                                    .withHint("credentiall issuer"))
+    private class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredential {
+        let serializer = JsonSerializer(node)
+        var options: JsonSerializer.Options
 
-        let issuanceDate = try nodeDict.getDate(Constants.ISSUANCE_DATE,
-                                JsonSerializer.Options<Date>()
-                                    .withHint("credential expirationDate"))
+        // TODO:
 
-        let subjectNode = node[Constants.CREDENTIAL_SUBJECT] as? Dictionary<String, Any>
-        guard let _ = subjectNode else {
+        options = JsonSerializer.Options()
+                                .withOptional()
+                                .withRef(ref)
+                                .withHint("credential issuer")
+        let issuer = try serializer.getDID(Constants.ISSUER, options)
+
+        options = JsonSerializer.Options()
+                                .withHint("credential expirationDate")
+        let issuanceDate = try serializer.getDate(Constants.ISSUANCE_DATE, options)
+
+        options = JsonSerializer.Options()
+                                .withHint("credential id")
+        let id = try serializer.getDIDURL(Constants.ID, options)
+
+        var subNode = node.getNode(Constants.CREDENTIAL_SUBJECT)
+        guard let _ = subNode else {
             throw DIDError.malformedCredential("missing credential subject.")
         }
-        let subject = try VerifiableCredentialSubject.fromJson(subjectNode!, ref)
+        let subject = try VerifiableCredentialSubject.fromJson(subNode!, ref)
 
-        let id = try nodeDict.getDIDURL(Constants.ID, JsonSerializer.Options<DIDURL>()
-                                    .withHint("credential id"))
-
-        let proofNode = node[Constants.PROOF] as? Dictionary<String, Any>
-        guard let _ = proofNode else {
+        subNode = node.getNode(Constants.PROOF)
+        guard let _ = subNode else {
             throw DIDError.malformedCredential("missing credential proof")
         }
-        let proof = try VerifiableCredentialProof.fromJson(proofNode!, ref)
+        let proof = try VerifiableCredentialProof.fromJson(subNode!, ref)
 
-        credential.setIssuer(issuer!)
+        let credential = VerifiableCredential()
+        credential.setIssuer(issuer)
         credential.setIssuanceDate(issuanceDate)
         credential.setSubject(subject)
         credential.setId(id!)
-         credential.setProof(proof)
+        credential.setProof(proof)
+
         if let _ = credential.getIssuer() {
             credential.setIssuer(credential.subject.did)
         }
-
         return credential
     }
 
@@ -354,7 +360,7 @@ public class VerifiableCredential: DIDObject {
         } catch {
             throw DIDError.didResolveError("Parse resolve result error")
         }
-        return try fromJson(node, nil)
+        return try fromJson(JsonNode(node), nil)
     }
 
     class func fromJson(_ json: String) throws -> VerifiableCredential {

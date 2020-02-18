@@ -36,17 +36,19 @@ public class VerifiableCredentialSubject {
         return nil
     }
 
-    func setProperties(_ props: Dictionary<String, Any>) {
+    func setProperties(_ props: JsonNode) {
         // TODO:
     }
 
-    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> VerifiableCredentialSubject {
+    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredentialSubject {
         let serializer = JsonSerializer(node)
-        let did = try serializer.getDID(Constants.ID, JsonSerializer.Options<DID>()
-                                .withOptional()
-                                .withDefValue(ref)
-                                .withHint("credentialSubject id"))
-        let credential = VerifiableCredentialSubject(did!)
+        let options = JsonSerializer.Options()
+                                    .withOptional(ref != nil)
+                                    .withRef(ref)
+                                    .withHint("credentialSubject id")
+        let did = try serializer.getDID(Constants.ID, options)
+
+        let credential = VerifiableCredentialSubject(did)
         credential.setProperties(node)
         return credential
     }

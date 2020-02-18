@@ -73,9 +73,7 @@ public class DID {
     // Clean alias Name when newValue is nil.
     private func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
-        if getMeta().attachedStore {
-            try getMeta().store?.storeDidMeta(getMeta(), for: self)
-        }
+        try getMeta().store?.storeDidMeta(getMeta(), for: self)
     }
 
     public func setAlias(_ newValue: String) throws {
@@ -100,9 +98,6 @@ public class DID {
 
     public func resolve(_ force: Bool) throws -> DIDDocument? {
         let doc = try DIDBackend.shareInstance()?.resolve(self, force)
-
-        // In case that no DID document was found, "nil" value would be
-        // returned instread of throwing Error.
         if let _ = doc {
             setMeta(doc!.getMeta())
         }

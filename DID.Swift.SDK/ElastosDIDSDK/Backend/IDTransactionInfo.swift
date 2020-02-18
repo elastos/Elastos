@@ -35,30 +35,35 @@ class IDTransactionInfo {
         return self._request
     }
 
-    class func fromJson(_ node: Dictionary<String, Any>) throws -> IDTransactionInfo {
-        guard node.count > 0 else {
+    class func fromJson(_ node: JsonNode) throws -> IDTransactionInfo {
+        guard !node.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
-        let error = { (description: String) -> DIDError in
-            throw DIDError.didResolveError(description)
+        let error = { (des: String) -> DIDError in
+            return DIDError.didResolveError(des)
         }
 
-        let jsonDict = JsonSerializer(node)
-        let transactionId = try jsonDict.getString(Constants.TXID, JsonSerializer.Options<String>()
-                                    .withHint("transaction id")
-                                    .withError(error as! JsonSerializerErrorGenerator))
-        let timestamp = try jsonDict.getDate(Constants.TIMESTAMP, JsonSerializer.Options<Date>()
-                                    .withHint("transaction timestamp")
-                                    .withError(error as! JsonSerializerErrorGenerator))
+        let serializer = JsonSerializer(node)
+        var options: JsonSerializer.Options
 
-        let reqNode = node[Constants.OPERATION] as? Dictionary<String, Any>
-        guard let _ = reqNode else {
-            throw DIDError.didResolveError("Missing ID operation")
+        options = JsonSerializer.Options()
+                                .withHint("transaction id")
+                                .withError(error)
+        let transactionId = try serializer.getString(Constants.TXID, options)
+
+        options = JsonSerializer.Options()
+                                .withHint("transaction timestamp")
+                                .withError(error)
+        let timestamp = try serializer.getDate(Constants.TIMESTAMP, options)
+
+        let subNode = node.getNode(Constants.OPERATION)
+        guard let _ = subNode else {
+            throw DIDError.didResolveError("missing ID operation")
         }
 
-        let request = try IDChainRequest.fromJson(reqNode!)
-        return IDTransactionInfo(transactionId!, timestamp, request)
+        let request = try IDChainRequest.fromJson(subNode!)
+        return IDTransactionInfo(transactionId, timestamp, request)
     }
 
     func toJson(_ generator: JsonGenerator) {

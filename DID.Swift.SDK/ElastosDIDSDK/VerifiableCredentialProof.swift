@@ -23,22 +23,26 @@ public class VerifiableCredentialProof {
         return self._signature
     }
     
-    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws
-                        -> VerifiableCredentialProof {
+    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredentialProof {
         let serializer = JsonSerializer(node)
-        let proofType = try serializer.getString(Constants.TYPE,
-                                JsonSerializer.Options<String>()
-                                    .withOptional()
-                                    .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
-                                    .withHint("credential proof type"))
-        let method    = try serializer.getDIDURL(Constants.VERIFICATION_METHOD,
-                                JsonSerializer.Options<DIDURL>()
-                                    .withHint("credential proof verificationMethod"))
-        let signature = try serializer.getString(Constants.SIGNATURE,
-                                JsonSerializer.Options<String>()
-                                    .withHint("credential proof signature"))
+        var options: JsonSerializer.Options
 
-        return VerifiableCredentialProof(proofType!, method!, signature!)
+        options = JsonSerializer.Options()
+                                .withOptional()
+                                .withRef(Constants.DEFAULT_PUBLICKEY_TYPE)
+                                .withHint("credential proof type")
+        let type = try serializer.getString(Constants.TYPE, options)
+
+        options = JsonSerializer.Options()
+                                .withRef(ref)
+                                .withHint("credential proof verificationMethod")
+        let method = try serializer.getDIDURL(Constants.VERIFICATION_METHOD, options)
+
+        options = JsonSerializer.Options()
+                                .withHint("credential proof signature")
+        let signature = try serializer.getString(Constants.SIGNATURE, options)
+
+        return VerifiableCredentialProof(type, method!, signature)
     }
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) {

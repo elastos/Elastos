@@ -2,44 +2,52 @@ import Foundation
 
 typealias JsonSerializerErrorGenerator = (String) -> DIDError
 
-class JsonSerializer {
-    private let data: Dictionary<String, Any>
+let malformedDocumentError = { (description) -> DIDError in
+    return DIDError.malformedDocument(description)
+}
 
-    init(_ data: Dictionary<String, Any>) {
-        self.data = data
+class JsonSerializer {
+    private var node: JsonNode
+
+    init(_ data: JsonNode) {
+        self.node = data
     }
 
-    func getString(_ keyName: String, _ options: Options<String>) throws -> String? {
-        let value = self.data[keyName] as? String
+    func getString(_ keyName: String, _ options: Options) throws -> String {
+        let value = node.getValue(keyName)
         guard let _ = value else {
             if options.optional {
-                return options.defValue
+                return options.refValue! as! String
             }
             throw options.error("Missing \(options.hint)")
         }
-        guard !value!.isEmpty else {
-            throw options.error("Invalid \(options.hint)")
-        }
-        return value
-    }
 
-    func getInteger(_ keyName: String, _ options: Options<Int>) throws -> Int {
-        let value = self.data[keyName] as? Int
-        guard let _ = value else {
-            if options.optional {
-                return options.defValue!
-            }
-            throw DIDError.malformedDocument("Missing \(options.hint)")
+        guard !value!.isEmpty else {
+            throw options.error("Missing \(options.hint)")
         }
+
         return value!
     }
 
-    func getDID(_ keyName: String, _ options: Options<DID>) throws -> DID? {
-        let value = self.data[keyName] as? String
+    func getInteger(_ keyName: String, _ options: Options) throws -> Int {
+        let value = node.getValue(keyName)
         guard let _ = value else {
             if options.optional {
-                return options.defValue
+                return options.refValue as! Int
             }
+            throw options.error("Missing \(options.hint)")
+        }
+
+        return Int(value!) ?? 0
+    }
+
+    func getDID(_ keyName: String, _ options: Options) throws -> DID {
+        let value = node.getValue(keyName)
+        guard let _ = value else {
+            if options.optional {
+                return options.refValue as! DID
+            }
+
             throw options.error("Missing \(options.hint)")
         }
         guard !value!.isEmpty else {
@@ -55,25 +63,62 @@ class JsonSerializer {
         return did
     }
 
-    func getDIDURL(_ keyName: String, _ options: Options<DIDURL>) throws -> DIDURL? {
-        // TODO;
-        return nil
+    func getDIDURL(_ keyName: String, _ options: Options) throws -> DIDURL? {
+        let value = node.getValue(keyName)
+        guard let _ = value else {
+            if options.optional {
+                return nil
+            }
+            throw options.error("Missing \(options.hint)")
+        }
+        guard !value!.isEmpty else {
+            throw options.error("Invalid \(options.hint)")
+        }
+
+        let id: DIDURL
+        do {
+            let ref: DID? = options.refValue as? DID
+            if ref != nil && value!.hasPrefix("#") {
+                id = try DIDURL(ref!, "TODO") // TODO:
+            } else {
+                id = try DIDURL(value!)
+            }
+        } catch {
+            throw options.error("Invalid \(options.hint)")
+        }
+        return id
     }
 
-    func getDate(_ keyName: String, _ options: Options<Date>) throws -> Date {
-        // TODO:
-        return Date()
+    func getDate(_ keyName: String, _ options: Options) throws -> Date {
+        let value = node.getValue(keyName)
+        guard let _ = value else {
+            if options.optional {
+                return options.refValue! as! Date
+            }
+            throw options.error("Missing \(options.hint)")
+        }
+        guard !value!.isEmpty else {
+            throw options.error("Invalid \(options.hint)")
+        }
+
+        let date = DateFormatter.convertToUTCDateFromString(value!)
+        guard let _ = date else {
+            throw options.error("Invalid \(options.hint)")
+        }
+
+        return date!
     }
 
-    class Options<T> {
+    class Options {
         var optional: Bool
-        var defValue: T?
+        var refValue: Any?
         var hint: String
         var error: JsonSerializerErrorGenerator
 
         init() {
             self.optional = false
             self.hint = ""
+            self.error = malformedDocumentError
         }
 
         func withOptional() -> Options {
@@ -85,8 +130,8 @@ class JsonSerializer {
             return optional ? withOptional() : self
         }
 
-        func withDefValue(_ defValue: T?) -> Options {
-            self.defValue = defValue
+        func withRef(_ ref: Any?) -> Options {
+            self.refValue = ref
             return self
         }
 
@@ -101,83 +146,3 @@ class JsonSerializer {
         }
     }
 }
-
-/*
-class JsonHelper {
-    static func getDidUrl(_ node: JsonNode,
-                          _ name: String,
-                          _ optional: Bool,
-                          _ ref: DID?,
-                          _ hint: String,
-                          _ errorGenerator: DIDErrorGenerator) throws -> DIDURL? {
-
-        let item = node.getItem(name)
-        guard let _ = item else {
-            guard !optional else {
-                return nil
-            }
-            throw errorGenerator("Missing \(hint).")
-        }
-
-        guard item!.isTextual else {
-            throw errorGenerator("Invalid \(hint) value")
-        }
-
-        let value = item!.asText()
-        guard value?.isEmpty ?? true else {
-            throw errorGenerator("Invalid \(hint) value")
-        }
-
-        let id: DIDURL
-        do {
-            if ref != nil && value!.hasPrefix("#") {
-                id = try DIDURL(ref!, "TODO")   // TODO:
-            } else  {
-                id = try DIDURL(value!)
-            }
-        } catch {
-            throw errorGenerator("Invalid \(hint):\(value!)")
-        }
-
-        return id
-    }
-
-    static func getDidUrl(_ node: JsonNode,
-                          _ name: String,
-                          _ ref: DID?,
-                          _ hint: String,
-                          _ errorGenerator: DIDErrorGenerator) throws -> DIDURL? {
-        return try getDidUrl(node, name, false, ref, hint, errorGenerator)
-    }
-
-    static func getDidUrl(_ node: JsonNode,
-                          _ ref: DID?,
-                          _ hint: String,
-                          _ errorGenerator: DIDErrorGenerator) throws -> DIDURL? {
-        // TODO
-        return nil
-    }
-    
-    static func getDate(_ node: JsonNode,
-                          _ name: String,
-                          _ optional: Bool,
-                          _ ref: Date?,
-                          _ hint: String,
-                          _ errorGenerator: DIDErrorGenerator) throws -> Date? {
-        // TODO
-        return nil
-    }
-    
-    static func fromDate(_ date: Date) -> String? {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        return formatter.string(from: date)
-    }
-
-    static func parseDate(_ dateStr: String) -> Date? {
-        // TODO
-        return nil
-    }
-}
-*/

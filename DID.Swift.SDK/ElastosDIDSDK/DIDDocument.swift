@@ -593,19 +593,23 @@ public class DIDDocument {
         return false
     }
 
-    private func parse(_ doc: Dictionary<String, Any>) throws {
-        let jsonDict = JsonSerializer(doc)
-        let did = try jsonDict.getDID(Constants.ID, JsonSerializer.Options<DID>()
-                                    .withHint("subject"))
-        setSubject(did!)
+    private func parse(_ doc: JsonNode) throws {
+        let serializer = JsonSerializer(doc)
+        var options: JsonSerializer.Options
 
-        var node = doc[Constants.PUBLICKEY] as? Dictionary<String, Any>
+        options = JsonSerializer.Options()
+                                .withHint("document subject")
+        let did = try serializer.getDID(Constants.ID, options)
+        setSubject(did)
+
+        var node: JsonNode?
+        node = doc.getNode(Constants.PUBLICKEY)
         guard let _ = node else {
             throw DIDError.malformedDocument("missing publicKey")
         }
         try parsePublicKeys(node!)
 
-        node = doc[Constants.AUTHENTICATION] as? Dictionary<String, Any>
+        node = doc.getNode(Constants.AUTHENTICATION)
         if let _ = node {
             try parseAuthenticationKeys(node!)
         }
@@ -615,51 +619,52 @@ public class DIDDocument {
             try appendAuthenticationKey(publicKey(ofId: defaultKey)!)  // TODO:
         }
 
-        node = doc[Constants.AUTHORIZATION] as? Dictionary<String, Any>
+        node = doc.getNode(Constants.AUTHORIZATION)
         if let _ = node {
             try parseAuthorizationKeys(node!)
         }
 
-        node = doc[Constants.VERIFIABLE_CREDENTIAL] as? Dictionary<String, Any>
+        node = doc.getNode(Constants.VERIFIABLE_CREDENTIAL)
         guard let _ = node else {
             try parseCredential(node!)
         }
 
-        node = doc[Constants.SERVICE] as? Dictionary<String, Any>
+        node = doc.getNode(Constants.SERVICE)
         guard let _ = node else {
             try parseService(node!)
         }
 
-        let expirationDate = try jsonDict.getDate(Constants.EXPIRES,
-                                    JsonSerializer.Options<Date>()
-                                        .withOptional()
-                                        .withHint("expires"))
+        options = JsonSerializer.Options()
+                                .withOptional()
+                                .withHint("document expires")
+        let expirationDate = try serializer.getDate(Constants.EXPIRES, options)
         self.setExpirationDate(expirationDate)
 
-        node = doc[Constants.PROOF] as? Dictionary<String, Any>
+        node = doc.getNode(Constants.PROOF)
         guard let _ = node else {
-            throw DIDError.malformedDocument("Missing proof")
+            throw DIDError.malformedDocument("missing document proof")
         }
+
         setProof(try DIDDocumentProof.fromJson(node!, defaultKey))
     }
 
-    private func parsePublicKeys(_ node: Dictionary<String, Any>) throws {
+    private func parsePublicKeys(_ node: JsonNode) throws {
         // TODO:
     }
 
-    private func parseAuthenticationKeys(_ node: Dictionary<String, Any>) throws {
+    private func parseAuthenticationKeys(_ node: JsonNode) throws {
         // TODO:
     }
 
-    private func parseAuthorizationKeys(_ node: Dictionary<String, Any>) throws {
+    private func parseAuthorizationKeys(_ node: JsonNode) throws {
         // TODO
     }
 
-    private func parseCredential(_ node: Dictionary<String, Any>) throws {
+    private func parseCredential(_ node: JsonNode) throws {
         // TODO
     }
 
-    private func parseService(_ node: Dictionary<String, Any>) throws {
+    private func parseService(_ node: JsonNode) throws {
         // TODO
     }
 
@@ -675,7 +680,7 @@ public class DIDDocument {
         } catch {
             throw DIDError.malformedDocument()
         }
-        try doc.parse(node!)
+        try doc.parse(JsonNode(node!))
     }
 
     public class func convertToDIDDocument(fromJson json: String) throws -> DIDDocument {

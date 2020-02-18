@@ -23,6 +23,14 @@ class JsonNode {
         return node[key] as? String
     }
 
+    func getNode(_ key: String) -> JsonNode? {
+        return node[key] as? JsonNode
+    }
+
+    func getNodeArray(_ key: String) -> [JsonNode]? {
+        return node[key] as? [JsonNode]
+    }
+
     func setValue(_ key: String, _ value: String) {
         node[key] = value
     }

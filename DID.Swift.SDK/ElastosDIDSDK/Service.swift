@@ -12,17 +12,24 @@ public class Service: DIDObject {
         return self._endpoint
     }
 
-    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> Service {
+    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> Service {
         let serializer = JsonSerializer(node)
+        var options: JsonSerializer.Options
 
-        let id = try serializer.getDIDURL(Constants.ID,
-                            JsonSerializer.Options<DIDURL>().withHint("serviceId"))
-        let type = try serializer.getString(Constants.TYPE,
-                            JsonSerializer.Options<String>().withHint("Service Type"))
-        let endpoint = try serializer.getString(Constants.SERVICE_ENDPOINT,
-                            JsonSerializer.Options<String>().withHint("Service Endpoint"))
+        options = JsonSerializer.Options()
+                                .withRef(ref)
+                                .withHint("service id")
+        let id = try serializer.getDIDURL(Constants.ID, options)
 
-        return Service(id!, type!, endpoint!)
+        options = JsonSerializer.Options()
+                                .withHint("service type")
+        let type = try serializer.getString(Constants.TYPE, options)
+
+        options = JsonSerializer.Options()
+                                .withHint("service endpoint")
+        let endpoint = try serializer.getString(Constants.SERVICE_ENDPOINT, options)
+
+        return Service(id!, type, endpoint)
     }
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) {

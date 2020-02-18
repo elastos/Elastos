@@ -214,58 +214,81 @@ class IDChainRequest: NSObject {
         }
     }
 
-    class func fromJson(_ node: Dictionary<String, Any>) throws -> IDChainRequest {
+    class func fromJson(_ node: JsonNode) throws -> IDChainRequest {
         guard !node.isEmpty else {
             throw DIDError.illegalArgument()
         }
-        let header = node[Constants.HEADER] as? Dictionary<String, Any>
-        guard let _ = header else {
+
+        let error = { (des: String) -> DIDError in
+            return DIDError.didResolveError(des)
+        }
+
+        var subNode = node.getNode(Constants.HEADER)
+        guard let _ = subNode else {
             throw DIDError.didResolveError("Missing header")
         }
 
-        let headerDict = JsonSerializer(header!)
-        let specs = try headerDict.getString(Constants.SPECIFICATION,
-                            JsonSerializer.Options<String>()
-                                .withHint(Constants.SPECIFICATION))
-        guard specs! == IDChainRequest.CURRENT_SPECIFICATION else {
+        var serializer = JsonSerializer(subNode!)
+        var options: JsonSerializer.Options
+
+        options = JsonSerializer.Options()
+                                .withHint(Constants.SPECIFICATION)
+                                .withError(error)
+        let specs = try serializer.getString(Constants.SPECIFICATION, options)
+        guard specs == IDChainRequest.CURRENT_SPECIFICATION else {
             throw DIDError.didResolveError("Unkown DID specification.")
         }
 
-        let opStr = try headerDict.getString(Constants.OPERATION,
-                            JsonSerializer.Options<String>()
-                                .withHint(Constants.OPERATION))
-        let operation = IDChainRequestOperation.valueOf(opStr!)
+        options = JsonSerializer.Options()
+                                .withHint(Constants.OPERATION)
+                                .withError(error)
+        let opstr = try serializer.getString(Constants.OPERATION, options)
+        let operation = IDChainRequestOperation.valueOf(opstr)
 
-        let request = IDChainRequest(IDChainRequestOperation.valueOf(opStr!))
+        let request = IDChainRequest(operation)
         if operation == .UPDATE {
-            let transactionId = try headerDict.getString(Constants.PREVIOUS_TXID,
-                            JsonSerializer.Options<String>().withHint(Constants.PREVIOUS_TXID))
-            _ = request.setPreviousTransactionId(transactionId!)
+            options = JsonSerializer.Options()
+                                .withHint(Constants.PREVIOUS_TXID)
+                                .withError(error)
+            let transactionId = try serializer.getString(Constants.PREVIOUS_TXID, options)
+            _ = request.setPreviousTransactionId(transactionId)
         }
 
+        serializer = JsonSerializer(node)
+        options = JsonSerializer.Options()
+                                .withHint(Constants.PAYLOAD)
+                                .withError(error)
+        let payload = try serializer.getString(Constants.PAYLOAD, options)
+        _  = try request.setPayload(payload)
 
-        let nodeDict = JsonSerializer(node)
-        let payload = try nodeDict.getString(Constants.PAYLOAD, JsonSerializer.Options<String>()
-                                .withHint(Constants.PAYLOAD))
-        _  = try request.setPayload(payload!)
+        subNode = node.getNode(Constants.PROOF)
+        guard let _ = subNode else {
+            throw DIDError.didResolveError("missing proof.")
+        }
 
-        let proof = node[Constants.PROOF] as? Dictionary<String, Any>
-        let proofDict = JsonSerializer(proof!)
-        let keyType = try proofDict.getString(Constants.KEY_TYPE, JsonSerializer.Options<String>()
+        serializer = JsonSerializer(subNode!)
+        options = JsonSerializer.Options()
                                 .withOptional()
-                                .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
-                                .withHint(Constants.KEY_TYPE))
-        guard keyType! == Constants.DEFAULT_PUBLICKEY_TYPE else {
+                                .withRef(Constants.DEFAULT_PUBLICKEY_TYPE)
+                                .withHint(Constants.KEY_TYPE)
+                                .withError(error)
+        let keyType = try serializer.getString(Constants.KEY_TYPE, options)
+        guard keyType == Constants.DEFAULT_PUBLICKEY_TYPE else {
             throw DIDError.didResolveError("Unkown signature key type")
         }
 
-        let signKey = try proofDict.getDIDURL(Constants.VERIFICATION_METHOD,
-                            JsonSerializer.Options<DIDURL>()
-                                .withHint(Constants.VERIFICATION_METHOD))
-        let signature = try proofDict.getString(Constants.SIGNATURE,
-                            JsonSerializer.Options<String>()
-                                .withHint(Constants.SIGNATURE))
-        _ = request.setProof(keyType!, signKey!, signature!)
+        options = JsonSerializer.Options()
+                                .withRef(request.did)
+                                .withHint(Constants.VERIFICATION_METHOD)
+                                .withError(error)
+        let signKey = try serializer.getDIDURL(Constants.VERIFICATION_METHOD, options)
+
+        options = JsonSerializer.Options()
+                                .withHint(Constants.SIGNATURE)
+                                .withError(error)
+        let signature = try serializer.getString(Constants.SIGNATURE, options)
+
+        _ = request.setProof(keyType, signKey!, signature)
         return request
     }
 
@@ -274,13 +297,13 @@ class IDChainRequest: NSObject {
             throw DIDError.illegalArgument()
         }
 
-        let node: Dictionary<String, Any>
+        let data: Dictionary<String, Any>
         do {
-            node = try JSONSerialization.jsonObject(with: json, options: []) as! Dictionary<String, Any>
+            data = try JSONSerialization.jsonObject(with: json, options: []) as! Dictionary<String, Any>
         } catch {
             throw DIDError.didResolveError("Parse resolve result error")
         }
-        return try fromJson(node)
+        return try fromJson(JsonNode(data))
     }
 
     class func fromJson(_ json: String) throws -> IDChainRequest {

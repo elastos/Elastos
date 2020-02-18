@@ -30,30 +30,32 @@ public class PublicKey: DIDObject {
         return self._keyBase58.data(using: .utf8)!
     }
 
-    class func fromJson(_ node: Dictionary<String, Any>, _ ref: DID?) throws -> PublicKey {
+    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> PublicKey {
         let serializer = JsonSerializer(node)
-        let id = try serializer.getDIDURL(Constants.ID,
-                            JsonSerializer.Options<DIDURL>()
+        var options: JsonSerializer.Options
+
+        options = JsonSerializer.Options()
+                                .withRef(ref)
+                                .withHint("publicKey id")
+        let id = try serializer.getDIDURL(Constants.ID, options)
+
+        options = JsonSerializer.Options()
                                 .withOptional()
-                                .withHint("publicKey id"))
+                                .withRef(Constants.DEFAULT_PUBLICKEY_TYPE)
+                                .withHint("publicKey type")
+        let type = try serializer.getString(Constants.TYPE, options)
 
-        let type = try serializer.getString(Constants.TYPE,
-                            JsonSerializer.Options<String>()
+        options = JsonSerializer.Options()
                                 .withOptional()
-                                .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
-                                .withHint("publicKey type"))
+                                .withRef(ref)
+                                .withHint("publicKey controller")
+        let controller = try serializer.getDID(Constants.CONTROLLER, options)
 
-        let controller = try serializer.getDID(Constants.CONTROLLER,
-                            JsonSerializer.Options<DID>()
-                                .withOptional()
-                                .withDefValue(ref)
-                                .withHint("publicKey controller"))
+        options = JsonSerializer.Options()
+                                .withHint("publicKeyBase58")
+        let keybase58 = try serializer.getString(Constants.PUBLICKEY_BASE58, options)
 
-        let keybase58 = try serializer.getString(Constants.PUBLICKEY_BASE58,
-                            JsonSerializer.Options<String>()
-                                .withHint("pulbicKeyBase58"))
-
-        return PublicKey(id!, type!, controller!, keybase58!)
+        return PublicKey(id!, type, controller, keybase58)
     }
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) {

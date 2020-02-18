@@ -33,22 +33,35 @@ public class DIDDocumentProof {
         return self._signature
     }
 
-    class func fromJson(_ node: Dictionary<String, Any>, _ refSginKey: DIDURL) throws -> DIDDocumentProof {
+    class func fromJson(_ node: JsonNode, _ refSginKey: DIDURL) throws -> DIDDocumentProof {
         let serializer = JsonSerializer(node)
-        let proofType = try serializer.getString(Constants.TYPE, JsonSerializer.Options<String>()
-                                .withOptional()
-                                .withDefValue(Constants.DEFAULT_PUBLICKEY_TYPE)
-                                .withHint("document proof type"))
-        let created   = try serializer.getDate(Constants.CREATED, JsonSerializer.Options<Date>()
-                                .withOptional()
-                                .withHint("document proof created date"))
-        let creator   = try serializer.getDIDURL(Constants.CREATOR, JsonSerializer.Options<DIDURL>()
-                                .withOptional()
-                                .withHint("document proof creator"))
-        let signature = try serializer.getString(Constants.SIGNATURE_VALUE, JsonSerializer.Options<String>()
-                                .withHint("document signature"))
+        var options: JsonSerializer.Options
 
-        return DIDDocumentProof(proofType!, created, creator!, signature!)
+        options = JsonSerializer.Options()
+                                .withOptional()
+                                .withRef(Constants.DEFAULT_PUBLICKEY_TYPE)
+                                .withHint("document proof type")
+        let type = try serializer.getString(Constants.TYPE, options)
+
+        options = JsonSerializer.Options()
+                                .withOptional()
+                                .withHint("document proof type")
+        let created = try serializer.getDate(Constants.CREATED, options)
+
+        options = JsonSerializer.Options()
+                                .withOptional()
+                                .withRef(refSginKey.did)
+                                .withHint("document proof creator")
+        var creator = try serializer.getDIDURL(Constants.CREATOR, options)
+        if  creator == nil {
+            creator = refSginKey
+        }
+
+        options = JsonSerializer.Options()
+                                .withHint("document proof signature")
+        let signature = try serializer.getString(Constants.SIGNATURE_VALUE, options)
+
+        return DIDDocumentProof(type, created, creator!, signature)
     }
 
     func toJson(_ generator: JsonGenerator, _ normalized: Bool) {
