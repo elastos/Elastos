@@ -304,6 +304,10 @@ public class VerifiableCredential: DIDObject {
         self._proof = newProof
     }
 
+    func checkIntegrity() -> Bool {
+        return (getTypes() != nil && self._subject != nil)
+    }
+
     private class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredential {
         let serializer = JsonSerializer(node)
         var options: JsonSerializer.Options

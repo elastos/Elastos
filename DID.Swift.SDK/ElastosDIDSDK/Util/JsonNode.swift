@@ -15,6 +15,20 @@ class JsonNode {
         return node.count > 0
     }
 
+    var count: Int {
+        return node.count
+    }
+
+    func toString() -> String {
+        // TODO:
+        return "TODO"
+    }
+
+    func deepCopy() -> JsonNode? {
+        // TODO:
+        return nil
+    }
+
     func getDict() -> Dictionary<String, Any> {
         return self.node
     }

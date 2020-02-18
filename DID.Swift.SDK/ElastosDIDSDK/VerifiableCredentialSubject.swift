@@ -2,7 +2,7 @@ import Foundation
 
 public class VerifiableCredentialSubject {
     private var _id: DID
-    private var _properties: Dictionary<String, Any>?
+    private var _properties: JsonNode?
     
     init(_ id: DID) {
         self._id = id
@@ -16,28 +16,24 @@ public class VerifiableCredentialSubject {
         return self._properties?.count ?? 0
     }
 
-    public func getPropertiesInString() -> String {
-        // TODO:
-        return "TODO"
+    public func getPropertiesAsString() -> String {
+        return self._properties?.toString() ?? ""
     }
 
-    public func getProperties() -> Dictionary<String, Any>? {
-        // TODO:
-        return nil
+    func getProperties() -> JsonNode? {
+        return self._properties
     }
 
-    public func getPropertyInString(ofName: String) -> String {
-        // TODO:
-        return "TODO"
+    func getPropertyAsString(ofName: String) -> String {
+        return self._properties?.getValue(ofName) ?? ""
     }
 
-    public func getProperity(ofName: String) ->  Dictionary<String, Any>? {
-        // TODO:
-        return nil
+    func getProperity(ofName: String) -> JsonNode? {
+        return self._properties?.getNode(ofName)?.deepCopy()
     }
 
     func setProperties(_ props: JsonNode) {
-        // TODO:
+        self._properties = props.deepCopy()
     }
 
     class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredentialSubject {

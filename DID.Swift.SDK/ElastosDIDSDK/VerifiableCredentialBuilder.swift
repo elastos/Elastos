@@ -3,10 +3,12 @@ import Foundation
 public class VerifiableCredentialBuilder {
     private var _target: DID
     private var _signKey: DIDURL
+    private var _forDoc: DIDDocument
     private var _credential: VerifiableCredential?
 
     init(_ target: DID, _ doc: DIDDocument, _ signKey: DIDURL) {
         self._target  = target
+        self._forDoc  = doc
         self._signKey = signKey
 
         self._credential = VerifiableCredential()
@@ -45,11 +47,7 @@ public class VerifiableCredentialBuilder {
     private func getMaxExpires() -> Date {
         let date: Date = Date()
 
-        // TODO
-        // if credential.issuanceDate != nil {
-        //    date = self.credential.issuanceDate!
-        // }
-        // return DateFormater.dateToWantDate(date, VerifiableCredentialBuilder.MAX_VALID_YEARS)
+        // TODO:
         return date
     }
 
@@ -105,7 +103,7 @@ public class VerifiableCredentialBuilder {
         return self
     }
 
-    public func withProperties(_ node: Dictionary<String, Any>) throws -> VerifiableCredentialBuilder {
+    public func withProperties(_ data: Dictionary<String, Any>) throws -> VerifiableCredentialBuilder {
         guard let _ = self._credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
@@ -114,7 +112,7 @@ public class VerifiableCredentialBuilder {
         } */
 
         let subject = VerifiableCredentialSubject(self._target)
-        subject.setProperties(node)
+        subject.setProperties(JsonNode(data))
         self._credential!.setSubject(subject)
 
         return self
@@ -127,48 +125,26 @@ public class VerifiableCredentialBuilder {
         guard !storePass.isEmpty else {
             throw DIDError.illegalArgument()
         }
-        guard let _ = self._credential!.getSubject() else {
-            throw DIDError.malformedCredential("Missing subject")
+        guard self._credential!.checkIntegrity() else {
+            throw DIDError.malformedCredential("imcomplete credential")
         }
-        /*
-        TODO:
-        guard let _ = self._credential!.types else {
-            throw DIDError.malformedCredentialError("Missing types")
-        }
-        guard let _ = self._credential!.expirationDate else {
-            throw DIDError.malformedCredentialError("Missing expirated Date")
-        }
-        */
 
         let date = DateHelper.currentDate()
         self._credential!.setIssuanceDate(date)
 
-        // let dict = _verifiableCredential?.toJson(true)
-
-        /*
-
-        if credential.expirationDate == nil {
-            defaultExpirationDate()
+        if self._credential!.getExpirationDate() == nil {
+            _ = try withDefaultExpirationDate()
         }
 
-        let dic = self.credential.toJson(true, true)
-        let json = JsonHelper.creatJsonString(dic: dic)
-        let inputs: [CVarArg] = [json, json.count]
-        let count: Int = inputs.count / 2
-        let sig: String = try (self.document.sign(signKey, storepass, count, inputs))
+        let json = self._credential!.toJson(true, true)
+        let signature = try self._forDoc.sign(using: self._signKey, storePass: storePass, json.data(using: .utf8)!)
+        let proof = VerifiableCredentialProof(Constants.DEFAULT_PUBLICKEY_TYPE, self._signKey, signature)
 
-        let proof = CredentialProof(DEFAULT_PUBLICKEY_TYPE, signKey, sig)
-        self.credential.proof = proof
+        self._credential!.setProof(proof)
 
-        return self.credential
-        */
-        /*
-        let proof = VerifiableCredentialProof(DEFAULT_PUBLICKEY_TYPE, signKey, sig)
-        credential.proof = proof
-        */
-
-        let vc = self._credential!
+        // invalidate builder
+        let credential = self._credential!
         self._credential = nil
-        return vc
+        return credential
     }
 }
