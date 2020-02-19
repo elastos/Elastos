@@ -22,9 +22,6 @@
 
 #define BACKGROUND_THREAD_COUNT 1
 
-#define ISO_OLD "ela"
-#define ISO "ela1"
-
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -143,7 +140,7 @@ namespace Elastos {
 
 		void SpvService::onTxAdded(const TransactionPtr &tx) {
 			if (!tx->IsCoinBase()) {
-				_databaseManager->PutTransaction(ISO, tx);
+				_databaseManager->PutTransaction(tx);
 
 				std::for_each(_walletListeners.begin(), _walletListeners.end(),
 							  [&tx](Wallet::Listener *listener) {
@@ -172,7 +169,7 @@ namespace Elastos {
 
 		void SpvService::onTxUpdatedAll(const std::vector<TransactionPtr> &txns) {
 			_databaseManager->DeleteAllTransactions();
-			_databaseManager->PutTransactions(ISO, txns);
+			_databaseManager->PutTransactions(txns);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&txns](Wallet::Listener *listener) {
@@ -232,7 +229,7 @@ namespace Elastos {
 				           blocks[0]->GetTarget());
 			}
 
-			_databaseManager->PutMerkleBlocks(ISO, replace, blocks);
+			_databaseManager->PutMerkleBlocks(replace, blocks);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &blocks](PeerManager::Listener *listener) {
@@ -273,7 +270,7 @@ namespace Elastos {
 		}
 
 		void SpvService::saveDIDInfo(const DIDEntity &didEntity) {
-			_databaseManager->PutDID(ISO, didEntity);
+			_databaseManager->PutDID(didEntity);
 		}
 
 		void SpvService::updateDIDInfo(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
@@ -340,17 +337,21 @@ namespace Elastos {
 			return allUTXOs;
 		}
 
-		std::vector<TransactionPtr> SpvService::loadCoinbaseTransactions() {
-			return _databaseManager->GetAllCoinbase();
+		std::vector<TransactionPtr> SpvService::loadCoinbaseTxns(const std::string &chainID) {
+			return _databaseManager->GetAllCoinbase(chainID);
 		}
 
 		// override protected methods
-		std::vector<TransactionPtr> SpvService::loadTransactions(const std::string &chainID) {
-			return _databaseManager->GetAllTransactions(chainID);
+		std::vector<TransactionPtr> SpvService::loadConfirmedTxns(const std::string &chainID) {
+			return _databaseManager->GetAllConfirmedTxns(chainID);
+		}
+
+		std::vector<TransactionPtr> SpvService::loadPendingTxns(const std::string &chainID) {
+			return _databaseManager->GetAllPendingTxns(chainID);
 		}
 
 		std::vector<MerkleBlockPtr> SpvService::loadBlocks(const std::string &chainID) {
-			return _databaseManager->GetAllMerkleBlocks(ISO, chainID);
+			return _databaseManager->GetAllMerkleBlocks(chainID);
 		}
 
 		std::vector<PeerInfo> SpvService::loadPeers() {

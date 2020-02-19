@@ -1,6 +1,24 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "MerkleBlockDataSource.h"
 
@@ -15,32 +33,28 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		MerkleBlockDataSource::MerkleBlockDataSource(Sqlite *sqlite) :
-			TableBase(sqlite) {
-			InitializeTable(MB_DATABASE_CREATE);
-		}
-
-		MerkleBlockDataSource::MerkleBlockDataSource(SqliteTransactionType type, Sqlite *sqlite) :
+		MerkleBlockDataSource::MerkleBlockDataSource(Sqlite *sqlite, SqliteTransactionType type) :
 			TableBase(type, sqlite) {
-			InitializeTable(MB_DATABASE_CREATE);
 		}
 
 		MerkleBlockDataSource::~MerkleBlockDataSource() {
 		}
 
-		bool MerkleBlockDataSource::PutMerkleBlock(const std::string &iso, const MerkleBlockPtr &blockPtr) {
-			return DoTransaction([&iso, &blockPtr, this]() {
-				return this->PutMerkleBlockInternal(iso, blockPtr);
+		void MerkleBlockDataSource::InitializeTable() {
+			TableBase::InitializeTable(MB_DATABASE_CREATE);
+		}
+
+		bool MerkleBlockDataSource::PutMerkleBlock(const MerkleBlockPtr &blockPtr) {
+			return DoTransaction([&blockPtr, this]() {
+				return this->PutMerkleBlockInternal(blockPtr);
 			});
 		}
 
-		bool MerkleBlockDataSource::PutMerkleBlocks(const std::string &iso,
-													bool replace,
-													const std::vector<MerkleBlockPtr> &blocks) {
+		bool MerkleBlockDataSource::PutMerkleBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
 			if (blocks.empty())
 				return true;
 
-			return DoTransaction([&iso, &replace, &blocks, this]() {
+			return DoTransaction([&replace, &blocks, this]() {
 				if (replace) {
 					std::string sql = "DELETE FROM " + MB_TABLE_NAME + ";";
 
@@ -52,7 +66,7 @@ namespace Elastos {
 
 				for (size_t i = 0; i < blocks.size(); ++i) {
 					if (blocks[i]->GetHeight() > 0) {
-						if (!this->PutMerkleBlockInternal(iso, blocks[i]))
+						if (!this->PutMerkleBlockInternal(blocks[i]))
 							return false;
 					}
 				}
@@ -62,7 +76,7 @@ namespace Elastos {
 		}
 
 		bool
-		MerkleBlockDataSource::PutMerkleBlockInternal(const std::string &iso, const MerkleBlockPtr &blockPtr) {
+		MerkleBlockDataSource::PutMerkleBlockInternal(const MerkleBlockPtr &blockPtr) {
 			std::string sql;
 
 			sql = "INSERT INTO " + MB_TABLE_NAME + " (" + MB_BUFF + "," + MB_HEIGHT + "," +
@@ -78,7 +92,7 @@ namespace Elastos {
 			blockPtr->Serialize(stream);
 			if (!_sqlite->BindBlob(stmt, 1, stream.GetBytes(), nullptr) ||
 				!_sqlite->BindInt(stmt, 2, blockPtr->GetHeight()) ||
-				!_sqlite->BindText(stmt, 3, iso, nullptr)) {
+				!_sqlite->BindText(stmt, 3, ISO, nullptr)) {
 				Log::error("bind args");
 			}
 
@@ -94,8 +108,8 @@ namespace Elastos {
 			return true;
 		}
 
-		bool MerkleBlockDataSource::DeleteMerkleBlock(const std::string &iso, long id) {
-			return DoTransaction([&iso, &id, this]() {
+		bool MerkleBlockDataSource::DeleteMerkleBlock(long id) {
+			return DoTransaction([&id, this]() {
 				std::string sql;
 
 				sql = "DELETE FROM " + MB_TABLE_NAME + " WHERE " + MB_COLUMN_ID + " = ?;";
@@ -123,8 +137,8 @@ namespace Elastos {
 			});
 		}
 
-		bool MerkleBlockDataSource::DeleteAllBlocks(const std::string &iso) {
-			return DoTransaction([&iso, this]() {
+		bool MerkleBlockDataSource::DeleteAllBlocks() {
+			return DoTransaction([this]() {
 				std::string sql;
 
 				sql = "DELETE FROM " + MB_TABLE_NAME + ";";
@@ -138,8 +152,7 @@ namespace Elastos {
 			});
 		}
 
-		std::vector<MerkleBlockPtr> MerkleBlockDataSource::GetAllMerkleBlocks(const std::string &iso,
-																			  const std::string &chainID) const {
+		std::vector<MerkleBlockPtr> MerkleBlockDataSource::GetAllMerkleBlocks(const std::string &chainID) const {
 			std::vector<MerkleBlockPtr> merkleBlocks;
 
 			std::string sql;

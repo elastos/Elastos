@@ -20,57 +20,46 @@
  * SOFTWARE.
  */
 
-#include "TableBase.h"
-
 #include <Common/Log.h>
+#include "TransactionPending.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		TableBase::TableBase(Sqlite *sqlite) :
-				_sqlite(sqlite),
-				_txType(IMMEDIATE) {
+		TransactionPending::TransactionPending(Sqlite *sqlite, SqliteTransactionType type) :
+			TransactionDataStore(sqlite, type) {
+			_tableName = "transactionPending";
+			_tableExist = TableExistInternal();
 		}
 
-		TableBase::TableBase(SqliteTransactionType type, Sqlite *sqlite) :
-				_sqlite(sqlite),
-				_txType(type) {
+		TransactionPending::~TransactionPending() {
 		}
 
-		void TableBase::InitializeTable() {
-
+		bool TransactionPending::TableExist() const {
+			return _tableExist;
 		}
 
-		TableBase::~TableBase() {
+		bool TransactionPending::TableExistInternal() const {
+			int count = 0;
 
-		}
+			std::string sql = "select count(*) from sqlite_master where type='table' and name = '" + _tableName + "';";
 
-		void TableBase::flush() {
-			_sqlite->flush();
-		}
-
-		bool TableBase::DoTransaction(const boost::function<bool()> &fun) const {
-
-			bool result;
-			_sqlite->BeginTransaction(_txType);
-			try {
-				result = fun();
-			} catch (const std::exception &e) {
-				result = false;
-				Log::error("Data base error: {}", e.what());
-			} catch (...) {
-				result = false;
-				Log::error("Unknown data base error.");
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return false;
 			}
-			_sqlite->EndTransaction();
 
-			return result;
-		}
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
+				count = _sqlite->ColumnInt(stmt, 0);
+			}
 
-		void TableBase::InitializeTable(const std::string &constructScript) {
-			_sqlite->BeginTransaction(_txType);
-			_sqlite->exec(constructScript, nullptr, nullptr);
-			_sqlite->EndTransaction();
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Coinbase update finalize");
+				return false;
+			}
+
+			return count > 0;
 		}
 	}
 }

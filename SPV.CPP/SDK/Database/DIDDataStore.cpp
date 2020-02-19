@@ -1,6 +1,24 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "DIDDataStore.h"
 
@@ -8,28 +26,25 @@
 
 namespace Elastos {
 	namespace ElaWallet {
-		DIDDataStore::DIDDataStore(Sqlite *sqlite) : TableBase(sqlite) {
-			InitializeTable(DID_DATABASE_CREATE);
-			InitializeTable("drop table if exists " + DID_OLD_TABLE_NAME + ";");
-		}
-
-		DIDDataStore::DIDDataStore(SqliteTransactionType type, Sqlite *sqlite) : TableBase(type, sqlite) {
-			InitializeTable(DID_DATABASE_CREATE);
-			InitializeTable("drop table if exists " + DID_OLD_TABLE_NAME + ";");
+		DIDDataStore::DIDDataStore(Sqlite *sqlite, SqliteTransactionType type) : TableBase(type, sqlite) {
 		}
 
 		DIDDataStore::~DIDDataStore() {
-
 		}
 
-		bool DIDDataStore::PutDID(const std::string &iso, const DIDEntity &didEntity) {
+		void DIDDataStore::InitializeTable() {
+			TableBase::InitializeTable(DID_DATABASE_CREATE);
+			TableBase::InitializeTable("drop table if exists " + DID_OLD_TABLE_NAME + ";");
+		}
+
+		bool DIDDataStore::PutDID(const DIDEntity &didEntity) {
 			if (ContainTxHash(didEntity.TxHash)) {
 				Log::error("should not put in existed did {}, txHash {}", didEntity.DID, didEntity.TxHash);
 				return false;
 			}
 
-			return DoTransaction([&iso, &didEntity, this]() {
-				return InsertDID(iso, didEntity);
+			return DoTransaction([&didEntity, this]() {
+				return InsertDID(didEntity);
 			});
 		}
 
@@ -214,7 +229,7 @@ namespace Elastos {
 			return SelectDID(did, didEntity);
 		}
 
-		bool DIDDataStore::InsertDID(const std::string &iso, const DIDEntity &didEntity) {
+		bool DIDDataStore::InsertDID(const DIDEntity &didEntity) {
 			std::string sql;
 
 			sql = "INSERT INTO " + DID_TABLE_NAME + "(" + DID_COLUMN_ID + "," +
@@ -249,7 +264,7 @@ namespace Elastos {
 			return true;
 		}
 
-		bool DIDDataStore::UpdateDID(const std::string &iso, const DIDEntity &didEntity) {
+		bool DIDDataStore::UpdateDID(const DIDEntity &didEntity) {
 			std::string sql;
 
 			sql = "UPDATE " + DID_TABLE_NAME + " SET "

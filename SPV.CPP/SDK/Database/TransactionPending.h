@@ -20,57 +20,30 @@
  * SOFTWARE.
  */
 
-#include "TableBase.h"
+#ifndef __ELASTOS_SDK_TRANSACTIONPENDING_H__
+#define __ELASTOS_SDK_TRANSACTIONPENDING_H__
 
-#include <Common/Log.h>
+#include "TransactionDataStore.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		TableBase::TableBase(Sqlite *sqlite) :
-				_sqlite(sqlite),
-				_txType(IMMEDIATE) {
-		}
+		class TransactionPending : public TransactionDataStore {
+		public:
+			explicit TransactionPending(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
 
-		TableBase::TableBase(SqliteTransactionType type, Sqlite *sqlite) :
-				_sqlite(sqlite),
-				_txType(type) {
-		}
+			~TransactionPending();
 
-		void TableBase::InitializeTable() {
+			bool TableExist() const;
 
-		}
+		private:
+			bool TableExistInternal() const;
 
-		TableBase::~TableBase() {
+		private:
+			bool _tableExist;
+		};
 
-		}
-
-		void TableBase::flush() {
-			_sqlite->flush();
-		}
-
-		bool TableBase::DoTransaction(const boost::function<bool()> &fun) const {
-
-			bool result;
-			_sqlite->BeginTransaction(_txType);
-			try {
-				result = fun();
-			} catch (const std::exception &e) {
-				result = false;
-				Log::error("Data base error: {}", e.what());
-			} catch (...) {
-				result = false;
-				Log::error("Unknown data base error.");
-			}
-			_sqlite->EndTransaction();
-
-			return result;
-		}
-
-		void TableBase::InitializeTable(const std::string &constructScript) {
-			_sqlite->BeginTransaction(_txType);
-			_sqlite->exec(constructScript, nullptr, nullptr);
-			_sqlite->EndTransaction();
-		}
 	}
 }
+
+#endif //__ELASTOS_SDK_TRANSACTIONPENDING_H__

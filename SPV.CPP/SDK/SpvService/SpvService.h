@@ -116,9 +116,11 @@ namespace Elastos {
 
 			virtual std::vector<UTXOPtr> LoadUTXOs() const;
 
-			virtual std::vector<TransactionPtr> loadCoinbaseTransactions();
+			virtual std::vector<TransactionPtr> loadCoinbaseTxns(const std::string &chainID);
 
-			virtual std::vector<TransactionPtr> loadTransactions(const std::string &chainID);
+			virtual std::vector<TransactionPtr> loadConfirmedTxns(const std::string &chainID);
+
+			virtual std::vector<TransactionPtr> loadPendingTxns(const std::string &chainID);
 
 			virtual std::vector<MerkleBlockPtr> loadBlocks(const std::string &chainID);
 

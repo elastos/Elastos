@@ -32,8 +32,8 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidChainID, "invalid chain ID");
 			}
 
-			std::vector<TransactionPtr> txs = loadTransactions(chainID);
-			std::vector<TransactionPtr> cbs = loadCoinbaseTransactions();
+			std::vector<TransactionPtr> txs = loadConfirmedTxns(chainID);
+			std::vector<TransactionPtr> cbs = loadCoinbaseTxns(chainID);
 
 			std::sort(txs.begin(), txs.end(), [](const TransactionPtr &a, const TransactionPtr &b) {
 				return a->GetBlockHeight() < b->GetBlockHeight();
@@ -155,28 +155,32 @@ namespace Elastos {
 			return {};
 		}
 
-		std::vector<TransactionPtr> CoreSpvService::loadCoinbaseTransactions() {
-			return std::vector<TransactionPtr>();
+		std::vector<TransactionPtr> CoreSpvService::loadCoinbaseTxns(const std::string &chainID) {
+			return {};
 		}
 
-		std::vector<TransactionPtr> CoreSpvService::loadTransactions(const std::string &chainID) {
-			return std::vector<TransactionPtr>();
+		std::vector<TransactionPtr> CoreSpvService::loadConfirmedTxns(const std::string &chainID) {
+			return {};
+		}
+
+		std::vector<TransactionPtr> CoreSpvService::loadPendingTxns(const std::string &chainID) {
+			return {};
 		}
 
 		std::vector<MerkleBlockPtr> CoreSpvService::loadBlocks(const std::string &chainID) {
-			return std::vector<MerkleBlockPtr>();
+			return {};
 		}
 
 		std::vector<PeerInfo> CoreSpvService::loadPeers() {
-			return std::vector<PeerInfo>();
+			return {};
 		}
 
 		std::set<PeerInfo> CoreSpvService::loadBlackPeers() {
-			return std::set<PeerInfo>();
+			return {};
 		}
 
 		std::vector<AssetPtr> CoreSpvService::loadAssets() {
-			return std::vector<AssetPtr>();
+			return {};
 		}
 
 		const CoreSpvService::PeerManagerListenerPtr &CoreSpvService::createPeerManagerListener() {

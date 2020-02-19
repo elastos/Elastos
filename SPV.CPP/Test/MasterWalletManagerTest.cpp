@@ -193,7 +193,6 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		"{\"account\":0,\"coinInfo\":[{\"ChainID\":\"ELA\",\"EarliestPeerTime\":1513936800,\"FeePerKB\":10000,\"VisibleAssets\":[\"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0\"]}],\"derivationStrategy\":\"BIP44\",\"m\":1,\"mnemonic\":\"P0C/7w2/h13rLqA8qgI+BwwDZrcK9g8ixjdPFFIEC6+G62Qsm4WsmoNbxJE+shQ2jy7tTsPsDYLKCow9hsGrWchJuBV5ULwwcnRhYimP9TlAYA6uTdk3aQgolw==\",\"mnemonicHasPassphrase\":true,\"n\":1,\"ownerPubKey\":\"027c876ac77226d6f25d198983b1ae58baa39b136ff0e09386e064b40d646767a1\",\"passphrase\":\"\",\"publicKeyRing\":[{\"requestPubKey\":\"027d917aa4732ebffcb496a40cce2bf5b57237570c106b97b98fa5be433c6b743d\",\"xPubKey\":\"xpub6CWoR5hv1BestMgnyWLPR1RXdttXhFLK9vTjri9J79SgYdCnpjTCNF5JiwyZXsaW4pMonQ8gaHWv5xUi9DgBLMzdWE75EULLzU444PkpF7E\"}],\"readonly\":false,\"requestPrivKey\":\"HiFHrGoxzoY3yCbshyUtMtY1fIO2rFw5265BALZgv08Vuen9c1llzg==\",\"requestPubKey\":\"027d917aa4732ebffcb496a40cce2bf5b57237570c106b97b98fa5be433c6b743d\",\"singleAddress\":false,\"xPrivKey\":\"SK1ian/e9X2YQdBdioAjo/P11xkGlaXp9AFXcSIYUmPuQwz8aepAkk4hUG7KfqqEtzwb4kOTt0Tm+ZiYiRXtLmVkaVLMaQD1ab49rIHlRj9zw2fSft8=\",\"xPubKey\":\"xpub6CWoR5hv1BestMgnyWLPR1RXdttXhFLK9vTjri9J79SgYdCnpjTCNF5JiwyZXsaW4pMonQ8gaHWv5xUi9DgBLMzdWE75EULLzU444PkpF7E\"}"));
 	ls.SaveTo(path);
 
-	std::string iso = "ela1";
 	DatabaseManager dm(__rootPath + masterWalletId + "/ELA.db");
 
 	std::string xprv = ls.GetxPrivKey();
@@ -201,6 +200,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	Key key = HDKeychain(bytes).getChild(keyPath);
 	Address addr(PrefixStandard, key.PubKey());
 
+	std::vector<UTXOEntity> utxoEntities;
 	int txCount = 20;
 	std::vector<TransactionPtr> txlist;
 	for (int i = 0; i < txCount; ++i) {
@@ -212,45 +212,44 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		tx->SetPayloadVersion(getRandUInt8());
 		tx->SetFee(getRandUInt64());
 
-		for (size_t i = 0; i < 1; ++i) {
-			InputPtr input(new TransactionInput());
-			input->SetTxHash(getRanduint256());
-			input->SetIndex(getRandUInt16());
-			input->SetSequence(getRandUInt32());
-			tx->AddInput(input);
+		InputPtr input(new TransactionInput());
+		input->SetTxHash(getRanduint256());
+		input->SetIndex(getRandUInt16());
+		input->SetSequence(getRandUInt32());
+		tx->AddInput(input);
+		ProgramPtr program(new Program(keyPath, addr.RedeemScript(), bytes_t()));
+		tx->AddUniqueProgram(program);
 
-			Address address(PrefixStandard, key.PubKey());
-			ProgramPtr program(new Program(keyPath, address.RedeemScript(), bytes_t()));
-			tx->AddUniqueProgram(program);
-		}
-
-		for (size_t i = 0; i < 20; ++i) {
+		for (size_t j = 0; j < 20; ++j) {
 			OutputPtr output(new TransactionOutput(10, addr));
 			tx->AddOutput(output);
 		}
 		tx->FixIndex();
 
 		uint256 md = tx->GetShaData();
-		const std::vector<ProgramPtr> &programs = tx->GetPrograms();
-		for (size_t i = 0; i < programs.size(); ++i) {
+		for (const ProgramPtr &p : tx->GetPrograms()) {
 			bytes_t parameter = key.Sign(md);
 			ByteStream stream;
 			stream.WriteVarBytes(parameter);
-			programs[i]->SetParameter(stream.GetBytes());
+			p->SetParameter(stream.GetBytes());
 		}
 
 		ByteStream stream;
 		tx->Serialize(stream, true);
 		bytes_t data = stream.GetBytes();
 		std::string txHash = tx->GetHash().GetHex();
+		utxoEntities.clear();
+		for (const OutputPtr &o : tx->GetOutputs())
+			utxoEntities.emplace_back(txHash, o->FixedIndex());
 
-		dm.PutTransaction(iso, tx);
+		dm.PutTransaction(tx);
+		dm.PutUTXOs(utxoEntities);
 
 		txlist.push_back(tx);
 	}
 
-
-	REQUIRE(dm.GetAllTransactions(CHAINID_MAINCHAIN).size() == txCount);
+	REQUIRE(dm.GetAllConfirmedTxns(CHAINID_MAINCHAIN).size() == txCount);
+	REQUIRE(dm.GetUTXOs().size() == 20 * txCount);
 
 	//transfer to another address
 	BigInt transferAmount(2005);
@@ -263,44 +262,38 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	tx->SetPayloadVersion(getRandUInt8());
 	tx->SetFee(getRandUInt64());
 
-	for (size_t i = 0; i < txCount; ++i) {
-		for (size_t j = 0; j < txlist[i]->GetOutputs().size(); ++j) {
+	std::vector<UTXOEntity> utxoRemoved;
+	for (size_t i = 0; i < txCount && totalInput < transferAmount; ++i) {
+		for (size_t j = 0; j < txlist[i]->GetOutputs().size() && totalInput < transferAmount; ++j) {
 			InputPtr input(new TransactionInput());
 			input->SetTxHash(txlist[i]->GetHash());
 			input->SetIndex(j);
 			input->SetSequence(getRandUInt32());
 			tx->AddInput(input);
+			utxoRemoved.emplace_back(txlist[i]->GetHash().GetHex(), txlist[i]->GetOutputs()[j]->FixedIndex());
 
 			totalInput += txlist[i]->GetOutputs()[j]->Amount();
 
 			Address address(PrefixStandard, key.PubKey());
 			ProgramPtr program(new Program(keyPath, address.RedeemScript(), bytes_t()));
 			tx->AddUniqueProgram(program);
-			if (totalInput > transferAmount) {
-				break;
-			}
-		}
-		if (totalInput > transferAmount) {
-			break;
 		}
 	}
-	BigInt fee = totalInput - transferAmount;
 	Address toAddress("Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ");
-	OutputPtr output(new TransactionOutput(transferAmount, toAddress));
-	tx->AddOutput(output);
-	if (fee > 0) {
-		Address change(PrefixStandard, key.PubKey());
-		tx->AddOutput(OutputPtr(new TransactionOutput(fee, toAddress)));
+	tx->AddOutput(OutputPtr(new TransactionOutput(transferAmount, toAddress)));
+	int fee = 100;
+	BigInt change = totalInput - transferAmount - fee;
+	if (change > 0) {
+		tx->AddOutput(OutputPtr(new TransactionOutput(change, addr)));
 	}
 	tx->FixIndex();
 
 	uint256 md = tx->GetShaData();
-	const std::vector<ProgramPtr> &programs = tx->GetPrograms();
-	for (size_t i = 0; i < programs.size(); ++i) {
+	for (const ProgramPtr &p : tx->GetPrograms()) {
 		bytes_t parameter = key.Sign(md);
 		ByteStream stream;
 		stream.WriteVarBytes(parameter);
-		programs[i]->SetParameter(stream.GetBytes());
+		p->SetParameter(stream.GetBytes());
 	}
 
 	ByteStream stream;
@@ -308,30 +301,45 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	bytes_t data = stream.GetBytes();
 	std::string txHash = tx->GetHash().GetHex();
 
-	dm.PutTransaction(iso, tx);
+	if (tx->GetOutputs().size() > 1) {
+		utxoEntities.clear();
+		utxoEntities.emplace_back(txHash, 1);
+		REQUIRE(dm.PutUTXOs(utxoEntities));
+	}
 
-	REQUIRE(dm.GetAllTransactions(CHAINID_MAINCHAIN).size() == txCount + 1);
+	REQUIRE(dm.DeleteUTXOs(utxoRemoved));
+	REQUIRE(dm.PutTransaction(tx));
+
+	REQUIRE(dm.GetAllConfirmedTxns(CHAINID_MAINCHAIN).size() == txCount + 1);
 
 	//put coinbase tx
+	utxoEntities.clear();
 	for (int i = 0; i < txCount; ++i) {
 		TransactionPtr txn(new Transaction(Transaction::coinBase, PayloadPtr(new CoinBase())));
-		OutputPtr o(new TransactionOutput(10, Address(PrefixStandard, key.PubKey())));
+		OutputPtr o(new TransactionOutput(10, addr));
 		txn->AddOutput(o);
 		txn->SetBlockHeight(4000 + i);
 		std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
 		txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
-		dm.PutCoinbase(txn);
+		txHash = txn->GetHash().GetHex();
+		utxoEntities.emplace_back(txHash, 0);
+		REQUIRE(dm.PutCoinbase(txn));
 	}
+	REQUIRE(dm.PutUTXOs(utxoEntities));
 	REQUIRE(dm.GetCoinbaseTotalCount() == txCount);
+	utxoEntities.clear();
 	for (int i = 0; i < txCount; ++i) {
 		TransactionPtr txn(new Transaction(Transaction::coinBase, PayloadPtr(new CoinBase())));
-		OutputPtr o(new TransactionOutput(10, Address(PrefixStandard, key.PubKey())));
+		OutputPtr o(new TransactionOutput(10, addr));
 		txn->AddOutput(o);
 		txn->SetBlockHeight(4032 - 101 - i);
 		std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
 		txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
+		txHash = txn->GetHash().GetHex();
+		utxoEntities.emplace_back(txHash, 0);
 		dm.PutCoinbase(txn);
 	}
+	REQUIRE(dm.PutUTXOs(utxoEntities));
 	REQUIRE(dm.GetCoinbaseTotalCount() == 2 * txCount);
 
 	// put merkle block
@@ -340,7 +348,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	block->SetHash(getRanduint256());
 	block->SetTimestamp(getRandUInt32());
 	block->SetTarget(getRandUInt32());
-	dm.PutMerkleBlock("ela1", block);
+	dm.PutMerkleBlock(block);
 	dm.flush();
 
 	// verify wallet balance
@@ -365,8 +373,12 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	nlohmann::json balanceInfo = subWallet->GetBalanceInfo();
 	REQUIRE(balanceInfo.size() == 1);
 	balanceInfo = balanceInfo[0]["Summary"];
-	balance = balanceInfo["LockedBalance"].get<std::string>();
-	REQUIRE(balance == "200");
+	REQUIRE(balanceInfo["LockedBalance"].get<std::string>() == "200");
+	REQUIRE(balanceInfo["Balance"].get<std::string>() == "2190");
+	REQUIRE(balanceInfo["DepositBalance"].get<std::string>() == "0");
+	REQUIRE(balanceInfo["PendingBalance"].get<std::string>() == "0");
+	REQUIRE(balanceInfo["SpendingBalance"].get<std::string>() == "0");
+	REQUIRE(balanceInfo["VotedBalance"].get<std::string>() == "0");
 
 	manager.DestroyWallet(masterWalletId);
 	boost::filesystem::path masterWalletPath = path;

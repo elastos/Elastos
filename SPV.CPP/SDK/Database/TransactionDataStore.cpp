@@ -1,6 +1,24 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "TransactionDataStore.h"
 
@@ -15,25 +33,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		TransactionDataStore::TransactionDataStore() :
-			TableBase(nullptr) {
-			Init();
-		}
-
-		TransactionDataStore::TransactionDataStore(Sqlite *sqlite) : TableBase(sqlite) {
-			Init();
-			InitializeTable(_tableCreation);
-		}
-
-		TransactionDataStore::TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite) :
+		TransactionDataStore::TransactionDataStore(Sqlite *sqlite, SqliteTransactionType type) :
 			TableBase(type, sqlite) {
-			Init();
-			InitializeTable(_tableCreation);
-		}
-
-		TransactionDataStore::~TransactionDataStore() {}
-
-		void TransactionDataStore::Init() {
 			_tableName = "transactionTable";
 			_txHash = "_id";
 			_buff = "transactionBuff";
@@ -42,7 +43,12 @@ namespace Elastos {
 			_iso = "transactionISO";
 			_remark = "transactionRemark";
 			_assetID = "assetID";
+		}
 
+		TransactionDataStore::~TransactionDataStore() {
+		}
+
+		void TransactionDataStore::InitializeTable() {
 			_tableCreation = "create table if not exists " +
 							 _tableName + "(" +
 							 _txHash + " text not null, " +
@@ -52,9 +58,10 @@ namespace Elastos {
 							 _remark + " text DEFAULT '', " +
 							 _assetID + " text not null, " +
 							 _iso + " text DEFAULT 'ELA');";
+			TableBase::InitializeTable(_tableCreation);
 		}
 
-		bool TransactionDataStore::PutTransactionInternal(const std::string &iso, const TransactionPtr &tx) {
+		bool TransactionDataStore::PutTransactionInternal(const TransactionPtr &tx) {
 			std::string sql, txHash;
 
 			sql = "INSERT INTO " + _tableName + "(" +
@@ -82,7 +89,7 @@ namespace Elastos {
 				!_sqlite->BindInt64(stmt, 4, tx->GetTimestamp()) ||
 				!_sqlite->BindText(stmt, 5, "", nullptr) ||
 				!_sqlite->BindText(stmt, 6, "", nullptr) ||
-				!_sqlite->BindText(stmt, 7, iso, nullptr)) {
+				!_sqlite->BindText(stmt, 7, ISO, nullptr)) {
 				Log::error("bind args");
 			}
 
@@ -98,23 +105,23 @@ namespace Elastos {
 			return true;
 		}
 
-		bool TransactionDataStore::PutTransaction(const std::string &iso, const TransactionPtr &tx) {
+		bool TransactionDataStore::PutTransaction(const TransactionPtr &tx) {
 			std::string txHash = tx->GetHash().GetHex();
 			if (ContainHash(txHash)) {
 				Log::error("should not put in existed tx {}", tx->GetHash().GetHex());
 				return false;
 			}
 
-			return DoTransaction([&iso, &tx, this]() { return this->PutTransactionInternal(iso, tx); });
+			return DoTransaction([&tx, this]() { return this->PutTransactionInternal(tx); });
 		}
 
-		bool TransactionDataStore::PutTransactions(const std::string &iso, const std::vector<TransactionPtr> &txns) {
+		bool TransactionDataStore::PutTransactions(const std::vector<TransactionPtr> &txns) {
 			if (txns.empty())
 				return true;
 
-			return DoTransaction([&iso, &txns, this]() {
+			return DoTransaction([&txns, this]() {
 				for (size_t i = 0; i < txns.size(); ++i) {
-					if (!this->PutTransactionInternal(iso, txns[i]))
+					if (!this->PutTransactionInternal(txns[i]))
 						return false;
 				}
 
@@ -166,7 +173,7 @@ namespace Elastos {
 			return SelectTxByHash(hash.GetHex(), chainID);
 		}
 
-		std::vector<TransactionPtr> TransactionDataStore::GetAllTransactions(const std::string &chainID) const {
+		std::vector<TransactionPtr> TransactionDataStore::GetAllConfirmedTxns(const std::string &chainID) const {
 			std::vector<TransactionPtr> txns;
 			std::string sql;
 			int r;
@@ -203,10 +210,10 @@ namespace Elastos {
 				uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
 				std::string iso = _sqlite->ColumnText(stmt, 4);
 
-				if (iso == "ela") {
+				if (iso == ISO_OLD) {
 					tx->Deserialize(stream);
 					assert(txHash == tx->GetHash());
-				} else if (iso == "ela1") {
+				} else if (iso == ISO) {
 					tx->Deserialize(stream, true);
 					tx->SetHash(txHash);
 				}
@@ -367,10 +374,10 @@ namespace Elastos {
 				uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
 				std::string iso = _sqlite->ColumnText(stmt, 4);
 
-				if (iso == "ela") {
+				if (iso == ISO_OLD) {
 					tx->Deserialize(stream);
 					assert(txHash == tx->GetHash());
-				} else if (iso == "ela1") {
+				} else if (iso == ISO) {
 					tx->Deserialize(stream, true);
 					tx->SetHash(txHash);
 				}

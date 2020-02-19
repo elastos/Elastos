@@ -21,7 +21,6 @@
 
 using namespace Elastos::ElaWallet;
 
-#define ISO "ela1"
 #define DBFILE "wallet.db"
 
 TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
@@ -51,7 +50,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			asset.AssetID = getRandString(64);
 			asset.Amount = rand();
 			assets.push_back(asset);
-			REQUIRE(dm.PutAsset(ISO, asset));
+			REQUIRE(dm.PutAsset("ELA", asset));
 		}
 
 		// verify save
@@ -125,16 +124,16 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			merkleBlock->SetTarget(getRandUInt32());
 			merkleBlock->SetNonce(getRandUInt32());
 
-			REQUIRE(dbm->PutMerkleBlock(ISO, merkleBlock));
-			REQUIRE(dbm->GetAllMerkleBlocks(ISO, pluginType).size() == 1);
+			REQUIRE(dbm->PutMerkleBlock(merkleBlock));
+			REQUIRE(dbm->GetAllMerkleBlocks(pluginType).size() == 1);
 
-			REQUIRE(dbm->PutMerkleBlocks(ISO, true, blocksToSave));
+			REQUIRE(dbm->PutMerkleBlocks(true, blocksToSave));
 			delete dbm;
 		}
 
 		SECTION("Merkle Block read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<MerkleBlockPtr> blocksRead = dbm.GetAllMerkleBlocks(ISO, pluginType);
+			std::vector<MerkleBlockPtr> blocksRead = dbm.GetAllMerkleBlocks(pluginType);
 			REQUIRE(blocksRead.size() == blocksToSave.size());
 			for (int i = 0; i < blocksRead.size(); ++i) {
 				REQUIRE(blocksToSave[i]->GetHeight() == blocksRead[i]->GetHeight());
@@ -149,22 +148,22 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Merkle Block delete test") {
 			DatabaseManager dbm(DBFILE);
 
-			REQUIRE(dbm.DeleteAllBlocks(ISO));
+			REQUIRE(dbm.DeleteAllBlocks());
 
-			std::vector<MerkleBlockPtr> blocksAfterDelete = dbm.GetAllMerkleBlocks(ISO, pluginType);
+			std::vector<MerkleBlockPtr> blocksAfterDelete = dbm.GetAllMerkleBlocks(pluginType);
 			REQUIRE(0 == blocksAfterDelete.size());
 		}
 
 		SECTION("Merkle Block save one by one test") {
 			DatabaseManager dbm(DBFILE);
 			for (int i = 0; i < blocksToSave.size(); ++i) {
-				REQUIRE(dbm.PutMerkleBlock(ISO, blocksToSave[i]));
+				REQUIRE(dbm.PutMerkleBlock(blocksToSave[i]));
 			}
 		}
 
 		SECTION("Merkle Block read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<MerkleBlockPtr> blocksRead = dbm.GetAllMerkleBlocks(ISO, pluginType);
+			std::vector<MerkleBlockPtr> blocksRead = dbm.GetAllMerkleBlocks(pluginType);
 			REQUIRE(blocksRead.size() == blocksToSave.size());
 			for (int i = 0; i < blocksRead.size(); ++i) {
 				REQUIRE(blocksToSave[i]->GetHeight() == blocksRead[i]->GetHeight());
@@ -179,9 +178,9 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Merkle Block delete one by one test") {
 			DatabaseManager dbm(DBFILE);
 
-			dbm.DeleteAllBlocks(ISO);
+			dbm.DeleteAllBlocks();
 
-			std::vector<MerkleBlockPtr> blocksAfterDelete = dbm.GetAllMerkleBlocks(ISO, pluginType);
+			std::vector<MerkleBlockPtr> blocksAfterDelete = dbm.GetAllMerkleBlocks(pluginType);
 			REQUIRE(0 == blocksAfterDelete.size());
 		}
 	}
@@ -375,13 +374,13 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Transaction save test") {
 			DatabaseManager dbm(DBFILE);
 			for (int i = 0; i < txToSave.size(); ++i) {
-				REQUIRE(dbm.PutTransaction(ISO, txToSave[i]));
+				REQUIRE(dbm.PutTransaction(txToSave[i]));
 			}
 		}
 
 		SECTION("Transaction read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(CHAINID_MAINCHAIN);
+			std::vector<TransactionPtr> readTx = dbm.GetAllConfirmedTxns(CHAINID_MAINCHAIN);
 			REQUIRE(txToSave.size() == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
@@ -408,7 +407,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Transaction read after update test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(CHAINID_MAINCHAIN);
+			std::vector<TransactionPtr> readTx = dbm.GetAllConfirmedTxns(CHAINID_MAINCHAIN);
 			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
@@ -431,7 +430,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				REQUIRE(dbm.DeleteTxByHash(txToUpdate[i]->GetHash()));
 			}
 
-			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(CHAINID_MAINCHAIN);
+			std::vector<TransactionPtr> readTx = dbm.GetAllConfirmedTxns(CHAINID_MAINCHAIN);
 			REQUIRE(0 == readTx.size());
 		}
 
@@ -453,7 +452,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				didEntity.CreateTime = getRandUInt64();
 				didToSave.push_back(didEntity);
 
-				REQUIRE(dm.PutDID(ISO, didEntity));
+				REQUIRE(dm.PutDID(didEntity));
 			}
 		}
 

@@ -60,12 +60,6 @@ namespace Elastos {
 
 			bool needUpdate = false, movedToCoinbase = false;
 			for (const TransactionPtr &tx : txns) {
-				if (StripTransaction(tx)) {
-					SPVLOG_INFO("{} strip tx: {}, h: {}, t: {}", _walletID, tx->GetHash().GetHex(),
-								tx->GetBlockHeight(), tx->GetTimestamp());
-					needUpdate = true;
-				}
-
 				if (!_allTx.Insert(tx))
 					continue;
 
@@ -86,11 +80,18 @@ namespace Elastos {
 
 			UTXOArray trash;
 			if (!existUTXOTable) {
-				for (const TransactionPtr &tx : _coinbaseTransactions)
+				for (const TransactionPtr &tx : _coinbaseTransactions) {
 					BalanceAfterUpdatedTx(tx, trash, trash);
+				}
 
-				for (const TransactionPtr &tx : _transactions)
+				for (const TransactionPtr &tx : _transactions) {
+					if (StripTransaction(tx)) {
+						SPVLOG_INFO("{} strip tx: {}, h: {}, t: {}", _walletID, tx->GetHash().GetHex(),
+									tx->GetBlockHeight(), tx->GetTimestamp());
+						needUpdate = true;
+					}
 					BalanceAfterUpdatedTx(tx, trash, trash);
+				}
 
 				UTXOArray result;
 				for (GroupedAssetMap::iterator it = _groupedAssets.begin(); it != _groupedAssets.end(); ++it) {
