@@ -33,8 +33,8 @@ db_host = config('DB_HOST')
 db_port = config('TEST_DB_PORT')
 
 database_uri = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-create_scripts = "../database/scripts/create_table_scripts.sql"
-reset_scripts = "../database/scripts/reset_database.sql"
+create_scripts = "grpc_adenine/database/scripts/create_table_scripts.sql"
+reset_scripts = "grpc_adenine/database/scripts/reset_database.sql"
 
 def create_database_tables():
 	# Connect to the PostgreSQL database and create tables

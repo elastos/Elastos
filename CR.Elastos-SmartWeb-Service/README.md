@@ -132,22 +132,6 @@ select * from users;
 
 ## Unit Testing
 
-Requires pytest version 5.3.5. Included as part of requirements.txt
-
-If pytest is not installed. Run the following command:
-```
-pip install pytest==5.3.5
-```
-
-Start Postgres server:
-```
-cd tools
-# This script automatically runs the scripts located at grpc_adenine/database/scripts/
-./postgres_test.sh
-cd ..
-```
-
-To run the pytest:
-```
-py.test grpc_adenine/implementations/common_test.py
+``` 
+./test.sh
 ```
