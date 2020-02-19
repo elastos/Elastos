@@ -57,7 +57,7 @@ class ResolveResult {
 
         let result = ResolveResult(did, status)
         if status != ResolveResultStatus.STATUS_NOT_FOUND.rawValue {
-            let transactions = node.getNodeArray(Constants.TRANSACTION)
+            let transactions = node.getArrayNode(Constants.TRANSACTION)
             guard transactions?.count ?? 0 > 0 else {
                 throw DIDError.didResolveError("invalid resolve result.")
             }

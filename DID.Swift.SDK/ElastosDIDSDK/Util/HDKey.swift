@@ -17,7 +17,7 @@ class HDKey: NSObject {
                                                0,
                                                seedPinter)
         let seed = Data(buffer: UnsafeBufferPointer(start: seedPinter, count: 64))
-        print(seed.hexEncodedString())
+        // print(seed.hexEncodedString())
         return HDKey(seed)
     }
 
@@ -25,7 +25,11 @@ class HDKey: NSObject {
         return _seed
     }
 
-    public func derive(_ index: Int) throws -> DerivedKey {
+    func derive(_ index: Int) throws -> DerivedKey {
         return DerivedKey(seed, Int32(index))
+    }
+
+    func wipe() {
+        // TODO:
     }
 }

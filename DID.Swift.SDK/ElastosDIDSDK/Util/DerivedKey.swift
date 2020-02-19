@@ -80,4 +80,18 @@ public class DerivedKey: NSObject {
         // TODO
         return Data()
     }
+
+    class func deserialize(_ data: Data) -> DerivedKey? {
+        // TODO:
+        return nil
+    }
+
+    func getAddress() -> String {
+        // TODO:
+        return "TODO"
+    }
+
+    func wipe() {
+        // TODO:
+    }
 }

@@ -586,7 +586,7 @@ public class DIDDocument {
         return try signEx(id, storePass, data)
     }
 
-    private func signEx(_ id: DIDURL, _ storePass: String, _ data: [Data]) throws -> String {
+    func signEx(_ id: DIDURL, _ storePass: String, _ data: [Data]) throws -> String {
         guard data.count > 0 else {
             throw DIDError.illegalArgument()
         }
@@ -612,7 +612,7 @@ public class DIDDocument {
         return try verifyEx(DIDURL(self.subject, id), signature, data)
     }
 
-    private func verifyEx(_ id: DIDURL, _ sigature: String, _ data: [Data]) throws -> Bool {
+    func verifyEx(_ id: DIDURL, _ sigature: String, _ data: [Data]) throws -> Bool {
         guard data.count > 0 else {
             throw DIDError.illegalArgument()
         }

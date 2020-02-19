@@ -358,22 +358,25 @@ public class VerifiableCredential: DIDObject {
         }
     }
 
+    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredential {
+        let credential = VerifiableCredential()
+        try credential.parse(node, ref)
+        return credential
+    }
+
     class func fromJson(_ json: Data) throws -> VerifiableCredential {
         guard !json.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
-        let node: Dictionary<String, Any>
+        let data: Dictionary<String, Any>
         do {
-            node = try JSONSerialization.jsonObject(with: json, options: []) as! Dictionary<String, Any>
+            data = try JSONSerialization.jsonObject(with: json, options: []) as! Dictionary<String, Any>
         } catch {
             throw DIDError.didResolveError("Parse resolve result error")
         }
 
-        let credential = VerifiableCredential()
-        try credential.parse(JsonNode(node), nil)
-
-        return credential
+        return try fromJson(JsonNode(data), nil)
     }
 
     class func fromJson(_ json: String) throws -> VerifiableCredential {
