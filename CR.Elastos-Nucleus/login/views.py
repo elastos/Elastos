@@ -110,13 +110,12 @@ def feed(request):
     your_activity_list = []
     all_apps = settings.ALL_APPS
     for items in recent_pages:
-        model_found= False
-        your_activity_string = ''
+        model_found = False
         view_name = items.view.split(':')[1]  # get the view name
         your_activity_model = get_activity_model(view_name)
-        if your_activity_model== None:
+        if your_activity_model is None:
             your_activity_list.append({
-                'display_string': 'You just visited {0}'.format(items.name)
+                'display_string': 'You just visited "{0}" page'.format(items.name)
             })
         else:
             for app in all_apps:
@@ -124,14 +123,14 @@ def feed(request):
                 for model in app_models:
                     try:
                         if model.__name__ == your_activity_model:
-                            obj_model= model.objects.filter(did=did).last()
+                            obj_model = model.objects.filter(did=did).last()
                             your_activity_list.append(obj_model.your_activity()[view_name])
                             model_found = True
                             break
                     except Exception as e:
-                            your_activity_list.append({
-                                'display_string' : 'You just visited {0}'.format(items.name)
-                            })
+                        your_activity_list.append({
+                            'display_string': 'You just visited "{0}" page'.format(items.name)
+                        })
                 if model_found:
                     break
 

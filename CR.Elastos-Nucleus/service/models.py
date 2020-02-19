@@ -42,43 +42,42 @@ class UserServiceSessionVars(models.Model):
 
     def your_activity(self):
         return {
-            'generate_key':{
-                'display_string':'You just generated a new API_Key',
-                'did':None,
-                'api_key':None,
+            'generate_key': {
+                'display_string': 'Generated a new API Key',
+                'did': None,
+                'api_key': None,
             },
-            'create_wallet':{
-                'display_string':'You just created a new wallet',
-                'did':None,
-                'api_key':None,
-                'mnemonic_mainchain':None,
-                'private_key_mainchain':None,
-                'public_key_mainchain':None,
-                'address_mainchain':None,
-                'private_key_did':None,
-                'public_key_did':None,
-                'address_did':None,
-                'did_did':None,
-                'address_eth':None,
-                'private_key_eth':None,
-            },
-            'view_wallet':{
-                'display_string':'you just created a new API_key',
+            'create_wallet': {
+                'display_string': 'Created a new wallet',
                 'did': None,
                 'api_key': None,
                 'mnemonic_mainchain': None,
                 'private_key_mainchain': None,
-                'public_key_mainchain': None,
-                'address_mainchain': None,
+                'public_key_mainchain': self.public_key_mainchain,
+                'address_mainchain': self.address_mainchain,
                 'private_key_did': None,
-                'public_key_did': None,
-                'address_did': None,
-                'did_did': None,
-                'address_eth': None,
+                'public_key_did': self.public_key_did,
+                'address_did': self.address_did,
+                'did_did': self.did_did,
+                'address_eth': self.address_eth,
+                'private_key_eth': None,
+            },
+            'view_wallet': {
+                'display_string': 'Viewed a wallet',
+                'did': None,
+                'api_key': None,
+                'mnemonic_mainchain': None,
+                'private_key_mainchain': None,
+                'public_key_mainchain': self.public_key_mainchain,
+                'address_mainchain': self.address_mainchain,
+                'private_key_did': None,
+                'public_key_did': self.public_key_did,
+                'address_did': self.address_did,
+                'did_did': self.did_did,
+                'address_eth': self.address_eth,
                 'private_key_eth': None,
             }
         }
-
 
 
 class SavedFileInformation(models.Model):
@@ -97,20 +96,22 @@ class SavedFileInformation(models.Model):
 
     def your_activity(self):
         return {
-            'upload_and_sign':{
-                'display_string':'you just uploaded a new file',
-                'did':None,
-                'file_name':self.file_name,
-                'message_hash':self.message_hash,
-                'signature':None,
-                'file_hash':None
+            'upload_and_sign': {
+                'display_string': 'Signed a new file using a private key and uploaded the '
+                                  'encrypted version of the file to Elastos Hive',
+                'did': None,
+                'file_name': self.file_name,
+                'message_hash': self.message_hash,
+                'signature': self.signature,
+                'file_hash': self.file_hash
             },
-            'verify_and_show':{
-                'display_string':'you just verified a new file',
-                'did':None,
-                'file_name':self.file_name,
-                'message_hash':self.message_hash,
-                'signature':None,
-                'file_hash':None,
+            'verify_and_show': {
+                'display_string': 'Verified the file using a private key and retrieved it '
+                                  'from Elastos Hive',
+                'did': None,
+                'file_name': self.file_name,
+                'message_hash': self.message_hash,
+                'signature': self.signature,
+                'file_hash': self.file_hash,
             }
         }

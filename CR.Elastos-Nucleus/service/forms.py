@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import HiddenInput
 
-from .models import UploadFile , SavedFileInformation
+from .models import UploadFile, SavedFileInformation
 from .choices import *
 
 
@@ -10,18 +10,11 @@ GMUNET_BUTTON = 'width: 150px; height: 44px; border-radius: 4px; background-colo
 
 class GenerateAPIKeyForm(forms.Form):
     did = forms.CharField(max_length=64)
+
     def __init__(self, *args, **kwargs):
         super(GenerateAPIKeyForm, self).__init__(*args, **kwargs)
         self.fields['did'].required = False
         self.fields['did'].widget = HiddenInput()
-
-    def your_activity(self):
-        return {
-            'did':'hidden'
-        }
-
-
-
 
 class UploadAndSignForm(forms.ModelForm):
     network = forms.ChoiceField(
@@ -49,19 +42,9 @@ class UploadAndSignForm(forms.ModelForm):
         self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
         self.fields['uploaded_file'].label = ""
 
-    def your_activity(self):
-        return {
-            'did':'hidden',
-            'file_name':'shown',
-            'message_hash':'hidden',
-            'signature':'hidden',
-            'file_hash':'hidden',
-        }
-
     class Meta:
         model = UploadFile
         fields = ['did', 'uploaded_file']
-
 
 
 class VerifyAndShowForm(forms.Form):
@@ -114,7 +97,6 @@ class VerifyAndShowForm(forms.Form):
         self.fields['select_files'] = forms.ModelChoiceField(queryset=SavedFileInformation.objects.filter(did=did), required=False)
 
         self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
-
 
 
 class CreateWalletForm(forms.Form):
