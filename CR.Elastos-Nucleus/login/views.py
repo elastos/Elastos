@@ -1,36 +1,22 @@
 import gc
 import logging
-import secrets
-import time
 
 import csv
-import urllib
 
-import jwt
 from django.apps import apps
 from django.conf import settings
 
-from datetime import timedelta, datetime
-
-from django.contrib.auth import login
 from django.core.mail import EmailMessage
-from django.utils import timezone
-from fastecdsa.encoding.sec1 import SEC1Encoder
-from fastecdsa import ecdsa, curve
-from binascii import unhexlify
 from decouple import config
 
 from django.contrib import messages
 from django.http import HttpResponse
-from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode
-from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.shortcuts import render, redirect
 from django.utils.encoding import force_text
 
-from console_main.settings import SECRET_KEY
 from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
     get_recent_services, send_email
 from console_main.models import TrackUserPageVisits
@@ -39,6 +25,8 @@ from .models import DIDUser
 from .forms import DIDUserCreationForm, DIDUserChangeForm
 from service.forms import SuggestServiceForm
 from .tokens import account_activation_token
+from .your_activity_dict import get_activity_model
+from service.models import UserServiceSessionVars, SavedFileInformation
 
 
 def register(request):
@@ -74,7 +62,6 @@ def edit_profile(request):
         form = DIDUserChangeForm(request.POST, instance=request.user)
 
         if form.is_valid():
-
             user = form.save(commit=False)
             # This means the user changed their email address
             if user.email != did_user.email:
@@ -120,9 +107,37 @@ def feed(request):
     recent_services = get_recent_services(did)
     recent_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-last_visited')[:5]
     most_visited_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-number_visits')[:5]
+    your_activity_list = []
+    all_apps = settings.ALL_APPS
+    for items in recent_pages:
+        model_found= False
+        your_activity_string = ''
+        view_name = items.view.split(':')[1]  # get the view name
+        your_activity_model = get_activity_model(view_name)
+        if your_activity_model== None:
+            your_activity_list.append({
+                'display_string': 'You just visited {0}'.format(items.name)
+            })
+        else:
+            for app in all_apps:
+                app_models = apps.get_app_config(app).get_models()
+                for model in app_models:
+                    try:
+                        if model.__name__ == your_activity_model:
+                            obj_model= model.objects.filter(did=did).last()
+                            your_activity_list.append(obj_model.your_activity()[view_name])
+                            model_found = True
+                            break
+                    except Exception as e:
+                            your_activity_list.append({
+                                'display_string' : 'You just visited {0}'.format(items.name)
+                            })
+                if model_found:
+                    break
 
     return render(request, 'login/feed.html', {'recent_pages': recent_pages, 'recent_services': recent_services,
-                                               'most_visited_pages': most_visited_pages, 'suggest_form': suggest_form})
+                                               'most_visited_pages': most_visited_pages, 'suggest_form': suggest_form,
+                                               'your_activity': your_activity_list})
 
 
 @login_required

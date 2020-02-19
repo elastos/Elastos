@@ -299,7 +299,9 @@
                     YOUR ACTIVITY
                 </p>
                 <div class="divider"></div>
-                <p class="sidebar-content" style="margin: 0px 20px 20px 20px;">COMING SOON</p>
+                {% for activity in your_activity %}
+                    <p class="sidebar-content" style="margin: 0px 20px 20px 20px;">{{ activity }}</p>
+                {% endfor %}
             </div>
         </div>
 
