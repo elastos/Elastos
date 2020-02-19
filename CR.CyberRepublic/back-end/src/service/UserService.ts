@@ -649,13 +649,13 @@ export default class extends Base {
             const userId = _.get(this.currentUser, '_id')
             const db_user = this.getDBModel('User')
             const user = await db_user.findById({ _id: userId })
-            if (!user) {
+            if (_.isEmpty(user)) {
                 return { success: false }
             }
             // for reassociating DID
-            if (user) {
+            if (user && !_.isEmpty(user.dids)) {
                 const dids = user.dids.map(el => {
-                    // the mark field will be removed after associate DID 
+                    // the mark field will be removed after reassociated DID 
                     if (el.active === true) {
                         return {
                             id: el.id,
@@ -707,9 +707,9 @@ export default class extends Base {
                     const user = await db_user.findById({ _id: decoded.userId })
                     if (user) { 
                         let dids: object[]
-                        const matched = user.dids.filter(el => el.id === decoded.iss)
+                        const matched = user.dids.find(el => el.id === decoded.iss)
                         // associate the same DID
-                        if (matched.length) {
+                        if (matched) {
                             dids = user.dids.map(el => {
                                 if (el.id === decoded.iss) {
                                     return {
