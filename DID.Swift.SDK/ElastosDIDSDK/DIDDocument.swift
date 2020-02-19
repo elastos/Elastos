@@ -55,30 +55,55 @@ public class DIDDocument {
         self._meta = doc.getMeta()
     }
 
-    private func getEntry<T: DIDObject>(_ dict: Dictionary<DIDURL, T>?, _ id: DIDURL) -> T? {
-        return dict?[id] ?? nil
+    private func getEntry<T: DIDObject>(_ entry: Dictionary<DIDURL, T>?, _ id: DIDURL) -> T? {
+        return entry?[id] ?? nil
     }
 
-    private func getEntryCount<T: DIDObject>(_ dict: Dictionary<DIDURL, T>?) -> Int {
-        return dict?.count ?? 0
+    private func getEntryCount<T: DIDObject>(_ entry: Dictionary<DIDURL, T>?) -> Int {
+        return entry?.count ?? 0
     }
 
-    private func getEntries<T: DIDObject>(_ dict: Dictionary<DIDURL, T>?) -> Array<T>? {
-        var pkArray: Array<T>? = nil
-        dict?.values.forEach { publicKey in
-            if  pkArray == nil {
-                pkArray = Array<T>()
-            }
-            pkArray!.append(publicKey)
+    private func getEntries<T: DIDObject>(_ entries: Dictionary<DIDURL, T>?) -> Array<T> {
+        var result = Array<T>()
+        entries?.values.forEach { entry in
+            result.append(entry)
         }
-        return pkArray
+        return result
     }
 
-    private func selectEntries<T: DIDObject>(_ dict: Dictionary<DIDURL, T>?,
+    private func selectEntries<T: DIDObject>(_ entries: Dictionary<DIDURL, T>?,
                                              _ id: DIDURL?,
-                                             _ type: String?) -> Array<T>? {
-        // TODO
-        return nil
+                                             _ type: String?) throws -> Array<T> {
+        guard id != nil || type != nil else {
+            throw DIDError.illegalArgument()
+        }
+
+        var result = Array<T>()
+        guard entries?.isEmpty ?? true else {
+            return result
+        }
+
+        for entry in entries!.values {
+            if id != nil && entry.getId() != id! {
+                continue
+            }
+
+            if type != nil {
+                // Credential' type is a list.
+                if entry is VerifiableCredential {
+                    let credential = entry as! VerifiableCredential
+                    if !credential.getTypes()!.contains(type!) {
+                        continue
+                    }
+                } else {
+                    if entry.getType() != type! {
+                        continue
+                    }
+                }
+            }
+            result.append(entry)
+        }
+        return result
     }
 
     public var subject: DID {
@@ -97,12 +122,12 @@ public class DIDDocument {
         return getEntries(self._publicKeys)
     }
 
-    public func selectPublicKeys(byId: String, andType: String? = nil) throws -> Array<PublicKey>? {
-        return selectEntries(self._publicKeys, try DIDURL(subject, byId), andType)
+    public func selectPublicKeys(byId: String, andType: String? = nil) throws -> Array<PublicKey> {
+        return try selectEntries(self._publicKeys, DIDURL(subject, byId), andType)
     }
 
-    public func selectPublicKeys(byId: DIDURL, andType: String? = nil) -> Array<PublicKey>? {
-        return selectEntries(self._publicKeys, byId, andType)
+    public func selectPublicKeys(byId: DIDURL, andType: String? = nil) throws -> Array<PublicKey> {
+        return try selectEntries(self._publicKeys, byId, andType)
     }
 
     public func publicKey(ofId: String) throws -> PublicKey? {
@@ -135,7 +160,7 @@ public class DIDDocument {
         return try getMeta().store!.containsPrivateKey(self.subject, forId)
     }
 
-    public var defaultPublicKey: DIDURL {
+    private func getDefaultPublicKey() -> DIDURL? {
         for publicKey in self._publicKeys!.values {
             if self.subject != publicKey.controller {
                 continue
@@ -146,9 +171,14 @@ public class DIDDocument {
                 return publicKey.getId()
             }
         }
+        return nil
     }
 
-    func appendPublicKey(_ publicKey: PublicKey) {
+    public var defaultPublicKey: DIDURL {
+        return getDefaultPublicKey()!
+    }
+
+    func appendPublicKey(_ publicKey: PublicKey) -> Bool {
         if self._publicKeys == nil {
             self._publicKeys = Dictionary<DIDURL, PublicKey>()
         }
@@ -157,49 +187,52 @@ public class DIDDocument {
             // Check the existance, by both DIDURL (id) and keyBase58
             if key.getId() == publicKey.getId() ||
                key.publicKeyBase58 == publicKey.publicKeyBase58 {
-                return
+                return false
             }
         }
 
         self._publicKeys![publicKey.getId()] = publicKey
+        return true
     }
 
-    func removePublicKey(atId id: DIDURL, _ force: Bool) throws {
+    func removePublicKey(_ id: DIDURL, _ force: Bool) -> Bool {
         // Can not remove default public key
         guard self.defaultPublicKey != id else {
-            throw DIDError.illegalArgument("Can be default public Key.")
+            return false
         }
 
         if force {
-            _ = try removeAuthenticationKey(atId: id)
-            _ = try removeAuthorizationKey(atId: id)
+            _ = removeAuthenticationKey(id)
+            _ = removeAuthorizationKey(id)
         } else {
             if  containsAuthenticationKey(forId: id) ||
                 containsAuthorizationKey(forId: id) {
-                throw DIDError.illegalArgument("id is being used.")
+                return false
             }
         }
 
         let removedKey = self._publicKeys?.removeValue(forKey: id)
-        if  removedKey != nil && getMeta().attachedStore {
-            _ = try getMeta().store!.deletePrivateKey(self.subject, id)
+        if  removedKey != nil {
+            _ = try? getMeta().store?.deletePrivateKey(self.subject, id)
         }
+
+        return removedKey != nil
     }
 
     public var authenticationKeyCount: Int {
         return getEntryCount(self._authenticationKeys)
     }
 
-    public func authenticationKeys() -> Array<PublicKey>? {
+    public func authenticationKeys() -> Array<PublicKey> {
         return getEntries(self._authenticationKeys)
     }
 
-    public func selectAuthenticationKeys(byId: String, andType: String? = nil) throws -> Array<PublicKey>? {
-        return selectEntries(self._authenticationKeys, try DIDURL(subject, byId), andType)
+    public func selectAuthenticationKeys(byId: String, andType: String? = nil) throws -> Array<PublicKey> {
+        return try selectEntries(self._authenticationKeys, DIDURL(subject, byId), andType)
     }
 
-    public func selectAuthenticationKeys(byId: DIDURL, andType: String? = nil) -> Array<PublicKey>? {
-        return selectEntries(self._authenticationKeys, byId, andType)
+    public func selectAuthenticationKeys(byId: DIDURL, andType: String? = nil) throws -> Array<PublicKey> {
+        return try selectEntries(self._authenticationKeys, byId, andType)
     }
 
     public func authenticationKey(ofId: String) throws -> PublicKey?  {
@@ -218,10 +251,10 @@ public class DIDDocument {
         return authenticationKey(ofId: forId) != nil
     }
 
-    func appendAuthenticationKey(_ publicKey: PublicKey) throws {
+    func appendAuthenticationKey(_ publicKey: PublicKey) -> Bool {
         // Make sure that controller should be current DID subject.
         guard publicKey.controller == self.subject else {
-            throw DIDError.illegalArgument("Controller is not document subject.")
+            return false
         }
 
         // Check whether this publicKey already is one of DIDDocument publicKeys
@@ -234,7 +267,7 @@ public class DIDDocument {
             _ = appendPublicKey(publicKey)
         } else if key! != publicKey {
             // Conflict happened, keep untouched
-            throw DIDError.illegalArgument("PublicKey conflicted.")
+            return false
         } else {
             // Prefer using publicKey of DIDDocument publicKeys.
             refKey = key!
@@ -245,35 +278,36 @@ public class DIDDocument {
         }
 
         if containsAuthenticationKey(forId: refKey.getId()) {
-            throw DIDError.illegalArgument("Already exist authentication Key with same Id.")
+            return false
         }
 
         self._authenticationKeys![refKey.getId()] = refKey
+        return true
     }
 
-    func removeAuthenticationKey(atId publicKey: DIDURL) throws {
+    func removeAuthenticationKey(_ key: DIDURL) -> Bool {
         // Can not remove default publicKey.
-        guard defaultPublicKey != publicKey else {
-            throw DIDError.illegalArgument("Can not remove default publicKey.")
+        guard defaultPublicKey != key else {
+            return false
         }
 
-        _ = self._authenticationKeys?.removeValue(forKey: publicKey)
+        return self._authenticationKeys?.removeValue(forKey: key) != nil
     }
 
     public var authorizationKeyCount: Int {
         return getEntryCount(self._authorizationKeys)
     }
 
-    public func authorizationKeys() -> Array<PublicKey>? {
+    public func authorizationKeys() -> Array<PublicKey> {
         return getEntries(self._authorizationKeys)
     }
 
-    public func selectAuthorizationKeys(byId: String, andType: String? = nil) throws -> Array<PublicKey>? {
-        return selectEntries(self._authorizationKeys, try DIDURL(subject, byId), andType)
+    public func selectAuthorizationKeys(byId: String, andType: String? = nil) throws -> Array<PublicKey> {
+        return try selectEntries(self._authorizationKeys, DIDURL(subject, byId), andType)
     }
 
-    public func selectAuthorizationKeys(byId: DIDURL, andType: String? = nil) -> Array<PublicKey>? {
-        return selectEntries(self._authenticationKeys, byId, andType)
+    public func selectAuthorizationKeys(byId: DIDURL, andType: String? = nil) throws -> Array<PublicKey> {
+        return try selectEntries(self._authenticationKeys, byId, andType)
     }
 
     public func authorizationKey(ofId: String) throws -> PublicKey?  {
@@ -292,10 +326,10 @@ public class DIDDocument {
         return authenticationKey(ofId: forId) != nil
     }
 
-    func appendAuthorizationKey(_ publicKey: PublicKey) throws {
+    func appendAuthorizationKey(_ publicKey: PublicKey) -> Bool {
         // Make sure that controller should be current DID subject.
         guard publicKey.controller == self.subject else {
-            throw DIDError.illegalArgument("Controller is not document subject.")
+            return false
         }
 
         // Check whether this publicKey already is one of DIDDocument publicKeys
@@ -308,7 +342,7 @@ public class DIDDocument {
             _ = appendPublicKey(publicKey)
         } else if key! != publicKey {
             // Conflict happened, keep untouched
-            throw DIDError.illegalArgument("PublicKey conflicted.")
+            return false
         } else {
             // Prefer using publicKey of DIDDocument publicKeys.
             refKey = key!
@@ -319,35 +353,36 @@ public class DIDDocument {
         }
 
         if containsAuthorizationKey(forId: refKey.getId()) {
-            throw DIDError.illegalArgument("Already exist authorization Key with same Id.")
+            return false
         }
 
         self._authorizationKeys![refKey.getId()] = refKey
+        return true
     }
 
-    func removeAuthorizationKey(atId: DIDURL) throws {
+    func removeAuthorizationKey(_ key: DIDURL) -> Bool {
         // Can not remove default publicKey.
-        guard defaultPublicKey != atId else {
-            throw DIDError.illegalArgument("Can not remove default publicKey.")
+        guard defaultPublicKey != key else {
+            return false
         }
 
-        _ = self._authorizationKeys!.removeValue(forKey: atId)
+        return self._authorizationKeys!.removeValue(forKey: key) != nil
     }
 
     public var credentialCount: Int {
         return getEntryCount(self._credentials)
     }
 
-    public var credentials: Array<VerifiableCredential>? {
+    public var credentials: Array<VerifiableCredential> {
         return getEntries(self._credentials)
     }
 
-    public func selectCredentials(byId: String, andType: String? = nil) throws -> Array<VerifiableCredential>?  {
-        return selectEntries(self._credentials, try DIDURL(self.subject, byId), andType)
+    public func selectCredentials(byId: String, andType: String? = nil) throws -> Array<VerifiableCredential>  {
+        return try selectEntries(self._credentials, DIDURL(self.subject, byId), andType)
     }
 
-    public func selectCredentials(byId: DIDURL, andType: String? = nil) -> Array<VerifiableCredential>?  {
-        return selectEntries(self._credentials, byId, andType)
+    public func selectCredentials(byId: DIDURL, andType: String? = nil) throws -> Array<VerifiableCredential>  {
+        return try selectEntries(self._credentials, byId, andType)
     }
 
     public func credential(ofId: String) throws -> VerifiableCredential? {
@@ -358,10 +393,10 @@ public class DIDDocument {
         return getEntry(self._credentials, ofId)
     }
 
-    func appendCredential(_ credential: VerifiableCredential) throws {
+    func appendCredential(_ credential: VerifiableCredential) -> Bool {
         // Make sure the verifiable credential must belong to current DID.
         guard credential.subject.did != self.subject else {
-            throw DIDError.illegalArgument("Credential subject shoud be document subject.")
+            return false
         }
 
         if  self._credentials == nil {
@@ -369,30 +404,31 @@ public class DIDDocument {
         }
 
         guard self._credentials!.keys.contains(credential.getId()) else {
-            throw DIDError.illegalArgument("Already exist credential with same Id.")
+            return false
         }
 
         self._credentials![credential.getId()] = credential
+        return true
     }
 
-    func removeCredential(atId: DIDURL) {
-        _ = self._credentials?.removeValue(forKey: atId)
+    func removeCredential(_ id: DIDURL) -> Bool {
+        return self._credentials?.removeValue(forKey: id) != nil
     }
 
     public var serviceCount: Int {
         return getEntryCount(self._services)
     }
 
-    public var services: Array<Service>? {
+    public var services: Array<Service> {
         return getEntries(self._services)
     }
 
-    public func selectServices(byId: String, andType: String? = nil) throws -> Array<Service>?  {
-        return selectEntries(self._services, try DIDURL(self.subject, byId), andType)
+    public func selectServices(byId: String, andType: String? = nil) throws -> Array<Service>  {
+        return try selectEntries(self._services, try DIDURL(self.subject, byId), andType)
     }
 
-    public func selectServices(byId: DIDURL, andType: String? = nil) -> Array<Service>?  {
-        return selectEntries(self._services, byId, andType)
+    public func selectServices(byId: DIDURL, andType: String? = nil) throws -> Array<Service>  {
+        return try selectEntries(self._services, byId, andType)
     }
 
     public func service(ofId: String) throws -> Service? {
@@ -403,20 +439,21 @@ public class DIDDocument {
         return getEntry(self._services, ofId)
     }
 
-    func appendService(_ service: Service) throws {
+    func appendService(_ service: Service) -> Bool {
         if  self._services == nil {
             self._services = Dictionary<DIDURL, Service>()
         }
 
-        guard self._services!.keys.contains(service.getId()) else { // TODO:
-            throw DIDError.illegalArgument("Already exist service with same Id.")
+        guard self._services!.keys.contains(service.getId()) else {
+            return false
         }
 
         self._services![service.getId()] = service
+        return true
     }
 
-    func removeService(atId: DIDURL) {
-        _ = self._services?.removeValue(forKey: atId)
+    func removeService(_ id: DIDURL) -> Bool {
+        return self._services?.removeValue(forKey: id) != nil
     }
 
     public var expirationDate: Date? {
@@ -505,8 +542,7 @@ public class DIDDocument {
     }
 
     public var isExpired: Bool {
-        // TODO:
-        return false
+        return DateHelper.isExipired(self.expirationDate!)
     }
 
     public var isGenuine: Bool {
@@ -550,7 +586,7 @@ public class DIDDocument {
         return try signEx(id, storePass, data)
     }
 
-    func signEx(_ id: DIDURL, _ storePass: String, _ data: [Data]) throws -> String {
+    private func signEx(_ id: DIDURL, _ storePass: String, _ data: [Data]) throws -> String {
         guard data.count > 0 else {
             throw DIDError.illegalArgument()
         }
@@ -576,7 +612,7 @@ public class DIDDocument {
         return try verifyEx(DIDURL(self.subject, id), signature, data)
     }
 
-    func verifyEx(_ id: DIDURL, _ sigature: String, _ data: [Data]) throws -> Bool {
+    private func verifyEx(_ id: DIDURL, _ sigature: String, _ data: [Data]) throws -> Bool {
         guard data.count > 0 else {
             throw DIDError.illegalArgument()
         }
@@ -589,7 +625,7 @@ public class DIDDocument {
             throw DIDError.illegalArgument()
         }
 
-        // TODO:
+        // TODO: Verify.
         return false
     }
 
@@ -602,36 +638,37 @@ public class DIDDocument {
         let did = try serializer.getDID(Constants.ID, options)
         setSubject(did)
 
-        var node: JsonNode?
-        node = doc.getNode(Constants.PUBLICKEY)
-        guard let _ = node else {
+        var arrayNode: [JsonNode]?
+        arrayNode = doc.getArrayNode(Constants.PUBLICKEY)
+        guard let _ = arrayNode else {
             throw DIDError.malformedDocument("missing publicKey")
         }
-        try parsePublicKeys(node!)
+        try parsePublicKeys(arrayNode!)
 
-        node = doc.getNode(Constants.AUTHENTICATION)
-        if let _ = node {
-            try parseAuthenticationKeys(node!)
+        arrayNode = doc.getArrayNode(Constants.AUTHENTICATION)
+        if let _ = arrayNode {
+            try parseAuthenticationKeys(arrayNode!)
         }
 
+        // Add default public key to authentication keys if need.
         let defaultKey = self.defaultPublicKey
         if containsAuthenticationKey(forId: defaultKey) {
-            try appendAuthenticationKey(publicKey(ofId: defaultKey)!)  // TODO:
+            _ = appendAuthenticationKey(publicKey(ofId: defaultKey)!)
         }
 
-        node = doc.getNode(Constants.AUTHORIZATION)
-        if let _ = node {
-            try parseAuthorizationKeys(node!)
+        arrayNode = doc.getArrayNode(Constants.AUTHORIZATION)
+        if let _ = arrayNode {
+            try parseAuthorizationKeys(arrayNode!)
         }
 
-        node = doc.getNode(Constants.VERIFIABLE_CREDENTIAL)
-        guard let _ = node else {
-            try parseCredential(node!)
+        arrayNode = doc.getArrayNode(Constants.VERIFIABLE_CREDENTIAL)
+        if let _ = arrayNode {
+            try parseCredential(arrayNode!)
         }
 
-        node = doc.getNode(Constants.SERVICE)
-        guard let _ = node else {
-            try parseService(node!)
+        arrayNode = doc.getArrayNode(Constants.SERVICE)
+        if let _ = arrayNode {
+            try parseService(arrayNode!)
         }
 
         options = JsonSerializer.Options()
@@ -640,6 +677,7 @@ public class DIDDocument {
         let expirationDate = try serializer.getDate(Constants.EXPIRES, options)
         self.setExpirationDate(expirationDate)
 
+        var node: JsonNode?
         node = doc.getNode(Constants.PROOF)
         guard let _ = node else {
             throw DIDError.malformedDocument("missing document proof")
@@ -648,24 +686,58 @@ public class DIDDocument {
         setProof(try DIDDocumentProof.fromJson(node!, defaultKey))
     }
 
-    private func parsePublicKeys(_ node: JsonNode) throws {
-        // TODO:
+    private func parsePublicKeys(_ arrayNode: [JsonNode]) throws {
+        guard arrayNode.count < 0 else {
+            throw DIDError.malformedDocument("invalid publicKeys, should not be empty.")
+        }
+
+        for node in arrayNode {
+            do {
+                _ = appendPublicKey(try PublicKey.fromJson(node, self.subject))
+            } catch {
+                throw DIDError.malformedDocument()
+            }
+        }
     }
 
-    private func parseAuthenticationKeys(_ node: JsonNode) throws {
-        // TODO:
+    private func parseAuthenticationKeys(_ arrayNode: [JsonNode]) throws {
+        for node in arrayNode {
+            do {
+                _ = appendAuthenticationKey(try PublicKey.fromJson(node, self.subject))
+            } catch {
+                throw DIDError.malformedDocument()
+            }
+        }
     }
 
-    private func parseAuthorizationKeys(_ node: JsonNode) throws {
-        // TODO
+    private func parseAuthorizationKeys(_ arrayNode: [JsonNode]) throws {
+        for node in arrayNode {
+            do {
+                _ = appendAuthorizationKey(try PublicKey.fromJson(node, self.subject))
+            } catch {
+                throw DIDError.malformedDocument()
+            }
+        }
     }
 
-    private func parseCredential(_ node: JsonNode) throws {
-        // TODO
+    private func parseCredential(_ arrayNode: [JsonNode]) throws {
+        for node in arrayNode {
+            do {
+                _ = appendCredential(try VerifiableCredential.fromJson(node, self.subject))
+            } catch {
+                throw DIDError.malformedDocument()
+            }
+        }
     }
 
-    private func parseService(_ node: JsonNode) throws {
-        // TODO
+    private func parseService(_ arrayNode: [JsonNode]) throws {
+        for node in arrayNode {
+            do {
+                _ = appendService(try Service.fromJson(node, self.subject))
+            } catch {
+                throw DIDError.malformedDocument()
+            }
+        }
     }
 
     public class func convertToDIDDocument(fromData data: Data) throws -> DIDDocument {
@@ -681,6 +753,8 @@ public class DIDDocument {
             throw DIDError.malformedDocument()
         }
         try doc.parse(JsonNode(node!))
+
+        return doc
     }
 
     public class func convertToDIDDocument(fromJson json: String) throws -> DIDDocument {
@@ -726,11 +800,9 @@ public class DIDDocument {
     private func toJson(_ generator: JsonGenerator, _ normalized: Bool, _ forSign: Bool) throws {
         generator.writeStartObject()
 
-        // subject/id
         generator.writeFieldName(Constants.ID)
         generator.writeString(self.subject.toString())
 
-        // publicKey
         generator.writeFieldName(Constants.PUBLICKEY)
         generator.writeStartArray()
         for pubKey in self._publicKeys!.values {
@@ -738,7 +810,6 @@ public class DIDDocument {
         }
         generator.writeEndArray()
 
-        // authentication
         generator.writeFieldName(Constants.AUTHENTICATION)
         generator.writeStartArray()
         for pubKey in self._authenticationKeys!.values {
@@ -752,7 +823,6 @@ public class DIDDocument {
         }
         generator.writeEndArray()
 
-        // authorization
         if self.authorizationKeyCount > 0 {
             generator.writeFieldName(Constants.AUTHORIZATION)
             generator.writeStartArray()
@@ -769,7 +839,6 @@ public class DIDDocument {
             generator.writeEndArray()
         }
 
-        // verifiable credential
         if self.credentialCount > 0 {
             generator.writeFieldName(Constants.VERIFIABLE_CREDENTIAL)
             generator.writeStartArray()
@@ -779,7 +848,6 @@ public class DIDDocument {
             generator.writeEndArray()
         }
 
-        // service
         if self.serviceCount > 0 {
             generator.writeFieldName(Constants.SERVICE)
             generator.writeStartArray()
@@ -789,16 +857,14 @@ public class DIDDocument {
             generator.writeEndArray()
         }
 
-        // expires
         if let _ = self.expirationDate {
             generator.writeFieldName(Constants.EXPIRES)
-            // TODO: try generator.writeString(JsonHelper.format)
+            generator.writeString(DateFormatter.convertToUTCStringFromDate(self.expirationDate!))
         }
 
-        // proof
-        if !forSign { // TODO: check
+        if getProof() != nil && !forSign {
             generator.writeFieldName(Constants.PROOF)
-            proof.toJson(generator, normalized)
+            self.proof.toJson(generator, normalized)
         }
 
         generator.writeEndObject()
@@ -809,25 +875,22 @@ public class DIDDocument {
     }
 
     func toJson(_ normalized: Bool, _ forSign: Bool) throws -> String {
-        // TODO
-        return "TODO"
+        let generator = JsonGenerator()
+        try toJson(generator, normalized, forSign)
+        return generator.toString()
     }
 
     func toJson(_ normalized: Bool) throws -> String {
         return try toJson(normalized, false)
     }
 
-    public func convertFromDIDDocumentToJsonString(_ normalized: Bool) throws -> String {
-        // TODO:
-        return "TODO"
+    public func convertFromDIDDocument(_ normalized: Bool) throws -> String {
+        return try toJson(normalized)
     }
 
-    public func convertFromDIDDocumentToData(_ normalized: Bool) throws -> Data {
-        // TODO:
-        return Data()
+    public func convertFromDIDDocument(_ normalized: Bool) throws -> Data {
+        return try toJson(normalized).data(using: .utf8)!
     }
-
-    // TODO:
 }
 
 extension DIDDocument: CustomStringConvertible {

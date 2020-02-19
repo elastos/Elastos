@@ -32,4 +32,9 @@ class DateHelper {
         // TODO
         return false
     }
+
+    class func maxExpirationDate() -> Date {
+        // TODO:
+        return Date()
+    }
 }

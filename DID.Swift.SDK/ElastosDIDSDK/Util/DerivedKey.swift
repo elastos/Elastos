@@ -66,19 +66,14 @@ public class DerivedKey: NSObject {
         return String(cString: base58)
     }
     
-    public class func getIdString(_ pk: [UInt8]) -> String {
+    public class func getAddress(_ pk: [UInt8]) -> String {
         var pkData = Data(bytes: pk, count: pk.count)
         let pks = pkData.withUnsafeMutableBytes { (bytes) -> UnsafeMutablePointer<Int8> in
             return bytes
         }
         let address = UnsafeMutablePointer<Int8>.allocate(capacity: 48)
-        let idstring = HDKey_GetAddress(pks, address, 48)
-        return String(cString: idstring)
-    }
-
-    func getAddress() -> String {
-        // TODO:
-        return "TODO"
+        let addrstr = HDKey_GetAddress(pks, address, 48)
+        return String(cString: addrstr)
     }
 
     func serialize() -> Data {

@@ -41,7 +41,7 @@ class JsonNode {
         return node[key] as? JsonNode
     }
 
-    func getNodeArray(_ key: String) -> [JsonNode]? {
+    func getArrayNode(_ key: String) -> [JsonNode]? {
         return node[key] as? [JsonNode]
     }
 

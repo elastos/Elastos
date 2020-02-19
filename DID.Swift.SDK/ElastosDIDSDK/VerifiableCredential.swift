@@ -308,7 +308,7 @@ public class VerifiableCredential: DIDObject {
         return (getTypes() != nil && self._subject != nil)
     }
 
-    private class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredential {
+    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredential {
         let serializer = JsonSerializer(node)
         var options: JsonSerializer.Options
 
@@ -438,8 +438,9 @@ public class VerifiableCredential: DIDObject {
     }
 
     func toJson(_ normalized: Bool, _ forSign: Bool) -> String {
-        // TODO:
-        return "TODO"
+        let generator = JsonGenerator()
+        toJson(generator, nil, forSign)
+        return generator.toString()
     }
 }
 
