@@ -91,13 +91,11 @@ public class VerifiablePresentation {
             }
         }
 
-        var inputs: [Data] = []
-        inputs.append(toJson(true).data(using: .utf8)!)
-        inputs.append(self.proof.realm.data(using: .utf8)!)
-        inputs.append(self.proof.nonce.data(using: .utf8)!)
-
-        return (try? doc!.verifyEx(self.proof.verificationMethod,
-                                   self.proof.signature, inputs)) ?? false
+        return (try? doc!.verify(using: self.proof.verificationMethod,
+                                signature: self.proof.signature,
+                                toJson(true).data(using: .utf8)!,
+                                self.proof.realm.data(using: .utf8)!,
+                                self.proof.nonce.data(using: .utf8)!)) ?? false
     }
 
     public var isValid: Bool {
@@ -129,13 +127,11 @@ public class VerifiablePresentation {
             }
         }
 
-        var inputs: [Data] = []
-        inputs.append(toJson(true).data(using: .utf8)!)
-        inputs.append(self.proof.realm.data(using: .utf8)!)
-        inputs.append(self.proof.nonce.data(using: .utf8)!)
-
-        return (try? doc!.verifyEx(self.proof.verificationMethod,
-                                   self.proof.signature, inputs)) ?? false
+        return (try? doc!.verify(using: self.proof.verificationMethod,
+                                signature: self.proof.signature,
+                                toJson(true).data(using: .utf8)!,
+                                self.proof.realm.data(using: .utf8)!,
+                                self.proof.nonce.data(using: .utf8)!)) ?? false
     }
 
     public var proof: VerifiablePresentationProof {
@@ -152,8 +148,49 @@ public class VerifiablePresentation {
         self._proof = proof
     }
 
-    private func parse(_ json: String) throws {
-        // TODO
+    private func parse(_ node: JsonNode) throws {
+        let serializer = JsonSerializer(node)
+        var options: JsonSerializer.Options
+        let error = { (des) -> DIDError in
+            return DIDError.malformedPresentation(des)
+        }
+
+        options = JsonSerializer.Options()
+                                .withHint("presentation type")
+                                .withError(error)
+        let type = try serializer.getString(Constants.TYPE, options)
+        guard type == Constants.DEFAULT_PRESENTATION_TYPE else {
+            throw DIDError.malformedPresentation("unkown presentation type:\(type)")
+        }
+        setType(type)
+
+        options = JsonSerializer.Options()
+                                .withHint("presentation created date")
+                                .withError(error)
+        let createdDate = try serializer.getDate(Constants.CREATED, options)
+        setCreatedDate(createdDate)
+
+        let arrayNode = node.getArrayNode(Constants.VERIFIABLE_CREDENTIAL)
+        guard let _ = arrayNode else {
+            throw DIDError.malformedPresentation("missing credential")
+        }
+
+        try parseCredential(arrayNode!)
+
+        let subNode = node.getNode(Constants.PROOF)
+        guard let _ = subNode else {
+            throw DIDError.malformedPresentation("missing presentation proof")
+        }
+
+        let proof = try VerifiablePresentationProof.fromJson(subNode!, nil)
+        setProof(proof)
+    }
+
+    private func parseCredential(_ arrayNode: [JsonNode]) throws {
+        for node in arrayNode {
+            let credential = try VerifiableCredential.fromJson(node, nil)
+            appendCredential(credential)
+        }
     }
 
     public static func fromJson(_ json: String) throws -> VerifiablePresentation {
@@ -161,8 +198,15 @@ public class VerifiablePresentation {
             throw DIDError.illegalArgument()
         }
 
+        let data: Dictionary<String, Any>?
+        do {
+            data = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: []) as? Dictionary<String, Any>
+        } catch {
+            throw DIDError.malformedPresentation("parse presentation json error")
+        }
+
         let vp = VerifiablePresentation()
-        try vp.parse(json)
+        try vp.parse(JsonNode(data!))
 
         return vp
     }
@@ -202,8 +246,9 @@ public class VerifiablePresentation {
     }
 
     func toJson(_ forSign: Bool) -> String {
-        // TODO
-        return "TODO"
+        let generator = JsonGenerator()
+        toJson(generator, forSign)
+        return generator.toString()
     }
 
     func toString() -> String {
@@ -219,7 +264,7 @@ public class VerifiablePresentation {
         do {
             signer = try store.loadDid(did)
         } catch {
-            throw DIDError.unknownFailure("Can not load DID") // TODO:
+            throw DIDError.unknownFailure("Can not load DID")
         }
 
         // If no 'signKey' provided, use default public key. Otherwise,

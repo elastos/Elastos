@@ -82,6 +82,7 @@ public class VerifiablePresentationBuilder {
         // invalidate builder.
         let vp = self._presentation!
         self._presentation = nil
+
         return vp
     }
 }
