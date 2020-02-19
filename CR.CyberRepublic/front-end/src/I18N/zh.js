@@ -1151,6 +1151,7 @@ const zh = {
   'profile.detail.no': '否',
 
   'profile.popover.email': '邮箱',
+  'profile.popover.did': 'DID',
   'profile.popover.name': '姓名',
   'profile.popover.copy': '复制',
   'profile.popover.viewProfile': '查看个人资料',

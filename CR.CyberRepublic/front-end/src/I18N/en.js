@@ -1187,6 +1187,7 @@ const en = {
   'profile.detail.no': 'No',
 
   'profile.popover.email': 'Email',
+  'profile.popover.did': 'DID',
   'profile.popover.name': 'Name',
   'profile.popover.copy': 'Copy',
   'profile.popover.viewProfile': 'View Profile',
