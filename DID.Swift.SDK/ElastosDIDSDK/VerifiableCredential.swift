@@ -55,8 +55,7 @@ public class VerifiableCredential: DIDObject {
     }
 
     public func getTypes() -> [String]? {
-        // TODO:
-        return nil
+        return self._types
     }
 
     func appendType(_ type: String) {
@@ -180,7 +179,6 @@ public class VerifiableCredential: DIDObject {
                 return false
             }
         default:
-            // TODO:
             return false
         }
 
@@ -204,7 +202,6 @@ public class VerifiableCredential: DIDObject {
                     return false
                 }
             default:
-                // TODO:
                 return false
             }
         }
@@ -245,11 +242,9 @@ public class VerifiableCredential: DIDObject {
             return false
         }
 
-        var inputs: [Data] = []
-        inputs.append(toJson(true, true).data(using: .utf8)!)
-
-        return try issuerDoc!.verifyEx(self.proof.verificationMethod,
-                                       self.proof.signature, inputs)
+        return try issuerDoc!.verify(using: self.proof.verificationMethod,
+                                    signature: self.proof.signature,
+                                    toJson(true, true).data(using: .utf8)!)
     }
 
     public var isGenuine: Bool {
@@ -308,24 +303,36 @@ public class VerifiableCredential: DIDObject {
         return (getTypes() != nil && self._subject != nil)
     }
 
-    class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredential {
+    func parse(_ node: JsonNode, _ ref: DID?) throws  {
         let serializer = JsonSerializer(node)
         var options: JsonSerializer.Options
+        let error = { (des) -> DIDError in
+            return DIDError.malformedCredential(des)
+        }
 
-        // TODO:
+        let arrayNode = node.getArrayNode(Constants.TYPE)
+        guard let _ = arrayNode else {
+            throw DIDError.malformedCredential("missing credential type")
+        }
+        for item in arrayNode! {
+            appendType(item.toString())
+        }
 
         options = JsonSerializer.Options()
                                 .withOptional()
                                 .withRef(ref)
                                 .withHint("credential issuer")
+                                .withError(error)
         let issuer = try serializer.getDID(Constants.ISSUER, options)
 
         options = JsonSerializer.Options()
                                 .withHint("credential expirationDate")
+                                .withError(error)
         let issuanceDate = try serializer.getDate(Constants.ISSUANCE_DATE, options)
 
         options = JsonSerializer.Options()
                                 .withHint("credential id")
+                                .withError(error)
         let id = try serializer.getDIDURL(Constants.ID, options)
 
         var subNode = node.getNode(Constants.CREDENTIAL_SUBJECT)
@@ -340,17 +347,15 @@ public class VerifiableCredential: DIDObject {
         }
         let proof = try VerifiableCredentialProof.fromJson(subNode!, ref)
 
-        let credential = VerifiableCredential()
-        credential.setIssuer(issuer)
-        credential.setIssuanceDate(issuanceDate)
-        credential.setSubject(subject)
-        credential.setId(id!)
-        credential.setProof(proof)
+        setIssuer(issuer)
+        setIssuanceDate(issuanceDate)
+        setSubject(subject)
+        setId(id!)
+        setProof(proof)
 
-        if let _ = credential.getIssuer() {
-            credential.setIssuer(credential.subject.did)
+        if let _ = getIssuer() {
+            setIssuer(self.subject.did)
         }
-        return credential
     }
 
     class func fromJson(_ json: Data) throws -> VerifiableCredential {
@@ -364,7 +369,11 @@ public class VerifiableCredential: DIDObject {
         } catch {
             throw DIDError.didResolveError("Parse resolve result error")
         }
-        return try fromJson(JsonNode(node), nil)
+
+        let credential = VerifiableCredential()
+        try credential.parse(JsonNode(node), nil)
+
+        return credential
     }
 
     class func fromJson(_ json: String) throws -> VerifiableCredential {

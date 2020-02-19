@@ -44,19 +44,12 @@ public class VerifiableCredentialBuilder {
         return self
     }
 
-    private func getMaxExpires() -> Date {
-        let date: Date = Date()
-
-        // TODO:
-        return date
-    }
-
     public func withDefaultExpirationDate() throws -> VerifiableCredentialBuilder {
         guard let _ = self._credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
 
-        self._credential!.setExpirationDate(getMaxExpires())
+        self._credential!.setExpirationDate(DateHelper.maxExpirationDate())
         return self
     }
 
@@ -65,12 +58,12 @@ public class VerifiableCredentialBuilder {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
 
-        var date: Date = expirationDate
-        let maxExpirationDate = getMaxExpires()
-        if DateHelper.isExpired(expirationDate, maxExpirationDate) {
-            date = maxExpirationDate
+        let maxExpirationDate = DateHelper.maxExpirationDate()
+        guard !DateHelper.isExpired(expirationDate, maxExpirationDate) else {
+            throw DIDError.illegalArgument()
         }
-        self._credential!.setExpirationDate(date)
+
+        self._credential!.setExpirationDate(expirationDate)
         return self
     }
 
@@ -82,12 +75,7 @@ public class VerifiableCredentialBuilder {
             throw DIDError.illegalArgument()
         }
 
-        /*
-        TODO:
-        var subject = VerifiableCredentialSubject(self.target)
-        // subject.property(ofName: )
-        credential!.subject = subject
-        */
+        // TODO:
         return self
     }
 
@@ -99,7 +87,7 @@ public class VerifiableCredentialBuilder {
             throw DIDError.illegalArgument()
         }
 
-        // TODO
+        // TODO:
         return self
     }
 
@@ -107,9 +95,8 @@ public class VerifiableCredentialBuilder {
         guard let _ = self._credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
-        /* guard node.count ?? 0 > 0 else {
-            throw DIDError.illegalArgument()
-        } */
+
+        // TODO:
 
         let subject = VerifiableCredentialSubject(self._target)
         subject.setProperties(JsonNode(data))
@@ -145,6 +132,7 @@ public class VerifiableCredentialBuilder {
         // invalidate builder
         let credential = self._credential!
         self._credential = nil
+
         return credential
     }
 }
