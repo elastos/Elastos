@@ -345,31 +345,30 @@ public final class DIDStore {
 		return synchronizeAsync((c, l) -> l, storepass);
 	}
 
-	public DIDDocument newDid(String alias, String storepass)
+	public DIDDocument newDid(int index, String alias, String storepass)
 			throws DIDStoreException {
-		if (storepass == null || storepass.isEmpty())
-			throw new IllegalArgumentException("Invalid password.");
+		if (index < 0 || storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException();
 
-		int nextIndex = storage.loadPrivateIdentityIndex();
 		HDKey privateIdentity = loadPrivateIdentity(storepass);
 		if (privateIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
 
-		HDKey.DerivedKey key = privateIdentity.derive(nextIndex++);
+		HDKey.DerivedKey key = privateIdentity.derive(index);
 		try {
 			DID did = new DID(DID.METHOD, key.getAddress());
-			DIDURL id = new DIDURL(did, "primary");
+			DIDDocument doc = loadDid(did);
+			if (doc != null)
+				throw new DIDStoreException("DID already exists.");
 
+			DIDURL id = new DIDURL(did, "primary");
 			storePrivateKey(did, id, key.serialize(), storepass);
 
 			DIDDocument.Builder db = new DIDDocument.Builder(did, this);
 			db.addAuthenticationKey(id, key.getPublicKeyBase58());
-			DIDDocument doc = db.seal(storepass);
+			doc = db.seal(storepass);
 			doc.getMeta().setAlias(alias);
 			storeDid(doc);
-
-			storage.storePrivateIdentityIndex(nextIndex);
-
 			return doc;
 		} finally {
 			privateIdentity.wipe();
@@ -377,8 +376,35 @@ public final class DIDStore {
 		}
 	}
 
+	public DIDDocument newDid(int index, String storepass) throws DIDStoreException {
+		return newDid(index, null, storepass);
+	}
+
+	public DIDDocument newDid(String alias, String storepass)
+			throws DIDStoreException {
+		int nextIndex = storage.loadPrivateIdentityIndex();
+		DIDDocument doc = newDid(nextIndex++, alias, storepass);
+		storage.storePrivateIdentityIndex(nextIndex);
+		return doc;
+	}
+
 	public DIDDocument newDid(String storepass) throws DIDStoreException {
 		return newDid(null, storepass);
+	}
+
+	public DID getDid(int index, String storepass) throws DIDStoreException {
+		if (index < 0 || storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException();
+
+		HDKey privateIdentity = loadPrivateIdentity(storepass);
+		if (privateIdentity == null)
+			throw new DIDStoreException("DID Store not contains private identity.");
+
+		HDKey.DerivedKey key = privateIdentity.derive(index);
+		DID did = new DID(DID.METHOD, key.getAddress());
+		privateIdentity.wipe();
+		key.wipe();
+		return did;
 	}
 
 	public String publishDid(DID did, int confirms,
@@ -1034,6 +1060,7 @@ public final class DIDStore {
 		if (did == null)
 			throw new IllegalArgumentException();
 
+		didCache.remove(did);
 		return storage.deleteDid(did);
 	}
 
@@ -1232,6 +1259,7 @@ public final class DIDStore {
 		if (did == null || id == null)
 			throw new IllegalArgumentException();
 
+		vcCache.remove(id);
 		return storage.deleteCredential(did, id);
 	}
 

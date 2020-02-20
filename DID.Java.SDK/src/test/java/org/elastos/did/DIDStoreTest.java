@@ -246,6 +246,31 @@ public class DIDStoreTest {
     }
 
 	@Test
+	public void testCreateDIDByIndex() throws DIDException {
+	    TestData testData = new TestData();
+	    DIDStore store = testData.setup(true);
+	    testData.initIdentity();
+
+	    String alias = "my first did";
+
+	    DID did = store.getDid(0, TestConfig.storePass);
+	    DIDDocument doc = store.newDid(0, alias, TestConfig.storePass);
+	    assertTrue(doc.isValid());
+	    assertEquals(did, doc.getSubject());
+
+	    Exception e = assertThrows(DIDStoreException.class, () -> {
+	        store.newDid(alias, TestConfig.storePass);
+	    });
+	    assertEquals("DID already exists.", e.getMessage());
+
+	    boolean success = store.deleteDid(did);
+	    assertTrue(success);
+	    doc = store.newDid(alias, TestConfig.storePass);
+	    assertTrue(doc.isValid());
+	    assertEquals(did, doc.getSubject());
+	}
+
+	@Test
 	public void testUpdateDid() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setup(true);
