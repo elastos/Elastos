@@ -134,6 +134,8 @@ _DIDStore_ContainsPrivateIdentity
 _DIDStore_InitPrivateIdentityFromRootKey
 _DIDStore_InitPrivateIdentity
 _DIDStore_NewDID
+_DIDStore_NewDIDByIndex
+_DIDStore_GetDIDByIndex
 _DIDStore_Sign
 _DIDStore_Signv
 _DIDStore_ResolveDID

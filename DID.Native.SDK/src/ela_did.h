@@ -2077,13 +2077,37 @@ DID_API int DIDStore_Synchronize(DIDStore *store, const char *storepass);
  * @param
  *      store                     [in] THe handle to DIDStore.
  * @param
+ *      storepass                 [in] Password for DIDStore.
+ * @param
  *      alias                     [in] The nickname of DID.
  * @return
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
  */
-DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char *alias);
+DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass,
+        const char *alias);
 
+DID_API DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, int index,
+        const char *storepass, const char *alias);
+
+/**
+ * \~English
+ * Only get DID object by index, not create document and so on.
+ *
+ * @param
+ *      store                     [in] THe handle to DIDStore.
+ * @param
+ *      alias                     [out] The DID object.
+ * @param
+ *      index                     [int] The index of DerivedKey from HDKey.
+ * @param
+ *      storepass                 [int] Password for DIDStore.
+ * @return
+ *      If no error occurs, return 0.
+ *      Otherwise, return -1.
+ */
+DID_API int DIDStore_GetDIDByIndex(DIDStore *store, DID *did, int index,
+        const char *storepass);
 /**
  * \~English
  * Create new DID Document and store in the DID Store.

@@ -90,6 +90,58 @@ static void test_didstore_newdid(void)
     TestData_Free();
 }
 
+static void test_didstore_newdid_byindex(void)
+{
+    char _path[PATH_MAX], newalias[ELA_MAX_ALIAS_LEN];
+    const char *storePath;
+    char *path;
+    DIDDocument *doc, *loaddoc;
+    DIDStore *store;
+    bool hasidentity, isEquals;
+    DID did, ndid;
+    int rc;
+
+    storePath = get_store_path(_path, "/servet");
+    store = TestData_SetupStore(storePath);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(store);
+
+    path = get_file_path(_path, PATH_MAX, 3, store->root, PATH_STEP, META_FILE);
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
+
+    const char *mnemonic = Mnemonic_Generate(0);
+    rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", storepass, 0, false);
+    Mnemonic_Free((void*)mnemonic);
+    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+
+    doc = DIDStore_NewDIDByIndex(store, 0, storepass, "did0 by index");
+    CU_ASSERT_PTR_NOT_NULL(doc);
+    DID_Copy(&did, DIDDocument_GetSubject(doc));
+
+    rc = DIDStore_GetDIDByIndex(store, &ndid, 0, storepass);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    isEquals = DID_Equals(&did, &ndid);
+    CU_ASSERT_TRUE(isEquals);
+    DIDDocument_Destroy(doc);
+
+    doc = DIDStore_LoadDID(store, &ndid);
+    CU_ASSERT_PTR_NOT_NULL(doc);
+    DIDDocument_Destroy(doc);
+
+    doc = DIDStore_NewDID(store, storepass, "did0");
+    CU_ASSERT_PTR_NULL(doc);
+    CU_ASSERT_TRUE(DIDStore_DeleteDID(store, &did));
+
+    doc = DIDStore_NewDID(store, storepass, "did0");
+    CU_ASSERT_PTR_NOT_NULL(doc);
+
+    isEquals = DID_Equals(&did, DIDDocument_GetSubject(doc));
+    CU_ASSERT_TRUE(isEquals);
+    DIDDocument_Destroy(doc);
+
+    TestData_Free();
+}
+
 static void test_didstore_newdid_withouAlias(void)
 {
     char _storepath[PATH_MAX], _path[PATH_MAX], newalias[ELA_MAX_ALIAS_LEN];
@@ -257,6 +309,7 @@ static void test_didstore_privateidentity_compatibility(void)
     CU_ASSERT_PTR_NOT_NULL(doc);
 
     DID_Copy(&did, &doc->did);
+    DIDStore_DeleteDID(store, &did);
     DIDDocument_Destroy(doc);
 
     rc = DIDStore_InitPrivateIdentityFromRootKey(store, ExtendedkeyBase,
@@ -285,11 +338,12 @@ static int didstore_initial_test_suite_cleanup(void)
 
 static CU_TestInfo cases[] = {
     {  "test_didstore_newdid",                test_didstore_newdid               },
+    {  "test_didstore_newdid_byindex",        test_didstore_newdid_byindex       },
     {  "test_didstore_newdid_withouAlias",    test_didstore_newdid_withouAlias   },
     {  "test_didstore_initial_error",         test_didstore_initial_error        },
     {  "test_didstore_privateIdentity_error", test_didstore_privateIdentity_error},
     {  "test_didstore_newdid_emptystore",     test_didstore_newdid_emptystore    },
-    { "test_didstore_privateidentity_compatibility", test_didstore_privateidentity_compatibility},
+    {  "test_didstore_privateidentity_compatibility", test_didstore_privateidentity_compatibility},
     {  NULL,                                  NULL                               }
 };
 

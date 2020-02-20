@@ -1728,16 +1728,28 @@ int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *extende
     return store_index(store, 0);
 }
 
+static DerivedKey *get_derivedkey(DIDStore *store, DerivedKey *derivedkey, int index,
+        const char *storepass)
+{
+    HDKey _identity, *privateIdentity;
+    DerivedKey *dkey;
+
+    if (!store || !derivedkey || index < 0 || !storepass || !*storepass)
+        return NULL;
+
+    privateIdentity = load_privateIdentity(store, storepass, &_identity);
+    if (!privateIdentity)
+        return NULL;
+
+    dkey = HDKey_GetDerivedKey(privateIdentity, index, derivedkey);
+    HDKey_Wipe(privateIdentity);
+    return dkey;
+}
+
 DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char *alias)
 {
     int index;
-    char publickeybase58[MAX_PUBLICKEY_BASE58];
-    HDKey _identity, *privateIdentity;
-    DerivedKey _derivedkey, *derivedkey;
     DIDDocument *document;
-
-    DID did;
-    int rc;
 
     if (!store || !storepass || !*storepass)
         return NULL;
@@ -1746,12 +1758,49 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
     if (index < 0)
         return NULL;
 
-    privateIdentity = load_privateIdentity(store, storepass, &_identity);
-    if (!privateIdentity)
+    document = DIDStore_NewDIDByIndex(store, index++, storepass, alias);
+    if (!document)
         return NULL;
 
-    derivedkey = HDKey_GetDerivedKey(privateIdentity, index++, &_derivedkey);
-    HDKey_Wipe(privateIdentity);
+    if (store_index(store, index) == -1) {
+        DIDStore_DeleteDID(store, DIDDocument_GetSubject(document));
+        DIDDocument_Destroy(document);
+        return NULL;
+    }
+
+    return document;
+}
+
+//caller provide DID object.
+int DIDStore_GetDIDByIndex(DIDStore *store, DID *did, int index, const char *storepass)
+{
+    DerivedKey _derivedkey, *derivedkey;
+    int rc;
+
+    if (!store || !did || index < 0 || !storepass || !*storepass)
+        return -1;
+
+    derivedkey = get_derivedkey(store, &_derivedkey, index++, storepass);
+    if (!derivedkey)
+        return -1;
+
+    rc = init_did(did, DerivedKey_GetAddress(derivedkey));
+    DerivedKey_Wipe(derivedkey);
+    return rc;
+}
+
+DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, int index,
+        const char *storepass, const char *alias)
+{
+    char publickeybase58[MAX_PUBLICKEY_BASE58];
+    DerivedKey _derivedkey, *derivedkey;
+    DIDDocument *document;
+    DID did;
+
+    if (!store || index < 0 || !storepass || !*storepass)
+        return NULL;
+
+    derivedkey = get_derivedkey(store, &_derivedkey, index, storepass);
     if (!derivedkey)
         return NULL;
 
@@ -1759,6 +1808,11 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
         DerivedKey_Wipe(derivedkey);
         return NULL;
     }
+
+    //check did is exist or not
+    document = DIDStore_LoadDID(store, &did);
+    if (document)
+        return NULL;
 
     if (store_default_privatekey(store, storepass,
             DerivedKey_GetAddress(derivedkey),
@@ -1777,13 +1831,6 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
     }
 
     if (DIDStore_StoreDID(store, document, alias) == -1) {
-        DIDStore_DeleteDID(store, &did);
-        DIDDocument_Destroy(document);
-        return NULL;
-    }
-
-    rc = store_index(store, index);
-    if (rc < 0) {
         DIDStore_DeleteDID(store, &did);
         DIDDocument_Destroy(document);
         return NULL;
