@@ -13,6 +13,19 @@ To spur growth of Elastos, Cyber Republic, and blockchain technology in Asia and
 Bitwork will join forces to create a strong council committee, which focuses on driving the development and marketing of
 cryptocurrency exchanges and blockchain communities.
 
+## Tokenomics - Addressing the Token Burn and Inflation Professionally
+
+Our priority in addressing the potential Token Burn is two fold:
+
+1. **Establish a Cryptocurrency Exchange Team** - we need experts to analyze the current volume, market sentiment and liquidity
+of ELA on current exchanges. At the moment we have no data to predict the effect of any token burn or tokenomics changes, it is
+imperative that we create a predictive model before we conduct any burn so that we may learn from our actions.
+
+2. **Conduct a partial burn to test our data models** - we would agree to a burn but only if it is properly advised by experts.
+Burning tokens in a vacuum with zero marketing or predictive models is a waste of time. Are there even investors or traders
+waiting for an opportunity to buy ELA? Do investors even look at total market cap to base their decisions? These are 
+fundamental questions we need to answer first. 
+
 
 ## The Council Committee
 

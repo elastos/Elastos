@@ -23,36 +23,36 @@ const middleware = (render, props) => render
  * @returns {*}
  * @constructor
  */
-const App = (maintenanceMode) => (
+const App = (props) => (
   <div>
     <Helmet>
-      <meta name="cr-env" content={process.env.NODE_ENV} />
+      <meta name="cr-env" content={process.env.NODE_ENV}/>
       <meta
-        name="cr-version-number"
-        content={
-          process.env.CR_VERSION ? `${process.env.CR_VERSION}` : 'unknown'
-        }
+      name="cr-version-number"
+      content={
+        process.env.CR_VERSION ? `${process.env.CR_VERSION}` : 'unknown'
+      }
       />
       {process.env.NODE_ENV === 'production' && (
-        <script defer={true} src="/assets/js/rollbar_prod.js" />
+      <script defer={true} src="/assets/js/rollbar_prod.js"/>
       )}
       {process.env.NODE_ENV === 'staging' && (
-        <script defer={true} src="/assets/js/rollbar_staging.js" />
+      <script defer={true} src="/assets/js/rollbar_staging.js"/>
       )}
       {process.env.NODE_ENV === 'production' && (
-        <script
-          async={true}
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GA_ID}`}
-        />
+      <script
+      async={true}
+      src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GA_ID}`}
+      />
       )}
       {process.env.NODE_ENV === 'production' && (
-        <script>{`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${process.env.GA_ID}');`}</script>
+      <script>{`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${process.env.GA_ID}');`}</script>
       )}
       {window.location.pathname === '/' && (
-        <script defer={true} src="/assets/js/elastos.js" />
+      <script defer={true} src="/assets/js/elastos.js"/>
       )}
     </Helmet>
-    {maintenanceMode ?
+    {props.maintenanceMode ?
     <div className="maintenance-mode">
 
       <img src="/assets/images/logo.svg" alt="Cyber Republic" width="20%"/>
@@ -81,11 +81,13 @@ const App = (maintenanceMode) => (
   </div>
 )
 
+
 const render = (maintenanceMode = false) => {
+
   ReactDOM.render(
     <Provider store={store}>
       <ConnectedRouter middleware={middleware} history={store.history}>
-        <App maintenanceModel={maintenanceMode}/>
+        <App maintenanceMode={maintenanceMode}/>
       </ConnectedRouter>
     </Provider>,
     document.getElementById('ebp-root')
@@ -142,11 +144,13 @@ if (sessionStorage.getItem('api-token')) {
       error: () => {
         sessionStorage.clear()
         localStorage.removeItem('api-token')
+
         render()
       }
     }).catch((err) => {
       // Promise catch
       // HACK - we don't have a formal maintenance mode yet, but if current_user fails we render
+
       render(true)
     })
   } catch (err) {
