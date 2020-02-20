@@ -80,6 +80,10 @@ export const api_request = (opts = {}) => {
     })
   }
 
+  /**
+   * This should not catch the error, throw it back to caller to allow
+   * the caller to handle it
+   */
   return fetch(server_url, option).then((response) => {
 
     if (response.status === 200) {
@@ -104,10 +108,13 @@ export const api_request = (opts = {}) => {
 
     // TODO: this isn't elegant, nothing is returned to the caller so there is no graceful error
     console.error(data.error)
-  }).catch((err) => {
+  })/*
+  // DO NOT DO THIS - or throw it again
+  .catch((err) => {
+    debugger
     // then we have this so the first then block can come straight here I guess?
     console.error(err)
-  })
+  })*/
 }
 
 /*

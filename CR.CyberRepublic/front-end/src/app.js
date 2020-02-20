@@ -15,7 +15,15 @@ import './style/mobile.scss'
 
 const middleware = (render, props) => render
 
-const App = () => (
+/**
+ * This is the entry point, we do the following in order
+ *
+ * 1. Always fetch /api/user/current_user at init, this sets the user data from the token and a DB call
+ * 2. Then render the App to ebp-root
+ * @returns {*}
+ * @constructor
+ */
+const App = (maintenanceMode) => (
   <div>
     <Helmet>
       <meta name="cr-env" content={process.env.NODE_ENV} />
@@ -44,29 +52,40 @@ const App = () => (
         <script defer={true} src="/assets/js/elastos.js" />
       )}
     </Helmet>
+    {maintenanceMode ?
+    <div className="maintenance-mode">
+
+      <img src="/assets/images/logo.svg" alt="Cyber Republic" width="20%"/>
+
+      <h3>Maintenance Mode</h3>
+
+      Sorry our website is currently down due to maintenance.
+
+    </div> :
     <Switch id="ebp-main">
       {_.map(config.router, (item, i) => {
         const props = _.omit(item, ['page', 'path', 'type'])
         const R = item.type || Route
         return (
-          <R
-            path={item.path}
-            key={i}
-            exact={true}
-            component={item.page}
-            {...props}
-          />
+        <R
+        path={item.path}
+        key={i}
+        exact={true}
+        component={item.page}
+        {...props}
+        />
         )
       })}
     </Switch>
+    }
   </div>
 )
 
-const render = () => {
+const render = (maintenanceMode = false) => {
   ReactDOM.render(
     <Provider store={store}>
       <ConnectedRouter middleware={middleware} history={store.history}>
-        <App />
+        <App maintenanceModel={maintenanceMode}/>
       </ConnectedRouter>
     </Provider>,
     document.getElementById('ebp-root')
@@ -79,51 +98,61 @@ if (localStorage.getItem('api-token') && !sessionStorage.getItem('api-token')) {
 
 if (sessionStorage.getItem('api-token')) {
   const userRedux = store.getRedux('user')
-  api_request({
-    path: '/api/user/current_user',
-    success: data => {
-      // store user in redux
-      const is_admin = permissions.isAdmin(data.role)
-      const is_leader = permissions.isLeader(data.role)
-      const is_council = permissions.isCouncil(data.role)
-      const is_secretary = permissions.isSecretary(data.role)
 
-      store.dispatch(userRedux.actions.is_leader_update(is_leader))
-      store.dispatch(userRedux.actions.is_admin_update(is_admin))
-      store.dispatch(userRedux.actions.is_council_update(is_council))
-      store.dispatch(userRedux.actions.is_secretary_update(is_secretary))
+  try {
+    api_request({
+      path: '/api/user/current_user',
+      success: data => {
+        // store user in redux
+        const is_admin = permissions.isAdmin(data.role)
+        const is_leader = permissions.isLeader(data.role)
+        const is_council = permissions.isCouncil(data.role)
+        const is_secretary = permissions.isSecretary(data.role)
 
-      store.dispatch(userRedux.actions.is_login_update(true))
-      store.dispatch(userRedux.actions.email_update(data.email))
-      store.dispatch(userRedux.actions.username_update(data.username))
-      store.dispatch(userRedux.actions.profile_update(data.profile))
-      store.dispatch(userRedux.actions.role_update(data.role))
-      store.dispatch(userRedux.actions.current_user_id_update(data._id))
-      store.dispatch(userRedux.actions.circles_update(_.values(data.circles)))
-      store.dispatch(
+        store.dispatch(userRedux.actions.is_leader_update(is_leader))
+        store.dispatch(userRedux.actions.is_admin_update(is_admin))
+        store.dispatch(userRedux.actions.is_council_update(is_council))
+        store.dispatch(userRedux.actions.is_secretary_update(is_secretary))
+
+        store.dispatch(userRedux.actions.is_login_update(true))
+        store.dispatch(userRedux.actions.email_update(data.email))
+        store.dispatch(userRedux.actions.username_update(data.username))
+        store.dispatch(userRedux.actions.profile_update(data.profile))
+        store.dispatch(userRedux.actions.role_update(data.role))
+        store.dispatch(userRedux.actions.current_user_id_update(data._id))
+        store.dispatch(userRedux.actions.circles_update(_.values(data.circles)))
+        store.dispatch(
         userRedux.actions.subscribers_update(_.values(data.subscribers))
-      )
-      store.dispatch(userRedux.actions.loading_update(false))
+        )
+        store.dispatch(userRedux.actions.loading_update(false))
 
-      // Segment - pass identify
-      const userProfile = data.profile
+        // Segment - pass identify
+        const userProfile = data.profile
 
-      // eslint-disable-next-line no-undef
-      analytics.identify(data._id, {
-        id: data._id,
-        title: data.role,
-        gender: userProfile.gender,
-        createdAt: data.createdAt
-      })
+        // eslint-disable-next-line no-undef
+        analytics.identify(data._id, {
+          id: data._id,
+          title: data.role,
+          gender: userProfile.gender,
+          createdAt: data.createdAt
+        })
 
-      render()
-    },
-    error: () => {
-      sessionStorage.clear()
-      localStorage.removeItem('api-token')
-      render()
-    }
-  })
+        render()
+      },
+      error: () => {
+        sessionStorage.clear()
+        localStorage.removeItem('api-token')
+        render()
+      }
+    }).catch((err) => {
+      // Promise catch
+      // HACK - we don't have a formal maintenance mode yet, but if current_user fails we render
+      render(true)
+    })
+  } catch (err) {
+    render(true)
+  }
+
 } else {
   render()
 }
