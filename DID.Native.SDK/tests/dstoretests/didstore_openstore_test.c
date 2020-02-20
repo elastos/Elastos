@@ -134,7 +134,7 @@ static void test_openstore_file_exist(void)
     rc = DIDStore_ExportMnemonic(store, password, mnemonic, sizeof(mnemonic));
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
-    rc = DIDStore_ListDID(store, get_did, 0, NULL);
+    rc = DIDStore_ListDID(store, 0, get_did, NULL);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 }
 

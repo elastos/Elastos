@@ -33,7 +33,7 @@ static void test_idchain_publishdid(void)
     did = DIDDocument_GetSubject(document);
     CU_ASSERT_PTR_NOT_NULL(did);
 
-    txid = (char *)DIDStore_PublishDID(store, did, signkey, storepass);
+    txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
     free(txid);
 
@@ -61,7 +61,7 @@ static void test_idchain_publishdid(void)
     signkey = DIDDocument_GetDefaultPublicKey(doc);
     CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
 
-    txid = (char *)DIDStore_PublishDID(store, did, signkey, storepass);
+    txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
     free(txid);
 
@@ -134,7 +134,7 @@ static int idchain_operation_test_suite_init(void)
 
     mnemonic = Mnemonic_Generate(0);
     printf("\n#### mnemonic: %s", mnemonic);
-    rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", storepass, 0, true);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", 0, true);
     Mnemonic_Free((char*)mnemonic);
     if (rc < 0)
         return -1;

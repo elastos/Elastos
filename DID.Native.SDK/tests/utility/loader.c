@@ -395,7 +395,7 @@ int TestData_InitIdentity(DIDStore *store)
     int rc;
 
     mnemonic = Mnemonic_Generate(0);
-    rc = DIDStore_InitPrivateIdentity(store, mnemonic, passphase, storepass, 0, false);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, passphase, 0, false);
     Mnemonic_Free((void*)mnemonic);
 
     return rc;

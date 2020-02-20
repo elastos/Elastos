@@ -43,7 +43,7 @@ static void test_didstore_newdid(void)
     CU_ASSERT_FALSE(hasidentity);
 
     const char *newmnemonic = Mnemonic_Generate(0);
-    rc = DIDStore_InitPrivateIdentity(store, newmnemonic, "", storepass, 0, false);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, newmnemonic, "", 0, false);
     Mnemonic_Free((void*)newmnemonic);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
@@ -98,7 +98,7 @@ static void test_didstore_newdid_byindex(void)
     DIDDocument *doc, *loaddoc;
     DIDStore *store;
     bool hasidentity, isEquals;
-    DID did, ndid;
+    DID did, *ndid;
     int rc;
 
     storePath = get_store_path(_path, "/servet");
@@ -109,23 +109,24 @@ static void test_didstore_newdid_byindex(void)
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
     const char *mnemonic = Mnemonic_Generate(0);
-    rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", storepass, 0, false);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", 0, false);
     Mnemonic_Free((void*)mnemonic);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
-    doc = DIDStore_NewDIDByIndex(store, 0, storepass, "did0 by index");
+    doc = DIDStore_NewDIDByIndex(store, storepass, 0, "did0 by index");
     CU_ASSERT_PTR_NOT_NULL(doc);
     DID_Copy(&did, DIDDocument_GetSubject(doc));
 
-    rc = DIDStore_GetDIDByIndex(store, &ndid, 0, storepass);
-    CU_ASSERT_NOT_EQUAL(rc, -1);
+    ndid = DIDStore_GetDIDByIndex(store, storepass, 0);
+    CU_ASSERT_PTR_NOT_NULL(ndid);
 
-    isEquals = DID_Equals(&did, &ndid);
+    isEquals = DID_Equals(&did, ndid);
     CU_ASSERT_TRUE(isEquals);
     DIDDocument_Destroy(doc);
 
-    doc = DIDStore_LoadDID(store, &ndid);
+    doc = DIDStore_LoadDID(store, ndid);
     CU_ASSERT_PTR_NOT_NULL(doc);
+    DID_Destroy(ndid);
     DIDDocument_Destroy(doc);
 
     doc = DIDStore_NewDID(store, storepass, "did0");
@@ -163,7 +164,7 @@ static void test_didstore_newdid_withouAlias(void)
     CU_ASSERT_FALSE(hasidentity);
 
     const char *newmnemonic = Mnemonic_Generate(0);
-    rc = DIDStore_InitPrivateIdentity(store, newmnemonic, "", storepass, 0, false);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, newmnemonic, "", 0, false);
     Mnemonic_Free((void*)newmnemonic);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
@@ -238,10 +239,10 @@ static void test_didstore_privateIdentity_error(void)
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
-    rc = DIDStore_InitPrivateIdentity(store, "", "", storepass, 0, false);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, "", "", 0, false);
     CU_ASSERT_EQUAL(rc, -1);
 
-    rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", "", 0, false);
+    rc = DIDStore_InitPrivateIdentity(store, "", mnemonic, "", 0, false);
     CU_ASSERT_EQUAL(rc, -1);
 
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
@@ -301,7 +302,7 @@ static void test_didstore_privateidentity_compatibility(void)
     store = TestData_SetupStore(storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-    rc = DIDStore_InitPrivateIdentity(store, mnemonic, passphrase, storepass,
+    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, passphrase,
             0, false);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
@@ -312,8 +313,8 @@ static void test_didstore_privateidentity_compatibility(void)
     DIDStore_DeleteDID(store, &did);
     DIDDocument_Destroy(doc);
 
-    rc = DIDStore_InitPrivateIdentityFromRootKey(store, ExtendedkeyBase,
-            storepass, true);
+    rc = DIDStore_InitPrivateIdentityFromRootKey(store, storepass, ExtendedkeyBase,
+            true);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     doc = DIDStore_NewDID(store, storepass, "identity test2");

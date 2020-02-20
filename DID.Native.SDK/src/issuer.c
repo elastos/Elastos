@@ -154,8 +154,8 @@ Credential *Issuer_CreateCredential(DID *did, const char *fragment, Issuer *issu
     data = Credential_ToJson(cred, 0, 1);
     if (!data)
         goto errorExit;
-    rc = DIDStore_Sign(store, &issuer->signer, &issuer->signkey,
-            storepass, signature, 1, (unsigned char*)data, strlen(data));
+    rc = DIDStore_Sign(store, storepass, &issuer->signer, &issuer->signkey,
+            signature, 1, (unsigned char*)data, strlen(data));
     free((char*)data);
     if (rc)
         goto errorExit;

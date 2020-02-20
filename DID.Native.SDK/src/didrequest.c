@@ -142,7 +142,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
     }
 
     op = operation[type];
-    rc = DIDStore_Sign(store, did, signKey, storepass, signature, 4,
+    rc = DIDStore_Sign(store, storepass, did, signKey, signature, 4,
             (unsigned char*)spec, strlen(spec), (unsigned char*)op, strlen(op),
             (unsigned char *)prevtxid, strlen(prevtxid),
             (unsigned char*)payload, strlen(payload));

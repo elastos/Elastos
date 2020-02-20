@@ -96,8 +96,8 @@ static void test_idchain_restore(void)
     store = TestData_SetupStore(path);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-    rc = DIDStore_InitPrivateIdentity(store, TestData_LoadRestoreMnemonic(),
-        "secret", storepass, 0, true);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, TestData_LoadRestoreMnemonic(),
+        "secret", 0, true);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
     printf("Synchronizing from IDChain...");
@@ -106,7 +106,7 @@ static void test_idchain_restore(void)
     printf("OK!\n");
 
     memset(&dids, 0, sizeof(DIDs));
-    rc = DIDStore_ListDID(store, get_did, 0, (void*)&dids);
+    rc = DIDStore_ListDID(store, 0, get_did, (void*)&dids);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(dids.index, 5);
 

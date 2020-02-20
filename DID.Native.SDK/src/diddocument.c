@@ -2029,7 +2029,7 @@ int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass
         return -1;
 
     va_start(inputs, count);
-    rc = DIDStore_Signv(store, DIDDocument_GetSubject(document), keyid, storepass,
+    rc = DIDStore_Signv(store, storepass, DIDDocument_GetSubject(document), keyid,
             sig, count, inputs);
     va_end(inputs);
 

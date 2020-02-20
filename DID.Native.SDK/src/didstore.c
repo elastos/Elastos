@@ -1058,7 +1058,7 @@ void DIDStore_Deinitialize()
 int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
         char *mnemonic, size_t size)
 {
-    if (!store || !mnemonic || size <= 0)
+    if (!store || !storepass || !*storepass || !mnemonic || size <= 0)
         return -1;
 
     return load_mnemonic(store, storepass, mnemonic, size);
@@ -1200,8 +1200,8 @@ bool DIDStore_DeleteDID(DIDStore *store, DID *did)
     }
 }
 
-int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDCallback *callback,
-        ELA_DID_FILTER filter, void *context)
+int DIDStore_ListDID(DIDStore *store, ELA_DID_FILTER filter,
+        DIDStore_GetDIDCallback *callback, void *context)
 {
     char path[PATH_MAX];
     DID_List_Helper dh;
@@ -1653,15 +1653,15 @@ bool DIDStore_ContainsPrivateIdentity(DIDStore *store)
     return st.st_size > 0;
 }
 
-int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
-        const char *passphrase, const char *storepass, const int language, bool force)
+int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
+        const char *mnemonic, const char *passphrase, const int language, bool force)
 {
     uint8_t extendedkey[EXTENDEDKEY_BYTES];
     char path[PATH_MAX];
     ssize_t size;
     HDKey _privateIdentity, *privateIdentity;
 
-    if (!store || !mnemonic || !*mnemonic || !storepass || !*storepass)
+    if (!store || !storepass || !*storepass|| !mnemonic || !*mnemonic)
         return -1;
 
     if (!passphrase)
@@ -1691,8 +1691,8 @@ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
     return store_index(store, 0);
 }
 
-int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *extendedkey,
-        const char *storepass, bool force)
+int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *storepass,
+        const char *extendedkey, bool force)
 {
     uint8_t seed[SEED_BYTES];
     uint8_t key[EXTENDEDKEY_BYTES];
@@ -1700,7 +1700,7 @@ int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *extende
     ssize_t size;
     HDKey _privateIdentity, *privateIdentity;
 
-    if (!store || !extendedkey || !storepass || !*storepass)
+    if (!store || !storepass || !*storepass || !extendedkey)
         return -1;
 
     //check if DIDStore has existed private identity
@@ -1728,14 +1728,16 @@ int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *extende
     return store_index(store, 0);
 }
 
-static DerivedKey *get_derivedkey(DIDStore *store, DerivedKey *derivedkey, int index,
-        const char *storepass)
+static DerivedKey *get_childkey(DIDStore *store, const char *storepass, int index,
+        DerivedKey *derivedkey)
 {
     HDKey _identity, *privateIdentity;
     DerivedKey *dkey;
 
-    if (!store || !derivedkey || index < 0 || !storepass || !*storepass)
-        return NULL;
+    assert(store);
+    assert(storepass && *storepass);
+    assert(index >= 0);
+    assert(derivedkey);
 
     privateIdentity = load_privateIdentity(store, storepass, &_identity);
     if (!privateIdentity)
@@ -1758,7 +1760,7 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
     if (index < 0)
         return NULL;
 
-    document = DIDStore_NewDIDByIndex(store, index++, storepass, alias);
+    document = DIDStore_NewDIDByIndex(store, storepass, index++, alias);
     if (!document)
         return NULL;
 
@@ -1771,36 +1773,37 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
     return document;
 }
 
-//caller provide DID object.
-int DIDStore_GetDIDByIndex(DIDStore *store, DID *did, int index, const char *storepass)
+//free DID after use it.
+DID *DIDStore_GetDIDByIndex(DIDStore *store, const char *storepass, int index)
 {
     DerivedKey _derivedkey, *derivedkey;
+    DID *did;
     int rc;
 
-    if (!store || !did || index < 0 || !storepass || !*storepass)
-        return -1;
+    if (!store || !storepass || !*storepass || index < 0)
+        return NULL;
 
-    derivedkey = get_derivedkey(store, &_derivedkey, index++, storepass);
+    derivedkey = get_childkey(store, storepass, index++, &_derivedkey);
     if (!derivedkey)
-        return -1;
+        return NULL;
 
-    rc = init_did(did, DerivedKey_GetAddress(derivedkey));
+    did = DID_New(DerivedKey_GetAddress(derivedkey));
     DerivedKey_Wipe(derivedkey);
-    return rc;
+    return did;
 }
 
-DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, int index,
-        const char *storepass, const char *alias)
+DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
+        int index, const char *alias)
 {
     char publickeybase58[MAX_PUBLICKEY_BASE58];
     DerivedKey _derivedkey, *derivedkey;
     DIDDocument *document;
     DID did;
 
-    if (!store || index < 0 || !storepass || !*storepass)
+    if (!store || !storepass || !*storepass || index < 0)
         return NULL;
 
-    derivedkey = get_derivedkey(store, &_derivedkey, index, storepass);
+    derivedkey = get_childkey(store, storepass, index, &_derivedkey);
     if (!derivedkey)
         return NULL;
 
@@ -1839,7 +1842,7 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, int index,
     return document;
 }
 
-int DIDStore_Signv(DIDStore *store, DID *did, DIDURL *key, const char *storepass,
+int DIDStore_Signv(DIDStore *store, const char *storepass, DID *did, DIDURL *key,
         char *sig, int count, va_list inputs)
 {
     const char *privatekey;
@@ -1847,7 +1850,7 @@ int DIDStore_Signv(DIDStore *store, DID *did, DIDURL *key, const char *storepass
     char path[PATH_MAX];
     int rc;
 
-    if (!store || !did || !key || !storepass || !*storepass || !sig || count <= 0)
+    if (!store || !storepass || !*storepass || !did || !key || !sig || count <= 0)
         return -1;
 
     if (get_file(path, 0, 5, store->root, DID_DIR, did->idstring, PRIVATEKEYS_DIR, key->fragment) == -1)
@@ -1869,17 +1872,17 @@ int DIDStore_Signv(DIDStore *store, DID *did, DIDURL *key, const char *storepass
     return 0;
 }
 
-int DIDStore_Sign(DIDStore *store, DID *did, DIDURL *key, const char *storepass,
+int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did, DIDURL *key,
         char *sig, int count, ...)
 {
     int rc;
     va_list inputs;
 
-    if (!store || !did || !key || !storepass || !*storepass || !sig || count <= 0)
+    if (!store || !storepass || !*storepass || !did || !key || !sig || count <= 0)
         return -1;
 
     va_start(inputs, count);
-    rc = DIDStore_Signv(store, did, key, storepass, sig, count, inputs);
+    rc = DIDStore_Signv(store, storepass, did, key, sig, count, inputs);
     va_end(inputs);
 
     return rc;
@@ -1910,14 +1913,14 @@ DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force)
     return doc;
 }
 
-const char *DIDStore_PublishDID(DIDStore *store, DID *did, DIDURL *signKey,
-        const char *storepass)
+const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
+        DIDURL *signKey)
 {
     char alias[ELA_MAX_ALIAS_LEN];
     char txid[ELA_MAX_TXID_LEN], resolvetxid[ELA_MAX_TXID_LEN];
     DIDDocument *doc, *resolvedoc;
 
-    if (!store || !did || !storepass || !*storepass)
+    if (!store || !storepass || !*storepass || !did)
         return NULL;
 
     doc = DIDStore_LoadDID(store, did);
@@ -1948,10 +1951,10 @@ const char *DIDStore_PublishDID(DIDStore *store, DID *did, DIDURL *signKey,
     return DIDBackend_Update(&store->backend, doc, signKey, storepass);
 }
 
-const char *DIDStore_DeactivateDID(DIDStore *store, DID *did, DIDURL *signKey,
-        const char *storepass)
+const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
+        DID *did, DIDURL *signKey)
 {
-    if (!store || !did || !signKey || !storepass || !*storepass)
+    if (!store || !storepass || !*storepass || !did || !signKey)
         return NULL;
 
     if (!signKey) {

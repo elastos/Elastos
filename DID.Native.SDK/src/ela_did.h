@@ -756,9 +756,10 @@ DID_API int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *builder,
  * @param
  *      builder               [in] A handle to DIDDocument Builder.
  * @param
- *      key                  [in] An identifier of public key.
+ *      keyid                 [in] An identifier of public key.
  * @param
- *      force                [in] An identifier of public key.
+ *      force                 [in] True, must to remove key; false, if key
+ *                                 is authentication or authorization key, not to remove.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -775,12 +776,9 @@ DID_API int DIDDocumentBuilder_RemovePublicKey(DIDDocumentBuilder *builder,
  * @param
  *      builder               [in] A handle to DIDDocument Builder.
  * @param
- *      key                  [in] An identifier of public key.
+ *      keyid                 [in] An identifier of public key.
  * @param
- *      controller           [in] A controller property, identifies
- *                              the controller of the corresponding private key.
- * @param
- *      key                  [in] Key property depend on key type.
+ *      key                    [in] Key property depend on key type.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -794,7 +792,7 @@ DID_API int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *builder,
  * @param
  *      builder              [in] A handle to DIDDocument Builder.
  * @param
- *      key                  [in] An identifier of public key.
+ *      keyid                 [in] An identifier of public key.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -810,7 +808,7 @@ DID_API int DIDDocumentBuilder_RemoveAuthenticationKey(DIDDocumentBuilder *build
  * @param
  *      builder              [in] A handle to DIDDocument Builder.
  * @param
- *      key                  [in] An identifier of authorization key.
+ *      keyid                [in] An identifier of authorization key.
  * @param
  *      controller           [in] A controller property, identifies
  *                              the controller of the corresponding private key.
@@ -830,12 +828,14 @@ DID_API int DIDDocumentBuilder_AddAuthorizationKey(DIDDocumentBuilder *builder,
  * A DID Document must include an authentication property.
  *
  * @param
- *      controller           [in] A controller property, identifies
- *                              the controller of the corresponding private key.
+ *      builder              [in] A handle to DIDDocument Builder.
  * @param
  *      keyid                [in] An identifier of public key.
  * @param
- *      key                  [in] Key property depend on key type.
+ *      controller           [in] A controller property, identifies
+ *                              the controller of the corresponding private key.
+ * @param
+ *      authorkeyid          [in] An identifier of authorization key.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -849,10 +849,7 @@ DID_API int DIDDocumentBuilder_AuthorizationDid(DIDDocumentBuilder *builder,
  * @param
  *      builder              [in] A handle to DIDDocument Builder.
  * @param
- *      key                  [in] An identifier of authorization key.
- * @param
- *      controller           [in] A controller property, identifies
- *                              the controller of the corresponding private key.
+ *      keyid                 [in] An identifier of authorization key.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -880,7 +877,7 @@ DID_API int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder,
  * @param
  *      builder              [in] A handle to DIDDocument Builder.
  * @param
- *      credential           [in] The handle to Credential.
+ *      credid               [in] An identifier of Credential.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -894,7 +891,7 @@ DID_API int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder,
  * @param
  *      builder              [in] A handle to DIDDocument Builder.
  * @param
- *      id                   [in] The identifier of Service.
+ *      serviceid            [in] The identifier of Service.
  * @param
  *      type                 [in] The type of Service.
  * @param
@@ -912,11 +909,7 @@ DID_API int DIDDocumentBuilder_AddService(DIDDocumentBuilder *builder,
  * @param
  *      builder              [in] A handle to DIDDocument Builder.
  * @param
- *      id                   [in] The identifier of Service.
- * @param
- *      type                 [in] The type of Service.
- * @param
- *      point                [in] ServiceEndpoint property is a valid URI.
+ *      serviceid            [in] The identifier of Service.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -970,7 +963,7 @@ DID_API ssize_t DIDDocument_GetPublicKeys(DIDDocument *document,
  * @param
  *      document             [in] A handle to DID Document.
  * @param
- *      id                   [in] An identifier of public key.
+ *      keyid                [in] An identifier of public key.
  * @return
  *      If no error occurs, return the handle to public key.
  *      Otherwise, return NULL
@@ -986,7 +979,7 @@ DID_API PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *keyid
  * @param
  *      type                 [in] The type of public key to be selected.
  * @param
- *      id                   [in] An identifier of public key to be selected.
+ *      keyid                [in] An identifier of public key to be selected.
  * @param
  *      pks                  [out] The buffer that will receive the public keys.
  * @param
@@ -1047,7 +1040,7 @@ DID_API ssize_t DIDDocument_GetAuthenticationKeys(DIDDocument *document,
  * @param
  *      document             [in] A handle to DID Document.
  * @param
- *      id                   [in] An identifier of authentication key.
+ *      keyid                [in] An identifier of authentication key.
  * @return
  *       If no error occurs, return the handle to public key.
  *       Otherwise, return NULL
@@ -1063,7 +1056,7 @@ DID_API PublicKey *DIDDocument_GetAuthenticationKey(DIDDocument *document, DIDUR
  * @param
  *      type                 [in] The type of authentication key to be selected.
  * @param
- *      id                   [in] An identifier of authentication key to be selected.
+ *      keyid                [in] An identifier of authentication key to be selected.
  * @param
  *      pks                  [out] The buffer that will receive the authentication keys.
  * @param
@@ -1136,7 +1129,7 @@ DID_API ssize_t DIDDocument_GetAuthorizationKeys(DIDDocument *document,
  * @param
  *      document             [in] A handle to DID Document.
  * @param
- *      id                   [in] An identifier of authorization key.
+ *      keyid                [in] An identifier of authorization key.
  * @return
  *       If no error occurs, return the handle to public key.
  *       Otherwise, return NULL
@@ -1152,7 +1145,7 @@ DID_API PublicKey *DIDDocument_GetAuthorizationKey(DIDDocument *document, DIDURL
  * @param
  *      type                 [in] The type of authorization key to be selected.
  * @param
- *      id                   [in] An identifier of authorization key to be selected.
+ *      keyid                [in] An identifier of authorization key to be selected.
  * @param
  *      pks                  [out] The buffer that will receive the authorization keys.
  * @param
@@ -1198,7 +1191,7 @@ DID_API ssize_t DIDDocument_GetCredentials(DIDDocument *document,
  * @param
  *      document             [in] A handle to DID Document.
  * @param
- *      id                   [in] An identifier of Credential.
+ *      credid               [in] An identifier of Credential.
  * @return
  *       If no error occurs, return the handle to Credential.
  *       Otherwise, return NULL
@@ -1214,7 +1207,7 @@ DID_API Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *cre
  * @param
  *      type                 [in] The type of Credential.
  * @param
- *      id                   [in] An identifier of Credential to be selected.
+ *      credid               [in] An identifier of Credential to be selected.
  * @param
  *      creds                [out] The buffer that will receive credentials.
  * @param
@@ -1260,7 +1253,7 @@ DID_API ssize_t DIDDocument_GetServices(DIDDocument *document, Service **service
  * @param
  *      document             [in] A handle to DID Document.
  * @param
- *      id                   [in] An identifier of Service.
+ *      serviceid            [in] An identifier of Service.
  * @return
  *       If no error occurs, return the handle to Service.
  *       Otherwise, return NULL
@@ -1276,7 +1269,7 @@ DID_API Service *DIDDocument_GetService(DIDDocument *document, DIDURL *serviceid
  * @param
  *      type                 [in] The type of Service.
  * @param
- *      id                   [in] An identifier of Service to be selected.
+ *      serviceid            [in] An identifier of Service to be selected.
  * @param
  *      services             [out] The buffer that will receive services.
  * @param
@@ -1305,7 +1298,7 @@ DID_API time_t DIDDocument_GetExpires(DIDDocument *document);
  * @param
  *      document                [in] The handle to DID Document.
  * @param
- *      key                     [in] Public key to sign.
+ *      keyid                    [in] Public key to sign.
  *                                   If key = NULL, sdk will get default key from
  *                                   DID Document.
  * @param
@@ -1327,7 +1320,7 @@ DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *s
  * @param
  *      document                [in] The handle to DID Document.
  * @param
- *      key                     [in] Public key to sign.
+ *      keyid                   [in] Public key to sign.
  *                                   If key = NULL, sdk will get default key from
  *                                   DID Document.
  * @param
@@ -1377,7 +1370,7 @@ DID_API int DIDDocument_GetAlias(DIDDocument *document, char *alias, size_t size
  * @param
  *      document                     [in] The handle to DID.
  * @param
- *      alias                        [out] The buffer that will receive transaction id.
+ *      txid                          [out] The buffer that will receive transaction id.
  *                                       The buffer size should at least
  *                                       (ELA_MAX_TXID_LEN) bytes.
  * @param
@@ -1567,7 +1560,7 @@ DID_API const char *Service_GetType(Service *service);
  * Get json context from Credential.
  *
  * @param
- *      document             [in] A handle to Credential.
+ *      cred                 [in] A handle to Credential.
  * @param
  *      compact              [in] Json context is compact or not.
  *                           1 represents compact, 0 represents not compact.
@@ -1727,7 +1720,7 @@ DID_API ssize_t Credential_GetPropertyCount(Credential *cred);
  *      properties           [out] The buffer that will receive
  *                                 credential subject properties.
  * @param
- *      cred                 [in] The buffer size of credential subject properties.
+ *      size                 [in] The buffer size of credential subject properties.
  * @return
  *      size of subject porperties on success, -1 if an error occurred.
  */
@@ -1881,7 +1874,7 @@ DID_API bool Credential_IsValid(Credential *cred);
  * Set Credential from DID Store.
  *
  * @param
- *      did                     [in] The handle to DID.
+ *      credential               [in] The handle to Credential.
  * @param
  *      alias                    [in] The nickname of credential.
  * @return
@@ -2036,11 +2029,11 @@ DID_API bool DIDStore_ContainsPrivateIdentity(DIDStore *store);
   * @param
  *      store                  [in] THe handle to DIDStore.
  * @param
+ *      storepass              [in] The password for DIDStore.
+ * @param
  *      mnemonic               [in] Mnemonic for generate key.
  * @param
  *      passphrase             [in] The pass word to generate private identity.
- * @param
- *      storepass              [in] The pass word of DID holder.
  * @param
  *      language               [in] The language for DID.
  *                             0: English; 1: French; 2: Spanish;
@@ -2051,11 +2044,11 @@ DID_API bool DIDStore_ContainsPrivateIdentity(DIDStore *store);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
-        const char *passphrase, const char *storepass, const int language, bool force);
+DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
+        const char *mnemonic, const char *passphrase, const int language, bool force);
 
 DID_API int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store,
-        const char *extendedkey, const char *storepass, bool force);
+        const char *storepass, const char *extendedkey, bool force);
 
 /**
  * \~English
@@ -2087,8 +2080,8 @@ DID_API int DIDStore_Synchronize(DIDStore *store, const char *storepass);
 DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass,
         const char *alias);
 
-DID_API DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, int index,
-        const char *storepass, const char *alias);
+DID_API DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
+        int index, const char *alias);
 
 /**
  * \~English
@@ -2097,17 +2090,14 @@ DID_API DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, int index,
  * @param
  *      store                     [in] THe handle to DIDStore.
  * @param
- *      alias                     [out] The DID object.
+ *      storepass                 [int] Password for DIDStore.
  * @param
  *      index                     [int] The index of DerivedKey from HDKey.
- * @param
- *      storepass                 [int] Password for DIDStore.
  * @return
- *      If no error occurs, return 0.
- *      Otherwise, return -1.
+ *      If no error occurs, return DID object. Free DID after use it.
+ *      Otherwise, return NULL.
  */
-DID_API int DIDStore_GetDIDByIndex(DIDStore *store, DID *did, int index,
-        const char *storepass);
+DID_API DID *DIDStore_GetDIDByIndex(DIDStore *store, const char *storepass, int index);
 /**
  * \~English
  * Create new DID Document and store in the DID Store.
@@ -2134,11 +2124,13 @@ DID_API int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
  * Sign data by DID.
  *
  * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
+ *      storepass               [in] Password for DIDStore.
+ * @param
  *      did                     [in] The handle to DID.
  * @param
  *      key                     [in] Public key to sign.
- * @param
- *      password                [in] Pass word to sign.
  * @param
  *      sig                     [out] The buffer will receive signature data.
  * @param
@@ -2146,18 +2138,20 @@ DID_API int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_Sign(DIDStore *store, DID *did, DIDURL *key,
-        const char *storepass, char *sig, int count, ...);
+DID_API int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
+        DIDURL *key, char *sig, int count, ...);
 
-DID_API int DIDStore_Signv(DIDStore *store, DID *did, DIDURL *key,
-        const char *storepass, char *sig, int count, va_list inputs);
+DID_API int DIDStore_Signv(DIDStore *store, const char *storepass, DID *did,
+        DIDURL *key, char *sig, int count, va_list inputs);
 
 /**
  * \~English
  * Store DID Document in DID Store.
  *
  * @param
- *      document                 [in] The handle to DID Document.
+ *      store                     [in] The handle to DIDStore.
+ * @param
+ *      document                  [in] The handle to DID Document.
  * @param
  *      alias                     [in] The nickname of DID.
  * @return
@@ -2169,6 +2163,8 @@ DID_API int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char
  * \~English
  * Load DID Document from DID Store.
  *
+ * @param
+ *      store                   [in] The handle to DIDStore.
  * @param
  *      did                     [in] The handle to DID.
  * @return
@@ -2182,6 +2178,8 @@ DID_API DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did);
  * Check if contain specific DID or not.
  *
  * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
  *      did                     [in] The handle to DID.
  * @return
  *      true on success, false if an error occurred.
@@ -2192,6 +2190,8 @@ DID_API bool DIDStore_ContainsDID(DIDStore *store, DID *did);
  * \~English
  * Delete specific DID.
  *
+ * @param
+ *      store                   [in] The handle to DIDStore.
  * @param
  *      did                     [in] The handle to DID.
  * @return
@@ -2206,24 +2206,26 @@ DID_API bool DIDStore_DeleteDID(DIDStore *store, DID *did);
  * @param
  *      store       [in] The handle to DIDStore.
  * @param
- *      callback    [in] a pointer to DIDStore_GetDIDCallback function.
- * @param
  *      filer       [in] DID filer. 0: all did; 1: did has privatekeys;
  *                                  2: did has no privatekeys.
+ * @param
+ *      callback    [in] a pointer to DIDStore_GetDIDCallback function.
  * @param
  *      context     [in] the application defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDCallback *callback,
-        ELA_DID_FILTER filer, void *context);
+DID_API int DIDStore_ListDID(DIDStore *store, ELA_DID_FILTER filer,
+        DIDStore_GetDIDCallback *callback, void *context);
 
 /**
  * \~English
  * Store Credential in DID Store.
  *
  * @param
- *      credential              [in] The handle to Credential.
+ *      store                    [in] The handle to DIDStore.
+ * @param
+ *      credential               [in] The handle to Credential.
  * @param
  *      alias                    [in] The nickname of credential.
  * @return
@@ -2237,9 +2239,11 @@ DID_API int DIDStore_StoreCredential(DIDStore *store, Credential *credential,
  * Load Credential from DID Store.
  *
  * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
  *      did                     [in] The handle to DID.
  * @param
- *      id                      [in] The identifier of credential.
+ *      credid                   [in] The identifier of credential.
  * @return
  *      If no error occurs, return the handle to Credential.
  *      Otherwise, return NULL.
@@ -2250,6 +2254,8 @@ DID_API Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *c
  * \~English
  * Check if contain any credential of specific DID.
  *
+ * @param
+ *      store                   [in] The handle to DIDStore.
  * @param
  *      did                     [in] The handle to DID.
  * @return
@@ -2262,9 +2268,11 @@ DID_API bool DIDStore_ContainsCredentials(DIDStore *store, DID *did);
  * Check if contain specific credential of specific DID.
  *
  * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
  *      did                     [in] The handle to DID.
  * @param
- *      id                      [in] The identifier of credential.
+ *      credid                  [in] The identifier of credential.
  * @return
  *      true on success, false if an error occurred.
  */
@@ -2274,6 +2282,8 @@ DID_API bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *cred
  * \~English
  * Delete specific credential.
  *
+ * @param
+ *      store                   [in] The handle to DIDStore.
  * @param
  *      did                     [in] The handle to DID.
  * @param
@@ -2287,6 +2297,8 @@ DID_API bool DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
  * \~English
  * List credentials of specific DID.
  *
+ * @param
+ *      store       [in] The handle to DIDStore.
  * @param
  *      did         [in] The handle to DID.
  * @param
@@ -2304,9 +2316,11 @@ DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
  * Get credential conforming to identifier or type property.
  *
  * @param
+ *      store       [in] The handle to DIDStore.
+ * @param
  *      did         [in] The handle to DID.
  * @param
- *      id          [in] The identifier of credential.
+ *      credid      [in] The identifier of credential.
  * @param
  *      type        [in] The type of Credential to be selected.
  * @param
@@ -2324,6 +2338,8 @@ DID_API int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *credid
  * Check if contain any private key of specific DID.
  *
  * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
  *      did                     [in] The handle to DID.
  * @return
  *      true on success, false if an error occurred.
@@ -2335,9 +2351,11 @@ DID_API bool DIDSotre_ContainsPrivateKeys(DIDStore *store, DID *did);
  * Check if contain specific private key of specific DID.
  *
  * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
  *      did                     [in] The handle to DID.
  * @param
- *      id                      [in] The identifier of public key.
+ *      keyid                   [in] The identifier of public key.
  * @return
  *      true on success, false if an error occurred.
  */
@@ -2347,6 +2365,10 @@ DID_API bool DIDStore_ContainsPrivateKey(DIDStore *store, DID *did, DIDURL *keyi
  * \~English
  * Store private key.
  *
+ * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
+ *      storepass               [in] Password for DIDStore.
  * @param
  *      did                     [in] The handle to DID.
  * @param
@@ -2364,6 +2386,8 @@ DID_API int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass,
  * Delete private key.
  *
  * @param
+ *      store                   [in] The handle to DIDStore.
+ * @param
  *      did                     [in] The handle to DID.
  * @param
  *      id                      [in] The identifier of public key.
@@ -2377,32 +2401,35 @@ DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid)
  * @param
  *      store                    [in] The handle to DID Store.
  * @param
+ *      storepass                [in] Pass word to sign.
+ * @param
  *      did                      [in] The handle to DID.
  * @param
  *      signKey                  [in] The public key to sign.
-  * @param
- *      storepass                [in] Pass word to sign.
+
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API const char *DIDStore_PublishDID(DIDStore *store, DID *did, DIDURL *signKey,
-        const char *storepass);
+DID_API const char *DIDStore_PublishDID(DIDStore *store, const char *storepass,
+        DID *did, DIDURL *signKey);
 
 /**
  * \~English
  * Deactivate a DID on the chain.
  *
  * @param
- *      document                 [in] The handle to DID Document.
+ *      store                   [in] The handle to DIDStore.
+ * @param
+ *      storepass                [in] Password for DIDStore.
+ * @param
+ *      did                      [in] The handle to DID.
  * @param
  *      signKey                  [in] The public key to sign.
- * @param
- *      storepass                [in] Pass word to sign.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API const char *DIDStore_DeactivateDID(DIDStore *store, DID *did,
-        DIDURL *signKey, const char *storepass);
+DID_API const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
+        DID *did, DIDURL *signKey);
 
 /**
  * \~English
@@ -2506,8 +2533,6 @@ DID_API void Presentation_Destroy(Presentation *pre);
  *
  * @param
  *      pre                      [in] The handle to Presentation.
-  * @return
- *      0 on success, -1 if an error occurred.
  */
 DID_API int Presentation_Verify(Presentation *pre);
 
@@ -2673,7 +2698,7 @@ DID_API bool Presentation_IsGenuine(Presentation *pre);
  * Presentation is valid or not.
  *
  * @param
- *      cred                      [in] The Presentation handle.
+ *      pre                      [in] The Presentation handle.
  * @return
  *      flase if not valid, true if valid.
  */

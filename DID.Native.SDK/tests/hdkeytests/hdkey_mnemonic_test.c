@@ -20,7 +20,7 @@ static void test_build_wordlist(void)
         CU_ASSERT_PTR_NOT_NULL(mnemonic);
         CU_ASSERT_TRUE(Mnemonic_IsValid(mnemonic, i));
 
-        rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", storepass, i, true);
+        rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", i, true);
         CU_ASSERT_NOT_EQUAL(rc, -1);
 
         strcpy(wmnemonic, mnemonic);
