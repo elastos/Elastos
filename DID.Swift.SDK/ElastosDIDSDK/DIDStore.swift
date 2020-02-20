@@ -608,7 +608,7 @@ public class DIDStore: NSObject {
         return try deletePrivateKey(_did, DIDURL(_did, id))
     }
 
-    private func signEx(_ did: DID, _ id: DIDURL?, _ storePass: String, _ data: [Data]) throws -> String {
+    func signEx(_ did: DID, _ id: DIDURL?, _ storePass: String, _ data: [Data]) throws -> String {
         guard !storePass.isEmpty else {
             throw DIDError.illegalArgument()
         }
