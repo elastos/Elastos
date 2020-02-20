@@ -1814,8 +1814,11 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
 
     //check did is exist or not
     document = DIDStore_LoadDID(store, &did);
-    if (document)
+    if (document) {
+        DerivedKey_Wipe(derivedkey);
+        DIDDocument_Destroy(document);
         return NULL;
+    }
 
     if (store_default_privatekey(store, storepass,
             DerivedKey_GetAddress(derivedkey),
