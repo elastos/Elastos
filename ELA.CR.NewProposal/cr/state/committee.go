@@ -590,10 +590,7 @@ func (c *Committee) isInVotingPeriod(height uint32) bool {
 
 func (c *Committee) changeCommitteeMembers(height uint32) error {
 
-	// Process current members.
 	candidates := c.getActiveCRCandidatesDesc()
-	c.processCurrentMembers(height, candidates)
-
 	oriInElectionPeriod := c.InElectionPeriod
 	oriLastVotingStartHeight := c.LastVotingStartHeight
 	if uint32(len(candidates)) < c.params.CRMemberCount {
@@ -606,9 +603,10 @@ func (c *Committee) changeCommitteeMembers(height uint32) error {
 		})
 		return errors.New("candidates count less than required count")
 	}
-
+	// Process current members.
+	newMembers := c.processCurrentMembers(height, candidates)
 	// Process current candidates.
-	c.processCurrentCandidates(height, candidates)
+	c.processCurrentCandidates(height, candidates, newMembers)
 
 	oriLastCommitteeHeight := c.LastCommitteeHeight
 	c.lastHistory.Append(height, func() {
@@ -625,10 +623,7 @@ func (c *Committee) changeCommitteeMembers(height uint32) error {
 }
 
 func (c *Committee) processCurrentMembers(height uint32,
-	activeCandidates []*Candidate) {
-	if uint32(len(activeCandidates)) < c.params.CRMemberCount {
-		return
-	}
+	activeCandidates []*Candidate) map[common.Uint168]*CRMember {
 
 	oriMembers := copyMembersMap(c.Members)
 	if len(c.Members) != 0 {
@@ -678,10 +673,11 @@ func (c *Committee) processCurrentMembers(height uint32,
 		c.state.Nicknames = oriNicknames
 		c.state.Votes = oriVotes
 	})
+	return newMembers
 }
 
 func (c *Committee) processCurrentCandidates(height uint32,
-	activeCandidates []*Candidate) {
+	activeCandidates []*Candidate, newMembers map[common.Uint168]*CRMember) {
 	newHistoryCandidates := make(map[common.Uint168]*Candidate)
 	if _, ok := c.state.HistoryCandidates[c.state.CurrentSession]; !ok {
 		c.state.HistoryCandidates[c.state.CurrentSession] =
@@ -699,6 +695,21 @@ func (c *Committee) processCurrentCandidates(height uint32,
 
 	oriCandidate := copyCandidateMap(c.state.Candidates)
 	currentSession := c.state.CurrentSession
+	for _, candidate := range oriCandidate {
+		ca := *candidate
+		if _, ok := newMembers[ca.info.DID]; ok {
+			continue
+		}
+		oriRefundable := c.state.depositInfo[ca.info.DID].Refundable
+
+		c.lastHistory.Append(height, func() {
+			c.state.depositInfo[ca.info.DID].Refundable = true
+			c.state.depositInfo[ca.info.DID].DepositAmount -= MinDepositAmount
+		}, func() {
+			c.state.depositInfo[ca.info.DID].Refundable = oriRefundable
+			c.state.depositInfo[ca.info.DID].DepositAmount += MinDepositAmount
+		})
+	}
 	c.lastHistory.Append(height, func() {
 		c.state.Candidates = make(map[common.Uint168]*Candidate)
 		c.state.HistoryCandidates[currentSession] = newHistoryCandidates
