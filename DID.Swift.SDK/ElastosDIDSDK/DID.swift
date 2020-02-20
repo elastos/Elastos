@@ -25,7 +25,7 @@ public class DID {
     }
 
     public var method: String {
-        return self._method!
+        return _method!
     }
 
     func setMethod(_ method: String) {
@@ -33,7 +33,7 @@ public class DID {
     }
 
     public var methodSpecificId: String {
-        return self._methodSpecificId!
+        return _methodSpecificId!
     }
 
     func setMethodSpecificId(_ methodSpecificId: String) {
@@ -41,10 +41,10 @@ public class DID {
     }
 
     func getMeta() -> DIDMeta {
-        if self._meta == nil {
+        if  self._meta == nil {
             self._meta = DIDMeta()
         }
-        return self._meta!
+        return _meta!
     }
 
     func setMeta(_ newValue: DIDMeta) {
@@ -67,7 +67,7 @@ public class DID {
     }
 
     public var aliasName: String {
-        return self._meta?.aliasName ?? ""
+        return _meta?.aliasName ?? ""
     }
 
     // Clean alias Name when newValue is nil.
@@ -111,7 +111,7 @@ public class DID {
 
 extension DID: CustomStringConvertible {
     func toString() -> String {
-        return String("did:\(self._method):\(self._methodSpecificId)")
+        return String("did:\(_method):\(_methodSpecificId)")
     }
 
     public var description: String {
@@ -122,12 +122,12 @@ extension DID: CustomStringConvertible {
 extension DID: Equatable {
     func equalsTo(_ other: DID) -> Bool {
         return self == other ||
-              (self.aliasName == other.aliasName &&
-               self.methodSpecificId == other.methodSpecificId)
+              (aliasName == other.aliasName &&
+               methodSpecificId == other.methodSpecificId)
     }
 
     func equalsTo(_ other: String) -> Bool {
-        return self.toString() == other
+        return toString() == other
     }
 
     public static func == (lhs: DID, rhs: DID) -> Bool {
@@ -150,7 +150,7 @@ extension DID {
         }
 
         public override func exitMethod(_ ctx: DIDURLParser.MethodContext) {
-            let method: String = ctx.getText()
+            let method = ctx.getText()
             if (method != Constants.METHOD){
                 // can't throw , print...
                 print(DIDError.unknownFailure("Unknown method: \(method)"))

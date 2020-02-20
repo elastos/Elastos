@@ -25,42 +25,42 @@ class IDChainRequest: NSObject {
     
     class func create(_ doc: DIDDocument,
                       _ signKey: DIDURL,
-                      _ storePass: String) throws -> IDChainRequest {
+                      _ storePassword: String) throws -> IDChainRequest {
 
         return try IDChainRequest(.CREATE)
                 .setPayload(doc)
-                .seal(signKey, storePass)
+                .sealed(signKey, storePassword)
     }
     
     class func update(_ doc: DIDDocument,
                       _ previousTransactionId: String,
                       _ signKey: DIDURL,
-                      _ storePass: String) throws -> IDChainRequest {
+                      _ storePassword: String) throws -> IDChainRequest {
 
         return try IDChainRequest(.UPDATE)
                 .setPreviousTransactionId(previousTransactionId)
                 .setPayload(doc)
-                .seal(signKey, storePass)
+                .sealed(signKey, storePassword)
     }
     
     class func deactivate(_ doc: DIDDocument,
                       _ signKey: DIDURL,
-                      _ storePass: String) throws -> IDChainRequest {
+                      _ storePassword: String) throws -> IDChainRequest {
 
         return try IDChainRequest(.DEACTIVATE)
                 .setPayload(doc)
-                .seal(signKey, storePass)
+                .sealed(signKey, storePassword)
     }
     
     class func deactivate(_ target: DID,
                       _ targetSignKey: DIDURL,
                       _ doc: DIDDocument,
                       _ signKey: DIDURL,
-                      _ storePass: String) throws -> IDChainRequest {
+                      _ storePassword: String) throws -> IDChainRequest {
 
         return try IDChainRequest(.DEACTIVATE)
                 .setPayload(target)
-                .seal(targetSignKey, doc, signKey, storePass)
+                .sealed(targetSignKey, doc, signKey, storePassword)
     }
 
     var operation: IDChainRequestOperation {
@@ -101,10 +101,9 @@ class IDChainRequest: NSObject {
         self._doc = doc
 
         if self._operation != .DEACTIVATE {
-            let json = try doc.toJson(false)
-            self._payload = json.base64EncodedString // TODO: checkMe.
+            self._payload = doc.toString().base64EncodedString
         } else {
-            self._payload = doc.subject.description
+            self._payload = doc.subject.toString()
         }
 
         return self
@@ -113,10 +112,8 @@ class IDChainRequest: NSObject {
     private func setPayload(_ payload: String) throws  -> IDChainRequest {
         do {
             if self._operation != .DEACTIVATE {
-                let json = payload.base64DecodedString  // TODO: checkMe
-
-                self._doc = try DIDDocument.convertToDIDDocument(fromJson: json!)
-                self._did = self._doc!.subject
+                self._doc = try DIDDocument.convertToDIDDocument(fromJson: payload.base64DecodedString!)
+                self._did = _doc!.subject
             } else {
                 self._doc = nil
                 self._did = try DID(payload)
@@ -139,38 +136,38 @@ class IDChainRequest: NSObject {
         return self
     }
     
-    private func seal(_ signKey: DIDURL,
-                      _ storePass: String) throws -> IDChainRequest {
+    private func sealed(_ signKey: DIDURL,
+                        _ storePassword: String) throws -> IDChainRequest {
 
-        let prevTxid = self._operation == .UPDATE ? self._previousTransactionId! : ""
+        let prevTxid = _operation == .UPDATE ? self._previousTransactionId! : ""
         var inputs: [Data] = []
 
-        inputs.append(self._specification.data(using: .utf8)!)
-        inputs.append(self._operation.description.data(using: .utf8)!)
+        inputs.append(_specification.data(using: .utf8)!)
+        inputs.append(_operation.description.data(using: .utf8)!)
+        inputs.append(_payload!.data(using: .utf8)!)
         inputs.append(prevTxid.description.data(using: .utf8)!)
-        inputs.append(self._payload!.data(using: .utf8)!)
 
-        self._signature = try self._doc!.signEx(signKey, storePass, inputs)
+        self._signature = try _doc!.makeSignWithIdentiy(signKey, storePassword, inputs)
         self._signKey = signKey
         self._keyType = Constants.DEFAULT_PUBLICKEY_TYPE
 
         return self
     }
     
-    private func seal(_ targetSignKey: DIDURL,
-                      _ doc: DIDDocument,
-                      _ signKey: DIDURL,
-                      _ storePass: String) throws -> IDChainRequest {
+    private func sealed(_ targetSignKey: DIDURL,
+                        _ doc: DIDDocument,
+                        _ signKey: DIDURL,
+                        _ storePassword: String) throws -> IDChainRequest {
 
-        let prevTxid = self._operation == .UPDATE ? self._previousTransactionId! : ""
+        let prevTxid = operation == .UPDATE ? self._previousTransactionId! : ""
         var inputs: [Data] = []
 
-        inputs.append(self._specification.data(using: .utf8)!)
-        inputs.append(self._operation.description.data(using: .utf8)!)
-        inputs.append(self._payload!.data(using: .utf8)!)
+        inputs.append(_specification.data(using: .utf8)!)
+        inputs.append(_operation.description.data(using: .utf8)!)
+        inputs.append(_payload!.data(using: .utf8)!)
         inputs.append(prevTxid.data(using: .utf8)!)
 
-        self._signature = try self._doc!.signEx(signKey, storePass, inputs)
+        self._signature = try _doc!.makeSignWithIdentiy(signKey, storePassword, inputs)
         self._signKey = targetSignKey
         self._keyType = Constants.DEFAULT_PUBLICKEY_TYPE
 
@@ -184,26 +181,26 @@ class IDChainRequest: NSObject {
         var doc: DIDDocument
         if self._operation != .DEACTIVATE {
             doc = self._doc!
-            guard doc.containsAuthenticationKey(forId: self._signKey!) else {
+            guard doc.containsAuthenticationKey(forId: _signKey!) else {
                 return false
             }
         } else {
             doc = try self._did!.resolve()!
-            guard doc.containsAuthenticationKey(forId: self._signKey!) ||
-                  doc.containsAuthorizationKey (forId: self._signKey!) else {
+            guard doc.containsAuthenticationKey(forId: _signKey!) ||
+                  doc.containsAuthorizationKey (forId: _signKey!) else {
                 return false
             }
         }
 
-        let prevTxid = self.operation == .UPDATE ? self._previousTransactionId!: ""
+        let prevTxid = operation == .UPDATE ? self._previousTransactionId!: ""
         var inputs: [Data] = [];
 
-        inputs.append(self._specification.data(using: .utf8)!)
-        inputs.append(self._operation.description.data(using: .utf8)!)
-        inputs.append(self._payload!.data(using: .utf8)!)
+        inputs.append(_specification.data(using: .utf8)!)
+        inputs.append(_operation.description.data(using: .utf8)!)
+        inputs.append(_payload!.data(using: .utf8)!)
         inputs.append(prevTxid.data(using: .utf8)!)
 
-        return try doc.verifyEx(self._signKey!, self._signature!, inputs)
+        return try doc.makeVerificationWithIdentity(_signKey!, _signature!, inputs)
     }
 
     var isValid: Bool {
@@ -225,7 +222,7 @@ class IDChainRequest: NSObject {
 
         var subNode = node.getNode(Constants.HEADER)
         guard let _ = subNode else {
-            throw DIDError.didResolveError("Missing header")
+            throw DIDError.didResolveError("missing header")
         }
 
         var serializer = JsonSerializer(subNode!)
@@ -236,7 +233,7 @@ class IDChainRequest: NSObject {
                                 .withError(error)
         let specs = try serializer.getString(Constants.SPECIFICATION, options)
         guard specs == IDChainRequest.CURRENT_SPECIFICATION else {
-            throw DIDError.didResolveError("Unkown DID specification.")
+            throw DIDError.didResolveError("unkown did specification.")
         }
 
         options = JsonSerializer.Options()
@@ -274,7 +271,7 @@ class IDChainRequest: NSObject {
                                 .withError(error)
         let keyType = try serializer.getString(Constants.KEY_TYPE, options)
         guard keyType == Constants.DEFAULT_PUBLICKEY_TYPE else {
-            throw DIDError.didResolveError("Unkown signature key type")
+            throw DIDError.didResolveError("unkown signature key type")
         }
 
         options = JsonSerializer.Options()
@@ -312,8 +309,6 @@ class IDChainRequest: NSObject {
 
     func toJson(_ generator: JsonGenerator, _ normalized: Bool) {
         generator.writeStartObject()
-
-        // header
         generator.writeFieldName(Constants.HEADER)
 
         generator.writeStartObject()
@@ -343,12 +338,12 @@ class IDChainRequest: NSObject {
         generator.writeStringField(Constants.SIGNATURE, self._signature!)
 
         generator.writeEndObject()  // end of signature.
-
         generator.writeEndObject()
     }
 
     func toJson(_ normalized: Bool) -> String {
-        // TODO
-        return "TODO"
+        let generator = JsonGenerator()
+        toJson(generator, normalized)
+        return generator.toString()
     }
 }

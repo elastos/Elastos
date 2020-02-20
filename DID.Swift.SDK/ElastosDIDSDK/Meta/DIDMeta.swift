@@ -7,7 +7,7 @@ class DIDMeta: Metadata {
     private var _aliasName: String?
 
     var aliasName: String {
-        return self._aliasName ?? ""
+        return _aliasName ?? ""
     }
 
     func setAlias(_ alias: String?) {
@@ -15,7 +15,7 @@ class DIDMeta: Metadata {
     }
 
     var transactionId: String? {
-        return self._transactionId
+        return _transactionId
     }
 
     func setTransactionId(_ transactionId: String?) {
@@ -31,7 +31,7 @@ class DIDMeta: Metadata {
     }
 
     var isDeactivated: Bool {
-        return self._deactivated
+        return _deactivated
     }
 
     func setDeactivated(_ newValue: Bool) {
@@ -67,20 +67,20 @@ class DIDMeta: Metadata {
     }
     
     override func toNode(_ node: JsonNode) {
-        if self._aliasName != nil {
-            node.setValue(Constants.ALIAS, self._aliasName!)
+        if _aliasName != nil {
+            node.setValue(Constants.ALIAS, _aliasName!)
         }
 
-        if self._deactivated {
-            node.setValue(Constants.DEACTIVATED, self._deactivated)
+        if _deactivated {
+            node.setValue(Constants.DEACTIVATED, _deactivated)
         }
 
-        if self._transactionId != nil {
-            node.setValue(Constants.TXID, self._transactionId!)
+        if _transactionId != nil {
+            node.setValue(Constants.TXID, _transactionId!)
         }
 
-        if self.updatedDate != nil {
-            node.setValue(Constants.TIMESTAMP, DateHelper.formateDate(self._updatedDate!))
+        if updatedDate != nil {
+            node.setValue(Constants.TIMESTAMP, DateHelper.formateDate(_updatedDate!))
         }
     }
 
@@ -107,11 +107,7 @@ class DIDMeta: Metadata {
     }
 
     override func isEmpty() -> Bool {
-        if  self.aliasName != ""    || self.transactionId != nil ||
-            self.updatedDate != nil || self.isDeactivated {
-            return false
-        }
-
-        return super.isEmpty()
+        return (aliasName != ""    || transactionId != nil ||
+                updatedDate != nil || isDeactivated) ? false : super.isEmpty()
     }
 }

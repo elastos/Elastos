@@ -1,6 +1,6 @@
 import Foundation
 
-func getFullName(_ name: String) -> String {
+private func getFullName(_ name: String) -> String {
     return Constants.EXTRA_PREFIX + name
 }
 
@@ -47,18 +47,14 @@ class Metadata {
     }
 
     class func fromJson<T: Metadata>(_ metadata: Data, _ type: T.Type) throws -> T {
-        let node: Dictionary<String, Any>?
-
+        let data: Dictionary<String, Any>?
         do {
-            node = try JSONSerialization.jsonObject(with: metadata, options: []) as? Dictionary<String, Any>
+            data = try JSONSerialization.jsonObject(with: metadata, options: []) as? Dictionary<String, Any>
         } catch {
             throw DIDError.malformedMeta("Parse metadata error.")
         }
 
-        guard let _ = node else {
-            throw DIDError.malformedMeta("Parse metadata error.")
-        }
-        return try fromJson(JsonNode(node!), type)
+        return try fromJson(JsonNode(data!), type)
     }
 
     class func fromJson<T: Metadata>(_ metadata: String, _ type: T.Type) throws -> T {
@@ -72,12 +68,12 @@ class Metadata {
 
     func merge(_ meta: Metadata) throws {
         meta._extra.forEach{ (key, value) in
-            self._extra[key] = value
+            _extra[key] = value
         }
     }
 
     func isEmpty() -> Bool {
-        return self._extra.isEmpty
+        return _extra.isEmpty
     }
 }
 

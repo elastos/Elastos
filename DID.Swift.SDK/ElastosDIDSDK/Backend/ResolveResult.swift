@@ -3,7 +3,7 @@ import Foundation
 class ResolveResult {
     private var _did: DID
     private var _status: ResolveResultStatus
-    private var _idtransactionInfos: Array<IDTransactionInfo>?
+    private var _idtransactionInfos: [IDTransactionInfo] = []
     
     init(_ did: DID, _ status: Int) {
         self._did = did
@@ -19,18 +19,15 @@ class ResolveResult {
     }
 
     var transactionCount: Int {
-        return self._idtransactionInfos?.count ?? 0
+        return self._idtransactionInfos.count
     }
 
     func transactionInfo(_ index: Int) -> IDTransactionInfo? {
-        return self._idtransactionInfos?[index]
+        return self._idtransactionInfos[index]
     }
 
-    func appendTransactionInfo( _ info: IDTransactionInfo) { // TODO: should be synchronized ?
-        if  self._idtransactionInfos == nil {
-            self._idtransactionInfos = Array<IDTransactionInfo>()
-        }
-        self._idtransactionInfos!.append(info)
+    func appendTransactionInfo( _ info: IDTransactionInfo) {
+        self._idtransactionInfos.append(info)
     }
 
     class func fromJson(_ node: JsonNode) throws -> ResolveResult {
@@ -89,14 +86,14 @@ class ResolveResult {
     private func toJson(_ generator: JsonGenerator) {
         generator.writeStartObject()
 
-        generator.writeStringField(Constants.DID, self.did.toString())
-        generator.writeNumberField(Constants.STATUS, self.status.rawValue)
+        generator.writeStringField(Constants.DID, did.toString())
+        generator.writeNumberField(Constants.STATUS, status.rawValue)
 
         if (self._status != .STATUS_NOT_FOUND) {
             generator.writeFieldName(Constants.TRANSACTION)
             generator.writeStartArray()
 
-            for txInfo in self._idtransactionInfos! {
+            for txInfo in _idtransactionInfos {
                 txInfo.toJson(generator)
             }
             generator.writeEndArray()
@@ -105,14 +102,15 @@ class ResolveResult {
         generator.writeEndObject()
     }
 
-    func toJson() throws -> String {
-        // TODO
-        return "TODO"
+    func toJson() -> String {
+        let generator = JsonGenerator()
+        toJson(generator)
+        return generator.toString()
     }
 }
 
 extension ResolveResult: CustomStringConvertible {
     @objc public var description: String {
-        return (try? toJson()) ?? ""
+        return toJson()
     }
 }

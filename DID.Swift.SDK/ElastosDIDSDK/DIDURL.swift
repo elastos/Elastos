@@ -1,5 +1,26 @@
 import Foundation
 
+private func mapToString(_ dict: Dictionary<String, String>?, _ sep: String) -> String? {
+    guard let _ = dict else {
+        return nil
+    }
+
+    var first  = true
+    var result = ""
+
+    for (key, value) in dict! {
+        result.append(!first ? sep : "")
+        result.append(key)
+        result.append("=")
+        result.append(value)
+
+        if  first {
+            first = false
+        }
+    }
+    return result
+}
+
 public class DIDURL {
     private var _did: DID?
     private var _fragment: String?
@@ -50,7 +71,7 @@ public class DIDURL {
 
     // A valid didurl guaranteed containing valid did.
     public var did: DID {
-        return self._did!
+        return _did!
     }
 
     public func setDid(_ newValue: DID) {
@@ -61,44 +82,23 @@ public class DIDURL {
     // "DID URL: A DID plus an optional DID path, optional ? character followed
     //  by a DID query, and optional # character followed by a DID fragment."
     public var fragment: String? {
-        return self._fragment
+        return _fragment
     }
 
     func setFragment(_ newValue: String) {
         self._fragment = newValue
     }
 
-    private func mapToString(_ dict: Dictionary<String, String>?, _ sep: String) -> String? {
-        guard let _ = dict else {
-            return nil
-        }
-
-        var first  = true
-        var result = ""
-
-        for (key, value) in dict! {
-            result.append(!first ? sep : "")
-            result.append(key)
-            result.append("=")
-            result.append(value)
-
-            if  first {
-                first = false
-            }
-        }
-        return result
-    }
-
     public func parameters() -> String? {
-        return mapToString(self._parameters, ";")
+        return mapToString(_parameters, ";")
     }
 
     public func parameter(ofKey: String) -> String? {
-        return self._parameters?[ofKey]
+        return _parameters?[ofKey]
     }
 
     public func containsParameter(forKey: String) -> Bool {
-        return self._parameters?.keys.contains(forKey) ?? false
+        return _parameters?.keys.contains(forKey) ?? false
     }
 
     public func appendParameter(_ value: String?, forKey: String) {
@@ -109,7 +109,7 @@ public class DIDURL {
     }
 
     public var path: String? {
-        return self._path
+        return _path
     }
 
     func setPath(_ newValue: String) {
@@ -117,15 +117,15 @@ public class DIDURL {
     }
 
     public func queryParameters() -> String? {
-        return mapToString(self._queryParameters, "&")
+        return mapToString(_queryParameters, "&")
     }
 
     public func queryParameter(ofKey: String) -> String? {
-        return self._queryParameters?[ofKey]
+        return _queryParameters?[ofKey]
     }
 
     public func containsQueryParameter(forKey: String) -> Bool {
-        return self._queryParameters?.keys.contains(forKey) ?? false
+        return _queryParameters?.keys.contains(forKey) ?? false
     }
     
     public func appendQueryParameter(_ value: String?, forKey: String) {
@@ -152,9 +152,7 @@ public class DIDURL {
         }
 
         getMeta().setExtra(name, value)
-        if getMeta().attachedStore {
-            try getMeta().store?.storeCredentialMeta(self.did, self, getMeta())
-        }
+        try getMeta().store?.storeCredentialMeta(did, self, getMeta())
     }
 
     public func getExtra(forName: String) -> String? {
@@ -165,12 +163,9 @@ public class DIDURL {
         return getMeta().aliasName
     }
 
-    // Clean alias Name when newValue is nil.
     private func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
-        if getMeta().attachedStore {
-            try getMeta().store?.storeCredentialMeta(did, self, getMeta())
-        }
+        try getMeta().store?.storeCredentialMeta(did, self, getMeta())
     }
 
     public func setAlias(_ newValue: String?) throws {
@@ -187,21 +182,21 @@ extension DIDURL: CustomStringConvertible {
         var builder: String = ""
 
         builder.append(did.toString())
-        if !(self._parameters?.isEmpty ?? true) {
+        if !(_parameters?.isEmpty ?? true) {
             builder.append(":")
             builder.append(parameters()!)
         }
-        if !(self.path?.isEmpty ?? true) {
-            builder.append(self.path!)
+        if !(path?.isEmpty ?? true) {
+            builder.append(path!)
         }
-        if !(self._queryParameters?.isEmpty ?? true) {
+        if !(_queryParameters?.isEmpty ?? true) {
             builder.append("?")
             builder.append(queryParameters()!)
         }
 
-        if !(self.fragment?.isEmpty ?? true) {
+        if !(fragment?.isEmpty ?? true) {
             builder.append("#")
-            builder.append(self.fragment!)
+            builder.append(fragment!)
         }
         return builder
     }
@@ -213,11 +208,11 @@ extension DIDURL: CustomStringConvertible {
 
 extension DIDURL: Equatable {
     func equalsTo(_ other: DIDURL) -> Bool {
-        return self == other || self.toString() == other.toString()
+        return self == other || toString() == other.toString()
     }
 
     func equalsTo(_ other: String) -> Bool {
-        return self.toString() == other
+        return toString() == other
     }
 
     public static func == (lhs: DIDURL, rhs: DIDURL) -> Bool {
@@ -271,7 +266,7 @@ extension DIDURL {
 
         override func exitParamMethod(_ ctx: DIDURLParser.ParamMethodContext) {
             let method = ctx.getText()
-            if method != Constants.METHOD {
+            if  method != Constants.METHOD {
                 print("Unknown parameter method: \(method)")
             }
             self.didURL?.did.setMethod(method)

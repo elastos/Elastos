@@ -12,7 +12,7 @@ public class DIDObject {
     }
 
     public func getId() -> DIDURL {
-        return self._id!
+        return _id!
     }
 
     func setId(_ id: DIDURL) {
@@ -20,7 +20,7 @@ public class DIDObject {
     }
 
     public func getType() -> String {
-        return self._type!
+        return _type!
     }
 
     func setType(_ type: String) {
@@ -28,11 +28,11 @@ public class DIDObject {
     }
 
     func isDefType() -> Bool {
-        return self._type == Constants.DEFAULT_PUBLICKEY_TYPE
+        return _type == Constants.DEFAULT_PUBLICKEY_TYPE
     }
 
     func equalsTo(_ other: DIDObject) -> Bool {
-        return self.getId() == other.getId() &&
-               self.getType() == other.getType()
+        return getId() == other.getId() &&
+               getType() == other.getType()
     }
 }

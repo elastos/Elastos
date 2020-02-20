@@ -23,8 +23,8 @@ class CredentialMeta: Metadata {
     }
 
     override func toNode(_ node: JsonNode) {
-        if self._aliasName != nil {
-            node.setValue(Constants.ALIAS, self._aliasName!)
+        if _aliasName != nil {
+            node.setValue(Constants.ALIAS, _aliasName!)
         }
     }
 
@@ -42,10 +42,6 @@ class CredentialMeta: Metadata {
     }
 
     override func isEmpty() -> Bool {
-        if self.aliasName != "" {
-            return false
-        }
-
-        return super.isEmpty()
+        return aliasName.isEmpty ? false : super.isEmpty()
     }
 }

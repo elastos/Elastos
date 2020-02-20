@@ -15,19 +15,19 @@ public class PublicKey: DIDObject {
     }
 
     public var controller: DID {
-        return self._controller
+        return _controller
     }
 
     public var publicKeyBase58: String {
-        return self._keyBase58
+        return _keyBase58
     }
 
     public var publicKeyBytes: [UInt8] {
-        return Base58.bytesFromBase58(self._keyBase58)
+        return Base58.bytesFromBase58(_keyBase58)
     }
 
-    public var publicKeyInData: Data {
-        return self._keyBase58.data(using: .utf8)!
+    public var publicKeyData: Data {
+        return _keyBase58.data(using: .utf8)!
     }
 
     class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> PublicKey {
@@ -69,14 +69,14 @@ public class PublicKey: DIDObject {
         }
 
         // controller
-        if normalized || ref == nil || ref != self.controller {
+        if normalized || ref == nil || ref != controller {
             generator.writeFieldName(Constants.CONTROLLER);
-            generator.writeString(self.controller.toString())
+            generator.writeString(controller.toString())
         }
 
         // publicKeyBase58
         generator.writeFieldName(Constants.PUBLICKEY_BASE58)
-        generator.writeString(self.publicKeyBase58)
+        generator.writeString(publicKeyBase58)
         generator.writeEndObject()
     }
 
@@ -87,8 +87,8 @@ public class PublicKey: DIDObject {
 
         let publicKey = other as! PublicKey
         return super.equalsTo(other) &&
-               self.controller == publicKey.controller &&
-               self.publicKeyBase58 == publicKey.publicKeyBase58
+               controller == publicKey.controller &&
+               publicKeyBase58 == publicKey.publicKeyBase58
     }
 }
 

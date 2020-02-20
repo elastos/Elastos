@@ -9,7 +9,7 @@ public class Service: DIDObject {
     }
 
     public var endpoint: String {
-        return self._endpoint
+        return _endpoint
     }
 
     class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> Service {
@@ -36,7 +36,7 @@ public class Service: DIDObject {
         generator.writeStartObject()
         generator.writeStringField(Constants.ID, IDGetter(getId(), ref).value(normalized))
         generator.writeStringField(Constants.TYPE, getType())
-        generator.writeStringField(Constants.SERVICE_ENDPOINT, self.endpoint)
+        generator.writeStringField(Constants.SERVICE_ENDPOINT, endpoint)
         generator.writeEndObject()
     }
 
@@ -46,7 +46,7 @@ public class Service: DIDObject {
         }
 
         let service = other as! Service
-        return super.equalsTo(other) && self.endpoint == service.endpoint
+        return super.equalsTo(other) && endpoint == service.endpoint
     }
 }
 
