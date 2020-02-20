@@ -143,18 +143,7 @@ namespace Elastos {
 		}
 
 		bool DIDDataStore::DeleteAllDID() {
-			return DoTransaction([this]() {
-				std::string sql;
-
-				sql = "DELETE FROM " + DID_TABLE_NAME + ";";
-
-				if (!_sqlite->exec(sql, nullptr, nullptr)) {
-					Log::error("exec sql: {}", sql);
-					return false;
-				}
-
-				return true;
-			});
+			return DeleteAll(DID_TABLE_NAME);
 		}
 
 		std::vector<DIDEntity> DIDDataStore::GetAllDID() const {

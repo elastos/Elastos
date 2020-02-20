@@ -112,16 +112,7 @@ namespace Elastos {
 		}
 
 		bool UTXOStore::DeleteAll() {
-			return DoTransaction([this]() {
-				std::string sql("DELETE FROM " TABLE_NAME ";");
-
-				if (!_sqlite->exec(sql, nullptr, nullptr)) {
-					Log::error("exec sql: {}", sql);
-					return false;
-				}
-
-				return true;
-			});
+			return TableBase::DeleteAll(TABLE_NAME);
 		}
 
 		bool UTXOStore::DeleteInternal(const UTXOEntity &entity) {

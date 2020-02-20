@@ -123,17 +123,7 @@ namespace Elastos {
 		}
 
 		bool PeerBlackList::DeleteAllPeers() {
-			return DoTransaction([this]() {
-
-				std::string sql = "DELETE FROM " + _peerBlackListTable + ";";
-
-				if (!_sqlite->exec(sql, nullptr, nullptr)) {
-					Log::error("exec sql: {}", sql);
-					return false;
-				}
-
-				return true;
-			});
+			return TableBase::DeleteAll(_peerBlackListTable);
 		}
 
 		bool PeerBlackList::Contain(const PeerEntity &entity) const {

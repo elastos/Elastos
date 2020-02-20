@@ -123,17 +123,7 @@ namespace Elastos {
 		}
 
 		bool PeerDataSource::DeleteAllPeers() {
-			return DoTransaction([this]() {
-
-				std::string sql = "DELETE FROM " + PEER_TABLE_NAME + ";";
-
-				if (!_sqlite->exec(sql, nullptr, nullptr)) {
-					Log::error("exec sql: {}", sql);
-					return false;
-				}
-
-				return true;
-			});
+			return DeleteAll(PEER_TABLE_NAME);
 		}
 
 		bool PeerDataSource::Contain(const PeerEntity &entity) const {

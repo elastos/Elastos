@@ -32,6 +32,7 @@
 #include "TransactionPending.h"
 #include "DIDDataStore.h"
 #include "UTXOStore.h"
+#include "AddressUsed.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -120,6 +121,11 @@ namespace Elastos {
 			bool DeleteUTXOs(const std::vector<UTXOEntity> &entities);
 			bool ExistUTXOTable() const;
 
+			// Used Address
+			bool PutUsedAddresses(const std::vector<std::string> &addresses);
+			std::vector<std::string> GetUsedAddresses() const;
+			bool DeleteAllUsedAddresses();
+
 			const boost::filesystem::path &GetPath() const;
 
 			void flush();
@@ -136,6 +142,7 @@ namespace Elastos {
 			AssetDataStore          _assetDataStore;
 			DIDDataStore            _didDataStore;
 			UTXOStore               _utxoStore;
+			AddressUsed             _addressUsed;
 		};
 
 	}

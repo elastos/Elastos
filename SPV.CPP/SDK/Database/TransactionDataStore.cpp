@@ -61,7 +61,7 @@ namespace Elastos {
 			TableBase::InitializeTable(_tableCreation);
 		}
 
-		bool TransactionDataStore::PutTransactionInternal(const TransactionPtr &tx) {
+		bool TransactionDataStore::PutInternal(const TransactionPtr &tx) {
 			std::string sql, txHash;
 
 			sql = "INSERT INTO " + _tableName + "(" +
@@ -105,23 +105,23 @@ namespace Elastos {
 			return true;
 		}
 
-		bool TransactionDataStore::PutTransaction(const TransactionPtr &tx) {
+		bool TransactionDataStore::Put(const TransactionPtr &tx) {
 			std::string txHash = tx->GetHash().GetHex();
 			if (ContainHash(txHash)) {
 				Log::error("should not put in existed tx {}", tx->GetHash().GetHex());
 				return false;
 			}
 
-			return DoTransaction([&tx, this]() { return this->PutTransactionInternal(tx); });
+			return DoTransaction([&tx, this]() { return this->PutInternal(tx); });
 		}
 
-		bool TransactionDataStore::PutTransactions(const std::vector<TransactionPtr> &txns) {
+		bool TransactionDataStore::Puts(const std::vector<TransactionPtr> &txns) {
 			if (txns.empty())
 				return true;
 
 			return DoTransaction([&txns, this]() {
 				for (size_t i = 0; i < txns.size(); ++i) {
-					if (!this->PutTransactionInternal(txns[i]))
+					if (!this->PutInternal(txns[i]))
 						return false;
 				}
 
@@ -129,22 +129,11 @@ namespace Elastos {
 			});
 		}
 
-		bool TransactionDataStore::DeleteAllTransactions() {
-			return DoTransaction([this]() {
-				std::string sql;
-
-				sql = "DELETE FROM " + _tableName + ";";
-
-				if (!_sqlite->exec(sql, nullptr, nullptr)) {
-					Log::error("exec sql: {}", sql);
-					return false;
-				}
-
-				return true;
-			});
+		bool TransactionDataStore::DeleteAll() {
+			return TableBase::DeleteAll(_tableName);
 		}
 
-		size_t TransactionDataStore::GetAllTransactionsCount() const {
+		size_t TransactionDataStore::GetAllCount() const {
 			size_t count = 0;
 
 			std::string sql;
@@ -169,11 +158,11 @@ namespace Elastos {
 			return count;
 		}
 
-		TransactionPtr TransactionDataStore::GetTransaction(const uint256 &hash, const std::string &chainID) {
-			return SelectTxByHash(hash.GetHex(), chainID);
+		TransactionPtr TransactionDataStore::Get(const uint256 &hash, const std::string &chainID) {
+			return SelectByHash(hash.GetHex(), chainID);
 		}
 
-		std::vector<TransactionPtr> TransactionDataStore::GetAllConfirmedTxns(const std::string &chainID) const {
+		std::vector<TransactionPtr> TransactionDataStore::GetAll(const std::string &chainID) const {
 			std::vector<TransactionPtr> txns;
 			std::string sql;
 			int r;
@@ -232,8 +221,8 @@ namespace Elastos {
 			return txns;
 		}
 
-		bool TransactionDataStore::UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight,
-													 time_t timestamp) {
+		bool TransactionDataStore::Update(const std::vector<uint256> &hashes, uint32_t blockHeight,
+										  time_t timestamp) {
 			return DoTransaction([&hashes, &blockHeight, &timestamp, this]() {
 				std::string sql, hash;
 
@@ -269,7 +258,7 @@ namespace Elastos {
 			});
 		}
 
-		bool TransactionDataStore::DeleteTxByHash(const uint256 &hash) {
+		bool TransactionDataStore::DeleteByHash(const uint256 &hash) {
 			return DoTransaction([&hash, this]() {
 				std::string sql;
 				std::string hashString = hash.GetHex();
@@ -298,7 +287,7 @@ namespace Elastos {
 			});
 		}
 
-		bool TransactionDataStore::DeleteTxByHashes(const std::vector<uint256> &hashes) {
+		bool TransactionDataStore::DeleteByHashes(const std::vector<uint256> &hashes) {
 			if (hashes.empty())
 				return true;
 
@@ -333,7 +322,7 @@ namespace Elastos {
 			});
 		}
 
-		TransactionPtr TransactionDataStore::SelectTxByHash(const std::string &hash, const std::string &chainID) const {
+		TransactionPtr TransactionDataStore::SelectByHash(const std::string &hash, const std::string &chainID) const {
 			TransactionPtr tx = nullptr;
 
 			std::string sql;

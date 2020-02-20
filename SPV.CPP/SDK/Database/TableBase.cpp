@@ -67,6 +67,19 @@ namespace Elastos {
 			return result;
 		}
 
+		bool TableBase::DeleteAll(const std::string &tableName) {
+			return DoTransaction([&tableName, this]() {
+				std::string sql = "DELETE FROM " + tableName + ";";
+
+				if (!_sqlite->exec(sql, nullptr, nullptr)) {
+					Log::error("exec sql: {}", sql);
+					return false;
+				}
+
+				return true;
+			});
+		}
+
 		void TableBase::InitializeTable(const std::string &constructScript) {
 			_sqlite->BeginTransaction(_txType);
 			_sqlite->exec(constructScript, nullptr, nullptr);

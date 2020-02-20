@@ -43,30 +43,30 @@ namespace Elastos {
 
 			virtual void InitializeTable();
 
-			bool PutTransaction(const TransactionPtr &tx);
+			bool Put(const TransactionPtr &tx);
 
-			bool PutTransactions(const std::vector<TransactionPtr> &txns);
+			bool Puts(const std::vector<TransactionPtr> &txns);
 
-			bool DeleteAllTransactions();
+			bool DeleteAll();
 
-			size_t GetAllTransactionsCount() const;
+			size_t GetAllCount() const;
 
-			TransactionPtr GetTransaction(const uint256 &hash, const std::string &chainID);
+			TransactionPtr Get(const uint256 &hash, const std::string &chainID);
 
-			std::vector<TransactionPtr> GetAllConfirmedTxns(const std::string &chainID) const;
+			std::vector<TransactionPtr> GetAll(const std::string &chainID) const;
 
-			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+			bool Update(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			bool DeleteTxByHash(const uint256 &hash);
+			bool DeleteByHash(const uint256 &hash);
 
-			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
+			bool DeleteByHashes(const std::vector<uint256> &hashes);
 
 		private:
-			TransactionPtr SelectTxByHash(const std::string &hash, const std::string &chainID) const;
+			TransactionPtr SelectByHash(const std::string &hash, const std::string &chainID) const;
 
 			bool ContainHash(const std::string &hash) const;
 
-			bool PutTransactionInternal(const TransactionPtr &tx);
+			bool PutInternal(const TransactionPtr &tx);
 
 		protected:
 			std::string _tableName;

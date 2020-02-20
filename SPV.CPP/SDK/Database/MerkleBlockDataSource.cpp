@@ -138,18 +138,7 @@ namespace Elastos {
 		}
 
 		bool MerkleBlockDataSource::DeleteAllBlocks() {
-			return DoTransaction([this]() {
-				std::string sql;
-
-				sql = "DELETE FROM " + MB_TABLE_NAME + ";";
-
-				if (!_sqlite->exec(sql, nullptr, nullptr)) {
-					Log::error("exec sql: {}" + sql);
-					return false;
-				}
-
-				return true;
-			});
+			return DeleteAll(MB_TABLE_NAME);
 		}
 
 		std::vector<MerkleBlockPtr> MerkleBlockDataSource::GetAllMerkleBlocks(const std::string &chainID) const {

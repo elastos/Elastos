@@ -83,18 +83,7 @@ namespace Elastos {
 		}
 
 		bool AssetDataStore::DeleteAllAssets() {
-			return DoTransaction([this]() {
-				std::string sql;
-
-				sql = "DELETE FROM " + ASSET_TABLE_NAME + ";";
-
-				if (!_sqlite->exec(sql, nullptr, nullptr)) {
-					Log::error("exec sql: {}", sql);
-					return false;
-				}
-
-				return true;
-			});
+			return DeleteAll(ASSET_TABLE_NAME);
 		}
 
 		bool AssetDataStore::GetAssetDetails(const std::string &assetID, AssetEntity &asset) const {

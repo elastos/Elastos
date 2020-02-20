@@ -20,45 +20,35 @@
  * SOFTWARE.
  */
 
-#ifndef __ELASTOS_SDK_TABLEBASE_H__
-#define __ELASTOS_SDK_TABLEBASE_H__
+#ifndef __ELASTOS_SDK_ADDRESSUSED_H__
+#define __ELASTOS_SDK_ADDRESSUSED_H__
 
-#include "Sqlite.h"
-#include <CMakeConfig.h>
-
-#include <boost/function.hpp>
-
+#include "TableBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-#define ISO_OLD "ela"
-#define ISO "ela1"
-		class TableBase {
+		class AddressUsed : public TableBase {
 		public:
-			TableBase(Sqlite *sqlite);
+			AddressUsed(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
 
-			TableBase(SqliteTransactionType type, Sqlite *sqlite);
+			~AddressUsed();
 
 			virtual void InitializeTable();
 
-			virtual ~TableBase();
+			bool Puts(const std::vector<std::string> &addresses);
 
-			void flush();
+			std::vector<std::string> Gets() const;
 
-		protected:
-			void InitializeTable(const std::string &constructScript);
+			bool DeleteAll();
 
-			bool DoTransaction(const boost::function<bool()> &fun) const;
+		private:
+			bool PutInternal(const std::string &address);
 
-			bool DeleteAll(const std::string &tableName);
-
-		protected:
-			Sqlite *_sqlite;
-			SqliteTransactionType _txType;
 		};
 
 	}
 }
 
-#endif //__ELASTOS_SDK_TABLEBASE_H__
+
+#endif

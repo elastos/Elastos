@@ -131,7 +131,7 @@ namespace Elastos {
 					return ;
 				}
 
-				PutTransactions(txns);
+				Puts(txns);
 			}
 		}
 
