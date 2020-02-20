@@ -34,7 +34,7 @@ public class DIDStore: NSObject {
     }
     
     public func containsPrivateIdentity() throws -> Bool {
-        return self.storage.containsPrivateIdentity()
+        return storage.containsPrivateIdentity()
     }
 
     class func encryptToBase64(_ input: Data, _ storePass: String) throws -> String {
@@ -89,37 +89,37 @@ public class DIDStore: NSObject {
     public func initPrivateIdentity(_ language: Int,
                                     _ mnemonic: String,
                                     _ passPhrase: String?,
-                                    _ storePass: String) throws {
-        try initPrivateIdentity(language, mnemonic, passPhrase, storePass, false)
+                                    _ storePassword: String) throws {
+        try initPrivateIdentity(language, mnemonic, passPhrase, storePassword, false)
     }
     
-    public func exportMnemonic(using storePass: String) throws -> String {
-        guard !storePass.isEmpty else {
+    public func exportMnemonic(using storePassword: String) throws -> String {
+        guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
         let encryptedMnemonic = try storage.loadMnemonic()
-        let decryptedMnemonic = try DIDStore.decryptFromBase64(encryptedMnemonic, storePass)
+        let decryptedMnemonic = try DIDStore.decryptFromBase64(encryptedMnemonic, storePassword)
         return String(data: decryptedMnemonic, encoding: .utf8)!
     }
 
     // initialized from saved private identity in DIDStore.
-    func loadPrivateIdentity(_ storePass: String) throws -> HDKey {
+    func loadPrivateIdentity(_ storePassword: String) throws -> HDKey {
         guard try containsPrivateIdentity() else {
             throw DIDError.didStoreError("no private identity contained.")
         }
 
         let privityIdentity = try storage.loadPrivateIdentity()
-        let seed = try DIDStore.decryptFromBase64(privityIdentity, storePass)
+        let seed = try DIDStore.decryptFromBase64(privityIdentity, storePassword)
         return HDKey(seed)
     }
 
-    public func synchronize(using storePass: String) throws {
-        guard !storePass.isEmpty else {
+    public func synchronize(using storePassword: String) throws {
+        guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
-        let privityIdentity  = try loadPrivateIdentity(storePass)
+        let privityIdentity  = try loadPrivateIdentity(storePassword)
         let nextIndex = try storage.loadPrivateIdentityIndex()
         var blanks = 0
         var index = 0
@@ -139,7 +139,7 @@ public class DIDStore: NSObject {
 
             if doc != nil {
                 //save private key.
-                try storePrivateKey(did, doc!.defaultPublicKey, key.serialize(), storePass)
+                try storePrivateKey(did, doc!.defaultPublicKey, key.serialize(), storePassword)
                 try storeDid(doc!)
 
                 if index >= nextIndex {
@@ -152,22 +152,22 @@ public class DIDStore: NSObject {
         }
     }
 
-    public func newDid(_ alias: String?, using storePass: String) throws -> DIDDocument {
-        guard !storePass.isEmpty else {
+    public func newDid(_ alias: String?, using storePassword: String) throws -> DIDDocument {
+        guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
-        let privateIdentity = try loadPrivateIdentity(storePass)
+        let privateIdentity = try loadPrivateIdentity(storePassword)
         var nextIndex = try storage.loadPrivateIdentityIndex()
         let key = try privateIdentity.derive(nextIndex++)
         let did = DID(Constants.METHOD, key.getAddress())
         let id  = try DIDURL(did, "primary")
 
-        try storePrivateKey(did, id, key.serialize(), storePass)
+        try storePrivateKey(did, id, key.serialize(), storePassword)
 
         let builder = DIDDocumentBuilder(did, self)
         let doc = try builder.appendAuthenticationKey(id, try key.getPublicKeyBase58())
-                             .seal(using: storePass)
+                             .sealed(using: storePassword)
         doc.getMeta().setAlias(alias)
         try storeDid(doc)
 
@@ -182,8 +182,8 @@ public class DIDStore: NSObject {
         return try newDid(nil, using: storePass)
     }
     
-    public func publishDid(_ did: DID, using signKey: DIDURL?, storePass: String) throws -> String {
-        guard !storePass.isEmpty else {
+    public func publishDid(_ did: DID, using signKey: DIDURL?, storePassword: String) throws -> String {
+        guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
@@ -217,9 +217,9 @@ public class DIDStore: NSObject {
 
         var lastTransactionId = doc.transactionId
         if  lastTransactionId?.isEmpty ?? true {
-            lastTransactionId = try DIDBackend.shareInstance()!.create(doc, usedSignKey!, storePass)
+            lastTransactionId = try DIDBackend.shareInstance()!.create(doc, usedSignKey!, storePassword)
         } else {
-            lastTransactionId = try DIDBackend.shareInstance()!.update(doc, lastTransactionId!, usedSignKey!, storePass)
+            lastTransactionId = try DIDBackend.shareInstance()!.update(doc, lastTransactionId!, usedSignKey!, storePassword)
         }
 
         if let _ = lastTransactionId {
@@ -230,27 +230,27 @@ public class DIDStore: NSObject {
         return lastTransactionId ?? ""
     }
 
-    public func publishDid(_ did: String, using signKey: String?, storePass: String) throws -> String {
+    public func publishDid(_ did: String, using signKey: String?, storePassword: String) throws -> String {
         let didObj = try DID(did)
         var signKeyObj: DIDURL? = nil
         if let _ = signKey {
             signKeyObj = try DIDURL(didObj, signKey!)
         }
 
-        return try publishDid(DID(did), using: signKeyObj, storePass: storePass)
+        return try publishDid(DID(did), using: signKeyObj, storePassword: storePassword)
     }
 
-    public func publishDid(_ did: DID, using storePass: String) throws -> String {
-        return try publishDid(did, using: nil, storePass: storePass)
+    public func publishDid(_ did: DID, using storePassword: String) throws -> String {
+        return try publishDid(did, using: nil, storePassword: storePassword)
     }
 
-    public func publishDid(_ did: String, using storePass: String) throws -> String {
-        return try publishDid(DID(did), using: nil, storePass: storePass)
+    public func publishDid(_ did: String, using storePassword: String) throws -> String {
+        return try publishDid(DID(did), using: nil, storePassword: storePassword)
     }
     
     // Deactivate self use authentication keys
-    public func deactivateDid(_ did: DID, using signKey: DIDURL?, storePass: String) throws -> String {
-        guard !storePass.isEmpty else {
+    public func deactivateDid(_ did: DID, using signKey: DIDURL?, storePassword: String) throws -> String {
+        guard !storePassword.isEmpty else {
             throw DIDError.didStoreError("Invalid storePass")
         }
 
@@ -280,7 +280,7 @@ public class DIDStore: NSObject {
             usedSignKey = doc!.defaultPublicKey
         }
 
-        let transactionId = try DIDBackend.shareInstance()?.deactivate(doc!, usedSignKey!, storePass)
+        let transactionId = try DIDBackend.shareInstance()?.deactivate(doc!, usedSignKey!, storePassword)
 
         // Save deactivated status to DID metadata
         if localCopy {
@@ -291,27 +291,27 @@ public class DIDStore: NSObject {
         return transactionId ?? ""
     }
     
-    public func deactivateDid(_ did: String, using signKey: String?, storePass :String) throws -> String {
+    public func deactivateDid(_ did: String, using signKey: String?, storePassword :String) throws -> String {
         let didObj = try DID(did)
         var signKeyObj: DIDURL? = nil
         if let _ = signKey {
             signKeyObj = try DIDURL(didObj, signKey!)
         }
 
-        return try deactivateDid(didObj, using: signKeyObj, storePass: storePass)
+        return try deactivateDid(didObj, using: signKeyObj, storePassword: storePassword)
     }
 
-    public func deactivateDid(_ did: DID, using storePass: String) throws -> String {
-        return try deactivateDid(did, using: nil, storePass: storePass)
+    public func deactivateDid(_ did: DID, using storePassword: String) throws -> String {
+        return try deactivateDid(did, using: nil, storePassword: storePassword)
     }
 
-    public func deactivateDid(_ did: String, using storePass: String) throws -> String {
-        return try deactivateDid(DID(did), using: nil, storePass: storePass)
+    public func deactivateDid(_ did: String, using storePassword: String) throws -> String {
+        return try deactivateDid(DID(did), using: nil, storePassword: storePassword)
     }
     
     // Deactivate target DID with authorization
-    public func deactivateDid(_ target: DID, with did: DID, using signKey: DIDURL?, storePass: String) throws -> String {
-        guard !storePass.isEmpty else {
+    public func deactivateDid(_ target: DID, with did: DID, using signKey: DIDURL?, storePassword: String) throws -> String {
+        guard !storePassword.isEmpty else {
             throw DIDError.didStoreError()
         }
 
@@ -379,21 +379,21 @@ public class DIDStore: NSObject {
             throw DIDError.didStoreError("no matched authorization key found.")
         }
 
-        return try DIDBackend.shareInstance()?.deactivate(target, targetSignKey!, doc!, usedSignKey!, storePass) ?? ""
+        return try DIDBackend.shareInstance()?.deactivate(target, targetSignKey!, doc!, usedSignKey!, storePassword) ?? ""
     }
     
-    public func deactivateDid(_ target: String, with did: String, using signKey: String?, storePass: String) throws -> String {
+    public func deactivateDid(_ target: String, with did: String, using signKey: String?, storePassword: String) throws -> String {
         let didObj = try DID(did)
         var signKeyObj: DIDURL? = nil
         if let _ = signKey {
             signKeyObj = try DIDURL(didObj, signKey!)
         }
 
-        return try deactivateDid(DID(target), with: didObj, using: signKeyObj!, storePass: storePass)
+        return try deactivateDid(DID(target), with: didObj, using: signKeyObj!, storePassword: storePassword)
     }
 
-    public func deactivateDid(_ target: DID, with did: DID, using storePass: String) throws -> String {
-        return try deactivateDid(target, with: did, using: nil, storePass: storePass)
+    public func deactivateDid(_ target: DID, with did: DID, using storePassword: String) throws -> String {
+        return try deactivateDid(target, with: did, using: nil, storePassword: storePassword)
     }
 
     public func storeDid(_ doc: DIDDocument, withAlias: String?) throws {
@@ -608,8 +608,8 @@ public class DIDStore: NSObject {
         return try deletePrivateKey(_did, DIDURL(_did, id))
     }
 
-    func signEx(_ did: DID, _ id: DIDURL?, _ storePass: String, _ data: [Data]) throws -> String {
-        guard !storePass.isEmpty else {
+    func makeSignWithIdentity(_ did: DID, _ id: DIDURL?, _ storePassword: String, _ data: [Data]) throws -> String {
+        guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
@@ -623,7 +623,7 @@ public class DIDStore: NSObject {
             }
         }
 
-        let binKey = try DIDStore.decryptFromBase64(loadPrivateKey(did, id: usedId!), storePass)
+        let binKey = try DIDStore.decryptFromBase64(loadPrivateKey(did, id: usedId!), storePassword)
         let key = DerivedKey.deserialize(binKey)!
 
         // TODO:
@@ -633,11 +633,11 @@ public class DIDStore: NSObject {
         return signature?.base64EncodedString() ?? ""
     }
 
-    public func sign(_ did: DID, _ id: DIDURL?, _ storePass: String, _ data: Data...) throws -> String {
-        return try signEx(did, id, storePass, data)
+    public func makeSignWithIdentity(did: DID, id: DIDURL?, using storePassword: String, data: Data...) throws -> String {
+        return try makeSignWithIdentity(did, id, storePassword, data)
     }
 
-    public func sign(_ did: DID, _ storePass: String, _ data: Data...) throws -> String {
-        return try signEx(did, nil, storePass, data)
+    public func makeSignWithIdentity(did: DID, using storePassword: String, _ data: Data...) throws -> String {
+        return try makeSignWithIdentity(did, nil, storePassword, data)
     }
 }

@@ -20,23 +20,23 @@ public class VerifiablePresentationProof {
     }
 
     public var type: String {
-        return self._type
+        return _type
     }
 
     public var verificationMethod: DIDURL {
-        return self._verificationMethod
+        return _verificationMethod
     }
 
     public var realm: String {
-        return self._realm
+        return _realm
     }
 
     public var nonce: String {
-        return self._nonce
+        return _nonce
     }
 
     public var signature: String {
-        return self._signature
+        return _signature
     }
 
     class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiablePresentationProof {
@@ -71,11 +71,11 @@ public class VerifiablePresentationProof {
 
     func toJson(_ generator: JsonGenerator) {
         generator.writeStartObject()
-        generator.writeStringField(Constants.TYPE, self.type)
-        generator.writeStringField(Constants.VERIFICATION_METHOD, self.verificationMethod.toString())
-        generator.writeStringField(Constants.REALM, self.realm)
-        generator.writeStringField(Constants.NONCE, self.nonce)
-        generator.writeStringField(Constants.SIGNATURE, self.signature)
+        generator.writeStringField(Constants.TYPE, type)
+        generator.writeStringField(Constants.VERIFICATION_METHOD, verificationMethod.toString())
+        generator.writeStringField(Constants.REALM, realm)
+        generator.writeStringField(Constants.NONCE, nonce)
+        generator.writeStringField(Constants.SIGNATURE, signature)
         generator.writeEndObject()
     }
 }

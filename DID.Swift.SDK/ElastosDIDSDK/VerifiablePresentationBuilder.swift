@@ -5,18 +5,20 @@ public class VerifiablePresentationBuilder {
     private let _signKey: DIDURL
     private var _realm: String?
     private var _nonce: String?
-    private var _presentation: VerifiablePresentation?
+
+    private var presentation: VerifiablePresentation?
 
     init(_ signer: DIDDocument, _ signKey: DIDURL) {
         self._signer = signer
         self._signKey = signKey
-        self._presentation = VerifiablePresentation()
+
+        self.presentation = VerifiablePresentation()
     }
 
     public func withCredentials(_ credentials: VerifiableCredential...) throws
         -> VerifiablePresentationBuilder {
 
-        guard let _ = self._presentation else {
+        guard let _ = presentation else {
             throw DIDError.invalidState(Errors.PRESENTATION_ALREADY_SEALED)
         }
 
@@ -26,15 +28,17 @@ public class VerifiablePresentationBuilder {
                 throw DIDError.illegalArgument(
                     "Credential \(credential.getId()) not match with requested id")
             }
+            guard credential.checkIntegrity() else {
+                throw DIDError.illegalArgument("incomplete credential \(credential.toString())")
+            }
 
-            // TODO: integrity check.
-            self._presentation!.appendCredential(credential)
+            presentation!.appendCredential(credential)
         }
         return self
     }
 
     public func withRealm(_ realm: String) throws -> VerifiablePresentationBuilder {
-        guard let _ = self._presentation else {
+        guard let _ = presentation else {
             throw DIDError.invalidState(Errors.PRESENTATION_ALREADY_SEALED)
         }
         guard !realm.isEmpty else {
@@ -46,7 +50,7 @@ public class VerifiablePresentationBuilder {
     }
 
     public func withNonce(_ nonce: String) throws -> VerifiablePresentationBuilder {
-        guard let _ = self._presentation else {
+        guard let _ = presentation else {
             throw DIDError.invalidState(Errors.PRESENTATION_ALREADY_SEALED)
         }
         guard !nonce.isEmpty else {
@@ -57,32 +61,30 @@ public class VerifiablePresentationBuilder {
         return self
     }
 
-    public func seal(using storePass: String) throws -> VerifiablePresentation {
-        guard let _ = self._presentation else {
+    public func sealed(using storePassword: String) throws -> VerifiablePresentation {
+        guard let _ = presentation else {
             throw DIDError.invalidState(Errors.PRESENTATION_ALREADY_SEALED)
         }
-        guard !storePass.isEmpty else {
+        guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
-        guard self._presentation!.cedentialCount > 0 else {
+        guard presentation!.cedentialCount > 0 else {
             throw DIDError.illegalArgument()
         }
-        guard self._realm != nil && self._nonce != nil else {
+        guard _realm != nil && _nonce != nil else {
             throw DIDError.invalidState("Missing realm and nonce")
         }
 
-        let json = self._presentation!.toJson(true)
-        let signature = try self._signer.sign(using: self._signKey,
-                                          storePass: storePass,
-                                          json.data(using: .utf8)!)
+        let data: Data = presentation!.toJson(true)
+        let signature = try _signer.makeSignWithIdentiy(_signKey, storePassword, [data])
 
-        let proof = VerifiablePresentationProof(self._signKey, self._realm!, self._nonce!, signature)
-        self._presentation!.setProof(proof)
+        let proof = VerifiablePresentationProof(_signKey, _realm!, _nonce!, signature)
+        presentation!.setProof(proof)
 
         // invalidate builder.
-        let vp = self._presentation!
-        self._presentation = nil
+        let sealed = self.presentation!
+        self.presentation = nil
 
-        return vp
+        return sealed
     }
 }

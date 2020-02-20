@@ -4,23 +4,24 @@ public class VerifiableCredentialBuilder {
     private var _target: DID
     private var _signKey: DIDURL
     private var _forDoc: DIDDocument
-    private var _credential: VerifiableCredential?
+
+    private var credential: VerifiableCredential?
 
     init(_ target: DID, _ doc: DIDDocument, _ signKey: DIDURL) {
         self._target  = target
         self._forDoc  = doc
         self._signKey = signKey
 
-        self._credential = VerifiableCredential()
-        self._credential!.setIssuer(doc.subject)
+        self.credential = VerifiableCredential()
+        self.credential!.setIssuer(doc.subject)
     }
 
     public func withId(_ id: DIDURL) throws -> VerifiableCredentialBuilder {
-        guard let _ = self._credential else {
+        guard let _ = credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
 
-        self._credential!.setId(id)
+        credential!.setId(id)
         return self
     }
 
@@ -29,32 +30,32 @@ public class VerifiableCredentialBuilder {
             throw DIDError.illegalArgument()
         }
 
-        return try withId(try DIDURL(self._target, id))
+        return try withId(DIDURL(_target, id))
     }
 
     public func withTypes(_ types: String...) throws -> VerifiableCredentialBuilder {
-        guard let _ = self._credential else {
+        guard let _ = credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
         guard types.count > 0 else {
             throw DIDError.illegalArgument()
         }
 
-        self._credential!.setType(types)
+        credential!.setType(types)
         return self
     }
 
     public func withDefaultExpirationDate() throws -> VerifiableCredentialBuilder {
-        guard let _ = self._credential else {
+        guard let _ = credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
 
-        self._credential!.setExpirationDate(DateHelper.maxExpirationDate())
+        credential!.setExpirationDate(DateHelper.maxExpirationDate())
         return self
     }
 
     public func withExpirationDate(_ expirationDate: Date) throws -> VerifiableCredentialBuilder {
-        guard let _ = self._credential else {
+        guard let _ = credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
 
@@ -63,12 +64,12 @@ public class VerifiableCredentialBuilder {
             throw DIDError.illegalArgument()
         }
 
-        self._credential!.setExpirationDate(expirationDate)
+        credential!.setExpirationDate(expirationDate)
         return self
     }
 
     public func withProperties(_ properties: Dictionary<String,String>) throws -> VerifiableCredentialBuilder {
-        guard let _ = self._credential else {
+        guard let _ = credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
         guard properties.count > 0 else {
@@ -80,7 +81,7 @@ public class VerifiableCredentialBuilder {
     }
 
     public func withProperties(_ json: String) throws -> VerifiableCredentialBuilder {
-        guard let _ = self._credential else {
+        guard let _ = credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
         guard !json.isEmpty else {
@@ -92,47 +93,45 @@ public class VerifiableCredentialBuilder {
     }
 
     public func withProperties(_ data: Dictionary<String, Any>) throws -> VerifiableCredentialBuilder {
-        guard let _ = self._credential else {
+        guard let _ = credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
 
         // TODO:
 
-        let subject = VerifiableCredentialSubject(self._target)
+        let subject = VerifiableCredentialSubject(_target)
         subject.setProperties(JsonNode(data))
-        self._credential!.setSubject(subject)
+        credential!.setSubject(subject)
 
         return self
     }
 
-    public func seal(using storePass: String) throws -> VerifiableCredential {
-        guard let _ = self._credential else {
+    public func sealed(using storePassword: String) throws -> VerifiableCredential {
+        guard let _ = credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
-        guard !storePass.isEmpty else {
+        guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
-        guard self._credential!.checkIntegrity() else {
+        guard credential!.checkIntegrity() else {
             throw DIDError.malformedCredential("imcomplete credential")
         }
 
-        let date = DateHelper.currentDate()
-        self._credential!.setIssuanceDate(date)
-
-        if self._credential!.getExpirationDate() == nil {
+        credential!.setIssuanceDate(DateHelper.currentDate())
+        if credential!.getExpirationDate() == nil {
             _ = try withDefaultExpirationDate()
         }
 
-        let json = self._credential!.toJson(true, true)
-        let signature = try self._forDoc.sign(using: self._signKey, storePass: storePass, json.data(using: .utf8)!)
-        let proof = VerifiableCredentialProof(Constants.DEFAULT_PUBLICKEY_TYPE, self._signKey, signature)
+        let data: Data = credential!.toJson(true, true).data(using: .utf8)!
+        let signature = try _forDoc.makeSignWithIdentiy(_signKey, storePassword, [data])
+        let proof = VerifiableCredentialProof(Constants.DEFAULT_PUBLICKEY_TYPE, _signKey, signature)
 
-        self._credential!.setProof(proof)
+        credential!.setProof(proof)
 
         // invalidate builder
-        let credential = self._credential!
-        self._credential = nil
+        let sealed = self.credential!
+        self.credential = nil
 
-        return credential
+        return sealed
     }
 }

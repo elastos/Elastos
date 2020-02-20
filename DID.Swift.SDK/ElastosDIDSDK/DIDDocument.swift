@@ -59,7 +59,7 @@ private func selectObjects<T: DIDObject>(_ entries: Dictionary<DIDURL, T>?,
             // Credential' type is a list.
             if entry is VerifiableCredential {
                 let credential = entry as! VerifiableCredential
-                if !credential.getTypes()!.contains(type!) {
+                if !credential.getTypes().contains(type!) {
                     continue
                 }
             } else {
@@ -582,7 +582,7 @@ public class DIDDocument {
             throw DIDError.didStoreError("Not attached with DID store")
         }
 
-        return try getMeta().store!.signEx(self.subject, id, storePassword, data)
+        return try getMeta().store!.makeSignWithIdentity(subject, id, storePassword, data)
     }
 
     public func makeVerificationWithDefaultIdentity(using signature: String, data: Data...) throws -> Bool {

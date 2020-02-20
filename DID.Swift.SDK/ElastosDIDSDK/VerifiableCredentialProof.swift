@@ -12,15 +12,15 @@ public class VerifiableCredentialProof {
     }
 
     public var type: String {
-        return self._type
+        return _type
     }
 
     public var verificationMethod: DIDURL {
-        return self._verificationMethod
+        return _verificationMethod
     }
 
     public var signature: String {
-        return self._signature
+        return _signature
     }
     
     class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredentialProof {
@@ -47,12 +47,12 @@ public class VerifiableCredentialProof {
 
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) {
         generator.writeStartObject()
-        if normalized || self.type != Constants.DEFAULT_PUBLICKEY_TYPE {
-            generator.writeStringField(Constants.TYPE, self.type)
+        if normalized || type != Constants.DEFAULT_PUBLICKEY_TYPE {
+            generator.writeStringField(Constants.TYPE, type)
         }
 
         generator.writeStringField(Constants.VERIFICATION_METHOD, IDGetter(verificationMethod, ref).value(normalized))
-        generator.writeStringField(Constants.SIGNATURE, self.signature)
+        generator.writeStringField(Constants.SIGNATURE, signature)
         generator.writeEndObject()
     }
 }

@@ -6,21 +6,24 @@ public class VerifiableCredentialIssuer {
 
     private init(_ doc: DIDDocument, _ signKey: DIDURL? = nil) throws {
         // use the default public key if no signKey provided.
-        let key = signKey != nil ? signKey! : doc.defaultPublicKey
+        var key = signKey
+        if  key == nil {
+            key = doc.defaultPublicKey
+        }
 
         // The key would be used to sign verifiable crendetial when using
         // builder to create a new verifiable credential. So,
         // should make sure the key would be authenticationKey and
         // has corresponding private key to make sign.
-        guard doc.containsAuthenticationKey(forId: key) else {
+        guard doc.containsAuthenticationKey(forId: key!) else {
             throw DIDError.illegalArgument()
         }
-        guard try doc.containsPrivateKey(forId: key) else {
+        guard doc.containsPrivateKey(forId: key!) else {
             throw DIDError.illegalArgument(Errors.NO_PRIVATE_KEY_EXIST)
         }
 
         self._issuerDoc = doc
-        self._signKey = key
+        self._signKey = key!
     }
 
     public convenience init(_ doc: DIDDocument, _ signKey: DIDURL) throws {
@@ -50,18 +53,18 @@ public class VerifiableCredentialIssuer {
     }
 
     public var did: DID {
-        return self._issuerDoc.subject
+        return _issuerDoc.subject
     }
     
     public var signKey: DIDURL {
-        return self._signKey
+        return _signKey
     }
 
-    public func createBuilder(forDid did: String) throws -> VerifiableCredentialBuilder {
-        return VerifiableCredentialBuilder(try DID(did), self._issuerDoc, self.signKey)
+    public func editingVerifiableCredential(for did: String) throws -> VerifiableCredentialBuilder {
+        return VerifiableCredentialBuilder(try DID(did), _issuerDoc, signKey)
     }
 
-    public func createBuilder(forDid did: DID) -> VerifiableCredentialBuilder {
-        return VerifiableCredentialBuilder(did, self._issuerDoc, self.signKey)
+    public func editingVerifiableCredential(for did: DID) -> VerifiableCredentialBuilder {
+        return VerifiableCredentialBuilder(did, _issuerDoc, signKey)
     }
 }
