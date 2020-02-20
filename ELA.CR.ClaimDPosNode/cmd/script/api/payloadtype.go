@@ -959,10 +959,10 @@ func newCRCProposal(L *lua.LState) int {
 		budgetStr = strings.Replace(budgetStr, "}", "", 1)
 		amount, _ := common.StringToFixed64(budgetStr)
 		var budgetType = payload.NormalPayment
-		if int(index) == 0 {
+		if int(index) == 1 {
 			budgetType = payload.Imprest
 		}
-		if int(index) == budgetsTable.Len()-1 {
+		if int(index) == budgetsTable.Len() {
 			budgetType = payload.FinalPayment
 		}
 		budget := &payload.Budget{
