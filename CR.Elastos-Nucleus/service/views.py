@@ -161,10 +161,8 @@ def upload_and_sign(request):
                     return redirect(reverse('service:upload_and_sign'))
                 finally:
                     temp_file.delete()
-                    file_to_delete = os.path.join(MEDIA_ROOT + '/user_files/', user_uploaded_file.name)
-                    if remove_uploaded_file and os.path.isfile(file_to_delete):
-
-                        os.remove(file_to_delete)
+                    if remove_uploaded_file:
+                        os.remove(os.path.join(MEDIA_ROOT + '/user_files/', user_uploaded_file.name))
                     hive.close()
         else:
             return redirect(reverse('service:upload_and_sign'))
