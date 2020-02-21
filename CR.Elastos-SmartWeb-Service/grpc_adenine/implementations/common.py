@@ -9,7 +9,7 @@ from grpc_adenine.database.user_api_relation import UserApiRelations
 from grpc_adenine.stubs.python import common_pb2, common_pb2_grpc
 from sqlalchemy.orm import sessionmaker
 from grpc_adenine import settings
-from grpc_adenine.implementations.utils import check_rate_limit, get_info_from_mnemonics
+from grpc_adenine.implementations.utils import get_info_from_mnemonics
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 
 
@@ -89,7 +89,7 @@ def generate_api_key(session, rate_limiter, did):
     if result:
         insert = session.query(UserApiRelations).filter_by(user_id=result.id).first()
         # check rate limit
-        response = check_rate_limit(rate_limiter, settings.GENERATE_API_LIMIT, insert.api_key,
+        response = rate_limiter.check_rate_limit(settings.GENERATE_API_LIMIT, insert.api_key,
                                     generate_api_key.__name__)
         if response:
             return common_pb2.Response(api_key='', status_message='Number of daily access limit exceeded',

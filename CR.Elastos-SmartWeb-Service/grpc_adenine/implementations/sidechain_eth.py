@@ -1,15 +1,17 @@
 import json
 from decouple import config
 from requests import Session
-from pathlib import Path
 import logging
+
+from sqlalchemy.orm import sessionmaker
 from web3 import Web3, HTTPProvider
 from web3.middleware import geth_poa_middleware
 from solc import compile_standard
 
 from grpc_adenine import settings
+from grpc_adenine.database import db_engine
 from grpc_adenine.implementations.rate_limiter import RateLimiter
-from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit, get_did_from_api
+from grpc_adenine.implementations.utils import validate_api_key, get_did_from_api
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs.python import sidechain_eth_pb2, sidechain_eth_pb2_grpc
 
@@ -22,7 +24,8 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         }
         self.session = Session()
         self.session.headers.update(headers)
-        self.rate_limiter = RateLimiter(self.session)
+        session_maker = sessionmaker(bind=db_engine)
+        self.rate_limiter = RateLimiter(session_maker())
 
     def DeployEthContract(self, request, context):
 
@@ -42,7 +45,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
                                               status_message='API Key could not be verified', status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        response = check_rate_limit(self.rate_limiter, settings.DEPLOY_ETH_CONTRACT_LIMIT, api_key,
+        response = self.rate_limiter.check_rate_limit(settings.DEPLOY_ETH_CONTRACT_LIMIT, api_key,
                                     self.DeployEthContract.__name__)
         if response:
             return sidechain_eth_pb2.Response(output=json.dumps(response),
@@ -151,7 +154,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
                                               status_message='API Key could not be verified', status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        response = check_rate_limit(self.rate_limiter, settings.WATCH_ETH_CONTRACT_LIMIT, api_key,
+        response = self.rate_limiter.check_rate_limit(settings.WATCH_ETH_CONTRACT_LIMIT, api_key,
                                     self.WatchEthContract.__name__)
         if response:
             return sidechain_eth_pb2.Response(output=json.dumps(response),

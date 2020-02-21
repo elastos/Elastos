@@ -3,14 +3,16 @@ import secrets
 import logging
 from requests import Session
 from decouple import config
+from sqlalchemy.orm import sessionmaker
 
 from web3 import Web3, HTTPProvider
 from web3.middleware import geth_poa_middleware
 
 from grpc_adenine import settings
+from grpc_adenine.database import db_engine
 from grpc_adenine.implementations import WalletAddresses, WalletAddressesETH
 from grpc_adenine.implementations.rate_limiter import RateLimiter
-from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit, get_did_from_api
+from grpc_adenine.implementations.utils import validate_api_key, get_did_from_api
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs.python import wallet_pb2, wallet_pb2_grpc
 
@@ -24,7 +26,8 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         }
         self.session = Session()
         self.session.headers.update(headers)
-        self.rate_limiter = RateLimiter(self.session)
+        session_maker = sessionmaker(bind=db_engine)
+        self.rate_limiter = RateLimiter(session_maker())
 
     def CreateWallet(self, request, context):
 
@@ -44,7 +47,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                                        status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        response = check_rate_limit(self.rate_limiter, settings.CREATE_WALLET_LIMIT, api_key,
+        response = self.rate_limiter.check_rate_limit(settings.CREATE_WALLET_LIMIT, api_key,
                                     self.CreateWallet.__name__)
         if response:
             return wallet_pb2.Response(output=json.dumps(response),
@@ -123,7 +126,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                                        status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        response = check_rate_limit(self.rate_limiter, settings.VIEW_WALLET_LIMIT, api_key, self.ViewWallet.__name__)
+        response = self.rate_limiter.check_rate_limit(settings.VIEW_WALLET_LIMIT, api_key, self.ViewWallet.__name__)
         if response:
             return wallet_pb2.Response(output=json.dumps(response),
                                        status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
@@ -164,7 +167,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                                        status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        response = check_rate_limit(self.rate_limiter, settings.REQUEST_ELA_LIMIT, api_key, self.RequestELA.__name__)
+        response = self.rate_limiter.check_rate_limit(settings.REQUEST_ELA_LIMIT, api_key, self.RequestELA.__name__)
         if response:
             return wallet_pb2.Response(output=json.dumps(response),
                                        status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',

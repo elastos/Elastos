@@ -3,10 +3,13 @@ from decouple import config
 from requests import Session
 import logging
 import sys
+from sqlalchemy.orm import sessionmaker
+
 from grpc_adenine import settings
+from grpc_adenine.database import db_engine
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs.python import hive_pb2, hive_pb2_grpc
-from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key, check_rate_limit, get_did_from_api
+from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key, get_did_from_api
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 from cryptography.fernet import Fernet
 
@@ -25,7 +28,8 @@ class Hive(hive_pb2_grpc.HiveServicer):
             "general": headers_general,
             "hive": headers_hive
         }
-        self.rate_limiter = RateLimiter(self.session)
+        session_maker = sessionmaker(bind=db_engine)
+        self.rate_limiter = RateLimiter(session_maker())
 
     def UploadAndSign(self, request, context):
 
@@ -46,7 +50,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
             return hive_pb2.Response(output=json.dumps(response), status_message=status_message, status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        response = check_rate_limit(self.rate_limiter, settings.UPLOAD_AND_SIGN_LIMIT, api_key,
+        response = self.rate_limiter.check_rate_limit(settings.UPLOAD_AND_SIGN_LIMIT, api_key,
                                     self.UploadAndSign.__name__)
         if response:
             return hive_pb2.Response(output=json.dumps(response),
@@ -126,7 +130,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
                                      status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        response = check_rate_limit(self.rate_limiter, settings.VERIFY_AND_SHOW_LIMIT, api_key,
+        response = self.rate_limiter.check_rate_limit(settings.VERIFY_AND_SHOW_LIMIT, api_key,
                                     self.VerifyAndShow.__name__)
         if response:
             return hive_pb2.Response(output=json.dumps(response),

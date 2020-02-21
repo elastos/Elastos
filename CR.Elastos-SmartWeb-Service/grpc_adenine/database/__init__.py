@@ -1,7 +1,6 @@
 import logging
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy_wrapper import SQLAlchemy
 from decouple import config
 
@@ -26,7 +25,6 @@ if gce:
 
 try:
     db_engine = create_engine(database_uri)
-    session_maker = sessionmaker(bind=db_engine)
     connection = SQLAlchemy(database_uri)
 except Exception as e:
     logging.debug(f"Error while connecting to the database: {e}")

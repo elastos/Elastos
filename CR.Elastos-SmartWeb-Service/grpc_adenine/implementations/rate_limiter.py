@@ -1,4 +1,5 @@
 import datetime
+
 from grpc_adenine.database.user_api_relation import UserApiRelations
 from grpc_adenine.database.services_list import ServicesLists
 
@@ -7,6 +8,28 @@ class RateLimiter:
     def __init__(self, session):
         self.date_format = '%Y-%m-%d %H:%M:%S.%f'
         self.session = session
+
+    def check_rate_limit(self, limit, api_key, service_name):
+        response = {}
+        result = self.get_last_access_count(api_key, service_name)
+        if result:
+            if result["diff"] < 86400:
+                if limit > result["access_count"]:
+                    self.add_access_count(result["user_api_id"], service_name, 'increment')
+                else:
+                    response = {
+                        'result': {
+                            'API': service_name,
+                            'daily_limit': limit,
+                            'num_requests': result['access_count']
+                        }
+                    }
+                    return response
+            else:
+                self.add_access_count(result["user_api_id"], service_name, 'reset')
+        else:
+            self.add_new_access_entry(api_key, service_name)
+        return response
 
     def get_last_access_count(self, api_key, service_name):
         api_key_data = self.session.query(UserApiRelations).filter_by(api_key=api_key).first()

@@ -4,9 +4,10 @@ import logging
 
 import pytz
 from requests import Session
+from sqlalchemy.orm import sessionmaker
 
 from grpc_adenine import settings
-from grpc_adenine.database import connection, session_maker
+from grpc_adenine.database import connection, db_engine
 from grpc_adenine.database.user_api_relation import UserApiRelations
 from grpc_adenine.database.user import Users
 from sqlalchemy.sql import exists
@@ -24,34 +25,12 @@ headers = {
 }
 session = Session()
 session.headers.update(headers)
+session_maker = sessionmaker(bind=db_engine)
 
 
 def validate_api_key(api_key):
     result = connection.query(exists().where(UserApiRelations.api_key == api_key)).scalar()
     return result
-
-
-def check_rate_limit(rate_limiter, limit, api_key, service_name):
-    response = {}
-    result = rate_limiter.get_last_access_count(api_key, service_name)
-    if result:
-        if result["diff"] < 86400:
-            if limit > result["access_count"]:
-                rate_limiter.add_access_count(result["user_api_id"], service_name, 'increment')
-            else:
-                response = {
-                    'result': {
-                        'API': service_name,
-                        'daily_limit': limit,
-                        'num_requests': result['access_count']
-                    }
-                }
-                return response
-        else:
-            rate_limiter.add_access_count(result["user_api_id"], service_name, 'reset')
-    else:
-        rate_limiter.add_new_access_entry(api_key, service_name)
-    return response
 
 
 def get_time():
