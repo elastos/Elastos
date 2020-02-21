@@ -36,28 +36,29 @@ database_uri = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_na
 create_scripts = "grpc_adenine/database/scripts/create_table_scripts.sql"
 reset_scripts = "grpc_adenine/database/scripts/reset_database.sql"
 
+
 def create_database_tables():
 	# Connect to the PostgreSQL database and create tables
-	postgresConnection = psycopg2.connect(database_uri)
-	cursor = postgresConnection.cursor()
+	postgres_connection = psycopg2.connect(database_uri)
+	cursor = postgres_connection.cursor()
 
 	sql = open(create_scripts, mode='r', encoding='utf-8-sig').read()
 	cursor.execute(sql)
-	postgresConnection.commit()
+	postgres_connection.commit()
 	cursor.close()
-	postgresConnection.close()
+	postgres_connection.close()
 
 
 def reset_database_tables():
-	#reset database tables
-	postgresConnection = psycopg2.connect(database_uri)
-	cursor = postgresConnection.cursor()
+	# reset database tables
+	postgres_connection = psycopg2.connect(database_uri)
+	cursor = postgres_connection.cursor()
 
 	sql = open(reset_scripts, mode='r', encoding='utf-8-sig').read()
 	cursor.execute(sql)
-	postgresConnection.commit()
+	postgres_connection.commit()
 	cursor.close()
-	postgresConnection.close()
+	postgres_connection.close()
 
 
 class RunTest(unittest.TestCase):
@@ -68,12 +69,12 @@ class RunTest(unittest.TestCase):
 		self.session = session_maker()
 		self.rate_limiter = RateLimiter(self.session)
 
-	#testing Generate API Key with valid DID
+	# testing Generate API Key with valid DID
 	def test_generate_api_key(self):
 		response = generate_api_key(self.session, self.rate_limiter, did_to_use)
 		self.assertEqual(response.status, True)
 
-	#testing Get API Key with valid DID
+	# testing Get API Key with valid DID
 	def test_get_api_key(self):
 		generate_api_key(self.session, self.rate_limiter, did_to_use)
 		response = get_api_key(self.session, did_to_use)
