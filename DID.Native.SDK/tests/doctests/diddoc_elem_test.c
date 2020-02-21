@@ -11,6 +11,7 @@
 #include "constant.h"
 #include "diddocument.h"
 #include "HDkey.h"
+#include "credential.h"
 
 static DIDDocument *doc;
 static DID *did;
@@ -847,6 +848,62 @@ static void test_diddoc_add_credential(void)
     DIDDocument_Destroy(sealeddoc);
 }
 
+static void test_diddoc_add_selfclaimed_credential(void)
+{
+    DIDDocument *sealeddoc;
+    DIDDocumentBuilder *builder;
+    Credential *vc;
+    bool isEquals;
+    int rc;
+
+    builder = DIDDocument_Modify(doc);
+    CU_ASSERT_PTR_NOT_NULL(builder);
+
+    // Add self claim credential.
+    builder = DIDDocument_Modify(doc);
+    CU_ASSERT_PTR_NOT_NULL(builder);
+
+    const char *types[] = {"BasicProfileCredential", "SelfProclaimedCredential"};
+    Property props[2];
+    props[0].key = "nation";
+    props[0].value = "Singapore";
+    props[1].key = "passport";
+    props[1].value = "S653258Z07";
+
+    rc = DIDDocumentBuilder_AddSelfClaimedCredential(builder, "passport",
+            types, 2, props, 2, DIDDocument_GetExpires(doc), storepass);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    sealeddoc = DIDDocumentBuilder_Seal(builder, storepass);
+    CU_ASSERT_PTR_NOT_NULL(sealeddoc);
+    CU_ASSERT_TRUE(DIDDocument_IsValid(sealeddoc));
+    DIDDocumentBuilder_Destroy(builder);
+
+    // check credential
+    DIDURL *id = DIDURL_FromDid(did, "passport");
+    CU_ASSERT_PTR_NOT_NULL(id);
+
+    vc = DIDDocument_GetCredential(sealeddoc, id);
+    CU_ASSERT_PTR_NOT_NULL(vc);
+    CU_ASSERT_TRUE(Credential_IsSelfProclaimed(vc));
+    CU_ASSERT_EQUAL(Credential_GetTypeCount(vc), 2);
+    CU_ASSERT_EQUAL(Credential_GetPropertyCount(vc), 2);
+    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "passport"), "S653258Z07");
+
+    const char *types1[2];
+    rc = Credential_GetTypes(vc, types1, sizeof(types1));
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    for (int i = 0; i < 2; i++) {
+        const char *type = types1[i];
+        CU_ASSERT_TRUE(!strcmp(type, "BasicProfileCredential") ||
+                !strcmp(type, "SelfProclaimedCredential"));
+    }
+
+    DIDURL_Destroy(id);
+    DIDDocument_Destroy(sealeddoc);
+}
+
 static void test_diddoc_remove_credential(void)
 {
     DIDDocument *sealeddoc;
@@ -1128,6 +1185,7 @@ static CU_TestInfo cases[] = {
     { "test_diddoc_remove_authorization_key",      test_diddoc_remove_authorization_key  },
     { "test_diddoc_get_credential",                test_diddoc_get_credential            },
     { "test_diddoc_add_credential",                test_diddoc_add_credential            },
+    { "test_diddoc_add_selfclaimed_credential",    test_diddoc_add_selfclaimed_credential},
     { "test_diddoc_remove_credential",             test_diddoc_remove_credential         },
     { "test_diddoc_get_service",                   test_diddoc_get_service               },
     { "test_diddoc_add_service",                   test_diddoc_add_service               },

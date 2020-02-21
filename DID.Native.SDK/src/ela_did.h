@@ -870,6 +870,9 @@ DID_API int DIDDocumentBuilder_RemoveAuthorizationKey(DIDDocumentBuilder *builde
 DID_API int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder,
         Credential *credential);
 
+DID_API int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
+        const char *fragment, const char **types, size_t typesize,
+        Property *properties, int propsize, time_t expires, const char *storepass);
 /**
  * \~English
  * Remove specified credential from credential array.

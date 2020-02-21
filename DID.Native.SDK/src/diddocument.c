@@ -1417,6 +1417,55 @@ int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder, Credential *cr
     return 0;
 }
 
+int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
+        const char *fragment, const char **types, size_t typesize,
+        Property *properties, int propsize, time_t expires, const char *storepass)
+{
+    DIDDocument *document;
+    Credential **creds;
+    Credential *cred;
+    Issuer *issuer;
+    const char *ntpyes[] = {"SelfProclaimedCredential"};
+
+    if (!builder || !builder->document || !fragment || !*fragment
+            || !properties || propsize <= 0 || !expires || !storepass || !*storepass)
+        return -1;
+
+    document = builder->document;
+    issuer = Issuer_Create(&document->did, DIDDocument_GetDefaultPublicKey(document));
+    if (!issuer)
+        return -1;
+
+    if (!types) {
+        types = ntpyes;
+        typesize = 1;
+    }
+
+    cred = Issuer_CreateCredential(DIDDocument_GetSubject(document), fragment, issuer,
+        types, typesize, properties, propsize, expires, storepass);
+    if (!cred) {
+        Issuer_Destroy(issuer);
+        return -1;
+    }
+
+    if (document->credentials.size == 0)
+        creds = (Credential**)calloc(1, sizeof(Credential*));
+    else
+        creds = (Credential**)realloc(document->credentials.credentials,
+                       (document->credentials.size + 1) * sizeof(Credential*));
+
+    if (!creds){
+        Credential_Destroy(cred);
+        Issuer_Destroy(issuer);
+        return -1;
+    }
+
+    creds[document->credentials.size++] = cred;
+    document->credentials.credentials = creds;
+
+    return 0;
+}
+
 int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder, DIDURL *credid)
 {
     DIDDocument *document;
