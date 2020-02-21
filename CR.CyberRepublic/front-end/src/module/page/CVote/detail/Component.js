@@ -69,14 +69,18 @@ const renderRichContent = (data, key, title) => {
   ) {
     rc = (
       <div>
-        <Subtitle>{`${I18N.get('suggestion.budget.total')} (ELA)`}</Subtitle>
+        <Subtitle>{`${I18N.get("suggestion.budget.total")} (ELA)`}</Subtitle>
         <Paragraph>{data.budgetAmount}</Paragraph>
-        <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
+        <Subtitle>{I18N.get("suggestion.budget.address")}</Subtitle>
         <Paragraph>{data.elaAddress}</Paragraph>
-        <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
-        <PaymentList list={data.budget} editable={false} />
+        <Subtitle>{I18N.get("suggestion.budget.schedule")}</Subtitle>
+        <PaymentList
+          list={data.budget}
+          milestone={data.plan.milestone}
+          editable={false}
+        />
       </div>
-    )
+    );
   } else if (
     key === 'plan' &&
     data.plan &&
