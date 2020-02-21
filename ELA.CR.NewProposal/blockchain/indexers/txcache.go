@@ -47,9 +47,10 @@ func (t *TxInfo) Deserialize(r io.Reader) (err error) {
 }
 
 type TxCache struct {
-	txns          map[common.Uint256]*TxInfo
-	txCacheVolume uint32
+	txns map[common.Uint256]*TxInfo
 	sync.RWMutex
+
+	params *config.Params
 }
 
 func (t *TxCache) Serialize(w io.Writer) (err error) {
@@ -90,9 +91,13 @@ func (t *TxCache) Deserialize(r io.Reader) (err error) {
 }
 
 func (t *TxCache) setTxn(height uint32, txn *types.Transaction) {
+	if t.params.NodeProfileStrategy ==
+		config.MemoryFirst.String() {
+		return
+	}
+
 	t.Lock()
 	defer t.Unlock()
-
 	t.txns[txn.Hash()] = &TxInfo{
 		blockHeight: height,
 		txn:         txn,
@@ -100,9 +105,13 @@ func (t *TxCache) setTxn(height uint32, txn *types.Transaction) {
 }
 
 func (t *TxCache) deleteTxn(hash common.Uint256) {
+	if t.params.NodeProfileStrategy ==
+		config.MemoryFirst.String() {
+		return
+	}
+
 	t.Lock()
 	defer t.Unlock()
-
 	delete(t.txns, hash)
 }
 
@@ -114,15 +123,17 @@ func (t *TxCache) getTxn(hash common.Uint256) *TxInfo {
 }
 
 func (t *TxCache) trim() {
+	if t.params.NodeProfileStrategy ==
+		config.MemoryFirst.String() {
+		return
+	}
+
 	t.Lock()
 	defer t.Unlock()
 
-	trigger := t.txCacheVolume + TrimmingInterval
-	//fmt.Println("cache volume:", t.txCacheVolume)
-	//fmt.Println("trigger:", trigger)
-
+	trigger := t.params.TxCacheVolume + TrimmingInterval
 	if len(t.txns) > int(trigger) {
-		extra := len(t.txns) - int(t.txCacheVolume)
+		extra := len(t.txns) - int(t.params.TxCacheVolume)
 		for k := range t.txns {
 			delete(t.txns, k)
 			extra--
@@ -137,6 +148,6 @@ func NewTxCache(params *config.Params) *TxCache {
 	return &TxCache{
 		txns: make(map[common.Uint256]*TxInfo, params.TxCacheVolume+
 			TrimmingInterval),
-		txCacheVolume: params.TxCacheVolume,
+		params: params,
 	}
 }

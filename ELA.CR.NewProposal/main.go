@@ -245,7 +245,6 @@ func startNode(c *cli.Context, st *settings.Settings) {
 	routesCfg.RelayAddr = server.RelayInventory
 	blockMemPool.IsCurrent = server.IsCurrent
 
-
 	committee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
 		GetTxReference:                   chain.UTXOCache.GetTxReference,
 		GetUTXO:                          chainStore.GetFFLDB().GetUTXO,
@@ -311,7 +310,6 @@ func startNode(c *cli.Context, st *settings.Settings) {
 		printErrorAndExit(err)
 	}
 	pgBar.Stop()
-	st.Params().CkpManager.SetNeedSave(true)
 
 	log.Info("Start the P2P networks")
 	server.Start()
@@ -342,6 +340,8 @@ func startNode(c *cli.Context, st *settings.Settings) {
 		log.Info("Start POW Services")
 		go servers.Pow.Start()
 	}
+
+	st.Params().CkpManager.SetNeedSave(true)
 
 	<-interrupt.C
 }

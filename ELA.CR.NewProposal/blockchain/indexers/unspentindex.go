@@ -285,6 +285,9 @@ func NewUnspentIndex(db database.DB, params *config.Params) *UnspentIndex {
 		db:      db,
 		txCache: NewTxCache(params),
 	}
-	params.CkpManager.Register(NewCheckpoint(unspentIndex))
+	if params.NodeProfileStrategy !=
+		config.MemoryFirst.String() {
+		params.CkpManager.Register(NewCheckpoint(unspentIndex))
+	}
 	return unspentIndex
 }
