@@ -3,7 +3,7 @@ astroid==2.3.2
 autopep8==1.4.4
 certifi==2019.9.11
 chardet==3.0.4
-Django==2.2.9
+Django==2.2.10
 django-admin-tools==0.8.1
 django-appconf==1.0.3
 django-classy-tags==0.9.0
