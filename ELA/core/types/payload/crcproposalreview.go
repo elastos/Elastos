@@ -14,14 +14,28 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-type VoteResult byte
+const CRCProposalReviewVersion byte = 0x00
 
 const (
 	Approve VoteResult = 0x00
 	Reject  VoteResult = 0x01
 	Abstain VoteResult = 0x02
 )
-const CRCProposalReviewVersion byte = 0x00
+
+type VoteResult byte
+
+func (v VoteResult) Name() string {
+	switch v {
+	case Approve:
+		return "approve"
+	case Reject:
+		return "reject"
+	case Abstain:
+		return "abstain"
+	default:
+		return "unknown"
+	}
+}
 
 type CRCProposalReview struct {
 	ProposalHash common.Uint256

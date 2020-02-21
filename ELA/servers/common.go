@@ -197,9 +197,80 @@ type CancelProducerInfo struct {
 	Signature      string `json:"signature"`
 }
 
+type InactiveArbitratorsInfo struct {
+	Sponsor     string   `json:"sponsor"`
+	Arbitrators []string `json:"arbitrators"`
+	BlockHeight uint32   `json:"blockheight"`
+}
+
 type ActivateProducerInfo struct {
 	NodePublicKey string `json:"nodepublickey"`
 	Signature     string `json:"signature"`
+}
+
+type UpdateVersionInfo struct {
+	StartHeight uint32 `json:"startheight"`
+	EndHeight   uint32 `json:"endheight"`
+}
+
+type CRInfo struct {
+	Code      string `json:"code"`
+	DID       string `json:"did"`
+	NickName  string `json:"nickname"`
+	Url       string `json:"url"`
+	Location  uint64 `json:"location"`
+	Signature string `json:"signature"`
+}
+
+type UnregisterCRInfo struct {
+	DID       string `json:"did"`
+	Signature string `json:"signature"`
+}
+
+type BudgetInfo struct {
+	Type   string `json:"type"`
+	Stage  uint8  `json:"stage"`
+	Amount string `json:"amount"`
+}
+type CRCProposalInfo struct {
+	ProposalType     string       `json:"proposaltype"`
+	CategoryData     string       `json:"categorydata"`
+	SponsorPublicKey string       `json:"sponsorpublickey"`
+	DraftHash        string       `json:"drafthash"`
+	Budgets          []BudgetInfo `json:"budgets"`
+	Recipient        string       `json:"recipient"`
+	Sign             string       `json:"sign"`
+	CRSponsorDID     string       `json:"crsponsordid"`
+	CROpinionHash    string       `json:"cropinionHash"`
+	CRSign           string       `json:"crsign"`
+	Hash             string       `json:"hash"`
+}
+
+type CRCProposalReviewInfo struct {
+	ProposalHash string `json:"proposalhash"`
+	VoteResult   string `json:"voteresult"`
+	DID          string `json:"did"`
+	Sign         string `json:"sign"`
+}
+
+type CRCProposalTrackingInfo struct {
+	ProposalTrackingType string `json:"proposaltrackingtype"`
+	ProposalHash         string `json:"proposalhash"`
+	DocumentHash         string `json:"documenthash"`
+	Stage                uint8  `json:"stage"`
+	LeaderPubKey         string `json:"leaderpubkey"`
+	NewLeaderPubKey      string `json:"newleaderpubkey"`
+	LeaderSign           string `json:"leadersign"`
+	NewLeaderSign        string `json:"newleadersign"`
+	SecretaryOpinionHash string `json:"secretaryopinionhash"`
+	SecretaryGeneralSign string `json:"secretarygeneralsign"`
+}
+
+type CRCProposalWithdrawInfo struct {
+	ProposalHash     string `json:"proposalhash"`
+	SponsorPublicKey string `json:"sponsorpublickey"`
+	Fee              string `json:"fee"`
+	Sign             string `json:"sign"`
 }
 
 type UTXOInfo struct {

@@ -84,6 +84,19 @@ const (
 
 type BudgetType byte
 
+func (b BudgetType) Name() string {
+	switch b {
+	case Imprest:
+		return "Imprest"
+	case NormalPayment:
+		return "NormalPayment"
+	case FinalPayment:
+		return "FinalPayment"
+	default:
+		return "Unknown"
+	}
+}
+
 type Budget struct {
 	Type   BudgetType
 	Stage  byte
