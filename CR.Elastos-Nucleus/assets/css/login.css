@@ -120,6 +120,10 @@
   margin: 20px 20px;
 }
 
+.container .console-services-image {
+  margin: 0px;
+}  
+
 .console-services-category {
   opacity: 0.7;
   font-size: 14px;
@@ -159,3 +163,7 @@
   margin: 20px;
 }
 
+.container {
+  padding-left: 25px !important; 
+  padding-right: 25px !important;
+}

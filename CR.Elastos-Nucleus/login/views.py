@@ -25,7 +25,7 @@ from .models import DIDUser
 from .forms import DIDUserCreationForm, DIDUserChangeForm
 from service.forms import SuggestServiceForm
 from .tokens import account_activation_token
-from .your_activity_dict import get_activity_string
+from .your_activity_dict import get_activity_model
 from service.models import UserServiceSessionVars, SavedFileInformation
 
 
@@ -62,7 +62,6 @@ def edit_profile(request):
         form = DIDUserChangeForm(request.POST, instance=request.user)
 
         if form.is_valid():
-
             user = form.save(commit=False)
             # This means the user changed their email address
             if user.email != did_user.email:
@@ -109,19 +108,31 @@ def feed(request):
     recent_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-last_visited')[:5]
     most_visited_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-number_visits')[:5]
     your_activity_list = []
-    for items in most_visited_pages:
+    all_apps = settings.ALL_APPS
+    for items in recent_pages:
+        model_found = False
         view_name = items.view.split(':')[1]  # get the view name
-        your_activity_string = get_activity_string(view_name)
-        if your_activity_string == None:
-            your_activity_string = 'You just visited {0}'.format(items.name)
-
-        if view_name == 'upload_and_sign':
-            obj = SavedFileInformation.objects.filter(did=did).last()
-            if (obj == None):
-                print("no object")
-            else:
-                your_activity_string += ' {0}'.format(obj.file_name)
-        your_activity_list.append(your_activity_string)
+        your_activity_model = get_activity_model(view_name)
+        if your_activity_model is None:
+            your_activity_list.append({
+                'display_string': 'You just visited "{0}" page'.format(items.name)
+            })
+        else:
+            for app in all_apps:
+                app_models = apps.get_app_config(app).get_models()
+                for model in app_models:
+                    try:
+                        if model.__name__ == your_activity_model:
+                            obj_model = model.objects.filter(did=did).last()
+                            your_activity_list.append(obj_model.your_activity()[view_name])
+                            model_found = True
+                            break
+                    except Exception as e:
+                        your_activity_list.append({
+                            'display_string': 'You just visited "{0}" page'.format(items.name)
+                        })
+                if model_found:
+                    break
 
     return render(request, 'login/feed.html', {'recent_pages': recent_pages, 'recent_services': recent_services,
                                                'most_visited_pages': most_visited_pages, 'suggest_form': suggest_form,

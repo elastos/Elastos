@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import HiddenInput
 
-from .models import UploadFile , SavedFileInformation
+from .models import UploadFile, SavedFileInformation
 from .choices import *
 
 
@@ -15,7 +15,6 @@ class GenerateAPIKeyForm(forms.Form):
         super(GenerateAPIKeyForm, self).__init__(*args, **kwargs)
         self.fields['did'].required = False
         self.fields['did'].widget = HiddenInput()
-
 
 class UploadAndSignForm(forms.ModelForm):
     network = forms.ChoiceField(
