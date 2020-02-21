@@ -1637,6 +1637,236 @@ public class DIDDocument {
 			return this;
 		}
 
+		public Builder addCredential(DIDURL id, String[] types,
+				Map<String, String> subject, Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
+			if (id == null || subject == null || subject.isEmpty() ||
+					storepass == null || storepass.isEmpty())
+				throw new IllegalArgumentException();
+
+			Issuer issuer = new Issuer(document);
+			Issuer.CredentialBuilder cb = issuer.issueFor(document.getSubject());
+			if (types == null)
+				types = new String[]{ "SelfProclaimedCredential" };
+
+			if (expirationDate == null)
+				expirationDate = document.getExpires();
+
+			try {
+				VerifiableCredential vc = cb.id(id)
+						.type(types)
+						.properties(subject)
+						.expirationDate(expirationDate)
+						.seal(storepass);
+
+				document.addCredential(vc);
+			} catch (MalformedCredentialException ignore) {
+			}
+
+			return this;
+		}
+
+		public Builder addCredential(String id, String[] types,
+				Map<String, String> subject, Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					types, subject, expirationDate, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, Map<String, String> subject,
+				Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(id, null, subject, expirationDate, storepass);
+		}
+
+		public Builder addCredential(String id, Map<String, String> subject,
+				Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					subject, expirationDate, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, String[] types,
+				Map<String,String> subject, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(id, types, subject, null, storepass);
+		}
+
+		public Builder addCredential(String id, String[] types,
+				Map<String, String> subject, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					types, subject, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, Map<String, String> subject,
+				String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(id, null, subject, null, storepass);
+		}
+
+		public Builder addCredential(String id, Map<String, String> subject,
+				String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					subject, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, String[] types,
+				String json, Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
+			if (id == null || json == null || json.isEmpty() ||
+					storepass == null || storepass.isEmpty())
+				throw new IllegalArgumentException();
+
+			Issuer issuer = new Issuer(document);
+			Issuer.CredentialBuilder cb = issuer.issueFor(document.getSubject());
+			if (types == null)
+				types = new String[]{ "SelfProclaimedCredential" };
+
+			if (expirationDate == null)
+				expirationDate = document.expires;
+
+			try {
+				VerifiableCredential vc = cb.id(id)
+						.type(types)
+						.properties(json)
+						.expirationDate(expirationDate)
+						.seal(storepass);
+
+				document.addCredential(vc);
+			} catch (MalformedCredentialException ignore) {
+			}
+
+			return this;
+		}
+
+		public Builder addCredential(String id, String[] types,
+				String json, Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					types, json, expirationDate, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, String json,
+				Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(id, null, json, expirationDate, storepass);
+		}
+
+		public Builder addCredential(String id, String json,
+				Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					json, expirationDate, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, String[] types,
+				String json, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(id, types, json, null, storepass);
+		}
+
+		public Builder addCredential(String id, String[] types,
+				String json, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					types, json, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, String json, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(id, null, json, null, storepass);
+		}
+
+		public Builder addCredential(String id, String json, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					json, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, String[] types,
+				JsonNode node, Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
+			if (id == null || node == null || node.size() == 0 ||
+					storepass == null || storepass.isEmpty())
+				throw new IllegalArgumentException();
+
+			Issuer issuer = new Issuer(document);
+			Issuer.CredentialBuilder cb = issuer.issueFor(document.getSubject());
+			if (types == null)
+				types = new String[]{ "SelfProclaimedCredential" };
+
+			if (expirationDate == null)
+				expirationDate = document.expires;
+
+			try {
+				VerifiableCredential vc = cb.id(id)
+						.type(types)
+						.properties(node)
+						.expirationDate(expirationDate)
+						.seal(storepass);
+
+				document.addCredential(vc);
+			} catch (MalformedCredentialException ignore) {
+			}
+
+			return this;
+		}
+
+		public Builder addCredential(String id, String[] types,
+				JsonNode node, Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					types, node, expirationDate, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, JsonNode node,
+				Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(id, null, node, expirationDate, storepass);
+		}
+
+		public Builder addCredential(String id, JsonNode node,
+				Date expirationDate, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					node, expirationDate, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, String[] types,
+				JsonNode node, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(id, types, node, null, storepass);
+		}
+
+		public Builder addCredential(String id, String[] types,
+				JsonNode node, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					types, node, storepass);
+		}
+
+		public Builder addCredential(DIDURL id, JsonNode node, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(id, null, node, null, storepass);
+		}
+
+		public Builder addCredential(String id, JsonNode node, String storepass)
+				throws DIDStoreException, InvalidKeyException {
+			return this.addCredential(new DIDURL(document.getSubject(), id),
+					node, storepass);
+		}
+
 		public Builder removeCredential(DIDURL id) {
 			if (document == null)
 				throw new IllegalStateException("Document already sealed.");

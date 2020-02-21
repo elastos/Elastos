@@ -436,7 +436,7 @@ public final class DIDStore {
 				if (localTxid == null && localSignature == null)
 					throw new DIDStoreException("DID document not up-to-date");
 
-				if (localTxid != null && !localTxid.equals(resolvedTxid))
+				if (localTxid != null && !localTxid.isEmpty() && !localTxid.equals(resolvedTxid))
 					throw new DIDStoreException("DID document not up-to-date");
 
 				if (localSignature != null && !localSignature.equals(reolvedSignautre))
