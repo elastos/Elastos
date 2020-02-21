@@ -49,6 +49,7 @@ import org.elastos.did.DIDDocument.PublicKey;
 import org.elastos.did.DIDStorage.ReEncryptor;
 import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDDeactivatedException;
+import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDExpiredException;
 import org.elastos.did.exception.DIDNotFoundException;
 import org.elastos.did.exception.DIDStoreException;
@@ -156,14 +157,22 @@ public final class DIDStore {
 	}
 
 	// Initialize & create new private identity and save it to DIDStore.
-	public void initPrivateIdentity(int language, String mnemonic,
+	public void initPrivateIdentity(String language, String mnemonic,
 			String passphrase, String storepass, boolean force)
 			throws DIDStoreException {
-		if (mnemonic == null || !Mnemonic.isValid(language, mnemonic))
+		if (mnemonic == null)
 			throw new IllegalArgumentException("Invalid mnemonic.");
 
 		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
+
+		try {
+			Mnemonic mc = Mnemonic.getInstance(language);
+			if (!mc.isValid(mnemonic))
+				throw new IllegalArgumentException("Invalid mnemonic.");
+		} catch (DIDException e) {
+			throw new IllegalArgumentException(e);
+		}
 
 		if (containsPrivateIdentity() && !force)
 			throw new DIDStoreException("Already has private indentity.");
@@ -182,7 +191,7 @@ public final class DIDStore {
 
 	}
 
-	public void initPrivateIdentity(int language, String mnemonic,
+	public void initPrivateIdentity(String language, String mnemonic,
 			String passphrase, String storepass) throws DIDStoreException {
 		initPrivateIdentity(language, mnemonic, passphrase, storepass, false);
 	}

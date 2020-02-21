@@ -61,7 +61,7 @@ public class TestDataGenerator {
 		Utils.deleteFile(new File(storeRoot));
 		store = DIDStore.open("filesystem", storeRoot, adapter);
 
-    	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
+    	String mnemonic =  Mnemonic.getInstance().generate();
     	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
     			TestConfig.passphrase, TestConfig.storePass, true);
 

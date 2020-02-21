@@ -42,14 +42,11 @@ public class EcdsaSignerTest {
 
 	@BeforeAll
 	public static void setup() throws DIDException {
-		String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
+		String mnemonic = Mnemonic.getInstance().generate();
 
 		HDKey root = HDKey.fromMnemonic(mnemonic, "");
 		key = root.derive(0);
-	}
 
-	@Test
-	public void testSign() {
 		sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), plain.getBytes(), nonce.getBytes());
 
 		assertEquals(64, sig.length);

@@ -28,15 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 public class HDKeyTest {
-	/*
-	private static void dumpHex(String prompt, byte[] bytes) {
-		System.out.print(prompt + "[" + bytes.length + "]: ");
-		for (byte b : bytes)
-			System.out.print(String.format("%02x", b));
-		System.out.println();
-	}
-	*/
-
 	// Test HD key algorithm, keep compatible with SPV.
 
 	@Test

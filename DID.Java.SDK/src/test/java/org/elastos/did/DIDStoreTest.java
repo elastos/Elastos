@@ -1318,7 +1318,7 @@ public class DIDStoreTest {
     	else
     		store = DIDStore.open("filesystem", TestConfig.storeRoot, 0, 0, adapter);
 
-       	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
+       	String mnemonic =  Mnemonic.getInstance().generate();
     	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
     			TestConfig.passphrase, TestConfig.storePass, true);
 
@@ -1365,7 +1365,7 @@ public class DIDStoreTest {
 			Utils.deleteFile(new File(TestConfig.storeRoot + i));
 			stores[i] = DIDStore.open("filesystem", TestConfig.storeRoot + i, new DummyAdapter());
 			assertNotNull(stores[i]);
-			String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
+			String mnemonic = Mnemonic.getInstance().generate();
 			stores[i].initPrivateIdentity(Mnemonic.ENGLISH, mnemonic, "", TestConfig.storePass);
 		}
 

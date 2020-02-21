@@ -118,5 +118,12 @@ public class Utils {
 
 		file.delete();
 	}
+
+	public static void dumpHex(String prompt, byte[] bytes) {
+		System.out.print(prompt + "[" + bytes.length + "]: ");
+		for (byte b : bytes)
+			System.out.print(String.format("%02x", b));
+		System.out.println();
+	}
 }
 

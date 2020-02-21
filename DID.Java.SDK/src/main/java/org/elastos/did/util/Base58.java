@@ -22,6 +22,8 @@
 
 package org.elastos.did.util;
 
+import org.bitcoinj.core.AddressFormatException;
+
 public class Base58 {
     /**
      * Encodes the given bytes as a base58 string (no checksum is appended).
@@ -30,7 +32,7 @@ public class Base58 {
      * @return the base58-encoded string
      */
     public static String encode(byte[] input) {
-    	return io.github.novacrypto.base58.Base58.base58Encode(input);
+    	return org.bitcoinj.core.Base58.encode(input);
     }
 
     /**
@@ -41,8 +43,7 @@ public class Base58 {
      * @throws AddressFormatException if the given string is not a valid base58 string
      */
     public static byte[] decode(String input) throws IllegalArgumentException {
-    	return io.github.novacrypto.base58.Base58.base58Decode(
-    			input.subSequence(0, input.length()));
+    	return org.bitcoinj.core.Base58.decode(input);
     }
 
 }

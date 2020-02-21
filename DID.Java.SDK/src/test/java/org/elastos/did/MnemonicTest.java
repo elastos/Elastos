@@ -25,50 +25,38 @@ package org.elastos.did;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
-import java.net.URL;
-
 import org.elastos.did.exception.DIDException;
-import org.elastos.did.wordlists.UserDefinedWordLists;
 import org.junit.jupiter.api.Test;
 
 public class MnemonicTest {
 	@Test
 	public void testBuiltinWordList() throws DIDException {
-		for (int i = 0; i < 6; i++) {
-			String mnemonic = Mnemonic.generate(i);
-			assertTrue(Mnemonic.isValid(i, mnemonic));
+		String[] languages = {
+				Mnemonic.DEFAULT,
+				Mnemonic.CHINESE_SIMPLIFIED,
+				Mnemonic.CHINESE_TRADITIONAL,
+				Mnemonic.CZECH,
+				Mnemonic.ENGLISH,
+				Mnemonic.FRENCH,
+				Mnemonic.ITALIAN,
+				Mnemonic.JAPANESE,
+				Mnemonic.KOREAN,
+				Mnemonic.SPANISH
+		};
+
+		for (String lang : languages) {
+			Mnemonic mc = Mnemonic.getInstance(lang);
+			String mnemonic = mc.generate();
+			assertTrue(mc.isValid(mnemonic));
 
 			// Try to use the mnemonic create root identity.
 			TestData testData = new TestData();
 			DIDStore store = testData.setup(true);
-	    	store.initPrivateIdentity(i, mnemonic,
+	    	store.initPrivateIdentity(lang, mnemonic,
 	    			TestConfig.passphrase, TestConfig.storePass, true);
 
 			mnemonic = mnemonic + "z";
-			assertFalse(Mnemonic.isValid(i, mnemonic));
-		}
-	}
-
-	@Test
-	public void testUserDefinedWordList() throws DIDException {
-		URL url = this.getClass().getResource("/wordlists");
-		File dir = new File(url.getPath());
-
-		UserDefinedWordLists.initialize(dir);
-
-		for (int i = 128; i < 131; i++) {
-			String mnemonic = Mnemonic.generate(i);
-			assertTrue(Mnemonic.isValid(i, mnemonic));
-
-			// Try to use the mnemonic create root identity.
-			TestData testData = new TestData();
-			DIDStore store = testData.setup(true);
-	    	store.initPrivateIdentity(i, mnemonic,
-	    			TestConfig.passphrase, TestConfig.storePass, true);
-
-			mnemonic = mnemonic + "z";
-			assertFalse(Mnemonic.isValid(i, mnemonic));
+			assertFalse(mc.isValid(mnemonic));
 		}
 	}
 }

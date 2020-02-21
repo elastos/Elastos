@@ -146,7 +146,7 @@ public final class TestData {
 	}
 
 	public String initIdentity() throws DIDException {
-    	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
+    	String mnemonic =  Mnemonic.getInstance().generate();
     	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
     			TestConfig.passphrase, TestConfig.storePass, true);
 
@@ -392,7 +392,7 @@ public final class TestData {
 	public static synchronized HDKey.DerivedKey generateKeypair()
 			throws DIDException {
 		if (rootKey == null) {
-	    	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
+	    	String mnemonic =  Mnemonic.getInstance().generate();
 	    	rootKey = HDKey.fromMnemonic(mnemonic, "");
 	    	index = 0;
 		}

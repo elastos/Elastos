@@ -23,108 +23,95 @@
 package org.elastos.did;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
+import org.bitcoinj.crypto.MnemonicCode;
+import org.bitcoinj.crypto.MnemonicException;
 import org.elastos.did.exception.DIDException;
-import org.elastos.did.wordlists.UserDefinedWordLists;
-
-import io.github.novacrypto.bip39.MnemonicGenerator;
-import io.github.novacrypto.bip39.MnemonicValidator;
-import io.github.novacrypto.bip39.WordList;
-import io.github.novacrypto.bip39.Words;
-import io.github.novacrypto.bip39.Validation.InvalidChecksumException;
-import io.github.novacrypto.bip39.Validation.InvalidWordCountException;
-import io.github.novacrypto.bip39.Validation.UnexpectedWhiteSpaceException;
-import io.github.novacrypto.bip39.Validation.WordNotFoundException;
-import io.github.novacrypto.bip39.wordlists.ChineseSimplified;
-import io.github.novacrypto.bip39.wordlists.ChineseTraditional;
-import io.github.novacrypto.bip39.wordlists.English;
-import io.github.novacrypto.bip39.wordlists.French;
-import io.github.novacrypto.bip39.wordlists.Japanese;
-import io.github.novacrypto.bip39.wordlists.Spanish;
 
 public class Mnemonic {
-	public static final int ENGLISH = 0;
-	public static final int FRENCH = 1;
-	public static final int SPANISH = 2;
-	public static final int CHINESE_SIMPLIFIED = 3;
-	public static final int CHINESE_TRADITIONAL = 4;
-	public static final int JAPANESE = 5;
+	public static final String DEFAULT = null;
+	public static final String CHINESE_SIMPLIFIED = "chinese_simplified";
+	public static final String CHINESE_TRADITIONAL = "chinese_traditional";
+	public static final String CZECH = "Czech";
+	public static final String ENGLISH = "english";
+	public static final String FRENCH = "French";
+	public static final String ITALIAN = "Italian";
+	public static final String JAPANESE = "japanese";
+	public static final String KOREAN = "Korean";
+	public static final String SPANISH = "Spanish";
 
-	private static WordList getWordList(int language) throws DIDException {
-		switch (language) {
-		case ENGLISH:
-			return English.INSTANCE;
+	private static final int TWELVE_WORDS_ENTROPY = 16;
 
-		case FRENCH:
-			return French.INSTANCE;
+	private MnemonicCode mc;
 
-		case SPANISH:
-			return Spanish.INSTANCE;
+	private static HashMap<String, Mnemonic> mcTable = new HashMap<String, Mnemonic>(4);
 
-		case CHINESE_SIMPLIFIED:
-			return ChineseSimplified.INSTANCE;
+	private Mnemonic(MnemonicCode mc) {
+		this.mc = mc;
+	}
 
-		case CHINESE_TRADITIONAL:
-			return ChineseTraditional.INSTANCE;
+	public static Mnemonic getInstance() {
+		String language = "";
 
-		case JAPANESE:
-			return Japanese.INSTANCE;
+		if (mcTable.containsKey(language))
+			return mcTable.get(language);
 
-		default:
-			UserDefinedWordLists wordLists;
-			wordLists = UserDefinedWordLists.getInstance();
-			if (wordLists != null) {
-				WordList wordList = null;
-				try {
-					wordList = wordLists.getWordList(language);
-				} catch (IOException e) {
-					throw new DIDException("Load word list failed.", e);
-				}
+		Mnemonic m = new Mnemonic(MnemonicCode.INSTANCE);
+		mcTable.put(language, m);
+		return m;
+	}
 
-				if (wordList != null)
-					return wordList;
-			}
+	public static Mnemonic getInstance(String language) throws DIDException {
+		if (language == null || language.isEmpty())
+			return getInstance();
 
-			return English.INSTANCE;
+		if (mcTable.containsKey(language))
+			return mcTable.get(language);
+
+		try {
+			InputStream is = MnemonicCode.openDefaultWords(language);
+			MnemonicCode mc = new MnemonicCode(is, null);
+			Mnemonic m = new Mnemonic(mc);
+			mcTable.put(language, m);
+			return m;
+		} catch (IOException | IllegalArgumentException e) {
+			throw new DIDException(e);
 		}
 	}
 
-	public static String generate(int language) throws DIDException {
-		if (language < 0)
-			throw new IllegalArgumentException();
-
-		StringBuilder mnemonic = new StringBuilder();
-
-		byte[] entropy = new byte[Words.TWELVE.byteLength()];
-		new SecureRandom().nextBytes(entropy);
-
-		new MnemonicGenerator(getWordList(language))
-		    .createMnemonic(entropy, mnemonic::append);
-
-		return mnemonic.toString();
+	public String generate() throws DIDException {
+		try {
+			byte[] entropy = new byte[TWELVE_WORDS_ENTROPY];
+			new SecureRandom().nextBytes(entropy);
+			List<String> words = mc.toMnemonic(entropy);
+			return String.join(" ", words);
+		} catch (MnemonicException e) {
+			throw new DIDException(e);
+		}
 	}
 
-	public static boolean isValid(int language, String mnemonic) {
-		if (language < 0)
-			throw new IllegalArgumentException();
+	public boolean isValid(String mnemonic) {
+    	if (mnemonic == null || mnemonic.isEmpty())
+    		throw new IllegalArgumentException();
 
-	    try {
-			MnemonicValidator
-			.ofWordList(getWordList(language))
-			.validate(mnemonic);
-		} catch (InvalidChecksumException e) {
-			return false;
-		} catch (InvalidWordCountException e) {
-			return false;
-		} catch (WordNotFoundException e) {
-			return false;
-		} catch (UnexpectedWhiteSpaceException e) {
-			return false;
-		} catch (DIDException e) {
+		List<String> words = Arrays.asList(mnemonic.split(" "));
+
+    	try {
+	    	mc.check(words);
+		    return true;
+		} catch (MnemonicException e) {
 			return false;
 		}
+	}
 
-	    return true;
+	public static byte[] toSeed(String mnemonic, String passphrase) {
+    	List<String> words = Arrays.asList(mnemonic.split(" "));
+
+    	return MnemonicCode.toSeed(words, passphrase);
 	}
 }

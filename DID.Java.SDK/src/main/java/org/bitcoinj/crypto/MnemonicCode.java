@@ -17,12 +17,8 @@
 
 package org.bitcoinj.crypto;
 
-import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.core.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Stopwatch;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.bitcoinj.core.Utils.HEX;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -32,11 +28,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.bitcoinj.core.Utils.HEX;
+import org.bitcoinj.core.Sha256Hash;
+import org.bitcoinj.core.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A MnemonicCode object may be used to convert between binary seed values and
@@ -76,10 +73,18 @@ public class MnemonicCode {
         this(openDefaultWords(), BIP39_ENGLISH_SHA256);
     }
 
-    private static InputStream openDefaultWords() throws IOException {
+    public static InputStream openDefaultWords() throws IOException {
         InputStream stream = MnemonicCode.class.getResourceAsStream(BIP39_ENGLISH_RESOURCE_NAME);
         if (stream == null)
             throw new FileNotFoundException(BIP39_ENGLISH_RESOURCE_NAME);
+        return stream;
+    }
+
+    public static InputStream openDefaultWords(String language) throws IOException {
+    	String wordsResource = "mnemonic/wordlist/" + language + ".txt";
+    	InputStream stream = MnemonicCode.class.getResourceAsStream(wordsResource);
+        if (stream == null)
+            throw new FileNotFoundException(wordsResource);
         return stream;
     }
 
@@ -133,10 +138,7 @@ public class MnemonicCode {
         String pass = Utils.SPACE_JOINER.join(words);
         String salt = "mnemonic" + passphrase;
 
-        final Stopwatch watch = Stopwatch.createStarted();
         byte[] seed = PBKDF2SHA512.derive(pass, salt, PBKDF2_ROUNDS, 64);
-        watch.stop();
-        log.info("PBKDF2 took {}", watch);
         return seed;
     }
 
@@ -158,7 +160,9 @@ public class MnemonicCode {
         int wordindex = 0;
         for (String word : words) {
             // Find the words index in the wordlist.
-            int ndx = Collections.binarySearch(this.wordList, word);
+            // int ndx = Collections.binarySearch(this.wordList, word);
+        	// Some language wordfile is not sorted, so can not use binarySearch
+        	int ndx = this.wordList.indexOf(word);
             if (ndx < 0)
                 throw new MnemonicException.MnemonicWordException(word);
 
@@ -166,7 +170,7 @@ public class MnemonicCode {
             for (int ii = 0; ii < 11; ++ii)
                 concatBits[(wordindex * 11) + ii] = (ndx & (1 << (10 - ii))) != 0;
             ++wordindex;
-        }        
+        }
 
         int checksumLengthBits = concatLenBits / 33;
         int entropyLengthBits = concatLenBits - checksumLengthBits;
@@ -205,11 +209,11 @@ public class MnemonicCode {
 
         byte[] hash = Sha256Hash.hash(entropy);
         boolean[] hashBits = bytesToBits(hash);
-        
+
         boolean[] entropyBits = bytesToBits(entropy);
         int checksumLengthBits = entropyBits.length / 32;
 
-        // We append these bits to the end of the initial entropy. 
+        // We append these bits to the end of the initial entropy.
         boolean[] concatBits = new boolean[entropyBits.length + checksumLengthBits];
         System.arraycopy(entropyBits, 0, concatBits, 0, entropyBits.length);
         System.arraycopy(hashBits, 0, concatBits, entropyBits.length, checksumLengthBits);
@@ -230,8 +234,8 @@ public class MnemonicCode {
             }
             words.add(this.wordList.get(index));
         }
-            
-        return words;        
+
+        return words;
     }
 
     /**
