@@ -2165,10 +2165,87 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
+	case *payload.InactiveArbitrators:
+		var arbitrators []string
+		for _, a := range object.Arbitrators {
+			arbitrators = append(arbitrators, common.BytesToHexString(a))
+		}
+		obj := new(InactiveArbitratorsInfo)
+		obj.Sponsor = common.BytesToHexString(object.Sponsor)
+		obj.Arbitrators = arbitrators
+		return obj
 	case *payload.ActivateProducer:
 		obj := new(ActivateProducerInfo)
 		obj.NodePublicKey = common.BytesToHexString(object.NodePublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)
+		return obj
+	case *payload.UpdateVersion:
+		obj := new(UpdateVersionInfo)
+		obj.StartHeight = object.StartHeight
+		obj.EndHeight = object.EndHeight
+		return obj
+	case *payload.CRInfo:
+		obj := new(CRInfo)
+		obj.Code = common.BytesToHexString(object.Code)
+		obj.DID = object.DID.String()
+		obj.NickName = object.NickName
+		obj.Url = object.Url
+		obj.Location = object.Location
+		obj.Signature = common.BytesToHexString(object.Signature)
+		return obj
+	case *payload.UnregisterCR:
+		obj := new(UnregisterCRInfo)
+		obj.DID = object.DID.String()
+		obj.Signature = common.BytesToHexString(object.Signature)
+		return obj
+	case *payload.CRCProposal:
+		var budgets []BudgetInfo
+		for _, b := range object.Budgets {
+			budgets = append(budgets, BudgetInfo{
+				Type:   b.Type.Name(),
+				Stage:  b.Stage,
+				Amount: b.Amount.String(),
+			})
+		}
+		obj := new(CRCProposalInfo)
+		obj.ProposalType = object.ProposalType.Name()
+		obj.CategoryData = object.CategoryData
+		obj.SponsorPublicKey = common.BytesToHexString(object.SponsorPublicKey)
+		obj.DraftHash = object.DraftHash.String()
+		obj.Budgets = budgets
+		obj.Recipient = object.Recipient.String()
+		obj.Sign = common.BytesToHexString(object.Sign)
+		obj.CRSponsorDID = object.CRSponsorDID.String()
+		obj.CROpinionHash = object.CROpinionHash.String()
+		obj.CRSign = common.BytesToHexString(object.CRSign)
+		obj.Hash = object.Hash().String()
+		return obj
+	case *payload.CRCProposalReview:
+		obj := new(CRCProposalReviewInfo)
+		obj.ProposalHash = object.ProposalHash.String()
+		obj.VoteResult = object.VoteResult.Name()
+		obj.DID = object.DID.String()
+		obj.Sign = common.BytesToHexString(object.Sign)
+		return obj
+	case *payload.CRCProposalTracking:
+		obj := new(CRCProposalTrackingInfo)
+		obj.ProposalTrackingType = object.ProposalTrackingType.Name()
+		obj.ProposalHash = object.ProposalHash.String()
+		obj.DocumentHash = object.ProposalHash.String()
+		obj.Stage = object.Stage
+		obj.LeaderPubKey = common.BytesToHexString(object.LeaderPubKey)
+		obj.NewLeaderPubKey = common.BytesToHexString(object.NewLeaderPubKey)
+		obj.LeaderSign = common.BytesToHexString(object.LeaderSign)
+		obj.NewLeaderPubKey = common.BytesToHexString(object.NewLeaderPubKey)
+		obj.SecretaryOpinionHash = object.SecretaryOpinionHash.String()
+		obj.SecretaryGeneralSign = common.BytesToHexString(object.SecretaryGeneralSign)
+		return obj
+	case *payload.CRCProposalWithdraw:
+		obj := new(CRCProposalWithdrawInfo)
+		obj.ProposalHash = object.ProposalHash.String()
+		obj.SponsorPublicKey = common.BytesToHexString(object.SponsorPublicKey)
+		obj.Fee = object.Fee.String()
+		obj.Sign = common.BytesToHexString(object.Sign)
 		return obj
 	}
 	return nil
