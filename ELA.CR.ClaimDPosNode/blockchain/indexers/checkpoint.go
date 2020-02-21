@@ -7,7 +7,6 @@ package indexers
 
 import (
 	"io"
-	"math"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -89,7 +88,8 @@ func (c *Checkpoint) OnInit() {
 }
 
 func (c *Checkpoint) StartHeight() uint32 {
-	return math.MaxInt32
+	//return math.MaxInt32
+	return 500000
 }
 
 func (c *Checkpoint) Serialize(w io.Writer) (err error) {

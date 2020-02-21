@@ -204,7 +204,7 @@ var DefaultParams = Params{
 		HistoryStartHeight: uint32(0),
 		NeedSave:           false,
 	}),
-	TxCacheVolume: 300000,
+	TxCacheVolume: 100000,
 }
 
 // TestNet returns the network parameters for the test network.
