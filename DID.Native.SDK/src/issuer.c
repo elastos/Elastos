@@ -96,7 +96,7 @@ DIDURL *Issuer_GetSignKey(Issuer *issuer)
     return &issuer->signkey;
 }
 
-Credential *Issuer_CreateCredential(DID *did, const char *fragment, Issuer *issuer,
+Credential *Issuer_CreateCredential(Issuer *issuer, DID *did, const char *fragment,
         const char **types, size_t typesize, Property *properties, int propsize,
         time_t expires, const char *storepass)
 {
@@ -106,7 +106,7 @@ Credential *Issuer_CreateCredential(DID *did, const char *fragment, Issuer *issu
     DIDStore *store;
     int i, rc;
 
-    if (!did || !fragment || !*fragment || !issuer || !types || typesize <= 0||
+    if (!issuer ||!did || !fragment || !*fragment || !types || typesize <= 0||
             !properties || propsize <= 0 || expires <= 0 ||
             !storepass || !*storepass)
         return NULL;

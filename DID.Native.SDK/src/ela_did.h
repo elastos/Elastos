@@ -869,7 +869,32 @@ DID_API int DIDDocumentBuilder_RemoveAuthorizationKey(DIDDocumentBuilder *builde
  */
 DID_API int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder,
         Credential *credential);
-
+/**
+ * \~English
+ * Directly, add self claimed information(credential).
+ *
+ * @param
+ *      builder              [in] A handle to DIDDocument Builder.
+ * @param
+ *      fragment             [in] The portion of a DID URL.
+ * @param
+ *      types                [in] The array of credential types.
+ *                                Support types == NULL，api add 'SelfProclaimedCredential' type.
+ * @param
+ *      typesize             [in] The size of credential types.
+ * @param
+ *      properties           [in] The array of credential subject property.
+ * @param
+ *      size                 [in] The size of credential subject property.
+ * @param
+ *      expires              [in] The time to credential be expired.
+ *                               Support expires == 0, api add document expires time.
+ * @param
+ *      storepass            [in] Password for DIDStores.
+ * @return
+ *      If no error occurs, return 0.
+ *      Otherwise, return -1.
+ */
 DID_API int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
         const char *fragment, const char **types, size_t typesize,
         Property *properties, int propsize, time_t expires, const char *storepass);
@@ -1933,12 +1958,12 @@ DID_API void Issuer_Destroy(Issuer *issuer);
  * Issuance always occurs before any other actions involving a credential.
  *
  * @param
+ *      issuer               [in] An issuer issues this credential.
+ * @param
  *      did                  [in] A handle to DID.
  *                               The holder of this Credential.
  * @param
  *      fragment             [in] The portion of a DID URL.
- * @param
- *      issuer               [in] An issuer issues this credential.
  * @param
  *      types                [in] The array of credential types.
  * @param
@@ -1955,7 +1980,7 @@ DID_API void Issuer_Destroy(Issuer *issuer);
  *      If no error occurs, return the handle to Credential issued.
  *      Otherwise, return NULL.
  */
-DID_API Credential *Issuer_CreateCredential(DID *did, const char *fragment, Issuer *issuer,
+DID_API Credential *Issuer_CreateCredential(Issuer *issuer, DID *did, const char *fragment,
         const char **types, size_t typesize, Property *properties, int size,
         time_t expires, const char *storepass);
 

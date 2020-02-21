@@ -1375,11 +1375,31 @@ int DIDDocumentBuilder_RemoveAuthorizationKey(DIDDocumentBuilder *builder, DIDUR
     return 0;
 }
 
+static int diddocument_addcredential(DIDDocument *document, Credential *credential)
+{
+    Credential **creds;
+
+    assert(document);
+    assert(credential);
+
+    if (document->credentials.size == 0)
+        creds = (Credential**)calloc(1, sizeof(Credential*));
+    else
+        creds = (Credential**)realloc(document->credentials.credentials,
+                       (document->credentials.size + 1) * sizeof(Credential*));
+
+    if (!creds)
+        return -1;
+
+    creds[document->credentials.size++] = credential;
+    document->credentials.credentials = creds;
+    return 0;
+}
+
 int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder, Credential *credential)
 {
     DIDDocument *document;
-    Credential **creds = NULL;
-    Credential *temp_cred = NULL;
+    Credential *temp_cred;
     Credential *cred;
     DIDURL *credid;
     ssize_t i;
@@ -1399,20 +1419,14 @@ int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder, Credential *cr
     }
 
     cred = (Credential *)calloc(1, sizeof(Credential));
-    if (!cred || credential_copy(cred, credential) == -1)
+    if (!cred)
         return -1;
 
-    if (document->credentials.size == 0)
-        creds = (Credential**)calloc(1, sizeof(Credential*));
-    else
-        creds = (Credential**)realloc(document->credentials.credentials,
-                       (document->credentials.size + 1) * sizeof(Credential*));
-
-    if (!creds)
+    if (credential_copy(cred, credential) == -1 ||
+            diddocument_addcredential(document, cred) == -1) {
+        Credential_Destroy(cred);
         return -1;
-
-    creds[document->credentials.size++] = cred;
-    document->credentials.credentials = creds;
+    }
 
     return 0;
 }
@@ -1422,13 +1436,13 @@ int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
         Property *properties, int propsize, time_t expires, const char *storepass)
 {
     DIDDocument *document;
-    Credential **creds;
     Credential *cred;
     Issuer *issuer;
     const char *ntpyes[] = {"SelfProclaimedCredential"};
+    int rc;
 
     if (!builder || !builder->document || !fragment || !*fragment
-            || !properties || propsize <= 0 || !expires || !storepass || !*storepass)
+            || !properties || propsize <= 0 || !storepass || !*storepass)
         return -1;
 
     document = builder->document;
@@ -1441,29 +1455,20 @@ int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
         typesize = 1;
     }
 
-    cred = Issuer_CreateCredential(DIDDocument_GetSubject(document), fragment, issuer,
+    if (expires <= 0)
+        expires = DIDDocument_GetExpires(document);
+
+    cred = Issuer_CreateCredential(issuer, DIDDocument_GetSubject(document), fragment,
         types, typesize, properties, propsize, expires, storepass);
-    if (!cred) {
-        Issuer_Destroy(issuer);
+    Issuer_Destroy(issuer);
+    if (!cred)
         return -1;
-    }
 
-    if (document->credentials.size == 0)
-        creds = (Credential**)calloc(1, sizeof(Credential*));
-    else
-        creds = (Credential**)realloc(document->credentials.credentials,
-                       (document->credentials.size + 1) * sizeof(Credential*));
-
-    if (!creds){
+    rc = diddocument_addcredential(document, cred);
+    if (rc == -1)
         Credential_Destroy(cred);
-        Issuer_Destroy(issuer);
-        return -1;
-    }
 
-    creds[document->credentials.size++] = cred;
-    document->credentials.credentials = creds;
-
-    return 0;
+    return rc;
 }
 
 int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder, DIDURL *credid)

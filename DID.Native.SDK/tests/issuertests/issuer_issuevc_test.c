@@ -64,7 +64,7 @@ static void test_issuer_issuevc(void)
     props[6].key = "phone";
     props[6].value = "132780456";
 
-    vc = Issuer_CreateCredential(did, "kyccredential", issuer, types, 2, props, 7,
+    vc = Issuer_CreateCredential(issuer, did, "kyccredential", types, 2, props, 7,
             expires, storepass);
     CU_ASSERT_PTR_NOT_NULL_FATAL(vc);
     CU_ASSERT_FALSE(Credential_IsExpired(vc));
@@ -127,7 +127,7 @@ static void test_issuer_issueselfvc(void)
     props[6].key = "phone";
     props[6].value = "132780456";
 
-    vc = Issuer_CreateCredential(issuerid, "mycredential", issuer, types, 3,
+    vc = Issuer_CreateCredential(issuer, issuerid, "mycredential", types, 3,
             props, 7, expires, storepass);
     CU_ASSERT_PTR_NOT_NULL_FATAL(vc);
     CU_ASSERT_FALSE(Credential_IsExpired(vc));
