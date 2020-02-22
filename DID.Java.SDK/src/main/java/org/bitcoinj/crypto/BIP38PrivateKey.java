@@ -16,13 +16,7 @@
 
 package org.bitcoinj.crypto;
 
-import org.bitcoinj.core.*;
-import org.bouncycastle.crypto.generators.SCrypt;
-
-import com.google.common.primitives.Bytes;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +24,19 @@ import java.security.GeneralSecurityException;
 import java.text.Normalizer;
 import java.util.Arrays;
 
-import static com.google.common.base.Preconditions.checkState;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.bitcoinj.core.AddressFormatException;
+import org.bitcoinj.core.Base58;
+import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.LegacyAddress;
+import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.PrefixedChecksummedBytes;
+import org.bitcoinj.core.Sha256Hash;
+import org.spongycastle.crypto.generators.SCrypt;
+
+import com.google.common.primitives.Bytes;
 
 /**
  * Implementation of <a href="https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki">BIP 38</a>
@@ -108,7 +114,7 @@ public class BIP38PrivateKey extends PrefixedChecksummedBytes {
 
     /**
      * Returns the base58-encoded textual form, including version and checksum bytes.
-     * 
+     *
      * @return textual form
      */
     public String toBase58() {

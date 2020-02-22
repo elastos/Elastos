@@ -17,15 +17,16 @@
 
 package org.bitcoinj.crypto;
 
-import org.bitcoinj.core.ECKey;
-import org.bouncycastle.crypto.digests.SHA512Digest;
-import org.bouncycastle.crypto.macs.HMac;
-import org.bouncycastle.crypto.params.KeyParameter;
-
-import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.annotation.Nonnull;
+
+import org.bitcoinj.core.ECKey;
+import org.spongycastle.crypto.digests.SHA512Digest;
+import org.spongycastle.crypto.macs.HMac;
+import org.spongycastle.crypto.params.KeyParameter;
 
 /**
  * Static utilities used in BIP 32 Hierarchical Deterministic Wallets (HDW).

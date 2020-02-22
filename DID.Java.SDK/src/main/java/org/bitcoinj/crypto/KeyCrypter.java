@@ -19,7 +19,7 @@ package org.bitcoinj.crypto;
 import java.io.Serializable;
 
 import org.bitcoinj.wallet.Protos.Wallet.EncryptionType;
-import org.bouncycastle.crypto.params.KeyParameter;
+import org.spongycastle.crypto.params.KeyParameter;
 
 /**
  * <p>A KeyCrypter can be used to encrypt and decrypt a message. The sequence of events to encrypt and then decrypt
