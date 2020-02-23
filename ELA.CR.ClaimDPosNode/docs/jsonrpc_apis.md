@@ -1231,13 +1231,14 @@ Response:
 
 ### getcrdepositcoin
 
-Get deposit coin by owner public key.
+Get deposit coin by owner public key or cid or did.
 
 #### Parameter 
 
-| name           | type   | description                     |
-| -------------- | ------ | ------------------------------- |
-| did            | string | the did address of CR candidate |
+| name           | type   | description                            |
+| -------------- | ------ | -------------------------------------- |
+| id             | string | the cid or did address of CR candidate |
+| publickey      | string | the public key of CR candidate         |
 
 #### Result
 
@@ -1254,7 +1255,7 @@ Request:
 {
   "method": "getcrdepositcoin",
   "params":{
-    "did": "iUzjmMPTYZq2afqtR46coY6B7h2qD1PQbyq"
+    "id": "iUzjmMPTYZq2afqtR46coY6B7h2qD1PQbyq"
   }
 }
 ```
@@ -1901,6 +1902,7 @@ if state flag not provided return the cr candidates in pending and active state.
 | name           | type   | description                               |
 | -------------- | ------ | ----------------------------------------- |
 | code           | string | the cr candiate code                      |
+| cid            | string | the cr candiate address                   |
 | did            | string | the cr candiate did address               |
 | nickname       | string | the nick name of the cr candiate          |
 | url            | string | the url of the cr candiate                |
@@ -1968,7 +1970,7 @@ Show current cr members information
 | name            | type   | description                               |
 | --------------  | ------ | ----------------------------------------- |
 | code            | string | the cr member code                        |
-| cid             | string | the cr member address                 |
+| cid             | string | the cr member address                     |
 | did             | string | the cr member did address                 |
 | nickname        | string | the nick name of the cr member            |
 | url             | string | the url of the cr member                  |

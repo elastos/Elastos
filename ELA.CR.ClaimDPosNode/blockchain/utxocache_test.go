@@ -1,14 +1,13 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	"path/filepath"
 	"testing"
 
@@ -63,15 +62,6 @@ var (
 		},
 	}
 )
-
-func TestNewUTXOCache(t *testing.T) {
-	code, _ := common.HexStringToBytes("21036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535ac")
-	didCode := append(code[:len(code)-1], common.DID)
-	ct, _ := contract.CreateCRIDContractByCode(didCode)
-	programHash := ct.ToProgramHash()
-	addr, _ := programHash.ToAddress()
-	fmt.Println("addr:",addr)
-}
 
 func deleteTestDBTx(tx *types.Transaction) error {
 	key := new(bytes.Buffer)
