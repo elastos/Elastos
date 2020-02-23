@@ -273,7 +273,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		}
 		candidates := b.crCommittee.GetState().GetCandidates(crstate.Active)
 		err := b.checkVoteOutputs(blockHeight, txn.Outputs, references,
-			getProducerPublicKeysMap(producers), getCRDIDsMap(candidates))
+			getProducerPublicKeysMap(producers), getCRCIDsMap(candidates))
 		if err != nil {
 			log.Warn("[CheckVoteOutputs]", err)
 			return ErrInvalidOutput
@@ -352,14 +352,14 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayloa
 		return errors.New("payload VoteProducerVersion not support vote CR")
 	}
 	for _, cv := range content.CandidateVotes {
-		did, err := common.Uint168FromBytes(cv.Candidate)
+		cid, err := common.Uint168FromBytes(cv.Candidate)
 		if err != nil {
 			return fmt.Errorf("invalid vote output payload " +
-				"Candidate can not change to proper did")
+				"Candidate can not change to proper cid")
 		}
-		if _, ok := crs[*did]; !ok {
+		if _, ok := crs[*cid]; !ok {
 			return fmt.Errorf("invalid vote output payload "+
-				"CR candidate: %s", did.String())
+				"CR candidate: %s", cid.String())
 		}
 	}
 	var totalVotes common.Fixed64
@@ -381,10 +381,10 @@ func getProducerPublicKeysMap(producers []*state.Producer) map[string]struct{} {
 	return pds
 }
 
-func getCRDIDsMap(crs []*crstate.Candidate) map[common.Uint168]struct{} {
+func getCRCIDsMap(crs []*crstate.Candidate) map[common.Uint168]struct{} {
 	codes := make(map[common.Uint168]struct{})
 	for _, c := range crs {
-		codes[c.Info().DID] = struct{}{}
+		codes[c.Info().CID] = struct{}{}
 	}
 	return codes
 }
@@ -1372,11 +1372,11 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 
 	cr := b.crCommittee.GetState().GetCandidate(info.Code)
 	if cr != nil {
-		return fmt.Errorf("did %s already exist", info.DID)
+		return fmt.Errorf("did %s already exist", info.CID)
 	}
 
-	// get DID program hash
-	ct, err := contract.CreateCRDIDContractByCode(info.Code)
+	// get CID program hash
+	ct, err := contract.CreateCRIDContractByCode(info.Code)
 	if err != nil {
 		return err
 	}
@@ -1395,8 +1395,8 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 		}
 	}
 
-	// check DID
-	if !info.DID.IsEqual(*programHash) {
+	// check CID
+	if !info.CID.IsEqual(*programHash) {
 		return errors.New("invalid did address")
 	}
 
@@ -1448,8 +1448,8 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		return err
 	}
 
-	// get did program hash
-	ct, err := contract.CreateCRDIDContractByCode(info.Code)
+	// get DID program hash
+	ct, err := contract.CreateCRIDContractByCode(info.Code)
 	if err != nil {
 		return err
 	}
@@ -1458,8 +1458,8 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		return err
 	}
 
-	// check DID
-	if !info.DID.IsEqual(*programHash) {
+	// check CID
+	if !info.CID.IsEqual(*programHash) {
 		return errors.New("invalid did address")
 	}
 
@@ -1499,7 +1499,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 		return errors.New("should create tx during voting period")
 	}
 
-	cr := b.crCommittee.GetState().GetCandidateByDID(info.DID)
+	cr := b.crCommittee.GetState().GetCandidateByCID(info.CID)
 	if cr == nil {
 		return errors.New("unregister unknown CR")
 	}
@@ -1631,13 +1631,13 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 	var penalty common.Fixed64
 	for _, program := range txn.Programs {
 		// Get candidate from code.
-		ct, err := contract.CreateCRDIDContractByCode(program.Code)
+		ct, err := contract.CreateCRIDContractByCode(program.Code)
 		if err != nil {
 			return err
 		}
 		programHash := ct.ToProgramHash()
 		// todo get candidate from not voting period state.
-		c := b.crCommittee.GetState().GetCandidateByDID(*programHash)
+		c := b.crCommittee.GetState().GetCandidateByCID(*programHash)
 		if c == nil {
 			return errors.New("signer must be CR candidate")
 		}

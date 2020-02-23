@@ -393,6 +393,10 @@ type Params struct {
 	// statistics error.
 	VoteStatisticsHeight uint32
 
+	// RegisterCRByDIDHeight defines the height to support register and update
+	// CR by CID and CID.
+	RegisterCRByDIDHeight uint32
+
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
 	CRCArbiters []string
 

@@ -7,7 +7,7 @@ package contract
 
 import "errors"
 
-func CreateCRDIDContractByCode(code []byte) (*Contract, error) {
+func CreateCRIDContractByCode(code []byte) (*Contract, error) {
 	if len(code) == 0 {
 		return nil, errors.New("code is nil")
 	}
