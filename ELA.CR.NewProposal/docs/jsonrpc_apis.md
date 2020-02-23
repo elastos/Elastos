@@ -1936,7 +1936,8 @@ Response:
         "crcandidatesinfo": [
             {
                 "code": "21036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535ac",
-                "did": "iUzjmMPTYZq2afqtR46coY6B7h2qD1PQbyq",
+                "cid": "iUzjmMPTYZq2afqtR46coY6B7h2qD1PQbyq",
+                "did": "iTgmaqaMpMj46MW3GCU2h7bPaytwuvQrV3",
                 "nickname": "ela_test11",
                 "url": "ela_test.org11",
                 "location": 38025,
@@ -1967,6 +1968,7 @@ Show current cr members information
 | name            | type   | description                               |
 | --------------  | ------ | ----------------------------------------- |
 | code            | string | the cr member code                        |
+| cid             | string | the cr member address                 |
 | did             | string | the cr member did address                 |
 | nickname        | string | the nick name of the cr member            |
 | url             | string | the url of the cr member                  |
@@ -2001,7 +2003,8 @@ Response:
         "crmembersinfo": [
             {
                 "code": "2102e23f70b9b967af35571c32b1442d787c180753bbed5cd6e7d5a5cfe75c7fc1ffac",
-                "did": "iaiZJM922uWo2Uc2gYwZk1nEgiVV7NTtxR",
+                "cid": "iaiZJM922uWo2Uc2gYwZk1nEgiVV7NTtxR",
+                "did": "inTc9GeWyNNKNwT1cDcvvEgQwnjszbtpZ5",
                 "nickname": "ela_cr2",
                 "url": "ela_cr2.org",
                 "location": 112211, "impeachmentvotes": 0,
@@ -2012,7 +2015,8 @@ Response:
             },
             {
                 "code": "2103c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95ac",
-                "did": "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf",
+                "cid": "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf",
+                "did": "intySungjAK3uyHeoajez3yRqX5x68NrNi",
                 "nickname": "ela_cr1",
                 "url": "ela_cr1.org",
                 "location": 112211,

@@ -1463,7 +1463,7 @@ type producersInfo struct {
 //single cr candidate info
 type crCandidateInfo struct {
 	Code           string `json:"code"`
-	DID            string `json:"did"`
+	CID            string `json:"cid"`
 	NickName       string `json:"nickname"`
 	Url            string `json:"url"`
 	Location       uint64 `json:"location"`
@@ -1485,7 +1485,7 @@ type crCandidatesInfo struct {
 //single cr member info
 type crMemberInfo struct {
 	Code             string         `json:"code"`
-	DID              string         `json:"did"`
+	CID              string         `json:"cid"`
 	NickName         string         `json:"nickname"`
 	Url              string         `json:"url"`
 	Location         uint64         `json:"location"`
@@ -1627,10 +1627,10 @@ func ListCRCandidates(param Params) map[string]interface{} {
 	var totalVotes common.Fixed64
 	for i, c := range candidates {
 		totalVotes += c.Votes()
-		didAddress, _ := c.Info().DID.ToAddress()
+		cidAddress, _ := c.Info().CID.ToAddress()
 		candidateInfo := crCandidateInfo{
 			Code:           hex.EncodeToString(c.Info().Code),
-			DID:            didAddress,
+			CID:            cidAddress,
 			NickName:       c.Info().NickName,
 			Url:            c.Info().Url,
 			Location:       c.Info().Location,
@@ -1685,10 +1685,10 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 	var rsCRMemberInfoSlice []crMemberInfo
 
 	for i, cr := range crMembers {
-		didAddress, _ := cr.Info.DID.ToAddress()
+		cidAddress, _ := cr.Info.CID.ToAddress()
 		memberInfo := crMemberInfo{
 			Code:             hex.EncodeToString(cr.Info.Code),
-			DID:              didAddress,
+			CID:              cidAddress,
 			NickName:         cr.Info.NickName,
 			Url:              cr.Info.Url,
 			Location:         cr.Info.Location,
@@ -1843,7 +1843,7 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 	}
 
 	crState := Chain.GetCRCommittee().GetState()
-	candidate := crState.GetCandidateByDID(*programHash)
+	candidate := crState.GetCandidateByCID(*programHash)
 	if candidate == nil {
 		return ResponsePack(InvalidParams, "can not find CR candidate")
 	}

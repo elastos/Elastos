@@ -41,7 +41,7 @@ func candidateEqual(first *Candidate, second *Candidate) bool {
 
 func crInfoEqual(first *payload.CRInfo, second *payload.CRInfo) bool {
 	if !bytes.Equal(first.Code, second.Code) ||
-		!first.DID.IsEqual(second.DID) ||
+		!first.CID.IsEqual(second.CID) ||
 		first.NickName != second.NickName ||
 		first.Url != second.Url ||
 		first.Location != second.Location {
@@ -54,7 +54,7 @@ func randomCRInfo() *payload.CRInfo {
 	code := randomBytes(34)
 	return &payload.CRInfo{
 		Code:     code,
-		DID:      *getDid(code),
+		CID:      *getCID(code),
 		NickName: randomString(),
 		Url:      randomString(),
 		Location: rand2.Uint64(),

@@ -124,7 +124,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 }
 
 func getDIDByCode(code []byte) (*Uint168, error) {
-	ct1, error := contract.CreateCRDIDContractByCode(code)
+	ct1, error := contract.CreateCRIDContractByCode(code)
 	if error != nil {
 		return nil, error
 	}
@@ -205,10 +205,10 @@ func checkDuplicateTx(block *Block) error {
 			}
 
 			// Check for duplicate CR in a block
-			if _, exists := existingCR[crPayload.DID]; exists {
+			if _, exists := existingCR[crPayload.CID]; exists {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
 			}
-			existingCR[crPayload.DID] = struct{}{}
+			existingCR[crPayload.CID] = struct{}{}
 		case UpdateCR:
 			crPayload, ok := txn.Payload.(*payload.CRInfo)
 			if !ok {
@@ -216,20 +216,20 @@ func checkDuplicateTx(block *Block) error {
 			}
 
 			// Check for duplicate  CR in a block
-			if _, exists := existingCR[crPayload.DID]; exists {
+			if _, exists := existingCR[crPayload.CID]; exists {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
 			}
-			existingCR[crPayload.DID] = struct{}{}
+			existingCR[crPayload.CID] = struct{}{}
 		case UnregisterCR:
 			unregisterCR, ok := txn.Payload.(*payload.UnregisterCR)
 			if !ok {
 				return errors.New("[PowCheckBlockSanity] invalid unregister CR payload")
 			}
 			// Check for duplicate  CR in a block
-			if _, exists := existingCR[unregisterCR.DID]; exists {
+			if _, exists := existingCR[unregisterCR.CID]; exists {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
 			}
-			existingCR[unregisterCR.DID] = struct{}{}
+			existingCR[unregisterCR.CID] = struct{}{}
 		}
 	}
 	return nil

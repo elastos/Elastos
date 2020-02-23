@@ -59,7 +59,7 @@ func (c *Committee) GetMembersDIDs() []common.Uint168 {
 
 	result := make([]common.Uint168, 0, len(c.Members))
 	for _, v := range c.Members {
-		result = append(result, v.Info.DID)
+		result = append(result, v.Info.CID)
 	}
 	return result
 }
@@ -173,7 +173,7 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 	c.Members = make([]*CRMember, 0, c.params.CRMemberCount)
 	for i := 0; i < int(c.params.CRMemberCount); i++ {
 		c.Members = append(c.Members, c.generateMember(candidates[i]))
-		result = append(result, candidates[i].info.DID)
+		result = append(result, candidates[i].info.CID)
 	}
 
 	c.LastCommitteeHeight = height

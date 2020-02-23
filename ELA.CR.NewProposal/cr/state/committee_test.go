@@ -55,7 +55,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 				expectCandidates1[i-1].votes > expectCandidates1[i].votes)
 		}
 		assert.True(t, existCode(expectCandidates1[i].info.Code, codes1))
-		assert.True(t, existDID(expectCandidates1[i].info.DID, did1))
+		assert.True(t, existCID(expectCandidates1[i].info.CID, did1))
 	}
 
 	// > CRCommitteeStartHeight && < CRCommitteeStartHeight + CRDutyPeriod
@@ -70,7 +70,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 	did2 := committee.GetMembersDIDs()
 	for i := 0; i < len(expectCandidates1); i++ {
 		assert.True(t, existCode(expectCandidates1[i].info.Code, codes2))
-		assert.True(t, existDID(expectCandidates1[i].info.DID, did2))
+		assert.True(t, existCID(expectCandidates1[i].info.CID, did2))
 	}
 
 	// CRCommitteeStartHeight + CRDutyPeriod
@@ -88,7 +88,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 				expectCandidates2[i-1].votes > expectCandidates2[i].votes)
 		}
 		assert.True(t, bytes.Equal(expectCandidates2[i].info.Code, codes2[i]))
-		assert.True(t, expectCandidates2[i].info.DID.IsEqual(did2[i]))
+		assert.True(t, expectCandidates2[i].info.CID.IsEqual(did2[i]))
 	}
 }
 
@@ -182,7 +182,7 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 
 	code := randomBytes(34)
 	nickname := randomString()
-	did := *randomUint168()
+	cid := *randomUint168()
 
 	// register candidate
 	height := config.DefaultParams.CRCommitteeStartHeight -
@@ -192,7 +192,7 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 			Height: height,
 		},
 		Transactions: []*types.Transaction{
-			generateRegisterCR(code, did, nickname),
+			generateRegisterCR(code, cid, nickname),
 		},
 	}, nil)
 	candidate := committee.GetState().GetCandidate(code)
@@ -207,7 +207,7 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 			Height: height,
 		},
 		Transactions: []*types.Transaction{
-			generateUpdateCR(code, did, nickname2),
+			generateUpdateCR(code, cid, nickname2),
 		},
 	}, nil)
 	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname2))
@@ -251,14 +251,14 @@ func TestCommittee_RollbackTo_SameCommittee_BeforeVoting(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		code := randomBytes(34)
 		nickname := randomString()
-		did := *randomUint168()
+		cid := *randomUint168()
 
 		committee.ProcessBlock(&types.Block{
 			Header: types.Header{
 				Height: height,
 			},
 			Transactions: []*types.Transaction{
-				generateRegisterCR(code, did, nickname),
+				generateRegisterCR(code, cid, nickname),
 			},
 		}, nil)
 		height++
@@ -326,9 +326,9 @@ func existCode(code []byte, codeArray [][]byte) bool {
 	return false
 }
 
-func existDID(did common.Uint168, didArray []common.Uint168) bool {
+func existCID(cid common.Uint168, didArray []common.Uint168) bool {
 	for _, v := range didArray {
-		if v.IsEqual(did) {
+		if v.IsEqual(cid) {
 			return true
 		}
 	}

@@ -630,7 +630,7 @@ func newRegisterCR(L *lua.LState) int {
 		os.Exit(1)
 	}
 
-	ct, err := contract.CreateCRDIDContractByCode(code)
+	ct, err := contract.CreateCRIDContractByCode(code)
 
 	if err != nil {
 		fmt.Println("wrong cr public key")
@@ -638,7 +638,7 @@ func newRegisterCR(L *lua.LState) int {
 	}
 	registerCR := &payload.CRInfo{
 		Code:     code,
-		DID:      *ct.ToProgramHash(),
+		CID:      *ct.ToProgramHash(),
 		NickName: nickName,
 		Url:      url,
 		Location: uint64(location),
@@ -736,7 +736,7 @@ func newUpdateCR(L *lua.LState) int {
 		os.Exit(1)
 	}
 
-	ct, err := contract.CreateCRDIDContractByCode(code)
+	ct, err := contract.CreateCRIDContractByCode(code)
 	if err != nil {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
@@ -744,7 +744,7 @@ func newUpdateCR(L *lua.LState) int {
 
 	updateCR := &payload.CRInfo{
 		Code:     ct.Code,
-		DID:      *ct.ToProgramHash(),
+		CID:      *ct.ToProgramHash(),
 		NickName: nickName,
 		Url:      url,
 		Location: uint64(location),
@@ -810,8 +810,8 @@ func RegisterUnregisterCRType(L *lua.LState) {
 	// methods
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), unregisterCRMethods))
 }
-func getDidProgramHash(code []byte) *common.Uint168 {
-	ct, _ := contract.CreateCRDIDContractByCode(code)
+func getIDProgramHash(code []byte) *common.Uint168 {
+	ct, _ := contract.CreateCRIDContractByCode(code)
 	return ct.ToProgramHash()
 }
 
@@ -840,9 +840,9 @@ func newUnregisterCR(L *lua.LState) int {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
 	}
-	did := getDidProgramHash(ct.Code)
+	cid := getIDProgramHash(ct.Code)
 	unregisterCR := &payload.UnregisterCR{
-		DID: *did,
+		CID: *cid,
 	}
 
 	if needSign {

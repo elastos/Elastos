@@ -19,7 +19,7 @@ const CRInfoVersion byte = 0x00
 // CRInfo defines the information of CR.
 type CRInfo struct {
 	Code      []byte
-	DID       common.Uint168
+	CID       common.Uint168
 	NickName  string
 	Url       string
 	Location  uint64
@@ -54,8 +54,8 @@ func (a *CRInfo) SerializeUnsigned(w io.Writer, version byte) error {
 		return errors.New("[CRInfo], code serialize failed")
 	}
 
-	if err = a.DID.Serialize(w); err != nil {
-		return errors.New("[CRInfo], DID serialize failed")
+	if err = a.CID.Serialize(w); err != nil {
+		return errors.New("[CRInfo], CID serialize failed")
 	}
 
 	err = common.WriteVarString(w, a.NickName)
@@ -96,8 +96,8 @@ func (a *CRInfo) DeserializeUnsigned(r io.Reader, version byte) error {
 		return errors.New("[CRInfo], code deserialize failed")
 	}
 
-	if err = a.DID.Deserialize(r); err != nil {
-		return errors.New("[CRInfo], DID deserialize failed")
+	if err = a.CID.Deserialize(r); err != nil {
+		return errors.New("[CRInfo], CID deserialize failed")
 	}
 
 	a.NickName, err = common.ReadVarString(r)
