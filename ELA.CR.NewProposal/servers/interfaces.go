@@ -1464,6 +1464,7 @@ type producersInfo struct {
 type crCandidateInfo struct {
 	Code           string `json:"code"`
 	CID            string `json:"cid"`
+	DID            string `json:"did"`
 	NickName       string `json:"nickname"`
 	Url            string `json:"url"`
 	Location       uint64 `json:"location"`
@@ -1486,6 +1487,7 @@ type crCandidatesInfo struct {
 type crMemberInfo struct {
 	Code             string         `json:"code"`
 	CID              string         `json:"cid"`
+	DID              string         `json:"did"`
 	NickName         string         `json:"nickname"`
 	Url              string         `json:"url"`
 	Location         uint64         `json:"location"`
@@ -1628,9 +1630,11 @@ func ListCRCandidates(param Params) map[string]interface{} {
 	for i, c := range candidates {
 		totalVotes += c.Votes()
 		cidAddress, _ := c.Info().CID.ToAddress()
+		didAddress, _ := c.Info().CID.ToAddress()
 		candidateInfo := crCandidateInfo{
 			Code:           hex.EncodeToString(c.Info().Code),
 			CID:            cidAddress,
+			DID:            didAddress,
 			NickName:       c.Info().NickName,
 			Url:            c.Info().Url,
 			Location:       c.Info().Location,
@@ -1686,9 +1690,11 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 
 	for i, cr := range crMembers {
 		cidAddress, _ := cr.Info.CID.ToAddress()
+		didAddress, _ := cr.Info.CID.ToAddress()
 		memberInfo := crMemberInfo{
 			Code:             hex.EncodeToString(cr.Info.Code),
 			CID:              cidAddress,
+			DID:              didAddress,
 			NickName:         cr.Info.NickName,
 			Url:              cr.Info.Url,
 			Location:         cr.Info.Location,
@@ -1833,19 +1839,31 @@ func GetDepositCoin(param Params) map[string]interface{} {
 }
 
 func GetCRDepositCoin(param Params) map[string]interface{} {
-	did, ok := param.String("did")
-	if !ok {
-		return ResponsePack(InvalidParams, "need a param called did")
-	}
-	programHash, err := common.Uint168FromAddress(did)
-	if err != nil {
-		return ResponsePack(InvalidParams, "invalid did to programHash")
-	}
-
 	crState := Chain.GetCRCommittee().GetState()
-	candidate := crState.GetCandidateByCID(*programHash)
+	var candidate *crstate.Candidate
+	pubkey, ok := param.String("publickey")
+	if ok {
+		candidate = crState.GetCandidateByPublicKey(pubkey)
+		if candidate == nil {
+			return ResponsePack(InvalidParams, "can not find CR candidate")
+		}
+	}
+	id, ok := param.String("id")
+	if ok {
+		programHash, err := common.Uint168FromAddress(id)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid did to programHash")
+		}
+
+		candidate = crState.GetCandidateByID(*programHash)
+		if candidate == nil {
+			return ResponsePack(InvalidParams, "can not find CR candidate")
+		}
+
+	}
 	if candidate == nil {
-		return ResponsePack(InvalidParams, "can not find CR candidate")
+		return ResponsePack(InvalidParams, "need a param called "+
+			"publickey or did")
 	}
 
 	type depositCoin struct {

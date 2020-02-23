@@ -6,6 +6,7 @@
 package state
 
 import (
+	"github.com/elastos/Elastos.ELA/crypto"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -50,12 +51,32 @@ func (s *State) GetCandidate(programCode []byte) *Candidate {
 	return s.getCandidate(programCode)
 }
 
-// GetCandidateByCID returns candidate with specified did, it will return nil
+// GetCandidateByID returns candidate with specified cid or did, it will return
 // nil if not found.
+func (s *State) GetCandidateByID(id common.Uint168) *Candidate {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	return s.getCandidateByID(id)
+}
+
+// GetCandidateByCID returns candidate with specified did, it will return nil
+// if not found.
 func (s *State) GetCandidateByCID(cid common.Uint168) *Candidate {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	return s.getCandidateByCID(cid)
+}
+
+// GetCandidateByPublicKey returns candidate with specified did, it will return
+// nil if not found.
+func (s *State) GetCandidateByPublicKey(publicKey string) *Candidate {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	pubkey, err := common.HexStringToBytes(publicKey)
+	if err != nil {
+		return nil
+	}
+	return s.getCandidateByPublicKey(pubkey)
 }
 
 // GetAllCandidates returns all candidates holding within state.
@@ -572,6 +593,22 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	}
 }
 
+func (s *State) getCandidateByID(id common.Uint168) *Candidate {
+	for k, v := range s.CodeCIDMap {
+		if v.IsEqual(id) {
+			return s.getCandidateByCID(v)
+		}
+		code, _ := common.HexStringToBytes(k)
+		didCode := append(code[:len(code)-1], common.DID)
+		ct, _ := contract.CreateCRIDContractByCode(didCode)
+		did := ct.ToProgramHash()
+		if did.IsEqual(id) {
+			return s.getCandidateByCID(v)
+		}
+	}
+	return nil
+}
+
 func (s *State) getCandidateByCID(cid common.Uint168) *Candidate {
 	if c, ok := s.PendingCandidates[cid]; ok {
 		return c
@@ -585,6 +622,23 @@ func (s *State) getCandidateByCID(cid common.Uint168) *Candidate {
 		return c
 	}
 	return nil
+}
+
+func (s *State) getCandidateByPublicKey(publicKey []byte) *Candidate {
+	pubkey, err := crypto.DecodePoint(publicKey)
+	if err != nil {
+		return nil
+	}
+	code, err := contract.CreateStandardRedeemScript(pubkey)
+	if err != nil {
+		return nil
+	}
+	ct, err := contract.CreateCRIDContractByCode(code)
+	if err != nil {
+		return nil
+	}
+	cid := ct.ToProgramHash()
+	return s.getCandidateByCID(*cid)
 }
 
 func (s *State) getCandidate(programCode []byte) *Candidate {

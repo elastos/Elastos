@@ -57,7 +57,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 		return ErrInvalidInput
 	}
 
-	if err := b.checkTransactionOutput(blockHeight, txn); err != nil {
+	if err := b.checkTransactionOutput(txn, blockHeight); err != nil {
 		log.Warn("[CheckTransactionOutput],", err)
 		return ErrInvalidOutput
 	}
@@ -460,8 +460,8 @@ func checkTransactionInput(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
-	txn *Transaction) error {
+func (b *BlockChain) checkTransactionOutput(txn *Transaction,
+	blockHeight uint32) error {
 	if len(txn.Outputs) > math.MaxUint16 {
 		return errors.New("output count should not be greater than 65535(MaxUint16)")
 	}
@@ -871,7 +871,13 @@ func checkDuplicateSidechainTx(txn *Transaction) error {
 // validate the type of transaction is allowed or not at current height.
 func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) error {
 	switch txn.TxType {
-	case RegisterCR, UpdateCR, UnregisterCR, ReturnCRDepositCoin:
+	case RegisterCR, UpdateCR:
+		if blockHeight < b.chainParams.CRVotingStartHeight ||
+			(blockHeight < b.chainParams.RegisterCRByDIDHeight &&
+				txn.PayloadVersion != payload.CRInfoVersion) {
+			return errors.New("not support before CRVotingStartHeight")
+		}
+	case UnregisterCR, ReturnCRDepositCoin:
 		if blockHeight < b.chainParams.CRVotingStartHeight {
 			return errors.New("not support before CRVotingStartHeight")
 		}
@@ -1375,7 +1381,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 		return fmt.Errorf("did %s already exist", info.CID)
 	}
 
-	// get CID program hash
+	// get CID program hash and check length of code
 	ct, err := contract.CreateCRIDContractByCode(info.Code)
 	if err != nil {
 		return err
@@ -1398,6 +1404,21 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 	// check CID
 	if !info.CID.IsEqual(*programHash) {
 		return errors.New("invalid did address")
+	}
+
+	if blockHeight >= b.chainParams.RegisterCRByDIDHeight {
+		// get DID program hash
+		didCode := append(info.Code[:len(info.Code)-1], common.DID)
+		ct, err = contract.CreateCRIDContractByCode(didCode)
+		if err != nil {
+			return err
+		}
+		programHash = ct.ToProgramHash()
+
+		// check DID
+		if !info.DID.IsEqual(*programHash) {
+			return errors.New("invalid did address")
+		}
 	}
 
 	// check code and signature
@@ -1448,7 +1469,7 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		return err
 	}
 
-	// get DID program hash
+	// get DID program hash and check length of code
 	ct, err := contract.CreateCRIDContractByCode(info.Code)
 	if err != nil {
 		return err
@@ -1460,7 +1481,22 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 
 	// check CID
 	if !info.CID.IsEqual(*programHash) {
-		return errors.New("invalid did address")
+		return errors.New("invalid cid address")
+	}
+
+	if blockHeight >= b.chainParams.RegisterCRByDIDHeight {
+		// get DID program hash
+		didCode := append(info.Code[:len(info.Code)-1], common.DID)
+		ct, err = contract.CreateCRIDContractByCode(didCode)
+		if err != nil {
+			return err
+		}
+		programHash = ct.ToProgramHash()
+
+		// check DID
+		if !info.DID.IsEqual(*programHash) {
+			return errors.New("invalid did address")
+		}
 	}
 
 	// check code and signature

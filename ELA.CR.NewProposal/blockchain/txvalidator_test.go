@@ -89,12 +89,20 @@ func (s *txValidatorTestSuite) TestCheckTxHeightVersion() {
 	// to CRVotingStartHeight.
 	blockHeight1 := s.Chain.chainParams.CRVotingStartHeight - 1
 	blockHeight2 := s.Chain.chainParams.CRVotingStartHeight
+	blockHeight3 := s.Chain.chainParams.RegisterCRByDIDHeight
 
 	// check height version of registerCR transaction.
 	registerCR := &types.Transaction{TxType: types.RegisterCR}
 	err := s.Chain.checkTxHeightVersion(registerCR, blockHeight1)
 	s.EqualError(err, "not support before CRVotingStartHeight")
 	err = s.Chain.checkTxHeightVersion(registerCR, blockHeight2)
+	s.NoError(err)
+
+	registerCR2 := &types.Transaction{TxType: types.RegisterCR,
+		PayloadVersion: payload.CRInfoDIDVersion}
+	err = s.Chain.checkTxHeightVersion(registerCR2, blockHeight1)
+	s.EqualError(err, "not support before CRVotingStartHeight")
+	err = s.Chain.checkTxHeightVersion(registerCR2, blockHeight3)
 	s.NoError(err)
 
 	// check height version of updateCR transaction.
@@ -206,14 +214,14 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 	}
-	err := s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err := s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.NoError(err)
 
 	// outputs < 2
 	tx.Outputs = []*types.Output{
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress},
 	}
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.EqualError(err, "coinbase output is not enough, at least 2")
 
 	// invalid asset id
@@ -221,7 +229,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: common.EmptyHash, ProgramHash: s.foundationAddress},
 		{AssetID: common.EmptyHash, ProgramHash: s.foundationAddress},
 	}
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.EqualError(err, "Asset ID in coinbase is invalid")
 
 	// reward to foundation in coinbase = 30% (CheckTxOut version)
@@ -233,7 +241,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
 		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.NoError(err)
 
 	// reward to foundation in coinbase < 30% (CheckTxOut version)
@@ -243,7 +251,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: foundationReward},
 		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: totalReward - foundationReward},
 	}
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.EqualError(err, "reward to foundation in coinbase < 30%")
 
 	// normal transaction
@@ -252,12 +260,12 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		output.AssetID = config.ELAAssetID
 		output.ProgramHash = common.Uint168{}
 	}
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.NoError(err)
 
 	// outputs < 1
 	tx.Outputs = nil
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.EqualError(err, "transaction has no outputs")
 
 	// invalid asset ID
@@ -266,7 +274,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		output.AssetID = common.EmptyHash
 		output.ProgramHash = common.Uint168{}
 	}
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.EqualError(err, "asset ID in output is invalid")
 
 	// should only have one special output
@@ -287,11 +295,11 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		})
 	}
 	tx.Outputs = appendSpecial()
-	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
+	s.NoError(s.Chain.checkTransactionOutput(tx, s.HeightVersion1))
 	tx.Outputs = appendSpecial() // add another special output here
 	originHeight := config.DefaultParams.PublicDPOSHeight
 	config.DefaultParams.PublicDPOSHeight = 0
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	config.DefaultParams.PublicDPOSHeight = originHeight
 	s.EqualError(err, "special output count should less equal than 1")
 
@@ -305,7 +313,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		output.ProgramHash = address
 	}
 	config.DefaultParams.PublicDPOSHeight = 0
-	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
+	s.NoError(s.Chain.checkTransactionOutput(tx, s.HeightVersion1))
 	config.DefaultParams.PublicDPOSHeight = originHeight
 
 	// new sideChainPow
@@ -318,7 +326,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 			},
 		},
 	}
-	s.NoError(s.Chain.checkTransactionOutput(s.HeightVersion1, tx))
+	s.NoError(s.Chain.checkTransactionOutput(tx, s.HeightVersion1))
 
 	tx.Outputs = []*types.Output{
 		{
@@ -330,7 +338,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 			Type:  0,
 		},
 	}
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.EqualError(err, "new sideChainPow tx must have only one output")
 
 	tx.Outputs = []*types.Output{
@@ -339,7 +347,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 			Type:  0,
 		},
 	}
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.EqualError(err, "the value of new sideChainPow tx output must be 0")
 
 	tx.Outputs = []*types.Output{
@@ -348,7 +356,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 			Type:  1,
 		},
 	}
-	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
+	err = s.Chain.checkTransactionOutput(tx, s.HeightVersion1)
 	s.EqualError(err, "the type of new sideChainPow tx output must be OTNone")
 }
 
@@ -1365,6 +1373,12 @@ func getID(code []byte) *common.Uint168 {
 	return ct1.ToProgramHash()
 }
 
+func getDID(code []byte) *common.Uint168 {
+	didCode := append(code[:len(code)-1], common.DID)
+	ct1, _ := contract.CreateCRIDContractByCode(didCode)
+	return ct1.ToProgramHash()
+}
+
 func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transaction {
 
 	publicKeyStr1 := publicKeyStr
@@ -1658,6 +1672,9 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 	//not in vote Period lower
 	err = s.Chain.checkUpdateCRTransaction(txn, config.DefaultParams.CRVotingStartHeight-1)
 	s.EqualError(err, "should create tx during voting period")
+
+	// set RegisterCRByDIDHeight after CRCommitteeStartHeight
+	s.Chain.chainParams.RegisterCRByDIDHeight = config.DefaultParams.CRCommitteeStartHeight + 10
 
 	//not in vote Period lower upper c.params.CRCommitteeStartHeight
 	err = s.Chain.checkUpdateCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
