@@ -185,14 +185,14 @@ func TestCRDuplicateTx(t *testing.T) {
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	code := getValideCode(publicKeyStr1)
 	nickname := randomString()
-	didPointer := getValideDID(publicKeyStr1)
-	did := *didPointer
+	cidPointer := getValideCID(publicKeyStr1)
+	cid := *cidPointer
 
 	TestRegisterCR := func(t *testing.T) {
 		OneRegisterCRTest := func() {
 			var block types.Block
 			block.Transactions = make([]*types.Transaction, 0)
-			registerCRTxPointer := generateRegisterCR(code, did, nickname)
+			registerCRTxPointer := generateRegisterCR(code, cid, nickname)
 			block.Transactions = append(block.Transactions, registerCRTxPointer)
 			err := checkDuplicateTx(&block)
 			assert.NoError(t, err)
@@ -202,7 +202,7 @@ func TestCRDuplicateTx(t *testing.T) {
 		TwoRegisterCRTest := func() {
 			var block types.Block
 			block.Transactions = make([]*types.Transaction, 0)
-			registerCRTxPointer := generateRegisterCR(code, did, nickname)
+			registerCRTxPointer := generateRegisterCR(code, cid, nickname)
 			block.Transactions = append(block.Transactions, registerCRTxPointer)
 			block.Transactions = append(block.Transactions, registerCRTxPointer)
 			err := checkDuplicateTx(&block)
@@ -216,7 +216,7 @@ func TestCRDuplicateTx(t *testing.T) {
 		OneUpdateCRTest := func(t *testing.T) {
 			var block types.Block
 			block.Transactions = make([]*types.Transaction, 0)
-			updateCRPointer := generateUpdateCR(code, did, nickname)
+			updateCRPointer := generateUpdateCR(code, cid, nickname)
 			block.Transactions = append(block.Transactions, updateCRPointer)
 			err := checkDuplicateTx(&block)
 			assert.NoError(t, err)
@@ -226,7 +226,7 @@ func TestCRDuplicateTx(t *testing.T) {
 		TwoUpdateCRTest := func(t *testing.T) {
 			var block types.Block
 			block.Transactions = make([]*types.Transaction, 0)
-			updateCRPointer := generateUpdateCR(code, did, nickname)
+			updateCRPointer := generateUpdateCR(code, cid, nickname)
 			block.Transactions = append(block.Transactions, updateCRPointer)
 			block.Transactions = append(block.Transactions, updateCRPointer)
 			err := checkDuplicateTx(&block)
@@ -263,8 +263,8 @@ func TestCRDuplicateTx(t *testing.T) {
 	OneRegisterOneUpdate := func(t *testing.T) {
 		var block types.Block
 		block.Transactions = make([]*types.Transaction, 0)
-		registerCRTxPointer := generateRegisterCR(code, did, nickname)
-		updateCRPointer := generateUpdateCR(code, did, nickname)
+		registerCRTxPointer := generateRegisterCR(code, cid, nickname)
+		updateCRPointer := generateUpdateCR(code, cid, nickname)
 		block.Transactions = append(block.Transactions, registerCRTxPointer)
 		block.Transactions = append(block.Transactions, updateCRPointer)
 		err := checkDuplicateTx(&block)
@@ -275,7 +275,7 @@ func TestCRDuplicateTx(t *testing.T) {
 	OneRegisterOneUnregister := func(t *testing.T) {
 		var block types.Block
 		block.Transactions = make([]*types.Transaction, 0)
-		registerCRTxPointer := generateRegisterCR(code, did, nickname)
+		registerCRTxPointer := generateRegisterCR(code, cid, nickname)
 		unregisterCRPointer := generateUnregisterCR(code)
 		block.Transactions = append(block.Transactions, registerCRTxPointer)
 		block.Transactions = append(block.Transactions, unregisterCRPointer)
@@ -286,7 +286,7 @@ func TestCRDuplicateTx(t *testing.T) {
 	OneUpdateOneUnregister := func(t *testing.T) {
 		var block types.Block
 		block.Transactions = make([]*types.Transaction, 0)
-		updateCRPointer := generateUpdateCR(code, did, nickname)
+		updateCRPointer := generateUpdateCR(code, cid, nickname)
 		unregisterCRPointer := generateUnregisterCR(code)
 		block.Transactions = append(block.Transactions, updateCRPointer)
 		block.Transactions = append(block.Transactions, unregisterCRPointer)
@@ -453,7 +453,7 @@ func generateRegisterCR(code []byte, did common.Uint168,
 		TxType: types.RegisterCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			DID:      did,
+			CID:      did,
 			NickName: nickname,
 		},
 	}
@@ -465,7 +465,7 @@ func generateUpdateCR(code []byte, did common.Uint168,
 		TxType: types.UpdateCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			DID:      did,
+			CID:      did,
 			NickName: nickname,
 		},
 	}
@@ -475,7 +475,7 @@ func generateUnregisterCR(code []byte) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.UnregisterCR,
 		Payload: &payload.UnregisterCR{
-			DID: *getDid(code),
+			CID: *getID(code),
 		},
 	}
 }
@@ -507,7 +507,7 @@ func getValideCode(publicKeyStr string) []byte {
 	return ct1.Code
 }
 
-func getValideDID(publicKeyStr string) *common.Uint168 {
+func getValideCID(publicKeyStr string) *common.Uint168 {
 	code := getValideCode(publicKeyStr)
-	return getDid(code)
+	return getID(code)
 }

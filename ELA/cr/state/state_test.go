@@ -28,21 +28,21 @@ func TestState_GetCandidatesRelated(t *testing.T) {
 
 	// get single candidate
 	for k, v := range keyFrame.PendingCandidates {
-		v2 := state.GetCandidateByDID(k)
+		v2 := state.GetCandidateByCID(k)
 		assert.True(t, candidateEqual(v, v2))
 
 		v3 := state.GetCandidate(v.info.Code)
 		assert.True(t, candidateEqual(v, v3))
 	}
 	for k, v := range keyFrame.ActivityCandidates {
-		v2 := state.GetCandidateByDID(k)
+		v2 := state.GetCandidateByCID(k)
 		assert.True(t, candidateEqual(v, v2))
 
 		v3 := state.GetCandidate(v.info.Code)
 		assert.True(t, candidateEqual(v, v3))
 	}
 	for k, v := range keyFrame.CanceledCandidates {
-		v2 := state.GetCandidateByDID(k)
+		v2 := state.GetCandidateByCID(k)
 		assert.True(t, candidateEqual(v, v2))
 
 		v3 := state.GetCandidate(v.info.Code)
@@ -73,24 +73,24 @@ func TestState_ExistCandidateRelated(t *testing.T) {
 	}
 
 	assert.False(t, state.ExistCandidate(make([]byte, 34)))
-	assert.False(t, state.ExistCandidateByDID(common.Uint168{}))
+	assert.False(t, state.ExistCandidateByCID(common.Uint168{}))
 	assert.False(t, state.ExistCandidateByNickname(""))
 
 	for _, v := range keyFrame.PendingCandidates {
 		assert.True(t, state.ExistCandidate(v.info.Code))
-		assert.True(t, state.ExistCandidateByDID(v.info.DID))
+		assert.True(t, state.ExistCandidateByCID(v.info.CID))
 		assert.True(t, state.ExistCandidateByNickname(v.info.NickName))
 	}
 
 	for _, v := range keyFrame.ActivityCandidates {
 		assert.True(t, state.ExistCandidate(v.info.Code))
-		assert.True(t, state.ExistCandidateByDID(v.info.DID))
+		assert.True(t, state.ExistCandidateByCID(v.info.CID))
 		assert.True(t, state.ExistCandidateByNickname(v.info.NickName))
 	}
 
 	for _, v := range keyFrame.CanceledCandidates {
 		assert.True(t, state.ExistCandidate(v.info.Code))
-		assert.True(t, state.ExistCandidateByDID(v.info.DID))
+		assert.True(t, state.ExistCandidateByCID(v.info.CID))
 		assert.True(t, state.ExistCandidateByNickname(v.info.NickName))
 	}
 }
@@ -106,11 +106,11 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 	state := NewState(nil)
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	code := getCode(publicKeyStr1)
-	did := *getDid(code)
+	cid := *getCID(code)
 	nickname := randomString()
 
 	assert.False(t, state.ExistCandidate(code))
-	assert.False(t, state.ExistCandidateByDID(did))
+	assert.False(t, state.ExistCandidateByCID(cid))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 
 	// register CR
@@ -119,11 +119,11 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 			Height: 1,
 		},
 		Transactions: []*types.Transaction{
-			generateRegisterCR(code, did, nickname),
+			generateRegisterCR(code, cid, nickname),
 		},
 	}, nil)
 	assert.True(t, state.ExistCandidate(code))
-	assert.True(t, state.ExistCandidateByDID(did))
+	assert.True(t, state.ExistCandidateByCID(cid))
 	assert.True(t, state.ExistCandidateByNickname(nickname))
 	candidate := state.GetCandidate(code)
 	assert.Equal(t, Pending, candidate.state)
@@ -135,11 +135,11 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 			Height: 2,
 		},
 		Transactions: []*types.Transaction{
-			generateUpdateCR(code, did, nickname2),
+			generateUpdateCR(code, cid, nickname2),
 		},
 	}, nil)
 	assert.True(t, state.ExistCandidate(code))
-	assert.True(t, state.ExistCandidateByDID(did))
+	assert.True(t, state.ExistCandidateByCID(cid))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 	assert.True(t, state.ExistCandidateByNickname(nickname2))
 	candidate = state.GetCandidate(code)
@@ -155,7 +155,7 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 		},
 	}, nil)
 	assert.True(t, state.ExistCandidate(code))
-	assert.True(t, state.ExistCandidateByDID(did))
+	assert.True(t, state.ExistCandidateByCID(cid))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 	assert.False(t, state.ExistCandidateByNickname(nickname2))
 	candidate = state.GetCandidate(code)
@@ -170,10 +170,10 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 	nickname := randomString()
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	code := getCode(publicKeyStr1)
-	did := *getDid(code)
+	cid := *getCID(code)
 
 	assert.False(t, state.ExistCandidate(code))
-	assert.False(t, state.ExistCandidateByDID(did))
+	assert.False(t, state.ExistCandidateByCID(cid))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 
 	// register CR
@@ -182,12 +182,12 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 			Height: height,
 		},
 		Transactions: []*types.Transaction{
-			generateRegisterCR(code, did, nickname),
+			generateRegisterCR(code, cid, nickname),
 		},
 	}, nil)
 	height++
 	assert.True(t, state.ExistCandidate(code))
-	assert.True(t, state.ExistCandidateByDID(did))
+	assert.True(t, state.ExistCandidateByCID(cid))
 	assert.True(t, state.ExistCandidateByNickname(nickname))
 	candidate := state.GetCandidate(code)
 	assert.Equal(t, Pending, candidate.state)
@@ -212,12 +212,12 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 			Height: height,
 		},
 		Transactions: []*types.Transaction{
-			generateUpdateCR(code, did, nickname2),
+			generateUpdateCR(code, cid, nickname2),
 		},
 	}, nil)
 	height++
 	assert.True(t, state.ExistCandidate(code))
-	assert.True(t, state.ExistCandidateByDID(did))
+	assert.True(t, state.ExistCandidateByCID(cid))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 	assert.True(t, state.ExistCandidateByNickname(nickname2))
 	candidate = state.GetCandidate(code)
@@ -233,7 +233,7 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 		},
 	}, nil)
 	assert.True(t, state.ExistCandidate(code))
-	assert.True(t, state.ExistCandidateByDID(did))
+	assert.True(t, state.ExistCandidateByCID(cid))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 	assert.False(t, state.ExistCandidateByNickname(nickname2))
 	candidate = state.GetCandidate(code)
@@ -258,14 +258,14 @@ func TestState_ProcessBlock_MixedCRProcessing(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		code := randomBytes(34)
 		nickname := randomString()
-		did := *randomUint168()
+		cid := *randomUint168()
 
 		state.ProcessBlock(&types.Block{
 			Header: types.Header{
 				Height: height,
 			},
 			Transactions: []*types.Transaction{
-				generateRegisterCR(code, did, nickname),
+				generateRegisterCR(code, cid, nickname),
 			},
 		}, nil)
 		height++
@@ -356,7 +356,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		TxType: types.RegisterCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			DID:      *getDid(code),
+			CID:      *getCID(code),
 			NickName: randomString(),
 		},
 		Outputs: []*types.Output{
@@ -457,10 +457,10 @@ func mockNewVoteTx(programCodes [][]byte) *types.Transaction {
 	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(programCodes))
 	for i, pk := range programCodes {
 		//code := getCode(common.BytesToHexString(pk))
-		did := getDid(pk)
+		cid := getCID(pk)
 		candidateVotes = append(candidateVotes,
 			outputpayload.CandidateVotes{
-				Candidate: did.Bytes(),
+				Candidate: cid.Bytes(),
 				Votes:     common.Fixed64((i + 1) * 10)})
 	}
 	output := &types.Output{
@@ -481,25 +481,25 @@ func mockNewVoteTx(programCodes [][]byte) *types.Transaction {
 	}
 }
 
-func generateRegisterCR(code []byte, did common.Uint168,
+func generateRegisterCR(code []byte, cid common.Uint168,
 	nickname string) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.RegisterCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			DID:      did,
+			CID:      cid,
 			NickName: nickname,
 		},
 	}
 }
 
-func generateUpdateCR(code []byte, did common.Uint168,
+func generateUpdateCR(code []byte, cid common.Uint168,
 	nickname string) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.UpdateCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			DID:      did,
+			CID:      cid,
 			NickName: nickname,
 		},
 	}
@@ -509,13 +509,13 @@ func generateUnregisterCR(code []byte) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.UnregisterCR,
 		Payload: &payload.UnregisterCR{
-			DID: *getDid(code),
+			CID: *getCID(code),
 		},
 	}
 }
 
-func getDid(code []byte) *common.Uint168 {
-	ct1, _ := contract.CreateCRDIDContractByCode(code)
+func getCID(code []byte) *common.Uint168 {
+	ct1, _ := contract.CreateCRIDContractByCode(code)
 	return ct1.ToProgramHash()
 }
 

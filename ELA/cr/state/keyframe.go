@@ -31,7 +31,7 @@ type KeyFrame struct {
 
 // StateKeyFrame holds necessary state about CR state.
 type StateKeyFrame struct {
-	CodeDIDMap         map[string]common.Uint168
+	CodeCIDMap         map[string]common.Uint168
 	DepositHashMap     map[common.Uint168]struct{}
 	PendingCandidates  map[common.Uint168]*Candidate
 	ActivityCandidates map[common.Uint168]*Candidate
@@ -135,7 +135,7 @@ func NewKeyFrame() *KeyFrame {
 }
 
 func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
-	if err = k.serializeCodeAddressMap(w, k.CodeDIDMap); err != nil {
+	if err = k.serializeCodeAddressMap(w, k.CodeCIDMap); err != nil {
 		return
 	}
 
@@ -167,7 +167,7 @@ func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
 }
 
 func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
-	if k.CodeDIDMap, err = k.deserializeCodeAddressMap(r); err != nil {
+	if k.CodeCIDMap, err = k.deserializeCodeAddressMap(r); err != nil {
 		return
 	}
 
@@ -370,7 +370,7 @@ func (s *StateKeyFrame) deserializeOutputsMap(
 // Snapshot will create a new StateKeyFrame object and deep copy all related data.
 func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
 	state := NewStateKeyFrame()
-	state.CodeDIDMap = copyCodeAddressMap(k.CodeDIDMap)
+	state.CodeCIDMap = copyCodeAddressMap(k.CodeCIDMap)
 	state.PendingCandidates = copyCandidateMap(k.PendingCandidates)
 	state.ActivityCandidates = copyCandidateMap(k.ActivityCandidates)
 	state.CanceledCandidates = copyCandidateMap(k.CanceledCandidates)
@@ -383,7 +383,7 @@ func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
 
 func NewStateKeyFrame() *StateKeyFrame {
 	return &StateKeyFrame{
-		CodeDIDMap:         make(map[string]common.Uint168),
+		CodeCIDMap:         make(map[string]common.Uint168),
 		DepositHashMap:     make(map[common.Uint168]struct{}),
 		PendingCandidates:  make(map[common.Uint168]*Candidate),
 		ActivityCandidates: make(map[common.Uint168]*Candidate),
