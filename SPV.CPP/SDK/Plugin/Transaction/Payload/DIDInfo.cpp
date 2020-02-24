@@ -340,6 +340,12 @@ namespace Elastos {
 			return _serviceEndpoint;
 		}
 
+		void ServiceEndpoint::AutoFill(const std::string &did) {
+			if (_id[0] == '#') {
+				_id = did + _id;
+			}
+		}
+
 		void ServiceEndpoint::ToOrderedJson(JsonGenerator *generator) const {
 			JsonGenerator_WriteStartObject(generator);
 
@@ -434,11 +440,12 @@ namespace Elastos {
 			}
 
 			_credentialSubject.AutoFill(did);
-			_proof.AutoFill(did);
 
 			if (_issuer.empty()) {
-				_issuer = did;
+				_issuer = _credentialSubject.ID();
 			}
+
+			_proof.AutoFill(_issuer);
 		}
 
 		void VerifiableCredential::ToOrderedJson(JsonGenerator *generator) const {
@@ -861,6 +868,7 @@ namespace Elastos {
 				for (nlohmann::json::iterator it = jservices.begin(); it != jservices.end(); ++it) {
 					ServiceEndpoint serviceEndpoint;
 					serviceEndpoint.FromJson(*it, version);
+					serviceEndpoint.AutoFill(_id);
 					_services.push_back(serviceEndpoint);
 				}
 			}
