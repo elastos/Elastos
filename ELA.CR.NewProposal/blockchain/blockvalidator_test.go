@@ -475,7 +475,7 @@ func generateUnregisterCR(code []byte) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.UnregisterCR,
 		Payload: &payload.UnregisterCR{
-			CID: *getID(code),
+			CID: *getCID(code),
 		},
 	}
 }
@@ -509,5 +509,5 @@ func getValideCode(publicKeyStr string) []byte {
 
 func getValideCID(publicKeyStr string) *common.Uint168 {
 	code := getValideCode(publicKeyStr)
-	return getID(code)
+	return getCID(code)
 }

@@ -1198,16 +1198,18 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	hash1, _ := getDepositAddress(publicKeyStr1)
 	hash2, _ := getDepositAddress(publicKeyStr2)
 
-	txn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	txn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1,
+		payload.CRInfoVersion, &common.Uint168{})
 
 	code1 := getCode(publicKeyStr1)
 	code2 := getCode(publicKeyStr2)
 	codeStr1 := common.BytesToHexString(code1)
 
-	cid1 := getID(code1)
-	cid2 := getID(code2)
+	cid1 := getCID(code1)
+	cid2 := getCID(code2)
 
 	votingHeight := config.DefaultParams.CRVotingStartHeight
+	registerCRByDIDHeight := config.DefaultParams.RegisterCRByDIDHeight
 
 	// all ok
 	err := s.Chain.checkRegisterCRTransaction(txn, votingHeight)
@@ -1259,11 +1261,11 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	err = s.Chain.checkRegisterCRTransaction(txn, 0)
 	s.EqualError(err, "should create tx during voting period")
 
-	//did aready exist
+	//cid already exist
 	s.Chain.crCommittee.GetState().CodeCIDMap[codeStr1] = *cid1
 	s.Chain.crCommittee.GetState().ActivityCandidates[*cid1] = &crstate.Candidate{}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "did "+
+	s.EqualError(err, "cid "+
 		"67ae53989e21c3212dd9bfed6daeb56874782502dd already exist")
 
 	delete(s.Chain.crCommittee.GetState().CodeCIDMap, codeStr1)
@@ -1279,12 +1281,12 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	txn.Payload.(*payload.CRInfo).Code = code1
 	txn.Payload.(*payload.CRInfo).CID = common.Uint168{1, 2, 3}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "invalid did address")
+	s.EqualError(err, "invalid cid address")
 
 	// Give a mismatching code and CID in payload
 	txn.Payload.(*payload.CRInfo).CID = *cid2
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "invalid did address")
+	s.EqualError(err, "invalid cid address")
 
 	// Invalidates the signature in payload
 	txn.Payload.(*payload.CRInfo).CID = *cid1
@@ -1357,6 +1359,22 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 		[]string{privateKeyStr1}, nickName1)
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "CR not support multi sign code")
+
+	//check register cr with CRInfoDIDVersion
+	txn2 := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1,
+		payload.CRInfoDIDVersion, &common.Uint168{1, 2, 3})
+	err = s.Chain.checkRegisterCRTransaction(txn2, registerCRByDIDHeight)
+	s.EqualError(err, "invalid did address")
+
+	txn2 = s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1,
+		payload.CRInfoDIDVersion, getDIDFromCode(code2))
+	err = s.Chain.checkRegisterCRTransaction(txn2, registerCRByDIDHeight)
+	s.EqualError(err, "invalid did address")
+
+	txn2 = s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1,
+		payload.CRInfoDIDVersion, getDIDFromCode(code1))
+	err = s.Chain.checkRegisterCRTransaction(txn2, registerCRByDIDHeight)
+	s.NoError(err)
 }
 
 func getDepositAddress(publicKeyStr string) (*common.Uint168, error) {
@@ -1368,18 +1386,13 @@ func getDepositAddress(publicKeyStr string) (*common.Uint168, error) {
 	return hash, nil
 }
 
-func getID(code []byte) *common.Uint168 {
+func getCID(code []byte) *common.Uint168 {
 	ct1, _ := contract.CreateCRIDContractByCode(code)
 	return ct1.ToProgramHash()
 }
 
-func getDID(code []byte) *common.Uint168 {
-	didCode := append(code[:len(code)-1], common.DID)
-	ct1, _ := contract.CreateCRIDContractByCode(didCode)
-	return ct1.ToProgramHash()
-}
-
-func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transaction {
+func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr,
+	nickName string, payloadVersion byte, did *common.Uint168) *types.Transaction {
 
 	publicKeyStr1 := publicKeyStr
 	privateKeyStr1 := privateKeyStr
@@ -1387,7 +1400,6 @@ func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nick
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 
 	code1 := getCode(publicKeyStr1)
-
 	ct1, _ := contract.CreateCRIDContractByCode(code1)
 	cid1 := ct1.ToProgramHash()
 
@@ -1396,15 +1408,17 @@ func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nick
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterCR
 	txn.Version = types.TxVersion09
+	txn.PayloadVersion = payloadVersion
 	crInfoPayload := &payload.CRInfo{
 		Code:     code1,
 		CID:      *cid1,
+		DID:      *did,
 		NickName: nickName,
 		Url:      "http://www.elastos_test.com",
 		Location: 1,
 	}
 	signBuf := new(bytes.Buffer)
-	crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
+	crInfoPayload.SerializeUnsigned(signBuf, payloadVersion)
 	rcSig1, _ := crypto.Sign(privateKey1, signBuf.Bytes())
 	crInfoPayload.Signature = rcSig1
 	txn.Payload = crInfoPayload
@@ -1525,7 +1539,7 @@ func (s *txValidatorTestSuite) getUnregisterCRTx(publicKeyStr, privateKeyStr str
 	txn.TxType = types.UnregisterCR
 	txn.Version = types.TxVersion09
 	unregisterCRPayload := &payload.UnregisterCR{
-		CID: *getID(code1),
+		CID: *getCID(code1),
 	}
 	signBuf := new(bytes.Buffer)
 	err := unregisterCRPayload.SerializeUnsigned(signBuf, payload.UnregisterCRVersion)
@@ -1569,12 +1583,12 @@ func (s *txValidatorTestSuite) TestCrInfoSanityCheck() {
 
 	//test ok
 	rcPayload.Signature = rcSig1
-	err = s.Chain.crInfoSanityCheck(rcPayload)
+	err = s.Chain.crInfoSanityCheck(rcPayload, payload.CRInfoVersion)
 	s.NoError(err)
 
 	//invalid code
 	rcPayload.Code = []byte{1, 2, 3, 4, 5}
-	err = s.Chain.crInfoSanityCheck(rcPayload)
+	err = s.Chain.crInfoSanityCheck(rcPayload, payload.CRInfoVersion)
 	s.EqualError(err, "invalid code")
 
 	//todo CHECKMULTISIG
@@ -1599,8 +1613,10 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 	votingHeight := config.DefaultParams.CRVotingStartHeight
 	//
 	//registe an cr to update
-	registerCRTxn1 := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
-	registerCRTxn2 := s.getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
+	registerCRTxn1 := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1,
+		nickName1, payload.CRInfoVersion, &common.Uint168{})
+	registerCRTxn2 := s.getRegisterCRTx(publicKeyStr2, privateKeyStr2,
+		nickName2, payload.CRInfoDIDVersion, &common.Uint168{})
 
 	block := &types.Block{
 		Transactions: []*types.Transaction{
@@ -1705,7 +1721,8 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 	nickName1 := "nickname 1"
 
 	//registe an cr to unregister
-	registerCRTxn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	registerCRTxn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1,
+		nickName1, payload.CRInfoVersion, &common.Uint168{})
 	block := &types.Block{
 		Transactions: []*types.Transaction{
 			registerCRTxn,
@@ -1718,7 +1735,8 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 	s.NoError(err)
 
 	//invalid payload need unregisterCR pass registerCr
-	registerTx := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	registerTx := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1,
+		nickName1, payload.CRInfoVersion, &common.Uint168{})
 	err = s.Chain.checkUnRegisterCRTransaction(registerTx, votingHeight)
 	s.EqualError(err, "invalid payload")
 
@@ -1996,7 +2014,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 			{
 				TxType: types.UnregisterCR,
 				Payload: &payload.UnregisterCR{
-					CID: *getID(code),
+					CID: *getCID(code),
 				},
 			},
 		},
@@ -2160,9 +2178,12 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
 	privateKeyStr3 := "94396a69462208b8fd96d83842855b867d3b0e663203cb31d0dfaec0362ec034"
 
-	registerCRTxn1 := s.getRegisterCRTx(publicKey1, privateKeyStr1, "nickName1")
-	registerCRTxn2 := s.getRegisterCRTx(publicKey2, privateKeyStr2, "nickName2")
-	registerCRTxn3 := s.getRegisterCRTx(publicKey3, privateKeyStr3, "nickName3")
+	registerCRTxn1 := s.getRegisterCRTx(publicKey1, privateKeyStr1,
+		"nickName1", payload.CRInfoVersion, &common.Uint168{})
+	registerCRTxn2 := s.getRegisterCRTx(publicKey2, privateKeyStr2,
+		"nickName2", payload.CRInfoVersion, &common.Uint168{})
+	registerCRTxn3 := s.getRegisterCRTx(publicKey3, privateKeyStr3,
+		"nickName3", payload.CRInfoVersion, &common.Uint168{})
 
 	block := &types.Block{
 		Transactions: []*types.Transaction{
@@ -2178,9 +2199,9 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 
 	candidate1, _ := common.HexStringToBytes(publicKey1)
 	candidate2, _ := common.HexStringToBytes(publicKey2)
-	candidateCID1 := getID(code1)
-	candidateCID2 := getID(code2)
-	candidateCID3 := getID(code3)
+	candidateCID1 := getCID(code1)
+	candidateCID2 := getCID(code2)
+	candidateCID3 := getCID(code3)
 
 	producersMap := make(map[string]struct{})
 	producersMap[publicKey1] = struct{}{}
