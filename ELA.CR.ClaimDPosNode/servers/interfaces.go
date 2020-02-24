@@ -50,6 +50,7 @@ var (
 	Arbiter     *dpos.Arbitrator
 	Arbiters    state.Arbitrators
 	Wallet      *wallet.Wallet
+	emptyHash   = common.Uint168{}
 )
 
 func ToReversedString(hash common.Uint256) string {
@@ -1630,7 +1631,10 @@ func ListCRCandidates(param Params) map[string]interface{} {
 	for i, c := range candidates {
 		totalVotes += c.Votes()
 		cidAddress, _ := c.Info().CID.ToAddress()
-		didAddress, _ := c.Info().CID.ToAddress()
+		var didAddress string
+		if !c.Info().DID.IsEqual(emptyHash) {
+			didAddress, _ = c.Info().DID.ToAddress()
+		}
 		candidateInfo := crCandidateInfo{
 			Code:           hex.EncodeToString(c.Info().Code),
 			CID:            cidAddress,
@@ -1690,7 +1694,10 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 
 	for i, cr := range crMembers {
 		cidAddress, _ := cr.Info.CID.ToAddress()
-		didAddress, _ := cr.Info.CID.ToAddress()
+		var didAddress string
+		if !cr.Info.DID.IsEqual(emptyHash) {
+			didAddress, _ = cr.Info.DID.ToAddress()
+		}
 		memberInfo := crMemberInfo{
 			Code:             hex.EncodeToString(cr.Info.Code),
 			CID:              cidAddress,
@@ -1852,7 +1859,7 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 	if ok {
 		programHash, err := common.Uint168FromAddress(id)
 		if err != nil {
-			return ResponsePack(InvalidParams, "invalid did to programHash")
+			return ResponsePack(InvalidParams, "invalid id to programHash")
 		}
 
 		candidate = crState.GetCandidateByID(*programHash)
@@ -1863,7 +1870,7 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 	}
 	if candidate == nil {
 		return ResponsePack(InvalidParams, "need a param called "+
-			"publickey or did")
+			"publickey or id")
 	}
 
 	type depositCoin struct {

@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package script
 
@@ -33,6 +33,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	host := c.String("host")
 	candidates := c.StringSlice("candidates")
 	candidateVotes := c.StringSlice("candidateVotes")
+	payloadVersion := c.Int64("payloadVersion")
 
 	getDepositAddr := func(L *lua.LState) int {
 		L.Push(lua.LString(depositAddr))
@@ -108,6 +109,10 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(table)
 		return 1
 	}
+	getPayloadVersion := func(L *lua.LState) int {
+		L.Push(lua.LNumber(payloadVersion))
+		return 1
+	}
 	L.Register("getDepositAddr", getDepositAddr)
 	L.Register("getPublicKey", getPublicKey)
 	L.Register("getCode", getCode)
@@ -124,6 +129,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getHostAddr", getHostAddr)
 	L.Register("getCandidates", getCandidates)
 	L.Register("getCandidateVotes", getCandidateVotes)
+	L.Register("getPayloadVersion", getPayloadVersion)
 }
 
 func scriptAction(c *cli.Context) error {
@@ -249,6 +255,10 @@ func NewCommand() *cli.Command {
 			cli.StringSliceFlag{
 				Name:  "candidateVotes, cvs",
 				Usage: "set the candidateVotes values",
+			},
+			cli.Int64Flag{
+				Name:  "payloadVersion",
+				Usage: "set the version of payload",
 			},
 		},
 		Action: scriptAction,

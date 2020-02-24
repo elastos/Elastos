@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -22,7 +22,7 @@ func TestNewCRCommittee(t *testing.T) {
 
 	assert.Equal(t, uint32(0), committee.LastCommitteeHeight)
 	assert.Equal(t, 0, len(committee.GetMembersCodes()))
-	assert.Equal(t, 0, len(committee.GetMembersDIDs()))
+	assert.Equal(t, 0, len(committee.GetMembersCIDs()))
 }
 
 func TestCommittee_ProcessBlock(t *testing.T) {
@@ -38,7 +38,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	assert.Equal(t, 0, len(committee.GetMembersCodes()))
-	assert.Equal(t, 0, len(committee.GetMembersDIDs()))
+	assert.Equal(t, 0, len(committee.GetMembersCIDs()))
 
 	// CRCommitteeStartHeight
 	committee.ProcessBlock(&types.Block{
@@ -47,7 +47,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	codes1 := committee.GetMembersCodes()
-	did1 := committee.GetMembersDIDs()
+	did1 := committee.GetMembersCIDs()
 
 	for i := 0; i < len(expectCandidates1); i++ {
 		if i > 0 {
@@ -67,7 +67,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	codes2 := committee.GetMembersCodes()
-	did2 := committee.GetMembersDIDs()
+	did2 := committee.GetMembersCIDs()
 	for i := 0; i < len(expectCandidates1); i++ {
 		assert.True(t, existCode(expectCandidates1[i].info.Code, codes2))
 		assert.True(t, existCID(expectCandidates1[i].info.CID, did2))
@@ -81,7 +81,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	codes2 = committee.GetMembersCodes()
-	did2 = committee.GetMembersDIDs()
+	did2 = committee.GetMembersCIDs()
 	for i := 0; i < len(expectCandidates2); i++ {
 		if i > 0 {
 			assert.True(t,
@@ -326,8 +326,8 @@ func existCode(code []byte, codeArray [][]byte) bool {
 	return false
 }
 
-func existCID(cid common.Uint168, didArray []common.Uint168) bool {
-	for _, v := range didArray {
+func existCID(cid common.Uint168, cidArray []common.Uint168) bool {
+	for _, v := range cidArray {
 		if v.IsEqual(cid) {
 			return true
 		}
