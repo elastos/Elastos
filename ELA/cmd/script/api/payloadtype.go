@@ -607,8 +607,9 @@ func newRegisterCR(L *lua.LState) int {
 	nickName := L.ToString(2)
 	url := L.ToString(3)
 	location := L.ToInt64(4)
+	payloadVersion := byte(L.ToInt(5))
 	needSign := true
-	client, err := checkClient(L, 5)
+	client, err := checkClient(L, 6)
 	if err != nil {
 		needSign = false
 	}
@@ -631,14 +632,24 @@ func newRegisterCR(L *lua.LState) int {
 	}
 
 	ct, err := contract.CreateCRIDContractByCode(code)
-
 	if err != nil {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
 	}
+
+	didCode := make([]byte, len(code))
+	copy(didCode, code)
+	didCode = append(didCode[:len(code)-1], common.DID)
+	didCT, err := contract.CreateCRIDContractByCode(didCode)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
 	registerCR := &payload.CRInfo{
 		Code:     code,
 		CID:      *ct.ToProgramHash(),
+		DID:      *didCT.ToProgramHash(),
 		NickName: nickName,
 		Url:      url,
 		Location: uint64(location),
@@ -646,7 +657,7 @@ func newRegisterCR(L *lua.LState) int {
 
 	if needSign {
 		rpSignBuf := new(bytes.Buffer)
-		err = registerCR.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
+		err = registerCR.SerializeUnsigned(rpSignBuf, payloadVersion)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -713,8 +724,9 @@ func newUpdateCR(L *lua.LState) int {
 	nickName := L.ToString(2)
 	url := L.ToString(3)
 	location := L.ToInt64(4)
+	payloadVersion := byte(L.ToInt(5))
 	needSign := true
-	client, err := checkClient(L, 5)
+	client, err := checkClient(L, 6)
 	if err != nil {
 		needSign = false
 	}
@@ -742,9 +754,19 @@ func newUpdateCR(L *lua.LState) int {
 		os.Exit(1)
 	}
 
+	didCode := make([]byte, len(code))
+	copy(didCode, code)
+	didCode = append(didCode[:len(code)-1], common.DID)
+	didCT, err := contract.CreateCRIDContractByCode(didCode)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
 	updateCR := &payload.CRInfo{
 		Code:     ct.Code,
 		CID:      *ct.ToProgramHash(),
+		DID:      *didCT.ToProgramHash(),
 		NickName: nickName,
 		Url:      url,
 		Location: uint64(location),
@@ -752,7 +774,7 @@ func newUpdateCR(L *lua.LState) int {
 
 	if needSign {
 		rpSignBuf := new(bytes.Buffer)
-		err = updateCR.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion)
+		err = updateCR.SerializeUnsigned(rpSignBuf, payloadVersion)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)

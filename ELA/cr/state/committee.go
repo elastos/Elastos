@@ -53,7 +53,7 @@ func (c *Committee) IsInVotingPeriod(height uint32) bool {
 	return c.isInVotingPeriod(height)
 }
 
-func (c *Committee) GetMembersDIDs() []common.Uint168 {
+func (c *Committee) GetMembersCIDs() []common.Uint168 {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 

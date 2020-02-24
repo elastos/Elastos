@@ -17,7 +17,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -121,14 +120,6 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 	}
 
 	return nil
-}
-
-func getDIDByCode(code []byte) (*Uint168, error) {
-	ct1, error := contract.CreateCRIDContractByCode(code)
-	if error != nil {
-		return nil, error
-	}
-	return ct1.ToProgramHash(), error
 }
 
 func checkDuplicateTx(block *Block) error {

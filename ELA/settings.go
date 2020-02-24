@@ -668,8 +668,8 @@ func newSettings() *settings {
 	result.Add(&settingItem{
 		Flag:         cmdcom.RegisterCRByDIDHeightFlag,
 		DefaultValue: uint32(0),
-		ConfigPath:   "CRConfiguration.RegisterCRByDIDHeightFlag",
-		ParamName:    "RegisterCRByDIDHeightFlag"})
+		ConfigPath:   "CRConfiguration.RegisterCRByDIDHeight",
+		ParamName:    "RegisterCRByDIDHeight"})
 
 	return result
 }

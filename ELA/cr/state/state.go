@@ -6,7 +6,6 @@
 package state
 
 import (
-	"github.com/elastos/Elastos.ELA/crypto"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -15,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
@@ -59,7 +59,7 @@ func (s *State) GetCandidateByID(id common.Uint168) *Candidate {
 	return s.getCandidateByID(id)
 }
 
-// GetCandidateByCID returns candidate with specified did, it will return nil
+// GetCandidateByCID returns candidate with specified cid, it will return nil
 // if not found.
 func (s *State) GetCandidateByCID(cid common.Uint168) *Candidate {
 	s.mtx.RLock()
@@ -67,8 +67,8 @@ func (s *State) GetCandidateByCID(cid common.Uint168) *Candidate {
 	return s.getCandidateByCID(cid)
 }
 
-// GetCandidateByPublicKey returns candidate with specified did, it will return
-// nil if not found.
+// GetCandidateByPublicKey returns candidate with specified public key, it will
+// return nil if not found.
 func (s *State) GetCandidateByPublicKey(publicKey string) *Candidate {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
@@ -599,7 +599,9 @@ func (s *State) getCandidateByID(id common.Uint168) *Candidate {
 			return s.getCandidateByCID(v)
 		}
 		code, _ := common.HexStringToBytes(k)
-		didCode := append(code[:len(code)-1], common.DID)
+		newCode := make([]byte, len(code))
+		copy(newCode, code)
+		didCode := append(newCode[:len(newCode)-1], common.DID)
 		ct, _ := contract.CreateCRIDContractByCode(didCode)
 		did := ct.ToProgramHash()
 		if did.IsEqual(id) {
