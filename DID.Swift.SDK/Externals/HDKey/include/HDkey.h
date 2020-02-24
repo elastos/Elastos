@@ -40,14 +40,17 @@ extern "C" {
 
 #define PUBLICKEY_BYTES                 33
 #define PRIVATEKEY_BYTES                32
-#define SEED_BYTES                      64
 #define ADDRESS_LEN                     48
+#define CHAINCODE_BYTES                 32
+#define EXTENDEDKEY_BYTES               82
+#define SEED_BYTES                      64
 
 typedef struct HDKey {
     uint32_t fingerPrint;
-    uint8_t chainCode[PRIVATEKEY_BYTES];
+    uint8_t chainCodeForSk[CHAINCODE_BYTES];
+    uint8_t privatekey[PRIVATEKEY_BYTES];
+    uint8_t chainCodeForPk[CHAINCODE_BYTES];
     uint8_t publickey[PUBLICKEY_BYTES];
-    uint8_t seed[SEED_BYTES];
 } HDKey;
 
 typedef struct DerivedKey {
@@ -58,29 +61,29 @@ typedef struct DerivedKey {
 
 const char *HDKey_GenerateMnemonic(int language);
 
-uint8_t *HDKey_GetSeedFromMnemonic(const char *mnemonic,
-        const char *mnemonicPassword, int language, uint8_t *seed);
+void HDKey_FreeMnemonic(void *mnemonic);
 
 bool HDKey_MnemonicIsValid(const char *mnemonic, int language);
 
-HDKey *HDKey_GetPrivateIdentity(const uint8_t *seed, int coinType, HDKey *hdkey);
+HDKey *HDKey_FromMnemonic(const char *mnemonic, const char *passphrase,
+        int language, HDKey *hdkey);
 
-void HDKey_Wipe(HDKey *privateIdentity);
+HDKey *HDKey_FromSeed(const uint8_t *seed, size_t size, HDKey *hdkey);
 
-uint8_t *HDkey_GetSubPrivateKey(HDKey* privateIdentity, int coinType, int chain,
-        int index, uint8_t *privatekey);
+HDKey *HDKey_FromExtendedKey(const uint8_t *extendedkey, size_t size, HDKey *hdkey);
 
-uint8_t *HDKey_GetSubPublicKey(HDKey *privateIdentity, int chain, int index,
-        uint8_t *publickey);
+// Convert to extended private key format
+ssize_t HDKey_Serialize(HDKey *hdkey, uint8_t *extendedkey, size_t size);
 
-char *HDKey_GetAddress(uint8_t *publickey, char *address, size_t len);
+void HDKey_Wipe(HDKey *hdkey);
 
-DerivedKey *HDKey_GetDerivedKey(HDKey* privateIdentity, DerivedKey *derivedkey,
-        int coinType, int chain, int index);
+char *HDKey_PublicKey2Address(uint8_t *publickey, char *address, size_t len);
+
+DerivedKey *HDKey_GetDerivedKey(HDKey* hdkey, int index, DerivedKey *derivedkey);
 
 uint8_t *DerivedKey_GetPublicKey(DerivedKey *derivedkey);
 
-const char *DerivedKey_GetPublicKeyBase(DerivedKey *derivedkey, char *base, size_t size);
+const char *DerivedKey_GetPublicKeyBase58(DerivedKey *derivedkey, char *base, size_t size);
 
 uint8_t *DerivedKey_GetPrivateKey(DerivedKey *derivedkey);
 
