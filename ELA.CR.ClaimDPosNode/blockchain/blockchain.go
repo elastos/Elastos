@@ -193,7 +193,7 @@ func (b *BlockChain) MigrateOldDB(
 				break
 			}
 			var confirm *payload.Confirm
-			if start > params.CRCOnlyDPOSHeight {
+			if start >= params.CRCOnlyDPOSHeight {
 				confirm, err = b.db.GetConfirm(hash)
 				if err != nil {
 					done <- fmt.Errorf("GetConfirm err: %s", err)
