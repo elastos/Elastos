@@ -24,6 +24,10 @@ public class VerifiableCredentialProof {
     }
     
     class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredentialProof {
+        let error = { (des) -> DIDError in
+            return DIDError.malformedCredential(des)
+        }
+
         let serializer = JsonSerializer(node)
         var options: JsonSerializer.Options
 
@@ -31,15 +35,18 @@ public class VerifiableCredentialProof {
                                 .withOptional()
                                 .withRef(Constants.DEFAULT_PUBLICKEY_TYPE)
                                 .withHint("credential proof type")
+                                .withError(error)
         let type = try serializer.getString(Constants.TYPE, options)
 
         options = JsonSerializer.Options()
                                 .withRef(ref)
                                 .withHint("credential proof verificationMethod")
+                                .withError(error)
         let method = try serializer.getDIDURL(Constants.VERIFICATION_METHOD, options)
 
         options = JsonSerializer.Options()
                                 .withHint("credential proof signature")
+                                .withError(error)
         let signature = try serializer.getString(Constants.SIGNATURE, options)
 
         return VerifiableCredentialProof(type, method!, signature)
@@ -51,7 +58,9 @@ public class VerifiableCredentialProof {
             generator.writeStringField(Constants.TYPE, type)
         }
 
-        generator.writeStringField(Constants.VERIFICATION_METHOD, IDGetter(verificationMethod, ref).value(normalized))
+        generator.writeFieldName(Constants.VERIFICATION_METHOD)
+        generator.writeString(IDGetter(verificationMethod, ref).value(normalized))
+
         generator.writeStringField(Constants.SIGNATURE, signature)
         generator.writeEndObject()
     }

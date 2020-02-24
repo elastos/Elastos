@@ -70,6 +70,9 @@
 		11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* ElastosDIDSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		11FB0A6123F0FF1D001941CF /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11FB0A6023F0FF0B001941CF /* libcrypto.a */; };
 		11FB0A6223F0FF1D001941CF /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11FB0A5F23F0FF0B001941CF /* libhdkey.a */; };
+		A31801A324015EA30087E074 /* DIDResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31801A224015EA30087E074 /* DIDResolver.swift */; };
+		A31801A9240277190087E074 /* JsonNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31801A8240277180087E074 /* JsonNode.swift */; };
+		A31801AB240281B00087E074 /* LRUCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31801AA240281B00087E074 /* LRUCache.swift */; };
 		A31ACE0623F199AE008EC032 /* PublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACDF823F199AD008EC032 /* PublicKey.swift */; };
 		A31ACE0723F199AE008EC032 /* DIDDocumentBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACDF923F199AE008EC032 /* DIDDocumentBuilder.swift */; };
 		A31ACE0823F199AE008EC032 /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACDFA23F199AE008EC032 /* Service.swift */; };
@@ -124,7 +127,6 @@
 		A31ACE6B23F19A66008EC032 /* IDChainRequestOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE6623F19A66008EC032 /* IDChainRequestOperation.swift */; };
 		A31ACE6C23F19A66008EC032 /* IDChainRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE6723F19A66008EC032 /* IDChainRequest.swift */; };
 		A34D732923FA758900B4CB3E /* IDGetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A34D732823FA758900B4CB3E /* IDGetter.swift */; };
-		A34D732B23FBCD1000B4CB3E /* JsonNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A34D732A23FBCD1000B4CB3E /* JsonNode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -305,6 +307,9 @@
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		11FB0A5F23F0FF0B001941CF /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhdkey.a; path = "Externals/HDKey/lib/-iphoneos/libhdkey.a"; sourceTree = "<group>"; };
 		11FB0A6023F0FF0B001941CF /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "Externals/HDKey/lib/-iphoneos/libcrypto.a"; sourceTree = "<group>"; };
+		A31801A224015EA30087E074 /* DIDResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDResolver.swift; sourceTree = "<group>"; };
+		A31801A8240277180087E074 /* JsonNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JsonNode.swift; sourceTree = "<group>"; };
+		A31801AA240281B00087E074 /* LRUCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LRUCache.swift; path = Util/LRUCache.swift; sourceTree = "<group>"; };
 		A31ACDF823F199AD008EC032 /* PublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublicKey.swift; sourceTree = "<group>"; };
 		A31ACDF923F199AE008EC032 /* DIDDocumentBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDDocumentBuilder.swift; sourceTree = "<group>"; };
 		A31ACDFA23F199AE008EC032 /* Service.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
@@ -359,7 +364,6 @@
 		A31ACE6623F19A66008EC032 /* IDChainRequestOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IDChainRequestOperation.swift; path = Backend/IDChainRequestOperation.swift; sourceTree = "<group>"; };
 		A31ACE6723F19A66008EC032 /* IDChainRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IDChainRequest.swift; path = Backend/IDChainRequest.swift; sourceTree = "<group>"; };
 		A34D732823FA758900B4CB3E /* IDGetter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IDGetter.swift; path = Util/IDGetter.swift; sourceTree = "<group>"; };
-		A34D732A23FBCD1000B4CB3E /* JsonNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JsonNode.swift; path = Util/JsonNode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -594,6 +598,7 @@
 				A31ACE5B23F19A3F008EC032 /* Meta */,
 				A31ACE6223F19A58008EC032 /* Backend */,
 				A31ACDFE23F199AE008EC032 /* Constants.swift */,
+				A31801A8240277180087E074 /* JsonNode.swift */,
 				1147721023F6976800C7C36F /* Mnemonic.swift */,
 				A31ACE0523F199AE008EC032 /* DID.swift */,
 				A31ACDFC23F199AE008EC032 /* DIDURL.swift */,
@@ -612,6 +617,7 @@
 				A31ACE1623F199BA008EC032 /* VerifiablePresentationBuilder.swift */,
 				A31ACE1523F199BA008EC032 /* VerifiablePresentationProof.swift */,
 				A31ACE0123F199AE008EC032 /* DIDAdapter.swift */,
+				A31801A224015EA30087E074 /* DIDResolver.swift */,
 				A31ACE0423F199AE008EC032 /* DIDBackend.swift */,
 				A31ACDFD23F199AE008EC032 /* DIDStore.swift */,
 				A31ACDFB23F199AE008EC032 /* DIDStorage.swift */,
@@ -640,9 +646,9 @@
 				A31ACE3023F19A22008EC032 /* HDKey.swift */,
 				A31ACE2C23F19A22008EC032 /* DerivedKey.swift */,
 				A31ACE2B23F19A22008EC032 /* ExtensionInt.swift */,
-				A34D732A23FBCD1000B4CB3E /* JsonNode.swift */,
 				A31ACE3123F19A22008EC032 /* JsonSerializer.swift */,
 				A31ACE2A23F19A22008EC032 /* JsonGenerator.swift */,
+				A31801AA240281B00087E074 /* LRUCache.swift */,
 				A31ACE3523F19A22008EC032 /* PathExtracter.swift */,
 				A31ACE3223F19A22008EC032 /* String.swift */,
 			);
@@ -913,6 +919,7 @@
 				A31ACE2223F199BA008EC032 /* VerifiableCredentialBuilder.swift in Sources */,
 				A31ACE0F23F199AE008EC032 /* DIDAdapter.swift in Sources */,
 				A31ACE0623F199AE008EC032 /* PublicKey.swift in Sources */,
+				A31801A324015EA30087E074 /* DIDResolver.swift in Sources */,
 				A31ACE0D23F199AE008EC032 /* FileSystemStorage.swift in Sources */,
 				A31ACE0A23F199AE008EC032 /* DIDURL.swift in Sources */,
 				A31ACE1323F199AE008EC032 /* DID.swift in Sources */,
@@ -926,6 +933,7 @@
 				A31ACE5923F19A3A008EC032 /* DIDURLLexer.swift in Sources */,
 				A31ACE3B23F19A22008EC032 /* DateFormatter.swift in Sources */,
 				A31ACE5423F19A3A008EC032 /* DIDURLLexerATN.swift in Sources */,
+				A31801AB240281B00087E074 /* LRUCache.swift in Sources */,
 				A31ACE6923F19A66008EC032 /* IDTransactionInfo.swift in Sources */,
 				A31ACE1F23F199BA008EC032 /* VerifiablePresentation.swift in Sources */,
 				A31ACE3D23F19A22008EC032 /* JsonSerializer.swift in Sources */,
@@ -946,9 +954,9 @@
 				A31ACE5223F19A3A008EC032 /* DIDURLBaseListener.swift in Sources */,
 				A31ACE5123F19A3A008EC032 /* DIDURLListener.swift in Sources */,
 				A31ACE3723F19A22008EC032 /* ExtensionInt.swift in Sources */,
+				A31801A9240277190087E074 /* JsonNode.swift in Sources */,
 				A31ACE1123F199AE008EC032 /* DIDObject.swift in Sources */,
 				A31ACE3C23F19A22008EC032 /* HDKey.swift in Sources */,
-				A34D732B23FBCD1000B4CB3E /* JsonNode.swift in Sources */,
 				A31ACE5823F19A3A008EC032 /* ParserHelper.swift in Sources */,
 				A31ACE2123F199BA008EC032 /* VerifiableCredentialSubject.swift in Sources */,
 				A31ACE2023F199BA008EC032 /* VerifiableCredentialIssuer.swift in Sources */,

@@ -191,7 +191,7 @@ public class DIDDocumentBuilder {
             throw DIDError.illegalArgument()
         }
 
-        let controllerDoc = try controller.resolve()
+        let controllerDoc = controller.resolve()
         guard let _ = controllerDoc else {
             throw DIDError.didResolveError("Can not resolve \(controller) DID.")
         }
@@ -259,6 +259,140 @@ public class DIDDocumentBuilder {
             throw DIDError.illegalArgument()
         }
 
+        return self
+    }
+
+    public func appendCredential(_ id: DIDURL,
+                                 _ types: Array<String>,
+                                 _ subject: Dictionary<String, String>,
+                                 _ expirationDate: Date,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder  {
+        // TODO:
+        return self
+    }
+
+    public func appendCredential(_ id: String,
+                                 _ types: Array<String>,
+                                 _ subject: Dictionary<String, String>,
+                                 _ expirationDate: Date,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        return try appendCredential(DIDURL(getSubject(), id), types, subject, expirationDate, storePassword)
+    }
+
+    public func appendCredential(_ id: DIDURL,
+                                 _ subject: Dictionary<String, String>,
+                                 _ expirationDate: Date,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        return try appendCredential(id, [], subject, expirationDate, storePassword)
+    }
+
+    public func appendCredential(_ id: String,
+                                 _ subject: Dictionary<String, String>,
+                                 _ expirationDate: Date,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        return try appendCredential(DIDURL(getSubject(), id), [], subject, expirationDate, storePassword)
+    }
+
+    public func appendCredential(_ id: DIDURL,
+                                 _ types: Array<String>,
+                                 _ subject: Dictionary<String, String>,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+        // TODO:
+        return self
+    }
+
+    public func appendCredential(_ id: String,
+                                 _ types: Array<String>,
+                                 _ subject: Dictionary<String, String>,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        return try appendCredential(DIDURL(getSubject(), id), types, subject, storePassword)
+    }
+
+    public func appendCredential(_ id: DIDURL,
+                                 _ subject: Dictionary<String, String>,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+        // TODO:
+        return self
+    }
+
+    public func appendCredential(_ id: String,
+                                 _ subject: Dictionary<String, String>,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        return try appendCredential(DIDURL(getSubject(), id), subject, storePassword)
+    }
+
+    public func appendCredential(_ id: DIDURL,
+                                 _ types: Array<String>,
+                                 _ json: String,
+                                 _ expirationDate: Date,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+        // TOOD:
+        return self
+    }
+
+    public func appendCredential(_ id: String,
+                                 _ types: Array<String>,
+                                 _ json: String,
+                                 _ expirationDate: Date,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        return try appendCredential(DIDURL(getSubject(), id), types, json, expirationDate, storePassword)
+    }
+
+    public func appendCredential(_ id: DIDURL,
+                                 _ json: String,
+                                 _ expirationDate: Date,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        // TODO:
+        return self
+    }
+
+    public func appendCredential(_ id: String,
+                                 _ json: String,
+                                 _ expirationDate: Date,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        // TODO:
+        return self
+    }
+
+    public func appendCredential(_ id: DIDURL,
+                                 _ types: Array<String>,
+                                 _ json: String,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        // TODO:
+        return self
+    }
+
+    public func appendCredential(_ id: String,
+                                 _ types: Array<String>,
+                                 _ json: String,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        // TODO:
+        return self
+    }
+
+    public func appendCredential(_ id: DIDURL,
+                                 _ json: String,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        // TODO:
+        return self
+    }
+
+    public func appendCredential(_ id: String,
+                                 _ json: String,
+                                 _ storePassword: String) throws -> DIDDocumentBuilder {
+
+        // TODO:
         return self
     }
 
@@ -347,7 +481,7 @@ public class DIDDocumentBuilder {
 
         let signKey = document!.defaultPublicKey
         let data:Data = try document!.toJson(true, true)
-        let signature = try document!.makeSignWithIdentiy(signKey, storePassword, [data])
+        let signature = try document!.signWithIdentiy(signKey, storePassword, [data])
 
         document!.setProof(DIDDocumentProof(signKey, signature))
 

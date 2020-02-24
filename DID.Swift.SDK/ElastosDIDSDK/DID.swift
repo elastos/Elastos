@@ -96,17 +96,34 @@ public class DID {
         return getMeta().isDeactivated
     }
 
-    public func resolve(_ force: Bool) throws -> DIDDocument? {
-        let doc = try DIDBackend.shareInstance()?.resolve(self, force)
-        if let _ = doc {
-            setMeta(doc!.getMeta())
+    public func resolve(_ force: Bool) -> DIDDocument? {
+        let doc: DIDDocument?
+        do {
+            doc = try DIDBackend.resolve(self, force)
+        } catch {
+            return nil
         }
+        guard let _ = doc else {
+            return nil
+        }
+
+        setMeta(doc!.getMeta())
         return doc
     }
     
-    public func resolve() throws -> DIDDocument? {
-        return try resolve(false)
+    public func resolve() -> DIDDocument? {
+        return resolve(false)
     }
+
+    // TODO: Promise
+    /*
+    func resolveAsync(_ force: Bool) -> Promise<DIDDocument> {
+        // TODO:
+    }
+
+    func resolveAsync() -> Promise<DIDDocument> {
+        return resolve(false)
+    }*/
 }
 
 extension DID: CustomStringConvertible {

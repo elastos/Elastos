@@ -26,14 +26,6 @@ public class VerifiableCredentialIssuer {
         self._signKey = key!
     }
 
-    public convenience init(_ doc: DIDDocument, _ signKey: DIDURL) throws {
-        try self.init(doc, signKey)
-    }
-
-    public convenience init(_ doc: DIDDocument) throws {
-        try self.init(doc)
-    }
-
     private convenience init(_ did: DID, signKey: DIDURL?=nil, _ store: DIDStore) throws {
         let doc: DIDDocument
         do {
@@ -42,6 +34,14 @@ public class VerifiableCredentialIssuer {
             throw DIDError.didResolveError("Can not resolve did")
         }
         try self.init(doc, signKey)
+    }
+
+    public convenience init(_ doc: DIDDocument, _ signKey: DIDURL) throws {
+        try self.init(doc, signKey)
+    }
+
+    public convenience init(_ doc: DIDDocument) throws {
+        try self.init(doc)
     }
 
     public convenience init(_ did: DID, _ signKey: DIDURL, _ store: DIDStore) throws {
@@ -60,11 +60,11 @@ public class VerifiableCredentialIssuer {
         return _signKey
     }
 
-    public func editingVerifiableCredential(for did: String) throws -> VerifiableCredentialBuilder {
+    public func editingVerifiableCredentialFor(did: String) throws -> VerifiableCredentialBuilder {
         return VerifiableCredentialBuilder(try DID(did), _issuerDoc, signKey)
     }
 
-    public func editingVerifiableCredential(for did: DID) -> VerifiableCredentialBuilder {
+    public func editingVerifiableCredentialFor(did: DID) -> VerifiableCredentialBuilder {
         return VerifiableCredentialBuilder(did, _issuerDoc, signKey)
     }
 }

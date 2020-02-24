@@ -68,11 +68,11 @@ public class VerifiableCredentialBuilder {
         return self
     }
 
-    public func withProperties(_ properties: Dictionary<String,String>) throws -> VerifiableCredentialBuilder {
+    public func withProperties(_ properites: Dictionary<String, String>) throws -> VerifiableCredentialBuilder {
         guard let _ = credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
-        guard properties.count > 0 else {
+        guard !properites.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
@@ -92,17 +92,18 @@ public class VerifiableCredentialBuilder {
         return self
     }
 
-    public func withProperties(_ data: Dictionary<String, Any>) throws -> VerifiableCredentialBuilder {
+    public func withProperties(_ properties: JsonNode) throws -> VerifiableCredentialBuilder {
         guard let _ = credential else {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
-
-        // TODO:
+        guard properties.count > 0 else {
+            throw DIDError.illegalArgument()
+        }
 
         let subject = VerifiableCredentialSubject(_target)
-        subject.setProperties(JsonNode(data))
-        credential!.setSubject(subject)
+        subject.setProperties(properties)
 
+        credential!.setSubject(subject)
         return self
     }
 
@@ -123,7 +124,7 @@ public class VerifiableCredentialBuilder {
         }
 
         let data: Data = credential!.toJson(true, true).data(using: .utf8)!
-        let signature = try _forDoc.makeSignWithIdentiy(_signKey, storePassword, [data])
+        let signature = try _forDoc.signWithIdentiy(_signKey, storePassword, [data])
         let proof = VerifiableCredentialProof(Constants.DEFAULT_PUBLICKEY_TYPE, _signKey, signature)
 
         credential!.setProof(proof)

@@ -36,10 +36,6 @@ class IDTransactionInfo {
     }
 
     class func fromJson(_ node: JsonNode) throws -> IDTransactionInfo {
-        guard !node.isEmpty else {
-            throw DIDError.illegalArgument()
-        }
-
         let error = { (des: String) -> DIDError in
             return DIDError.didResolveError(des)
         }
@@ -57,7 +53,7 @@ class IDTransactionInfo {
                                 .withError(error)
         let timestamp = try serializer.getDate(Constants.TIMESTAMP, options)
 
-        let subNode = node.getNode(Constants.OPERATION)
+        let subNode = node.get(forKey: Constants.OPERATION)
         guard let _ = subNode else {
             throw DIDError.didResolveError("missing ID operation")
         }
@@ -71,7 +67,6 @@ class IDTransactionInfo {
         generator.writeStringField(Constants.TXID, self.transactionId)
         generator.writeStringField(Constants.TIMESTAMP, self.timestamp.description)
 
-        // Operation
         generator.writeFieldName(Constants.OPERATION)
         self._request.toJson(generator, false)
         generator.writeEndObject()

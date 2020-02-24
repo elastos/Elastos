@@ -14,65 +14,75 @@ class JsonSerializer {
     }
 
     func getString(_ keyName: String, _ options: Options) throws -> String {
-        let value = node.getValue(keyName)
-        guard let _ = value else {
+        let _node = node.get(forKey: keyName)
+        guard let _ = _node else {
             if options.optional {
                 return options.refValue! as! String
             }
-            throw options.error("Missing \(options.hint)")
+            throw options.error("missing \(options.hint)")
         }
 
-        guard !value!.isEmpty else {
-            throw options.error("Missing \(options.hint)")
+        let value = _node!.asString()
+        guard !(value?.isEmpty ?? false) else {
+            throw options.error("invalid \(options.hint)")
         }
 
         return value!
     }
 
     func getInteger(_ keyName: String, _ options: Options) throws -> Int {
-        let value = node.getValue(keyName)
-        guard let _ = value else {
+        let _node = node.get(forKey: keyName)
+        guard let _ = _node else {
             if options.optional {
                 return options.refValue as! Int
             }
-            throw options.error("Missing \(options.hint)")
+            throw options.error("invalid \(options.hint)")
         }
 
-        return Int(value!) ?? 0
+        let value = _node!.asInteger()
+        guard let _ = value else {
+            throw options.error("invalid \(options.hint)")
+        }
+
+        return value!
     }
 
     func getDID(_ keyName: String, _ options: Options) throws -> DID {
-        let value = node.getValue(keyName)
-        guard let _ = value else {
+        let _node = node.get(forKey: keyName)
+        guard let _ = _node else {
             if options.optional {
                 return options.refValue as! DID
             }
 
-            throw options.error("Missing \(options.hint)")
+            throw options.error("missing \(options.hint)")
         }
-        guard !value!.isEmpty else {
-            throw options.error("Invalid \(options.hint)")
+
+        let value = _node!.asString()
+        guard !(value?.isEmpty ?? false) else {
+            throw options.error("invalid \(options.hint)")
         }
 
         let did: DID
         do {
             did = try DID(value!)
         } catch {
-            throw options.error("Invalid \(options.hint)")
+            throw options.error("invalid \(options.hint)")
         }
         return did
     }
 
     func getDIDURL(_ keyName: String, _ options: Options) throws -> DIDURL? {
-        let value = node.getValue(keyName)
-        guard let _ = value else {
+        let _node = node.get(forKey: keyName)
+        guard let _ = _node else {
             if options.optional {
                 return nil
             }
-            throw options.error("Missing \(options.hint)")
+            throw options.error("missing \(options.hint)")
         }
-        guard !value!.isEmpty else {
-            throw options.error("Invalid \(options.hint)")
+
+        let value = _node!.asString()
+        guard !(value?.isEmpty ?? false) else {
+            throw options.error("invalid \(options.hint)")
         }
 
         let id: DIDURL
@@ -84,26 +94,28 @@ class JsonSerializer {
                 id = try DIDURL(value!)
             }
         } catch {
-            throw options.error("Invalid \(options.hint)")
+            throw options.error("invalid \(options.hint)")
         }
         return id
     }
 
     func getDate(_ keyName: String, _ options: Options) throws -> Date {
-        let value = node.getValue(keyName)
-        guard let _ = value else {
+        let _node = node.get(forKey: keyName)
+        guard let _ = _node else {
             if options.optional {
                 return options.refValue! as! Date
             }
-            throw options.error("Missing \(options.hint)")
+            throw options.error("missing \(options.hint)")
         }
-        guard !value!.isEmpty else {
-            throw options.error("Invalid \(options.hint)")
+
+        let value = _node!.asString()
+        guard !(value?.isEmpty ?? false) else {
+            throw options.error("invalid \(options.hint)")
         }
 
         let date = DateFormatter.convertToUTCDateFromString(value!)
         guard let _ = date else {
-            throw options.error("Invalid \(options.hint)")
+            throw options.error("invalid \(options.hint)")
         }
 
         return date!

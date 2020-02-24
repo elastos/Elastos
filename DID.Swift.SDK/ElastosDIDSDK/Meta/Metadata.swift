@@ -40,21 +40,26 @@ class Metadata {
         }
 
         try meta.fromNode(node)
-        for (key, value) in (node.getDict() as! Dictionary<String, String>) {
-            meta.setExtra(key, value)
+        let dict = node.asDictionary()
+        guard let _ = dict else {
+            return meta
+        }
+
+        for (key, value) in dict! {
+            meta.setExtra(key, value.asString() ?? "")
         }
         return meta
     }
 
     class func fromJson<T: Metadata>(_ metadata: Data, _ type: T.Type) throws -> T {
-        let data: Dictionary<String, Any>?
+        let data: Any
         do {
-            data = try JSONSerialization.jsonObject(with: metadata, options: []) as? Dictionary<String, Any>
+            data = try JSONSerialization.jsonObject(with: metadata, options: [])
         } catch {
             throw DIDError.malformedMeta("Parse metadata error.")
         }
 
-        return try fromJson(JsonNode(data!), type)
+        return try fromJson(JsonNode(data), type)
     }
 
     class func fromJson<T: Metadata>(_ metadata: String, _ type: T.Type) throws -> T {

@@ -20,28 +20,31 @@ public class VerifiableCredentialSubject {
         return self._properties?.toString() ?? ""
     }
 
-    func getProperties() -> JsonNode? {
-        return self._properties
+    public func getProperties() -> JsonNode? {
+        return self._properties?.deepCopy()
     }
 
-    func getPropertyAsString(ofName: String) -> String {
-        return self._properties?.getValue(ofName) ?? ""
+    public func getPropertyAsString(ofName: String) -> String? {
+        return self._properties?.get(forKey: ofName)?.toString()
     }
 
-    func getProperity(ofName: String) -> JsonNode? {
-        return self._properties?.getNode(ofName)?.deepCopy()
+    public func getProperty(ofName: String) -> JsonNode? {
+        return self._properties?.get(forKey: ofName)
     }
 
-    func setProperties(_ props: JsonNode) {
-        self._properties = props.deepCopy()
+    func setProperties(_ properties: JsonNode) {
+        self._properties = properties.deepCopy()
     }
 
     class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredentialSubject {
         let serializer = JsonSerializer(node)
-        let options = JsonSerializer.Options()
+        let options    = JsonSerializer.Options()
                                     .withOptional(ref != nil)
                                     .withRef(ref)
                                     .withHint("credentialSubject id")
+                                    .withError() { (des) -> DIDError in
+                                        return DIDError.malformedCredential(des)
+                                    }
         let did = try serializer.getDID(Constants.ID, options)
 
         let credential = VerifiableCredentialSubject(did)

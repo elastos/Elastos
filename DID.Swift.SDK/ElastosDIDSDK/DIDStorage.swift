@@ -35,4 +35,6 @@ protocol DIDStorage {
     func containsPrivateKeys(_ did: DID) throws -> Bool
     func containsPrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool
     func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool
+
+    func changePassword(_  callback: (String) throws -> String) throws
 }

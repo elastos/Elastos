@@ -545,7 +545,7 @@ public class DIDDocument {
 
         do {
             let data: Data = try toJson(true, true)
-            return try makeVerificationWithIdentity(proof.creator, proof.signature, [data])
+            return try verifyWithIdentity(proof.creator, proof.signature, [data])
         } catch {
             return false
         }
@@ -559,19 +559,19 @@ public class DIDDocument {
         return DIDDocumentBuilder(self)
     }
 
-    public func makeSignWithDefaultIdentify(using storePassword: String, data: Data...) throws -> String {
-        return try makeSignWithIdentiy(self.defaultPublicKey, storePassword, data)
+    public func signWithDefaultIdentify(using storePassword: String, data: Data...) throws -> String {
+        return try signWithIdentiy(self.defaultPublicKey, storePassword, data)
     }
 
-    public func makeSignWithIdentiy(did: String, using storePassword: String, data: Data...) throws -> String {
-        return try makeSignWithIdentiy(try DIDURL(self.subject, did), storePassword, data)
+    public func signWithIdentiy(did: String, using storePassword: String, data: Data...) throws -> String {
+        return try signWithIdentiy(try DIDURL(self.subject, did), storePassword, data)
     }
 
-    public func makeSignWithIdentify(id: DIDURL, using storePassword: String, data: Data...) throws -> String {
-        return try makeSignWithIdentiy(id, storePassword, data)
+    public func signWithIdentify(id: DIDURL, using storePassword: String, data: Data...) throws -> String {
+        return try signWithIdentiy(id, storePassword, data)
     }
 
-    func makeSignWithIdentiy(_ id: DIDURL, _ storePassword: String, _ data: [Data]) throws -> String {
+    func signWithIdentiy(_ id: DIDURL, _ storePassword: String, _ data: [Data]) throws -> String {
         guard data.count > 0 else {
             throw DIDError.illegalArgument()
         }
@@ -585,19 +585,19 @@ public class DIDDocument {
         return try getMeta().store!.makeSignWithIdentity(subject, id, storePassword, data)
     }
 
-    public func makeVerificationWithDefaultIdentity(using signature: String, data: Data...) throws -> Bool {
-        return try makeVerificationWithIdentity(self.defaultPublicKey, signature, data)
+    public func verifyWithDefaultIdentity(using signature: String, data: Data...) throws -> Bool {
+        return try verifyWithIdentity(self.defaultPublicKey, signature, data)
     }
 
-    public func makeVerificationWithIdentity(id: DIDURL, using signature: String, data: Data...) throws -> Bool {
-        return try makeVerificationWithIdentity(id, signature, data)
+    public func verifyWithIdentity(id: DIDURL, using signature: String, data: Data...) throws -> Bool {
+        return try verifyWithIdentity(id, signature, data)
     }
 
-    public func makeVerificationWithIdentity(did: String, using signature: String, data: Data...) throws -> Bool {
-        return try makeVerificationWithIdentity(DIDURL(self.subject, did), signature, data)
+    public func verifyWithIdentity(did: String, using signature: String, data: Data...) throws -> Bool {
+        return try verifyWithIdentity(DIDURL(self.subject, did), signature, data)
     }
 
-    func makeVerificationWithIdentity(_ id: DIDURL, _ sigature: String, _ data: [Data]) throws -> Bool {
+    func verifyWithIdentity(_ id: DIDURL, _ sigature: String, _ data: [Data]) throws -> Bool {
         guard data.count > 0 else {
             throw DIDError.illegalArgument()
         }
@@ -623,16 +623,16 @@ public class DIDDocument {
         let did = try serializer.getDID(Constants.ID, options)
         setSubject(did)
 
-        var arrayNode: [JsonNode]?
-        arrayNode = doc.getArrayNode(Constants.PUBLICKEY)
-        guard let _ = arrayNode else {
+        var node: JsonNode?
+        node = doc.get(forKey: Constants.PUBLICKEY)
+        guard let _ = node else {
             throw DIDError.malformedDocument("missing publicKey")
         }
-        try parsePublicKeys(arrayNode!)
+        try parsePublicKeys(node!)
 
-        arrayNode = doc.getArrayNode(Constants.AUTHENTICATION)
-        if let _ = arrayNode {
-            try parseAuthenticationKeys(arrayNode!)
+        node = doc.get(forKey: Constants.AUTHENTICATION)
+        if let _ = node {
+            try parseAuthenticationKeys(node!)
         }
 
         // Add default public key to authentication keys if need.
@@ -641,19 +641,19 @@ public class DIDDocument {
             _ = appendAuthenticationKey(publicKey(ofId: defaultKey)!)
         }
 
-        arrayNode = doc.getArrayNode(Constants.AUTHORIZATION)
-        if let _ = arrayNode {
-            try parseAuthorizationKeys(arrayNode!)
+        node = doc.get(forKey: Constants.AUTHORIZATION)
+        if let _ = node {
+            try parseAuthorizationKeys(node!)
         }
 
-        arrayNode = doc.getArrayNode(Constants.VERIFIABLE_CREDENTIAL)
-        if let _ = arrayNode {
-            try parseCredential(arrayNode!)
+        node = doc.get(forKey: Constants.VERIFIABLE_CREDENTIAL)
+        if let _ = node {
+            try parseCredential(node!)
         }
 
-        arrayNode = doc.getArrayNode(Constants.SERVICE)
-        if let _ = arrayNode {
-            try parseService(arrayNode!)
+        node = doc.get(forKey: Constants.SERVICE)
+        if let _ = node {
+            try parseService(node!)
         }
 
         options = JsonSerializer.Options()
@@ -662,8 +662,7 @@ public class DIDDocument {
         let expirationDate = try serializer.getDate(Constants.EXPIRES, options)
         self.setExpirationDate(expirationDate)
 
-        var node: JsonNode?
-        node = doc.getNode(Constants.PROOF)
+        node = doc.get(forKey: Constants.PROOF)
         guard let _ = node else {
             throw DIDError.malformedDocument("missing document proof")
         }
@@ -671,12 +670,14 @@ public class DIDDocument {
         setProof(try DIDDocumentProof.fromJson(node!, defaultKey))
     }
 
-    private func parsePublicKeys(_ arrayNode: [JsonNode]) throws {
-        guard arrayNode.count < 0 else {
+    private func parsePublicKeys(_ arrayNode: JsonNode) throws {
+        let array = arrayNode.asArray()
+
+        guard array?.count ?? 0 < 0 else {
             throw DIDError.malformedDocument("invalid publicKeys, should not be empty.")
         }
 
-        for node in arrayNode {
+        for node in array! {
             do {
                 _ = appendPublicKey(try PublicKey.fromJson(node, self.subject))
             } catch {
@@ -685,8 +686,13 @@ public class DIDDocument {
         }
     }
 
-    private func parseAuthenticationKeys(_ arrayNode: [JsonNode]) throws {
-        for node in arrayNode {
+    private func parseAuthenticationKeys(_ arrayNode: JsonNode) throws {
+        let array = arrayNode.asArray()
+        guard array?.count ?? 0 < 0 else {
+            return
+        }
+
+        for node in array! {
             do {
                 _ = appendAuthenticationKey(try PublicKey.fromJson(node, self.subject))
             } catch {
@@ -695,8 +701,13 @@ public class DIDDocument {
         }
     }
 
-    private func parseAuthorizationKeys(_ arrayNode: [JsonNode]) throws {
-        for node in arrayNode {
+    private func parseAuthorizationKeys(_ arrayNode: JsonNode) throws {
+        let array = arrayNode.asArray()
+        guard array?.count ?? 0 < 0 else {
+            return
+        }
+
+        for node in array! {
             do {
                 _ = appendAuthorizationKey(try PublicKey.fromJson(node, self.subject))
             } catch {
@@ -705,8 +716,13 @@ public class DIDDocument {
         }
     }
 
-    private func parseCredential(_ arrayNode: [JsonNode]) throws {
-        for node in arrayNode {
+    private func parseCredential(_ arrayNode: JsonNode) throws {
+        let array = arrayNode.asArray()
+        guard array?.count ?? 0 < 0 else {
+            return
+        }
+
+        for node in array! {
             do {
                 _ = appendCredential(try VerifiableCredential.fromJson(node, self.subject))
             } catch {
@@ -715,8 +731,13 @@ public class DIDDocument {
         }
     }
 
-    private func parseService(_ arrayNode: [JsonNode]) throws {
-        for node in arrayNode {
+    private func parseService(_ arrayNode: JsonNode) throws {
+        let array = arrayNode.asArray()
+        guard array?.count ?? 0 < 0 else {
+            return
+        }
+
+        for node in array! {
             do {
                 _ = appendService(try Service.fromJson(node, self.subject))
             } catch {

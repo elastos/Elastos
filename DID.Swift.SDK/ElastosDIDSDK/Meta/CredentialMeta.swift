@@ -16,7 +16,7 @@ class CredentialMeta: Metadata {
     }
 
     override func fromNode(_ node: JsonNode) throws {
-        let value = node.getValue(Constants.ALIAS)
+        let value = node.get(forKey: Constants.ALIAS)?.asString()
         if  value != nil {
             setAlias(value!)
         }
@@ -24,7 +24,7 @@ class CredentialMeta: Metadata {
 
     override func toNode(_ node: JsonNode) {
         if _aliasName != nil {
-            node.setValue(Constants.ALIAS, _aliasName!)
+            node.put(forKey: Constants.ALIAS, value: _aliasName!)
         }
     }
 

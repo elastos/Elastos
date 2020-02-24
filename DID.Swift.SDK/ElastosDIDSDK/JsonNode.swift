@@ -1,10 +1,14 @@
 import Foundation
 
-class JsonNode {
-    private var node: Dictionary<String, Any>
+public class JsonNode {
+    private var node: Any
 
     init() {
         self.node = Dictionary<String, Any>()
+    }
+
+    init(_ node: Any) {
+        self.node = node
     }
 
     init(_ node: Dictionary<String, Any>) {
@@ -12,14 +16,16 @@ class JsonNode {
     }
 
     var isEmpty: Bool {
-        return node.count > 0
+        // TODO:
+        return false
     }
 
     var count: Int {
-        return node.count
+        // TOD:
+        return 0
     }
 
-    func toString() -> String {
+    public func toString() -> String {
         // TODO:
         return "TODO"
     }
@@ -29,6 +35,7 @@ class JsonNode {
         return nil
     }
 
+/*
     func getDict() -> Dictionary<String, Any> {
         return self.node
     }
@@ -51,5 +58,38 @@ class JsonNode {
 
     func setValue(_ key: String, _ value: Bool) {
         node[key] = value
+    }
+*/
+    func get(forKey key: String) -> JsonNode? {
+        // TODO:
+        return nil
+    }
+
+    func put(forKey key: String, value: String) {
+        // TODO:
+    }
+
+    func put(forKey key: String, value: Bool) {
+        // TOD:
+    }
+
+    public func asString() -> String? {
+        // TODO:
+        return nil
+    }
+
+    public func asInteger() -> Int? {
+        // TODO:
+        return 0
+    }
+
+    public func asArray() -> Array<JsonNode>? {
+        // TODO:
+        return nil
+    }
+
+    public func asDictionary() -> Dictionary<String, JsonNode>? {
+        // TODO:
+        return nil
     }
 }

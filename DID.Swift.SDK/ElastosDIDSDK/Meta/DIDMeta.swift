@@ -4,6 +4,7 @@ class DIDMeta: Metadata {
     private var _deactivated: Bool = false
     private var _updatedDate: Date?
     private var _transactionId: String?
+    private var _signature: String?
     private var _aliasName: String?
 
     var aliasName: String {
@@ -18,16 +19,24 @@ class DIDMeta: Metadata {
         return _transactionId
     }
 
-    func setTransactionId(_ transactionId: String?) {
-        self._transactionId = transactionId
+    func setTransactionId(_ newValue: String?) {
+        self._transactionId = newValue
+    }
+
+    var signature: String? {
+        return self._signature
+    }
+
+    func setSignature(_ newValue: String) {
+        self._signature = newValue
     }
 
     var updatedDate: Date? {
         return self._updatedDate
     }
 
-    func setUpdatedDate(_ updateDate: Date?) {
-        self._updatedDate = updatedDate
+    func setUpdatedDate(_ newValue: Date?) {
+        self._updatedDate = newValue
     }
 
     var isDeactivated: Bool {
@@ -45,22 +54,27 @@ class DIDMeta: Metadata {
     override func fromNode(_ node: JsonNode) throws {
         var value: String?
 
-        value = node.getValue(Constants.ALIAS)
+        value = node.get(forKey: Constants.ALIAS)?.asString()
         if value != nil {
             setAlias(value!)
         }
 
-        value = node.getValue(Constants.DEACTIVATED)
+        value = node.get(forKey: Constants.DEACTIVATED)?.asString()
         if value != nil {
             setDeactivated(Bool(value!) ?? true)
         }
 
-        value = node.getValue(Constants.TXID)
+        value = node.get(forKey: Constants.TXID)?.asString()
         if value != nil {
             setTransactionId(value!)
         }
 
-        value = node.getValue(Constants.TIMESTAMP)
+        value = node.get(forKey: Constants.SIGNATURE)?.asString()
+        if value != nil {
+            setSignature(value!)
+        }
+
+        value = node.get(forKey: Constants.TIMESTAMP)?.asString()
         if value != nil {
             setUpdatedDate(DateFormatter.convertToUTCDateFromString(value!))
         }
@@ -68,19 +82,23 @@ class DIDMeta: Metadata {
     
     override func toNode(_ node: JsonNode) {
         if _aliasName != nil {
-            node.setValue(Constants.ALIAS, _aliasName!)
+            node.put(forKey: Constants.ALIAS, value: _aliasName!)
         }
 
         if _deactivated {
-            node.setValue(Constants.DEACTIVATED, _deactivated)
+            node.put(forKey: Constants.DEACTIVATED, value: _deactivated)
         }
 
         if _transactionId != nil {
-            node.setValue(Constants.TXID, _transactionId!)
+            node.put(forKey: Constants.TXID, value: _transactionId!)
+        }
+
+        if _signature != nil {
+            node.put(forKey: Constants.SIGNATURE, value: _signature!)
         }
 
         if updatedDate != nil {
-            node.setValue(Constants.TIMESTAMP, DateHelper.formateDate(_updatedDate!))
+            node.put(forKey: Constants.TIMESTAMP, value: DateHelper.formateDate(_updatedDate!))
         }
     }
 
@@ -93,14 +111,17 @@ class DIDMeta: Metadata {
         if let _ = meta._aliasName {
             setAlias(meta.aliasName)
         }
+        if !self.isDeactivated {
+            setDeactivated(meta.isDeactivated)
+        }
         if let _ = meta.transactionId {
             setTransactionId(meta.transactionId)
         }
+        if let _ = meta.signature {
+            setSignature(meta.signature!)
+        }
         if let _ = meta.updatedDate {
             setUpdatedDate(meta.updatedDate)
-        }
-        if !self.isDeactivated {
-            setDeactivated(meta.isDeactivated)
         }
 
         try super.merge(other)
@@ -108,6 +129,7 @@ class DIDMeta: Metadata {
 
     override func isEmpty() -> Bool {
         return (aliasName != ""    || transactionId != nil ||
-                updatedDate != nil || isDeactivated) ? false : super.isEmpty()
+                signature != nil   || updatedDate != nil   || isDeactivated)
+            ? false : super.isEmpty()
     }
 }

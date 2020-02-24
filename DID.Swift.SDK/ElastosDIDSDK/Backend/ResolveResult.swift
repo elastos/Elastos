@@ -54,7 +54,7 @@ class ResolveResult {
 
         let result = ResolveResult(did, status)
         if status != ResolveResultStatus.STATUS_NOT_FOUND.rawValue {
-            let transactions = node.getArrayNode(Constants.TRANSACTION)
+            let transactions = node.get(forKey: Constants.TRANSACTION)?.asArray()
             guard transactions?.count ?? 0 > 0 else {
                 throw DIDError.didResolveError("invalid resolve result.")
             }
@@ -70,13 +70,13 @@ class ResolveResult {
             throw DIDError.illegalArgument()
         }
 
-        let node: Dictionary<String, Any>?
+        let node: Any
         do {
-            node = try JSONSerialization.jsonObject(with: json, options: []) as? Dictionary<String, Any>
+            node = try JSONSerialization.jsonObject(with: json, options: [])
         } catch {
             throw DIDError.didResolveError("Parse resolve result error")
         }
-        return try fromJson(JsonNode(node!))
+        return try fromJson(JsonNode(node))
     }
 
     class func fromJson(_ json: String) throws -> ResolveResult {

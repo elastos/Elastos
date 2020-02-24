@@ -40,29 +40,38 @@ public class VerifiablePresentationProof {
     }
 
     class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiablePresentationProof {
+        let error = { (des) -> DIDError in
+            return DIDError.malformedPresentation(des)
+        }
+
         let serializer = JsonSerializer(node)
         var options: JsonSerializer.Options
 
         options = JsonSerializer.Options()
                                 .withOptional()
                                 .withRef(Constants.DEFAULT_PUBLICKEY_TYPE)
+                                .withError(error)
                                 .withHint("presentation proof type")
         let type = try serializer.getString(Constants.TYPE, options)
 
         options = JsonSerializer.Options()
                                 .withRef(ref)
+                                .withError(error)
                                 .withHint("presentation proof verificationMethod")
         let method = try serializer.getDIDURL(Constants.VERIFICATION_METHOD, options)
 
         options = JsonSerializer.Options()
+                                .withError(error)
                                 .withHint("presentation proof realm")
         let realm = try serializer.getString(Constants.REALM, options)
 
         options = JsonSerializer.Options()
+                                .withError(error)
                                 .withHint("presentation proof nonce")
         let nonce = try serializer.getString(Constants.NONCE, options)
 
         options = JsonSerializer.Options()
+                                .withError(error)
                                 .withHint("presentation proof signature")
         let signature = try serializer.getString(Constants.SIGNATURE, options)
 

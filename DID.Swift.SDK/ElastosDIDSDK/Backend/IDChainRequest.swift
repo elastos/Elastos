@@ -147,7 +147,7 @@ class IDChainRequest: NSObject {
         inputs.append(_payload!.data(using: .utf8)!)
         inputs.append(prevTxid.description.data(using: .utf8)!)
 
-        self._signature = try _doc!.makeSignWithIdentiy(signKey, storePassword, inputs)
+        self._signature = try _doc!.signWithIdentiy(signKey, storePassword, inputs)
         self._signKey = signKey
         self._keyType = Constants.DEFAULT_PUBLICKEY_TYPE
 
@@ -167,7 +167,7 @@ class IDChainRequest: NSObject {
         inputs.append(_payload!.data(using: .utf8)!)
         inputs.append(prevTxid.data(using: .utf8)!)
 
-        self._signature = try _doc!.makeSignWithIdentiy(signKey, storePassword, inputs)
+        self._signature = try _doc!.signWithIdentiy(signKey, storePassword, inputs)
         self._signKey = targetSignKey
         self._keyType = Constants.DEFAULT_PUBLICKEY_TYPE
 
@@ -185,7 +185,7 @@ class IDChainRequest: NSObject {
                 return false
             }
         } else {
-            doc = try self._did!.resolve()!
+            doc = self._did!.resolve()!
             guard doc.containsAuthenticationKey(forId: _signKey!) ||
                   doc.containsAuthorizationKey (forId: _signKey!) else {
                 return false
@@ -200,7 +200,7 @@ class IDChainRequest: NSObject {
         inputs.append(_payload!.data(using: .utf8)!)
         inputs.append(prevTxid.data(using: .utf8)!)
 
-        return try doc.makeVerificationWithIdentity(_signKey!, _signature!, inputs)
+        return try doc.verifyWithIdentity(_signKey!, _signature!, inputs)
     }
 
     var isValid: Bool {
@@ -212,15 +212,11 @@ class IDChainRequest: NSObject {
     }
 
     class func fromJson(_ node: JsonNode) throws -> IDChainRequest {
-        guard !node.isEmpty else {
-            throw DIDError.illegalArgument()
-        }
-
         let error = { (des: String) -> DIDError in
             return DIDError.didResolveError(des)
         }
 
-        var subNode = node.getNode(Constants.HEADER)
+        var subNode = node.get(forKey: Constants.HEADER)
         guard let _ = subNode else {
             throw DIDError.didResolveError("missing header")
         }
@@ -258,7 +254,7 @@ class IDChainRequest: NSObject {
         let payload = try serializer.getString(Constants.PAYLOAD, options)
         _  = try request.setPayload(payload)
 
-        subNode = node.getNode(Constants.PROOF)
+        subNode = node.get(forKey: Constants.PROOF)
         guard let _ = subNode else {
             throw DIDError.didResolveError("missing proof.")
         }
@@ -294,9 +290,9 @@ class IDChainRequest: NSObject {
             throw DIDError.illegalArgument()
         }
 
-        let data: Dictionary<String, Any>
+        let data: Any
         do {
-            data = try JSONSerialization.jsonObject(with: json, options: []) as! Dictionary<String, Any>
+            data = try JSONSerialization.jsonObject(with: json, options: [])
         } catch {
             throw DIDError.didResolveError("Parse resolve result error")
         }

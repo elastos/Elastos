@@ -102,6 +102,7 @@ public class FileSystemStorage: DIDStorage {
     }
 
     private func getFileHandle(_ create: Bool, _ path: String...) throws -> FileHandle {
+        // TODO:
     }
 
     /*
@@ -359,5 +360,9 @@ public class FileSystemStorage: DIDStorage {
     func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
         // TODO:
         return false
+    }
+
+    func changePassword(_ callback: (String) throws -> String) throws {
+        // TODO:
     }
 }
