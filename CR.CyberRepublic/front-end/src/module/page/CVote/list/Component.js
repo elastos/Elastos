@@ -49,9 +49,9 @@ const FILTERS = {
 }
 
 const BUDGET_REQUESTED_OPTIONS = {
-  1: { value: '$0 - $100 (USD)', budgetLow: 0, budgetHigh: 100 },
-  2: { value: '$100 - $1000 (USD)', budgetLow: 100, budgetHigh: 1000 },
-  3: { value: '> $1000 (USD)', budgetLow: 1000 }
+  1: { value: '0 - 100 (ELA)', budgetLow: 0, budgetHigh: 100 },
+  2: { value: '100 - 1000 (ELA)', budgetLow: 100, budgetHigh: 1000 },
+  3: { value: '> 1000 (ELA)', budgetLow: 1000 }
 }
 
 export default class extends BaseComponent {
