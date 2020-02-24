@@ -32,7 +32,7 @@ import Foundation
  */
 public class FileSystemStorage: DIDStorage {
     private static let STORE_MAGIC:   [UInt8] = [0x00, 0x0D, 0x01, 0x0D]
-    private static let STORE_VERSION: [UInt8] = [0x00, 0x00, 0x00, 0x01]
+    private static let STORE_VERSION = 2
     private static let STORE_META_SIZE = 8
 
     private static let DEFAULT_CHARSET = "UTF-8"
@@ -58,11 +58,14 @@ public class FileSystemStorage: DIDStorage {
                                withIntermediateDirectories: true,
                                                 attributes: nil)
 
-            var data: Data = Data(capacity: 8)
+            var data = Data(capacity: 8)
             data.append(contentsOf: FileSystemStorage.STORE_MAGIC)
-            data.append(contentsOf: FileSystemStorage.STORE_VERSION)
 
-            let file = try getFileHandle(false, Constants.META_FILE)
+            let version = [UInt8]()
+            // TODO: do with version
+            data.append(contentsOf: version)
+
+            let file = try openFileHandle(true, Constants.META_FILE)
             file.write(data)
             file.closeFile()
         } catch {
@@ -81,7 +84,7 @@ public class FileSystemStorage: DIDStorage {
         // Check 'META_FILE' file exists or not.
         let file: FileHandle
         do {
-            file = try getFileHandle(false, Constants.META_FILE)
+            file = try openFileHandle(false, Constants.META_FILE)
         } catch {
             throw DIDError.didStoreError("Directory \(_rootPath) is not DIDStore directory")
         }
@@ -96,56 +99,51 @@ public class FileSystemStorage: DIDStorage {
         guard data[0...3].elementsEqual(FileSystemStorage.STORE_MAGIC) else {
             throw DIDError.didStoreError("Directory \(_rootPath) is not DIDStore file")
         }
-        guard data[4...7].elementsEqual(FileSystemStorage.STORE_VERSION) else {
-            throw DIDError.didStoreError("DIDStore \(_rootPath) unsupported version.")
+
+        // TODO: STORE_VERSION
+
+        // postChangePassword()
+    }
+
+    private func openFileHandle(_ forWrite: Bool, _ pathArgs: String...) throws -> FileHandle {
+        var path: String = ""
+        for item in pathArgs {
+            path.append(item)
         }
-    }
 
-    private func getFileHandle(_ create: Bool, _ path: String...) throws -> FileHandle {
-        // TODO:
-    }
-
-    /*
-    private func getFile(_ path: String, _ needCreate: Bool) throws -> FileHandle {
-        var realPath = ""
-        // var file: FileHandle?
-
-        realPath.append(self._rootPath)
-        // TODO:
-
-        return FileHandle(forReadingAtPath: realPath)!
-    }*/
-
-    /*
-
-    private func getHDPrivateKeyFile(_ create: Bool) throws -> String{
-        let path = storeRootPath + "/" + FileSystemStorage.PRIVATE_DIR + "/" + FileSystemStorage.HDKEY_FILE
-        return try getFile(create, path)
-    }
-
-    private func getHDPrivateKeyFile(_ dir: String, _ hdKey: String, _ create: Bool) throws -> Bool {
-        let keyPath = storeRootPath + "/" + "\(dir)/\(hdKey)"
-        guard try exists(keyPath) else {
-            return false
+        if !FileManager.default.fileExists(atPath: path) && forWrite {
+            FileManager.default.createFile(atPath: path, contents: nil, attributes: nil)
         }
-        let readHandler = FileHandle(forReadingAtPath: keyPath)
-        let key = readHandler?.readDataToEndOfFile() ?? Data()
-        guard key.count != 0 else {
-            return false
+
+        let handle: FileHandle?
+        if forWrite {
+            handle = FileHandle(forWritingAtPath: path)
+        } else {
+            handle = FileHandle(forReadingAtPath: path)
         }
-        return true
+
+        guard let _ = handle else {
+            throw DIDError.unknownFailure("opening file at \(path) error")
+        }
+
+        return handle!
     }
 
-    public func containsPrivateIdentity() throws -> Bool {
-        let path = try getHDPrivateKeyFile(false)
-        return try exists(path)
+    private func openPrivateIdentityFile(_ forWrite: Bool) throws -> FileHandle {
+        return try openFileHandle(forWrite, Constants.PRIVATE_DIR, Constants.HDKEY_FILE)
     }
-     */
+
+    private func openPrivateIdentityFile() throws -> FileHandle {
+        return try openPrivateIdentityFile(false)
+    }
 
     func containsPrivateIdentity() -> Bool {
         do {
-            let handle = try getFileHandle(false, Constants.PRIVATE_DIR, Constants.HDKEY_FILE)
-            defer { handle.closeFile() }
+            let handle = try openPrivateIdentityFile()
+            defer {
+                handle.closeFile()
+            }
+
             return handle.readDataToEndOfFile().count > 0
         } catch {
             return false
@@ -154,127 +152,206 @@ public class FileSystemStorage: DIDStorage {
 
     func storePrivateIdentity(_ key: String) throws {
         do {
-            let handle = try getFileHandle(true, Constants.PRIVATE_DIR, Constants.HDKEY_FILE)
-            defer { handle.closeFile() }
+            let handle = try openPrivateIdentityFile(true)
+            defer {
+                handle.closeFile()
+            }
+
             handle.write(key.data(using: .utf8)!)
         } catch {
-            throw DIDError.didStoreError("Store private key identity error")
+            throw DIDError.didStoreError("store private key identity error")
         }
     }
 
     func loadPrivateIdentity() throws -> String {
         do {
-            let handle = try getFileHandle(false, Constants.PRIVATE_DIR, Constants.HDKEY_FILE)
-            handle.closeFile()
-            // TODO
-        } catch {
-            throw DIDError.didStoreError("Load private key identity error")
-        }
+            let handle = try openPrivateIdentityFile()
+            defer {
+                handle.closeFile()
+            }
 
-        return "TODO"
+            let data = handle.readDataToEndOfFile()
+            return String(data: data, encoding: .utf8)!
+        } catch {
+            throw DIDError.didStoreError("load private key identity error")
+        }
+    }
+
+    private func openPrivateIdentityIndexFile(_ forWrite: Bool) throws -> FileHandle {
+        return try openFileHandle(forWrite, Constants.PRIVATE_DIR, Constants.INDEX_FILE)
+    }
+
+    private func openPrivateIdentityIndexFile() throws -> FileHandle {
+        return try openPrivateIdentityIndexFile(false)
     }
 
     func storePrivateIdentityIndex(_ index: Int) throws {
         do {
-            let handle = try getFileHandle(true, Constants.PRIVATE_DIR, Constants.INDEX_FILE)
-            handle.closeFile()
-            // TODO
+            let handle = try openPrivateIdentityIndexFile(true)
+            defer {
+                handle.closeFile()
+            }
+            let data = withUnsafeBytes(of: index) { ptr in
+                Data(ptr)
+            }
+            handle.write(data)
         } catch {
-            throw DIDError.didStoreError("Store private identity index error")
+            throw DIDError.didStoreError("store private identity index error")
         }
     }
 
     func loadPrivateIdentityIndex() throws -> Int {
         do {
-            let handle = try getFileHandle(false, Constants.PRIVATE_DIR, Constants.INDEX_FILE)
-            handle.closeFile()
-            // TODO
+            let handle = try openPrivateIdentityIndexFile()
+            defer {
+                handle.closeFile()
+            }
+
+            let data = handle.readDataToEndOfFile()
+            return data.withUnsafeBytes { (pointer: UnsafePointer<Int32>) -> Int in
+                return Int(pointer.pointee)
+            }
         } catch {
-            throw DIDError.didStoreError("Load private identity index error")
+            throw DIDError.didStoreError("load private identity index error")
         }
+    }
+
+    private func openMnemonicFile(_ forWrite: Bool) throws -> FileHandle {
+        return try openFileHandle(forWrite, Constants.PRIVATE_DIR, Constants.MNEMONIC_FILE)
+    }
+
+    private func openMnemonicFile() throws -> FileHandle {
+        return try openMnemonicFile(false)
     }
 
     func storeMnemonic(_ mnemonic: String) throws {
         do {
-            let handle = try getFileHandle(true, Constants.PRIVATE_DIR, Constants.MNEMONIC_FILE)
-            defer { handle.closeFile() }
+            let handle = try openMnemonicFile(true)
+            defer {
+                handle.closeFile()
+            }
+
             handle.write(mnemonic.data(using: .utf8)!)
         } catch {
-            throw DIDError.didStoreError("Store mnemonic error")
+            throw DIDError.didStoreError("store mnemonic error")
         }
     }
 
     func loadMnemonic() throws -> String {
         do {
-            let handle = try getFileHandle(false, Constants.PRIVATE_DIR, Constants.MNEMONIC_FILE)
-            handle.closeFile()
-            // TODO
-        } catch {
-            throw DIDError.didStoreError("Load mnemonic error")
-        }
+            let handle = try openMnemonicFile()
+            defer {
+                handle.closeFile()
+            }
 
-        // TODO:
-        return ""
+            let data = handle.readDataToEndOfFile()
+            return String(data: data, encoding: .utf8)!
+        } catch {
+            throw DIDError.didStoreError("load mnemonic error")
+        }
     }
 
-    func storeDidMeta(_ did: DID, _ alias: DIDMeta?) throws {
+    private func openDidMetaFile(_ did: DID, _ forWrite: Bool) throws -> FileHandle {
+        return try openFileHandle(forWrite, Constants.DID_DIR, did.methodSpecificId, Constants.META_FILE)
+    }
+
+    private func openDidMetaFile(_ did: DID) throws -> FileHandle {
+        return try openDidMetaFile(did, false)
+    }
+
+    func storeDidMeta(_ did: DID, _ meta: DIDMeta) throws {
         do {
-            let handle = try getFileHandle(true, Constants.DID_DIR,
-                                           did.methodSpecificId, Constants.META_FILE)
-            handle.closeFile()
-            // TODO
+            let handle = try openDidMetaFile(did, true)
+            let metadata = meta.toString()
+            defer {
+                handle.closeFile()
+            }
+
+            if metadata.isEmpty {
+                var path: String = ""
+                path.append(Constants.DID_DIR)
+                path.append(did.methodSpecificId)
+                path.append(Constants.META_FILE)
+
+                try FileManager.default.removeItem(atPath: path)
+            } else {
+                handle.write(metadata.data(using: .utf8)!)
+            }
         } catch {
-            throw DIDError.didStoreError("Store alias name error")
+            throw DIDError.didStoreError("store DID metadata error")
         }
     }
 
     func loadDidMeta(_ did: DID) throws -> DIDMeta {
         do {
-            let handle = try getFileHandle(false, Constants.DID_DIR,
-                                           did.methodSpecificId, Constants.META_FILE)
-            handle.closeFile()
-            // TODO
+            let handle = try openDidMetaFile(did)
+            defer {
+                handle.closeFile()
+            }
+
+            let data = handle.readDataToEndOfFile()
+            return try DIDMeta.fromJson(String(data: data, encoding: .utf8)!)
         } catch {
-            throw DIDError.didStoreError("Load alias name error")
+            throw DIDError.didStoreError("load DID metadata error")
         }
+    }
+
+    private func openDocumentFile(_ did: DID, _ forWrite: Bool) throws -> FileHandle {
+        return try openFileHandle(forWrite, Constants.DID_DIR, did.methodSpecificId, Constants.DOCUMENT_FILE)
+    }
+
+    private func openDocumentFile(_ did: DID) throws -> FileHandle {
+        return try openDocumentFile(did, false)
     }
 
     func storeDid(_ doc: DIDDocument) throws {
         do {
-            let handle = try getFileHandle(true, Constants.DID_DIR,
-                                           doc.subject.methodSpecificId, Constants.DOCUMENT_FILE)
-            handle.closeFile()
-            // TODO
+            let handle = try openDocumentFile(doc.subject, true)
+            defer {
+                handle.closeFile()
+            }
+
+            let data: Data = try doc.toJson(true, false)
+            handle.write(data)
         } catch {
-            throw DIDError.didStoreError("Store DIDDocument error")
+            throw DIDError.didStoreError("store DIDDocument error")
         }
     }
 
     func loadDid(_ did: DID) throws -> DIDDocument {
         do {
-            let handle = try getFileHandle(false, Constants.DID_DIR,
-                                           did.methodSpecificId, Constants.DOCUMENT_FILE)
-            handle.closeFile()
-            // TODO
+            let handle = try openDocumentFile(did)
+            defer {
+                handle.closeFile()
+            }
+
+            let data = handle.readDataToEndOfFile()
+            return try DIDDocument.convertToDIDDocument(fromData: data)
         } catch {
-            throw DIDError.didStoreError("Load DIDDocument error")
+            throw DIDError.didStoreError("load DIDDocument error")
         }
     }
 
     func containsDid(_ did: DID) -> Bool {
         do {
-            let handle = try getFileHandle(true, Constants.DID_DIR,
-                                           did.methodSpecificId, Constants.DOCUMENT_FILE)
-            handle.closeFile()
-            // TODO
+            let handle = try openDocumentFile(did)
+            defer {
+                handle.closeFile()
+            }
             return true
         } catch {
             return false
         }
     }
 
-    func deleteDid(_ did: DID) throws {
-        // TODO:
+    func deleteDid(_ did: DID) -> Bool {
+        do {
+            let path = Constants.DID_DIR + did.methodSpecificId
+            try FileManager.default.removeItem(atPath: path)
+            return true
+        } catch {
+            return false
+        }
     }
 
     func listDids(_ filter: Int) throws -> Array<DID> {
@@ -282,45 +359,106 @@ public class FileSystemStorage: DIDStorage {
         return Array<DID>()
     }
 
-    func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta?) throws {
+    private func openCredentialMetaFile(_ did: DID, _ id: DIDURL, _ forWrite: Bool) throws -> FileHandle {
+        return try openFileHandle(forWrite, Constants.DID_DIR, did.methodSpecificId,
+                       Constants.CREDENTIALS_DIR, id.fragment!, Constants.META_FILE)
+    }
+
+    private func openCredentialMetaFile(_ did: DID, _ id: DIDURL) throws -> FileHandle {
+        return try openCredentialMetaFile(did, id, false)
+    }
+
+    func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta) throws {
         do {
-            let handle = try getFileHandle(true, Constants.DID_DIR,
-                                          did.methodSpecificId, Constants.CREDENTIALS_DIR,
-                                          id.fragment!, Constants.META_FILE)
-            defer { handle.closeFile()}
-            let metadata = (meta != nil && !meta!.isEmpty()) ? meta!.toString() : nil
-            if  metadata?.isEmpty ?? false {
-                // TODO: handle.delete()
-            } else {
-                // TODO
+            let handle = try openCredentialMetaFile(did, id, true)
+            let metadata = meta.toJson().data(using: .utf8)!
+            defer {
+                handle.closeFile()
             }
 
+            if metadata.isEmpty {
+                var path: String = ""
+                path.append(Constants.DID_DIR)
+                path.append(did.methodSpecificId)
+                path.append(Constants.CREDENTIALS_DIR)
+                path.append(id.fragment!)
+                path.append(Constants.META_FILE)
+
+                try FileManager.default.removeItem(atPath: path)
+            } else {
+                handle.write(metadata)
+            }
         } catch {
-            throw DIDError.didStoreError("Write credential meta error")
+            throw DIDError.didStoreError("store credential meta error")
         }
     }
 
     func loadCredentialMeta(_ did: DID, _ id: DIDURL) throws -> CredentialMeta {
-        // TODO
+        do {
+            let handle = try openCredentialMetaFile(did, id)
+            defer {
+                handle.closeFile()
+            }
+
+            let data = handle.readDataToEndOfFile()
+            return try CredentialMeta.fromJson(String(data: data, encoding: .utf8)!)
+        } catch {
+            throw DIDError.didStoreError("load credential meta error")
+        }
+    }
+
+    private func openCredentialFile(_ did: DID, _ id: DIDURL, _ forWrite: Bool) throws -> FileHandle {
+        return try openFileHandle(forWrite, Constants.DID_DIR, did.methodSpecificId,
+                       Constants.CREDENTIALS_DIR, id.fragment!, Constants.CREDENTIAL_FILE)
+    }
+
+    private func openCredentialFile(_ did: DID, _ id: DIDURL) throws -> FileHandle {
+        return try openCredentialFile(did, id, false)
     }
 
     func storeCredential(_ credential: VerifiableCredential) throws {
-        // TODO:
+        do {
+            let handle = try openCredentialFile(credential.subject.did, credential.getId(), true)
+            defer {
+                handle.closeFile()
+            }
+
+            let data = credential.toJson(true, false)
+            handle.write(data.data(using: .utf8)!)
+        } catch {
+            throw DIDError.didStoreError("store credential error")
+        }
     }
 
-    func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? {
-        // TODO:
-        return nil
+    func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential {
+        do {
+            let handle = try openCredentialFile(did, id)
+            defer {
+                handle.closeFile()
+            }
+
+            let data = handle.readDataToEndOfFile()
+            return try VerifiableCredential.fromJson(data)
+        } catch {
+            throw DIDError.didStoreError("load credential error")
+        }
     }
 
-    func containsCredentials(_ did: DID) throws -> Bool {
+    func containsCredentials(_ did: DID) -> Bool {
         // TODO:
         return false
     }
 
-    func containsCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
-        // TODO:
-        return false
+    func containsCredential(_ did: DID, _ id: DIDURL) -> Bool {
+        do {
+            let handle = try openCredentialFile(did, id)
+            defer {
+                handle.closeFile()
+            }
+            return true
+        } catch {
+            return false
+        }
     }
 
     func deleteCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
@@ -338,26 +476,53 @@ public class FileSystemStorage: DIDStorage {
         return Array<DIDURL>()
     }
 
+    private func openPrivateKeyFile(_ did: DID, _ id: DIDURL, _ forWrite: Bool) throws -> FileHandle {
+        return try openFileHandle(forWrite, Constants.DID_DIR, did.methodSpecificId,
+                                  Constants.PRIVATEKEYS_DIR, id.fragment!)
+    }
+
+    private func openPrivateKeyFile(_ did: DID, _ id: DIDURL) throws -> FileHandle {
+        return try openPrivateKeyFile(did, id, false)
+    }
+
     func storePrivateKey(_ did: DID, _ id: DIDURL, _ privateKey: String) throws {
-        // TODO:
+        do {
+            let handle = try openPrivateKeyFile(did, id, true)
+            defer {
+                handle.closeFile()
+            }
+
+            handle.write(privateKey.data(using: .utf8)!)
+        } catch {
+            throw DIDError.didStoreError("store private key error.")
+        }
     }
 
     func loadPrivateKey(_ did: DID, _ id: DIDURL) throws -> String {
-        // TODO:
-        return ""
+        do {
+            let handle = try openPrivateKeyFile(did, id)
+            defer {
+                handle.closeFile()
+            }
+
+            let data = handle.readDataToEndOfFile()
+            return String(data: data, encoding: .utf8)!
+        } catch {
+            throw DIDError.didStoreError("load private key error.")
+        }
     }
 
-    func containsPrivateKeys(_ did: DID) throws -> Bool {
+    func containsPrivateKeys(_ did: DID) -> Bool {
         // TODO:
         return false
     }
 
-    func containsPrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
+    func containsPrivateKey(_ did: DID, _ id: DIDURL) -> Bool {
         // TODO:
         return false
     }
 
-    func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
+    func deletePrivateKey(_ did: DID, _ id: DIDURL) -> Bool {
         // TODO:
         return false
     }
