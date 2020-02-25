@@ -89,7 +89,8 @@ export default {
       milestones: '里程碑为空',
       team: '实施团队为空',
       amount: '金额大于总金额的30%',
-      previousMilestoneDate: '日期必须晚于前一个里程碑'
+      previousMilestoneDate: '日期必须晚于前一个里程碑',
+      requirePayment: '在完成提案之前，需要填写项目的支付项。'
     }
   },
   modal: {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Form, Input, Button, Row, Tabs, Radio } from 'antd'
+import { Form, Input, Button, Row, Tabs, Radio, message } from 'antd'
 import _ from 'lodash'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
@@ -9,6 +9,7 @@ import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import PaymentSchedule from './PaymentSchedule'
 import ImplementationPlan from './ImplementationPlan'
 import { wordCounter } from '@/util'
+import Toast from '@/module/common/Toast'
 
 import { Container, TabPaneInner, Note, TabText, CirContainer } from './style'
 
@@ -81,12 +82,20 @@ class C extends BaseComponent {
         return
       }
       const budget = form.getFieldValue('budget')
+
       // exclude old suggestion data
       if (budget && typeof budget !== 'string') {
         values.budget = budget.paymentItems
         values.budgetAmount = Number(budget.budgetAmount)
         values.elaAddress = budget.elaAddress
       }
+      
+      if(!budget || budget.paymentItems.length === 0){
+        this.setState({ loading: false })
+        message.success(I18N.get('suggestion.form.error.requirePayment'));
+        return
+      }
+      
       await callback(values)
       this.setState({ loading: false })
     })
@@ -185,8 +194,8 @@ class C extends BaseComponent {
 
   getTextarea(id) {
     const initialValues = _.isEmpty(this.props.initialValues)
-      ? { type: '1' }
-      : this.props.initialValues
+                        ? { type: '1' }
+                        : this.props.initialValues
 
     const { getFieldDecorator } = this.props.form
     const rules = [
@@ -222,7 +231,7 @@ class C extends BaseComponent {
     if (
       id === 'plan' &&
       ((initialValues.plan && typeof initialValues.plan !== 'string') ||
-        !initialValues.plan)
+       !initialValues.plan)
     ) {
       rules.push({
         validator: this.validatePlan
@@ -242,7 +251,7 @@ class C extends BaseComponent {
     if (
       id === 'budget' &&
       ((initialValues.budget && typeof initialValues.budget !== 'string') ||
-        !initialValues.budget)
+       !initialValues.budget)
     ) {
       const initialBudget = initialValues.budget && {
         budgetAmount: initialValues.budgetAmount,
@@ -310,8 +319,8 @@ class C extends BaseComponent {
       </Button>
     )
     const cancelText = isEditMode
-      ? I18N.get('suggestion.form.button.discardChanges')
-      : I18N.get('suggestion.form.button.cancel')
+                     ? I18N.get('suggestion.form.button.discardChanges')
+                     : I18N.get('suggestion.form.button.cancel')
     const cancelBtn = (
       <Button
         onClick={this.props.onCancel}
