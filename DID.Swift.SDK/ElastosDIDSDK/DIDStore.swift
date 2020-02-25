@@ -79,9 +79,8 @@ public class DIDStore: NSObject {
             usedPhrase = ""
         }
 
-        let privateIdentity = try HDKey.fromMnemonic(mnemonic, usedPhrase!)
+        let privateIdentity = HDKey.fromMnemonic(mnemonic, usedPhrase!, Mnemonic.getLanguageId(language))
         try initializePrivateIdentity(privateIdentity, storePassword)
-
 
         // Save mnemonic
         let mnemonicData = mnemonic.data(using: .utf8)!
@@ -130,7 +129,7 @@ public class DIDStore: NSObject {
 
         let privityIdentity = try storage.loadPrivateIdentity()
         let seed = try DIDStore.decryptFromBase64(privityIdentity, storePassword)
-        return HDKey(seed)
+        return HDKey.fromSeed(seed)
     }
 
     public func synchronize(using storePassword: String, _ mergeHandler: ConflictHanlder) throws {
@@ -144,7 +143,7 @@ public class DIDStore: NSObject {
         var index = 0
 
         while index < nextIndex || blanks < 10 {
-            let key: DerivedKey = try privityIdentity.derive(index++)
+            let key: HDKey.DerivedKey = privityIdentity.derivedKey(index++)
             let did = DID(Constants.METHOD, key.getAddress())
             let doc: DIDDocument?
 
@@ -192,14 +191,14 @@ public class DIDStore: NSObject {
 
         let privateIdentity = try loadPrivateIdentity(storePassword)
         var nextIndex = try storage.loadPrivateIdentityIndex()
-        let key = try privateIdentity.derive(nextIndex++)
+        let key = privateIdentity.derivedKey(nextIndex++)
         let did = DID(Constants.METHOD, key.getAddress())
         let id  = try DIDURL(did, "primary")
 
         try storePrivateKey(did, id, key.serialize(), storePassword)
 
         let builder = DIDDocumentBuilder(did, self)
-        let doc = try builder.appendAuthenticationKey(id, try key.getPublicKeyBase58())
+        let doc = try builder.appendAuthenticationKey(id, key.getPublicKeyBase58())
                              .sealed(using: storePassword)
         doc.getMeta().setAlias(alias)
         try storeDid(doc)
@@ -233,7 +232,7 @@ public class DIDStore: NSObject {
         }
 
         let privateIdentity = try loadPrivateIdentity(storePassword)
-        let key = try privateIdentity.derive(index)
+        let key = privateIdentity.derivedKey(index)
         let did = DID(Constants.METHOD, key.getAddress())
 
         privateIdentity.wipe()
@@ -795,8 +794,7 @@ public class DIDStore: NSObject {
     }
 
     public func deleteDid(_ did: DID) -> Bool {
-        try? storage.deleteDid(did)
-        return true
+        return storage.deleteDid(did)
     }
 
     public func deleteDid(_ did: String) throws -> Bool {
@@ -859,7 +857,7 @@ public class DIDStore: NSObject {
     }
     
     public func containsCredentials(_ did:DID) throws -> Bool {
-        return try storage.containsCredentials(did)
+        return storage.containsCredentials(did)
     }
     
     public func containsCredentials(_ did: String) throws -> Bool {
@@ -867,7 +865,7 @@ public class DIDStore: NSObject {
     }
     
     public func containsCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
-        return try storage.containsCredential(did, id)
+        return storage.containsCredential(did, id)
     }
     
     public func containsCredential(_ did: String, _ id: String) throws -> Bool {
@@ -926,7 +924,7 @@ public class DIDStore: NSObject {
     }
     
     public func containsPrivateKeys(_ did: DID) throws -> Bool {
-        return try storage.containsPrivateKeys(did)
+        return storage.containsPrivateKeys(did)
     }
     
     public func containsPrivateKeys(_ did: String) throws -> Bool {
@@ -934,7 +932,7 @@ public class DIDStore: NSObject {
     }
     
     public func containsPrivateKey(_ did: DID,_ id: DIDURL) throws -> Bool {
-        return try storage.containsPrivateKey(did, id)
+        return storage.containsPrivateKey(did, id)
     }
     
     public func containsPrivateKey(_ did: String,_ id: String) throws -> Bool {
@@ -943,7 +941,7 @@ public class DIDStore: NSObject {
     }
     
     public func deletePrivateKey(_ did: DID,_ id: DIDURL) throws -> Bool {
-        return try storage.deletePrivateKey(did, id)
+        return storage.deletePrivateKey(did, id)
     }
     
     public func deletePrivateKey(_ did: String,_ id: String) throws -> Bool {
@@ -967,7 +965,7 @@ public class DIDStore: NSObject {
         }
 
         let binKey = try DIDStore.decryptFromBase64(loadPrivateKey(did, id: usedId!), storePassword)
-        let key = DerivedKey.deserialize(binKey)!
+        let key = HDKey.DerivedKey.deserialize(binKey)!
 
         // TODO:
         let signature: Data? = nil

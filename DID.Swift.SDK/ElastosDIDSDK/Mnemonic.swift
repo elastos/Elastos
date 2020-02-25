@@ -71,4 +71,8 @@ public class Mnemonic {
 
         return HDKey_MnemonicIsValid(mnemonic.toUnsafePointerInt8()!, Int32(lang!.rawValue))
     }
+
+    class func getLanguageId(_ language: String) -> Int {
+        return Language.valueOf(language)?.rawValue ?? -1
+    }
 }

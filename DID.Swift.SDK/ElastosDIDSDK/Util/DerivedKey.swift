@@ -8,7 +8,8 @@ public class DerivedKey: NSObject {
         self.seed = seed
         self.index = index
     }
-    
+
+    /*
     public func getPublicKeyBytes() throws -> [UInt8] {
         return seed.withUnsafeMutableBytes { (seeds: UnsafeMutablePointer<Int8>) -> [UInt8] in
             let pubKey = UnsafeMutablePointer<Int8>.allocate(capacity: 66)
@@ -94,4 +95,5 @@ public class DerivedKey: NSObject {
     func wipe() {
         // TODO:
     }
+    */
 }

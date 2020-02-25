@@ -15,9 +15,33 @@ class HDKey: NSObject {
             self.cderivedKey = cderivedKey
         }
 
+        public class func getAddress(_ pk: [UInt8]) -> String  {
+            // TODO:
+            return "TODO"
+        }
+
         func serialize() -> Data {
             // TODO:
             return Data()
+        }
+
+        func getAddress() -> String {
+            // TODO:
+            return "TODO"
+        }
+
+        func getPublicKeyBase58() -> String {
+            // TODO:
+            return "TODO"
+        }
+
+        class func deserialize(_ data: Data) -> DerivedKey? {
+            // TODO:
+            return nil
+        }
+
+        func wipe() {
+            // TODO:
         }
     }
 

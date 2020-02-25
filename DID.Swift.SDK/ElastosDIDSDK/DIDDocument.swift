@@ -161,7 +161,7 @@ public class DIDDocument {
                 continue
             }
 
-            let address = DerivedKey.getAddress(pk.publicKeyBytes)
+            let address = HDKey.DerivedKey.getAddress(pk.publicKeyBytes)
             guard address == self.subject.methodSpecificId else {
                 return pk.getId()
             }
