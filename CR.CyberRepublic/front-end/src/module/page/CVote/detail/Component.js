@@ -74,7 +74,11 @@ const renderRichContent = (data, key, title) => {
         <Subtitle>{I18N.get('suggestion.budget.address')}</Subtitle>
         <Paragraph>{data.elaAddress}</Paragraph>
         <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
-        <PaymentList list={data.budget} editable={false} />
+        <PaymentList
+          list={data.budget}
+          editable={false}
+          milestone={data.plan.milestone}
+        />
       </div>
     )
   } else if (
