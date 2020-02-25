@@ -193,6 +193,9 @@ func dbPutTxIndexEntry(dbTx database.Tx, txHash *common.Uint256, serializedData 
 // the region and the error.
 func dbFetchTxIndexEntry(dbTx database.Tx, txHash *common.Uint256) (*database.BlockRegion, error) {
 	// Load the record from the database and return nil if it doesn't exist.
+	if txHash == nil {
+		return nil, nil
+	}
 	txIndex := dbTx.Metadata().Bucket(txIndexKey)
 	serializedData := txIndex.Get(txHash[:])
 	if len(serializedData) == 0 {
