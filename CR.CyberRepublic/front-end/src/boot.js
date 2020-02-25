@@ -8,4 +8,4 @@ const localStorageLang = localStorage.getItem('lang')
 const lang = localStorageLang || userLang
 I18N.setLang(lang)
 
-console.log(process.env)
+// console.log(process.env)

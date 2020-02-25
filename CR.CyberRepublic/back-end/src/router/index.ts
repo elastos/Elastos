@@ -45,9 +45,9 @@ export const middleware = async (req: Request, res: Response, next: NextFunction
             try {
                 const user = await DB.getModel('User').findOne({_id: json.userId})
                 // TODO: find better way to not send the salt back to the front-end
-                delete user._doc.salt
 
                 if (user) {
+                    delete user._doc.salt
                     req['session'].user = user
                     req['session'].userId = user.id
                 }
