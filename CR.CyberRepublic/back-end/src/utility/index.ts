@@ -37,10 +37,13 @@ export const getDidPublicKey = async (did: string) => {
     if (res && res.data && res.data.result) {
       const base64 = _.get(res.data.result, 'transaction[0].operation.payload')
       const payload: any = base64url.decode(base64)
-      const base58 = _.get(JSON.parse(payload), 'publicKey[0].publicKeyBase58')
+      const pubKeys = _.get(JSON.parse(payload), 'publicKey')
+      const matched = pubKeys.find(el => el.id === '#primary')
+      // compressed public key beginning with 02
+      const publicKey = bs58.decode(matched.publicKeyBase58).toString('hex')
       return {
         expirationDate: moment(payload.expires),
-        publicKey: bs58.decode(base58).toString('hex')
+        publicKey
       }
     }
   } catch (err) {

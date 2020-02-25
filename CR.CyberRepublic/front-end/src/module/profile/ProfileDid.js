@@ -73,7 +73,6 @@ class ProfileDid extends Component {
 
   render() {
     const { did } = this.props
-    const { visible } = this.state
     let domain
     if (process.env.NODE_ENV === 'production') {
       domain = 'blockchain-did-mainnet'
