@@ -123,7 +123,7 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.wallet" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "7ba7a8ff2e2bd3de51cf3ddda0d6916c88815dce" "github.com/elastos/Elastos.ORG.Wallet.Service" "service.wallet" \
+    build_binary_and_docker "bfd56b6516a85740c020c3e600cbd165780319e7" "github.com/elastos/Elastos.ORG.Wallet.Service" "service.wallet" \
         "cyberrepublic/elastos-wallet-service" "yes" ""
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.sidechain" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
@@ -133,7 +133,7 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.misc" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "ce343f7505af2a3145ca18a86ea10f78d3036f6b" "github.com/elastos/Elastos.ORG.API.Misc" "service.misc" \
+    build_binary_and_docker "6da23db74c01baf7a01938d586582e4260036682" "github.com/elastos/Elastos.ORG.API.Misc" "service.misc" \
         "cyberrepublic/elastos-api-misc-service" "yes" ""
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "elaphant" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
