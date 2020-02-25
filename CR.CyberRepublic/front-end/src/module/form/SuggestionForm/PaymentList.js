@@ -19,7 +19,7 @@ class PaymentList extends BaseComponent {
     this.props.onEdit(index)
   }
 
-  renderMilestone = (item) => {
+  renderMilestone = item => {
     const date = (
       <div className="square-date">
         {moment(item.date).format('MMM D, YYYY')}
@@ -81,15 +81,19 @@ class PaymentList extends BaseComponent {
                   />
                 </td>
                 <td>
-                  <Popover
-                    content={this.renderMilestone(milestone[item.milestoneKey])}
-                  >
-                    <a>
-                      {`${I18N.get('suggestion.budget.milestone')} #${Number(
-                        item.milestoneKey
-                      ) + 1}`}
-                    </a>
-                  </Popover>
+                  {item.milestoneKey ? (
+                    <Popover
+                      content={this.renderMilestone(
+                        milestone[item.milestoneKey]
+                      )}
+                    >
+                      <a>
+                        {`${I18N.get('suggestion.budget.milestone')} #${Number(
+                          item.milestoneKey
+                        ) + 1}`}
+                      </a>
+                    </Popover>
+                  ) : null}
                 </td>
                 <td>
                   <MarkdownPreview
