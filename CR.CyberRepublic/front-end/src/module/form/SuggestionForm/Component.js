@@ -252,14 +252,24 @@ class C extends BaseComponent {
     }
 
     if (
-      id === 'budget' &&
+      id === 'budget'
+      /* &&
       ((initialValues.budget && typeof initialValues.budget !== 'string') ||
-       !initialValues.budget)
+       !initialValues.budget) */
     ) {
-      const initialBudget = initialValues.budget && {
-        budgetAmount: initialValues.budgetAmount,
-        elaAddress: initialValues.elaAddress,
-        paymentItems: initialValues.budget
+      let initialBudget = {}
+      if(initialValues.budget && typeof initialValues.budget !== 'string') {
+        initialBudget = initialValues.budget && {
+          budgetAmount: initialValues.budgetAmount,
+          elaAddress: initialValues.elaAddress,
+          paymentItems: initialValues.budget
+        }
+      }else{
+        initialBudget = {
+          budgetAmount: initialValues.budget,
+          elaAddress: "",
+          paymentItems: []
+        }
       }
 
       return getFieldDecorator('budget', {
