@@ -508,16 +508,14 @@ public class StreamTest {
 
 		TestOptions options = new TestOptions(context.getAppPath());
 		try {
-			Carrier.initializeInstance(options, handler);
-			carrier = Carrier.getInstance();
+			carrier = Carrier.createInstance(options, handler);
 			carrier.start(0);
 			synchronized (carrier) {
 				carrier.wait();
 			}
 			Log.i(TAG, "Carrier node is ready now");
 
-			Manager.initializeInstance(carrier, sessionHandler);
-			sessionManager = Manager.getInstance();
+			sessionManager = Manager.createInstance(carrier, sessionHandler);
 			assertNotNull(sessionManager);
 		}
 		catch (CarrierException | InterruptedException e) {

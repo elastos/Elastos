@@ -55,7 +55,6 @@ public class Carrier {
 	public static final int MAX_APP_MESSAGE_LEN = 1024;
 
 	private static final String TAG = "CarrierCore";
-	private static Carrier carrier;
 	private Thread carrierThread;
 	private CarrierHandler handler;
 	private long nativeCookie = 0;  // store the native (JNI-layered) carrier handler
@@ -425,46 +424,38 @@ public class Carrier {
 	}
 
 	/**
-	 * Initialize node singleton instance. After initializing the instance,
-	 * it's ready to start and therefore connect to carrier network.
+	 * Create node instance. After returning, it's ready to start and
+	 * therefore connect to carrier network.
 	 *
 	 * @param
 	 * 		options		The options to set for creating carrier node.
 	 * @param
 	 * 		handler		The interface handler for carrier node.
 	 *
+	 * @return
+	 * 		New Carrier instance
+	 *
 	 * @throws CarrierException carrier exception.
 	 */
-	public static void initializeInstance(Options options, CarrierHandler handler) throws CarrierException {
+	public static Carrier createInstance(Options options, CarrierHandler handler) throws CarrierException {
 		if (options == null || handler == null)
-				throw new IllegalArgumentException();
+			throw new IllegalArgumentException();
 
-		if (carrier == null) {
-			Callbacks callbacks = new Callbacks();
-			Carrier tmp = new Carrier(handler);
+		Callbacks callbacks = new Callbacks();
+		Carrier tmp = new Carrier(handler);
 
-			if (!tmp.native_init(options, callbacks))
-				throw CarrierException.fromErrorCode(get_error_code());
+		if (!tmp.native_init(options, callbacks))
+			throw CarrierException.fromErrorCode(get_error_code());
 
-			Log.i(TAG, "Carrier node instance created");
-			carrier = tmp;
-  		}
+		Log.i(TAG, "Carrier node instance created");
+
+		return tmp;
 	}
 
 	@Override
 	protected void finalize() throws Throwable {
 		kill();
 		super.finalize();
-	}
-
-	/**
-	 * Get a carrier node singleton instance.
-	 *
-	 * @return
-	 * 		A carrier node instance or nil on failure.
-	 */
-	public static Carrier getInstance() {
-		return carrier;
 	}
 
 	/**
@@ -480,7 +471,7 @@ public class Carrier {
 				@Override
 				public void run() {
 					Log.i(TAG, "Native carrier node started");
-					if (!carrier.native_run(iterateInterval)) {
+					if (!native_run(iterateInterval)) {
 						Log.e(TAG, "Native carrier node started error(" + get_error_code() + ")");
 						return;
 					}
@@ -503,7 +494,6 @@ public class Carrier {
 			Log.i(TAG, "Killing Carrier node instance ...");
 			native_kill();
 			didKill = true;
-			carrier = null;
 
 			if (carrierThread != null) {
 				try {
@@ -687,6 +677,7 @@ public class Carrier {
 	public boolean isReady() {
 		return is_ready();
 	}
+
 	/**
 	 * Get friends list.
 	 *

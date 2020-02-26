@@ -38,8 +38,7 @@ public class GetInstanceTest extends AbstractCarrierHandler {
 		TestHandler handler = new TestHandler();
 
 		try {
-			Carrier.initializeInstance(options, handler);
-			Carrier carrier = Carrier.getInstance();
+			Carrier carrier = Carrier.createInstance(options, handler);
 			assertNotNull(carrier);
 
 			carrier.start(0);
@@ -49,7 +48,7 @@ public class GetInstanceTest extends AbstractCarrierHandler {
 			assertEquals(carrier.getNodeId(), carrier.getUserId());
 
 			carrier.kill();
-			assertNull(Carrier.getInstance());
+//			assertNull(Carrier.getInstance());
 		} catch (CarrierException | InterruptedException e) {
 			e.printStackTrace();
 			fail();

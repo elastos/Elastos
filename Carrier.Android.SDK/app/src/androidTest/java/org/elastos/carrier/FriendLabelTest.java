@@ -141,8 +141,7 @@ public class FriendLabelTest {
 
 		TestOptions options = new TestOptions(context.getAppPath());
 		try {
-			Carrier.initializeInstance(options, handler);
-			carrier = Carrier.getInstance();
+			carrier = Carrier.createInstance(options, handler);
 			carrier.start(0);
 			synchronized (carrier) {
 				carrier.wait();

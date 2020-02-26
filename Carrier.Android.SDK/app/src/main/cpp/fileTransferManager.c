@@ -39,10 +39,16 @@ typedef struct CallbackContext {
     jobject handler;
 } CallbackContext;
 
-static CallbackContext callbackContext;
-
 extern jobject filetransfer_create(JNIEnv* env, jclass clazz, jobject jcarrier, jstring jto,
                                    jobject jfileinfo, jobject jhandler);
+
+static inline
+CallbackContext* getCallbackContext(JNIEnv* env, jobject thiz)
+{
+    uint64_t ctxt = 0;
+    return getLongField(env, thiz, "nativeCookie", &ctxt) ? \
+           (CallbackContext*)ctxt : NULL;
+}
 
 static
 void onFileTransferRequestCallback(ElaCarrier *carrier, const char *from,
@@ -143,10 +149,12 @@ void callbackCtxCleanup(CallbackContext* cc, JNIEnv* env)
         (*env)->DeleteGlobalRef(env, cc->carrier);
     if (cc->handler)
         (*env)->DeleteGlobalRef(env, cc->handler);
+
+    free(cc);
 }
 
 static
-jboolean fileTransferMgrInit(JNIEnv* env, jclass clazz, jobject jcarrier, jobject jhandler)
+jboolean fileTransferMgrInit(JNIEnv* env, jobject thiz, jobject jcarrier, jobject jhandler)
 {
     CallbackContext *hc = NULL;
     ElaCarrier *carrier = NULL;
@@ -154,38 +162,58 @@ jboolean fileTransferMgrInit(JNIEnv* env, jclass clazz, jobject jcarrier, jobjec
 
     assert(jcarrier);
 
-    (void)clazz;
-
     carrier = getCarrier(env, jcarrier);
-    memset(&callbackContext, 0, sizeof(callbackContext));
 
-    if (jhandler) {
-        hc = (CallbackContext*)&callbackContext;
-        if (!callbackCtxSet(hc, env, jcarrier, jhandler)) {
-            setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
+    if (!jhandler) {
+        rc = ela_filetransfer_init(carrier, NULL, NULL);
+        if (rc < 0) {
+            logE("Call ela_filetransfer_init API error");
+            setErrorCode(ela_get_error());
             return JNI_FALSE;
         }
+
+        return JNI_TRUE;
+    }
+
+    hc = malloc(sizeof(CallbackContext));
+    if (!hc) {
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        return JNI_FALSE;
+    }
+    memset(hc, 0, sizeof(*hc));
+
+    if (!callbackCtxSet(hc, env, jcarrier, jhandler)) {
+        callbackCtxCleanup(hc, env);
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
+        return JNI_FALSE;
     }
 
     rc = ela_filetransfer_init(carrier, onFileTransferRequestCallback, hc);
     if (rc < 0) {
+        callbackCtxCleanup(hc, env);
         logE("Call ela_filetransfer_init API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
     }
 
+    setLongField(env, thiz, "nativeCookie", (uint64_t)hc);
+
     return JNI_TRUE;
 }
 
 static
-void fileTransferMgrCleanup(JNIEnv* env, jclass clazz, jobject jcarrier)
+void fileTransferMgrCleanup(JNIEnv* env, jobject thiz, jobject jcarrier)
 {
+    CallbackContext *hc = getCallbackContext(env, thiz);
+
     assert(jcarrier);
 
-    (void)clazz;
-
     ela_filetransfer_cleanup(getCarrier(env, jcarrier));
-    callbackCtxCleanup(&callbackContext, env);
+
+    if (hc) {
+        callbackCtxCleanup(hc, env);
+        setLongField(env, thiz, "nativeCookie", 0);
+    }
 }
 
 static

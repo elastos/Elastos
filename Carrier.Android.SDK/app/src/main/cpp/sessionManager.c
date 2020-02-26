@@ -29,6 +29,7 @@
 
 #include "log.h"
 #include "utils.h"
+#include "utilsExt.h"
 #include "carrierCookie.h"
 #include "sessionUtils.h"
 
@@ -39,7 +40,13 @@ typedef struct CallbackContext {
     jobject handler;
 } CallbackContext;
 
-static CallbackContext callbackContext;
+static inline
+CallbackContext* getCallbackContext(JNIEnv* env, jobject thiz)
+{
+    uint64_t ctxt = 0;
+    return getLongField(env, thiz, "nativeCookie", &ctxt) ? \
+           (CallbackContext*)ctxt : NULL;
+}
 
 static
 void onSessionRequestCallback(ElaCarrier* carrier, const char* from, const char *bundle,
@@ -139,10 +146,12 @@ void callbackCtxtCleanup(CallbackContext* cc, JNIEnv* env)
         (*env)->DeleteGlobalRef(env, cc->carrier);
     if (cc->handler)
         (*env)->DeleteGlobalRef(env, cc->handler);
+
+    free(cc);
 }
 
 static
-jboolean sessionMgrInit(JNIEnv* env, jclass clazz, jobject jcarrier, jobject jhandler)
+jboolean sessionMgrInit(JNIEnv* env, jobject thiz, jobject jcarrier, jobject jhandler)
 {
     CallbackContext *hc = NULL;
     ElaCarrier *carrier = NULL;
@@ -150,19 +159,7 @@ jboolean sessionMgrInit(JNIEnv* env, jclass clazz, jobject jcarrier, jobject jha
 
     assert(jcarrier);
 
-    (void)clazz;
-
     carrier = getCarrier(env, jcarrier);
-    memset(&callbackContext, 0, sizeof(callbackContext));
-
-
-    if (jhandler) {
-        hc = (CallbackContext*)&callbackContext;
-        if (!callbackCtxtSet(hc, env, jcarrier, jhandler)) {
-            setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
-            return JNI_FALSE;
-        }
-    }
 
     rc = ela_session_init(carrier);
     if (rc < 0) {
@@ -171,30 +168,55 @@ jboolean sessionMgrInit(JNIEnv* env, jclass clazz, jobject jcarrier, jobject jha
         return JNI_FALSE;
     }
 
+    if (!jhandler)
+        return JNI_TRUE;
+
+    hc = malloc(sizeof(CallbackContext));
+    if (!hc) {
+        ela_session_cleanup(carrier);
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        return JNI_FALSE;
+    }
+    memset(hc, 0, sizeof(*hc));
+
+    if (!callbackCtxtSet(hc, env, jcarrier, jhandler)) {
+        callbackCtxtCleanup(hc, env);
+        ela_session_cleanup(carrier);
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
+        return JNI_FALSE;
+    }
+
     rc = ela_session_set_callback(carrier, NULL, onSessionRequestCallback, hc);
     if (rc < 0) {
+        callbackCtxtCleanup(hc, env);
         ela_session_cleanup(carrier);
         logE("Call ela_session_set_callback API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
     }
 
+    setLongField(env, thiz, "nativeCookie", (uint64_t)hc);
+
     return JNI_TRUE;
 }
 
 static
-void sessionMgrCleanup(JNIEnv* env, jclass clazz, jobject jcarrier)
+void sessionMgrCleanup(JNIEnv* env, jobject thiz, jobject jcarrier)
 {
+    CallbackContext *hc = getCallbackContext(env, thiz);
+
     assert(jcarrier);
 
-    (void)clazz;
+    if (hc) {
+        callbackCtxtCleanup(hc, env);
+        setLongField(env, thiz, "nativeCookie", 0);
+    }
 
-    callbackCtxtCleanup(&callbackContext, env);
     ela_session_cleanup(getCarrier(env, jcarrier));
 }
 
 static
-jobject createSession(JNIEnv* env, jobject thiz, jobject jcarrier, jstring jto)
+jobject createSession(JNIEnv* env, jclass clazz, jobject jcarrier, jstring jto)
 {
     const char *to;
     ElaSession *session;
@@ -202,8 +224,6 @@ jobject createSession(JNIEnv* env, jobject thiz, jobject jcarrier, jstring jto)
 
     assert(jcarrier);
     assert(jto);
-
-    (void)thiz;
 
     to = (*env)->GetStringUTFChars(env, jto, NULL);
     if (!to) {
@@ -239,11 +259,11 @@ jint getErrorCode(JNIEnv* env, jclass clazz)
 
 static const char* gClassName = "org/elastos/carrier/session/Manager";
 static JNINativeMethod gMethods[] = {
-        {"native_init",      "("_W("Carrier;")_S("ManagerHandler;)Z"),  (void*)sessionMgrInit   },
-        {"native_cleanup",   "("_W("Carrier;)V"),                       (void*)sessionMgrCleanup},
-        {"create_session",   "("_W("Carrier;")_J("String;)")_S("Session;"),
-                                                                        (void*)createSession    },
-        {"get_error_code",   "()I",                                     (void*)getErrorCode     },
+    {"native_init",      "("_W("Carrier;")_S("ManagerHandler;)Z"),  (void*)sessionMgrInit   },
+    {"native_cleanup",   "("_W("Carrier;)V"),                       (void*)sessionMgrCleanup},
+    {"create_session",   "("_W("Carrier;")_J("String;)")_S("Session;"),
+                                                                    (void*)createSession    },
+    {"get_error_code",   "()I",                                     (void*)getErrorCode     },
 };
 
 int registerCarrierSessionManagerMethods(JNIEnv* env)

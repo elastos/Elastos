@@ -765,5 +765,7 @@ void handlerCtxtCleanup(HandlerContext* hc, JNIEnv* env)
         (*env)->DeleteGlobalRef(env, hc->carrier);
     if (hc->callbacks)
         (*env)->DeleteGlobalRef(env, hc->callbacks);
+
+    free(hc);
 }
 
