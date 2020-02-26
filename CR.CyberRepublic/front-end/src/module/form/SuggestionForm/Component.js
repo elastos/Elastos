@@ -83,10 +83,12 @@ class C extends BaseComponent {
       }
       const budget = form.getFieldValue('budget')
 
-      if(budget && (typeof budget === 'string'
-                 || typeof budget === 'number'
-                 || !budget.paymentItems
-                 || budget.paymentItems.length === 0)){
+      const completion = budget.paymentItems.find((e) => {
+        if(e.type === "COMPLETION"){
+          return e
+        }
+      })
+      if(budget && !completion){
         this.setState({ loading: false })
         message.success(I18N.get('suggestion.form.error.requirePayment'));
         return
