@@ -33,7 +33,7 @@ namespace Elastos {
 
 		void SideAccount::Init() {}
 
-		void SideAccount::InitDID() {}
+		void SideAccount::InitCID() {}
 
 		bool SideAccount::IsSingleAddress() const { return true; }
 
@@ -51,7 +51,7 @@ namespace Elastos {
 			return addr.size();
 		}
 
-		size_t SideAccount::GetAllDID(AddressArray &did, uint32_t start, size_t count) const {
+		size_t SideAccount::GetAllCID(AddressArray &did, uint32_t start, size_t count) const {
 			return 0;
 		}
 

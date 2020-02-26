@@ -5,6 +5,7 @@
 #include "CRInfo.h"
 #include <Common/Log.h>
 #include <WalletCore/Key.h>
+#include <WalletCore/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -22,6 +23,14 @@ namespace Elastos {
 
 		void CRInfo::SetCode(const bytes_t &code) {
 			_code = code;
+		}
+
+		const uint168 &CRInfo::GetCID() const {
+			return _cid;
+		}
+
+		void CRInfo::SetCID(const uint168 &cid) {
+			_cid = cid;
 		}
 
 		const uint168 &CRInfo::GetDID() const {
@@ -70,7 +79,9 @@ namespace Elastos {
 
 			size += stream.WriteVarUint(_code.size());
 			size += _code.size();
-			size += _did.size();
+			size += _cid.size();
+			if (version > CRInfoVersion)
+				size += _did.size();
 			size += stream.WriteVarUint(_nickName.size());
 			size += _nickName.size();
 			size += stream.WriteVarUint(_url.size());
@@ -103,7 +114,9 @@ namespace Elastos {
 
 		void CRInfo::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteVarBytes(_code);
-			ostream.WriteBytes(_did);
+			ostream.WriteBytes(_cid);
+			if (version > CRInfoVersion)
+				ostream.WriteBytes(_did);
 			ostream.WriteVarString(_nickName);
 			ostream.WriteVarString(_url);
 			ostream.WriteUint64(_location);
@@ -114,9 +127,15 @@ namespace Elastos {
 				Log::error("CRInfo Deserialize: read _code");
 				return false;
 			}
-			if (!istream.ReadBytes(_did)) {
-				Log::error("CRInfo Deserialize: read _did");
+			if (!istream.ReadBytes(_cid)) {
+				Log::error("CRInfo Deserialize: read _cid");
 				return false;
+			}
+			if (version > CRInfoVersion) {
+				if (!istream.ReadBytes(_did)) {
+					Log::error("CRInfo Deserialize: read _did");
+					return false;
+				}
 			}
 			if (!istream.ReadVarString(_nickName)) {
 				Log::error("CRInfoDeserialize: read nick name");
@@ -137,7 +156,8 @@ namespace Elastos {
 		nlohmann::json CRInfo::ToJson(uint8_t version) const {
 			nlohmann::json j;
 			j["Code"] = _code.getHex();
-			j["DID"] = _did.GetHex();
+			j["CID"] = Address(_cid).String();
+			j["DID"] = Address(_did).String();
 			j["NickName"] = _nickName;
 			j["Url"] = _url;
 			j["Location"] = _location;
@@ -149,8 +169,11 @@ namespace Elastos {
 			std::string code = j["Code"].get<std::string>();
 			_code.setHex(code);
 
+			std::string cid = j["CID"].get<std::string>();
+			_cid = Address(cid).ProgramHash();
+
 			std::string did = j["DID"].get<std::string>();
-			_did.SetHex(did);
+			_did = Address(did).ProgramHash();
 
 			_nickName = j["NickName"].get<std::string>();
 			_url = j["Url"].get<std::string>();
@@ -188,6 +211,7 @@ namespace Elastos {
 
 		CRInfo &CRInfo::operator=(const CRInfo &payload) {
 			_code = payload._code;
+			_cid = payload._cid;
 			_did = payload._did;
 			_nickName = payload._nickName;
 			_url = payload._url;

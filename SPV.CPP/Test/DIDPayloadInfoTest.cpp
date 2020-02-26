@@ -307,7 +307,7 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 			ServiceEndpoints serviceEndpoints2 = didPayloadInfo2.GetServiceEndpoint();
 			REQUIRE(serviceEndpoints2.size() == serviceEndpoints.size());
 			for (int j = 0; j < serviceEndpoints2.size(); ++j) {
-				REQUIRE(serviceEndpoints2[i].ID() == serviceEndpoints[i].ID());
+				REQUIRE(serviceEndpoints2[i].ID().find(serviceEndpoints[i].ID()) != std::string::npos);
 				REQUIRE(serviceEndpoints2[i].Type() == serviceEndpoints[i].Type());
 				REQUIRE(serviceEndpoints2[i].GetService() == serviceEndpoints[i].GetService());
 			}

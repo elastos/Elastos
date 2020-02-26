@@ -4,6 +4,7 @@
 
 #include "UnregisterCR.h"
 #include <Common/Log.h>
+#include <WalletCore/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -15,12 +16,12 @@ namespace Elastos {
 
 		}
 
-		void UnregisterCR::SetDID(const uint168 &did) {
-			_did = did;
+		void UnregisterCR::SetCID(const uint168 &cid) {
+			_cid = cid;
 		}
 
-		const uint168 &UnregisterCR::GetDID() const {
-			return _did;
+		const uint168 &UnregisterCR::GetCID() const {
+			return _cid;
 		}
 
 		void UnregisterCR::SetSignature(const bytes_t &signature) {
@@ -33,7 +34,7 @@ namespace Elastos {
 
 		size_t UnregisterCR::EstimateSize(uint8_t version) const {
 			size_t size = 0;
-			size += _did.size();
+			size += _cid.size();
 
 			ByteStream stream;
 			size += stream.WriteVarUint(_signature.size());
@@ -61,11 +62,11 @@ namespace Elastos {
 		}
 
 		void UnregisterCR::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
-			ostream.WriteBytes(_did);
+			ostream.WriteBytes(_cid);
 		}
 
 		bool UnregisterCR::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
-			if (!istream.ReadBytes(_did)) {
+			if (!istream.ReadBytes(_cid)) {
 				Log::error("UnregisterCR Deserialize: read _did");
 				return false;
 			}
@@ -74,14 +75,14 @@ namespace Elastos {
 
 		nlohmann::json UnregisterCR::ToJson(uint8_t version) const {
 			nlohmann::json j;
-			j["DID"] = _did.GetHex();
+			j["CID"] = Address(_cid).String();
 			j["Signature"] = _signature.getHex();
 			return j;
 		}
 
 		void UnregisterCR::FromJson(const nlohmann::json &j, uint8_t version) {
-			std::string did = j["DID"].get<std::string>();
-			_did.SetHex(did);
+			std::string cid = j["CID"].get<std::string>();
+			_cid = Address(cid).ProgramHash();
 
 			std::string signature = j["Signature"].get<std::string>();
 			_signature.setHex(signature);
@@ -99,7 +100,7 @@ namespace Elastos {
 		}
 
 		UnregisterCR &UnregisterCR::operator=(const UnregisterCR &payload) {
-			_did = payload._did;
+			_cid = payload._cid;
 			_signature = payload._signature;
 			return *this;
 		}

@@ -22,7 +22,7 @@ namespace Elastos {
 
 			virtual void Init() = 0;
 
-			virtual void InitDID() = 0;
+			virtual void InitCID() = 0;
 
 			virtual bool IsSingleAddress() const = 0;
 
@@ -36,7 +36,7 @@ namespace Elastos {
 
 			virtual size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const = 0;
 
-			virtual size_t GetAllDID(AddressArray &did, uint32_t start, size_t count) const = 0;
+			virtual size_t GetAllCID(AddressArray &did, uint32_t start, size_t count) const = 0;
 
 			virtual size_t GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
 			                                bool containInternal) const = 0;

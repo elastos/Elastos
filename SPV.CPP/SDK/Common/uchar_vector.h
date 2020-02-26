@@ -105,7 +105,7 @@ public:
 
     void clean();
 
-    bool isZero();
+    bool isZero() const;
 };
 
 typedef std::string string_secure;

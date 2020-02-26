@@ -15,9 +15,9 @@ namespace Elastos {
 
 			~UnregisterCR();
 
-			void SetDID(const uint168 &did);
+			void SetCID(const uint168 &cid);
 
-			const uint168 &GetDID() const;
+			const uint168 &GetCID() const;
 
 			void SetSignature(const bytes_t &signature);
 
@@ -41,7 +41,7 @@ namespace Elastos {
 
 			UnregisterCR &operator=(const UnregisterCR &payload);
 		private:
-			uint168 _did;
+			uint168 _cid;
 			bytes_t _signature;
 		};
 	}

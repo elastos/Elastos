@@ -86,7 +86,7 @@ namespace Elastos {
 		                                   const std::string &netType) :
 				SidechainSubWallet(info, config, parent, netType) {
 
-			_walletManager->GetWallet()->GenerateDID();
+			_walletManager->GetWallet()->GenerateCID();
 			InitDIDList();
 		}
 
@@ -270,12 +270,14 @@ namespace Elastos {
 			ArgInfo("count: {}", count);
 
 			nlohmann::json j;
-			AddressArray did;
-			size_t maxCount = _walletManager->GetWallet()->GetAllDID(did, start, count);
+			AddressArray cid;
+			size_t maxCount = _walletManager->GetWallet()->GetAllCID(cid, start, count);
 
 			nlohmann::json didJson;
-			for (size_t i = 0; i < did.size(); ++i) {
-				didJson.push_back(did[i]->String());
+			for (size_t i = 0; i < cid.size(); ++i) {
+				Address tmp(*cid[i]);
+				tmp.ConvertToDID();
+				didJson.push_back(tmp.String());
 			}
 
 			j["DID"] = didJson;
@@ -285,14 +287,36 @@ namespace Elastos {
 			return j;
 		}
 
-		std::string IDChainSubWallet::Sign(const std::string &did, const std::string &message,
+		nlohmann::json IDChainSubWallet::GetAllCID(uint32_t start, uint32_t count) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("start: {}", start);
+			ArgInfo("count: {}", count);
+
+			nlohmann::json j;
+			AddressArray cid;
+			size_t maxCount = _walletManager->GetWallet()->GetAllCID(cid, start, count);
+
+			nlohmann::json cidJosn;
+			for (AddressPtr &a : cid) {
+				cidJosn.push_back(a->String());
+			}
+
+			j["CID"] = cidJosn;
+			j["MaxCount"] = maxCount;
+
+			ArgInfo("r => {}", j.dump());
+
+			return j;
+		}
+
+		std::string IDChainSubWallet::Sign(const std::string &DIDOrCID, const std::string &message,
 		                                   const std::string &payPassword) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("did: {}", did);
+			ArgInfo("DIDOrCID: {}", DIDOrCID);
 			ArgInfo("message: {}", message);
 			ArgInfo("payPasswd: *");
 
-			AddressPtr didAddress(new Address(did));
+			AddressPtr didAddress(new Address(DIDOrCID));
 			std::string signature = _walletManager->GetWallet()->SignWithDID(didAddress, message, payPassword);
 
 			ArgInfo("r => {}", signature);
@@ -300,15 +324,15 @@ namespace Elastos {
 			return signature;
 		}
 
-		std::string IDChainSubWallet::SignDigest(const std::string &did, const std::string &digest,
+		std::string IDChainSubWallet::SignDigest(const std::string &DIDOrCID, const std::string &digest,
 		                                         const std::string &payPassword) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("did: {}", did);
+			ArgInfo("DIDOrCID: {}", DIDOrCID);
 			ArgInfo("digest: {}", digest);
 			ArgInfo("payPasswd: *");
 
 			ErrorChecker::CheckParam(digest.size() != 64, Error::InvalidArgument, "invalid digest");
-			AddressPtr didAddress(new Address(did));
+			AddressPtr didAddress(new Address(DIDOrCID));
 			std::string signature = _walletManager->GetWallet()->SignDigestWithDID(didAddress, uint256(digest), payPassword);
 
 			ArgInfo("r => {}", signature);
@@ -338,10 +362,22 @@ namespace Elastos {
 
 			ErrorChecker::CheckParamNotEmpty(pubkey, "public key");
 
-			std::string did = Address(PrefixIDChain, pubkey).String();
+			std::string did = Address(PrefixIDChain, bytes_t(pubkey), true).String();
 
 			ArgInfo("r => {}", did);
 			return did;
+		}
+
+		std::string IDChainSubWallet::GetPublicKeyCID(const std::string &pubkey) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("pubkey: {}", pubkey);
+
+			ErrorChecker::CheckParamNotEmpty(pubkey, "public key");
+
+			std::string cid = Address(PrefixIDChain, bytes_t(pubkey)).String();
+
+			ArgInfo("r => {}", cid);
+			return cid;
 		}
 
 		nlohmann::json

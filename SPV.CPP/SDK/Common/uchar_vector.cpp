@@ -202,7 +202,7 @@ void uchar_vector::clean() {
 	memset(this->data(), 0, size());
 }
 
-bool uchar_vector::isZero() {
+bool uchar_vector::isZero() const {
 	for (size_t i = 0; i < this->size(); ++i) {
 		if ((*this)[i] != 0)
 			return false;

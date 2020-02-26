@@ -696,18 +696,18 @@ namespace Elastos {
 
 			AddressArray specialAddresses = _wallet->GetAllSpecialAddresses();
 
-			AddressArray addrs, addrInternal, allDID;
+			AddressArray addrs, addrInternal, allCID;
 			_wallet->GetAllAddresses(addrs, 0, UINT32_MAX, false);
 			_wallet->GetAllAddresses(addrInternal, 0, UINT32_MAX, true);
 			addrs.insert(addrs.end(), addrInternal.begin(), addrInternal.end());
-			_wallet->GetAllDID(allDID, 0, UINT32_MAX);
+			_wallet->GetAllCID(allCID, 0, UINT32_MAX);
 
 			UTXOArray utxos = _wallet->GetAllUTXO("");
 			uint32_t blockHeight = (_lastBlock->GetHeight() > 100) ? _lastBlock->GetHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
 
-			size_t elementCount = specialAddresses.size() + addrs.size() + allDID.size() +
+			size_t elementCount = specialAddresses.size() + addrs.size() + allCID.size() +
 				utxos.size() + transactions.size();
 
 			bool is_side_wallet = addrs.size() == 1 && addrs[0]->ProgramHash().prefix() == PrefixCrossChain;
@@ -733,8 +733,8 @@ namespace Elastos {
 				}
 			}
 
-			for (size_t i = 0; i < allDID.size(); ++i) {
-				hash = allDID[i]->ProgramHash().bytes();
+			for (size_t i = 0; i < allCID.size(); ++i) {
+				hash = allCID[i]->ProgramHash().bytes();
 				if (!filter->ContainsData(hash)) {
 					filter->InsertData(hash);
 				}

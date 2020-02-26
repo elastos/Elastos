@@ -94,7 +94,7 @@ namespace Elastos {
 
 			virtual ~Wallet();
 
-			void GenerateDID();
+			void GenerateCID();
 
 			nlohmann::json GetBasicInfo() const;
 
@@ -113,7 +113,7 @@ namespace Elastos {
 
 			size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const;
 
-			size_t GetAllDID(AddressArray &did, uint32_t start, size_t count) const;
+			size_t GetAllCID(AddressArray &cid, uint32_t start, size_t count) const;
 
 			size_t GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count, bool containInternal);
 

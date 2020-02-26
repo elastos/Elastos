@@ -48,13 +48,13 @@ namespace Elastos {
 			UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 		}
 
-		void SubAccount::InitDID() {
+		void SubAccount::InitCID() {
 			if (_parent->GetSignType() != IAccount::MultiSign) {
 				for (AddressArray::iterator it = _externalChain.begin(); it != _externalChain.end(); ++it) {
-					AddressPtr did(new Address(**it));
-					did->ChangePrefix(PrefixIDChain);
-					_did.push_back(did);
-					_allDID.insert(did);
+					AddressPtr cid(new Address(**it));
+					cid->ChangePrefix(PrefixIDChain);
+					_cid.push_back(cid);
+					_allCID.insert(cid);
 				}
 			}
 		}
@@ -99,13 +99,13 @@ namespace Elastos {
 			return maxCount;
 		}
 
-		size_t SubAccount::GetAllDID(AddressArray &did, uint32_t start, size_t count) const {
+		size_t SubAccount::GetAllCID(AddressArray &did, uint32_t start, size_t count) const {
 			size_t maxCount = 0;
 
 			if (_parent->GetSignType() != IAccount::MultiSign) {
-				maxCount = _did.size();
+				maxCount = _cid.size();
 				for (size_t i = start, cnt = 0; i < maxCount && cnt < count; ++i, ++cnt) {
-					did.push_back(_did[i]);
+					did.push_back(_cid[i]);
 				}
 			}
 
@@ -270,11 +270,17 @@ namespace Elastos {
 			}
 		}
 
-		Key SubAccount::GetKeyWithDID(const AddressPtr &did, const std::string &payPasswd) const {
+		Key SubAccount::GetKeyWithDID(const AddressPtr &DIDOrCID, const std::string &payPasswd) const {
 			if (_parent->GetSignType() != IAccount::MultiSign) {
-				for (size_t i = 0; i < _did.size(); ++i) {
-					if (*did == *_did[i]) {
+				for (size_t i = 0; i < _cid.size(); ++i) {
+					if (*DIDOrCID == *_cid[i]) {
 						return _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0").getChild(i);
+					} else {
+						Address did(*_cid[i]);
+						did.ConvertToDID();
+						if (did == *DIDOrCID) {
+							return _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0").getChild(i);
+						}
 					}
 				}
 			}
@@ -302,7 +308,7 @@ namespace Elastos {
 			}
 
 			if (_parent->GetSignType() != IAccount::MultiSign) {
-				if (_allDID.find(address) != _allDID.end())
+				if (_allCID.find(address) != _allCID.end())
 					return true;
 			}
 
@@ -356,9 +362,9 @@ namespace Elastos {
 			}
 
 			if (_parent->GetSignType() != IAccount::MultiSign) {
-				for (index = _did.size(); index > 0; index--) {
-					if (*_did[index - 1] == *addr) {
-						code = _did[index - 1]->RedeemScript();
+				for (index = _cid.size(); index > 0; index--) {
+					if (*_cid[index - 1] == *addr) {
+						code = _cid[index - 1]->RedeemScript();
 						path = "44'/0'/0'/0/" + std::to_string(index - 1);
 						return true;
 					}

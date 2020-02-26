@@ -57,27 +57,29 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GetAllDID(uint32_t start, uint32_t count) const = 0;
 
+			virtual nlohmann::json GetAllCID(uint32_t start, uint32_t count) const = 0;
+
 			/**
 			 * Sign message with private key of did.
-			 * @param did will sign the message with public key of this did.
+			 * @param DIDOrCID will sign the message with public key of this did/cid.
 			 * @param message to be signed.
 			 * @param payPassword pay password.
 			 * @return If success, signature will be returned.
 			 */
 			virtual std::string Sign(
-				const std::string &did,
+				const std::string &DIDOrCID,
 				const std::string &message,
 				const std::string &payPassword) const = 0;
 
 			/**
 			 * Sign message with private key of did.
-			 * @param did will sign the message with public key of this did.
+			 * @param DIDOrCID will sign the message with public key of this did/cid.
 			 * @param digest hex string of sha256
 			 * @param payPassword pay password.
 			 * @return If success, signature will be returned.
 			 */
 			virtual std::string SignDigest(
-					const std::string &did,
+					const std::string &DIDOrCID,
 					const std::string &digest,
 					const std::string &payPassword) const = 0;
 
@@ -99,6 +101,13 @@ namespace Elastos {
 			 * @return did string
 			 */
 			virtual std::string GetPublicKeyDID(const std::string &pubkey) const = 0;
+
+			/**
+			 * Get CID by public key
+			 * @param pubkey
+			 * @return cid string
+			 */
+			 virtual std::string GetPublicKeyCID(const std::string &pubkey) const = 0;
 
 			/**
 			 * Generate payload for operation the did.

@@ -28,7 +28,7 @@ namespace Elastos {
 
 			void Init();
 
-			void InitDID();
+			void InitCID();
 
 			bool IsSingleAddress() const;
 
@@ -42,7 +42,7 @@ namespace Elastos {
 
 			size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const;
 
-			size_t GetAllDID(AddressArray &did, uint32_t start, size_t count) const;
+			size_t GetAllCID(AddressArray &did, uint32_t start, size_t count) const;
 
 			AddressArray UnusedAddresses(uint32_t gapLimit, bool internal);
 
@@ -72,8 +72,8 @@ namespace Elastos {
 			AccountPtr Parent() const;
 		private:
 			uint32_t _coinIndex;
-			AddressArray _internalChain, _externalChain, _did;
-			AddressSet _usedAddrs, _allAddrs, _allDID;
+			AddressArray _internalChain, _externalChain, _cid;
+			AddressSet _usedAddrs, _allAddrs, _allCID;
 			mutable AddressPtr _depositAddress, _ownerAddress, _crDepositAddress;
 
 			AccountPtr _parent;

@@ -16,7 +16,8 @@ TEST_CASE("CRInfo test", "[CRInfo]") {
 	SECTION("Serialize and deserialize") {
 		CRInfo crInfo1;
 		crInfo1.SetCode(getRandBytes(34));
-		crInfo1.SetDID(getRandUInt168());
+		crInfo1.SetCID(uint168(PrefixIDChain, getRandBytes(20)));
+		crInfo1.SetDID(uint168(PrefixIDChain, getRandBytes(20)));
 		crInfo1.SetNickName(getRandString(10));
 		crInfo1.SetLocation(getRandUInt64());
 		crInfo1.SetUrl(getRandString(13));
@@ -24,11 +25,12 @@ TEST_CASE("CRInfo test", "[CRInfo]") {
 
 		ByteStream stream;
 
-		crInfo1.Serialize(stream, 0);
+		crInfo1.Serialize(stream, CRInfoDIDVersion);
 
 		CRInfo crInfo2;
-		REQUIRE(crInfo2.Deserialize(stream, 0));
+		REQUIRE(crInfo2.Deserialize(stream, CRInfoDIDVersion));
 		REQUIRE(crInfo2.GetCode() == crInfo1.GetCode());
+		REQUIRE(crInfo2.GetCID() == crInfo1.GetCID());
 		REQUIRE(crInfo2.GetDID() == crInfo1.GetDID());
 		REQUIRE(crInfo2.GetNickName() == crInfo1.GetNickName());
 		REQUIRE(crInfo2.GetUrl() == crInfo1.GetUrl());
@@ -37,8 +39,10 @@ TEST_CASE("CRInfo test", "[CRInfo]") {
 
 	SECTION("to json and from json") {
 		CRInfo crInfo1;
+		;
 		crInfo1.SetCode(getRandBytes(34));
-		crInfo1.SetDID(getRandUInt168());
+		crInfo1.SetDID(uint168(PrefixIDChain, getRandBytes(20)));
+		crInfo1.SetCID(uint168(PrefixIDChain, getRandBytes(20)));
 		crInfo1.SetNickName(getRandString(10));
 		crInfo1.SetLocation(getRandUInt64());
 		crInfo1.SetUrl(getRandString(13));
@@ -48,6 +52,7 @@ TEST_CASE("CRInfo test", "[CRInfo]") {
 		crInfo2.FromJson(crInfo1.ToJson(0), 0);
 
 		REQUIRE(crInfo2.GetCode() == crInfo1.GetCode());
+		REQUIRE(crInfo2.GetCID() == crInfo1.GetCID());
 		REQUIRE(crInfo2.GetDID() == crInfo1.GetDID());
 		REQUIRE(crInfo2.GetNickName() == crInfo1.GetNickName());
 		REQUIRE(crInfo2.GetUrl() == crInfo1.GetUrl());

@@ -28,6 +28,7 @@ namespace Elastos {
 		enum SignType {
 			SignTypeInvalid    = 0,
 			SignTypeStandard   = 0xAC,
+			SignTypeDID        = 0xAD,
 			SignTypeMultiSign  = 0xAE,
 			SignTypeCrossChain = 0xAF,
 			SignTypeDestroy    = 0xAA,
@@ -50,9 +51,9 @@ namespace Elastos {
 
 			explicit Address(const uint168 &programHash);
 
-			Address(Prefix prefix, const bytes_t &pubkey);
+			Address(Prefix prefix, const bytes_t &pubkey, bool did = false);
 
-			Address(Prefix prefix, const std::vector<bytes_t> &pubkey, uint8_t m);
+			Address(Prefix prefix, const std::vector<bytes_t> &pubkey, uint8_t m, bool did = false);
 
 			Address(const Address &address);
 
@@ -76,6 +77,8 @@ namespace Elastos {
 
 			bool ChangePrefix(Prefix prefix);
 
+			void ConvertToDID();
+
 			bool operator<(const Address &address) const;
 
 			bool operator==(const Address &address) const;
@@ -92,7 +95,7 @@ namespace Elastos {
 
 			bool Compare(const bytes_t &a, const bytes_t &b) const;
 
-			void GenerateCode(Prefix prefix, const std::vector<bytes_t> &pubkeys, uint8_t m);
+			void GenerateCode(Prefix prefix, const std::vector<bytes_t> &pubkeys, uint8_t m, bool did = false);
 
 			void GenerateProgramHash(Prefix prefix);
 

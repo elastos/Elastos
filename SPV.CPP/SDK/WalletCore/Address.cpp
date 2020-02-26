@@ -37,15 +37,15 @@ namespace Elastos {
 			}
 		}
 
-		Address::Address(Prefix prefix, const bytes_t &pubKey) :
-			Address(prefix, {pubKey}, 1) {
+		Address::Address(Prefix prefix, const bytes_t &pubKey, bool did) :
+			Address(prefix, {pubKey}, 1, did) {
 		}
 
-		Address::Address(Prefix prefix, const std::vector<bytes_t> &pubkeys, uint8_t m) {
+		Address::Address(Prefix prefix, const std::vector<bytes_t> &pubkeys, uint8_t m, bool did) {
 			if (pubkeys.size() == 0) {
 				_isValid = false;
 			} else {
-				GenerateCode(prefix, pubkeys, m);
+				GenerateCode(prefix, pubkeys, m, did);
 				GenerateProgramHash(prefix);
 				if (CheckValid())
 					_str = Base58::CheckEncode(_programHash.bytes());
@@ -137,6 +137,14 @@ namespace Elastos {
 			return true;
 		}
 
+		void Address::ConvertToDID() {
+			if (!_code.empty() && _programHash.prefix() == PrefixIDChain) {
+				_code.back() = SignTypeDID;
+				GenerateProgramHash(PrefixIDChain);
+				_str = Base58::CheckEncode(_programHash.bytes());
+			}
+		}
+
 		const bytes_t &Address::RedeemScript() const {
 			assert(!_code.empty());
 			return _code;
@@ -189,13 +197,16 @@ namespace Elastos {
 			return bigIntA <= bigIntB;
 		}
 
-		void Address::GenerateCode(Prefix prefix, const std::vector<bytes_t> &pubkeys, uint8_t m) {
+		void Address::GenerateCode(Prefix prefix, const std::vector<bytes_t> &pubkeys, uint8_t m, bool did) {
 			ErrorChecker::CheckLogic(m > pubkeys.size() || m == 0, Error::MultiSignersCount, "Invalid m");
 
 			if (m == 1 && pubkeys.size() == 1) {
 				_code.push_back(pubkeys[0].size());
 				_code += pubkeys[0];
-				_code.push_back(PrefixToSignType(prefix));
+				if (did)
+					_code.push_back(SignTypeDID);
+				else
+					_code.push_back(PrefixToSignType(prefix));
 			} else {
 				ErrorChecker::CheckCondition(pubkeys.size() > sizeof(uint8_t) - OP_1, Error::MultiSignersCount,
 											 "Signers should less than 205.");

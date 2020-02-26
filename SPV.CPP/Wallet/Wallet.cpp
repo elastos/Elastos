@@ -1001,6 +1001,24 @@ static int did(int argc, char *argv[]) {
 	return 0;
 }
 
+// cid
+static int _cid(int argc, char *argv[]) {
+	checkCurrentWallet();
+
+	try {
+		IIDChainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ID);
+
+		nlohmann::json cidlist = subWallet->GetAllCID(0, 20);
+		std::cout << cidlist.dump(4) << std::endl;
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+
+	return 0;
+}
+
 // public keys
 static int publickeys(int argc, char *argv[]) {
 	checkCurrentWallet();
@@ -1037,14 +1055,16 @@ static int _register(int argc, char *argv[]) {
 			IIDChainSubWallet *idSubWallet;
 			getSubWallet(idSubWallet, currentWallet, CHAINID_ID);
 
-			std::string crPublicKey, nickName, url, did;
+			std::string crPublicKey, nickName, url, did, cid;
 			uint64_t location;
 
 			crPublicKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
 			did = idSubWallet->GetPublicKeyDID(crPublicKey);
+			cid = idSubWallet->GetPublicKeyCID(crPublicKey);
 
 			std::cout << "DID public key: " << crPublicKey << std::endl;
 			std::cout << "DID: " << did << std::endl;
+			std::cout << "CID: " << cid << std::endl;
 
 			std::cout << "Enter nick name: ";
 			std::getline(std::cin, nickName);
@@ -1055,13 +1075,13 @@ static int _register(int argc, char *argv[]) {
 			std::cout << "Enter location code (example 86): ";
 			std::cin >> location;
 
-			nlohmann::json payload = subWallet->GenerateCRInfoPayload(crPublicKey, nickName, url, location);
+			nlohmann::json payload = subWallet->GenerateCRInfoPayload(crPublicKey, did, nickName, url, location);
 
 			std::string digest = payload["Digest"].get<std::string>();
 
 			password = getpass("Enter payment password: ");
 
-			std::string signature = idSubWallet->SignDigest(did, digest, password);
+			std::string signature = idSubWallet->SignDigest(cid, digest, password);
 			payload["Signature"] = signature;
 
 			tx = subWallet->CreateRegisterCRTransaction("", payload, convertAmount("5000"), "");
@@ -1119,14 +1139,14 @@ static int unregister(int argc, char *argv[]) {
 			IIDChainSubWallet *idSubWallet;
 			getSubWallet(idSubWallet, currentWallet, CHAINID_ID);
 
-			std::string did = idSubWallet->GetAllDID(0, 1)["DID"][0];
+			std::string cid = idSubWallet->GetAllCID(0, 1)["DID"][0];
 
-			nlohmann::json payload = subWallet->GenerateUnregisterCRPayload(did);
+			nlohmann::json payload = subWallet->GenerateUnregisterCRPayload(cid);
 			std::string digest = payload["Digest"].get<std::string>();
 
 			password = getpass("Enter payment password: ");
 
-			std::string signature = idSubWallet->SignDigest(did, digest, password);
+			std::string signature = idSubWallet->SignDigest(cid, digest, password);
 			payload["Signature"] = signature;
 
 			tx = subWallet->CreateUnregisterCRTransaction("", payload, "");
@@ -1195,10 +1215,10 @@ static int retrieve(int argc, char *argv[]) {
 			getSubWallet(idSubWallet, currentWallet, CHAINID_ID);
 
 			std::string crPublicKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
-			std::string did = idSubWallet->GetPublicKeyDID(crPublicKey);
+			std::string cid = idSubWallet->GetPublicKeyCID(crPublicKey);
 
 			std::cout << "DID public key: " << crPublicKey << std::endl;
-			std::cout << "DID: " << did << std::endl;
+			std::cout << "CID: " << cid << std::endl;
 
 			std::cout << "Enter retrieve amount: ";
 			std::string amount;
@@ -1982,6 +2002,7 @@ struct command {
 	{"didinfo",    didInfo,        "[did]                                            Get Resolve DID Info."},
 	{"didsign",    didsign,        "DID digest                                       Sign `digest` with private key of DID."},
 	{"did",        did,            "                                                 List did of IDChain"},
+	{"cid",        _cid,           "                                                 List cid of IDChain"},
 	{"publickeys", publickeys,     "                                                 List public keys of IDChain"},
 	{"sync",       _sync,          "chainID (start | stop)                           Start or stop sync of wallet"},
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},

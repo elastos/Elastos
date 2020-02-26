@@ -61,14 +61,18 @@ namespace Elastos {
 
 			virtual nlohmann::json GetAllDID(uint32_t start, uint32_t count) const;
 
-			virtual std::string Sign(const std::string &did, const std::string &message, const std::string &payPassword) const;
+			virtual nlohmann::json GetAllCID(uint32_t start, uint32_t count) const;
 
-			virtual std::string SignDigest(const std::string &did, const std::string &digest,
+			virtual std::string Sign(const std::string &DIDOrCID, const std::string &message, const std::string &payPassword) const;
+
+			virtual std::string SignDigest(const std::string &DIDOrCID, const std::string &digest,
 			                               const std::string &payPassword) const;
 
 			virtual bool VerifySignature(const std::string &publicKey, const std::string &message, const std::string &signature);
 
 			virtual std::string GetPublicKeyDID(const std::string &pubkey) const;
+
+			virtual std::string GetPublicKeyCID(const std::string &pubkey) const;
 
 			virtual nlohmann::json GenerateDIDInfoPayload(
 				const nlohmann::json &didInfo,

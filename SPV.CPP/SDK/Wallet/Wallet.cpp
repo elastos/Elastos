@@ -662,9 +662,9 @@ namespace Elastos {
 			return _subAccount->GetAllAddresses(addr, start, count, internal);
 		}
 
-		size_t Wallet::GetAllDID(AddressArray &did, uint32_t start, size_t count) const {
+		size_t Wallet::GetAllCID(AddressArray &cid, uint32_t start, size_t count) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->GetAllDID(did, start, count);
+			return _subAccount->GetAllCID(cid, start, count);
 		}
 
 		size_t Wallet::GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
@@ -724,8 +724,8 @@ namespace Elastos {
 			return _subAccount->ContainsAddress(address);
 		}
 
-		void Wallet::GenerateDID() {
-			_subAccount->InitDID();
+		void Wallet::GenerateCID() {
+			_subAccount->InitCID();
 		}
 
 		nlohmann::json Wallet::GetBasicInfo() const {

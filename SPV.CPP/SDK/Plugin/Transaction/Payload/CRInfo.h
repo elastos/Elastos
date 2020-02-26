@@ -9,6 +9,10 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+
+#define CRInfoVersion 0x00
+#define CRInfoDIDVersion 0x01
+
 		class CRInfo : public IPayload {
 		public:
 			CRInfo();
@@ -18,6 +22,10 @@ namespace Elastos {
 			const bytes_t &GetCode() const;
 
 			void SetCode(const bytes_t &code);
+
+			const uint168 &GetCID() const;
+
+			void SetCID(const uint168 &cid);
 
 			const uint168 &GetDID() const;
 
@@ -61,6 +69,7 @@ namespace Elastos {
 
 		private:
 			bytes_t _code;
+			uint168 _cid;
 			uint168 _did;
 			std::string _nickName;
 			std::string _url;

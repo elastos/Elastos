@@ -564,11 +564,13 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::GenerateCRInfoPayload(
 				const std::string &crPublicKey,
+				const std::string &did,
 				const std::string &nickName,
 				const std::string &url,
 				uint64_t location) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("crPublicKey: {}", crPublicKey);
+			ArgInfo("did: {}", did);
 			ArgInfo("nickName: {}", nickName);
 			ArgInfo("url: {}", url);
 			ArgInfo("location: {}", location);
@@ -579,38 +581,40 @@ namespace Elastos {
 
 			bytes_t pubkey(crPublicKey);
 
+			Address didAddress(did);
 			Address address(PrefixStandard, pubkey);
 
 			CRInfo crInfo;
 			crInfo.SetCode(address.RedeemScript());
+			crInfo.SetDID(didAddress.ProgramHash());
 			crInfo.SetNickName(nickName);
 			crInfo.SetUrl(url);
 			crInfo.SetLocation(location);
 
-			Address did;
-			did.SetRedeemScript(PrefixIDChain, crInfo.GetCode());
-			crInfo.SetDID(did.ProgramHash());
+			Address cid;
+			cid.SetRedeemScript(PrefixIDChain, crInfo.GetCode());
+			crInfo.SetCID(cid.ProgramHash());
 
 			ByteStream ostream;
-			crInfo.SerializeUnsigned(ostream, 0);
+			crInfo.SerializeUnsigned(ostream, CRInfoDIDVersion);
 			uint256 digest(sha256(ostream.GetBytes()));
 
-			nlohmann::json payloadJson = crInfo.ToJson(0);
+			nlohmann::json payloadJson = crInfo.ToJson(CRInfoDIDVersion);
 			payloadJson["Digest"] = digest.GetHex();
 
 			ArgInfo("r => {}", payloadJson.dump());
 			return payloadJson;
 		}
 
-		nlohmann::json MainchainSubWallet::GenerateUnregisterCRPayload(const std::string &crDID) const {
+		nlohmann::json MainchainSubWallet::GenerateUnregisterCRPayload(const std::string &CID) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("crDID: {}", crDID);
+			ArgInfo("CID: {}", CID);
 
-			Address address(crDID);
-			ErrorChecker::CheckParam(!address.Valid(), Error::InvalidArgument, "invalid crDID");
+			Address cid(CID);
+			ErrorChecker::CheckParam(!cid.Valid(), Error::InvalidArgument, "invalid crDID");
 
 			UnregisterCR unregisterCR;
-			unregisterCR.SetDID(address.ProgramHash());
+			unregisterCR.SetCID(cid.ProgramHash());
 
 			ByteStream ostream;
 			unregisterCR.SerializeUnsigned(ostream, 0);
@@ -650,7 +654,7 @@ namespace Elastos {
 
 			PayloadPtr payload = PayloadPtr(new CRInfo());
 			try {
-				payload->FromJson(payloadJSON, 0);
+				payload->FromJson(payloadJSON, CRInfoDIDVersion);
 				ErrorChecker::CheckParam(!payload->IsValid(), Error::InvalidArgument, "verify signature failed");
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
@@ -666,6 +670,7 @@ namespace Elastos {
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::registerCR, payload, fromAddr, outputs, memo);
+			tx->SetPayloadVersion(CRInfoDIDVersion);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -686,7 +691,7 @@ namespace Elastos {
 
 			PayloadPtr payload = PayloadPtr(new CRInfo());
 			try {
-				payload->FromJson(payloadJSON, 0);
+				payload->FromJson(payloadJSON, CRInfoDIDVersion);
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 				                                  "Payload format err: " + std::string(e.what()));
@@ -698,6 +703,7 @@ namespace Elastos {
 			AddressPtr fromAddr(new Address(fromAddress));
 
 			TransactionPtr tx = wallet->CreateTransaction(Transaction::updateCR, payload, fromAddr, outputs, memo);
+			tx->SetPayloadVersion(CRInfoDIDVersion);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -807,9 +813,9 @@ namespace Elastos {
 				ErrorChecker::CheckBigIntAmount(voteAmount);
 
 				key = it.key();
-				Address didAddress(key);
-				ErrorChecker::CheckParam(!didAddress.Valid(), Error::InvalidArgument, "invalid candidate did");
-				candidate = didAddress.ProgramHash().bytes();
+				Address cidAddress(key);
+				ErrorChecker::CheckParam(!cidAddress.Valid(), Error::InvalidArgument, "invalid candidate cid");
+				candidate = cidAddress.ProgramHash().bytes();
 
 				value.setDec(voteAmount);
 				ErrorChecker::CheckParam(value <= 0, Error::InvalidArgument, "stake value should larger than 0");
@@ -861,11 +867,11 @@ namespace Elastos {
 					              if (vc.GetType() == VoteContent::Type::CRC) {
 						              std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
 						                            [&votedList](const CandidateVotes &cv) {
-							                            std::string did = Address(uint168(cv.GetCandidate())).String();
-							                            if (votedList.find(did) != votedList.end()) {
-								                            votedList[did] += cv.GetVotes();
+							                            std::string cid = Address(uint168(cv.GetCandidate())).String();
+							                            if (votedList.find(cid) != votedList.end()) {
+								                            votedList[cid] += cv.GetVotes();
 							                            } else {
-								                            votedList[did] = cv.GetVotes();
+								                            votedList[cid] = cv.GetVotes();
 							                            }
 						                            });
 					              }
@@ -909,10 +915,14 @@ namespace Elastos {
 						ByteStream stream(pinfo->GetCode());
 						bytes_t pubKey;
 						stream.ReadVarBytes(pubKey);
+						Address cid(pinfo->GetCID());
 						Address did(pinfo->GetDID());
+						bool bondedDID = !pinfo->GetDID().bytes().isZero();
 
 						info["CROwnerPublicKey"] = pubKey.getHex();
-						info["CROwnerDID"] = did.String();
+						info["CID"] = cid.String();
+						info["DID"] = bondedDID ? did.String() : "";
+						info["BondedDID"] = !did.ProgramHash().bytes().isZero();
 						info["NickName"] = pinfo->GetNickName();
 						info["URL"] = pinfo->GetUrl();
 						info["Location"] = pinfo->GetLocation();
