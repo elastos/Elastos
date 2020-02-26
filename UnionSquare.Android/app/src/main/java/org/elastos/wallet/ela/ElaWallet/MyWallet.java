@@ -1256,10 +1256,11 @@ public class MyWallet {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[2]: String crPublickey
-    // args[3]: String nickName
-    // args[4]: String url
-    // args[5]: String location
-    // args[6]: String payPasswd
+    // args[3]: String did
+    // args[4]: String nickName
+    // args[5]: String url
+    // args[6]: String location
+    // args[7]: String payPasswd
     public BaseEntity generateCRInfoPayload(String masterWalletID, String chainID, String crPublickey, String nickName, String url, long location) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
@@ -1275,7 +1276,9 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String payloadJson = mainchainSubWallet.GenerateCRInfoPayload(crPublickey, nickName, url, location);
+            // TODO: fix did later
+            String did = "";
+            String payloadJson = mainchainSubWallet.GenerateCRInfoPayload(crPublickey, did, nickName, url, location);
 
             KLog.a(payloadJson);
             return new CommmonStringEntity(SUCCESSCODE, payloadJson);
@@ -1286,9 +1289,9 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    // args[2]: String crDID
+    // args[2]: String cID
     // args[3]: String payPasswd
-    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String crDID) {
+    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String cID) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1303,7 +1306,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String payloadJson = mainchainSubWallet.GenerateUnregisterCRPayload(crDID);
+            String payloadJson = mainchainSubWallet.GenerateUnregisterCRPayload(cID);
             KLog.a(payloadJson);
             return new CommmonStringEntity(SUCCESSCODE, payloadJson);
         } catch (WalletException e) {

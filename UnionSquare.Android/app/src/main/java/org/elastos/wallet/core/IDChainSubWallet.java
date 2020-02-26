@@ -22,6 +22,10 @@ public class IDChainSubWallet extends SidechainSubWallet {
         return GetAllDID(mInstance, start, count);
     }
 
+    public String GetAllCID(int start, int count) throws WalletException {
+        return GetAllCID(mInstance, start, count);
+    }
+
     public String Sign(String did, String message, String payPassword) throws WalletException {
         return Sign(mInstance, did, message, payPassword);
     }
@@ -32,6 +36,10 @@ public class IDChainSubWallet extends SidechainSubWallet {
 
     public String GetPublicKeyDID(String publicKey) throws WalletException {
         return GetPublicKeyDID(mInstance, publicKey);
+    }
+
+    public String GetPublicKeyCID(String publicKey) throws WalletException {
+        return GetPublicKeyCID(mInstance, publicKey);
     }
 
     public String GetResolveDIDInfo(int start, int count, String did) throws WalletException {
@@ -53,11 +61,15 @@ public class IDChainSubWallet extends SidechainSubWallet {
 
     private native String GetAllDID(long instance, int start, int count);
 
+    private native String GetAllCID(long instance, int start, int count);
+
     private native String Sign(long instance, String did, String message, String payPassword);
 
     private native boolean VerifySignature(long instance, String publicKey, String message, String signature);
 
     private native String GetPublicKeyDID(long instance, String publicKey);
+
+    private native String GetPublicKeyCID(long instance, String publicKey);
 
     private native String GetResolveDIDInfo(long instance, int start, int count, String did);
 

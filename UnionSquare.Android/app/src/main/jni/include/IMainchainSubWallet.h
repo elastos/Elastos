@@ -216,6 +216,7 @@ namespace Elastos {
 			 * Generate cr info payload digest for signature.
 			 *
 			 * @param crPublicKey    The public key to identify a cr. Can't change later.
+			 * @param did            DID to be bonded
 			 * @param nickName       Nickname of cr.
 			 * @param url            URL of cr.
 			 * @param location       Location code.
@@ -223,7 +224,8 @@ namespace Elastos {
 			 * @return               The payload in JSON format contains the "Digest" field to be signed and then set the "Signature" field. Such as
 			 * {
 			 * 	"Code":"210370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280ac",
-			 * 	"DID":"b13bfbc6afd4e2d5227e659be5b808cbaa1c59d267",
+			 * 	"CID":"iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+			 * 	"DID":"icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
 			 * 	"Location":86,
 			 * 	"NickName":"test",
 			 * 	"Url":"test.com",
@@ -233,6 +235,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GenerateCRInfoPayload(
 					const std::string &crPublicKey,
+					const std::string &did,
 					const std::string &nickName,
 					const std::string &url,
 					uint64_t location) const = 0;
@@ -240,15 +243,15 @@ namespace Elastos {
 			/**
 			 * Generate unregister cr payload digest for signature.
 			 *
-			 * @param crDID          The id of cr will unregister
+			 * @param CID          The id of cr will unregister
 			 * @return               The payload in JSON format contains the "Digest" field to be signed and then set the "Signature" field. Such as
 			 * {
-			 * 	"DID":"4854185275217ffcf8c97177d4ef1599810c8b8f67",
+			 * 	"CID":"iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
 			 * 	"Digest":"8e17a8bcacc5d70b5b312fccefc19d25d88ac6450322a846132e859509b88001",
 			 * 	"Signature":""
 			 * 	}
 			 */
-			virtual nlohmann::json GenerateUnregisterCRPayload(const std::string &crDID) const = 0;
+			virtual nlohmann::json GenerateUnregisterCRPayload(const std::string &CID) const = 0;
 
 			/**
 			 * Create register cr transaction.
@@ -366,7 +369,9 @@ namespace Elastos {
 			 *    "Status": "Registered",
 			 *    "Info": {
 			 *      "CROwnerPublicKey": "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-			 *      "CROwnerDID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+			 *      "CID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+			 *      "DID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+			 *      "BondedDID": true,
 			 *      "NickName": "hello nickname",
 			 *      "URL": "www.google.com",
 			 *      "Location": 86,

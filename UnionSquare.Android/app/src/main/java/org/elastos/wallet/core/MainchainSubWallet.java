@@ -63,13 +63,13 @@ public class MainchainSubWallet extends SubWallet {
         return GetOwnerAddress(mMainchainProxy);
     }
 
-    public String GenerateCRInfoPayload(String crPublickey, String nickName, String url,
+    public String GenerateCRInfoPayload(String crPublickey, String did, String nickName, String url,
                                         long location) throws WalletException {
-        return GenerateCRInfoPayload(mMainchainProxy, crPublickey, nickName, url, location);
+        return GenerateCRInfoPayload(mMainchainProxy, crPublickey, did, nickName, url, location);
     }
 
-    public String GenerateUnregisterCRPayload(String crDID) throws WalletException {
-        return GenerateUnregisterCRPayload(mMainchainProxy, crDID);
+    public String GenerateUnregisterCRPayload(String cID) throws WalletException {
+        return GenerateUnregisterCRPayload(mMainchainProxy, cID);
     }
 
     public String CreateRegisterCRTransaction(String fromAddress, String payload, String amount, String memo) throws WalletException {
@@ -171,9 +171,9 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String GetOwnerAddress(long proxy);
 
-    private native String GenerateCRInfoPayload(long proxy, String crPublickey, String nickName, String url, long location);
+    private native String GenerateCRInfoPayload(long proxy, String crPublickey, String did, String nickName, String url, long location);
 
-    private native String GenerateUnregisterCRPayload(long proxy, String crDID);
+    private native String GenerateUnregisterCRPayload(long proxy, String cID);
 
     private native String CreateRegisterCRTransaction(long proxy, String fromAddress, String payload, String amount, String memo);
 
