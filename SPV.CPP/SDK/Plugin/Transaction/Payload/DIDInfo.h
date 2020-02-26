@@ -192,6 +192,8 @@
 			void SetService(const std::string &service);
 
 			const std::string &GetService() const;
+
+			void AutoFill(const std::string &did);
 		public:
 
 			virtual nlohmann::json ToJson(uint8_t version) const;
