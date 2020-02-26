@@ -64,6 +64,7 @@ type KeyFrame struct {
 	CRCFoundationBalance   common.Fixed64
 	CRCCommitteeBalance    common.Fixed64
 	CRCCommitteeUsedAmount common.Fixed64
+	CRCCurrentStageAmount  common.Fixed64
 	DestroyedAmount        common.Fixed64
 	CirculationAmount      common.Fixed64
 }

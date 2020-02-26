@@ -37,8 +37,6 @@ type Committee struct {
 	appendToTxpool           func(transaction *types.Transaction) elaerr.ELAError
 	createCRCAppropriationTx func() (*types.Transaction, error)
 	getUTXO                  func(programHash *common.Uint168) ([]*types.UTXO, error)
-
-	recordBalanceHeight uint32
 }
 
 type CommitteeKeyFrame struct {
@@ -193,8 +191,8 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		return
 	}
 
-	// Get CRC foundation and committee balance at CRVotingStartHeight.
-	c.tryInitCRCRelatedAddressBalance(block.Height)
+	// Get UTXOs of CRC foundation and committee address.
+	c.recordCRCRelatedAddressOutputs(block)
 
 	// If reached the voting start height, record the last voting start height.
 	c.recordLastVotingStartHeight(block.Height)
@@ -214,6 +212,9 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	if c.shouldChange(block.Height) {
 		c.changeCommittee(block.Height)
 		c.createAppropriationTransaction(block.Height)
+	}
+	if c.hasAppropriationTx(block) {
+		c.recordCurrentStageAmount(block.Height)
 	}
 
 	c.lastHistory.Commit(block.Height)
@@ -298,57 +299,38 @@ func (c *Committee) resetCRCCommitteeUsedAmount(height uint32) {
 
 }
 
-func (c *Committee) tryInitCRCRelatedAddressBalance(height uint32) {
-	if c.recordBalanceHeight == 0 {
-		bestHeight := c.getHeight()
-		utxos, _ := c.getUTXO(&c.params.CRCFoundation)
-		var foundationBalance common.Fixed64
-		for _, u := range utxos {
-			foundationBalance += u.Value
-			op := types.NewOutPoint(u.TxID, uint16(u.Index))
-			c.firstHistory.Append(height, func() {
-				c.state.CRCFoundationOutputs[op.ReferKey()] = u.Value
-			}, func() {
-				delete(c.state.CRCFoundationOutputs, op.ReferKey())
-			})
-		}
-		var committeeBalance common.Fixed64
-		utxos, _ = c.getUTXO(&c.params.CRCCommitteeAddress)
-		for _, u := range utxos {
-			committeeBalance += u.Value
-			op := types.NewOutPoint(u.TxID, uint16(u.Index))
-			c.firstHistory.Append(height, func() {
-				c.state.CRCCommitteeOutputs[op.ReferKey()] = u.Value
-			}, func() {
-				delete(c.state.CRCCommitteeOutputs, op.ReferKey())
-			})
-		}
-		utxos, _ = c.getUTXO(&c.params.DestroyELAAddress)
-		var destroyBalance common.Fixed64
-		for _, u := range utxos {
-			destroyBalance += u.Value
-		}
-		c.firstHistory.Append(height, func() {
-			c.CRCFoundationBalance = foundationBalance
-			c.CRCCommitteeBalance = committeeBalance
-			c.DestroyedAmount = destroyBalance
-		}, func() {
-			c.CRCFoundationBalance = 0
-			c.CRCCommitteeBalance = 0
-			c.DestroyedAmount = 0
-		})
+func (c *Committee) recordCurrentStageAmount(height uint32) {
+	oriCurrentStageAmount := c.CRCCurrentStageAmount
+	c.lastHistory.Append(height, func() {
+		c.CRCCurrentStageAmount = c.CRCCommitteeBalance - c.CRCCommitteeUsedAmount
+	}, func() {
+		c.CRCCurrentStageAmount = oriCurrentStageAmount
+	})
+}
 
-		c.freshCirculationAmount(c.firstHistory, bestHeight, height)
-		c.firstHistory.Append(height, func() {
-			c.recordBalanceHeight = bestHeight
-		}, func() {
-			c.recordBalanceHeight = 0
-		})
-		c.firstHistory.Commit(height)
-		log.Infof("record balance at height of %d, balance of CRC "+
-			"foundation is %s, balance of CRC committee address is %s",
-			bestHeight, c.CRCFoundationBalance, c.CRCCommitteeBalance)
+func (c *Committee) recordCRCRelatedAddressOutputs(block *types.Block) {
+	for _, tx := range block.Transactions {
+		for i, output := range tx.Outputs {
+			if output.ProgramHash.IsEqual(c.params.CRCFoundation) {
+				key := types.NewOutPoint(tx.Hash(), uint16(i)).ReferKey()
+				value := output.Value
+				c.firstHistory.Append(block.Height, func() {
+					c.state.CRCFoundationOutputs[key] = value
+				}, func() {
+					delete(c.state.CRCFoundationOutputs, key)
+				})
+			} else if output.ProgramHash.IsEqual(c.params.CRCCommitteeAddress) {
+				key := types.NewOutPoint(tx.Hash(), uint16(i)).ReferKey()
+				value := output.Value
+				c.firstHistory.Append(block.Height, func() {
+					c.state.CRCCommitteeOutputs[key] = value
+				}, func() {
+					delete(c.state.CRCCommitteeOutputs, key)
+				})
+			}
+		}
 	}
+	c.firstHistory.Commit(block.Height)
 }
 
 func (c *Committee) freshCirculationAmount(history *utils.History,
@@ -444,65 +426,6 @@ func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32
 	})
 }
 
-func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32,
-	history *utils.History, foundationInputsAmounts map[string]common.Fixed64,
-	committeeInputsAmounts map[string]common.Fixed64) {
-	if tx.IsCRCProposalTx() {
-		proposal := tx.Payload.(*payload.CRCProposal)
-		var budget common.Fixed64
-		for _, b := range proposal.Budgets {
-			budget += b.Amount
-		}
-		history.Append(height, func() {
-			c.CRCCommitteeUsedAmount += budget
-		}, func() {
-			c.CRCCommitteeUsedAmount -= budget
-		})
-	}
-
-	if height <= c.recordBalanceHeight {
-		return
-	}
-	for _, input := range tx.Inputs {
-		if amount, ok := foundationInputsAmounts[input.Previous.ReferKey()]; ok {
-			history.Append(height, func() {
-				c.CRCFoundationBalance -= amount
-			}, func() {
-				c.CRCFoundationBalance += amount
-			})
-		} else if amount, ok := committeeInputsAmounts[input.Previous.ReferKey()]; ok {
-			history.Append(height, func() {
-				c.CRCCommitteeBalance -= amount
-			}, func() {
-				c.CRCCommitteeBalance += amount
-			})
-		}
-	}
-
-	for _, output := range tx.Outputs {
-		amount := output.Value
-		if output.ProgramHash.IsEqual(c.params.CRCFoundation) {
-			history.Append(height, func() {
-				c.CRCFoundationBalance += amount
-			}, func() {
-				c.CRCFoundationBalance -= amount
-			})
-		} else if output.ProgramHash.IsEqual(c.params.CRCCommitteeAddress) {
-			history.Append(height, func() {
-				c.CRCCommitteeBalance += amount
-			}, func() {
-				c.CRCCommitteeBalance -= amount
-			})
-		} else if output.ProgramHash.IsEqual(c.params.DestroyELAAddress) {
-			history.Append(height, func() {
-				c.DestroyedAmount += amount
-			}, func() {
-				c.DestroyedAmount -= amount
-			})
-		}
-	}
-}
-
 func (c *Committee) GetAvailableDepositAmount(did common.Uint168) common.Fixed64 {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -559,6 +482,15 @@ func (c *Committee) shouldChange(height uint32) bool {
 	}
 
 	return height == c.LastVotingStartHeight+c.params.CRVotingPeriod
+}
+
+func (c *Committee) hasAppropriationTx(block *types.Block) bool {
+	for _, tx := range block.Transactions {
+		if tx.TxType == types.CRCAppropriation {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Committee) shouldCleanHistory() bool {

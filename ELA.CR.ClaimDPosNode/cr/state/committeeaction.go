@@ -193,16 +193,55 @@ func (c *Committee) processVoteOutput(output *types.Output, height uint32) {
 // processCRCRelatedAmount takes a transaction, if the transaction takes a previous
 // output to CRC related address then try to subtract the vote.
 func (c *Committee) processCRCAddressRelatedTx(tx *types.Transaction, height uint32) {
-	for i, output := range tx.Outputs {
-		if output.ProgramHash.IsEqual(c.params.CRCFoundation) {
-			op := types.NewOutPoint(tx.Hash(), uint16(i))
-			c.state.CRCFoundationOutputs[op.ReferKey()] = output.Value
-		} else if output.ProgramHash.IsEqual(c.params.CRCCommitteeAddress) {
-			op := types.NewOutPoint(tx.Hash(), uint16(i))
-			c.state.CRCCommitteeOutputs[op.ReferKey()] = output.Value
+	if tx.IsCRCProposalTx() {
+		proposal := tx.Payload.(*payload.CRCProposal)
+		var budget common.Fixed64
+		for _, b := range proposal.Budgets {
+			budget += b.Amount
+		}
+		c.state.history.Append(height, func() {
+			c.CRCCommitteeUsedAmount += budget
+		}, func() {
+			c.CRCCommitteeUsedAmount -= budget
+		})
+	}
+
+	for _, input := range tx.Inputs {
+		if amount, ok :=  c.state.CRCFoundationOutputs[input.Previous.ReferKey()]; ok {
+			c.state.history.Append(height, func() {
+				c.CRCFoundationBalance -= amount
+			}, func() {
+				c.CRCFoundationBalance += amount
+			})
+		} else if amount, ok :=  c.state.CRCCommitteeOutputs[input.Previous.ReferKey()]; ok {
+			c.state.history.Append(height, func() {
+				c.CRCCommitteeBalance -= amount
+			}, func() {
+				c.CRCCommitteeBalance += amount
+			})
 		}
 	}
 
-	c.processCRCRelatedAmount(tx, height, c.state.history,
-		c.state.CRCFoundationOutputs, c.state.CRCCommitteeOutputs)
+	for _, output := range tx.Outputs {
+		amount := output.Value
+		if output.ProgramHash.IsEqual(c.params.CRCFoundation) {
+			c.state.history.Append(height, func() {
+				c.CRCFoundationBalance += amount
+			}, func() {
+				c.CRCFoundationBalance -= amount
+			})
+		} else if output.ProgramHash.IsEqual(c.params.CRCCommitteeAddress) {
+			c.state.history.Append(height, func() {
+				c.CRCCommitteeBalance += amount
+			}, func() {
+				c.CRCCommitteeBalance -= amount
+			})
+		} else if output.ProgramHash.IsEqual(c.params.DestroyELAAddress) {
+			c.state.history.Append(height, func() {
+				c.DestroyedAmount += amount
+			}, func() {
+				c.DestroyedAmount -= amount
+			})
+		}
+	}
 }
