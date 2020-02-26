@@ -83,19 +83,22 @@ class C extends BaseComponent {
       }
       const budget = form.getFieldValue('budget')
 
+      if(budget && (typeof budget === 'string'
+                 || typeof budget === 'number'
+                 || !budget.paymentItems
+                 || budget.paymentItems.length === 0)){
+        this.setState({ loading: false })
+        message.success(I18N.get('suggestion.form.error.requirePayment'));
+        return
+      }
+      
       // exclude old suggestion data
       if (budget && typeof budget !== 'string') {
         values.budget = budget.paymentItems
         values.budgetAmount = Number(budget.budgetAmount)
         values.elaAddress = budget.elaAddress
       }
-      
-      if(!budget || budget.paymentItems.length === 0){
-        this.setState({ loading: false })
-        message.success(I18N.get('suggestion.form.error.requirePayment'));
-        return
-      }
-      
+
       await callback(values)
       this.setState({ loading: false })
     })
