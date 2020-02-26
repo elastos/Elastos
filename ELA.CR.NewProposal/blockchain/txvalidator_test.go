@@ -2450,6 +2450,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	memebers[member1.Info.DID] = member1
 	s.Chain.crCommittee.Members = memebers
 	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(100 * 1e8)
+	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(100 * 1e8)
 
 	// ok
 	txn := s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
@@ -2475,10 +2476,12 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	// invalid budgets.
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x0000
 	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(10 * 1e8)
+	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(10 * 1e8)
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "budgets exceeds 10% of CRC committee balance")
 
 	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(100 * 1e8)
+	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(100 * 1e8)
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(99 * 1e8)
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "budgets exceeds the balance of CRC committee")

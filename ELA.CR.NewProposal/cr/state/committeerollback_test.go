@@ -338,7 +338,6 @@ func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := config.DefaultParams.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -429,7 +428,6 @@ func TestCommittee_RollbackEndVotingPeriod(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := config.DefaultParams.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -534,7 +532,6 @@ func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := config.DefaultParams.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -711,7 +708,6 @@ func TestCommittee_RollbackChangeCommittee(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -850,7 +846,6 @@ func TestCommittee_RollbackCRCProposal(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -1050,7 +1045,6 @@ func TestCommittee_RollbackCRCProposalTracking(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -1249,7 +1243,6 @@ func TestCommittee_RollbackCRCProposalWithdraw(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -1474,7 +1467,6 @@ func TestCommittee_RollbackTempStartVotingPeriod(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -1624,7 +1616,6 @@ func TestCommittee_RollbackCRCAppropriationTx(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := config.DefaultParams.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -1820,7 +1811,6 @@ func TestCommittee_RollbackCRCImpeachmentTx(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := config.DefaultParams.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -1956,7 +1946,6 @@ func TestCommittee_RollbackCRCImpeachmentAndReelectionTx(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := config.DefaultParams.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -2131,7 +2120,6 @@ func TestCommitee_RollbackCRCBlendTx(t *testing.T) {
 	// avoid getting UTXOs from database
 
 	currentHeight := cfg.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 	// register cr
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -2356,7 +2344,6 @@ func TestCommitee_RollbackCRCBlendAppropriationTx(t *testing.T) {
 	// avoid getting UTXOs from database
 
 	currentHeight := cfg.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 	// register cr
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -2612,7 +2599,6 @@ func TestCommitee_RollbackCRCBlendTxPropoalVert(t *testing.T) {
 	// avoid getting UTXOs from database
 
 	currentHeight := cfg.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -2815,7 +2801,6 @@ func TestCommitee_RollbackCRCBlendTxCRVert(t *testing.T) {
 	// avoid getting UTXOs from database
 
 	currentHeight := cfg.CRVotingStartHeight
-	committee.recordBalanceHeight = currentHeight - 1
 	// register cr
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
