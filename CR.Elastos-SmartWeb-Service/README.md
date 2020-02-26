@@ -117,6 +117,10 @@ Build docker image:
 ```
 docker build -t cyberrepublic/elastos-smartweb-service .
 ```
+Push docker image:
+```
+docker push cyberrepublic/elastos-smartweb-service:latest
+```
 Connect to postgresql database
 ```
 docker container exec -it smartweb-postgres psql -h localhost -U gmu -d smartweb_master
@@ -134,4 +138,39 @@ select * from users;
 
 ``` 
 ./test.sh
+```
+
+## Deploy to production(Uses Google Cloud Run)
+
+https://cloud.google.com/endpoints/docs/grpc/get-started-cloud-run
+
+```
+# Only for the first time
+gcloud run deploy elastos-smartweb-service-esp --image="gcr.io/endpoints-release/endpoints-runtime-serverless:2" --allow-unauthenticated  --platform managed --project=careful-pillar-269322;
+
+# Every time there is an update
+python3 -m grpc_tools.protoc --include_imports --include_source_info --proto_path=grpc_adenine/definitions --descriptor_set_out=api_descriptor.pb --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/*.proto;
+# Replace all the subts with "from . import __"
+
+# Build and push docker image
+docker build -t cyberrepublic/elastos-smartweb-service .;
+docker tag cyberrepublic/elastos-smartweb-service gcr.io/careful-pillar-269322/elastos-smartweb-service:latest;
+docker push gcr.io/careful-pillar-269322/elastos-smartweb-service:latest;
+
+# Deploy Endpoints config
+gcloud endpoints services deploy api_descriptor.pb api_config.yaml;
+
+# Build and run a new esp image
+./gcloud_build_image.sh -s elastos-smartweb-service-esp-jgdewju65a-uk.a.run.app -c 2020-02-26r2 -p careful-pillar-269322;
+gcloud run deploy elastos-smartweb-service-esp \
+  --image="gcr.io/careful-pillar-269322/endpoints-runtime-serverless:elastos-smartweb-service-esp-jgdewju65a-uk.a.run.app-2020-02-26r2" \
+  --set-env-vars=ESPv2_ARGS=--cors_preset=basic \
+  --allow-unauthenticated \
+  --platform managed \
+  --project=careful-pillar-269322;
+gcloud run services add-iam-policy-binding elastos-smartweb-service \
+  --member "serviceAccount:268296012146-compute@developer.gserviceaccount.com" \
+  --role "roles/run.invoker" \
+  --platform managed \
+  --project careful-pillar-269322
 ```

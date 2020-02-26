@@ -26,8 +26,9 @@ gcloud beta compute ssl-certificates create elastos-smartweb-service-certificate
 
 ## Repeat
 # Docker
-docker build -t gcr.io/elastos-smartweb-service/elastos-smartweb-service -f .gce/Dockerfile .;
-docker push gcr.io/elastos-smartweb-service/elastos-smartweb-service;
+docker build -t gcr.io/careful-pillar-269322/elastos-smartweb-service -f prod.Dockerfile .;
+docker tag gcr.io/careful-pillar-269322/elastos-smartweb-service gcr.io/careful-pillar-269322/elastos-smartweb-service:latest
+docker push gcr.io/careful-pillar-269322/elastos-smartweb-service:latest;
 
 # Create network and subnet
 gcloud compute networks create elastos-smartweb-service-network --subnet-mode=custom

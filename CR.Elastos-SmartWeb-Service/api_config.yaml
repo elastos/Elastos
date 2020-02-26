@@ -1,0 +1,45 @@
+# The configuration schema is defined by the all the .proto files.
+# https://github.com/googleapis/googleapis/blob/master/google/api/service.proto
+
+type: google.api.Service
+config_version: 3
+name: elastos-smartweb-service-esp-jgdewju65a-uk.a.run.app
+title: Elastos Smartweb Service - Cloud Endpoints + Cloud Run gRPC
+apis:
+  - name: health_check.Health
+  - name: common.Common
+  - name: hive.Hive
+  - name: wallet.Wallet
+  - name: sidechain_eth.SidechainEth
+usage:
+  rules:
+  - selector: health_check.Health.Check
+    allow_unregistered_calls: true
+  - selector: health_check.Health.Watch
+    allow_unregistered_calls: true
+  - selector: common.Common.GenerateAPIRequestMnemonic
+    allow_unregistered_calls: true
+  - selector: common.Common.GenerateAPIRequest
+    allow_unregistered_calls: true
+  - selector: common.Common.GetAPIKeyMnemonic
+    allow_unregistered_calls: true
+  - selector: common.Common.GetAPIKey
+    allow_unregistered_calls: true
+  - selector: hive.Hive.UploadAndSign
+    allow_unregistered_calls: true
+  - selector: hive.Hive.VerifyAndShow
+    allow_unregistered_calls: true
+  - selector: wallet.Wallet.CreateWallet
+    allow_unregistered_calls: true
+  - selector: wallet.Wallet.ViewWallet
+    allow_unregistered_calls: true
+  - selector: wallet.Wallet.RequestELA
+    allow_unregistered_calls: true
+  - selector: sidechain_eth.SidechainEth.DeployEthContract
+    allow_unregistered_calls: true
+  - selector: sidechain_eth.SidechainEth.WatchEthContract
+    allow_unregistered_calls: true
+backend:
+  rules:
+    - selector: "*"
+      address: grpcs://elastos-smartweb-service-jgdewju65a-uk.a.run.app
