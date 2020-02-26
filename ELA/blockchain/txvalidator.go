@@ -2076,7 +2076,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	for _, b := range proposal.Budgets {
 		amount += b.Amount
 	}
-	if amount > b.crCommittee.CRCCommitteeBalance*CRCProposalBudgetsPercentage/100 {
+	if amount > b.crCommittee.CRCCurrentStageAmount*CRCProposalBudgetsPercentage/100 {
 		return errors.New("budgets exceeds 10% of CRC committee balance")
 	} else if amount > b.crCommittee.CRCCommitteeBalance-
 		b.crCommittee.CRCCommitteeUsedAmount {
