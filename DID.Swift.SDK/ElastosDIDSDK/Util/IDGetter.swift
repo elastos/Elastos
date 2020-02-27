@@ -15,7 +15,6 @@ class IDGetter {
         if normalized || refDid == nil || refDid != id.did {
             value = id.toString()
         } else {
-            // DIDObject always keeps not empty fragment.
             value = "#" + id.fragment!
         }
         return value
