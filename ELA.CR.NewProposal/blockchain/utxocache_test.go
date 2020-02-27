@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -100,7 +101,7 @@ func TestUTXOCache_Init(t *testing.T) {
 }
 
 func TestUTXOCache_GetTxReferenceInfo(t *testing.T) {
-	utxoCache = NewUTXOCache(utxoCacheDB)
+	utxoCache = NewUTXOCache(utxoCacheDB, &config.DefaultParams)
 
 	// get tx reference form db and cache it first time.
 	reference, err := utxoCache.GetTxReference(spendTx)
@@ -213,7 +214,7 @@ func Test_PointerKeyForMap(t *testing.T) {
 
 func TestUTXOCache_InsertReference(t *testing.T) {
 	// init reference
-	for i := uint32(0); i < maxReferenceSize; i++ {
+	for i := uint32(0); i < uint32(maxReferenceSize); i++ {
 		input := &types.Input{
 			Sequence: i,
 		}
@@ -224,12 +225,12 @@ func TestUTXOCache_InsertReference(t *testing.T) {
 	}
 	assert.Equal(t, maxReferenceSize, len(utxoCache.reference))
 	assert.Equal(t, maxReferenceSize, utxoCache.inputs.Len())
-	assert.Equal(t, uint32(0), utxoCache.inputs.Front().Value.(*types.Input).Sequence)
-	assert.Equal(t, uint32(maxReferenceSize-1), utxoCache.inputs.Back().Value.(*types.Input).Sequence)
-	assert.Equal(t, uint32(0), utxoCache.reference[utxoCache.inputs.Front().Value.(*types.Input)].OutputLock)
-	assert.Equal(t, uint32(maxReferenceSize-1), utxoCache.reference[utxoCache.inputs.Back().Value.(*types.Input)].OutputLock)
+	assert.Equal(t, uint32(0), utxoCache.inputs.Front().Value.(types.Input).Sequence)
+	assert.Equal(t, uint32(maxReferenceSize-1), utxoCache.inputs.Back().Value.(types.Input).Sequence)
+	assert.Equal(t, uint32(0), utxoCache.reference[utxoCache.inputs.Front().Value.(types.Input)].OutputLock)
+	assert.Equal(t, uint32(maxReferenceSize-1), utxoCache.reference[utxoCache.inputs.Back().Value.(types.Input)].OutputLock)
 
-	for i := uint32(maxReferenceSize); i < maxReferenceSize+500; i++ {
+	for i := uint32(maxReferenceSize); i < uint32(maxReferenceSize+500); i++ {
 		input := &types.Input{
 			Sequence: i,
 		}
@@ -240,9 +241,9 @@ func TestUTXOCache_InsertReference(t *testing.T) {
 	}
 	assert.Equal(t, maxReferenceSize, len(utxoCache.reference))
 	assert.Equal(t, maxReferenceSize, utxoCache.inputs.Len())
-	assert.Equal(t, uint32(500), utxoCache.inputs.Front().Value.(*types.Input).Sequence)
-	assert.Equal(t, uint32(maxReferenceSize+499), utxoCache.inputs.Back().Value.(*types.Input).Sequence)
-	assert.Equal(t, uint32(500), utxoCache.reference[utxoCache.inputs.Front().Value.(*types.Input)].OutputLock)
-	assert.Equal(t, uint32(maxReferenceSize+499), utxoCache.reference[utxoCache.inputs.Back().Value.(*types.Input)].
+	assert.Equal(t, uint32(500), utxoCache.inputs.Front().Value.(types.Input).Sequence)
+	assert.Equal(t, uint32(maxReferenceSize+499), utxoCache.inputs.Back().Value.(types.Input).Sequence)
+	assert.Equal(t, uint32(500), utxoCache.reference[utxoCache.inputs.Front().Value.(types.Input)].OutputLock)
+	assert.Equal(t, uint32(maxReferenceSize+499), utxoCache.reference[utxoCache.inputs.Back().Value.(types.Input)].
 		OutputLock)
 }

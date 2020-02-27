@@ -246,7 +246,7 @@ type State struct {
 	getProducerDepositAmount func(programHash common.Uint168) (
 		common.Fixed64, error)
 	getTxReference func(tx *types.Transaction) (
-		map[*types.Input]*types.Output, error)
+		map[*types.Input]types.Output, error)
 	chainParams *config.Params
 
 	mtx     sync.RWMutex
@@ -1064,7 +1064,8 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 		referKey := input.ReferKey()
 		_, ok := s.Votes[referKey]
 		if ok {
-			s.processVoteCancel(references[input], height)
+			out := references[input]
+			s.processVoteCancel(&out, height)
 		}
 	}
 }
