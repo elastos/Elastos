@@ -295,11 +295,14 @@ public class VerifiableCredential extends DIDObject {
 
 	protected void setMeta(CredentialMeta meta) {
 		this.meta = meta;
+		this.getId().setMeta(meta);
 	}
 
 	protected CredentialMeta getMeta() {
-		if (meta == null)
+		if (meta == null) {
 			meta = new CredentialMeta();
+			this.getId().setMeta(meta);
+		}
 
 		return meta;
 	}

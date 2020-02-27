@@ -25,9 +25,17 @@ package org.elastos.did;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
+import org.elastos.did.backend.ResolverCache;
+import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.MalformedDIDException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -107,5 +115,44 @@ public class DIDTest {
 		other = new DID("did:elastos:1234567890");
 		assertFalse(did.equals(other));
 		assertFalse(did.equals("did:elastos:1234567890"));
+	}
+
+	@Test
+	public void testResolve() throws DIDException, IOException {
+		DIDBackend.initialize(TestConfig.resolver, TestData.getResolverCacheDir());
+		ResolverCache.reset();
+
+		ArrayList<DID> dids = new ArrayList<DID>(16);
+
+		BufferedReader input = new BufferedReader(new InputStreamReader(
+				getClass().getClassLoader().getResourceAsStream("testdata/dids.restore")));
+		input.lines().forEach((didstr) -> {
+			try {
+				DID did = new DID(didstr);
+				dids.add(did);
+			} catch (MalformedDIDException ignore) {
+			}
+		});
+		input.close();
+
+		long start = System.currentTimeMillis();
+		for (DID did : dids) {
+			DIDDocument doc = did.resolve();
+			assertNotNull(doc);
+		}
+		long end = System.currentTimeMillis();
+
+		System.out.println(String.format("First time resovle %d DIDs took %d Milliseconds",
+				dids.size(), (end-start)));
+
+		start = System.currentTimeMillis();
+		for (DID did : dids) {
+			DIDDocument doc = did.resolve();
+			assertNotNull(doc);
+		}
+		end = System.currentTimeMillis();
+
+		System.out.println(String.format("Second time resovle %d DIDs took %d Milliseconds",
+				dids.size(), (end-start)));
 	}
 }

@@ -867,11 +867,14 @@ public class DIDDocument {
 
 	protected void setMeta(DIDMeta meta) {
 		this.meta = meta;
+		subject.setMeta(meta);
 	}
 
 	protected DIDMeta getMeta() {
-		if (meta == null)
+		if (meta == null) {
 			meta = new DIDMeta();
+			subject.setMeta(meta);
+		}
 
 		return meta;
 	}

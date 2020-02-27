@@ -45,7 +45,7 @@ public class SPVAdapter implements DIDAdapter {
 	public SPVAdapter(String walletDir, String walletId, String network,
 			PasswordCallback passwordCallback)
 			throws DIDBackendException, DIDResolveException {
-		handle = create(walletDir, walletId, network, "");
+		handle = create(walletDir, walletId, network);
 		this.walletDir = walletDir;
 		this.walletId = walletId;
 		this.network = network;
@@ -58,7 +58,7 @@ public class SPVAdapter implements DIDAdapter {
 	}
 
 	private final static native long create(String walletDir, String walletId,
-			String network, String resolver);
+			String network);
 
 	private final static native void destroy(long handle);
 
