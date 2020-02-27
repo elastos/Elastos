@@ -94,7 +94,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32,
 
 // CheckTransactionContext verifies a transaction with history transaction in ledger
 func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
-	txn *Transaction, references map[*Input]*Output) elaerr.ELAError {
+	txn *Transaction, references map[*Input]Output) elaerr.ELAError {
 	// check if duplicated with transaction in ledger
 	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
@@ -314,7 +314,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 	return nil
 }
 
-func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, references map[*Input]*Output) error {
+func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, references map[*Input]Output) error {
 	programHashes := make(map[common.Uint168]struct{})
 	for _, output := range references {
 		programHashes[output.ProgramHash] = struct{}{}
@@ -473,7 +473,7 @@ func getCRMembersMap(members []*crstate.CRMember) map[string]struct{} {
 	return crMaps
 }
 
-func checkDestructionAddress(references map[*Input]*Output) error {
+func checkDestructionAddress(references map[*Input]Output) error {
 	for _, output := range references {
 		if output.ProgramHash == config.DestructionAddress {
 			return errors.New("cannot use utxo from the destruction address")
@@ -753,7 +753,7 @@ func checkOutputPayload(txType TxType, output *Output) error {
 	return output.Payload.Validate()
 }
 
-func checkTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {
+func checkTransactionUTXOLock(txn *Transaction, references map[*Input]Output) error {
 	for input, output := range references {
 
 		if output.OutputLock == 0 {
@@ -770,7 +770,7 @@ func checkTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) e
 	return nil
 }
 
-func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output) error {
+func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]Output) error {
 	for _, output := range references {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
 			if !txn.IsReturnDepositCoin() && !txn.IsReturnCRDepositCoinTx() {
@@ -841,7 +841,7 @@ func (b *BlockChain) checkCRCProposalWithdrawFee(txn *Transaction,
 }
 
 func (b *BlockChain) getTransactionFee(tx *Transaction,
-	references map[*Input]*Output) common.Fixed64 {
+	references map[*Input]Output) common.Fixed64 {
 	var outputValue common.Fixed64
 	var inputValue common.Fixed64
 	for _, output := range tx.Outputs {
@@ -861,7 +861,7 @@ func (b *BlockChain) isSmallThanMinTransactionFee(fee common.Fixed64) bool {
 	return false
 }
 
-func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]*Output) error {
+func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]Output) error {
 	fee := b.getTransactionFee(tx, references)
 	if b.isSmallThanMinTransactionFee(fee) {
 		return fmt.Errorf("transaction fee not enough")
@@ -964,7 +964,7 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 	return nil
 }
 
-func checkTransactionSignature(tx *Transaction, references map[*Input]*Output) error {
+func checkTransactionSignature(tx *Transaction, references map[*Input]Output) error {
 	programHashes, err := GetTxProgramHashes(tx, references)
 	if tx.IsCRCProposalWithdrawTx() {
 		return nil
@@ -1097,7 +1097,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 	return nil
 }
 
-func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]*Output) error {
+func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]Output) error {
 	witPayload, ok := txn.Payload.(*payload.WithdrawFromSideChain)
 	if !ok {
 		return errors.New("Invalid withdraw from side chain payload type")
@@ -1164,7 +1164,7 @@ func (b *BlockChain) checkCrossChainArbitrators(publicKeys [][]byte) error {
 	return nil
 }
 
-func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, references map[*Input]*Output) error {
+func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, references map[*Input]Output) error {
 	payloadObj, ok := txn.Payload.(*payload.TransferCrossChainAsset)
 	if !ok {
 		return errors.New("Invalid transfer cross chain asset payload type")
@@ -1708,7 +1708,7 @@ func getCode(publicKey []byte) []byte {
 }
 
 func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
-	references map[*Input]*Output, blockHeight uint32) error {
+	references map[*Input]Output, blockHeight uint32) error {
 
 	withdrawPayload, ok := txn.Payload.(*payload.CRCProposalWithdraw)
 	if !ok {
@@ -1791,7 +1791,7 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 }
 
 func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
-	references map[*Input]*Output) error {
+	references map[*Input]Output) error {
 	// Check if current session has appropriated.
 	if !b.crCommittee.IsAppropriationNeeded() {
 		return errors.New("should have no appropriation transaction")
@@ -2197,7 +2197,7 @@ func (b *BlockChain) additionalProducerInfoCheck(
 }
 
 func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
-	references map[*Input]*Output, currentHeight uint32) error {
+	references map[*Input]Output, currentHeight uint32) error {
 
 	var inputValue common.Fixed64
 	fromAddrMap := make(map[common.Uint168]struct{})
@@ -2251,7 +2251,7 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 }
 
 func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
-	references map[*Input]*Output, currentHeight uint32) error {
+	references map[*Input]Output, currentHeight uint32) error {
 
 	var inputValue common.Fixed64
 	fromAddrMap := make(map[common.Uint168]struct{})

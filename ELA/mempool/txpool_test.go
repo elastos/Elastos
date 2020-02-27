@@ -97,7 +97,7 @@ func TestTxPoolInit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err, "BlockChain generate failed")
 	}
-	chain.UTXOCache = blockchain.NewUTXOCache(utxoCacheDB)
+	chain.UTXOCache = blockchain.NewUTXOCache(utxoCacheDB, &config.DefaultParams)
 	err = chain.Init(nil)
 	assert.NoError(t, err)
 	initialLedger = blockchain.DefaultLedger

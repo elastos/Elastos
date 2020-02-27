@@ -98,7 +98,7 @@ func (a *arbitrators) Start() {
 func (a *arbitrators) RegisterFunction(bestHeight func() uint32,
 	getBlockByHeight func(uint32) (*types.Block, error),
 	getTxReference func(tx *types.Transaction) (
-		map[*types.Input]*types.Output, error)) {
+		map[*types.Input]types.Output, error)) {
 	a.bestHeight = bestHeight
 	a.getBlockByHeight = getBlockByHeight
 	a.getTxReference = getTxReference
