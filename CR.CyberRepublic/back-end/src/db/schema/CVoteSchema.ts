@@ -153,5 +153,8 @@ export const CVote = {
   },
   copyright: {
     type: String
+  },
+  payment: {
+    type: String
   }
 }

@@ -19,7 +19,8 @@ const BASE_FIELDS = [
   'budget',
   'budgetAmount',
   'elaAddress',
-  'plan'
+  'plan',
+  'payment'
 ]
 
 export default class extends Base {
@@ -27,13 +28,14 @@ export default class extends Base {
   public async createDraft(param: any): Promise<Document> {
     const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
-    const { title, proposedBy, proposer, suggestionId } = param
+    const { title, proposedBy, proposer, suggestionId, payment } = param
 
     const vid = await this.getNewVid()
 
     const doc: any = {
       title,
       vid,
+      payment,
       status: constant.CVOTE_STATUS.DRAFT,
       published: false,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
@@ -133,7 +135,8 @@ export default class extends Base {
       motivation,
       relevance,
       budget,
-      plan
+      plan,
+      payment
     } = param
 
     if (!this.currentUser || !this.currentUser._id) {
@@ -163,6 +166,7 @@ export default class extends Base {
       doc.budget = budget
     }
     if (plan) doc.plan = plan
+    if (payment) doc.payment = payment
 
     try {
       await db_cvote.update({ _id }, doc)
@@ -207,7 +211,8 @@ export default class extends Base {
       motivation,
       relevance,
       budget,
-      plan
+      plan,
+      payment
     } = param
 
     const vid = await this.getNewVid()
@@ -228,6 +233,7 @@ export default class extends Base {
       relevance,
       budget,
       plan,
+      payment,
       proposer,
       createdBy: this.currentUser._id
     }

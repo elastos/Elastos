@@ -421,7 +421,7 @@ export default class extends BaseComponent {
           columns={columns}
           loading={loading}
           dataSource={list}
-          rowKey={record => record._id}
+          rowKey={(record, index) => index}
         />
       </Container>
     )
