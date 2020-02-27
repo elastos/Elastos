@@ -10,7 +10,7 @@ extern "C" {
 typedef const char* (GetPasswordCallback)(const char *walletDir, const char *walletId);
 
 DIDAdapter *TestDIDAdapter_Create(const char *walletDir, const char *walletId,
-        const char *network, const char *resolver, GetPasswordCallback *callback);
+        const char *network, GetPasswordCallback *callback);
 
 void TestDIDAdapter_Destroy(DIDAdapter *adapter);
 

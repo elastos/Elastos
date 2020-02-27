@@ -30,9 +30,9 @@ ExternalProject_Add(
     libspvsdk
 
     PREFIX ${PROJECT_DEPS_BUILD_PREFIX}
-    URL "https://github.com/elastos/Elastos.ELA.SPV.Cpp/archive/v0.5.0.tar.gz"
-    URL_HASH SHA256=322fff1d61698b19236e409207779a6fb47149c3c229dd548f0ffb12af9fe273
-    DOWNLOAD_NAME "libspv-0.5.0.tar.gz"
+    URL "https://github.com/elastos/Elastos.ELA.SPV.Cpp/archive/v0.5.1.tar.gz"
+    URL_HASH SHA256=bc3363cc36bc89a1b97a46420236cf44a8cd049ab6a63f2768a1bc75741e7fc0
+    DOWNLOAD_NAME "libspv-0.5.1.tar.gz"
     DOWNLOAD_DIR ${PROJECT_DEPS_TARBALL_DIR}
     DOWNLOAD_NO_PROGRESS 1
 

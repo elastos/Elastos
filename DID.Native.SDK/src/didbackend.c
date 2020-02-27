@@ -31,6 +31,52 @@
 #include "didbackend.h"
 #include "didmeta.h"
 #include "diddocument.h"
+#include "didresolver.h"
+
+static DIDResolver *resolverInstance;
+static bool defaultInstance;
+
+static void DIDBackend_Deinitialize(void)
+{
+    if (resolverInstance && defaultInstance) {
+        free(resolverInstance);
+        resolverInstance = NULL;
+    }
+}
+
+int DIDBackend_InitializeDefault(const char *url)
+{
+    if (!url || !*url || strlen(url) >= URL_LEN)
+        return -1;
+
+    DIDBackend_Deinitialize();
+
+    DefaultResolver *resolver = (DefaultResolver*)calloc(1, sizeof(DefaultResolver));
+    if (!resolver)
+        return -1;
+
+    memcpy((char*)resolver->url, url, strlen(url) + 1);
+    resolver->base.resolve = DefaultResolver_Resolve;
+
+    resolverInstance = (DIDResolver*)resolver;
+    defaultInstance = true;
+
+    atexit(DIDBackend_Deinitialize);
+    return 0;
+}
+
+int DIDBackend_Initialize(DIDResolver *resolver)
+{
+    if (!resolver)
+        return -1;
+
+    DIDBackend_Deinitialize();
+
+    resolverInstance = resolver;
+    defaultInstance = false;
+
+    return 0;
+}
 
 const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
         DIDURL *signkey, const char *storepass)
@@ -42,13 +88,15 @@ const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
             !*storepass)
         return NULL;
 
+    if (!DIDMeta_AttachedStore(&document->meta))
+        return NULL;
+
     docstring = DIDDocument_ToJson(document, 1, 0);
     if (!docstring)
         return NULL;
 
     reqstring = DIDRequest_Sign(RequestType_Create, DIDDocument_GetSubject(document),
-            signkey, docstring, storepass);
-
+            signkey, docstring, document->meta.store, storepass);
     free((char*)docstring);
     if (!reqstring)
         return NULL;
@@ -68,12 +116,15 @@ const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL
             !*storepass)
         return NULL;
 
+    if (!DIDMeta_AttachedStore(&document->meta))
+        return NULL;
+
     docstring = DIDDocument_ToJson(document, 1, 0);
     if (!docstring)
         return NULL;
 
     reqstring = DIDRequest_Sign(RequestType_Update, DIDDocument_GetSubject(document),
-            signkey, docstring, storepass);
+            signkey, docstring, document->meta.store, storepass);
     free((char*)docstring);
     if (!reqstring)
         return NULL;
@@ -94,12 +145,16 @@ const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey
             !*storepass)
         return NULL;
 
-    datastring = DID_ToString(did, data, ELA_MAX_DID_LEN);
-    if (!reqstring)
+    if (!DIDMeta_AttachedStore(&did->meta))
         return NULL;
 
-    reqstring = DIDRequest_Sign(RequestType_Deactivate, did,
-            signKey, datastring, storepass);
+    datastring = DID_ToString(did, data, ELA_MAX_DID_LEN);
+    if (!datastring)
+        return NULL;
+
+    reqstring = DIDRequest_Sign(RequestType_Deactivate, did, signKey, datastring,
+            did->meta.store, storepass);
+    free((char*)datastring);
     if (!reqstring)
         return NULL;
 
@@ -108,7 +163,7 @@ const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey
     return ret;
 }
 
-DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
+DIDDocument *DIDBackend_Resolve(DID *did)
 {
     int rc;
     const char *data;
@@ -118,10 +173,11 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
     time_t timestamp;
     bool deactivated;
 
-    if (!backend || !did)
+    if (!did || !resolverInstance || !resolverInstance->resolve)
         return NULL;
 
-    data = backend->adapter->resolve(backend->adapter, DID_ToString(did, _idstring, sizeof(_idstring)));
+    data = resolverInstance->resolve(resolverInstance,
+            DID_ToString(did, _idstring, sizeof(_idstring)), 0);
     if (!data)
         return NULL;
 

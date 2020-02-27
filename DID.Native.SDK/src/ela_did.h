@@ -172,25 +172,34 @@ typedef struct Property             Property;
 typedef struct DIDStore             DIDStore;
 /**
  * \~English
- * DIDAdapter is use for various method to create did transaction and resolve
- * did document from chain.
+ * DIDAdapter is support method to create did transaction.
  */
 typedef struct DIDAdapter           DIDAdapter;
+/**
+ * \~English
+ * DIDResolver is support method to resolve did document from chain.
+ */
+typedef struct DIDResolver          DIDResolver;
 
 struct DIDAdapter {
-    const char* (*createIdTransaction) (DIDAdapter *adapter, const char *payload, const char *memo);
-    const char* (*resolve) (DIDAdapter *adapter, const char *did);
+    const char* (*createIdTransaction) (DIDAdapter *adapter,
+            const char *payload, const char *memo);
 };
+
+struct DIDResolver {
+    const char* (*resolve) (DIDResolver *resolver, const char *did, int all);
+};
+
 /**
  * \~English
  * DID list callbacks, return alias about did.
  */
-typedef int DIDStore_GetDIDCallback(DID *did, void *context);
+typedef int DIDStore_DIDsCallback(DID *did, void *context);
 /**
  * \~English
  * Credential list callbacks, return alias about credential.
  */
-typedef int DIDStore_GetCredCallback(DIDURL *id, void *context);
+typedef int DIDStore_CredentialsCallback(DIDURL *id, void *context);
 
 /******************************************************************************
  * DID
@@ -298,13 +307,13 @@ DID_API int DID_Compare(DID *did1, DID *did2);
  * Copy one DID to the other DID.
  *
  * @param
- *      newdid                   [in] DID to be copied.
+ *      dest                   [in] DID to be copied.
  * @param
- *      olddid                   [in] DID be copied.
+ *      src                   [in] DID be copied.
  * @return
- *      0 on success, -1 if an error occurred.
+ *      the handle to dest DID if succuss, NULL if failed .
  */
-DID_API int DID_Copy(DID *newdid, DID *olddid);
+DID_API DID *DID_Copy(DID *dest, DID *src);
 
 /**
  * \~English
@@ -411,7 +420,7 @@ DID_API time_t DID_GetTimestamp(DID *did);
  *      If no error occurs, return a handle to Document.
  *      Otherwise, return NULL.
  */
-DID_API DIDDocumentBuilder* DID_CreateBuilder(DID *did);
+DID_API DIDDocumentBuilder* DID_CreateBuilder(DID *did, DIDStore *store);
 
 /******************************************************************************
  * DIDURL
@@ -1941,7 +1950,7 @@ DID_API int Credential_GetAlias(Credential *credential, char *alias, size_t size
  * @return
  *      The handle of Issuer.
  */
-DID_API Issuer *Issuer_Create(DID *did, DIDURL *signkey);
+DID_API Issuer *Issuer_Create(DID *did, DIDURL *signkey, DIDStore *store);
 
 /**
  * \~English
@@ -2022,22 +2031,16 @@ DID_API DIDURL *Issuer_GetSignKey(Issuer *issuer);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API DIDStore* DIDStore_Initialize(const char *root, DIDAdapter *adapter);
+DID_API DIDStore* DIDStore_Open(const char *root, DIDAdapter *adapter);
 
 /**
  * \~English
- * Get DIDStore handle.
- *
- * @return
- *      the handle.
+ * Deinitialize DIDStore. * @param
+ *      store                 [in] The handle to DIDStore.
+ * @param
+ *      store                 [in] The handle to DIDStore.
  */
-DID_API DIDStore* DIDStore_GetInstance(void);
-
-/**
- * \~English
- * Deinitialize DIDStore.
- */
-DID_API void DIDStore_Deinitialize(void);
+DID_API void DIDStore_Close(DIDStore *store);
 
 /**
  * \~English
@@ -2237,14 +2240,14 @@ DID_API bool DIDStore_DeleteDID(DIDStore *store, DID *did);
  *      filer       [in] DID filer. 0: all did; 1: did has privatekeys;
  *                                  2: did has no privatekeys.
  * @param
- *      callback    [in] a pointer to DIDStore_GetDIDCallback function.
+ *      callback    [in] a pointer to DIDStore_DIDsCallback function.
  * @param
  *      context     [in] the application defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_ListDID(DIDStore *store, ELA_DID_FILTER filer,
-        DIDStore_GetDIDCallback *callback, void *context);
+        DIDStore_DIDsCallback *callback, void *context);
 
 /**
  * \~English
@@ -2330,14 +2333,14 @@ DID_API bool DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
  * @param
  *      did         [in] The handle to DID.
  * @param
- *      callback    [in] a pointer to DIDStore_GetCredCallback function.
+ *      callback    [in] a pointer to DIDStore_CredentialsCallback function.
  * @param
  *      context     [in] the application defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
-        DIDStore_GetCredCallback *callback, void *context);
+        DIDStore_CredentialsCallback *callback, void *context);
 
 /**
  * \~English
@@ -2352,14 +2355,14 @@ DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
  * @param
  *      type        [in] The type of Credential to be selected.
  * @param
- *      callback    [in] a pointer to DIDStore_GetCredCallback function.
+ *      callback    [in] a pointer to DIDStore_CredentialsCallback function.
  * @param
  *      context     [in] the application defined context data.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *credid,
-        const char *type, DIDStore_GetCredCallback *callback, void *context);
+        const char *type, DIDStore_CredentialsCallback *callback, void *context);
 
 /**
  * \~English
@@ -2459,23 +2462,6 @@ DID_API const char *DIDStore_PublishDID(DIDStore *store, const char *storepass,
 DID_API const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         DID *did, DIDURL *signKey);
 
-/**
- * \~English
- * Resolve and store DID Document from chain.
- *
- * @param
- *      store                    [in] The handle of DIDStore.
- * @param
- *      did                      [in] The handle to DID.
- * @param
- *      force                    [in] force = true, DIDStore can load document.
-                                 force = false, DIDStore can not load document.
- * @return
- *      If no error occurs, return the handle to DID Document.
- *      Otherwise, return NULL.
- */
-DID_API DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force);
-
 /******************************************************************************
  * Mnemonic
  *****************************************************************************/
@@ -2543,7 +2529,7 @@ DID_API bool Mnemonic_IsValid(const char *mnemonic, int language);
  *      If no error occurs, return the handle to Presentataion.
  *      Otherwise, return NULL.
  */
-DID_API Presentation *Presentation_Create(DID *did, DIDURL *signkey,
+DID_API Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
         const char *storepass, const char *nonce, const char *realm, int count, ...);
 
 /**
@@ -2726,11 +2712,33 @@ DID_API bool Presentation_IsGenuine(Presentation *pre);
  * Presentation is valid or not.
  *
  * @param
- *      pre                      [in] The Presentation handle.
+ *      pre              [in] The Presentation handle.
  * @return
  *      flase if not valid, true if valid.
  */
 DID_API bool Presentation_IsValid(Presentation *pre);
+
+/**
+ * \~English
+ * Initialize DIDBackend to resolve by url.
+ *
+ * @param
+ *      url              [in] The URL string.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDBackend_InitializeDefault(const char *url);
+
+/**
+ * \~English
+ * Initialize DIDBackend to resolve by DIDResolver.
+ *
+ * @param
+ *      resolver            [in] The handle to DIDResolver.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDBackend_Initialize(DIDResolver *resolver);
 
 #ifdef __cplusplus
 }

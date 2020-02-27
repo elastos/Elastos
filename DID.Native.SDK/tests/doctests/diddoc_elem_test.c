@@ -15,6 +15,7 @@
 
 static DIDDocument *doc;
 static DID *did;
+static DIDStore *store;
 
 static void test_diddoc_get_publickey(void)
 {
@@ -1138,7 +1139,6 @@ static int diddoc_elem_test_suite_init(void)
 {
     char _path[PATH_MAX];
     const char *storePath;
-    DIDStore *store;
     int rc;
 
     storePath = get_store_path(_path, "/servet");

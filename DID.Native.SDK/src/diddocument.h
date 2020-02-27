@@ -92,6 +92,8 @@ struct DIDDocumentBuilder {
 
 DIDMeta *document_getmeta(DIDDocument *document);
 
+int document_setstore(DIDDocument *document, DIDStore *store);
+
 #ifdef __cplusplus
 }
 #endif

@@ -28,6 +28,8 @@
 #include "diddocument.h"
 #include "didstore.h"
 #include "ela_did.h"
+#include "credential.h"
+#include "credmeta.h"
 
 typedef struct TestData {
     DIDStore *store;
@@ -295,8 +297,7 @@ static Credential *store_credential(const char *file, const char *alias)
     if (!cred)
         return NULL;
 
-    store = DIDStore_GetInstance();
-    if (DIDStore_StoreCredential(store, cred, alias) == -1) {
+    if (DIDStore_StoreCredential(testdata.store, cred, alias) == -1) {
         Credential_Destroy(cred);
         return NULL;
     }
@@ -319,8 +320,7 @@ static DIDDocument *store_document(const char *file, const char *alias)
     if (!doc)
         return NULL;
 
-    store = DIDStore_GetInstance();
-    if (DIDStore_StoreDID(store, doc, alias) == -1) {
+    if (DIDStore_StoreDID(testdata.store, doc, alias) == -1) {
         DIDDocument_Destroy(doc);
         return NULL;
     }
@@ -357,8 +357,7 @@ static int import_privatekey(DIDURL *id, const char *storepass, const char *file
     }
 
     free(skbase);
-    store = DIDStore_GetInstance();
-    if (DIDStore_StorePrivateKey(store, storepass, DIDURL_GetDid(id), id, privatekey) == -1)
+    if (DIDStore_StorePrivateKey(testdata.store, storepass, DIDURL_GetDid(id), id, privatekey) == -1)
         return -1;
 
     return 0;
@@ -371,7 +370,7 @@ void TestData_Init(void)
     char *walletDir;
 
     walletDir = get_wallet_path(_dir, walletdir);
-    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    adapter = TestDIDAdapter_Create(walletDir, walletId, network, getpassword);
 }
 
 void TestData_Deinit(void)
@@ -385,7 +384,8 @@ DIDStore *TestData_SetupStore(const char *root)
         return NULL;
 
     delete_file(root);
-    testdata.store = DIDStore_Initialize(root, adapter);
+    testdata.store = DIDStore_Open(root, adapter);
+    DIDBackend_InitializeDefault(resolver);
     return testdata.store;
 }
 
@@ -648,7 +648,7 @@ const char *TestData_LoadRestoreMnemonic(void)
 
 void TestData_Free(void)
 {
-    DIDStore_Deinitialize();
+    DIDStore_Close(testdata.store);
 
     if (testdata.issuerdoc)
         DIDDocument_Destroy(testdata.issuerdoc);

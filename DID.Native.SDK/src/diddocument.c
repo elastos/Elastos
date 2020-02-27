@@ -552,6 +552,16 @@ DIDMeta *document_getmeta(DIDDocument *document)
     return &document->meta;
 }
 
+int document_setstore(DIDDocument *document, DIDStore *store)
+{
+    if (!document || !store)
+        return -1;
+
+    document->meta.store = store;
+    document->did.meta.store = store;
+    return 0;
+}
+
 ////////////////////////////////Document/////////////////////////////////////
 DIDDocument *DIDDocument_FromJson(const char *json)
 {
@@ -729,16 +739,18 @@ void DIDDocument_Destroy(DIDDocument *document)
 
 int DIDDocument_SetAlias(DIDDocument *document, const char *alias)
 {
-    DIDStore *store;
-
-    if (!document)
+   if (!document)
         return -1;
 
     if (DIDMeta_SetAlias(&document->meta, alias) == -1)
         return -1;
 
-    store = DIDStore_GetInstance();
-    return didstore_storedidmeta(store, &document->meta, &document->did);
+    DIDMeta_Copy(&document->did.meta, &document->meta);
+
+    if (DIDMeta_AttachedStore(&document->meta))
+        didstore_storedidmeta(document->meta.store, &document->meta, &document->did);
+
+    return 0;
 }
 
 int DIDDocument_GetAlias(DIDDocument *document, char *alias, size_t size)
@@ -909,13 +921,13 @@ static int credential_copy(Credential *cred1, Credential *cred2)
         cred1->type.types[i] = strdup(cred2->type.types[i]);
     cred1->type.size = cred2->type.size;
 
-    if (DID_Copy(&cred1->issuer, &cred2->issuer) == -1)
+    if (!DID_Copy(&cred1->issuer, &cred2->issuer))
         return -1;
 
     cred1->issuanceDate = cred2->issuanceDate;
     cred1->expirationDate = cred2->expirationDate;
 
-    if (DID_Copy(&cred1->subject.id, &cred2->subject.id) == -1)
+    if (!DID_Copy(&cred1->subject.id, &cred2->subject.id))
         return -1;
 
     cred1->subject.infos.properties = (Property*)calloc(cred2->subject.infos.size, sizeof(Property));
@@ -995,29 +1007,31 @@ static int services_copy(DIDDocument *doc, Service **services, size_t size)
     return 0;
 }
 
-static int DIDDocument_Copy(DIDDocument *doc, DIDDocument *document)
+static int document_copy(DIDDocument *destdoc, DIDDocument *srcdoc)
 {
     size_t size;
     int i;
 
-    assert(doc);
-    assert(document);
+    assert(destdoc);
+    assert(srcdoc);
 
-    DID_Copy(&doc->did, &document->did);
+    DID_Copy(&destdoc->did, &srcdoc->did);
 
-    if (publickeys_copy(doc, document->publickeys.pks, document->publickeys.size) == -1)
+    if (publickeys_copy(destdoc, srcdoc->publickeys.pks, srcdoc->publickeys.size) == -1)
         return -1;
 
-    if (document->credentials.size != 0  && credentials_copy(doc,
-            document->credentials.credentials, document->credentials.size) == -1)
+    if (srcdoc->credentials.size != 0  && credentials_copy(destdoc,
+            srcdoc->credentials.credentials, srcdoc->credentials.size) == -1)
         return -1;
 
-    if (document->services.size != 0 && services_copy(doc,
-            document->services.services, document->services.size) == -1)
+    if (srcdoc->services.size != 0 && services_copy(destdoc,
+            srcdoc->services.services, srcdoc->services.size) == -1)
         return -1;
 
-    doc->expires = document->expires;
-    memcpy(&doc->proof, &document->proof, sizeof(DocumentProof));
+    destdoc->expires = srcdoc->expires;
+    memcpy(&destdoc->proof, &srcdoc->proof, sizeof(DocumentProof));
+    DIDMeta_Copy(&destdoc->meta, &srcdoc->meta);
+    DIDMeta_Copy(&destdoc->did.meta, &destdoc->meta);
     return 0;
 }
 
@@ -1035,7 +1049,7 @@ DIDDocumentBuilder* DIDDocument_Modify(DIDDocument *document)
         return NULL;
     }
 
-    if (document && DIDDocument_Copy(builder->document, document) == -1) {
+    if (document && document_copy(builder->document, document) == -1) {
         DIDDocumentBuilder_Destroy(builder);
         return NULL;
     }
@@ -1438,7 +1452,7 @@ int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
     DIDDocument *document;
     Credential *cred;
     Issuer *issuer;
-    const char *ntpyes[] = {"SelfProclaimedCredential"};
+    const char *defaulttypes[] = {"SelfProclaimedCredential"};
     int rc;
 
     if (!builder || !builder->document || !fragment || !*fragment
@@ -1446,12 +1460,13 @@ int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
         return -1;
 
     document = builder->document;
-    issuer = Issuer_Create(&document->did, DIDDocument_GetDefaultPublicKey(document));
+    issuer = Issuer_Create(&document->did, DIDDocument_GetDefaultPublicKey(document),
+            document->meta.store);
     if (!issuer)
         return -1;
 
     if (!types) {
-        types = ntpyes;
+        types = defaulttypes;
         typesize = 1;
     }
 
@@ -2070,7 +2085,6 @@ int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass
 {
     int rc;
     va_list inputs;
-    DIDStore *store;
 
     if (!document || !storepass || !*storepass || !sig || count <= 0)
         return -1;
@@ -2078,13 +2092,9 @@ int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass
     if (!keyid)
         keyid = DIDDocument_GetDefaultPublicKey(document);
 
-    store = DIDStore_GetInstance();
-    if (!store)
-        return -1;
-
     va_start(inputs, count);
-    rc = DIDStore_Signv(store, storepass, DIDDocument_GetSubject(document), keyid,
-            sig, count, inputs);
+    rc = DIDStore_Signv(document->meta.store, storepass, DIDDocument_GetSubject(document),
+            keyid, sig, count, inputs);
     va_end(inputs);
 
     return rc;

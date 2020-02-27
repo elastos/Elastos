@@ -70,7 +70,15 @@ else()
     add_definitions(-DCRYSTAL_STATIC)
 endif()
 
+if (NOT ENABLE_SHARED)
+    set(STATIC_LIBS
+        cjson
+        curl
+        ssl)
+endif()
+
 set(LIBS
+    ${STATIC_LIBS}
     eladid
     hdkey-static
     crypto
@@ -114,9 +122,10 @@ include_directories(
     ${PROJECT_INT_DIST_DIR}/include)
 
 link_directories(
-    ../hdkey
-    ${PROJECT_INT_DIST_DIR}/lib
-    ${CMAKE_CURRENT_BINARY_DIR}/../src)
+    ${CMAKE_CURRENT_BINARY_DIR}/../src
+    ${CMAKE_CURRENT_BINARY_DIR}/../hdkey
+    ${CMAKE_CURRENT_BINARY_DIR}/../adapter/spvadapter
+    ${PROJECT_INT_DIST_DIR}/lib)
 
 add_executable(didtest
     ${SRC})

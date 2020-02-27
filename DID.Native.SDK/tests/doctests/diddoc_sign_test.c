@@ -18,6 +18,7 @@
 
 static DIDDocument *document;
 static DIDURL *keyid;
+static DIDStore *store;
 
 static void test_diddoc_sign_verify(void)
 {
@@ -45,7 +46,6 @@ static int diddoc_sign_test_suite_init(void)
     int rc;
     char _path[PATH_MAX];
     const char *storePath, *mnemonic;
-    DIDStore *store;
 
     storePath = get_store_path(_path, "/idchain");
     store = TestData_SetupStore(storePath);

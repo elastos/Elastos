@@ -4,6 +4,8 @@ set (CMAKE_CXX_STANDARD 11)
 
 include(ProjectDefaults)
 
+set(ENABLE_SHARED TRUE)
+
 set(SRC
     spvadapter.cpp)
 

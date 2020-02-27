@@ -39,7 +39,7 @@ static void test_idchain_publishdid(void)
 
     printf("\n#### begin to resolve(create) [%s]", did->idstring);
     while(!doc) {
-        doc = DIDStore_ResolveDID(store, did, true);
+        doc = DID_Resolve(did);
         if (!doc) {
             ++i;
             printf(".");
@@ -67,7 +67,7 @@ static void test_idchain_publishdid(void)
 
     printf("#### begin to resolve(update) [%s]", did->idstring);
     while(!updatedoc || !strcmp(createTxid, updateTxid)) {
-        updatedoc = DIDStore_ResolveDID(store, did, true);
+        updatedoc = DID_Resolve(did);
         if (!updatedoc) {
             ++i;
             printf(".");
@@ -136,12 +136,16 @@ static int idchain_operation_test_suite_init(void)
     printf("\n#### mnemonic: %s", mnemonic);
     rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", 0, true);
     Mnemonic_Free((char*)mnemonic);
-    if (rc < 0)
+    if (rc < 0) {
+        TestData_Free();
         return -1;
+    }
 
     document = DIDStore_NewDID(store, storepass, "littlefish");
-    if (!document)
+    if (!document) {
+        TestData_Free();
         return -1;
+    }
 
     return 0;
 }

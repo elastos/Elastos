@@ -207,18 +207,18 @@ static void test_didstore_initial_error(void)
     DIDAdapter *adapter;
 
     storePath = get_store_path(_path, "/servet");
-    store = DIDStore_Initialize(storePath, NULL);
+    store = DIDStore_Open(storePath, NULL);
     CU_ASSERT_PTR_NULL(store);
 
     walletDir = get_wallet_path(_path, walletdir);
-    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    adapter = TestDIDAdapter_Create(walletDir, walletId, network, getpassword);
     CU_ASSERT_PTR_NOT_NULL_FATAL(adapter);
 
-    store = DIDStore_Initialize("", adapter);
+    store = DIDStore_Open("", adapter);
     CU_ASSERT_PTR_NULL(store);
 
     TestDIDAdapter_Destroy(adapter);
-    DIDStore_Deinitialize();
+    DIDStore_Close(store);
 }
 
 static void test_didstore_privateIdentity_error(void)
@@ -235,7 +235,6 @@ static void test_didstore_privateIdentity_error(void)
     store = TestData_SetupStore(storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-    store = DIDStore_GetInstance();
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 

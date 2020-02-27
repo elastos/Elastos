@@ -36,6 +36,7 @@ typedef struct DIDMeta {
     bool deactived;
     char txid[ELA_MAX_TXID_LEN];
     time_t timestamp;
+    DIDStore *store;
 } DIDMeta;
 
 int DIDMeta_Init(DIDMeta *meta, const char *alias, char *txid,
@@ -65,7 +66,15 @@ time_t DIDMeta_GetTimestamp(DIDMeta *meta);
 
 int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta);
 
+int DIDMeta_Copy(DIDMeta *meta, DIDMeta *frommeta);
+
 bool DIDMeta_IsEmpty(DIDMeta *meta);
+
+int DIDMeta_SetStore(DIDMeta *meta, DIDStore *store);
+
+DIDStore *DIDMeta_GetStore(DIDMeta *meta);
+
+bool DIDMeta_AttachedStore(DIDMeta *meta);
 
 #ifdef __cplusplus
 }

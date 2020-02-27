@@ -12,6 +12,7 @@
 #include "did.h"
 
 static DIDDocument *document;
+static DIDStore *store;
 
 static void test_diddoc_json_operateion(void)
 {
@@ -54,7 +55,6 @@ static int diddoc_json_op_test_suite_init(void)
 {
     char _path[PATH_MAX];
     const char *storePath;
-    DIDStore *store;
     int rc;
 
     storePath = get_store_path(_path, "/servet");

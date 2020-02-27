@@ -15,8 +15,6 @@
 #include "didmeta.h"
 #include "didstore.h"
 
-static DIDStore *store;
-
 static int get_did(DID *did, void *context)
 {
     int *count = (int*)context;
@@ -103,6 +101,7 @@ static void test_didstore_op_deletedid(void)
     DID dids[100];
     char alias[ELA_MAX_ALIAS_LEN], _path[PATH_MAX];
     const char *storePath;
+    DIDStore *store;
     int rc, count = 0;
 
     storePath = get_store_path(_path, "/servet");
@@ -123,9 +122,7 @@ static void test_didstore_op_deletedid(void)
         DID *did = DIDDocument_GetSubject(doc);
         CU_ASSERT_PTR_NOT_NULL(did);
 
-        rc = DID_Copy(&dids[i], did);
-        CU_ASSERT_NOT_EQUAL(rc, -1);
-
+        DID_Copy(&dids[i], did);
         DIDDocument_Destroy(doc);
     }
 
@@ -164,6 +161,7 @@ static void test_didstore_op_store_load_did(void)
     DIDDocument *issuerdoc, *doc, *loaddoc;
     char _path[PATH_MAX];
     const char *storePath;
+    DIDStore *store;
     bool isEquals;
     int rc, count = 0;
 

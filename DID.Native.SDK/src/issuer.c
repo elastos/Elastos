@@ -32,17 +32,17 @@
 
 extern const char *ProofType;
 
-Issuer *Issuer_Create(DID *did, DIDURL *signkey)
+Issuer *Issuer_Create(DID *did, DIDURL *signkey, DIDStore *store)
 {
     Issuer *issuer;
     DIDDocument *doc;
-    DIDStore *store;
     bool isAuthKey;
 
     if (!did)
         return NULL;
 
-    doc = DID_Resolve(did);
+    //doc = DID_Resolve(did);
+    doc = DIDStore_LoadDID(store, did);
     if (!doc)
         return NULL;
 
@@ -56,7 +56,6 @@ Issuer *Issuer_Create(DID *did, DIDURL *signkey)
         }
     }
 
-    store = DIDStore_GetInstance();
     if (!DIDStore_ContainsPrivateKey(store, did, signkey)) {
         DIDDocument_Destroy(doc);
         return NULL;
@@ -66,7 +65,7 @@ Issuer *Issuer_Create(DID *did, DIDURL *signkey)
     if (!issuer)
         return NULL;
 
-    strcpy(issuer->signer.idstring, did->idstring);
+    DID_Copy(&issuer->signer, DIDDocument_GetSubject(doc));
     DIDURL_Copy(&issuer->signkey, signkey);
     DIDDocument_Destroy(doc);
     return issuer;
@@ -111,10 +110,6 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *did, const char *fragme
             !storepass || !*storepass)
         return NULL;
 
-    store = DIDStore_GetInstance();
-    if (!store)
-        return NULL;
-
     cred = (Credential*)calloc(1, sizeof(Credential));
     if (!cred)
         return NULL;
@@ -154,8 +149,8 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *did, const char *fragme
     data = Credential_ToJson(cred, 0, 1);
     if (!data)
         goto errorExit;
-    rc = DIDStore_Sign(store, storepass, &issuer->signer, &issuer->signkey,
-            signature, 1, (unsigned char*)data, strlen(data));
+    rc = DIDStore_Sign(issuer->signer.meta.store, storepass, &issuer->signer,
+            &issuer->signkey, signature, 1, (unsigned char*)data, strlen(data));
     free((char*)data);
     if (rc)
         goto errorExit;

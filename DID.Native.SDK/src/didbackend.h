@@ -33,7 +33,7 @@ typedef struct DIDBackend {
     DIDAdapter *adapter;
 } DIDBackend;
 
-DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did);
+DIDDocument *DIDBackend_Resolve(DID *did);
 
 const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
         DIDURL *signkey, const char *storepass);

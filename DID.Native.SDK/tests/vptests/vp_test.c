@@ -15,6 +15,7 @@
 static const char *PresentationType = "VerifiablePresentation";
 static DIDDocument *issuerdoc;
 static DIDDocument *testdoc;
+static DIDStore *store;
 
 static void test_vp_getelem(void)
 {
@@ -115,7 +116,7 @@ static void test_vp_create(void)
     did = DIDDocument_GetSubject(testdoc);
     CU_ASSERT_PTR_NOT_NULL_FATAL(did);
 
-    vp = Presentation_Create(did, NULL, storepass, "873172f58701a9ee686f0630204fee59",
+    vp = Presentation_Create(did, NULL, store, storepass, "873172f58701a9ee686f0630204fee59",
             "https://example.com/", 4, TestData_LoadProfileVc(), TestData_LoadEmailVc(),
             TestData_LoadPassportVc(), TestData_LoadTwitterVc());
     CU_ASSERT_PTR_NOT_NULL_FATAL(vp);
@@ -178,7 +179,6 @@ static int vp_test_suite_init(void)
 {
     char _path[PATH_MAX];
     const char *storePath;
-    DIDStore *store;
     int rc;
 
     storePath = get_store_path(_path, "/idchain");

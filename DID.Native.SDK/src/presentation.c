@@ -132,7 +132,7 @@ static int parse_proof(DID *signer, Presentation *pre, cJSON *json)
         return -1;
 
     if (DIDURL_Copy(&pre->proof.verificationMethod, keyid) == -1 ||
-            DID_Copy(signer, &keyid->did) == -1) {
+            !DID_Copy(signer, &keyid->did)) {
         DIDURL_Destroy(keyid);
         return -1;
     }
@@ -217,23 +217,21 @@ static int add_credential(Credential **creds, int index, Credential *cred)
 }
 
 ////////////////////////////////////////////////////////////////////////////
-Presentation *Presentation_Create(DID *did, DIDURL *signkey, const char *storepass,
-        const char *nonce, const char *realm, int count, ...)
+Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
+        const char *storepass, const char *nonce, const char *realm, int count, ...)
 {
     va_list list;
     Credential *cred;
     Presentation *pre = NULL;
     DIDDocument *doc;
-    DIDStore *store;
     const char *data;
     char signature[SIGNATURE_BYTES * 2 + 16];
     int rc;
 
-    if (!did || !storepass || !*storepass || !nonce || !*nonce ||
+    if (!did || !store || !storepass || !*storepass || !nonce || !*nonce ||
             !realm || !*realm || count <= 0)
         return NULL;
 
-    store = DIDStore_GetInstance();
     doc = DIDStore_LoadDID(store, did);
     if (!doc)
         return NULL;
@@ -526,6 +524,7 @@ bool Presentation_IsGenuine(Presentation *pre)
     }
 
     rc = Presentation_Verify(pre);
+
     DIDDocument_Destroy(doc);
     return rc == 0;
 

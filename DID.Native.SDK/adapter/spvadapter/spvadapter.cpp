@@ -31,7 +31,6 @@ struct SpvDidAdapter {
     IMasterWallet *masterWallet;
     IIDChainSubWallet *idWallet;
     SubWalletCallback *callback;
-    char *resolver;
 };
 
 enum TransactionStatus { DELETED, ADDED, UPDATED };
@@ -223,7 +222,7 @@ static void SyncStop(SpvDidAdapter *adapter)
 }
 
 SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
-        const char *network, const char *resolver)
+        const char *network)
 {
     nlohmann::json netConfig;
     IMasterWallet *masterWallet;
@@ -255,14 +254,6 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
             walletDir, network, netConfig);
     if (!manager)
         return NULL;
-
-    if (resolver) {
-        url = strdup(resolver);
-        if (!url) {
-            delete manager;
-            return NULL;
-        }
-    }
 
     IIDChainSubWallet *idWallet = NULL;
 
@@ -300,7 +291,6 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
     adapter->masterWallet = masterWallet;
     adapter->idWallet = idWallet;
     adapter->callback = callback;
-    adapter->resolver = url;
 
     SyncStart(adapter);
 
@@ -313,9 +303,6 @@ void SpvDidAdapter_Destroy(SpvDidAdapter *adapter)
         return;
 
     SyncStop(adapter);
-
-    if (adapter->resolver)
-        free(adapter->resolver);
 
     delete adapter->callback;
     delete adapter->manager;
@@ -439,135 +426,6 @@ void SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
     } catch (...) {
         txCallback(NULL, -1, "SPV adapter internal error.", context);
     }
-}
-
-typedef struct HttpResponseBody {
-    size_t used;
-    size_t sz;
-    void *data;
-} HttpResponseBody;
-
-static size_t HttpResponseBodyWriteCallback(char *ptr,
-        size_t size, size_t nmemb, void *userdata)
-{
-    HttpResponseBody *response = (HttpResponseBody *)userdata;
-    size_t length = size * nmemb;
-
-    if (response->sz - response->used < length) {
-        size_t new_sz;
-        size_t last_try;
-        void *new_data;
-
-        if (response->sz + length < response->sz) {
-            response->used = 0;
-            return 0;
-        }
-
-        for (new_sz = response->sz ? response->sz << 1 : 512, last_try = response->sz;
-            new_sz > last_try && new_sz <= response->sz + length;
-            last_try = new_sz, new_sz <<= 1) ;
-
-        if (new_sz <= last_try)
-            new_sz = response->sz + length;
-
-        new_sz += 16;
-
-        new_data = realloc(response->data, new_sz);
-        if (!new_data) {
-            response->used = 0;
-            return 0;
-        }
-
-        response->data = new_data;
-        response->sz = new_sz;
-    }
-
-    memcpy((char *)response->data + response->used, ptr, length);
-    response->used += length;
-
-    return length;
-}
-
-typedef struct HttpRequestBody {
-    size_t used;
-    size_t sz;
-    char *data;
-} HttpRequestBody;
-
-static size_t HttpRequestBodyReadCallback(void *dest, size_t size,
-        size_t nmemb, void *userdata)
-{
-    HttpRequestBody *request = (HttpRequestBody *)userdata;
-    size_t length = size * nmemb;
-    size_t bytes_copy = request->sz - request->used;
-
-    if (bytes_copy) {
-        if(bytes_copy > length)
-            bytes_copy = length;
-
-        memcpy(dest, request->data + request->used, bytes_copy);
-
-        request->used += bytes_copy;
-        return bytes_copy;
-    }
-
-    return 0;
-}
-
-#define DID_RESOLVE_REQUEST "{\"method\":\"resolvedid\",\"params\":{\"did\":\"%s\",\"all\":%s}}"
-
-// Caller need free the pointer
-const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter, const char *did, int all)
-{
-    HttpRequestBody request;
-    HttpResponseBody response;
-    char buffer[256];
-    const char *forAll;
-
-    if (!adapter || !did || !adapter->resolver)
-        return NULL;
-
-    // TODO: max did length
-    if (strlen(did) > 64)
-        return NULL;
-
-    forAll = !all ? "false" : "true";
-
-    request.used = 0;
-    request.sz = sprintf(buffer, DID_RESOLVE_REQUEST, did, forAll);
-    request.data = buffer;
-
-    CURL *curl = curl_easy_init();
-    curl_easy_setopt(curl, CURLOPT_URL, adapter->resolver);
-
-    curl_easy_setopt(curl, CURLOPT_POST, 1L);
-    curl_easy_setopt(curl, CURLOPT_READFUNCTION, HttpRequestBodyReadCallback);
-    curl_easy_setopt(curl, CURLOPT_READDATA, &request);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)request.sz);
-
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, HttpResponseBodyWriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-
-    // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-
-    struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, "Content-Type: application/json");
-    headers = curl_slist_append(headers, "Accept: application/json");
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-    memset(&response, 0, sizeof(response));
-    CURLcode rc = curl_easy_perform(curl);
-    curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
-    if (rc != CURLE_OK) {
-        if (response.data)
-            free(response.data);
-
-        return NULL;
-    }
-
-    ((char *)response.data)[response.used] = 0;
-    return (const char *)response.data;
 }
 
 void SpvDidAdapter_FreeMemory(SpvDidAdapter *adapter, void *mem)

@@ -50,6 +50,7 @@ set(SRC
     issuer.c
     credmeta.c
     didmeta.c
+    didresolver.c
     ${utility-SOURCES})
 
 set(HEADERS
@@ -91,28 +92,29 @@ if(WIN32)
 endif()
 
 set(LIBS
+    cjson
+    curl
+    ssl
     crypto
-    cjson)
+    z)
 
 if(WIN32)
-set(LIBS
-    ${LIBS}
-    crystal
-    pthread)
-else()
-set(LIBS
-    ${LIBS})
+    set(LIBS
+        ${LIBS}
+        crystal
+        pthread)
 endif()
 
 add_definitions(-DDID_BUILD)
 
 add_custom_target(ela-did)
 
-set(ELADID_DEPENDS libressl cJSON hdkey)
+set(ELADID_DEPENDS libressl libcurl cJSON hdkey)
+
 if(WIN32)
-set(ELADID_DEPENDS
-    libcrystal
-    ${ELADID_DEPENDS})
+    set(ELADID_DEPENDS
+        libcrystal
+        ${ELADID_DEPENDS})
 endif()
 
 if(ENABLE_STATIC)
@@ -165,21 +167,23 @@ if(ENABLE_SHARED)
         RUNTIME DESTINATION "bin"
         ARCHIVE DESTINATION "lib"
         LIBRARY DESTINATION "lib")
+
+    install(EXPORT
+            ElastosDIDConfig
+        NAMESPACE
+            "ElastosDID::"
+        DESTINATION
+            share/ElastosDID/cmake
+    )
+
+    export(
+        TARGETS
+            eladid-shared
+        FILE
+            ElastosDIDConfig.cmake
+    )
 endif()
 
 install(FILES ${HEADERS} DESTINATION "include")
 
-install(EXPORT
-          ElastosDIDConfig
-        NAMESPACE
-          "ElastosDID::"
-        DESTINATION
-          share/ElastosDID/cmake
-)
-export(
-  TARGETS
-    eladid-shared
-  FILE
-    ElastosDIDConfig.cmake
-)
 

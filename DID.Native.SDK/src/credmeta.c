@@ -136,6 +136,15 @@ int CredentialMeta_Merge(CredentialMeta *meta, CredentialMeta *frommeta)
     return 0;
 }
 
+int CredentialMeta_Copy(CredentialMeta *meta, CredentialMeta *frommeta)
+{
+    if (!meta || !frommeta)
+        return -1;
+
+    memcpy(meta, frommeta, sizeof(CredentialMeta));
+    return 0;
+}
+
 bool CredentialMeta_IsEmpty(CredentialMeta *meta)
 {
     if (!meta)
@@ -145,4 +154,29 @@ bool CredentialMeta_IsEmpty(CredentialMeta *meta)
         return false;
 
     return true;
+}
+
+int CredentialMeta_SetStore(CredentialMeta *meta, DIDStore *store)
+{
+    if (!meta || !store)
+        return -1;
+
+    meta->store = store;
+    return 0;
+}
+
+DIDStore *CredentialMeta_GetStore(CredentialMeta *meta)
+{
+    if (!meta)
+        return NULL;
+
+    return meta->store;
+}
+
+bool CredentialMeta_AttachedStore(CredentialMeta *meta)
+{
+    if (!meta)
+        return false;
+
+    return meta->store != NULL;
 }

@@ -14,6 +14,7 @@
 static DIDDocument *issuerdoc;
 static DID *issuerid;
 static Issuer *issuer;
+static DIDStore *store;
 
 static bool has_type(const char **types, size_t size, const char *type)
 {
@@ -40,7 +41,6 @@ static void test_issuer_issuevc(void)
     int rc;
 
     doc = TestData_LoadDoc();
-    store = DIDStore_GetInstance();
     rc = DIDStore_StoreDID(store, doc, "credential doc");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
@@ -166,7 +166,6 @@ static int issuer_issuevc_test_suite_init(void)
 {
     char _path[PATH_MAX];
     const char *storePath;
-    DIDStore *store;
     DIDURL *signkey;
     int rc;
 
@@ -199,7 +198,7 @@ static int issuer_issuevc_test_suite_init(void)
         return -1;
     }
 
-    issuer = Issuer_Create(issuerid, signkey);
+    issuer = Issuer_Create(issuerid, signkey, store);
     if (!issuer) {
         TestData_Free();
         return -1;

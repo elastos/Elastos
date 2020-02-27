@@ -24,6 +24,8 @@
 #define __DID_H__
 
 #include "ela_did.h"
+#include "didmeta.h"
+#include "credmeta.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,11 +36,13 @@ extern "C" {
 
 struct DID {
     char idstring[MAX_ID_SPECIFIC_STRING];
+    DIDMeta meta;
 };
 
 struct  DIDURL {
     DID did;
     char fragment[MAX_FRAGMENT];
+    CredentialMeta meta;
 };
 
 int parse_did(DID *did, const char *idstring);

@@ -552,7 +552,7 @@ Credential *Parser_Credential(cJSON *json, DID *did)
 
     field = cJSON_GetObjectItem(item, "id");
     if (!field) {
-        if (!did || DID_Copy(&credential->subject.id, did) == -1)
+        if (!did || !DID_Copy(&credential->subject.id, did))
             goto errorExit;
     } else {
         if (parse_did(&credential->subject.id, field->valuestring) == -1)
@@ -797,7 +797,6 @@ int Credential_Verify(Credential *cred)
     rc = DIDDocument_Verify(doc, &cred->proof.verificationMethod,
             cred->proof.signatureValue, 1, (unsigned char*)data, strlen(data));
     free((void*)data);
-
     return rc;
 }
 
@@ -871,18 +870,17 @@ bool Credential_IsValid(Credential *cred)
 
 int Credential_SetAlias(Credential *credential, const char *alias)
 {
-    DIDStore *store;
-    int rc;
-
     if (!credential)
         return -1;
 
-    rc = CredentialMeta_SetAlias(&credential->meta, alias);
-    if (rc)
-        return rc;
+    if (CredentialMeta_SetAlias(&credential->meta, alias) == -1)
+        return -1;
 
-    store = DIDStore_GetInstance();
-    return didstore_storecredmeta(store, &credential->meta, &credential->id);
+    if (CredentialMeta_AttachedStore(&credential->meta))
+        didstore_storecredmeta(CredentialMeta_GetStore(&credential->meta),
+                &credential->meta, &credential->id);
+
+    return 0;
 }
 
 int Credential_GetAlias(Credential *credential, char *alias, size_t size)

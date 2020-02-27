@@ -57,7 +57,7 @@ typedef enum DIDRequest_Type
 DIDDocument *DIDRequest_FromJson(cJSON *json);
 
 const char* DIDRequest_Sign(DIDRequest_Type type, DID *did,
-        DIDURL *signKey, const char* data, const char *storepass);
+        DIDURL *signKey, const char* data, DIDStore *store, const char *storepass);
 
 int DIDRequest_Verify(DIDRequest *request);
 

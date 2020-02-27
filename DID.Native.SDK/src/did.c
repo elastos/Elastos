@@ -31,6 +31,7 @@
 #include "diddocument.h"
 #include "didstore.h"
 #include "credential.h"
+#include "didmeta.h"
 
 static const char did_scheme[] = "did";
 static const char did_method[] = "elastos";
@@ -185,13 +186,17 @@ char *DID_ToString(DID *did, char *idstring, size_t len)
     return idstring;
 }
 
-int DID_Copy(DID *dest, DID *src)
+DID *DID_Copy(DID *dest, DID *src)
 {
     if (!dest || !src)
-        return -1;
+        return NULL;
 
     strcpy(dest->idstring, src->idstring);
-    return 0;
+
+    if (DIDMeta_Copy(&dest->meta, &src->meta) == -1)
+        return NULL;
+
+    return dest;
 }
 
 bool DID_Equals(DID *did1, DID *did2)
@@ -271,7 +276,7 @@ DID_API DIDURL *DIDURL_FromDid(DID *did, const char *fragment)
     if (!id)
         return NULL;
 
-    if (DID_Copy(&id->did, did) == -1) {
+    if (!DID_Copy(&id->did, did)) {
         free(id);
         return NULL;
     }
@@ -356,6 +361,7 @@ int DIDURL_Copy(DIDURL *dest, DIDURL *src)
 
     strcpy(dest->did.idstring, src->did.idstring);
     strcpy(dest->fragment, src->fragment);
+    CredentialMeta_Copy(&dest->meta, &src->meta);
 
     return 0;
 }
@@ -371,146 +377,82 @@ void DIDURL_Destroy(DIDURL *id)
 
 DIDDocument *DID_Resolve(DID *did)
 {
-    DIDStore *store;
-
     if (!did)
         return NULL;
 
-    store = DIDStore_GetInstance();
-    if (!store)
-        return NULL;
-
-    return DIDStore_ResolveDID(store, did, false);
+    return DIDBackend_Resolve(did);
 }
 
 int DID_SetAlias(DID *did, const char *alias)
 {
-    DIDStore *store;
-    DIDMeta meta;
-    int rc;
-
     if (!did)
         return -1;
 
-    store = DIDStore_GetInstance();
-    rc = didstore_loaddidmeta(store, &meta, did);
-    if (rc)
-        return rc;
+    if (DIDMeta_SetAlias(&did->meta, alias) == -1)
+        return -1;
 
-    rc = DIDMeta_SetAlias(&meta, alias);
-    if (rc)
-        return rc;
+    if (DIDMeta_AttachedStore(&did->meta))
+        didstore_storedidmeta(did->meta.store, &did->meta, did);
 
-    return didstore_storedidmeta(store, &meta, did);
+    return 0;
 }
 
 int DID_GetAlias(DID *did, char *alias, size_t size)
 {
-    DIDStore *store;
-    DIDMeta meta;
-    int rc;
-
     if (!did || !alias || size <= 0)
         return -1;
 
-    store = DIDStore_GetInstance();
-    rc = didstore_loaddidmeta(store, &meta, did);
-    if (rc)
-        return rc;
-
-    return DIDMeta_GetAlias(&meta, alias, size);
+    return DIDMeta_GetAlias(&did->meta, alias, size);
 }
 
 int DID_GetTxid(DID *did, char *txid, size_t size)
 {
-    DIDStore *store;
-    DIDMeta meta;
-    int rc;
-
     if (!did || !txid || size <= 0)
         return -1;
 
-    store = DIDStore_GetInstance();
-    rc = didstore_loaddidmeta(store, &meta, did);
-    if (rc)
-        return rc;
-
-    return DIDMeta_GetTxid(&meta, txid, size);
+    return DIDMeta_GetTxid(&did->meta, txid, size);
 }
 
 bool DID_GetDeactived(DID *did)
 {
-    DIDStore *store;
-    DIDMeta meta;
-    int rc;
-
     if (!did)
         return false;
 
-    store = DIDStore_GetInstance();
-    rc = didstore_loaddidmeta(store, &meta, did);
-    if (rc)
-        return rc;
-
-    return DIDMeta_GetDeactived(&meta);
+    return DIDMeta_GetDeactived(&did->meta);
 }
 
 time_t DID_GetTimestamp(DID *did)
 {
-    DIDStore *store;
-    DIDMeta meta;
-    int rc;
-
     if (!did)
         return 0;
 
-    store = DIDStore_GetInstance();
-    rc = didstore_loaddidmeta(store, &meta, did);
-    if (rc)
-        return rc;
-
-    return DIDMeta_GetTimestamp(&meta);
+    return DIDMeta_GetTimestamp(&did->meta);
 }
 
+//for Credential
 int DIDURL_SetAlias(DIDURL *id, const char *alias)
 {
-    DIDStore *store;
-    CredentialMeta meta;
-    int rc;
-
     if (!id)
         return -1;
 
-    store = DIDStore_GetInstance();
-    rc = didstore_loadcredmeta(store, &meta, id);
-    if (rc)
-        return rc;
+    if (CredentialMeta_SetAlias(&id->meta, alias) == -1)
+        return -1;
 
-    rc = CredentialMeta_SetAlias(&meta, alias);
-    if (rc)
-        return rc;
+    if (CredentialMeta_AttachedStore(&id->meta))
+        didstore_storecredmeta(id->meta.store, &id->meta, id);
 
-    return didstore_storecredmeta(store, &meta, id);
+    return 0;
 }
 
 int DIDURL_GetAlias(DIDURL *id, char* alias, size_t size)
 {
-    DIDStore *store;
-    CredentialMeta meta;
-    int rc;
-
     if (!id || !alias || size <= 0)
         return -1;
 
-    store = DIDStore_GetInstance();
-    rc = didstore_loadcredmeta(store, &meta, id);
-    if (rc)
-        return rc;
-
-    return CredentialMeta_GetAlias(&meta, alias, size);
+    return CredentialMeta_GetAlias(&id->meta, alias, size);
 }
 
-DIDDocumentBuilder* DID_CreateBuilder(DID *did)
+DIDDocumentBuilder* DID_CreateBuilder(DID *did, DIDStore *store)
 {
     DIDDocumentBuilder *builder;
 
@@ -524,11 +466,13 @@ DIDDocumentBuilder* DID_CreateBuilder(DID *did)
         return NULL;
     }
 
-    if (DID_Copy(&builder->document->did, did) == -1) {
+    if (!DID_Copy(&builder->document->did, did)) {
         free(builder->document);
         free(builder);
         return NULL;
     }
+
+    document_setstore(builder->document, store);
 
     return builder;
 }

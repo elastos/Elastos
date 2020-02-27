@@ -234,6 +234,15 @@ int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta)
     return 0;
 }
 
+int DIDMeta_Copy(DIDMeta *meta, DIDMeta *frommeta)
+{
+    if (!meta || !frommeta)
+        return -1;
+
+    memcpy(meta, frommeta, sizeof(DIDMeta));
+    return 0;
+}
+
 bool DIDMeta_IsEmpty(DIDMeta *meta)
 {
     if (!meta)
@@ -243,4 +252,29 @@ bool DIDMeta_IsEmpty(DIDMeta *meta)
         return true;
 
     return false;
+}
+
+int DIDMeta_SetStore(DIDMeta *meta, DIDStore *store)
+{
+    if (!meta || !store)
+        return -1;
+
+    meta->store = store;
+    return 0;
+}
+
+DIDStore *DIDMeta_GetStore(DIDMeta *meta)
+{
+    if (!meta)
+        return NULL;
+
+    return meta->store;
+}
+
+bool DIDMeta_AttachedStore(DIDMeta *meta)
+{
+    if (!meta)
+        return false;
+
+    return meta->store != NULL;
 }

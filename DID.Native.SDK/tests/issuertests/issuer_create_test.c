@@ -14,13 +14,14 @@
 static DIDDocument *issuerdoc;
 static DID *issuerid;
 static DIDURL *signkey;
+static DIDStore *store;
 
 static void test_issuer_create(void)
 {
     Issuer *issuer;
     bool isequal;
 
-    issuer = Issuer_Create(issuerid, signkey);
+    issuer = Issuer_Create(issuerid, signkey, store);
     CU_ASSERT_PTR_NOT_NULL_FATAL(issuer);
 
     isequal = DID_Equals(issuerid, Issuer_GetSigner(issuer));
@@ -37,7 +38,7 @@ static void test_issuer_create_without_key(void)
     Issuer *issuer;
     bool isequal;
 
-    issuer = Issuer_Create(issuerid, NULL);
+    issuer = Issuer_Create(issuerid, NULL, store);
     CU_ASSERT_PTR_NOT_NULL_FATAL(issuer);
 
     isequal = DID_Equals(issuerid, Issuer_GetSigner(issuer));
@@ -76,7 +77,7 @@ static void test_issuer_create_with_invalidkey1(void)
     CU_ASSERT_TRUE(DIDDocument_IsValid(doc));
     DIDDocument_Destroy(doc);
 
-    issuer = Issuer_Create(issuerid, keyid);
+    issuer = Issuer_Create(issuerid, keyid, store);
     DIDURL_Destroy(keyid);
 
     CU_ASSERT_PTR_NULL(issuer);
@@ -91,7 +92,7 @@ static void test_issuer_create_with_invalidkey2(void)
     key = DIDURL_FromDid(issuerid, "key2");
     CU_ASSERT_PTR_NOT_NULL_FATAL(key);
 
-    issuer = Issuer_Create(issuerid, key);
+    issuer = Issuer_Create(issuerid, key, store);
     CU_ASSERT_PTR_NULL(issuer);
 
     Issuer_Destroy(issuer);
@@ -101,7 +102,6 @@ static int issuer_create_test_suite_init(void)
 {
     char _path[PATH_MAX];
     const char *storePath;
-    DIDStore *store;
     int rc;
 
     storePath = get_store_path(_path, "/idchain");

@@ -16,6 +16,7 @@ _DID_GetTxid
 _DID_GetDeactived
 _DID_GetTimestamp
 _DID_CreateBuilder
+_DID_Resolve
 
 # DIDURL
 _DIDURL_FromString
@@ -128,9 +129,8 @@ _Credential_SetAlias
 _Credential_GetAlias
 
 # DIDStore
-_DIDStore_GetInstance
-_DIDStore_Initialize
-_DIDStore_Deinitialize
+_DIDStore_Open
+_DIDStore_Close
 _DIDStore_ContainsPrivateIdentity
 _DIDStore_InitPrivateIdentityFromRootKey
 _DIDStore_InitPrivateIdentity
@@ -139,7 +139,6 @@ _DIDStore_NewDIDByIndex
 _DIDStore_GetDIDByIndex
 _DIDStore_Sign
 _DIDStore_Signv
-_DIDStore_ResolveDID
 _DIDStore_StoreDID
 _DIDStore_LoadDID
 _DIDStore_ContainsDID
@@ -160,6 +159,10 @@ _DIDStore_PublishDID
 _DIDStore_DeactivateDID
 _DIDStore_ExportMnemonic
 _DIDStore_Synchronize
+
+# Backend
+_DIDBackend_InitializeDefault
+_DIDBackend_Initialize
 
 # Mnemonic
 _Mnemonic_Generate

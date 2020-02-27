@@ -71,7 +71,6 @@ typedef enum {
     JavaUnknownError,
     DIDBackendException,
     DIDTransactionException,
-    DIDResolveException
 } JavaExceptionCodes;
 
 typedef struct {
@@ -98,7 +97,6 @@ static void JavaThrowException(JNIEnv *jenv, JavaExceptionCodes code,
         { JavaUnknownError,  "java/lang/UnknownError" },
         { DIDBackendException, "org/elastos/did/exception/DIDBackendException" },
         { DIDTransactionException, "org/elastos/did/exception/DIDTransactionException" },
-        { DIDResolveException, "org/elastos/did/exception/DIDResolveException" },
         { (JavaExceptionCodes)0,  "java/lang/UnknownError" }
     };
 
@@ -131,12 +129,11 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 JNI_EXPORT jlong JNICALL Java_org_elastos_did_adapter_SPVAdapter_create(
         JNIEnv *jenv, jclass jcls, jstring jWalletDir, jstring jWalletId,
-        jstring jNetwork, jstring jResolver)
+        jstring jNetwork)
 {
     const char *walletDir = NULL;
     const char *walletId = NULL;
     const char *network = NULL;
-    const char *resolver = NULL;
     jlong result = 0 ;
 
     (void)jcls;
@@ -161,12 +158,8 @@ JNI_EXPORT jlong JNICALL Java_org_elastos_did_adapter_SPVAdapter_create(
     if (jNetwork)
         network = (*jenv)->GetStringUTFChars(jenv, jNetwork, 0);
 
-    if (jResolver)
-        resolver = (*jenv)->GetStringUTFChars(jenv, jResolver, 0);
+    result = (jlong)SpvDidAdapter_Create(walletDir, walletId, network);
 
-    result = (jlong)SpvDidAdapter_Create(walletDir, walletId, network, resolver);
-
-    if (resolver) (*jenv)->ReleaseStringUTFChars(jenv, jResolver, resolver);
     if (network) (*jenv)->ReleaseStringUTFChars(jenv, jNetwork, network);
     (*jenv)->ReleaseStringUTFChars(jenv, jWalletId, walletId);
     (*jenv)->ReleaseStringUTFChars(jenv, jWalletDir, walletDir);
@@ -307,37 +300,6 @@ JNI_EXPORT void JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransact
     if (memo) (*jenv)->ReleaseStringUTFChars(jenv, jMemo, memo);
     (*jenv)->ReleaseStringUTFChars(jenv, jPassword, password);
     (*jenv)->ReleaseStringUTFChars(jenv, jPayload, payload);
-}
-
-
-JNI_EXPORT jstring JNICALL Java_org_elastos_did_adapter_SPVAdapter_resolve(
-        JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jDid, jboolean jAll)
-{
-    SpvDidAdapter *handle = (SpvDidAdapter *)jHandle;
-    const char *did = NULL;
-    const char *result = NULL;
-
-    (void)jcls;
-
-    if (jDid)
-        did = (char *)(*jenv)->GetStringUTFChars(jenv, jDid, 0);
-
-    if (!did) {
-        JavaThrowException(jenv, JavaIllegalArgumentException, "Invalid DID parameter.");
-        return 0;
-    }
-
-    result = SpvDidAdapter_Resolve(handle, did, (int)jAll);
-    (*jenv)->ReleaseStringUTFChars(jenv, jDid, did);
-
-    if (result) {
-        jstring jresult = (*jenv)->NewStringUTF(jenv, result);
-        SpvDidAdapter_FreeMemory(handle, (void *)result);
-        return jresult;
-    } else {
-        JavaThrowException(jenv, DIDResolveException, "Resolve DID failed.");
-        return 0;
-    }
 }
 
 #ifdef __cplusplus

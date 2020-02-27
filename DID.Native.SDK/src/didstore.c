@@ -61,8 +61,6 @@
 #include "didmeta.h"
 #include "credmeta.h"
 
-DIDStore *storeInstance = NULL;
-
 static const char *META_FILE = ".meta";
 static char MAGIC[] = { 0x00, 0x0D, 0x01, 0x0D };
 static char VERSION[] = { 0x00, 0x00, 0x00, 0x02 };
@@ -83,14 +81,14 @@ extern const char *ProofType;
 
 typedef struct DID_List_Helper {
     DIDStore *store;
-    DIDStore_GetDIDCallback *cb;
+    DIDStore_DIDsCallback *cb;
     void *context;
     int filter;
 } DID_List_Helper;
 
 typedef struct Cred_List_Helper {
     DIDStore *store;
-    DIDStore_GetCredCallback *cb;
+    DIDStore_CredentialsCallback *cb;
     void *context;
     DID did;
     const char *type;
@@ -425,6 +423,10 @@ static int load_didmeta(DIDStore *store, DIDMeta *meta, const char *did)
 
     rc = DIDMeta_FromJson(meta, data);
     free((char*)data);
+    if (rc)
+        return rc;
+
+    DIDMeta_SetStore(meta, store);
     return rc;
 }
 
@@ -538,6 +540,10 @@ static int load_credmeta(DIDStore *store, CredentialMeta *meta, const char *did,
 
     rc = CredentialMeta_FromJson(meta, data);
     free((char*)data);
+    if (rc)
+        return rc;
+
+    CredentialMeta_SetStore(meta, store);
     return rc;
 }
 
@@ -808,6 +814,8 @@ static int list_did_helper(const char *path, void *context)
     }
 
     strcpy(did.idstring, path);
+    load_didmeta(dh->store, &did.meta, did.idstring);
+
     if (dh->filter == 0 || (dh->filter == 1 && DIDSotre_ContainsPrivateKeys(dh->store, &did)) ||
             (dh->filter == 2 && !DIDSotre_ContainsPrivateKeys(dh->store, &did)))
         return dh->cb(&did, dh->context);
@@ -913,10 +921,11 @@ static int list_credential_helper(const char *path, void *context)
 
     strcpy(id.did.idstring, ch->did.idstring);
     strcpy(id.fragment, path);
+    load_credmeta(ch->store, &id.meta, id.did.idstring, id.fragment);
     return ch->cb(&id, ch->context);
 }
 
-static DIDDocument *create_document(DID *did, const char *key,
+static DIDDocument *create_document(DIDStore *store, DID *did, const char *key,
         const char *storepass, const char *alias)
 {
     DIDDocument *document;
@@ -934,7 +943,7 @@ static DIDDocument *create_document(DID *did, const char *key,
     if (init_didurl(&id, did, "primary") == -1)
         return NULL;
 
-    builder = DID_CreateBuilder(did);
+    builder = DID_CreateBuilder(did, store);
     if (!builder)
         return NULL;
 
@@ -964,6 +973,7 @@ static DIDDocument *create_document(DID *did, const char *key,
         return NULL;
     }
 
+    DIDMeta_Copy(&document->did.meta, &document->meta);
     return document;
 }
 
@@ -1012,47 +1022,35 @@ static int store_credential(DIDStore *store, Credential *credential)
 }
 
 /////////////////////////////////////////////////////////////////////////
-DIDStore* DIDStore_Initialize(const char *root, DIDAdapter *adapter)
+DIDStore* DIDStore_Open(const char *root, DIDAdapter *adapter)
 {
     char path[PATH_MAX];
+    DIDStore *didstore;
 
     if (!root || !*root || strlen(root) >= PATH_MAX|| !adapter)
         return NULL;
 
-    DIDStore_Deinitialize();
-
-    storeInstance = (DIDStore *)calloc(1, sizeof(DIDStore));
-    if (!storeInstance)
+    didstore = (DIDStore *)calloc(1, sizeof(DIDStore));
+    if (!didstore)
         return NULL;
 
-    strcpy(storeInstance->root, root);
-    storeInstance->backend.adapter = adapter;
+    strcpy(didstore->root, root);
+    didstore->backend.adapter = adapter;
 
-    if (get_dir(path, 0, 1, root) == 0 && !check_store(storeInstance))
-        return storeInstance;
+    if (get_dir(path, 0, 1, root) == 0 && !check_store(didstore))
+        return didstore;
 
-    if (get_dir(path, 1, 1, root) == 0 && !create_store(storeInstance))
-        return storeInstance;
+    if (get_dir(path, 1, 1, root) == 0 && !create_store(didstore))
+        return didstore;
 
-    free(storeInstance);
+    free(didstore);
     return NULL;
 }
 
-DIDStore* DIDStore_GetInstance(void)
+void DIDStore_Close(DIDStore *didstore)
 {
-    if (!storeInstance)
-        return NULL;
-
-    return storeInstance;
-}
-
-void DIDStore_Deinitialize()
-{
-    if (!storeInstance)
-        return;
-
-    free(storeInstance);
-    storeInstance = NULL;
+    if (didstore)
+        free(didstore);
 }
 
 int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
@@ -1081,6 +1079,8 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
         return -1;
 
     memcpy(&document->meta, &meta, sizeof(DIDMeta));
+    document_setstore(document, store);
+
 	data = DIDDocument_ToJson(document, 0, 0);
 	if (!data)
 		return -1;
@@ -1155,6 +1155,8 @@ DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did)
         return NULL;
     }
 
+    document_setstore(document, store);
+
     return document;
 }
 
@@ -1201,7 +1203,7 @@ bool DIDStore_DeleteDID(DIDStore *store, DID *did)
 }
 
 int DIDStore_ListDID(DIDStore *store, ELA_DID_FILTER filter,
-        DIDStore_GetDIDCallback *callback, void *context)
+        DIDStore_DIDsCallback *callback, void *context)
 {
     char path[PATH_MAX];
     DID_List_Helper dh;
@@ -1248,6 +1250,7 @@ int DIDStore_StoreCredential(DIDStore *store, Credential *credential, const char
             CredentialMeta_Merge(&meta, &credential->meta) == -1)
         return -1;
 
+    CredentialMeta_SetStore(&meta, store);
     memcpy(&credential->meta, &meta, sizeof(CredentialMeta));
     if (store_credential(store, credential) == -1 ||
             store_credmeta(store, &credential->meta, id) == -1)
@@ -1365,7 +1368,7 @@ bool DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id)
 }
 
 int DIDStore_ListCredentials(DIDStore *store, DID *did,
-        DIDStore_GetCredCallback *callback, void *context)
+        DIDStore_CredentialsCallback *callback, void *context)
 {
     ssize_t size = 0;
     char path[PATH_MAX];
@@ -1400,7 +1403,7 @@ int DIDStore_ListCredentials(DIDStore *store, DID *did,
 }
 
 int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *id,
-        const char *type, DIDStore_GetCredCallback *callback, void *context)
+        const char *type, DIDStore_CredentialsCallback *callback, void *context)
 {
     char path[PATH_MAX];
     Cred_List_Helper ch;
@@ -1606,7 +1609,7 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass)
             continue;
 
         if (init_did(&did, DerivedKey_GetAddress(derivedkey)) == 0) {
-            document = DIDStore_ResolveDID(store, &did, true);
+            document = DID_Resolve(&did);
             if (document) {
                 if (DIDStore_StoreDID(store, document, "") == 0) {
                     if (store_default_privatekey(store, storepass,
@@ -1830,7 +1833,7 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
     base58_encode(publickeybase58, DerivedKey_GetPublicKey(derivedkey), PUBLICKEY_BYTES);
     DerivedKey_Wipe(derivedkey);
 
-    document = create_document(&did, publickeybase58, storepass, alias);
+    document = create_document(store, &did, publickeybase58, storepass, alias);
     if (!document) {
         DIDStore_DeleteDID(store, &did);
         return NULL;
@@ -1842,6 +1845,7 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
         return NULL;
     }
 
+    document_setstore(document, store);
     return document;
 }
 
@@ -1891,31 +1895,6 @@ int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did, DIDURL *key,
     return rc;
 }
 
-DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force)
-{
-    DIDDocument *doc;
-    const char *json;
-    char alias[ELA_MAX_ALIAS_LEN];
-
-    if (!store || !did)
-        return NULL;
-
-    doc = DIDStore_LoadDID(store, did);
-    if (!doc || DIDDocument_GetAlias(doc, alias, sizeof(alias)) == -1)
-        *alias = 0;
-
-    doc = DIDBackend_Resolve(&store->backend, did);
-    if (doc && DIDStore_StoreDID(store, doc, alias) == -1) {
-        DIDDocument_Destroy(doc);
-        return NULL;
-    }
-
-    if (!doc && !force)
-        doc = DIDStore_LoadDID(store, did);
-
-    return doc;
-}
-
 const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
         DIDURL *signKey)
 {
@@ -1933,7 +1912,7 @@ const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did
     if (!signKey)
         signKey = DIDDocument_GetDefaultPublicKey(doc);
 
-    resolvedoc = DIDStore_ResolveDID(store, did, true);
+    resolvedoc = DID_Resolve(did);
     if (!resolvedoc)
         return DIDBackend_Create(&store->backend, doc, signKey, storepass);
 
@@ -1961,7 +1940,7 @@ const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         return NULL;
 
     if (!signKey) {
-        DIDDocument *doc = DIDStore_ResolveDID(store, did, false);
+        DIDDocument *doc = DID_Resolve(did);
         if (!doc)
             return NULL;
 

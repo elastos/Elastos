@@ -179,13 +179,13 @@ static int didstore_openstore_test_suite_init(void)
     const char *walletDir, *path;
 
     walletDir = get_wallet_path(_path, walletdir);
-    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    adapter = TestDIDAdapter_Create(walletDir, walletId, network, getpassword);
     if (!adapter)
         return -1;
 
     path = get_file_path(_path, PATH_MAX, 9, "..", PATH_STEP, "etc", PATH_STEP,
             "did", PATH_STEP, "resources", PATH_STEP, "teststore");
-    store = DIDStore_Initialize(path, adapter);
+    store = DIDStore_Open(path, adapter);
     if (!store)
         return -1;
 
@@ -195,7 +195,7 @@ static int didstore_openstore_test_suite_init(void)
 static int didstore_openstore_test_suite_cleanup(void)
 {
     TestDIDAdapter_Destroy(adapter);
-    DIDStore_Deinitialize();
+    DIDStore_Close(store);
     return 0;
 }
 

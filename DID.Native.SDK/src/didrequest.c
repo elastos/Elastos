@@ -108,7 +108,7 @@ static const char *didRequest_toJson(DIDRequest *req, DIDRequest_Type type)
 }
 
 const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
-        const char* data, const char *storepass)
+        const char* data, DIDStore *store, const char *storepass)
 {
     DIDRequest req;
     const char *payload, *op, *requestJson;
@@ -116,25 +116,20 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
     size_t len;
     int rc;
     char signature[SIGNATURE_BYTES * 2 + 16];
-    DIDStore *store;
 
-    if (!did || !signKey || !data || !storepass || !*storepass
-            || ((type < RequestType_Create) && (type > RequestType_Deactivate)))
+    if (!did || !signKey || !data || !storepass || !store || !*storepass
+            || ((type < RequestType_Create) && (type > RequestType_Deactivate)) ||
+            !DIDMeta_AttachedStore(&did->meta))
         return NULL;
 
-    store = DIDStore_GetInstance();
-    if (!store)
-        return NULL;
-
-    rc = DID_GetTxid(did, prevtxid, sizeof(prevtxid));
-    if (rc)
+    if (DID_GetTxid(did, prevtxid, sizeof(prevtxid)) == -1)
         return NULL;
 
     if (type == RequestType_Create)
         strcpy(prevtxid, "");
 
     if (type == RequestType_Deactivate)
-        payload = data;
+        payload = strdup(data);
     else {
         len = strlen(data);
         payload = (char *)malloc(len * 4 / 3 + 16);

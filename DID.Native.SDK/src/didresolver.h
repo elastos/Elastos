@@ -20,10 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef __CREDMETA_H__
-#define __CREDMETA_H__
-
-#include <cjson/cJSON.h>
+#ifndef __DIDRESOLVER_H__
+#define __DIDRESOLVER_H__
 
 #include "ela_did.h"
 
@@ -31,38 +29,17 @@
 extern "C" {
 #endif
 
-typedef struct CredentialMeta
-{
-    char alias[ELA_MAX_ALIAS_LEN];
-    DIDStore *store;
-} CredentialMeta;
+#define URL_LEN              512
 
-int CredentialMeta_Init(CredentialMeta *meta, const char *alias);
+typedef struct DefaultResolver {
+    DIDResolver base;
+    const char url[URL_LEN];
+} DefaultResolver;
 
-const char *CredentialMeta_ToJson(CredentialMeta *meta);
-
-int CredentialMeta_FromJson(CredentialMeta *meta, const char *json);
-
-void CredentialMeta_Destroy(CredentialMeta *meta);
-
-int CredentialMeta_SetAlias(CredentialMeta *meta, const char *alias);
-
-int CredentialMeta_GetAlias(CredentialMeta *meta, char *alias, size_t size);
-
-int CredentialMeta_Merge(CredentialMeta *meta, CredentialMeta *frommeta);
-
-int CredentialMeta_Copy(CredentialMeta *meta, CredentialMeta *frommeta);
-
-bool CredentialMeta_IsEmpty(CredentialMeta *meta);
-
-int CredentialMeta_SetStore(CredentialMeta *meta, DIDStore *store);
-
-DIDStore *CredentialMeta_GetStore(CredentialMeta *meta);
-
-bool CredentialMeta_AttachedStore(CredentialMeta *meta);
+const char *DefaultResolver_Resolve(DIDResolver *resolver, const char *did, int all);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__CREDMETA_H__
+#endif //__DIDRESOLVER_H__
