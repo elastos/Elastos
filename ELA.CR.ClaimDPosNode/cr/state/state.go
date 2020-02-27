@@ -35,7 +35,7 @@ type State struct {
 
 	getHistoryMember func(code []byte) []*CRMember
 	getTxReference   func(tx *types.Transaction) (
-		map[*types.Input]*types.Output, error)
+		map[*types.Input]types.Output, error)
 
 	params  *config.Params
 	history *utils.History
@@ -49,7 +49,7 @@ func (s *State) SetManager(manager *ProposalManager) {
 type FunctionsConfig struct {
 	GetHistoryMember func(code []byte) []*CRMember
 	GetTxReference   func(tx *types.Transaction) (
-		map[*types.Input]*types.Output, error)
+		map[*types.Input]types.Output, error)
 }
 
 // registerFunctions set the tryStartVotingPeriod and processImpeachment function
@@ -389,7 +389,8 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 		referKey := input.ReferKey()
 		_, ok := s.Votes[referKey]
 		if ok {
-			s.processVoteCancel(references[input], height)
+			out := references[input]
+			s.processVoteCancel(&out, height)
 		}
 	}
 }

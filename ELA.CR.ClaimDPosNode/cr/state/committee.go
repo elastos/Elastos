@@ -814,7 +814,7 @@ func (c *Committee) GetProposalByDraftHash(draftHash common.Uint256) *ProposalSt
 
 type CommitteeFuncsConfig struct {
 	GetTxReference func(tx *types.Transaction) (
-		map[*types.Input]*types.Output, error)
+		map[*types.Input]types.Output, error)
 	GetHeight                        func() uint32
 	CreateCRAppropriationTransaction func() (*types.Transaction, error)
 	IsCurrent                        func() bool

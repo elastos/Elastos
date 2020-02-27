@@ -7,6 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -525,7 +526,8 @@ func conflictTestProc(action func(*UtxoCacheDB)) {
 	utxoCacheDB := NewUtxoCacheDB()
 	blockchain.DefaultLedger = &blockchain.Ledger{
 		Blockchain: &blockchain.BlockChain{
-			UTXOCache: blockchain.NewUTXOCache(utxoCacheDB),
+			UTXOCache: blockchain.NewUTXOCache(utxoCacheDB,
+				&config.DefaultParams),
 		},
 	}
 	action(utxoCacheDB)

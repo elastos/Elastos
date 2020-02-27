@@ -869,10 +869,10 @@ func TestState_ProducerExists(t *testing.T) {
 }
 
 func TestState_IsDPOSTransaction(t *testing.T) {
-	references := make(map[*types.Input]*types.Output)
+	references := make(map[*types.Input]types.Output)
 	state := NewState(&config.DefaultParams, nil, nil)
 	state.getTxReference = func(tx *types.Transaction) (
-		map[*types.Input]*types.Output, error) {
+		map[*types.Input]types.Output, error) {
 		return references, nil
 	}
 
@@ -916,7 +916,7 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 		t.FailNow()
 	}
 	for i, input := range tx2.Inputs {
-		references[input] = tx.Outputs[i]
+		references[input] = *tx.Outputs[i]
 	}
 	state.ProcessBlock(mockBlock(11, tx2), nil)
 	p = state.getProducer(producer.OwnerPublicKey)

@@ -495,14 +495,14 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 		{AssetID: config.ELAAssetID, ProgramHash: s.foundationAddress, Value: outputValue1},
 	}
 
-	references := map[*types.Input]*types.Output{
+	references := map[*types.Input]types.Output{
 		&types.Input{}: {
 			Value: outputValue1,
 		},
 	}
 	s.EqualError(s.Chain.checkTransactionFee(tx, references), "transaction fee not enough")
 
-	references = map[*types.Input]*types.Output{
+	references = map[*types.Input]types.Output{
 		&types.Input{}: {
 			Value: outputValue1 + s.Chain.chainParams.MinTransactionFee,
 		},
@@ -518,14 +518,14 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 		{AssetID: config.ELAAssetID, ProgramHash: common.Uint168{}, Value: outputValue2},
 	}
 
-	references = map[*types.Input]*types.Output{
+	references = map[*types.Input]types.Output{
 		&types.Input{}: {
 			Value: outputValue1 + outputValue2,
 		},
 	}
 	s.EqualError(s.Chain.checkTransactionFee(tx, references), "transaction fee not enough")
 
-	references = map[*types.Input]*types.Output{
+	references = map[*types.Input]types.Output{
 		&types.Input{}: {
 			Value: outputValue1 + outputValue2 + s.Chain.chainParams.MinTransactionFee,
 		},
@@ -572,7 +572,7 @@ func (s *txValidatorTestSuite) TestCheckDestructionAddress() {
 	destructionAddress := "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
 	txID, _ := common.Uint256FromHexString("7e8863a503e90e6464529feb1c25d98c903e01bec00ccfea2475db4e37d7328b")
 	programHash, _ := common.Uint168FromAddress(destructionAddress)
-	reference := map[*types.Input]*types.Output{
+	reference := map[*types.Input]types.Output{
 		&types.Input{Previous: types.OutPoint{*txID, 1234}, Sequence: 123456}: {
 			ProgramHash: *programHash,
 		},
@@ -1882,18 +1882,18 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0 * 1e8)
 
 	// Create reference.
-	reference := make(map[*types.Input]*types.Output)
+	reference := make(map[*types.Input]types.Output)
 	input := &types.Input{
 		Previous: types.OutPoint{
 			TxID:  *randomUint256(),
 			Index: 0,
 		},
 	}
-	refOutput := &types.Output{
+	refOutput := types.Output{
 		Value:       990 * 1e8,
 		ProgramHash: s.Chain.chainParams.CRCFoundation,
 	}
-	refOutputErr := &types.Output{
+	refOutputErr := types.Output{
 		Value:       990 * 1e8,
 		ProgramHash: *randomUint168(),
 	}
@@ -2326,8 +2326,8 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	pk1Bytes, _ := common.HexStringToBytes(publicKeyStr1)
 	ela := common.Fixed64(100000000)
 
-	references := make(map[*types.Input]*types.Output)
-	references[&types.Input{}] = &types.Output{
+	references := make(map[*types.Input]types.Output)
+	references[&types.Input{}] = types.Output{
 		ProgramHash: *randomUint168(),
 		Value:       common.Fixed64(60 * ela),
 	}
@@ -2536,13 +2536,13 @@ func (s *txValidatorTestSuite) TestCheckStringField() {
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
-	references := make(map[*types.Input]*types.Output)
+	references := make(map[*types.Input]types.Output)
 	input := &types.Input{}
 	var txn types.Transaction
 
 	// Use the deposit UTXO in a TransferAsset transaction
 	depositHash, _ := common.Uint168FromAddress("DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD")
-	depositOutput := &types.Output{
+	depositOutput := types.Output{
 		ProgramHash: *depositHash,
 	}
 	references[input] = depositOutput
@@ -2559,7 +2559,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 
 	// Use the standard UTXO in a ReturnDepositCoin transaction
 	normalHash, _ := common.Uint168FromAddress("EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR")
-	normalOutput := &types.Output{
+	normalOutput := types.Output{
 		ProgramHash: *normalHash,
 	}
 	references[input] = normalOutput
@@ -2632,8 +2632,8 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 	s.True(producer.State() == state.Active, "active producer failed")
 
 	// check a return deposit coin transaction with wrong state.
-	references := make(map[*types.Input]*types.Output)
-	references[&types.Input{}] = &types.Output{
+	references := make(map[*types.Input]types.Output)
+	references[&types.Input{}] = types.Output{
 		ProgramHash: *randomUint168(),
 		Value:       common.Fixed64(5000 * 100000000),
 	}
@@ -2756,8 +2756,8 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	}
 	s.True(candidate.State() == crstate.Active, "active CR failed")
 
-	references := make(map[*types.Input]*types.Output)
-	references[&types.Input{}] = &types.Output{
+	references := make(map[*types.Input]types.Output)
+	references[&types.Input{}] = types.Output{
 		ProgramHash: *randomUint168(),
 		Value:       common.Fixed64(5000 * 100000000),
 	}
@@ -2946,7 +2946,7 @@ func (s *txValidatorTestSuite) TestCheckOutputPayload() {
 
 func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 
-	references := make(map[*types.Input]*types.Output)
+	references := make(map[*types.Input]types.Output)
 	outputs := []*types.Output{{Type: types.OTNone}}
 	s.NoError(s.Chain.checkVoteOutputs(0, outputs, references))
 
@@ -3069,7 +3069,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		"the output address of vote tx should exist in its input")
 
 	// Check vote output v0 with correct ouput program hash
-	references[&types.Input{}] = &types.Output{
+	references[&types.Input{}] = types.Output{
 		ProgramHash: *hash,
 	}
 	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs1, references))

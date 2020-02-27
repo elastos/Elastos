@@ -324,9 +324,9 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	}
 
 	registerFuncs(committee.state)
-	references := make(map[*types.Input]*types.Output)
+	references := make(map[*types.Input]types.Output)
 	committee.state.getTxReference = func(tx *types.Transaction) (
-		map[*types.Input]*types.Output, error) {
+		map[*types.Input]types.Output, error) {
 		return references, nil
 	}
 
@@ -349,7 +349,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	input := &types.Input{
 		Previous: *types.NewOutPoint(voteTx.Hash(), uint16(0)),
 	}
-	references[input] = voteTx.Outputs[0]
+	references[input] = *voteTx.Outputs[0]
 
 	// cancel votes the active candidates
 	committee.ProcessBlock(&types.Block{
@@ -582,7 +582,7 @@ func registerFuncs(state *State) {
 	state.registerFunctions(&FunctionsConfig{
 		GetHistoryMember: func(code []byte) []*CRMember { return nil },
 		GetTxReference: func(tx *types.Transaction) (
-			map[*types.Input]*types.Output, error) {
-			return make(map[*types.Input]*types.Output), nil
+			map[*types.Input]types.Output, error) {
+			return make(map[*types.Input]types.Output), nil
 		}})
 }
