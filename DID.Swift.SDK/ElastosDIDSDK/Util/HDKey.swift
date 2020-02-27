@@ -75,6 +75,18 @@ class HDKey: NSObject {
         return HDKey(chdKey)
     }
 
+    class func deserialize(_ keyData: [UInt8]) -> HDKey {
+        let buffer = UnsafeMutablePointer<CHDKey>.allocate(capacity: 1)
+        // TODO:
+        return HDKey(UnsafePointer(buffer))
+    }
+
+    class func deserialize(_ keyData: Data) -> HDKey {
+        let buffer = UnsafeMutablePointer<CHDKey>.allocate(capacity: 1)
+        // TODO:
+        return HDKey(UnsafePointer(buffer))
+    }
+
     func derivedKey(_ index: Int) -> HDKey.DerivedKey {
         let buffer = UnsafeMutablePointer<CDerivedKey>.allocate(capacity: 1)
         let cdrivedKey = HDKey_GetDerivedKey(chdKey, index, buffer)

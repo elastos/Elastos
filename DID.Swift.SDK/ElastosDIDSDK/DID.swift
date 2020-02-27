@@ -156,6 +156,12 @@ extension DID: Equatable {
     }
 }
 
+extension DID: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        //TODO:
+    }
+}
+
 // Parse Listener
 extension DID {
     private class Listener: DIDURLBaseListener {
