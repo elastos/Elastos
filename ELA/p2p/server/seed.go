@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package server
 
@@ -49,7 +49,8 @@ func (s *seed) GetAddress() (net.Addr, error) {
 			break
 		}
 
-		log.Debugf("seeds pick addr %v", addr.NetAddress())
+		//log.Debugf("seeds pick addr %v", addr.NetAddress())
+
 		// Address will not be invalid, local or unroutable
 		// because addrmanager rejects those on addition.
 		// Just check that we don't already have an address
