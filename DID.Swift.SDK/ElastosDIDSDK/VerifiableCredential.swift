@@ -1,4 +1,5 @@
 import Foundation
+import PromiseKit
 
 public class VerifiableCredential: DIDObject {
     private var _types: Array<String> = []
@@ -217,11 +218,10 @@ public class VerifiableCredential: DIDObject {
         }
     }
 
-    /*
     public func isExpiredAsync() -> Promise<Bool> {
         // TODO:
+        return Promise<Bool>(error: DIDError.unknownFailure("Not implemented"))
     }
-    */
 
     private func checkGenuine() throws -> Bool {
         let doc = issuer.resolve()
@@ -249,11 +249,10 @@ public class VerifiableCredential: DIDObject {
         }
     }
 
-    /*
     public func isGenuineAsync() -> Promise<Bool> {
         // TODO:
+        return Promise<Bool>(error: DIDError.unknownFailure("Not implemented"))
     }
-    */
 
     public var isValid: Bool {
         do {
@@ -263,11 +262,10 @@ public class VerifiableCredential: DIDObject {
         }
     }
 
-    /*
     public func isValidAsync() -> Promise<Bool> {
         // TODO:
+        return Promise<Bool>(error: DIDError.unknownFailure("Not implemented"))
     }
-    */
 
     public var subject: VerifiableCredentialSubject {
         return _subject!

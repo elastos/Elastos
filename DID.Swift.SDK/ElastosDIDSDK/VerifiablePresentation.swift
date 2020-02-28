@@ -1,4 +1,5 @@
 import Foundation
+import PromiseKit
 
 public class VerifiablePresentation {
     private var _type: String
@@ -99,11 +100,10 @@ public class VerifiablePresentation {
                                              data)) ?? false
     }
 
-    /*
     public func isGenuineAsync() -> Promise<Bool> {
-        // TOOD:
+        // TODO:
+        return Promise<Bool>(error: DIDError.unknownFailure("Not implemented"))
     }
-    */
 
     public var isValid: Bool {
         let doc = getSigner()?.resolve()
@@ -144,11 +144,10 @@ public class VerifiablePresentation {
                                              data)) ?? false
     }
 
-    /*
     public func isValidAsync() -> Promise<Bool> {
         // TODO:
+        return Promise<Bool>(error: DIDError.unknownFailure("Not implemented"))
     }
-    */
 
     public var proof: VerifiablePresentationProof {
         // Guaranteed that this field would not be nil because the object

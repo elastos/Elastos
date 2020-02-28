@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E568F5F89CD94B76CE6213E /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED7485A64A06C161BCD31D48 /* Pods_ElastosDIDSDK.framework */; };
 		11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1C239D1B31008A4500 /* DIDURLTest.swift */; };
 		11054F1F239D2088008A4500 /* DIDTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1E239D2088008A4500 /* DIDTest.swift */; };
 		110AD2FF234E44C8006578D6 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
@@ -307,6 +308,8 @@
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		11FB0A5F23F0FF0B001941CF /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhdkey.a; path = "Externals/HDKey/lib/-iphoneos/libhdkey.a"; sourceTree = "<group>"; };
 		11FB0A6023F0FF0B001941CF /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "Externals/HDKey/lib/-iphoneos/libcrypto.a"; sourceTree = "<group>"; };
+		2C9D52CBC88BB3D458134F3E /* Pods-ElastosDIDSDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.release.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.release.xcconfig"; sourceTree = "<group>"; };
+		35836A2B1CB8DA7F034879C8 /* Pods-ElastosDIDSDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.debug.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.debug.xcconfig"; sourceTree = "<group>"; };
 		A31801A224015EA30087E074 /* DIDResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDResolver.swift; sourceTree = "<group>"; };
 		A31801A8240277180087E074 /* JsonNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JsonNode.swift; sourceTree = "<group>"; };
 		A31801AA240281B00087E074 /* LRUCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LRUCache.swift; path = Util/LRUCache.swift; sourceTree = "<group>"; };
@@ -364,6 +367,7 @@
 		A31ACE6623F19A66008EC032 /* IDChainRequestOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IDChainRequestOperation.swift; path = Backend/IDChainRequestOperation.swift; sourceTree = "<group>"; };
 		A31ACE6723F19A66008EC032 /* IDChainRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IDChainRequest.swift; path = Backend/IDChainRequest.swift; sourceTree = "<group>"; };
 		A34D732823FA758900B4CB3E /* IDGetter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IDGetter.swift; path = Util/IDGetter.swift; sourceTree = "<group>"; };
+		ED7485A64A06C161BCD31D48 /* Pods_ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -384,6 +388,7 @@
 				11FB0A6223F0FF1D001941CF /* libhdkey.a in Frameworks */,
 				11FB0A6123F0FF1D001941CF /* libcrypto.a in Frameworks */,
 				111BF480235467880043D570 /* Antlr4.framework in Frameworks */,
+				0E568F5F89CD94B76CE6213E /* Pods_ElastosDIDSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -448,6 +453,7 @@
 				119338E4237E623100C4998E /* libc++.tbd */,
 				119338E2237E622300C4998E /* libc++.1.tbd */,
 				1109D08423275CFE00A03D56 /* Antlr4.framework */,
+				ED7485A64A06C161BCD31D48 /* Pods_ElastosDIDSDK.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -577,6 +583,7 @@
 				1155D9472352FACE00DF8C9D /* ElastosDIDSDKTests */,
 				11F262AB23260CF40009C103 /* Products */,
 				1109D08723275DC600A03D56 /* Frameworks */,
+				4F3DEAD3C3197A829FB15D11 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -626,6 +633,16 @@
 				11F262AE23260CF40009C103 /* Info.plist */,
 			);
 			path = ElastosDIDSDK;
+			sourceTree = "<group>";
+		};
+		4F3DEAD3C3197A829FB15D11 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				35836A2B1CB8DA7F034879C8 /* Pods-ElastosDIDSDK.debug.xcconfig */,
+				2C9D52CBC88BB3D458134F3E /* Pods-ElastosDIDSDK.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		A31ACE2423F199F7008EC032 /* Error */ = {
@@ -743,6 +760,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 11F262B223260CF40009C103 /* Build configuration list for PBXNativeTarget "ElastosDIDSDK" */;
 			buildPhases = (
+				BB1AE73E3303D93DAE811F07 /* [CP] Check Pods Manifest.lock */,
 				11F262A523260CF40009C103 /* Headers */,
 				11F262A623260CF40009C103 /* Sources */,
 				11F262A723260CF40009C103 /* Frameworks */,
@@ -883,6 +901,31 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BB1AE73E3303D93DAE811F07 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ElastosDIDSDK-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		1155D9422352FACE00DF8C9D /* Sources */ = {
@@ -1179,6 +1222,7 @@
 		};
 		11F262B323260CF40009C103 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 35836A2B1CB8DA7F034879C8 /* Pods-ElastosDIDSDK.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -1217,6 +1261,7 @@
 		};
 		11F262B423260CF40009C103 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2C9D52CBC88BB3D458134F3E /* Pods-ElastosDIDSDK.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
