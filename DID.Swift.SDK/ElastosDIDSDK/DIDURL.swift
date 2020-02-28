@@ -152,7 +152,7 @@ public class DIDURL {
         }
 
         getMeta().setExtra(name, value)
-        try getMeta().store?.storeCredentialMeta(did, self, getMeta())
+        try getMeta().store?.storeCredentialMeta(for: did, key: self, meta: getMeta())
     }
 
     public func getExtra(forName: String) -> String? {
@@ -165,7 +165,7 @@ public class DIDURL {
 
     private func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
-        try getMeta().store?.storeCredentialMeta(did, self, getMeta())
+        try getMeta().store?.storeCredentialMeta(for: did, key: self, meta: getMeta())
     }
 
     public func setAlias(_ newValue: String?) throws {

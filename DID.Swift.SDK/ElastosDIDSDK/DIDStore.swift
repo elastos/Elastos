@@ -25,13 +25,13 @@ public class DIDStore: NSObject {
         self.backend = DIDBackend.getInstance(adapter)
         self.storage = storage
     }
-    
-    public class func openStore(atPath: String,
-                              withType: String,
-                  initialCacheCapacity: Int,
-                      maxCacheCapacity: Int,
-                               adapter: DIDAdapter) throws -> DIDStore {
-        guard !atPath.isEmpty else {
+
+    private class func openStore(_ path: String,
+                                 _ type: String,
+                                 _ initialCacheCapacity: Int,
+                                 _ maxCacheCapacity: Int,
+                                 _ adapter: DIDAdapter) throws -> DIDStore {
+        guard !path.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
@@ -39,18 +39,27 @@ public class DIDStore: NSObject {
             throw DIDError.illegalArgument()
         }
 
-        guard withType == "filesystem" else {
-            throw DIDError.illegalArgument("Unsupported store type:\(withType)")
+        guard type == "filesystem" else {
+            throw DIDError.illegalArgument("Unsupported store type:\(type)")
         }
 
-        return DIDStore(initialCacheCapacity, maxCacheCapacity, adapter, try FileSystemStorage(atPath))
+        return DIDStore(initialCacheCapacity, maxCacheCapacity, adapter, try FileSystemStorage(path))
+    }
+
+    public class func openStore(atPath: String,
+                              withType: String,
+                  initialCacheCapacity: Int,
+                      maxCacheCapacity: Int,
+                               adapter: DIDAdapter) throws -> DIDStore {
+
+        return try openStore(atPath, withType, initialCacheCapacity, maxCacheCapacity, adapter)
     }
     
     public class func openStore(atPath: String,
                               withType: String,
                                adapter: DIDAdapter) throws -> DIDStore {
 
-        return try openStore(atPath: atPath, withType:withType, initialCacheCapacity: CACHE_INITIAL_CAPACITY, maxCacheCapacity: CACHE_MAX_CAPACITY, adapter: adapter)
+        return try openStore(atPath, withType, CACHE_INITIAL_CAPACITY, CACHE_MAX_CAPACITY, adapter)
     }
     
     public func containsPrivateIdentity() throws -> Bool {
@@ -68,11 +77,11 @@ public class DIDStore: NSObject {
     }
 
     // Initialize & create new private identity and save it to DIDStore.
-    public func initializePrivateIdentity(using language: String,
-                                                mnemonic: String,
-                                              passPhrase: String? = nil,
-                                           storePassword: String,
-                                                 _ force: Bool ) throws {
+    private func initializePrivateIdentity(_ language: String,
+                                           _ mnemonic: String,
+                                           _ passPhrase: String?,
+                                           _ storePassword: String,
+                                           _ force: Bool ) throws {
         guard try Mnemonic.isValid(language, mnemonic) else {
             throw DIDError.illegalArgument()
         }
@@ -98,17 +107,52 @@ public class DIDStore: NSObject {
         let encryptedMnemonic = try DIDStore.encryptToBase64(mnemonicData, storePassword)
         try storage.storeMnemonic(encryptedMnemonic)
     }
-    
+
     public func initializePrivateIdentity(using language: String,
                                                 mnemonic: String,
-                                              passPhrase: String? = nil,
-                                           storePassword: String) throws {
-        try initializePrivateIdentity(using: language, mnemonic: mnemonic, passPhrase: passPhrase, storePassword: storePassword, false)
+                                              passPhrase: String,
+                                           storePassword: String,
+                                                 _ force: Bool ) throws {
+
+        try initializePrivateIdentity(language, mnemonic, passPhrase, storePassword, force)
     }
 
-    public func initializePrivateIdentity(using extendedPrivateKey: String,
+    public func initializePrivateIdentity(using language: String,
+                                                mnemonic: String,
                                            storePassword: String,
-                                                 _ force: Bool) throws {
+                                                 _ force: Bool ) throws {
+
+        try initializePrivateIdentity(language, mnemonic, nil, storePassword, force)
+    }
+
+    public func initializePrivateIdentity(using language: String,
+                                                mnemonic: String,
+                                              passPhrase: String,
+                                           storePassword: String) throws {
+
+        try initializePrivateIdentity(language, mnemonic, passPhrase, storePassword, false)
+    }
+
+    public func initializePrivateIdentity(using language: String,
+                                                mnemonic: String,
+                                           storePassword: String) throws {
+
+        try initializePrivateIdentity(language, mnemonic, nil, storePassword, false)
+    }
+
+    private func initializePrivateIdentity(_ privateIdentity: HDKey,
+                                           _ storePassword: String) throws {
+
+        let encryptedIdentity = try DIDStore.encryptToBase64(privateIdentity.serialize(), storePassword)
+        try storage.storePrivateIdentity(encryptedIdentity)
+
+        try storage.storePrivateIdentityIndex(0)
+        privateIdentity.wipe()
+    }
+
+    private func initializePrivateIdentity(_ extendedPrivateKey: String,
+                                           _ storePassword: String,
+                                           _ force: Bool) throws {
         guard !extendedPrivateKey.isEmpty else {
             throw DIDError.illegalArgument()
         }
@@ -126,19 +170,16 @@ public class DIDStore: NSObject {
     }
 
     public func initializePrivateIdentity(using extendedPrivateKey: String,
-                                           storePassword: String) throws {
+                                                     storePassword: String,
+                                                           _ force: Bool) throws {
 
-        return try initializePrivateIdentity(using: extendedPrivateKey, storePassword: storePassword, false)
+        return try initializePrivateIdentity(extendedPrivateKey, storePassword, force)
     }
 
-    private func initializePrivateIdentity(_ privateIdentity: HDKey,
-                                           _ storePassword: String) throws {
+    public func initializePrivateIdentity(using extendedPrivateKey: String,
+                                                     storePassword: String) throws {
 
-        let encryptedIdentity = try DIDStore.encryptToBase64(privateIdentity.serialize(), storePassword)
-        try storage.storePrivateIdentity(encryptedIdentity)
-
-        try storage.storePrivateIdentityIndex(0)
-        privateIdentity.wipe()
+        return try initializePrivateIdentity(extendedPrivateKey, storePassword, false)
     }
     
     public func exportMnemonic(using storePassword: String) throws -> String {
@@ -177,7 +218,7 @@ public class DIDStore: NSObject {
         return privateIdentity
     }
 
-    public func synchronize(using storePassword: String, _ conflictHandler: ConflictHanlder) throws {
+    public func synchronize(using storePassword: String, conflictHandler: ConflictHanlder) throws {
         guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
@@ -243,7 +284,7 @@ public class DIDStore: NSObject {
 
                 // save private key
                 try storePrivateKey(did, finalCopy!.defaultPublicKey, key.serialize(), storePassword)
-                try storeDid(finalCopy!)
+                try storeDid(using: finalCopy!)
 
                 if index >= nextIndex {
                     try storage.storePrivateIdentityIndex(index)
@@ -273,10 +314,10 @@ public class DIDStore: NSObject {
     }
      */
 
-    public func newDid(withPrivateIdentityIndex: Int,
-                                          alias: String,
-                            using storePassword: String) throws -> DIDDocument {
-        guard withPrivateIdentityIndex >= 0 else {
+    private func newDid(_ privateIdentityIndex: Int,
+                        _ alias: String?,
+                        _ storePassword: String) throws -> DIDDocument {
+        guard privateIdentityIndex >= 0 else {
             throw DIDError.illegalArgument()
         }
 
@@ -285,7 +326,7 @@ public class DIDStore: NSObject {
         }
 
         let privateIdentity = try loadPrivateIdentity(storePassword)
-        let key = privateIdentity.derivedKey(withPrivateIdentityIndex)
+        let key = privateIdentity.derivedKey(privateIdentityIndex)
 
         defer {
             privateIdentity.wipe()
@@ -307,29 +348,40 @@ public class DIDStore: NSObject {
         let builder = DIDDocumentBuilder(did, self)
         doc = try builder.appendAuthenticationKey(id, key.getPublicKeyBase58()).sealed(using: storePassword)
         doc!.getMeta().setAlias(alias)
-        try storeDid(doc!)
+        try storeDid(using: doc!)
 
         return doc!
+    }
+
+    public func newDid(withPrivateIdentityIndex: Int,
+                                          alias: String,
+                            using storePassword: String) throws -> DIDDocument {
+
+        return try newDid(withPrivateIdentityIndex, alias, storePassword)
     }
     
     public func newDid(withPrivateIdentityIndex: Int,
                             using storePassword: String) throws -> DIDDocument {
 
-        return try newDid(withPrivateIdentityIndex: withPrivateIdentityIndex, alias: "", using: storePassword)
+        return try newDid(withPrivateIdentityIndex, nil, storePassword)
     }
 
-    public func newDid(withAlias: String, using storePassword: String) throws -> DIDDocument {
+    private func newDid(_ alias: String?, _ storePassword: String) throws -> DIDDocument {
         var nextIndex = try storage.loadPrivateIdentityIndex()
         nextIndex += 1
 
-        let doc = try newDid(withPrivateIdentityIndex: nextIndex, alias: withAlias, using: storePassword)
+        let doc = try newDid(nextIndex, alias, storePassword)
         try storage.storePrivateIdentityIndex(nextIndex)
 
         return doc
     }
 
+    public func newDid(withAlias: String, using storePassword: String) throws -> DIDDocument {
+        return try newDid(withAlias, storePassword)
+    }
+
     public func newDid(using storePassword: String) throws -> DIDDocument {
-        return try newDid(withAlias: "", using: storePassword)
+        return try newDid(nil, storePassword)
     }
 
     public func getDid(byPrivateIdentityIndex: Int, using storePassword: String) throws -> DID {
@@ -800,73 +852,73 @@ public class DIDStore: NSObject {
 
 
     public func deactivateDid(for target: DID,
-                      onAuthroizationDid: DID,
+                    withAuthroizationDid: DID,
                          waitForConfirms: Int,
                            using signKey: DIDURL,
                            storePassword: String) throws -> String {
 
-        return try deactivateDid(target, onAuthroizationDid, waitForConfirms, signKey, storePassword)
+        return try deactivateDid(target, withAuthroizationDid, waitForConfirms, signKey, storePassword)
     }
 
     public func deactivateDid(for target: String,
-                      onAuthroizationDid: String,
+                    withAuthroizationDid: String,
                          waitForConfirms: Int,
                            using signKey: String,
                            storePassword: String) throws -> String {
 
-        let _did = try DID(onAuthroizationDid)
+        let _did = try DID(withAuthroizationDid)
         let _key = try DIDURL(_did, signKey)
 
         return try deactivateDid(DID(target), _did, waitForConfirms, _key, storePassword)
     }
 
     public func deactivateDid(for target: DID,
-                      onAuthroizationDid: DID,
+                    withAuthroizationDid: DID,
                            using signKey: DIDURL,
                            storePassword: String) throws -> String {
 
-        return try deactivateDid(target, onAuthroizationDid, 0, signKey, storePassword)
+        return try deactivateDid(target, withAuthroizationDid, 0, signKey, storePassword)
     }
 
     public func deactivateDid(for target: String,
-                      onAuthroizationDid: String,
+                    withAuthroizationDid: String,
                            using signKey: String,
                            storePassword: String) throws -> String {
 
-        let _did = try DID(onAuthroizationDid)
+        let _did = try DID(withAuthroizationDid)
         let _key = try DIDURL(_did, signKey)
 
         return try deactivateDid(DID(target), _did, 0, _key, storePassword)
     }
 
     public func deactivateDid(for target: DID,
-                      onAuthroizationDid: DID,
+                    withAuthroizationDid: DID,
                          waitForConfirms: Int,
                            storePassword: String) throws -> String {
 
-        return try deactivateDid(target, onAuthroizationDid, waitForConfirms, nil, storePassword)
+        return try deactivateDid(target, withAuthroizationDid, waitForConfirms, nil, storePassword)
     }
 
     public func deactivateDid(for target: String,
-                      onAuthroizationDid: String,
+                    withAuthroizationDid: String,
                          waitForConfirms: Int,
                            storePassword: String) throws -> String {
 
-        return try deactivateDid(DID(target), DID(onAuthroizationDid), waitForConfirms, nil, storePassword)
+        return try deactivateDid(DID(target), DID(withAuthroizationDid), waitForConfirms, nil, storePassword)
     }
 
     public func deactivateDid(for target: DID,
-                      onAuthroizationDid: DID,
+                    withAuthroizationDid: DID,
                            storePassword: String) throws -> String {
 
-        return try deactivateDid(target, onAuthroizationDid, 0, nil, storePassword)
+        return try deactivateDid(target, withAuthroizationDid, 0, nil, storePassword)
     }
 
     public func deactivateDid(for target: String,
-                      onAuthroizationDid: String,
+                    withAuthroizationDid: String,
                            storePassword: String) throws -> String {
 
-        return try deactivateDid(DID(target), DID(onAuthroizationDid), 0, nil, storePassword)
+        return try deactivateDid(DID(target), DID(withAuthroizationDid), 0, nil, storePassword)
     }
 
     /*
@@ -935,7 +987,7 @@ public class DIDStore: NSObject {
     public func storeDid(using doc: DIDDocument) throws {
         try storage.storeDid(doc)
 
-        let meta = try loadDidMeta(doc.subject)
+        let meta = try loadDidMeta(for: doc.subject)
         try meta.merge(doc.getMeta())
         meta.setStore(self)
         doc.setMeta(meta)
@@ -943,7 +995,7 @@ public class DIDStore: NSObject {
         try storage.storeDidMeta(doc.subject, meta)
 
         for credential in doc.credentials {
-            try storeCredential(credential)
+            try storeCredential(using: credential)
         }
     }
     
@@ -955,12 +1007,12 @@ public class DIDStore: NSObject {
         try storeDidMeta(meta, for: try DID(did))
     }
     
-    func loadDidMeta(_ did: DID) throws -> DIDMeta {
+    func loadDidMeta(for did: DID) throws -> DIDMeta {
         return try storage.loadDidMeta(did)
     }
 
-    func loadDidMeta(_ did: String) throws -> DIDMeta {
-        return try loadDidMeta(DID(did))
+    func loadDidMeta(for did: String) throws -> DIDMeta {
+        return try loadDidMeta(for: DID(did))
     }
     
     public func loadDid(_ did: DID) throws -> DIDDocument {
@@ -994,7 +1046,7 @@ public class DIDStore: NSObject {
         let dids = try storage.listDids(filter)
 
         try dids.forEach { did in
-            let meta = try loadDidMeta(did)
+            let meta = try loadDidMeta(for: did)
             meta.setStore(self)
             did.setMeta(meta)
         }
@@ -1002,15 +1054,15 @@ public class DIDStore: NSObject {
         return dids
     }
     
-    public func storeCredential(_ credential: VerifiableCredential, with alias: String?) throws {
+    public func storeCredential(using credential: VerifiableCredential, with alias: String) throws {
         credential.getMeta().setAlias(alias)
-        try storeCredential(credential)
+        try storeCredential(using: credential)
     }
     
-    public func storeCredential(_ credential: VerifiableCredential) throws {
+    public func storeCredential(using credential: VerifiableCredential) throws {
         try storage.storeCredential(credential)
 
-        let meta = try loadCredentialMeta(credential.subject.did, credential.getId())
+        let meta = try loadCredentialMeta(for: credential.subject.did, byId: credential.getId())
         try meta.merge(credential.getMeta())
         meta.setStore(self)
         credential.setMeta(meta)
@@ -1018,31 +1070,34 @@ public class DIDStore: NSObject {
         try storage.storeCredentialMeta(credential.subject.did, credential.getId(), meta)
     }
 
-    func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta) throws {
+    func storeCredentialMeta(for did: DID, key id: DIDURL, meta: CredentialMeta) throws {
         try storage.storeCredentialMeta(did, id, meta)
     }
     
-    func storeCredentialMeta(_ did: String, _ id: String, _ meta: CredentialMeta) throws {
-        let didObj = try DID(did)
-        try storeCredentialMeta(didObj, try DIDURL(didObj, id), meta)
+    func storeCredentialMeta(for did: String, key id: String, meta: CredentialMeta) throws {
+        let _did = try DID(did)
+        let _key = try DIDURL(_did, id)
+        try storeCredentialMeta(for: _did, key: _key, meta: meta)
     }
     
-    func loadCredentialMeta(_ did: DID, _ id: DIDURL) throws -> CredentialMeta {
-        return try storage.loadCredentialMeta(did, id)
+    func loadCredentialMeta(for did: DID, byId: DIDURL) throws -> CredentialMeta {
+        return try storage.loadCredentialMeta(did, byId)
     }
 
-    func loadCredentialMeta(_ did: String, _ id: String) throws -> CredentialMeta? {
+    func loadCredentialMeta(for did: String, byId: String) throws -> CredentialMeta? {
         let _did = try DID(did)
-        return try loadCredentialMeta(_did, DIDURL(_did, id))
+        let _key = try DIDURL(_did, byId)
+        return try loadCredentialMeta(for: _did, byId: _key)
     }
 
-    public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? {
-        return try storage.loadCredential(did, id)
+    public func loadCredential(for did: DID, byId: DIDURL) throws -> VerifiableCredential? {
+        return try storage.loadCredential(did, byId)
     }
     
-    public func loadCredential(_ did: String, _ id: String) throws -> VerifiableCredential? {
+    public func loadCredential(for did: String, byId: String) throws -> VerifiableCredential? {
         let _did = try DID(did)
-        return try loadCredential(_did, DIDURL(_did, id))
+        let _key = try DIDURL(_did, byId)
+        return try loadCredential(for: _did, byId: _key)
     }
     
     public func containsCredentials(_ did:DID) throws -> Bool {
@@ -1062,27 +1117,28 @@ public class DIDStore: NSObject {
         return try containsCredential(_did, DIDURL(_did, id))
     }
     
-    public func deleteCredential(_ did: DID , _ id: DIDURL) throws -> Bool{
+    public func deleteCredential(for did: DID, id: DIDURL) throws -> Bool{
         return try storage.deleteCredential(did, id)
     }
     
-    public func deleteCredential(_ did: String , _ id: String) throws -> Bool{
-        let _did: DID = try DID(did)
-        return try deleteCredential(_did, DIDURL(_did, id))
+    public func deleteCredential(for did: String, id: String) throws -> Bool{
+        let _did = try DID(did)
+        let _key = try DIDURL(_did, id)
+        return try deleteCredential(for: _did, id: _key)
     }
     
-    public func listCredentials(_ did: DID) throws -> Array<DIDURL> {
+    public func listCredentials(for did: DID) throws -> Array<DIDURL> {
         let ids = try storage.listCredentials(did)
         for id in ids {
-            let meta = try loadCredentialMeta(did, id)
+            let meta = try loadCredentialMeta(for: did, byId: id)
             meta.setStore(self)
             id.setMeta(meta)
         }
         return ids
     }
     
-    public func listCredentials(_ did: String) throws -> Array<DIDURL> {
-        return try listCredentials(DID(did))
+    public func listCredentials(for did: String) throws -> Array<DIDURL> {
+        return try listCredentials(for: DID(did))
     }
 
     public func selectCredentials(_ did: DID, _ id: DIDURL,_ type: Array<Any>) throws -> Array<DIDURL> {

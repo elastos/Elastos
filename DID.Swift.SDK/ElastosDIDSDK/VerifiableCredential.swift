@@ -127,7 +127,7 @@ public class VerifiableCredential: DIDObject {
         }
 
         getMeta().setExtra(value, forName)
-        try getMeta().store?.storeCredentialMeta(subject.did, getId(), getMeta())
+        try getMeta().store?.storeCredentialMeta(for: subject.did, key: getId(), meta: getMeta())
     }
 
     public func getExtra(forName: String) -> String? {
@@ -140,7 +140,7 @@ public class VerifiableCredential: DIDObject {
 
     private func setAliasName(_ newValue: String?) throws {
         getMeta().setAlias(newValue)
-        try getMeta().store?.storeCredentialMeta(subject.did, getId(), getMeta())
+        try getMeta().store?.storeCredentialMeta(for: subject.did, key: getId(), meta: getMeta())
     }
 
     public func unsetAlias() throws {
