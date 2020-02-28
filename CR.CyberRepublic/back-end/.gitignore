@@ -29,6 +29,7 @@ jspm_packages/
 
 # dotenv environment variables file
 /env/*.env
+/env/*.pem
 
 newrelic.js
 
@@ -50,5 +51,3 @@ issues.json
 .data
 .upload
 google-translation-service-acct.json
-
-

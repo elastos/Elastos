@@ -10,10 +10,16 @@ import sso from './sso'
 import user from './user'
 import * as permissions from './permissions'
 import * as logger from './logger'
+import * as fs from 'fs'
+import * as path from 'path'
 
 export { utilCrypto, sso, user, validate, permissions, mail, logger }
 
 export const getEnv = () => process.env.NODE_ENV
+
+export const loadKey = (filename: string) => {
+  return fs.readFileSync(path.join(__dirname, filename));
+}
 
 export const getDidPublicKey = async (did: string) => {
   const headers = {

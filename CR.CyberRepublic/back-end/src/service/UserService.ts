@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import {constant} from '../constant'
 import {geo} from '../utility/geo'
 import * as uuid from 'uuid'
-import { validate, utilCrypto, mail, permissions, getDidPublicKey, logger } from '../utility'
+import { validate, utilCrypto, mail, permissions, getDidPublicKey, logger, loadKey } from '../utility'
 import CommunityService from './CommunityService'
 import * as jwt from 'jsonwebtoken'
 
@@ -671,7 +671,6 @@ export default class extends Base {
         } catch(err) {
             logger.error(err)
         }
-
         const jwtClaims = {
             iss: process.env.APP_DID,
             userId: this.currentUser._id,
@@ -680,7 +679,7 @@ export default class extends Base {
         }
         const jwtToken = jwt.sign(
             jwtClaims, 
-            process.env.APP_PRIVATE_KEY, 
+            loadKey('../../env/ecdsa-private.pem'),
             { expiresIn: '1d', algorithm: 'ES256' }
         )
         const url = `elastos://credaccess/${jwtToken}`
