@@ -101,7 +101,10 @@ func (s *State) getAvailableDepositAmount(did common.Uint168,
 			lockedDepositAmount = MinDepositAmount
 		}
 	}
-	depositInfo := s.depositInfo[did]
+	depositInfo, ok := s.depositInfo[did]
+	if !ok {
+		return 0
+	}
 	return depositInfo.TotalAmount - depositInfo.DepositAmount -
 		depositInfo.Penalty - lockedDepositAmount
 }
