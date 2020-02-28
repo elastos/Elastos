@@ -1621,6 +1621,7 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 		DraftHash:        common.Hash(draftData),
 		CROpinionHash:    common.Hash(opinionHash),
 		Budgets:          createBudgets(3),
+		Recipient:        *randomUint168(),
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -2456,6 +2457,11 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	txn := s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.NoError(err)
+
+	//recipient is empty
+	txn.Payload.(*payload.CRCProposal).Recipient = common.Uint168{}
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "recipient is empty")
 
 	// invalid payload
 	txn.Payload = &payload.CRInfo{}
