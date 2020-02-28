@@ -1,8 +1,7 @@
-import _ from 'lodash'
 import axios from 'axios'
 import base64url from 'base64url'
-import bs58 from 'bs58'
-import moment from 'moment'
+import * as bs58 from 'bs58'
+import * as moment from 'moment'
 import utilCrypto from './crypto'
 import mail from './mail'
 import validate from './validate'
@@ -12,6 +11,8 @@ import * as permissions from './permissions'
 import * as logger from './logger'
 import * as fs from 'fs'
 import * as path from 'path'
+const _ = require('lodash')
+const { PublicKey } = require('bitcore-lib-p256')
 
 export { utilCrypto, sso, user, validate, permissions, mail, logger }
 
@@ -19,6 +20,17 @@ export const getEnv = () => process.env.NODE_ENV
 
 export const loadKey = (filename: string) => {
   return fs.readFileSync(path.join(__dirname, filename));
+}
+
+export const uncompressPubKey = (key: any) => {
+  if (!key.compressed) {
+    throw new Error('Publick key is not compressed.')
+  }
+  const x = key.point.getX()
+  const y = key.point.getY()
+  const xbuf = x.toBuffer({ size: 32 })
+  const ybuf = y.toBuffer({ size: 32 })
+  return Buffer.concat([Buffer.from([0x04]), xbuf, ybuf])
 }
 
 export const getDidPublicKey = async (did: string) => {
@@ -47,9 +59,10 @@ export const getDidPublicKey = async (did: string) => {
       const matched = pubKeys.find(el => el.id === '#primary')
       // compressed public key beginning with 02
       const publicKey = bs58.decode(matched.publicKeyBase58).toString('hex')
+      const rawPubKey = uncompressPubKey(PublicKey.fromString(publicKey)).toString('hex')
       return {
         expirationDate: moment(payload.expires),
-        publicKey
+        publicKey: rawPubKey
       }
     }
   } catch (err) {
