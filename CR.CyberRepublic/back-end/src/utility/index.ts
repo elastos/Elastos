@@ -13,6 +13,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 const _ = require('lodash')
 const { PublicKey } = require('bitcore-lib-p256')
+const jwkToPem = require('jwk-to-pem')
 
 export { utilCrypto, sso, user, validate, permissions, mail, logger }
 
@@ -24,13 +25,28 @@ export const loadKey = (filename: string) => {
 
 export const uncompressPubKey = (key: any) => {
   if (!key.compressed) {
-    throw new Error('Publick key is not compressed.')
+    throw new Error('Public key is not compressed.')
   }
   const x = key.point.getX()
   const y = key.point.getY()
   const xbuf = x.toBuffer({ size: 32 })
   const ybuf = y.toBuffer({ size: 32 })
   return Buffer.concat([Buffer.from([0x04]), xbuf, ybuf])
+}
+
+export const getPemPubKey = async (key: any) => {
+  if (!key.compressed) {
+    throw new Error('Public key is not compressed.')
+  }
+  const x = key.point.getX()
+  const y = key.point.getY()
+  const jwk = {
+    kty: 'EC',
+    crv: 'P-256',
+    x: x.toBuffer({ size: 32 }).toString('base64'),
+    y: y.toBuffer({ size: 32 }).toString('base64')
+  }
+  return jwkToPem(jwk)
 }
 
 export const getDidPublicKey = async (did: string) => {
@@ -59,10 +75,10 @@ export const getDidPublicKey = async (did: string) => {
       const matched = pubKeys.find(el => el.id === '#primary')
       // compressed public key beginning with 02
       const publicKey = bs58.decode(matched.publicKeyBase58).toString('hex')
-      const rawPubKey = uncompressPubKey(PublicKey.fromString(publicKey)).toString('hex')
+      const pemPubKey = await getPemPubKey(PublicKey.fromString(publicKey))
       return {
         expirationDate: moment(payload.expires),
-        publicKey: rawPubKey
+        publicKey: pemPubKey
       }
     }
   } catch (err) {
