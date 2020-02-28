@@ -35,31 +35,6 @@ public class JsonNode {
         return nil
     }
 
-/*
-    func getDict() -> Dictionary<String, Any> {
-        return self.node
-    }
-
-    func getValue(_ key: String) -> String? {
-        return node[key] as? String
-    }
-
-    func getNode(_ key: String) -> JsonNode? {
-        return node[key] as? JsonNode
-    }
-
-    func getArrayNode(_ key: String) -> [JsonNode]? {
-        return node[key] as? [JsonNode]
-    }
-
-    func setValue(_ key: String, _ value: String) {
-        node[key] = value
-    }
-
-    func setValue(_ key: String, _ value: Bool) {
-        node[key] = value
-    }
-*/
     func get(forKey key: String) -> JsonNode? {
         // TODO:
         return nil

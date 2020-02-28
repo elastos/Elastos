@@ -283,7 +283,7 @@ public class DIDStore: NSObject {
                 }
 
                 // save private key
-                try storePrivateKey(did, finalCopy!.defaultPublicKey, key.serialize(), storePassword)
+                try storePrivateKey(for: did, id: finalCopy!.defaultPublicKey, privateKey: key.serialize(), using: storePassword)
                 try storeDid(using: finalCopy!)
 
                 if index >= nextIndex {
@@ -343,7 +343,7 @@ public class DIDStore: NSObject {
         }
 
         let id  = try DIDURL(did, "primary")
-        try storePrivateKey(did, id, key.serialize(), storePassword)
+        try storePrivateKey(for: did, id: id, privateKey: key.serialize(), using: storePassword)
 
         let builder = DIDDocumentBuilder(did, self)
         doc = try builder.appendAuthenticationKey(id, key.getPublicKeyBase58()).sealed(using: storePassword)
@@ -1141,60 +1141,84 @@ public class DIDStore: NSObject {
         return try listCredentials(for: DID(did))
     }
 
-    public func selectCredentials(_ did: DID, _ id: DIDURL,_ type: Array<Any>) throws -> Array<DIDURL> {
+    public func selectCredentials(for did: DID,
+                                  byId id: DIDURL,
+                             andType type: Array<String>) throws -> Array<DIDURL> {
         return try storage.selectCredentials(did, id, type)
     }
     
-    public func selectCredentials(_ did: String, _ id: String,_ type: Array<Any>) throws -> Array<DIDURL> {
-        let didObj = try DID(did)
-        return try selectCredentials(didObj, DIDURL(didObj, id), type)
+    public func selectCredentials(for did: String,
+                                  byId id: String,
+                             andType type: Array<String>) throws -> Array<DIDURL> {
+        let _did = try DID(did)
+        let _key = try DIDURL(_did, id)
+
+        return try selectCredentials(for: _did, byId: _key, andType: type)
     }
     
-    public func storePrivateKey(_ did: DID,_ id: DIDURL, _ privateKey: Data, _ storePass: String) throws {
-        guard !storePass.isEmpty else {
+    public func storePrivateKey(for did: DID,
+                                     id: DIDURL,
+                             privateKey: Data,
+                    using storePassword: String) throws {
+
+        guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
-        let encryptedKey = try DIDStore.encryptToBase64(privateKey, storePass)
+        let encryptedKey = try DIDStore.encryptToBase64(privateKey, storePassword)
         try storage.storePrivateKey(did, id, encryptedKey)
     }
-    
-    public func storePrivateKey(_ did: String,_ id: String, _ privateKey: Data, _ storepass: String) throws {
-        let didObj: DID = try DID(did)
-       try storePrivateKey(didObj, DIDURL(didObj, id), privateKey, storepass)
+
+    public func storePrivateKey(for did: String,
+                                     id: String,
+                             privateKey: Data,
+                    using storePassword: String) throws {
+
+        let _did = try DID(did)
+        let _key = try DIDURL(_did, id)
+
+        return try storePrivateKey(for: _did, id: _key, privateKey: privateKey, using: storePassword)
     }
     
-   public func loadPrivateKey(_ did: DID, id: DIDURL) throws -> String {
-        return try storage.loadPrivateKey(did, id)
+   public func loadPrivateKey(for did: DID, byId: DIDURL) throws -> String {
+        return try storage.loadPrivateKey(did, byId)
     }
     
-    public func containsPrivateKeys(_ did: DID) throws -> Bool {
+    public func containsPrivateKeys(for did: DID) throws -> Bool {
         return storage.containsPrivateKeys(did)
     }
     
-    public func containsPrivateKeys(_ did: String) throws -> Bool {
-        return try containsPrivateKeys(DID(did))
+    public func containsPrivateKeys(for did: String) throws -> Bool {
+        return try containsPrivateKeys(for: DID(did))
     }
     
-    public func containsPrivateKey(_ did: DID,_ id: DIDURL) throws -> Bool {
+    public func containsPrivateKey(for did: DID, id: DIDURL) throws -> Bool {
         return storage.containsPrivateKey(did, id)
     }
     
-    public func containsPrivateKey(_ did: String,_ id: String) throws -> Bool {
-        let didObj: DID = try DID(did)
-        return try containsPrivateKey(didObj, DIDURL(didObj, id))
+    public func containsPrivateKey(for did: String, id: String) throws -> Bool {
+        let _did = try DID(did)
+        let _key = try DIDURL(_did, id)
+
+        return try containsPrivateKey(for: _did, id: _key)
     }
     
-    public func deletePrivateKey(_ did: DID,_ id: DIDURL) throws -> Bool {
+    public func deletePrivateKey(for did: DID, id: DIDURL) throws -> Bool {
         return storage.deletePrivateKey(did, id)
     }
     
-    public func deletePrivateKey(_ did: String,_ id: String) throws -> Bool {
-        let _did: DID = try DID(did)
-        return try deletePrivateKey(_did, DIDURL(_did, id))
+    public func deletePrivateKey(for did: String, id: String) throws -> Bool {
+        let _did = try DID(did)
+        let _key = try DIDURL(_did, id)
+
+        return try deletePrivateKey(for: _did, id: _key)
     }
 
-    func makeSignWithIdentity(_ did: DID, _ id: DIDURL?, _ storePassword: String, _ data: [Data]) throws -> String {
+    func signWithIdentity(_ did: DID,
+                          _ id: DIDURL?,
+                          _ storePassword: String,
+                          _ data: [Data]) throws -> String {
+
         guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
@@ -1209,7 +1233,7 @@ public class DIDStore: NSObject {
             }
         }
 
-        let binKey = try DIDStore.decryptFromBase64(loadPrivateKey(did, id: usedId!), storePassword)
+        let binKey = try DIDStore.decryptFromBase64(loadPrivateKey(for: did, byId: usedId!), storePassword)
         let key = HDKey.DerivedKey.deserialize(binKey)!
 
         // TODO:
@@ -1219,12 +1243,19 @@ public class DIDStore: NSObject {
         return signature?.base64EncodedString() ?? ""
     }
 
-    public func makeSignWithIdentity(did: DID, id: DIDURL?, using storePassword: String, data: Data...) throws -> String {
-        return try makeSignWithIdentity(did, id, storePassword, data)
+    public func signWithIdentity(did: DID,
+                                  id: DIDURL,
+                 using storePassword: String,
+                            for data: Data...) throws -> String {
+
+        return try signWithIdentity(did, id, storePassword, data)
     }
 
-    public func makeSignWithIdentity(did: DID, using storePassword: String, _ data: Data...) throws -> String {
-        return try makeSignWithIdentity(did, nil, storePassword, data)
+    public func signWithIdentity(did: DID,
+                 using storePassword: String,
+                            for data: Data...) throws -> String {
+
+        return try signWithIdentity(did, nil, storePassword, data)
     }
 
     private func exportDid(_ did: DID,

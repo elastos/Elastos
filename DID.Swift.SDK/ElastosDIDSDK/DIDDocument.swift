@@ -152,7 +152,7 @@ public class DIDDocument {
         guard containsPublicKey(forId: forId) else {
             return false
         }
-        return (try? (getMeta().store?.containsPrivateKey(self.subject, forId) ?? false)) ?? false
+        return (try? (getMeta().store?.containsPrivateKey(for: self.subject, id: forId) ?? false)) ?? false
     }
 
     private func getDefaultPublicKey() -> DIDURL? {
@@ -205,7 +205,7 @@ public class DIDDocument {
 
         let value = self._publicKeys?.removeValue(forKey: id)
         if  value != nil {
-            _ = try? getMeta().store?.deletePrivateKey(subject, id)
+            _ = try? getMeta().store?.deletePrivateKey(for: subject, id: id)
         }
 
         return value != nil
@@ -582,7 +582,7 @@ public class DIDDocument {
             throw DIDError.didStoreError("Not attached with DID store")
         }
 
-        return try getMeta().store!.makeSignWithIdentity(subject, id, storePassword, data)
+        return try getMeta().store!.signWithIdentity(subject, id, storePassword, data)
     }
 
     public func verifyWithDefaultIdentity(using signature: String, data: Data...) throws -> Bool {

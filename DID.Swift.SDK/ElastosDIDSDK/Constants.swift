@@ -89,12 +89,3 @@ class Constants {
     static let DEFAULT_TTL = 24 * 60 * 60 * 1000
 
 }
-
-/*
-let DATE_FORMAT: String = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-let DATE_FORMAT_ISO_8601: String = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-
-public let MAX_VALID_YEARS: Int = 5
-
-let UTC: TimeZone = TimeZone(abbreviation: "UTC")!
-*/
