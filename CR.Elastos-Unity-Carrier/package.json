@@ -1,5 +1,5 @@
 {
-  "name": "elastos-unity-carrier",
+  "name": "react-native-elastos-unity-carrier",
   "version": "1.0.2",
   "description": "react native plugin for elastos carrier",
   "main": "index.js",
