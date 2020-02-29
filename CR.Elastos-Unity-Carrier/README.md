@@ -8,18 +8,25 @@ The release version for plugin is [here](https://www.npmjs.com/package/elastos-u
 
 ## Getting started
 ```
-npm install --save elastos-unity-carrier
+npm install --save react-native-elastos-unity-carrier
+# with yarn
+yarn add react-native-elastos-unity-carrier
+```
 
-react-native link elastos-unity-carrier
+### Linking 
+
+- RN < 0.60
+```
+react-native link react-native-elastos-unity-carrier
+```
+- RN > 0.60
+```
+cd ios
+pod install
 ```
 
 
-## Next step
-### iOS
-* open xcode
-* add ElastosCarrier.framework to **Linked Frameworks and Libraries** from **/node_modules/react-native-elastos-carrier/ios/Carrier** folder
-* run project
-
+## Additional steps
 
 ### Android
 add following lines to project build.gradle 
