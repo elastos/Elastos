@@ -34,9 +34,9 @@ extern "C" {
 #define LANGUAGE_ENGLISH                0
 #define LANGUAGE_FRENCH                 1
 #define LANGUAGE_SPANISH                2
-#define LANGUAGE_JAPANESE               3
-#define LANGUAGE_CHINESE_SIMPLIFIED     4
-#define LANGUAGE_CHINESE_TRADITIONAL    5
+#define LANGUAGE_CHINESE_SIMPLIFIED     3
+#define LANGUAGE_CHINESE_TRADITIONAL    4
+#define LANGUAGE_JAPANESE               5
 
 #define PUBLICKEY_BYTES                 33
 #define PRIVATEKEY_BYTES                32

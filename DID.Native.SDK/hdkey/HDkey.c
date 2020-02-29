@@ -60,14 +60,14 @@ static const char **get_word_list(int language)
     case LANGUAGE_SPANISH:
         return BRBIP39WordsSpan;
 
-    case LANGUAGE_JAPANESE:
-        return BRBIP39WordsJap;
-
     case LANGUAGE_CHINESE_SIMPLIFIED:
         return BRBIP39WordsChs;
 
     case LANGUAGE_CHINESE_TRADITIONAL:
         return BRBIP39WordsCht;
+
+    case LANGUAGE_JAPANESE:
+        return BRBIP39WordsJap;
 
     default:
         return BRBIP39WordsEn;
