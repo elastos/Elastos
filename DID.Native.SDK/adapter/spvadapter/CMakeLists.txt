@@ -22,7 +22,6 @@ set(SYSTEM_LIBS
 endif()
 
 set(LIBS
-    curl
     spvsdk
     sqlite3
     fruit
@@ -52,7 +51,7 @@ endif()
 link_directories(
     ${PROJECT_INT_DIST_DIR}/lib)
 
-set(SPVADAPTER_DEPENDS libcurl libspvsdk)
+set(SPVADAPTER_DEPENDS libspvsdk)
 
 add_custom_target(spvadapter)
 
