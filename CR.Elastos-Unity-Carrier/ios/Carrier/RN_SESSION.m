@@ -7,7 +7,7 @@
 //
 
 #import "RN_SESSION.h"
-#import <ElastosCarrier/ElastosCarrier.h>
+#import <ElastosCarrierSDK/ElastosCarrierSDK.h>
 #import <React/RCTLog.h>
 
 #import "Carrier.h"
@@ -26,10 +26,11 @@
 -(instancetype) initWithCarrier: (Carrier *) carrier{
   if(self = [super init]){
     [self setCarrier:carrier];
-    [self setElaCarrier: [carrier getIntance]];
+    [self setElaCarrier: [carrier getInstance]];
     
     NSError *error = nil;
-    ELACarrierSessionManager *m = [ELACarrierSessionManager getInstance:self.elaCarrier usingHandler:
+  [ELACarrierSessionManager initializeSharedInstance:self.elaCarrier sessionRequestHandler:
+    
       ^(ELACarrier *_carrier, NSString *friendId, NSString *sdp){
         RCTLog(@"[ onSessionRequest ] => %@, %@", friendId, sdp);
         
@@ -46,8 +47,8 @@
         self.carrier.callback(self.elaCarrier, param);
       
     } error: &error];
-    
-    [self setElaSessionManager:m];
+    [ELACarrierSessionManager sharedInstance];
+//    [self setElaSessionManager:m];
   }
   return self;
 }

@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ElastosCarrier/ElastosCarrier.h>
+#import <ElastosCarrierSDK/ElastosCarrierSDK.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -6,7 +6,7 @@
 //  Copyright © 2018 Facebook. All rights reserved.
 //
 #import <Foundation/Foundation.h>
-#import <ElastosCarrier/ElastosCarrier.h>
+#import <ElastosCarrierSDK/ElastosCarrierSDK.h>
 
 //#import "RN_SESSION.h"
 
@@ -20,7 +20,7 @@ typedef void (^CarrierSendEvent)(ELACarrier *carrier, NSDictionary *param);
 @property(copy) CarrierSendEvent callback;
 
 -(void) start:(NSDictionary *)config sendEvent:(CarrierSendEvent)sendEvent completion:(void (^)(NSError *error))completion;
--(ELACarrier *) getIntance;
+-(ELACarrier *) getInstance;
 -(RN_SESSION *) getRNSessionInstance;
 
 

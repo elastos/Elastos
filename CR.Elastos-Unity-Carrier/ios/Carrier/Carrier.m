@@ -27,7 +27,7 @@ NSString * const NSCustomErrorDomain = @"PLUGIN-ERROR";
 
 @implementation Carrier
 
--(ELACarrier *) getIntance{
+-(ELACarrier *) getInstance{
   return elaCarrier;
 }
 
@@ -45,7 +45,7 @@ NSString * const NSCustomErrorDomain = @"PLUGIN-ERROR";
     _init = NO;
     connectStatus = ELACarrierConnectionStatusDisconnected;
     managerCarrierQueue = dispatch_queue_create("managerCarrierQueue", NULL);
-    [ELACarrier setLogLevel:ELACarrierLogLevelDebug];
+//    [ELACarrier setLogLevel:ELACarrierLogLevelDebug];
     
   }
   return self;
@@ -98,9 +98,11 @@ NSString * const NSCustomErrorDomain = @"PLUGIN-ERROR";
       options.udpEnabled = [config[@"udp_enabled"] boolValue];
       options.bootstrapNodes = bootstrapNodes;
       
-      [ELACarrier initializeInstanceWithOptions:options delegate:self error:&error];
-      elaCarrier = [ELACarrier getInstance];
+    [ELACarrier initializeSharedInstance:options delegate:self error:&error];
+//      [ELACarrier initializeInstanceWithOptions:options delegate:self error:&error];
+//      elaCarrier = [ELACarrier getInstance];
       
+    elaCarrier = [ELACarrier sharedInstance];
       
       
       _init = NO;
@@ -114,7 +116,7 @@ NSString * const NSCustomErrorDomain = @"PLUGIN-ERROR";
       }
     }
     
-    _init = [elaCarrier startWithIterateInterval:1000 error:&error];
+    _init = [elaCarrier start:1000 error:&error];
     if (_init) {
       [self setCallback:sendEvent];
       _callback = sendEvent;

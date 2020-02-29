@@ -644,7 +644,7 @@ RCT_EXPORT_METHOD
 }
 -(ELACarrier *) getELACarrier: (NSString *)cid{
   Carrier *carrier = [ALL_MAP objectForKey:cid];
-  return [carrier getIntance];
+  return [carrier getInstance];
 }
 
 -(NSDictionary *) user_info: (ELACarrierUserInfo *)info{
