@@ -54,27 +54,27 @@ static void test_vp_getelem(void)
     signer = Presentation_GetSigner(vp);
     CU_ASSERT_PTR_NOT_NULL_FATAL(signer);
 
-    id = DIDURL_FromDid(signer, "profile");
+    id = DIDURL_NewByDid(signer, "profile");
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(signer, "email");
+    id = DIDURL_NewByDid(signer, "email");
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(signer, "twitter");
+    id = DIDURL_NewByDid(signer, "twitter");
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(signer, "passport");
+    id = DIDURL_NewByDid(signer, "passport");
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(signer, "notexist");
+    id = DIDURL_NewByDid(signer, "notexist");
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     CU_ASSERT_PTR_NULL(Presentation_GetCredential(vp, id));
     DIDURL_Destroy(id);
@@ -99,8 +99,8 @@ static void test_vp_parse(void)
     CU_ASSERT_TRUE(Presentation_IsGenuine(normvp));
     CU_ASSERT_TRUE(Presentation_IsValid(normvp));
 
-    CU_ASSERT_TRUE(!strcmp(TestData_LoadVpNormJson(), Presentation_ToJson(normvp, 0, 0)));
-    CU_ASSERT_TRUE(!strcmp(TestData_LoadVpNormJson(), Presentation_ToJson(vp, 0, 0)));
+    CU_ASSERT_TRUE(!strcmp(TestData_LoadVpNormJson(), Presentation_ToJson(normvp, true)));
+    CU_ASSERT_TRUE(!strcmp(TestData_LoadVpNormJson(), Presentation_ToJson(vp, true)));
 }
 
 static void test_vp_create(void)
@@ -146,27 +146,27 @@ static void test_vp_create(void)
     signer = Presentation_GetSigner(vp);
     CU_ASSERT_PTR_NOT_NULL_FATAL(signer);
 
-    id = DIDURL_FromDid(signer, "profile");
+    id = DIDURL_NewByDid(signer, "profile");
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(signer, "email");
+    id = DIDURL_NewByDid(signer, "email");
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(signer, "twitter");
+    id = DIDURL_NewByDid(signer, "twitter");
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(signer, "passport");
+    id = DIDURL_NewByDid(signer, "passport");
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     CU_ASSERT_PTR_NOT_NULL(Presentation_GetCredential(vp, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(signer, "notexist");
+    id = DIDURL_NewByDid(signer, "notexist");
     CU_ASSERT_PTR_NOT_NULL_FATAL(id);
     CU_ASSERT_PTR_NULL(Presentation_GetCredential(vp, id));
     DIDURL_Destroy(id);

@@ -28,8 +28,8 @@ static int get_did(DID *did, void *context)
 
 static void test_didstore_bulk_newdid(void)
 {
-    char alias[ELA_MAX_ALIAS_LEN], gAlias[ELA_MAX_ALIAS_LEN], _path[PATH_MAX];
-    const char *storePath;
+    char alias[ELA_MAX_ALIAS_LEN], _path[PATH_MAX];
+    const char *gAlias, *storePath;
     DIDStore *store;
     int rc, count = 0;
 
@@ -65,7 +65,7 @@ static void test_didstore_bulk_newdid(void)
         CU_ASSERT_PTR_NOT_NULL(loaddoc);
         CU_ASSERT_TRUE(DIDDocument_IsValid(loaddoc));
 
-        rc = DIDDocument_GetAlias(loaddoc, gAlias, sizeof(gAlias));
+        gAlias = DIDDocument_GetAlias(loaddoc);
         CU_ASSERT_NOT_EQUAL(rc, -1);
 
         CU_ASSERT_STRING_EQUAL(alias, gAlias);
@@ -79,17 +79,17 @@ static void test_didstore_bulk_newdid(void)
         DIDDocument_Destroy(loaddoc);
     }
 
-    rc = DIDStore_ListDID(store, 0, get_did, (void*)&count);
+    rc = DIDStore_ListDIDs(store, 0, get_did, (void*)&count);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(count, 100);
 
     count = 0;
-    rc = DIDStore_ListDID(store, 1, get_did, (void*)&count);
+    rc = DIDStore_ListDIDs(store, 1, get_did, (void*)&count);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(count, 100);
 
     count = 0;
-    rc = DIDStore_ListDID(store, 2, get_did, (void*)&count);
+    rc = DIDStore_ListDIDs(store, 2, get_did, (void*)&count);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(count, 0);
 
@@ -138,18 +138,18 @@ static void test_didstore_op_deletedid(void)
         CU_ASSERT_FALSE_FATAL(file_exist(path));
     }
 
-    rc = DIDStore_ListDID(store, 0, get_did, (void*)&count);
+    rc = DIDStore_ListDIDs(store, 0, get_did, (void*)&count);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(count, 80);
 
     count = 0;
-    rc = DIDStore_ListDID(store, 1, get_did, (void*)&count);
+    rc = DIDStore_ListDIDs(store, 1, get_did, (void*)&count);
 
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(count, 80);
 
     count = 0;
-    rc = DIDStore_ListDID(store, 2, get_did, (void*)&count);
+    rc = DIDStore_ListDIDs(store, 2, get_did, (void*)&count);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(count, 0);
 
@@ -189,17 +189,17 @@ static void test_didstore_op_store_load_did(void)
     CU_ASSERT_TRUE(DIDDocument_IsValid(loaddoc));
     DIDDocument_Destroy(loaddoc);
 
-    rc = DIDStore_ListDID(store, 0, get_did, (void*)&count);
+    rc = DIDStore_ListDIDs(store, 0, get_did, (void*)&count);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(count, 2);
 
     count = 0;
-    rc = DIDStore_ListDID(store, 1, get_did, (void*)&count);
+    rc = DIDStore_ListDIDs(store, 1, get_did, (void*)&count);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(count, 2);
 
     count = 0;
-    rc = DIDStore_ListDID(store, 2, get_did, (void*)&count);
+    rc = DIDStore_ListDIDs(store, 2, get_did, (void*)&count);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(count, 0);
 

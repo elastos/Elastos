@@ -33,8 +33,8 @@ static void test_issuer_issuevc(void)
 {
     Credential *vc;
     DIDDocument *doc;
-    DIDStore *store;
     DID *did, *vcdid;
+    DIDURL *credid;
     time_t expires;
     bool isEquals;
     ssize_t size;
@@ -46,6 +46,9 @@ static void test_issuer_issuevc(void)
 
     did = DIDDocument_GetSubject(doc);
     expires = DIDDocument_GetExpires(doc);
+
+    credid = DIDURL_NewByDid(did, "kyccredential");
+    CU_ASSERT_PTR_NOT_NULL(credid);
 
     const char *types[] = {"BasicProfileCredential", "PhoneCredential"};
     Property props[7];
@@ -64,7 +67,7 @@ static void test_issuer_issuevc(void)
     props[6].key = "phone";
     props[6].value = "132780456";
 
-    vc = Issuer_CreateCredential(issuer, did, "kyccredential", types, 2, props, 7,
+    vc = Issuer_CreateCredential(issuer, did, credid, types, 2, props, 7,
             expires, storepass);
     CU_ASSERT_PTR_NOT_NULL_FATAL(vc);
     CU_ASSERT_FALSE(Credential_IsExpired(vc));
@@ -95,6 +98,7 @@ static void test_issuer_issuevc(void)
     CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "twitter"), "@john");
     CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "phone"), "132780456");
 
+    DIDURL_Destroy(credid);
     Credential_Destroy(vc);
 }
 
@@ -103,11 +107,15 @@ static void test_issuer_issueselfvc(void)
     Credential *vc;
     DIDDocument *doc;
     DID *did, *vcdid;
+    DIDURL *credid;
     time_t expires;
     bool isEquals;
     ssize_t size;
 
     expires = DIDDocument_GetExpires(issuerdoc);
+
+    credid = DIDURL_NewByDid(issuerid, "mycredential");
+    CU_ASSERT_PTR_NOT_NULL(credid);
 
     const char *types[] = {"BasicProfileCredential", "PhoneCredential",
             "SelfProclaimedCredential"};
@@ -127,7 +135,7 @@ static void test_issuer_issueselfvc(void)
     props[6].key = "phone";
     props[6].value = "132780456";
 
-    vc = Issuer_CreateCredential(issuer, issuerid, "mycredential", types, 3,
+    vc = Issuer_CreateCredential(issuer, issuerid, credid, types, 3,
             props, 7, expires, storepass);
     CU_ASSERT_PTR_NOT_NULL_FATAL(vc);
     CU_ASSERT_FALSE(Credential_IsExpired(vc));
@@ -159,6 +167,7 @@ static void test_issuer_issueselfvc(void)
     CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "twitter"), "@john");
     CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "phone"), "132780456");
 
+    DIDURL_Destroy(credid);
     Credential_Destroy(vc);
 }
 

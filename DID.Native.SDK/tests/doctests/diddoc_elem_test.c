@@ -55,7 +55,7 @@ static void test_diddoc_get_publickey(void)
     defaultkey = DIDDocument_GetDefaultPublicKey(doc);
     CU_ASSERT_PTR_NOT_NULL(defaultkey);
 
-    primaryid = DIDURL_FromDid(did, "primary");
+    primaryid = DIDURL_NewByDid(did, "primary");
     CU_ASSERT_PTR_NOT_NULL(primaryid);
     pk = DIDDocument_GetPublicKey(doc, primaryid);
     CU_ASSERT_PTR_NOT_NULL(pk);
@@ -64,7 +64,7 @@ static void test_diddoc_get_publickey(void)
     isEquals = DIDURL_Equals(primaryid, defaultkey);
     CU_ASSERT_TRUE(isEquals);
 
-    id = DIDURL_FromDid(did, "key2");
+    id = DIDURL_NewByDid(did, "key2");
     CU_ASSERT_PTR_NOT_NULL(id);
     pk = DIDDocument_GetPublicKey(doc, id);
     CU_ASSERT_PTR_NOT_NULL(pk);
@@ -73,7 +73,7 @@ static void test_diddoc_get_publickey(void)
     DIDURL_Destroy(id);
 
     //Key not exist, should fail.
-    id = DIDURL_FromDid(did, "notExist");
+    id = DIDURL_NewByDid(did, "notExist");
     CU_ASSERT_PTR_NOT_NULL(id);
     pk = DIDDocument_GetPublicKey(doc, id);
     CU_ASSERT_PTR_NULL(pk);
@@ -94,7 +94,7 @@ static void test_diddoc_get_publickey(void)
     size = DIDDocument_SelectPublicKeys(doc, default_type, NULL, pks, sizeof(pks));
     CU_ASSERT_EQUAL(size, 4);
 
-    id = DIDURL_FromDid(did, "key2");
+    id = DIDURL_NewByDid(did, "key2");
     CU_ASSERT_PTR_NOT_NULL(id);
     size = DIDDocument_SelectPublicKeys(doc, default_type, id, pks, sizeof(pks));
     CU_ASSERT_EQUAL(size, 1);
@@ -102,7 +102,7 @@ static void test_diddoc_get_publickey(void)
     CU_ASSERT_TRUE(isEquals);
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(did, "key3");
+    id = DIDURL_NewByDid(did, "key3");
     CU_ASSERT_PTR_NOT_NULL(id);
     size = DIDDocument_SelectPublicKeys(doc, NULL, id, pks, sizeof(pks));
     CU_ASSERT_EQUAL(size, 1);
@@ -120,18 +120,18 @@ static void test_diddoc_add_publickey(void)
     bool isEquals;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
     // Add 2 public keys
-    DIDURL *id1 = DIDURL_FromDid(did, "test1");
+    DIDURL *id1 = DIDURL_NewByDid(did, "test1");
     CU_ASSERT_PTR_NOT_NULL(id1);
     keybase = Generater_Publickey(publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
     rc = DIDDocumentBuilder_AddPublicKey(builder, id1, did, keybase);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *id2 = DIDURL_FromDid(did, "test2");
+    DIDURL *id2 = DIDURL_NewByDid(did, "test2");
     CU_ASSERT_PTR_NOT_NULL(id2);
     keybase = Generater_Publickey(publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
@@ -171,11 +171,11 @@ static void test_diddoc_remove_publickey(void)
     DIDURL *recoveryid, *keyid;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
     // recovery used by authorization, should failed.
-    recoveryid = DIDURL_FromDid(did, "recovery");
+    recoveryid = DIDURL_NewByDid(did, "recovery");
     CU_ASSERT_PTR_NOT_NULL(recoveryid);
     rc = DIDDocumentBuilder_RemovePublicKey(builder, recoveryid, false);
     CU_ASSERT_EQUAL(rc, -1);
@@ -183,13 +183,13 @@ static void test_diddoc_remove_publickey(void)
     rc = DIDDocumentBuilder_RemovePublicKey(builder, recoveryid, true);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    keyid = DIDURL_FromDid(did, "notExistKey");
+    keyid = DIDURL_NewByDid(did, "notExistKey");
     CU_ASSERT_PTR_NOT_NULL(keyid);
     rc = DIDDocumentBuilder_RemovePublicKey(builder, keyid, true);
     CU_ASSERT_EQUAL(rc, -1);
     DIDURL_Destroy(keyid);
 
-    keyid = DIDURL_FromDid(did, "key2");
+    keyid = DIDURL_NewByDid(did, "key2");
     CU_ASSERT_PTR_NOT_NULL(keyid);
     rc = DIDDocumentBuilder_RemovePublicKey(builder, keyid, true);
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -249,7 +249,7 @@ static void test_diddoc_get_authentication_key(void)
     }
 
     // AuthenticationKey getter
-    id = DIDURL_FromDid(did, "primary");
+    id = DIDURL_NewByDid(did, "primary");
     CU_ASSERT_PTR_NOT_NULL(id);
     pk = DIDDocument_GetAuthenticationKey(doc, id);
     CU_ASSERT_PTR_NOT_NULL(pk);
@@ -257,7 +257,7 @@ static void test_diddoc_get_authentication_key(void)
     CU_ASSERT_TRUE(isEquals);
     DIDURL_Destroy(id);
 
-    keyid = DIDURL_FromDid(did, "key3");
+    keyid = DIDURL_NewByDid(did, "key3");
     CU_ASSERT_PTR_NOT_NULL(keyid);
     pk = DIDDocument_GetAuthenticationKey(doc, keyid);
     CU_ASSERT_PTR_NOT_NULL(pk);
@@ -265,7 +265,7 @@ static void test_diddoc_get_authentication_key(void)
     CU_ASSERT_TRUE(isEquals);
 
     //Key not exist, should fail.
-    id = DIDURL_FromDid(did, "notExist");
+    id = DIDURL_NewByDid(did, "notExist");
     CU_ASSERT_PTR_NOT_NULL(id);
     pk = DIDDocument_GetAuthenticationKey(doc, id);
     CU_ASSERT_PTR_NULL(pk);
@@ -286,7 +286,7 @@ static void test_diddoc_get_authentication_key(void)
     size = DIDDocument_SelectAuthenticationKeys(doc, default_type, NULL, pks, sizeof(pks));
     CU_ASSERT_EQUAL(size, 3);
 
-    id = DIDURL_FromDid(did, "key2");
+    id = DIDURL_NewByDid(did, "key2");
     CU_ASSERT_PTR_NOT_NULL(id);
     size = DIDDocument_SelectAuthenticationKeys(doc, default_type, id, pks, sizeof(pks));
     CU_ASSERT_EQUAL(size, 1);
@@ -309,11 +309,11 @@ static void test_diddoc_add_authentication_key(void)
     bool isEquals;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
     // Add 2 public keys
-    DIDURL *id1 = DIDURL_FromDid(did, "test1");
+    DIDURL *id1 = DIDURL_NewByDid(did, "test1");
     CU_ASSERT_PTR_NOT_NULL(id1);
     keybase = Generater_Publickey(publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
@@ -322,7 +322,7 @@ static void test_diddoc_add_authentication_key(void)
     rc = DIDDocumentBuilder_AddAuthenticationKey(builder, id1, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *id2 = DIDURL_FromDid(did, "test2");
+    DIDURL *id2 = DIDURL_NewByDid(did, "test2");
     CU_ASSERT_PTR_NOT_NULL(id2);
     keybase = Generater_Publickey(publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
@@ -332,14 +332,14 @@ static void test_diddoc_add_authentication_key(void)
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     // Add new keys
-    DIDURL *id3 = DIDURL_FromDid(did, "test3");
+    DIDURL *id3 = DIDURL_NewByDid(did, "test3");
     CU_ASSERT_PTR_NOT_NULL(id3);
     keybase = Generater_Publickey(publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
     rc = DIDDocumentBuilder_AddAuthenticationKey(builder, id3, keybase);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *id4 = DIDURL_FromDid(did, "test4");
+    DIDURL *id4 = DIDURL_NewByDid(did, "test4");
     CU_ASSERT_PTR_NOT_NULL(id4);
     keybase = Generater_Publickey(publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
@@ -347,14 +347,14 @@ static void test_diddoc_add_authentication_key(void)
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     // Try to add a non existing key, should fail.
-    DIDURL *id = DIDURL_FromDid(did, "notExistKey");
+    DIDURL *id = DIDURL_NewByDid(did, "notExistKey");
     CU_ASSERT_PTR_NOT_NULL(id);
     rc = DIDDocumentBuilder_AddAuthenticationKey(builder, id, NULL);
     CU_ASSERT_EQUAL(rc, -1);
     DIDURL_Destroy(id);
 
     // Try to add a key not owned by self, should fail.
-    id = DIDURL_FromDid(did, "recovery");
+    id = DIDURL_NewByDid(did, "recovery");
     CU_ASSERT_PTR_NOT_NULL(id);
     rc = DIDDocumentBuilder_AddAuthenticationKey(builder, id, NULL);
     CU_ASSERT_EQUAL(rc, -1);
@@ -406,18 +406,18 @@ static void test_diddoc_remove_authentication_key(void)
     const char *keybase;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
     // Add 2 public keys
-    DIDURL *id1 = DIDURL_FromDid(did, "test1");
+    DIDURL *id1 = DIDURL_NewByDid(did, "test1");
     CU_ASSERT_PTR_NOT_NULL(id1);
     keybase = Generater_Publickey(publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
     rc = DIDDocumentBuilder_AddAuthenticationKey(builder, id1, keybase);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *id2 = DIDURL_FromDid(did, "test2");
+    DIDURL *id2 = DIDURL_NewByDid(did, "test2");
     CU_ASSERT_PTR_NOT_NULL(id2);
     keybase = Generater_Publickey(publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
@@ -431,13 +431,13 @@ static void test_diddoc_remove_authentication_key(void)
     rc = DIDDocumentBuilder_RemoveAuthenticationKey(builder, id2);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *id3 = DIDURL_FromDid(did, "key2");
+    DIDURL *id3 = DIDURL_NewByDid(did, "key2");
     CU_ASSERT_PTR_NOT_NULL(id3);
     rc = DIDDocumentBuilder_RemoveAuthenticationKey(builder, id3);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     // Key not exist, should fail.
-    DIDURL *id = DIDURL_FromDid(did, "notExistKey");
+    DIDURL *id = DIDURL_NewByDid(did, "notExistKey");
     CU_ASSERT_PTR_NOT_NULL(id);
     rc = DIDDocumentBuilder_RemoveAuthenticationKey(builder, id);
     CU_ASSERT_EQUAL(rc, -1);
@@ -501,7 +501,7 @@ static void test_diddoc_get_authorization_key(void)
     }
 
     // AuthorizationKey getter
-    keyid = DIDURL_FromDid(did, "recovery");
+    keyid = DIDURL_NewByDid(did, "recovery");
     CU_ASSERT_PTR_NOT_NULL(keyid);
     pk = DIDDocument_GetAuthorizationKey(doc, keyid);
     CU_ASSERT_PTR_NOT_NULL(pk);
@@ -509,7 +509,7 @@ static void test_diddoc_get_authorization_key(void)
     CU_ASSERT_TRUE(isEquals);
 
     //Key not exist, should fail.
-    id = DIDURL_FromDid(did, "notExist");
+    id = DIDURL_NewByDid(did, "notExist");
     CU_ASSERT_PTR_NOT_NULL(id);
     pk = DIDDocument_GetAuthorizationKey(doc, id);
     CU_ASSERT_PTR_NULL(pk);
@@ -542,38 +542,38 @@ static void test_diddoc_add_authorization_key(void)
     bool isEquals;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
     // Add 2 public keys
-    DIDURL *id1 = DIDURL_FromDid(did, "test1");
+    DIDURL *id1 = DIDURL_NewByDid(did, "test1");
     CU_ASSERT_PTR_NOT_NULL(id1);
     dkey = Generater_KeyPair(&_dkey);
     keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
-    rc = DIDDocumentBuilder_AddPublicKey(builder, id1, did, keybase);
-    CU_ASSERT_NOT_EQUAL(rc, -1);
     idstring = DerivedKey_GetAddress(dkey);
     CU_ASSERT_PTR_NOT_NULL(idstring);
     strncpy(controller.idstring, idstring, sizeof(controller.idstring));
+    rc = DIDDocumentBuilder_AddPublicKey(builder, id1, &controller, keybase);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
     rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id1, &controller, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *id2 = DIDURL_FromDid(did, "test2");
+    DIDURL *id2 = DIDURL_NewByDid(did, "test2");
     CU_ASSERT_PTR_NOT_NULL(id2);
     dkey = Generater_KeyPair(&_dkey);
     keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
     CU_ASSERT_PTR_NOT_NULL(keybase);
-    rc = DIDDocumentBuilder_AddPublicKey(builder, id2, did, keybase);
-    CU_ASSERT_NOT_EQUAL(rc, -1);
     idstring = DerivedKey_GetAddress(dkey);
     CU_ASSERT_PTR_NOT_NULL(idstring);
     strncpy(controller.idstring, idstring, sizeof(controller.idstring));
-    rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id2, &controller, NULL);
+    rc = DIDDocumentBuilder_AddPublicKey(builder, id2, &controller, keybase);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id2, NULL, keybase);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     // Add new keys
-    DIDURL *id3 = DIDURL_FromDid(did, "test3");
+    DIDURL *id3 = DIDURL_NewByDid(did, "test3");
     CU_ASSERT_PTR_NOT_NULL(id3);
     dkey = Generater_KeyPair(&_dkey);
     keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
@@ -581,10 +581,12 @@ static void test_diddoc_add_authorization_key(void)
     idstring = DerivedKey_GetAddress(dkey);
     CU_ASSERT_PTR_NOT_NULL(idstring);
     strncpy(controller.idstring, idstring, sizeof(controller.idstring));
-    rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id3, &controller, keybase);
+    rc = DIDDocumentBuilder_AddPublicKey(builder, id3, &controller, keybase);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+    rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id3, NULL, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *id4 = DIDURL_FromDid(did, "test4");
+    DIDURL *id4 = DIDURL_NewByDid(did, "test4");
     CU_ASSERT_PTR_NOT_NULL(id4);
     dkey = Generater_KeyPair(&_dkey);
     keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58, sizeof(publickeybase58));
@@ -596,14 +598,14 @@ static void test_diddoc_add_authorization_key(void)
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     // Try to add a non existing key, should fail.
-    DIDURL *id = DIDURL_FromDid(did, "notExistKey");
+    DIDURL *id = DIDURL_NewByDid(did, "notExistKey");
     CU_ASSERT_PTR_NOT_NULL(id);
     rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id, NULL, NULL);
     CU_ASSERT_EQUAL(rc, -1);
     DIDURL_Destroy(id);
 
     // Try to add a key not owned by self, should fail.
-    id = DIDURL_FromDid(did, "key2");
+    id = DIDURL_NewByDid(did, "key2");
     CU_ASSERT_PTR_NOT_NULL(id);
     rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id, NULL, NULL);
     CU_ASSERT_EQUAL(rc, -1);
@@ -657,11 +659,11 @@ static void test_diddoc_remove_authorization_key(void)
     DID controller;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
     // Add 2 public keys
-    DIDURL *id1 = DIDURL_FromDid(did, "test1");
+    DIDURL *id1 = DIDURL_NewByDid(did, "test1");
     CU_ASSERT_PTR_NOT_NULL(id1);
     dkey = Generater_KeyPair(&_dkey);
     keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58,
@@ -673,7 +675,7 @@ static void test_diddoc_remove_authorization_key(void)
     rc = DIDDocumentBuilder_AddAuthorizationKey(builder, id1, &controller, keybase);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *id2 = DIDURL_FromDid(did, "test2");
+    DIDURL *id2 = DIDURL_NewByDid(did, "test2");
     CU_ASSERT_PTR_NOT_NULL(id2);
     dkey = Generater_KeyPair(&_dkey);
     keybase = DerivedKey_GetPublicKeyBase58(dkey, publickeybase58,
@@ -689,13 +691,13 @@ static void test_diddoc_remove_authorization_key(void)
     rc = DIDDocumentBuilder_RemoveAuthorizationKey(builder, id1);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *recoveryid = DIDURL_FromDid(did, "recovery");
+    DIDURL *recoveryid = DIDURL_NewByDid(did, "recovery");
     CU_ASSERT_PTR_NOT_NULL(recoveryid);
     rc = DIDDocumentBuilder_RemoveAuthorizationKey(builder, recoveryid);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     // Key not exist, should fail.
-    DIDURL *id = DIDURL_FromDid(did, "notExistKey");
+    DIDURL *id = DIDURL_NewByDid(did, "notExistKey");
     CU_ASSERT_PTR_NOT_NULL(id);
     rc = DIDDocumentBuilder_RemoveAuthorizationKey(builder, id);
     CU_ASSERT_EQUAL(rc, -1);
@@ -754,14 +756,14 @@ static void test_diddoc_get_credential(void)
     }
 
     // Credential getter.
-    DIDURL *profileid = DIDURL_FromDid(did, "profile");
+    DIDURL *profileid = DIDURL_NewByDid(did, "profile");
     CU_ASSERT_PTR_NOT_NULL(profileid);
     vc = DIDDocument_GetCredential(doc, profileid);
     CU_ASSERT_PTR_NOT_NULL(vc);
     isEquals = DIDURL_Equals(profileid, Credential_GetId(vc));
     CU_ASSERT_TRUE(isEquals);
 
-    id = DIDURL_FromDid(did, "email");
+    id = DIDURL_NewByDid(did, "email");
     CU_ASSERT_PTR_NOT_NULL(id);
     vc = DIDDocument_GetCredential(doc, id);
     CU_ASSERT_PTR_NOT_NULL(vc);
@@ -770,7 +772,7 @@ static void test_diddoc_get_credential(void)
     DIDURL_Destroy(id);
 
     // Credential not exist.
-    id = DIDURL_FromDid(did, "notExist");
+    id = DIDURL_NewByDid(did, "notExist");
     CU_ASSERT_PTR_NOT_NULL(id);
     vc = DIDDocument_GetCredential(doc, id);
     CU_ASSERT_PTR_NULL(vc);
@@ -807,7 +809,7 @@ static void test_diddoc_add_credential(void)
     bool isEquals;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
     // Add credentials.
@@ -827,7 +829,7 @@ static void test_diddoc_add_credential(void)
     DIDDocumentBuilder_Destroy(builder);
 
     // Check new added credential.
-    DIDURL *id = DIDURL_FromDid(did, "passport");
+    DIDURL *id = DIDURL_NewByDid(did, "passport");
     CU_ASSERT_PTR_NOT_NULL(id);
     vc = DIDDocument_GetCredential(sealeddoc, id);
     CU_ASSERT_PTR_NOT_NULL(vc);
@@ -835,7 +837,7 @@ static void test_diddoc_add_credential(void)
     CU_ASSERT_TRUE(isEquals);
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(did, "twitter");
+    id = DIDURL_NewByDid(did, "twitter");
     CU_ASSERT_PTR_NOT_NULL(id);
     vc = DIDDocument_GetCredential(sealeddoc, id);
     CU_ASSERT_PTR_NOT_NULL(vc);
@@ -857,12 +859,12 @@ static void test_diddoc_add_selfclaimed_credential(void)
     bool isEquals;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    // Add self claim credential.
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
-    // Add self claim credential.
-    builder = DIDDocument_Modify(doc);
-    CU_ASSERT_PTR_NOT_NULL(builder);
+    DIDURL *credid = DIDURL_NewByDid(did, "passport");
+    CU_ASSERT_PTR_NOT_NULL(credid);
 
     const char *types[] = {"BasicProfileCredential", "SelfProclaimedCredential"};
     Property props[2];
@@ -871,7 +873,7 @@ static void test_diddoc_add_selfclaimed_credential(void)
     props[1].key = "passport";
     props[1].value = "S653258Z07";
 
-    rc = DIDDocumentBuilder_AddSelfClaimedCredential(builder, "passport",
+    rc = DIDDocumentBuilder_AddSelfClaimedCredential(builder, credid,
             types, 2, props, 2, DIDDocument_GetExpires(doc), storepass);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
@@ -881,10 +883,7 @@ static void test_diddoc_add_selfclaimed_credential(void)
     DIDDocumentBuilder_Destroy(builder);
 
     // check credential
-    DIDURL *id = DIDURL_FromDid(did, "passport");
-    CU_ASSERT_PTR_NOT_NULL(id);
-
-    vc = DIDDocument_GetCredential(sealeddoc, id);
+    vc = DIDDocument_GetCredential(sealeddoc, credid);
     CU_ASSERT_PTR_NOT_NULL(vc);
     CU_ASSERT_TRUE(Credential_IsSelfProclaimed(vc));
     CU_ASSERT_EQUAL(Credential_GetTypeCount(vc), 2);
@@ -901,7 +900,7 @@ static void test_diddoc_add_selfclaimed_credential(void)
                 !strcmp(type, "SelfProclaimedCredential"));
     }
 
-    DIDURL_Destroy(id);
+    DIDURL_Destroy(credid);
     DIDDocument_Destroy(sealeddoc);
 }
 
@@ -912,7 +911,7 @@ static void test_diddoc_remove_credential(void)
     Credential *vc;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
     // Add credentials.
@@ -922,17 +921,17 @@ static void test_diddoc_remove_credential(void)
     rc = DIDDocumentBuilder_AddCredential(builder, TestData_LoadTwitterVc());
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *profileid = DIDURL_FromDid(did, "profile");
+    DIDURL *profileid = DIDURL_NewByDid(did, "profile");
     CU_ASSERT_PTR_NOT_NULL(profileid);
     rc = DIDDocumentBuilder_RemoveCredential(builder, profileid);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *twitterid = DIDURL_FromDid(did, "twitter");
+    DIDURL *twitterid = DIDURL_NewByDid(did, "twitter");
     CU_ASSERT_PTR_NOT_NULL(twitterid);
     rc = DIDDocumentBuilder_RemoveCredential(builder, twitterid);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *id = DIDURL_FromDid(did, "notExistCredential");
+    DIDURL *id = DIDURL_NewByDid(did, "notExistCredential");
     CU_ASSERT_PTR_NOT_NULL(id);
     rc = DIDDocumentBuilder_RemoveCredential(builder, id);
     CU_ASSERT_EQUAL(rc, -1);
@@ -982,7 +981,7 @@ static void test_diddoc_get_service(void)
     }
 
     // Service getter, should success.
-    DIDURL *openid = DIDURL_FromDid(did, "openid");
+    DIDURL *openid = DIDURL_NewByDid(did, "openid");
     CU_ASSERT_PTR_NOT_NULL(openid);
     service = DIDDocument_GetService(doc, openid);
     CU_ASSERT_PTR_NOT_NULL(service);
@@ -991,7 +990,7 @@ static void test_diddoc_get_service(void)
     CU_ASSERT_STRING_EQUAL("OpenIdConnectVersion1.0Service", Service_GetType(service));
     CU_ASSERT_STRING_EQUAL("https://openid.example.com/", Service_GetEndpoint(service));
 
-    DIDURL *vcrid = DIDURL_FromDid(did, "vcr");
+    DIDURL *vcrid = DIDURL_NewByDid(did, "vcr");
     CU_ASSERT_PTR_NOT_NULL(vcrid);
     service = DIDDocument_GetService(doc, vcrid);
     CU_ASSERT_PTR_NOT_NULL(service);
@@ -999,7 +998,7 @@ static void test_diddoc_get_service(void)
     CU_ASSERT_TRUE(isEquals);
 
     // Service not exist, should fail.
-    DIDURL *notexistid = DIDURL_FromDid(did, "notExistService");
+    DIDURL *notexistid = DIDURL_NewByDid(did, "notExistService");
     CU_ASSERT_PTR_NOT_NULL(notexistid);
     service = DIDDocument_GetService(doc, notexistid);
     CU_ASSERT_PTR_NULL(service);
@@ -1018,7 +1017,7 @@ static void test_diddoc_get_service(void)
     CU_ASSERT_TRUE(isEquals);
     DIDURL_Destroy(openid);
 
-    DIDURL *id = DIDURL_FromDid(did, "carrier");
+    DIDURL *id = DIDURL_NewByDid(did, "carrier");
     CU_ASSERT_PTR_NOT_NULL(id);
     size = DIDDocument_SelectServices(doc, "CarrierAddress", NULL, services, sizeof(services));
     CU_ASSERT_EQUAL(size, 1);
@@ -1045,24 +1044,24 @@ static void test_diddoc_add_service(void)
     ssize_t size;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
     // Add credentials.
-    DIDURL *id1 = DIDURL_FromDid(did, "test-svc-1");
+    DIDURL *id1 = DIDURL_NewByDid(did, "test-svc-1");
     CU_ASSERT_PTR_NOT_NULL(id1);
     rc = DIDDocumentBuilder_AddService(builder, id1, "Service.Testing",
             "https://www.elastos.org/testing1");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *id2 = DIDURL_FromDid(did, "test-svc-2");
+    DIDURL *id2 = DIDURL_NewByDid(did, "test-svc-2");
     CU_ASSERT_PTR_NOT_NULL(id2);
     rc = DIDDocumentBuilder_AddService(builder, id2, "Service.Testing",
             "https://www.elastos.org/testing2");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     // Service id already exist, should failed.
-    DIDURL *id = DIDURL_FromDid(did, "vcr");
+    DIDURL *id = DIDURL_NewByDid(did, "vcr");
     CU_ASSERT_PTR_NOT_NULL(id1);
     rc = DIDDocumentBuilder_AddService(builder, id, "test", "https://www.elastos.org/test");
     CU_ASSERT_EQUAL(rc, -1);
@@ -1094,22 +1093,22 @@ static void test_diddoc_remove_service(void)
     DIDDocumentBuilder *builder;
     int rc;
 
-    builder = DIDDocument_Modify(doc);
+    builder = DIDDocument_Edit(doc);
     CU_ASSERT_PTR_NOT_NULL(builder);
 
     // remove services
-    DIDURL *openid = DIDURL_FromDid(did, "openid");
+    DIDURL *openid = DIDURL_NewByDid(did, "openid");
     CU_ASSERT_PTR_NOT_NULL(openid);
     rc = DIDDocumentBuilder_RemoveService(builder, openid);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDURL *vcrid = DIDURL_FromDid(did, "vcr");
+    DIDURL *vcrid = DIDURL_NewByDid(did, "vcr");
     CU_ASSERT_PTR_NOT_NULL(vcrid);
     rc = DIDDocumentBuilder_RemoveService(builder, vcrid);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     // Service not exist, should fail.
-    DIDURL *id = DIDURL_FromDid(did, "notExistService");
+    DIDURL *id = DIDURL_NewByDid(did, "notExistService");
     CU_ASSERT_PTR_NOT_NULL(id);
     rc = DIDDocumentBuilder_RemoveService(builder, id);
     CU_ASSERT_EQUAL(rc, -1);

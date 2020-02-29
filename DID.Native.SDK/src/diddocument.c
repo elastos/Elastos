@@ -476,8 +476,8 @@ static int Parser_Proof(DIDDocument *document, cJSON *json)
             parse_didurl(&document->proof.creater, item->valuestring, &document->did) == -1))
         return -1;
 
-    if (!item && DIDURL_Copy(&document->proof.creater,
-            DIDDocument_GetDefaultPublicKey(document)) == -1)
+    if (!item && !DIDURL_Copy(&document->proof.creater,
+            DIDDocument_GetDefaultPublicKey(document)))
         return -1;
 
     item = cJSON_GetObjectItem(json, "signatureValue");
@@ -544,7 +544,7 @@ static int Parser_Credentials_InDoc(DIDDocument *document, cJSON *json)
     return 0;
 }
 
-DIDMeta *document_getmeta(DIDDocument *document)
+DIDMeta *DIDDocument_GetMeta(DIDDocument *document)
 {
     if (!document)
         return NULL;
@@ -552,7 +552,7 @@ DIDMeta *document_getmeta(DIDDocument *document)
     return &document->meta;
 }
 
-int document_setstore(DIDDocument *document, DIDStore *store)
+int DIDDocument_SetStore(DIDDocument *document, DIDStore *store)
 {
     if (!document || !store)
         return -1;
@@ -637,9 +637,8 @@ errorExit:
     return NULL;
 }
 
-static
-int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc,
-        int compact, int forsign)
+static int diddocument_tojson_internal(JsonGenerator *gen, DIDDocument *doc,
+        bool compact, bool forsign)
 {
     char id[ELA_MAX_DIDURL_LEN];
     char _timestring[DOC_BUFFER_LEN];
@@ -689,23 +688,28 @@ int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc,
     return 0;
 }
 
-const char *DIDDocument_ToJson(DIDDocument *doc, int compact, int forsign)
+static const char *diddocument_tojson_forsign(DIDDocument *document, bool compact, bool forsign)
 {
     JsonGenerator g, *gen;
 
-    if (!doc)
+    if (!document)
         return NULL;
 
     gen = JsonGenerator_Initialize(&g);
     if (!gen)
         return NULL;
 
-    if (DIDDocument_ToJson_Internal(gen, doc, compact, forsign) < 0) {
+    if (diddocument_tojson_internal(gen, document, compact, forsign) < 0) {
         JsonGenerator_Destroy(gen);
         return NULL;
     }
 
     return JsonGenerator_Finish(gen);
+}
+
+const char *DIDDocument_ToJson(DIDDocument *document, bool normalized)
+{
+    return diddocument_tojson_forsign(document, !normalized, false);
 }
 
 void DIDDocument_Destroy(DIDDocument *document)
@@ -753,23 +757,23 @@ int DIDDocument_SetAlias(DIDDocument *document, const char *alias)
     return 0;
 }
 
-int DIDDocument_GetAlias(DIDDocument *document, char *alias, size_t size)
+const char *DIDDocument_GetAlias(DIDDocument *document)
 {
-    if (!document || !alias || size <= 0)
-        return -1;
+    if (!document)
+        return NULL;
 
-    return DIDMeta_GetAlias(&document->meta, alias, size);
+    return DIDMeta_GetAlias(&document->meta);
 }
 
-int DIDDocument_GetTxid(DIDDocument *document, char *txid, size_t size)
+const char *DIDDocument_GetTxid(DIDDocument *document)
 {
-    if (!document || !txid || size <= 0)
-        return -1;
+    if (!document)
+        return NULL;
 
-    return DIDMeta_GetTxid(&document->meta, txid, size);
+    return DIDMeta_GetTxid(&document->meta);
 }
 
-time_t DIDDocument_GetTimestamp(DIDDocument *document)
+time_t DIDDocument_GetLastTransactionTimestamp(DIDDocument *document)
 {
     if (!document)
         return 0;
@@ -832,7 +836,7 @@ bool DIDDocument_IsGenuine(DIDDocument *document)
     if (strcmp(document->proof.type, ProofType))
         return false;
 
-    data = DIDDocument_ToJson(document, 0, 1);
+    data = diddocument_tojson_forsign(document, false, true);
     if (!data)
         return false;
 
@@ -910,7 +914,7 @@ static int credential_copy(Credential *cred1, Credential *cred2)
     assert(cred1);
     assert(cred2);
 
-    if (DIDURL_Copy(&cred1->id, &cred2->id) == -1)
+    if (!DIDURL_Copy(&cred1->id, &cred2->id))
         return -1;
 
     cred1->type.types = (char**)calloc(cred2->type.size, sizeof(char*));
@@ -1035,7 +1039,7 @@ static int document_copy(DIDDocument *destdoc, DIDDocument *srcdoc)
     return 0;
 }
 
-DIDDocumentBuilder* DIDDocument_Modify(DIDDocument *document)
+DIDDocumentBuilder* DIDDocument_Edit(DIDDocument *document)
 {
     DIDDocumentBuilder *builder;
 
@@ -1087,7 +1091,7 @@ DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder, const char *st
     if (!key)
         return NULL;
 
-    data = DIDDocument_ToJson(doc, 0, 1);
+    data = diddocument_tojson_forsign(doc, false, true);
     if (!data)
         return NULL;
 
@@ -1316,7 +1320,8 @@ int DIDDocumentBuilder_AddAuthorizationKey(DIDDocumentBuilder *builder, DIDURL *
     //check new authentication key is exist in publickeys
     pk = DIDDocument_GetPublicKey(document, keyid);
     if (pk) {
-        if (key && strcmp(pk->publicKeyBase58, key))
+        if ((key && strcmp(pk->publicKeyBase58, key)) ||
+                (controller &&!DID_Equals(controller, &pk->controller)))
             return -1;
 
         if (pk->authenticationKey || pk->authorizationKey)
@@ -1446,7 +1451,7 @@ int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder, Credential *cr
 }
 
 int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
-        const char *fragment, const char **types, size_t typesize,
+        DIDURL *credid, const char **types, size_t typesize,
         Property *properties, int propsize, time_t expires, const char *storepass)
 {
     DIDDocument *document;
@@ -1455,11 +1460,14 @@ int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
     const char *defaulttypes[] = {"SelfProclaimedCredential"};
     int rc;
 
-    if (!builder || !builder->document || !fragment || !*fragment
-            || !properties || propsize <= 0 || !storepass || !*storepass)
+    if (!builder || !builder->document || !credid || !properties || propsize <= 0 ||
+            !storepass || !*storepass)
         return -1;
 
     document = builder->document;
+    if (!DID_Equals(&document->did, &credid->did))
+        return -1;
+
     issuer = Issuer_Create(&document->did, DIDDocument_GetDefaultPublicKey(document),
             document->meta.store);
     if (!issuer)
@@ -1473,7 +1481,7 @@ int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
     if (expires <= 0)
         expires = DIDDocument_GetExpires(document);
 
-    cred = Issuer_CreateCredential(issuer, DIDDocument_GetSubject(document), fragment,
+    cred = Issuer_CreateCredential(issuer, DIDDocument_GetSubject(document), credid,
         types, typesize, properties, propsize, expires, storepass);
     Issuer_Destroy(issuer);
     if (!cred)

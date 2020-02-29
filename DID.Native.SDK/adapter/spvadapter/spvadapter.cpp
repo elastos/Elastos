@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <curl/curl.h>
 
 #include <MasterWalletManager.h>
 #include <IMasterWallet.h>
@@ -115,11 +114,16 @@ public:
             if (confirms > 1000)
                 return;
 
+            // expected confirms >= 1
             if (callback.getConfirms() > 0 && confirms >= callback.getConfirms()) {
                 callback.success(txid);
                 RemoveTransactionCallback(txid);
-            } else {
-                callback.setStatus(UPDATED);
+            }
+        } else if (status.compare("Added") == 0) {
+            // expected confirms == 0, Published to tx pool
+            if (callback.getConfirms() == 0 ) {
+                callback.success(txid);
+                RemoveTransactionCallback(txid);
             }
         }
     }
@@ -131,12 +135,7 @@ public:
 
         TransactionCallback &callback = txCallbacks[txid];
         int rc = result["Code"];
-        if (rc == 0) {
-            if (callback.getStatus() == UPDATED && callback.getConfirms() <= 0) {
-                callback.success(txid);
-                RemoveTransactionCallback(txid);
-            }
-        } else {
+        if (rc != 0) {
             std::string msg = result["Reason"];
             callback.failed(txid, rc, msg);
             RemoveTransactionCallback(txid);
@@ -227,7 +226,6 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
     nlohmann::json netConfig;
     IMasterWallet *masterWallet;
     int syncState = 0;
-    char *url = NULL;
 
     if (!walletDir || !walletId)
         return NULL;
@@ -257,14 +255,6 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
 
     IIDChainSubWallet *idWallet = NULL;
 
-    CURLcode rc = curl_global_init(CURL_GLOBAL_ALL);
-    if (rc != CURLE_OK) {
-        if (url)
-            free(url);
-        delete manager;
-        return NULL;
-    }
-
     try {
         masterWallet = manager->GetMasterWallet(walletId);
         std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
@@ -276,10 +266,7 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
     }
 
     if (!idWallet) {
-        if (url)
-            free(url);
         delete manager;
-        curl_global_cleanup();
         return NULL;
     }
 
@@ -307,8 +294,6 @@ void SpvDidAdapter_Destroy(SpvDidAdapter *adapter)
     delete adapter->callback;
     delete adapter->manager;
     delete adapter;
-
-    curl_global_cleanup();
 }
 
 int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter)
@@ -396,11 +381,11 @@ const char *SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
 
     TransactionResult tr;
 
-    SpvDidAdapter_CreateIdTransactionEx(adapter, payload, memo, 0,
+    SpvDidAdapter_CreateIdTransactionEx(adapter, payload, memo, 1,
         TransactionCallback, &tr, password);
 
     tr.wait();
-    if (tr.getStatus() < 0)
+    if (tr.getStatus() != 0)
         return NULL;
     else
         return strdup(tr.getTxid());

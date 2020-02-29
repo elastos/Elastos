@@ -925,6 +925,31 @@ static int list_credential_helper(const char *path, void *context)
     return ch->cb(&id, ch->context);
 }
 
+static DIDDocumentBuilder* did_createbuilder(DID *did, DIDStore *store)
+{
+    DIDDocumentBuilder *builder;
+
+    builder = (DIDDocumentBuilder*)calloc(1, sizeof(DIDDocumentBuilder));
+    if (!builder)
+        return NULL;
+
+    builder->document = (DIDDocument*)calloc(1, sizeof(DIDDocument));
+    if (!builder->document) {
+        free(builder);
+        return NULL;
+    }
+
+    if (!DID_Copy(&builder->document->did, did)) {
+        free(builder->document);
+        free(builder);
+        return NULL;
+    }
+
+    DIDDocument_SetStore(builder->document, store);
+
+    return builder;
+}
+
 static DIDDocument *create_document(DIDStore *store, DID *did, const char *key,
         const char *storepass, const char *alias)
 {
@@ -943,7 +968,7 @@ static DIDDocument *create_document(DIDStore *store, DID *did, const char *key,
     if (init_didurl(&id, did, "primary") == -1)
         return NULL;
 
-    builder = DID_CreateBuilder(did, store);
+    builder = did_createbuilder(did, store);
     if (!builder)
         return NULL;
 
@@ -991,7 +1016,7 @@ static int store_credential(DIDStore *store, Credential *credential)
     if (!id)
         return -1;
 
-    data = Credential_ToJson(credential, 0, 0);
+    data = Credential_ToJson(credential, true);
     if (!data)
         return -1;
 
@@ -1079,9 +1104,9 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
         return -1;
 
     memcpy(&document->meta, &meta, sizeof(DIDMeta));
-    document_setstore(document, store);
+    DIDDocument_SetStore(document, store);
 
-	data = DIDDocument_ToJson(document, 0, 0);
+	data = DIDDocument_ToJson(document, true);
 	if (!data)
 		return -1;
 
@@ -1155,7 +1180,8 @@ DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did)
         return NULL;
     }
 
-    document_setstore(document, store);
+    DIDMeta_SetStore(&document->meta, store);
+    DIDMeta_Copy(&document->did.meta, &document->meta);
 
     return document;
 }
@@ -1202,7 +1228,7 @@ bool DIDStore_DeleteDID(DIDStore *store, DID *did)
     }
 }
 
-int DIDStore_ListDID(DIDStore *store, ELA_DID_FILTER filter,
+int DIDStore_ListDIDs(DIDStore *store, ELA_DID_FILTER filter,
         DIDStore_DIDsCallback *callback, void *context)
 {
     char path[PATH_MAX];
@@ -1845,7 +1871,7 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
         return NULL;
     }
 
-    document_setstore(document, store);
+    DIDDocument_SetStore(document, store);
     return document;
 }
 
@@ -1898,9 +1924,9 @@ int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did, DIDURL *key,
 const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
         DIDURL *signKey)
 {
-    char alias[ELA_MAX_ALIAS_LEN];
-    char txid[ELA_MAX_TXID_LEN], resolvetxid[ELA_MAX_TXID_LEN];
+    const char *alias, *txid, *resolvetxid;
     DIDDocument *doc, *resolvedoc;
+    int rc;
 
     if (!store || !storepass || !*storepass || !did)
         return NULL;
@@ -1909,46 +1935,59 @@ const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did
     if (!doc || DIDDocument_IsDeactivated(doc))
         return NULL;
 
+    alias = DIDDocument_GetAlias(doc);
+
     if (!signKey)
         signKey = DIDDocument_GetDefaultPublicKey(doc);
 
     resolvedoc = DID_Resolve(did);
-    if (!resolvedoc)
-        return DIDBackend_Create(&store->backend, doc, signKey, storepass);
+    if (!resolvedoc) {
+        txid = DIDBackend_Create(&store->backend, doc, signKey, storepass);
+    } else {
+        if (DIDStore_StoreDID(store, resolvedoc, alias) == -1 ||
+                DIDDocument_IsDeactivated(resolvedoc))
+            return NULL;
 
-    if (DIDDocument_IsDeactivated(resolvedoc)) {
-        if (DIDDocument_GetAlias(doc, alias, sizeof(alias)) == -1)
-            *alias = 0;
-        DIDStore_StoreDID(store, resolvedoc, alias);
+        txid = DIDDocument_GetTxid(doc);
+        resolvetxid = DIDDocument_GetTxid(resolvedoc);
+        if (!txid || !resolvetxid || strcmp(txid, resolvetxid))
+            return NULL;
+
+        DIDDocument_Destroy(resolvedoc);
+        txid = DIDBackend_Update(&store->backend, doc, signKey, storepass);
+    }
+
+    if (!txid || !*txid) {
+        DIDDocument_Destroy(doc);
         return NULL;
     }
 
-    if (DIDDocument_GetTxid(doc, txid, sizeof(txid)) == -1
-            || DIDDocument_GetTxid(resolvedoc, resolvetxid, sizeof(resolvetxid)) == -1)
-        return NULL;
-
-    if (strcmp(txid, resolvetxid))
-        return NULL;
-
-    return DIDBackend_Update(&store->backend, doc, signKey, storepass);
+    DIDMeta_SetTxid(&doc->meta, txid);
+    rc = store_didmeta(store, &doc->meta, &doc->did);
+    DIDDocument_Destroy(doc);
+    return rc == -1 ? NULL : txid;
 }
 
 const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         DID *did, DIDURL *signKey)
 {
+    const char *txid;
+    DIDDocument *doc;
+
     if (!store || !storepass || !*storepass || !did || !signKey)
         return NULL;
 
     if (!signKey) {
-        DIDDocument *doc = DID_Resolve(did);
-        if (!doc)
+        doc = DID_Resolve(did);
+        if (!doc || DIDStore_StoreDID(store, doc, "") == -1)
             return NULL;
 
         signKey = DIDDocument_GetDefaultPublicKey(doc);
-        DIDDocument_Destroy(doc);
         if (!signKey)
             return NULL;
     }
 
-    return DIDBackend_Deactivate(&store->backend, did, signKey, storepass);
+    txid = DIDBackend_Deactivate(&store->backend, did, signKey, storepass);
+    DIDDocument_Destroy(doc);
+    return txid;
 }

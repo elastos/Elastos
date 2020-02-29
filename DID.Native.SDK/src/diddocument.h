@@ -90,9 +90,9 @@ struct DIDDocumentBuilder {
     DIDDocument *document;
 };
 
-DIDMeta *document_getmeta(DIDDocument *document);
+DIDMeta *DIDDocument_GetMeta(DIDDocument *document);
 
-int document_setstore(DIDDocument *document, DIDStore *store);
+int DIDDocument_SetStore(DIDDocument *document, DIDStore *store);
 
 #ifdef __cplusplus
 }

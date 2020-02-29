@@ -103,7 +103,7 @@ static size_t HttpRequestBodyReadCallback(void *dest, size_t size,
 }
 
 // Caller need free the pointer
-const char *DefaultResolver_Resolve(DIDResolver *resolver, const char *did, int all)
+static const char *DefaultResolver_Resolve(DIDResolver *resolver, const char *did, int all)
 {
     DefaultResolver *_resolver = (DefaultResolver *)resolver;
 
@@ -157,5 +157,29 @@ const char *DefaultResolver_Resolve(DIDResolver *resolver, const char *did, int 
     ((char *)response.data)[response.used] = 0;
     return (const char *)response.data;
 }
+
+DIDResolver *DefaultResolver_Create(const char *url)
+{
+    CURLcode rc = curl_global_init(CURL_GLOBAL_ALL);
+    if (rc != CURLE_OK)
+        return NULL;
+
+    DefaultResolver *resolver = (DefaultResolver*)calloc(1, sizeof(DefaultResolver));
+    if (!resolver)
+        return NULL;
+
+    memcpy((char*)resolver->url, url, strlen(url) + 1);
+    resolver->base.resolve = DefaultResolver_Resolve;
+    return (DIDResolver *)resolver;
+}
+
+void DefaultResolver_Destroy(DIDResolver *resolver)
+{
+    if (resolver)
+        free(resolver);
+
+    curl_global_cleanup();
+}
+
 
 

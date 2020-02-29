@@ -185,22 +185,20 @@ int DIDMeta_SetTxid(DIDMeta *meta, const char *txid)
     return 0;
 }
 
-int DIDMeta_GetAlias(DIDMeta *meta, char *alias, size_t size)
+const char *DIDMeta_GetAlias(DIDMeta *meta)
 {
-    if (!meta || !alias || strlen(meta->alias) >= size)
-        return -1;
+    if (!meta)
+        return NULL;
 
-    strcpy(alias, meta->alias);
-    return 0;
+    return meta->alias;
 }
 
-int DIDMeta_GetTxid(DIDMeta *meta, char *txid, size_t size)
+const char *DIDMeta_GetTxid(DIDMeta *meta)
 {
-    if (!meta || !txid || strlen(meta->txid) >= size)
-        return -1;
+    if (!meta)
+        return NULL;
 
-    strcpy(txid, meta->txid);
-    return 0;
+    return meta->txid;
 }
 
 bool DIDMeta_GetDeactived(DIDMeta *meta)

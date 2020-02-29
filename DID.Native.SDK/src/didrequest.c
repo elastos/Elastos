@@ -111,8 +111,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
         const char* data, DIDStore *store, const char *storepass)
 {
     DIDRequest req;
-    const char *payload, *op, *requestJson;
-    char prevtxid[ELA_MAX_TXID_LEN];
+    const char *payload, *op, *requestJson, *prevtxid;
     size_t len;
     int rc;
     char signature[SIGNATURE_BYTES * 2 + 16];
@@ -122,11 +121,12 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
             !DIDMeta_AttachedStore(&did->meta))
         return NULL;
 
-    if (DID_GetTxid(did, prevtxid, sizeof(prevtxid)) == -1)
+    prevtxid = DID_GetTxid(did);
+    if (!prevtxid)
         return NULL;
 
     if (type == RequestType_Create)
-        strcpy(prevtxid, "");
+        prevtxid = "";
 
     if (type == RequestType_Deactivate)
         payload = strdup(data);

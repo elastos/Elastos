@@ -58,8 +58,8 @@ static int proof_toJson(JsonGenerator *gen, Presentation *pre, int compact)
     return 0;
 }
 
-static int Presentation_ToJson_Internal(JsonGenerator *gen, Presentation *pre,
-        int compact, int forsign)
+static int presentation_tojson_internal(JsonGenerator *gen, Presentation *pre,
+        bool compact, bool forsign)
 {
     char id[ELA_MAX_DIDURL_LEN];
     char _timestring[DOC_BUFFER_LEN];
@@ -85,7 +85,7 @@ static int Presentation_ToJson_Internal(JsonGenerator *gen, Presentation *pre,
     return 0;
 }
 
-static int Parser_Credentials_InPre(DID *signer, Presentation *pre, cJSON *json)
+static int parser_credentials_inpre(DID *signer, Presentation *pre, cJSON *json)
 {
     size_t size = 0;
 
@@ -131,7 +131,7 @@ static int parse_proof(DID *signer, Presentation *pre, cJSON *json)
     if (!keyid)
         return -1;
 
-    if (DIDURL_Copy(&pre->proof.verificationMethod, keyid) == -1 ||
+    if (!DIDURL_Copy(&pre->proof.verificationMethod, keyid) ||
             !DID_Copy(signer, &keyid->did)) {
         DIDURL_Destroy(keyid);
         return -1;
@@ -199,7 +199,7 @@ static Presentation *Parser_Presentation(cJSON *json)
 
     item = cJSON_GetObjectItem(json, "verifiableCredential");
     if (!item || !cJSON_IsArray(item) ||
-            Parser_Credentials_InPre(&subject, pre, item) == -1) {
+            parser_credentials_inpre(&subject, pre, item) == -1) {
         Presentation_Destroy(pre);
         return NULL;
     }
@@ -214,6 +214,26 @@ static int add_credential(Credential **creds, int index, Credential *cred)
 
     creds[index] = cred;
     return 0;
+}
+
+static const char* presentation_tojson_forsign(Presentation *pre, bool compact, bool forsign)
+{
+    JsonGenerator g, *gen;
+    char id[ELA_MAX_DIDURL_LEN];
+
+    if (!pre)
+        return NULL;
+
+    gen = JsonGenerator_Initialize(&g);
+    if (!gen)
+        return NULL;
+
+    if (presentation_tojson_internal(gen, pre, compact, forsign) < 0) {
+        JsonGenerator_Destroy(gen);
+        return NULL;
+    }
+
+    return JsonGenerator_Finish(gen);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -269,7 +289,7 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
     pre->credentials.credentials = creds;
     pre->credentials.size = count;
 
-    data = Presentation_ToJson(pre, 0, 1);
+    data = presentation_tojson_forsign(pre, false, true);
     if (!data)
         goto errorExit;
 
@@ -339,7 +359,7 @@ int Presentation_Verify(Presentation *pre)
     if (!doc)
         return -1;
 
-    data = Presentation_ToJson(pre, 0, 1);
+    data = presentation_tojson_forsign(pre, false, true);
     if (!data) {
         DIDDocument_Destroy(doc);
         return -1;
@@ -355,24 +375,9 @@ int Presentation_Verify(Presentation *pre)
     return 0;
 }
 
-const char* Presentation_ToJson(Presentation *pre, int compact, int forsign)
+const char* Presentation_ToJson(Presentation *pre, bool normalized)
 {
-    JsonGenerator g, *gen;
-    char id[ELA_MAX_DIDURL_LEN];
-
-    if (!pre)
-        return NULL;
-
-    gen = JsonGenerator_Initialize(&g);
-    if (!gen)
-        return NULL;
-
-    if (Presentation_ToJson_Internal(gen, pre, compact, forsign) < 0) {
-        JsonGenerator_Destroy(gen);
-        return NULL;
-    }
-
-    return JsonGenerator_Finish(gen);
+    return presentation_tojson_forsign(pre, !normalized, false);
 }
 
 Presentation *Presentation_FromJson(const char *json)

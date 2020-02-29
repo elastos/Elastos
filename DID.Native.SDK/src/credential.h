@@ -37,11 +37,6 @@ extern "C" {
 #define MAX_CRED_TYPE        64
 #define MAX_CRED_SIGN        128
 
-typedef struct Property {
-    char *key;
-    char *value;
-} Property;
-
 typedef struct CredentialSubject {
     DID id;
 
@@ -74,13 +69,15 @@ struct Credential {
 };
 
 int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds, size_t size,
-        DID *did, int compact);
+        DID *did, bool compact);
 
 Credential *Parser_Credential(cJSON *json, DID *did);
 
 ssize_t Parser_Credentials(DID *did, Credential **creds, size_t size, cJSON *json);
 
-CredentialMeta *credential_getmeta(Credential *credential);
+CredentialMeta *Credential_GetMeta(Credential *credential);
+
+const char* Credential_ToJson_ForSign(Credential *cred, bool compact, bool forsign);
 
 #ifdef __cplusplus
 }

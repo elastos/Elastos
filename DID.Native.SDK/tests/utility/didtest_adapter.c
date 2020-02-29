@@ -31,7 +31,7 @@ static const char *TestDIDAdaptor_CreateIdTransaction(DIDAdapter *_adapter, cons
     printf("Waiting for wallet available");
     while (true) {
         if (SpvDidAdapter_IsAvailable(adapter->impl)) {
-            printf(" OK");
+            printf(" OK\n");
             break;
         } else {
             printf(".");

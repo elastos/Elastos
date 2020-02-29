@@ -100,13 +100,13 @@ static void test_idchain_restore(void)
         "secret", 0, true);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
-    printf("Synchronizing from IDChain...");
+    printf("\nSynchronizing from IDChain...");
     rc = DIDStore_Synchronize(store, storepass);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     printf("OK!\n");
 
     memset(&dids, 0, sizeof(DIDs));
-    rc = DIDStore_ListDID(store, 0, get_did, (void*)&dids);
+    rc = DIDStore_ListDIDs(store, 0, get_did, (void*)&dids);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     CU_ASSERT_EQUAL(dids.index, 5);
 

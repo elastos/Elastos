@@ -60,13 +60,13 @@ static void test_issuer_create_with_invalidkey1(void)
     DIDDocument *doc;
     int rc;
 
-    builder = DIDDocument_Modify(issuerdoc);
+    builder = DIDDocument_Edit(issuerdoc);
     CU_ASSERT_PTR_NOT_NULL_FATAL(builder);
 
     publickeybase = Generater_Publickey(pkbase, sizeof(pkbase));
     CU_ASSERT_PTR_NOT_NULL_FATAL(publickeybase);
 
-    keyid = DIDURL_FromDid(DIDDocument_GetSubject(issuerdoc), "testkey");
+    keyid = DIDURL_NewByDid(DIDDocument_GetSubject(issuerdoc), "testkey");
     CU_ASSERT_PTR_NOT_NULL_FATAL(keyid);
 
     rc = DIDDocumentBuilder_AddAuthenticationKey(builder, keyid, publickeybase);
@@ -89,7 +89,7 @@ static void test_issuer_create_with_invalidkey2(void)
     DIDURL *key;
     Issuer *issuer;
 
-    key = DIDURL_FromDid(issuerid, "key2");
+    key = DIDURL_NewByDid(issuerid, "key2");
     CU_ASSERT_PTR_NOT_NULL_FATAL(key);
 
     issuer = Issuer_Create(issuerid, key, store);

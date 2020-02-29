@@ -264,7 +264,7 @@ DIDURL *DIDURL_New(const char *method_specific_string, const char *fragment)
     return id;
 }
 
-DID_API DIDURL *DIDURL_FromDid(DID *did, const char *fragment)
+DID_API DIDURL *DIDURL_NewByDid(DID *did, const char *fragment)
 {
     DIDURL *id;
 
@@ -354,16 +354,16 @@ int DIDURL_Compare(DIDURL *id1, DIDURL *id2)
     return strcmp(idstring1, idstring2);
 }
 
-int DIDURL_Copy(DIDURL *dest, DIDURL *src)
+DIDURL *DIDURL_Copy(DIDURL *dest, DIDURL *src)
 {
     if (!dest || !src )
-        return -1;
+        return NULL;
 
     strcpy(dest->did.idstring, src->did.idstring);
     strcpy(dest->fragment, src->fragment);
     CredentialMeta_Copy(&dest->meta, &src->meta);
 
-    return 0;
+    return dest;
 }
 
 void DIDURL_Destroy(DIDURL *id)
@@ -397,20 +397,20 @@ int DID_SetAlias(DID *did, const char *alias)
     return 0;
 }
 
-int DID_GetAlias(DID *did, char *alias, size_t size)
+const char *DID_GetAlias(DID *did)
 {
-    if (!did || !alias || size <= 0)
-        return -1;
+    if (!did)
+        return NULL;
 
-    return DIDMeta_GetAlias(&did->meta, alias, size);
+    return DIDMeta_GetAlias(&did->meta);
 }
 
-int DID_GetTxid(DID *did, char *txid, size_t size)
+const char *DID_GetTxid(DID *did)
 {
-    if (!did || !txid || size <= 0)
-        return -1;
+    if (!did)
+        return NULL;
 
-    return DIDMeta_GetTxid(&did->meta, txid, size);
+    return DIDMeta_GetTxid(&did->meta);
 }
 
 bool DID_GetDeactived(DID *did)
@@ -421,7 +421,7 @@ bool DID_GetDeactived(DID *did)
     return DIDMeta_GetDeactived(&did->meta);
 }
 
-time_t DID_GetTimestamp(DID *did)
+time_t DID_GetLastTransactionTimestamp(DID *did)
 {
     if (!did)
         return 0;
@@ -444,35 +444,10 @@ int DIDURL_SetAlias(DIDURL *id, const char *alias)
     return 0;
 }
 
-int DIDURL_GetAlias(DIDURL *id, char* alias, size_t size)
+const char *DIDURL_GetAlias(DIDURL *id)
 {
-    if (!id || !alias || size <= 0)
-        return -1;
-
-    return CredentialMeta_GetAlias(&id->meta, alias, size);
-}
-
-DIDDocumentBuilder* DID_CreateBuilder(DID *did, DIDStore *store)
-{
-    DIDDocumentBuilder *builder;
-
-    builder = (DIDDocumentBuilder*)calloc(1, sizeof(DIDDocumentBuilder));
-    if (!builder)
+    if (!id)
         return NULL;
 
-    builder->document = (DIDDocument*)calloc(1, sizeof(DIDDocument));
-    if (!builder->document) {
-        free(builder);
-        return NULL;
-    }
-
-    if (!DID_Copy(&builder->document->did, did)) {
-        free(builder->document);
-        free(builder);
-        return NULL;
-    }
-
-    document_setstore(builder->document, store);
-
-    return builder;
+    return CredentialMeta_GetAlias(&id->meta);
 }

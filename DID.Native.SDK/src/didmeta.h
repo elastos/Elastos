@@ -56,9 +56,9 @@ int DIDMeta_SetTimestamp(DIDMeta *meta, time_t time);
 
 int DIDMeta_SetTxid(DIDMeta *meta, const char *txid);
 
-int DIDMeta_GetAlias(DIDMeta *meta, char *alias, size_t size);
+const char *DIDMeta_GetAlias(DIDMeta *meta);
 
-int DIDMeta_GetTxid(DIDMeta *meta, char *txid, size_t size);
+const char *DIDMeta_GetTxid(DIDMeta *meta);
 
 bool DIDMeta_GetDeactived(DIDMeta *meta);
 

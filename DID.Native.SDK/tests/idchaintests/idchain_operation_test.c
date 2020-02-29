@@ -22,10 +22,9 @@ static void test_idchain_publishdid(void)
     char *txid;
     DIDURL *signkey;
     DIDDocument *doc = NULL, *updatedoc = NULL;
-    char createTxid[ELA_MAX_TXID_LEN], updateTxid[ELA_MAX_TXID_LEN];
-    const char *data;
+    const char *createTxid, *updateTxid;
     DID *did;
-    int i = 0;
+    int i = 0, rc;
 
     signkey = DIDDocument_GetDefaultPublicKey(document);
     CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
@@ -33,11 +32,13 @@ static void test_idchain_publishdid(void)
     did = DIDDocument_GetSubject(document);
     CU_ASSERT_PTR_NOT_NULL(did);
 
+    printf("\n-------------------------------------\n-- publish begin(create), waiting....\n");
     txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
+    printf("-- publish result:\n   did = %s\n   txid = %s\n", did->idstring, txid);
     free(txid);
 
-    printf("\n#### begin to resolve(create) [%s]", did->idstring);
+    printf("-- resolve begin(create)");
     while(!doc) {
         doc = DID_Resolve(did);
         if (!doc) {
@@ -46,27 +47,26 @@ static void test_idchain_publishdid(void)
             sleep(30);
         }
         else {
-            DIDDocument_GetTxid(doc, createTxid, sizeof(createTxid));
-            data = DIDDocument_ToJson(doc, 0, 0);
-            printf("\n#### document resolved: time = %d.\n", ++i);
-            printf("#### did: %s, transaction id: %s\n", did->idstring, createTxid);
-            printf("#### document: %s\n", data);
-            free((char*)data);
+            rc = DIDStore_StoreDID(store, doc, "");
+            CU_ASSERT_NOT_EQUAL(rc, -1);
+            createTxid = DIDDocument_GetTxid(doc);
         }
-
     }
-    printf("#### end resolve\n");
+    printf("\n-- resolve result: successfully!\n-- publish begin(update), wating...\n");
 
-    printf("\n#### begin to update did\n");
     signkey = DIDDocument_GetDefaultPublicKey(doc);
     CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
 
     txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
+    printf("-- publish result:\n   did = %s\n   txid = %s\n", did->idstring, txid);
     free(txid);
 
-    printf("#### begin to resolve(update) [%s]", did->idstring);
+    printf("-- resolve begin(update)");
     while(!updatedoc || !strcmp(createTxid, updateTxid)) {
+        if (updatedoc)
+            DIDDocument_Destroy(updatedoc);
+
         updatedoc = DID_Resolve(did);
         if (!updatedoc) {
             ++i;
@@ -75,16 +75,14 @@ static void test_idchain_publishdid(void)
             continue;
         }
         else {
-            DIDDocument_GetTxid(updatedoc, updateTxid, sizeof(updateTxid));
-            data = DIDDocument_ToJson(updatedoc, 0, 0);
+            rc = DIDStore_StoreDID(store, updatedoc, "");
+            CU_ASSERT_NOT_EQUAL(rc, -1);
+            updateTxid = DIDDocument_GetTxid(updatedoc);
             printf(".");
             continue;
         }
     }
-    printf("\n#### did: %s, transaction id: %s\n", did->idstring, updateTxid);
-    printf("#### document: %s\n", data);
-    printf("#### end resolve\n");
-    free((char*)data);
+    printf("\n-- resolve result: successfully!\n-------------------------------------\n");
 
     DIDDocument_Destroy(doc);
     DIDDocument_Destroy(updatedoc);
@@ -133,7 +131,6 @@ static int idchain_operation_test_suite_init(void)
         return -1;
 
     mnemonic = Mnemonic_Generate(0);
-    printf("\n#### mnemonic: %s", mnemonic);
     rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", 0, true);
     Mnemonic_Free((char*)mnemonic);
     if (rc < 0) {

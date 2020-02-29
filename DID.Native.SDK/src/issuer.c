@@ -95,7 +95,7 @@ DIDURL *Issuer_GetSignKey(Issuer *issuer)
     return &issuer->signkey;
 }
 
-Credential *Issuer_CreateCredential(Issuer *issuer, DID *did, const char *fragment,
+Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
         const char **types, size_t typesize, Property *properties, int propsize,
         time_t expires, const char *storepass)
 {
@@ -105,16 +105,19 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *did, const char *fragme
     DIDStore *store;
     int i, rc;
 
-    if (!issuer ||!did || !fragment || !*fragment || !types || typesize <= 0||
+    if (!issuer ||!owner || !credid || !types || typesize <= 0||
             !properties || propsize <= 0 || expires <= 0 ||
             !storepass || !*storepass)
+        return NULL;
+
+    if (!DID_Equals(owner, &credid->did))
         return NULL;
 
     cred = (Credential*)calloc(1, sizeof(Credential));
     if (!cred)
         return NULL;
 
-    if (init_didurl(&cred->id, did, fragment) == -1)
+    if (!DIDURL_Copy(&cred->id, credid))
         goto errorExit;
 
     //set type
@@ -133,7 +136,7 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *did, const char *fragme
     time(&cred->issuanceDate);
 
     //subject
-    strcpy(cred->subject.id.idstring, did->idstring);
+    strcpy(cred->subject.id.idstring, owner->idstring);
 
     cred->subject.infos.size = propsize;
     cred->subject.infos.properties = (Property*)calloc(propsize, sizeof(Property));
@@ -146,7 +149,7 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *did, const char *fragme
     }
 
     //proof
-    data = Credential_ToJson(cred, 0, 1);
+    data = Credential_ToJson_ForSign(cred, false, true);
     if (!data)
         goto errorExit;
     rc = DIDStore_Sign(issuer->signer.meta.store, storepass, &issuer->signer,

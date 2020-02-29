@@ -23,7 +23,7 @@ static DIDAdapter *adapter;
 static int get_issuer_cred(DIDURL *id, void *context)
 {
     Credential *cred;
-    char alias[ELA_MAX_ALIAS_LEN];
+    const char *alias;
     DID *creddid;
     int rc;
 
@@ -35,8 +35,8 @@ static int get_issuer_cred(DIDURL *id, void *context)
     if (!creddid)
         return -1;
 
-    rc = DIDURL_GetAlias(id, alias, sizeof(alias));
-    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    alias = DIDURL_GetAlias(id);
+    CU_ASSERT_PTR_NOT_NULL(alias);
 
     if (strcmp(alias, "Profile") == 0) {
         cred = DIDStore_LoadCredential(store, creddid, id);
@@ -51,7 +51,7 @@ static int get_issuer_cred(DIDURL *id, void *context)
 static int get_test_cred(DIDURL *id, void *context)
 {
     Credential *cred;
-    char alias[ELA_MAX_ALIAS_LEN];
+    const char *alias;
     DID *creddid;
     int rc;
 
@@ -62,8 +62,8 @@ static int get_test_cred(DIDURL *id, void *context)
     if (!creddid)
         return -1;
 
-    rc = DIDURL_GetAlias(id, alias, sizeof(alias));
-    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    alias = DIDURL_GetAlias(id);
+    CU_ASSERT_PTR_NOT_NULL(alias);
 
     if (strcmp(alias, "Profile") == 0 || strcmp(alias, "Email") == 0 ||
             strcmp(alias, "Twitter") == 0 || strcmp(alias, "Passport") == 0) {
@@ -78,14 +78,15 @@ static int get_test_cred(DIDURL *id, void *context)
 
 static int get_did(DID *did, void *context)
 {
-    char alias[ELA_MAX_ALIAS_LEN];
+    const char *alias;
     DIDDocument *doc = NULL;
     int rc;
 
     if (!did)
         return 0;
 
-    if (DID_GetAlias(did, alias, sizeof(alias)) == -1)
+    alias = DID_GetAlias(did);
+    if (!alias)
         return -1;
 
     if (strcmp(alias, "Issuer") == 0) {
@@ -134,7 +135,7 @@ static void test_openstore_file_exist(void)
     rc = DIDStore_ExportMnemonic(store, password, mnemonic, sizeof(mnemonic));
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
-    rc = DIDStore_ListDID(store, 0, get_did, NULL);
+    rc = DIDStore_ListDIDs(store, 0, get_did, NULL);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 }
 

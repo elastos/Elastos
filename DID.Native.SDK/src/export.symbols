@@ -14,14 +14,13 @@ _DID_SetAlias
 _DID_GetAlias
 _DID_GetTxid
 _DID_GetDeactived
-_DID_GetTimestamp
-_DID_CreateBuilder
+_DID_GetLastTransactionTimestamp
 _DID_Resolve
 
 # DIDURL
 _DIDURL_FromString
 _DIDURL_New
-_DIDURL_FromDid
+_DIDURL_NewByDid
 _DIDURL_GetDid
 _DIDURL_GetFragment
 _DIDURL_ToString
@@ -40,7 +39,7 @@ _DIDDocument_IsDeactivated
 _DIDDocument_IsGenuine
 _DIDDocument_IsExpires
 _DIDDocument_IsValid
-_DIDDocument_Modify
+_DIDDocument_Edit
 _DIDDocumentBuilder_Seal
 _DIDDocumentBuilder_Destroy
 _DIDDocumentBuilder_AddPublicKey
@@ -84,7 +83,7 @@ _DIDDocument_GetServiceCount
 _DIDDocument_SetAlias
 _DIDDocument_GetAlias
 _DIDDocument_GetTxid
-_DIDDocument_GetTimestamp
+_DIDDocument_GetLastTransactionTimestamp
 _DIDDocument_GetProofType
 _DIDDocument_GetProofCreater
 _DIDDocument_GetProofCreatedTime
@@ -117,9 +116,6 @@ _Credential_GetProperty
 _Credential_GetProofMethod
 _Credential_GetProofType
 _Credential_GetProofSignture
-_Credential_AddType
-_Credential_SetExpirationDate
-_Credential_AddProperty
 _Credential_Verify
 _Credential_IsExpired
 _Credential_IsGenuine
@@ -143,7 +139,7 @@ _DIDStore_StoreDID
 _DIDStore_LoadDID
 _DIDStore_ContainsDID
 _DIDStore_DeleteDID
-_DIDStore_ListDID
+_DIDStore_ListDIDs
 _DIDStore_StoreCredential
 _DIDStore_LoadCredential
 _DIDStore_ContainsCredentials

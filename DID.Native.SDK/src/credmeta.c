@@ -116,13 +116,12 @@ int CredentialMeta_SetAlias(CredentialMeta *meta, const char *alias)
     return 0;
 }
 
-int CredentialMeta_GetAlias(CredentialMeta *meta, char *alias, size_t size)
+const char *CredentialMeta_GetAlias(CredentialMeta *meta)
 {
-    if (!meta || !alias || strlen(meta->alias) >= size)
-        return -1;
+    if (!meta)
+        return NULL;
 
-    strcpy(alias, meta->alias);
-    return 0;
+    return meta->alias;
 }
 
 int CredentialMeta_Merge(CredentialMeta *meta, CredentialMeta *frommeta)

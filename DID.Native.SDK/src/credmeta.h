@@ -47,7 +47,7 @@ void CredentialMeta_Destroy(CredentialMeta *meta);
 
 int CredentialMeta_SetAlias(CredentialMeta *meta, const char *alias);
 
-int CredentialMeta_GetAlias(CredentialMeta *meta, char *alias, size_t size);
+const char *CredentialMeta_GetAlias(CredentialMeta *meta);
 
 int CredentialMeta_Merge(CredentialMeta *meta, CredentialMeta *frommeta);
 

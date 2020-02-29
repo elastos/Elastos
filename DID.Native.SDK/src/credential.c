@@ -250,8 +250,8 @@ static int proof_toJson(JsonGenerator *generator, Credential *cred, int compact)
     return 0;
 }
 
-static int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, DID *did,
-        int compact, int forsign)
+static int credential_tojson_internal(JsonGenerator *gen, Credential *cred, DID *did,
+        bool compact, bool forsign)
 {
     char id[ELA_MAX_DIDURL_LEN];
     char _timestring[DOC_BUFFER_LEN];
@@ -294,7 +294,7 @@ static int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, DID 
     return 0;
 }
 
-CredentialMeta *credential_getmeta(Credential *credential)
+CredentialMeta *Credential_GetMeta(Credential *credential)
 {
     if (!credential)
         return NULL;
@@ -613,7 +613,7 @@ static int didurl_func(const void *a, const void *b)
 }
 
 int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds, size_t size,
-        DID *did, int compact)
+        DID *did, bool compact)
 {
     size_t i;
 
@@ -625,13 +625,13 @@ int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds, size_t size,
 
     CHECK(JsonGenerator_WriteStartArray(gen));
     for ( i = 0; i < size; i++ )
-        CHECK(Credential_ToJson_Internal(gen, creds[i], did, compact, 0));
+        CHECK(credential_tojson_internal(gen, creds[i], did, compact, false));
     CHECK(JsonGenerator_WriteEndArray(gen));
 
     return 0;
 }
 
-const char* Credential_ToJson(Credential *cred, int compact, int forsign)
+const char* Credential_ToJson_ForSign(Credential *cred, bool compact, bool forsign)
 {
     JsonGenerator g, *gen;
     char id[ELA_MAX_DIDURL_LEN];
@@ -643,7 +643,7 @@ const char* Credential_ToJson(Credential *cred, int compact, int forsign)
     if (!gen)
         return NULL;
 
-    if (Credential_ToJson_Internal(gen, cred, NULL, compact, forsign) < 0) {
+    if (credential_tojson_internal(gen, cred, NULL, compact, forsign) < 0) {
         JsonGenerator_Destroy(gen);
         return NULL;
     }
@@ -651,7 +651,12 @@ const char* Credential_ToJson(Credential *cred, int compact, int forsign)
     return JsonGenerator_Finish(gen);
 }
 
-Credential *Credential_FromJson(const char *json, DID *did)
+const char* Credential_ToJson(Credential *cred, bool normalized)
+{
+    return Credential_ToJson_ForSign(cred, !normalized, false);
+}
+
+Credential *Credential_FromJson(const char *json, DID *owner)
 {
     cJSON *root;
     Credential *cred;
@@ -663,7 +668,7 @@ Credential *Credential_FromJson(const char *json, DID *did)
     if (!root)
         return NULL;
 
-    cred = Parser_Credential(root, did);
+    cred = Parser_Credential(root, owner);
     if (!cred) {
         cJSON_Delete(root);
         return NULL;
@@ -671,98 +676,6 @@ Credential *Credential_FromJson(const char *json, DID *did)
 
     cJSON_Delete(root);
     return cred;
-}
-
-int Credential_AddType(Credential *cred, const char *type)
-{
-    char **types;
-    int size, i;
-
-    if (!cred || !type || !*type)
-        return -1;
-
-    size = cred->type.size;
-    for (i = 0; i < size; i++) {
-        char *temp_type = cred->type.types[i];
-        assert(temp_type);
-
-        if (strcmp(temp_type, type) == 0)
-            return 0;
-    }
-
-    if (size > 0)
-        types = (char **)realloc(cred->type.types, sizeof(char **) * (size + 1));
-    else
-        types = (char **)calloc(1, sizeof(char **));
-
-    if (!types)
-        return -1;
-
-    types[cred->type.size++] = (char *)type;
-    cred->type.types = types;
-
-    return 0;
-}
-
-int Credential_SetExpirationDate(Credential *cred, time_t time)
-{
-    if (!cred || !time)
-        return -1;
-
-    cred->expirationDate = time;
-    return 0;
-}
-
-int Credential_AddProperty(Credential *cred, const char *name, const char *value)
-{
-    Property *prop_array;
-    Property prop, *pro;
-    char *pvalue;
-    char *pkey;
-    size_t size;
-    size_t i;
-
-    if (!cred || !name || !*name || !value || !*value)
-        return -1;
-
-    pvalue = strdup(value);
-    if (!pvalue)
-        return -1;
-
-    pro = cred->subject.infos.properties;
-    size = cred->subject.infos.size;
-    for (i = 0; i < size; i++, pro++) {
-        if (!strcmp(pro->key, name)) {
-            pro->value = pvalue;
-            return 0;
-        }
-    }
-
-    pkey = strdup(name);
-    if (!pkey) {
-        free(pvalue);
-        return -1;
-    }
-
-    prop.key = pkey;
-    prop.value = pvalue;
-
-    if (size)
-        prop_array = (Property*)realloc(cred->subject.infos.properties,
-                (size + 1) * sizeof(Property));
-    else
-        prop_array = (Property*)calloc(1, sizeof(Property));
-
-    if (!prop_array) {
-        free(pvalue);
-        free(pkey);
-        return -1;
-    }
-
-    memcpy(&(prop_array[cred->subject.infos.size++]), &prop, sizeof(Property));
-    cred->subject.infos.properties = prop_array;
-
-    return (ssize_t)cred->subject.infos.size;
 }
 
 DIDURL *Credential_GetVerificationMethod(Credential *cred)
@@ -788,7 +701,7 @@ int Credential_Verify(Credential *cred)
     if (!doc)
         return -1;
 
-    data = Credential_ToJson(cred, 0, 1);
+    data = Credential_ToJson_ForSign(cred, false, true);
     if (!data) {
         DIDDocument_Destroy(doc);
         return -1;
@@ -883,10 +796,10 @@ int Credential_SetAlias(Credential *credential, const char *alias)
     return 0;
 }
 
-int Credential_GetAlias(Credential *credential, char *alias, size_t size)
+const char *Credential_GetAlias(Credential *credential)
 {
-    if (!credential || !alias || strlen(credential->meta.alias) >= size)
-        return -1;
+    if (!credential)
+        return NULL;
 
-    return CredentialMeta_GetAlias(&credential->meta, alias, size);
+    return CredentialMeta_GetAlias(&credential->meta);
 }

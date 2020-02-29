@@ -24,8 +24,8 @@ static const char *getpassword(const char *walletDir, const char *walletId)
 
 static void test_didstore_newdid(void)
 {
-    char _path[PATH_MAX], newalias[ELA_MAX_ALIAS_LEN];
-    const char *storePath;
+    char _path[PATH_MAX];
+    const char *storePath, *newalias;
     char *path;
     DIDDocument *doc, *loaddoc;
     DIDStore *store;
@@ -73,7 +73,7 @@ static void test_didstore_newdid(void)
             PATH_STEP, (char*)idstring, PATH_STEP, META_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    rc = DIDDocument_GetAlias(doc, newalias, sizeof(newalias));
+    newalias = DIDDocument_GetAlias(doc);
     CU_ASSERT_NOT_EQUAL(rc, -1);
     CU_ASSERT_STRING_EQUAL(newalias, alias);
 
@@ -87,6 +87,9 @@ static void test_didstore_newdid(void)
     CU_ASSERT_NOT_EQUAL_FATAL(isEquals, 0);
 
     CU_ASSERT_TRUE_FATAL(DIDDocument_IsValid(loaddoc));
+
+    DIDDocument_Destroy(doc);
+    DIDDocument_Destroy(loaddoc);
     TestData_Free();
 }
 
@@ -132,6 +135,7 @@ static void test_didstore_newdid_byindex(void)
     doc = DIDStore_NewDID(store, storepass, "did0");
     CU_ASSERT_PTR_NULL(doc);
     CU_ASSERT_TRUE(DIDStore_DeleteDID(store, &did));
+    DIDDocument_Destroy(doc);
 
     doc = DIDStore_NewDID(store, storepass, "did0");
     CU_ASSERT_PTR_NOT_NULL(doc);
@@ -145,8 +149,8 @@ static void test_didstore_newdid_byindex(void)
 
 static void test_didstore_newdid_withouAlias(void)
 {
-    char _storepath[PATH_MAX], _path[PATH_MAX], newalias[ELA_MAX_ALIAS_LEN];
-    const char *storePath;
+    char _storepath[PATH_MAX], _path[PATH_MAX];
+    const char *storePath, *newalias;
     char *path;
     DIDDocument *doc, *loaddoc;
     DIDStore *store;
@@ -194,8 +198,8 @@ static void test_didstore_newdid_withouAlias(void)
             PATH_STEP, (char*)idstring, PATH_STEP, META_FILE);
     CU_ASSERT_FALSE(file_exist(path));
 
-    rc = DIDDocument_GetAlias(doc, newalias, sizeof(newalias));
-    CU_ASSERT_NOT_EQUAL(rc, -1);
+    newalias = DIDDocument_GetAlias(doc);
+    CU_ASSERT_PTR_NOT_NULL(newalias);
     CU_ASSERT_STRING_EQUAL(newalias, "");
 }
 

@@ -19,7 +19,7 @@ static int get_vc(DIDURL *id, void *context)
 {
     int *count = (int*)context;
 
-    char alias[ELA_MAX_ALIAS_LEN];
+    const char *alias;
     int rc;
 
     if (!id)
@@ -27,8 +27,8 @@ static int get_vc(DIDURL *id, void *context)
 
     (*count)++;
 
-    rc = DIDURL_GetAlias(id, alias, sizeof(alias));
-    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    alias = DIDURL_GetAlias(id);
+    CU_ASSERT_PTR_NOT_NULL(alias);
 
     if (strcmp(id->fragment, "profile") == 0 ||
             strcmp(id->fragment, "email") == 0 ||
@@ -51,8 +51,8 @@ static int get_vc(DIDURL *id, void *context)
 
 static void test_didstore_load_vcs(void)
 {
-    char _path[PATH_MAX], alias[ELA_MAX_ALIAS_LEN];
-    const char *storePath;
+    char _path[PATH_MAX];
+    const char *storePath, *alias;
     DIDDocument *issuerdoc, *doc;
     DIDStore *store;
     Credential *vc;
@@ -85,13 +85,13 @@ static void test_didstore_load_vcs(void)
     rc = Credential_SetAlias(vc, "Passport");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    id = DIDURL_FromDid(did, "profile");
+    id = DIDURL_NewByDid(did, "profile");
     CU_ASSERT_PTR_NOT_NULL(id);
 
     vc = DIDStore_LoadCredential(store, did, id);
     CU_ASSERT_PTR_NOT_NULL(vc);
-    rc = Credential_GetAlias(vc, alias, sizeof(alias));
-    CU_ASSERT_NOT_EQUAL(rc, -1);
+    alias = Credential_GetAlias(vc);
+    CU_ASSERT_PTR_NOT_NULL(alias);
     CU_ASSERT_STRING_EQUAL("MyProfile", alias);
     isEquals = DID_Equals(did, Credential_GetOwner(vc));
     CU_ASSERT_TRUE(isEquals);
@@ -102,13 +102,13 @@ static void test_didstore_load_vcs(void)
     Credential_Destroy(vc);
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(did, "twitter");
+    id = DIDURL_NewByDid(did, "twitter");
     CU_ASSERT_PTR_NOT_NULL(id);
 
     vc = DIDStore_LoadCredential(store, did, id);
     CU_ASSERT_PTR_NOT_NULL(vc);
-    rc = Credential_GetAlias(vc, alias, sizeof(alias));
-    CU_ASSERT_NOT_EQUAL(rc, -1);
+    alias = Credential_GetAlias(vc);
+    CU_ASSERT_PTR_NOT_NULL(alias);
     CU_ASSERT_STRING_EQUAL("Twitter", alias);
     isEquals = DID_Equals(did, Credential_GetOwner(vc));
     CU_ASSERT_TRUE(isEquals);
@@ -119,7 +119,7 @@ static void test_didstore_load_vcs(void)
     Credential_Destroy(vc);
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(did, "notExist");
+    id = DIDURL_NewByDid(did, "notExist");
     CU_ASSERT_PTR_NOT_NULL(id);
 
     vc = DIDStore_LoadCredential(store, did, id);
@@ -231,19 +231,19 @@ static void test_didstore_delete_vc(void)
             "passport", PATH_STEP, META_FILE);
     CU_ASSERT_TRUE(file_exist(path));
 
-    id = DIDURL_FromDid(did, "twitter");
+    id = DIDURL_NewByDid(did, "twitter");
     CU_ASSERT_PTR_NOT_NULL(id);
     isDeleted = DIDStore_DeleteCredential(store, did, id);
     CU_ASSERT_TRUE(isDeleted);
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(did, "passport");
+    id = DIDURL_NewByDid(did, "passport");
     CU_ASSERT_PTR_NOT_NULL(id);
     isDeleted = DIDStore_DeleteCredential(store, did, id);
     CU_ASSERT_TRUE(isDeleted);
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(did, "notExist");
+    id = DIDURL_NewByDid(did, "notExist");
     CU_ASSERT_PTR_NOT_NULL(id);
     isDeleted = DIDStore_DeleteCredential(store, did, id);
     CU_ASSERT_FALSE(isDeleted);
@@ -259,22 +259,22 @@ static void test_didstore_delete_vc(void)
             "passport");
     CU_ASSERT_FALSE(file_exist(path));
 
-    id = DIDURL_FromDid(did, "email");
+    id = DIDURL_NewByDid(did, "email");
     CU_ASSERT_PTR_NOT_NULL(id);
     CU_ASSERT_TRUE(DIDStore_ContainsCredential(store, did, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(did, "profile");
+    id = DIDURL_NewByDid(did, "profile");
     CU_ASSERT_PTR_NOT_NULL(id);
     CU_ASSERT_TRUE(DIDStore_ContainsCredential(store, did, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(did, "twitter");
+    id = DIDURL_NewByDid(did, "twitter");
     CU_ASSERT_PTR_NOT_NULL(id);
     CU_ASSERT_FALSE(DIDStore_ContainsCredential(store, did, id));
     DIDURL_Destroy(id);
 
-    id = DIDURL_FromDid(did, "passport");
+    id = DIDURL_NewByDid(did, "passport");
     CU_ASSERT_PTR_NOT_NULL(id);
     CU_ASSERT_FALSE(DIDStore_ContainsCredential(store, did, id));
     DIDURL_Destroy(id);

@@ -598,19 +598,19 @@ DIDDocument *TestData_LoadDoc(void)
        testdata.doc = store_document("document.json", "doc test");
 
     subject = DIDDocument_GetSubject(testdata.doc);
-    id = DIDURL_FromDid(subject, "key2");
+    id = DIDURL_NewByDid(subject, "key2");
     rc = import_privatekey(id, storepass, "document.key2.sk");
     DIDURL_Destroy(id);
     if (rc)
         return NULL;
 
-    id = DIDURL_FromDid(subject, "key3");
+    id = DIDURL_NewByDid(subject, "key3");
     rc = import_privatekey(id, storepass, "document.key3.sk");
     DIDURL_Destroy(id);
     if (rc)
         return NULL;
 
-    id = DIDURL_FromDid(subject, "primary");
+    id = DIDURL_NewByDid(subject, "primary");
     rc = import_privatekey(id, storepass, "document.primary.sk");
     DIDURL_Destroy(id);
     if (rc)
@@ -629,7 +629,7 @@ DIDDocument *TestData_LoadIssuerDoc(void)
         testdata.issuerdoc = store_document("issuer.json", "issuer test");
 
     subject = DIDDocument_GetSubject(testdata.issuerdoc);
-    id = DIDURL_FromDid(subject, "primary");
+    id = DIDURL_NewByDid(subject, "primary");
     rc = import_privatekey(id, storepass, "issuer.primary.sk");
     DIDURL_Destroy(id);
     if (rc)

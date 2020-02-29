@@ -39,7 +39,7 @@ static bool defaultInstance;
 static void DIDBackend_Deinitialize(void)
 {
     if (resolverInstance && defaultInstance) {
-        free(resolverInstance);
+        DefaultResolver_Destroy(resolverInstance);
         resolverInstance = NULL;
     }
 }
@@ -51,14 +51,10 @@ int DIDBackend_InitializeDefault(const char *url)
 
     DIDBackend_Deinitialize();
 
-    DefaultResolver *resolver = (DefaultResolver*)calloc(1, sizeof(DefaultResolver));
-    if (!resolver)
+    resolverInstance = DefaultResolver_Create(url);
+    if (!resolverInstance)
         return -1;
 
-    memcpy((char*)resolver->url, url, strlen(url) + 1);
-    resolver->base.resolve = DefaultResolver_Resolve;
-
-    resolverInstance = (DIDResolver*)resolver;
     defaultInstance = true;
 
     atexit(DIDBackend_Deinitialize);
@@ -91,7 +87,7 @@ const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
     if (!DIDMeta_AttachedStore(&document->meta))
         return NULL;
 
-    docstring = DIDDocument_ToJson(document, 1, 0);
+    docstring = DIDDocument_ToJson(document, false);
     if (!docstring)
         return NULL;
 
@@ -119,7 +115,7 @@ const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL
     if (!DIDMeta_AttachedStore(&document->meta))
         return NULL;
 
-    docstring = DIDDocument_ToJson(document, 1, 0);
+    docstring = DIDDocument_ToJson(document, false);
     if (!docstring)
         return NULL;
 
@@ -237,6 +233,7 @@ DIDDocument *DIDBackend_Resolve(DID *did)
     DIDMeta_SetTimestamp(&document->meta, timestamp);
     DIDMeta_SetDeactived(&document->meta, deactivated);
     DIDMeta_SetAlias(&document->meta, "");
+    DIDMeta_Copy(&document->did.meta, &document->meta);
 
     cJSON_Delete(root);
     return document;

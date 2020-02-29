@@ -36,7 +36,9 @@ typedef struct DefaultResolver {
     const char url[URL_LEN];
 } DefaultResolver;
 
-const char *DefaultResolver_Resolve(DIDResolver *resolver, const char *did, int all);
+DIDResolver *DefaultResolver_Create(const char *url);
+
+void DefaultResolver_Destroy(DIDResolver *resolver);
 
 #ifdef __cplusplus
 }
