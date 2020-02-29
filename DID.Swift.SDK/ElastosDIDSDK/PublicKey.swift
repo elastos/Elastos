@@ -4,9 +4,16 @@ public class PublicKey: DIDObject {
     private var _controller: DID
     private var _keyBase58: String
 
+    private var authenticationKey: Bool
+    private var authorizationKey: Bool
+
     init(_ id: DIDURL, _ type: String, _ controller: DID, _ keyBase58: String) {
         self._controller = controller
         self._keyBase58 = keyBase58
+
+        self.authenticationKey = false
+        self.authorizationKey = false
+
         super.init(id, type)
     }
 
@@ -28,6 +35,22 @@ public class PublicKey: DIDObject {
 
     public var publicKeyData: Data {
         return _keyBase58.data(using: .utf8)!
+    }
+
+    public var isAuthenticationKey: Bool {
+        return authenticationKey
+    }
+
+    func setAuthenticationKey(_ newValue: Bool) {
+        self.authenticationKey = newValue
+    }
+
+    public var isAthorizationKey: Bool {
+        return authorizationKey
+    }
+
+    func setAthorizationKey(_ newValue: Bool) {
+        self.authorizationKey = newValue
     }
 
     class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> PublicKey {

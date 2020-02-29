@@ -124,7 +124,7 @@ public class VerifiableCredentialBuilder {
         }
 
         let data: Data = credential!.toJson(true, true).data(using: .utf8)!
-        let signature = try _forDoc.signWithIdentiy(_signKey, storePassword, [data])
+        let signature = try _forDoc.sign(_signKey, storePassword, [data])
         let proof = VerifiableCredentialProof(Constants.DEFAULT_PUBLICKEY_TYPE, _signKey, signature)
 
         credential!.setProof(proof)

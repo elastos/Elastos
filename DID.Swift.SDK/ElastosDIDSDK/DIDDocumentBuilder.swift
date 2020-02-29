@@ -81,7 +81,7 @@ public class DIDDocumentBuilder {
         guard let _ = key else {
             throw DIDError.illegalArgument()
         }
-        guard document!.appendAuthenticationKey(key!) else {
+        guard document!.appendAuthenticationKey(id) else {
             throw DIDError.illegalArgument()
         }
 
@@ -108,7 +108,7 @@ public class DIDDocumentBuilder {
         } catch {
             throw DIDError.illegalArgument()
         }
-        guard document!.appendAuthorizationKey(publicKey) else {
+        guard document!.appendAuthorizationKey(id) else {
             throw DIDError.illegalArgument()
         }
 
@@ -145,7 +145,7 @@ public class DIDDocumentBuilder {
             throw DIDError.illegalArgument()
         }
         // use the ref "key" rather than parameter "id".
-        guard document!.appendAuthorizationKey(key!) else {
+        guard document!.appendAuthorizationKey(id) else {
             throw DIDError.illegalArgument()
         }
 
@@ -168,7 +168,7 @@ public class DIDDocumentBuilder {
         }
 
         let publicKey = PublicKey(id, controller, keyBase58)
-        guard document!.appendAuthorizationKey(publicKey) else {
+        guard document!.appendAuthorizationKey(id) else {
             throw DIDError.illegalArgument()
         }
 
@@ -210,7 +210,7 @@ public class DIDDocumentBuilder {
         let publicKey = PublicKey(id, targetKey!.getType(), controller,
                                   targetKey!.publicKeyBase58)
 
-        guard document!.appendAuthorizationKey(publicKey) else {
+        guard document!.appendAuthorizationKey(id) else {
             throw DIDError.illegalArgument()
         }
 
@@ -481,7 +481,7 @@ public class DIDDocumentBuilder {
 
         let signKey = document!.defaultPublicKey
         let data:Data = try document!.toJson(true, true)
-        let signature = try document!.signWithIdentiy(signKey, storePassword, [data])
+        let signature = try document!.sign(signKey, storePassword, [data])
 
         document!.setProof(DIDDocumentProof(signKey, signature))
 

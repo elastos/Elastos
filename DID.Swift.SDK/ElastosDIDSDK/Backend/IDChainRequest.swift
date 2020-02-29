@@ -147,7 +147,7 @@ class IDChainRequest: NSObject {
         inputs.append(_payload!.data(using: .utf8)!)
         inputs.append(prevTxid.description.data(using: .utf8)!)
 
-        self._signature = try _doc!.signWithIdentiy(signKey, storePassword, inputs)
+        self._signature = try _doc!.sign(signKey, storePassword, inputs)
         self._signKey = signKey
         self._keyType = Constants.DEFAULT_PUBLICKEY_TYPE
 
@@ -167,7 +167,7 @@ class IDChainRequest: NSObject {
         inputs.append(_payload!.data(using: .utf8)!)
         inputs.append(prevTxid.data(using: .utf8)!)
 
-        self._signature = try _doc!.signWithIdentiy(signKey, storePassword, inputs)
+        self._signature = try _doc!.sign(signKey, storePassword, inputs)
         self._signKey = targetSignKey
         self._keyType = Constants.DEFAULT_PUBLICKEY_TYPE
 
@@ -200,7 +200,7 @@ class IDChainRequest: NSObject {
         inputs.append(_payload!.data(using: .utf8)!)
         inputs.append(prevTxid.data(using: .utf8)!)
 
-        return try doc.verifyWithIdentity(_signKey!, _signature!, inputs)
+        return try doc.verify(_signKey!, _signature!, inputs)
     }
 
     var isValid: Bool {

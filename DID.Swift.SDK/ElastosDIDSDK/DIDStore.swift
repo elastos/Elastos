@@ -1091,7 +1091,7 @@ public class DIDStore: NSObject {
 
         try storage.storeDidMeta(doc.subject, meta)
 
-        for credential in doc.credentials {
+        for credential in doc.credentials() {
             try storeCredential(using: credential)
         }
     }
@@ -1281,7 +1281,7 @@ public class DIDStore: NSObject {
         return try storage.loadPrivateKey(did, byId)
     }
     
-    public func containsPrivateKeys(for did: DID) throws -> Bool {
+    public func containsPrivateKeys(for did: DID) -> Bool {
         return storage.containsPrivateKeys(did)
     }
     
@@ -1289,7 +1289,7 @@ public class DIDStore: NSObject {
         return try containsPrivateKeys(for: DID(did))
     }
     
-    public func containsPrivateKey(for did: DID, id: DIDURL) throws -> Bool {
+    public func containsPrivateKey(for did: DID, id: DIDURL) -> Bool {
         return storage.containsPrivateKey(did, id)
     }
     
@@ -1297,10 +1297,10 @@ public class DIDStore: NSObject {
         let _did = try DID(did)
         let _key = try DIDURL(_did, id)
 
-        return try containsPrivateKey(for: _did, id: _key)
+        return containsPrivateKey(for: _did, id: _key)
     }
     
-    public func deletePrivateKey(for did: DID, id: DIDURL) throws -> Bool {
+    public func deletePrivateKey(for did: DID, id: DIDURL) -> Bool {
         return storage.deletePrivateKey(did, id)
     }
     
@@ -1308,14 +1308,10 @@ public class DIDStore: NSObject {
         let _did = try DID(did)
         let _key = try DIDURL(_did, id)
 
-        return try deletePrivateKey(for: _did, id: _key)
+        return deletePrivateKey(for: _did, id: _key)
     }
 
-    func signWithIdentity(_ did: DID,
-                          _ id: DIDURL?,
-                          _ storePassword: String,
-                          _ data: [Data]) throws -> String {
-
+    func sign(_ did: DID, _ id: DIDURL?, _ storePassword: String, _ data: [Data]) throws -> String {
         guard !storePassword.isEmpty else {
             throw DIDError.illegalArgument()
         }
@@ -1340,19 +1336,19 @@ public class DIDStore: NSObject {
         return signature?.base64EncodedString() ?? ""
     }
 
-    public func signWithIdentity(did: DID,
-                                  id: DIDURL,
-                 using storePassword: String,
-                            for data: Data...) throws -> String {
+    public func sign(WithDid did: DID,
+                              id: DIDURL,
+             using storePassword: String,
+                        for data: Data...) throws -> String {
 
-        return try signWithIdentity(did, id, storePassword, data)
+        return try sign(did, id, storePassword, data)
     }
 
-    public func signWithIdentity(did: DID,
-                 using storePassword: String,
-                            for data: Data...) throws -> String {
+    public func sign(WithDid did: DID,
+             using storePassword: String,
+                        for data: Data...) throws -> String {
 
-        return try signWithIdentity(did, nil, storePassword, data)
+        return try sign(did, nil, storePassword, data)
     }
 
     private func exportDid(_ did: DID,

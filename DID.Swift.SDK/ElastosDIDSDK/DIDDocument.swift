@@ -1,108 +1,142 @@
 import Foundation
 
-private func copyObjects<T: DIDObject>(_ destEntry: inout Dictionary<DIDURL, T>?,
-                                       _ sourceEntry: Dictionary<DIDURL, T>?)
-{
-    if sourceEntry == nil {
-        return
-    }
-
-    if  destEntry == nil {
-        destEntry = Dictionary<DIDURL, T>()
-    }
-
-    for (id, value) in sourceEntry! {
-        destEntry![id] = value
-    }
-}
-
-private func getObjectCount<T: DIDObject>(_ entry: Dictionary<DIDURL, T>?) -> Int
-{
-    return entry?.count ?? 0
-}
-
-private func getObject<T: DIDObject>(_ entry: Dictionary<DIDURL, T>?,
-                                     _ id: DIDURL) -> T?
-{
-    return entry?[id] ?? nil
-}
-
-private func getObjects<T: DIDObject>(_ entry: Dictionary<DIDURL, T>?) -> Array<T>
-{
-    var result = Array<T>()
-
-    entry?.values.forEach { item in
-        result.append(item)
-    }
-    return result
-}
-
-private func selectObjects<T: DIDObject>(_ entries: Dictionary<DIDURL, T>?,
-                                         _ id: DIDURL?,
-                                         _ type: String?) throws -> Array<T>
-{
-    guard id != nil || type != nil else {
-        throw DIDError.illegalArgument()
-    }
-
-    var result = Array<T>()
-    guard entries?.isEmpty ?? true else {
-        return result
-    }
-
-    for entry in entries!.values {
-        if id != nil && entry.getId() != id! {
-            continue
-        }
-
-        if type != nil {
-            // Credential' type is a list.
-            if entry is VerifiableCredential {
-                let credential = entry as! VerifiableCredential
-                if !credential.getTypes().contains(type!) {
-                    continue
-                }
-            } else {
-                if entry.getType() != type! {
-                    continue
-                }
-            }
-        }
-        result.append(entry)
-    }
-    return result
-}
-
 public class DIDDocument {
     private var _subject: DID?
-    private var _publicKeys: Dictionary<DIDURL, PublicKey>?
-    private var _authenticationKeys: Dictionary<DIDURL, PublicKey>?
-    private var _authorizationKeys:  Dictionary<DIDURL, PublicKey>?
-    private var _credentials: Dictionary<DIDURL, VerifiableCredential>?
-    private var _services: Dictionary<DIDURL, Service>?
     private var _expirationDate: Date?
     private var _proof: DIDDocumentProof?
     private var _meta: DIDMeta?
 
-    private init() {}
+    private var publicKeyMap: EntryMap<PublicKey>
+    private var credentialMap: EntryMap<VerifiableCredential>
+    private var serviceMap: EntryMap<Service>
+
+    class EntryMap<T: DIDObject> {
+        private var map: Dictionary<DIDURL, T>?
+
+        init() {}
+
+        init(_ source: EntryMap) {
+            map = Dictionary<DIDURL, T>()
+            for (id, value) in source.map! {
+                map![id] = value
+            }
+        }
+
+        func count(_ fulfill: (T) -> Bool) -> Int {
+            var total: Int = 0
+
+            guard map?.count ?? 0 > 0 else {
+                return 0
+            }
+
+            for value in map!.values {
+                if fulfill(value) {
+                    total += 1
+                }
+            }
+            return total
+        }
+
+        func get(forKey: DIDURL, _ fulfill: (T) -> Bool) -> T? {
+            let value = map?[forKey]
+
+            guard let _ = value else {
+                return nil
+            }
+            guard fulfill(value!) else {
+                return nil
+            }
+
+            return value!
+        }
+
+        func values(_ fulfill: (T) -> Bool) -> Array<T> {
+            var result = Array<T>()
+
+            guard let _ = map else {
+                return result
+            }
+
+            for value in map!.values {
+                if fulfill(value) {
+                    result.append(value)
+                }
+            }
+            return result
+        }
+
+        func select(_ id: DIDURL?, _ type: String?, _ filter: (T) -> Bool) -> Array<T> {
+            var result = Array<T>()
+
+            guard id != nil || type != nil else {
+                return result
+            }
+            guard map?.isEmpty ?? true else {
+                return result
+            }
+
+            for value in map!.values {
+                if id != nil && value.getId() != id! {
+                    continue
+                }
+
+                if type != nil {
+                    // Credential' type is a list.
+                    if value is VerifiableCredential {
+                        let credential = value as! VerifiableCredential
+                        if !credential.getTypes().contains(type!) {
+                            continue
+                        }
+                    } else {
+                        if value.getType() != type! {
+                            continue
+                        }
+                    }
+                }
+                if filter(value) {
+                    result.append(value)
+                }
+            }
+            return result
+        }
+
+        func append(_ value: T) {
+            if  map == nil {
+                map = Dictionary<DIDURL, T>()
+            }
+
+            map![value.getId()] = value
+        }
+
+        func remove(_ key: DIDURL) -> Bool {
+            return map?.removeValue(forKey: key) != nil
+        }
+    }
+
+    private init() {
+        publicKeyMap = EntryMap<PublicKey>()
+        credentialMap = EntryMap<VerifiableCredential>()
+        serviceMap = EntryMap<Service>()
+    }
 
     init(_ subject: DID) {
         self._subject = subject
+
+        publicKeyMap = EntryMap<PublicKey>()
+        credentialMap = EntryMap<VerifiableCredential>()
+        serviceMap = EntryMap<Service>()
     }
 
     init(_ doc: DIDDocument) {
-        copyObjects(&self._publicKeys, doc._publicKeys)
-        copyObjects(&self._authenticationKeys, doc._authenticationKeys)
-        copyObjects(&self._authorizationKeys, doc._authorizationKeys);
-        copyObjects(&self._credentials, doc._credentials)
-        copyObjects(&self._services, doc._services)
+        publicKeyMap = EntryMap<PublicKey>(doc.publicKeyMap)
+        credentialMap = EntryMap<VerifiableCredential>(doc.credentialMap)
+        serviceMap = EntryMap<Service>(doc.serviceMap)
 
         self._subject = doc.subject
         self._expirationDate = doc.expirationDate
         self._proof = doc.proof
         self._meta = doc.getMeta()
     }
-
 
     public var subject: DID {
         return self._subject!
@@ -113,57 +147,61 @@ public class DIDDocument {
     }
 
     public var publicKeyCount: Int {
-        return getObjectCount(self._publicKeys)
+        return self.publicKeyMap.count() { value -> Bool in return true }
     }
 
     public func publicKeys() -> Array<PublicKey> {
-        return getObjects(self._publicKeys)
+        return self.publicKeyMap.values() { value -> Bool in return true }
     }
 
-    public func selectPublicKeys(byId: String, andType: String? = nil) throws -> Array<PublicKey> {
-        return try selectObjects(self._publicKeys, DIDURL(subject, byId), andType)
+    public func selectPublicKeys(byId: DIDURL?, andType: String?) -> Array<PublicKey> {
+        return self.publicKeyMap.select(byId, andType) { value -> Bool in return true }
     }
 
-    public func selectPublicKeys(byId: DIDURL, andType: String? = nil) throws -> Array<PublicKey> {
-        return try selectObjects(self._publicKeys, byId, andType)
-    }
-
-    public func publicKey(ofId: String) throws -> PublicKey? {
-        return getObject(self._publicKeys, try DIDURL(subject, ofId))
+    public func selectPublicKeys(byId: String, andType: String?) throws -> Array<PublicKey> {
+        return selectPublicKeys(byId: try DIDURL(subject, byId), andType: andType)
     }
 
     public func publicKey(ofId: DIDURL) -> PublicKey? {
-        return getObject(self._publicKeys, ofId)
+        return self.publicKeyMap.get(forKey: ofId) { value -> Bool in return true }
     }
 
-    public func containsPublicKey(forId: String) throws -> Bool {
-        return try publicKey(ofId: forId) != nil
+    public func publicKey(ofId: String) throws -> PublicKey? {
+        return publicKey(ofId: try DIDURL(subject, ofId))
     }
 
     public func containsPublicKey(forId: DIDURL) -> Bool {
         return publicKey(ofId: forId) != nil
     }
 
-    public func containsPrivateKey(forId: String) throws -> Bool {
-        return containsPrivateKey(forId: try DIDURL(self.subject, forId))
+    public func containsPublicKey(forId: String) throws -> Bool {
+        return try publicKey(ofId: forId) != nil
     }
 
     public func containsPrivateKey(forId: DIDURL) -> Bool {
         guard containsPublicKey(forId: forId) else {
             return false
         }
-        return (try? (getMeta().store?.containsPrivateKey(for: self.subject, id: forId) ?? false)) ?? false
+        guard let store = getMeta().store else {
+            return false
+        }
+
+        return store.containsPrivateKey(for: self.subject, id: forId)
+    }
+
+    public func containsPrivateKey(forId: String) throws -> Bool {
+        return containsPrivateKey(forId: try DIDURL(self.subject, forId))
     }
 
     private func getDefaultPublicKey() -> DIDURL? {
-        for pk in publicKeys() {
-            if self.subject != pk.controller {
+        for key in publicKeys() {
+            if subject != key.controller {
                 continue
             }
 
-            let address = HDKey.DerivedKey.getAddress(pk.publicKeyBytes)
-            guard address == self.subject.methodSpecificId else {
-                return pk.getId()
+            let address = HDKey.DerivedKey.getAddress(key.publicKeyBytes)
+            if  address == subject.methodSpecificId {
+                return key.getId()
             }
         }
         return nil
@@ -174,65 +212,67 @@ public class DIDDocument {
     }
 
     func appendPublicKey(_ publicKey: PublicKey) -> Bool {
-        if  self._publicKeys == nil {
-            self._publicKeys = Dictionary<DIDURL, PublicKey>()
-        }
-
-        for key in self._publicKeys!.values {
-            // Check the existance, by both DIDURL (id) and keyBase58
-            if key.getId() == publicKey.getId() ||
-               key.publicKeyBase58 == publicKey.publicKeyBase58 {
+        for key in publicKeys() {
+            if  key.getId() == publicKey.getId() ||
+                key.publicKeyBase58 == publicKey.publicKeyBase58 {
                 return false
             }
         }
 
-        self._publicKeys![publicKey.getId()] = publicKey
+        publicKeyMap.append(publicKey)
         return true
     }
 
     func removePublicKey(_ id: DIDURL, _ force: Bool) -> Bool {
+        let key = publicKey(ofId: id)
+        guard let _ = key else {
+            return false
+        }
+
         // Can not remove default public key
         guard self.getDefaultPublicKey() != id else {
             return false
         }
 
-        if force {
-            _ = removeAuthenticationKey(id)
-            _ = removeAuthorizationKey(id)
-        } else if containsAuthenticationKey(forId: id) || containsAuthorizationKey(forId: id) {
-            return false
+        if !force && (key!.isAuthenticationKey || key!.isAthorizationKey) {
+            return  false
         }
 
-        let value = self._publicKeys?.removeValue(forKey: id)
-        if  value != nil {
-            _ = try? getMeta().store?.deletePrivateKey(for: subject, id: id)
-        }
-
-        return value != nil
+        _ = publicKeyMap.remove(id)
+        _ = getMeta().store?.deletePrivateKey(for: subject, id: id)
+        return true
     }
 
     public var authenticationKeyCount: Int {
-        return getObjectCount(self._authenticationKeys)
+        return publicKeyMap.count() { value -> Bool in
+            return (value as PublicKey).isAuthenticationKey
+        }
     }
 
     public func authenticationKeys() -> Array<PublicKey> {
-        return getObjects(self._authenticationKeys)
+        return publicKeyMap.values() { value -> Bool in
+            return (value as PublicKey).isAuthenticationKey
+        }
     }
 
-    public func selectAuthenticationKeys(byId: String, andType: String? = nil) throws -> Array<PublicKey> {
-        return try selectObjects(self._authenticationKeys, DIDURL(subject, byId), andType)
+    public func selectAuthenticationKeys(byId: DIDURL?, andType: String?) -> Array<PublicKey> {
+        return publicKeyMap.select(byId, andType) { value -> Bool in
+            return (value as PublicKey).isAuthenticationKey
+        }
     }
 
-    public func selectAuthenticationKeys(byId: DIDURL, andType: String? = nil) throws -> Array<PublicKey> {
-        return try selectObjects(self._authenticationKeys, byId, andType)
-    }
-
-    public func authenticationKey(ofId: String) throws -> PublicKey?  {
-        return getObject(self._authenticationKeys, try DIDURL(subject, ofId))
+    public func selectAuthenticationKeys(byId: String, andType: String?) throws -> Array<PublicKey> {
+        return selectAuthenticationKeys(byId: try DIDURL(subject, byId), andType: andType)
     }
 
     public func authenticationKey(ofId: DIDURL) -> PublicKey? {
-        return getObject(self._authenticationKeys, ofId)
+        return publicKeyMap.get(forKey: ofId) { value -> Bool in
+            return (value as PublicKey).isAuthenticationKey
+        }
+    }
+
+    public func authenticationKey(ofId: String) throws -> PublicKey?  {
+        return authenticationKey(ofId: try DIDURL(subject, ofId))
     }
 
     public func containsAuthenticationKey(forId: String) throws -> Bool {
@@ -243,209 +283,184 @@ public class DIDDocument {
         return authenticationKey(ofId: forId) != nil
     }
 
-    func appendAuthenticationKey(_ publicKey: PublicKey) -> Bool {
+    func appendAuthenticationKey(_ id: DIDURL) -> Bool {
+        let key = publicKey(ofId: id)
+        guard let _ = key else {
+            return false
+        }
+
         // Make sure that controller should be current DID subject.
-        guard publicKey.controller == self.subject else {
+        guard key!.controller == self.subject else {
             return false
         }
 
-        // Check whether this publicKey already is one of DIDDocument publicKeys
-        // if not, just add it. Otherwise, need to check whether it is the same
-        // public key. If does, we prefer to use public key in DIDDocument publicKeys.
-        // If not, then would be conflicted and should keep untouched.
-        var refKey = publicKey
-        let key = self.publicKey(ofId: publicKey.getId())
-        if  key == nil {
-            _ = appendPublicKey(publicKey)
-        } else if key! != publicKey {
-            // Conflict happened, keep untouched
-            return false
-        } else {
-            // Prefer using publicKey of DIDDocument publicKeys.
-            refKey = key!
-        }
-
-        if  self._authenticationKeys == nil {
-            self._authenticationKeys = Dictionary<DIDURL, PublicKey>()
-        }
-
-        if containsAuthenticationKey(forId: refKey.getId()) {
-            return false
-        }
-
-        self._authenticationKeys![refKey.getId()] = refKey
+        key!.setAuthenticationKey(true)
         return true
     }
 
-    func removeAuthenticationKey(_ key: DIDURL) -> Bool {
-        // Can not remove default publicKey.
-        guard getDefaultPublicKey() != key else {
+    func removeAuthenticationKey(_ id: DIDURL) -> Bool {
+        let key = publicKey(ofId: id)
+        guard let _ = key else {
             return false
         }
 
-        return self._authenticationKeys?.removeValue(forKey: key) != nil
+        // Can not remove default publicKey.
+        guard getDefaultPublicKey() != id else {
+            return false
+        }
+
+        key!.setAuthenticationKey(false)
+        return true
     }
 
     public var authorizationKeyCount: Int {
-        return getObjectCount(self._authorizationKeys)
+        return publicKeyMap.count() { value -> Bool in
+            return (value as PublicKey).isAthorizationKey
+        }
     }
 
     public func authorizationKeys() -> Array<PublicKey> {
-        return getObjects(self._authorizationKeys)
+        return publicKeyMap.values() { value -> Bool in
+            return (value as PublicKey).isAthorizationKey
+        }
     }
 
-    public func selectAuthorizationKeys(byId: String, andType: String? = nil) throws -> Array<PublicKey> {
-        return try selectObjects(self._authorizationKeys, DIDURL(subject, byId), andType)
+    public func selectAuthorizationKeys(byId: DIDURL?, andType: String?) -> Array<PublicKey> {
+        return publicKeyMap.select(byId, andType) { value -> Bool in
+            return (value as PublicKey).isAthorizationKey
+        }
     }
 
-    public func selectAuthorizationKeys(byId: DIDURL, andType: String? = nil) throws -> Array<PublicKey> {
-        return try selectObjects(self._authenticationKeys, byId, andType)
-    }
-
-    public func authorizationKey(ofId: String) throws -> PublicKey?  {
-        return getObject(self._authorizationKeys, try DIDURL(subject, ofId))
+    public func selectAuthorizationKeys(byId: String, andType: String?) throws -> Array<PublicKey> {
+        return selectAuthorizationKeys(byId: try DIDURL(subject, byId), andType: andType)
     }
 
     public func authorizationKey(ofId: DIDURL) -> PublicKey? {
-        return getObject(self._authorizationKeys, ofId)
+        return publicKeyMap.get(forKey: ofId) { value -> Bool in
+            return (value as PublicKey).isAthorizationKey
+        }
+    }
+
+    public func authorizationKey(ofId: String) throws -> PublicKey?  {
+        return authorizationKey(ofId: try DIDURL(subject, ofId))
     }
 
     public func containsAuthorizationKey(forId: String) throws -> Bool {
-        return try authenticationKey(ofId: forId) != nil
+        return try authorizationKey(ofId: forId) != nil
     }
 
     public func containsAuthorizationKey(forId: DIDURL) -> Bool {
-        return authenticationKey(ofId: forId) != nil
+        return authorizationKey(ofId: forId) != nil
     }
 
-    func appendAuthorizationKey(_ publicKey: PublicKey) -> Bool {
+    func appendAuthorizationKey(_ id: DIDURL) -> Bool {
+        let key = publicKey(ofId: id)
+        guard let _ = key else {
+            return false
+        }
+
         // Make sure that controller should be current DID subject.
-        guard publicKey.controller == self.subject else {
+        guard key!.controller == self.subject else {
             return false
         }
 
-        // Check whether this publicKey already is one of DIDDocument publicKeys
-        // if not, just add it. Otherwise, need to check whether it is the same
-        // public key. If does, we prefer to use public key in DIDDocument publicKeys.
-        // If not, then would be conflicted and should keep untouched.
-        var refKey = publicKey
-        let key = self.publicKey(ofId: refKey.getId())
-        if  key == nil {
-            _ = appendPublicKey(publicKey)
-        } else if key! != publicKey {
-            // Conflict happened, keep untouched
-            return false
-        } else {
-            // Prefer using publicKey of DIDDocument publicKeys.
-            refKey = key!
-        }
-
-        if  self._authorizationKeys == nil {
-            self._authorizationKeys = Dictionary<DIDURL, PublicKey>()
-        }
-
-        if containsAuthorizationKey(forId: refKey.getId()) {
-            return false
-        }
-
-        self._authorizationKeys![refKey.getId()] = refKey
+        key!.setAthorizationKey(true)
         return true
     }
 
-    func removeAuthorizationKey(_ key: DIDURL) -> Bool {
-        // Can not remove default publicKey.
-        guard getDefaultPublicKey() != key else {
+    func removeAuthorizationKey(_ id: DIDURL) -> Bool {
+        let key = publicKey(ofId: id)
+        guard let _ = key else {
             return false
         }
 
-        return self._authorizationKeys!.removeValue(forKey: key) != nil
+        // Can not remove default publicKey.
+        guard getDefaultPublicKey() != id else {
+            return false
+        }
+
+        key!.setAuthenticationKey(false)
+        return true
     }
 
     public var credentialCount: Int {
-        return getObjectCount(self._credentials)
+        return credentialMap.count() { value -> Bool in return true }
     }
 
-    public var credentials: Array<VerifiableCredential> {
-        return getObjects(self._credentials)
+    public func credentials() -> Array<VerifiableCredential> {
+        return credentialMap.values() { value -> Bool in return true }
     }
 
-    public func selectCredentials(byId: String, andType: String? = nil) throws -> Array<VerifiableCredential>  {
-        return try selectObjects(self._credentials, DIDURL(self.subject, byId), andType)
+    public func selectCredentials(byId: DIDURL?, andType: String?) -> Array<VerifiableCredential>  {
+        return credentialMap.select(byId, andType) { value -> Bool in return true }
     }
 
-    public func selectCredentials(byId: DIDURL, andType: String? = nil) throws -> Array<VerifiableCredential>  {
-        return try selectObjects(self._credentials, byId, andType)
-    }
-
-    public func credential(ofId: String) throws -> VerifiableCredential? {
-        return getObject(self._credentials, try DIDURL(self.subject, ofId))
+    public func selectCredentials(byId: String, andType: String?) throws -> Array<VerifiableCredential>  {
+        return selectCredentials(byId: try DIDURL(subject, byId), andType: andType)
     }
 
     public func credential(ofId: DIDURL) -> VerifiableCredential? {
-        return getObject(self._credentials, ofId)
+        return credentialMap.get(forKey: ofId) { value -> Bool in return true }
     }
 
-    func appendCredential(_ credential: VerifiableCredential) -> Bool {
-        // Make sure the verifiable credential must belong to current DID.
-        guard getDefaultPublicKey()?.did != self.subject else {
+    public func credential(ofId: String) throws -> VerifiableCredential? {
+        return credential(ofId: try DIDURL(subject, ofId))
+    }
+
+    func appendCredential(_ vc: VerifiableCredential) -> Bool {
+        let _vc = credential(ofId: vc.getId())
+        guard let _ = _vc else {
             return false
         }
 
-        if  self._credentials == nil {
-            self._credentials = Dictionary<DIDURL, VerifiableCredential>()
-        }
-
-        guard self._credentials!.keys.contains(credential.getId()) else {
+        guard vc.subject.did != subject else {
             return false
         }
 
-        self._credentials![credential.getId()] = credential
+        credentialMap.append(vc)
         return true
     }
 
     func removeCredential(_ id: DIDURL) -> Bool {
-        return self._credentials?.removeValue(forKey: id) != nil
-    }
-
-    public var serviceCount: Int {
-        return getObjectCount(self._services)
-    }
-
-    public var services: Array<Service> {
-        return getObjects(self._services)
-    }
-
-    public func selectServices(byId: String, andType: String? = nil) throws -> Array<Service>  {
-        return try selectObjects(self._services, try DIDURL(self.subject, byId), andType)
-    }
-
-    public func selectServices(byId: DIDURL, andType: String? = nil) throws -> Array<Service>  {
-        return try selectObjects(self._services, byId, andType)
-    }
-
-    public func service(ofId: String) throws -> Service? {
-        return getObject(self._services, try DIDURL(self.subject, ofId))
-    }
-
-    public func service(ofId: DIDURL) -> Service? {
-        return getObject(self._services, ofId)
-    }
-
-    func appendService(_ service: Service) -> Bool {
-        if  self._services == nil {
-            self._services = Dictionary<DIDURL, Service>()
-        }
-
-        guard self._services!.keys.contains(service.getId()) else {
+        let vc = credential(ofId: id)
+        guard let _ = vc else {
             return false
         }
 
-        self._services![service.getId()] = service
+        return credentialMap.remove(id)
+    }
+
+    public var serviceCount: Int {
+        return serviceMap.count() { value -> Bool in return true }
+    }
+
+    public func services() -> Array<Service> {
+        return serviceMap.values() { value -> Bool in return true }
+    }
+
+    public func selectServices(byId: DIDURL?, andType: String?) -> Array<Service>  {
+        return serviceMap.select(byId, andType) { value -> Bool in return true }
+    }
+
+    public func selectServices(byId: String, andType: String?) throws -> Array<Service>  {
+        return selectServices(byId: try DIDURL(subject, byId), andType: andType)
+    }
+
+    public func service(ofId: DIDURL) -> Service? {
+        return serviceMap.get(forKey: ofId) { value -> Bool in return true }
+    }
+
+    public func service(ofId: String) throws -> Service? {
+        return service(ofId: try DIDURL(subject, ofId))
+    }
+
+    func appendService(_ service: Service) -> Bool {
+        serviceMap.append(service)
         return true
     }
 
     func removeService(_ id: DIDURL) -> Bool {
-        return self._services?.removeValue(forKey: id) != nil
+        return serviceMap.remove(id)
     }
 
     public var expirationDate: Date? {
@@ -545,7 +560,7 @@ public class DIDDocument {
 
         do {
             let data: Data = try toJson(true, true)
-            return try verifyWithIdentity(proof.creator, proof.signature, [data])
+            return try verify(proof.creator, proof.signature, [data])
         } catch {
             return false
         }
@@ -559,19 +574,19 @@ public class DIDDocument {
         return DIDDocumentBuilder(self)
     }
 
-    public func signWithDefaultIdentify(using storePassword: String, data: Data...) throws -> String {
-        return try signWithIdentiy(self.defaultPublicKey, storePassword, data)
+    public func sign(using storePassword: String, for data: Data...) throws -> String {
+        return try sign(self.defaultPublicKey, storePassword, data)
     }
 
-    public func signWithIdentiy(did: String, using storePassword: String, data: Data...) throws -> String {
-        return try signWithIdentiy(try DIDURL(self.subject, did), storePassword, data)
+    public func sign(withId: DIDURL, using storePassword: String, for data: Data...) throws -> String {
+        return try sign(withId, storePassword, data)
     }
 
-    public func signWithIdentify(id: DIDURL, using storePassword: String, data: Data...) throws -> String {
-        return try signWithIdentiy(id, storePassword, data)
+    public func sign(withId: String, using storePassword: String, for data: Data...) throws -> String {
+        return try sign(try DIDURL(self.subject, withId), storePassword, data)
     }
 
-    func signWithIdentiy(_ id: DIDURL, _ storePassword: String, _ data: [Data]) throws -> String {
+    func sign(_ id: DIDURL, _ storePassword: String, _ data: [Data]) throws -> String {
         guard data.count > 0 else {
             throw DIDError.illegalArgument()
         }
@@ -582,22 +597,22 @@ public class DIDDocument {
             throw DIDError.didStoreError("Not attached with DID store")
         }
 
-        return try getMeta().store!.signWithIdentity(subject, id, storePassword, data)
+        return try getMeta().store!.sign(subject, id, storePassword, data)
     }
 
-    public func verifyWithDefaultIdentity(using signature: String, data: Data...) throws -> Bool {
-        return try verifyWithIdentity(self.defaultPublicKey, signature, data)
+    public func verify(signature: String, onto data: Data...) throws -> Bool {
+        return try verify(self.defaultPublicKey, signature, data)
     }
 
-    public func verifyWithIdentity(id: DIDURL, using signature: String, data: Data...) throws -> Bool {
-        return try verifyWithIdentity(id, signature, data)
+    public func verify(withId: DIDURL, using signature: String, onto data: Data...) throws -> Bool {
+        return try verify(withId, signature, data)
     }
 
-    public func verifyWithIdentity(did: String, using signature: String, data: Data...) throws -> Bool {
-        return try verifyWithIdentity(DIDURL(self.subject, did), signature, data)
+    public func verify(withId: String, using signature: String, onto data: Data...) throws -> Bool {
+        return try verify(DIDURL(self.subject, withId), signature, data)
     }
 
-    func verifyWithIdentity(_ id: DIDURL, _ sigature: String, _ data: [Data]) throws -> Bool {
+    func verify(_ id: DIDURL, _ sigature: String, _ data: [Data]) throws -> Bool {
         guard data.count > 0 else {
             throw DIDError.illegalArgument()
         }
@@ -624,6 +639,7 @@ public class DIDDocument {
         setSubject(did)
 
         var node: JsonNode?
+
         node = doc.get(forKey: Constants.PUBLICKEY)
         guard let _ = node else {
             throw DIDError.malformedDocument("missing publicKey")
@@ -636,9 +652,13 @@ public class DIDDocument {
         }
 
         // Add default public key to authentication keys if need.
-        let defaultKey = self.defaultPublicKey
-        if containsAuthenticationKey(forId: defaultKey) {
-            _ = appendAuthenticationKey(publicKey(ofId: defaultKey)!)
+        let defaultKey = self.getDefaultPublicKey()
+        guard let _ = defaultKey else {
+            throw DIDError.malformedDocument("missing default public key")
+        }
+
+        if !containsAuthenticationKey(forId: defaultKey!) {
+            _ = appendAuthenticationKey(defaultKey!)
         }
 
         node = doc.get(forKey: Constants.AUTHORIZATION)
@@ -667,7 +687,7 @@ public class DIDDocument {
             throw DIDError.malformedDocument("missing document proof")
         }
 
-        setProof(try DIDDocumentProof.fromJson(node!, defaultKey))
+        setProof(try DIDDocumentProof.fromJson(node!, defaultKey!))
     }
 
     private func parsePublicKeys(_ arrayNode: JsonNode) throws {
@@ -694,7 +714,7 @@ public class DIDDocument {
 
         for node in array! {
             do {
-                _ = appendAuthenticationKey(try PublicKey.fromJson(node, self.subject))
+                _ = appendAuthenticationKey(try PublicKey.fromJson(node, self.subject).getId())
             } catch {
                 throw DIDError.malformedDocument()
             }
@@ -709,7 +729,7 @@ public class DIDDocument {
 
         for node in array! {
             do {
-                _ = appendAuthorizationKey(try PublicKey.fromJson(node, self.subject))
+                _ = appendAuthorizationKey(try PublicKey.fromJson(node, self.subject).getId())
             } catch {
                 throw DIDError.malformedDocument()
             }
@@ -812,14 +832,14 @@ public class DIDDocument {
 
         generator.writeFieldName(Constants.PUBLICKEY)
         generator.writeStartArray()
-        for pubKey in self._publicKeys!.values {
+        for pubKey in publicKeys() {
             pubKey.toJson(generator, self.subject, normalized)
         }
         generator.writeEndArray()
 
         generator.writeFieldName(Constants.AUTHENTICATION)
         generator.writeStartArray()
-        for pubKey in self._authenticationKeys!.values {
+        for pubKey in authenticationKeys() {
             var value: String
             if normalized || pubKey.getId().did != self.subject {
                 value = pubKey.getId().toString()
@@ -834,7 +854,7 @@ public class DIDDocument {
             generator.writeFieldName(Constants.AUTHORIZATION)
             generator.writeStartArray()
 
-            for pubKey in self._authorizationKeys!.values {
+            for pubKey in authorizationKeys() {
                 var value: String
                 if normalized || pubKey.getId().did != self.subject {
                     value = pubKey.getId().did.toString()
@@ -849,7 +869,7 @@ public class DIDDocument {
         if self.credentialCount > 0 {
             generator.writeFieldName(Constants.VERIFIABLE_CREDENTIAL)
             generator.writeStartArray()
-            for credential in self._credentials!.values {
+            for credential in credentials() {
                 credential.toJson(generator, self.subject, normalized)
             }
             generator.writeEndArray()
@@ -858,7 +878,7 @@ public class DIDDocument {
         if self.serviceCount > 0 {
             generator.writeFieldName(Constants.SERVICE)
             generator.writeStartArray()
-            for service in self._services!.values {
+            for service in services() {
                 service.toJson(generator, self.subject, normalized)
             }
             generator.writeEndArray()

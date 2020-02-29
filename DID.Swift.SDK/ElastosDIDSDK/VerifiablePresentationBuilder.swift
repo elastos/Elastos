@@ -76,7 +76,7 @@ public class VerifiablePresentationBuilder {
         }
 
         let data: Data = presentation!.toJson(true)
-        let signature = try _signer.signWithIdentiy(_signKey, storePassword, [data])
+        let signature = try _signer.sign(_signKey, storePassword, [data])
 
         let proof = VerifiablePresentationProof(_signKey, _realm!, _nonce!, signature)
         presentation!.setProof(proof)
