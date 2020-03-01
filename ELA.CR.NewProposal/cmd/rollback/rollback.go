@@ -11,7 +11,8 @@ import (
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/common/config"
+	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
+	"github.com/elastos/Elastos.ELA/common/config/settings"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/database"
@@ -20,8 +21,8 @@ import (
 )
 
 var (
+	appSettings = settings.NewSettings()
 	dataDir     = "elastos/data"
-	chainParams = config.DefaultParams
 )
 
 func NewCommand() *cli.Command {
@@ -35,12 +36,21 @@ func NewCommand() *cli.Command {
 				Name:  "height",
 				Usage: "the final height after rollback",
 			},
+			cmdcom.ConfigFileFlag,
+			cmdcom.DataDirFlag,
+			cmdcom.TestNetFlag,
+			cmdcom.RegTestFlag,
+			cmdcom.InstantBlockFlag,
 		},
 		Action: rollbackAction,
 	}
 }
 
 func rollbackAction(c *cli.Context) error {
+	appSettings.SetContext(c)
+	appSettings.SetupConfig()
+	appSettings.InitParamsValue()
+
 	if c.NumFlags() == 0 {
 		cli.ShowSubcommandHelp(c)
 		return nil
@@ -57,14 +67,14 @@ func rollbackAction(c *cli.Context) error {
 	}
 
 	log.NewDefault("logs/node", 0, 0, 0)
-	chainStore, err := blockchain.NewChainStore(dataDir, &chainParams)
+	chainStore, err := blockchain.NewChainStore(dataDir, appSettings.Params())
 	if err != nil {
 		fmt.Println("create chain store failed, ", err)
 		return err
 	}
 	defer chainStore.Close()
 
-	chain, err := blockchain.New(chainStore, &chainParams, nil, nil)
+	chain, err := blockchain.New(chainStore, appSettings.Params(), nil, nil)
 	if err != nil {
 		fmt.Println("create blockchain failed, ", err)
 		return err
