@@ -38,10 +38,10 @@ import java.util.Map;
 
 import org.elastos.did.DIDDocument.PublicKey;
 import org.elastos.did.DIDDocument.Service;
+import org.elastos.did.crypto.HDKey;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDObjectAlreadyExistException;
 import org.elastos.did.exception.DIDObjectNotExistException;
-import org.elastos.did.util.HDKey;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;

@@ -38,6 +38,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
 
+import org.elastos.did.crypto.Base58;
+import org.elastos.did.crypto.Base64;
+import org.elastos.did.crypto.EcdsaSigner;
+import org.elastos.did.crypto.HDKey;
 import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDNotFoundException;
 import org.elastos.did.exception.DIDObjectAlreadyExistException;
@@ -49,10 +53,6 @@ import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDIDException;
 import org.elastos.did.exception.MalformedDocumentException;
 import org.elastos.did.meta.DIDMeta;
-import org.elastos.did.util.Base58;
-import org.elastos.did.util.Base64;
-import org.elastos.did.util.EcdsaSigner;
-import org.elastos.did.util.HDKey;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonFactory;

@@ -38,11 +38,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.elastos.did.adapter.DummyAdapter;
+import org.elastos.did.crypto.HDKey;
 import org.elastos.did.exception.DIDDeactivatedException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.WrongPasswordException;
-import org.elastos.did.util.HDKey;
 import org.junit.jupiter.api.Test;
 
 public class DIDStoreTest {

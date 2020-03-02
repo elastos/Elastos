@@ -31,9 +31,9 @@ import java.io.Reader;
 import org.elastos.did.adapter.DummyAdapter;
 import org.elastos.did.adapter.SPVAdapter;
 import org.elastos.did.backend.ResolverCache;
+import org.elastos.did.crypto.Base58;
+import org.elastos.did.crypto.HDKey;
 import org.elastos.did.exception.DIDException;
-import org.elastos.did.util.Base58;
-import org.elastos.did.util.HDKey;
 
 public final class TestData {
 	private static DummyAdapter dummyAdapter;
@@ -128,13 +128,13 @@ public final class TestData {
 			spvAdapter = (SPVAdapter)adapter;
 
 		if (spvAdapter != null) {
-			System.out.print("Waiting for wallet available");
+			System.out.print("Waiting for wallet available...");
+			long start = System.currentTimeMillis();
 			while (true) {
 				if (spvAdapter.isAvailable()) {
-					System.out.println(".OK");
+					long duration = (System.currentTimeMillis() - start + 500) / 1000;
+					System.out.println("OK(" + duration + "s)");
 					break;
-				} else {
-					System.out.print(".");
 				}
 
 				try {

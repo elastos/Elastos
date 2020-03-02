@@ -33,9 +33,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elastos.did.crypto.HDKey;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.InvalidKeyException;
-import org.elastos.did.util.HDKey;
 import org.junit.jupiter.api.Test;
 
 public class IssuerTest {

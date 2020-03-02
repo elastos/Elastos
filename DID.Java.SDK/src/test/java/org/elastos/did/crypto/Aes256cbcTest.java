@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.did.util;
+package org.elastos.did.crypto;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;

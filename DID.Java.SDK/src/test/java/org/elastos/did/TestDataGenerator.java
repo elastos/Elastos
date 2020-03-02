@@ -31,9 +31,9 @@ import java.util.Map;
 
 import org.elastos.did.adapter.SPVAdapter;
 import org.elastos.did.backend.ResolverCache;
+import org.elastos.did.crypto.Base58;
+import org.elastos.did.crypto.HDKey;
 import org.elastos.did.exception.DIDException;
-import org.elastos.did.util.Base58;
-import org.elastos.did.util.HDKey;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

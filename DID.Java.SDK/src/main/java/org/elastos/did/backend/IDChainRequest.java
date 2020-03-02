@@ -30,12 +30,12 @@ import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDURL;
+import org.elastos.did.crypto.Base64;
 import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.DIDTransactionException;
 import org.elastos.did.exception.InvalidKeyException;
-import org.elastos.did.util.Base64;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonFactory;

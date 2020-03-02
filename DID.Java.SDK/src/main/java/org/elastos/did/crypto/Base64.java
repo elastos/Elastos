@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.elastos.did.util;
+package org.elastos.did.crypto;
 
 import java.io.UnsupportedEncodingException;
 

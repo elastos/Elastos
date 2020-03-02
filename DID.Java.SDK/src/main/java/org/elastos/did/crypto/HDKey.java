@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.did.util;
+package org.elastos.did.crypto;
 
 import java.util.ArrayList;
 
