@@ -577,7 +577,7 @@ export default class extends Base {
       'voteResult',
       'vote_map'
     ]
-    const list = await db_cvote.list(query, { vid: -1 }, 100, fields.join(' '))
+    const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
     return list
   }
 
