@@ -185,7 +185,11 @@ class IDChainRequest: NSObject {
                 return false
             }
         } else {
-            doc = self._did!.resolve()!
+            do {
+                doc = try self._did!.resolve()
+            } catch {
+                return false
+            }
             guard doc.containsAuthenticationKey(forId: _signKey!) ||
                   doc.containsAuthorizationKey (forId: _signKey!) else {
                 return false

@@ -62,9 +62,11 @@ public class VerifiablePresentation {
     }
 
     public var isGenuine: Bool {
-        let doc = getSigner()?.resolve()
-        guard let _ = doc else {
-            return false
+        let doc: DIDDocument?
+        do {
+            doc = try signer.resolve()
+        } catch {
+            doc = nil
         }
 
         // Check the integrity of signer's document.
@@ -99,14 +101,15 @@ public class VerifiablePresentation {
     }
 
     public func isGenuineAsync() -> Promise<Bool> {
-        // TODO:
-        return Promise<Bool>(error: DIDError.unknownFailure("Not implemented"))
+        return Promise<Bool> { $0.fulfill(isGenuine) }
     }
 
     public var isValid: Bool {
-        let doc = getSigner()?.resolve()
-        guard let _ = doc else {
-            return false
+        let doc: DIDDocument?
+        do {
+            doc = try signer.resolve()
+        } catch {
+            doc = nil
         }
 
         // Check the validity of signer's document.
@@ -141,8 +144,7 @@ public class VerifiablePresentation {
     }
 
     public func isValidAsync() -> Promise<Bool> {
-        // TODO:
-        return Promise<Bool>(error: DIDError.unknownFailure("Not implemented"))
+        return Promise<Bool> { $0.fulfill(isValid) }
     }
 
     public var proof: VerifiablePresentationProof {

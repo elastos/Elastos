@@ -1,4 +1,5 @@
 import Foundation
+import PromiseKit
 
 public class DID {
     private var _method: String?
@@ -96,34 +97,34 @@ public class DID {
         return getMeta().isDeactivated
     }
 
-    public func resolve(_ force: Bool) -> DIDDocument? {
+    public func resolve(_ force: Bool) throws -> DIDDocument {
         let doc: DIDDocument?
-        do {
-            doc = try DIDBackend.resolve(self, force)
-        } catch {
-            return nil
-        }
+        doc = try DIDBackend.resolve(self, force)
         guard let _ = doc else {
-            return nil
+            throw DIDError.notFound()
         }
 
         setMeta(doc!.getMeta())
-        return doc
+        return doc!
     }
     
-    public func resolve() -> DIDDocument? {
-        return resolve(false)
+    public func resolve() throws -> DIDDocument {
+        return try resolve(false)
     }
 
-    // TODO: Promise
-    /*
     func resolveAsync(_ force: Bool) -> Promise<DIDDocument> {
-        // TODO:
+        return Promise<DIDDocument> { resolver in
+            do {
+                resolver.fulfill(try resolve(force))
+            } catch let error  {
+                resolver.reject(error)
+            }
+        }
     }
 
     func resolveAsync() -> Promise<DIDDocument> {
-        return resolve(false)
-    }*/
+        return resolveAsync(false)
+    }
 }
 
 extension DID: CustomStringConvertible {

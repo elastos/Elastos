@@ -316,8 +316,14 @@ public class DIDStore: NSObject {
 
     private func synchronizeAsync(_ storePassword: String,
                                   _ conflictHandler: ConflictHandler) -> Promise<Void> {
-        // TODO:
-        return Promise<Void>()
+        return Promise<Void> { resolver in
+            do {
+                try synchronize(storePassword, conflictHandler)
+                resolver.fulfill(())
+            } catch let error  {
+                resolver.reject(error)
+            }
+        }
     }
 
     public func synchornizeAsync(using storePassword: String,
@@ -442,34 +448,33 @@ public class DIDStore: NSObject {
         }
 
         var lastTransactionId: String? = nil
-        let resolvedDoc = did.resolve()
-        if let _ = resolvedDoc {
-            guard !resolvedDoc!.isDeactivated else {
-                throw  DIDError.didStoreError("DID already deactivated")
-            }
+        let resolvedDoc = try did.resolve()
 
-            if !force {
-                let localTxId = doc.getMeta().transactionId
-                let localSignature = doc.getMeta().signature
-
-                let resolvedTxId = resolvedDoc!.getMeta().transactionId!
-                let resolvedSignature = resolvedDoc!.getMeta().signature!
-
-                guard localTxId != nil || localSignature != nil else {
-                    throw DIDError.didStoreError("DID document not up-to-date")
-                }
-
-                guard localTxId == nil || localTxId == resolvedTxId else {
-                    throw DIDError.didStoreError("DID document not up-to-date")
-                }
-
-                guard localSignature == nil || localSignature == resolvedSignature else {
-                    throw DIDError.didStoreError("DID document not up-to-date")
-                }
-            }
-
-            lastTransactionId = resolvedDoc!.transactionId!
+        guard !resolvedDoc.isDeactivated else {
+            throw  DIDError.didStoreError("DID already deactivated")
         }
+
+        if !force {
+            let localTxId = doc.getMeta().transactionId
+            let localSignature = doc.getMeta().signature
+
+            let resolvedTxId = resolvedDoc.getMeta().transactionId!
+            let resolvedSignature = resolvedDoc.getMeta().signature!
+
+            guard localTxId != nil || localSignature != nil else {
+                throw DIDError.didStoreError("DID document not up-to-date")
+            }
+
+            guard localTxId == nil || localTxId == resolvedTxId else {
+                throw DIDError.didStoreError("DID document not up-to-date")
+            }
+
+            guard localSignature == nil || localSignature == resolvedSignature else {
+                throw DIDError.didStoreError("DID document not up-to-date")
+            }
+        }
+
+        lastTransactionId = resolvedDoc.transactionId!
 
         var usedSignKey = signKey
         if  usedSignKey == nil {
@@ -581,8 +586,13 @@ public class DIDStore: NSObject {
                                  _ storePassword: String,
                                  _ force: Bool) -> Promise<String> {
 
-        // TODO:
-        return Promise<String>(error: DIDError.unknownFailure("Not implemented"))
+        return Promise<String> { resolver in
+            do {
+                resolver.fulfill(try publishDid(did, confirms, signKey, storePassword, force))
+            } catch let error  {
+                resolver.reject(error)
+            }
+        }
     }
 
     public func publishDidAsync(for did: DID,
@@ -782,8 +792,13 @@ public class DIDStore: NSObject {
                                     _ signKey: DIDURL?,
                                     _ storePassword: String) -> Promise<String> {
 
-        // TODO:
-        return Promise<String>(error: DIDError.unknownFailure("Not implemented"))
+        return Promise<String> { resolver in
+            do {
+                resolver.fulfill(try deactivateDid(target, confirms, signKey, storePassword))
+            } catch let error  {
+                resolver.reject(error)
+            }
+        }
     }
 
     public func deactivateDidAsync(for target: DID,
@@ -1002,8 +1017,13 @@ public class DIDStore: NSObject {
                                     _ signKey: DIDURL?,
                                     _ storePassword: String) -> Promise<String> {
 
-        // TODO:
-        return Promise<String>(error: DIDError.unknownFailure("Not implemented"))
+        return Promise<String> { resolver in
+            do {
+                resolver.fulfill(try deactivateDid(target, did, confirms, signKey, storePassword))
+            } catch let error  {
+                resolver.reject(error)
+            }
+        }
     }
 
     public func deactivateDidAsync(for target: DID,

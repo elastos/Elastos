@@ -157,7 +157,13 @@ public class VerifiableCredential: DIDObject {
     }
     
     private func traceCheck(_ rule: Int) throws -> Bool {
-        let controllerDoc = getSubject()?.did.resolve()
+        var controllerDoc: DIDDocument?
+        do {
+            controllerDoc = try issuer.resolve()
+        } catch {
+            controllerDoc = nil
+        }
+
         guard let _ = controllerDoc else {
             return false
         }
@@ -180,7 +186,12 @@ public class VerifiableCredential: DIDObject {
         }
 
         if !isSelfProclaimed() {
-            let issuerDoc = getIssuer()?.resolve()
+            let issuerDoc: DIDDocument?
+            do {
+                issuerDoc = try issuer.resolve()
+            } catch {
+                issuerDoc = nil
+            }
             guard let _ = issuerDoc else {
                 return false
             }
@@ -219,17 +230,14 @@ public class VerifiableCredential: DIDObject {
     }
 
     public func isExpiredAsync() -> Promise<Bool> {
-        // TODO:
-        return Promise<Bool>(error: DIDError.unknownFailure("Not implemented"))
+        return Promise<Bool> { $0.fulfill(isExpired) }
     }
 
     private func checkGenuine() throws -> Bool {
-        let doc = issuer.resolve()
-        guard let _ = doc else {
-            return false
-        }
+        let doc = try issuer.resolve()
+
         // Credential should signed by authentication key.
-        guard doc!.containsAuthenticationKey(forId: proof.verificationMethod) else {
+        guard doc.containsAuthenticationKey(forId: proof.verificationMethod) else {
             return false
         }
         // Unsupported public key type;
@@ -238,7 +246,7 @@ public class VerifiableCredential: DIDObject {
         }
 
         let data: Data = toJson(true, true).data(using: .utf8)!
-        return try doc!.verify(proof.verificationMethod, proof.signature, [data])
+        return try doc.verify(proof.verificationMethod, proof.signature, [data])
     }
 
     public var isGenuine: Bool {
@@ -250,8 +258,7 @@ public class VerifiableCredential: DIDObject {
     }
 
     public func isGenuineAsync() -> Promise<Bool> {
-        // TODO:
-        return Promise<Bool>(error: DIDError.unknownFailure("Not implemented"))
+        return Promise<Bool> { $0.fulfill(isGenuine) }
     }
 
     public var isValid: Bool {
@@ -263,8 +270,7 @@ public class VerifiableCredential: DIDObject {
     }
 
     public func isValidAsync() -> Promise<Bool> {
-        // TODO:
-        return Promise<Bool>(error: DIDError.unknownFailure("Not implemented"))
+        return Promise<Bool> { $0.fulfill(isValid) }
     }
 
     public var subject: VerifiableCredentialSubject {
