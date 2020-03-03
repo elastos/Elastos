@@ -251,7 +251,7 @@ export default class extends Base {
       .getDBInstance()
       .findOne(query)
       .populate('reference')
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
     if (!rs) {
       return { elip: { success: true, empty: true } }

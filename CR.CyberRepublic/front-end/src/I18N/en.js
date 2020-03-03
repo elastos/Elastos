@@ -1019,6 +1019,9 @@ const en = {
   'role.admin.mode': 'Admin Mode',
 
   // Profile
+  'profile.associateDid': 'Associate DID',
+  'profile.qrcodeTip': 'Open ELA wallet and scan',
+  'profile.reassociateDid': 'Re-associate DID',
   'profile.thanksForCompleting': 'Thanks for updating your profile!',
   'profile.skillsets': 'My Skillsets',
   'profile.completeProfile': 'Complete your Profile',
@@ -1184,6 +1187,7 @@ const en = {
   'profile.detail.no': 'No',
 
   'profile.popover.email': 'Email',
+  'profile.popover.did': 'DID',
   'profile.popover.name': 'Name',
   'profile.popover.copy': 'Copy',
   'profile.popover.viewProfile': 'View Profile',

@@ -11,6 +11,7 @@ export default ({ owner, curUser }) => {
   const userId = _.get(owner, '_id')
   const email = _.get(owner, 'email')
   const isAuthor = curUser.current_user_id === userId
+  const did = owner.dids && owner.dids.find(el => el.active === true)
   const content = (
     <PopoverContent>
       <div>
@@ -32,11 +33,20 @@ export default ({ owner, curUser }) => {
           {I18N.get('profile.popover.copy')}
         </Button>
       </div>
+      {did && did.id && (
+        <div>
+          <span className="label">{I18N.get('profile.popover.did')}:</span>
+          <span className="value">{did.id}</span>
+        </div>
+      )}
       <div>
         <span className="label">{I18N.get('profile.popover.name')}:</span>
         <span className="value">{name}</span>
       </div>
-      {(isAuthor || curUser.is_admin || curUser.is_secretary || curUser.is_council) && (
+      {(isAuthor ||
+        curUser.is_admin ||
+        curUser.is_secretary ||
+        curUser.is_council) && (
         <Link to={`/member/${userId}`}>
           {I18N.get('profile.popover.viewProfile')}
         </Link>
@@ -57,11 +67,8 @@ const PopoverContent = styled.div`
     align-items: center;
     margin-bottom: 8px;
     .label {
-      padding-right: 20px;
+      width: 60px;
       flex-shrink: 0;
-    }
-    .label.email {
-      padding-right: 14px;
     }
     .value {
       color: rgba(0, 0, 0, 0.45);

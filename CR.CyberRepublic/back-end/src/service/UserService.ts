@@ -4,10 +4,11 @@ import * as _ from 'lodash'
 import {constant} from '../constant'
 import {geo} from '../utility/geo'
 import * as uuid from 'uuid'
-import { validate, utilCrypto, mail, permissions } from '../utility'
+import { validate, utilCrypto, mail, permissions, getDidPublicKey, logger, loadKey } from '../utility'
 import CommunityService from './CommunityService'
+import * as jwt from 'jsonwebtoken'
 
-const selectFields = '-salt -password -elaBudget -elaOwed -votePower -resetToken'
+const selectFields = '-logins -salt -password -elaBudget -elaOwed -votePower -resetToken'
 const strictSelectFields = selectFields + ' -email -profile.walletAddress'
 
 const restrictedFields = {
@@ -153,8 +154,11 @@ export default class extends Base {
                 })
             }
         }
-
-        return user
+        const did = user.dids && user.dids.find(el => el.active === true)
+        const temp = { ...user._doc }
+        delete temp.dids
+        temp.did = did
+        return temp
     }
 
     public async updateRole(param) {
@@ -638,5 +642,142 @@ export default class extends Base {
         }
 
         return { isExist: false }
+    }
+
+    public async getElaUrl() {
+        try {
+            const userId = _.get(this.currentUser, '_id')
+            const db_user = this.getDBModel('User')
+            const user = await db_user.findById({ _id: userId })
+            if (_.isEmpty(user)) {
+                return { success: false }
+            }
+            // for reassociating DID
+            if (user && !_.isEmpty(user.dids)) {
+                const dids = user.dids.map(el => {
+                    // the mark field will be removed after reassociated DID 
+                    if (el.active === true) {
+                        return {
+                            id: el.id,
+                            expirationDate: el.expirationDate,
+                            active: true,
+                            mark: true
+                        }
+                    }
+                    return el
+                })
+                await db_user.update({ _id: userId }, { $set: { dids } })
+            }
+            const jwtClaims = {
+                iss: process.env.APP_DID,
+                userId: this.currentUser._id,
+                callbackurl: `${process.env.API_URL}/api/user/did-callback-ela`,
+                claims: {}
+            }
+            const jwtToken = jwt.sign(
+                jwtClaims,
+                process.env.APP_PRIVATE_KEY,
+                { expiresIn: '7d', algorithm: 'ES256' }
+            )
+            const url = `elastos://credaccess/${jwtToken}`
+            return { success: true, url }
+        } catch(err) {
+            console.log('get ela url err...', err)
+            logger.error(err)
+            return { success: false }
+        }
+    }
+
+    public async didCallbackEla(param: any) {
+        try {
+            const jwtToken = param.jwt
+            console.log('ela cb jwtToken...', jwtToken)
+            const claims: any = jwt.decode(jwtToken)
+            if (!claims) {
+                return { code: 400 }
+            }
+            const rs: any = await getDidPublicKey(claims.iss)
+            console.log('ela cb rs...', rs)
+            if (!rs) {
+                return { code: 400 }
+            }
+    
+            // verify response data from ela wallet
+            jwt.verify(jwtToken, rs.publicKey, async (err: any, decoded: any) => {
+                if (err) {
+                    return { code: 401 }
+                  } else {
+                    console.log('ela cb decoded...', decoded)
+                    // get user id to find the specific user and save DID
+                    const db_user = this.getDBModel('User')
+                    const user = await db_user.findById({ _id: decoded.userId })
+                    if (user) { 
+                        let dids: object[]
+                        const matched = user.dids.find(el => el.id === decoded.iss)
+                        console.log('ela cb matched...', matched)
+                        // associate the same DID
+                        if (matched) {
+                            dids = user.dids.map(el => {
+                                if (el.id === decoded.iss) {
+                                    return {
+                                        id: el.id,
+                                        active: true,
+                                        expirationDate: rs.expirationDate
+                                    }
+                                }
+                                return {
+                                    id: el.id,
+                                    expirationDate: el.expirationDate,
+                                    active: false
+                                }
+                            })
+                            console.log('ela cb dids...', dids)
+                        } else {
+                            // associate different DID
+                            const inactiveDids = user.dids.map(el => {
+                                if (el.active === true) {
+                                    return {
+                                        id: el.id,
+                                        expirationDate: el.expirationDate,
+                                        active: false
+                                    }
+                                }
+                                return el
+                            })
+                            dids = [ ...inactiveDids, { id: decoded.iss, active: true, expirationDate: rs.expirationDate } ]
+                            console.log('ela cb dids1...', dids)
+                        }
+                        await db_user.update(
+                            { _id: decoded.userId }, 
+                            { $set: { dids } }
+                        )
+                        console.log('ela cb success')
+                        return { code: 200 }
+                    } else {
+                        console.log('ela cb fail')
+                        return { code: 400 }
+                    }
+                  }
+            })
+        } catch(err) {
+            logger.error(err)
+            return { code: 500 }
+        }
+    }
+
+    public async getDid() {
+        const userId = this.currentUser._id
+        const db_user = this.getDBModel('User')
+        const user = await db_user.findById({_id: userId})
+        if (user && user.dids) {
+            const did = user.dids.find(el => el.active === true)
+            if (did && !did.mark) {
+                return { success: true, did }
+            } else {
+                return { success: false }
+            }   
+        } else {
+            return { success: false }
+        }
     }
 }

@@ -26,6 +26,7 @@ export default class extends BaseService {
     const is_leader = permissions.isLeader(res.user.role)
     const is_council = permissions.isCouncil(res.user.role)
     const is_secretary = permissions.isSecretary(res.user.role)
+    const did = res.user.dids && res.user.dids.find(el => el.active === true)
 
     this.dispatch(userRedux.actions.is_leader_update(is_leader))
     this.dispatch(userRedux.actions.is_admin_update(is_admin))
@@ -35,6 +36,7 @@ export default class extends BaseService {
     this.dispatch(userRedux.actions.login_form_reset())
     this.dispatch(userRedux.actions.is_login_update(true))
 
+    this.dispatch(userRedux.actions.did_update(did))
     this.dispatch(userRedux.actions.email_update(res.user.email))
     this.dispatch(userRedux.actions.username_update(res.user.username))
     this.dispatch(userRedux.actions.profile_update(res.user.profile))
@@ -125,6 +127,7 @@ export default class extends BaseService {
     this.dispatch(userRedux.actions.is_council_update(is_council))
     this.dispatch(userRedux.actions.is_secretary_update(is_secretary))
 
+    this.dispatch(userRedux.actions.did_update(data.did))
     this.dispatch(userRedux.actions.email_update(data.email))
     this.dispatch(userRedux.actions.username_update(data.username))
     this.dispatch(userRedux.actions.profile_reset())
@@ -219,6 +222,7 @@ export default class extends BaseService {
       this.dispatch(userRedux.actions.is_secretary_reset())
       this.dispatch(userRedux.actions.is_council_reset())
 
+      this.dispatch(userRedux.actions.did_reset())
       this.dispatch(userRedux.actions.email_reset())
       this.dispatch(userRedux.actions.username_reset())
       this.dispatch(userRedux.actions.profile_reset())
@@ -309,6 +313,25 @@ export default class extends BaseService {
       method: 'post',
       data: { email }
     })
+    return rs
+  }
+
+  async getElaUrl() {
+    const rs = await api_request({
+      path: '/api/user/ela-url'
+    })
+    return rs
+  }
+
+  async getNewActiveDid() {
+    const rs = await api_request({
+      path: '/api/user/did'
+    })
+
+    if (rs && rs.success) {
+      const userRedux = this.store.getRedux('user')
+      this.dispatch(userRedux.actions.did_update(rs.did))
+    }
     return rs
   }
 }

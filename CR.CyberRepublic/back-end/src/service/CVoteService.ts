@@ -737,8 +737,8 @@ export default class extends Base {
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
       )
-      .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
       .populate('referenceElip', 'vid')
     if (!rs) {

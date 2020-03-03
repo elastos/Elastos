@@ -18,6 +18,7 @@ class UserRedux extends BaseRedux {
 
       email: '',
       username: '',
+      did: {},
 
       role: '',
       circles: [],

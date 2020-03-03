@@ -1,21 +1,17 @@
 import React from 'react'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
-import I18N from '@/I18N'
 import Footer from '@/module/layout/Footer/Container'
 import Profile from '@/module/profile/Container'
 
 import './style.scss'
 import '../../admin/admin.scss'
 
-import { Col, Row, Icon, Form, Breadcrumb, Button, Dropdown } from 'antd'
+import { Col, Row } from 'antd'
 
 import MediaQuery from 'react-responsive'
 import ProfilePage from '../../ProfilePage'
 
-const FormItem = Form.Item
-
 export default class extends ProfilePage {
-
   ord_renderContent() {
     return (
       <div>
