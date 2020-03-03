@@ -668,22 +668,24 @@ export default class extends Base {
                 })
                 await db_user.update({ _id: userId }, { $set: { dids } })
             }
+            const jwtClaims = {
+                iss: process.env.APP_DID,
+                userId: this.currentUser._id,
+                callbackurl: `${process.env.API_URL}/api/user/did-callback-ela`,
+                claims: {}
+            }
+            const jwtToken = jwt.sign(
+                jwtClaims,
+                process.env.APP_PRIVATE_KEY,
+                { expiresIn: '7d', algorithm: 'ES256' }
+            )
+            const url = `elastos://credaccess/${jwtToken}`
+            return { success: true, url }
         } catch(err) {
+            console.log('get ela url err...', err)
             logger.error(err)
+            return { success: false }
         }
-        const jwtClaims = {
-            iss: process.env.APP_DID,
-            userId: this.currentUser._id,
-            callbackurl: `${process.env.SERVER_URL}/api/user/did-callback-ela`,
-            claims: {}
-        }
-        const jwtToken = jwt.sign(
-            jwtClaims, 
-            loadKey('../../env/ecdsa-private.pem'),
-            { expiresIn: '1d', algorithm: 'ES256' }
-        )
-        const url = `elastos://credaccess/${jwtToken}`
-        return { success: true, url }
     }
 
     public async didCallbackEla(param: any) {

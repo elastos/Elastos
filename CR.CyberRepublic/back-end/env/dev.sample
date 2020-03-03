@@ -1,6 +1,7 @@
 # SERVER
 SERVER_URL=http://localhost:3001
 SERVER_PORT=3000
+API_URL=http://localhost:3000
 
 # DB
 # this is for local running to develop
@@ -10,7 +11,7 @@ DB_URL=mongodb://localhost:27017/EBP
 
 # APP
 APP_SECRET=elastos
-APP_PRIVATE_KEY=test
+APP_PRIVATE_KEY="your app private key in pem format"
 APP_DID=did
 DID_SIDECHAIN_AUTH=xxx
 DID_SIDECHAIN_URL=xxx
