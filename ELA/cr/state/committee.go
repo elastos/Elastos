@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package state
 
@@ -183,6 +183,33 @@ func (c *Committee) getMember(did common.Uint168) *CRMember {
 	return nil
 }
 
+//update Candidates state in voting period
+func (c *Committee) updateVotingCandidatesState(height uint32) {
+	if c.isInVotingPeriod(height) {
+		// Check if any pending candidates has got 6 confirms, set them to activate.
+		activateCandidateFromPending :=
+			func(key common.Uint168, candidate *Candidate) {
+				c.state.history.Append(height, func() {
+					candidate.state = Active
+					c.state.Candidates[key] = candidate
+				}, func() {
+					candidate.state = Pending
+					c.state.Candidates[key] = candidate
+				})
+			}
+
+		pendingCandidates := c.state.getCandidates(Pending)
+
+		if len(pendingCandidates) > 0 {
+			for _, candidate := range pendingCandidates {
+				if height-candidate.registerHeight+1 >= ActivateDuration {
+					activateCandidateFromPending(candidate.info.CID, candidate)
+				}
+			}
+		}
+	}
+}
+
 func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
@@ -197,14 +224,10 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	// If reached the voting start height, record the last voting start height.
 	c.recordLastVotingStartHeight(block.Height)
 
-	// If in election period and not in voting period, deal with TransferAsset
-	// ReturnCRDepositCoin CRCProposal type of transaction only.
-	isVoting := c.isInVotingPeriod(block.Height)
-	if isVoting {
-		c.ProcessBlockInVotingPeriod(block)
-	} else {
-		c.processBlockInElectionPeriod(block)
-	}
+	c.processTransactions(block.Transactions, block.Height)
+	c.updateVotingCandidatesState(block.Height)
+	c.state.history.Commit(block.Height)
+
 	c.manager.updateProposals(block.Height, c.CirculationAmount)
 	c.tryStartVotingPeriod(block.Height)
 	c.freshCirculationAmount(c.lastHistory, block.Height, block.Height)
@@ -276,8 +299,7 @@ func (c *Committee) resetCRCCommitteeUsedAmount(height uint32) {
 	// todo add finished proposals into finished map
 	var budget common.Fixed64
 	for _, v := range c.manager.Proposals {
-		if v.Status == Finished || v.Status == CRCanceled ||
-			v.Status == VoterCanceled || v.Status == Aborted {
+		if v.Status == CRCanceled || v.Status == VoterCanceled {
 			continue
 		}
 		for _, b := range v.Proposal.Budgets {
@@ -656,6 +678,7 @@ func (c *Committee) generateMember(candidate *Candidate) *CRMember {
 		Info:             candidate.info,
 		ImpeachmentVotes: 0,
 		DepositHash:      candidate.depositHash,
+		MemberState:      MemberElected,
 	}
 }
 

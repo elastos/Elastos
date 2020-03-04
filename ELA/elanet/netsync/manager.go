@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package netsync
 
@@ -470,6 +470,10 @@ func (sm *SyncManager) haveInventory(invVect *msg.InvVect) (bool, error) {
 	case msg.InvTypeConfirmedBlock:
 		// Ask blockMemPool and chain if the block with confirm is
 		// known to it in (blockMemPool, main chain)
+		if !sm.chain.BlockExists(&invVect.Hash) {
+			return false, nil
+		}
+
 		block, _ := sm.chain.GetDposBlockByHash(invVect.Hash)
 		if block != nil && block.HaveConfirm {
 			return true, nil

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -11,13 +11,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 )
-
-// ProcessBlock takes a block and it's confirm to update CR state and
-// votes accordingly.
-func (c *Committee) ProcessBlockInVotingPeriod(block *types.Block) {
-	c.processTransactions(block.Transactions, block.Height)
-	c.state.history.Commit(block.Height)
-}
 
 // processTransactions takes the transactions and the height when they have been
 // packed into a block.  Then loop through the transactions to update CR
@@ -90,49 +83,6 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 
 	c.state.processCancelVotes(tx, height)
 	c.processCRCAddressRelatedTx(tx, height)
-}
-
-// processBlockInElectionPeriod takes a block and it's confirm to update CR member state
-// and proposals accordingly, only in election period and not in voting period.
-func (c *Committee) processBlockInElectionPeriod(block *types.Block) {
-	for _, tx := range block.Transactions {
-		c.processElectionTransaction(tx, block.Height)
-	}
-	c.state.history.Commit(block.Height)
-}
-
-// processElectionTransaction take a transaction and the height it has been
-// packed into a block, then update CR members state and proposals according to
-// the transaction content.
-func (c *Committee) processElectionTransaction(tx *types.Transaction, height uint32) {
-	switch tx.TxType {
-	case types.TransferAsset:
-		c.processVotes(tx, height)
-		c.state.processDeposit(tx, height)
-
-	case types.ReturnCRDepositCoin:
-		c.state.returnDeposit(tx, height)
-		c.state.processDeposit(tx, height)
-
-	case types.CRCProposal:
-		c.manager.registerProposal(tx, height, c.state.history)
-
-	case types.CRCProposalReview:
-		c.manager.proposalReview(tx, height, c.state.history)
-
-	case types.CRCAppropriation:
-		c.processCRCAppropriation(tx, height, c.state.history)
-
-	case types.CRCProposalTracking:
-		c.manager.proposalTracking(tx, height, c.state.history)
-
-	case types.CRCProposalWithdraw:
-		c.manager.proposalWithdraw(tx, height, c.state.history)
-	}
-
-	c.state.processCancelVotes(tx, height)
-	c.processCRCAddressRelatedTx(tx, height)
-
 }
 
 // processVotes takes a transaction, if the transaction including any vote

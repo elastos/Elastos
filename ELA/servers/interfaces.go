@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package servers
 
@@ -713,7 +713,7 @@ func SendRawTransaction(param Params) map[string]interface{} {
 	}
 
 	if err := VerifyAndSendTx(&txn); err != nil {
-		return ResponsePack(err.(ServerErrCode), err.Error())
+		return ResponsePack(InvalidTransaction, err.Error())
 	}
 
 	return ResponsePack(Success, ToReversedString(txn.Hash()))
@@ -1549,7 +1549,7 @@ type RpcProposalState struct {
 	TxHash                 string                        `json:"txhash"`
 	CRVotes                map[string]payload.VoteResult `json:"crvotes"`
 	VotersRejectAmount     string                        `json:"votersrejectamount"`
-	RegisterHeight         uint32                        `json:"registerheight`
+	RegisterHeight         uint32                        `json:"registerheight"`
 	VoteStartHeight        uint32                        `json:"votestartheight"`
 	CurrentStage           uint8                         `json:"currentstage"`
 	AppropriatedStage      uint8                         `json:"appropriatedstage"`

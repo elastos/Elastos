@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package state
 
@@ -102,7 +102,10 @@ func (s *State) getAvailableDepositAmount(cid common.Uint168,
 			lockedDepositAmount = MinDepositAmount
 		}
 	}
-	depositInfo := s.depositInfo[cid]
+	depositInfo, ok := s.depositInfo[cid]
+	if !ok {
+		return 0
+	}
 	return depositInfo.TotalAmount - depositInfo.DepositAmount -
 		depositInfo.Penalty - lockedDepositAmount
 }
