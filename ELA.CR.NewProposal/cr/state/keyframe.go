@@ -78,8 +78,8 @@ type DepositInfo struct {
 
 // StateKeyFrame holds necessary state about CR state.
 type StateKeyFrame struct {
-	CodeDIDMap           map[string]common.Uint168
-	DepositHashDIDMap    map[common.Uint168]common.Uint168
+	CodeCIDMap           map[string]common.Uint168
+	DepositHashCIDMap    map[common.Uint168]common.Uint168
 	Candidates           map[common.Uint168]*Candidate
 	HistoryCandidates    map[uint64]map[common.Uint168]*Candidate
 	depositInfo          map[common.Uint168]*DepositInfo
@@ -370,11 +370,11 @@ func (d *DepositInfo) Deserialize(r io.Reader) (err error) {
 }
 
 func (kf *StateKeyFrame) Serialize(w io.Writer) (err error) {
-	if err = kf.serializeCodeAddressMap(w, kf.CodeDIDMap); err != nil {
+	if err = kf.serializeCodeAddressMap(w, kf.CodeCIDMap); err != nil {
 		return
 	}
 
-	if err = kf.serializeDepositDIDMap(w, kf.DepositHashDIDMap); err != nil {
+	if err = kf.serializeDepositCIDMap(w, kf.DepositHashCIDMap); err != nil {
 		return
 	}
 
@@ -414,11 +414,11 @@ func (kf *StateKeyFrame) Serialize(w io.Writer) (err error) {
 }
 
 func (kf *StateKeyFrame) Deserialize(r io.Reader) (err error) {
-	if kf.CodeDIDMap, err = kf.deserializeCodeAddressMap(r); err != nil {
+	if kf.CodeCIDMap, err = kf.deserializeCodeAddressMap(r); err != nil {
 		return
 	}
 
-	if kf.DepositHashDIDMap, err = kf.deserializeDepositDIDMap(r); err != nil {
+	if kf.DepositHashCIDMap, err = kf.deserializeDepositCIDMap(r); err != nil {
 		return
 	}
 
@@ -499,7 +499,7 @@ func (kf *StateKeyFrame) deserializeCodeAddressMap(r io.Reader) (
 	return
 }
 
-func (kf *StateKeyFrame) serializeDepositDIDMap(w io.Writer,
+func (kf *StateKeyFrame) serializeDepositCIDMap(w io.Writer,
 	cmap map[common.Uint168]common.Uint168) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(cmap))); err != nil {
 		return
@@ -515,7 +515,7 @@ func (kf *StateKeyFrame) serializeDepositDIDMap(w io.Writer,
 	return
 }
 
-func (kf *StateKeyFrame) deserializeDepositDIDMap(r io.Reader) (
+func (kf *StateKeyFrame) deserializeDepositCIDMap(r io.Reader) (
 	cmap map[common.Uint168]common.Uint168, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -695,8 +695,8 @@ func (kf *StateKeyFrame) DeserializeFixed64Map(
 // Snapshot will create a new StateKeyFrame object and deep copy all related data.
 func (kf *StateKeyFrame) Snapshot() *StateKeyFrame {
 	state := NewStateKeyFrame()
-	state.CodeDIDMap = copyCodeAddressMap(kf.CodeDIDMap)
-	state.DepositHashDIDMap = copyHashDIDMap(kf.DepositHashDIDMap)
+	state.CodeCIDMap = copyCodeAddressMap(kf.CodeCIDMap)
+	state.DepositHashCIDMap = copyHashIDMap(kf.DepositHashCIDMap)
 	state.Candidates = copyCandidateMap(kf.Candidates)
 	state.HistoryCandidates = copyHistoryCandidateMap(kf.HistoryCandidates)
 	state.depositInfo = copyDepositInfoMap(kf.depositInfo)
@@ -987,8 +987,8 @@ func NewProposalKeyFrame() *ProposalKeyFrame {
 
 func NewStateKeyFrame() *StateKeyFrame {
 	return &StateKeyFrame{
-		CodeDIDMap:           make(map[string]common.Uint168),
-		DepositHashDIDMap:    make(map[common.Uint168]common.Uint168),
+		CodeCIDMap:           make(map[string]common.Uint168),
+		DepositHashCIDMap:    make(map[common.Uint168]common.Uint168),
 		Candidates:           make(map[common.Uint168]*Candidate),
 		HistoryCandidates:    make(map[uint64]map[common.Uint168]*Candidate),
 		depositInfo:          make(map[common.Uint168]*DepositInfo),
@@ -1023,8 +1023,8 @@ func copyHistoryCandidateMap(src map[uint64]map[common.Uint168]*Candidate) (
 	return
 }
 
-// copyHashDIDMap copy the map's key and value, and return the dst map.
-func copyHashDIDMap(src map[common.Uint168]common.Uint168) (
+// copyHashIDMap copy the map's key and value, and return the dst map.
+func copyHashIDMap(src map[common.Uint168]common.Uint168) (
 	dst map[common.Uint168]common.Uint168) {
 	dst = map[common.Uint168]common.Uint168{}
 	for k, v := range src {

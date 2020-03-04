@@ -147,19 +147,19 @@ func newConflictManager() conflictManager {
 					Func: strProducerInfoNickname,
 				},
 			),
-			// CR DID
+			// CR CID
 			slotCRDID: newConflictSlot(programHash,
 				keyTypeFuncPair{
 					Type: types.RegisterCR,
-					Func: addrCRInfoCRDID,
+					Func: addrCRInfoCRCID,
 				},
 				keyTypeFuncPair{
 					Type: types.UpdateCR,
-					Func: addrCRInfoCRDID,
+					Func: addrCRInfoCRCID,
 				},
 				keyTypeFuncPair{
 					Type: types.UnregisterCR,
-					Func: addrUnregisterCRDID,
+					Func: addrUnregisterCRCID,
 				},
 			),
 			// CR nickname

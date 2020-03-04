@@ -544,20 +544,29 @@ func (s *transactionSuite) TestInactiveArbitrators_SerializeDeserialize() {
 }
 
 func (s *transactionSuite) TestCRInfo_SerializeDeserialize() {
+	buf := new(bytes.Buffer)
 
 	crPayload1 := randomCRInfoPayload()
-
-	buf := new(bytes.Buffer)
+	crPayload1.DID = common.Uint168{}
 	crPayload1.Serialize(buf, payload.CRInfoVersion)
 
 	crPayload2 := &payload.CRInfo{}
 	crPayload2.Deserialize(buf, payload.CRInfoVersion)
 
 	s.True(crInfoPayloadEqual(crPayload1, crPayload2))
+
+	buf = new(bytes.Buffer)
+	crPayload1.Serialize(buf, payload.CRInfoDIDVersion)
+
+	crPayload2 = &payload.CRInfo{}
+	crPayload2.Deserialize(buf, payload.CRInfoDIDVersion)
+
+	s.True(crInfoPayloadEqual(crPayload1, crPayload2))
 }
 
 func crInfoPayloadEqual(crPayload1 *payload.CRInfo, crPayload2 *payload.CRInfo) bool {
 	if !bytes.Equal(crPayload1.Code, crPayload2.Code) ||
+		!crPayload1.CID.IsEqual(crPayload2.CID) ||
 		!crPayload1.DID.IsEqual(crPayload2.DID) ||
 		crPayload1.NickName != crPayload2.NickName ||
 		crPayload1.Url != crPayload2.Url ||
@@ -582,7 +591,7 @@ func (s *transactionSuite) TestUnregisterCR_Deserialize() {
 }
 
 func unregisterCRPayloadEqual(payload1 *payload.UnregisterCR, payload2 *payload.UnregisterCR) bool {
-	if !payload1.DID.IsEqual(payload2.DID) ||
+	if !payload1.CID.IsEqual(payload2.CID) ||
 		!bytes.Equal(payload1.Signature, payload2.Signature) {
 		return false
 	}
@@ -808,6 +817,7 @@ func randomOldVersionTransaction(oldVersion bool, txType byte, inputNum, outputN
 func randomCRInfoPayload() *payload.CRInfo {
 	return &payload.CRInfo{
 		Code:      randomBytes(34),
+		CID:       *randomUint168(),
 		DID:       *randomUint168(),
 		NickName:  randomString(),
 		Url:       randomString(),
@@ -818,7 +828,7 @@ func randomCRInfoPayload() *payload.CRInfo {
 
 func randomUnregisterCRPayload() *payload.UnregisterCR {
 	return &payload.UnregisterCR{
-		DID:       *randomUint168(),
+		CID:       *randomUint168(),
 		Signature: randomBytes(65),
 	}
 }

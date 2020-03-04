@@ -120,7 +120,7 @@ func (c *Committee) GetMembersDIDs() []common.Uint168 {
 	return result
 }
 
-// get all CRMembers ordered by DID
+// get all CRMembers ordered by CID
 func (c *Committee) GetAllMembers() []*CRMember {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -399,7 +399,7 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 	if crMember == nil {
 		return
 	}
-	oriPenalty := c.state.depositInfo[crMember.Info.DID].Penalty
+	oriPenalty := c.state.depositInfo[crMember.Info.CID].Penalty
 	oriMemberState := crMember.MemberState
 	penalty := c.getMemberPenalty(height, crMember)
 	history.Append(height, func() {
@@ -407,12 +407,12 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 		if crMember.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
 			c.params.VoterRejectPercentage/100.0) {
 			crMember.MemberState = MemberImpeached
-			c.state.depositInfo[crMember.Info.DID].Penalty = penalty
+			c.state.depositInfo[crMember.Info.CID].Penalty = penalty
 		}
 	}, func() {
 		crMember.ImpeachmentVotes -= votes
 		crMember.MemberState = oriMemberState
-		c.state.depositInfo[crMember.Info.DID].Penalty = oriPenalty
+		c.state.depositInfo[crMember.Info.CID].Penalty = oriPenalty
 	})
 	return
 }
@@ -426,13 +426,13 @@ func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32
 	})
 }
 
-func (c *Committee) GetAvailableDepositAmount(did common.Uint168) common.Fixed64 {
+func (c *Committee) GetAvailableDepositAmount(cid common.Uint168) common.Fixed64 {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
 	currentHeight := c.getHeight()
 	inVoting := c.isInVotingPeriod(currentHeight)
-	return c.state.getAvailableDepositAmount(did, currentHeight, inVoting)
+	return c.state.getAvailableDepositAmount(cid, currentHeight, inVoting)
 }
 
 func (c *Committee) getHistoryMember(code []byte) []*CRMember {
@@ -571,19 +571,19 @@ func (c *Committee) processCurrentMembers(height uint32,
 
 		for _, m := range oriMembers {
 			member := *m
-			oriPenalty := c.state.depositInfo[m.Info.DID].Penalty
-			oriRefundable := c.state.depositInfo[m.Info.DID].Refundable
-			oriDepositAmount := c.state.depositInfo[m.Info.DID].DepositAmount
+			oriPenalty := c.state.depositInfo[m.Info.CID].Penalty
+			oriRefundable := c.state.depositInfo[m.Info.CID].Refundable
+			oriDepositAmount := c.state.depositInfo[m.Info.CID].DepositAmount
 			c.lastHistory.Append(height, func() {
-				c.state.depositInfo[m.Info.DID].Penalty = c.getMemberPenalty(height, m)
-				c.state.depositInfo[m.Info.DID].Refundable = true
-				c.state.depositInfo[m.Info.DID].DepositAmount -= MinDepositAmount
-				c.HistoryMembers[c.state.CurrentSession][m.Info.DID] = &member
+				c.state.depositInfo[m.Info.CID].Penalty = c.getMemberPenalty(height, m)
+				c.state.depositInfo[m.Info.CID].Refundable = true
+				c.state.depositInfo[m.Info.CID].DepositAmount -= MinDepositAmount
+				c.HistoryMembers[c.state.CurrentSession][m.Info.CID] = &member
 			}, func() {
-				c.state.depositInfo[m.Info.DID].Penalty = oriPenalty
-				c.state.depositInfo[m.Info.DID].Refundable = oriRefundable
-				c.state.depositInfo[m.Info.DID].DepositAmount -= oriDepositAmount
-				delete(c.HistoryMembers[c.state.CurrentSession], m.Info.DID)
+				c.state.depositInfo[m.Info.CID].Penalty = oriPenalty
+				c.state.depositInfo[m.Info.CID].Refundable = oriRefundable
+				c.state.depositInfo[m.Info.CID].DepositAmount -= oriDepositAmount
+				delete(c.HistoryMembers[c.state.CurrentSession], m.Info.CID)
 			})
 		}
 	}
@@ -632,14 +632,14 @@ func (c *Committee) processCurrentCandidates(height uint32,
 		if _, ok := newMembers[ca.info.DID]; ok {
 			continue
 		}
-		oriRefundable := c.state.depositInfo[ca.info.DID].Refundable
+		oriRefundable := c.state.depositInfo[ca.info.CID].Refundable
 
 		c.lastHistory.Append(height, func() {
-			c.state.depositInfo[ca.info.DID].Refundable = true
-			c.state.depositInfo[ca.info.DID].DepositAmount -= MinDepositAmount
+			c.state.depositInfo[ca.info.CID].Refundable = true
+			c.state.depositInfo[ca.info.CID].DepositAmount -= MinDepositAmount
 		}, func() {
-			c.state.depositInfo[ca.info.DID].Refundable = oriRefundable
-			c.state.depositInfo[ca.info.DID].DepositAmount += MinDepositAmount
+			c.state.depositInfo[ca.info.CID].Refundable = oriRefundable
+			c.state.depositInfo[ca.info.CID].DepositAmount += MinDepositAmount
 		})
 	}
 	c.lastHistory.Append(height, func() {
@@ -681,7 +681,7 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 	}
 
 	// Calculate the final penalty.
-	penalty := c.state.depositInfo[member.Info.DID].Penalty
+	penalty := c.state.depositInfo[member.Info.CID].Penalty
 	currentPenalty := MinDepositAmount * common.Fixed64(1-electionRate*voteRate)
 	finalPenalty := penalty + currentPenalty
 
@@ -715,10 +715,10 @@ func (c *Committee) getActiveCRCandidatesDesc() []*Candidate {
 	return candidates
 }
 
-func (c *Committee) GetCandidate(did common.Uint168) *Candidate {
+func (c *Committee) GetCandidate(cid common.Uint168) *Candidate {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
-	return c.state.getCandidate(did)
+	return c.state.getCandidate(cid)
 }
 
 func (c *Committee) GetCandidates(state CandidateState) []*Candidate {
@@ -733,16 +733,16 @@ func (c *Committee) ExistCandidateByNickname(nickname string) bool {
 	return c.state.existCandidateByNickname(nickname)
 }
 
-func (c *Committee) ExistCandidateByDepositHash(did common.Uint168) bool {
+func (c *Committee) ExistCandidateByDepositHash(cid common.Uint168) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
-	return c.state.existCandidateByDepositHash(did)
+	return c.state.existCandidateByDepositHash(cid)
 }
 
-func (c *Committee) GetPenalty(did common.Uint168) common.Fixed64 {
+func (c *Committee) GetPenalty(cid common.Uint168) common.Fixed64 {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
-	return c.state.getPenalty(did)
+	return c.state.getPenalty(cid)
 }
 
 func (c *Committee) ExistProposal(hash common.Uint256) bool {
@@ -763,10 +763,10 @@ func (c *Committee) AvailableWithdrawalAmount(hash common.Uint256) common.Fixed6
 	return c.manager.availableWithdrawalAmount(hash)
 }
 
-func (c *Committee) IsProposalFull(did common.Uint168) bool {
+func (c *Committee) IsProposalFull(cid common.Uint168) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
-	return c.manager.isProposalFull(did)
+	return c.manager.isProposalFull(cid)
 }
 
 func (c *Committee) ExistDraft(hash common.Uint256) bool {
@@ -775,17 +775,17 @@ func (c *Committee) ExistDraft(hash common.Uint256) bool {
 	return c.manager.existDraft(hash)
 }
 
-func (c *Committee) Exist(did common.Uint168) bool {
+func (c *Committee) Exist(cid common.Uint168) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
-	return c.state.exist(did)
+	return c.state.exist(cid)
 }
 
-func (c *Committee) IsRefundable(did common.Uint168) bool {
+func (c *Committee) IsRefundable(cid common.Uint168) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
-	return c.state.isRefundable(did)
+	return c.state.isRefundable(cid)
 }
 
 func (c *Committee) GetAllCandidates() []*Candidate {
@@ -810,6 +810,34 @@ func (c *Committee) GetProposalByDraftHash(draftHash common.Uint256) *ProposalSt
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 	return c.manager.getProposalByDraftHash(draftHash)
+}
+
+// GetCandidateByID returns candidate with specified cid or did, it will return
+// nil if not found.
+func (c *Committee) GetCandidateByID(id common.Uint168) *Candidate {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.state.getCandidateByID(id)
+}
+
+// GetCandidateByCID returns candidate with specified cid, it will return nil
+// if not found.
+func (c *Committee) GetCandidateByCID(cid common.Uint168) *Candidate {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.state.getCandidate(cid)
+}
+
+// GetCandidateByPublicKey returns candidate with specified public key, it will
+// return nil if not found.
+func (c *Committee) GetCandidateByPublicKey(publicKey string) *Candidate {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	pubkey, err := common.HexStringToBytes(publicKey)
+	if err != nil {
+		return nil
+	}
+	return c.state.getCandidateByPublicKey(pubkey)
 }
 
 type CommitteeFuncsConfig struct {
