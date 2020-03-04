@@ -93,7 +93,7 @@ RCT_EXPORT_METHOD
 
 RCT_EXPORT_METHOD
 (isValidId : (NSString *)Id :(RCTResponseSenderBlock)callback){
-  BOOL rs = [ELACarrier isValidId:Id];
+  BOOL rs = [ELACarrier isValidUserId:Id];
   callback(@[NULL_ERR, @(rs)]);
 }
 
@@ -213,7 +213,7 @@ RCT_EXPORT_METHOD
   }
   ELACarrier *elaCarrier = [self getELACarrier:cid];
   NSError *error = nil;
-  [elaCarrier acceptFriendWith:userId error:&error];
+  [elaCarrier acceptFriend:userId error:&error];
   if(error != nil){
     callback(@[[self create_error:error]]);
   }
@@ -228,7 +228,7 @@ RCT_EXPORT_METHOD
   }
   ELACarrier *elaCarrier = [self getELACarrier:cid];
   NSError *error = nil;
-  BOOL flag = [elaCarrier sendFriendMessageTo:userId withMessage:msg error:&error];
+  BOOL flag = [elaCarrier sendFriendMessage:userId withMessage:msg error:&error];
   if(!flag){
     callback(@[[self create_error:error]]);
   }
