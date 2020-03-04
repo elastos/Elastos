@@ -37,13 +37,13 @@ public class Mnemonic {
 	public static final String DEFAULT = null;
 	public static final String CHINESE_SIMPLIFIED = "chinese_simplified";
 	public static final String CHINESE_TRADITIONAL = "chinese_traditional";
-	public static final String CZECH = "Czech";
+	public static final String CZECH = "czech";
 	public static final String ENGLISH = "english";
-	public static final String FRENCH = "French";
-	public static final String ITALIAN = "Italian";
+	public static final String FRENCH = "french";
+	public static final String ITALIAN = "italian";
 	public static final String JAPANESE = "japanese";
-	public static final String KOREAN = "Korean";
-	public static final String SPANISH = "Spanish";
+	public static final String KOREAN = "korean";
+	public static final String SPANISH = "spanish";
 
 	private static final int TWELVE_WORDS_ENTROPY = 16;
 
