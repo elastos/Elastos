@@ -108,7 +108,22 @@ def upload_and_sign(request):
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/upload_and_sign.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
-    if request.method == 'POST':
+    if request.is_ajax():
+        boolean = request.POST.get('delete')
+        if boolean:
+                SavedFileInformation.objects.filter(did = did).delete()
+                return HttpResponse("Files have been deleted")
+        return HttpResponse("files are going to be deleted")
+    elif request.method == 'POST':
+        userFileCount = len(SavedFileInformation.objects.filter(did=did))
+        if userFileCount >= 50:
+            messages.warning(request, "you have reached the total number of files")
+            request.session['upload_and_sign_submit'] = True
+            form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key'],
+                                              'private_key': request.session['private_key_mainchain']})
+            return render(request, "service/upload_and_sign.html",
+                          {'form': form, 'output': False, 'sample_code': sample_code,
+                           'recent_services': recent_services, 'total_reached': True})
         if not request.session['upload_and_sign_submit']:
             # Purge old requests for housekeeping.
             UploadFile.objects.filter(did=did).delete()
@@ -119,6 +134,11 @@ def upload_and_sign(request):
                 api_key = form.cleaned_data.get('api_key')
                 private_key = form.cleaned_data.get('private_key')
                 file_content = form.cleaned_data.get('file_content').encode()
+                userFile = SavedFileInformation.objects.filter(did=did, file_name=file_name)
+                if len(userFile) != 0:
+                    messages.warning(request, "You have already upload a file with that name, please change the name "
+                                              "of the file")
+                    return redirect(reverse('service:upload_and_sign'))
                 form.save()
                 obj, created = UploadFile.objects.update_or_create(defaults={'did': did})
                 if file_content:
