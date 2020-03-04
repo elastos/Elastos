@@ -8,7 +8,7 @@ The release version for plugin is [here](https://www.npmjs.com/package/elastos-u
 
 ## Installation
 
-You can install the react-native-unity-elastos-carrier using npm or yarn:
+You can install the react-native-unity-elastos-carrier package using npm or yarn:
 ```
 ## with npm
 npm install --save react-native-elastos-unity-carrier
