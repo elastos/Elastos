@@ -24,8 +24,20 @@ package org.elastos.did.crypto;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.Signature;
+
+import org.bitcoinj.core.Sha256Hash;
+import org.elastos.did.TestData;
+import org.elastos.did.exception.DIDException;
 import org.junit.jupiter.api.Test;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
 
 public class HDKeyTest {
 	// Test HD key algorithm, keep compatible with SPV.
@@ -67,5 +79,54 @@ public class HDKeyTest {
 		root = HDKey.deserialize(Base58.decode(key));
 		assertEquals(key, Base58.encode(root.serialize()));
 		assertArrayEquals(keyBytes, root.getKeyBytes());
+	}
+
+	@Test
+	public void testJWTCompatible() throws DIDException, GeneralSecurityException {
+		byte[] input = "The quick brown fox jumps over the lazy dog.".getBytes();
+
+		for (int i = 0; i < 1000; i++) {
+			HDKey.DerivedKey key = TestData.generateKeypair();
+
+			// to JCE KeyPair
+			KeyPair jceKeyPair = HDKey.DerivedKey.getKeyPair(
+					key.getPublicKeyBytes(), key.getPrivateKeyBytes());
+			Signature jceSigner = Signature.getInstance("SHA256withECDSA");
+
+			byte[] didSig = key.sign(Sha256Hash.hash(input));
+
+			jceSigner.initSign(jceKeyPair.getPrivate());
+			jceSigner.update(input);
+	        byte[] jceSig = jceSigner.sign();
+
+	        assertTrue(key.verify(Sha256Hash.hash(input), jceSig));
+
+	        jceSigner.initVerify(jceKeyPair.getPublic());
+	        jceSigner.update(input);
+	        assertTrue(jceSigner.verify(didSig));
+		}
+	}
+
+	@Test
+	public void testJwtES256() throws DIDException {
+		for (int i = 0; i < 1000; i++) {
+			HDKey.DerivedKey key = TestData.generateKeypair();
+			KeyPair keypair = HDKey.DerivedKey.getKeyPair(
+					key.getPublicKeyBytes(), key.getPrivateKeyBytes());
+
+	    	// Build and sign
+	    	String token = Jwts.builder()
+	    			.setSubject("Hello JWT!")
+	    			.claim("name", "abc")
+	    			.signWith(keypair.getPrivate())
+	    			.compact();
+
+	    	// Parse and verify
+	    	@SuppressWarnings("unused")
+			Jws<Claims> jws = Jwts.parserBuilder()
+	    			.setSigningKey(keypair.getPublic())
+	    			.build()
+	    			.parseClaimsJws(token);
+		}
 	}
 }

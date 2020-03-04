@@ -22,33 +22,18 @@
 
 package org.elastos.did.crypto;
 
+import static org.bitcoinj.core.ECKey.CURVE;
+import static org.bitcoinj.core.ECKey.CURVE_PARAMS;
+
 import java.math.BigInteger;
 
-import org.spongycastle.asn1.sec.SECNamedCurves;
-import org.spongycastle.asn1.x9.X9ECParameters;
 import org.spongycastle.crypto.digests.SHA256Digest;
-import org.spongycastle.crypto.ec.CustomNamedCurves;
-import org.spongycastle.crypto.params.ECDomainParameters;
 import org.spongycastle.crypto.params.ECPrivateKeyParameters;
 import org.spongycastle.crypto.params.ECPublicKeyParameters;
 import org.spongycastle.crypto.signers.ECDSASigner;
 import org.spongycastle.crypto.signers.RandomDSAKCalculator;
-import org.spongycastle.math.ec.FixedPointUtil;
 
 public class EcdsaSigner {
-	private static final String CURVE_ALGORITHM = "secp256r1";
-	private static X9ECParameters CURVE_PARAMS;
-	protected static ECDomainParameters CURVE;
-
-	static {
-		CURVE_PARAMS = CustomNamedCurves.getByName(CURVE_ALGORITHM);
-		FixedPointUtil.precompute(CURVE_PARAMS.getG(), 12);
-		CURVE = new ECDomainParameters(CURVE_PARAMS.getCurve(),
-				CURVE_PARAMS.getG(),
-				CURVE_PARAMS.getN(),
-				CURVE_PARAMS.getH());
-	}
-
 	public static byte[] sign(byte[] privateKey, byte[] ... inputs) {
 		BigInteger keyInt = new BigInteger(1, privateKey);
 
@@ -76,9 +61,8 @@ public class EcdsaSigner {
 			return false;
 		}
 
-		X9ECParameters curve = SECNamedCurves.getByName(CURVE_ALGORITHM);
 		ECPublicKeyParameters keyParams = new ECPublicKeyParameters(
-				curve.getCurve().decodePoint(publicKey), CURVE);
+				CURVE_PARAMS.getCurve().decodePoint(publicKey), CURVE);
 
 		ECDSASigner signer = new ECDSASigner(
 				new RandomDSAKCalculator());

@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -42,6 +43,7 @@ import org.elastos.did.crypto.Base58;
 import org.elastos.did.crypto.Base64;
 import org.elastos.did.crypto.EcdsaSigner;
 import org.elastos.did.crypto.HDKey;
+import org.elastos.did.crypto.HDKey.DerivedKey;
 import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDNotFoundException;
 import org.elastos.did.exception.DIDObjectAlreadyExistException;
@@ -522,6 +524,45 @@ public class DIDDocument {
 		}
 
 		throw new IllegalStateException("DID Document internal error.");
+	}
+
+	public KeyPair getKeyPair(DIDURL id) throws InvalidKeyException {
+		if (id == null)
+			throw new IllegalArgumentException();
+
+		if (!hasPublicKey(id))
+			throw new InvalidKeyException("Key no exist");
+
+		return DerivedKey.getKeyPair(getPublicKey(id).getPublicKeyBytes(), null);
+	}
+
+	public KeyPair getKeyPair(String id) throws InvalidKeyException {
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return getKeyPair(_id);
+	}
+
+	public KeyPair getKeyPair(DIDURL id, String storepass)
+			throws InvalidKeyException, DIDStoreException {
+		if (id == null || storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException();
+
+		if (!hasPublicKey(id))
+			throw new InvalidKeyException("Key no exist");
+
+		if (!getMeta().attachedStore())
+			throw new DIDStoreException("Not attached with DID store.");
+
+		if (!getMeta().getStore().containsPrivateKey(getSubject(), id))
+			throw new InvalidKeyException("Don't have private key");
+
+		return DerivedKey.getKeyPair(getPublicKey(id).getPublicKeyBytes(),
+				getMeta().getStore().loadPrivateKey(getSubject(), id, storepass));
+	}
+
+	public KeyPair getKeyPair(String id, String storepass)
+			throws InvalidKeyException, DIDStoreException {
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return getKeyPair(_id, storepass);
 	}
 
 	protected void addPublicKey(PublicKey pk) {

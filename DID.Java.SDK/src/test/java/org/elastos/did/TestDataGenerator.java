@@ -98,8 +98,7 @@ public class TestDataGenerator {
 		store.storeCredential(vc, "Profile");
 
 		DIDURL id = issuer.getDefaultPublicKey();
-		String sk = store.loadPrivateKey(issuer.getSubject(), id);
-		byte[] binSk = DIDStore.decryptFromBase64(sk, TestConfig.storePass);
+		byte[] binSk = store.loadPrivateKey(issuer.getSubject(), id, TestConfig.storePass);
 		writeTo("issuer." + id.getFragment() + ".sk", Base58.encode(binSk));
 
 		String json = issuer.toString(true);
@@ -178,8 +177,7 @@ public class TestDataGenerator {
 		store.storeCredential(vcEmail, "Email");
 
 		DIDURL id = test.getDefaultPublicKey();
-		String sk = store.loadPrivateKey(test.getSubject(), id);
-		byte[] binSk = DIDStore.decryptFromBase64(sk, TestConfig.storePass);
+		byte[] binSk = store.loadPrivateKey(test.getSubject(), id, TestConfig.storePass);
 		writeTo("document." + id.getFragment() + ".sk", Base58.encode(binSk));
 
 		String json = test.toString(true);

@@ -22,6 +22,19 @@
 
 package org.elastos.did.crypto;
 
+import static org.bitcoinj.core.ECKey.CURVE;
+import static org.bitcoinj.core.ECKey.CURVE_PARAMS;
+
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPrivateKeySpec;
+import java.security.spec.ECPublicKeySpec;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 
 import org.bitcoinj.core.ECKey.ECDSASignature;
@@ -33,8 +46,11 @@ import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.HDKeyDerivation;
 import org.bitcoinj.params.MainNetParams;
 import org.elastos.did.Mnemonic;
+import org.elastos.did.exception.InvalidKeyException;
 import org.spongycastle.crypto.digests.RIPEMD160Digest;
 import org.spongycastle.crypto.digests.SHA256Digest;
+import org.spongycastle.crypto.params.ECPublicKeyParameters;
+import org.spongycastle.jce.spec.ECNamedCurveSpec;
 
 public class HDKey {
 	public static final int PUBLICKEY_BYTES = 33;
@@ -159,6 +175,46 @@ public class HDKey {
 			return Base64.encodeToString(getPrivateKeyBytes(),
 					Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 		}
+
+	    public static KeyPair getKeyPair(byte[] publicKey, byte[] privateKey)
+	    		throws InvalidKeyException {
+	    	if (publicKey == null && privateKey == null)
+	    		throw new IllegalArgumentException();
+
+	    	ECParameterSpec paramSpec = new ECNamedCurveSpec(
+	        		"secp256r1", CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(),
+	        		CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
+
+	        KeyFactory keyFactory = null;
+			try {
+				keyFactory = KeyFactory.getInstance("EC");
+			} catch (NoSuchAlgorithmException ignore) {
+				// never happen
+			}
+
+	    	PublicKey pub = null;
+	    	PrivateKey priv = null;
+
+	    	try {
+		    	if (publicKey != null) {
+		    		ECPublicKeyParameters pubParams = new ECPublicKeyParameters(
+		    				CURVE_PARAMS.getCurve().decodePoint(publicKey), CURVE);
+		    		ECPublicKeySpec pubSpec = new ECPublicKeySpec(new java.security.spec.ECPoint(
+		    				pubParams.getQ().getXCoord().toBigInteger(),
+		    				pubParams.getQ().getYCoord().toBigInteger()), paramSpec);
+		    		pub = keyFactory.generatePublic(pubSpec);
+		    	}
+
+		    	if (privateKey != null) {
+		    		BigInteger keyInt = new BigInteger(1, privateKey);
+		    		ECPrivateKeySpec privSpec = new ECPrivateKeySpec(keyInt, paramSpec);
+		    		priv = keyFactory.generatePrivate(privSpec);
+		    	}
+			} catch (InvalidKeySpecException e) {
+				throw new InvalidKeyException();
+			}
+	    	return new KeyPair(pub, priv);
+	    }
 
 		private static byte[] getRedeemScript(byte[] pk) {
 	        byte[] script = new byte[35];
