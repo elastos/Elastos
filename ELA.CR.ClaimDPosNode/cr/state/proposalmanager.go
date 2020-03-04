@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package state
 
@@ -145,14 +145,14 @@ func (p *ProposalManager) availableWithdrawalAmount(hash common.Uint256) common.
 // updateProposals will update proposals' status.
 func (p *ProposalManager) updateProposals(height uint32,
 	circulation common.Fixed64) {
-	for k, v := range p.Proposals {
+	for _, v := range p.Proposals {
 		switch v.Status {
 		case Registered:
-			if p.shouldEndCRCVote(k, height) {
+			if p.shouldEndCRCVote(v.RegisterHeight, height) {
 				p.transferRegisteredState(v, height)
 			}
 		case CRAgreed:
-			if p.shouldEndPublicVote(k, height) {
+			if p.shouldEndPublicVote(v.VoteStartHeight, height) {
 				p.transferCRAgreedState(v, height, circulation)
 			}
 		}
@@ -224,24 +224,17 @@ func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 
 // shouldEndCRCVote returns if current height should end CRC vote about
 // 	the specified proposal.
-func (p *ProposalManager) shouldEndCRCVote(hash common.Uint256,
+func (p *ProposalManager) shouldEndCRCVote(RegisterHeight uint32,
 	height uint32) bool {
-	proposal := p.getProposal(hash)
-	if proposal == nil {
-		return false
-	}
-	return proposal.RegisterHeight+p.params.ProposalCRVotingPeriod <= height
+	//proposal.RegisterHeight
+	return RegisterHeight+p.params.ProposalCRVotingPeriod <= height
 }
 
 // shouldEndPublicVote returns if current height should end public vote
 // about the specified proposal.
-func (p *ProposalManager) shouldEndPublicVote(hash common.Uint256,
+func (p *ProposalManager) shouldEndPublicVote(VoteStartHeight uint32,
 	height uint32) bool {
-	proposal := p.getProposal(hash)
-	if proposal == nil {
-		return false
-	}
-	return proposal.VoteStartHeight+p.params.ProposalPublicVotingPeriod <=
+	return VoteStartHeight+p.params.ProposalPublicVotingPeriod <=
 		height
 }
 
@@ -344,10 +337,16 @@ func (p *ProposalManager) proposalReview(tx *types.Transaction,
 		return
 	}
 	did := proposalReview.DID
+	oldVoteResult, oldVoteExist := proposalState.CRVotes[did]
 	history.Append(height, func() {
 		proposalState.CRVotes[did] = proposalReview.VoteResult
 	}, func() {
-		delete(proposalState.CRVotes, did)
+		if oldVoteExist {
+			proposalState.CRVotes[did] = oldVoteResult
+		} else {
+			delete(proposalState.CRVotes, did)
+		}
+
 	})
 }
 
