@@ -23,7 +23,7 @@
 #ifndef __ELASTOS_SDK_COINBASEUTXODATASTORE_H__
 #define __ELASTOS_SDK_COINBASEUTXODATASTORE_H__
 
-#include "TransactionDataStore.h"
+#include "TransactionNormal.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -33,7 +33,7 @@ namespace Elastos {
 		typedef boost::shared_ptr<UTXO> UTXOPtr;
 		typedef std::vector<UTXOPtr> UTXOArray;
 
-		class TransactionCoinbase : public TransactionDataStore {
+		class TransactionCoinbase : public TransactionNormal {
 		public:
 			explicit TransactionCoinbase(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
 
@@ -41,7 +41,12 @@ namespace Elastos {
 
 			virtual void InitializeTable();
 
+			virtual std::vector<TransactionPtr> GetAll(const std::string &chainID) const;
+
+			void RemoveOld();
 		private:
+			std::vector<TransactionPtr> GetAllOld(const std::string &chainID) const;
+
 			bool ContainOldData() const;
 
 			void ConvertFromOldData();

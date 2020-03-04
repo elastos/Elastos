@@ -66,10 +66,9 @@ namespace Elastos {
 			// Override SpvService methods.
 			void onTxAdded(const TransactionPtr &tx) override;
 
-			void onTxUpdated(const std::vector<uint256> &hashes, uint32_t block_height,
-							 time_t timestamp) override;
+			void onTxUpdated(const std::vector<TransactionPtr> &txns) override;
 
-			void onTxDeleted(const uint256 &hash, bool notify, bool rescan) override;
+			void onTxDeleted(const TransactionPtr &tx, bool notify, bool rescan) override;
 
 			void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) override;
 

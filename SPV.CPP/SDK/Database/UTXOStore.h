@@ -43,21 +43,27 @@ namespace Elastos {
 
 			std::vector<UTXOEntity> Gets() const;
 
+			bool Update(const std::vector<UTXOEntity> &added, const std::vector<UTXOEntity> &deleted, bool replace);
+
 			bool DeleteAll();
 
 			bool Delete(const std::vector<UTXOEntity> &entities);
 
-			bool TableExist() const;
+			const std::string &GetTableName() const;
 
+			const std::string &GetTxHashColumnName() const;
+
+			const std::string &GetIndexColumnName() const;
 		private:
 			bool PutInternal(const UTXOEntity &entity);
 
 			bool DeleteInternal(const UTXOEntity &entity);
 
-			bool TableExistInternal() const;
-
 		private:
-			bool _tableExist;
+			std::string _tableName;
+			std::string _txHash;
+			std::string _index;
+			std::string _tableCreation;
 		};
 
 		class UTXOEntity {

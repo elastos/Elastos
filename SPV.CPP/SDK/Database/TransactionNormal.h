@@ -35,11 +35,11 @@ namespace Elastos {
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
 
-		class TransactionDataStore : public TableBase {
+		class TransactionNormal : public TableBase {
 		public:
-			TransactionDataStore(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
+			TransactionNormal(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
 
-			~TransactionDataStore();
+			~TransactionNormal();
 
 			virtual void InitializeTable();
 
@@ -51,22 +51,41 @@ namespace Elastos {
 
 			size_t GetAllCount() const;
 
-			TransactionPtr Get(const uint256 &hash, const std::string &chainID);
+			TransactionPtr Get(const uint256 &hash, const std::string &chainID) const;
 
-			std::vector<TransactionPtr> GetAll(const std::string &chainID) const;
+			std::vector<TransactionPtr> GetAfter(const std::string &chainID, uint32_t height) const;
 
-			bool Update(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+			virtual std::vector<TransactionPtr> GetAll(const std::string &chainID) const;
+
+			std::vector<TransactionPtr> Gets(const std::string &chainID, size_t offset, size_t limit, bool asc = false) const;
+
+			std::vector<TransactionPtr> GetUTXOTxn(const std::string &chainID,
+												   const std::string &utxoTableName,
+												   const std::string &utxoTxHashColumnName) const;
+
+			bool Update(const std::vector<TransactionPtr> &txns);
 
 			bool DeleteByHash(const uint256 &hash);
 
 			bool DeleteByHashes(const std::vector<uint256> &hashes);
 
+			bool ContainHash(const uint256 &hash) const;
+
+			// not in the transaction
+		public:
+			bool _Update(const TransactionPtr &txn);
+
+			bool _DeleteByHashes(const std::vector<uint256> &hashes);
+
+			bool _DeleteByHash(const uint256 &hash);
+
+			bool _Puts(const std::vector<TransactionPtr> &txns, bool replace);
+
+			bool _Put(const TransactionPtr &tx);
 		private:
-			TransactionPtr SelectByHash(const std::string &hash, const std::string &chainID) const;
+			TransactionPtr SelectByHash(const uint256 &hash, const std::string &chainID) const;
 
-			bool ContainHash(const std::string &hash) const;
-
-			bool PutInternal(const TransactionPtr &tx);
+			void GetSelectedTxns(std::vector<TransactionPtr> &txns, const std::string &chainID, sqlite3_stmt *stmt) const;
 
 		protected:
 			std::string _tableName;

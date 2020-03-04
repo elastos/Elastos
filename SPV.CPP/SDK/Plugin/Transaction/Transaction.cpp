@@ -24,7 +24,6 @@
 #include <Plugin/Transaction/Payload/CRCProposal.h>
 #include <Plugin/Transaction/Payload/CRCProposalReview.h>
 #include <Plugin/Transaction/Payload/CRCProposalTracking.h>
-#include <Wallet/UTXO.h>
 #include <Wallet/Wallet.h>
 
 #include <Common/Log.h>
@@ -313,6 +312,10 @@ namespace Elastos {
 
 		bool Transaction::IsCoinBase() const {
 			return _type == coinBase;
+		}
+
+		bool Transaction::IsUnconfirmed() const {
+			return _blockHeight == TX_UNCONFIRMED;
 		}
 
 		bool Transaction::IsValid() const {

@@ -147,6 +147,8 @@ namespace Elastos {
 
 			bool IsCoinBase() const;
 
+			bool IsUnconfirmed() const;
+
 			bool IsValid() const;
 
 			virtual nlohmann::json ToJson() const;

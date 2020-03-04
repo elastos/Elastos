@@ -40,8 +40,17 @@ namespace Elastos {
 			TableBase::InitializeTable(TABLE_CREATION);
 		}
 
-		bool AddressUsed::Puts(const std::vector<std::string> &addresses) {
-			return DoTransaction([&addresses, this]() {
+		bool AddressUsed::Puts(const std::vector<std::string> &addresses, bool replace) {
+			return DoTransaction([&addresses, &replace, this]() {
+				if (replace) {
+					std::string sql("DELETE FROM " TABLE_NAME ";");
+
+					if (!_sqlite->exec(sql, nullptr, nullptr)) {
+						Log::error("exec sql: {}" + sql);
+						return false;
+					}
+				}
+
 				for (const std::string &address : addresses) {
 					if (!this->PutInternal(address))
 						return false;

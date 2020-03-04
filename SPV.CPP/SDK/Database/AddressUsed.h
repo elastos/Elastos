@@ -36,7 +36,7 @@ namespace Elastos {
 
 			virtual void InitializeTable();
 
-			bool Puts(const std::vector<std::string> &addresses);
+			bool Puts(const std::vector<std::string> &addresses, bool replace);
 
 			std::vector<std::string> Gets() const;
 

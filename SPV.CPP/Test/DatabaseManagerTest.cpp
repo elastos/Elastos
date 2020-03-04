@@ -7,7 +7,7 @@
 #include <catch.hpp>
 #include "TestHelper.h"
 
-#include <Database/TransactionDataStore.h>
+#include <Database/TransactionNormal.h>
 #include <Database/DatabaseManager.h>
 #include <SpvService/BackgroundExecutor.h>
 #include <Common/Utils.h>
@@ -374,13 +374,13 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Transaction save test") {
 			DatabaseManager dbm(DBFILE);
 			for (int i = 0; i < txToSave.size(); ++i) {
-				REQUIRE(dbm.PutTransaction(txToSave[i]));
+				REQUIRE(dbm.PutNormalTxn(txToSave[i]));
 			}
 		}
 
 		SECTION("Transaction read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionPtr> readTx = dbm.GetAllConfirmedTxns(CHAINID_MAINCHAIN);
+			std::vector<TransactionPtr> readTx = dbm.GetNormalTxns(CHAINID_MAINCHAIN);
 			REQUIRE(txToSave.size() == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
@@ -398,16 +398,12 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Transaction udpate test") {
 			DatabaseManager dbm(DBFILE);
 
-			std::vector<uint256> hashes;
-			for (int i = 0; i < txToUpdate.size(); ++i) {
-				hashes.push_back(uint256(txToUpdate[i]->GetHash()));
-			}
-			REQUIRE(dbm.UpdateTransaction(hashes, txToUpdate[0]->GetBlockHeight(), txToUpdate[0]->GetTimestamp()));
+			REQUIRE(dbm.UpdateNormalTxn(txToUpdate));
 		}
 
 		SECTION("Transaction read after update test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionPtr> readTx = dbm.GetAllConfirmedTxns(CHAINID_MAINCHAIN);
+			std::vector<TransactionPtr> readTx = dbm.GetNormalTxns(CHAINID_MAINCHAIN);
 			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
@@ -427,10 +423,10 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			DatabaseManager dbm(DBFILE);
 
 			for (int i = 0; i < txToUpdate.size(); ++i) {
-				REQUIRE(dbm.DeleteTxByHash(txToUpdate[i]->GetHash()));
+				REQUIRE(dbm.DeleteNormalTxn(txToUpdate[i]->GetHash()));
 			}
 
-			std::vector<TransactionPtr> readTx = dbm.GetAllConfirmedTxns(CHAINID_MAINCHAIN);
+			std::vector<TransactionPtr> readTx = dbm.GetNormalTxns(CHAINID_MAINCHAIN);
 			REQUIRE(0 == readTx.size());
 		}
 
@@ -540,7 +536,6 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		// save
 		DatabaseManager *dbm = new DatabaseManager(DBFILE);
 
-		REQUIRE(!dbm->ExistUTXOTable());
 		REQUIRE(dbm->PutUTXOs(utxoToSave));
 
 		// read & verify
@@ -581,7 +576,6 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		delete dbm;
 
 		DatabaseManager *dbmNew = new DatabaseManager(DBFILE);
-		REQUIRE(dbmNew->ExistUTXOTable());
 		delete dbmNew;
 	}
 }

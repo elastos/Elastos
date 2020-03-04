@@ -45,7 +45,9 @@ namespace Elastos {
 
 			TransactionPtr GetTransaction(const uint256 &hash, const std::string &chainID);
 
-			size_t GetAllTransactionsCount();
+			size_t GetAllTransactionCount(TxnType type) const;
+
+			std::vector<TransactionPtr> LoadTxnDesc(const std::string &chainID, TxnType type, size_t offset, size_t limit) const;
 
 			void RegisterWalletListener(Wallet::Listener *listener);
 
@@ -56,30 +58,35 @@ namespace Elastos {
 			void DatabaseFlush();
 
 		public:
-			virtual void onUTXODeleted(const UTXOArray &utxo);
-
-			virtual void onUTXOAdded(const UTXOArray &utxo);
+			virtual void onUTXOUpdated(const UTXOArray &utxoAdded, const UTXOArray &utxoDeleted, bool replace);
 
 			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
 
-			virtual void onCoinbaseTxAdded(const TransactionPtr &tx);
-
-			virtual void onCoinbaseTxMove(const std::vector<TransactionPtr> &txns);
-
-			virtual void onCoinbaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
-
-			virtual void onCoinbaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+			virtual void
+			onTxnReplace(const std::vector<TransactionPtr> &txConfirmed, const std::vector<TransactionPtr> &txPending,
+						 const std::vector<TransactionPtr> &txCoinbase);
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 
-			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
+			virtual void onTxUpdated(const std::vector<TransactionPtr> &txns);
 
-			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
-
-			virtual void onTxUpdatedAll(const std::vector<TransactionPtr> &txns);
+			virtual void onTxDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan);
 
 			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
+			virtual void onUsedAddressSaved(const AddressSet &usedAddress, bool replace);
+
+			virtual void onUsedAddressAdded(const AddressPtr &usedAddress);
+
+			virtual std::vector<TransactionPtr> onLoadTxn(const std::string &chainID, TxnType type) const;
+
+			virtual std::vector<TransactionPtr> onLoadTxnAfter(const std::string &chainID, uint32_t height) const;
+
+			virtual TransactionPtr onLoadTxn(const std::string &chainID, const uint256 &hash) const;
+
+			virtual bool onContainTxn(const uint256 &hash) const;
+
+			virtual std::vector<TransactionPtr> onLoadUTXOTxn(const std::string &chainID) const;
 		public:
 			virtual void syncStarted();
 
@@ -112,9 +119,13 @@ namespace Elastos {
 			virtual std::vector<DIDEntity> loadDIDList()  const;
 
 		protected:
-			virtual bool ExistUTXOTable() const;
+			virtual bool ExistPendingTxnTable() const;
+
+			virtual AddressSet LoadUsedAddress() const;
 
 			virtual std::vector<UTXOPtr> LoadUTXOs() const;
+
+			virtual void DeleteTxn(const uint256 &hash);
 
 			virtual std::vector<TransactionPtr> loadCoinbaseTxns(const std::string &chainID);
 
@@ -132,7 +143,7 @@ namespace Elastos {
 
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
-			virtual const WalletListenerPtr &createWalletListener();
+//			virtual const WalletListenerPtr &createWalletListener();
 
 		private:
 			DatabaseManagerPtr _databaseManager;

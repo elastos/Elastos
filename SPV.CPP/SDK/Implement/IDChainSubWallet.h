@@ -83,9 +83,9 @@ namespace Elastos {
 		protected:
 			virtual void onTxAdded(const TransactionPtr &tx);
 
-			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
+			virtual void onTxUpdated(const std::vector<TransactionPtr> &txns);
 
-			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan);
 
 		private:
 			std::vector<std::string> GetVerifiableCredentialTypes(const CredentialSubject &subject) const;

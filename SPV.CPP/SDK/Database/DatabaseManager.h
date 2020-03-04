@@ -24,7 +24,7 @@
 #define __ELASTOS_SDK_DATABASEMANAGER_H__
 
 #include "MerkleBlockDataSource.h"
-#include "TransactionDataStore.h"
+#include "TransactionNormal.h"
 #include "PeerDataSource.h"
 #include "PeerBlackList.h"
 #include "AssetDataStore.h"
@@ -38,92 +38,173 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class UTXO;
+
 		typedef boost::shared_ptr<UTXO> UTXOPtr;
 
 		class DatabaseManager {
 		public:
 			DatabaseManager(const boost::filesystem::path &path);
+
 			DatabaseManager();
+
 			~DatabaseManager();
 
-			// CoinBase Transaction
-			bool PutCoinbases(const std::vector<TransactionPtr> &entitys);
-			bool PutCoinbase(const TransactionPtr &entity);
-			bool DeleteAllCoinbase();
-			size_t GetCoinbaseTotalCount() const;
-			std::vector<TransactionPtr> GetAllCoinbase(const std::string &chainID) const;
-			bool UpdateCoinbase(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
-			bool DeleteCoinbase(const uint256 &hash);
+			bool ReplaceTxns(const std::vector<TransactionPtr> &txConfirmed,
+							 const std::vector<TransactionPtr> &txPending,
+							 const std::vector<TransactionPtr> &txCoinbase);
 
-			// Confirmed Transaction
-			bool PutTransaction(const TransactionPtr &tx);
-			bool PutTransactions(const std::vector<TransactionPtr> &txns);
-			bool DeleteAllTransactions();
-			size_t GetAllTransactionsCount() const;
-			TransactionPtr GetTransaction(const uint256& hash, const std::string &chainID);
-			std::vector<TransactionPtr> GetAllConfirmedTxns(const std::string &chainID) const;
-			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
-			bool DeleteTxByHash(const uint256 &hash);
-			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
+			bool ContainTxn(const uint256 &hash) const;
+
+			bool UpdateTxns(const std::vector<TransactionPtr> &txns);
+
+			// CoinBase Transaction
+			bool PutCoinbaseTxns(const std::vector<TransactionPtr> &txns);
+
+			bool PutCoinbaseTxn(const TransactionPtr &txn);
+
+			bool DeleteAllCoinbase();
+
+			size_t GetCoinbaseTotalCount() const;
+
+			TransactionPtr GetCoinbaseTxn(const uint256 &hash, const std::string &chainID) const;
+
+			std::vector<TransactionPtr> GetCoinbaseTxns(const std::string &chainID, uint32_t height) const;
+
+			std::vector<TransactionPtr> GetCoinbaseTxns(const std::string &chainID) const;
+
+			std::vector<TransactionPtr> GetCoinbaseUTXOTxn(const std::string &chainID) const;
+
+			std::vector<TransactionPtr>
+			GetCoinbaseTxns(const std::string &chainID, size_t offset, size_t limit, bool asc = false) const;
+
+			bool UpdateCoinbaseTxn(const std::vector<TransactionPtr> &txns);
+
+			bool DeleteCoinbaseTxn(const uint256 &hash);
+
+			// Normal Transaction
+			bool PutNormalTxn(const TransactionPtr &tx);
+
+			bool PutNormalTxns(const std::vector<TransactionPtr> &txns);
+
+			bool DeleteAllNormalTxns();
+
+			size_t GetNormalTotalCount() const;
+
+			TransactionPtr GetNormalTxn(const uint256 &hash, const std::string &chainID) const;
+
+			std::vector<TransactionPtr> GetNormalTxns(const std::string &chainID, uint32_t height) const;
+
+			std::vector<TransactionPtr> GetNormalTxns(const std::string &chainID) const;
+
+			std::vector<TransactionPtr> GetNormalUTXOTxn(const std::string &chainID) const;
+
+			std::vector<TransactionPtr>
+			GetNormalTxns(const std::string &chainID, size_t offset, size_t limit, bool asc = false) const;
+
+			bool UpdateNormalTxn(const std::vector<TransactionPtr> &txns);
+
+			bool DeleteNormalTxn(const uint256 &hash);
+
+			bool DeleteNormalTxn(const std::vector<uint256> &hashes);
 
 			// Pending Transaction
 			bool PutPendingTxn(const TransactionPtr &txn);
-			bool PutPendingTxns(const std::vector<TransactionPtr> txns);
+
+			bool PutPendingTxns(const std::vector<TransactionPtr> &txns);
+
 			bool DeleteAllPendingTxns();
+
 			bool DeletePendingTxn(const uint256 &hash);
+
+			bool DeletePendingTxns(const std::vector<uint256> &hashes);
+
 			size_t GetPendingTxnTotalCount() const;
+
+			TransactionPtr GetPendingTxn(const uint256 &hash, const std::string &chainID) const;
+
 			std::vector<TransactionPtr> GetAllPendingTxns(const std::string &chainID) const;
+
 			bool ExistPendingTxnTable() const;
 
 			// Peer Address
 			bool PutPeer(const PeerEntity &peerEntity);
+
 			bool PutPeers(const std::vector<PeerEntity> &peerEntities);
+
 			bool DeletePeer(const PeerEntity &peerEntity);
+
 			bool DeleteAllPeers();
+
 			size_t GetAllPeersCount() const;
+
 			std::vector<PeerEntity> GetAllPeers() const;
 
 			// Peer Blacklist
 			bool PutBlackPeer(const PeerEntity &entity);
+
 			bool PutBlackPeers(const std::vector<PeerEntity> &entitys);
+
 			bool DeleteBlackPeer(const PeerEntity &entity);
+
 			bool DeleteAllBlackPeers();
+
 			std::vector<PeerEntity> GetAllBlackPeers() const;
 
 			// MerkleBlock
 			bool PutMerkleBlock(const MerkleBlockPtr &blockPtr);
+
 			bool PutMerkleBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
+
 			bool DeleteMerkleBlock(long id);
+
 			bool DeleteAllBlocks();
+
 			std::vector<MerkleBlockPtr> GetAllMerkleBlocks(const std::string &chainID) const;
 
 			// Asset
 			bool PutAsset(const std::string &iso, const AssetEntity &asset);
+
 			bool DeleteAsset(const std::string &assetID);
+
 			bool DeleteAllAssets();
+
 			bool GetAssetDetails(const std::string &assetID, AssetEntity &asset) const;
+
 			std::vector<AssetEntity> GetAllAssets() const;
 
 			// DID
 			bool PutDID(const DIDEntity &didEntity);
+
 			bool UpdateDID(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+
 			bool DeleteDID(const std::string &did);
+
 			bool DeleteDIDByTxHash(const std::string &txHash);
+
 			bool GetDIDDetails(const std::string &did, DIDEntity &didEntity) const;
+
 			std::string GetDIDByTxHash(const std::string &txHash) const;
+
 			std::vector<DIDEntity> GetAllDID() const;
+
 			bool DeleteAllDID();
 
 			// UTXO store
 			bool PutUTXOs(const std::vector<UTXOEntity> &entities);
+
 			std::vector<UTXOEntity> GetUTXOs() const;
+
+			bool Update(const std::vector<UTXOEntity> &added, const std::vector<UTXOEntity> &deleted, bool replace);
+
 			bool DeleteAllUTXOs();
+
 			bool DeleteUTXOs(const std::vector<UTXOEntity> &entities);
-			bool ExistUTXOTable() const;
 
 			// Used Address
-			bool PutUsedAddresses(const std::vector<std::string> &addresses);
+			bool PutUsedAddresses(const std::vector<std::string> &addresses, bool replace);
+
 			std::vector<std::string> GetUsedAddresses() const;
+
 			bool DeleteAllUsedAddresses();
 
 			const boost::filesystem::path &GetPath() const;
@@ -132,17 +213,17 @@ namespace Elastos {
 
 		private:
 			boost::filesystem::path _path;
-			Sqlite                	_sqlite;
-			PeerDataSource        	_peerDataSource;
-			PeerBlackList           _peerBlackList;
-			TransactionCoinbase     _transactionCoinbase;
-			TransactionDataStore  	_transactionDataStore;
-			TransactionPending      _transactionPending;
-			MerkleBlockDataSource 	_merkleBlockDataSource;
-			AssetDataStore          _assetDataStore;
-			DIDDataStore            _didDataStore;
-			UTXOStore               _utxoStore;
-			AddressUsed             _addressUsed;
+			Sqlite _sqlite;
+			PeerDataSource _peerDataSource;
+			PeerBlackList _peerBlackList;
+			TransactionCoinbase _transactionCoinbase;
+			TransactionNormal _transactionNormal;
+			TransactionPending _transactionPending;
+			MerkleBlockDataSource _merkleBlockDataSource;
+			AssetDataStore _assetDataStore;
+			DIDDataStore _didDataStore;
+			UTXOStore _utxoStore;
+			AddressUsed _addressUsed;
 		};
 
 	}

@@ -23,12 +23,12 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONPENDING_H__
 #define __ELASTOS_SDK_TRANSACTIONPENDING_H__
 
-#include "TransactionDataStore.h"
+#include "TransactionNormal.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class TransactionPending : public TransactionDataStore {
+		class TransactionPending : public TransactionNormal {
 		public:
 			explicit TransactionPending(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
 

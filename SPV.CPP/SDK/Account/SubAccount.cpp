@@ -75,7 +75,11 @@ namespace Elastos {
 			return _crDepositAddress && _crDepositAddress->Valid() && *_crDepositAddress == *address;
 		}
 
-		bool SubAccount::AddUsedAddrs(const AddressPtr &address) {
+		void SubAccount::SetUsedAddresses(const AddressSet &addresses) {
+			_usedAddrs = addresses;
+		}
+
+		bool SubAccount::AddUsedAddress(const AddressPtr &address) {
 			return _usedAddrs.insert(address).second;
 		}
 

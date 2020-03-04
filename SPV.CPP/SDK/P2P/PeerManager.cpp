@@ -1322,7 +1322,7 @@ namespace Elastos {
 				// track the observed bloom filter false positive rate using a low pass filter to smooth out variance
 				if (peer == _downloadPeer && block->GetTransactionCount() > 0) {
 					for (i = 0; i < txHashes.size(); i++) { // wallet tx are not false-positives
-						if (_wallet->TransactionForHash(txHashes[i]) == nullptr)
+						if (!_wallet->ContainsTransaction(txHashes[i]))
 							fpCount++;
 					}
 

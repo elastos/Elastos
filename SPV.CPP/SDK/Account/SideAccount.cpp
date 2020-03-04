@@ -43,7 +43,9 @@ namespace Elastos {
 
 		bool SideAccount::IsCRDepositAddress(const AddressPtr &address) const { return false; }
 
-		bool SideAccount::AddUsedAddrs(const AddressPtr &) { return false; }
+		void SideAccount::SetUsedAddresses(const AddressSet &addresses) { }
+
+		bool SideAccount::AddUsedAddress(const AddressPtr &) { return false; }
 
 		size_t SideAccount::GetAllAddresses(AddressArray &addr, uint32_t, size_t, bool) const {
 			addr.clear();

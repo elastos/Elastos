@@ -32,7 +32,9 @@ namespace Elastos {
 
 			virtual bool IsCRDepositAddress(const AddressPtr &address) const = 0;
 
-			virtual bool AddUsedAddrs(const AddressPtr &address) = 0;
+			virtual void SetUsedAddresses(const AddressSet &addresses) = 0;
+
+			virtual bool AddUsedAddress(const AddressPtr &address) = 0;
 
 			virtual size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const = 0;
 

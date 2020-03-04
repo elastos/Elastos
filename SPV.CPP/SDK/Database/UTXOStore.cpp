@@ -27,25 +27,23 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-#define TABLE_NAME     "UTXOTable"
-#define TX_HASH        "txHash"
-#define OUTPUT_INDEX   "outputIndex"
-#define TABLE_CREATION "create table if not exists " TABLE_NAME "(" \
-						TX_HASH " text not null," OUTPUT_INDEX " integer);"
-
 		UTXOStore::UTXOStore(Sqlite *sqlite, SqliteTransactionType type) : TableBase(type, sqlite) {
-			_tableExist = TableExistInternal();
+			_tableName = "UTXOTable";
+			_txHash = "txHash";
+			_index = "outputIndex";
 		}
 
 		UTXOStore::~UTXOStore() {
 		}
 
 		void UTXOStore::InitializeTable() {
-			TableBase::InitializeTable(TABLE_CREATION);
+			_tableCreation = "create table if not exists " + _tableName + "(" +
+						_txHash + " text not null," + _index + " integer);";
+			TableBase::InitializeTable(_tableCreation);
 		}
 
 		bool UTXOStore::PutInternal(const UTXOEntity &entity) {
-			std::string sql("INSERT INTO " TABLE_NAME "(" TX_HASH "," OUTPUT_INDEX ") VALUES (?, ?);");
+			std::string sql("INSERT INTO " + _tableName + "(" + _txHash + "," + _index + ") VALUES (?, ?);");
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -75,8 +73,8 @@ namespace Elastos {
 				return true;
 
 			return DoTransaction([&entities, this]() {
-				for (size_t i = 0; i < entities.size(); ++i) {
-					if (!this->PutInternal(entities[i]))
+				for (const UTXOEntity &entity : entities) {
+					if (!this->PutInternal(entity))
 						return false;
 				}
 
@@ -87,7 +85,7 @@ namespace Elastos {
 		std::vector<UTXOEntity> UTXOStore::Gets() const {
 			std::vector<UTXOEntity> utxos;
 			int r;
-			std::string sql("SELECT " TX_HASH "," OUTPUT_INDEX " FROM " TABLE_NAME ";");
+			std::string sql("SELECT " + _txHash + "," + _index + " FROM " + _tableName + ";");
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -111,12 +109,36 @@ namespace Elastos {
 			return utxos;
 		}
 
+		bool UTXOStore::Update(const std::vector<UTXOEntity> &added, const std::vector<UTXOEntity> &deleted, bool replace) {
+			return DoTransaction([this, &added, &deleted, &replace]() {
+				if (replace) {
+					std::string sql("DELETE FROM " + _tableName + ";");
+
+					if (!_sqlite->exec(sql, nullptr, nullptr)) {
+						Log::error("exec sql: {}" + sql);
+						return false;
+					}
+				}
+
+				for (const UTXOEntity &entity : deleted) {
+					if (!this->DeleteInternal(entity))
+						return false;
+				}
+
+				for (const UTXOEntity &entity : added) {
+					if (!this->PutInternal(entity))
+						return false;
+				}
+				return true;
+			});
+		}
+
 		bool UTXOStore::DeleteAll() {
-			return TableBase::DeleteAll(TABLE_NAME);
+			return TableBase::DeleteAll(_tableName);
 		}
 
 		bool UTXOStore::DeleteInternal(const UTXOEntity &entity) {
-			std::string sql("DELETE FROM " TABLE_NAME " WHERE " TX_HASH " = ? AND " OUTPUT_INDEX " = ?;");
+			std::string sql("DELETE FROM " + _tableName + " WHERE " + _txHash + " = ? AND " + _index + " = ?;");
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -152,31 +174,16 @@ namespace Elastos {
 			});
 		}
 
-		bool UTXOStore::TableExist() const {
-			return _tableExist;
+		const std::string &UTXOStore::GetTableName() const {
+			return _tableName;
 		}
 
-		bool UTXOStore::TableExistInternal() const {
-			int count = 0;
+		const std::string &UTXOStore::GetTxHashColumnName() const {
+			return _txHash;
+		}
 
-			std::string sql("select count(*) from sqlite_master where type='table' and name = '" TABLE_NAME "';");
-
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}", sql);
-				return false;
-			}
-
-			if (SQLITE_ROW == _sqlite->Step(stmt)) {
-				count = _sqlite->ColumnInt(stmt, 0);
-			}
-
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("Coinbase update finalize");
-				return false;
-			}
-
-			return count > 0;
+		const std::string &UTXOStore::GetIndexColumnName() const {
+			return _index;
 		}
 
 	}

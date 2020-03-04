@@ -242,13 +242,13 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		for (const OutputPtr &o : tx->GetOutputs())
 			utxoEntities.emplace_back(txHash, o->FixedIndex());
 
-		dm.PutTransaction(tx);
+		dm.PutNormalTxn(tx);
 		dm.PutUTXOs(utxoEntities);
 
 		txlist.push_back(tx);
 	}
 
-	REQUIRE(dm.GetAllConfirmedTxns(CHAINID_MAINCHAIN).size() == txCount);
+	REQUIRE(dm.GetNormalTxns(CHAINID_MAINCHAIN).size() == txCount);
 	REQUIRE(dm.GetUTXOs().size() == 20 * txCount);
 
 	//transfer to another address
@@ -308,9 +308,9 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	}
 
 	REQUIRE(dm.DeleteUTXOs(utxoRemoved));
-	REQUIRE(dm.PutTransaction(tx));
+	REQUIRE(dm.PutNormalTxn(tx));
 
-	REQUIRE(dm.GetAllConfirmedTxns(CHAINID_MAINCHAIN).size() == txCount + 1);
+	REQUIRE(dm.GetNormalTxns(CHAINID_MAINCHAIN).size() == txCount + 1);
 
 	//put coinbase tx
 	utxoEntities.clear();
@@ -323,7 +323,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
 		txHash = txn->GetHash().GetHex();
 		utxoEntities.emplace_back(txHash, 0);
-		REQUIRE(dm.PutCoinbase(txn));
+		REQUIRE(dm.PutCoinbaseTxn(txn));
 	}
 	REQUIRE(dm.PutUTXOs(utxoEntities));
 	REQUIRE(dm.GetCoinbaseTotalCount() == txCount);
@@ -337,7 +337,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
 		txHash = txn->GetHash().GetHex();
 		utxoEntities.emplace_back(txHash, 0);
-		dm.PutCoinbase(txn);
+		dm.PutCoinbaseTxn(txn);
 	}
 	REQUIRE(dm.PutUTXOs(utxoEntities));
 	REQUIRE(dm.GetCoinbaseTotalCount() == 2 * txCount);

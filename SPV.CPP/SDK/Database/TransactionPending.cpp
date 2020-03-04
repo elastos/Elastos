@@ -27,7 +27,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		TransactionPending::TransactionPending(Sqlite *sqlite, SqliteTransactionType type) :
-			TransactionDataStore(sqlite, type) {
+			TransactionNormal(sqlite, type) {
 			_tableName = "transactionPending";
 			_tableExist = TableExistInternal();
 		}

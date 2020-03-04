@@ -23,7 +23,7 @@ namespace Elastos {
 
 		void SPVModule::SubmitTxReceipt(const uint256 &tx_hash) {
 			_notify_queue.Delete(tx_hash);
-			SpvService::onTxDeleted(tx_hash, false, false);
+			DeleteTxn(tx_hash);
 		}
 
 		void SPVModule::onTxAdded(const TransactionPtr &tx) {
@@ -34,18 +34,18 @@ namespace Elastos {
 			_notify_queue.Upsert(NotifyQueue::RecordPtr(new NotifyQueue::Record(tx->GetHash(), tx->GetBlockHeight())));
 		}
 
-		void SPVModule::onTxUpdated(const std::vector<uint256> &hashes, uint32_t block_height, time_t timestamp) {
-			SpvService::onTxUpdated(hashes, block_height, timestamp); // Call parent.
+		void SPVModule::onTxUpdated(const std::vector<TransactionPtr> &txns) {
+			SpvService::onTxUpdated(txns); // Call parent.
 
-			for (auto hash : hashes) {
-				if (GetTransaction(hash, CHAINID_MAINCHAIN))
-					_notify_queue.Upsert(NotifyQueue::RecordPtr(new NotifyQueue::Record(hash, block_height)));
+			for (auto tx : txns) {
+				if (GetTransaction(tx->GetHash(), CHAINID_MAINCHAIN))
+					_notify_queue.Upsert(NotifyQueue::RecordPtr(new NotifyQueue::Record(tx->GetHash(), tx->GetBlockHeight())));
 			}
 		}
 
-		void SPVModule::onTxDeleted(const uint256 &hash, bool notify, bool rescan) {
-			SpvService::onTxDeleted(hash, notify, rescan); // Call parent.
-			_notify_queue.Delete(hash);
+		void SPVModule::onTxDeleted(const TransactionPtr &tx, bool notify, bool rescan) {
+			SpvService::onTxDeleted(tx, rescan, false); // Call parent.
+			_notify_queue.Delete(tx->GetHash());
 		}
 
 		void SPVModule::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {

@@ -22,8 +22,11 @@ namespace Elastos {
 #define SELA_PER_ELA 100000000
 
 		class MasterWallet;
+
 		class Transaction;
+
 		class ChainConfig;
+
 		class CoinInfo;
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
@@ -71,30 +74,30 @@ namespace Elastos {
 			virtual void RemoveCallback();
 
 			virtual nlohmann::json CreateTransaction(
-					const std::string &fromAddress,
-					const std::string &toAddress,
-					const std::string &amount,
-					const std::string &memo);
+				const std::string &fromAddress,
+				const std::string &toAddress,
+				const std::string &amount,
+				const std::string &memo);
 
 			virtual nlohmann::json GetAllUTXOs(uint32_t start, uint32_t count, const std::string &address) const;
 
 			virtual nlohmann::json CreateConsolidateTransaction(
-					const std::string &memo);
+				const std::string &memo);
 
 			virtual nlohmann::json SignTransaction(
-					const nlohmann::json &createdTx,
-					const std::string &payPassword) const;
+				const nlohmann::json &createdTx,
+				const std::string &payPassword) const;
 
 			virtual nlohmann::json GetTransactionSignedInfo(
-					const nlohmann::json &rawTransaction) const;
+				const nlohmann::json &rawTransaction) const;
 
 			virtual nlohmann::json PublishTransaction(
-					const nlohmann::json &signedTx);
+				const nlohmann::json &signedTx);
 
 			virtual nlohmann::json GetAllTransaction(
-					uint32_t start,
-					uint32_t count,
-					const std::string &txid) const;
+				uint32_t start,
+				uint32_t count,
+				const std::string &txid) const;
 
 			virtual nlohmann::json GetAllCoinBaseTransaction(
 				uint32_t start,
@@ -102,7 +105,7 @@ namespace Elastos {
 				const std::string &txID) const;
 
 			virtual nlohmann::json GetAssetInfo(
-					const std::string &assetID) const;
+				const std::string &assetID) const;
 
 			virtual bool SetFixedPeer(const std::string &address, uint16_t port);
 
@@ -111,34 +114,41 @@ namespace Elastos {
 			virtual void SyncStop();
 
 		protected: //implement Wallet::Listener
-			virtual void onUTXODeleted(const UTXOArray &utxo) {}
-
-			virtual void onUTXOAdded(const UTXOArray &utxo) {}
+			virtual void onUTXOUpdated(const UTXOArray &utxoAdded, const UTXOArray &utxoDeleted, bool replace) {}
 
 			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
 
-			virtual void onCoinbaseTxAdded(const TransactionPtr &tx);
-
-			virtual void onCoinbaseTxMove(const std::vector<TransactionPtr> &txns);
-
-			virtual void onCoinbaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
-
-			virtual void onCoinbaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+			virtual void onTxnReplace(const std::vector<TransactionPtr> &txConfirmed,
+									  const std::vector<TransactionPtr> &txPending,
+									  const std::vector<TransactionPtr> &txCoinbase);
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 
-			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
+			virtual void onTxUpdated(const std::vector<TransactionPtr> &txns);
 
-			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
-
-			virtual void onTxUpdatedAll(const std::vector<TransactionPtr> &txns);
+			virtual void onTxDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan);
 
 			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
+			virtual void onUsedAddressSaved(const AddressSet &usedAddress, bool replace) {}
+
+			virtual void onUsedAddressAdded(const AddressPtr &usedAddress) {}
+
+			virtual std::vector<TransactionPtr> onLoadTxn(const std::string &chainID, TxnType type) const { return {}; }
+
+			virtual std::vector<TransactionPtr>
+			onLoadTxnAfter(const std::string &chainID, uint32_t height) const { return {}; }
+
+			virtual TransactionPtr onLoadTxn(const std::string &chainID, const uint256 &hash) const { return nullptr; }
+
+			virtual bool onContainTxn(const uint256 &hash) const { return false; }
+
+			virtual std::vector<TransactionPtr> onLoadUTXOTxn(const std::string &chainID) const { return {}; }
 		protected: //implement PeerManager::Listener
 			virtual void syncStarted();
 
-			virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer);
+			virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond,
+									  const std::string &downloadPeer);
 
 			virtual void syncStopped(const std::string &error);
 
@@ -168,6 +178,11 @@ namespace Elastos {
 				const std::string &memo,
 				const uint256 &asset) const;
 
+			nlohmann::json GetAllTransactionCommon(uint32_t start,
+												   uint32_t count,
+												   const std::string &txid,
+												   TxnType type) const;
+
 			virtual void publishTransaction(const TransactionPtr &tx);
 
 			virtual void fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
@@ -181,7 +196,7 @@ namespace Elastos {
 
 		protected:
 			WalletManagerPtr _walletManager;
-			ISubWalletCallback * _callback;
+			ISubWalletCallback *_callback;
 			MasterWallet *_parent;
 			CoinInfoPtr _info;
 			ChainConfigPtr _config;

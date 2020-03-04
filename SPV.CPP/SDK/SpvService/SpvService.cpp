@@ -70,24 +70,17 @@ namespace Elastos {
 		}
 
 		//override Wallet listener
-		void SpvService::onUTXODeleted(const UTXOArray &utxo) {
-			std::vector<UTXOEntity> entities;
+		void SpvService::onUTXOUpdated(const UTXOArray &utxoAdded, const UTXOArray &utxoDeleted, bool replace) {
+			std::vector<UTXOEntity> added, deleted;
 
-			entities.reserve(utxo.size());
-			for (const UTXOPtr &u : utxo)
-				entities.emplace_back(u->Hash().GetHex(), u->Index());
+			added.reserve(utxoAdded.size());
+			for (const UTXOPtr &u : utxoAdded)
+				added.emplace_back(u->Hash().GetHex(), u->Index());
 
-			_databaseManager->DeleteUTXOs(entities);
-		}
+			for (const UTXOPtr &u : utxoDeleted)
+				deleted.emplace_back(u->Hash().GetHex(), u->Index());
 
-		void SpvService::onUTXOAdded(const UTXOArray &utxo) {
-			std::vector<UTXOEntity> entities;
-
-			entities.reserve(utxo.size());
-			for (const UTXOPtr &u : utxo)
-				entities.emplace_back(u->Hash().GetHex(), u->Index());
-
-			_databaseManager->PutUTXOs(entities);
+			_databaseManager->Update(added, deleted, replace);
 		}
 
 		void SpvService::onBalanceChanged(const uint256 &asset, const BigInt &balance) {
@@ -97,83 +90,48 @@ namespace Elastos {
 						  });
 		}
 
-		void SpvService::onCoinbaseTxAdded(const TransactionPtr &tx) {
-			if (tx->IsCoinBase()) {
-				_databaseManager->PutCoinbase(tx);
-
-				std::for_each(_walletListeners.begin(), _walletListeners.end(),
-							  [&tx](Wallet::Listener *listener) {
-								  listener->onCoinbaseTxAdded(tx);
-							  });
-			}
-		}
-
-		void SpvService::onCoinbaseTxMove(const std::vector<TransactionPtr> &txns) {
-			std::vector<uint256> txHashes;
-
-			for (const TransactionPtr &tx : txns)
-				txHashes.push_back(tx->GetHash());
-
-			_databaseManager->DeleteTxByHashes(txHashes);
-			_databaseManager->DeleteAllCoinbase();
-			_databaseManager->PutCoinbases(txns);
-		}
-
-		void SpvService::onCoinbaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
-											 time_t timestamp) {
-			_databaseManager->UpdateCoinbase(hashes, blockHeight, timestamp);
-
-			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hashes, &blockHeight, &timestamp](Wallet::Listener *listener) {
-							  listener->onCoinbaseTxUpdated(hashes, blockHeight, timestamp);
-						  });
-		}
-
-		void SpvService::onCoinbaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			_databaseManager->DeleteCoinbase(hash);
-
-			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
-							  listener->onCoinbaseTxDeleted(hash, notifyUser, recommendRescan);
-						  });
+		void SpvService::onTxnReplace(const std::vector<TransactionPtr> &txConfirmed,
+									  const std::vector<TransactionPtr> &txPending,
+									  const std::vector<TransactionPtr> &txCoinbase) {
+			_databaseManager->ReplaceTxns(txConfirmed, txPending, txCoinbase);
 		}
 
 		void SpvService::onTxAdded(const TransactionPtr &tx) {
-			if (!tx->IsCoinBase()) {
-				_databaseManager->PutTransaction(tx);
-
-				std::for_each(_walletListeners.begin(), _walletListeners.end(),
-							  [&tx](Wallet::Listener *listener) {
-								  listener->onTxAdded(tx);
-							  });
+			if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
+				_databaseManager->PutPendingTxn(tx);
+			} else if (tx->IsCoinBase()) {
+				_databaseManager->PutCoinbaseTxn(tx);
+			} else {
+				_databaseManager->PutNormalTxn(tx);
 			}
-		}
-
-		void SpvService::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
-			_databaseManager->UpdateTransaction(hashes, blockHeight, timestamp);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hashes, &blockHeight, &timestamp](Wallet::Listener *listener) {
-							  listener->onTxUpdated(hashes, blockHeight, timestamp);
+						  [&tx](Wallet::Listener *listener) {
+							  listener->onTxAdded(tx);
 						  });
 		}
 
-		void SpvService::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			_databaseManager->DeleteTxByHash(hash);
-
-			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
-							  listener->onTxDeleted(hash, notifyUser, recommendRescan);
-						  });
-		}
-
-		void SpvService::onTxUpdatedAll(const std::vector<TransactionPtr> &txns) {
-			_databaseManager->DeleteAllTransactions();
-			_databaseManager->PutTransactions(txns);
+		void SpvService::onTxUpdated(const std::vector<TransactionPtr> &txns) {
+			_databaseManager->UpdateTxns(txns);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&txns](Wallet::Listener *listener) {
-								listener->onTxUpdatedAll(txns);
+							  listener->onTxUpdated(txns);
+						  });
+		}
+
+		void SpvService::onTxDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan) {
+			if (tx->IsUnconfirmed()) {
+				_databaseManager->DeletePendingTxn(tx->GetHash());
+			} else if (tx->IsCoinBase()) {
+				_databaseManager->DeleteCoinbaseTxn(tx->GetHash());
+			} else {
+				_databaseManager->DeleteNormalTxn(tx->GetHash());
+			}
+
+			std::for_each(_walletListeners.begin(), _walletListeners.end(),
+						  [&tx, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
+							  listener->onTxDeleted(tx, recommendRescan, false);
 						  });
 		}
 
@@ -188,6 +146,69 @@ namespace Elastos {
 						  [&asset, &amount, &controller](Wallet::Listener *listener) {
 							  listener->onAssetRegistered(asset, amount, controller);
 						  });
+		}
+
+		void SpvService::onUsedAddressSaved(const AddressSet &usedAddress, bool replace) {
+			std::vector<std::string> addresses;
+			for (const AddressPtr &a : usedAddress)
+				addresses.push_back(a->String());
+			_databaseManager->PutUsedAddresses(addresses, replace);
+		}
+
+		void SpvService::onUsedAddressAdded(const AddressPtr &usedAddress) {
+			std::vector<std::string> address;
+			address.push_back(usedAddress->String());
+			_databaseManager->PutUsedAddresses(address, false);
+		}
+
+		std::vector<TransactionPtr> SpvService::onLoadTxn(const std::string &chainID, TxnType type) const {
+			if (type == TXN_PENDING) {
+				return _databaseManager->GetAllPendingTxns(chainID);
+			} else if (type == TXN_NORMAL) {
+				return _databaseManager->GetNormalTxns(chainID);
+			} else if (type == TXN_COINBASE) {
+				return _databaseManager->GetCoinbaseTxns(chainID);
+			}
+			return {};
+		}
+
+		std::vector<TransactionPtr> SpvService::onLoadTxnAfter(const std::string &chainID, uint32_t height) const {
+			std::vector<TransactionPtr> result = _databaseManager->GetAllPendingTxns(chainID);
+			std::vector<TransactionPtr> txTmp = _databaseManager->GetNormalTxns(chainID, height);
+			result.insert(result.end(), txTmp.begin(), txTmp.end());
+			txTmp = _databaseManager->GetCoinbaseTxns(chainID, height);
+			result.insert(result.end(), txTmp.begin(), txTmp.end());
+
+			std::sort(result.begin(), result.end(), [](const TransactionPtr &x, const TransactionPtr &y) {
+				return x->GetBlockHeight() < y->GetBlockHeight();
+			});
+
+			return result;
+		}
+
+		TransactionPtr SpvService::onLoadTxn(const std::string &chainID, const uint256 &hash) const {
+			TransactionPtr tx = _databaseManager->GetNormalTxn(hash, chainID);
+			if (tx != nullptr)
+				return tx;
+
+			tx = _databaseManager->GetPendingTxn(hash, chainID);
+			if (tx != nullptr)
+				return tx;
+
+			return _databaseManager->GetCoinbaseTxn(hash, chainID);
+		}
+
+		bool SpvService::onContainTxn(const uint256 &hash) const {
+			return _databaseManager->ContainTxn(hash);
+		}
+
+		std::vector<TransactionPtr> SpvService::onLoadUTXOTxn(const std::string &chainID) const {
+			std::vector<TransactionPtr> txns = _databaseManager->GetCoinbaseUTXOTxn(chainID);
+			std::vector<TransactionPtr> tmp = _databaseManager->GetNormalUTXOTxn(chainID);
+
+			txns.insert(txns.end(), tmp.begin(), tmp.end());
+
+			return txns;
 		}
 
 		//override PeerManager listener
@@ -314,15 +335,42 @@ namespace Elastos {
 		}
 
 		TransactionPtr SpvService::GetTransaction(const uint256 &hash, const std::string &chainID) {
-			return _databaseManager->GetTransaction(hash, chainID);
+			return _databaseManager->GetNormalTxn(hash, chainID);
 		}
 
-		size_t SpvService::GetAllTransactionsCount() {
-			return _databaseManager->GetAllTransactionsCount();
+		size_t SpvService::GetAllTransactionCount(TxnType type) const {
+			if (type == TXN_NORMAL) {
+				return _databaseManager->GetNormalTotalCount();
+			} else if (type == TXN_COINBASE) {
+				return _databaseManager->GetCoinbaseTotalCount();
+			} else if (type == TXN_PENDING) {
+				return _databaseManager->GetPendingTxnTotalCount();
+			}
+			return 0;
 		}
 
-		bool SpvService::ExistUTXOTable() const {
-			return _databaseManager->ExistUTXOTable();
+		std::vector<TransactionPtr> SpvService::LoadTxnDesc(const std::string &chainID, TxnType type, size_t offset, size_t limit) const {
+			if (type == TXN_NORMAL) {
+				return _databaseManager->GetNormalTxns(chainID, offset, limit);
+			} else if (type == TXN_COINBASE) {
+				return _databaseManager->GetCoinbaseTxns(chainID, offset, limit);
+			}
+
+			return {};
+		}
+
+		bool SpvService::ExistPendingTxnTable() const {
+			return _databaseManager->ExistPendingTxnTable();
+		}
+
+		AddressSet SpvService::LoadUsedAddress() const {
+			AddressSet usedAddress;
+			std::vector<std::string> usedAddr = _databaseManager->GetUsedAddresses();
+
+			for (const std::string &addr : usedAddr)
+				usedAddress.insert(AddressPtr(new Address(addr)));
+
+			return usedAddress;
 		}
 
 		std::vector<UTXOPtr> SpvService::LoadUTXOs() const {
@@ -337,13 +385,19 @@ namespace Elastos {
 			return allUTXOs;
 		}
 
+		void SpvService::DeleteTxn(const uint256 &hash) {
+			_databaseManager->DeleteNormalTxn(hash);
+			_databaseManager->DeletePendingTxn(hash);
+			_databaseManager->DeleteCoinbaseTxn(hash);
+		}
+
 		std::vector<TransactionPtr> SpvService::loadCoinbaseTxns(const std::string &chainID) {
-			return _databaseManager->GetAllCoinbase(chainID);
+			return _databaseManager->GetCoinbaseTxns(chainID);
 		}
 
 		// override protected methods
 		std::vector<TransactionPtr> SpvService::loadConfirmedTxns(const std::string &chainID) {
-			return _databaseManager->GetAllConfirmedTxns(chainID);
+			return _databaseManager->GetNormalTxns(chainID);
 		}
 
 		std::vector<TransactionPtr> SpvService::loadPendingTxns(const std::string &chainID) {
@@ -403,12 +457,14 @@ namespace Elastos {
 			return _peerManagerListener;
 		}
 
+#if 0
 		const CoreSpvService::WalletListenerPtr &SpvService::createWalletListener() {
 			if (_walletListener == nullptr) {
 				_walletListener = WalletListenerPtr(new WrappedExecutorWalletListener(this, &_executor));
 			}
 			return _walletListener;
 		}
+#endif
 
 		void SpvService::RegisterWalletListener(Wallet::Listener *listener) {
 			_walletListeners.push_back(listener);

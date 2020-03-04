@@ -684,43 +684,44 @@ namespace Elastos {
 
 		}
 
-		void IDChainSubWallet::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
-			SubWallet::onTxUpdated(hashes, blockHeight,timeStamp);
+		void IDChainSubWallet::onTxUpdated(const std::vector<TransactionPtr> &txns) {
+			SubWallet::onTxUpdated(txns);
+			std::vector<uint256> hashes;
+
 			Lock();
 			size_t didCount = _didList.size();
 
-			for (size_t i = 0;  i < hashes.size(); ++i) {
+			for (size_t i = 0; i < txns.size(); ++i) {
+				hashes.push_back(txns[i]->GetHash());
 				for (size_t j = 0; j < didCount; ++j) {
 					DIDDetailPtr detailPtr = _didList[j];
-					if (detailPtr->GetTxHash() == hashes[i].GetHex()) {
-						detailPtr->SetBlockHeighht(blockHeight);
-						detailPtr->SetTxTimeStamp(timeStamp);
+					if (detailPtr->GetTxHash() == txns[i]->GetHash().GetHex()) {
+						detailPtr->SetBlockHeighht(txns[i]->GetBlockHeight());
+						detailPtr->SetTxTimeStamp(txns[i]->GetTimestamp());
 						break;
 					}
 				}
 			}
 			Unlock();
 
-			if (!hashes.empty()) {
-				_walletManager->updateDIDInfo(hashes, blockHeight, timeStamp);
-			}
-
+			if (!txns.empty())
+				_walletManager->updateDIDInfo(hashes, txns[0]->GetBlockHeight(), txns[0]->GetTimestamp());
 		}
 
-		void IDChainSubWallet::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			SubWallet::onTxDeleted(hash, notifyUser, recommendRescan);
+		void IDChainSubWallet::onTxDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan) {
+			SubWallet::onTxDeleted(tx, recommendRescan, false);
 
 			Lock();
 			size_t len = _didList.size();
 			for (size_t i = 0; i < len; ++i) {
-				if (_didList[i]->GetTxHash() == hash.GetHex()) {
+				if (_didList[i]->GetTxHash() == tx->GetHash().GetHex()) {
 					_didList.erase(_didList.begin() + i);
 					break;
 				}
 			}
 			Unlock();
 
-			_walletManager->deleteDIDInfo(hash.GetHex());
+			_walletManager->deleteDIDInfo(tx->GetHash().GetHex());
 		}
 
 	}
