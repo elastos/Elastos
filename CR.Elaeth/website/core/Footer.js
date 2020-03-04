@@ -37,6 +37,18 @@ class Footer extends React.Component {
           </a>
           <div>
             <h5>Developer Resources</h5>
+            <a href="https://faucet.elaeth.io" target="_blank">
+              Faucet
+            </a>
+            <a href="https://explorer.elaeth.io" target="_blank">
+              Mainnet Block Explorer
+            </a>
+            <a href="https://wallet.elaeth.io" target="_blank">
+              Testnet Block Explorer
+            </a>
+            <a href="https://wallet.elaeth.io" target="_blank">
+              Web Wallet
+            </a>
             <a href="https://developer.elastos.org" target="_blank">
               Official Developer Site
             </a>
@@ -72,7 +84,7 @@ class Footer extends React.Component {
             <h5>More</h5>
             <a href="https://news.elastos.org" target="_blank">Elastos News</a>
             <a href="https://elanews.net" target="_blank">Community News</a>
-            <a href="https://github.com/cyber-republic/elastosjs" target="_blank">Our GitHub</a>
+            <a href="https://github.com/cyber-republic/elaeth.io" target="_blank">Our GitHub</a>
             {/*<a
               className="github-button"
               href={this.props.config.repoUrl}
