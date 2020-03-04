@@ -682,7 +682,6 @@ export default class extends Base {
             const url = `elastos://credaccess/${jwtToken}`
             return { success: true, url }
         } catch(err) {
-            console.log('get ela url err...', err)
             logger.error(err)
             return { success: false }
         }
@@ -703,7 +702,7 @@ export default class extends Base {
             }
     
             // verify response data from ela wallet
-            jwt.verify(jwtToken, rs.publicKey, async (err: any, decoded: any) => {
+            return jwt.verify(jwtToken, rs.publicKey, async (err: any, decoded: any) => {
                 if (err) {
                     return { code: 401 }
                   } else {

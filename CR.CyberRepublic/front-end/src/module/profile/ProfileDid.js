@@ -82,6 +82,11 @@ class ProfileDid extends Component {
     if (did && did.id) {
       return (
         <Did>
+          <Popover content={this.elaQrCode()} trigger="click" placement="top">
+            <Reassociate onClick={this.handleReassociate}>
+              {I18N.get('profile.reassociateDid')}
+            </Reassociate>
+          </Popover>
           <span>DID:</span>
           <a
             href={`https://${domain}.elastos.org/address/${did.id}`}
@@ -89,11 +94,6 @@ class ProfileDid extends Component {
           >
             {did.id} <ExternalLinkSvg />
           </a>
-          <Popover content={this.elaQrCode()} trigger="click" placement="top">
-            <Reassociate onClick={this.handleReassociate}>
-              {I18N.get('profile.reassociateDid')}
-            </Reassociate>
-          </Popover>
         </Did>
       )
     } else {
@@ -141,8 +141,8 @@ const Did = styled.div`
   }
 `
 const Reassociate = styled.span`
+  display: inline-block;
   font-size: 13px;
   color: #008d85;
-  padding-left: 32px;
   cursor: pointer;
 `
