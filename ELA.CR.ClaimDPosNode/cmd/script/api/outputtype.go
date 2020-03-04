@@ -317,9 +317,9 @@ func newVoteCRContent(L *lua.LState) int {
 		}
 
 		//get didUint168 from code
-		didUint168 := getDidProgramHash(code)
+		cid := getIDProgramHash(code)
 		candidateVotes = append(candidateVotes, outputpayload.CandidateVotes{
-			Candidate: didUint168.Bytes(),
+			Candidate: cid.Bytes(),
 			Votes:     votes[i],
 		})
 	}

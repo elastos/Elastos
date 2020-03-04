@@ -30,7 +30,7 @@ func TestState_GetCandidatesRelated(t *testing.T) {
 		v2 := state.getCandidate(k)
 		assert.True(t, candidateEqual(v, v2))
 
-		v3 := state.getCandidate(v.info.DID)
+		v3 := state.getCandidate(v.info.CID)
 		assert.True(t, candidateEqual(v, v3))
 	}
 
@@ -58,12 +58,12 @@ func TestState_ExistCandidateRelated(t *testing.T) {
 	}
 
 	assert.False(t, state.existCandidate(make([]byte, 34)))
-	assert.False(t, state.ExistCandidateByDID(common.Uint168{}))
+	assert.False(t, state.ExistCandidateByCID(common.Uint168{}))
 	assert.False(t, state.existCandidateByNickname(""))
 
 	for _, v := range keyFrame.Candidates {
 		assert.True(t, state.existCandidate(v.info.Code))
-		assert.True(t, state.ExistCandidateByDID(v.info.DID))
+		assert.True(t, state.ExistCandidateByCID(v.info.CID))
 		assert.True(t, state.existCandidateByNickname(v.info.NickName))
 	}
 }
@@ -90,11 +90,11 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 	})
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	code := getCode(publicKeyStr1)
-	did := *getDid(code)
+	cid := *getCID(code)
 	nickname := randomString()
 
 	assert.False(t, committee.state.existCandidate(code))
-	assert.False(t, committee.state.ExistCandidateByDID(did))
+	assert.False(t, committee.state.ExistCandidateByCID(cid))
 	assert.False(t, committee.state.existCandidateByNickname(nickname))
 
 	registerFuncs(committee.state)
@@ -105,13 +105,13 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 			Height: currentHeight,
 		},
 		Transactions: []*types.Transaction{
-			generateRegisterCR(code, did, nickname),
+			generateRegisterCR(code, cid, nickname),
 		},
 	}, nil)
 	assert.True(t, committee.state.existCandidate(code))
-	assert.True(t, committee.state.ExistCandidateByDID(did))
+	assert.True(t, committee.state.ExistCandidateByCID(cid))
 	assert.True(t, committee.state.existCandidateByNickname(nickname))
-	candidate := committee.state.getCandidate(did)
+	candidate := committee.state.getCandidate(cid)
 	assert.Equal(t, Pending, candidate.state)
 
 	// update pending CR
@@ -122,14 +122,14 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 			Height: currentHeight,
 		},
 		Transactions: []*types.Transaction{
-			generateUpdateCR(code, did, nickname2),
+			generateUpdateCR(code, cid, nickname2),
 		},
 	}, nil)
 	assert.True(t, committee.state.existCandidate(code))
-	assert.True(t, committee.state.ExistCandidateByDID(did))
+	assert.True(t, committee.state.ExistCandidateByCID(cid))
 	assert.False(t, committee.state.existCandidateByNickname(nickname))
 	assert.True(t, committee.state.existCandidateByNickname(nickname2))
-	candidate = committee.state.getCandidate(did)
+	candidate = committee.state.getCandidate(cid)
 	assert.Equal(t, Pending, candidate.state)
 
 	//cancel pending CR
@@ -143,10 +143,10 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 		},
 	}, nil)
 	assert.True(t, committee.state.existCandidate(code))
-	assert.True(t, committee.state.ExistCandidateByDID(did))
+	assert.True(t, committee.state.ExistCandidateByCID(cid))
 	assert.False(t, committee.state.existCandidateByNickname(nickname))
 	assert.False(t, committee.state.existCandidateByNickname(nickname2))
-	candidate = committee.state.getCandidate(did)
+	candidate = committee.state.getCandidate(cid)
 	assert.Equal(t, Canceled, candidate.state)
 	assert.Equal(t, 0, len(committee.state.getCandidates(Pending)))
 	assert.Equal(t, 1, len(committee.state.getCandidates(Canceled)))
@@ -168,10 +168,10 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 	nickname := randomString()
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	code := getCode(publicKeyStr1)
-	did := *getDid(code)
+	cid := *getCID(code)
 
 	assert.False(t, committee.state.existCandidate(code))
-	assert.False(t, committee.state.ExistCandidateByDID(did))
+	assert.False(t, committee.state.ExistCandidateByCID(cid))
 	assert.False(t, committee.state.existCandidateByNickname(nickname))
 
 	registerFuncs(committee.state)
@@ -182,14 +182,14 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 			Height: currentHeight,
 		},
 		Transactions: []*types.Transaction{
-			generateRegisterCR(code, did, nickname),
+			generateRegisterCR(code, cid, nickname),
 		},
 	}, nil)
 	currentHeight++
 	assert.True(t, committee.state.existCandidate(code))
-	assert.True(t, committee.state.ExistCandidateByDID(did))
+	assert.True(t, committee.state.ExistCandidateByCID(cid))
 	assert.True(t, committee.state.existCandidateByNickname(nickname))
-	candidate := committee.state.getCandidate(did)
+	candidate := committee.state.getCandidate(cid)
 	assert.Equal(t, Pending, candidate.state)
 
 	// register CR then after 6 block should be active state
@@ -202,7 +202,7 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 		}, nil)
 		currentHeight++
 	}
-	candidate = committee.state.getCandidate(did)
+	candidate = committee.state.getCandidate(cid)
 	assert.Equal(t, Active, candidate.state)
 
 	// update active CR
@@ -212,15 +212,15 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 			Height: currentHeight,
 		},
 		Transactions: []*types.Transaction{
-			generateUpdateCR(code, did, nickname2),
+			generateUpdateCR(code, cid, nickname2),
 		},
 	}, nil)
 	currentHeight++
 	assert.True(t, committee.state.existCandidate(code))
-	assert.True(t, committee.state.ExistCandidateByDID(did))
+	assert.True(t, committee.state.ExistCandidateByCID(cid))
 	assert.False(t, committee.state.existCandidateByNickname(nickname))
 	assert.True(t, committee.state.existCandidateByNickname(nickname2))
-	candidate = committee.state.getCandidate(did)
+	candidate = committee.state.getCandidate(cid)
 	assert.Equal(t, Active, candidate.state)
 
 	// cancel active CR
@@ -233,10 +233,10 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 		},
 	}, nil)
 	assert.True(t, committee.state.existCandidate(code))
-	assert.True(t, committee.state.ExistCandidateByDID(did))
+	assert.True(t, committee.state.ExistCandidateByCID(cid))
 	assert.False(t, committee.state.existCandidateByNickname(nickname))
 	assert.False(t, committee.state.existCandidateByNickname(nickname2))
-	candidate = committee.state.getCandidate(did)
+	candidate = committee.state.getCandidate(cid)
 	assert.Equal(t, Canceled, candidate.state)
 	assert.Equal(t, 0, len(committee.state.getCandidates(Pending)))
 	assert.Equal(t, 1, len(committee.state.getCandidates(Canceled)))
@@ -267,14 +267,14 @@ func TestState_ProcessBlock_MixedCRProcessing(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		code := randomBytes(34)
 		nickname := randomString()
-		did := *randomUint168()
+		cid := *randomUint168()
 
 		committee.ProcessBlock(&types.Block{
 			Header: types.Header{
 				Height: currentHeight,
 			},
 			Transactions: []*types.Transaction{
-				generateRegisterCR(code, did, nickname),
+				generateRegisterCR(code, cid, nickname),
 			},
 		}, nil)
 		currentHeight++
@@ -317,10 +317,10 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 		},
 	})
 
-	activeDIDs := make([][]byte, 0, 5)
+	activeCIDs := make([][]byte, 0, 5)
 	for k, v := range keyframe.Candidates {
 		v.votes = 0
-		activeDIDs = append(activeDIDs, k.Bytes())
+		activeCIDs = append(activeCIDs, k.Bytes())
 	}
 
 	registerFuncs(committee.state)
@@ -331,7 +331,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	}
 
 	// vote for the active candidates
-	voteTx := mockNewVoteTx(activeDIDs)
+	voteTx := mockNewVoteTx(activeCIDs)
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: currentHeight,
@@ -340,7 +340,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	}, nil)
 	currentHeight++
 
-	for i, v := range activeDIDs {
+	for i, v := range activeCIDs {
 		did, _ := common.Uint168FromBytes(v)
 		candidate := committee.state.getCandidate(*did)
 		assert.Equal(t, common.Fixed64((i+1)*10), candidate.votes)
@@ -363,7 +363,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 		},
 	}, nil)
 
-	for _, v := range activeDIDs {
+	for _, v := range activeCIDs {
 		did, _ := common.Uint168FromBytes(v)
 		candidate := committee.state.getCandidate(*did)
 		assert.Equal(t, common.Fixed64(0), candidate.votes)
@@ -388,7 +388,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	_, pk, _ := crypto.GenerateKeyPair()
 	cont, _ := contract.CreateStandardContract(pk)
 	code := cont.Code
-	did := *getDid(code)
+	cid := *getCID(code)
 
 	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
 
@@ -397,7 +397,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		TxType: types.RegisterCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			DID:      *getDid(code),
+			CID:      cid,
 			NickName: randomString(),
 		},
 		Outputs: []*types.Output{
@@ -414,11 +414,11 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		Transactions: []*types.Transaction{registerCRTx},
 	}, nil)
 	currentHeight++
-	candidate := committee.state.getCandidate(did)
+	candidate := committee.state.getCandidate(cid)
 	assert.Equal(t, common.Fixed64(5000*1e8),
-		committee.state.getDepositAmount(candidate.info.DID))
+		committee.state.getDepositAmount(candidate.info.CID))
 	assert.Equal(t, common.Fixed64(6000*1e8),
-		committee.state.getTotalAmount(candidate.info.DID))
+		committee.state.getTotalAmount(candidate.info.CID))
 
 	// deposit though normal tx
 	tranferTx := &types.Transaction{
@@ -439,9 +439,9 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	}, nil)
 	currentHeight++
 	assert.Equal(t, common.Fixed64(5000*1e8),
-		committee.state.getDepositAmount(candidate.info.DID))
+		committee.state.getDepositAmount(candidate.info.CID))
 	assert.Equal(t, common.Fixed64(7000*1e8),
-		committee.state.getTotalAmount(candidate.info.DID))
+		committee.state.getTotalAmount(candidate.info.CID))
 
 	// cancel candidate
 	for i := 0; i < 4; i++ {
@@ -498,16 +498,16 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	}, nil)
 	committee.state.history.Commit(currentHeight)
 	assert.Equal(t, common.Fixed64(0),
-		committee.state.getDepositAmount(candidate.info.DID))
+		committee.state.getDepositAmount(candidate.info.CID))
 }
 
-func mockNewVoteTx(dids [][]byte) *types.Transaction {
-	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(dids))
-	for i, did := range dids {
+func mockNewVoteTx(cids [][]byte) *types.Transaction {
+	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(cids))
+	for i, cid := range cids {
 		//code := getCode(common.BytesToHexString(pk))
 		candidateVotes = append(candidateVotes,
 			outputpayload.CandidateVotes{
-				Candidate: did,
+				Candidate: cid,
 				Votes:     common.Fixed64((i + 1) * 10)})
 	}
 	output := &types.Output{
@@ -528,25 +528,25 @@ func mockNewVoteTx(dids [][]byte) *types.Transaction {
 	}
 }
 
-func generateRegisterCR(code []byte, did common.Uint168,
+func generateRegisterCR(code []byte, cid common.Uint168,
 	nickname string) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.RegisterCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			DID:      did,
+			CID:      cid,
 			NickName: nickname,
 		},
 	}
 }
 
-func generateUpdateCR(code []byte, did common.Uint168,
+func generateUpdateCR(code []byte, cid common.Uint168,
 	nickname string) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.UpdateCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			DID:      did,
+			CID:      cid,
 			NickName: nickname,
 		},
 	}
@@ -556,13 +556,13 @@ func generateUnregisterCR(code []byte) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.UnregisterCR,
 		Payload: &payload.UnregisterCR{
-			DID: *getDid(code),
+			CID: *getCID(code),
 		},
 	}
 }
 
-func getDid(code []byte) *common.Uint168 {
-	ct1, _ := contract.CreateCRDIDContractByCode(code)
+func getCID(code []byte) *common.Uint168 {
+	ct1, _ := contract.CreateCRIDContractByCode(code)
 	return ct1.ToProgramHash()
 }
 
