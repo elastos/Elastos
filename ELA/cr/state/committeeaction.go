@@ -44,7 +44,7 @@ func (c *Committee) processTransactions(txs []*types.Transaction, height uint32)
 	if len(pendingCandidates) > 0 {
 		for _, candidate := range pendingCandidates {
 			if height-candidate.registerHeight+1 >= ActivateDuration {
-				activateCandidateFromPending(candidate.info.DID, candidate)
+				activateCandidateFromPending(candidate.info.CID, candidate)
 			}
 		}
 	}
@@ -207,13 +207,13 @@ func (c *Committee) processCRCAddressRelatedTx(tx *types.Transaction, height uin
 	}
 
 	for _, input := range tx.Inputs {
-		if amount, ok :=  c.state.CRCFoundationOutputs[input.Previous.ReferKey()]; ok {
+		if amount, ok := c.state.CRCFoundationOutputs[input.Previous.ReferKey()]; ok {
 			c.state.history.Append(height, func() {
 				c.CRCFoundationBalance -= amount
 			}, func() {
 				c.CRCFoundationBalance += amount
 			})
-		} else if amount, ok :=  c.state.CRCCommitteeOutputs[input.Previous.ReferKey()]; ok {
+		} else if amount, ok := c.state.CRCCommitteeOutputs[input.Previous.ReferKey()]; ok {
 			c.state.history.Append(height, func() {
 				c.CRCCommitteeBalance -= amount
 			}, func() {

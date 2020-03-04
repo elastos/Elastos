@@ -41,6 +41,7 @@ local nick_name = getNickName()
 local url = getUrl()
 local location = getLocation()
 local fee = getFee()
+local payload_version = getPayloadVersion()
 
 if cr_publickey == ""
 	then
@@ -72,13 +73,15 @@ print("public key:", cr_publickey)
 print("nick_name:", nick_name)
 print("url:", url)
 print("location:", location)
+print("payload version:", payload_version)
 
 -- register cr payload: publickey, nickname, url, local, wallet
-local up_payload =updatecr.new(cr_publickey, nick_name, url, location, wallet)
+local up_payload =updatecr.new(cr_publickey, nick_name, url, location,
+ payload_version, wallet)
 print(up_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
-local tx = transaction.new(9, 0x23, 0, up_payload, 0)
+local tx = transaction.new(9, 0x23, payload_version, up_payload, 0)
 print("tx1")
 print(tx:get())
 

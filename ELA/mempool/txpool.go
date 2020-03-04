@@ -205,7 +205,7 @@ func (mp *TxPool) cleanCanceledProducerAndCR(txs []*Transaction) error {
 			if !ok {
 				return errors.New("invalid cancel producer payload")
 			}
-			if err := mp.cleanVoteAndUpdateCR(crPayload.DID); err != nil {
+			if err := mp.cleanVoteAndUpdateCR(crPayload.CID); err != nil {
 				log.Error(err)
 			}
 		}
@@ -260,7 +260,7 @@ func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
 	return nil
 }
 
-func (mp *TxPool) cleanVoteAndUpdateCR(did Uint168) error {
+func (mp *TxPool) cleanVoteAndUpdateCR(cid Uint168) error {
 	for _, txn := range mp.txnList {
 		if txn.TxType == TransferAsset {
 			for _, output := range txn.Outputs {
@@ -272,7 +272,7 @@ func (mp *TxPool) cleanVoteAndUpdateCR(did Uint168) error {
 					for _, content := range opPayload.Contents {
 						if content.VoteType == outputpayload.CRC {
 							for _, cv := range content.CandidateVotes {
-								if bytes.Equal(did.Bytes(), cv.Candidate) {
+								if bytes.Equal(cid.Bytes(), cv.Candidate) {
 									mp.removeTransaction(txn)
 								}
 							}
@@ -285,9 +285,9 @@ func (mp *TxPool) cleanVoteAndUpdateCR(did Uint168) error {
 			if !ok {
 				return errors.New("invalid update CR payload")
 			}
-			if did.IsEqual(crPayload.DID) {
+			if cid.IsEqual(crPayload.CID) {
 				mp.removeTransaction(txn)
-				if err := mp.RemoveKey(crPayload.DID, slotCRDID); err != nil {
+				if err := mp.RemoveKey(crPayload.CID, slotCRDID); err != nil {
 					return err
 				}
 			}
