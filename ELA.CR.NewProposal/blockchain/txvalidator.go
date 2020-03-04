@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package blockchain
 
@@ -2116,6 +2116,12 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	} else if amount > b.crCommittee.CRCCommitteeBalance-
 		b.crCommittee.CRCCommitteeUsedAmount {
 		return errors.New("budgets exceeds the balance of CRC committee")
+	} else if amount <= 0 {
+		return errors.New("budgets is invalid")
+	}
+	emptyUint168 := common.Uint168{}
+	if proposal.Recipient == emptyUint168 {
+		return errors.New("recipient is empty")
 	}
 
 	// The number of the proposals of the committee can not more than 128
