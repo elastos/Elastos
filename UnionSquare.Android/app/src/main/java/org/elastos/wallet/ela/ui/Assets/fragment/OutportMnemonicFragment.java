@@ -18,7 +18,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
-import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -43,7 +43,7 @@ public class OutportMnemonicFragment extends BaseFragment implements NewBaseView
     private String mnemonic;
     private Wallet wallet;
     private boolean hasPassPhrase;
-    private WallletManagePresenter presenter;
+    private WalletManagePresenter presenter;
 
     @Override
     protected int getLayoutId() {
@@ -56,7 +56,7 @@ public class OutportMnemonicFragment extends BaseFragment implements NewBaseView
         mnemonic = data.getString("mnemonic");
         tvMnemonic.setText(mnemonic);
         wallet = data.getParcelable("wallet");
-        presenter = new WallletManagePresenter();
+        presenter = new WalletManagePresenter();
         presenter.getMasterWalletBasicInfo(wallet.getWalletId(), this);
     }
 

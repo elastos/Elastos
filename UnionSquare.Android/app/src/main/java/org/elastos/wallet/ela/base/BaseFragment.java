@@ -26,13 +26,16 @@ import com.scwang.smartrefresh.layout.header.ClassicsHeader;
 import com.trello.rxlifecycle2.LifecycleTransformer;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.DID.MyDID;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
+import org.elastos.wallet.ela.ui.Assets.fragment.WalletManageFragment;
 import org.elastos.wallet.ela.ui.did.fragment.DIDListFragment;
+import org.elastos.wallet.ela.ui.did.fragment.DidDetailFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.greenrobot.eventbus.EventBus;
@@ -79,6 +82,10 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
 
     public MyWallet getMyWallet() {
         return getBaseActivity().getWallet();
+    }
+
+    public MyDID getMyDID() {
+        return getBaseActivity().getMyDID();
     }
 
     protected String getText(TextView et) {
@@ -332,7 +339,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     }
 
 
-    protected void post(int code, String name, Object obj) {
+    public void post(int code, String name, Object obj) {
         EventBus.getDefault().post(new BusEvent(code, name, obj));
     }
 
@@ -474,11 +481,21 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     }
 
     public void toDIDListFragment() {
-        Fragment DIDListFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(org.elastos.wallet.ela.ui.did.fragment.DIDListFragment.class.getName());
-        if (DIDListFragment != null) {
-            popTo(DIDListFragment.getClass(), false);
+        Fragment fragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(DIDListFragment.class.getName());
+        if (fragment != null) {
+            popTo(DIDListFragment.class, false);
         } else {
             startWithPopTo(new DIDListFragment(), MainFragment.class, false);
+
+        }
+    }
+
+    public void toDIDDetailFragment() {
+        Fragment fragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(DidDetailFragment.class.getName());
+        if (fragment != null) {
+            popTo(DidDetailFragment.class, false);
+        } else {
+            startWithPopTo(new DIDListFragment(), WalletManageFragment.class, false);
 
         }
     }

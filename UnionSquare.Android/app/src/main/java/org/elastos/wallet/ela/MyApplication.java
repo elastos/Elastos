@@ -63,6 +63,10 @@ public class MyApplication extends MultiDexApplication {
         }
     }
 
+    public static String getRoutDir() {
+        return getAppContext().getFilesDir().getParent();
+    }
+
     public static Context getAppContext() {
         return myApplication.getApplicationContext();
     }

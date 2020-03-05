@@ -11,6 +11,7 @@ public class Constant {
     public static final String SUPERNODESIGN = "supernodesign";//超级节点参选注册
     public static final String CRSIGNUP = "crsignup";//cr注册
     public static final String DIDSIGNUP = "didsignup";//did注册
+    public static final String DIDINIT = "didinit";//did注册
     public static final String CRVOTE = "crvote";//cr投票
     public static final String SUPERNODEVOTE = "nodecrvote";//cr投票
     public static final String TOWHOL = "towhole";//零钱换整

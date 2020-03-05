@@ -35,9 +35,9 @@ import java.util.Date;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class SocialAccountFragment extends BaseFragment implements NewBaseViewData {
+public class SocialAccountFragment /*extends BaseFragment implements NewBaseViewData*/ {
 
-    @BindView(R.id.tv_title)
+   /* @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.et_homepage)
     EditText etHomepage;
@@ -223,5 +223,5 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
         return super.onBackPressedSupport();
 
 
-    }
+    }*/
 }

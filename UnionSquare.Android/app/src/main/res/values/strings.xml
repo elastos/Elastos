@@ -155,7 +155,6 @@
     <string name="inputdotname">请输入节点名称(必填)</string>
     <string name="inputdotpublickey">请输入节点公钥(必填)</string>
     <string name="walletkey">请输入钱包公钥</string>
-    <string name="choosearea">请选择国家/地区</string>
     <string name="pleasechoosearea">请选择国家/地区</string>
     <string name="inputurl">请输入节点官网URL(必填)</string>
     <string name="sureelection">确认参选</string>
@@ -609,4 +608,9 @@
     <string name="personalinfo">- 个人信息</string>
     <string name="personalintro_">- 个人简介</string>
     <string name="socialaccount_">- 社交账号</string>
+    <string name="plzinputnamemust">请输入姓名（必填）</string>
+    <string name="headurl">头像网址</string>
+    <string name="abandondidornot">是否永久弃用当前DID？</string>
+    <string name="didinitfaile">DID初始化失败</string>
+    <string name="addinfo">添加信息</string>
 </resources>

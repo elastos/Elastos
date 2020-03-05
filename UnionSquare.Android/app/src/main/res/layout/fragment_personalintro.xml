@@ -7,16 +7,6 @@
 
     <include layout="@layout/title" />
 
-    <TextView
-        android:id="@+id/tv_tip"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white20"
-        android:paddingLeft="15dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:text="@string/tipcanjump"
-        android:textSize="11sp" />
 
     <EditText
         android:maxLength="800"
@@ -35,5 +25,5 @@
         android:id="@+id/tv_next"
         style="@style/button_margin"
         android:layout_marginTop="100dp"
-        android:text="@string/next" />
+        android:text="@string/sure" />
 </LinearLayout>

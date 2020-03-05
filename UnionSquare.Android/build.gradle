@@ -9,7 +9,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.4.1'
-       // classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "io.realm:realm-gradle-plugin:4.2.0"//realm配置1 io.realm:realm-gradle-plugin:2.2.2
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
         // NOTE: Do not place your application dependencies here; they belong
@@ -22,7 +22,8 @@ allprojects {
         google()
         jcenter()
         maven { url 'https://jitpack.io' }
-        jcenter(){url 'http://jcenter.bintray.com/'}
+        maven { url 'https://dl.bintray.com/elastostest/Elastos.DID.Java.SDK' }
+        jcenter() { url 'http://jcenter.bintray.com/' }
     }
 }
 

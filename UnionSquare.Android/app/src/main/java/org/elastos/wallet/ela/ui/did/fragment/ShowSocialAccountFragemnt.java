@@ -20,9 +20,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class ShowSocialAccountFragemnt extends BaseFragment {
+public class ShowSocialAccountFragemnt /*extends BaseFragment*/ {
 
-    @BindView(R.id.tv_title)
+   /* @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.iv_title_right)
     ImageView ivTitleRight;
@@ -99,6 +99,6 @@ public class ShowSocialAccountFragemnt extends BaseFragment {
 
         }
     }
-
+*/
 
 }

@@ -237,4 +237,14 @@ public class PwdPresenter extends NewPresenterAbstract {
         });
         subscriberObservable(observer, observable, baseActivity);
     }
+    public void DIDPublish(String pwd,BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "DIDPublish",false);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyDID().DIDPublish(pwd);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
 }

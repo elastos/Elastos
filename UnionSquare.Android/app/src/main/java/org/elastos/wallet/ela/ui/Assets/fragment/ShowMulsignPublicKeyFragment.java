@@ -53,7 +53,7 @@ public class ShowMulsignPublicKeyFragment extends BaseFragment/* implements NewB
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.mulsignpiblickey));
-        // new WallletManagePresenter().getPubKeyInfo(wallet.getWalletId(), this);
+        // new WalletManagePresenter().getPubKeyInfo(wallet.getWalletId(), this);
     }
 
     @OnClick({R.id.tv_copy})

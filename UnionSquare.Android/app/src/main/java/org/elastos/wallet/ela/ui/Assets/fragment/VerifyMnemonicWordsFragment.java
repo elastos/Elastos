@@ -122,7 +122,7 @@ public class VerifyMnemonicWordsFragment extends BaseFragment implements Creater
         if (BuildConfig.DEBUG || putList.toString().equals(readList.toString())) {
             if (openType == RxEnum.MANAGER.ordinal()) {
                 //钱包管理的导出助记词
-                popTo(WallletManageFragment.class, false);
+                popTo(WalletManageFragment.class, false);
             } else if (openType == RxEnum.PRIVATEKEY.ordinal()) {
                 popTo(CreateMulWalletFragment.class, false);
                 post(RxEnum.CREATEPRIVATEKEY.ordinal(), null, createWalletBean);

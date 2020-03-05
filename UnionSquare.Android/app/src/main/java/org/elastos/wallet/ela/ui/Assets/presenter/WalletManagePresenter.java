@@ -1,5 +1,6 @@
 package org.elastos.wallet.ela.ui.Assets.presenter;
 
+import org.elastos.did.DID;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
@@ -10,7 +11,7 @@ import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListen
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 
-public class WallletManagePresenter extends NewPresenterAbstract {
+public class WalletManagePresenter extends NewPresenterAbstract {
 
 
     public void exportWalletWithMnemonic(String walletId, String pwd, BaseFragment baseFragment) {
@@ -88,12 +89,25 @@ public class WallletManagePresenter extends NewPresenterAbstract {
             }
         });
         subscriberObservable(observer, observable, baseFragment);
-    } public void verifyPassPhrase(String walletId, String passphrase, String payPasswd, BaseFragment baseFragment) {
+    }
+
+    public void verifyPassPhrase(String walletId, String passphrase, String payPasswd, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "verifyPassPhrase");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
                 return baseFragment.getMyWallet().verifyPassPhrase(walletId, passphrase, payPasswd);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void DIDResolve(DID did,BaseFragment baseFragment,Object o) {
+        Observer observer = createObserver(baseFragment, "DIDResolve",o);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyDID().DIDResolve(did);
             }
         });
         subscriberObservable(observer, observable, baseFragment);

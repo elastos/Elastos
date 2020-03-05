@@ -23,7 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:text="@string/didname"
+            android:text="@string/name"
             android:textColor="@color/whiter50" />
 
         <TextView

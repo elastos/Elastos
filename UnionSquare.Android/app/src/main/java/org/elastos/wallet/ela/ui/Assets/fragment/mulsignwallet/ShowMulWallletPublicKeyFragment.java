@@ -18,7 +18,7 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.adapter.PublicKeyRecAdapter;
-import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
 import org.elastos.wallet.ela.utils.ScreenUtil;
@@ -55,7 +55,7 @@ public class ShowMulWallletPublicKeyFragment extends BaseFragment implements New
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.pklist));
-        new WallletManagePresenter().getPubKeyInfo(wallet.getWalletId(), this);
+        new WalletManagePresenter().getPubKeyInfo(wallet.getWalletId(), this);
     }
 
 

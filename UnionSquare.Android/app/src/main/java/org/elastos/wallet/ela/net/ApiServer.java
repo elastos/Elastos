@@ -34,6 +34,10 @@ public interface ApiServer {
     @GET
     Observable<NodeInfoBean> getUrlJson(@Url String url);//不同baseurl用@Url @GET
 
+    @FormUrlEncoded
+    @POST
+    Observable<NodeInfoBean> postData(@Url String url, @FieldMap Map<String, String> map);//不同baseurl用@Url @GET
+
     @GET(Constant.SERVERLIST)
     Observable<ServerListEntity> getServerList();//不同baseurl用@Url
 

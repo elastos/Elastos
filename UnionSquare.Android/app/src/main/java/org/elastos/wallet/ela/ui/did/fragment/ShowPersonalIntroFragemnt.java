@@ -46,9 +46,9 @@ public class ShowPersonalIntroFragemnt extends BaseFragment {
     }
 
     private void setData() {
-        CredentialSubjectBean.Intro personal = info.getIntro();
+        /*CredentialSubjectBean.Intro personal = info.getIntro();
 
-        setText(personal.getIntroduction(), tvIntro);
+        setText(personal.getIntroduction(), tvIntro);*/
 
     }
 

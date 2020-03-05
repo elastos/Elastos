@@ -129,6 +129,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.relsease
         }
+        debug {
+            signingConfig signingConfigs.relsease
+        }
     }
     externalNativeBuild {
         cmake {
@@ -205,7 +208,19 @@ dependencies {
     implementation 'com.tencent.bugly:crashreport:latest.release'
     //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.1.9
     implementation 'com.tencent.bugly:nativecrashreport:latest.release'
+    implementation 'org.elastos:did:0.0.16'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.0'
+    runtimeOnly('io.jsonwebtoken:jjwt-orgjson:0.11.0') {
+        exclude group: 'org.json', module: 'json' //provided by Android natively
+    }
+    // Uncomment the next line if you want to use RSASSA-PSS (PS256, PS384, PS512) algorithms:
+    //runtimeOnly 'org.bouncycastle:bcprov-jdk15on:1.60'
 
+    implementation 'com.auth0.android:jwtdecode:1.4.0'
+    //implementation 'com.auth0:jwks-rsa:0.10.0'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.9.9'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
 }
 repositories {
     mavenCentral()

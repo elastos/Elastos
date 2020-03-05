@@ -153,7 +153,6 @@
     <string name="inputdotname">Enter node name (Required)</string>
     <string name="inputdotpublickey">Enter public key of your node (Required)</string>
     <string name="walletkey">Enter wallet public key</string>
-    <string name="choosearea">Choose Country/Region</string>
     <string name="pleasechoosearea">Choose Country/Region</string>
     <string name="inputurl">Enter website URL of your node (Required)</string>
     <string name="sureelection">Confirm</string>
@@ -571,7 +570,7 @@
     <string name="pagehome">个人主页</string>
     <string name="googleaccount">谷歌账号</string>
     <string name="microsoftaccount">微软账号</string>
-    <string name="facebookaccount">请输入Facebook账号</string>
+    <string name="facebookaccount">Facebook账号</string>
     <string name="twitteraccount">Twitter账号</string>
     <string name="weboaccount">微博账号</string>
     <string name="wechataccount">微信账号</string>
@@ -604,4 +603,9 @@
     <string name="personalinfo">- 个人信息</string>
     <string name="personalintro_">- 个人简介</string>
     <string name="socialaccount_">- 社交账号</string>
+    <string name="plzinputnamemust">请输入姓名（必填）</string>
+    <string name="headurl">头像网址</string>
+    <string name="abandondidornot">是否永久弃用当前DID？</string>
+    <string name="didinitfaile">DID初始化失败</string>
+    <string name="addinfo">添加信息</string>
 </resources>

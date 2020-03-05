@@ -13,8 +13,6 @@ import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
 
-import java.util.Date;
-
 import butterknife.BindView;
 import butterknife.OnClick;
 
@@ -22,14 +20,10 @@ public class PersonalIntroFragment extends BaseFragment {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
-    @BindView(R.id.tv_title_right)
-    TextView tvTitleRight;
     @BindView(R.id.et_intro)
     EditText etIntro;
     @BindView(R.id.tv_next)
     TextView tvNext;
-    @BindView(R.id.tv_tip)
-    TextView tvTip;
     private DIDInfoEntity didInfo;
     private CredentialSubjectBean credentialSubjectBean;
 
@@ -50,8 +44,7 @@ public class PersonalIntroFragment extends BaseFragment {
             //新增did  从凭证信息进入
             onAddPartCredential(data);
         } else {
-            tvTitleRight.setVisibility(View.VISIBLE);
-            tvTitle.setText(getString(R.string.addpersonalintro));
+
             didInfo = data.getParcelable("didInfo");
             credentialSubjectBean = data.getParcelable("credentialSubjectBean");
             if (data.getBoolean("useDraft"))
@@ -61,10 +54,7 @@ public class PersonalIntroFragment extends BaseFragment {
 
     private void onAddPartCredential(Bundle data) {
         credentialSubjectBean = data.getParcelable("CredentialSubjectBean");
-        tvTitle.setText(getString(R.string.editpersonalintro));
-        tvTip.setVisibility(View.GONE);
-        tvTitleRight.setVisibility(View.GONE);
-        tvNext.setText(getString(R.string.keep));
+        etIntro.setText(credentialSubjectBean.getIntroduction());
         tvNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -77,16 +67,15 @@ public class PersonalIntroFragment extends BaseFragment {
     }
 
     private void putData() {
-        CredentialSubjectBean.Intro intro = credentialSubjectBean.getIntro();
+       /* CredentialSubjectBean.Intro intro = credentialSubjectBean.getIntro();
         if (intro != null)
-            etIntro.setText(intro.getIntroduction());
+            etIntro.setText(intro.getIntroduction());*/
     }
 
 
     @Override
     protected void initView(View view) {
-
-
+        tvTitle.setText(getString(R.string.personalintro));
     }
 
 
@@ -96,7 +85,7 @@ public class PersonalIntroFragment extends BaseFragment {
             case R.id.tv_title_right:
             case R.id.tv_next:
                 setData();
-                start(SocialAccountFragment.class, getArguments());
+                popBackFragment();
                 break;
 
 
@@ -104,17 +93,7 @@ public class PersonalIntroFragment extends BaseFragment {
     }
 
     private void setData() {
-        CredentialSubjectBean.Intro intro = credentialSubjectBean.getIntro();
-        if (getText(etIntro) != null) {
-            if (intro == null) {
-                intro = new CredentialSubjectBean.Intro();
-                credentialSubjectBean.setIntro(intro);
-            }
-            intro.setIntroduction(getText(etIntro));
-            intro.setEditTime(new Date().getTime() / 1000);
-        } else {
-            credentialSubjectBean.setIntro(null);
-        }
+        credentialSubjectBean.setIntroduction(getText(etIntro));
     }
 
     @Override

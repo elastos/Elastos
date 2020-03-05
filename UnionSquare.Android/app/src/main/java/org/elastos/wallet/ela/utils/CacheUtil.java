@@ -95,12 +95,15 @@ public class CacheUtil {
         if (credentialSubjectBean == null) {
             return;
         }
-        if (credentialSubjectBean.getSocial() != null || credentialSubjectBean.getInfo() != null || credentialSubjectBean.getIntro() != null) {
+    /*    if (credentialSubjectBean.getSocial() != null || credentialSubjectBean.getInfo() != null || credentialSubjectBean.getIntro() != null) {
             CacheDiskUtils.getInstance(file)
                     .put(credentialSubjectBean.getDid(), credentialSubjectBean, CacheDiskUtils.DAY * 360);
         } else {
             CacheDiskUtils.getInstance(file).remove(credentialSubjectBean.getDid());
-        }
+        }*/
+        CacheDiskUtils.getInstance(file)
+                .put(credentialSubjectBean.getDid(), credentialSubjectBean, CacheDiskUtils.DAY * 360);
+
     }
 
     public static void remove(String key) {

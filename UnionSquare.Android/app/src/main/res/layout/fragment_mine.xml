@@ -17,42 +17,6 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <RelativeLayout
-                android:id="@+id/rl_did"
-                style="@style/settingItem"
-                android:layout_gravity="center"
-                android:background="@drawable/ass_border">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="15dp"
-                    android:text="DID"
-                    android:textColor="#ffffffff"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/tv_did"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_toLeftOf="@id/iv_did"
-                    android:text="@string/currentno"
-                    android:textColor="@color/whiter50"
-                    android:textSize="13sp" />
-
-                <ImageView
-                    android:id="@+id/iv_did"
-                    android:layout_width="@dimen/px44"
-                    android:layout_height="@dimen/px44"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="@dimen/px40"
-                    android:src="@mipmap/asset_list_arrow" />
-
-            </RelativeLayout>
-
 
             <RelativeLayout
                 android:id="@+id/rl_contact"

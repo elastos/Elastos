@@ -67,7 +67,7 @@ public class ShowPersonalInfoFragemnt extends BaseFragment {
     }
 
     private void setData() {
-        CredentialSubjectBean.Info personal = info.getInfo();
+      /*  CredentialSubjectBean.Info personal = info.getInfo();
         GlideApp.with(this).load(personal.getAvatar())
                 .error(R.mipmap.mine_did_default_avator).circleCrop().into(ivIcon);
         setText(personal.getName(), tvName);
@@ -86,7 +86,7 @@ public class ShowPersonalInfoFragemnt extends BaseFragment {
         }
 
         setText(phone, tvPhonenumber);
-        setText(AppUtlis.getLoc(getContext(), personal.getNation()), tvArea);
+        setText(AppUtlis.getLoc(getContext(), personal.getNation()), tvArea);*/
     }
 
     private void setText(String text, TextView textView) {

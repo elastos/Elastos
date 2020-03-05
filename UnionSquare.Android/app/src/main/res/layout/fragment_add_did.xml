@@ -10,58 +10,41 @@
     <TextView
         style="@style/settingItem_margin15"
         android:gravity="center_vertical"
-        android:text="@string/selfannouncecer"
+        android:text="@string/didinfo"
         android:textSize="16sp" />
 
     <EditText
-        android:maxLength="16"
+        android:text="name11"
         android:id="@+id/et_didname"
         style="@style/settingItem_margin15"
         android:background="@null"
-        android:hint="@string/plziputdidname" />
+        android:hint="@string/plzinputnamemust"
+        android:maxLength="16" />
 
-    <View style="@style/line_margin15" />
-
-    <RelativeLayout
-        android:id="@+id/rl_selectwallet"
-        style="@style/settingItem_margin15">
-
-        <TextView
-            android:id="@+id/tv_walletname"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:hint="@string/plzselectwallet"
-            android:textColorHint="@color/whiter"
-            android:textColor="#ffffffff"
-            android:textSize="14sp" />
-
-        <ImageView
-            android:layout_width="@dimen/px44"
-            android:layout_height="@dimen/px44"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="@dimen/px10"
-            android:src="@mipmap/asset_list_arrow" />
-    </RelativeLayout>
 
     <View style="@style/line_margin15" />
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/tv_didpk"
         style="@style/settingItem_margin15"
-        android:gravity="center_vertical"
-        android:hint="@string/mainkpnomodify" />
+        android:gravity="center_vertical" />
 
-    <View style="@style/line_margin15" />
+
+    <View
+        android:visibility="gone"
+        style="@style/line_margin15" />
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/tv_did"
         style="@style/settingItem_margin15"
-        android:gravity="center_vertical"
-        android:hint="@string/didonlywithmainpk" />
+        android:gravity="center_vertical" />
 
-    <View style="@style/line_margin15" />
+
+    <View
+        android:visibility="gone"
+        style="@style/line_margin15" />
 
     <RelativeLayout
         android:id="@+id/rl_outdate"
@@ -73,8 +56,8 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:hint="@string/plzselctoutdate"
-            android:textColorHint="@color/whiter"
             android:textColor="#ffffffff"
+            android:textColorHint="@color/whiter"
             android:textSize="14sp" />
 
         <ImageView

@@ -3,6 +3,7 @@ package org.elastos.wallet.ela.ui.vote.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +12,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 
+import org.elastos.did.DIDAdapter;
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.DID.listener.MyDIDTransactionCallback;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.db.table.Wallet;
@@ -24,15 +27,18 @@ import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
+
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 
 /**
- * 只为模拟交易获得手续费的情况准备
+ * 只为模拟交易获得手续费的情况准备 和init did
  */
-public class OtherPwdActivity extends BaseActivity implements CommmonStringWithMethNameViewData, NewBaseViewData {
+public class OtherPwdActivity extends BaseActivity implements CommmonStringWithMethNameViewData, NewBaseViewData, MyDIDTransactionCallback {
     @BindView(R.id.et_pwd)
     ClearEditText etPwd;
     private Wallet wallet;
@@ -40,10 +46,12 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     private PwdPresenter presenter;
     private String type, amount, nodePublicKey, ownerPublicKey, name, url;
     private long code;
-    private String inputJson;
+    //private String inputJson;
     private String did;
     private int transType;
     private JSONObject paylodJson;
+    private String didName;
+    private Date didEndDate;
 
     @Override
     protected int getLayoutId() {
@@ -77,8 +85,10 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         name = data.getStringExtra("name");
         url = data.getStringExtra("url");
         code = data.getLongExtra("code", 0);
-        inputJson = data.getStringExtra("inputJson");
+        //inputJson = data.getStringExtra("inputJson");
         did = data.getStringExtra("did");
+        didName = data.getStringExtra("didName");
+        didEndDate = (Date) data.getSerializableExtra("didEndDate");
 
         transType = data.getIntExtra("transType", 13);
 
@@ -115,7 +125,9 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, did, this);
                         break;
                     case Constant.DIDSIGNUP:
-                        presenter.generateDIDInfoPayload(wallet.getWalletId(), inputJson, pwd, this);
+                        getMyDID().setDIDDocumentExprise(didEndDate,pwd , didName);
+                        getMyDID().getMyDIDAdapter().setMyDIDTransactionCallback(this);
+                        presenter.DIDPublish(pwd, this);
                         break;
 
 
@@ -139,6 +151,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 try {
                     JSONObject pulishdata = JSON.parseObject(data);
                     hash = pulishdata.getString("TxHash");
+                    getMyDID().getMyDIDAdapter().setTxId(hash);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -202,6 +215,15 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 presenter.signTransaction(wallet.getWalletId(), chainId, ((CommmonStringEntity) baseEntity).getData(), pwd, this);
                 break;
         }
+    }
+
+    @Override
+    public void createIdTransaction(String payload, String memo, int confirms, DIDAdapter.TransactionCallback callback) {
+        Looper.prepare();
+        presenter.createIDTransaction(wallet.getWalletId(), payload, this);
+        Looper.loop();// 进入loop中的循环，查看消息队列
+
+
     }
 }
 
