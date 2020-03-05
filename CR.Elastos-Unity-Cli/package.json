@@ -1,5 +1,5 @@
 {
-  "name": "elastos-unity-init-dapp-cli",
+  "name": "elastos-unity-cli",
   "version": "1.0.0",
   "description": "Elastos Unity CLI",
   "main": "index.js",
