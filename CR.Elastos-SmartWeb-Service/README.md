@@ -94,6 +94,7 @@ Command to build protocol buffer files:
 - For generating python client code
     ```
     python3 -m grpc_tools.protoc --proto_path=grpc_adenine/definitions --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/health_check.proto;
+    python3 -m grpc_tools.protoc --proto_path=grpc_adenine/definitions --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/node_rpc.proto;
     python3 -m grpc_tools.protoc --proto_path=grpc_adenine/definitions --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/common.proto;
     python3 -m grpc_tools.protoc --proto_path=grpc_adenine/definitions --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/hive.proto;
     python3 -m grpc_tools.protoc --proto_path=grpc_adenine/definitions --python_out=grpc_adenine/stubs/python --grpc_python_out=grpc_adenine/stubs/python grpc_adenine/definitions/wallet.proto;
@@ -106,6 +107,7 @@ Command to build protocol buffer files:
     go get -u github.com/golang/protobuf/protoc-gen-go;
     export PATH=$PATH:$GOPATH/bin;
     protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/health_check.proto;
+    protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/node_rpc.proto;
     protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/common.proto;
     protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/hive.proto;
     protoc -I=grpc_adenine/definitions --go_out=plugins=grpc:grpc_adenine/stubs/go grpc_adenine/definitions/wallet.proto;

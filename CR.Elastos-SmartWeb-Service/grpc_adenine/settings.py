@@ -1,11 +1,16 @@
+# Node RPC
+NODE_COMMON_RPC_METHODS = ['getreceivedbyaddress', 'getnodestate', 'getblockbyheight']
+NODE_MAIN_RPC_METHODS = ['getmininginfo', 'listproducers', 'getconfirmbyheight', 'getarbitersinfo',
+                          'getarbitratorgroupbyheight', 'listcrcandidates', 'listcurrentcrs']
+
 # Mainchain RPC
-MAINCHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'
+MAINCHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress' # Get the balance of an address
 
 # DID Sidechain RPC
-DID_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'
+DID_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress' # Get the balance of an address
 
 # Token Sidechain RPC
-TOKEN_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'
+TOKEN_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress' # Get the balance of an address
 
 # Wallet Service[mainchain, did sidechain]
 WALLET_API_GENERATE_MNEMONIC = '/1/eng/mnemonic'
@@ -41,4 +46,6 @@ VIEW_WALLET_LIMIT = 1000
 REQUEST_ELA_LIMIT = 10
 DEPLOY_ETH_CONTRACT_LIMIT = 100
 WATCH_ETH_CONTRACT_LIMIT = 1000
+
+# Limit on other items
 FILE_UPLOAD_SIZE_LIMIT = 5000000

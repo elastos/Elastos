@@ -6,11 +6,13 @@ import logging
 
 from grpc_adenine.stubs.python import health_check_pb2, health_check_pb2_grpc
 from grpc_adenine.stubs.python import common_pb2_grpc
+from grpc_adenine.stubs.python import node_rpc_pb2_grpc
 from grpc_adenine.stubs.python import wallet_pb2_grpc
 from grpc_adenine.stubs.python import hive_pb2_grpc
 from grpc_adenine.stubs.python import sidechain_eth_pb2_grpc
 
 from grpc_adenine.implementations.health_check import HealthServicer
+from grpc_adenine.implementations.node_rpc import NodeRpc
 from grpc_adenine.implementations.common import Common
 from grpc_adenine.implementations.wallet import Wallet
 from grpc_adenine.implementations.hive import Hive
@@ -34,6 +36,9 @@ def serve():
     health_servicer.set('', health_check_pb2.HealthCheckResponse.SERVING)
     health_check_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
     logging.debug("Added Health Check Service to server")
+
+    node_rpc_pb2_grpc.add_NodeRpcServicer_to_server(NodeRpc(), server)
+    logging.debug("Added Node Rpc Service to server")
 
     common_pb2_grpc.add_CommonServicer_to_server(Common(), server)
     logging.debug("Added Common Service to server")
