@@ -1,7 +1,6 @@
 # Elastos Unity
-Main repository for the Elastos Unity project
-
-The oficial website of the project is located at elastosunity.com
+Main repository for the Elastos Unity project.
+The oficial website of the project is located at [elastosunity.com](elastosunity.com). You can read more about the proposal related to the project at [https://ademcan.net/RNFrameworkProposal.pdf](https://ademcan.net/RNFrameworkProposal.pdf)
 
 ## Introduction
 
