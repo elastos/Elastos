@@ -51,7 +51,7 @@ func (d *ProposalEvidence) Deserialize(r io.Reader) (err error) {
 		return err
 	}
 
-	if d.BlockHeader, err = common.ReadVarBytes(r, pact.MaxBlockSize,
+	if d.BlockHeader, err = common.ReadVarBytes(r, pact.MaxBlockContextSize,
 		"block header"); err != nil {
 		return err
 	}
