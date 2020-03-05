@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -2106,9 +2106,29 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		return errors.New("ELIP needs to have and only have two outputs")
 	}
 
-	// Check budgets of proposal.
+	// Check budgets of proposal
+	if len(proposal.Budgets) < 1 {
+		return errors.New("a proposal cannot be without a Budget")
+	}
+	if proposal.Budgets[0].Type == payload.Imprest && proposal.Budgets[0].Stage != 0 {
+		return errors.New("proposal imprest can only be in the first phase")
+	}
+	if proposal.Budgets[0].Type != payload.Imprest && proposal.Budgets[0].Stage != 1 {
+		return errors.New("the first general type budget needs to start at the beginning")
+	}
+	if proposal.Budgets[len(proposal.Budgets)-1].Type != payload.FinalPayment {
+		return errors.New("proposal finalpayment can only be in the last phase")
+	}
+	stage := proposal.Budgets[0].Stage
 	var amount common.Fixed64
 	for _, b := range proposal.Budgets {
+		if b.Type.Name() == "Unknown" {
+			return errors.New("type of budget should be known")
+		}
+		if b.Stage != stage {
+			return errors.New("the first phase starts incrementing")
+		}
+		stage++
 		amount += b.Amount
 	}
 	if amount > b.crCommittee.CRCCurrentStageAmount*CRCProposalBudgetsPercentage/100 {
