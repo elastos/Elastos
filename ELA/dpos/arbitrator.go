@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package dpos
 
@@ -27,14 +27,14 @@ import (
 )
 
 type Config struct {
-	EnableEventLog    bool
-	Arbitrators       state.Arbitrators
-	Server            elanet.Server
-	TxMemPool         *mempool.TxPool
-	BlockMemPool      *mempool.BlockPool
-	ChainParams       *config.Params
-	Broadcast         func(msg p2p.Message)
-	AnnounceAddr      func()
+	EnableEventLog bool
+	Arbitrators    state.Arbitrators
+	Server         elanet.Server
+	TxMemPool      *mempool.TxPool
+	BlockMemPool   *mempool.BlockPool
+	ChainParams    *config.Params
+	Broadcast      func(msg p2p.Message)
+	AnnounceAddr   func()
 }
 
 type Arbitrator struct {
@@ -64,11 +64,13 @@ func (a *Arbitrator) recover() {
 }
 
 func (a *Arbitrator) Stop() error {
+	log.Info("#### arbitrator stop start")
 	a.enableViewLoop = false
 
 	if err := a.network.Stop(); err != nil {
 		return err
 	}
+	log.Info("#### arbitrator stop end")
 
 	return nil
 }
