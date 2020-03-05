@@ -1,8 +1,8 @@
-Elastos.ELA version 0.3.9 is now available from:
+Elastos.ELA version 0.4.2 is now available from:
 
-  <https://download.elastos.org/elastos-ela/elastos-ela-v0.3.9/>
+  <https://download.elastos.org/elastos-ela/elastos-ela-v0.4.2/>
 
-This is a new minor version release, fix rollback failed error, compatible with release_v0.3.8 version.
+This is a new minor version release, support registering CR by CID and DID. 
 
 Please report bugs using the issue tracker at GitHub:
 
@@ -11,7 +11,7 @@ Please report bugs using the issue tracker at GitHub:
 How to Upgrade
 ==============
 
-If you are running version release_v0.3.8 and before, you should shut it down and wait until
+If you are running version release_v0.4.1 and before, you should shut it down and wait until
  it has completely closed, then just copy over `ela` (on Linux).
 
 However, as usual, config, keystore and chaindata files are compatible.
@@ -32,12 +32,12 @@ distribution provides binaries for the x86_64 platform.
 Notable changes
 ===============
 
-Solved the rollback caused the block height does not grow.
+Support registering CR by CID and DID.
 
-0.3.9 change log
+0.4.2 change log
 =================
 
 Detailed release notes follow
 
-- #1290 `9ff97b1` fix vote statistics error
-- #1292 `a0a0221` add write and read deadline for peer
+- #1393 modify RegisterCRByDIDHeight of mainNet
+- #1381 modify to support registering CR by CID and DID
