@@ -27,6 +27,10 @@ fi
 cd ios;
 pod install;
 cd ..
+wget https://github.com/cyber-republic/elastos-unity/releases/download/1.0.0/ElastosUnityResource.zip
+unzip ElastosUnityResource.zip
+mv ElastosUnityResource resources
+rm ElastosUnityResource.zip
 
 # grab the resources/ folder with example images and icons
 
@@ -55,7 +59,9 @@ echo "}"
 echo ""
 echo " 4 - for Carrier: add the following code into the android/build.gradle file anywhere in the repositories{} block"
 echo "flatDir{"
-echo "	dirs \"$rootDir/../node_modules/react-native-elastos-unity-carrier/android/libs\""
+echo "	dirs \"\$rootDir/../node_modules/react-native-elastos-unity-carrier/android/libs\""
 echo "}"
 echo ""
+echo ""
+echo "To get started you can see a complete example at https://github.com/cyber-republic/elastos-unity-cli/blob/master/demo.js"
 echo ""
