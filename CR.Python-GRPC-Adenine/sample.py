@@ -7,6 +7,7 @@ import argparse
 from elastos_adenine.stubs import health_check_pb2
 
 from elastos_adenine.health_check import HealthCheck
+from elastos_adenine.node_rpc import NodeRpc
 from elastos_adenine.common import Common
 from elastos_adenine.hive import Hive
 from elastos_adenine.sidechain_eth import SidechainEth
@@ -31,7 +32,7 @@ def main():
     network = "gmunet"
     mnemonic_to_use = 'obtain pill nest sample caution stone candy habit silk husband give net'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'TxEiQVAVwraMQMB82qMARHu5AxY0rfvfpoxkuefbZLI0OVAgiNWUCo6QUpOKqYY3'
+    api_key_to_use = 'E9e0vJhczcj51wRiNqPIooD8ngHdMPmBcMcswLrmy85CqS7rdXEQ4qB1yTgzVSb9'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -47,7 +48,18 @@ def main():
         print(e)
         sys.exit(1)
 
-    if service == "generate_api_key":
+    if service == "get_current_height":
+        try:
+            node_rpc = NodeRpc(host, port, production)
+            # Get current height
+            print("--> Get current height")
+            current_height = node_rpc.get_current_height(network, "mainchain")
+            print("Current Height: ", current_height)
+        except Exception as e:
+            print(e)
+        finally:
+            node_rpc.close()
+    elif service == "generate_api_key":
         try:
             common = Common(host, port, production)
             # Generate API Key
