@@ -162,7 +162,7 @@ var DefaultParams = Params{
 	CRCommitteeStartHeight:      2000000, // todo correct me when height has been confirmed
 	CheckRewardHeight:           436812,
 	VoteStatisticsHeight:        512881,
-	RegisterCRByDIDHeight:       595200,
+	RegisterCRByDIDHeight:       598000,
 	ToleranceDuration:           5 * time.Second,
 	MaxInactiveRounds:           720 * 2,
 	InactivePenalty:             0, //there will be no penalty in this version
