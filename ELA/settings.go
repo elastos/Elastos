@@ -250,17 +250,17 @@ func (s *settings) initNetSetting() (err error) {
 			return err
 		}
 		s.params = config.DefaultParams.RegNet()
-		pact.MaxBlockSize = 2000000
+		pact.MaxBlockContextSize = 2000000
 	} else {
 		if err := s.mainNetDefault(s.conf); err != nil {
 			return err
 		}
 		s.params = &config.DefaultParams
-		pact.MaxBlockSize = 2000000
+		pact.MaxBlockContextSize = 2000000
 	}
 
 	if s.conf.MaxBlockSize > 0 {
-		pact.MaxBlockSize = s.conf.MaxBlockSize
+		pact.MaxBlockContextSize = s.conf.MaxBlockSize
 	}
 
 	config.Parameters = s.conf
