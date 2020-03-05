@@ -266,6 +266,7 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	}
 	tx6.Inputs = []*types.Input{input4}
 
+	//tx7 tx8 no use same code,so not conflict
 	tx7 := new(types.Transaction)
 	tx7.TxType = types.ReturnDepositCoin
 	tx7.Version = types.TxVersion09
@@ -340,6 +341,42 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 
 	// 16. Verify same ReturnCRDepositCoin tx again
 	assert.Error(t, txPool.VerifyTx(tx8))
+
+	txs3 := make([]*types.Transaction, 2)
+	txs3[0] = tx7
+	txs3[1] = tx8
+	txPool.cleanTransactions(txs3)
+
+	//tx9 tx10 both use ct1.code should conflict
+	tx9 := new(types.Transaction)
+	tx9.TxType = types.ReturnDepositCoin
+	tx9.Version = types.TxVersion09
+	tx9.Programs = []*program.Program{
+		&program.Program{
+			Code:      ct1.Code,
+			Parameter: nil,
+		},
+	}
+
+	tx10 := new(types.Transaction)
+	tx10.TxType = types.ReturnCRDepositCoin
+	tx10.Version = types.TxVersion09
+	tx10.Programs = []*program.Program{
+		&program.Program{
+			Code:      ct1.Code,
+			Parameter: nil,
+		},
+	}
+	// 13. Verify ReturnDepositCoin tx
+	assert.NoError(t, txPool.VerifyTx(tx9))
+	assert.NoError(t, txPool.AppendTx(tx9))
+
+	// 14. Verify same ReturnDepositCoin tx again
+	assert.Error(t, txPool.VerifyTx(tx9))
+
+	// 16. Verify same ReturnCRDepositCoin tx again
+	assert.Error(t, txPool.VerifyTx(tx10))
+
 }
 
 func TestTxPool_CleanSidechainTx(t *testing.T) {
