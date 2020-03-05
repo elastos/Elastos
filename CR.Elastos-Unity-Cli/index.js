@@ -17,7 +17,7 @@ inquirer
         {
             type:"input",
             name:"projectname",
-            message:"What is the name of your project?"
+            message:"How would you like to name your project?"
         },
         {
             type: 'checkbox',
@@ -35,20 +35,9 @@ inquirer
     ])
     .then(answers => {
         console.log("Creating Elastos Dapp...")
-        console.log(answers)
-        // create a new react-native app
-        // exec('ls', (err, stdout, stderr) => {
-        //     if (err) {
-        //     //some err occurred
-        //     console.error(err)
-        //     } else {
-        //     // the *entire* stdout and stderr (buffered)
-        //     console.log(`stdout: ${stdout}`);
-        //     console.log(`stderr: ${stderr}`);
-        //     }
-        // });
+        // console.log(answers)
 
-        console.log(answers.components.length)
+        // console.log(answers.components.length)
         // install wallet and carrier packages
         if (answers.components.length == 2){
             const myShellScript = exec('sh createDapp.sh '+answers.projectname+" 0");
@@ -83,11 +72,8 @@ inquirer
                     console.error(data);
                 });
             }
-        }
-        
+        }        
     });
-
-
 
 // install the elastos-unity modules
 

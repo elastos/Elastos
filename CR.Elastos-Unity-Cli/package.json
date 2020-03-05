@@ -7,11 +7,16 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "cli"
+    "cli",
+    "elastos",
+    "blockchain",
+    "dapp"
   ],
   "author": "Adem Bilican",
   "license": "ISC",
   "dependencies": {
-    "inquirer": "^6.3.1"
+    "inquirer": "^6.3.1",
+    "react-native-elastos-unity-carrier": "^1.0.4",
+    "react-native-elastos-unity-wallet": "^1.0.7"
   }
 }
