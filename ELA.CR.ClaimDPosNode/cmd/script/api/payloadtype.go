@@ -975,16 +975,16 @@ func newCRCProposal(L *lua.LState) int {
 
 	budgets := make([]payload.Budget, 0)
 	budgetsTable.ForEach(func(i, value lua.LValue) {
-		index := lua.LVAsNumber(i)
+		index := lua.LVAsNumber(i) - 1
 		budgetStr := lua.LVAsString(value)
 		budgetStr = strings.Replace(budgetStr, "{", "", 1)
 		budgetStr = strings.Replace(budgetStr, "}", "", 1)
 		amount, _ := common.StringToFixed64(budgetStr)
 		var budgetType = payload.NormalPayment
-		if int(index) == 1 {
+		if int(index) == 0 {
 			budgetType = payload.Imprest
 		}
-		if int(index) == budgetsTable.Len() {
+		if int(index) == budgetsTable.Len()-1 {
 			budgetType = payload.FinalPayment
 		}
 		budget := &payload.Budget{
