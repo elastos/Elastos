@@ -39,7 +39,7 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
                                          status_message=f'The method {method} is not available for the chain {chain}',
                                          status=False)
 
-        if method != "mainchain" and method not in settings.NODE_COMMON_RPC_METHODS:
+        if chain != "mainchain" and method not in settings.NODE_COMMON_RPC_METHODS:
             return node_rpc_pb2.Response(output=json.dumps({}),
                                          status_message=f'The method {method} is not available for the chain {chain}',
                                          status=False)
