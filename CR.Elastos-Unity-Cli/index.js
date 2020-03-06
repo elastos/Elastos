@@ -40,7 +40,7 @@ inquirer
         // console.log(answers.components.length)
         // install wallet and carrier packages
         if (answers.components.length == 2){
-            const myShellScript = exec('sh createDapp.sh '+answers.projectname+" 0");
+            const myShellScript = exec('sh '+__dirname+'/createDapp.sh '+answers.projectname+" 0");
             myShellScript.stdout.on('data', (data)=>{
                 console.log(data); 
                 // do whatever you want here with data
@@ -52,7 +52,7 @@ inquirer
         else {
             // only install wallet package
             if (answers.components.indexOf("Wallet") > -1){
-                const myShellScript = exec('sh createDapp.sh '+answers.projectname+" 1");
+                const myShellScript = exec('sh '+__dirname+'/createDapp.sh '+answers.projectname+" 1");
                 myShellScript.stdout.on('data', (data)=>{
                     console.log(data); 
                     // do whatever you want here with data
@@ -63,7 +63,7 @@ inquirer
             }
             // only install carrier package
             else {
-                const myShellScript = exec('sh createDapp.sh '+answers.projectname+" 2");
+                const myShellScript = exec('sh '+__dirname+'/createDapp.sh '+answers.projectname+" 2");
                 myShellScript.stdout.on('data', (data)=>{
                     console.log(data); 
                     // do whatever you want here with data

@@ -1,7 +1,7 @@
 {
   "name": "elastos-unity-cli",
   "bin": "./index.js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Elastos Unity CLI",
   "main": "index.js",
   "files": [
