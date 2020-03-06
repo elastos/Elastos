@@ -1,16 +1,16 @@
 # Node RPC
-NODE_COMMON_RPC_METHODS = ['getreceivedbyaddress', 'getnodestate', 'getblockbyheight']
-NODE_MAIN_RPC_METHODS = ['getmininginfo', 'listproducers', 'getconfirmbyheight', 'getarbitersinfo',
-                          'getarbitratorgroupbyheight', 'listcrcandidates', 'listcurrentcrs']
+NODE_COMMON_RPC_METHODS = ['getreceivedbyaddress', 'getnodestate', 'getblockbyheight',
+                           'getarbitratorgroupbyheight']
+NODE_MAIN_RPC_METHODS = ['getconfirmbyheight', 'getmininginfo', 'getarbitersinfo', 'listproducers', 'listcrcandidates', 'listcurrentcrs']
 
 # Mainchain RPC
-MAINCHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress' # Get the balance of an address
+MAINCHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'  # Get the balance of an address
 
 # DID Sidechain RPC
-DID_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress' # Get the balance of an address
+DID_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'  # Get the balance of an address
 
 # Token Sidechain RPC
-TOKEN_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress' # Get the balance of an address
+TOKEN_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'  # Get the balance of an address
 
 # Wallet Service[mainchain, did sidechain]
 WALLET_API_GENERATE_MNEMONIC = '/1/eng/mnemonic'

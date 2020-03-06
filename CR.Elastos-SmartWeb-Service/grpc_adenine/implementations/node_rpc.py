@@ -31,6 +31,9 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
         method = request_input["method"]
         params = request_input["params"]
 
+        d = {"method": method}
+        if params:
+            d["params"] = params
         if chain == "mainchain" and not (method in settings.NODE_COMMON_RPC_METHODS or method in settings.NODE_MAIN_RPC_METHODS):
             return node_rpc_pb2.Response(output=json.dumps({}),
                                          status_message=f'The method {method} is not available for the chain {chain}',
@@ -41,9 +44,6 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
                                          status_message=f'The method {method} is not available for the chain {chain}',
                                          status=False)
 
-        d = {"method": method}
-        if params:
-            d["params"] = params
         if network == "testnet":
             if chain == "mainchain":
                 url = config('TEST_NET_MAINCHAIN_RPC_PORT')
