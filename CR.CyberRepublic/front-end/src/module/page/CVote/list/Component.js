@@ -73,6 +73,7 @@ export default class extends BaseComponent {
     } = this.props.filters
     this.state = {
       list: [],
+      total: 1,
       loading: true,
       page: 1,
       isVisitableFilter,
@@ -315,7 +316,7 @@ export default class extends BaseComponent {
       </FilterLabel>
     )
     const filterPanel = this.renderFilterPanel(PROPOSAL_TYPE)
-    const { list, loading, page } = this.state
+    const { list, total, loading, page } = this.state
     let dataCSV = []
     if (isSecretary) {
       const itemsCSV = _.map(list, v => [
@@ -354,44 +355,44 @@ export default class extends BaseComponent {
         <Container>
           {createBtn}
           <Row
-          type="flex"
-          align="bottom"
-          justify="space-between"
-          style={{ marginTop: 20 }}
-        >
+            type="flex"
+            align="bottom"
+            justify="space-between"
+            style={{ marginTop: 20 }}
+          >
             {title}
             {btns}
           </Row>
           <Row
-          type="flex"
-          align="middle"
-          justify="start"
-          gutter={40}
-          style={{ marginTop: 20, marginBottom: 20 }}
-        >
+            type="flex"
+            align="middle"
+            justify="start"
+            gutter={40}
+            style={{ marginTop: 20, marginBottom: 20 }}
+          >
             {searchInput}
             {filterBtns}
           </Row>
           {isVisitableFilter && filterPanel}
           <Row type="flex" align="middle" justify="end">
             {isSecretary && (
-            <CSVLink data={dataCSV} style={{ marginBottom: 16 }}>
-              {I18N.get('elip.button.exportAsCSV')}
-            </CSVLink>
+              <CSVLink data={dataCSV} style={{ marginBottom: 16 }}>
+                {I18N.get('elip.button.exportAsCSV')}
+              </CSVLink>
             )}
           </Row>
           <Table
-          columns={columns}
-          loading={loading}
-          dataSource={list}
-          rowKey={record => record._id}
-          pagination={{
-            current: page,
-            pageSize: 10,
-            total: list && list.length,
-            onChange: this.onPageChange
-          }}
-        />
+            columns={columns}
+            loading={loading}
+            dataSource={list}
+            rowKey={record => record._id}
+            pagination={{
+              current: page,
+              pageSize: 10,
+              total: total,// list && list.length,
+              onChange: this.onPageChange
+            }}
+          />
           {createBtn}
         </Container>
       </div>
@@ -399,8 +400,7 @@ export default class extends BaseComponent {
   }
 
   onPageChange = (page, pageSize) => {
-    this.setState({ page: parseInt(page) })
-    sessionStorage.setItem('proposalPage', page)
+    this.loadPage(page, pageSize)
   }
 
   createAndRedirect = async () => {
@@ -484,14 +484,36 @@ export default class extends BaseComponent {
     this.ord_loading(true)
     const { listData, canManage } = this.props
     const param = this.getQuery()
+    const page = 1
+    param.page = page
+    param.results = 10
     try {
-      const list = await listData(param, canManage)
-      const page = sessionStorage.getItem('proposalPage')
-      this.setState({ list, page: (page && parseInt(page)) || 1 })
+      const {list,total} = await listData(param, canManage)
+      // const page = sessionStorage.getItem('proposalPage')
+      this.setState({ list, total, page: (page && parseInt(page)) || 1 })
     } catch (error) {
       logger.error(error)
     }
 
+    this.ord_loading(false)
+  }
+  
+  loadPage = async (page, pageSize) => {
+    this.ord_loading(true)
+    const { listData, canManage } = this.props
+    const query = {
+      ...this.getQuery(),
+      page,
+      results: pageSize
+    }
+    try {
+      const {list,total} = await listData(query, canManage)
+      // const page = sessionStorage.getItem('proposalPage')
+      this.setState({ list, total, page: (page && parseInt(page)) || 1 })
+      sessionStorage.setItem('proposalPage', page)
+    } catch (error) {
+      logger.error(error)
+    }
     this.ord_loading(false)
   }
 

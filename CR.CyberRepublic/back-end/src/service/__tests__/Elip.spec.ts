@@ -153,7 +153,7 @@ describe('Tests for ELIP', () => {
     // ELIP's author
     const rs = await elipService.list({})
     console.log("elip.last_length", rs.length)
-    expect(rs.length).to.be.equal(1)
+    expect(rs.length).to.be.equal(2)
 
     // A guest
     const elipService1 = new ElipService(DB, {})
@@ -163,7 +163,7 @@ describe('Tests for ELIP', () => {
     // A secretary
     const elipService2 = new ElipService(DB, { user: user.secretary })
     const rs2 = await elipService2.list({})
-    expect(rs2.length).to.be.equal(0)
+    expect(rs2.length).to.be.equal(1)
   })
 
   test('A secretary review an ELIP', async () => {

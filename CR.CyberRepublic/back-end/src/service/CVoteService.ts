@@ -439,7 +439,7 @@ export default class extends Base {
    * @param query
    * @returns {Promise<"mongoose".Document>}
    */
-  public async list(param): Promise<Document> {
+  public async list(param): Promise<Object> {
     const db_cvote = this.getDBModel('CVote')
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
@@ -577,8 +577,31 @@ export default class extends Base {
       'voteResult',
       'vote_map'
     ]
-    const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
-    return list
+
+    // const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
+
+    const cursor =  db_cvote
+      .getDBInstance()
+      .find(query, fields.join(' '))
+      .sort({vid: -1})
+
+    if (param.results) {
+      const results = parseInt(param.results, 10)
+      const page = parseInt(param.page, 10)
+      cursor.skip(results * (page - 1)).limit(results)
+    }
+    
+    const rs = await Promise.all([
+      cursor,
+      db_cvote
+        .getDBInstance()
+        .find(query)
+        .count()
+    ])
+    const list = rs[0]
+    const total = rs[1]
+
+    return {list, total}
   }
 
   /**
