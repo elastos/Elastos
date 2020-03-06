@@ -249,7 +249,7 @@
 
         <div class="row">
             <!-- Deployed Apps Row -->
-            <div class="col-9 console-services">
+            <div class="col-8 console-services">
                 <p style="float: left; margin: 15px;">
                     <img src="{% static 'images/common/contract.svg' %}"/>
                 </p>
@@ -291,7 +291,7 @@
                 </div>
             </div>
             <!-- User Activity Row -->
-            <div class="col-2 console-services">
+            <div class="col-3 console-services">
                 <p style="float: left; margin: 15px;">
                     <img src="{% static 'images/common/show.svg' %}"/>
                 </p>
@@ -300,7 +300,18 @@
                 </p>
                 <div class="divider"></div>
                 {% for activity in your_activity %}
-                    <p class="sidebar-content" style="margin: 0px 20px 20px 20px;">{{ activity }}</p>
+                    {% for key, value in activity.items %}
+                    <div class="container">
+                        
+                        <div class="d-flex justify-content-between w-90" style="padding-left: 10px;">
+                            
+                            <p class="sidebar-content">
+                                {{ value }}
+                            </p> 
+                        </div>
+                    </div>
+                    <div class="divider" style="margin-top: 10px !important;"></div>
+                    {% endfor %}
                 {% endfor %}
             </div>
         </div>
