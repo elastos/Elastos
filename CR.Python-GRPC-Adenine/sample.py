@@ -17,9 +17,9 @@ from elastos_adenine.wallet import Wallet
 def main():
     parser = argparse.ArgumentParser(description="sample.py", add_help=False)
     parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
-                        help='Types of services supported: generate_api_key, get_api_key, upload_and_sign, '
-                             'verify_and_show, create_wallet, view_wallet, request_ela, deploy_eth_contract, '
-                             'watch_eth_contract')
+                        help='Types of services supported: node_rpc_methods, generate_api_key, get_api_key, '
+                             'upload_and_sign, verify_and_show, create_wallet, view_wallet, request_ela, '
+                             'deploy_eth_contract, watch_eth_contract')
     parser.add_argument('-s', action="store", dest="service")
 
     results = parser.parse_args()

@@ -17,6 +17,8 @@ network = "gmunet"
 ela_to_use = 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN'
 ela_eth_to_use = '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e'
 
+
 def test_node_rpc():
-	# test_node_rpc
-	#assert response.status==True,"Testing test_node_rpc Failed"
+    # test_node_rpc
+    # assert response.status==True,"Testing test_node_rpc Failed"
+    pass

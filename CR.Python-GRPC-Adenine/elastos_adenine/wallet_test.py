@@ -20,5 +20,7 @@ api_key_to_use = ''
 private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
 def test_wallet():
-	# test_wallet
-	#assert response.status==True,"Testing test_wallet Failed"
+    # test_wallet
+    #assert response.status==True,"Testing test_wallet Failed"
+    pass
+
