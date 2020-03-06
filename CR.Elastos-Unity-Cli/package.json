@@ -4,6 +4,9 @@
   "version": "1.0.1",
   "description": "Elastos Unity CLI",
   "main": "index.js",
+  "files": [
+    "createDapp.sh"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
