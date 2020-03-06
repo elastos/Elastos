@@ -31,8 +31,10 @@ def main():
 
     network = "gmunet"
     mnemonic_to_use = 'obtain pill nest sample caution stone candy habit silk husband give net'
+    ela_to_use = 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN'
+    ela_eth_to_use = '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'E9e0vJhczcj51wRiNqPIooD8ngHdMPmBcMcswLrmy85CqS7rdXEQ4qB1yTgzVSb9'
+    api_key_to_use = 'QHvQMh5pV7OwrJInmEa9SYkoV6xib66nkQKlG6LrIszBNqIMadQ30UO15warAVOq'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -48,13 +50,43 @@ def main():
         print(e)
         sys.exit(1)
 
-    if service == "get_current_height":
+    if service == "node_rpc_methods":
         try:
             node_rpc = NodeRpc(host, port, production)
-            # Get current height
             print("--> Get current height")
             current_height = node_rpc.get_current_height(network, "mainchain")
-            print("Current Height: ", current_height)
+            print("Current Height - mainchain: ", current_height)
+            current_height = node_rpc.get_current_height(network, "did")
+            print("Current Height - did sidechain: ", current_height)
+            current_height = node_rpc.get_current_height(network, "token")
+            print("Current Height - token sidechain: ", current_height)
+            print("--> Get current balance")
+            current_balance = node_rpc.get_current_balance(network, "mainchain", ela_to_use)
+            print("Current balance - mainchain:", current_balance)
+            current_balance = node_rpc.get_current_balance(network, "did", ela_to_use)
+            print("Current balance - did sidechain:", current_balance)
+            current_balance = node_rpc.get_current_balance(network, "token", ela_to_use)
+            print("Current balance - token sidechain:", current_balance)
+            print("--> Get current block details")
+            current_block_details = node_rpc.get_current_block_details(network, "mainchain")
+            print("Current block details - mainchain: ", current_block_details)
+            current_block_details = node_rpc.get_current_block_details(network, "did")
+            print("Current block details - did sidechain: ", current_block_details)
+            current_block_details = node_rpc.get_current_block_details(network, "token")
+            print("Current block details - token sidechain: ", current_block_details)
+
+            print("--> Get current mining info - mainchain")
+            current_mining_info = node_rpc.get_current_mining_info(network)
+            print("Current mining info: ", current_mining_info)
+            print("--> Get current block confirm - mainchain")
+            current_block_confirm = node_rpc.get_current_block_confirm(network)
+            print("Current block confirm: ", current_block_confirm)
+            print("--> Get current arbitrator info - mainchain")
+            current_arbitrator_info = node_rpc.get_current_arbitrators_info(network)
+            print("Current arbitrator info: ", current_arbitrator_info)
+            print("--> Get current arbitrator group - mainchain")
+            current_arbitrator_group = node_rpc.get_current_arbitrator_group(network)
+            print("Current arbitrator group: ", current_arbitrator_group)
         except Exception as e:
             print(e)
         finally:
@@ -158,7 +190,7 @@ def main():
             wallet = Wallet(host, port, production)
             print("\n--> View Wallet")
             # Mainchain
-            response = wallet.view_wallet(api_key_to_use, network, 'mainchain', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
+            response = wallet.view_wallet(api_key_to_use, network, 'mainchain', ela_to_use)
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -166,7 +198,7 @@ def main():
                     print(i, ':', json_output['result'][i])
 
             # DID sidechain
-            response = wallet.view_wallet(api_key_to_use, network, 'did', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
+            response = wallet.view_wallet(api_key_to_use, network, 'did', ela_to_use)
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -174,7 +206,7 @@ def main():
                     print(i, ':', json_output['result'][i])
 
             # Token sidechain
-            response = wallet.view_wallet(api_key_to_use, network, 'token', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
+            response = wallet.view_wallet(api_key_to_use, network, 'token', ela_to_use)
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -182,7 +214,7 @@ def main():
                     print(i, ':', json_output['result'][i])
 
             # Eth sidechain
-            response = wallet.view_wallet(api_key_to_use, network, 'eth', '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e')
+            response = wallet.view_wallet(api_key_to_use, network, 'eth', ela_eth_to_use)
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -197,7 +229,7 @@ def main():
             wallet = Wallet(host, port, production)
             print("\n--> Request ELA")
             # Mainchain
-            response = wallet.request_ela(api_key_to_use, 'mainchain', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
+            response = wallet.request_ela(api_key_to_use, 'mainchain', ela_to_use)
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -205,7 +237,7 @@ def main():
                     print(i, ':', json_output['result'][i])
 
             # DID sidechain
-            response = wallet.request_ela(api_key_to_use, 'did', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
+            response = wallet.request_ela(api_key_to_use, 'did', ela_to_use)
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -213,7 +245,7 @@ def main():
                     print(i, ':', json_output['result'][i])
 
             # Token sidechain
-            response = wallet.request_ela(api_key_to_use, 'token', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
+            response = wallet.request_ela(api_key_to_use, 'token', ela_to_use)
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -221,7 +253,7 @@ def main():
                     print(i, ':', json_output['result'][i])
 
             # Eth sidechain
-            response = wallet.request_ela(api_key_to_use, 'eth', '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e')
+            response = wallet.request_ela(api_key_to_use, 'eth', ela_eth_to_use)
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -240,7 +272,7 @@ def main():
             # For production GMUnet, this won't work
             print("\n--> Deploy ETH Contract")
             response = sidechain_eth.deploy_eth_contract(api_key_to_use, network,
-                                                         '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e',
+                                                         ela_eth_to_use,
                                                          '0x35a12175385b24b2f906d6027d440aac7bd31e1097311fa8e3cf21ceac7c4809',
                                                          2000000, 'test/HelloWorld.sol')
             if response.output:

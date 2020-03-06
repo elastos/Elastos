@@ -18,15 +18,83 @@ class NodeRpc:
     def close(self):
         self._channel.close()
 
+    # TODO: Common method for mainchain only
+    def get_current_current_council(self, network):
+        params = {"state": "all"}
+        return self.rpc_method(network, "mainchain", "listcurrentcrs", params)
+
+    # TODO: Common method for mainchain only
+    def get_current_crc_candidates(self, network):
+        params = {"start": 0, "state": "all"}
+        return self.rpc_method(network, "mainchain", "listcrcandidates", params)
+
+    # TODO: Common method for mainchain only
+    def get_current_dpos_supernodes(self, network):
+        params = {"start": 0, "state": "all"}
+        return self.rpc_method(network, "mainchain", "listproducers", params)
+
+    # Common method for mainchain only
+    def get_current_arbitrator_group(self, network):
+        params = {"height": str(self.get_current_height(network, "mainchain"))}
+        return self.rpc_method(network, "mainchain", "getarbitratorgroupbyheight", params)
+
+    # Common method for mainchain only
+    def get_arbitrator_group(self, network, height):
+        params = {"height": height}
+        return self.rpc_method(network, "mainchain", "getarbitratorgroupbyheight", params)
+
+    # Common method for mainchain only
+    def get_current_arbitrators_info(self, network):
+        return self.rpc_method(network, "mainchain", "getarbitersinfo", {})
+
+    # Common method for mainchain only
+    def get_current_block_confirm(self, network):
+        params = {"height": self.get_current_height(network, "mainchain"), "verbosity": 1}
+        return self.rpc_method(network, "mainchain", "getconfirmbyheight", params)
+
+    # Common method for mainchain only
+    def get_block_confirm(self, network, height):
+        params = {"height": height, "verbosity": 1}
+        return self.rpc_method(network, "mainchain", "getconfirmbyheight", params)
+
+    # Common method for mainchain only
+    def get_current_mining_info(self, network):
+        return self.rpc_method(network, "mainchain", "getmininginfo", {})
+
+    # Common method for mainchain, did sidechain and token sidechain
+    def get_current_block_details(self, network, chain):
+        params = {"height": str(self.get_current_height(network, chain))}
+        return self.rpc_method(network, chain, "getblockbyheight", params)
+
+    # Common method for mainchain, did sidechain and token sidechain
+    def get_block_details(self, network, chain, height):
+        params = {"height": height}
+        return self.rpc_method(network, chain, "getblockbyheight", params)
+
+    # Common method for mainchain, did sidechain and token sidechain
+    def get_current_balance(self, network, chain, address):
+        params = {"address": address}
+        return self.rpc_method(network, chain, "getreceivedbyaddress", params)
+
+    # Common method for mainchain, did sidechain and token sidechain
     def get_current_height(self, network, chain):
-        current_height = None
+        node_state = self.get_current_node_state(network, chain)
+        current_height = node_state["height"]
+        return current_height
+
+    # Common method for mainchain, did sidechain and token sidechain
+    def get_current_node_state(self, network, chain):
+        return self.rpc_method(network, chain, "getnodestate", {})
+
+    def rpc_method(self, network, chain, method, params):
         req_data = {
             'chain': chain,
-            'method': "getnodestate",
-            'params': {}
+            'method': method,
+            'params': params
         }
-        response = self.stub.RpcMethod(node_rpc_pb2.Request(network=network, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
+        response = self.stub.RpcMethod(node_rpc_pb2.Request(network=network, input=json.dumps(req_data)),
+                                       timeout=REQUEST_TIMEOUT)
+        data = {}
         if response.status:
             data = json.loads(response.output)["result"]
-            current_height = data["height"]
-        return current_height
+        return data
