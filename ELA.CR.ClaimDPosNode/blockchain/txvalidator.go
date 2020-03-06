@@ -828,18 +828,6 @@ func checkAssetPrecision(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkCRCProposalWithdrawFee(txn *Transaction,
-	fee common.Fixed64) error {
-	withdrawPayload, ok := txn.Payload.(*payload.CRCProposalWithdraw)
-	if !ok {
-		return errors.New("checkCRCProposalWithdrawFee invalid payload")
-	}
-	if fee != withdrawPayload.Fee {
-		return errors.New("transaction fee != withdrawPayload.Fee")
-	}
-	return nil
-}
-
 func (b *BlockChain) getTransactionFee(tx *Transaction,
 	references map[*Input]Output) common.Fixed64 {
 	var outputValue common.Fixed64
@@ -865,13 +853,6 @@ func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]
 	fee := b.getTransactionFee(tx, references)
 	if b.isSmallThanMinTransactionFee(fee) {
 		return fmt.Errorf("transaction fee not enough")
-	}
-
-	if tx.IsCRCProposalWithdrawTx() {
-		err := b.checkCRCProposalWithdrawFee(tx, fee)
-		if err != nil {
-			return err
-		}
 	}
 	// set Fee and FeePerKB if check has passed
 	tx.Fee = fee

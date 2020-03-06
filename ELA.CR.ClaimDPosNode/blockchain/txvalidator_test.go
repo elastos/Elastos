@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -2313,7 +2313,6 @@ func (s *txValidatorTestSuite) getCRCProposalWithdrawTx(crPublicKeyStr,
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
 		ProposalHash:     *randomUint256(),
 		SponsorPublicKey: pkBytes,
-		Fee:              common.Fixed64(1),
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -2438,29 +2437,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	txn.Outputs = append(txn.Outputs, &types.Output{})
 	err = s.Chain.checkTransactionOutput(txn, tenureHeight)
 	s.EqualError(err, "CRCProposalWithdraw tx should not have over two output")
-
-	//transaction fee != withdrawPayload.Fee
-	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 1,
-		Recipient, CRCCommitteeAddressU168, 8*ela, 50*ela)
-	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
-	propState = &crstate.ProposalState{
-		Status: crstate.VoterAgreed,
-		Proposal: payload.CRCProposal{
-
-			SponsorPublicKey: pk1Bytes,
-			Recipient:        *Recipient,
-			Budgets:          createBudgets(3),
-		},
-		FinalPaymentStatus: false,
-		ProposalLeader:     pk1Bytes,
-	}
-	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
-		ProposalHash] = propState
-	err = s.Chain.checkTransactionFee(txn, references)
-	s.EqualError(err, "transaction fee != withdrawPayload.Fee")
-
-	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
-	s.EqualError(err, "no need to withdraw")
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	pk2Bytes, _ := common.HexStringToBytes(publicKeyStr2)

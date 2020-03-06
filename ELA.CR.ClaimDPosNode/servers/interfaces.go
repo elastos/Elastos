@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package servers
 
@@ -2274,7 +2274,6 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj := new(CRCProposalWithdrawInfo)
 		obj.ProposalHash = object.ProposalHash.String()
 		obj.SponsorPublicKey = common.BytesToHexString(object.SponsorPublicKey)
-		obj.Fee = object.Fee.String()
 		obj.Sign = common.BytesToHexString(object.Sign)
 		return obj
 	}
