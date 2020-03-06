@@ -1308,8 +1308,7 @@ func getPublicKeyFromCode(code []byte) []byte {
 // Constructor
 func newCRCProposalWithdraw(L *lua.LState) int {
 	proposalHashString := L.ToString(1)
-	fee := L.ToInt64(2)
-	client, err := checkClient(L, 3)
+	client, err := checkClient(L, 2)
 	if err != nil {
 		fmt.Println("err != nil wallet expected")
 		os.Exit(1)
@@ -1317,7 +1316,6 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 	proposalHash, _ := common.Uint256FromHexString(proposalHashString)
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
 		ProposalHash: *proposalHash,
-		Fee:          common.Fixed64(fee),
 	}
 	rpSignBuf := new(bytes.Buffer)
 	acc := client.GetMainAccount()

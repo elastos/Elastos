@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package payload
 
@@ -22,9 +22,6 @@ type CRCProposalWithdraw struct {
 
 	// Public key of sponsor.
 	SponsorPublicKey []byte
-
-	//fee amount
-	Fee common.Fixed64
 
 	//signature
 	Sign []byte
@@ -61,10 +58,6 @@ func (p *CRCProposalWithdraw) SerializeUnsigned(w io.Writer, version byte) error
 		return err
 	}
 
-	if err := common.WriteUint64(w, uint64(p.Fee)); err != nil {
-		return errors.New("[CRCProposalWithdraw], Fee serialization error.")
-	}
-
 	return nil
 }
 
@@ -92,11 +85,5 @@ func (p *CRCProposalWithdraw) DeserializeUnsigned(r io.Reader,
 		return err
 	}
 	p.SponsorPublicKey = SponsorPublicKey
-
-	var fee uint64
-	if fee, err = common.ReadUint64(r); err != nil {
-		return errors.New("[CRCProposalReview] Fee deserialization error.")
-	}
-	p.Fee = common.Fixed64(fee)
 	return nil
 }

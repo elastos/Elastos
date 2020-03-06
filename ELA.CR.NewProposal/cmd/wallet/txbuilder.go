@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package wallet
 
@@ -444,7 +444,6 @@ func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
 		ProposalHash:     *proposalHash,
 		SponsorPublicKey: SponsorPublicKey,
-		Fee:              *fee,
 	}
 
 	signBuf := new(bytes.Buffer)
