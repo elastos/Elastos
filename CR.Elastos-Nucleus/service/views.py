@@ -5,15 +5,11 @@ import os
 from django.core import serializers
 from django.http import HttpResponse
 
-from decouple import config
-
-from django.core.mail import EmailMessage
 from django.core.files.base import ContentFile, File
 from django.shortcuts import render, redirect
-from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 
-from console_main.settings import MEDIA_ROOT
+from console_main.settings import MEDIA_ROOT, GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION, SHARED_SECRET_ADENINE
 from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
     get_recent_services
 from django.contrib import messages
@@ -47,11 +43,11 @@ def generate_key(request):
         form = GenerateAPIKeyForm(request.POST, initial={'did': did})
         if form.is_valid():
             try:
-                common = Common()
+                common = Common(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
                 error_message = None
                 output = {}
                 if 'submit_get_api_key' in request.POST:
-                    response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did)
+                    response = common.get_api_key_request(SHARED_SECRET_ADENINE, did)
                     if response.status:
                         api_key = response.api_key
                         obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
@@ -63,7 +59,7 @@ def generate_key(request):
                     else:
                         error_message = response.status_message
                 elif 'submit_generate_api_key' in request.POST:
-                    response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did)
+                    response = common.generate_api_request(SHARED_SECRET_ADENINE, did)
                     if response.status:
                         api_key = response.api_key
                         obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
@@ -155,7 +151,7 @@ def upload_and_sign(request):
                     messages.success(request, "Please upload a file or fill out the 'File content' field")
                     return redirect(reverse('service:upload_and_sign'))
                 try:
-                    hive = Hive()
+                    hive = Hive(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
                     response = hive.upload_and_sign(api_key, network, private_key, file_path)
                     data = json.loads(response.output)
                     if response.status:
@@ -228,7 +224,7 @@ def verify_and_show(request):
                     "privateKey": form.cleaned_data.get('private_key')
                 }
                 try:
-                    hive = Hive()
+                    hive = Hive(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
                     response = hive.verify_and_show(api_key, network, request_input)
                     if response.status:
                         request.session['verify_and_show_submit'] = True
@@ -279,7 +275,7 @@ def create_wallet(request):
                 network = form.cleaned_data.get('network')
                 api_key = form.cleaned_data.get('api_key')
                 try:
-                    wallet = Wallet()
+                    wallet = Wallet(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
                     response = wallet.create_wallet(api_key, network)
                     if response.status:
                         request.session['create_wallet_submit'] = True
@@ -402,7 +398,7 @@ def view_wallet(request):
             api_key = form.cleaned_data.get('api_key')
             addr = form.cleaned_data.get('address')
             try:
-                wallet = Wallet()
+                wallet = Wallet(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
                 response = wallet.view_wallet(api_key, network, chain, addr)
                 if response.status:
                     output[chain] = True
@@ -486,7 +482,7 @@ def request_ela(request):
             api_key = form.cleaned_data.get('api_key')
             addr = form.cleaned_data.get('address')
             try:
-                wallet = Wallet()
+                wallet = Wallet(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
                 response = wallet.request_ela(api_key, chain, addr)
                 if response.status:
                     output[chain] = True
@@ -547,7 +543,7 @@ def deploy_eth_contract(request):
                     messages.success(request, "Please upload a file or fill out the 'File content' field")
                     return redirect(reverse('service:upload_and_sign'))
                 try:
-                    sidechain_eth = SidechainEth()
+                    sidechain_eth = SidechainEth(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
                     response = sidechain_eth.deploy_eth_contract(api_key, network, eth_account_address, eth_private_key, eth_gas,
                                                                  file_path)
                     data = json.loads(response.output)
@@ -604,7 +600,7 @@ def watch_eth_contract(request):
                 contract_name = form.cleaned_data.get('contract_name')
                 contract_code_hash = form.cleaned_data.get('contract_code_hash')
                 try:
-                    sidechain_eth = SidechainEth()
+                    sidechain_eth = SidechainEth(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
                     response = sidechain_eth.watch_eth_contract(api_key, network, contract_address, contract_name,
                                                                 contract_code_hash)
                     data = json.loads(response.output)

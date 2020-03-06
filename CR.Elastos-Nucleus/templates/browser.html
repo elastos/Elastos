@@ -1,16 +1,17 @@
 {% extends "base.html" %} 
+{% load static %}
+
+{% block scripts %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/browser.css' %}" />
+{% endblock %}
 
 {% block content %}
-<!--<div class="container-fluid">-->
-<div class="row flex-xl-nowrap">
-
-  <!-- Center Utilities -->
-  <main class="col-12 col-xl-12 bd-content" role="main">
-    {% block browsertitle %}{% endblock %}
-    <div class="card-body">
-      {% block browser %}{% endblock %}
+    <div class="row flex-xl-nowrap browser">
+        <main class="col-12 col-xl-12 bd-content" role="main">
+        {% block browsertitle %}{% endblock %}
+        <div class="card-body">
+          {% block browser %}{% endblock %}
+        </div>
+      </main>
     </div>
-  </main>
-</div>
-<!--</div>-->
 {% endblock content %}

@@ -10,5 +10,12 @@
 {% endblock browsertitle %} 
 
 {% block browser %}
-    <p>Placeholder</p>
+    <form  class="form-group" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Switch</button>
+    </form>
+    <p>Current Height: {{ current_height }}</p>
+    <p>Previous Block Hash: {{ current_block_details.previousblockhash }}</p>
+    <p>Current Block Hash: {{ current_block_details.hash }}</p>
 {% endblock browser %}

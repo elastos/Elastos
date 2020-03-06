@@ -1,7 +1,7 @@
 from django import forms
 
-from .choices import * 
+from .choices import *
 
 
 class SelectNetworkForm(forms.Form):
-    network = forms.ChoiceField(choices = NETWORK, label="", initial='', widget=forms.Select(), required=True)
+    network = forms.ChoiceField(choices=NETWORK, label="", initial='', widget=forms.Select(), required=True)

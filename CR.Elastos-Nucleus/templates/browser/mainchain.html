@@ -1,5 +1,6 @@
 {% extends "browser.html" %} 
-{% load static %} 
+{% load static %}
+{% load mathfilters %}
 
 {% block title %}
 <title>Mainchain Browser - Elastos Nucleus</title>
@@ -15,9 +16,11 @@
         {{ form.as_p }}
         <button type="submit">Switch</button>
     </form>
-    {% if network == 'mainnet' %}
-        <iframe src="https://blockchain.elastos.org/" style="width:100%; height: 1500px;"></iframe>
-    {% else %}
-        <p>There is no browser available yet for {{ network }}</p>  
-    {% endif %}
+    <p>Current Height: {{ current_height }}</p>
+    <p>Previous Block Hash: {{ current_block_details.previousblockhash }}</p>
+    <p>Current Block Hash: {{ current_block_details.hash }}</p>
+    <p>Current Miner: {{ current_block_details.minerinfo }}</p>
+    <p>Current Validator: {{ current_block_confirm.sponsor }}</p>
+    <p>Current Difficulty: {{ current_mining_info.difficulty }}</p>
+    <p>Current Hash Rate: {{ current_mining_info.networkhashps|floatformat|div:1000000000000000000 }} EH/s</p>
 {% endblock browser %}

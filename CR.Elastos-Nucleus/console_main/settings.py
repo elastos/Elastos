@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'qr_code',
     'django_extensions',
+    'mathfilters',
     'django_simple_cookie_consent',
     'console_main.apps.ConsoleMainConfig',
     'login.apps.LoginConfig',
@@ -334,3 +335,9 @@ ALL_APPS = [
     'browser',
     'elastos_trinity'
 ]
+
+# Configuration for python grpc client library(elastos-adenine)
+SHARED_SECRET_ADENINE = config('SHARED_SECRET_ADENINE')
+PRODUCTION = config('PRODUCTION', default=False, cast=bool)
+GRPC_SERVER_HOST = config('GRPC_SERVER_HOST')
+GRPC_SERVER_PORT = config('GRPC_SERVER_PORT')
