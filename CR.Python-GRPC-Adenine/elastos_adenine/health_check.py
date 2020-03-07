@@ -6,9 +6,6 @@ from .stubs import health_check_pb2, health_check_pb2_grpc
 class HealthCheck:
 
     def __init__(self, host, port, production):
-        #if not production:
-        #    self._channel = grpc.insecure_channel('{}:{}'.format(host, port))
-        #else:
         with open('tools/server.crt', 'rb') as f:
             trusted_certs = f.read()
 
