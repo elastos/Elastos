@@ -7,11 +7,16 @@ from contextlib import contextmanager
 import unittest
 
 from grpc_adenine.stubs.python import common_pb2, common_pb2_grpc
-from grpc_adenine.implementations.common import Common
+from grpc_adenine.implementations.common import get_api_key, generate_api_key
+from grpc_adenine.implementations.rate_limiter import RateLimiter
+
+import codecs
+from codecs import open
+import psycopg2
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
-host = "localhost"
-server_port = 0
 secret_key = config('SHARED_SECRET_ADENINE')
 
 network = "gmunet"
@@ -20,63 +25,67 @@ did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
 api_key_to_use = ''
 private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
-@contextmanager
-def mock_server(cls):
-	"""Instantiate a mockserver and return a stub for use in tests"""
-	server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-	common_pb2_grpc.add_CommonServicer_to_server(Common(), server)
-	port = server.add_insecure_port('[::]:{}'.format(server_port))
-	server.start()
+# Connect to the database
+db_name = config('TEST_DB_NAME')
+db_user = config('DB_USER')
+db_password = config('DB_PASSWORD')
+db_host = config('DB_HOST')
+db_port = config('TEST_DB_PORT')
 
-	try:
-		with grpc.insecure_channel('{}:{}'.format(host, port)) as channel:
-			yield common_pb2_grpc.CommonStub(channel)
-	finally:
-		server.stop(None)
+database_uri = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+create_scripts = "grpc_adenine/database/scripts/create_table_scripts.sql"
+reset_scripts = "grpc_adenine/database/scripts/reset_database.sql"
 
 
-class MockServerTest(unittest.TestCase):
-	#testing Get API Key with valid DID
-	def test_get_api_key_1(self):
-		class FakeMockServer(common_pb2_grpc.CommonServicer):
-			def GetAPIKey(self, request, context):
-				return common_pb2.Response()
+def create_database_tables():
+	# Connect to the PostgreSQL database and create tables
+	postgres_connection = psycopg2.connect(database_uri)
+	cursor = postgres_connection.cursor()
 
-		with mock_server(FakeMockServer) as stub:
-			response = stub.GetAPIKey(common_pb2.Request(secret_key=secret_key, did=did_to_use), timeout=30)
-			self.assertEqual(response.status, True)
+	sql = open(create_scripts, mode='r', encoding='utf-8-sig').read()
+	cursor.execute(sql)
+	postgres_connection.commit()
+	cursor.close()
+	postgres_connection.close()
 
-	#testing Get API Key with invalid DID
-	def test_get_api_key_2(self):
-		invalid_did = "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPob"
-		class FakeMockServer(common_pb2_grpc.CommonServicer):
-			def GetAPIKey(self, request, context):
-				return common_pb2.Response()
 
-		with mock_server(FakeMockServer) as stub:
-			response = stub.GetAPIKey(common_pb2.Request(secret_key=secret_key, did=invalid_did), timeout=30)
-			self.assertEqual(response.status, False)
+def reset_database_tables():
+	# reset database tables
+	postgres_connection = psycopg2.connect(database_uri)
+	cursor = postgres_connection.cursor()
 
-	#testing get api key mnemonic
-	def test_get_api_key_mnemonic_1(self):
-		class FakeMockServer(common_pb2_grpc.CommonServicer):
-			def GetAPIKeyMnemonic(self, request, context):
-				return common_pb2.Response()
+	sql = open(reset_scripts, mode='r', encoding='utf-8-sig').read()
+	cursor.execute(sql)
+	postgres_connection.commit()
+	cursor.close()
+	postgres_connection.close()
 
-		with mock_server(FakeMockServer) as stub:
-			response = stub.GetAPIKeyMnemonic(common_pb2.RequestMnemonic(mnemonic=mnemonic_to_use), timeout=30)
-			self.assertEqual(response.status, True)
 
-	#testing get api key invalid mnemonic
-	def test_get_api_key_mnemonic_2(self):
-		invalid_mneumonic = "obtain pill nest sample caution stone candy habit silk husband give internet"
-		class FakeMockServer(common_pb2_grpc.CommonServicer):
-			def GetAPIKeyMnemonic(self, request, context):
-				return common_pb2.Response()
+class RunTest(unittest.TestCase):
+	def setUp(self):
+		create_database_tables()
+		db_engine = create_engine(database_uri)
+		session_maker = sessionmaker(bind=db_engine)
+		self.session = session_maker()
+		self.rate_limiter = RateLimiter(self.session)
 
-		with mock_server(FakeMockServer) as stub:
-			response = stub.GetAPIKeyMnemonic(common_pb2.RequestMnemonic(mnemonic=invalid_mneumonic), timeout=30)
-			self.assertEqual(response.status, False)
+	# testing Generate API Key with valid DID
+	def test_generate_api_key(self):
+		response = generate_api_key(self.session, self.rate_limiter, did_to_use)
+		self.assertEqual(response.status, True)
+
+	# testing Get API Key with valid DID
+	def test_get_api_key(self):
+		generate_api_key(self.session, self.rate_limiter, did_to_use)
+		response = get_api_key(self.session, did_to_use)
+		self.assertEqual(response.status, True)
+
+	def tearDown(self):
+		self.session.close()
+		reset_database_tables()
+
+		
+
 
 	
 
