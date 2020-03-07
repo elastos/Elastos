@@ -3,7 +3,7 @@ import sys
 from decouple import config
 import json
 import argparse
-
+import jwt
 from elastos_adenine.stubs import health_check_pb2
 
 from elastos_adenine.health_check import HealthCheck
@@ -98,13 +98,17 @@ def main():
             print("--> Generate API Key - SHARED_SECRET_ADENINE")
             response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did_to_use)
             if response.status:
-                print("Api Key: " + response.api_key)
+                jwt_info = jwt.decode(response.output, key=config('SHARED_SECRET_ADENINE'), algorithms=['HS256']).get('jwt_info')
+                print("Api Key: " + jwt_info['api_key'])
             else:
                 print("Error Message: " + response.status_message)
+
+            # Generate API Key - MNEMONICS
             print("--> Generate API Key - MNEMONICS")
-            response = common.generate_api_request_mnemonic(mnemonic_to_use)
+            response = common.generate_api_request_mnemonic(mnemonic_to_use, did_to_use)
             if response.status:
-                print("Api Key: " + response.api_key)
+                jwt_info = jwt.decode(response.output, key=config('SHARED_SECRET_ADENINE'), algorithms=['HS256']).get('jwt_info')
+                print("Api Key: " + jwt_info['api_key'])
             else:
                 print("Error Message: " + response.status_message)
         except Exception as e:
@@ -118,13 +122,17 @@ def main():
             print("--> Get API Key - SHARED_SECRET_ADENINE")
             response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did_to_use)
             if response.status:
-                print("Api Key: " + response.api_key)
+                jwt_info = jwt.decode(response.output, key=config('SHARED_SECRET_ADENINE'), algorithms=['HS256']).get('jwt_info')
+                print("Api Key: " + jwt_info['api_key'])
             else:
                 print("Error Message: " + response.status_message)
+            
+            # Get API Key - MNEMONICS
             print("--> Get API Key - MNEMONICS")
-            response = common.get_api_request_mnemonic(mnemonic_to_use)
+            response = common.get_api_request_mnemonic(mnemonic_to_use, did_to_use)
             if response.status:
-                print("Api Key: " + response.api_key)
+                jwt_info = jwt.decode(response.output, key=config('SHARED_SECRET_ADENINE'), algorithms=['HS256']).get('jwt_info')
+                print("Api Key: " + jwt_info['api_key'])
             else:
                 print("Error Message: " + response.status_message)
         except Exception as e:

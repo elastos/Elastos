@@ -20,21 +20,21 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='common',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\x06\x63ommon\"#\n\x0fRequestMnemonic\x12\x10\n\x08mnemonic\x18\x01 \x01(\t\"*\n\x07Request\x12\x12\n\nsecret_key\x18\x01 \x01(\t\x12\x0b\n\x03\x64id\x18\x02 \x01(\t\"C\n\x08Response\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\x82\x02\n\x06\x43ommon\x12I\n\x1aGenerateAPIRequestMnemonic\x12\x17.common.RequestMnemonic\x1a\x10.common.Response\"\x00\x12\x39\n\x12GenerateAPIRequest\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x12@\n\x11GetAPIKeyMnemonic\x12\x17.common.RequestMnemonic\x1a\x10.common.Response\"\x00\x12\x30\n\tGetAPIKey\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\x06\x63ommon\"\x18\n\x07Request\x12\r\n\x05input\x18\x01 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\xf2\x01\n\x06\x43ommon\x12\x41\n\x1aGenerateAPIRequestMnemonic\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x12\x39\n\x12GenerateAPIRequest\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x12\x38\n\x11GetAPIKeyMnemonic\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x12\x30\n\tGetAPIKey\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x62\x06proto3')
 )
 
 
 
 
-_REQUESTMNEMONIC = _descriptor.Descriptor(
-  name='RequestMnemonic',
-  full_name='common.RequestMnemonic',
+_REQUEST = _descriptor.Descriptor(
+  name='Request',
+  full_name='common.Request',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='mnemonic', full_name='common.RequestMnemonic.mnemonic', index=0,
+      name='input', full_name='common.Request.input', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -53,45 +53,7 @@ _REQUESTMNEMONIC = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=24,
-  serialized_end=59,
-)
-
-
-_REQUEST = _descriptor.Descriptor(
-  name='Request',
-  full_name='common.Request',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='secret_key', full_name='common.Request.secret_key', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='did', full_name='common.Request.did', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=61,
-  serialized_end=103,
+  serialized_end=48,
 )
 
 
@@ -103,7 +65,7 @@ _RESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='api_key', full_name='common.Response.api_key', index=0,
+      name='output', full_name='common.Response.output', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -135,21 +97,13 @@ _RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=105,
-  serialized_end=172,
+  serialized_start=50,
+  serialized_end=116,
 )
 
-DESCRIPTOR.message_types_by_name['RequestMnemonic'] = _REQUESTMNEMONIC
 DESCRIPTOR.message_types_by_name['Request'] = _REQUEST
 DESCRIPTOR.message_types_by_name['Response'] = _RESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
-
-RequestMnemonic = _reflection.GeneratedProtocolMessageType('RequestMnemonic', (_message.Message,), {
-  'DESCRIPTOR' : _REQUESTMNEMONIC,
-  '__module__' : 'common_pb2'
-  # @@protoc_insertion_point(class_scope:common.RequestMnemonic)
-  })
-_sym_db.RegisterMessage(RequestMnemonic)
 
 Request = _reflection.GeneratedProtocolMessageType('Request', (_message.Message,), {
   'DESCRIPTOR' : _REQUEST,
@@ -173,15 +127,15 @@ _COMMON = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=175,
-  serialized_end=433,
+  serialized_start=119,
+  serialized_end=361,
   methods=[
   _descriptor.MethodDescriptor(
     name='GenerateAPIRequestMnemonic',
     full_name='common.Common.GenerateAPIRequestMnemonic',
     index=0,
     containing_service=None,
-    input_type=_REQUESTMNEMONIC,
+    input_type=_REQUEST,
     output_type=_RESPONSE,
     serialized_options=None,
   ),
@@ -199,7 +153,7 @@ _COMMON = _descriptor.ServiceDescriptor(
     full_name='common.Common.GetAPIKeyMnemonic',
     index=2,
     containing_service=None,
-    input_type=_REQUESTMNEMONIC,
+    input_type=_REQUEST,
     output_type=_RESPONSE,
     serialized_options=None,
   ),
