@@ -4,26 +4,20 @@ package common;
 
 // The common service definition.
 service Common {
-  rpc GenerateAPIRequestMnemonic (RequestMnemonic) returns (Response) {}
+  rpc GenerateAPIRequestMnemonic (Request) returns (Response) {}
   rpc GenerateAPIRequest (Request) returns (Response) {}
-  rpc GetAPIKeyMnemonic (RequestMnemonic) returns (Response) {}
+  rpc GetAPIKeyMnemonic (Request) returns (Response) {}
   rpc GetAPIKey (Request) returns (Response) {}
 }
 
 // The request message.
-message RequestMnemonic {
-  string mnemonic = 1;
-}
-
-// The request message.
 message Request {
-  string secret_key = 1;
-  string did = 2;
+  string input = 1;
 }
 
 // The response message
 message Response {
-  string api_key = 1;
+  string output = 1;
   string status_message = 2;
   bool status = 3;
 }

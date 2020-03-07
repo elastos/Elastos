@@ -1,7 +1,7 @@
 import random
 import string
 import datetime
-
+import jwt
 from decouple import config
 from grpc_adenine.database import db_engine
 from grpc_adenine.database.user import Users
@@ -21,59 +21,94 @@ class Common(common_pb2_grpc.CommonServicer):
         self.rate_limiter = RateLimiter(self.session)
 
     def GenerateAPIRequestMnemonic(self, request, context):
-        mnemonic = request.mnemonic
+        secret_key = config('SHARED_SECRET_ADENINE')
+        jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+        metadata = dict(context.invocation_metadata())
+        input_did = metadata["did"]
+
+        mnemonic = jwt_info['mnemonic']
 
         private_key, did = get_info_from_mnemonics(mnemonic)
         if not (private_key and did):
-            return common_pb2.Response(api_key='', status_message='Invalid Mnemonics Error', status=False)
+            return common_pb2.Response(output='', status_message='Invalid Mnemonics Error', status=False)
+
+        #if (input_did != did):
+        #    return common_pb2.Response(output='', status_message='Invalid DID', status=False)
 
         response = generate_api_key(self.session, self.rate_limiter, did)
         return response
 
     def GenerateAPIRequest(self, request, context):
         secret_key = config('SHARED_SECRET_ADENINE')
-        did = request.did
+        jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+        metadata = dict(context.invocation_metadata())
+        did = metadata["did"]
 
-        if secret_key != request.secret_key:
-            return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
+        if secret_key != jwt_info['secret_key']:
+            return common_pb2.Response(output='', status_message='Authentication Error', status=False)
 
         response = generate_api_key(self.session, self.rate_limiter, did)
         return response
 
     def GetAPIKeyMnemonic(self, request, context):
-        mnemonic = request.mnemonic
+        secret_key = config('SHARED_SECRET_ADENINE')
+        jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+        metadata = dict(context.invocation_metadata())
+        input_did = metadata["did"]
+
+        mnemonic = jwt_info['mnemonic']
 
         private_key, did = get_info_from_mnemonics(mnemonic)
         if not (private_key and did):
-            return common_pb2.Response(api_key='', status_message='Invalid Mnemonics Error', status=False)
+            return common_pb2.Response(output='', status_message='Invalid Mnemonics Error', status=False)
+
+        #if (input_did != did):
+        #    return common_pb2.Response(output='', status_message='Invalid DID', status=False)
 
         response = get_api_key(self.session, did)
         return response
 
     def GetAPIKey(self, request, context):
         secret_key = config('SHARED_SECRET_ADENINE')
-        did = request.did
+        jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+        metadata = dict(context.invocation_metadata())
+        did = metadata["did"]
 
-        if secret_key != request.secret_key:
-            return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
+        if secret_key != jwt_info['secret_key']:
+            return common_pb2.Response(output='', status_message='Authentication Error', status=False)
 
         response = get_api_key(self.session, did)
         return response
 
+TOKEN_EXPIRATION = 24 * 30
 
 def get_api_key(session, did):
+    secret_key = config('SHARED_SECRET_ADENINE')
+    global TOKEN_EXPIRATION
     result = session.query(Users).filter_by(did=did).first()
     if result:
         api_present = session.query(UserApiRelations).filter_by(user_id=result.id).first()
         api_key = api_present.api_key
-        return common_pb2.Response(api_key=api_key, status_message='Success', status=True)
-    else:
-        return common_pb2.Response(api_key='', status_message='No such API Key exists', status=False)
 
+        #generate jwt token
+        jwt_info = {
+            'api_key': api_key
+        }
+
+        jwt_token = jwt.encode({
+            'jwt_info': jwt_info,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
+        }, secret_key, algorithm='HS256')
+
+        return common_pb2.Response(output=jwt_token, status_message='Success', status=True)
+    else:
+        return common_pb2.Response(output='', status_message='No such API Key exists', status=False)
 
 def generate_api_key(session, rate_limiter, did):
     string_length = 64
     date_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S %z")
+    secret_key = config('SHARED_SECRET_ADENINE')
+    global TOKEN_EXPIRATION
 
     api_key = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(string_length))
     api_present = session.query(UserApiRelations).filter_by(api_key=api_key).first()
@@ -92,7 +127,7 @@ def generate_api_key(session, rate_limiter, did):
         response = rate_limiter.check_rate_limit(settings.GENERATE_API_LIMIT, insert.api_key,
                                     generate_api_key.__name__)
         if response:
-            return common_pb2.Response(api_key='', status_message='Number of daily access limit exceeded',
+            return common_pb2.Response(output='', status_message='Number of daily access limit exceeded',
                                        status=False)
 
         # replace the new API Key
@@ -117,4 +152,15 @@ def generate_api_key(session, rate_limiter, did):
         session.commit()
         # insert into SERVICES LISTS table
         rate_limiter.add_new_access_entry(api_key, generate_api_key.__name__)
-    return common_pb2.Response(api_key=api_key, status_message='Success', status=True)
+
+    #generate jwt token
+    jwt_info = {
+        'api_key': api_key
+    }
+
+    jwt_token = jwt.encode({
+        'jwt_info': jwt_info,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
+    }, secret_key, algorithm='HS256')
+
+    return common_pb2.Response(output=jwt_token, status_message='Success', status=True)
