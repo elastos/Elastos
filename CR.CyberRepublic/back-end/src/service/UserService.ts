@@ -690,13 +690,11 @@ export default class extends Base {
     public async didCallbackEla(param: any) {
         try {
             const jwtToken = param.jwt
-            console.log('ela cb jwtToken...', jwtToken)
             const claims: any = jwt.decode(jwtToken)
             if (!claims) {
                 return { code: 400 }
             }
             const rs: any = await getDidPublicKey(claims.iss)
-            console.log('ela cb rs...', rs)
             if (!rs) {
                 return { code: 400 }
             }
@@ -706,14 +704,13 @@ export default class extends Base {
                 if (err) {
                     return { code: 401 }
                   } else {
-                    console.log('ela cb decoded...', decoded)
                     // get user id to find the specific user and save DID
+                    const result: any = jwt.decode(decoded.req.slice('elastos://credaccess/'.length))
                     const db_user = this.getDBModel('User')
-                    const user = await db_user.findById({ _id: decoded.userId })
+                    const user = await db_user.findById({ _id: result.userId })
                     if (user) { 
                         let dids: object[]
                         const matched = user.dids.find(el => el.id === decoded.iss)
-                        console.log('ela cb matched...', matched)
                         // associate the same DID
                         if (matched) {
                             dids = user.dids.map(el => {
@@ -730,7 +727,6 @@ export default class extends Base {
                                     active: false
                                 }
                             })
-                            console.log('ela cb dids...', dids)
                         } else {
                             // associate different DID
                             const inactiveDids = user.dids.map(el => {
@@ -744,16 +740,13 @@ export default class extends Base {
                                 return el
                             })
                             dids = [ ...inactiveDids, { id: decoded.iss, active: true, expirationDate: rs.expirationDate } ]
-                            console.log('ela cb dids1...', dids)
                         }
                         await db_user.update(
-                            { _id: decoded.userId }, 
+                            { _id: result.userId }, 
                             { $set: { dids } }
                         )
-                        console.log('ela cb success')
                         return { code: 200 }
                     } else {
-                        console.log('ela cb fail')
                         return { code: 400 }
                     }
                   }
