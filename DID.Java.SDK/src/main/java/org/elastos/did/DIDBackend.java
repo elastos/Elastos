@@ -46,6 +46,8 @@ import org.elastos.did.exception.InvalidKeyException;
 import org.elastos.did.exception.MalformedResolveResultException;
 import org.elastos.did.exception.NetworkException;
 import org.elastos.did.meta.DIDMeta;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -68,6 +70,8 @@ public class DIDBackend {
 	private static long ttl = DEFAULT_TTL; // milliseconds
 
 	private DIDAdapter adapter;
+
+	private static final Logger log = LoggerFactory.getLogger(DIDBackend.class);
 
 	class TransactionResult {
 		private String txid;
@@ -108,10 +112,25 @@ public class DIDBackend {
 		public boolean isEmpty() {
 			return !filled;
 		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(256);
+
+			sb.append("txid: ").append(txid)
+				.append("status: ").append(status);
+
+			if (status != 0)
+				sb.append("message: ").append(message);
+
+			return sb.toString();
+		}
 	}
 
 	static class DefaultResolver implements DIDResolver {
 		private URL url;
+
+		private static final Logger log = LoggerFactory.getLogger(DefaultResolver.class);
 
 		public DefaultResolver(String resolver) throws DIDResolveException {
 			if (resolver == null || resolver.isEmpty())
@@ -128,6 +147,8 @@ public class DIDBackend {
 		public InputStream resolve(String requestId, String did, boolean all)
 				throws DIDResolveException {
 			try {
+				log.debug("Resolving {}...", did.toString());
+
 				HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 				connection.setRequestMethod("POST");
 				connection.setRequestProperty("User-Agent",
@@ -153,11 +174,15 @@ public class DIDBackend {
 				os.close();
 
 				int code = connection.getResponseCode();
-				if (code != 200)
-					return null;
+				if (code != 200) {
+					log.error("Resolve {} error, status: {}, message: {}",
+							did.toString(), code, connection.getResponseMessage());
+					throw new DIDResolveException("HTTP error with status: " + code);
+				}
 
 				return connection.getInputStream();
 			} catch (IOException e) {
+				log.error("Resovle " + did + " error", e);
 				throw new NetworkException("Network error.", e);
 			}
 		}
@@ -236,8 +261,6 @@ public class DIDBackend {
 			throw new DIDResolveException("DID resolver not initialized.");
 
 		InputStream is = resolver.resolve(requestId, did.toString(), false);
-		if (is == null)
-			throw new DIDResolveException("Unknown error.");
 
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode node = null;
@@ -278,10 +301,14 @@ public class DIDBackend {
 
 	protected static DIDDocument resolve(DID did, boolean force)
 			throws DIDResolveException {
+		log.info("Resolving {}...", did.toString());
 
 		ResolveResult rr = null;
-		if (!force)
+		if (!force) {
 			rr = ResolverCache.load(did, ttl);
+			log.debug("Try load {} from resolver cache: {}.",
+					did.toString(), rr == null ? "non" : "matched");
+		}
 
 		if (rr == null)
 			rr = resolveFromBackend(did);
@@ -320,6 +347,10 @@ public class DIDBackend {
 			throws DIDTransactionException {
 		TransactionResult tr = new TransactionResult();
 
+		log.info("Create ID transaction...");
+		log.trace("Transaction paload: '{}', memo: {}, confirms: {}",
+				payload, memo, confirms);
+
 		adapter.createIdTransaction(payload, memo, confirms,
 				(txid, status, message) -> {
 					tr.update(txid, status, message);
@@ -334,6 +365,8 @@ public class DIDBackend {
 				}
 			}
 		}
+
+		log.info("ID transaction complete. {}", tr.toString());
 
 		if (tr.getStatus() != 0)
 			throw new DIDTransactionException(

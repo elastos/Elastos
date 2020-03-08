@@ -67,6 +67,8 @@ import org.elastos.did.meta.CredentialMeta;
 import org.elastos.did.meta.DIDMeta;
 import org.elastos.did.util.JsonHelper;
 import org.elastos.did.util.LRUCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongycastle.crypto.CryptoException;
 import org.spongycastle.crypto.digests.SHA256Digest;
 
@@ -91,6 +93,8 @@ public final class DIDStore {
 
 	private DIDStorage storage;
 	private DIDBackend backend;
+
+	private static final Logger log = LoggerFactory.getLogger(DIDStore.class);
 
 	public interface ConflictHandle {
 		DIDDocument merge(DIDDocument chainCopy, DIDDocument localCopy);
@@ -282,15 +286,22 @@ public final class DIDStore {
 				HDKey.DerivedKey key = privateIdentity.derive(i++);
 				DID did = new DID(DID.METHOD, key.getAddress());
 
+				log.info("Synchronize {}/{}...", did.toString(), i);
+
 				try {
 					DIDDocument chainCopy = null;
 					try {
 						chainCopy = DIDBackend.resolve(did, true);
 					} catch (DIDExpiredException | DIDDeactivatedException e) {
+						log.debug("{} is {}, skip.", did.toString(),
+								e instanceof DIDExpiredException ?
+								"expired" : "deactivated");
 						continue;
 					}
 
 					if (chainCopy != null) {
+						log.debug("{} exists, got the on-chain copy.", did.toString());
+
 						DIDDocument finalCopy = chainCopy;
 
 						DIDDocument localCopy = loadDid(did);
@@ -298,11 +309,17 @@ public final class DIDStore {
 							if (localCopy.getMeta().getSignature() == null ||
 									!localCopy.getProof().getSignature().equals(
 									localCopy.getMeta().getSignature())) {
+								log.debug("{} on-chain copy conflict with local copy.",
+										did.toString());
+
 								// Local copy was modified
 								finalCopy = handle.merge(chainCopy, localCopy);
-
-								if (finalCopy == null || !finalCopy.getSubject().equals(did))
+								if (finalCopy == null || !finalCopy.getSubject().equals(did)) {
+									log.error("Conflict handle merge the DIDDocument error.");
 									throw new DIDStoreException("deal with local modification error.");
+								} else {
+									log.debug("Conflict handle return the final copy.");
+								}
 							}
 						}
 
@@ -317,6 +334,8 @@ public final class DIDStore {
 
 						blanks = 0;
 					} else {
+						log.debug("{} not exists.", did.toString());
+
 						if (i >= nextIndex)
 							blanks++;
 					}
@@ -366,6 +385,8 @@ public final class DIDStore {
 		HDKey.DerivedKey key = privateIdentity.derive(index);
 		try {
 			DID did = new DID(DID.METHOD, key.getAddress());
+			log.info("Creating new DID {} with index {}...", did.toString(), index);
+
 			DIDDocument doc = loadDid(did);
 			if (doc != null)
 				throw new DIDStoreException("DID already exists.");
@@ -422,18 +443,27 @@ public final class DIDStore {
 		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
-		DIDDocument doc = loadDid(did);
-		if (doc == null)
-			throw new DIDStoreException("Can not find the document for " + did);
+		log.info("Publishing {}{}...", did.toString(),
+				force ? " in force mode" : "");
 
-		if (doc.isDeactivated())
+		DIDDocument doc = loadDid(did);
+		if (doc == null) {
+			log.error("No document for {}", did.toString());
+			throw new DIDStoreException("Can not find the document for " + did);
+		}
+
+		if (doc.isDeactivated()) {
+			log.error("{} already deactivated.", did.toString());
 			throw new DIDStoreException("DID already deactivated.");
+		}
 
 		String lastTxid = null;
 		DIDDocument resolvedDoc = did.resolve();
 		if (resolvedDoc != null) {
-			if (resolvedDoc.isDeactivated())
+			if (resolvedDoc.isDeactivated()) {
+				log.error("{} already deactivated.", did.toString());
 				throw new DIDStoreException("DID already deactivated.");
+			}
 
 			if (!force) {
 				String localTxid = doc.getMeta().getTransactionId();
@@ -442,14 +472,22 @@ public final class DIDStore {
 				String resolvedTxid = resolvedDoc.getTransactionId();
 				String reolvedSignautre = resolvedDoc.getProof().getSignature();
 
-				if (localTxid == null && localSignature == null)
+				if (localTxid == null && localSignature == null) {
+					log.error("Missing last transaction id and signature, " +
+							"DID SDK dosen't know how to handle it, " +
+							"use force mode to ignore checks.");
 					throw new DIDStoreException("DID document not up-to-date");
+				}
 
-				if (localTxid != null && !localTxid.isEmpty() && !localTxid.equals(resolvedTxid))
+				if (localTxid != null && !localTxid.isEmpty() && !localTxid.equals(resolvedTxid)) {
+					log.error("Current copy not based on the lastest on-chain copy, txid mismatch.");
 					throw new DIDStoreException("DID document not up-to-date");
+				}
 
-				if (localSignature != null && !localSignature.equals(reolvedSignautre))
+				if (localSignature != null && !localSignature.equals(reolvedSignautre)) {
+					log.error("Current copy not based on the lastest on-chain copy, signature mismatch");
 					throw new DIDStoreException("DID document not up-to-date");
+				}
 			}
 
 			lastTxid = resolvedDoc.getTransactionId();
@@ -458,12 +496,15 @@ public final class DIDStore {
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
 
-		if (lastTxid == null || lastTxid.isEmpty())
+		if (lastTxid == null || lastTxid.isEmpty()) {
+			log.info("Try to publish[create] {}...", did.toString());
 			lastTxid = backend.create(doc, confirms,
 					signKey, storepass);
-		else
+		} else {
+			log.info("Try to publish[update] {}...", did.toString());
 			lastTxid = backend.update(doc, lastTxid, confirms,
 					signKey, storepass);
+		}
 
 		if (lastTxid != null)
 			doc.getMeta().setTransactionId(lastTxid);
@@ -1489,6 +1530,8 @@ public final class DIDStore {
 		if (doc == null)
 			throw new DIDStoreException("Export DID " + did + " failed, not exist.");
 
+		log.debug("Exporting {}...", did.toString());
+
 		SHA256Digest sha256 = new SHA256Digest();
 		byte[] bytes = password.getBytes();
 		sha256.update(bytes, 0, bytes.length);
@@ -1535,6 +1578,8 @@ public final class DIDStore {
 			List<DIDURL> ids = listCredentials(did);
 			Collections.sort(ids);
 			for (DIDURL id : ids) {
+				log.debug("Exporting credential {}...", id.toString());
+
 				VerifiableCredential vc = storage.loadCredential(did, id);
 
 				vc.toJson(generator, false);
@@ -1560,6 +1605,8 @@ public final class DIDStore {
 				DIDURL id = pk.getId();
 
 				if (storage.containsPrivateKey(did, id)) {
+					log.debug("Exporting private key {}...", id.toString());
+
 					String csk = storage.loadPrivateKey(did, id);
 					byte[] sk = decryptFromBase64(csk, storepass);
 					csk = encryptToBase64(sk, password);
@@ -1745,6 +1792,8 @@ public final class DIDStore {
 		bytes = did.toString().getBytes();
 		sha256.update(bytes, 0, bytes.length);
 
+		log.debug("Importing {}...", did.toString());
+
 		// Created
 		Date created = JsonHelper.getDate(root, "created", true, null,
 				"export date", exceptionClass);
@@ -1753,29 +1802,35 @@ public final class DIDStore {
 
 		// Document
 		JsonNode node = root.get("document");
-		if (node == null)
+		if (node == null) {
+			log.error("Missing DID document.");
 			throw new DIDStoreException("Missing DID document in the export data");
+		}
 
 		DIDDocument doc = null;
 		try {
 			doc = DIDDocument.fromJson(node);
 		} catch (MalformedDocumentException e) {
+			log.error("Parse DID document error.", e);
 			throw new DIDStoreException("Invalid export data.", e);
 		}
 
-		if (!doc.getSubject().equals(did) || !doc.isGenuine())
+		if (!doc.getSubject().equals(did) || !doc.isGenuine()) {
+			log.error("DID Document not blongs to {}", did.toString());
 			throw new DIDStoreException("Invalid DID document in the export data.");
+		}
 
 		bytes = doc.toString(true).getBytes();
 		sha256.update(bytes, 0, bytes.length);
-
 
 		// Credential
 		HashMap<DIDURL, VerifiableCredential> vcs = null;
 		node = root.get("credential");
 		if (node != null) {
-			if (!node.isArray())
+			if (!node.isArray()) {
+				log.error("Credential should be an array.");
 				throw new DIDStoreException("Invalid export data, wrong credential data.");
+			}
 
 			vcs = new HashMap<DIDURL, VerifiableCredential>(node.size());
 
@@ -1785,11 +1840,14 @@ public final class DIDStore {
 				try {
 					vc = VerifiableCredential.fromJson(node.get(i), did);
 				} catch (MalformedCredentialException e) {
+					log.error("Parse credential " + i + " error", e);
 					throw new DIDStoreException("Invalid export data.", e);
 				}
 
-				if (!vc.getSubject().getId().equals(did) /* || !vc.isGenuine() */)
+				if (!vc.getSubject().getId().equals(did) /* || !vc.isGenuine() */) {
+					log.error("Credential {} not blongs to {}", i, did.toString());
 					throw new DIDStoreException("Invalid credential in the export data.");
+				}
 
 				bytes = vc.toString(true).getBytes();
 				sha256.update(bytes, 0, bytes.length);
@@ -1802,8 +1860,10 @@ public final class DIDStore {
 		HashMap<DIDURL, String> sks = null;
 		node = root.get("privatekey");
 		if (node != null) {
-			if (!node.isArray())
+			if (!node.isArray()) {
+				log.error("Privatekey should be an array.");
 				throw new DIDStoreException("Invalid export data, wrong privatekey data.");
+			}
 
 			sks = new HashMap<DIDURL, String>(node.size());
 
@@ -1841,8 +1901,10 @@ public final class DIDStore {
 
 			metaNode = node.get("credential");
 			if (metaNode != null) {
-				if (!metaNode.isArray())
+				if (!metaNode.isArray()) {
+					log.error("Credential's metadata should be an array.");
 					throw new DIDStoreException("Invalid export data, wrong metadata.");
+				}
 
 				for (int i = 0; i < metaNode.size(); i++) {
 					JsonNode n = metaNode.get(i);
@@ -1868,8 +1930,10 @@ public final class DIDStore {
 
 		// Fingerprint
 		node = root.get("fingerprint");
-		if (node == null)
+		if (node == null) {
+			log.error("Missing fingerprint");
 			throw new DIDStoreException("Missing fingerprint in the export data");
+		}
 		String refFingerprint = node.asText();
 
 		byte digest[] = new byte[32];
@@ -1877,22 +1941,27 @@ public final class DIDStore {
 		String fingerprint = Base64.encodeToString(digest,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 
-		if (!fingerprint.equals(refFingerprint))
+		if (!fingerprint.equals(refFingerprint)) {
+			log.error("Fingerprint mismatch.");
 			throw new DIDStoreException("Invalid export data, the fingerprint mismatch.");
+		}
 
 		// Save
 		//
 		// All objects should load directly from storage,
 		// avoid affects the cached objects.
+		log.debug("Importing document...");
 		storage.storeDid(doc);
 		storage.storeDidMeta(doc.getSubject(), doc.getMeta());
 
 		for (VerifiableCredential vc : vcs.values()) {
+			log.debug("Importing credential {}...", vc.getId().toString());
 			storage.storeCredential(vc);
 			storage.storeCredentialMeta(did, vc.getId(), vc.getMeta());
 		}
 
 		for (Map.Entry<DIDURL, String> sk : sks.entrySet()) {
+			log.debug("Importing private key {}...", sk.getKey().toString());
 			storage.storePrivateKey(did, sk.getKey(), sk.getValue());
 		}
 	}
