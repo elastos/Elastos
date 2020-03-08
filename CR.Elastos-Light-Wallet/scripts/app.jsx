@@ -39,6 +39,7 @@ const PRIVATE_KEY_LENGTH = 64;
 const DEFAULT_FEE_SATS = '500';
 
 /** networks */
+const DEFAULT_ELA_HOST_PREFIX = 'http://elastos.coranos.cc';
 
 const MAINNET = {
   NAME: "Mainnet",
@@ -58,6 +59,8 @@ const NETWORKS = [MAINNET, TESTNET];
 
 var currentNetworkIx = 0;
 
+var nodeUrl = DEFAULT_ELA_HOST_PREFIX;
+
 const getCurrentNetwork = () => {
   return NETWORKS[currentNetworkIx];
 }
@@ -74,10 +77,8 @@ const getTransactionHistoryLink = (txid) => {
   return url;
 }
 
-const ELA_HOST_PREFIX = 'http://elastos.coranos.cc';
-
 const getRestUrl = () => {
-  const url = `${ELA_HOST_PREFIX}:${getCurrentNetwork().REST_PORT}`;
+  const url = `${nodeUrl}:${getCurrentNetwork().REST_PORT}`;
   // mainConsole.log('getRestUrl',url);
   return url;
 }
@@ -101,7 +102,7 @@ const getStateUrl = () => {
 }
 
 const getRpcUrl = () => {
-  const url = `${ELA_HOST_PREFIX}:${getCurrentNetwork().RPC_PORT}`;
+  const url = `${nodeUrl}:${getCurrentNetwork().RPC_PORT}`;
   // mainConsole.log('getRpcUrl',url);
   return url;
 }
@@ -182,6 +183,16 @@ const formatDate = (date) => {
 const changeNetwork = (event) => {
   currentNetworkIx = event.target.value;
   refreshBlockchainData();
+}
+
+const resetNodeUrl = () => {
+  get('nodeUrl').value = DEFAULT_ELA_HOST_PREFIX;
+  renderApp();
+}
+
+const changeNodeUrl = () => {
+  nodeUrl = get('nodeUrl').value;
+  showLogin();
 }
 
 const refreshBlockchainData = () => {
@@ -856,6 +867,7 @@ const hideEverything = () => {
   clearButtonSelection('receive');
   clearButtonSelection('transactions');
   clearButtonSelection('voting');
+  hide('change-node');
   hide('private-key-entry');
   hide('cancel-confirm-transaction');
   hide('completed-transaction');
@@ -892,6 +904,13 @@ const openDevTools = () => {
 const copyToClipboard = () => {
   clipboard.writeText(generatedPrivateKeyHex);
   alert(`copied to clipboard:\n${generatedPrivateKeyHex}`)
+}
+
+const showChangeNode = () => {
+  clearGlobalData();
+  hideEverything();
+  clearSendData();
+  show('change-node');
 }
 
 const showLogin = () => {
@@ -1017,6 +1036,7 @@ const showGenerateNewPrivateKey = () => {
 const clearGlobalData = () => {
   get('privateKey').value = '';
   get('feeAmount').value = DEFAULT_FEE_SATS;
+  get('nodeUrl').value = '';
 
   useLedgerFlag = false;
   publicKey = undefined;
@@ -1137,6 +1157,12 @@ class App extends React.Component {
                     </td>
                   </tr>
                   <tr>
+                    <td className="white_on_purple_with_hover h20px fake_button" onClick={(e) => showChangeNode()}>
+                      <div className="tooltip">Change Node<span className="tooltiptext">{nodeUrl}</span>
+                        </div>
+                    </td>
+                    </tr>
+                  <tr>
                     <td className="white_on_purple h20px no_border"></td>
                   </tr>
                   <tr>
@@ -1206,6 +1232,21 @@ class App extends React.Component {
                       <p><LedgerMessage/>
                       </p>
                       <UseLedgerButton/>
+                    </td>
+                  </tr>
+                  <tr id="change-node">
+                    <td className="black_on_white h20px darkgray_border">
+                      <div className="gray_on_white">Node URL</div>
+                      <br/>
+                      <input style={{
+                          fontFamily: 'monospace'
+                        }} type="text" size="64" id="nodeUrl" placeholder={nodeUrl}></input>
+                      <br/>
+                      <br/>
+                      <br/>
+                      <div className="white_on_gray bordered display_inline_block fake_button rounded padding_5px" onClick={(e) => showLogin()}>Cancel</div>
+                      <div className="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => changeNodeUrl()}>Change Node URL</div>
+                      <div className="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => resetNodeUrl()}>Reset Node URL TO Default</div>
                     </td>
                   </tr>
                   <tr id="private-key-login">
