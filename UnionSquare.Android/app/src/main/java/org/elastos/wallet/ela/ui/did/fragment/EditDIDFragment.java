@@ -9,7 +9,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDStore;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -34,7 +33,6 @@ import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
 
@@ -55,9 +53,6 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
     RelativeLayout rlOutdate;
     @BindView(R.id.tv_updata)
     TextView tvUpdata;
-    Unbinder unbinder;
-    private DIDStore didStore;
-    private DIDDocument doc;
     private Date didEndDate;
     private String didName;
 
@@ -69,17 +64,17 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void setExtraData(Bundle data) {
         wallet = data.getParcelable("wallet");
-        didStore = getMyDID().getDidStore();
-        doc = getMyDID().getDIDDocument();
-        putData();
+        putData(getMyDID().getDIDDocument());
 
     }
 
-    private void putData() {
-        etDidname.setText(getMyDID().getName(doc));
+    private void putData(DIDDocument doc) {
+        didName = getMyDID().getName(doc);
+        didEndDate = getMyDID().getExpires(doc);
+        etDidname.setText(didName);
         tvDid.setText(getMyDID().getDidString());
         tvDidpk.setText(getMyDID().getDidPublicKey(doc));
-        tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(getMyDID().getExpires(doc), getContext()));
+        tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(didEndDate, getContext()));
         registReceiver();
     }
 
@@ -105,7 +100,6 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
                     break;
                 }
                 new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
-
 
                 break;
             case R.id.rl_outdate:
@@ -147,6 +141,7 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
         }
 
     }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();

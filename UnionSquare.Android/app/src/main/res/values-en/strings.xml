@@ -608,4 +608,7 @@
     <string name="abandondidornot">是否永久弃用当前DID？</string>
     <string name="didinitfaile">DID初始化失败</string>
     <string name="addinfo">添加信息</string>
+    <string name="notcreatedid">当前钱包未创建DID</string>
+    <string name="didoutofdate">DID已过期</string>
+    <string name="createdid">创建DID</string>
 </resources>

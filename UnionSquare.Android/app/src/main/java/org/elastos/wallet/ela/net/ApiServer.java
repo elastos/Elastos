@@ -4,6 +4,7 @@ import org.elastos.wallet.ela.bean.GetdePositcoinBean;
 import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.did.entity.WebBackEntity;
 import org.elastos.wallet.ela.ui.main.entity.ServerListEntity;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
@@ -12,6 +13,7 @@ import org.elastos.wallet.ela.utils.Constant;
 import java.util.Map;
 
 import io.reactivex.Observable;
+import retrofit2.http.Body;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
@@ -34,9 +36,9 @@ public interface ApiServer {
     @GET
     Observable<NodeInfoBean> getUrlJson(@Url String url);//不同baseurl用@Url @GET
 
-    @FormUrlEncoded
+
     @POST
-    Observable<NodeInfoBean> postData(@Url String url, @FieldMap Map<String, String> map);//不同baseurl用@Url @GET
+    Observable<WebBackEntity> postData(@Url String url, @Body Map map);//不同baseurl用@Url @GET
 
     @GET(Constant.SERVERLIST)
     Observable<ServerListEntity> getServerList();//不同baseurl用@Url

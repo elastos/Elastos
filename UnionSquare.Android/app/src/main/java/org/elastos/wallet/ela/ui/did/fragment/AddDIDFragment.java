@@ -28,7 +28,7 @@ public class AddDIDFragment extends BaseFragment {
     EditText etDidname;
     @BindView(R.id.tv_date)
     TextView tvDate;
-    private Date endDate;
+    private Date didEndDate;
 
     @Override
     protected int getLayoutId() {
@@ -39,7 +39,7 @@ public class AddDIDFragment extends BaseFragment {
     @Override
     protected void initView(View view) {
 
-        tvTitle.setText(getString(R.string.adddid));
+        tvTitle.setText(R.string.createdid);
 
 
     }
@@ -55,13 +55,13 @@ public class AddDIDFragment extends BaseFragment {
                     break;
                 }
 
-                if (endDate == null) {
+                if (didEndDate == null) {
                     showToast(getString(R.string.plzselctoutdate));
                     break;
                 }
                 Bundle bundle = getArguments();
                 bundle.putString("didName", didName);
-                bundle.putSerializable("didEndDate", endDate);
+                bundle.putSerializable("didEndDate", didEndDate);
                 start(PersonalInfoFragment.class, bundle);
                 break;
 
@@ -76,9 +76,9 @@ public class AddDIDFragment extends BaseFragment {
                     public void affireBtnClick(View view) {
                         String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
                                 + "-" + ((TextConfigDataPicker) view).getDayOfMonth();
-                        endDate = DateUtil.parseToDate(date);
+                        didEndDate = DateUtil.parseToDate(date);
 
-                        tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(endDate, getContext()));
+                        tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(didEndDate, getContext()));
                     }
                 });
                 break;

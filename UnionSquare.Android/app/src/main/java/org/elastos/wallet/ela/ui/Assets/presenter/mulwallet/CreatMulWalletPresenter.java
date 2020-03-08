@@ -2,6 +2,7 @@ package org.elastos.wallet.ela.ui.Assets.presenter.mulwallet;
 
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 import org.elastos.wallet.ela.ui.Assets.listener.CreateMasterWalletListner;
@@ -11,9 +12,10 @@ import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewDa
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 
-public class CreatMulWalletPresenter extends PresenterAbstract {
+public class CreatMulWalletPresenter extends NewPresenterAbstract {
+
     public void exportxPrivateKey(String masterWalletID, String payPassword, BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
+        Observer observer = createObserver(baseFragment,"exportxPrivateKey",payPassword);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
@@ -24,7 +26,6 @@ public class CreatMulWalletPresenter extends PresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
 
     }
-
     public void createMultiSignMasterWalletReadOnly(String masterWalletID, String coSigners, int requiredSignCount, boolean singleAddress, boolean compatible, long timestamp, BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {

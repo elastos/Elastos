@@ -25,6 +25,10 @@ import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
+import org.elastos.did.DIDStore;
+import org.elastos.did.exception.DIDBackendException;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -50,15 +54,18 @@ import org.elastos.wallet.ela.ui.Assets.presenter.AssetsPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.bean.MessageEntity;
 import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
+import org.elastos.wallet.ela.ui.vote.activity.VertifyPwdActivity;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.Log;
@@ -109,6 +116,8 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private CommonGetBalancePresenter commonGetBalancePresenter;
     private Map<String, List<org.elastos.wallet.ela.db.table.SubWallet>> listMap;
     private Map<String, String> transactionMap;
+    private DIDStore store;
+    private String scanResult;
 
     @Override
     protected int getLayoutId() {
@@ -207,13 +216,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         super.onActivityResult(requestCode, resultCode, data);
         //处理扫描结果（在界面上显示）
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
-            String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
-            if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                if (result.startsWith("elastos:")) {
+            scanResult = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
+            if (!TextUtils.isEmpty(scanResult) /*&& matcherUtil.isMatcherAddr(result)*/) {
+                if (scanResult.startsWith("elastos:")) {
                     //兼容elastos:
-                    scanElastos(result);
+                    scanElastos(scanResult);
                 } else {
-                    scanQrBean(result);
+                    scanQrBean(scanResult);
                 }
 
             }
@@ -281,9 +290,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     private void decodeJwt(String result) {
         try {
+            ////0 普通单签 1单签只读 2普通多签 3多签只读
+            if (wallet.getType()!=0){
+                toErroScan(scanResult);
+            }
             result = result.replace("//credaccess/", "");
             String[] jwtParts = result.split("\\.");
-            String base64Header = jwtParts[0];
+            // String base64Header = jwtParts[0];
             String base64Payload = jwtParts[1];
             // String unSignature = base64Header + "." + base64Payload;
             //  String signature = jwtParts[2];
@@ -294,11 +307,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
             // Log.e("Base64", "Base64---->" + header + "\n" + payload + "\n" + signature);
             DID did = new DID(elaString);
-            new WalletManagePresenter().DIDResolve(did, this, result);
-
-
+            new WalletManagePresenter().DIDResolve(did, this, null);
         } catch (Exception e) {
-            toErroScan(result);
+            toErroScan(scanResult);
         }
 
 
@@ -675,8 +686,8 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             //切换钱包
             Wallet temp = (Wallet) result.getObj();
             if (!wallet.getWalletId().equals(temp.getWalletId())) {
-                getMyDID().init(wallet.getWalletId());//初始化mydid
                 wallet = temp;
+                getMyDID().init(wallet.getWalletId());//初始化mydid
                 setWalletView(wallet);
                 setRecycleView();
                 if (dataMap != null && dataMap.size() > 0) {
@@ -690,6 +701,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             Wallet temp = (Wallet) result.getObj();
             if (!wallet.getWalletId().equals(temp.getWalletId())) {
                 wallet = temp;
+                getMyDID().init(wallet.getWalletId());//初始化mydid
                 setWalletViewNew(wallet);
             }
 
@@ -707,6 +719,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             listMap.remove(walletId);
             if (wallet.getWalletId().equals(walletId)) {
                 wallet = realmUtil.queryDefauleWallet();
+                getMyDID().init(wallet.getWalletId());//初始化mydid
                 setWalletView(wallet);
                 setRecycleView();
             }
@@ -728,6 +741,33 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
             transactionMap.put((String) result.getObj(), result.getName());
         }
+        if (integer == RxEnum.VERTIFYPAYPASS.ordinal()) {
+            //验证密码成功
+            String payPasswd = (String) result.getObj();
+            initDid(payPasswd);
+        }
+
+    }
+
+    private void initDid(String payPasswd) {
+
+        try {
+            store = getMyDID().getDidStore();
+            if (store.containsPrivateIdentity()) {
+                resolve(payPasswd);
+            } else {
+                //获得私钥用于初始化did
+                new CreatMulWalletPresenter().exportxPrivateKey(wallet.getWalletId(), payPasswd, this);
+            }
+        } catch (DIDException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void resolve(String payPasswd) throws DIDStoreException, DIDBackendException {
+        DID did = getMyDID().initDID(payPasswd);
+        new WalletManagePresenter().DIDResolve(did, this, payPasswd);
 
     }
 
@@ -739,10 +779,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         super.onDestroy();
     }
 
-    @Override
-    public void onGetCommonData(String methodname, String data) {
-
-    }
 
     private int currentType = -1;
     private Map<Integer, String> dataMap;//用于存储二维码信息
@@ -852,37 +888,81 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
-            case "DIDResolve":
-                Bundle bundle1 = new Bundle();
-                bundle1.putParcelable("wallet", wallet);
-                DIDDocument didDocument = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
-                String result = (String) o;
-                if (didDocument == null) {
-                    //doc 为空
-                    toErroScan("elastos://credaccess/" + result);
-                } else {
-                    //验签
-                    String[] jwtParts = result.split("\\.");
-                    String base64Payload = jwtParts[1];
-                    String unSignature = jwtParts[0] + "." + base64Payload;
-                    String signature = jwtParts[2];
-                    if (didDocument.verify(signature, unSignature.getBytes())) {
-                        // 验签成功
-                        String payload = new String(org.elastos.did.util.Base64.decode(base64Payload));
-                        Bundle bundle = new Bundle();
-                        bundle.putParcelable("RecieveJwtEntity", JSON.parseObject(payload, RecieveJwtEntity.class));
-                        ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
-                    } else {
-                        //验签
-                        // toErroScan("elastos://credaccess/" + result);
-                        String payload = new String(org.elastos.did.util.Base64.decode(base64Payload));
-                        Bundle bundle = new Bundle();
-                        bundle.putParcelable("RecieveJwtEntity", JSON.parseObject(payload, RecieveJwtEntity.class));
-                        ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
-                    }
-                    Log.d("???", didDocument.verify(signature, unSignature.getBytes()) + "");
+            case "exportxPrivateKey":
+                String privateKey = ((CommmonStringEntity) baseEntity).getData();
+                String payPasswd = (String) o;
+                try {
+                    store.initPrivateIdentity(privateKey, payPasswd);
+                    resolve(payPasswd);
+                } catch (DIDException e) {
+                    e.printStackTrace();
+                    showToast(getString(R.string.didinitfaile));
                 }
                 break;
+            case "DIDResolve":
+                DIDDocument didDocument = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
+                String paypas = (String) o;
+                //未传递paypas网站提供的did验签  传递paypas是判断当前钱包有没有did
+                if (paypas==null) {
+                    verifyDID(didDocument);
+                } else {
+                    curentHasDID(didDocument,paypas);
+                }
+
+                break;
         }
+    }
+
+    private void verifyDID(DIDDocument didDocument) {
+        if (didDocument == null) {
+            toErroScan(scanResult);
+        } else {
+            //验签
+            String result = scanResult.replace("elastos://credaccess/", "");
+            String[] jwtParts = result.split("\\.");
+            String unSignature = jwtParts[0] + "." + jwtParts[1];
+            String signature = jwtParts[2];
+            if (didDocument.verify(signature, unSignature.getBytes())) {
+                // 验签成功
+                // 验签成功
+                //先判断本地是否有did
+                // 先去获得密码并验证密码正确否
+                Intent intent = new Intent(getActivity(), VertifyPwdActivity.class);
+                intent.putExtra("walletId", wallet.getWalletId());
+                intent.putExtra("type", this.getClass().getSimpleName());
+                startActivity(intent);
+            } else {
+                //验签失败
+                toErroScan(scanResult);
+            }
+        }
+    }
+
+    private void curentHasDID(DIDDocument didDocument,String payPasswd) {
+        if (didDocument == null) {
+            showToast(getString(R.string.notcreatedid));
+        } else {
+            try {
+                store.storeDid(didDocument);//存储本地
+                if (getMyDID().getExpires(didDocument).before(new Date())) {
+                    //did过期
+                    showToast(getString(R.string.didoutofdate));
+                } else {
+                    Bundle bundle = new Bundle();
+                   // bundle.putParcelable("wallet", wallet);
+                   // bundle.putParcelable("RecieveJwtEntity", JSON.parseObject(payload, RecieveJwtEntity.class));
+                    bundle.putString("scanResult", scanResult);
+                    bundle.putString("payPasswd", payPasswd);
+                    ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
+                }
+            } catch (DIDStoreException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void onGetCommonData(String methodname, String data) {
+
     }
 }

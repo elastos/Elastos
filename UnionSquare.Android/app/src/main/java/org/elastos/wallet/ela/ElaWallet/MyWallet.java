@@ -41,7 +41,7 @@ public class MyWallet {
     public static String Url = getTxHashBaseUrl();
     public MasterWalletManager mMasterWalletManager;
     //private IDidManager mDidManager = null;
-    private String mRootPath ;
+    private String mRootPath;
     public static final String SUCCESSCODE = "00000";
     private static final String WalletException = "000001";
     private static final String JSONEXCEPTION = "000002";
@@ -1651,7 +1651,7 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
             }
             String privateKey = masterWallet.ExportPrivateKey(payPasswd);
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, privateKey, "exportxPrivateKey");
+            return new CommmonStringEntity(SUCCESSCODE, privateKey);
         } catch (WalletException e) {
             return exceptionProcess(e, "ExportxPrivateKey" + formatWalletName(masterWalletID));
         }

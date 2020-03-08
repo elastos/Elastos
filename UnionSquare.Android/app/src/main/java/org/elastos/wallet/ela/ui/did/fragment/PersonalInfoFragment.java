@@ -142,6 +142,7 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
     protected void initView(View view) {
         initItemDate();
         sexs = new String[]{getString(R.string.man), getString(R.string.woman)};
+        registReceiver();
     }
 
     private void initItemDate() {
@@ -364,7 +365,6 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
             //国家地区
             start(AreaCodeFragment.class);
             tvArea = v;
-            registReceiver();
         } else if (index == 7) {
             //个人简介
             Bundle bundle = new Bundle();

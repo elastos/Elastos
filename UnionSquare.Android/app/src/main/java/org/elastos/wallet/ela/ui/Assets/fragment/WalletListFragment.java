@@ -16,11 +16,13 @@ import org.elastos.wallet.ela.bean.CreateWalletBean;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.adapter.WalletListRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet.CreateMulWalletFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
@@ -33,7 +35,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class WalletListFragment extends BaseFragment implements CommonRvListener, WarmPromptListener, CommmonStringWithMethNameViewData {
+public class WalletListFragment extends BaseFragment implements CommonRvListener, WarmPromptListener, NewBaseViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.rv)
@@ -133,8 +135,11 @@ public class WalletListFragment extends BaseFragment implements CommonRvListener
         new CreatMulWalletPresenter().exportxPrivateKey(curentWallt.getWalletId(), pwd, this);
     }
 
+
+
     @Override
-    public void onGetCommonData(String methodname, String data) {
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        String data = ((CommmonStringEntity) baseEntity).getData();
         dialog.dismiss();
         CreateWalletBean createWalletBean = new CreateWalletBean();
         createWalletBean.setMasterWalletID(curentWallt.getWalletId());
@@ -142,5 +147,6 @@ public class WalletListFragment extends BaseFragment implements CommonRvListener
         createWalletBean.setPrivateKey(data);
         post(RxEnum.SELECTRIVATEKEY.ordinal(), "", createWalletBean);
         popTo(CreateMulWalletFragment.class, false);
+
     }
 }

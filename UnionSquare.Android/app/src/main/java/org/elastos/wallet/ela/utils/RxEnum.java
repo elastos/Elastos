@@ -75,6 +75,7 @@ public enum RxEnum {
     READNOTICE,//看完消息通知
     GETDEPOSITVOTR,//列表其他获得非active数据
     REFRESHMESSAGE,//刷新消息中心的数据
+    VERTIFYPAYPASS,//刷新消息中心的数据
 
    /* enum Type {
         CoinBase, // 创币交易

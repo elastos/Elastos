@@ -93,6 +93,10 @@ public class MyDID {
         if (did == null) {
             try {
                 this.did = didStore.getDid(0, payPasswd);
+                DIDURL didurl = new DIDURL(did, "primary");
+                if (!didStore.containsDid(did) || !didStore.containsPrivateKey(did, didurl)) {
+                    didStore.newDid(0, payPasswd);
+                }
             } catch (DIDStoreException e) {
                 e.printStackTrace();
             }

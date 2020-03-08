@@ -283,11 +283,6 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
 
     private void resolve() throws DIDStoreException, DIDBackendException {
         DID did = getMyDID().initDID(payPasswd);
-        DIDURL didurl = new DIDURL(did, "primary");
-
-        if (!store.containsDid(did) || !store.containsPrivateKey(did, didurl)) {
-            store.newDid(0, payPasswd);
-        }
         presenter.DIDResolve(did, this, null);
 
     }
@@ -321,16 +316,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
                 bundle.putParcelable("wallet", wallet);
                 start(OutportMnemonicFragment.class, bundle);
                 break;
-            case "exportxPrivateKey":
-                dialog.dismiss();
-                try {
-                    store.initPrivateIdentity(data, payPasswd);
-                    resolve();
-                } catch (DIDException e) {
-                    e.printStackTrace();
-                    showToast(getString(R.string.didinitfaile));
-                }
-                break;
+
         }
 
     }
@@ -339,6 +325,17 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "exportxPrivateKey":
+                String privateKey = ((CommmonStringEntity) baseEntity).getData();
+                dialog.dismiss();
+                try {
+                    store.initPrivateIdentity(privateKey, payPasswd);
+                    resolve();
+                } catch (DIDException e) {
+                    e.printStackTrace();
+                    showToast(getString(R.string.didinitfaile));
+                }
+                break;
             case "DIDResolve":
                 Bundle bundle1 = new Bundle();
                 bundle1.putParcelable("wallet", wallet);

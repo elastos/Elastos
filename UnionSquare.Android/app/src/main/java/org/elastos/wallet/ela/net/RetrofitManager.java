@@ -115,7 +115,8 @@ public class RetrofitManager {
         }
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         if (MyApplication.currentWalletNet != WalletNet.MAINNET
-                &&MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET) {
+                &&MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET
+                &&MyApplication.currentWalletNet != WalletNet.REGTESTNET) {
             try {
                 OkhttpManager.getInstance().setTrustrCertificates(context.getAssets().open("server.cer"));
             } catch (IOException e) {

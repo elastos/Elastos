@@ -6,7 +6,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDStore;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.table.Wallet;
@@ -14,8 +13,6 @@ import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
-
-import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -38,10 +35,7 @@ public class DidDetailFragment extends BaseFragment {
     @BindView(R.id.tv_edit)
     TextView tvEdit;
     Wallet wallet;
-    private DIDStore didStore;
-    private DIDDocument doc;
-    private Date endDate;
-    private String didName;
+
 
     @Override
     protected int getLayoutId() {
@@ -51,18 +45,13 @@ public class DidDetailFragment extends BaseFragment {
     @Override
     protected void setExtraData(Bundle data) {
         wallet = data.getParcelable("wallet");
-        didStore = getMyDID().getDidStore();
         //  did.getMethodSpecificId()//"did:ela:xxxx"去除did:ela
-        doc = getMyDID().getDIDDocument();
-        putData();
+        putData(getMyDID().getDIDDocument());
 
     }
 
-    private void putData() {
-        didName = getMyDID().getName(doc);
-        tvDidname.setText(didName);
-        endDate = getMyDID().getExpires(doc);
-
+    private void putData(DIDDocument doc) {
+        tvDidname.setText(getMyDID().getName(doc));
         tvDid.setText(getMyDID().getDidString());
         tvDidpk.setText(getMyDID().getDidPublicKey(doc));
         tvValiddate.setText(getString(R.string.to) + DateUtil.timeNYR(getMyDID().getExpires(doc), getContext()));

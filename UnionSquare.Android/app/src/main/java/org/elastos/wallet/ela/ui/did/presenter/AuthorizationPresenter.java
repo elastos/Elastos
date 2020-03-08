@@ -12,7 +12,7 @@ import io.reactivex.Observer;
 
 public class AuthorizationPresenter extends NewPresenterAbstract {
     public void postData(String url,String jwt, BaseFragment baseFragment) {
-        Map<String,  String> map = new HashMap();
+        Map<String,  Object> map = new HashMap();
         map.put("jwt", jwt);
         Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).postData(url,map);
         Observer observer = createObserver(baseFragment, "postData");

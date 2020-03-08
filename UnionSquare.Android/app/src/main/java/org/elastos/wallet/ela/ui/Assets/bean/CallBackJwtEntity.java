@@ -11,14 +11,33 @@ public class CallBackJwtEntity implements Parcelable {
      * exp : 1566382213
      * aud : did:ela:e02e05a2e7dc29a5f2a5882c509a56CeYJ
      * req : xx
+     * "userId": "5e561e879ba6e50078684107",
      */
 
     private String type;
     private String iss;
-    private int iat;
-    private int exp;
+    private long iat;
+    private long exp;
     private String aud;
     private String req;
+    private String presentation;
+    private String userId;
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getPresentation() {
+        return presentation;
+    }
+
+    public void setPresentation(String presentation) {
+        this.presentation = presentation;
+    }
 
     public String getType() {
         return type;
@@ -36,19 +55,19 @@ public class CallBackJwtEntity implements Parcelable {
         this.iss = iss;
     }
 
-    public int getIat() {
+    public long getIat() {
         return iat;
     }
 
-    public void setIat(int iat) {
+    public void setIat(long iat) {
         this.iat = iat;
     }
 
-    public int getExp() {
+    public long getExp() {
         return exp;
     }
 
-    public void setExp(int exp) {
+    public void setExp(long exp) {
         this.exp = exp;
     }
 
@@ -77,10 +96,12 @@ public class CallBackJwtEntity implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.type);
         dest.writeString(this.iss);
-        dest.writeInt(this.iat);
-        dest.writeInt(this.exp);
+        dest.writeLong(this.iat);
+        dest.writeLong(this.exp);
         dest.writeString(this.aud);
         dest.writeString(this.req);
+        dest.writeString(this.presentation);
+        dest.writeString(this.userId);
     }
 
     public CallBackJwtEntity() {
@@ -89,10 +110,12 @@ public class CallBackJwtEntity implements Parcelable {
     protected CallBackJwtEntity(Parcel in) {
         this.type = in.readString();
         this.iss = in.readString();
-        this.iat = in.readInt();
-        this.exp = in.readInt();
+        this.iat = in.readLong();
+        this.exp = in.readLong();
         this.aud = in.readString();
         this.req = in.readString();
+        this.presentation = in.readString();
+        this.userId = in.readString();
     }
 
     public static final Parcelable.Creator<CallBackJwtEntity> CREATOR = new Parcelable.Creator<CallBackJwtEntity>() {

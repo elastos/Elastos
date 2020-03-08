@@ -3,6 +3,9 @@ package org.elastos.wallet.ela.ui.did.fragment;
 import android.os.Bundle;
 import android.view.View;
 
+import com.alibaba.fastjson.JSON;
+
+import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -10,26 +13,37 @@ import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.bean.CallBackJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.RecieveJwtEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AuthorizationPresenter;
-import org.elastos.wallet.ela.utils.Log;
+
+import java.util.Date;
 
 import butterknife.OnClick;
 
 public class AuthorizationFragment extends BaseFragment implements NewBaseViewData {
+    private String[] jwtParts;
+    RecieveJwtEntity recieveJwtEntity;
+    private String scanResult;
+    private String payPasswd;
+    String callBackUrl;
+
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_did_authorization;
     }
 
-    RecieveJwtEntity recieveJwtEntity;
-    String callBackUrl;
+
     @Override
     protected void setExtraData(Bundle data) {
-        recieveJwtEntity = data.getParcelable("RecieveJwtEntity");
+        scanResult = data.getString("scanResult");
+        payPasswd = data.getString("payPasswd");
+        String result = scanResult.replace("elastos://credaccess/", "");
+        jwtParts = result.split("\\.");
+        String payload = new String(org.elastos.did.util.Base64.decode(jwtParts[1]));
+        recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
     }
 
     @Override
     protected void initView(View view) {
-         callBackUrl = recieveJwtEntity.getCallbackurl();
+        callBackUrl = recieveJwtEntity.getCallbackurl();
 
 
     }
@@ -38,7 +52,8 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "postData":
-              //  Log.d("??", "111");
+              showToast("授权成功");
+                popBackFragment();
                 break;
         }
     }
@@ -57,11 +72,25 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
                 //"req": "网站二维码包含的内容",
                 //"presentation":"授权的数据内容"
                 //}
-                CallBackJwtEntity callBackJwtEntity=new CallBackJwtEntity();
+                CallBackJwtEntity callBackJwtEntity = new CallBackJwtEntity();
                 callBackJwtEntity.setType("credaccess");
-                callBackJwtEntity.setIss("credaccess");
+                callBackJwtEntity.setIss(getMyDID().getDidString());
+                callBackJwtEntity.setIat(new Date().getTime());
+                callBackJwtEntity.setExp(new Date().getTime() + 5 * 60 * 1000);
+                callBackJwtEntity.setAud(recieveJwtEntity.getIss());
+                callBackJwtEntity.setReq(scanResult);
+                callBackJwtEntity.setPresentation("");
+                callBackJwtEntity.setUserId(recieveJwtEntity.getUserId());
 
-                new AuthorizationPresenter().postData(callBackUrl, "111", this);
+                String header = jwtParts[0];
+                String payload = org.elastos.did.util.Base64.encodeToString(JSON.toJSONString(callBackJwtEntity).getBytes());
+                try {
+                    String signature = getMyDID().getDIDDocument().sign(payPasswd, (header + "." + payload).getBytes());
+                    new AuthorizationPresenter().postData(callBackUrl, header + "." + payload + "." + signature, this);
+                } catch (DIDStoreException e) {
+                    e.printStackTrace();
+                }
+
                 break;
             case R.id.tv_refuse:
 
