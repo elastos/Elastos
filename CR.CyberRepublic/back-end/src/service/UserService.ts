@@ -692,68 +692,114 @@ export default class extends Base {
             const jwtToken = param.jwt
             const claims: any = jwt.decode(jwtToken)
             if (!claims) {
-                return { code: 400 }
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Problems parsing jwt token.'
+                }
             }
             const rs: any = await getDidPublicKey(claims.iss)
             if (!rs) {
-                return { code: 400 }
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Can not get public key.'
+                }
             }
     
             // verify response data from ela wallet
             return jwt.verify(jwtToken, rs.publicKey, async (err: any, decoded: any) => {
                 if (err) {
-                    return { code: 401 }
+                    return {
+                        code: 401,
+                        success: false,
+                        message: 'Verify signatrue failed.'
+                    }
                   } else {
-                    // get user id to find the specific user and save DID
-                    const result: any = jwt.decode(decoded.req.slice('elastos://credaccess/'.length))
-                    const db_user = this.getDBModel('User')
-                    const user = await db_user.findById({ _id: result.userId })
-                    if (user) { 
-                        let dids: object[]
-                        const matched = user.dids.find(el => el.id === decoded.iss)
-                        // associate the same DID
-                        if (matched) {
-                            dids = user.dids.map(el => {
-                                if (el.id === decoded.iss) {
-                                    return {
-                                        id: el.id,
-                                        active: true,
-                                        expirationDate: rs.expirationDate
+                    if (!decoded.req) {
+                        return {
+                            code: 400,
+                            success: false,
+                            message: 'The payload of jwt token is not correct.'
+                        }
+                    }
+                    try {
+                        // get user id to find the specific user and save DID
+                        const result: any = jwt.decode(decoded.req.slice('elastos://credaccess/'.length))
+                        if (!result || (result && !result.userId)) {
+                            return {
+                                code: 400,
+                                success: false,
+                                message: 'Problems parsing jwt token of CR website.'
+                            }
+                        }
+                        const db_user = this.getDBModel('User')
+                        const user = await db_user.findById({ _id: result.userId })
+                        if (user) { 
+                            let dids: object[]
+                            const matched = user.dids.find(el => el.id === decoded.iss)
+                            // associate the same DID
+                            if (matched) {
+                                dids = user.dids.map(el => {
+                                    if (el.id === decoded.iss) {
+                                        return {
+                                            id: el.id,
+                                            active: true,
+                                            expirationDate: rs.expirationDate
+                                        }
                                     }
-                                }
-                                return {
-                                    id: el.id,
-                                    expirationDate: el.expirationDate,
-                                    active: false
-                                }
-                            })
-                        } else {
-                            // associate different DID
-                            const inactiveDids = user.dids.map(el => {
-                                if (el.active === true) {
                                     return {
                                         id: el.id,
                                         expirationDate: el.expirationDate,
                                         active: false
                                     }
-                                }
-                                return el
-                            })
-                            dids = [ ...inactiveDids, { id: decoded.iss, active: true, expirationDate: rs.expirationDate } ]
+                                })
+                            } else {
+                                // associate different DID
+                                const inactiveDids = user.dids.map(el => {
+                                    if (el.active === true) {
+                                        return {
+                                            id: el.id,
+                                            expirationDate: el.expirationDate,
+                                            active: false
+                                        }
+                                    }
+                                    return el
+                                })
+                                dids = [ ...inactiveDids, { id: decoded.iss, active: true, expirationDate: rs.expirationDate } ]
+                            }
+                            await db_user.update(
+                                { _id: result.userId }, 
+                                { $set: { dids } }
+                            )
+                            return {
+                                code: 200,
+                                success: true, message: 'Ok'
+                            }
+                        } else {
+                            return {
+                                code: 400,
+                                success: false,
+                                message: 'User ID does not exist.'
+                            }
                         }
-                        await db_user.update(
-                            { _id: result.userId }, 
-                            { $set: { dids } }
-                        )
-                        return { code: 200 }
-                    } else {
-                        return { code: 400 }
+                    } catch (err) {
+                        logger.error(err)
+                        return {
+                            code: 500,
+                            success: false,
+                            message: 'Something went wrong'
+                        }
                     }
                   }
             })
         } catch(err) {
             logger.error(err)
-            return { code: 500 }
+            return {
+                code: 500,
+                success: false,
+                message: 'Something went wrong'
+            }
         }
     }
 

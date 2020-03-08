@@ -69,8 +69,8 @@ export default abstract class {
             this.db = await DB.create()
             const result = await this.action()
             if(result){
-                if (result.code && result.code < -1) {
-                    this.res.sendStatus(-result.code)
+                if (result.data && _.isNumber(result.data.code)) {
+                    this.res.status(result.data.code).json(result.data)
                 } else {
                     this.res.set('Content-Type', 'application/json')
                     this.res.json(result)
