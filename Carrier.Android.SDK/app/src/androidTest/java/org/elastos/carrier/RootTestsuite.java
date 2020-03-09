@@ -29,6 +29,9 @@ import static org.junit.Assert.fail;
 		GetInfoTest.class,
 		GetVersionTest.class,
 
+		//CarrierExtension
+		CarrierExtensionTest.class,
+
 		//Group
 		GroupNewTest.class,
 		GroupTitleTest.class,

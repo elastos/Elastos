@@ -28,6 +28,7 @@
 #include "ela_filetransfer.h"
 
 extern int registerCarrierMethods(JNIEnv* env);
+extern int registerCarrierExtensionMethods(JNIEnv* env);
 extern int registerCarrierGroupMethods(JNIEnv* env);
 extern int registerCarrierSessionManagerMethods(JNIEnv* env);
 extern int registerCarrierSessionMethods(JNIEnv* env);
@@ -36,6 +37,7 @@ extern int registerCarrierFileTransferMethods(JNIEnv* env);
 extern int registerCarrierFileTransferManagerMethods(JNIEnv* env);
 
 extern void unregisterCarrierMethods(JNIEnv* env);
+extern void unregisterCarrierExtensionMethods(JNIEnv* env);
 extern void unregisterCarrierGroupMethods(JNIEnv* env);
 extern void unregisterCarrierSessionManagerMethods(JNIEnv* env);
 extern void unregisterCarrierSessionMethods(JNIEnv* env);
@@ -95,6 +97,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     }
 
     if ((registerCarrierMethods(env) != JNI_TRUE) ||
+        (registerCarrierExtensionMethods(env) != JNI_TRUE) ||
         (registerCarrierGroupMethods(env) != JNI_TRUE) ||
         (registerCarrierSessionManagerMethods(env) != JNI_TRUE) ||
         (registerCarrierSessionMethods(env) != JNI_TRUE) ||
@@ -135,6 +138,7 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     unregisterCarrierSessionMethods(env);
     unregisterCarrierStreamMethods(env);
     unregisterCarrierGroupMethods(env);
+    unregisterCarrierExtensionMethods(env);
     unregisterCarrierMethods(env);
     unregisterCarrierFileTransferManagerMethods(env);
     unregisterCarrierFileTransferMethods(env);

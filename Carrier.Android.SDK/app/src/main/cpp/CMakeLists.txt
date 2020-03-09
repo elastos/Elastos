@@ -14,7 +14,9 @@ set(SOURCES
     group.c
     groupUtils.c
     carrier.c
+    carrierExtension.c
     carrierHandler.c
+    carrierExtUtils.c
     carrierUtils.c
     session.c
     sessionManager.c
