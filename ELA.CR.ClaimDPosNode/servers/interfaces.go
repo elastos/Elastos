@@ -50,6 +50,7 @@ var (
 	Arbiter     *dpos.Arbitrator
 	Arbiters    state.Arbitrators
 	Wallet      *wallet.Wallet
+	emptyHash   = common.Uint168{}
 )
 
 func ToReversedString(hash common.Uint256) string {
@@ -1463,6 +1464,7 @@ type RpcProducersInfo struct {
 //single cr candidate info
 type RpcCrCandidateInfo struct {
 	Code     string `json:"code"`
+	CID      string `json:"cid"`
 	DID      string `json:"did"`
 	NickName string `json:"nickname"`
 	Url      string `json:"url"`
@@ -1487,6 +1489,7 @@ type RpcSecretaryGeneral struct {
 //single cr member info
 type RpcCrMemberInfo struct {
 	Code             string `json:"code"`
+	CID              string `json:"cid"`
 	DID              string `json:"did"`
 	NickName         string `json:"nickname"`
 	Url              string `json:"url"`
@@ -1532,7 +1535,7 @@ type RpcCRCProposal struct {
 	ProposalType payload.CRCProposalType
 	// Public key of sponsor.
 	SponsorPublicKey string
-	// DID of CR sponsor.
+	// CID of CR sponsor.
 	CRSponsorDID string
 	// The hash of draft proposal.
 	DraftHash string
@@ -1693,9 +1696,14 @@ func ListCRCandidates(param Params) map[string]interface{} {
 	var totalVotes common.Fixed64
 	for i, c := range candidates {
 		totalVotes += c.Votes()
-		didAddress, _ := c.Info().DID.ToAddress()
+		cidAddress, _ := c.Info().CID.ToAddress()
+		var didAddress string
+		if !c.Info().DID.IsEqual(emptyHash) {
+			didAddress, _ = c.Info().DID.ToAddress()
+		}
 		candidateInfo := RpcCrCandidateInfo{
 			Code:     hex.EncodeToString(c.Info().Code),
+			CID:      cidAddress,
 			DID:      didAddress,
 			NickName: c.Info().NickName,
 			Url:      c.Info().Url,
@@ -1745,17 +1753,22 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 	var rsCRMemberInfoSlice []RpcCrMemberInfo
 
 	for i, cr := range crMembers {
-		didAddress, _ := cr.Info.DID.ToAddress()
+		cidAddress, _ := cr.Info.CID.ToAddress()
+		var didAddress string
+		if !cr.Info.DID.IsEqual(emptyHash) {
+			didAddress, _ = cr.Info.DID.ToAddress()
+		}
 		memberInfo := RpcCrMemberInfo{
 			Code:             hex.EncodeToString(cr.Info.Code),
+			CID:              cidAddress,
 			DID:              didAddress,
 			NickName:         cr.Info.NickName,
 			Url:              cr.Info.Url,
 			Location:         cr.Info.Location,
 			ImpeachmentVotes: cr.ImpeachmentVotes.String(),
-			DepositAmount:    cm.GetAvailableDepositAmount(cr.Info.DID).String(),
+			DepositAmount:    cm.GetAvailableDepositAmount(cr.Info.CID).String(),
 			DepositHash:      cr.DepositHash.String(),
-			Penalty:          cm.GetPenalty(cr.Info.DID).String(),
+			Penalty:          cm.GetPenalty(cr.Info.CID).String(),
 			Index:            uint64(i),
 			State:            cr.MemberState.String(),
 		}
@@ -2040,17 +2053,29 @@ func GetDepositCoin(param Params) map[string]interface{} {
 }
 
 func GetCRDepositCoin(param Params) map[string]interface{} {
-	did, ok := param.String("did")
-	if !ok {
-		return ResponsePack(InvalidParams, "need a param called did")
+	crCommittee := Chain.GetCRCommittee()
+	var candidate *crstate.Candidate
+	pubkey, ok := param.String("publickey")
+	if ok {
+		candidate = crCommittee.GetCandidateByPublicKey(pubkey)
+		if candidate == nil {
+			return ResponsePack(InvalidParams, "can not find CR candidate")
+		}
 	}
-	programHash, err := common.Uint168FromAddress(did)
-	if err != nil {
-		return ResponsePack(InvalidParams, "invalid did to programHash")
+	id, ok := param.String("id")
+	if ok {
+		programHash, err := common.Uint168FromAddress(id)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid id to programHash")
+		}
+
+		candidate = crCommittee.GetCandidateByID(*programHash)
+		if candidate == nil {
+			return ResponsePack(InvalidParams, "need a param called "+
+				"publickey or id")
+		}
 	}
 
-	crCommittee := Chain.GetCRCommittee()
-	candidate := crCommittee.GetCandidate(*programHash)
 	if candidate == nil {
 		return ResponsePack(InvalidParams, "can not find CR candidate")
 	}
@@ -2060,8 +2085,8 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 		Deducted  string `json:"deducted"`
 	}
 	return ResponsePack(Success, &depositCoin{
-		Available: crCommittee.GetAvailableDepositAmount(*programHash).String(),
-		Deducted:  crCommittee.GetPenalty(*programHash).String(),
+		Available: crCommittee.GetAvailableDepositAmount(candidate.Info().CID).String(),
+		Deducted:  crCommittee.GetPenalty(candidate.Info().CID).String(),
 	})
 }
 
@@ -2187,7 +2212,12 @@ func getPayloadInfo(p Payload) PayloadInfo {
 	case *payload.CRInfo:
 		obj := new(CRInfo)
 		obj.Code = common.BytesToHexString(object.Code)
-		obj.DID = object.DID.String()
+		obj.CID = object.CID.String()
+		if object.DID.IsEqual(emptyHash) {
+			obj.DID = object.DID.String()
+		} else {
+			obj.DID = object.DID.String()
+		}
 		obj.NickName = object.NickName
 		obj.Url = object.Url
 		obj.Location = object.Location
@@ -2195,7 +2225,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *payload.UnregisterCR:
 		obj := new(UnregisterCRInfo)
-		obj.DID = object.DID.String()
+		obj.CID = object.CID.String()
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *payload.CRCProposal:
@@ -2262,12 +2292,25 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 		for _, content := range object.Contents {
 			var contentInfo VoteContentInfo
 			contentInfo.VoteType = content.VoteType
-			for _, cv := range content.CandidateVotes {
-				contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
-					CandidateVotes{
-						Candidate: common.BytesToHexString(cv.Candidate),
-						Votes:     cv.Votes.String(),
-					})
+			switch contentInfo.VoteType {
+			case outputpayload.Delegate:
+				for _, cv := range content.CandidateVotes {
+					contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
+						CandidateVotes{
+							Candidate: common.BytesToHexString(cv.Candidate),
+							Votes:     cv.Votes.String(),
+						})
+				}
+			case outputpayload.CRC:
+				for _, cv := range content.CandidateVotes {
+					c, _ := common.Uint168FromBytes(cv.Candidate)
+					addr, _ := c.ToAddress()
+					contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
+						CandidateVotes{
+							Candidate: addr,
+							Votes:     cv.Votes.String(),
+						})
+				}
 			}
 			obj.Contents = append(obj.Contents, contentInfo)
 		}

@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
@@ -64,44 +65,44 @@ func (s *State) getAllCandidates() []*Candidate {
 	return s.getCandidateFromMap(s.Candidates, nil)
 }
 
-func (s *State) exist(did common.Uint168) bool {
-	_, ok := s.depositInfo[did]
+func (s *State) exist(cid common.Uint168) bool {
+	_, ok := s.depositInfo[cid]
 	return ok
 }
 
-func (s *State) isRefundable(did common.Uint168) bool {
-	return s.depositInfo[did].Refundable
+func (s *State) isRefundable(cid common.Uint168) bool {
+	return s.depositInfo[cid].Refundable
 }
 
-// getTotalAmount returns total amount with specified candidate or member did.
-func (s *State) getTotalAmount(did common.Uint168) common.Fixed64 {
-	return s.depositInfo[did].TotalAmount
+// getTotalAmount returns total amount with specified candidate or member cid.
+func (s *State) getTotalAmount(cid common.Uint168) common.Fixed64 {
+	return s.depositInfo[cid].TotalAmount
 }
 
-// getDepositAmount returns deposit amount with specified candidate or member did.
-func (s *State) getDepositAmount(did common.Uint168) common.Fixed64 {
-	return s.depositInfo[did].DepositAmount
+// getDepositAmount returns deposit amount with specified candidate or member cid.
+func (s *State) getDepositAmount(cid common.Uint168) common.Fixed64 {
+	return s.depositInfo[cid].DepositAmount
 }
 
-// getPenalty returns penalty with specified candidate or member did.
-func (s *State) getPenalty(did common.Uint168) common.Fixed64 {
-	return s.depositInfo[did].Penalty
+// getPenalty returns penalty with specified candidate or member cid.
+func (s *State) getPenalty(cid common.Uint168) common.Fixed64 {
+	return s.depositInfo[cid].Penalty
 }
 
 // getAvailableDepositAmount returns available deposit amount with specified
 // candidate or member did.
-func (s *State) getAvailableDepositAmount(did common.Uint168,
+func (s *State) getAvailableDepositAmount(cid common.Uint168,
 	currentHeight uint32, isInVotingPeriod bool) common.Fixed64 {
 
 	var lockedDepositAmount common.Fixed64
 	if isInVotingPeriod {
-		c := s.getCandidate(did)
+		c := s.getCandidate(cid)
 		if c != nil && c.state == Canceled && currentHeight-c.cancelHeight <
 			s.params.CRDepositLockupBlocks {
 			lockedDepositAmount = MinDepositAmount
 		}
 	}
-	depositInfo, ok := s.depositInfo[did]
+	depositInfo, ok := s.depositInfo[cid]
 	if !ok {
 		return 0
 	}
@@ -111,21 +112,21 @@ func (s *State) getAvailableDepositAmount(did common.Uint168,
 
 // existCandidate judges if there is a candidate with specified program code.
 func (s *State) existCandidate(programCode []byte) bool {
-	_, ok := s.CodeDIDMap[common.BytesToHexString(programCode)]
+	_, ok := s.CodeCIDMap[common.BytesToHexString(programCode)]
 	return ok
 }
 
-// ExistCandidateByDID judges if there is a candidate with specified did.
-func (s *State) ExistCandidateByDID(did common.Uint168) (ok bool) {
-	if _, ok = s.Candidates[did]; ok {
+// ExistCandidateByCID judges if there is a candidate with specified cid.
+func (s *State) ExistCandidateByCID(cid common.Uint168) (ok bool) {
+	if _, ok = s.Candidates[cid]; ok {
 		return
 	}
 	return
 }
 
 // existCandidateByDepositHash judges if there is a candidate with deposit hash.
-func (s *State) existCandidateByDepositHash(did common.Uint168) bool {
-	_, ok := s.DepositHashDIDMap[did]
+func (s *State) existCandidateByDepositHash(cid common.Uint168) bool {
+	_, ok := s.DepositHashCIDMap[cid]
 	return ok
 }
 
@@ -206,36 +207,36 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 	}
 
 	var firstTimeRegister bool
-	if _, ok := s.depositInfo[info.DID]; !ok {
+	if _, ok := s.depositInfo[info.CID]; !ok {
 		firstTimeRegister = true
 	}
 
 	s.history.Append(height, func() {
 		if firstTimeRegister {
-			s.depositInfo[info.DID] = &DepositInfo{}
-			s.CodeDIDMap[code] = info.DID
-			s.DepositHashDIDMap[candidate.depositHash] = info.DID
+			s.depositInfo[info.CID] = &DepositInfo{}
+			s.CodeCIDMap[code] = info.CID
+			s.DepositHashCIDMap[candidate.depositHash] = info.CID
 		}
 		s.Nicknames[nickname] = struct{}{}
-		s.Candidates[info.DID] = &candidate
-		s.depositInfo[info.DID].DepositAmount += MinDepositAmount
-		s.depositInfo[info.DID].TotalAmount += amount
+		s.Candidates[info.CID] = &candidate
+		s.depositInfo[info.CID].DepositAmount += MinDepositAmount
+		s.depositInfo[info.CID].TotalAmount += amount
 	}, func() {
-		delete(s.Candidates, info.DID)
+		delete(s.Candidates, info.CID)
 		delete(s.Nicknames, nickname)
-		s.depositInfo[info.DID].DepositAmount -= MinDepositAmount
-		s.depositInfo[info.DID].TotalAmount -= amount
+		s.depositInfo[info.CID].DepositAmount -= MinDepositAmount
+		s.depositInfo[info.CID].TotalAmount -= amount
 		if firstTimeRegister {
-			delete(s.depositInfo, info.DID)
-			delete(s.CodeDIDMap, code)
-			delete(s.DepositHashDIDMap, candidate.depositHash)
+			delete(s.depositInfo, info.CID)
+			delete(s.CodeCIDMap, code)
+			delete(s.DepositHashCIDMap, candidate.depositHash)
 		}
 	})
 }
 
 // updateCR handles the update CR transaction.
 func (s *State) updateCR(info *payload.CRInfo, height uint32) {
-	candidate := s.getCandidate(info.DID)
+	candidate := s.getCandidate(info.CID)
 	crInfo := candidate.info
 	s.history.Append(height, func() {
 		s.updateCandidateInfo(&crInfo, info)
@@ -246,21 +247,21 @@ func (s *State) updateCR(info *payload.CRInfo, height uint32) {
 
 // unregisterCR handles the cancel producer transaction.
 func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
-	candidate := s.getCandidate(info.DID)
+	candidate := s.getCandidate(info.CID)
 	if candidate == nil {
 		return
 	}
 	oriState := candidate.state
-	oriRefundable := s.depositInfo[info.DID].Refundable
+	oriRefundable := s.depositInfo[info.CID].Refundable
 	s.history.Append(height, func() {
-		s.depositInfo[info.DID].DepositAmount -= MinDepositAmount
-		s.depositInfo[info.DID].Refundable = true
+		s.depositInfo[info.CID].DepositAmount -= MinDepositAmount
+		s.depositInfo[info.CID].Refundable = true
 		candidate.cancelHeight = height
 		candidate.state = Canceled
 		delete(s.Nicknames, candidate.info.NickName)
 	}, func() {
-		s.depositInfo[info.DID].DepositAmount += MinDepositAmount
-		s.depositInfo[info.DID].Refundable = oriRefundable
+		s.depositInfo[info.CID].DepositAmount += MinDepositAmount
+		s.depositInfo[info.CID].Refundable = oriRefundable
 		candidate.cancelHeight = 0
 		candidate.state = oriState
 		s.Nicknames[candidate.info.NickName] = struct{}{}
@@ -270,7 +271,7 @@ func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
 // updateCandidateInfo updates the candidate's info with value compare,
 // any change will be updated.
 func (s *State) updateCandidateInfo(origin *payload.CRInfo, update *payload.CRInfo) {
-	candidate := s.getCandidate(origin.DID)
+	candidate := s.getCandidate(origin.CID)
 
 	// compare and update node nickname.
 	if origin.NickName != update.NickName {
@@ -327,11 +328,11 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 	}
 
 	for _, program := range tx.Programs {
-		did, _ := getDIDByCode(program.Code)
-		if candidate := s.getCandidate(*did); candidate != nil {
+		cid, _ := getCIDByCode(program.Code)
+		if candidate := s.getCandidate(*cid); candidate != nil {
 			returnCandidateAction(candidate, candidate.state)
 		}
-		if candidates := s.getHistoryCandidate(*did); len(candidates) != 0 {
+		if candidates := s.getHistoryCandidate(*cid); len(candidates) != 0 {
 			for _, c := range candidates {
 				if c.state != Returned {
 					returnCandidateAction(c, c.state)
@@ -344,29 +345,29 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 			}
 		}
 
-		updateAmountAction(*did)
+		updateAmountAction(*cid)
 	}
 }
 
 // addCRCRelatedAssert will plus deposit amount for CRC referenced in
 // program hash of transaction output.
 func (s *State) addCRCRelatedAssert(output *types.Output, height uint32) bool {
-	if did, ok := s.getDIDByDepositHash(output.ProgramHash); ok {
+	if cid, ok := s.getCIDByDepositHash(output.ProgramHash); ok {
 		s.history.Append(height, func() {
-			s.depositInfo[did].TotalAmount += output.Value
+			s.depositInfo[cid].TotalAmount += output.Value
 		}, func() {
-			s.depositInfo[did].TotalAmount -= output.Value
+			s.depositInfo[cid].TotalAmount -= output.Value
 		})
 		return true
 	}
 	return false
 }
 
-// getDIDByDepositHash will try to get did of candidate or member with specified
+// getCIDByDepositHash will try to get cid of candidate or member with specified
 // program hash.
-func (s *State) getDIDByDepositHash(hash common.Uint168) (common.Uint168, bool) {
-	did, ok := s.DepositHashDIDMap[hash]
-	return did, ok
+func (s *State) getCIDByDepositHash(hash common.Uint168) (common.Uint168, bool) {
+	cid, ok := s.DepositHashCIDMap[hash]
+	return cid, ok
 }
 
 // processCancelVotes takes a transaction, if the transaction takes a previous
@@ -400,11 +401,11 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 
 // processVoteCRC record candidate votes.
 func (s *State) processVoteCRC(height uint32, cv outputpayload.CandidateVotes) {
-	did, err := common.Uint168FromBytes(cv.Candidate)
+	cid, err := common.Uint168FromBytes(cv.Candidate)
 	if err != nil {
 		return
 	}
-	candidate := s.getCandidate(*did)
+	candidate := s.getCandidate(*cid)
 	if candidate == nil {
 		return
 	}
@@ -465,29 +466,72 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	}
 }
 
-// getCandidate returns candidate with specified did, it will return nil
+// getCandidate returns candidate with specified cid, it will return nil
 // nil if not found.
-func (s *State) getCandidate(did common.Uint168) *Candidate {
-	if c, ok := s.Candidates[did]; ok {
+func (s *State) getCandidate(cid common.Uint168) *Candidate {
+	if c, ok := s.Candidates[cid]; ok {
 		return c
 	}
 	return nil
 }
 
-func (s *State) getHistoryCandidate(did common.Uint168) []*Candidate {
+func (s *State) getCandidateByID(id common.Uint168) *Candidate {
+	for k, v := range s.CodeCIDMap {
+		if v.IsEqual(id) {
+			return s.getCandidate(v)
+		}
+		code, _ := common.HexStringToBytes(k)
+		newCode := make([]byte, len(code))
+		copy(newCode, code)
+		didCode := append(newCode[:len(newCode)-1], common.DID)
+		ct, _ := contract.CreateCRIDContractByCode(didCode)
+		did := ct.ToProgramHash()
+		if did.IsEqual(id) {
+			return s.getCandidate(v)
+		}
+	}
+	return nil
+}
+
+func (s *State) getCandidateByPublicKey(publicKey []byte) *Candidate {
+	pubkey, err := crypto.DecodePoint(publicKey)
+	if err != nil {
+		return nil
+	}
+	code, err := contract.CreateStandardRedeemScript(pubkey)
+	if err != nil {
+		return nil
+	}
+	ct, err := contract.CreateCRIDContractByCode(code)
+	if err != nil {
+		return nil
+	}
+	cid := ct.ToProgramHash()
+	return s.getCandidate(*cid)
+}
+
+func (s *State) getHistoryCandidate(cid common.Uint168) []*Candidate {
 	candidates := make([]*Candidate, 0)
 	for _, v := range s.HistoryCandidates {
-		if c, ok := v[did]; ok {
+		if c, ok := v[cid]; ok {
 			candidates = append(candidates, c)
 		}
 	}
 	return candidates
 }
 
-func (s *State) getDIDByCode(programCode []byte) (did common.Uint168,
+func (s *State) getCandidateByCode(programCode []byte) *Candidate {
+	cid, ok := s.getCIDByCode(programCode)
+	if !ok {
+		return nil
+	}
+	return s.getCandidate(cid)
+}
+
+func (s *State) getCIDByCode(programCode []byte) (cid common.Uint168,
 	exist bool) {
 	codeStr := common.BytesToHexString(programCode)
-	did, exist = s.CodeDIDMap[codeStr]
+	cid, exist = s.CodeCIDMap[codeStr]
 	return
 }
 

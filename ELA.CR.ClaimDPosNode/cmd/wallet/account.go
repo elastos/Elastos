@@ -403,8 +403,11 @@ func getCode(publicKey string) []byte {
 	return redeemScript
 }
 
-func getDid(code []byte) *common.Uint168 {
-	ct1, _ := contract.CreateCRDIDContractByCode(code)
+func getDID(code []byte) *common.Uint168 {
+	didCode := make([]byte, len(code))
+	copy(didCode, code)
+	didCode = append(didCode[:len(code)-1], common.DID)
+	ct1, _ := contract.CreateCRIDContractByCode(didCode)
 	return ct1.ToProgramHash()
 }
 
@@ -438,7 +441,7 @@ func generateDIDAddress(c *cli.Context) error {
 		code = getCode(publicKey)
 	}
 
-	did := getDid(code)
+	did := getDID(code)
 	didAddress, err := did.ToAddress()
 	if err != nil {
 		return err

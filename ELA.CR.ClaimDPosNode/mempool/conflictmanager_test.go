@@ -125,12 +125,12 @@ func TestConflictManager_DPoS_Nickname(t *testing.T) {
 
 func TestConflictManager_CR_DID(t *testing.T) {
 	conflictTestProc(func(db *UtxoCacheDB) {
-		did := *randomProgramHash()
+		cid := *randomProgramHash()
 		txs := []*types.Transaction{
 			{
 				TxType: types.RegisterCR,
 				Payload: &payload.CRInfo{
-					DID:      did,
+					CID:      cid,
 					Code:     redeemScriptFromPk(randomPublicKey()),
 					NickName: randomNickname(),
 				},
@@ -138,7 +138,7 @@ func TestConflictManager_CR_DID(t *testing.T) {
 			{
 				TxType: types.UpdateCR,
 				Payload: &payload.CRInfo{
-					DID:      did,
+					CID:      cid,
 					Code:     redeemScriptFromPk(randomPublicKey()),
 					NickName: randomNickname(),
 				},
@@ -146,7 +146,7 @@ func TestConflictManager_CR_DID(t *testing.T) {
 			{
 				TxType: types.UnregisterCR,
 				Payload: &payload.UnregisterCR{
-					DID: did,
+					CID: cid,
 				},
 			},
 		}
@@ -186,9 +186,8 @@ func TestConflictManager_ProgramCode(t *testing.T) {
 		code := redeemScriptFromPk(randomPublicKey())
 		txs := []*types.Transaction{
 			{
-				TxType: types.ReturnDepositCoin,
-				Payload: &payload.ReturnDepositCoin{
-				},
+				TxType:  types.ReturnDepositCoin,
+				Payload: &payload.ReturnDepositCoin{},
 				Programs: []*program.Program{
 					{
 						Code: code,
@@ -196,9 +195,8 @@ func TestConflictManager_ProgramCode(t *testing.T) {
 				},
 			},
 			{
-				TxType: types.ReturnCRDepositCoin,
-				Payload: &payload.ReturnDepositCoin{
-				},
+				TxType:  types.ReturnCRDepositCoin,
+				Payload: &payload.ReturnDepositCoin{},
 				Programs: []*program.Program{
 					{
 						Code: code,
@@ -459,13 +457,12 @@ func TestConflictManager_InputInferKeys(t *testing.T) {
 			{
 				TxType: types.UnregisterCR,
 				Payload: &payload.UnregisterCR{
-					DID: *randomProgramHash(),
+					CID: *randomProgramHash(),
 				},
 			},
 			{
-				TxType: types.ReturnDepositCoin,
-				Payload: &payload.ReturnDepositCoin{
-				},
+				TxType:  types.ReturnDepositCoin,
+				Payload: &payload.ReturnDepositCoin{},
 				Programs: []*program.Program{
 					{
 						Code: redeemScriptFromPk(randomPublicKey()),
@@ -473,9 +470,8 @@ func TestConflictManager_InputInferKeys(t *testing.T) {
 				},
 			},
 			{
-				TxType: types.ReturnCRDepositCoin,
-				Payload: &payload.ReturnDepositCoin{
-				},
+				TxType:  types.ReturnCRDepositCoin,
+				Payload: &payload.ReturnDepositCoin{},
 				Programs: []*program.Program{
 					{
 						Code: redeemScriptFromPk(randomPublicKey()),

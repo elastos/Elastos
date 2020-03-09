@@ -74,7 +74,7 @@ func (a *CRCProposalReview) SerializeUnsigned(w io.Writer, version byte) error {
 		return errors.New("[CRCProposalReview], VoteResult serialization error.")
 	}
 	if err := a.DID.Serialize(w); err != nil {
-		return errors.New("[CRCProposalReview], DID serialize failed")
+		return errors.New("[CRCProposalReview], CID serialize failed")
 	}
 
 	return nil
@@ -105,7 +105,7 @@ func (a *CRCProposalReview) DeserializeUnsigned(r io.Reader, version byte) error
 	a.VoteResult = VoteResult(val[0])
 
 	if err := a.DID.Deserialize(r); err != nil {
-		return errors.New("[CRCProposalReview], DID deserialize failed")
+		return errors.New("[CRCProposalReview], CID deserialize failed")
 	}
 	return nil
 }

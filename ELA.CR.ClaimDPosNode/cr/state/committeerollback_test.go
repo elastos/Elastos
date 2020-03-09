@@ -29,9 +29,16 @@ func getCodeByPubKeyStr(publicKey string) []byte {
 	return redeemScript
 }
 
+func getCIDByPublicKey(publicKey string) *common.Uint168 {
+	code1 := getCodeByPubKeyStr(publicKey)
+	ct1, _ := contract.CreateCRIDContractByCode(code1)
+	return ct1.ToProgramHash()
+}
+
 func getDIDByPublicKey(publicKey string) *common.Uint168 {
 	code1 := getCodeByPubKeyStr(publicKey)
-	ct1, _ := contract.CreateCRDIDContractByCode(code1)
+
+	ct1, _ := contract.CreateCRIDContractByCode(code1)
 	return ct1.ToProgramHash()
 }
 
@@ -50,8 +57,8 @@ func getRegisterCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transa
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 
 	code1 := getCodeByPubKeyStr(publicKeyStr1)
-	ct1, _ := contract.CreateCRDIDContractByCode(code1)
-	did1 := ct1.ToProgramHash()
+	cid1, _ := getCIDByCode(code1)
+	did1, _ := getDIDByCode(code1)
 	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
 
 	txn := new(types.Transaction)
@@ -59,6 +66,7 @@ func getRegisterCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transa
 	txn.Version = types.TxVersion09
 	crInfoPayload := &payload.CRInfo{
 		Code:     code1,
+		CID:      *cid1,
 		DID:      *did1,
 		NickName: nickName,
 		Url:      "http://www.elastos_test.com",
@@ -86,24 +94,24 @@ func getRegisterCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transa
 	return txn
 }
 
-func getUpdateCR(publicKeyStr string, did common.Uint168,
+func getUpdateCR(publicKeyStr string, cid common.Uint168,
 	nickname string) *types.Transaction {
 	code := getCodeByPubKeyStr(publicKeyStr)
 	return &types.Transaction{
 		TxType: types.UpdateCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			DID:      did,
+			CID:      cid,
 			NickName: nickname,
 		},
 	}
 }
 
-func getUnregisterCR(did common.Uint168) *types.Transaction {
+func getUnregisterCR(cid common.Uint168) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.UnregisterCR,
 		Payload: &payload.UnregisterCR{
-			DID: did,
+			CID: cid,
 		},
 	}
 }
@@ -150,6 +158,14 @@ func getVoteCRTx(amount common.Fixed64,
 	}
 }
 
+func getDID(code []byte) *common.Uint168 {
+	didCode := make([]byte, len(code))
+	copy(didCode, code)
+	didCode = append(didCode[:len(code)-1], common.DID)
+	ct1, _ := contract.CreateCRIDContractByCode(didCode)
+	return ct1.ToProgramHash()
+}
+
 func getCRCProposalTx(elaAddress string, publicKeyStr, privateKeyStr,
 	crPublicKeyStr, crPrivateKeyStr string) *types.Transaction {
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr)
@@ -168,7 +184,7 @@ func getCRCProposalTx(elaAddress string, publicKeyStr, privateKeyStr,
 	crcProposalPayload := &payload.CRCProposal{
 		ProposalType:     payload.Normal,
 		SponsorPublicKey: publicKey1,
-		CRSponsorDID:     *getDid(code2),
+		CRSponsorDID:     *getDID(code2),
 		DraftHash:        common.Hash(draftData),
 		CROpinionHash:    common.Hash(opinionHash),
 		Budgets:          createBudgets(3),
@@ -204,7 +220,7 @@ func getCRCProposalReviewTx(proposalHash common.Uint256, vote payload.VoteResult
 	crcProposalReviewPayload := &payload.CRCProposalReview{
 		ProposalHash: proposalHash,
 		VoteResult:   vote,
-		DID:          *getDid(code),
+		DID:          *getDID(code),
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -316,17 +332,17 @@ func checkResult(t *testing.T, A, B, C, D *CommitteeKeyFrame) {
 func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	cid1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	cid2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	cid3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
@@ -365,9 +381,9 @@ func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
 	keyFrameA := committee.Snapshot()
 
 	voteCRTx := getVoteCRTx(6, []outputpayload.CandidateVotes{
-		{did1.Bytes(), 3},
-		{did2.Bytes(), 2},
-		{did3.Bytes(), 1}})
+		{cid1.Bytes(), 3},
+		{cid2.Bytes(), 2},
+		{cid3.Bytes(), 1}})
 	currentHeight++
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -377,14 +393,14 @@ func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
 			voteCRTx,
 		},
 	}, nil)
-	assert.Equal(t, common.Fixed64(3), committee.GetCandidate(*did1).votes)
+	assert.Equal(t, common.Fixed64(3), committee.GetCandidate(*cid1).votes)
 	keyFrameB := committee.Snapshot()
 
 	// rollback
 	currentHeight--
 	err := committee.RollbackTo(currentHeight)
 	assert.NoError(t, err)
-	assert.Equal(t, common.Fixed64(0), committee.GetCandidate(*did1).votes)
+	assert.Equal(t, common.Fixed64(0), committee.GetCandidate(*cid1).votes)
 	keyFrameC := committee.Snapshot()
 
 	// reprocess
@@ -392,7 +408,7 @@ func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
 	committee.ProcessBlock(&types.Block{
 		Header:       types.Header{Height: currentHeight},
 		Transactions: []*types.Transaction{voteCRTx}}, nil)
-	assert.Equal(t, common.Fixed64(3), committee.GetCandidate(*did1).votes)
+	assert.Equal(t, common.Fixed64(3), committee.GetCandidate(*cid1).votes)
 	keyFrameD := committee.Snapshot()
 
 	checkResult(t, keyFrameA, keyFrameB, keyFrameC, keyFrameD)
@@ -401,17 +417,17 @@ func TestCommittee_RollbackRegisterAndVoteCR(t *testing.T) {
 func TestCommittee_RollbackEndVotingPeriod(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
@@ -505,17 +521,17 @@ func TestCommittee_RollbackEndVotingPeriod(t *testing.T) {
 func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
@@ -609,7 +625,7 @@ func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
 
 	publicKeyStr4 := "027209c3a6bcb95e9ef766c81136bcd6f2338eee7f9caebf694825e411320bab12"
 	privateKeyStr4 := "b3b1c16abd786c4994af9ee8c79d25457f66509731f74d6a9a9673ca872fa8fa"
-	did4 := getDIDByPublicKey(publicKeyStr4)
+	did4 := getCIDByPublicKey(publicKeyStr4)
 	nickName4 := "nickname 4"
 	registerCRTxn4 := getRegisterCRTx(publicKeyStr4, privateKeyStr4, nickName4)
 
@@ -681,17 +697,17 @@ func TestCommittee_RollbackContinueVotingPeriod(t *testing.T) {
 func TestCommittee_RollbackChangeCommittee(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
@@ -819,17 +835,17 @@ func TestCommittee_RollbackChangeCommittee(t *testing.T) {
 func TestCommittee_RollbackCRCProposal(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
@@ -1018,17 +1034,17 @@ func TestCommittee_RollbackCRCProposal(t *testing.T) {
 func TestCommittee_RollbackCRCProposalTracking(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
@@ -1216,17 +1232,17 @@ func TestCommittee_RollbackCRCProposalTracking(t *testing.T) {
 func TestCommittee_RollbackCRCProposalWithdraw(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
@@ -1439,17 +1455,17 @@ func TestCommittee_RollbackCRCProposalWithdraw(t *testing.T) {
 func TestCommittee_RollbackTempStartVotingPeriod(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
@@ -1584,17 +1600,17 @@ func TestCommittee_RollbackCRCAppropriationTx(t *testing.T) {
 
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	registerCRTxn1 := getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
@@ -1769,14 +1785,14 @@ func getAppropriationTx(value common.Fixed64, outPutAddr common.Uint168) *types.
 
 func getDIDStrByPublicKey(publicKey string) (string, error) {
 	code1 := getCodeByPubKeyStr(publicKey)
-	ct1, _ := contract.CreateCRDIDContractByCode(code1)
+	ct1, _ := contract.CreateCRIDContractByCode(code1)
 	return ct1.ToProgramHash().ToAddress()
 }
 
 func TestCommittee_RollbackCRCImpeachmentTx(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	address1Uint168, _ := getProgramHash(publicKeyStr1)
 	did1Str, _ := getDIDStrByPublicKey(publicKeyStr1)
 	fmt.Println("did1", did1Str)
@@ -1785,14 +1801,14 @@ func TestCommittee_RollbackCRCImpeachmentTx(t *testing.T) {
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 	did2Str, _ := getDIDStrByPublicKey(publicKeyStr2)
 	fmt.Println("did2", did2Str)
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 	did3Str, _ := getDIDStrByPublicKey(publicKeyStr3)
 	fmt.Println("did3", did3Str)
@@ -1911,7 +1927,7 @@ func TestCommittee_RollbackCRCImpeachmentTx(t *testing.T) {
 func TestCommittee_RollbackCRCImpeachmentAndReelectionTx(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	address1Uint168, _ := getProgramHash(publicKeyStr1)
 	did1Str, _ := getDIDStrByPublicKey(publicKeyStr1)
 	fmt.Println("did1", did1Str)
@@ -1920,14 +1936,14 @@ func TestCommittee_RollbackCRCImpeachmentAndReelectionTx(t *testing.T) {
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 	did2Str, _ := getDIDStrByPublicKey(publicKeyStr2)
 	fmt.Println("did2", did2Str)
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 	did3Str, _ := getDIDStrByPublicKey(publicKeyStr3)
 	fmt.Println("did3", did3Str)
@@ -2091,18 +2107,18 @@ func getCRCImpeachmentTx(publicKeyStr string, did *common.Uint168,
 func TestCommitee_RollbackCRCBlendTx(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 	address1Uint168, _ := getProgramHash(publicKeyStr1)
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	privateKeyStr4 := "b3b1c16abd786c4994af9ee8c79d25457f66509731f74d6a9a9673ca872fa8fa"
@@ -2280,7 +2296,7 @@ func TestCommitee_RollbackCRCBlendTx(t *testing.T) {
 		WithdrawableBudgets))
 	assert.Equal(t, 1, len(committee.GetProposal(proposalCHash).
 		WithdrawnBudgets))
-	assert.Equal(t, false, committee.InElectionPeriod)
+	assert.Equal(t, true, committee.InElectionPeriod)
 
 	keyFrameB := committee.Snapshot()
 
@@ -2315,18 +2331,18 @@ func TestCommitee_RollbackCRCBlendTx(t *testing.T) {
 func TestCommitee_RollbackCRCBlendAppropriationTx(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 	address1Uint168, _ := getProgramHash(publicKeyStr1)
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	did3 := getDIDByPublicKey(publicKeyStr3)
+	did3 := getCIDByPublicKey(publicKeyStr3)
 	nickName3 := "nickname 3"
 
 	privateKeyStr4 := "b3b1c16abd786c4994af9ee8c79d25457f66509731f74d6a9a9673ca872fa8fa"
@@ -2505,7 +2521,7 @@ func TestCommitee_RollbackCRCBlendAppropriationTx(t *testing.T) {
 		WithdrawableBudgets))
 	assert.Equal(t, 1, len(committee.GetProposal(proposalCHash).
 		WithdrawnBudgets))
-	assert.Equal(t, false, committee.InElectionPeriod)
+	assert.Equal(t, true, committee.InElectionPeriod)
 
 	// rollback
 	currentHeight--
@@ -2576,12 +2592,12 @@ func TestCommitee_RollbackCRCBlendAppropriationTx(t *testing.T) {
 func TestCommitee_RollbackCRCBlendTxPropoalVert(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	did1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	did2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 
 	privateKeyStr4 := "b3b1c16abd786c4994af9ee8c79d25457f66509731f74d6a9a9673ca872fa8fa"
@@ -2777,13 +2793,13 @@ func TestCommitee_RollbackCRCBlendTxPropoalVert(t *testing.T) {
 func TestCommitee_RollbackCRCBlendTxCRVert(t *testing.T) {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-	did1 := getDIDByPublicKey(publicKeyStr1)
+	cid1 := getCIDByPublicKey(publicKeyStr1)
 	nickName1 := "nickname 1"
 	newNickName1 := "newNickName1"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
-	did2 := getDIDByPublicKey(publicKeyStr2)
+	cid2 := getCIDByPublicKey(publicKeyStr2)
 	nickName2 := "nickname 2"
 	newNickName2 := "newNickName2"
 
@@ -2814,9 +2830,9 @@ func TestCommitee_RollbackCRCBlendTxCRVert(t *testing.T) {
 	keyFrameA := committee.Snapshot()
 	assert.Equal(t, 2, len(committee.GetCandidates(Pending)))
 
-	updateCr1 := getUpdateCR(publicKeyStr1, *did1,
+	updateCr1 := getUpdateCR(publicKeyStr1, *cid1,
 		newNickName1)
-	updateCR2 := getUpdateCR(publicKeyStr2, *did2,
+	updateCR2 := getUpdateCR(publicKeyStr2, *cid2,
 		newNickName2)
 	currentHeight++
 	// update cr
@@ -2832,8 +2848,8 @@ func TestCommitee_RollbackCRCBlendTxCRVert(t *testing.T) {
 	assert.Equal(t, true, committee.ExistCandidateByNickname(newNickName1))
 	assert.Equal(t, true, committee.ExistCandidateByNickname(newNickName2))
 
-	unregister1 := getUnregisterCR(*did1)
-	unregister2 := getUnregisterCR(*did2)
+	unregister1 := getUnregisterCR(*cid1)
+	unregister2 := getUnregisterCR(*cid2)
 	currentHeight++
 	// unregister cr
 	committee.ProcessBlock(&types.Block{
@@ -2845,8 +2861,8 @@ func TestCommitee_RollbackCRCBlendTxCRVert(t *testing.T) {
 			unregister2,
 		},
 	}, nil)
-	assert.Equal(t, Canceled, committee.GetCandidate(*did1).state)
-	assert.Equal(t, Canceled, committee.GetCandidate(*did2).state)
+	assert.Equal(t, Canceled, committee.GetCandidate(*cid1).state)
+	assert.Equal(t, Canceled, committee.GetCandidate(*cid2).state)
 
 	returnDepositTx1 := generateReturnDeposite(publicKeyStr1)
 	returnDepositTx2 := generateReturnDeposite(publicKeyStr2)
@@ -2862,8 +2878,8 @@ func TestCommitee_RollbackCRCBlendTxCRVert(t *testing.T) {
 		},
 	}, nil)
 
-	assert.Equal(t, Returned, committee.GetCandidate(*did1).state)
-	assert.Equal(t, Returned, committee.GetCandidate(*did2).state)
+	assert.Equal(t, Returned, committee.GetCandidate(*cid1).state)
+	assert.Equal(t, Returned, committee.GetCandidate(*cid2).state)
 
 	// rollback
 	currentHeight = cfg.CRVotingStartHeight

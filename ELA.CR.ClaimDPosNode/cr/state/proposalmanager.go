@@ -310,12 +310,23 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 	})
 }
 
-func getDIDByCode(code []byte) (*common.Uint168, error) {
-	ct1, error := contract.CreateCRDIDContractByCode(code)
-	if error != nil {
-		return nil, error
+func getCIDByCode(code []byte) (*common.Uint168, error) {
+	ct1, err := contract.CreateCRIDContractByCode(code)
+	if err != nil {
+		return nil, err
 	}
-	return ct1.ToProgramHash(), error
+	return ct1.ToProgramHash(), err
+}
+
+func getDIDByCode(code []byte) (*common.Uint168, error) {
+	didCode := make([]byte, len(code))
+	copy(didCode, code)
+	didCode = append(didCode[:len(code)-1], common.DID)
+	ct1, err := contract.CreateCRIDContractByCode(didCode)
+	if err != nil {
+		return nil, err
+	}
+	return ct1.ToProgramHash(), err
 }
 
 func (p *ProposalManager) proposalReview(tx *types.Transaction,

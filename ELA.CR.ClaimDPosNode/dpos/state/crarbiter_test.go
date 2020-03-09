@@ -54,7 +54,7 @@ func randomCRMember() *state.CRMember {
 func randomCRInfo() *payload.CRInfo {
 	return &payload.CRInfo{
 		Code:     randomBytes(34),
-		DID:      *randomUint168(),
+		CID:      *randomUint168(),
 		NickName: randomString(),
 		Url:      randomString(),
 		Location: rand.Uint64(),

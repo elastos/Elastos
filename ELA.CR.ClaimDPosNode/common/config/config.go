@@ -115,6 +115,7 @@ type CRConfiguration struct {
 	MaxCommitteeProposalCount  uint32  `json:"MaxCommitteeProposalCount"`
 	SecretaryGeneral           string  `json:"SecretaryGeneral"`
 	MaxProposalTrackingCount   uint8   `json:"MaxProposalTrackingCount"`
+	RegisterCRByDIDHeight      uint32  `json:"RegisterCRByDIDHeight"`
 }
 
 type RPCServiceLevel byte

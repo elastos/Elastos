@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package payload
 
@@ -15,10 +15,12 @@ import (
 )
 
 const CRInfoVersion byte = 0x00
+const CRInfoDIDVersion byte = 0x01
 
 // CRInfo defines the information of CR.
 type CRInfo struct {
 	Code      []byte
+	CID       common.Uint168
 	DID       common.Uint168
 	NickName  string
 	Url       string
@@ -54,8 +56,14 @@ func (a *CRInfo) SerializeUnsigned(w io.Writer, version byte) error {
 		return errors.New("[CRInfo], code serialize failed")
 	}
 
-	if err = a.DID.Serialize(w); err != nil {
-		return errors.New("[CRInfo], DID serialize failed")
+	if err = a.CID.Serialize(w); err != nil {
+		return errors.New("[CRInfo], CID serialize failed")
+	}
+
+	if version > CRInfoVersion {
+		if err = a.DID.Serialize(w); err != nil {
+			return errors.New("[CRInfo], DID serialize failed")
+		}
 	}
 
 	err = common.WriteVarString(w, a.NickName)
@@ -96,8 +104,14 @@ func (a *CRInfo) DeserializeUnsigned(r io.Reader, version byte) error {
 		return errors.New("[CRInfo], code deserialize failed")
 	}
 
-	if err = a.DID.Deserialize(r); err != nil {
-		return errors.New("[CRInfo], DID deserialize failed")
+	if err = a.CID.Deserialize(r); err != nil {
+		return errors.New("[CRInfo], CID deserialize failed")
+	}
+
+	if version > CRInfoVersion {
+		if err = a.DID.Deserialize(r); err != nil {
+			return errors.New("[CRInfo], DID deserialize failed")
+		}
 	}
 
 	a.NickName, err = common.ReadVarString(r)
