@@ -3929,11 +3929,6 @@ int ela_get_groups(ElaCarrier *w, ElaIterateGroupCallback *callback,
         return -1;
     }
 
-    if (!w->is_ready) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
-        return -1;
-    }
-
     group_count = dht_get_group_count(&w->dht);
     if (!group_count) {
         callback(NULL, context);
