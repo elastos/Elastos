@@ -215,6 +215,7 @@ type UpdateVersionInfo struct {
 
 type CRInfo struct {
 	Code      string `json:"code"`
+	CID       string `json:"cid"`
 	DID       string `json:"did"`
 	NickName  string `json:"nickname"`
 	Url       string `json:"url"`
@@ -223,7 +224,7 @@ type CRInfo struct {
 }
 
 type UnregisterCRInfo struct {
-	DID       string `json:"did"`
+	CID       string `json:"cid"`
 	Signature string `json:"signature"`
 }
 

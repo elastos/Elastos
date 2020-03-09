@@ -173,6 +173,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
 	recipient := c.String("recipient")
 	crcCommitteeAddress := c.String("crccommiteeaddr")
+	payloadVersion := c.Int64("payloadVersion")
 
 	getProposalType := func(L *lua.LState) int {
 		L.Push(lua.LNumber(proposalType))
@@ -248,6 +249,10 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(crcCommitteeAddress))
 		return 1
 	}
+	getPayloadVersion := func(L *lua.LState) int {
+		L.Push(lua.LNumber(payloadVersion))
+		return 1
+	}
 	L.Register("getProposalType", getProposalType)
 	L.Register("getDraftData", getDraftData)
 	L.Register("getBudgets", getBudgets)
@@ -265,6 +270,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getSecretaryGeneralPrivkey", getSecretaryGeneralPrivkey)
 	L.Register("getRecipient", getRecipient)
 	L.Register("getCRCCommitteeAddress", getCRCCommitteeAddress)
+	L.Register("getPayloadVersion", getPayloadVersion)
 }
 
 func scriptAction(c *cli.Context) error {
@@ -464,6 +470,10 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "crccommiteeaddr",
 				Usage: "set the crccommiteeaddress",
+			},
+			cli.Int64Flag{
+				Name:  "payloadVersion",
+				Usage: "set the version of payload",
 			},
 		},
 		Action: scriptAction,

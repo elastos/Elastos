@@ -78,8 +78,8 @@ func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 	if first.CurrentSession != second.CurrentSession ||
 		len(first.Candidates) != len(second.Candidates) ||
 		len(first.HistoryCandidates) != len(second.HistoryCandidates) ||
-		len(first.DepositHashDIDMap) != len(second.DepositHashDIDMap) ||
-		len(first.CodeDIDMap) != len(second.CodeDIDMap) ||
+		len(first.DepositHashCIDMap) != len(second.DepositHashCIDMap) ||
+		len(first.CodeCIDMap) != len(second.CodeCIDMap) ||
 		len(first.DepositOutputs) != len(second.DepositOutputs) ||
 		len(first.CRCFoundationOutputs) != len(second.CRCFoundationOutputs) ||
 		len(first.CRCCommitteeOutputs) != len(second.CRCCommitteeOutputs) ||
@@ -90,8 +90,8 @@ func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 
 	return candidatesMapEqual(first.Candidates, second.Candidates) &&
 		candidatesHistoryMapEqual(first.HistoryCandidates, second.HistoryCandidates) &&
-		depositHashDIDMapEqual(first.DepositHashDIDMap, second.DepositHashDIDMap) &&
-		codeDIDMapEqual(first.CodeDIDMap, second.CodeDIDMap) &&
+		depositHashCIDMapEqual(first.DepositHashCIDMap, second.DepositHashCIDMap) &&
+		codeCIDMapEqual(first.CodeCIDMap, second.CodeCIDMap) &&
 		amountMapEqual(first.DepositOutputs, second.DepositOutputs) &&
 		amountMapEqual(first.CRCFoundationOutputs, second.CRCFoundationOutputs) &&
 		amountMapEqual(first.CRCCommitteeOutputs, second.CRCCommitteeOutputs) &&
@@ -109,7 +109,7 @@ func stringMapEqual(first map[string]struct{}, second map[string]struct{}) bool 
 	return true
 }
 
-func codeDIDMapEqual(first map[string]common.Uint168,
+func codeCIDMapEqual(first map[string]common.Uint168,
 	second map[string]common.Uint168) bool {
 	if len(first) != len(second) {
 		return false
@@ -127,7 +127,7 @@ func codeDIDMapEqual(first map[string]common.Uint168,
 	return true
 }
 
-func depositHashDIDMapEqual(first map[common.Uint168]common.Uint168,
+func depositHashCIDMapEqual(first map[common.Uint168]common.Uint168,
 	second map[common.Uint168]common.Uint168) bool {
 	if len(first) != len(second) {
 		return false
@@ -267,11 +267,11 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 			candidate.state = Pending
 			nickname := candidate.Info().NickName
 			code := candidate.Info().Code
-			did := candidate.Info().DID
-			frame.CodeDIDMap[common.BytesToHexString(code)] = did
-			frame.Candidates[did] = candidate
+			cid := candidate.Info().CID
+			frame.CodeCIDMap[common.BytesToHexString(code)] = cid
+			frame.Candidates[cid] = candidate
 			frame.Nicknames[nickname] = struct{}{}
-			frame.depositInfo[did] = &DepositInfo{
+			frame.depositInfo[cid] = &DepositInfo{
 				Refundable:    false,
 				DepositAmount: 5000 * 1e8,
 				TotalAmount:   5000 * 1e8,
@@ -282,12 +282,12 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 		candidate := randomCandidate()
 		candidate.state = Active
 		code := candidate.info.Code
-		did := candidate.info.DID
+		cid := candidate.info.CID
 		nickname := candidate.info.NickName
-		frame.CodeDIDMap[common.BytesToHexString(code)] = did
-		frame.Candidates[did] = candidate
+		frame.CodeCIDMap[common.BytesToHexString(code)] = cid
+		frame.Candidates[cid] = candidate
 		frame.Nicknames[nickname] = struct{}{}
-		frame.depositInfo[did] = &DepositInfo{
+		frame.depositInfo[cid] = &DepositInfo{
 			Refundable:    false,
 			DepositAmount: 5000 * 1e8,
 			TotalAmount:   5000 * 1e8,
@@ -295,7 +295,8 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 	}
 	for i := 0; i < size; i++ {
 		candidate := randomCandidate()
-		did := candidate.info.DID
+		cid := candidate.info.CID
+
 		nickname := candidate.info.NickName
 		code := candidate.info.Code
 		var refundable bool
@@ -306,10 +307,10 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 			candidate.state = Returned
 			refundable = false
 		}
-		frame.CodeDIDMap[common.BytesToHexString(code)] = did
-		frame.Candidates[did] = candidate
+		frame.CodeCIDMap[common.BytesToHexString(code)] = cid
+		frame.Candidates[cid] = candidate
 		frame.Nicknames[nickname] = struct{}{}
-		frame.depositInfo[did] = &DepositInfo{
+		frame.depositInfo[cid] = &DepositInfo{
 			Refundable:    refundable,
 			DepositAmount: 5000 * 1e8,
 			TotalAmount:   5000 * 1e8,

@@ -148,8 +148,8 @@ var (
 		Usage: "magic number for node to initialize p2p connection",
 	}
 	PrintLevelFlag = cli.StringFlag{
-		Name:        "printlevel",
-		Usage:       "level to print log",
+		Name:  "printlevel",
+		Usage: "level to print log",
 	}
 	EnableDnsFlag = cli.StringFlag{
 		Name:  "dnsseed",
@@ -362,6 +362,10 @@ var (
 	CRCCommitteeAddressFlag = cli.StringFlag{
 		Name:  "crccommitteeaddress",
 		Usage: "defines appropriation address of CRC committee",
+	}
+	RegisterCRByDIDHeightFlag = cli.StringFlag{
+		Name:  "registercrbydidheight",
+		Usage: "defines the height to support register CR by CID",
 	}
 )
 

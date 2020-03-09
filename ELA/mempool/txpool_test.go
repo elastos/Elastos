@@ -223,7 +223,7 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	tx3.Version = types.TxVersion09
 	tx3.Payload = &payload.CRInfo{
 		Code:     ct1.Code,
-		DID:      *hash1,
+		CID:      *hash1,
 		NickName: "nickname 1",
 		Url:      "http://www.elastos_test.com",
 		Location: 1,
@@ -235,7 +235,7 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	tx4.Version = types.TxVersion09
 	tx4.Payload = &payload.CRInfo{
 		Code:     ct1.Code,
-		DID:      *hash1,
+		CID:      *hash1,
 		NickName: "nickname 2",
 		Url:      "http://www.elastos_test.com",
 		Location: 2,

@@ -177,6 +177,7 @@ var DefaultParams = Params{
 	CRCommitteeStartHeight:      2000000, // todo correct me when height has been confirmed
 	CheckRewardHeight:           436812,
 	VoteStatisticsHeight:        512881,
+	RegisterCRByDIDHeight:       595200,
 	ToleranceDuration:           5 * time.Second,
 	MaxInactiveRounds:           720 * 2,
 	InactivePenalty:             0, //there will be no penalty in this version
@@ -259,6 +260,7 @@ func (p *Params) TestNet() *Params {
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
 	copy.CheckRewardHeight = 100
 	copy.VoteStatisticsHeight = 0
+	copy.RegisterCRByDIDHeight = 483500
 	copy.EnableUtxoDB = true
 	copy.VoterRejectPercentage = 10
 	copy.CRCAppropriatePercentage = 10
@@ -320,6 +322,7 @@ func (p *Params) RegNet() *Params {
 	copy.EnableActivateIllegalHeight = 256000
 	copy.CheckRewardHeight = 280000
 	copy.VoteStatisticsHeight = 0
+	copy.RegisterCRByDIDHeight = 393000
 	copy.EnableUtxoDB = true
 	copy.VoterRejectPercentage = 10
 	copy.CRCAppropriatePercentage = 10
@@ -453,6 +456,10 @@ type Params struct {
 	// VoteStatisticsHeight defines the height to deal with block with vote
 	// statistics error.
 	VoteStatisticsHeight uint32
+
+	// RegisterCRByDIDHeight defines the height to support register and update
+	// CR by CID and CID.
+	RegisterCRByDIDHeight uint32
 
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
 	CRCArbiters []string
