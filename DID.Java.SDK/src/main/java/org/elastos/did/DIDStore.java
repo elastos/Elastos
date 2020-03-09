@@ -227,6 +227,9 @@ public final class DIDStore {
 				privateIdentity.serialize(), storepass);
 		storage.storePrivateIdentity(encryptedIdentity);
 
+		// Save pre-derived public key
+		storage.storePublicIdentity(privateIdentity.serializePubBase58());
+
 		// Save index
 		storage.storePrivateIdentityIndex(0);
 
@@ -266,6 +269,16 @@ public final class DIDStore {
 		Arrays.fill(keyData, (byte)0);
 
 		return privateIdentity;
+	}
+
+	protected HDKey loadPublicIdentity() throws DIDStoreException {
+		if (!containsPrivateIdentity())
+			return null;
+
+		String keyData = storage.loadPublicIdentity();
+		HDKey publicIdentity = HDKey.deserializeBase58(keyData);
+
+		return publicIdentity;
 	}
 
 	public void synchronize(ConflictHandle handle, String storepass)
@@ -422,18 +435,16 @@ public final class DIDStore {
 		return newDid(null, storepass);
 	}
 
-	public DID getDid(int index, String storepass) throws DIDStoreException {
-		if (index < 0 || storepass == null || storepass.isEmpty())
+	public DID getDid(int index) throws DIDStoreException {
+		if (index < 0)
 			throw new IllegalArgumentException();
 
-		HDKey privateIdentity = loadPrivateIdentity(storepass);
-		if (privateIdentity == null)
+		HDKey publicIdentity = loadPublicIdentity();
+		if (publicIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
 
-		HDKey.DerivedKey key = privateIdentity.derive(index);
+		HDKey.DerivedKey key = publicIdentity.derive(index);
 		DID did = new DID(DID.METHOD, key.getAddress());
-		privateIdentity.wipe();
-		key.wipe();
 		return did;
 	}
 

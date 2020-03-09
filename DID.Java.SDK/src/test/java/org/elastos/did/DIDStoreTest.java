@@ -253,7 +253,7 @@ public class DIDStoreTest {
 
 	    String alias = "my first did";
 
-	    DID did = store.getDid(0, TestConfig.storePass);
+	    DID did = store.getDid(0);
 	    DIDDocument doc = store.newDid(0, alias, TestConfig.storePass);
 	    assertTrue(doc.isValid());
 	    assertEquals(did, doc.getSubject());
@@ -268,6 +268,24 @@ public class DIDStoreTest {
 	    doc = store.newDid(alias, TestConfig.storePass);
 	    assertTrue(doc.isValid());
 	    assertEquals(did, doc.getSubject());
+	}
+
+	@Test
+	public void testGetDid() throws DIDException {
+	    TestData testData = new TestData();
+	    DIDStore store = testData.setup(true);
+	    testData.initIdentity();
+
+	    for (int i = 0; i < 100; i++) {
+		    String alias = "did#" + i;
+
+		    DIDDocument doc = store.newDid(i, alias, TestConfig.storePass);
+		    assertTrue(doc.isValid());
+
+		    DID did = store.getDid(i);
+
+		    assertEquals(doc.getSubject(), did);
+	    }
 	}
 
 	@Test

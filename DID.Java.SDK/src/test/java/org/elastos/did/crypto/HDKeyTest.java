@@ -82,6 +82,26 @@ public class HDKeyTest {
 	}
 
 	@Test
+	public void testDerivePublicOnly() {
+		String mnemonic = "pact reject sick voyage foster fence warm luggage cabbage any subject carbon";
+		String passphrase = "helloworld";
+
+		HDKey root = HDKey.fromMnemonic(mnemonic, passphrase);
+		String rootPubBase58 = root.serializePubBase58();
+
+		HDKey rootPub = HDKey.deserializeBase58(rootPubBase58);
+
+		for (int i = 0; i < 1000; i++) {
+			HDKey.DerivedKey key = root.derive(i);
+
+			HDKey.DerivedKey keyPubOnly = rootPub.derive(i);
+
+			assertEquals(key.getPublicKeyBase58(), keyPubOnly.getPublicKeyBase58());
+			assertEquals(key.getAddress(), keyPubOnly.getAddress());
+		}
+	}
+
+	@Test
 	public void testJWTCompatible() throws DIDException, GeneralSecurityException {
 		byte[] input = "The quick brown fox jumps over the lazy dog.".getBytes();
 

@@ -94,22 +94,38 @@ public class HDKey {
 	}
 
 	public byte[] serialize() {
-		return Base58.decode(serializeBase58());
+		return Base58.decode(serializePrivBase58());
 	}
 
-	public String serializeBase58() {
+	public String serializePrivBase58() {
 		return dh.getRootKey().serializePrivB58(MainNetParams.get());
 	}
 
+	public String serializePubBase58() {
+		//return dh.getRootKey().serializePubB58(MainNetParams.get());
+
+		DeterministicKey child = dh.get(derivePath, false, true);
+		return child.serializePubB58(MainNetParams.get());
+	}
+
 	public static HDKey deserialize(byte[] keyData) {
+		return deserializeBase58(Base58.encode(keyData));
+	}
+
+	public static HDKey deserializeBase58(String keyData) {
 		DeterministicKey rootKey = DeterministicKey.deserializeB58(
-				Base58.encode(keyData), MainNetParams.get());
+				keyData, MainNetParams.get());
 		return new HDKey(rootKey);
 	}
 
 	public DerivedKey derive(int index) {
-		DeterministicKey child = dh.deriveChild(derivePath, false, true,
-				new ChildNumber(index, false));
+		ChildNumber number = new ChildNumber(index, false);
+		DeterministicKey child;
+
+		if (dh.getRootKey().isPubKeyOnly())
+			child = HDKeyDerivation.deriveChildKey(dh.getRootKey(), number);
+		else
+			child = dh.deriveChild(derivePath, false, true, number);
 
 		return new DerivedKey(child);
 	}

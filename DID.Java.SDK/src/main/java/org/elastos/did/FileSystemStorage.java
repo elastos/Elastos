@@ -82,6 +82,7 @@ class FileSystemStorage implements DIDStorage {
 
 	private static final String PRIVATE_DIR = "private";
 	private static final String HDKEY_FILE = "key";
+	private static final String HDPUBKEY_FILE = "key.pub";
 	private static final String INDEX_FILE = "index";
 	private static final String MNEMONIC_FILE = "mnemonic";
 
@@ -277,6 +278,20 @@ class FileSystemStorage implements DIDStorage {
 		}
 	}
 
+	private File getHDPublicKeyFile(boolean create) throws IOException {
+		return getFile(create, PRIVATE_DIR, HDPUBKEY_FILE);
+	}
+
+	private File getHDPublicKeyFile() {
+		try {
+			return getHDPublicKeyFile(false);
+		} catch (IOException ignore) {
+			// createNewFile will throws IOException.
+			// but in this case, createNewFile will never be called.
+			return null;
+		}
+	}
+
 	@Override
 	public boolean containsPrivateIdentity() {
 		File file = getHDPrivateKeyFile();
@@ -300,6 +315,26 @@ class FileSystemStorage implements DIDStorage {
 			return readText(file);
 		} catch (IOException e) {
 			throw new DIDStorageException("Load private identity error.", e);
+		}
+	}
+
+	@Override
+	public void storePublicIdentity(String key) throws DIDStorageException {
+		try {
+			File file = getHDPublicKeyFile(true);
+			writeText(file, key);
+		} catch (IOException e) {
+			throw new DIDStorageException("Store public identity error.", e);
+		}
+	}
+
+	@Override
+	public String loadPublicIdentity() throws DIDStorageException {
+		try {
+			File file = getHDPublicKeyFile();
+			return readText(file);
+		} catch (IOException e) {
+			throw new DIDStorageException("Load public identity error.", e);
 		}
 	}
 

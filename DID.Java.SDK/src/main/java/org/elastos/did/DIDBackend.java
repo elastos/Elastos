@@ -117,11 +117,11 @@ public class DIDBackend {
 		public String toString() {
 			StringBuilder sb = new StringBuilder(256);
 
-			sb.append("txid: ").append(txid)
+			sb.append("txid: ").append(txid).append(", ")
 				.append("status: ").append(status);
 
 			if (status != 0)
-				sb.append("message: ").append(message);
+				sb.append(", ").append("message: ").append(message);
 
 			return sb.toString();
 		}
