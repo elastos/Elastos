@@ -100,7 +100,6 @@
 		A31ACE2823F19A04008EC032 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE2623F19A04008EC032 /* Errors.swift */; };
 		A31ACE3623F19A22008EC032 /* JsonGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE2A23F19A22008EC032 /* JsonGenerator.swift */; };
 		A31ACE3723F19A22008EC032 /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE2B23F19A22008EC032 /* ExtensionInt.swift */; };
-		A31ACE3823F19A22008EC032 /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE2C23F19A22008EC032 /* DerivedKey.swift */; };
 		A31ACE3B23F19A22008EC032 /* DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE2F23F19A22008EC032 /* DateFormatter.swift */; };
 		A31ACE3C23F19A22008EC032 /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE3023F19A22008EC032 /* HDKey.swift */; };
 		A31ACE3D23F19A22008EC032 /* JsonSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31ACE3123F19A22008EC032 /* JsonSerializer.swift */; };
@@ -339,7 +338,6 @@
 		A31ACE2623F19A04008EC032 /* Errors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Errors.swift; path = Error/Errors.swift; sourceTree = "<group>"; };
 		A31ACE2A23F19A22008EC032 /* JsonGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JsonGenerator.swift; path = Util/JsonGenerator.swift; sourceTree = "<group>"; };
 		A31ACE2B23F19A22008EC032 /* ExtensionInt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ExtensionInt.swift; path = Util/ExtensionInt.swift; sourceTree = "<group>"; };
-		A31ACE2C23F19A22008EC032 /* DerivedKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DerivedKey.swift; path = Util/DerivedKey.swift; sourceTree = "<group>"; };
 		A31ACE2F23F19A22008EC032 /* DateFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DateFormatter.swift; path = Util/DateFormatter.swift; sourceTree = "<group>"; };
 		A31ACE3023F19A22008EC032 /* HDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HDKey.swift; path = Util/HDKey.swift; sourceTree = "<group>"; };
 		A31ACE3123F19A22008EC032 /* JsonSerializer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JsonSerializer.swift; path = Util/JsonSerializer.swift; sourceTree = "<group>"; };
@@ -641,7 +639,6 @@
 				35836A2B1CB8DA7F034879C8 /* Pods-ElastosDIDSDK.debug.xcconfig */,
 				2C9D52CBC88BB3D458134F3E /* Pods-ElastosDIDSDK.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -661,7 +658,6 @@
 				A31ACE2F23F19A22008EC032 /* DateFormatter.swift */,
 				A34D732823FA758900B4CB3E /* IDGetter.swift */,
 				A31ACE3023F19A22008EC032 /* HDKey.swift */,
-				A31ACE2C23F19A22008EC032 /* DerivedKey.swift */,
 				A31ACE2B23F19A22008EC032 /* ExtensionInt.swift */,
 				A31ACE3123F19A22008EC032 /* JsonSerializer.swift */,
 				A31ACE2A23F19A22008EC032 /* JsonGenerator.swift */,
@@ -1010,7 +1006,6 @@
 				A31ACE3E23F19A22008EC032 /* String.swift in Sources */,
 				A34D732923FA758900B4CB3E /* IDGetter.swift in Sources */,
 				A31ACE5523F19A3A008EC032 /* DIDURLParserATN.swift in Sources */,
-				A31ACE3823F19A22008EC032 /* DerivedKey.swift in Sources */,
 				A31ACE3623F19A22008EC032 /* JsonGenerator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

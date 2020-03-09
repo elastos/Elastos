@@ -165,8 +165,7 @@ public class DIDStore: NSObject {
         guard try !containsPrivateIdentity() || force else {
             throw DIDError.didStoreError("Already has private indentity.")
         }
-
-        let privateIdentity = HDKey.deserialize(Base58.bytesFromBase58(extendedPrivateKey))
+        let privateIdentity = try HDKey.deserialize(Base58.bytesFromBase58(extendedPrivateKey))
         try initializePrivateIdentity(privateIdentity, storePassword)
     }
 
@@ -212,7 +211,7 @@ public class DIDStore: NSObject {
             let encryptedIdentity = try DIDStore.encryptToBase64(privateIdentity.serialize(), storePassword)
             try storage.storePrivateIdentity(encryptedIdentity)
         } else if keyData.count == HDKey.EXTENDED_PRIVATE_BYTES {
-            privateIdentity = HDKey.deserialize(keyData)
+            privateIdentity = try HDKey.deserialize(keyData)
         } else {
             throw DIDError.didStoreError("invalid private identity")
         }
@@ -1347,11 +1346,11 @@ public class DIDStore: NSObject {
         }
 
         let binKey = try DIDStore.decryptFromBase64(loadPrivateKey(for: did, byId: usedId!), storePassword)
-        let key = HDKey.DerivedKey.deserialize(binKey)!
+//        let key = HDKey.DerivedKey.deserialize(binKey)
 
         // TODO:
         let signature: Data? = nil
-        key.wipe()
+//        key.wipe()
 
         return signature?.base64EncodedString() ?? ""
     }

@@ -8,6 +8,7 @@ final class LRUCache<Key: Hashable, Value> {
 
     private let list = DoubleLinkedList<CachePayload>()
     private var nodesDict = [Key: DoubleLinkedListNode<CachePayload>]()
+    private let dispatchQueue = DispatchQueue(label: "com.elastos.LRUCache.queue", attributes: .concurrent)
 
     private let initCapacity: Int
     private let maxCapacity: Int
@@ -23,20 +24,22 @@ final class LRUCache<Key: Hashable, Value> {
     }
 
     func setValue(_ value: Value, for key: Key) {
-        let payload = CachePayload(key: key, value: value)
+        dispatchQueue.async(flags: .barrier) { [weak self] in
+            let payload = CachePayload(key: key, value: value)
 
-        if let node = nodesDict[key] {
-            node.payload = payload
-            list.moveToHead(node)
-        } else {
-            let node = list.addHead(payload)
-            nodesDict[key] = node
-        }
+            if let node = self!.nodesDict[key] {
+                node.payload = payload
+                self!.list.moveToHead(node)
+            } else {
+                let node = self!.list.addHead(payload)
+                self!.nodesDict[key] = node
+            }
 
-        if list.count > maxCapacity {
-            let nodeRemoved = list.removeLast()
-            if let key = nodeRemoved?.payload.key {
-                nodesDict[key] = nil
+            if self!.list.count > self!.maxCapacity {
+                let nodeRemoved = self!.list.removeLast()
+                if let key = nodeRemoved?.payload.key {
+                    self!.nodesDict[key] = nil
+                }
             }
         }
     }
@@ -48,6 +51,13 @@ final class LRUCache<Key: Hashable, Value> {
 
         list.moveToHead(node)
         return node.payload.value
+    }
+    
+    func clear() {
+        dispatchQueue.async(flags: .barrier) { [weak self] in
+            self!.list.clear()
+            self!.nodesDict.removeAll()
+        }
     }
 }
 
@@ -122,5 +132,11 @@ final class DoubleLinkedList<T> {
 
         count -= 1
         return tail
+    }
+    
+    func clear() {
+        
+        head = nil
+        count = 0
     }
 }
