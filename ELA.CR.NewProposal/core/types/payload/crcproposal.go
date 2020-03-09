@@ -123,7 +123,7 @@ type CRCProposal struct {
 	// The signature of sponsor.
 	Sign []byte
 
-	// DID of CR sponsor.
+	// CID of CR sponsor.
 	CRSponsorDID common.Uint168
 
 	// The hash of proposal opinion.

@@ -843,6 +843,13 @@ func NewSettings() *Settings {
 		ParamName:    "TxCacheVolume",
 	})
 
+	result.Add(&settingItem{
+		Flag:         cmdcom.RegisterCRByDIDHeightFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.RegisterCRByDIDHeight",
+		ParamName:    "RegisterCRByDIDHeight",
+	})
+
 	return result
 }
 

@@ -149,21 +149,21 @@ func strCRCAppropriation(*types.Transaction) (interface{}, error) {
 }
 
 // program hashes related functions
-func addrCRInfoCRDID(tx *types.Transaction) (interface{}, error) {
+func addrCRInfoCRCID(tx *types.Transaction) (interface{}, error) {
 	p, err := comGetCRInfo(tx)
 	if err != nil {
 		return nil, err
 	}
-	return p.DID, nil
+	return p.CID, nil
 }
 
-func addrUnregisterCRDID(tx *types.Transaction) (interface{}, error) {
+func addrUnregisterCRCID(tx *types.Transaction) (interface{}, error) {
 	p, ok := tx.Payload.(*payload.UnregisterCR)
 	if !ok {
 		return nil, fmt.Errorf(
 			"unregisterCR CR payload cast failed, tx: %s", tx.Hash())
 	}
-	return p.DID, nil
+	return p.CID, nil
 }
 
 // hash array related functions

@@ -64,7 +64,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32,
 		return elaerr.Simple(elaerr.ErrTxInvalidInput, err)
 	}
 
-	if err := b.checkTransactionOutput(blockHeight, txn); err != nil {
+	if err := b.checkTransactionOutput(txn, blockHeight); err != nil {
 		log.Warn("[CheckTransactionOutput],", err)
 		return elaerr.Simple(elaerr.ErrTxInvalidOutput, err)
 	}
@@ -405,7 +405,7 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayloa
 		_, err := common.Uint168FromBytes(cv.Candidate)
 		if err != nil {
 			return fmt.Errorf("invalid vote output payload " +
-				"Candidate can not change to proper did")
+				"Candidate can not change to proper cid")
 		}
 	}
 	var totalVotes common.Fixed64
@@ -457,10 +457,10 @@ func getProducerPublicKeysMap(producers []*state.Producer) map[string]struct{} {
 	return pds
 }
 
-func getCRDIDsMap(crs []*crstate.Candidate) map[common.Uint168]struct{} {
+func getCRCIDsMap(crs []*crstate.Candidate) map[common.Uint168]struct{} {
 	codes := make(map[common.Uint168]struct{})
 	for _, c := range crs {
-		codes[c.Info().DID] = struct{}{}
+		codes[c.Info().CID] = struct{}{}
 	}
 	return codes
 }
@@ -569,8 +569,8 @@ func (b *BlockChain) checkCRCProposalWithdrawOutput(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
-	txn *Transaction) error {
+func (b *BlockChain) checkTransactionOutput(txn *Transaction,
+	blockHeight uint32) error {
 	if len(txn.Outputs) > math.MaxUint16 {
 		return errors.New("output count should not be greater than 65535(MaxUint16)")
 	}
@@ -1042,7 +1042,13 @@ func checkDuplicateSidechainTx(txn *Transaction) error {
 // validate the type of transaction is allowed or not at current height.
 func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) error {
 	switch txn.TxType {
-	case RegisterCR, UpdateCR, UnregisterCR, ReturnCRDepositCoin:
+	case RegisterCR, UpdateCR:
+		if blockHeight < b.chainParams.CRVotingStartHeight ||
+			(blockHeight < b.chainParams.RegisterCRByDIDHeight &&
+				txn.PayloadVersion != payload.CRInfoVersion) {
+			return errors.New("not support before CRVotingStartHeight")
+		}
+	case UnregisterCR, ReturnCRDepositCoin:
 		if blockHeight < b.chainParams.CRVotingStartHeight {
 			return errors.New("not support before CRVotingStartHeight")
 		}
@@ -1522,6 +1528,14 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	return nil
 }
 
+func getDIDFromCode(code []byte) *common.Uint168 {
+	newCode := make([]byte, len(code))
+	copy(newCode, code)
+	didCode := append(newCode[:len(newCode)-1], common.DID)
+	ct1, _ := contract.CreateCRIDContractByCode(didCode)
+	return ct1.ToProgramHash()
+}
+
 func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 	blockHeight uint32) error {
 	info, ok := txn.Payload.(*payload.CRInfo)
@@ -1546,13 +1560,13 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 		return fmt.Errorf("nick name %s already inuse", info.NickName)
 	}
 
-	cr := b.crCommittee.GetCandidate(info.DID)
+	cr := b.crCommittee.GetCandidate(info.CID)
 	if cr != nil {
-		return fmt.Errorf("did %s already exist", info.DID)
+		return fmt.Errorf("cid %s already exist", info.CID)
 	}
 
-	// get DID program hash
-	ct, err := contract.CreateCRDIDContractByCode(info.Code)
+	// get CID program hash and check length of code
+	ct, err := contract.CreateCRIDContractByCode(info.Code)
 	if err != nil {
 		return err
 	}
@@ -1571,13 +1585,24 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 		}
 	}
 
-	// check DID
-	if !info.DID.IsEqual(*programHash) {
-		return errors.New("invalid did address")
+	// check CID
+	if !info.CID.IsEqual(*programHash) {
+		return errors.New("invalid cid address")
+	}
+
+	if blockHeight >= b.chainParams.RegisterCRByDIDHeight &&
+		txn.PayloadVersion == payload.CRInfoDIDVersion {
+		// get DID program hash
+		programHash = getDIDFromCode(info.Code)
+
+		// check DID
+		if !info.DID.IsEqual(*programHash) {
+			return errors.New("invalid did address")
+		}
 	}
 
 	// check code and signature
-	if err := b.crInfoSanityCheck(info); err != nil {
+	if err := b.crInfoSanityCheck(info, txn.PayloadVersion); err != nil {
 		return err
 	}
 
@@ -1624,8 +1649,8 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		return err
 	}
 
-	// get did program hash
-	ct, err := contract.CreateCRDIDContractByCode(info.Code)
+	// get CID program hash and check length of code
+	ct, err := contract.CreateCRIDContractByCode(info.Code)
 	if err != nil {
 		return err
 	}
@@ -1634,20 +1659,30 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		return err
 	}
 
-	// check DID
-	if !info.DID.IsEqual(*programHash) {
-		return errors.New("invalid did address")
+	// check CID
+	if !info.CID.IsEqual(*programHash) {
+		return errors.New("invalid cid address")
+	}
+
+	if blockHeight >= b.chainParams.RegisterCRByDIDHeight &&
+		txn.PayloadVersion == payload.CRInfoDIDVersion {
+		// get DID program hash
+		programHash = getDIDFromCode(info.Code)
+		// check DID
+		if !info.DID.IsEqual(*programHash) {
+			return errors.New("invalid did address")
+		}
 	}
 
 	// check code and signature
-	if err := b.crInfoSanityCheck(info); err != nil {
+	if err := b.crInfoSanityCheck(info, txn.PayloadVersion); err != nil {
 		return err
 	}
 	if !b.crCommittee.IsInVotingPeriod(blockHeight) {
 		return errors.New("should create tx during voting period")
 	}
 
-	cr := b.crCommittee.GetCandidate(info.DID)
+	cr := b.crCommittee.GetCandidate(info.CID)
 	if cr == nil {
 		return errors.New("updating unknown CR")
 	}
@@ -2030,7 +2065,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 		return errors.New("should create tx during voting period")
 	}
 
-	cr := b.crCommittee.GetCandidate(info.DID)
+	cr := b.crCommittee.GetCandidate(info.CID)
 	if cr == nil {
 		return errors.New("unregister unknown CR")
 	}
@@ -2127,7 +2162,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		return errors.New("invalid CR signature")
 	}
 	if err = proposal.CRSponsorDID.Serialize(signedBuf); err != nil {
-		return errors.New("invalid DID of CR sponsor")
+		return errors.New("invalid CID of CR sponsor")
 	}
 	if err = checkCRTransactionSignature(proposal.CRSign, crMember.Info.Code,
 		signedBuf.Bytes()); err != nil {
@@ -2174,9 +2209,9 @@ func checkCRTransactionSignature(signature []byte, code []byte, data []byte) err
 	return nil
 }
 
-func (b *BlockChain) crInfoSanityCheck(info *payload.CRInfo) error {
+func (b *BlockChain) crInfoSanityCheck(info *payload.CRInfo, payloadVersion byte) error {
 	signedBuf := new(bytes.Buffer)
-	err := info.SerializeUnsigned(signedBuf, payload.CRInfoVersion)
+	err := info.SerializeUnsigned(signedBuf, payloadVersion)
 	if err != nil {
 		return err
 	}
@@ -2288,19 +2323,19 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 	var availableValue common.Fixed64
 	for _, program := range txn.Programs {
 		// Get candidate from code.
-		ct, err := contract.CreateCRDIDContractByCode(program.Code)
+		ct, err := contract.CreateCRIDContractByCode(program.Code)
 		if err != nil {
 			return err
 		}
-		did := ct.ToProgramHash()
-		if !b.crCommittee.Exist(*did) {
+		cid := ct.ToProgramHash()
+		if !b.crCommittee.Exist(*cid) {
 			return errors.New("signer must be candidate or member")
 		}
-		if !b.crCommittee.IsRefundable(*did) {
+		if !b.crCommittee.IsRefundable(*cid) {
 			return errors.New("signer must be refundable")
 		}
 
-		availableValue += b.crCommittee.GetAvailableDepositAmount(*did)
+		availableValue += b.crCommittee.GetAvailableDepositAmount(*cid)
 	}
 
 	// Check output amount.

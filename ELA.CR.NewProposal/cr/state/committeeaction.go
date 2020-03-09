@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -18,6 +18,28 @@ import (
 func (c *Committee) processTransactions(txs []*types.Transaction, height uint32) {
 	for _, tx := range txs {
 		c.processTransaction(tx, height)
+	}
+
+	// Check if any pending candidates has got 6 confirms, set them to activate.
+	activateCandidateFromPending :=
+		func(key common.Uint168, candidate *Candidate) {
+			c.state.history.Append(height, func() {
+				candidate.state = Active
+				c.state.Candidates[key] = candidate
+			}, func() {
+				candidate.state = Pending
+				c.state.Candidates[key] = candidate
+			})
+		}
+
+	pendingCandidates := c.state.getCandidates(Pending)
+
+	if len(pendingCandidates) > 0 {
+		for _, candidate := range pendingCandidates {
+			if height-candidate.registerHeight+1 >= ActivateDuration {
+				activateCandidateFromPending(candidate.info.CID, candidate)
+			}
+		}
 	}
 }
 
