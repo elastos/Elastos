@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package api
 
@@ -1132,7 +1132,10 @@ func RegisterCRCProposalReviewType(L *lua.LState) {
 }
 
 func getDID(code []byte) *common.Uint168 {
-	ct1, _ := contract.CreateCRIDContractByCode(code)
+	newCode := make([]byte, len(code))
+	copy(newCode, code)
+	didCode := append(newCode[:len(newCode)-1], common.DID)
+	ct1, _ := contract.CreateCRIDContractByCode(didCode)
 	return ct1.ToProgramHash()
 }
 

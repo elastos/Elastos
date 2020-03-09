@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package script
 
@@ -173,7 +173,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
 	recipient := c.String("recipient")
 	crcCommitteeAddress := c.String("crccommiteeaddr")
-	payloadVersion := c.Int64("payloadVersion")
+	payloadVersion := c.Int64("payloadversion")
 
 	getProposalType := func(L *lua.LState) int {
 		L.Push(lua.LNumber(proposalType))
@@ -472,7 +472,7 @@ func NewCommand() *cli.Command {
 				Usage: "set the crccommiteeaddress",
 			},
 			cli.Int64Flag{
-				Name:  "payloadVersion",
+				Name:  "payloadversion",
 				Usage: "set the version of payload",
 			},
 		},

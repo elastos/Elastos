@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -422,6 +422,8 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 		return
 	}
 	oriPenalty := c.state.depositInfo[crMember.Info.CID].Penalty
+	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
+	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
 	oriMemberState := crMember.MemberState
 	penalty := c.getMemberPenalty(height, crMember)
 	history.Append(height, func() {
@@ -430,11 +432,15 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 			c.params.VoterRejectPercentage/100.0) {
 			crMember.MemberState = MemberImpeached
 			c.state.depositInfo[crMember.Info.CID].Penalty = penalty
+			c.state.depositInfo[crMember.Info.CID].DepositAmount -= MinDepositAmount
+			c.state.depositInfo[crMember.Info.CID].Refundable = true
 		}
 	}, func() {
 		crMember.ImpeachmentVotes -= votes
 		crMember.MemberState = oriMemberState
 		c.state.depositInfo[crMember.Info.CID].Penalty = oriPenalty
+		c.state.depositInfo[crMember.Info.CID].Refundable = oriRefundable
+		c.state.depositInfo[crMember.Info.CID].DepositAmount = oriDepositAmount
 	})
 	return
 }
@@ -596,15 +602,19 @@ func (c *Committee) processCurrentMembers(height uint32,
 			oriPenalty := c.state.depositInfo[m.Info.CID].Penalty
 			oriRefundable := c.state.depositInfo[m.Info.CID].Refundable
 			oriDepositAmount := c.state.depositInfo[m.Info.CID].DepositAmount
+			var dpositAmount common.Fixed64
+			if member.MemberState != MemberImpeached {
+				dpositAmount = MinDepositAmount
+			}
 			c.lastHistory.Append(height, func() {
 				c.state.depositInfo[m.Info.CID].Penalty = c.getMemberPenalty(height, m)
 				c.state.depositInfo[m.Info.CID].Refundable = true
-				c.state.depositInfo[m.Info.CID].DepositAmount -= MinDepositAmount
+				c.state.depositInfo[m.Info.CID].DepositAmount -= dpositAmount
 				c.HistoryMembers[c.state.CurrentSession][m.Info.CID] = &member
 			}, func() {
 				c.state.depositInfo[m.Info.CID].Penalty = oriPenalty
 				c.state.depositInfo[m.Info.CID].Refundable = oriRefundable
-				c.state.depositInfo[m.Info.CID].DepositAmount -= oriDepositAmount
+				c.state.depositInfo[m.Info.CID].DepositAmount = oriDepositAmount
 				delete(c.HistoryMembers[c.state.CurrentSession], m.Info.CID)
 			})
 		}
