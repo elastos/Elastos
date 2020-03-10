@@ -42,8 +42,8 @@ static void test_didstore_newdid(void)
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
-    const char *newmnemonic = Mnemonic_Generate(0);
-    rc = DIDStore_InitPrivateIdentity(store, storepass, newmnemonic, "", 0, false);
+    const char *newmnemonic = Mnemonic_Generate(language);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, newmnemonic, "", language, false);
     Mnemonic_Free((void*)newmnemonic);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
@@ -111,8 +111,8 @@ static void test_didstore_newdid_byindex(void)
     path = get_file_path(_path, PATH_MAX, 3, store->root, PATH_STEP, META_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    const char *mnemonic = Mnemonic_Generate(0);
-    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", 0, false);
+    const char *mnemonic = Mnemonic_Generate(language);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", language, false);
     Mnemonic_Free((void*)mnemonic);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
@@ -167,8 +167,8 @@ static void test_didstore_newdid_withouAlias(void)
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
-    const char *newmnemonic = Mnemonic_Generate(0);
-    rc = DIDStore_InitPrivateIdentity(store, storepass, newmnemonic, "", 0, false);
+    const char *newmnemonic = Mnemonic_Generate(language);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, newmnemonic, "", language, false);
     Mnemonic_Free((void*)newmnemonic);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
@@ -242,10 +242,10 @@ static void test_didstore_privateIdentity_error(void)
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
-    rc = DIDStore_InitPrivateIdentity(store, storepass, "", "", 0, false);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, "", "", language, false);
     CU_ASSERT_EQUAL(rc, -1);
 
-    rc = DIDStore_InitPrivateIdentity(store, "", mnemonic, "", 0, false);
+    rc = DIDStore_InitPrivateIdentity(store, "", mnemonic, "", language, false);
     CU_ASSERT_EQUAL(rc, -1);
 
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
@@ -306,7 +306,7 @@ static void test_didstore_privateidentity_compatibility(void)
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, passphrase,
-            0, false);
+            language, false);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     doc = DIDStore_NewDID(store, storepass, "identity test1");

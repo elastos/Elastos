@@ -394,8 +394,8 @@ int TestData_InitIdentity(DIDStore *store)
     const char *mnemonic;
     int rc;
 
-    mnemonic = Mnemonic_Generate(0);
-    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, passphase, 0, false);
+    mnemonic = Mnemonic_Generate(language);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, passphase, language, false);
     Mnemonic_Free((void*)mnemonic);
 
     return rc;
@@ -616,6 +616,10 @@ DIDDocument *TestData_LoadDoc(void)
     if (rc)
         return NULL;
 
+    if (!DID_Resolve(subject) &&
+            !DIDStore_PublishDID(testdata.store, storepass, subject, NULL))
+        return NULL;
+
     return testdata.doc;
 }
 
@@ -633,6 +637,10 @@ DIDDocument *TestData_LoadIssuerDoc(void)
     rc = import_privatekey(id, storepass, "issuer.primary.sk");
     DIDURL_Destroy(id);
     if (rc)
+        return NULL;
+
+    if (!DID_Resolve(subject) &&
+            !DIDStore_PublishDID(testdata.store, storepass, subject, NULL))
         return NULL;
 
     return testdata.issuerdoc;
@@ -727,11 +735,11 @@ const char *Generater_Publickey(char *publickeybase58, size_t size)
     if (size < MAX_PUBLICKEY_BASE58)
         return NULL;
 
-    mnemonic = Mnemonic_Generate(0);
+    mnemonic = Mnemonic_Generate(language);
     if (!mnemonic || !*mnemonic)
         return NULL;
 
-    privateIdentity = HDKey_FromMnemonic(mnemonic, "", 0, &hk);
+    privateIdentity = HDKey_FromMnemonic(mnemonic, "", language, &hk);
     Mnemonic_Free((char*)mnemonic);
     if (!privateIdentity)
         return NULL;
@@ -750,11 +758,11 @@ DerivedKey *Generater_KeyPair(DerivedKey *dkey)
     HDKey hk, *privateIdentity;
     ssize_t size;
 
-    mnemonic = Mnemonic_Generate(0);
+    mnemonic = Mnemonic_Generate(language);
     if (!mnemonic || !*mnemonic)
         return NULL;
 
-    privateIdentity = HDKey_FromMnemonic(mnemonic, "", 0, &hk);
+    privateIdentity = HDKey_FromMnemonic(mnemonic, "", language, &hk);
     Mnemonic_Free((char*)mnemonic);
     if (!privateIdentity)
         return NULL;

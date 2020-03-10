@@ -130,8 +130,8 @@ static int idchain_operation_test_suite_init(void)
     if (!store)
         return -1;
 
-    mnemonic = Mnemonic_Generate(0);
-    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", 0, true);
+    mnemonic = Mnemonic_Generate(language);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", language, true);
     Mnemonic_Free((char*)mnemonic);
     if (rc < 0) {
         TestData_Free();

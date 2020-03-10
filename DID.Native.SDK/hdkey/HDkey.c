@@ -36,6 +36,9 @@
 #include "BRBIP39WordsJap.h"
 #include "BRBIP39WordsSpan.h"
 #include "BRBIP39WordsCht.h"
+#include "BRBIP39WordsCzech.h"
+#include "BRBIP39WordsItalian.h"
+#include "BRBIP39WordsKorean.h"
 #include "BRBIP32Sequence.h"
 #include "BRCrypto.h"
 #include "BRBase58.h"
@@ -48,34 +51,39 @@ static uint32_t VersionCode = 0x0488ade4;
 
 #define MAX_PUBLICKEY_BASE58 64
 
-static const char **get_word_list(int language)
+static const char **get_word_list(const char* language)
 {
-    switch (language) {
-    case LANGUAGE_ENGLISH:
-        return BRBIP39WordsEn;
+    if (language) {
+        if (!strcmp(language, CHINESE_SIMPLIFIED))
+            return BRBIP39WordsChs;
 
-    case LANGUAGE_FRENCH:
-        return BRBIP39WordsFrance;
+        if (!strcmp(language, CHINESE_TRADITIONAL))
+            return BRBIP39WordsCht;
 
-    case LANGUAGE_SPANISH:
-        return BRBIP39WordsSpan;
+        if (!strcmp(language, CZECH))
+            return BRBIP39WordsCzech;
 
-    case LANGUAGE_CHINESE_SIMPLIFIED:
-        return BRBIP39WordsChs;
+        if (!strcmp(language, FRENCH))
+            return BRBIP39WordsFrance;
 
-    case LANGUAGE_CHINESE_TRADITIONAL:
-        return BRBIP39WordsCht;
+        if (!strcmp(language, ITALIAN))
+            return BRBIP39WordsItalian;
 
-    case LANGUAGE_JAPANESE:
-        return BRBIP39WordsJap;
+        if (!strcmp(language, JAPANESE))
+            return BRBIP39WordsJap;
 
-    default:
-        return BRBIP39WordsEn;
+        if (!strcmp(language, KOREAN))
+            return BRBIP39WordsKorean;
+
+        if (!strcmp(language, SPANISH))
+            return BRBIP39WordsSpan;
     }
+
+    return BRBIP39WordsEn;
 }
 
 // need to free after use this function
-const char *HDKey_GenerateMnemonic(int language)
+const char *HDKey_GenerateMnemonic(const char *language)
 {
     unsigned char rand[16];
     const char **word_list;
@@ -106,7 +114,7 @@ void HDKey_FreeMnemonic(void *mnemonic)
         free(mnemonic);
 }
 
-bool HDKey_MnemonicIsValid(const char *mnemonic, int language)
+bool HDKey_MnemonicIsValid(const char *mnemonic, const char *language)
 {
     const char **word_list;
 
@@ -171,7 +179,7 @@ static ssize_t generate_extendedkey(uint8_t *extendedkey, size_t size,
 }
 
 static ssize_t get_extendedkey_frommnemonic(const char *mnemonic,
-        const char* passphrase, int language, uint8_t *extendedkey, size_t size)
+        const char* passphrase, const char *language, uint8_t *extendedkey, size_t size)
 {
     int len;
     const char **word_list;
@@ -251,7 +259,7 @@ static HDKey *get_hdkey(const uint8_t *extendedkey, size_t size, HDKey *hdkey)
 }
 
 HDKey *HDKey_FromMnemonic(const char *mnemonic, const char *passphrase,
-        int language, HDKey *hdkey)
+        const char *language, HDKey *hdkey)
 {
     ssize_t size;
     uint8_t extendedkey[EXTENDEDKEY_BYTES];

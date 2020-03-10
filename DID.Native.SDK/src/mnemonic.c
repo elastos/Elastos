@@ -30,7 +30,7 @@
 #include "ela_did.h"
 #include "HDkey.h"
 
-const char *Mnemonic_Generate(int language)
+const char *Mnemonic_Generate(const char *language)
 {
     return HDKey_GenerateMnemonic(language);
 }
@@ -40,7 +40,7 @@ void Mnemonic_Free(void *mnemonic)
     HDKey_FreeMnemonic(mnemonic);
 }
 
-bool Mnemonic_IsValid(const char *mnemonic, int language)
+bool Mnemonic_IsValid(const char *mnemonic, const char *language)
 {
     return HDKey_MnemonicIsValid(mnemonic, language);
 }

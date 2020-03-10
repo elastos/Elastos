@@ -31,19 +31,22 @@
 extern "C" {
 #endif
 
-#define LANGUAGE_ENGLISH                0
-#define LANGUAGE_FRENCH                 1
-#define LANGUAGE_SPANISH                2
-#define LANGUAGE_CHINESE_SIMPLIFIED     3
-#define LANGUAGE_CHINESE_TRADITIONAL    4
-#define LANGUAGE_JAPANESE               5
-
 #define PUBLICKEY_BYTES                 33
 #define PRIVATEKEY_BYTES                32
 #define ADDRESS_LEN                     48
 #define CHAINCODE_BYTES                 32
 #define EXTENDEDKEY_BYTES               82
 #define SEED_BYTES                      64
+
+#define CHINESE_SIMPLIFIED             "chinese_simplified"
+#define CHINESE_TRADITIONAL            "chinese_traditional"
+#define CZECH                          "czech"
+#define ENGLISH                        "english"
+#define FRENCH                         "french"
+#define ITALIAN                        "italian"
+#define JAPANESE                       "japanese"
+#define KOREAN                         "korean"
+#define SPANISH                        "spanish"
 
 typedef struct HDKey {
     uint32_t fingerPrint;
@@ -59,14 +62,14 @@ typedef struct DerivedKey {
     char address[ADDRESS_LEN];
 } DerivedKey;
 
-const char *HDKey_GenerateMnemonic(int language);
+const char *HDKey_GenerateMnemonic(const char *language);
 
 void HDKey_FreeMnemonic(void *mnemonic);
 
-bool HDKey_MnemonicIsValid(const char *mnemonic, int language);
+bool HDKey_MnemonicIsValid(const char *mnemonic, const char *language);
 
 HDKey *HDKey_FromMnemonic(const char *mnemonic, const char *passphrase,
-        int language, HDKey *hdkey);
+        const char *language, HDKey *hdkey);
 
 HDKey *HDKey_FromSeed(const uint8_t *seed, size_t size, HDKey *hdkey);
 

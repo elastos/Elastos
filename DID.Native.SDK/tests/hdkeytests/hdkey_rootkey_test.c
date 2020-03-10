@@ -21,7 +21,7 @@ static void test_rootkey_with_diff_method(void)
     size = base58_decode(ExtendedKey, ExtendedkeyBase);
     CU_ASSERT_EQUAL(size, EXTENDEDKEY_BYTES);
 
-    hdkey = HDKey_FromMnemonic(mnemonic, passphrase, 0, &_hdkey);
+    hdkey = HDKey_FromMnemonic(mnemonic, passphrase, "english", &_hdkey);
     CU_ASSERT_PTR_NOT_NULL(hdkey);
 
     size = HDKey_Serialize(hdkey, _ExtendedKey, sizeof(_ExtendedKey));

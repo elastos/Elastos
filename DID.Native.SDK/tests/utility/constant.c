@@ -29,6 +29,7 @@ const char *default_type = "ECDSAsecp256r1";
 const char *service_type = "CarrierAddress";
 
 const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
+const char *language = "english";
 
 const char *testdid_string = "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu";
 const char *testid_string = "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#default";

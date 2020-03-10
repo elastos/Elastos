@@ -1981,16 +1981,16 @@ DID_API bool DIDStore_ContainsPrivateIdentity(DIDStore *store);
  *      passphrase             [in] The pass word to generate private identity.
  * @param
  *      language               [in] The language for DID.
- *                             0: English; 1: French; 2: Spanish;
- *                             3: Japanese; 4: Chinese_simplified;
- *                             5: Chinese_traditional;
+ *                             support language string: "chinese_simplified",
+ *                             "chinese_traditional", "czech", "english", "french",
+ *                             "italian", "japanese", "korean", "spanish".
  * @param
  *      extendedkey            [in] Extendedkey string.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
-        const char *mnemonic, const char *passphrase, const int language, bool force);
+        const char *mnemonic, const char *passphrase, const char *language, bool force);
 
 DID_API int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store,
         const char *storepass, const char *extendedkey, bool force);
@@ -2385,14 +2385,13 @@ DID_API const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepas
  *
  * @param
  *      language               [in] The language for DID.
- *                             0: English; 1: French; 2: Spanish;
- *                             3: Chinese_simplified;
- *                             4: Chinese_traditional;
- *                             5: Japanese.
+ *                             support language string: "chinese_simplified",
+ *                             "chinese_traditional", "czech", "english", "french",
+ *                             "italian", "japanese", "korean", "spanish".
  * @return
  *      mnemonic string. Use Mnemonic_free after finish using mnemonic string.
  */
-DID_API const char *Mnemonic_Generate(int language);
+DID_API const char *Mnemonic_Generate(const char *language);
 
 /**
  * \~English
@@ -2418,7 +2417,7 @@ DID_API void Mnemonic_Free(void *mnemonic);
  * @return
  *      true, if mnemonic is valid. or else, return false.
  */
-DID_API bool Mnemonic_IsValid(const char *mnemonic, int language);
+DID_API bool Mnemonic_IsValid(const char *mnemonic, const char *language);
 
 /******************************************************************************
  * Presentation

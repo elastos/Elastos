@@ -97,7 +97,7 @@ static void test_idchain_restore(void)
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = DIDStore_InitPrivateIdentity(store, storepass, TestData_LoadRestoreMnemonic(),
-        "secret", 0, true);
+        "secret", language, true);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
     printf("\nSynchronizing from IDChain...");

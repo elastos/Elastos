@@ -10,22 +10,26 @@
 
 static DIDStore *store;
 
+static const char *languagelists[] = {"chinese_simplified", "chinese_traditional",
+        "czech", "english", "french", "italian", "japanese", "korean", "spanish"};
+
 static void test_build_wordlist(void)
 {
     int rc, size;
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 9; i++) {
         char wmnemonic[256];
-        const char *mnemonic = Mnemonic_Generate(i);
+        const char *lang = languagelists[i];
+        const char *mnemonic = Mnemonic_Generate(lang);
         CU_ASSERT_PTR_NOT_NULL(mnemonic);
-        CU_ASSERT_TRUE(Mnemonic_IsValid(mnemonic, i));
+        CU_ASSERT_TRUE(Mnemonic_IsValid(mnemonic, lang));
 
-        rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", i, true);
+        rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", lang, true);
         CU_ASSERT_NOT_EQUAL(rc, -1);
 
         strcpy(wmnemonic, mnemonic);
         strcat(wmnemonic, "z");
-        CU_ASSERT_FALSE(Mnemonic_IsValid(wmnemonic, i));
+        CU_ASSERT_FALSE(Mnemonic_IsValid(wmnemonic, lang));
 
         Mnemonic_Free((void*)mnemonic);
     }

@@ -269,8 +269,13 @@ static int get_file(char *path, bool create, int count, ...)
 
     va_start(components, count);
     rc = get_dirv(path, create, count - 1, components);
+    va_end(components);
     if (rc < 0)
         return -1;
+
+    va_start(components, count);
+    for (int i = 0; i < count - 1; i++)
+        va_arg(components, const char *);
 
     filename = va_arg(components, const char *);
     strcat(path, PATH_SEP);
@@ -1683,7 +1688,7 @@ bool DIDStore_ContainsPrivateIdentity(DIDStore *store)
 }
 
 int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
-        const char *mnemonic, const char *passphrase, const int language, bool force)
+        const char *mnemonic, const char *passphrase, const char *language, bool force)
 {
     uint8_t extendedkey[EXTENDEDKEY_BYTES];
     char path[PATH_MAX];

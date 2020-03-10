@@ -12,6 +12,7 @@ const char *passphase;
 const char *default_type;
 const char *service_type;
 const char *mnemonic;
+const char *language;
 
 const char *testdid_string;
 const char *testid_string;
