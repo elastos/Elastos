@@ -44,6 +44,18 @@ public class VerifiableCredentialBuilder {
         credential!.setType(types)
         return self
     }
+    
+    func withTypes(_ types: Array<String>) throws -> VerifiableCredentialBuilder {
+         guard let _ = credential else {
+             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
+         }
+         guard types.count > 0 else {
+             throw DIDError.illegalArgument()
+         }
+
+         credential!.setType(types)
+         return self
+     }
 
     public func withDefaultExpirationDate() throws -> VerifiableCredentialBuilder {
         guard let _ = credential else {
@@ -75,8 +87,12 @@ public class VerifiableCredentialBuilder {
         guard !properites.isEmpty else {
             throw DIDError.illegalArgument()
         }
-
-        // TODO:
+        // TODO: CHECK
+        let jsonNode = JsonNode(properites)
+        let subject = VerifiableCredentialSubject(_target)
+        subject.setProperties(jsonNode)
+        credential!.setSubject(subject)
+        
         return self
     }
 
@@ -87,8 +103,13 @@ public class VerifiableCredentialBuilder {
         guard !json.isEmpty else {
             throw DIDError.illegalArgument()
         }
-
-        // TODO:
+        // TODO: CHECK
+        let dic: [String: Any] = try (JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: [JSONSerialization.ReadingOptions.init(rawValue: 0)]) as! [String: Any])
+        let jsonNode = JsonNode(dic)
+        let subject = VerifiableCredentialSubject(_target)
+        subject.setProperties(jsonNode)
+        credential!.setSubject(subject)
+        
         return self
     }
 
@@ -123,7 +144,9 @@ public class VerifiableCredentialBuilder {
             _ = try withDefaultExpirationDate()
         }
 
-        let data: Data = credential!.toJson(true, true).data(using: .utf8)!
+        guard let data = credential!.toJson(true, true).data(using: .utf8) else {
+            throw DIDError.illegalArgument("credential is nil")
+        }
         let signature = try _forDoc.sign(_signKey, storePassword, [data])
         let proof = VerifiableCredentialProof(Constants.DEFAULT_PUBLICKEY_TYPE, _signKey, signature)
 

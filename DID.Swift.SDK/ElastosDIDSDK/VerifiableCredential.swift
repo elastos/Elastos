@@ -245,7 +245,9 @@ public class VerifiableCredential: DIDObject {
             return false
         }
 
-        let data: Data = toJson(true, true).data(using: .utf8)!
+        guard let data = toJson(true, true).data(using: .utf8) else {
+            throw DIDError.illegalArgument("credential is nil")
+        }
         return try doc.verify(proof.verificationMethod, proof.signature, [data])
     }
 

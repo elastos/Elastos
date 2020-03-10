@@ -625,8 +625,24 @@ public class DIDDocument {
             throw DIDError.illegalArgument()
         }
 
-        // TODO: Verify.
-        return false
+        var cinputs: [CVarArg] = []
+        data.forEach { data in
+            let cdata = data.withUnsafeBytes { cdata -> UnsafePointer<Int8> in
+                return cdata
+            }
+            cinputs.append(cdata)
+            cinputs.append(data.count)
+        }
+        let pks: [UInt8] = pubKey!.publicKeyBytes
+        var pkData: Data = Data(bytes: pks, count: pks.count)
+        let cpk: UnsafeMutablePointer<UInt8> = pkData.withUnsafeMutableBytes { (pk: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+            return pk
+        }
+        let csignature = sigature.toUnsafeMutablePointerInt8()
+        let c_inputs = getVaList(cinputs)
+        let count = cinputs.count / 2
+        let re = ecdsa_verify_base64v(csignature, cpk, Int32(count), c_inputs)
+        return re == 0 ? true : false
     }
 
     private func fromJson(_ doc: JsonNode) throws {

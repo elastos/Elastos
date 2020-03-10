@@ -1345,14 +1345,31 @@ public class DIDStore: NSObject {
             }
         }
 
-        let binKey = try DIDStore.decryptFromBase64(loadPrivateKey(for: did, byId: usedId!), storePassword)
-//        let key = HDKey.DerivedKey.deserialize(binKey)
+        let privatekeys = try DIDStore.decryptFromBase64(loadPrivateKey(for: did, byId: usedId!), storePassword)
 
-        // TODO:
-        let signature: Data? = nil
-//        key.wipe()
-
-        return signature?.base64EncodedString() ?? ""
+        var cinputs: [CVarArg] = []
+        data.forEach { data in
+            let cdata = data.withUnsafeBytes { cdata -> UnsafePointer<Int8> in
+                return cdata
+            }
+            cinputs.append(cdata)
+            cinputs.append(data.count)
+        }
+        
+        let toPPointer = privatekeys.toPointer()
+        
+        let c_inputs = getVaList(cinputs)
+        let count = cinputs.count / 2
+        // UnsafeMutablePointer(mutating: toPPointer)
+        let csig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 4096)
+        let re = ecdsa_sign_base64v(csig, UnsafeMutablePointer(mutating: toPPointer), Int32(count), c_inputs)
+        guard re >= 0 else {
+            throw DIDError.didStoreError("sign error.")
+        }
+        let jsonStr: String = String(cString: csig)
+        let endIndex = jsonStr.index(jsonStr.startIndex, offsetBy: re)
+        let sig = String(jsonStr[jsonStr.startIndex..<endIndex])
+        return sig
     }
 
     public func sign(WithDid did: DID,

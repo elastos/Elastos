@@ -68,6 +68,7 @@ class HDKey: NSObject {
         }
         
         func serialize() -> Data {
+            // TODO:
             return getPrivateKeyData()
         }
         
@@ -145,16 +146,7 @@ class HDKey: NSObject {
     
     class func deserialize(_ keyData: [UInt8]) throws -> HDKey {
         let keyData = Data(bytes: keyData, count: keyData.count)
-        if keyData.count == SEED_BYTES {
-            return HDKey.fromSeed(keyData)
-        }
-        else if (keyData.count == EXTENDED_PRIVATE_BYTES) {
-            return HDKey.fromExtendedKey(keyData)
-        }
-        else {
-            // TODO:
-            throw DIDError.unknownFailure("deserialize error.")
-        }
+        return try deserialize(keyData)
     }
 
     func wipe() {

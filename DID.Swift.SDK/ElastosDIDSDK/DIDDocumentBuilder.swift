@@ -265,7 +265,19 @@ public class DIDDocumentBuilder {
                                  _ subject: Dictionary<String, String>,
                                  _ expirationDate: Date,
                                  _ storePassword: String) throws -> DIDDocumentBuilder  {
-        // TODO:
+        guard let _ = document else {
+            throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
+        }
+        let credential = try VerifiableCredentialBuilder(self.document!.subject, self.document!, id)
+                        .withId(id)
+                        .withTypes(types)
+                        .withProperties(subject)
+                        .withExpirationDate(expirationDate)
+                        .sealed(using: storePassword)
+        guard document!.appendCredential(credential) else {
+            throw DIDError.illegalArgument()
+        }
+        
         return self
     }
 
@@ -298,7 +310,18 @@ public class DIDDocumentBuilder {
                                  _ types: Array<String>,
                                  _ subject: Dictionary<String, String>,
                                  _ storePassword: String) throws -> DIDDocumentBuilder {
-        // TODO:
+        guard let _ = document else {
+            throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
+        }
+        let credential = try VerifiableCredentialBuilder(self.document!.subject, self.document!, id)
+                        .withId(id)
+                        .withTypes(types)
+                        .withProperties(subject)
+                        .sealed(using: storePassword)
+        guard document!.appendCredential(credential) else {
+            throw DIDError.illegalArgument()
+        }
+        
         return self
     }
 
@@ -313,7 +336,17 @@ public class DIDDocumentBuilder {
     public func appendCredential(_ id: DIDURL,
                                  _ subject: Dictionary<String, String>,
                                  _ storePassword: String) throws -> DIDDocumentBuilder {
-        // TODO:
+        guard let _ = document else {
+            throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
+        }
+        let credential = try VerifiableCredentialBuilder(self.document!.subject, self.document!, id)
+                        .withId(id)
+                        .withProperties(subject)
+                        .sealed(using: storePassword)
+        guard document!.appendCredential(credential) else {
+            throw DIDError.illegalArgument()
+        }
+        
         return self
     }
 
@@ -329,7 +362,19 @@ public class DIDDocumentBuilder {
                                  _ json: String,
                                  _ expirationDate: Date,
                                  _ storePassword: String) throws -> DIDDocumentBuilder {
-        // TOOD:
+        guard let _ = document else {
+            throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
+        }
+        let credential = try VerifiableCredentialBuilder(self.document!.subject, self.document!, id)
+                        .withId(id)
+                        .withTypes(types)
+                        .withProperties(json)
+                        .withExpirationDate(expirationDate)
+                        .sealed(using: storePassword)
+        guard document!.appendCredential(credential) else {
+            throw DIDError.illegalArgument()
+        }
+        
         return self
     }
 
@@ -346,8 +391,18 @@ public class DIDDocumentBuilder {
                                  _ json: String,
                                  _ expirationDate: Date,
                                  _ storePassword: String) throws -> DIDDocumentBuilder {
-
-        // TODO:
+        guard let _ = document else {
+            throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
+        }
+        let credential = try VerifiableCredentialBuilder(self.document!.subject, self.document!, id)
+                        .withId(id)
+                        .withProperties(json)
+                        .withExpirationDate(expirationDate)
+                        .sealed(using: storePassword)
+        guard document!.appendCredential(credential) else {
+            throw DIDError.illegalArgument()
+        }
+        
         return self
     }
 
@@ -356,16 +411,25 @@ public class DIDDocumentBuilder {
                                  _ expirationDate: Date,
                                  _ storePassword: String) throws -> DIDDocumentBuilder {
 
-        // TODO:
-        return self
+        return try appendCredential(DIDURL(id), json, expirationDate, storePassword)
     }
 
     public func appendCredential(_ id: DIDURL,
                                  _ types: Array<String>,
                                  _ json: String,
                                  _ storePassword: String) throws -> DIDDocumentBuilder {
-
-        // TODO:
+        guard let _ = document else {
+            throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
+        }
+        let credential = try VerifiableCredentialBuilder(self.document!.subject, self.document!, id)
+                        .withId(id)
+                        .withTypes(types)
+                        .withProperties(json)
+                        .sealed(using: storePassword)
+        guard document!.appendCredential(credential) else {
+            throw DIDError.illegalArgument()
+        }
+        
         return self
     }
 
@@ -374,15 +438,23 @@ public class DIDDocumentBuilder {
                                  _ json: String,
                                  _ storePassword: String) throws -> DIDDocumentBuilder {
 
-        // TODO:
-        return self
+        return try appendCredential(DIDURL(id), types, json, storePassword)
     }
 
     public func appendCredential(_ id: DIDURL,
                                  _ json: String,
                                  _ storePassword: String) throws -> DIDDocumentBuilder {
-
-        // TODO:
+        guard let _ = document else {
+            throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
+        }
+        let credential = try VerifiableCredentialBuilder(self.document!.subject, self.document!, id)
+                        .withId(id)
+                        .withProperties(json)
+                        .sealed(using: storePassword)
+        guard document!.appendCredential(credential) else {
+            throw DIDError.illegalArgument()
+        }
+        
         return self
     }
 
@@ -390,8 +462,7 @@ public class DIDDocumentBuilder {
                                  _ json: String,
                                  _ storePassword: String) throws -> DIDDocumentBuilder {
 
-        // TODO:
-        return self
+        return try appendCredential(DIDURL(id), json, storePassword)
     }
 
     public func removeCredential(_ id: DIDURL) throws -> DIDDocumentBuilder {
@@ -478,7 +549,7 @@ public class DIDDocumentBuilder {
         }
 
         let signKey = document!.defaultPublicKey
-        let data:Data = try document!.toJson(true, true)
+        let data: Data = try document!.toJson(true, true)
         let signature = try document!.sign(signKey, storePassword, [data])
 
         document!.setProof(DIDDocumentProof(signKey, signature))

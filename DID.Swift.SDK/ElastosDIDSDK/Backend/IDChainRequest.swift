@@ -142,10 +142,18 @@ class IDChainRequest: NSObject {
         let prevTxid = _operation == .UPDATE ? self._previousTransactionId! : ""
         var inputs: [Data] = []
 
-        inputs.append(_specification.data(using: .utf8)!)
-        inputs.append(_operation.description.data(using: .utf8)!)
-        inputs.append(_payload!.data(using: .utf8)!)
-        inputs.append(prevTxid.description.data(using: .utf8)!)
+        if let data = _specification.data(using: .utf8)  {
+            inputs.append(data)
+        }
+        if let data = _operation.description.data(using: .utf8)  {
+            inputs.append(data)
+        }
+        if let data = _payload!.data(using: .utf8)  {
+            inputs.append(data)
+        }
+        if let data = prevTxid.description.data(using: .utf8)  {
+            inputs.append(data)
+        }
 
         self._signature = try _doc!.sign(signKey, storePassword, inputs)
         self._signKey = signKey
@@ -161,11 +169,18 @@ class IDChainRequest: NSObject {
 
         let prevTxid = operation == .UPDATE ? self._previousTransactionId! : ""
         var inputs: [Data] = []
-
-        inputs.append(_specification.data(using: .utf8)!)
-        inputs.append(_operation.description.data(using: .utf8)!)
-        inputs.append(_payload!.data(using: .utf8)!)
-        inputs.append(prevTxid.data(using: .utf8)!)
+        if let data = _specification.data(using: .utf8)  {
+            inputs.append(data)
+        }
+        if let data = _operation.description.data(using: .utf8)  {
+            inputs.append(data)
+        }
+        if let data = _payload!.data(using: .utf8)  {
+            inputs.append(data)
+        }
+        if let data = prevTxid.description.data(using: .utf8)  {
+            inputs.append(data)
+        }
 
         self._signature = try _doc!.sign(signKey, storePassword, inputs)
         self._signKey = targetSignKey
@@ -197,12 +212,19 @@ class IDChainRequest: NSObject {
         }
 
         let prevTxid = operation == .UPDATE ? self._previousTransactionId!: ""
-        var inputs: [Data] = [];
-
-        inputs.append(_specification.data(using: .utf8)!)
-        inputs.append(_operation.description.data(using: .utf8)!)
-        inputs.append(_payload!.data(using: .utf8)!)
-        inputs.append(prevTxid.data(using: .utf8)!)
+        var inputs: [Data] = []
+        if let data = _specification.data(using: .utf8)  {
+            inputs.append(data)
+        }
+        if let data = _operation.description.data(using: .utf8)  {
+            inputs.append(data)
+        }
+        if let data = _payload!.data(using: .utf8)  {
+            inputs.append(data)
+        }
+        if let data = prevTxid.description.data(using: .utf8)  {
+            inputs.append(data)
+        }
 
         return try doc.verify(_signKey!, _signature!, inputs)
     }

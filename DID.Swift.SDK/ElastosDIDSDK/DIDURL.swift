@@ -46,13 +46,14 @@ public class DIDURL {
             guard did == id else {
                 throw DIDError.illegalArgument("Mismatched arguments")
             }
+            return
         }
 
         if fragment.hasPrefix("#") {
-            //TODO:
-            usedFragment = ""
+            let starIndex = usedFragment.index(usedFragment.startIndex, offsetBy: 1)
+            let endIndex = usedFragment.index(starIndex, offsetBy: usedFragment.count - 2)
+            usedFragment = String(usedFragment[starIndex...endIndex])
         }
-
         self._did = id
         self._fragment = usedFragment
     }

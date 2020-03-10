@@ -6,14 +6,14 @@ public class DIDBackend {
     private var _ttl: Int = Constants.DEFAULT_TTL // milliseconds
     private var _adapter: DIDAdapter
     
-    class TransactionResult {
+    class TransactionResult: NSObject {
         private var _transactionId: String?
         private var _status: Int
         private var _message: String?
         private var _filled: Bool
         private let _condition: NSCondition
 
-        init() {
+        override init() {
             self._status = 0
             self._filled = false
             self._condition = NSCondition()
@@ -46,6 +46,19 @@ public class DIDBackend {
 
         var isEmpty: Bool {
             return !_filled
+        }
+        
+        override var description: String {
+            var str = ""
+            str.append("txid: ")
+            str.append(transactionId)
+            str.append("status: ")
+            str.append(String(status))
+            if status != 0 {
+                str.append("message: ")
+                str.append(message!)
+            }
+            return str
         }
     }
 
