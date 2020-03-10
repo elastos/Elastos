@@ -672,7 +672,11 @@ export default class extends Base {
                 iss: process.env.APP_DID,
                 userId: this.currentUser._id,
                 callbackurl: `${process.env.API_URL}/api/user/did-callback-ela`,
-                claims: {}
+                claims: {},
+                website: {
+                    domain: process.env.SERVER_URL,
+                    logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+                }
             }
             const jwtToken = jwt.sign(
                 jwtClaims,
