@@ -173,6 +173,7 @@ def check_ela_auth(request):
                 request.session['logged_in'] = True
                 populate_session_vars_from_database(request, request.session['did'])
                 messages.success(request, "Logged in successfully!")
+        del request.session['elaState']
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'redirect': redirect_url}, status=200)
@@ -202,7 +203,7 @@ def send_email(request, to_email, user):
 
 def landing(request):
     did_login = config('DIDLOGIN', default=False, cast=bool)
-    recent_services = None
+    context = {}
     if not did_login:
         email = config('SUPERUSER_USER')
         try:
@@ -223,16 +224,13 @@ def landing(request):
         request.session['did'] = user.did
         request.session['logged_in'] = True
         populate_session_vars_from_database(request, user.did)
-        recent_services = get_recent_services(user.did)
+        context['recent_services'] = get_recent_services(user.did)
     else:
-        random = secrets.randbelow(999999999999)
-        request.session['elaState'] = random
-
-        elephant_url = get_elaphant_sign_in_url(request, random)
-        elastos_url = get_elastos_sign_in_url(request, random)
-
-        request.session['elephant_url'] = elephant_url
-        request.session['elastos_url'] = elastos_url
+        if 'elaState' in request.session.keys():
+            random = request.session['elaState']
+        else:
+            random = secrets.randbelow(999999999999)
+            request.session['elaState'] = random
 
         # Purge old requests for housekeeping. If the time denoted by 'created_by'
         # is more than 2 minutes old, delete the row
@@ -242,7 +240,15 @@ def landing(request):
         # Save token to the database didauth_requests
         token = {'state': random, 'data': {'auth': False}}
         DIDRequest.objects.create(state=token['state'], data=json.dumps(token['data']))
-    return render(request, 'landing.html', {'recent_services': recent_services})
+
+        # Remove duplicate rows(this is a workaround for chrome browser since it sends multiple requests)
+        for row in DIDRequest.objects.all().reverse():
+            if DIDRequest.objects.filter(state=token['state']).count() > 1:
+                row.delete()
+
+        context['elephant_url'] = get_elaphant_sign_in_url(request, random)
+        context['elastos_url'] = get_elastos_sign_in_url(request, random)
+    return render(request, 'landing.html', context)
 
 
 def get_elastos_sign_in_url(request, random):

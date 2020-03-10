@@ -28,7 +28,6 @@
 {% load qr_code %} 
 
 {% block content %}
-  <!-- Jumbotron -->
 <main class="bd-masthead" role="main" style="background-color: #181b22;">
     <div class="container">
       <div class="row align-items-center">
@@ -87,7 +86,7 @@
                                     </p>
                                 </div>
                                 <div class="col-md-12 text-center">
-                                    <img src="{% qr_url_from_text request.session.elastos_url error_correction='Q' size=3 version=10 image_format='png' %}" style="margin-top: 1rem;"/>
+                                    <img src="{% qr_url_from_text elastos_url error_correction='Q' size=3 version=10 image_format='png' %}" style="margin-top: 1rem;"/>
                                 </div>
                                 <div class="col-md-12 text-center">
                                     <p class="scan-qr-wait">
@@ -110,7 +109,7 @@
                                     </p>
                                 </div>
                                 <div class="col-md-12 text-center">
-                                    <img src="{% qr_url_from_text request.session.elephant_url error_correction='Q' size=3 version=10 image_format='png' %}" style="margin-top: 1rem;"/>
+                                    <img src="{% qr_url_from_text elephant_url error_correction='Q' size=3 version=10 image_format='png' %}" style="margin-top: 1rem;"/>
                                 </div>
                                 <div class="col-md-12 text-center">
                                     <p class="scan-qr-wait text-center">
