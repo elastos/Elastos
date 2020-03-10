@@ -346,16 +346,12 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 					return err
 				}
 			case outputpayload.CRCProposal:
-				err := b.checkVoteCRCProposalContent(blockHeight,
+				err := b.checkVoteCRCProposalContent(
 					content, votePayload.Version, o.Value)
 				if err != nil {
 					return err
 				}
 			case outputpayload.CRCImpeachment:
-				err := b.checkCRImpeachmentContent(content)
-				if err != nil {
-					return err
-				}
 			}
 		}
 	}
@@ -419,7 +415,7 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayloa
 	return nil
 }
 
-func (b *BlockChain) checkVoteCRCProposalContent(blockHeight uint32,
+func (b *BlockChain) checkVoteCRCProposalContent(
 	content outputpayload.VoteContent, payloadVersion byte,
 	amount common.Fixed64) error {
 
@@ -428,11 +424,15 @@ func (b *BlockChain) checkVoteCRCProposalContent(blockHeight uint32,
 	}
 
 	for _, cv := range content.CandidateVotes {
+		if cv.Votes > amount {
+			return errors.New("votes larger than output amount")
+		}
 		proposalHash, err := common.Uint256FromBytes(cv.Candidate)
 		if err != nil {
 			return err
 		}
-		if !b.crCommittee.ExistProposal(*proposalHash) {
+		proposal := b.crCommittee.GetProposal(*proposalHash)
+		if proposal == nil || proposal.Status != crstate.CRAgreed {
 			return fmt.Errorf("invalid CRCProposal: %s",
 				common.BytesToHexString(cv.Candidate))
 		}
@@ -447,22 +447,6 @@ func (b *BlockChain) checkVoteCRCProposalContent(blockHeight uint32,
 	}
 
 	return nil
-}
-
-func getProducerPublicKeysMap(producers []*state.Producer) map[string]struct{} {
-	pds := make(map[string]struct{})
-	for _, p := range producers {
-		pds[common.BytesToHexString(p.Info().OwnerPublicKey)] = struct{}{}
-	}
-	return pds
-}
-
-func getCRCIDsMap(crs []*crstate.Candidate) map[common.Uint168]struct{} {
-	codes := make(map[common.Uint168]struct{})
-	for _, c := range crs {
-		codes[c.Info().CID] = struct{}{}
-	}
-	return codes
 }
 
 func getCRMembersMap(members []*crstate.CRMember) map[string]struct{} {
@@ -2026,6 +2010,9 @@ func (b *BlockChain) checkSecretaryGeneralSignature(
 	sgContract, err = contract.CreateStandardContract(publicKey)
 	if err != nil {
 		return errors.New("invalid secretary general public key")
+	}
+	if err := cptPayload.SecretaryOpinionHash.Serialize(signedBuf); err != nil {
+		return errors.New("invalid secretary opinion hash")
 	}
 	if err = checkCRTransactionSignature(cptPayload.SecretaryGeneralSign,
 		sgContract.Code, signedBuf.Bytes()); err != nil {

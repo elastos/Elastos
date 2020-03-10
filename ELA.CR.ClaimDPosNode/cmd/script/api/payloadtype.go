@@ -1261,6 +1261,7 @@ func newCRCProposalTracking(L *lua.LState) int {
 	}
 
 	common.WriteVarBytes(signBuf, sig)
+	cPayload.SecretaryOpinionHash.Serialize(signBuf)
 	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
 	cPayload.SecretaryGeneralSign = crSig
 
