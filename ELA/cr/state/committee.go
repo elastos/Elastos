@@ -254,10 +254,8 @@ func (c *Committee) changeCommittee(height uint32) {
 			c.HistoryMembers = oriHistoryMembers
 			c.state.HistoryCandidates = oriHistoryCandidates
 		})
-
 	}
-	err := c.changeCommitteeMembers(height)
-	if err != nil {
+	if err := c.changeCommitteeMembers(height); err != nil {
 		log.Warn("[ProcessBlock] change committee members error: ", err)
 		return
 	}
@@ -549,8 +547,7 @@ func (c *Committee) isInVotingPeriod(height uint32) bool {
 }
 
 func (c *Committee) changeCommitteeMembers(height uint32) error {
-
-	candidates := c.getActiveCRCandidatesDesc()
+	candidates := c.getActiveAndExistDIDCRCandidatesDesc()
 	oriInElectionPeriod := c.InElectionPeriod
 	oriLastVotingStartHeight := c.LastVotingStartHeight
 	if uint32(len(candidates)) < c.params.CRMemberCount {
@@ -734,8 +731,15 @@ func (c *Committee) generateCandidate(height uint32, member *CRMember) *Candidat
 	}
 }
 
-func (c *Committee) getActiveCRCandidatesDesc() []*Candidate {
-	candidates := c.state.getCandidates(Active)
+func (c *Committee) getActiveAndExistDIDCRCandidatesDesc() []*Candidate {
+	emptyDID := common.Uint168{}
+	candidates := c.state.getCandidateFromMap(c.state.Candidates,
+		func(candidate *Candidate) bool {
+			if candidate.info.DID.IsEqual(emptyDID) {
+				return false
+			}
+			return candidate.state == Active
+		})
 
 	sort.Slice(candidates, func(i, j int) bool {
 		if candidates[i].votes == candidates[j].votes {
