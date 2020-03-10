@@ -109,10 +109,11 @@ def upload_and_sign(request):
         if boolean:
                 SavedFileInformation.objects.filter(did = did).delete()
                 return HttpResponse("Files have been deleted")
-        return HttpResponse("files are going to be deleted")
+        return HttpResponse("files have not been deleted")
     elif request.method == 'POST':
         userFileCount = len(SavedFileInformation.objects.filter(did=did))
         if userFileCount >= 50:
+            request.session['upload_and_sign_submit'] = True
             messages.warning(request, "you have reached the total number of files")
             request.session['upload_and_sign_submit'] = True
             form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key'],
@@ -127,11 +128,16 @@ def upload_and_sign(request):
             if form.is_valid():
                 network = form.cleaned_data.get('network')
                 file_name = form.cleaned_data.get('file_name')
+                file_name_list = file_name.split(' ')
+                file_name = ''
+                for item in file_name_list:
+                    file_name += item + ' '
                 api_key = form.cleaned_data.get('api_key')
                 private_key = form.cleaned_data.get('private_key')
                 file_content = form.cleaned_data.get('file_content').encode()
                 userFile = SavedFileInformation.objects.filter(did=did, file_name=file_name)
                 if len(userFile) != 0:
+                    request.session['upload_and_sign_submit'] = True
                     messages.warning(request, "You have already upload a file with that name, please change the name "
                                               "of the file")
                     return redirect(reverse('service:upload_and_sign'))
