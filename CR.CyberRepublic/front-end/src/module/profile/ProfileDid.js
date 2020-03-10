@@ -77,7 +77,7 @@ class ProfileDid extends Component {
     if (process.env.NODE_ENV === 'production') {
       domain = 'blockchain-did-mainnet'
     } else {
-      domain = 'blockchain-did-testnet'
+      domain = 'blockchain-did-regtest'
     }
     if (did && did.id) {
       return (
