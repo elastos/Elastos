@@ -1892,6 +1892,7 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	}
 
 	common.WriteVarBytes(signBuf, sig)
+	cPayload.SecretaryOpinionHash.Serialize(signBuf)
 	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
 	cPayload.SecretaryGeneralSign = crSig
 
@@ -2973,9 +2974,6 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
 	privateKeyStr3 := "94396a69462208b8fd96d83842855b867d3b0e663203cb31d0dfaec0362ec034"
 
-	publicKey4 := "033279a88abf504192f36d0a8f06d66ab1fff80d2715cf3ecbd243b4db8ff2e77e"
-	candidate4, _ := common.HexStringToBytes(publicKey4)
-
 	registerCRTxn1 := s.getRegisterCRTx(publicKey1, privateKeyStr1,
 		"nickName1", payload.CRInfoVersion, &common.Uint168{})
 	registerCRTxn2 := s.getRegisterCRTx(publicKey2, privateKeyStr2,
@@ -3284,7 +3282,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		},
 	})
 	s.Chain.crCommittee.GetProposalManager().Proposals[*proposalHash1] =
-		&crstate.ProposalState{Status: 0}
+		&crstate.ProposalState{Status: 1}
 	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs13, references))
 
 	// Check vote output of v1 with wrong votes
@@ -3309,82 +3307,6 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs14, references),
 		"invalid CRCProposal: 9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0")
-
-	// Check vote output v1 with correct votes
-	outputs15 := []*types.Output{{Type: types.OTNone}}
-	outputs15 = append(outputs15, &types.Output{
-		Type:        types.OTVote,
-		ProgramHash: *hash,
-		Value:       common.Fixed64(10),
-		Payload: &outputpayload.VoteOutput{
-			Version: 1,
-			Contents: []outputpayload.VoteContent{
-				{
-					VoteType: outputpayload.CRCImpeachment,
-					CandidateVotes: []outputpayload.CandidateVotes{
-						{getCodeByPubKeyStr(publicKey4), 10},
-					},
-				},
-			},
-		},
-	})
-	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs15, references),
-		"candidate should be one of the CR members")
-
-	// Check vote output of v1 with wrong votes
-	did := getDIDFromCode(getCodeByPubKeyStr(publicKey4))
-	outputs16 := []*types.Output{{Type: types.OTNone}}
-	outputs16 = append(outputs16, &types.Output{
-		Type:        types.OTVote,
-		ProgramHash: *hash,
-		Value:       common.Fixed64(10),
-		Payload: &outputpayload.VoteOutput{
-			Version: 1,
-			Contents: []outputpayload.VoteContent{
-				{
-					VoteType: outputpayload.CRCImpeachment,
-					CandidateVotes: []outputpayload.CandidateVotes{
-						{did.Bytes(), 10},
-					},
-				},
-			},
-		},
-	})
-	s.Chain.crCommittee.Members[common.Uint168{1, 2, 3}] = &crstate.CRMember{
-		Info: payload.CRInfo{
-			DID: *did,
-		},
-		MemberState: crstate.MemberElected,
-	}
-	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs16, references))
-
-	// Check vote output of v1 with wrong votes
-	outputs17 := []*types.Output{{Type: types.OTNone}}
-	outputs17 = append(outputs17, &types.Output{
-		Type:        types.OTVote,
-		ProgramHash: *hash,
-		Value:       common.Fixed64(10),
-		Payload: &outputpayload.VoteOutput{
-			Version: 1,
-			Contents: []outputpayload.VoteContent{
-				{
-					VoteType: outputpayload.CRCImpeachment,
-					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate4, 10},
-					},
-				},
-			},
-		},
-	})
-	s.Chain.crCommittee.Members[common.Uint168{1, 2, 3}] = &crstate.CRMember{
-		Info: payload.CRInfo{
-			Code: getCodeByPubKeyStr(publicKey4),
-		},
-		MemberState: crstate.MemberImpeached,
-	}
-	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs15, references),
-		"candidate should be one of the CR members")
-
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {
