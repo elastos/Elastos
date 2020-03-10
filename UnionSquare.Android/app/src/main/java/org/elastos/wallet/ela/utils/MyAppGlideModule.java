@@ -1,6 +1,6 @@
 package org.elastos.wallet.ela.utils;
 
-import android.content.Context;
+/*import android.content.Context;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Registry;
@@ -21,4 +21,4 @@ public final class MyAppGlideModule extends AppGlideModule {
     }
 
 
-}
+}*/

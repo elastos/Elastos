@@ -372,12 +372,16 @@ public class DialogUtil {
         dialog.show();
     }
 
-    public void showTime(BaseActivity activity, long minDate, long maxDate, WarmPromptListener listener) {
+    public void showTime(BaseActivity activity,String dec, long minDate, long maxDate, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.dialog_timepicker);
         dialog.setCancelable(true);
         dialog.setCanceledOnTouchOutside(true);
         TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextView tvDec = dialog.findViewById(R.id.tv_dec);
+        if (dec!=null){
+            tvDec.setText(dec);
+        }
         TextConfigDataPicker datePicker = dialog.findViewById(R.id.np);
         //datePicker.updateUI(datePicker);
         datePicker.setMinDate(minDate);

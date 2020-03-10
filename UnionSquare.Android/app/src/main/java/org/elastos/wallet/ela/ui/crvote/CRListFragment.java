@@ -108,7 +108,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     private CRListAdapter adapter;
     private CRListAdapterFather curentAdapter;
     private CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode;
-    private String did;
+    private String CID;
     private int pageNum = 1;
     private final int pageSize = 1000;//基本没分页了
     private AddDIDPresenter addDIDPresenter;
@@ -373,7 +373,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = list.get(i);
             bean.setIndex(i);
             setVoterate(bean, totalvotes);
-            if (curentNode == null && bean.getDid().equals(did)) {
+            if (curentNode == null && bean.getDid().equals(CID)) {
                 curentNode = bean;
             }
 
@@ -438,6 +438,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                         return;
                     }
                 }
+                //027d5db6b80da56b549d0cc58022f5993c31111a60c3446d5dcd31e3ea8b74630b
                 //没有对应的子钱包 需要打开idchain
                 showOpenDIDWarm(subWalletListEntity);
 
@@ -450,13 +451,13 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                     return;
                 }
                 publickey = allPkEntity.getPublicKeys().get(0);
-                addDIDPresenter.getDIDByPublicKey(wallet.getWalletId(), publickey, this);
+                addDIDPresenter.getCIDByPublicKey(wallet.getWalletId(), publickey, this);
                 break;
-            case "getDIDByPublicKey":
-                did = ((CommmonStringEntity) baseEntity).getData();
+            case "getCIDByPublicKey":
+                CID = ((CommmonStringEntity) baseEntity).getData();
                 //无论是点击创建或者管理  还是打开页面就加载的  did肯定都为null 不为null的上层已经拦截    两种情况互斥
                 Bundle bundle = new Bundle();
-                bundle.putString("did", did);
+                bundle.putString("CID", CID);
                 bundle.putString("publickey", publickey);
                 if (status.equals("Unregistered")) {
                     bundle.putSerializable("netList", netList);
@@ -496,7 +497,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                             break;
                         case "ReturnDeposit":
                             publickey = crStatusBean.getInfo().getCROwnerPublicKey();
-                            did = crStatusBean.getInfo().getCROwnerDID();
+                            CID = crStatusBean.getInfo().getCROwnerDID();
                             tv_signupfor.setVisibility(View.GONE);
                             presenter.getCRlist(pageNum, pageSize, "all", this, true);
 
@@ -504,7 +505,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                         case "Canceled":
                         case "Registered":
                             publickey = crStatusBean.getInfo().getCROwnerPublicKey();
-                            did = crStatusBean.getInfo().getCROwnerDID();
+                            CID = crStatusBean.getInfo().getCROwnerDID();
                             tv_signupfor.setText(getString(R.string.electoral_affairs));
                             tv_signupfor.setVisibility(View.VISIBLE);
                             tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_management), null, null);

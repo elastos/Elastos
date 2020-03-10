@@ -32,6 +32,10 @@ public class CustomMigration implements RealmMigration {
             uodata4to5(schema);
             // oldVersion++;
         }
+        if (oldVersion == 5) {
+            uodata5to6(schema);
+            // oldVersion++;
+        }
     }
 
     private void updata1to2(RealmSchema schema) {
@@ -71,6 +75,13 @@ public class CustomMigration implements RealmMigration {
                     .addField("downloadPeer", String.class);
 
         }
+
+    }
+
+    private void uodata5to6(RealmSchema schema) {
+        RealmObjectSchema personSchema = schema.get("Wallet");
+        //新增@Required的id
+        personSchema.addField("did", String.class);
 
     }
 

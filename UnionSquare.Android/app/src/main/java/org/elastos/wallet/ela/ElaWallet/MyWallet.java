@@ -1756,6 +1756,19 @@ public class MyWallet {
     /***********************************************************DID**************************************************************/
 
 
+    public BaseEntity getCIDByPublicKey(String masterWalletID, String publicKey) {
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String cid = idChainSubWallet.GetPublicKeyCID(publicKey);
+            return new CommmonStringEntity(SUCCESSCODE, cid);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, IDChain) + "GetDIDByPublicKey");
+        }
+    }
+
     public BaseEntity getDIDByPublicKey(String masterWalletID, String publicKey) {
         try {
             IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);

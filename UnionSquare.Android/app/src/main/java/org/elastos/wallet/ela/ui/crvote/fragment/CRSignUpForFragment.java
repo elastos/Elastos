@@ -68,8 +68,8 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
     @Override
     protected void setExtraData(Bundle data) {
         ownerPublicKey = data.getString("publickey");
-        did = data.getString("did");
-        tvDid.setText(did);
+        CID = data.getString("CID");
+        tvDid.setText(CID);
         netList = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) data.getSerializable("netList");
 
     }
@@ -85,14 +85,14 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
     }
 
 
-    String name, ownerPublicKey, did, area, url = "";
+    String name, ownerPublicKey, CID, area, url = "";
 
     @OnClick({R.id.tv_sure, R.id.ll_area})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_sure:
                 name = etDotname.getText().toString().trim();//节点名称
-                did = tvDid.getText().toString().trim();//节点did
+                CID = tvDid.getText().toString().trim();//节点did
                 area = tvArea.getText().toString().trim();//国家地址
                 url = etUrl.getText().toString().trim();//官网
                 if (netList != null && netList.size() != 0) {
@@ -106,7 +106,7 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
                 if (TextUtils.isEmpty(ownerPublicKey)) {
                     return;
                 }
-                if (TextUtils.isEmpty(did)) {
+                if (TextUtils.isEmpty(CID)) {
                     return;
                 }
                 if (TextUtils.isEmpty(name)) {
@@ -181,7 +181,7 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
         intent.putExtra("chainId", MyWallet.ELA);
         intent.putExtra("ownerPublicKey", ownerPublicKey);
         intent.putExtra("fee", fee);
-        intent.putExtra("did", did);
+        intent.putExtra("CID", CID);
         intent.putExtra("name", name);
         intent.putExtra("url", url);
         intent.putExtra("code", code);

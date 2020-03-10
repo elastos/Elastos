@@ -15,22 +15,6 @@ import io.reactivex.Observer;
 
 public class AddDIDPresenter extends NewPresenterAbstract {
 
-    public void getDID(String walletId, String chainID, int start, int count, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "getDID", walletId);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                BaseEntity baseEntity = baseFragment.getMyWallet().getAllPublicKeys(walletId, chainID, start, count);
-                if (MyWallet.SUCCESSCODE.equals(baseEntity.getCode())) {
-                    AllPkEntity allPkEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), AllPkEntity.class);
-                    return baseFragment.getMyWallet().getDIDByPublicKey(walletId, allPkEntity.getPublicKeys().get(0));
-                } else {
-                    return baseEntity;
-                }
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
 
     public void getAllPublicKeys(String walletId, String chainID, int start, int count, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "getAllPublicKeys", walletId);
@@ -44,12 +28,12 @@ public class AddDIDPresenter extends NewPresenterAbstract {
     }
 
 
-    public void getDIDByPublicKey(String masterWalletID, String publicKey, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "getDIDByPublicKey");
+    public void getCIDByPublicKey(String masterWalletID, String publicKey, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "getCIDByPublicKey");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().getDIDByPublicKey(masterWalletID, publicKey);
+                return baseFragment.getMyWallet().getCIDByPublicKey(masterWalletID, publicKey);
             }
         });
         subscriberObservable(observer, observable, baseFragment);

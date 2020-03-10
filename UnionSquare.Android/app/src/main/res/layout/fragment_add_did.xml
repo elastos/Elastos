@@ -14,7 +14,6 @@
         android:textSize="16sp" />
 
     <EditText
-        android:text="name11"
         android:id="@+id/et_didname"
         style="@style/settingItem_margin15"
         android:background="@null"

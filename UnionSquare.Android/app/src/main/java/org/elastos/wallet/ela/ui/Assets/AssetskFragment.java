@@ -14,6 +14,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,11 +24,7 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
-import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDStore;
-import org.elastos.did.exception.DIDBackendException;
-import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -54,18 +51,15 @@ import org.elastos.wallet.ela.ui.Assets.presenter.AssetsPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
-import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.bean.MessageEntity;
 import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
-import org.elastos.wallet.ela.ui.vote.activity.VertifyPwdActivity;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.Log;
@@ -116,7 +110,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private CommonGetBalancePresenter commonGetBalancePresenter;
     private Map<String, List<org.elastos.wallet.ela.db.table.SubWallet>> listMap;
     private Map<String, String> transactionMap;
-    private DIDStore store;
     private String scanResult;
 
     @Override
@@ -291,7 +284,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private void decodeJwt(String result) {
         try {
             ////0 普通单签 1单签只读 2普通多签 3多签只读
-            if (wallet.getType()!=0){
+            if (wallet.getType() != 0) {
                 toErroScan(scanResult);
             }
             result = result.replace("//credaccess/", "");
@@ -301,13 +294,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             // String unSignature = base64Header + "." + base64Payload;
             //  String signature = jwtParts[2];
             //  String header = new String(org.elastos.did.util.Base64.decode(base64Header));
-            String payload = new String(org.elastos.did.util.Base64.decode(base64Payload));
+            String payload = new String(Base64.decode(base64Payload, Base64.DEFAULT));
             RecieveJwtEntity recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
             String elaString = recieveJwtEntity.getIss();
             elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
-            // Log.e("Base64", "Base64---->" + header + "\n" + payload + "\n" + signature);
-            DID did = new DID(elaString);
-            new WalletManagePresenter().DIDResolve(did, this, null);
+            // Log.e("Base64", "Base64---->" + header + "\n" + payload + "\n" + signature);.0
+            new WalletManagePresenter().DIDResolve(elaString, this, 1);
         } catch (Exception e) {
             toErroScan(scanResult);
         }
@@ -700,8 +692,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             //创建钱包
             Wallet temp = (Wallet) result.getObj();
             if (!wallet.getWalletId().equals(temp.getWalletId())) {
-                wallet = temp;
-                getMyDID().init(wallet.getWalletId());//初始化mydid
                 setWalletViewNew(wallet);
             }
 
@@ -741,35 +731,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
             transactionMap.put((String) result.getObj(), result.getName());
         }
-        if (integer == RxEnum.VERTIFYPAYPASS.ordinal()) {
-            //验证密码成功
-            String payPasswd = (String) result.getObj();
-            initDid(payPasswd);
-        }
 
     }
 
-    private void initDid(String payPasswd) {
-
-        try {
-            store = getMyDID().getDidStore();
-            if (store.containsPrivateIdentity()) {
-                resolve(payPasswd);
-            } else {
-                //获得私钥用于初始化did
-                new CreatMulWalletPresenter().exportxPrivateKey(wallet.getWalletId(), payPasswd, this);
-            }
-        } catch (DIDException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void resolve(String payPasswd) throws DIDStoreException, DIDBackendException {
-        DID did = getMyDID().initDID(payPasswd);
-        new WalletManagePresenter().DIDResolve(did, this, payPasswd);
-
-    }
 
     @Override
     public void onDestroy() {
@@ -888,25 +852,14 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
-            case "exportxPrivateKey":
-                String privateKey = ((CommmonStringEntity) baseEntity).getData();
-                String payPasswd = (String) o;
-                try {
-                    store.initPrivateIdentity(privateKey, payPasswd);
-                    resolve(payPasswd);
-                } catch (DIDException e) {
-                    e.printStackTrace();
-                    showToast(getString(R.string.didinitfaile));
-                }
-                break;
             case "DIDResolve":
                 DIDDocument didDocument = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
-                String paypas = (String) o;
+                int type = (int) o;
                 //未传递paypas网站提供的did验签  传递paypas是判断当前钱包有没有did
-                if (paypas==null) {
+                if (type == 1) {
                     verifyDID(didDocument);
                 } else {
-                    curentHasDID(didDocument,paypas);
+                    curentHasDID(didDocument);
                 }
 
                 break;
@@ -927,10 +880,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 // 验签成功
                 //先判断本地是否有did
                 // 先去获得密码并验证密码正确否
-                Intent intent = new Intent(getActivity(), VertifyPwdActivity.class);
-                intent.putExtra("walletId", wallet.getWalletId());
-                intent.putExtra("type", this.getClass().getSimpleName());
-                startActivity(intent);
+                if (TextUtils.isEmpty(wallet.getDid())) {
+                    //本地没有did
+                    showToast(getString(R.string.unknown));
+                    return;
+
+                }
+                new WalletManagePresenter().DIDResolve(wallet.getDid(), this, 2);
             } else {
                 //验签失败
                 toErroScan(scanResult);
@@ -938,21 +894,21 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
     }
 
-    private void curentHasDID(DIDDocument didDocument,String payPasswd) {
+    private void curentHasDID(DIDDocument didDocument) {
         if (didDocument == null) {
             showToast(getString(R.string.notcreatedid));
         } else {
             try {
-                store.storeDid(didDocument);//存储本地
+                getMyDID().getDidStore().storeDid(didDocument);//存储本地
                 if (getMyDID().getExpires(didDocument).before(new Date())) {
                     //did过期
                     showToast(getString(R.string.didoutofdate));
                 } else {
                     Bundle bundle = new Bundle();
-                   // bundle.putParcelable("wallet", wallet);
-                   // bundle.putParcelable("RecieveJwtEntity", JSON.parseObject(payload, RecieveJwtEntity.class));
+                    // bundle.putParcelable("wallet", wallet);
+                    // bundle.putParcelable("RecieveJwtEntity", JSON.parseObject(payload, RecieveJwtEntity.class));
                     bundle.putString("scanResult", scanResult);
-                    bundle.putString("payPasswd", payPasswd);
+                    bundle.putString("walletId", wallet.getWalletId());
                     ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
                 }
             } catch (DIDStoreException e) {

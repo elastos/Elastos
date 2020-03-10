@@ -1,17 +1,17 @@
 package org.elastos.wallet.ela.DID;
 
+import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.DIDBackend;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDStore;
 import org.elastos.did.DIDURL;
-import org.elastos.did.Issuer;
 import org.elastos.did.VerifiableCredential;
 import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.InvalidKeyException;
-import org.elastos.did.exception.MalformedCredentialException;
+import org.elastos.did.exception.MalformedDIDException;
 import org.elastos.wallet.ela.DID.adapter.MyDIDAdapter;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
@@ -19,16 +19,20 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.CommonEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.utils.JwtUtils;
+import org.elastos.wallet.ela.utils.Log;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.elastos.did.Constants.MAX_VALID_YEARS;
 import static org.elastos.wallet.ela.ElaWallet.MyWallet.SUCCESSCODE;
 
 public class MyDID {
-    private static final String JSONEXCEPTION = "000002";
+    private static final String DIDSDKEXCEPTIOM = "DIDException";
     private DIDStore didStore;
     private String walletId;
     private DID did;
@@ -61,7 +65,6 @@ public class MyDID {
      * @param walletId
      */
     public void init(String walletId) {
-        //这样是否可行
         if (!walletId.equals(this.walletId) || didStore == null) {
             try {
                 String didResolveUrl = WalletNet.MAINDID;
@@ -92,10 +95,10 @@ public class MyDID {
     public DID initDID(String payPasswd) {
         if (did == null) {
             try {
-                this.did = didStore.getDid(0, payPasswd);
+                this.did = didStore.getDid(0);
                 DIDURL didurl = new DIDURL(did, "primary");
                 if (!didStore.containsDid(did) || !didStore.containsPrivateKey(did, didurl)) {
-                    didStore.newDid(0, payPasswd);
+                    didStore.newDid(0, payPasswd);//为了什么  我直接new DID(String) 为了生成doc load
                 }
             } catch (DIDStoreException e) {
                 e.printStackTrace();
@@ -130,6 +133,9 @@ public class MyDID {
 
     // 获得did的字符串的放"did:ela:"
     public String getDidString() {
+        if (did == null) {
+            return null;
+        }
         return did.toString();
     }
 
@@ -145,9 +151,11 @@ public class MyDID {
 
 
     public String getDidPublicKey(DIDDocument doc) {
-
         DIDURL url = doc.getDefaultPublicKey();
-        return doc.getPublicKey(url).getPublicKeyBase58();
+        // String pkbase58 = doc.getPublicKey(url).getPublicKeyBase58();
+        // String pk1 = JwtUtils.byte2hex(Base58.decode(pkbase58));
+        //  String pk = JwtUtils.byte2hex(doc.getPublicKey(url).getPublicKeyBytes());
+        return JwtUtils.byte2hex(doc.getPublicKey(url).getPublicKeyBytes());
 
     }
 
@@ -177,34 +185,26 @@ public class MyDID {
         return null;
     }
 
+
+
     public void setDIDDocumentExprise(Date expires, String pwd, String name) {
 
         try {
             DIDDocument document = didStore.loadDid(did);
             DIDDocument.Builder build = document.edit();
             build.setExpires(expires);
-            Issuer issuer = new Issuer(did, didStore);
             String[] SelfProclaimedCredential = {"SelfProclaimedCredential"};
             Map<String, String> props = new HashMap<String, String>();
             props.put("name", name);
-            //VerifiableCredential vc = issuer.issueFor(document.getSubject())
-            VerifiableCredential vc = issuer.issueFor(did)
-                    .id("name")//唯一标识一个VerifiableCredential 相同会覆盖
-                    .type(SelfProclaimedCredential)
-                    .expirationDate(expires)
-                    .properties(props)
-                    .seal(pwd);
-            try {
-                //无论有没有  都remove一下
-                DIDURL didurl = new DIDURL(did, "name");
+            DIDURL didurl = new DIDURL(did, "name");
+            VerifiableCredential vc1 = document.getCredential(didurl);
+            if (vc1 != null) {
                 build.removeCredential(didurl);
-            } catch (Exception e) {
             }
-
-            build.addCredential(vc);
+            build.addCredential(didurl, SelfProclaimedCredential, props, pwd);
             DIDDocument newDoc = build.seal(pwd);
             didStore.storeDid(newDoc);//存储本地
-        } catch (DIDStoreException | MalformedCredentialException | InvalidKeyException e) {
+        } catch (DIDStoreException | InvalidKeyException e) {
             e.printStackTrace();
         }
 
@@ -245,7 +245,17 @@ public class MyDID {
 
             return new CommmonObjEntity(SUCCESSCODE, did.resolve());
         } catch (DIDBackendException e) {
-            return exceptionProcess(e, formatWalletName(walletId, "") + "DIDResolve");
+            return exceptionProcess(e, "DIDResolve");
+
+        }
+    }
+
+    public BaseEntity DIDResolve(String didString) {
+        try {
+            DID did = new DID(didString);
+            return DIDResolve(did);
+        } catch (MalformedDIDException e) {
+            return exceptionProcess(e, "DIDResolve");
 
         }
     }
@@ -265,18 +275,17 @@ public class MyDID {
             String lastTxid = didStore.publishDid(did, 0, pwd);
             return new CommmonStringEntity(SUCCESSCODE, lastTxid);
         } catch (DIDException e) {
-            return exceptionProcess(e, formatWalletName(walletId, "") + "DIDResolve");
+            return exceptionProcess(e, "DIDPublish");
 
         }
     }
 
-    private BaseEntity exceptionProcess(DIDException e, String msg) {
+    private BaseEntity exceptionProcess(DIDException e, String methodName) {
         e.printStackTrace();
-        return new CommonEntity(e.getClass().getName(), msg);
+        String message = "method:" + methodName + "\nwalletId:" + walletId + "\nException:" + e.getClass().getName() +
+                "\nmes:" + e.getMessage();
+        return new CommonEntity(DIDSDKEXCEPTIOM, message);
 
     }
 
-    private String formatWalletName(String masterWalletID, String chainID) {
-        return masterWalletID;
-    }
 }

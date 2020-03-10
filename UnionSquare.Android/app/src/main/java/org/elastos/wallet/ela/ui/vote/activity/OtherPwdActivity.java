@@ -47,7 +47,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     private String type, amount, nodePublicKey, ownerPublicKey, name, url;
     private long code;
     //private String inputJson;
-    private String did;
+    private String CID;
     private int transType;
     private JSONObject paylodJson;
     private String didName;
@@ -86,7 +86,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         url = data.getStringExtra("url");
         code = data.getLongExtra("code", 0);
         //inputJson = data.getStringExtra("inputJson");
-        did = data.getStringExtra("did");
+        CID = data.getStringExtra("CID");
         didName = data.getStringExtra("didName");
         didEndDate = (Date) data.getSerializableExtra("didEndDate");
 
@@ -122,7 +122,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         break;
                     case Constant.UNREGISTERCR:
 
-                        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, did, this);
+                        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, CID, this);
                         break;
                     case Constant.DIDSIGNUP:
                         getMyDID().setDIDDocumentExprise(didEndDate,pwd , didName);
@@ -201,7 +201,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 paylodJson = JSON.parseObject(payload);
                 String digest = paylodJson.getString("Digest");
                 if (type.equals(Constant.CRSIGNUP) || type.equals(Constant.CRUPDATE) || type.equals(Constant.UNREGISTERCR)) {
-                    presenter.signDigest(wallet.getWalletId(), did, digest, pwd, this);
+                    presenter.signDigest(wallet.getWalletId(), CID, digest, pwd, this);
                 }
                 break;
             //创建交易

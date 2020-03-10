@@ -37,7 +37,7 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.GlideApp;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -108,7 +108,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     private Wallet wallet = realmUtil.queryDefauleWallet();
     CRManagePresenter presenter;
     String status;
-    private String did;
+    private String CID;
     private String ownerPublicKey;
 
 
@@ -134,7 +134,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     protected void setExtraData(Bundle data) {
         ownerPublicKey = data.getString("publickey");
         status = data.getString("status", "Canceled");
-        did = data.getString("did", "");
+        CID = data.getString("CID", "");
         CrStatusBean.InfoBean info = data.getParcelable("info");
         CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentNode");
         if (curentNode == null) {
@@ -153,7 +153,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             long height = info.getConfirms();
             if (height >= 2160) {
                 //获取赎回金额
-                presenter.getCRDepositcoin(did, this);
+                presenter.getCRDepositcoin(CID, this);
             }
         } else {
             //Registered 未注销展示选举信息
@@ -288,7 +288,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                     intent.putExtra("transType", 34);
                 }
                 intent.putExtra("chainId", MyWallet.ELA);
-                intent.putExtra("did", did);
+                intent.putExtra("CID", CID);
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
                 startActivity(intent);
                 break;

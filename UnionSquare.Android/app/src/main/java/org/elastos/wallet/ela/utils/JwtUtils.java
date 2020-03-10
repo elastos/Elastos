@@ -1,33 +1,16 @@
 package org.elastos.wallet.ela.utils;
 
-import android.os.Bundle;
-
-import org.elastos.did.util.Base64;
-import org.elastos.wallet.ela.base.BaseFragment;
-import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
-
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.KeyAgreement;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SigningKeyResolverAdapter;
-import io.jsonwebtoken.security.Keys;
 
 public class JwtUtils {
 
@@ -112,7 +95,7 @@ public class JwtUtils {
             signature.initVerify(publicKey);
             signature.update(message.getBytes());
 
-            byte[] hex =hex2byte(signed);
+            byte[] hex = hex2byte(signed);
             boolean bool = signature.verify(hex);
             System.out.println("验证：" + bool);
             return bool;
@@ -137,15 +120,15 @@ public class JwtUtils {
      * 从string转public key
      */
     public static PublicKey getPublicKey(String key) throws Exception {
-        byte[] bytes =hex2byte(key);
+        byte[] bytes = hex2byte(key);
 
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(bytes);
         KeyFactory keyFactory = KeyFactory.getInstance("EC");
         return keyFactory.generatePublic(keySpec);
     }
 
-    public static final char[] DIGITS_UPPER = { '0', '1', '2', '3', '4', '5',
-            '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+    public static final char[] DIGITS_UPPER = {'0', '1', '2', '3', '4', '5',
+            '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     public static String byte2HexString(final byte[] data) {
         final int l = data.length;
@@ -202,7 +185,7 @@ public class JwtUtils {
         keyGen.initialize(256, random);
         return keyGen.generateKeyPair();
     }
-
+/*
     public static class MySigningKeyResolver extends SigningKeyResolverAdapter {
 
         public String getPubk() {
@@ -228,16 +211,17 @@ public class JwtUtils {
             }
             return null;
         }
-    }
-    private void decodeJwt(String result) {
+    }*/
+
+   /* private void decodeJwt(String result) {
         result = result.replace("//credaccess/", "");
-                         /*result = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJkaWQ6ZWxhc3RvczppV3NLM1g4YUJwTHFGVlhBZDJLVXBNcEZHSllFWXlmalVpIiwiaWF0IjoxNTY2MzUyMjEzLCJleHAiOjE1ODA2MDcwODksImNhbGxiYWNrdXJsIjoiaHR0cHM6Ly93d3cubnVjbGV1c2NvbnNvbGUuY29tL2RpZF9jYWxsYmFja19lbGFzdG9zIiwiY2xhaW1zIjp7fX0.nBDAz8vcfcVufHtGzD31fSoGabGHwkmAPPsHi8o0l74";
+                         *//*result = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJkaWQ6ZWxhc3RvczppV3NLM1g4YUJwTHFGVlhBZDJLVXBNcEZHSllFWXlmalVpIiwiaWF0IjoxNTY2MzUyMjEzLCJleHAiOjE1ODA2MDcwODksImNhbGxiYWNrdXJsIjoiaHR0cHM6Ly93d3cubnVjbGV1c2NvbnNvbGUuY29tL2RpZF9jYWxsYmFja19lbGFzdG9zIiwiY2xhaW1zIjp7fX0.nBDAz8vcfcVufHtGzD31fSoGabGHwkmAPPsHi8o0l74";
                         String secretString = "iWsK3X8aBpLqFVXAd2KUpMpFGJYEYyfjUiiWsK3X8aBpLqFVXAd2KUpMpFGJYEYyfjUi";
                         SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretString));
                         Jwt jwt = Jwts.parserBuilder()
                                 .setSigningKey(key)
                                 .build()
-                                .parseClaimsJws(result);*/
+                                .parseClaimsJws(result);*//*
         //   new SecretKeySpec(keyBytes, alg.getJcaName());
         KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.ES256);
 
@@ -262,13 +246,13 @@ public class JwtUtils {
             );
             Bundle bundle = new Bundle();
             bundle.putString("JWT", jws1.toString());
-          //  ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
+            //  ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
         } catch (Exception e) {
-           // toErroScan(result);
+            // toErroScan(result);
         }
 
 
-    }
+    }*/
 }
 
 

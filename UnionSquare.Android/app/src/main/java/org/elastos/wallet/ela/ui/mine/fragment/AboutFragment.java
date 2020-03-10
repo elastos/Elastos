@@ -15,7 +15,10 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.common.fragment.WebViewFragment;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.mine.presenter.AboutPresenter;
@@ -63,15 +66,21 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_updatalog:
-                Bundle bundle=new Bundle();
-                bundle.putString(Constant.FRAGMENTTAG,Constant.UpdateLog + "?langua=" + (new SPUtil(getContext()).getLanguage() == 0 ? "ch" : "en"));
-                start(WebViewFragment.class,bundle);
+                Bundle bundle = new Bundle();
+                bundle.putString(Constant.FRAGMENTTAG, Constant.UpdateLog + "?langua=" + (new SPUtil(getContext()).getLanguage() == 0 ? "ch" : "en"));
+                start(WebViewFragment.class, bundle);
                /* Intent intent = new Intent("android.intent.action.VIEW");
                 intent.setData(Uri.parse(Constant.UpdateLog + "?langua =" + (new SPUtil(getContext()).getLanguage() == 0 ? "ch" : "en")));
                 startActivity(intent);*/
                 break;
             case R.id.tv_feedback:
                 ClipboardUtil.copyClipboar(getBaseActivity(), Constant.Email, getResources().getString(R.string.copyemailsuccess));
+
+                for (Wallet wallet : new RealmUtil().queryUserAllWallet()) {
+                    File file = new File(MyApplication.getRoutDir() + File.separator + wallet.getWalletId() + File.separator + "store");
+                    delFile(file);
+                }
+
                 break;
             case R.id.tv_runlog:
                 //导出c运行日志
@@ -80,6 +89,19 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
         }
     }
 
+    static boolean delFile(File file) {
+        if (!file.exists()) {
+            return false;
+        }
+
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            for (File f : files) {
+                delFile(f);
+            }
+        }
+        return file.delete();
+    }
 
     @Override
     protected void requstPermissionOk() {

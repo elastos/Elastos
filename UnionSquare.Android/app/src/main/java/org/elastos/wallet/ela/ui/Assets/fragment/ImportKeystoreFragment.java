@@ -2,23 +2,27 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 
 
 import android.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.TextUtils;
 import android.view.View;
 
 import com.allen.library.SuperButton;
 
+import org.elastos.did.exception.DIDException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonCreateSubWalletPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.ImportKeystorePresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.ImportKeystoreViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -30,7 +34,7 @@ import butterknife.Unbinder;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ImportKeystoreFragment extends BaseFragment implements ImportKeystoreViewData, CommonCreateSubWalletViewData {
+public class ImportKeystoreFragment extends BaseFragment implements ImportKeystoreViewData, CommonCreateSubWalletViewData, NewBaseViewData {
 
 
     @BindView(R.id.et_keystore)
@@ -43,7 +47,6 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
     ClearEditText etWalletpwsAgin;
     @BindView(R.id.sb_sure)
     SuperButton sbSure;
-    Unbinder unbinder;
     @BindView(R.id.et_keystore_pwd)
     ClearEditText etKeystorePwd;
 
@@ -52,6 +55,7 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
     private String walletName;
     private String masterWalletID;
     private RealmUtil realmUtil;
+    private String payPassword;
 
     @Override
     protected int getLayoutId() {
@@ -89,7 +93,7 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
                 }*/
                 String keystorePwd = etKeystorePwd.getText().toString().trim();
 
-                String payPassword = etWalletpws.getText().toString().trim();
+                payPassword = etWalletpws.getText().toString().trim();
                 if (TextUtils.isEmpty(payPassword)) {
                     showToastMessage(getString(R.string.pwdnoempty));
                     return;
@@ -122,26 +126,50 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
         new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this,null);
     }
 
+    String basecInfo;
+
     @Override
-    public void onCreateSubWallet(String data,Object o) {
+    public void onCreateSubWallet(String data, Object o) {
 
         if (data != null) {
             //创建Mainchain子钱包
-            Wallet masterWallet = realmUtil.updateWalletDetial(walletName, masterWalletID, data);
-            realmUtil.updateSubWalletDetial(masterWalletID, data, new RealmTransactionAbs() {
-                @Override
-                public void onSuccess() {
-                    realmUtil.updateWalletDefault(masterWalletID, new RealmTransactionAbs() {
-                        @Override
-                        public void onSuccess() {
-                            post(RxEnum.ONE.ordinal(), null, masterWallet);
-                            toMainFragment();
-                        }
-                    });
+            new CreatMulWalletPresenter().exportxPrivateKey(masterWalletID, payPassword, this);
+            basecInfo = data;
+        }
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "exportxPrivateKey":
+                //保存did
+                String privateKey = ((CommmonStringEntity) baseEntity).getData();
+                try {
+                    getMyDID().init(masterWalletID);//初始化mydid
+                    getMyDID().getDidStore().initPrivateIdentity(privateKey, payPassword);
+                    getMyDID().initDID(payPassword);
+
+                } catch (DIDException e) {
+                    e.printStackTrace();
+                    showToast(getString(R.string.didinitfaile));
                 }
-            });
+                //通知首页
+                Wallet masterWallet = realmUtil.updateWalletDetial(walletName, masterWalletID, basecInfo,getMyDID().getDidString());
+                realmUtil.updateSubWalletDetial(masterWalletID, basecInfo, new RealmTransactionAbs() {
+                    @Override
+                    public void onSuccess() {
+                        realmUtil.updateWalletDefault(masterWalletID, new RealmTransactionAbs() {
+                            @Override
+                            public void onSuccess() {
+                                post(RxEnum.ONE.ordinal(), null, masterWallet);
+                                toMainFragment();
 
 
+                            }
+                        });
+                    }
+                });
+                break;
         }
     }
 }

@@ -71,7 +71,8 @@ public class AddDIDFragment extends BaseFragment {
                 calendar.set(Calendar.HOUR_OF_DAY, 0);
                 long minData = calendar.getTimeInMillis();
                 calendar.add(Calendar.YEAR, 5);
-                new DialogUtil().showTime(getBaseActivity(), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
+                calendar.add(Calendar.DAY_OF_MONTH, -1);
+                new DialogUtil().showTime(getBaseActivity(),getString(R.string.plzselctoutdate), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
                         String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)

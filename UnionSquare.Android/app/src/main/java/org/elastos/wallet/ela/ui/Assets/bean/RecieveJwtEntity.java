@@ -1,26 +1,38 @@
 package org.elastos.wallet.ela.ui.Assets.bean;
 
-import android.os.Parcel;
 import android.os.Parcelable;
 
-public class RecieveJwtEntity implements Parcelable {
+public class RecieveJwtEntity  {
+    //{
+    // "iss": "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
+    // "userId": "5e60cbc4d408a4606c1476de",
+    // "callbackurl": "https://staging-api.cyberrepublic.org/api/user/did-callback-ela",
+    // "claims": {},
+    // "website": {
+    //  "domain": "https://staging.cyberrepublic.org",
+    //  "logo": "https://staging.cyberrepublic.org/assets/images/logo.svg"
+    // },
+    // "iat": 1583834166,
+    // "exp": 1584438966
+    //}
+
     /**
-     * iss : iYpQMwheDxySqivocSJaoprcoDTqQsDYAu
-     * userId : 5e561e879ba6e50078684107
+     * iss : did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu
+     * userId : 5e60cbc4d408a4606c1476de
      * callbackurl : https://staging-api.cyberrepublic.org/api/user/did-callback-ela
      * claims : {}
-     * iat : 1583214652
-     * exp : 1583243907
-     * jti : b774543e-d470-4f08-aaf1-994bf51e4ab9
+     * website : {"domain":"https://staging.cyberrepublic.org","logo":"https://staging.cyberrepublic.org/assets/images/logo.svg"}
+     * iat : 1583834166
+     * exp : 1584438966
      */
 
     private String iss;
     private String userId;
     private String callbackurl;
     private ClaimsBean claims;
-    private int iat;
-    private int exp;
-    private String jti;
+    private WebsiteBean website;
+    private long iat;
+    private long exp;
 
     public String getIss() {
         return iss;
@@ -54,97 +66,56 @@ public class RecieveJwtEntity implements Parcelable {
         this.claims = claims;
     }
 
-    public int getIat() {
+    public WebsiteBean getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(WebsiteBean website) {
+        this.website = website;
+    }
+
+    public long getIat() {
         return iat;
     }
 
-    public void setIat(int iat) {
+    public void setIat(long iat) {
         this.iat = iat;
     }
 
-    public int getExp() {
+    public long getExp() {
         return exp;
     }
 
-    public void setExp(int exp) {
+    public void setExp(long exp) {
         this.exp = exp;
     }
 
-    public String getJti() {
-        return jti;
+    public static class ClaimsBean {
     }
 
-    public void setJti(String jti) {
-        this.jti = jti;
-    }
+    public static class WebsiteBean {
+        /**
+         * domain : https://staging.cyberrepublic.org
+         * logo : https://staging.cyberrepublic.org/assets/images/logo.svg
+         */
 
-    public static class ClaimsBean implements Parcelable {
-        @Override
-        public int describeContents() {
-            return 0;
+        private String domain;
+        private String logo;
+
+        public String getDomain() {
+            return domain;
         }
 
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
+        public void setDomain(String domain) {
+            this.domain = domain;
         }
 
-        public ClaimsBean() {
+        public String getLogo() {
+            return logo;
         }
 
-        protected ClaimsBean(Parcel in) {
+        public void setLogo(String logo) {
+            this.logo = logo;
         }
-
-        public static final Creator<ClaimsBean> CREATOR = new Creator<ClaimsBean>() {
-            @Override
-            public ClaimsBean createFromParcel(Parcel source) {
-                return new ClaimsBean(source);
-            }
-
-            @Override
-            public ClaimsBean[] newArray(int size) {
-                return new ClaimsBean[size];
-            }
-        };
     }
-
-    public RecieveJwtEntity() {
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.iss);
-        dest.writeString(this.userId);
-        dest.writeString(this.callbackurl);
-        dest.writeParcelable(this.claims, flags);
-        dest.writeInt(this.iat);
-        dest.writeInt(this.exp);
-        dest.writeString(this.jti);
-    }
-
-    protected RecieveJwtEntity(Parcel in) {
-        this.iss = in.readString();
-        this.userId = in.readString();
-        this.callbackurl = in.readString();
-        this.claims = in.readParcelable(ClaimsBean.class.getClassLoader());
-        this.iat = in.readInt();
-        this.exp = in.readInt();
-        this.jti = in.readString();
-    }
-
-    public static final Creator<RecieveJwtEntity> CREATOR = new Creator<RecieveJwtEntity>() {
-        @Override
-        public RecieveJwtEntity createFromParcel(Parcel source) {
-            return new RecieveJwtEntity(source);
-        }
-
-        @Override
-        public RecieveJwtEntity[] newArray(int size) {
-            return new RecieveJwtEntity[size];
-        }
-    };
 }

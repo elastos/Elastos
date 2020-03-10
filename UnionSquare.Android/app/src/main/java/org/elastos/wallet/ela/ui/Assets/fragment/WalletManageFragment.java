@@ -14,7 +14,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDStore;
-import org.elastos.did.DIDURL;
 import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
@@ -269,7 +268,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
 
         try {
             store = getMyDID().getDidStore();
-            if (store.containsPrivateIdentity()) {
+            if (store.containsPrivateIdentity()) {//什么时候必须containsPrivateIdentity3
                 resolve();
             } else {
                 //获得私钥用于初始化did
@@ -283,6 +282,8 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
 
     private void resolve() throws DIDStoreException, DIDBackendException {
         DID did = getMyDID().initDID(payPasswd);
+        if (TextUtils.isEmpty(wallet.getDid()))
+            new RealmUtil().upDataWalletDid(wallet.getWalletId(), did.toString());
         presenter.DIDResolve(did, this, null);
 
     }

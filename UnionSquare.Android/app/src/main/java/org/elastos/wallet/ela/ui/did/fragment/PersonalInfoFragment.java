@@ -351,7 +351,7 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
             long minData = calendar.getTimeInMillis();
             int year = calendar.get(Calendar.YEAR);
             calendar.set(Calendar.YEAR, year - 100);
-            new DialogUtil().showTime(getBaseActivity(), calendar.getTimeInMillis(), minData, new WarmPromptListener() {
+            new DialogUtil().showTime(getBaseActivity(),getString(R.string.plzselectbirthday), calendar.getTimeInMillis(), minData, new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
                     String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)

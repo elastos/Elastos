@@ -14,7 +14,7 @@ import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
-import org.elastos.wallet.ela.utils.GlideApp;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

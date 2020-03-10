@@ -14,12 +14,11 @@
         android:textSize="16sp" />
 
     <EditText
-        android:text="name11"
         android:id="@+id/et_didname"
         style="@style/settingItem_margin15"
         android:background="@null"
         android:hint="@string/plzinputnamemust"
-        android:maxLength="16" />
+        android:maxLength="50" />
 
 
     <View style="@style/line_margin15" />

@@ -107,8 +107,9 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
                 calendar.set(Calendar.HOUR_OF_DAY, 0);
                 long minData = calendar.getTimeInMillis();
+                calendar.add(Calendar.DAY_OF_MONTH, -1);
                 calendar.add(Calendar.YEAR, 5);
-                new DialogUtil().showTime(getBaseActivity(), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
+                new DialogUtil().showTime(getBaseActivity(),getString(R.string.plzselctoutdate), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
                         String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)

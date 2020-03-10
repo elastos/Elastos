@@ -14,8 +14,8 @@ import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
-import org.elastos.wallet.ela.utils.GlideApp;
-import org.elastos.wallet.ela.utils.GlideRequest;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
+import org.elastos.wallet.ela.utils.svg.GlideRequest;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.math.BigDecimal;
