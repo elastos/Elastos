@@ -37,6 +37,9 @@ export default createContainer(
           message.error(err.message)
           return false
         }
+      },
+      async loginElaUrl() {
+        return await userService.loginElaUrl()
       }
     }
   }

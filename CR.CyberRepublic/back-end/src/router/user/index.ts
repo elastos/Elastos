@@ -20,6 +20,7 @@ import subscribe from './subscribe'
 import unsubscribe from './unsubscribe'
 import logout from './logout'
 import elaUrl from './ela_url'
+import loginElaUrl from './login_ela_url'
 import didCallbackEla from './did_callback_ela'
 import getDid from './get_did'
 
@@ -137,6 +138,11 @@ export default Base.setRouter([
     {
         path: '/did',
         router: getDid,
+        method: 'get'
+    },
+    {
+        path: '/login-ela-url',
+        router: loginElaUrl,
         method: 'get'
     }
 ])

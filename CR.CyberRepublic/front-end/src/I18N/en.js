@@ -161,6 +161,8 @@ const en = {
   'login.reset': 'Reset password',
   'login.title': 'Login to Cyber Republic',
   'login.description_1': 'Input your credentials below.',
+  'login.withDid': 'Log in with Elastos DID', 
+  'login.qrcodeTip': 'Open ELA wallet app and scan to log in.',
 
   // Logout
   'logout.title': 'Are you sure you want to logout?',

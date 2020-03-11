@@ -822,4 +822,28 @@ export default class extends Base {
             return { success: false }
         }
     }
+
+    public async loginElaUrl() {
+        try {
+            const jwtClaims = {
+                iss: process.env.APP_DID,
+                callbackurl: `${process.env.API_URL}/api/user/login-callback-ela`,
+                claims: {},
+                website: {
+                    domain: process.env.SERVER_URL,
+                    logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+                }
+            }
+            const jwtToken = jwt.sign(
+                jwtClaims,
+                process.env.APP_PRIVATE_KEY,
+                { expiresIn: '7d', algorithm: 'ES256' }
+            )
+            const url = `elastos://credaccess/${jwtToken}`
+            return { success: true, url }
+        } catch(err) {
+            logger.error(err)
+            return { success: false }
+        }
+    }
 }

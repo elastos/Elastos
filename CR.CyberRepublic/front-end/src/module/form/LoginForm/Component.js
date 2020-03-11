@@ -3,6 +3,7 @@ import BaseComponent from '@/model/BaseComponent'
 import { Form, Input, Button, Checkbox } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
+import LoginWithDid from './LoginWithDid'
 
 import './style.scss'
 
@@ -92,6 +93,7 @@ class C extends BaseComponent {
             {I18N.get('login.submit')}
           </Button>
         </FormItem>
+        <LoginWithDid loginElaUrl={this.props.loginElaUrl} />
       </Form>
     )
   }

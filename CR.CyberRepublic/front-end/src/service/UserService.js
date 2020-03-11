@@ -323,6 +323,13 @@ export default class extends BaseService {
     return rs
   }
 
+  async loginElaUrl() {
+    const rs = await api_request({
+      path: '/api/user/login-ela-url'
+    })
+    return rs
+  }
+
   async getNewActiveDid() {
     const rs = await api_request({
       path: '/api/user/did'
