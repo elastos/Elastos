@@ -40,6 +40,7 @@ const char *compact_idstring = "#default";
 const char *PATH_STEP = "/";
 const char *PRIVATE_DIR = "private";
 const char *HDKEY_FILE = "key";
+const char *HDPUBKEY_FILE = "key.pub";
 const char *INDEX_FILE = "index";
 const char *MNEMONIC_FILE = "mnemonic";
 

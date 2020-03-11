@@ -58,6 +58,10 @@ static void test_didstore_newdid(void)
             PATH_STEP, HDKEY_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
+    path = get_file_path(_path, PATH_MAX, 5, store->root, PATH_STEP, PRIVATE_DIR,
+            PATH_STEP, HDKEY_FILE);
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
+
     doc = DIDStore_NewDID(store, storepass, alias);
     CU_ASSERT_PTR_NOT_NULL_FATAL(doc);
     CU_ASSERT_TRUE_FATAL(DIDDocument_IsValid(doc));
@@ -120,7 +124,7 @@ static void test_didstore_newdid_byindex(void)
     CU_ASSERT_PTR_NOT_NULL(doc);
     DID_Copy(&did, DIDDocument_GetSubject(doc));
 
-    ndid = DIDStore_GetDIDByIndex(store, storepass, 0);
+    ndid = DIDStore_GetDIDByIndex(store, 0);
     CU_ASSERT_PTR_NOT_NULL(ndid);
 
     isEquals = DID_Equals(&did, ndid);

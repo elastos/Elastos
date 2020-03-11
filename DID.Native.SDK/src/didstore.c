@@ -61,6 +61,8 @@
 #include "didmeta.h"
 #include "credmeta.h"
 
+#define MAX_PUBKEY_BASE58            128
+
 static const char *META_FILE = ".meta";
 static char MAGIC[] = { 0x00, 0x0D, 0x01, 0x0D };
 static char VERSION[] = { 0x00, 0x00, 0x00, 0x02 };
@@ -68,6 +70,7 @@ static char VERSION[] = { 0x00, 0x00, 0x00, 0x02 };
 static const char *PATH_SEP = "/";
 static const char *PRIVATE_DIR = "private";
 static const char *HDKEY_FILE = "key";
+static const char *HDPUBKEY_FILE = "key.pub";
 static const char *INDEX_FILE = "index";
 static const char *MNEMONIC_FILE = "mnemonic";
 
@@ -657,7 +660,7 @@ static int check_store(DIDStore *store)
     return 0;
 }
 
-static int store_extendedkey(DIDStore *store, uint8_t *extendedkey,
+static int store_extendedprvkey(DIDStore *store, uint8_t *extendedkey,
         size_t size, const char *storepass)
 {
     unsigned char base64[512];
@@ -680,7 +683,7 @@ static int store_extendedkey(DIDStore *store, uint8_t *extendedkey,
     return 0;
 }
 
-static ssize_t load_extendedkey(DIDStore *store, uint8_t *extendedkey, size_t size,
+static ssize_t load_extendedprvkey(DIDStore *store, uint8_t *extendedkey, size_t size,
         const char *storepass)
 {
     const char *string;
@@ -705,6 +708,48 @@ static ssize_t load_extendedkey(DIDStore *store, uint8_t *extendedkey, size_t si
         return -1;
 
     len = decrypt_from_base64(extendedkey, storepass, string);
+    free((char*)string);
+
+    return len;
+}
+
+static int store_extendedpubkey(DIDStore *store, uint8_t *extendedkey, size_t size)
+{
+    char publickeybase58[MAX_PUBKEY_BASE58];
+    char path[PATH_MAX];
+
+    assert(store);
+    assert(extendedkey && size > 0);
+
+    if (base58_encode(publickeybase58, extendedkey, size) == -1)
+        return -1;
+
+    if (get_file(path, 1, 3, store->root, PRIVATE_DIR, HDPUBKEY_FILE) == -1)
+        return -1;
+
+    if (store_file(path, (const char *)publickeybase58) == -1)
+        return -1;
+
+    return 0;
+}
+
+static ssize_t load_extendedpubkey(DIDStore *store, uint8_t *extendedkey, size_t size)
+{
+    const char *string;
+    char path[PATH_MAX];
+    ssize_t len;
+
+    assert(store);
+    assert(extendedkey && size >= EXTENDEDKEY_BYTES);
+
+    if (get_file(path, 0, 3, store->root, PRIVATE_DIR, HDPUBKEY_FILE) == -1)
+        return -1;
+
+    string = load_file(path);
+    if (!string)
+        return -1;
+
+    len = base58_decode(extendedkey, string);
     free((char*)string);
 
     return len;
@@ -1562,7 +1607,7 @@ void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *id)
 
 //caller provide HDKey object.
 static HDKey *load_privateIdentity(DIDStore *store, const char *storepass,
-        HDKey *privateIdentity)
+        HDKey *identity)
 {
     uint8_t extendedkey[EXTENDEDKEY_BYTES];
     ssize_t size;
@@ -1570,26 +1615,42 @@ static HDKey *load_privateIdentity(DIDStore *store, const char *storepass,
 
     assert(store);
     assert(storepass && *storepass);
-    assert(privateIdentity);
+    assert(identity);
 
-    size = load_extendedkey(store, extendedkey, sizeof(extendedkey), storepass);
+    size = load_extendedprvkey(store, extendedkey, sizeof(extendedkey), storepass);
     if (size == -1)
         return NULL;
 
     if (size == SEED_BYTES) {
-        if (HDKey_FromSeed(extendedkey, size, privateIdentity)) {
-            size = HDKey_Serialize(privateIdentity, extendedkey, sizeof(extendedkey));
+        if (HDKey_FromSeed(extendedkey, size, identity)) {
+            size = HDKey_SerializePrv(identity, extendedkey, sizeof(extendedkey));
             if (size != -1) {
-                rc = store_extendedkey(store, extendedkey, size, storepass);
+                rc = store_extendedprvkey(store, extendedkey, size, storepass);
             }
         }
     } else {
-        if (!HDKey_FromExtendedKey(extendedkey, sizeof(extendedkey), privateIdentity))
+        if (!HDKey_FromExtendedKey(extendedkey, sizeof(extendedkey), identity))
             rc = -1;
     }
 
     memset(extendedkey, 0, sizeof(extendedkey));
-    return rc == 0 ? privateIdentity : NULL;
+    return rc == 0 ? identity : NULL;
+}
+
+static HDKey *load_publicIdentity(DIDStore *store, HDKey *identity)
+{
+    uint8_t extendedkey[EXTENDEDKEY_BYTES];
+    ssize_t size;
+    int rc = 0;
+
+    assert(store);
+    assert(identity);
+
+    size = load_extendedpubkey(store, extendedkey, sizeof(extendedkey));
+    if (size == -1)
+        return NULL;
+
+    return HDKey_FromExtendedKey(extendedkey, sizeof(extendedkey), identity);
 }
 
 static int store_default_privatekey(DIDStore *store, const char *storepass,
@@ -1711,14 +1772,21 @@ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
     if (!privateIdentity)
         return -1;
 
-    size = HDKey_Serialize(privateIdentity, extendedkey, sizeof(extendedkey));
+    size = HDKey_SerializePrv(privateIdentity, extendedkey, sizeof(extendedkey));
     if (size == -1)
         return -1;
 
-    if (store_extendedkey(store, extendedkey, sizeof(extendedkey), storepass) == -1)
+    if (store_extendedprvkey(store, extendedkey, size, storepass) == -1)
         return -1;
 
     memset(extendedkey, 0, sizeof(extendedkey));
+    size = HDKey_SerializePub(privateIdentity, extendedkey, sizeof(extendedkey));
+    if (size == -1)
+        return -1;
+
+    if (store_extendedpubkey(store, extendedkey, size) == -1)
+        return -1;
+
     if (store_mnemonic(store, storepass, mnemonic) == -1)
         return -1;
 
@@ -1726,15 +1794,14 @@ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *storepass,
 }
 
 int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *storepass,
-        const char *extendedkey, bool force)
+        const char *extendedprvkey, bool force)
 {
-    uint8_t seed[SEED_BYTES];
-    uint8_t key[EXTENDEDKEY_BYTES];
+    uint8_t seed[SEED_BYTES], extendedkey[EXTENDEDKEY_BYTES];
     char path[PATH_MAX];
     ssize_t size;
     HDKey _privateIdentity, *privateIdentity;
 
-    if (!store || !storepass || !*storepass || !extendedkey)
+    if (!store || !storepass || !*storepass || !extendedprvkey)
         return -1;
 
     //check if DIDStore has existed private identity
@@ -1743,42 +1810,52 @@ int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *storepa
             return -1;
     }
 
-    size = base58_decode(key, extendedkey);
+    size = base58_decode(extendedkey, extendedprvkey);
     if (size == -1)
         return -1;
 
-    privateIdentity = HDKey_FromExtendedKey(key, size, &_privateIdentity);
+    privateIdentity = HDKey_FromExtendedKey(extendedkey, size, &_privateIdentity);
     if (!privateIdentity)
         return -1;
 
-    size = HDKey_Serialize(privateIdentity, key, sizeof(key));
+    size = HDKey_SerializePrv(privateIdentity, extendedkey, sizeof(extendedkey));
     if (size == -1)
         return -1;
 
-    if (store_extendedkey(store, key, size, storepass) == -1)
+    if (store_extendedprvkey(store, extendedkey, size, storepass) == -1)
         return -1;
 
-    memset(key, 0, sizeof(key));
+    memset(extendedkey, 0, sizeof(extendedkey));
+    size = HDKey_SerializePub(privateIdentity, extendedkey, sizeof(extendedkey));
+    if (size == -1)
+        return -1;
+
+    if (store_extendedpubkey(store, extendedkey, size) == -1)
+        return -1;
+
     return store_index(store, 0);
 }
 
 static DerivedKey *get_childkey(DIDStore *store, const char *storepass, int index,
         DerivedKey *derivedkey)
 {
-    HDKey _identity, *privateIdentity;
+    HDKey _identity, *identity;
     DerivedKey *dkey;
 
     assert(store);
-    assert(storepass && *storepass);
     assert(index >= 0);
     assert(derivedkey);
 
-    privateIdentity = load_privateIdentity(store, storepass, &_identity);
-    if (!privateIdentity)
+    if (!storepass)
+        identity = load_publicIdentity(store, &_identity);
+    else
+        identity = load_privateIdentity(store, storepass, &_identity);
+
+    if (!identity)
         return NULL;
 
-    dkey = HDKey_GetDerivedKey(privateIdentity, index, derivedkey);
-    HDKey_Wipe(privateIdentity);
+    dkey = HDKey_GetDerivedKey(identity, index, derivedkey);
+    HDKey_Wipe(identity);
     return dkey;
 }
 
@@ -1808,16 +1885,16 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
 }
 
 //free DID after use it.
-DID *DIDStore_GetDIDByIndex(DIDStore *store, const char *storepass, int index)
+DID *DIDStore_GetDIDByIndex(DIDStore *store, int index)
 {
     DerivedKey _derivedkey, *derivedkey;
     DID *did;
     int rc;
 
-    if (!store || !storepass || !*storepass || index < 0)
+    if (!store || index < 0)
         return NULL;
 
-    derivedkey = get_childkey(store, storepass, index++, &_derivedkey);
+    derivedkey = get_childkey(store, NULL, index, &_derivedkey);
     if (!derivedkey)
         return NULL;
 

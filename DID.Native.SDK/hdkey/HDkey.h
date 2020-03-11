@@ -50,9 +50,9 @@ extern "C" {
 
 typedef struct HDKey {
     uint32_t fingerPrint;
-    uint8_t chainCodeForSk[CHAINCODE_BYTES];
+    uint8_t prvChainCode[CHAINCODE_BYTES];
     uint8_t privatekey[PRIVATEKEY_BYTES];
-    uint8_t chainCodeForPk[CHAINCODE_BYTES];
+    uint8_t pubChainCode[CHAINCODE_BYTES];
     uint8_t publickey[PUBLICKEY_BYTES];
 } HDKey;
 
@@ -76,7 +76,9 @@ HDKey *HDKey_FromSeed(const uint8_t *seed, size_t size, HDKey *hdkey);
 HDKey *HDKey_FromExtendedKey(const uint8_t *extendedkey, size_t size, HDKey *hdkey);
 
 // Convert to extended private key format
-ssize_t HDKey_Serialize(HDKey *hdkey, uint8_t *extendedkey, size_t size);
+ssize_t HDKey_SerializePrv(HDKey *hdkey, uint8_t *extendedkey, size_t size);
+
+ssize_t HDKey_SerializePub(HDKey *hdkey, uint8_t *pubkey, size_t size);
 
 void HDKey_Wipe(HDKey *hdkey);
 

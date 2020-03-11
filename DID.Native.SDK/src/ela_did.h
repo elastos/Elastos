@@ -2035,14 +2035,12 @@ DID_API DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepa
  * @param
  *      store                     [in] THe handle to DIDStore.
  * @param
- *      storepass                 [int] Password for DIDStore.
- * @param
  *      index                     [int] The index of DerivedKey from HDKey.
  * @return
  *      If no error occurs, return DID object. Free DID after use it.
  *      Otherwise, return NULL.
  */
-DID_API DID *DIDStore_GetDIDByIndex(DIDStore *store, const char *storepass, int index);
+DID_API DID *DIDStore_GetDIDByIndex(DIDStore *store, int index);
 /**
  * \~English
  * Create new DID Document and store in the DID Store.

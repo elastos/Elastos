@@ -23,6 +23,7 @@ const char *compact_idstring;
 const char *PATH_STEP;
 const char *PRIVATE_DIR;
 const char *HDKEY_FILE;
+const char *HDPUBKEY_FILE;
 const char *INDEX_FILE;
 const char *MNEMONIC_FILE;
 

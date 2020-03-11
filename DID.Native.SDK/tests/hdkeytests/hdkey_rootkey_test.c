@@ -16,15 +16,23 @@ static void test_rootkey_with_diff_method(void)
 
     const char *mnemonic = "pact reject sick voyage foster fence warm luggage cabbage any subject carbon";
     const char *ExtendedkeyBase = "xprv9s21ZrQH143K4biiQbUq8369meTb1R8KnstYFAKtfwk3vF8uvFd1EC2s49bMQsbdbmdJxUWRkuC48CXPutFfynYFVGnoeq8LJZhfd9QjvUt";
+    const char *pubkeyBase = "xpub6BmohzsffkuPQHqRNqksqvnef6c3wKarsRAmBjRHZgkLrT91xzH3HnkkJv48oursb6CxdzwuDecozwCXF5t9ropBqpPVz4hw2foivZxsmVs";
     const char *passphrase = "helloworld";
-
-    size = base58_decode(ExtendedKey, ExtendedkeyBase);
-    CU_ASSERT_EQUAL(size, EXTENDEDKEY_BYTES);
 
     hdkey = HDKey_FromMnemonic(mnemonic, passphrase, "english", &_hdkey);
     CU_ASSERT_PTR_NOT_NULL(hdkey);
 
-    size = HDKey_Serialize(hdkey, _ExtendedKey, sizeof(_ExtendedKey));
+    size = HDKey_SerializePrv(hdkey, _ExtendedKey, sizeof(_ExtendedKey));
+    CU_ASSERT_EQUAL(size, EXTENDEDKEY_BYTES);
+
+    size = base58_decode(ExtendedKey, ExtendedkeyBase);
+    CU_ASSERT_EQUAL(size, EXTENDEDKEY_BYTES);
+    CU_ASSERT_NSTRING_EQUAL(ExtendedKey, _ExtendedKey, EXTENDEDKEY_BYTES - 4);
+
+    size = HDKey_SerializePub(hdkey, _ExtendedKey, sizeof(_ExtendedKey));
+    CU_ASSERT_EQUAL(size, EXTENDEDKEY_BYTES);
+
+    size = base58_decode(ExtendedKey, pubkeyBase);
     CU_ASSERT_EQUAL(size, EXTENDEDKEY_BYTES);
     CU_ASSERT_NSTRING_EQUAL(ExtendedKey, _ExtendedKey, EXTENDEDKEY_BYTES - 4);
 }
