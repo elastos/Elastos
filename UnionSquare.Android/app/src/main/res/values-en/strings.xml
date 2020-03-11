@@ -611,4 +611,5 @@
     <string name="notcreatedid">当前钱包未创建DID</string>
     <string name="didoutofdate">DID已过期</string>
     <string name="createdid">创建DID</string>
+    <string name="updatedidinfo">更新DID信息</string>
 </resources>

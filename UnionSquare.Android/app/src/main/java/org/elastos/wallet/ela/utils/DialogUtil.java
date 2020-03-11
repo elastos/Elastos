@@ -332,12 +332,16 @@ public class DialogUtil {
         dialog.show();
     }
 
-    public void showCommonSelect(BaseActivity activity, String[] strings, WarmPromptListener listener) {
+    public void showCommonSelect(BaseActivity activity, String dec,String[] strings, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.dialog_numberpicker);
         dialog.setCancelable(true);
         dialog.setCanceledOnTouchOutside(true);
         TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextView tvDec = dialog.findViewById(R.id.tv_dec);
+        if (dec!=null){
+            tvDec.setText(dec);
+        }
         TextConfigNumberPicker numberPicker = dialog.findViewById(R.id.np);
         tvSure.setOnClickListener(v -> {
             dialog.dismiss();

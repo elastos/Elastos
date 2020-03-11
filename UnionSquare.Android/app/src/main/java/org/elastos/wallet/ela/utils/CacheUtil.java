@@ -27,7 +27,11 @@ public class CacheUtil {
     }
 
     public static void setArea(List<Area> list) {
-        if (list == null || list.size() == 0) {
+        if (list == null ) {
+            return;
+        }
+        if (list.size() == 0) {
+            CacheDiskUtils.getInstance(file).remove("area" );
             return;
         }
         CacheDiskUtils.getInstance(file).put("area", (Serializable) list, CacheDiskUtils.DAY * 360);
@@ -41,10 +45,16 @@ public class CacheUtil {
     }
 
     public static void setProducerList(List<VoteListBean.DataBean.ResultBean.ProducersBean> list) {
-        if (list == null || list.size() == 0) {
+        if (list == null) {
             return;
         }
         Wallet wallet = new RealmUtil().queryDefauleWallet();
+        if (list.size() == 0) {
+            CacheDiskUtils.getInstance(file).remove("list" + wallet.getWalletId());
+            return;
+        }
+
+
         CacheDiskUtils.getInstance(file).put("list" + wallet.getWalletId(), (Serializable) list, CacheDiskUtils.DAY * 360);
     }
 
@@ -56,10 +66,15 @@ public class CacheUtil {
     }
 
     public static void setCRProducerList(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list) {
-        if (list == null || list.size() == 0) {
+        if (list == null) {
             return;
         }
         Wallet wallet = new RealmUtil().queryDefauleWallet();
+        if (list.size() == 0) {
+            CacheDiskUtils.getInstance(file).remove("CRlist1" + wallet.getWalletId());
+            return;
+        }
+
         CacheDiskUtils.getInstance(file).put("CRlist1" + wallet.getWalletId(), (Serializable) list, CacheDiskUtils.DAY * 360);
     }
 
@@ -72,7 +87,11 @@ public class CacheUtil {
 
     //Set<String> serverList = new HashSet<>();
     public static void setDIDInfoList(List<DIDInfoEntity> list) {
-        if (list == null || list.size() == 0) {
+        if (list == null) {
+            return;
+        }
+        if (list.size() == 0) {
+            CacheDiskUtils.getInstance(file).remove("DIDInfoList" );
             return;
         }
         CacheDiskUtils.getInstance(file).put("DIDInfoList", (Serializable) list, CacheDiskUtils.DAY * 360);
@@ -120,7 +139,11 @@ public class CacheUtil {
 
     //Set<String> serverList = new HashSet<>();
     public static void setIps(List<IPEntity> list) {
-        if (list == null || list.size() == 0) {
+        if (list == null ) {
+            return;
+        }
+        if ( list.size() == 0) {
+            CacheDiskUtils.getInstance(file).remove("ips" );
             return;
         }
         CacheDiskUtils.getInstance(file).put("ips", (Serializable) list, CacheDiskUtils.DAY * 360);
@@ -128,7 +151,11 @@ public class CacheUtil {
 
 
     private static void setMessage(List<MessageEntity> list, String key) {
-        if (list == null || list.size() == 0) {
+        if (list == null ) {
+            return;
+        }
+        if ( list.size() == 0) {
+            CacheDiskUtils.getInstance(file).remove(key );
             return;
         }
         CacheDiskUtils.getInstance(file).put(key, (Serializable) list, CacheDiskUtils.DAY * 360);

@@ -14,7 +14,6 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
-import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringViewData;
@@ -54,8 +53,8 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
     TextView tvArea;
     @BindView(R.id.et_url)
     EditText etUrl;
-    private RealmUtil realmUtil = new RealmUtil();
-    private Wallet wallet = realmUtil.queryDefauleWallet();
+
+    private Wallet wallet;
     CRSignUpPresenter presenter;
     private ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> netList;
 
@@ -68,8 +67,9 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
     @Override
     protected void setExtraData(Bundle data) {
         ownerPublicKey = data.getString("publickey");
+        wallet = data.getParcelable("wallet");
         CID = data.getString("CID");
-        tvDid.setText(CID);
+        tvDid.setText(wallet.getDid());//todo 没有did
         netList = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) data.getSerializable("netList");
 
     }
@@ -80,8 +80,8 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
         presenter = new CRSignUpPresenter();
 
         registReceiver();
-        MatcherUtil.editTextFormat(etDotname,100);
-        MatcherUtil.editTextFormat(etUrl,100);
+        MatcherUtil.editTextFormat(etDotname, 100);
+        MatcherUtil.editTextFormat(etUrl, 100);
     }
 
 
@@ -92,7 +92,6 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
         switch (view.getId()) {
             case R.id.tv_sure:
                 name = etDotname.getText().toString().trim();//节点名称
-                CID = tvDid.getText().toString().trim();//节点did
                 area = tvArea.getText().toString().trim();//国家地址
                 url = etUrl.getText().toString().trim();//官网
                 if (netList != null && netList.size() != 0) {
@@ -106,7 +105,7 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
                 if (TextUtils.isEmpty(ownerPublicKey)) {
                     return;
                 }
-                if (TextUtils.isEmpty(CID)) {
+                if (TextUtils.isEmpty(wallet.getDid())) {
                     return;
                 }
                 if (TextUtils.isEmpty(name)) {

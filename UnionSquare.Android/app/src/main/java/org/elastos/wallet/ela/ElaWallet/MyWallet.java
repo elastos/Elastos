@@ -702,13 +702,13 @@ public class MyWallet {
         }
     }
 
-    public BaseEntity signDigest(String masterWalletID, String did, String digest, String payPassword) {
+    public BaseEntity signDigest(String masterWalletID, String cid, String digest, String payPassword) {
         try {
             IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
             if (idChainSubWallet == null) {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
             }
-            String result = idChainSubWallet.SignDigest(did, digest, payPassword);
+            String result = idChainSubWallet.SignDigest(cid, digest, payPassword);
             return new CommmonStringEntity(SUCCESSCODE, result);
         } catch (WalletException e) {
             return exceptionProcess(e, "signDigest " + formatWalletName(masterWalletID) + " tx");
@@ -1262,7 +1262,7 @@ public class MyWallet {
     // args[5]: String url
     // args[6]: String location
     // args[7]: String payPasswd
-    public BaseEntity generateCRInfoPayload(String masterWalletID, String chainID, String crPublickey, String nickName, String url, long location) {
+    public BaseEntity generateCRInfoPayload(String masterWalletID, String chainID, String crPublickey, String nickName, String url, long location,String did) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1276,9 +1276,6 @@ public class MyWallet {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
-            // TODO: fix did later
-            String did = "";
             String payloadJson = mainchainSubWallet.GenerateCRInfoPayload(crPublickey, did, nickName, url, location);
 
             KLog.a(payloadJson);
@@ -1292,7 +1289,7 @@ public class MyWallet {
     // args[1]: String chainID
     // args[2]: String cID
     // args[3]: String payPasswd
-    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String cID) {
+    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String cid) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1307,7 +1304,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String payloadJson = mainchainSubWallet.GenerateUnregisterCRPayload(cID);
+            String payloadJson = mainchainSubWallet.GenerateUnregisterCRPayload(cid);
             KLog.a(payloadJson);
             return new CommmonStringEntity(SUCCESSCODE, payloadJson);
         } catch (WalletException e) {

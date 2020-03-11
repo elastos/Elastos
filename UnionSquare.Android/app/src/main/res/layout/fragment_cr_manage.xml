@@ -293,7 +293,7 @@
                 android:layout_width="0dp"
                 android:layout_marginLeft="15dp"
                 android:layout_weight="1"
-                android:text="@string/quitcr"
+                android:text="@string/updatedidinfo"
                 app:sCornersRadius="0dp" />
 
         </LinearLayout>

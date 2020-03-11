@@ -83,7 +83,6 @@ public class DidDetailFragment extends BaseFragment {
             case R.id.tv_credentialinfo:
                 //凭证信息
                 bundle = new Bundle();
-                //   bundle.putString("did", didInfo.getId());
                 start(CredentialFragment.class, bundle);
                 break;
             case R.id.iv_title_right:

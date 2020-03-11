@@ -25,7 +25,6 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.elastos.did.DIDDocument;
-import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -299,7 +298,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             String elaString = recieveJwtEntity.getIss();
             elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
             // Log.e("Base64", "Base64---->" + header + "\n" + payload + "\n" + signature);.0
-            new WalletManagePresenter().DIDResolve(elaString, this, 1);
+            new WalletManagePresenter().DIDResolve(elaString, this);
         } catch (Exception e) {
             toErroScan(scanResult);
         }
@@ -692,6 +691,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             //创建钱包
             Wallet temp = (Wallet) result.getObj();
             if (!wallet.getWalletId().equals(temp.getWalletId())) {
+                wallet = temp;
                 setWalletViewNew(wallet);
             }
 
@@ -853,15 +853,14 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "DIDResolve":
-                DIDDocument didDocument = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
-                int type = (int) o;
-                //未传递paypas网站提供的did验签  传递paypas是判断当前钱包有没有did
-                if (type == 1) {
-                    verifyDID(didDocument);
-                } else {
-                    curentHasDID(didDocument);
-                }
+                //未传递paypas网站提供的did验签
+                verifyDID((DIDDocument) ((CommmonObjEntity) baseEntity).getData());
 
+
+                break;
+            case "DIDResolveWithTip":
+                //传递paypas是判断当前钱包有没有did
+                curentHasDID((DIDDocument) ((CommmonObjEntity) baseEntity).getData());
                 break;
         }
     }
@@ -879,14 +878,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 // 验签成功
                 // 验签成功
                 //先判断本地是否有did
-                // 先去获得密码并验证密码正确否
-                if (TextUtils.isEmpty(wallet.getDid())) {
-                    //本地没有did
-                    showToast(getString(R.string.unknown));
-                    return;
-
-                }
-                new WalletManagePresenter().DIDResolve(wallet.getDid(), this, 2);
+                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this);
             } else {
                 //验签失败
                 toErroScan(scanResult);
@@ -895,25 +887,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     private void curentHasDID(DIDDocument didDocument) {
-        if (didDocument == null) {
-            showToast(getString(R.string.notcreatedid));
-        } else {
-            try {
-                getMyDID().getDidStore().storeDid(didDocument);//存储本地
-                if (getMyDID().getExpires(didDocument).before(new Date())) {
-                    //did过期
-                    showToast(getString(R.string.didoutofdate));
-                } else {
-                    Bundle bundle = new Bundle();
-                    // bundle.putParcelable("wallet", wallet);
-                    // bundle.putParcelable("RecieveJwtEntity", JSON.parseObject(payload, RecieveJwtEntity.class));
-                    bundle.putString("scanResult", scanResult);
-                    bundle.putString("walletId", wallet.getWalletId());
-                    ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
-                }
-            } catch (DIDStoreException e) {
-                e.printStackTrace();
-            }
+        if (didDocument != null) {
+            //  getMyDID().getDidStore().storeDid(didDocument);//存储本地
+            Bundle bundle = new Bundle();
+            bundle.putString("scanResult", scanResult);
+            bundle.putString("walletId", wallet.getWalletId());
+            ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
+
         }
     }
 

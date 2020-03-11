@@ -61,7 +61,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         bean4.setUpText(getString(R.string.findlistup4));
         bean4.setDownText(getString(R.string.findlistdown4));
         list.add(bean1);
-        list.add(bean2);
+        //list.add(bean2);
         list.add(bean4);
         //  list.add(R.mipmap.found_card_id);
         //list.add(R.mipmap.found_card_paradrop);
@@ -99,9 +99,10 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         if (position == 0) {
             ((BaseFragment) getParentFragment()).start(SuperNodeListFragment.class);
         } else if (position == 1) {
+            ((BaseFragment) getParentFragment()).start(CRListFragment.class);
             //社区提案
-            ((BaseFragment) getParentFragment()).start(ProposalFragment.class);
-        }else if (position == 2) {
+           // ((BaseFragment) getParentFragment()).start(ProposalFragment.class);
+        } else if (position == 2) {
             ((BaseFragment) getParentFragment()).start(CRListFragment.class);
         }
     }

@@ -102,7 +102,9 @@ public class IPAddressActivity extends BaseActivity implements NewBaseViewData, 
 
 
                 //ping一下
-                new IPPresenter().ping(new IPEntity(ip, port), this);
+               // new IPPresenter().ping(new IPEntity(ip, port), this);
+                new IPPresenter().setFixedPeer(subWallet.getBelongId(), subWallet.getChainId(),new IPEntity(ip, port), this);
+
                 break;
 
         }

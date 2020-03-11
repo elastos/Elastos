@@ -1,17 +1,19 @@
 package org.elastos.wallet.ela.DID;
 
-import org.elastos.did.Constants;
+import android.text.TextUtils;
+
+import com.blankj.utilcode.util.ToastUtils;
+
 import org.elastos.did.DID;
 import org.elastos.did.DIDBackend;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDStore;
 import org.elastos.did.DIDURL;
 import org.elastos.did.VerifiableCredential;
-import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.InvalidKeyException;
-import org.elastos.did.exception.MalformedDIDException;
+import org.elastos.wallet.R;
 import org.elastos.wallet.ela.DID.adapter.MyDIDAdapter;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
@@ -20,15 +22,13 @@ import org.elastos.wallet.ela.rxjavahelp.CommonEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.utils.JwtUtils;
-import org.elastos.wallet.ela.utils.Log;
 
 import java.io.File;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.elastos.did.Constants.MAX_VALID_YEARS;
+import static com.blankj.utilcode.util.StringUtils.getString;
 import static org.elastos.wallet.ela.ElaWallet.MyWallet.SUCCESSCODE;
 
 public class MyDID {
@@ -186,7 +186,6 @@ public class MyDID {
     }
 
 
-
     public void setDIDDocumentExprise(Date expires, String pwd, String name) {
 
         try {
@@ -240,21 +239,40 @@ public class MyDID {
 
     }*/
 
-    public BaseEntity DIDResolve(DID did) {
-        try {
 
-            return new CommmonObjEntity(SUCCESSCODE, did.resolve());
-        } catch (DIDBackendException e) {
+    public BaseEntity DIDResolve(String didString) {
+        try {
+            return new CommmonObjEntity(SUCCESSCODE, new DID(didString).resolve());
+        } catch (DIDException e) {
             return exceptionProcess(e, "DIDResolve");
 
         }
     }
 
-    public BaseEntity DIDResolve(String didString) {
+    public BaseEntity DIDResolveWithTip(String didString) {
         try {
+            if (TextUtils.isEmpty(didString)) {
+                ToastUtils.showShort(getString(R.string.notcreatedid));
+                // Toast.makeText(baseFragment.getContext(), baseFragment.getString(R.string.notcreatedid), Toast.LENGTH_SHORT).show();
+                return new CommmonObjEntity(SUCCESSCODE, null);
+            }
             DID did = new DID(didString);
-            return DIDResolve(did);
-        } catch (MalformedDIDException e) {
+            DIDDocument doc = did.resolve();
+
+            if (doc == null) {
+                //没注册did
+                ToastUtils.showShort(getString(R.string.notcreatedid));
+                // Toast.makeText(baseFragment.getContext(), baseFragment.getString(R.string.notcreatedid), Toast.LENGTH_SHORT).show();
+                return new CommmonObjEntity(SUCCESSCODE, null);
+            }
+            if (getExpires(doc).before(new Date())) {
+                //did过期
+                ToastUtils.showShort(getString(R.string.didoutofdate));
+                return new CommmonObjEntity(SUCCESSCODE, null);
+
+            }
+            return new CommmonObjEntity(SUCCESSCODE, doc);
+        } catch (DIDException e) {
             return exceptionProcess(e, "DIDResolve");
 
         }

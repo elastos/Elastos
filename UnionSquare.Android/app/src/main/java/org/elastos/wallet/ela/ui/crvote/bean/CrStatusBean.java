@@ -4,9 +4,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class CrStatusBean {
+
     /**
-     * Info : {"CROwnerDID":"im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH","CROwnerPublicKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331","Confirms":10795,"Location":93,"NickName":"raocr","Url":"http://52.80.54.227:9000/"}
-     * Status : ReturnDeposit
+     * Info : {"BondedDID":false,"CID":"ihNSAaGACbGucnXjvPKCRA7Ei7puUyUnrd","CROwnerPublicKey":"0221d3e27c9636ee31b894ef3648df8ec8a266807144beb7ac7dbad43897630fb8","Confirms":4584,"DID":"","Location":1268,"NickName":"linda-reg17","URL":"www.baidu.com"}
+     * Status : Registered
      */
 
     private InfoBean Info;
@@ -30,27 +31,39 @@ public class CrStatusBean {
 
     public static class InfoBean implements Parcelable {
         /**
-         * CROwnerDID : im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH
-         * CROwnerPublicKey : 02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331
-         * Confirms : 10795
-         * Location : 93
-         * NickName : raocr
-         * Url : http://52.80.54.227:9000/
+         * BondedDID : false
+         * CID : ihNSAaGACbGucnXjvPKCRA7Ei7puUyUnrd
+         * CROwnerPublicKey : 0221d3e27c9636ee31b894ef3648df8ec8a266807144beb7ac7dbad43897630fb8
+         * Confirms : 4584
+         * DID :
+         * Location : 1268
+         * NickName : linda-reg17
+         * URL : www.baidu.com
          */
 
-        private String CROwnerDID;
+        private boolean BondedDID;
+        private String CID;
         private String CROwnerPublicKey;
         private int Confirms;
+        private String DID;
         private int Location;
         private String NickName;
         private String URL;
 
-        public String getCROwnerDID() {
-            return CROwnerDID;
+        public boolean isBondedDID() {
+            return BondedDID;
         }
 
-        public void setCROwnerDID(String CROwnerDID) {
-            this.CROwnerDID = CROwnerDID;
+        public void setBondedDID(boolean BondedDID) {
+            this.BondedDID = BondedDID;
+        }
+
+        public String getCID() {
+            return CID;
+        }
+
+        public void setCID(String CID) {
+            this.CID = CID;
         }
 
         public String getCROwnerPublicKey() {
@@ -67,6 +80,14 @@ public class CrStatusBean {
 
         public void setConfirms(int Confirms) {
             this.Confirms = Confirms;
+        }
+
+        public String getDID() {
+            return DID;
+        }
+
+        public void setDID(String DID) {
+            this.DID = DID;
         }
 
         public int getLocation() {
@@ -100,9 +121,11 @@ public class CrStatusBean {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(this.CROwnerDID);
+            dest.writeByte(this.BondedDID ? (byte) 1 : (byte) 0);
+            dest.writeString(this.CID);
             dest.writeString(this.CROwnerPublicKey);
             dest.writeInt(this.Confirms);
+            dest.writeString(this.DID);
             dest.writeInt(this.Location);
             dest.writeString(this.NickName);
             dest.writeString(this.URL);
@@ -112,9 +135,11 @@ public class CrStatusBean {
         }
 
         protected InfoBean(Parcel in) {
-            this.CROwnerDID = in.readString();
+            this.BondedDID = in.readByte() != 0;
+            this.CID = in.readString();
             this.CROwnerPublicKey = in.readString();
             this.Confirms = in.readInt();
+            this.DID = in.readString();
             this.Location = in.readInt();
             this.NickName = in.readString();
             this.URL = in.readString();

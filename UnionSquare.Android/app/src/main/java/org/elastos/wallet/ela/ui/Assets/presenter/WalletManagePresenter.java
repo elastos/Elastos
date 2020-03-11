@@ -1,6 +1,5 @@
 package org.elastos.wallet.ela.ui.Assets.presenter;
 
-import org.elastos.did.DID;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
@@ -102,23 +101,24 @@ public class WalletManagePresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void DIDResolve(DID did, BaseFragment baseFragment, Object o) {
-        Observer observer = createObserver(baseFragment, "DIDResolve", o);
+
+    public void DIDResolve(String didString, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "DIDResolve");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyDID().DIDResolve(did);
+                return baseFragment.getMyDID().DIDResolve(didString);
             }
         });
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void DIDResolve(String didString, BaseFragment baseFragment, Object o) {
-        Observer observer = createObserver(baseFragment, "DIDResolve", o);
+    public void DIDResolveWithTip(String didString, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "DIDResolveWithTip");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyDID().DIDResolve(didString);
+                return baseFragment.getMyDID().DIDResolveWithTip(didString);
             }
         });
         subscriberObservable(observer, observable, baseFragment);

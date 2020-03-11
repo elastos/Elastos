@@ -21,9 +21,8 @@ import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
-import org.elastos.wallet.ela.utils.svg.GlideApp;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -136,7 +135,8 @@ public class CRInformationFragment extends BaseFragment {
         });
         tvName.setText(bean.getNickname());
         tvNumVote.setText(bean.getVotes().split("\\.")[0] + " " + getString(R.string.ticket));
-        tvDid.setText(bean.getDid());
+        if (!TextUtils.isEmpty(bean.getDid()))
+            tvDid.setText("did:ela:" + bean.getDid());
         tv_addrs.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         tvUrl.setText(bean.getUrl());
         tvZl.setText(bean.getVoterate() + "%");

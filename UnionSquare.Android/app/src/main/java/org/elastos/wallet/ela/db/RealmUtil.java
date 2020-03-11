@@ -126,8 +126,8 @@ public class RealmUtil {
 
         Wallet masterWallet = new Wallet();
         masterWallet.setWalletName(walletName);
-        masterWallet.setWalletId(did);
-        masterWallet.setDid(masterWalletID);
+        masterWallet.setWalletId(masterWalletID);
+        masterWallet.setDid(did);
         masterWallet.setSingleAddress(account.isSingleAddress());
         masterWallet.setType(getType(account));
         updateWalletDetial(masterWallet);

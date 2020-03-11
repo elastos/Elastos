@@ -12,16 +12,18 @@ import android.widget.TextView;
 
 import com.allen.library.SuperButton;
 
+import org.elastos.did.DIDDocument;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
-import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
+import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
@@ -37,10 +39,10 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -102,14 +104,15 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     @BindView(R.id.ll_infodetail)
     LinearLayout llInfodetail;
 
-    @BindView(R.id.sb_zx)
-    SuperButton sbZx;
-    private RealmUtil realmUtil = new RealmUtil();
-    private Wallet wallet = realmUtil.queryDefauleWallet();
+    @BindView(R.id.tv_title_right)
+    TextView tvTitleRight;
+    private Wallet wallet;
     CRManagePresenter presenter;
     String status;
-    private String CID;
+    private String CID, DID;
     private String ownerPublicKey;
+    private String name, url;
+    private long code;
 
 
     @Override
@@ -126,6 +129,8 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.electoral_affairs));
+
+        tvTitleRight.setText(getString(R.string.quitcr));
         registReceiver();
     }
 
@@ -133,9 +138,11 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void setExtraData(Bundle data) {
         ownerPublicKey = data.getString("publickey");
-        status = data.getString("status", "Canceled");
+        wallet = data.getParcelable("wallet");
         CID = data.getString("CID", "");
+        status = data.getString("status", "Canceled");
         CrStatusBean.InfoBean info = data.getParcelable("info");
+        DID = info.getDID();
         CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentNode");
         if (curentNode == null) {
             return;
@@ -149,7 +156,6 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             ll_xggl.setVisibility(View.GONE);
             ll_tq.setVisibility(View.VISIBLE);
             tvQuit.setText(curentNode.getNickname() + getString(R.string.hasquit));
-
             long height = info.getConfirms();
             if (height >= 2160) {
                 //获取赎回金额
@@ -162,9 +168,23 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
         super.setExtraData(data);
     }
 
-    @OnClick({R.id.tv_url, R.id.sb_zx, R.id.sb_tq, R.id.sb_up, R.id.ll_info, R.id.ll_intro})
+    @OnClick({R.id.tv_url, R.id.sb_zx, R.id.sb_tq, R.id.sb_up, R.id.ll_info, R.id.ll_intro, R.id.tv_title_right})
     public void onViewClicked(View view) {
         switch (view.getId()) {
+            case R.id.sb_zx:
+                //更新did
+                if (!TextUtils.isEmpty(DID)) {
+                    //更新凭证到中心化服务器 todo
+                    return;
+                }
+                //先绑定did  再更新到服务器
+                String didString = wallet.getDid();
+                if (TextUtils.isEmpty(didString)) {
+                    showToast(getString(R.string.notcreatedid));
+                    return;
+                }
+                new WalletManagePresenter().DIDResolveWithTip(didString, this);
+                break;
             case R.id.ll_info:
                 lineInfo.setVisibility(View.VISIBLE);
                 lineIntro.setVisibility(View.GONE);
@@ -186,11 +206,11 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 ClipboardUtil.copyClipboar(getBaseActivity(), tvUrl.getText().toString());
                 break;
 
-            case R.id.sb_zx:
+            case R.id.tv_title_right:
                 dialogUtil.showWarmPrompt2(getBaseActivity(), getString(R.string.quitcrornot), new WarmPromptListener() {
                             @Override
                             public void affireBtnClick(View view) {
-                                showWarmPromptInput();
+                                showWarmPromptInput(Constant.UNREGISTERCR);
                             }
                         }
                 );
@@ -208,8 +228,8 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     }
 
 
-    private void showWarmPromptInput() {
-        new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+    private void showWarmPromptInput(String type) {
+        new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", type, this);
 
 
     }
@@ -217,7 +237,10 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
 
     private void onJustRegistered(CrStatusBean.InfoBean bean, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode) {
 
-
+        name = bean.getNickName();
+        url = bean.getURL();
+        code = bean.getLocation();
+        tvTitleRight.setVisibility(View.VISIBLE);
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         String url = bean.getURL();
@@ -249,7 +272,8 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             }
         });
         tvUrl.setText(url);
-        tvDid.setText(bean.getCROwnerDID());
+        if (!TextUtils.isEmpty(DID))
+            tvDid.setText("did:ela:" +DID);
         if (curentNode != null) {
             tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
             tv_zb.setText(curentNode.getVoterate() + "%");
@@ -270,27 +294,34 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 intent.putExtra("type", Constant.WITHDRAWCR);
                 intent.putExtra("amount", available);
                 intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("transType", 36);
                 intent.putExtra("attributes", ((CommmonStringEntity) baseEntity).getData());
                 startActivity(intent);
                 break;
             case "getFee":
+                String type = (String) o;
                 intent = new Intent(getActivity(), VoteTransferActivity.class);
                 intent.putExtra("wallet", wallet);
-                if (status.equals("Canceled")) {
-                    //提取按钮
-                    intent.putExtra("type", Constant.WITHDRAWCR);
-                    intent.putExtra("amount", available);
-                    intent.putExtra("transType", 36);
-                    intent.putExtra("ownerPublicKey", ownerPublicKey);
-                } else {
-                    //注销按钮
-                    intent.putExtra("type", Constant.UNREGISTERCR);
-                    intent.putExtra("transType", 34);
-                }
+                intent.putExtra("type", type);
                 intent.putExtra("chainId", MyWallet.ELA);
                 intent.putExtra("CID", CID);
+
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
+                if (Constant.UNREGISTERCR.equals(type)) {
+                    //注销按钮
+                    intent.putExtra("transType", 34);
+
+                } else if (Constant.CRUPDATE.equals(type)) {
+                    //绑定did
+                    intent.putExtra("name", name);
+                    intent.putExtra("CID", CID);
+                    intent.putExtra("url", url);
+                    intent.putExtra("code", code);
+                    intent.putExtra("transType", 35);
+                    intent.putExtra("ownerPublicKey", ownerPublicKey);
+                }
                 startActivity(intent);
+
                 break;
 
 
@@ -300,7 +331,13 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 //注销可提取
                 sbtq.setVisibility(View.VISIBLE);
                 break;
-
+            case "DIDResolveWithTip":
+                DIDDocument didDocument = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
+                if (didDocument != null) {
+                    //绑定 did
+                    new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", Constant.CRUPDATE, this);
+                }
+                break;
 
         }
     }
@@ -309,12 +346,19 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
-            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
-                @Override
-                public void affireBtnClick(View view) {
-                    popBackFragment();
-                }
-            });
+            if (result.getName().equals("35")) {
+                //同步中心化服务器
+            } else {
+                new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        popBackFragment();
+                    }
+                });
+            }
+
         }
     }
+
+
 }

@@ -338,7 +338,7 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
     private void onRvTextViewClick(TextView v, int index) {
         if (index == 1) {
             //选择性别
-            new DialogUtil().showCommonSelect(getBaseActivity(), sexs, new WarmPromptListener() {
+            new DialogUtil().showCommonSelect(getBaseActivity(), getString(R.string.plzselcetsex),sexs, new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
                     gender = ((TextConfigNumberPicker) view).getValue() + 1;

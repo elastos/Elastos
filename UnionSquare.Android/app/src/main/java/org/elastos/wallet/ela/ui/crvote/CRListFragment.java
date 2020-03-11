@@ -26,6 +26,7 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
+import org.elastos.did.DIDDocument;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -36,6 +37,8 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
+import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
+import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter;
@@ -403,6 +406,13 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
 
         switch (methodName) {
+            case "DIDResolveWithTip":
+                DIDDocument didDocument = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
+                if (didDocument != null) {
+                    //已经注册过did
+                    addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
+                }
+                break;
             case "getDepositVoteList":
                 List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
                 JSONObject depiositUnActiveVote = new JSONObject();
@@ -459,6 +469,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 Bundle bundle = new Bundle();
                 bundle.putString("CID", CID);
                 bundle.putString("publickey", publickey);
+                bundle.putParcelable("wallet", wallet);
                 if (status.equals("Unregistered")) {
                     bundle.putSerializable("netList", netList);
                     start(CRSignUpForFragment.class, bundle);
@@ -497,7 +508,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                             break;
                         case "ReturnDeposit":
                             publickey = crStatusBean.getInfo().getCROwnerPublicKey();
-                            CID = crStatusBean.getInfo().getCROwnerDID();
+                            CID = crStatusBean.getInfo().getCID();
                             tv_signupfor.setVisibility(View.GONE);
                             presenter.getCRlist(pageNum, pageSize, "all", this, true);
 
@@ -505,7 +516,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                         case "Canceled":
                         case "Registered":
                             publickey = crStatusBean.getInfo().getCROwnerPublicKey();
-                            CID = crStatusBean.getInfo().getCROwnerDID();
+                            CID = crStatusBean.getInfo().getCID();
                             tv_signupfor.setText(getString(R.string.electoral_affairs));
                             tv_signupfor.setVisibility(View.VISIBLE);
                             tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_management), null, null);
@@ -564,7 +575,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         if (integer == RxEnum.AGREE.ordinal()) {
             //注册did同意了协议
             //注册cr前的判断
-            addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
+            new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this);
+
 
         }
 
