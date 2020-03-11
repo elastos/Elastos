@@ -141,7 +141,7 @@ const Did = styled.div`
   }
 `
 const Reassociate = styled.span`
-  display: inline-block;
+  display: block;
   font-size: 13px;
   color: #008d85;
   cursor: pointer;
