@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import {constant} from '../constant'
 import {geo} from '../utility/geo'
 import * as uuid from 'uuid'
-import { validate, utilCrypto, mail, permissions, getDidPublicKey, logger, loadKey } from '../utility'
+import { validate, utilCrypto, mail, permissions, getDidPublicKey, logger } from '../utility'
 import CommunityService from './CommunityService'
 import * as jwt from 'jsonwebtoken'
 
@@ -828,6 +828,7 @@ export default class extends Base {
             const jwtClaims = {
                 iss: process.env.APP_DID,
                 callbackurl: `${process.env.API_URL}/api/user/login-callback-ela`,
+                nonce: uuid.v4(),
                 claims: {},
                 website: {
                     domain: process.env.SERVER_URL,
@@ -844,6 +845,62 @@ export default class extends Base {
         } catch(err) {
             logger.error(err)
             return { success: false }
+        }
+    }
+
+    public async loginCallbackEla(param: any) {
+        try {
+            const jwtToken = param.jwt
+            const claims: any = jwt.decode(jwtToken)
+            if (!claims) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Problems parsing jwt token.'
+                }
+            }
+            const rs: any = await getDidPublicKey(claims.iss)
+            if (!rs) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Can not get public key.'
+                }
+            }
+    
+            // verify response data from ela wallet
+            return jwt.verify(jwtToken, rs.publicKey, async (err: any, decoded: any) => {
+                if (err) {
+                    return {
+                        code: 401,
+                        success: false,
+                        message: 'Verify signatrue failed.'
+                    }
+                  } else {
+                    try {
+                        const db_user = this.getDBModel('User')
+                        await db_user.find({ dids: { $elemMatch: { id: decoded.iss } } })
+                        return {
+                            code: 200,
+                            success: true, message: 'Ok'
+                        }
+                    } catch (err) {
+                        logger.error(err)
+                        return {
+                            code: 500,
+                            success: false,
+                            message: 'Something went wrong'
+                        }
+                    }
+                  }
+            })
+        } catch(err) {
+            logger.error(err)
+            return {
+                code: 500,
+                success: false,
+                message: 'Something went wrong'
+            }
         }
     }
 }
