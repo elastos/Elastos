@@ -234,7 +234,7 @@ TEST_CASE("new tx with type and payload", "[IDTransaction]") {
 
 		DIDInfo *didInfo = dynamic_cast<DIDInfo *>(tx2->GetPayload());
 
-		REQUIRE(didInfo->IsValid());
+		REQUIRE(didInfo->IsValid(0));
 		const DIDHeaderInfo &header = didInfo->DIDHeader();
 		REQUIRE(header.Specification() == "elastos/did/1.0");
 		if (i == 0) {

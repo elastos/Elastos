@@ -1090,7 +1090,7 @@ namespace Elastos {
 			_payloadInfo.FromJson(nlohmann::json::parse(payloadString), version);
 		}
 
-		bool DIDInfo::IsValid() const {
+		bool DIDInfo::IsValid(uint8_t version) const {
 			bool verifiedSign = false;
 
 			if (_proof.Type() != DID_DEFAULT_TYPE) {

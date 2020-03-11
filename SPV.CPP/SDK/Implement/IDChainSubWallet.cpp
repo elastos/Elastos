@@ -130,7 +130,7 @@ namespace Elastos {
 				payload->FromJson(payloadJson, 0);
 
 				DIDInfo *didInfo = static_cast<DIDInfo *>(payload.get());
-				ErrorChecker::CheckParam(!didInfo->IsValid(), Error::InvalidArgument, "verify did signature failed");
+				ErrorChecker::CheckParam(!didInfo->IsValid(0), Error::InvalidArgument, "verify did signature failed");
 				std::string id = didInfo->DIDPayload().ID();
 				std::vector<std::string> idSplited;
 				boost::algorithm::split(idSplited, id, boost::is_any_of(":"), boost::token_compress_on);

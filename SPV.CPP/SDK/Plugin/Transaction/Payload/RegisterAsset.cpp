@@ -29,7 +29,7 @@ namespace Elastos {
 
 		}
 
-		bool RegisterAsset::IsValid() const {
+		bool RegisterAsset::IsValid(uint8_t version) const {
 			return (_asset->GetPrecision() <= Asset::MaxPrecision);
 		}
 

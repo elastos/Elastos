@@ -331,7 +331,7 @@ namespace Elastos {
 				}
 			}
 
-			if (_payload == nullptr || !_payload->IsValid()) {
+			if (_payload == nullptr || !_payload->IsValid(_payloadVersion)) {
 				Log::error("tx payload invalid");
 				return false;
 			}

@@ -183,7 +183,7 @@ namespace Elastos {
 			_signature.setHex(signature);
 		}
 
-		bool CRInfo::IsValid() const {
+		bool CRInfo::IsValid(uint8_t version) const {
 			ByteStream stream(_code);
 			bytes_t pubKey;
 			stream.ReadVarBytes(pubKey);
@@ -192,7 +192,7 @@ namespace Elastos {
 			key.SetPubKey(pubKey);
 
 			ByteStream ostream;
-			SerializeUnsigned(ostream, 0);
+			SerializeUnsigned(ostream, version);
 			uint256 digest(sha256(ostream.GetBytes()));
 
 			return key.Verify(digest, _signature);

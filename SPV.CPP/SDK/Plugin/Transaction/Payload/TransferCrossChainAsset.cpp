@@ -64,7 +64,7 @@ namespace Elastos {
 
 		}
 
-		bool TransferCrossChainAsset::IsValid() const {
+		bool TransferCrossChainAsset::IsValid(uint8_t version) const {
 			if (_info.empty())
 				return false;
 

@@ -383,7 +383,7 @@
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
-			virtual bool IsValid() const;
+			virtual bool IsValid(uint8_t version) const;
 
 			virtual IPayload &operator=(const IPayload &payload);
 

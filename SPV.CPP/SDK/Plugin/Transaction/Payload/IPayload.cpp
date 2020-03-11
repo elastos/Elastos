@@ -18,7 +18,7 @@ namespace Elastos {
 			return stream.GetBytes();
 		}
 
-		bool IPayload::IsValid() const {
+		bool IPayload::IsValid(uint8_t version) const {
 			return true;
 		}
 

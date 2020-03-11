@@ -39,7 +39,7 @@ namespace Elastos {
 			_sign = sign;
 		}
 
-		bool RegisterIdentification::IsValid() const {
+		bool RegisterIdentification::IsValid(uint8_t version) const {
 			if (_id.empty() || _contents.empty() || _sign.size() <= 0) {
 				return false;
 			}

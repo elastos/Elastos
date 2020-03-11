@@ -655,7 +655,7 @@ namespace Elastos {
 			PayloadPtr payload = PayloadPtr(new CRInfo());
 			try {
 				payload->FromJson(payloadJSON, CRInfoDIDVersion);
-				ErrorChecker::CheckParam(!payload->IsValid(), Error::InvalidArgument, "verify signature failed");
+				ErrorChecker::CheckParam(!payload->IsValid(CRInfoDIDVersion), Error::InvalidArgument, "verify signature failed");
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 				                                  "Payload format err: " + std::string(e.what()));
