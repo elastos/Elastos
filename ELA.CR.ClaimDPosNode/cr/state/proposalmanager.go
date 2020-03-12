@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -296,7 +296,6 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		TrackingCount:       0,
 		TerminatedHeight:    0,
 		ProposalLeader:      proposal.SponsorPublicKey,
-		AppropriatedStage:   0,
 	}
 	CRSponsorDID := proposal.CRSponsorDID
 	hash := proposal.Hash()

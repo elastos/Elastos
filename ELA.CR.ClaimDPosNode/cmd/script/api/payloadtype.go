@@ -1302,6 +1302,7 @@ func RegisterCRCProposalWithdrawType(L *lua.LState) {
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(),
 		crcProposalWithdrawMethods))
 }
+
 func getPublicKeyFromCode(code []byte) []byte {
 	return code[1 : len(code)-1]
 }
