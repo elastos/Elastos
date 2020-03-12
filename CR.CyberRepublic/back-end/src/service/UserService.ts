@@ -878,8 +878,33 @@ export default class extends Base {
                     }
                   } else {
                     try {
+                        const payload: any = jwt.decode(decoded.req.slice('elastos://credaccess/'.length))
+                        if (!payload || (payload && !payload.nonce)) {
+                            return {
+                                code: 400,
+                                success: false,
+                                message: 'Problems parsing jwt token of CR website.'
+                            }
+                        }
                         const db_user = this.getDBModel('User')
-                        await db_user.find({ dids: { $elemMatch: { id: decoded.iss } } })
+                        const user = await db_user.find({ dids: { $elemMatch: { id: decoded.iss } } })
+                        let doc: object
+                        if (user) {
+                            doc = {
+                                userId: user._id,
+                                did: decoded.iss,
+                                expirationDate: rs.expirationDate,
+                                number: payload.nonce
+                            }
+                        } else {
+                            doc = {
+                                did: decoded.iss,
+                                expirationDate: rs.expirationDate,
+                                number: payload.nonce
+                            }
+                        }
+                        const db_did = this.getDBModel('Did')
+                        await db_did.save(doc)
                         return {
                             code: 200,
                             success: true, message: 'Ok'
