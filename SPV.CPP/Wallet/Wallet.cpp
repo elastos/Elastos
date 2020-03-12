@@ -280,12 +280,17 @@ static std::string convertAmount(const std::string &amount) {
 
 static void subWalletOpen(IMasterWallet *masterWallet, ISubWallet *subWallet) {
 	WalletData walletData;
-	SubWalletData subWalletData;
 	ISubWalletCallback *callback = new SubWalletCallback(masterWallet->GetID(), subWallet->GetChainID());
 
 	walletData.SetCallback(callback);
-	subWalletData[subWallet->GetChainID()] = walletData;
-	masterWalletData[masterWallet->GetID()] = subWalletData;
+
+	if (masterWalletData.find(masterWallet->GetID()) != masterWalletData.end()) {
+		masterWalletData[masterWallet->GetID()][subWallet->GetChainID()] = walletData;
+	} else {
+		SubWalletData subWalletData;
+		subWalletData[subWallet->GetChainID()] = walletData;
+		masterWalletData[masterWallet->GetID()] = subWalletData;
+	}
 
 	subWallet->AddCallback(callback);
 	subWallet->SyncStart();
@@ -589,38 +594,31 @@ static int list(int argc, char *argv[]) {
 				printf(" %c %-17s\n", currentWallet != nullptr && currentWallet->GetID() == masterWalletID ? '*' : ' ', masterWalletID.c_str());
 			}
 		} else {
-			printf("%-20s", "WalletName");
-			for (const std::string &chainID : subWalletIDList)
-				printf("%50s", chainID.c_str());
-			printf("\n%s\n", SplitLine);
-
 			struct tm tm;
 			time_t lastBlockTime;
 			int progress;
 			double balance;
-			ISubWallet *subWallet;
 			char info[256];
 			char buf[100] = {0};
 
-			printf("   %-17s", currentWallet->GetID().c_str());
-			for (const std::string &chainID: subWalletIDList) {
-				subWallet = currentWallet->GetSubWallet(chainID);
+			auto subWallets = currentWallet->GetAllSubWallets();
+			for (const ISubWallet *subWallet : subWallets) {
+				std::string chainID = subWallet->GetChainID();
 				if (subWallet) {
 					balance = std::stod(subWallet->GetBalance()) / SELA_PER_ELA;
 
 					lastBlockTime = masterWalletData[currentWallet->GetID()][chainID].GetLastBlockTime();
 					progress = masterWalletData[currentWallet->GetID()][chainID].GetSyncProgress();
-					localtime_r(&lastBlockTime, &tm);
-					strftime(buf, sizeof(buf), "%F %T", &tm);
+					if (lastBlockTime != 0) {
+						localtime_r(&lastBlockTime, &tm);
+						strftime(buf, sizeof(buf), "%F %T", &tm);
+					}
 
-					snprintf(info, sizeof(info), "%.8lf  [%s  %3d%%]", balance, buf, progress);
-				} else {
-					snprintf(info, sizeof(info), "--");
+					snprintf(info, sizeof(info), "%18.8lf  %3d%%  %19s", balance, progress, buf);
 				}
 
-				printf("%50s", info);
+				printf("%s:%-10s %s\n", currentWallet->GetID().c_str(), chainID.c_str(), info);
 			}
-			printf("\n");
 		}
 	} catch (const std::exception &e) {
 		exceptionError(e);

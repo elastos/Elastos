@@ -95,8 +95,7 @@ namespace Elastos {
 					return false;
 				}
 
-				const std::vector<std::string> chainIDList = {CHAINID_MAINCHAIN, CHAINID_IDCHAIN};
-				for (const std::string &chainID : chainIDList) {
+				for (const std::string &chainID : supportChainIDList) {
 					if (j.find(chainID) == j.end())
 						continue;
 
@@ -158,6 +157,7 @@ namespace Elastos {
 						chainConfig->_genesisAddress = address.String();
 
 						chainConfig->_chainParameters = chainParams;
+						Log::debug("Lock address {}: {}", chainID, chainConfig->_genesisAddress);
 					}
 					_chains[chainID] = chainConfig;
 				}
@@ -217,7 +217,6 @@ namespace Elastos {
 		}
 
 		bool Config::SetConfiguration(const std::string &netType, const nlohmann::json &newConfig) {
-			const std::vector<std::string> chainIDList = {CHAINID_MAINCHAIN, CHAINID_IDCHAIN};
 			bool changed = false;
 			nlohmann::json currentConfig;
 
@@ -241,7 +240,7 @@ namespace Elastos {
 			}
 
 			if (!newConfig.is_null()) {
-				for (const std::string &chainID : chainIDList) {
+				for (const std::string &chainID : supportChainIDList) {
 					if (newConfig.find(chainID) != newConfig.end()) {
 						if (ChangeConfig(currentConfig[chainID], newConfig[chainID])) {
 							changed = true;

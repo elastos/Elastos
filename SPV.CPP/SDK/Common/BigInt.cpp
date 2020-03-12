@@ -27,6 +27,8 @@ namespace Elastos {
 		}
 
 		BigInt::BigInt(const BigInt &bigint) {
+			this->autoclear = bigint.autoclear;
+
 			if (!(this->ctx = BN_CTX_new())) {
 				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt ctx new");
 			}
@@ -35,7 +37,6 @@ namespace Elastos {
 				if (this->ctx) BN_CTX_free(this->ctx);
 				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt dup");
 			}
-
 		}
 
 		BigInt::BigInt(uint64_t num) {
@@ -71,6 +72,7 @@ namespace Elastos {
 		}
 
 		BigInt &BigInt::operator=(const BigInt &bigint) {
+			this->autoclear = bigint.autoclear;
 			if (!(BN_copy(this->bn, bigint.bn)))
 				ErrorChecker::ThrowLogicException(Error::BigInt, "BigInt copy");
 			//if (!(this->bn = BN_dup(bigint.bn))) throw std::runtime_error("BIGNUM allocation error.");

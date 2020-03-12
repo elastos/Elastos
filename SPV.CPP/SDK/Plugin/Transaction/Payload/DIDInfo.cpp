@@ -1087,6 +1087,7 @@ namespace Elastos {
 
 			bytes_t bytes = Base64::DecodeURL(_payload);
 			std::string payloadString((char *) bytes.data(), bytes.size());
+			SPVLOG_DEBUG("did doc: {}", payloadString);
 			_payloadInfo.FromJson(nlohmann::json::parse(payloadString), version);
 		}
 

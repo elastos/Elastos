@@ -239,9 +239,9 @@ namespace Elastos {
 			info->SetChainID(chainID);
 			info->SetVisibleAsset(Asset::GetELAAssetID());
 
-			_account->AddSubWalletInfoList(info);
 			SubWallet *subWallet = SubWalletFactoryMethod(info, chainConfig, this, _config->GetNetType());
 			_createdWallets[chainID] = subWallet;
+			_account->AddSubWalletInfoList(info);
 			_account->Save();
 
 			return subWallet;
