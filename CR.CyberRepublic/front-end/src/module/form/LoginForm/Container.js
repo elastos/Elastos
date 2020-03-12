@@ -45,9 +45,9 @@ export default createContainer(
         try {
           const rs = await userService.checkElaAuth(qrcodeStr)
           if (rs && rs.did) {
-            return true
+            message.info('请注册账号或用已有账号登陆')
           }
-          if (rs && rs.username) {
+          if (rs && rs.success && rs.username) {
             message.success(`${I18N.get('login.success')}, ${rs.username}`)
             const loginRedirect = sessionStorage.getItem('loginRedirect')
             if (loginRedirect) {
@@ -58,8 +58,8 @@ export default createContainer(
             } else {
               this.history.push('/profile/info')
             }
-            return true
           }
+          return rs
         } catch (err) {
           message.error(err.message)
           return false

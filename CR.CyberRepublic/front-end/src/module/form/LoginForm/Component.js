@@ -97,6 +97,7 @@ class C extends BaseComponent {
           loginElaUrl={this.props.loginElaUrl}
           checkElaAuth={this.props.checkElaAuth}
           history={this.props.history}
+          changeTab={this.props.onChangeActiveKey}
         />
       </Form>
     )

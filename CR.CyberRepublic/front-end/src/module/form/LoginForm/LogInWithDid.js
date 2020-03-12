@@ -8,7 +8,8 @@ class LoginWithDid extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      url: ''
+      url: '',
+      visible: false
     }
     this.timerDid = null
   }
@@ -27,10 +28,13 @@ class LoginWithDid extends Component {
     const { url } = this.state
     this.timerDid = setInterval(async () => {
       const rs = await this.props.checkElaAuth(url)
-      if (rs) {
+      if (rs && rs.success) {
         clearInterval(this.timerDid)
         this.timerDid = null
-        this.setState({ url: '' })
+        if (rs.did) {
+          this.props.changeTab('register')
+          this.setState({ visible: false })
+        }
       }
     }, 3000)
   }
@@ -53,13 +57,23 @@ class LoginWithDid extends Component {
     clearInterval(this.timerDid)
   }
 
+  handleVisibleChange = (visible) => {
+    this.setState({ visible })
+  }
+
   render() {
     return (
       <Wrapper>
         <Divider>
           <Text>OR</Text>
         </Divider>
-        <Popover content={this.elaQrCode()} trigger="click" placement="top">
+        <Popover
+          visible={this.state.visible}
+          onVisibleChange={this.handleVisibleChange}
+          content={this.elaQrCode()}
+          trigger="click"
+          placement="top"
+        >
           <Button onClick={this.handleClick}>
             {I18N.get('login.withDid')}
           </Button>
