@@ -73,6 +73,7 @@ export default class extends BaseComponent {
     } = this.props.filters
     this.state = {
       list: [],
+      alllist: [],
       total: 1,
       loading: true,
       page: 1,
@@ -317,38 +318,41 @@ export default class extends BaseComponent {
     )
     const filterPanel = this.renderFilterPanel(PROPOSAL_TYPE)
     const { list, total, loading, page } = this.state
-    let dataCSV = []
+    // const dataCSV = []
     if (isSecretary) {
-      const itemsCSV = _.map(list, v => [
-        v.vid,
-        v.title,
-        PROPOSAL_TYPE[v.type],
-        v.proposedBy,
-        this.renderEndsInForCSV(v),
-        this.voteDataByUserForCSV(v),
-        this.renderStatus(v.status),
-        _.replace(
-          this.renderProposed(v.published, v.proposedAt || v.createdAt) || '',
-          ',',
-          ' '
-        )
-      ])
-      dataCSV = _.concat(
-        [
-          [
-            I18N.get('council.voting.number'),
-            I18N.get('council.voting.title'),
-            I18N.get('council.voting.type'),
-            I18N.get('council.voting.author'),
-            I18N.get('council.voting.votingEndsIn'),
-            I18N.get('council.voting.voteByCouncil'),
-            I18N.get('council.voting.status'),
-            I18N.get('council.voting.proposedAt')
-          ]
-        ],
-        itemsCSV
-      )
+      /*
+         const itemsCSV = _.map(list, v => [
+         v.vid,
+         v.title,
+         PROPOSAL_TYPE[v.type],
+         v.proposedBy,
+         this.renderEndsInForCSV(v),
+         this.voteDataByUserForCSV(v),
+         this.renderStatus(v.status),
+         _.replace(
+         this.renderProposed(v.published, v.proposedAt || v.createdAt) || '',
+         ',',
+         ' '
+         )
+         ])
+         dataCSV = _.concat(
+         [
+         [
+         I18N.get('council.voting.number'),
+         I18N.get('council.voting.title'),
+         I18N.get('council.voting.type'),
+         I18N.get('council.voting.author'),
+         I18N.get('council.voting.votingEndsIn'),
+         I18N.get('council.voting.voteByCouncil'),
+         I18N.get('council.voting.status'),
+         I18N.get('council.voting.proposedAt')
+         ]
+         ],
+         // itemsCSV
+         )
+       */
     }
+    
     return (
       <div>
         <Meta title="Cyber Republic - Elastos" />
@@ -376,7 +380,9 @@ export default class extends BaseComponent {
           {isVisitableFilter && filterPanel}
           <Row type="flex" align="middle" justify="end">
             {isSecretary && (
-              <CSVLink data={dataCSV} style={{ marginBottom: 16 }}>
+              <CSVLink
+                data={this.state.alllist}
+                style={{ marginBottom: 16 }}>
                 {I18N.get('elip.button.exportAsCSV')}
               </CSVLink>
             )}
@@ -482,15 +488,52 @@ export default class extends BaseComponent {
 
   refetch = async () => {
     this.ord_loading(true)
+    const PROPOSAL_TYPE = {
+      1: I18N.get('council.voting.type.newMotion'),
+      2: I18N.get('council.voting.type.motionAgainst'),
+      3: I18N.get('council.voting.type.anythingElse'),
+      4: I18N.get('council.voting.type.standardTrack'),
+      5: I18N.get('council.voting.type.process'),
+      6: I18N.get('council.voting.type.information')
+    }
     const { listData, canManage } = this.props
     const param = this.getQuery()
     const page = 1
-    param.page = page
-    param.results = 10
     try {
-      const {list,total} = await listData(param, canManage)
+      const { list: allListData, total: allListTotal } = await listData(param, canManage)
+      const dataCSV = []
+      dataCSV.push([
+        I18N.get('council.voting.number'),
+        I18N.get('council.voting.title'),
+        I18N.get('council.voting.type'),
+        I18N.get('council.voting.author'),
+        I18N.get('council.voting.votingEndsIn'),
+        I18N.get('council.voting.voteByCouncil'),
+        I18N.get('council.voting.status'),
+        I18N.get('council.voting.proposedAt')
+      ])
+      _.map(allListData, v => {
+        dataCSV.push( 
+          [
+            v.vid,
+            v.title,
+            PROPOSAL_TYPE[v.type],
+            v.proposedBy,
+            this.renderEndsInForCSV(v),
+            this.voteDataByUserForCSV(v),
+            this.renderStatus(v.status),
+            _.replace(
+              this.renderProposed(v.published, v.proposedAt || v.createdAt) || '',
+              ',',
+              ' '
+            )
+      ])})
+
       // const page = sessionStorage.getItem('proposalPage')
-      this.setState({ list, total, page: (page && parseInt(page)) || 1 })
+      param.page = page
+      param.results = 10
+      const {list,total} = await listData(param, canManage)
+      this.setState({ list, alllist: dataCSV, total, page: (page && parseInt(page)) || 1 })
     } catch (error) {
       logger.error(error)
     }
