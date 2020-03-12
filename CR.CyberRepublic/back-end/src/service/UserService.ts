@@ -898,8 +898,19 @@ export default class extends Base {
                                 message: 'Problems parsing jwt token of CR website.'
                             }
                         }
+
+                        const db_did = this.getDBModel('Did')
+                        const didDoc = await db_did.findOne({ nonce: payload.nonce })
+                        if (!_.isEmpty(didDoc)) {
+                            return {
+                                code: 200,
+                                success: true, message: 'Ok'
+                            }
+                        }
+
                         const db_user = this.getDBModel('User')
-                        const user = await db_user.find({ dids: { $elemMatch: { id: decoded.iss } } })
+                        const user = await db_user.find({ dids: { $elemMatch: { id: decoded.iss, active: true } } })
+
                         let doc: object
                         if (user) {
                             doc = {
@@ -915,7 +926,6 @@ export default class extends Base {
                                 number: payload.nonce
                             }
                         }
-                        const db_did = this.getDBModel('Did')
                         await db_did.save(doc)
                         return {
                             code: 200,
