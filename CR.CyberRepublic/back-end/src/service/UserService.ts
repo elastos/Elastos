@@ -266,15 +266,13 @@ export default class extends Base {
         }).select(selectFields).populate('circles')
     }
 
-    public async findUserById(query): Promise<Document>{
+    public async findUserByDid(did: string): Promise<Document>{
         const db_user = this.getDBModel('User')
-        return await db_user.getDBInstance().findOne({
-            _id: query.userId,
-            $or: [
-                {banned: {$exists: false}},
-                {banned: false}
-            ]
-        }).select(selectFields).populate('circles')
+        const query = {
+            'dids.id': did,
+            'dids.active': true
+        }
+        return await db_user.getDBInstance().find(query, selectFields)
     }
 
     public async findUsers(query): Promise<Document[]>{
@@ -908,23 +906,10 @@ export default class extends Base {
                             }
                         }
 
-                        const db_user = this.getDBModel('User')
-                        const user = await db_user.find({ dids: { $elemMatch: { id: decoded.iss, active: true } } })
-
-                        let doc: object
-                        if (user) {
-                            doc = {
-                                userId: user._id,
-                                did: decoded.iss,
-                                expirationDate: rs.expirationDate,
-                                number: payload.nonce
-                            }
-                        } else {
-                            doc = {
-                                did: decoded.iss,
-                                expirationDate: rs.expirationDate,
-                                number: payload.nonce
-                            }
+                        const doc = {
+                            did: decoded.iss,
+                            expirationDate: rs.expirationDate,
+                            number: payload.nonce
                         }
                         await db_did.save(doc)
                         return {
@@ -969,7 +954,7 @@ export default class extends Base {
                     const db_did = this.getDBModel('Did')
                     const doc = await db_did.findOne({ number: decoded.nonce })
                 if (doc) {
-                    return { success: true, did: doc }
+                    return { success: true, did: doc.did }
                 } else {
                     return { success: false }
                 }

@@ -7,14 +7,14 @@ export default class extends Base {
   async action() {
     const userService = this.buildService(UserService)
     const rs: any = await userService.checkElaAuth(this.getParam())
-    if (rs && rs.success) {
-      if (rs.did && rs.did.userId) {
-        const user = await userService.findUserById({ userId: rs.did.userId })
+    if (rs && rs.success && rs.did) {
+      const docs: any = await userService.findUserByDid(rs.did)
+      if (docs.length) {
+        const user = docs[0]
         const resultData = { user }
-
         // record user login date
         userService.recordLogin({ userId: user.id })
-
+  
         // always return api-token on login, this is needed for future requests
         this.session.userId = user.id
         resultData['api-token'] = utilCrypto.encrypt(
