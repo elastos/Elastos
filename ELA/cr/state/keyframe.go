@@ -109,7 +109,6 @@ type ProposalState struct {
 	TrackingCount     uint8
 	TerminatedHeight  uint32
 	ProposalLeader    []byte
-	AppropriatedStage uint8
 }
 
 type ProposalHashSet map[common.Uint256]struct{}
