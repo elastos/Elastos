@@ -87,8 +87,8 @@ public class HDKeyTest {
 		String passphrase = "helloworld";
 
 		HDKey root = HDKey.fromMnemonic(mnemonic, passphrase);
-		String rootPubBase58 = root.serializePubBase58();
 
+		String rootPubBase58 = root.serializePrederivedPubBase58();
 		HDKey rootPub = HDKey.deserializeBase58(rootPubBase58);
 
 		for (int i = 0; i < 1000; i++) {

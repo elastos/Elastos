@@ -209,7 +209,8 @@ public class VerifiablePresentation {
 	}
 
 	public VerifiableCredential getCredential(String id) {
-		return credentials.get(new DIDURL(getSigner(), id));
+		DIDURL _id = id == null ? null : new DIDURL(getSigner(), id);
+		return getCredential(_id);
 	}
 
 	public DID getSigner() {

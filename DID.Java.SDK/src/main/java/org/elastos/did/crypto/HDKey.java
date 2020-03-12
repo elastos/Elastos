@@ -101,10 +101,17 @@ public class HDKey {
 		return dh.getRootKey().serializePrivB58(MainNetParams.get());
 	}
 
-	public String serializePubBase58() {
-		//return dh.getRootKey().serializePubB58(MainNetParams.get());
+    public String serializePubBase58() {
+    	return dh.getRootKey().serializePubB58(MainNetParams.get());
+    }
 
-		DeterministicKey child = dh.get(derivePath, false, true);
+	public String serializePrederivedPubBase58() {
+		ArrayList<ChildNumber> hardenedPath = new ArrayList<ChildNumber>(3);
+		hardenedPath.add(new ChildNumber(44, true));
+		hardenedPath.add(new ChildNumber(0, true));
+		hardenedPath.add(new ChildNumber(0, true));
+
+		DeterministicKey child = dh.get(hardenedPath, false, true);
 		return child.serializePubB58(MainNetParams.get());
 	}
 
@@ -120,13 +127,20 @@ public class HDKey {
 
 	public DerivedKey derive(int index) {
 		ChildNumber number = new ChildNumber(index, false);
+		ArrayList<ChildNumber> path;
 		DeterministicKey child;
+		boolean relative;
 
-		if (dh.getRootKey().isPubKeyOnly())
-			child = HDKeyDerivation.deriveChildKey(dh.getRootKey(), number);
-		else
-			child = dh.deriveChild(derivePath, false, true, number);
+		if (dh.getRootKey().isPubKeyOnly()) {
+			path = new ArrayList<ChildNumber>(1);
+			path.add(new ChildNumber(0, false));
+			relative = true;
+		} else {
+			path = derivePath;
+			relative = false;
+		}
 
+		child = dh.deriveChild(path, relative, true, number);
 		return new DerivedKey(child);
 	}
 

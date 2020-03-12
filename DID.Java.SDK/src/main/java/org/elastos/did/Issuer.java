@@ -143,7 +143,8 @@ public class Issuer {
 			if (credential == null)
 				throw new IllegalStateException("Credential already sealed.");
 
-			return id(new DIDURL(target, id));
+			DIDURL _id = id == null ? null : new DIDURL(target, id);
+			return id(_id);
 		}
 
 		public CredentialBuilder type(String ... types) {
@@ -251,19 +252,12 @@ public class Issuer {
 			if (storepass == null || storepass.isEmpty())
 				throw new IllegalArgumentException();
 
-			if (credential.getId() == null)
-				throw new MalformedCredentialException("Missing id.");
-
-			if (credential.getTypes() == null)
-				throw new MalformedCredentialException("Missing types.");
-
-			if (credential.getSubject() == null)
-				throw new MalformedCredentialException("Missing subject.");
+			credential.completeCheck();
 
 			Calendar cal = Calendar.getInstance(Constants.UTC);
 			credential.setIssuanceDate(cal.getTime());
 
-			if (credential.getExpirationDate() == null)
+			if (!credential.hasExpirationDate())
 				defaultExpirationDate();
 
 			String json = credential.toJson(true, true);

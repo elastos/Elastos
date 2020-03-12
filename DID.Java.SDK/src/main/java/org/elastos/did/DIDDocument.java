@@ -1010,7 +1010,8 @@ public class DIDDocument {
 
 	public String sign(String id, String storepass, byte[] ... data)
 			throws DIDStoreException {
-		return sign(new DIDURL(getSubject(), id), storepass, data);
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return sign(_id, storepass, data);
 	}
 
 	public boolean verify(String signature, byte[] ... data) {
@@ -1019,7 +1020,8 @@ public class DIDDocument {
 	}
 
 	public boolean verify(String id, String signature, byte[] ... data) {
-		return verify(new DIDURL(getSubject(), id), signature, data);
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return verify(_id, signature, data);
 	}
 
 	public boolean verify(DIDURL id, String signature, byte[] ... data) {
@@ -1467,7 +1469,8 @@ public class DIDDocument {
 				throw new IllegalArgumentException();
 			}
 
-			return addPublicKey(new DIDURL(getSubject(), id), _controller, pk);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addPublicKey(_id, _controller, pk);
 		}
 
 		public Builder removePublicKey(DIDURL id, boolean force) {
@@ -1483,7 +1486,8 @@ public class DIDDocument {
 		}
 
 		public Builder removePublicKey(String id, boolean force) {
-			return removePublicKey(new DIDURL(getSubject(), id), force);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return removePublicKey(_id, force);
 		}
 
 		public Builder removePublicKey(DIDURL id) {
@@ -1507,7 +1511,8 @@ public class DIDDocument {
 		}
 
 		public Builder addAuthenticationKey(String id) {
-			return addAuthenticationKey(new DIDURL(getSubject(), id));
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addAuthenticationKey(_id);
 		}
 
 		public Builder addAuthenticationKey(DIDURL id, String pk) {
@@ -1528,7 +1533,8 @@ public class DIDDocument {
 		}
 
 		public Builder addAuthenticationKey(String id, String pk) {
-			return addAuthenticationKey(new DIDURL(getSubject(), id), pk);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addAuthenticationKey(_id, pk);
 		}
 
 		public Builder removeAuthenticationKey(DIDURL id) {
@@ -1544,7 +1550,8 @@ public class DIDDocument {
 		}
 
 		public Builder removeAuthenticationKey(String id) {
-			return removeAuthenticationKey(new DIDURL(getSubject(), id));
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return removeAuthenticationKey(_id);
 		}
 
 		public Builder addAuthorizationKey(DIDURL id) {
@@ -1560,7 +1567,8 @@ public class DIDDocument {
 		}
 
 		public Builder addAuthorizationKey(String id) {
-			return addAuthorizationKey(new DIDURL(getSubject(), id));
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addAuthorizationKey(_id);
 		}
 
 		public Builder addAuthorizationKey(DIDURL id, DID controller, String pk) {
@@ -1592,8 +1600,8 @@ public class DIDDocument {
 				throw new IllegalArgumentException();
 			}
 
-			return addAuthorizationKey(new DIDURL(getSubject(), id),
-					_controller, pk);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addAuthorizationKey(_id, _controller, pk);
 		}
 
 		public Builder authorizationDid(DIDURL id, DID controller, DIDURL key)
@@ -1642,10 +1650,9 @@ public class DIDDocument {
 				throw new IllegalArgumentException(e);
 			}
 
-			DIDURL keyid = key == null ? null : new DIDURL(controllerId, key);
-
-			return authorizationDid(new DIDURL(getSubject(), id),
-					controllerId, keyid);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			DIDURL _key = key == null ? null : new DIDURL(controllerId, key);
+			return authorizationDid(_id, controllerId, _key);
 		}
 
 		public Builder authorizationDid(String id, String controller)
@@ -1666,7 +1673,8 @@ public class DIDDocument {
 		}
 
 		public Builder removeAuthorizationKey(String id) {
-			return removeAuthorizationKey(new DIDURL(getSubject(), id));
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return removeAuthorizationKey(_id);
 		}
 
 		public Builder addCredential(VerifiableCredential vc) {
@@ -1716,47 +1724,47 @@ public class DIDDocument {
 		public Builder addCredential(String id, String[] types,
 				Map<String, String> subject, Date expirationDate, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					types, subject, expirationDate, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, types, subject, expirationDate, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, Map<String, String> subject,
 				Date expirationDate, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(id, null, subject, expirationDate, storepass);
+			return addCredential(id, null, subject, expirationDate, storepass);
 		}
 
 		public Builder addCredential(String id, Map<String, String> subject,
 				Date expirationDate, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					subject, expirationDate, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, subject, expirationDate, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, String[] types,
 				Map<String,String> subject, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(id, types, subject, null, storepass);
+			return addCredential(id, types, subject, null, storepass);
 		}
 
 		public Builder addCredential(String id, String[] types,
 				Map<String, String> subject, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					types, subject, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, types, subject, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, Map<String, String> subject,
 				String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(id, null, subject, null, storepass);
+			return addCredential(id, null, subject, null, storepass);
 		}
 
 		public Builder addCredential(String id, Map<String, String> subject,
 				String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					subject, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, subject, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, String[] types,
@@ -1794,45 +1802,45 @@ public class DIDDocument {
 		public Builder addCredential(String id, String[] types,
 				String json, Date expirationDate, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					types, json, expirationDate, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, types, json, expirationDate, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, String json,
 				Date expirationDate, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(id, null, json, expirationDate, storepass);
+			return addCredential(id, null, json, expirationDate, storepass);
 		}
 
 		public Builder addCredential(String id, String json,
 				Date expirationDate, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					json, expirationDate, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, json, expirationDate, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, String[] types,
 				String json, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(id, types, json, null, storepass);
+			return addCredential(id, types, json, null, storepass);
 		}
 
 		public Builder addCredential(String id, String[] types,
 				String json, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					types, json, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, types, json, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, String json, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(id, null, json, null, storepass);
+			return addCredential(id, null, json, null, storepass);
 		}
 
 		public Builder addCredential(String id, String json, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					json, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, json, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, String[] types,
@@ -1870,45 +1878,45 @@ public class DIDDocument {
 		public Builder addCredential(String id, String[] types,
 				JsonNode node, Date expirationDate, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					types, node, expirationDate, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, types, node, expirationDate, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, JsonNode node,
 				Date expirationDate, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(id, null, node, expirationDate, storepass);
+			return addCredential(id, null, node, expirationDate, storepass);
 		}
 
 		public Builder addCredential(String id, JsonNode node,
 				Date expirationDate, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					node, expirationDate, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, node, expirationDate, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, String[] types,
 				JsonNode node, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(id, types, node, null, storepass);
+			return addCredential(id, types, node, null, storepass);
 		}
 
 		public Builder addCredential(String id, String[] types,
 				JsonNode node, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					types, node, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, types, node, storepass);
 		}
 
 		public Builder addCredential(DIDURL id, JsonNode node, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(id, null, node, null, storepass);
+			return addCredential(id, null, node, null, storepass);
 		}
 
 		public Builder addCredential(String id, JsonNode node, String storepass)
 				throws DIDStoreException, InvalidKeyException {
-			return this.addCredential(new DIDURL(document.getSubject(), id),
-					node, storepass);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addCredential(_id, node, storepass);
 		}
 
 		public Builder removeCredential(DIDURL id) {
@@ -1924,7 +1932,8 @@ public class DIDDocument {
 		}
 
 		public Builder removeCredential(String id) {
-			return removeCredential(new DIDURL(getSubject(), id));
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return removeCredential(_id);
 		}
 
 		public Builder addService(DIDURL id, String type, String endpoint) {
@@ -1942,7 +1951,8 @@ public class DIDDocument {
 		}
 
 		public Builder addService(String id, String type, String endpoint) {
-			return addService(new DIDURL(getSubject(), id), type, endpoint);
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return addService(_id, type, endpoint);
 		}
 
 		public Builder removeService(DIDURL id) {
@@ -1958,7 +1968,8 @@ public class DIDDocument {
 		}
 
 		public Builder removeService(String id) {
-			return removeService(new DIDURL(getSubject(), id));
+			DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+			return removeService(_id);
 		}
 
 		private Calendar getMaxExpires() {

@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -249,7 +250,7 @@ class FileSystemStorage implements DIDStorage {
 		String text = null;
 
 		if (!file.exists()) {
-			return null;
+			throw new FileNotFoundException(file.getAbsolutePath());
 		} else {
 			BufferedReader reader = null;
 			try {
@@ -319,6 +320,12 @@ class FileSystemStorage implements DIDStorage {
 	}
 
 	@Override
+	public boolean containsPublicIdentity() {
+		File file = getHDPublicKeyFile();
+		return file.exists() && file.length() > 0;
+	}
+
+	@Override
 	public void storePublicIdentity(String key) throws DIDStorageException {
 		try {
 			File file = getHDPublicKeyFile(true);
@@ -356,6 +363,12 @@ class FileSystemStorage implements DIDStorage {
 		} catch (Exception e) {
 			throw new DIDStorageException("Load private identity index error.", e);
 		}
+	}
+
+	@Override
+	public boolean containsMnemonic() throws DIDStorageException {
+		File file = getFile(PRIVATE_DIR, MNEMONIC_FILE);;
+		return file.exists() && file.length() > 0;
 	}
 
 	@Override
@@ -400,6 +413,8 @@ class FileSystemStorage implements DIDStorage {
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(), META_FILE);
 			return DIDMeta.fromJson(readText(file));
+		} catch (FileNotFoundException e) {
+			return new DIDMeta();
 		} catch (MalformedMetaException | IOException e) {
 			throw new DIDStorageException("Load DID metadata error.", e);
 		}
@@ -516,6 +531,8 @@ class FileSystemStorage implements DIDStorage {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
 			return CredentialMeta.fromJson(readText(file));
+		} catch (FileNotFoundException e) {
+			return new CredentialMeta();
 		} catch (MalformedMetaException | IOException e) {
 			throw new DIDStorageException("Load credential metadata error.", e);
 		}

@@ -1286,7 +1286,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void testCompatibilityNewDID() throws DIDException {
+	public void testCompatibilityNewDIDandGetDID() throws DIDException {
 		URL url = this.getClass().getResource("/teststore");
 		File dir = new File(url.getPath());
 
@@ -1298,6 +1298,15 @@ public class DIDStoreTest {
        	assertNotNull(doc);
 
        	store.deleteDid(doc.getSubject());
+
+       	DID did = store.getDid(1000);
+
+       	doc = store.newDid(1000, TestConfig.storePass);
+       	assertNotNull(doc);
+       	assertEquals(doc.getSubject(), did);
+
+       	store.deleteDid(doc.getSubject());
+
 	}
 
 	private void createDataForPerformanceTest(DIDStore store)
@@ -1458,12 +1467,21 @@ public class DIDStoreTest {
 
 	@Test
 	public void testExportAndImportStore() throws DIDException, IOException {
-		URL url = this.getClass().getResource("/teststore");
-		File storeDir = new File(url.getPath());
+    	TestData testData = new TestData();
+    	DIDStore store = testData.setup(true);
+    	testData.initIdentity();
 
-		DummyAdapter adapter = new DummyAdapter();
-		DIDBackend.initialize(adapter, TestData.getResolverCacheDir());
-		DIDStore store = DIDStore.open("filesystem", storeDir.getAbsolutePath(), adapter);
+    	// Store test data into current store
+    	testData.loadTestIssuer();
+    	testData.loadTestDocument();
+    	VerifiableCredential vc = testData.loadProfileCredential();
+    	vc.setAlias("MyProfile");
+    	vc = testData.loadEmailCredential();
+    	vc.setAlias("Email");
+    	vc = testData.loadTwitterCredential();
+    	vc.setAlias("Twitter");
+    	vc = testData.loadPassportCredential();
+    	vc.setAlias("Passport");
 
 		File tempDir = new File(TestConfig.tempDir);
 		tempDir.mkdirs();
@@ -1473,8 +1491,10 @@ public class DIDStoreTest {
 
 		File restoreDir = new File(tempDir, "restore");
 		Utils.deleteFile(restoreDir);
-		DIDStore store2 = DIDStore.open("filesystem", restoreDir.getAbsolutePath(), adapter);
+		DIDStore store2 = DIDStore.open("filesystem", restoreDir.getAbsolutePath(), testData.getAdapter());
 		store2.importStore(exportFile, "password", TestConfig.storePass);
+
+		File storeDir = new File(TestConfig.storeRoot);
 
 		assertTrue(storeDir.exists());
 		assertTrue(restoreDir.exists());

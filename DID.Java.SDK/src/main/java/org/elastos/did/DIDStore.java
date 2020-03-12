@@ -228,7 +228,7 @@ public final class DIDStore {
 		storage.storePrivateIdentity(encryptedIdentity);
 
 		// Save pre-derived public key
-		storage.storePublicIdentity(privateIdentity.serializePubBase58());
+		storage.storePublicIdentity(privateIdentity.serializePrederivedPubBase58());
 
 		// Save index
 		storage.storePrivateIdentityIndex(0);
@@ -240,8 +240,12 @@ public final class DIDStore {
 		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
 
-		String encryptedMnemonic = storage.loadMnemonic();
-		return new String(decryptFromBase64(encryptedMnemonic, storepass));
+		if (storage.containsMnemonic()) {
+			String encryptedMnemonic = storage.loadMnemonic();
+			return new String(decryptFromBase64(encryptedMnemonic, storepass));
+		} else {
+			throw new DIDStoreException("DID store doesn't contain mnemonic.");
+		}
 	}
 
 	// initialized from saved private identity from DIDStore.
@@ -254,9 +258,10 @@ public final class DIDStore {
 
 		byte[] keyData = decryptFromBase64(storage.loadPrivateIdentity(), storepass);
 		if (keyData.length == HDKey.SEED_BYTES) {
+			// For backward compatible, convert to extended root private key
+			// TODO: Should be remove in the future
 			privateIdentity = HDKey.fromSeed(keyData);
 
-			// convert to extended root private key
 			String encryptedIdentity = encryptToBase64(
 					privateIdentity.serialize(), storepass);
 			storage.storePrivateIdentity(encryptedIdentity);
@@ -267,6 +272,11 @@ public final class DIDStore {
 		}
 
 		Arrays.fill(keyData, (byte)0);
+
+		// For backward compatible, create pre-derived public key if not exist.
+		// TODO: Should be remove in the future
+		if (!storage.containsPublicIdentity())
+			storage.storePublicIdentity(privateIdentity.serializePrederivedPubBase58());
 
 		return privateIdentity;
 	}
@@ -2024,15 +2034,21 @@ public final class DIDStore {
 
 	private void exportPrivateIdentity(JsonGenerator generator, String password,
 			String storepass) throws DIDStoreException, IOException {
-		String encryptedMnemonic = storage.loadMnemonic();
-		byte[] plain = decryptFromBase64(encryptedMnemonic, storepass);
-		encryptedMnemonic = encryptToBase64(plain, password);
+		String encryptedKey = storage.loadPrivateIdentity();
+		byte[] plain = decryptFromBase64(encryptedKey, storepass);
+		encryptedKey = encryptToBase64(plain, password);
 		Arrays.fill(plain, (byte)0);
 
-		String encryptedSeed = storage.loadPrivateIdentity();
-		plain = decryptFromBase64(encryptedSeed, storepass);
-		encryptedSeed = encryptToBase64(plain, password);
-		Arrays.fill(plain, (byte)0);
+		String encryptedMnemonic = null;
+		if (storage.containsMnemonic()) {
+			encryptedMnemonic = storage.loadMnemonic();
+			plain = decryptFromBase64(encryptedMnemonic, storepass);
+			encryptedMnemonic = encryptToBase64(plain, password);
+			Arrays.fill(plain, (byte)0);
+		}
+
+		String pubKey = storage.containsPublicIdentity() ?
+				storage.loadPublicIdentity() : null;
 
 		int index = storage.loadPrivateIdentityIndex();
 
@@ -2048,14 +2064,23 @@ public final class DIDStore {
 		sha256.update(bytes, 0, bytes.length);
 
 		// Mnemonic
-		generator.writeStringField("mnemonic", encryptedMnemonic);
-		bytes = encryptedMnemonic.getBytes();
-		sha256.update(bytes, 0, bytes.length);
+		if (encryptedMnemonic != null) {
+			generator.writeStringField("mnemonic", encryptedMnemonic);
+			bytes = encryptedMnemonic.getBytes();
+			sha256.update(bytes, 0, bytes.length);
+		}
 
 		// Key
-		generator.writeStringField("key", encryptedSeed);
-		bytes = encryptedSeed.getBytes();
+		generator.writeStringField("key", encryptedKey);
+		bytes = encryptedKey.getBytes();
 		sha256.update(bytes, 0, bytes.length);
+
+		// Key.pub
+		if (pubKey != null) {
+			generator.writeStringField("key.pub", pubKey);
+			bytes = pubKey.getBytes();
+			sha256.update(bytes, 0, bytes.length);
+		}
 
 		// Index
 		generator.writeNumberField("index", index);
@@ -2134,23 +2159,35 @@ public final class DIDStore {
 
 		// Mnemonic
 		String encryptedMnemonic = JsonHelper.getString(root, "mnemonic",
-				false, null, "mnemonic", exceptionClass);
-		bytes = encryptedMnemonic.getBytes();
-		sha256.update(bytes, 0, bytes.length);
+				true, null, "mnemonic", exceptionClass);
+		if (encryptedMnemonic != null) {
+			bytes = encryptedMnemonic.getBytes();
+			sha256.update(bytes, 0, bytes.length);
+		}
 
 		byte[] plain = decryptFromBase64(encryptedMnemonic, password);
 		encryptedMnemonic = encryptToBase64(plain, storepass);
 		Arrays.fill(plain, (byte)0);
 
-		String encryptedSeed = JsonHelper.getString(root, "key",
+		// Key
+		String encryptedKey = JsonHelper.getString(root, "key",
 				false, null, "key", exceptionClass);
-		bytes = encryptedSeed.getBytes();
+		bytes = encryptedKey.getBytes();
 		sha256.update(bytes, 0, bytes.length);
 
-		plain = decryptFromBase64(encryptedSeed, password);
-		encryptedSeed = encryptToBase64(plain, storepass);
+		plain = decryptFromBase64(encryptedKey, password);
+		encryptedKey = encryptToBase64(plain, storepass);
 		Arrays.fill(plain, (byte)0);
 
+		// Key.pub
+		String pubKey = JsonHelper.getString(root, "key.pub",
+				true, null, "publickey", exceptionClass);
+		if (pubKey != null) {
+			bytes = pubKey.getBytes();
+			sha256.update(bytes, 0, bytes.length);
+		}
+
+		// Index
 		JsonNode node = root.get("index");
 		if (node == null || !node.isNumber())
 			throw new DIDStoreException("Invalid export data, unknow index.");
@@ -2173,8 +2210,14 @@ public final class DIDStore {
 			throw new DIDStoreException("Invalid export data, the fingerprint mismatch.");
 
 		// Save
-		storage.storeMnemonic(encryptedMnemonic);
-		storage.storePrivateIdentity(encryptedSeed);
+		if (encryptedMnemonic != null)
+			storage.storeMnemonic(encryptedMnemonic);
+
+		storage.storePrivateIdentity(encryptedKey);
+
+		if (pubKey != null)
+			storage.storePublicIdentity(pubKey);
+
 		storage.storePrivateIdentityIndex(index);
 	}
 
