@@ -24,6 +24,7 @@ import loginElaUrl from './login_ela_url'
 import didCallbackEla from './did_callback_ela'
 import loginCallbackEla from './login_callback_ela'
 import getDid from './get_did'
+import checkElaAuth from './check_ela_auth'
 
 export default Base.setRouter([
     {
@@ -149,6 +150,11 @@ export default Base.setRouter([
     {
         path: '/login-callback-ela',
         router: loginCallbackEla,
+        method: 'post'
+    },
+    {
+        path: '/check-ela-auth',
+        router: checkElaAuth,
         method: 'post'
     }
 ])

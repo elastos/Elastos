@@ -93,7 +93,11 @@ class C extends BaseComponent {
             {I18N.get('login.submit')}
           </Button>
         </FormItem>
-        <LoginWithDid loginElaUrl={this.props.loginElaUrl} />
+        <LoginWithDid
+          loginElaUrl={this.props.loginElaUrl}
+          checkElaAuth={this.props.checkElaAuth}
+          history={this.props.history}
+        />
       </Form>
     )
   }

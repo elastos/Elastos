@@ -266,6 +266,17 @@ export default class extends Base {
         }).select(selectFields).populate('circles')
     }
 
+    public async findUserById(query): Promise<Document>{
+        const db_user = this.getDBModel('User')
+        return await db_user.getDBInstance().findOne({
+            _id: query.userId,
+            $or: [
+                {banned: {$exists: false}},
+                {banned: false}
+            ]
+        }).select(selectFields).populate('circles')
+    }
+
     public async findUsers(query): Promise<Document[]>{
         const db_user = this.getDBModel('User')
 
@@ -835,6 +846,7 @@ export default class extends Base {
                     logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
                 }
             }
+            
             const jwtToken = jwt.sign(
                 jwtClaims,
                 process.env.APP_PRIVATE_KEY,
@@ -926,6 +938,38 @@ export default class extends Base {
                 success: false,
                 message: 'Something went wrong'
             }
+        }
+    }
+
+    public async checkElaAuth(param: any) {
+        try {
+            if (!param.req) {
+                return { success: false }
+            }
+            const jwtToken = param.req.slice('elastos://credaccess/'.length)
+            if (!jwtToken) {
+                return { success: false }
+            }
+            return jwt.verify(jwtToken, process.env.APP_PUBLIC_KEY, async (err: any, decoded: any) => {
+                if(err) {
+                    console.log('err...', err)
+                    return { success: false }
+                }
+                try {
+                    const db_did = this.getDBModel('Did')
+                    const doc = await db_did.findOne({ number: decoded.nonce })
+                if (doc) {
+                    return { success: true, did: doc }
+                } else {
+                    return { success: false }
+                }
+                } catch (err) {
+                    return { success: false }
+                }
+            })
+
+        } catch (err) {
+            return { success: false }
         }
     }
 }

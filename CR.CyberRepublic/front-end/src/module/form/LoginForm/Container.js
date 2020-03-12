@@ -40,6 +40,30 @@ export default createContainer(
       },
       async loginElaUrl() {
         return await userService.loginElaUrl()
+      },
+      async checkElaAuth(qrcodeStr) {
+        try {
+          const rs = await userService.checkElaAuth(qrcodeStr)
+          if (rs && rs.did) {
+            return true
+          }
+          if (rs && rs.username) {
+            message.success(`${I18N.get('login.success')}, ${rs.username}`)
+            const loginRedirect = sessionStorage.getItem('loginRedirect')
+            if (loginRedirect) {
+              
+              this.history.push(loginRedirect)
+              sessionStorage.setItem('loggedIn', '1')
+              sessionStorage.setItem('loginRedirect', null)
+            } else {
+              this.history.push('/profile/info')
+            }
+            return true
+          }
+        } catch (err) {
+          message.error(err.message)
+          return false
+        }
       }
     }
   }

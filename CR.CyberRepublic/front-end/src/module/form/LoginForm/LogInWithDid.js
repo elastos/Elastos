@@ -23,7 +23,17 @@ class LoginWithDid extends Component {
     )
   }
 
-  polling = () => {}
+  polling = () => {
+    const { url } = this.state
+    this.timerDid = setInterval(async () => {
+      const rs = await this.props.checkElaAuth(url)
+      if (rs) {
+        clearInterval(this.timerDid)
+        this.timerDid = null
+        this.setState({ url: '' })
+      }
+    }, 3000)
+  }
 
   handleClick = async () => {
     if (this.timerDid) {

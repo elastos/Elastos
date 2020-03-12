@@ -316,6 +316,52 @@ export default class extends BaseService {
     return rs
   }
 
+  async checkElaAuth(qrcodeStr) {
+    const res = await api_request({
+      path: '/api/user/check-ela-auth',
+      method: 'post',
+      data: { req: qrcodeStr }
+    })
+    if (res && res.success === false) {
+      return res
+    }
+    if (res && res.success && res.did) {
+      return res
+    }
+    const userRedux = this.store.getRedux('user')
+
+    const is_admin = permissions.isAdmin(res.user.role)
+    const is_leader = permissions.isLeader(res.user.role)
+    const is_council = permissions.isCouncil(res.user.role)
+    const is_secretary = permissions.isSecretary(res.user.role)
+    const did = res.user.dids && res.user.dids.find(el => el.active === true)
+
+    this.dispatch(userRedux.actions.is_leader_update(is_leader))
+    this.dispatch(userRedux.actions.is_admin_update(is_admin))
+    this.dispatch(userRedux.actions.is_council_update(is_council))
+    this.dispatch(userRedux.actions.is_secretary_update(is_secretary))
+
+    this.dispatch(userRedux.actions.login_form_reset())
+    this.dispatch(userRedux.actions.is_login_update(true))
+
+    this.dispatch(userRedux.actions.did_update(did))
+    this.dispatch(userRedux.actions.email_update(res.user.email))
+    this.dispatch(userRedux.actions.username_update(res.user.username))
+    this.dispatch(userRedux.actions.profile_update(res.user.profile))
+    this.dispatch(userRedux.actions.role_update(res.user.role))
+    this.dispatch(userRedux.actions.circles_update(_.values(res.user.circles)))
+    this.dispatch(userRedux.actions.subscribers_update(_.values(res.user.subscribers)))
+    this.dispatch(userRedux.actions.current_user_id_update(res.user._id))
+    this.dispatch(userRedux.actions.popup_update_update(res.user.popupUpdate))
+    sessionStorage.setItem('api-token', res['api-token'])
+    localStorage.setItem('api-token', res['api-token'])
+
+    return {
+      success: true,
+      username: res.user.username
+    }
+  }
+
   async getElaUrl() {
     const rs = await api_request({
       path: '/api/user/ela-url'
