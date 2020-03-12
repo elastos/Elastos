@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package config
 
@@ -112,6 +112,22 @@ var (
 		0x5c, 0x7d, 0x31, 0x97, 0xfe, 0xcf, 0x6c,
 		0x0d, 0xe3, 0x0f, 0x88, 0x9a, 0xce, 0xf7,
 	}
+
+	// CRCAssetsAddress indicates the "CRASSETSXXXXXXXXXXXXXXXXXXXX2qDX5J"
+	// CRC assets address.
+	CRCAssetsAddress = common.Uint168{
+		0x1c, 0x5f, 0x6c, 0x3e, 0x9f, 0x0c, 0x9a,
+		0x71, 0x10, 0xb8, 0xeb, 0x6e, 0x37, 0x02,
+		0x63, 0x0f, 0x71, 0x27, 0x4d, 0xf1, 0xc0,
+	}
+
+	// CRCExpensesAddress indicates the "CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b"
+	// CRC council expenses address.
+	CRCExpensesAddress = common.Uint168{
+		0x1c, 0x60, 0x32, 0x09, 0xff, 0x5d, 0x86,
+		0x54, 0x2d, 0x26, 0x1a, 0x8d, 0x22, 0x7f,
+		0xe0, 0xf5, 0xee, 0x2c, 0x4e, 0xd2, 0xd3,
+	}
 )
 
 // DefaultParams defines the default network parameters.
@@ -129,8 +145,8 @@ var DefaultParams = Params{
 
 	Foundation:          mainNetFoundation,
 	CRCAddress:          mainNetCRCAddress,
-	CRCFoundation:       common.Uint168{}, // todo correct me later
-	CRCCommitteeAddress: common.Uint168{}, // todo correct me later
+	CRCFoundation:       CRCAssetsAddress,
+	CRCCommitteeAddress: CRCExpensesAddress,
 	DestroyELAAddress:   destroyELAAddress,
 	GenesisBlock:        GenesisBlock(&mainNetFoundation),
 
@@ -222,8 +238,8 @@ func (p *Params) TestNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
-	copy.CRCFoundation = common.Uint168{}       // todo correct me later
-	copy.CRCCommitteeAddress = common.Uint168{} // todo correct me later
+	copy.CRCFoundation = CRCAssetsAddress
+	copy.CRCCommitteeAddress = CRCExpensesAddress
 	copy.DestroyELAAddress = destroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019100
@@ -284,8 +300,8 @@ func (p *Params) RegNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
-	copy.CRCFoundation = common.Uint168{}       // todo correct me later
-	copy.CRCCommitteeAddress = common.Uint168{} // todo correct me later
+	copy.CRCFoundation = CRCAssetsAddress
+	copy.CRCCommitteeAddress = CRCExpensesAddress
 	copy.DestroyELAAddress = destroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019200
