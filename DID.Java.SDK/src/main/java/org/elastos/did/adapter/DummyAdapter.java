@@ -34,7 +34,7 @@ import org.elastos.did.DID;
 import org.elastos.did.DIDAdapter;
 import org.elastos.did.DIDResolver;
 import org.elastos.did.backend.IDChainRequest;
-import org.elastos.did.backend.IDTransactionInfo;
+import org.elastos.did.backend.IDChainTransaction;
 import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.exception.DIDTransactionException;
 
@@ -46,12 +46,12 @@ public class DummyAdapter implements DIDAdapter, DIDResolver {
 	private static Random random = new Random();
 
 	private boolean verbose;
-	private LinkedList<IDTransactionInfo> idtxs;
+	private LinkedList<IDChainTransaction> idtxs;
 
 	public DummyAdapter(boolean verbose) {
 		this.verbose = verbose;
 
-		idtxs = new LinkedList<IDTransactionInfo>();
+		idtxs = new LinkedList<IDChainTransaction>();
 	}
 
 	public DummyAdapter() {
@@ -67,8 +67,8 @@ public class DummyAdapter implements DIDAdapter, DIDResolver {
         return sb.toString();
     }
 
-	private IDTransactionInfo getLastTransaction(DID did) {
-		for (IDTransactionInfo ti : idtxs) {
+	private IDChainTransaction getLastTransaction(DID did) {
+		for (IDChainTransaction ti : idtxs) {
 			if (ti.getDid().equals(did))
 				return ti;
 		}
@@ -97,7 +97,7 @@ public class DummyAdapter implements DIDAdapter, DIDResolver {
 				throw new DIDTransactionException("Invalid DID Document.");
 		}
 
-		IDTransactionInfo ti = getLastTransaction(request.getDid());
+		IDChainTransaction ti = getLastTransaction(request.getDid());
 
 		switch (request.getOperation()) {
 		case CREATE:
@@ -110,7 +110,7 @@ public class DummyAdapter implements DIDAdapter, DIDResolver {
 			if (ti == null)
 				throw new DIDTransactionException("DID not exist.");
 
-			if (ti.getOperation() == IDChainRequest.Operation.DEACTIVATE)
+			if (ti.getOperationCode() == IDChainRequest.Operation.DEACTIVATE)
 				throw new DIDTransactionException("DID already dactivated.");
 
 			if (!request.getPreviousTxid().equals(ti.getTransactionId()))
@@ -122,13 +122,13 @@ public class DummyAdapter implements DIDAdapter, DIDResolver {
 			if (ti == null)
 				throw new DIDTransactionException("DID not exist.");
 
-			if (ti.getOperation() == IDChainRequest.Operation.DEACTIVATE)
+			if (ti.getOperationCode() == IDChainRequest.Operation.DEACTIVATE)
 				throw new DIDTransactionException("DID already dactivated.");
 
 			break;
 		}
 
-		ti = new IDTransactionInfo(generateTxid(),
+		ti = new IDChainTransaction(generateTxid(),
 				Calendar.getInstance(Constants.UTC).getTime(), request);
 		idtxs.add(0, ti);
 
@@ -173,9 +173,9 @@ public class DummyAdapter implements DIDAdapter, DIDResolver {
 			generator.writeStringField("did", target.toString());
 
 			int status = 3;
-			IDTransactionInfo last = getLastTransaction(target);
+			IDChainTransaction last = getLastTransaction(target);
 			if (last != null) {
-				if (last.getOperation() == IDChainRequest.Operation.DEACTIVATE) {
+				if (last.getOperationCode() == IDChainRequest.Operation.DEACTIVATE) {
 					status = 2;
 			    } else {
 					if (last.getRequest().getDocument().isExpired())
@@ -192,7 +192,7 @@ public class DummyAdapter implements DIDAdapter, DIDResolver {
 			if (status != 3) {
 				generator.writeFieldName("transaction");
 				generator.writeStartArray();
-				for (IDTransactionInfo ti : idtxs) {
+				for (IDChainTransaction ti : idtxs) {
 					if (ti.getDid().equals(target)) {
 						ti.toJson(generator);
 

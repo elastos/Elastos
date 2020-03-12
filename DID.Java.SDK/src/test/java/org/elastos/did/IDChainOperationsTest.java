@@ -131,6 +131,9 @@ public class IDChainOperationsTest {
 
 	@Test
 	public void testUpdateAndResolve() throws DIDException {
+		String[] txids = new String[3];
+		String[] sigs = new String[3];
+
 		TestData testData = new TestData();
 		DIDStore store = testData.setup(DUMMY_TEST);
 		testData.initIdentity();
@@ -146,6 +149,9 @@ public class IDChainOperationsTest {
 		long duration = (System.currentTimeMillis() - start + 500) / 1000;
 		System.out.println("OK(" + duration + "s)");
 		assertNotNull(txid);
+
+		txids[2] = txid;
+		sigs[2] = doc.getProof().getSignature();
 
 		testData.waitForWalletAvaliable();
 		DIDDocument resolved = did.resolve(true);
@@ -171,6 +177,9 @@ public class IDChainOperationsTest {
 		duration = (System.currentTimeMillis() - start + 500) / 1000;
 		System.out.println("OK(" + duration + "s)");
 		assertNotNull(txid);
+
+		txids[1] = txid;
+		sigs[1] = doc.getProof().getSignature();
 
 		testData.waitForWalletAvaliable();
 		resolved = did.resolve(true);
@@ -198,6 +207,9 @@ public class IDChainOperationsTest {
 		System.out.println("OK(" + duration + "s)");
 		assertNotNull(txid);
 
+		txids[0] = txid;
+		sigs[0] = doc.getProof().getSignature();
+
 		testData.waitForWalletAvaliable();
 		resolved = did.resolve(true);
 		assertNotEquals(lastTxid, resolved.getTransactionId());
@@ -207,10 +219,29 @@ public class IDChainOperationsTest {
 
 		lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
+
+		DIDHistory his = did.resolveHistory();
+		assertNotNull(his);
+		assertEquals(did, his.getDid());
+		assertEquals(DIDHistory.STATUS_VALID, his.getStatus());
+		assertEquals(3, his.getTransactionCount());
+		List<DIDTransaction> txs = his.getAllTransactions();
+		assertNotNull(txs);
+		assertEquals(3, txs.size());
+
+		for (int i = 0; i < txs.size(); i++) {
+			DIDTransaction tx = txs.get(i);
+			assertEquals(did, tx.getDid());
+			assertEquals(txids[i], tx.getTransactionId());
+			assertEquals(sigs[i], tx.getDocument().getProof().getSignature());
+		}
 	}
 
 	@Test
 	public void testUpdateAndResolveAsync() throws DIDException {
+		String[] txids = new String[3];
+		String[] sigs = new String[3];
+
 		TestData testData = new TestData();
 		DIDStore store = testData.setup(DUMMY_TEST);
 		testData.initIdentity();
@@ -230,6 +261,9 @@ public class IDChainOperationsTest {
 				});
 		String txid = tf.join();
 		assertNotNull(txid);
+
+		txids[2] = txid;
+		sigs[2] = doc.getProof().getSignature();
 
 		testData.waitForWalletAvaliable();
 		CompletableFuture<DIDDocument> rf = did.resolveAsync(true);
@@ -260,6 +294,9 @@ public class IDChainOperationsTest {
 				});
 		txid = tf.join();
 		assertNotNull(txid);
+
+		txids[1] = txid;
+		sigs[1] = doc.getProof().getSignature();
 
 		testData.waitForWalletAvaliable();
 		rf = did.resolveAsync(true);
@@ -292,6 +329,9 @@ public class IDChainOperationsTest {
 		txid = tf.join();
 		assertNotNull(txid);
 
+		txids[0] = txid;
+		sigs[0] = doc.getProof().getSignature();
+
 		testData.waitForWalletAvaliable();
 		rf = did.resolveAsync(true);
 		resolved = rf.join();
@@ -302,6 +342,24 @@ public class IDChainOperationsTest {
 
 		lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
+
+		CompletableFuture<DIDHistory> hf = did.resolveHistoryAsync();
+		DIDHistory his = hf.join();
+		assertNotNull(his);
+		assertEquals(did, his.getDid());
+		assertEquals(DIDHistory.STATUS_VALID, his.getStatus());
+		assertEquals(3, his.getTransactionCount());
+		List<DIDTransaction> txs = his.getAllTransactions();
+		assertNotNull(txs);
+		assertEquals(3, txs.size());
+
+		for (int i = 0; i < txs.size(); i++) {
+			DIDTransaction tx = txs.get(i);
+			assertEquals(did, tx.getDid());
+			assertEquals(txids[i], tx.getTransactionId());
+			assertEquals(sigs[i], tx.getDocument().getProof().getSignature());
+		}
+
 	}
 
 	@Test

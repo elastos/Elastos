@@ -143,8 +143,7 @@ public class DID implements Comparable<DID> {
 		return resolve(false);
 	}
 
-
-	protected CompletableFuture<DIDDocument> resolveAsync(boolean force) {
+	public CompletableFuture<DIDDocument> resolveAsync(boolean force) {
 		CompletableFuture<DIDDocument> future = CompletableFuture.supplyAsync(() -> {
 			try {
 				return resolve(force);
@@ -158,6 +157,22 @@ public class DID implements Comparable<DID> {
 
 	public CompletableFuture<DIDDocument> resolveAsync(DID did) {
 		return resolveAsync(false);
+	}
+
+	public DIDHistory resolveHistory() throws DIDResolveException {
+		return DIDBackend.resolveHistory(this);
+	}
+
+	public CompletableFuture<DIDHistory> resolveHistoryAsync() {
+		CompletableFuture<DIDHistory> future = CompletableFuture.supplyAsync(() -> {
+			try {
+				return resolveHistory();
+			} catch (DIDResolveException e) {
+				throw new CompletionException(e);
+			}
+		});
+
+		return future;
 	}
 
 	@Override

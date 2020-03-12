@@ -478,6 +478,11 @@ public final class DIDStore {
 			throw new DIDStoreException("DID already deactivated.");
 		}
 
+		if (doc.isExpired()) {
+			log.error("{} already expired, use force mode to publish anyway.", did.toString());
+			throw new DIDStoreException("DID already expired.");
+		}
+
 		String lastTxid = null;
 		DIDDocument resolvedDoc = did.resolve();
 		if (resolvedDoc != null) {

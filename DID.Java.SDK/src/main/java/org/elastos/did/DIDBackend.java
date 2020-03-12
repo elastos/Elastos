@@ -34,11 +34,10 @@ import java.nio.charset.Charset;
 import java.util.Random;
 
 import org.elastos.did.backend.IDChainRequest;
-import org.elastos.did.backend.IDTransactionInfo;
+import org.elastos.did.backend.IDChainTransaction;
 import org.elastos.did.backend.ResolveResult;
 import org.elastos.did.backend.ResolverCache;
 import org.elastos.did.exception.DIDDeactivatedException;
-import org.elastos.did.exception.DIDExpiredException;
 import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.DIDTransactionException;
@@ -253,14 +252,14 @@ public class DIDBackend {
 		return sb.toString();
 	}
 
-	private static ResolveResult resolveFromBackend(DID did)
+	private static ResolveResult resolveFromBackend(DID did, boolean all)
 			throws DIDResolveException {
 		String requestId = generateRequestId();
 
 		if (resolver == null)
 			throw new DIDResolveException("DID resolver not initialized.");
 
-		InputStream is = resolver.resolve(requestId, did.toString(), false);
+		InputStream is = resolver.resolve(requestId, did.toString(), all);
 
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode node = null;
@@ -299,6 +298,16 @@ public class DIDBackend {
 		return rr;
 	}
 
+	protected static DIDHistory resolveHistory(DID did) throws DIDResolveException {
+		log.info("Resolving {}...", did.toString());
+
+		ResolveResult rr = resolveFromBackend(did, true);
+		if (rr.getStatus() == ResolveResult.STATUS_NOT_FOUND)
+			return null;
+
+		return rr;
+	}
+
 	protected static DIDDocument resolve(DID did, boolean force)
 			throws DIDResolveException {
 		log.info("Resolving {}...", did.toString());
@@ -311,11 +320,12 @@ public class DIDBackend {
 		}
 
 		if (rr == null)
-			rr = resolveFromBackend(did);
+			rr = resolveFromBackend(did, false);
 
 		switch (rr.getStatus()) {
-		case ResolveResult.STATUS_EXPIRED:
-			throw new DIDExpiredException();
+		// When DID expired, we should also return the document.
+		// case ResolveResult.STATUS_EXPIRED:
+		// 	throw new DIDExpiredException();
 
 		case ResolveResult.STATUS_DEACTIVATED:
 			throw new DIDDeactivatedException();
@@ -324,7 +334,7 @@ public class DIDBackend {
 			return null;
 
 		default:
-			IDTransactionInfo ti = rr.getTransactionInfo(0);
+			IDChainTransaction ti = rr.getTransactionInfo(0);
 			DIDDocument doc = ti.getRequest().getDocument();
 			DIDMeta meta = new DIDMeta();
 			meta.setTransactionId(ti.getTransactionId());

@@ -26,10 +26,13 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.elastos.did.DID;
+import org.elastos.did.DIDHistory;
+import org.elastos.did.DIDTransaction;
 import org.elastos.did.exception.DIDTransactionException;
 import org.elastos.did.exception.MalformedResolveResultException;
 import org.elastos.did.util.JsonHelper;
@@ -39,33 +42,31 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ResolveResult {
+public class ResolveResult implements DIDHistory {
 	private final static String DID = "did";
 	private final static String STATUS = "status";
 	private final static String TRANSACTION = "transaction";
 
-	public static final int STATUS_VALID = 0;
-	public static final int STATUS_EXPIRED = 1;
-	public static final int STATUS_DEACTIVATED = 2;
-	public static final int STATUS_NOT_FOUND = 3;
-
 	private DID did;
 	private int status;
-	private List<IDTransactionInfo> idtxs;
+	private List<IDChainTransaction> idtxs;
 
 	protected ResolveResult(DID did, int status) {
 		this.did = did;
 		this.status = status;
 	}
 
+	@Override
 	public DID getDid() {
 		return did;
 	}
 
+	@Override
 	public int getStatus() {
 		return status;
 	}
 
+	@Override
 	public int getTransactionCount() {
 		if (idtxs == null)
 			return 0;
@@ -73,16 +74,23 @@ public class ResolveResult {
 		return idtxs.size();
 	}
 
-	public IDTransactionInfo getTransactionInfo(int index) {
+	public IDChainTransaction getTransactionInfo(int index) {
 		if (idtxs == null)
 			return null;
 
 		return idtxs.get(index);
 	}
 
-	protected synchronized void addTransactionInfo(IDTransactionInfo ti) {
+	@Override
+	public List<DIDTransaction> getAllTransactions() {
+		List<DIDTransaction> txs = new ArrayList<DIDTransaction>(idtxs.size());
+		txs.addAll(idtxs);
+		return txs;
+	}
+
+	protected synchronized void addTransactionInfo(IDChainTransaction ti) {
 		if (idtxs == null)
-			idtxs = new LinkedList<IDTransactionInfo>();
+			idtxs = new LinkedList<IDChainTransaction>();
 
 		idtxs.add(ti);
 	}
@@ -100,7 +108,7 @@ public class ResolveResult {
 			generator.writeFieldName(TRANSACTION);
 			generator.writeStartArray();
 
-			for (IDTransactionInfo ti : idtxs)
+			for (IDChainTransaction ti : idtxs)
 				ti.toJson(generator);
 
 			generator.writeEndArray();
@@ -138,7 +146,7 @@ public class ResolveResult {
 
 			for (int i = 0; i < txs.size(); i++) {
 				try {
-					IDTransactionInfo ti = IDTransactionInfo.fromJson(txs.get(i));
+					IDChainTransaction ti = IDChainTransaction.fromJson(txs.get(i));
 					rr.addTransactionInfo(ti);
 				} catch (DIDTransactionException e) {
 					new MalformedResolveResultException(e);

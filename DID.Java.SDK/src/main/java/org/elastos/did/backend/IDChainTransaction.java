@@ -26,13 +26,15 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.elastos.did.DID;
+import org.elastos.did.DIDDocument;
+import org.elastos.did.DIDTransaction;
 import org.elastos.did.exception.DIDTransactionException;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class IDTransactionInfo {
+public class IDChainTransaction implements DIDTransaction {
 	private final static String TXID = "txid";
 	private final static String TIMESTAMP = "timestamp";
 	private final static String OPERATION = "operation";
@@ -41,26 +43,29 @@ public class IDTransactionInfo {
 	private Date timestamp;
 	private IDChainRequest request;
 
-	public IDTransactionInfo(String txid, Date timestamp,
+	public IDChainTransaction(String txid, Date timestamp,
 			IDChainRequest request) {
 		this.txId = txid;
 		this.timestamp = timestamp;
 		this.request = request;
 	}
 
+	@Override
 	public String getTransactionId() {
 		return txId;
 	}
 
+	@Override
 	public Date getTimestamp() {
 		return timestamp;
 	}
 
+	@Override
 	public DID getDid() {
 		return request.getDid();
 	}
 
-	public IDChainRequest.Operation getOperation() {
+	public IDChainRequest.Operation getOperationCode() {
 		return request.getOperation();
 	}
 
@@ -72,6 +77,16 @@ public class IDTransactionInfo {
 		return request;
 	}
 
+	@Override
+	public String getOperation() {
+		return getOperationCode().toString();
+	}
+
+	@Override
+	public DIDDocument getDocument() {
+		return request.getDocument();
+	}
+
 	public void toJson(JsonGenerator generator) throws IOException {
 		generator.writeStartObject();
 		generator.writeStringField(TXID, getTransactionId());
@@ -81,7 +96,7 @@ public class IDTransactionInfo {
 		generator.writeEndObject();
 	}
 
-	public static IDTransactionInfo fromJson(JsonNode node)
+	public static IDChainTransaction fromJson(JsonNode node)
 			throws DIDTransactionException {
 		Class<DIDTransactionException> exceptionClass = DIDTransactionException.class;
 
@@ -100,6 +115,6 @@ public class IDTransactionInfo {
 
 		IDChainRequest request = IDChainRequest.fromJson(reqNode);
 
-		return new IDTransactionInfo(txid, timestamp, request);
+		return new IDChainTransaction(txid, timestamp, request);
 	}
 }
