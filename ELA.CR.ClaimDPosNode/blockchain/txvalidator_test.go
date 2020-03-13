@@ -2356,17 +2356,39 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
 	RecipientAddress := "ERyUmNH51roR9qfru37Kqkaok2NghR7L5U"
 	CRCCommitteeAddress := "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	NOCRCCommitteeAddress := "EWm2ZGeSyDBBAsVSsvSvspPKV4wQBKPjUk"
 	Recipient, _ := common.Uint168FromAddress(RecipientAddress)
 	tenureHeight := config.DefaultParams.CRCommitteeStartHeight
 	pk1Bytes, _ := common.HexStringToBytes(publicKeyStr1)
 	ela := common.Fixed64(100000000)
+	CRCCommitteeAddressU168, _ := common.Uint168FromAddress(CRCCommitteeAddress)
+	NOCRCCommitteeAddressU168, _ := common.Uint168FromAddress(NOCRCCommitteeAddress)
+
+	inputs := []*types.Input{
+		{
+			Previous: types.OutPoint{
+				TxID:  common.EmptyHash,
+				Index: 1,
+			},
+			Sequence: math.MaxUint32,
+		},
+	}
+	outputs := []*types.Output{
+		{
+			AssetID:     config.ELAAssetID,
+			ProgramHash: *CRCCommitteeAddressU168,
+			Value:       common.Fixed64(60 * ela),
+		},
+		{
+			AssetID:     config.ELAAssetID,
+			ProgramHash: *NOCRCCommitteeAddressU168,
+			Value:       common.Fixed64(600 * ela),
+		},
+	}
 
 	references := make(map[*types.Input]types.Output)
-	references[&types.Input{}] = types.Output{
-		ProgramHash: *randomUint168(),
-		Value:       common.Fixed64(60 * ela),
-	}
-	CRCCommitteeAddressU168, _ := common.Uint168FromAddress(CRCCommitteeAddress)
+	references[inputs[0]] = *outputs[0]
+
 	s.Chain.chainParams.CRCCommitteeAddress = *CRCCommitteeAddressU168
 	// stage = 1 ok
 	txn := s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 1,
@@ -2445,6 +2467,10 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	propState.ProposalLeader = pk2Bytes
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
 	s.EqualError(err, "the SponsorPublicKey is not ProposalLeader of proposal")
+
+	references[inputs[0]] = *outputs[1]
+	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
+	s.EqualError(err, "proposal withdrawal transaction for non-crc committee address")
 }
 
 func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
