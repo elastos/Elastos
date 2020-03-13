@@ -1780,16 +1780,7 @@ public class MyWallet {
     }
 
     public BaseEntity generateDIDInfoPayload(String masterWalletID, String inputJson, String passwd) {
-        try {
-            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
-            if (idChainSubWallet == null) {
-                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
-            }
-            String did = idChainSubWallet.GenerateDIDInfoPayload(inputJson, passwd);
-            return new CommmonStringEntity(SUCCESSCODE, did);
-        } catch (WalletException e) {
-            return exceptionProcess(e, formatWalletName(masterWalletID, IDChain) + "GenerateDIDInfoPayload");
-        }
+        return errorProcess("99999", "function removed");
     }
 
     public BaseEntity createIDTransaction(String masterWalletID, String payloadJson) {
@@ -1806,16 +1797,7 @@ public class MyWallet {
     }
 
     public BaseEntity getResolveDIDInfo(String masterWalletID, int start, int count, String did) {
-        try {
-            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
-            if (idChainSubWallet == null) {
-                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
-            }
-            String info = idChainSubWallet.GetResolveDIDInfo(start, count, did);
-            return new CommmonStringEntity(SUCCESSCODE, info);
-        } catch (WalletException e) {
-            return exceptionProcess(e, formatWalletName(masterWalletID, IDChain) + "GetResolveDIDInfo");
-        }
+        return errorProcess("88888", "function removed");
     }
 }
 

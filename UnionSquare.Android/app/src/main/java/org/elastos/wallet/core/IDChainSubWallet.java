@@ -14,10 +14,6 @@ public class IDChainSubWallet extends SidechainSubWallet {
         return CreateIDTransaction(mInstance, payloadJson, memo);
     }
 
-    public String GenerateDIDInfoPayload(String inputJson, String passwd) throws WalletException {
-        return GenerateDIDInfoPayload(mInstance, inputJson, passwd);
-    }
-
     public String GetAllDID(int start, int count) throws WalletException {
         return GetAllDID(mInstance, start, count);
     }
@@ -42,10 +38,6 @@ public class IDChainSubWallet extends SidechainSubWallet {
         return GetPublicKeyCID(mInstance, publicKey);
     }
 
-    public String GetResolveDIDInfo(int start, int count, String did) throws WalletException {
-        return GetResolveDIDInfo(mInstance, start, count, did);
-    }
-
     public String SignDigest(String did, String digest, String payPassword) throws WalletException {
         return SignDigest(mInstance, did, digest, payPassword);
     }
@@ -56,8 +48,6 @@ public class IDChainSubWallet extends SidechainSubWallet {
     }
 
     private native String CreateIDTransaction(long instance, String payloadJSON, String memo);
-
-    private native String GenerateDIDInfoPayload(long instance, String inputJson, String passwd);
 
     private native String GetAllDID(long instance, int start, int count);
 
@@ -70,8 +60,6 @@ public class IDChainSubWallet extends SidechainSubWallet {
     private native String GetPublicKeyDID(long instance, String publicKey);
 
     private native String GetPublicKeyCID(long instance, String publicKey);
-
-    private native String GetResolveDIDInfo(long instance, int start, int count, String did);
 
     private native String SignDigest(long instance, String did, String digest, String payPassword);
 }

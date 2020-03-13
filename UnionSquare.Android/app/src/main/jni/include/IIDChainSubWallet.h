@@ -1,6 +1,24 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #ifndef __ELASTOS_SDK_IIDCHAINSUBWALLET_H__
 #define __ELASTOS_SDK_IIDCHAINSUBWALLET_H__
@@ -27,20 +45,6 @@ namespace Elastos {
 			virtual nlohmann::json CreateIDTransaction(
 					const nlohmann::json &payloadJson,
 					const std::string &memo = "") = 0;
-
-			/**
-			 * Get all Resolved DID list of current subwallet.
-			 * @param start specify start index of all did list.
-			 * @param count specify count of did we need.
-			 * @param did filter word, if empty all did list shall be qualified.
-			 * @return all did list of resolved in json format.
-			 * example:
-			 * params did is not empty
-			 * {"DID":[{"expires":1575104460,"id":"innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs","issuanceDate":1572516335,"operation":"update","publicKey":[{"id":"#primary","publicKey":"031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4"}],"status":"Confirmed"}],"MaxCount":1}
-			 * or params did is empty
-			 * {"DID":[{"expires":"1575104460","id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","didName":"testname","operation":"create","issuanceDate":1575104460,status:"Pending"},{"expires":"1575104460","id":"ifUQ59wFpHUKe5NZ6gjffx48sWEBt9YgQE","didName":"testname","operation":"create","issuanceDate":1575104460,status:"Confirmed"}],"MaxCount":2}
-			 */
-			virtual nlohmann::json GetResolveDIDInfo(uint32_t start, uint32_t count, const std::string &did) const = 0;
 
 			/**
 			 * Get all DID derived of current subwallet.
@@ -107,32 +111,8 @@ namespace Elastos {
 			 * @param pubkey
 			 * @return cid string
 			 */
-			 virtual std::string GetPublicKeyCID(const std::string &pubkey) const = 0;
+			virtual std::string GetPublicKeyCID(const std::string &pubkey) const = 0;
 
-			/**
-			 * Generate payload for operation the did.
-			 * @param inputInfo to generate DIDInfoPayload json fomat,able used to CreateIDTransaction. Content such as
-			 * {
-				"id": "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs",
-			 	"didName":"testName",
-				"operation":"create",
-				 "publicKey": [{
-				  "id": "#primary",
-				  "publicKey":
-				 "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4"
-				  }, {
-				 "id": "#recovery",
-				 "controller": "ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh",
-				 "publicKey":
-				 "03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"
-				 }],
-				"expires":1575104460
-			   }
-			 * @return The payload in JSON format.
-			 */
-			virtual nlohmann::json GenerateDIDInfoPayload(
-				const nlohmann::json &didInfo,
-				const std::string &paypasswd) = 0;
 		};
 
 	}
