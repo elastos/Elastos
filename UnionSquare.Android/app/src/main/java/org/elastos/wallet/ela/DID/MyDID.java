@@ -9,10 +9,12 @@ import org.elastos.did.DIDBackend;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDStore;
 import org.elastos.did.DIDURL;
+import org.elastos.did.Issuer;
 import org.elastos.did.VerifiableCredential;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.InvalidKeyException;
+import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.DID.adapter.MyDIDAdapter;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
@@ -22,6 +24,7 @@ import org.elastos.wallet.ela.rxjavahelp.CommonEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.utils.JwtUtils;
+import org.elastos.wallet.ela.utils.Log;
 
 import java.io.File;
 import java.util.Date;
@@ -87,9 +90,8 @@ public class MyDID {
     }
 
     /**
-     * 使用did前必须执行此方法
+     * 使用did前必须执行此方法 使用前提containsPrivateIdentity
      *
-     * @param payPasswd
      * @return
      */
     public DID initDID(String payPasswd) {
@@ -98,7 +100,8 @@ public class MyDID {
                 this.did = didStore.getDid(0);
                 DIDURL didurl = new DIDURL(did, "primary");
                 if (!didStore.containsDid(did) || !didStore.containsPrivateKey(did, didurl)) {
-                    didStore.newDid(0, payPasswd);//为了什么  我直接new DID(String) 为了生成doc load
+                    didStore.deleteDid(did);
+                    didStore.newDid(0, payPasswd);//为了什么  我直接new DID(String) 为了生成doc 是的能够loaddoc
                 }
             } catch (DIDStoreException e) {
                 e.printStackTrace();
@@ -185,8 +188,85 @@ public class MyDID {
         return null;
     }
 
+    /**
+     * 设置凭证信息  不上链
+     *
+     * @param json
+     * @param pwd
+     * @param expires
+     */
+    public void setCredential(String json, String pwd, Date expires) {
 
-    public void setDIDDocumentExprise(Date expires, String pwd, String name) {
+        try {
+
+            Issuer issuer = new Issuer(did, didStore);//发布者的did
+            String[] SelfProclaimedCredential = {"BasicProfileCredential"};
+            VerifiableCredential vc = issuer.issueFor(did)//被发布的did
+                    .id("outPut")//唯一标识一个VerifiableCredential 相同会覆盖
+                    .type(SelfProclaimedCredential)
+                    .expirationDate(expires)
+                    .properties(json)
+                    .seal(pwd);
+            didStore.storeCredential(vc);
+
+
+        } catch (DIDException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    /**
+     * 获得本地存储的不上链的凭证字符串
+     *
+     * @return
+     */
+    public String getCredentialJSon(String didString) {
+
+        try {
+            VerifiableCredential vc1 = didStore.loadCredential(didString, "outPut");
+            return vc1.toString(true);
+
+        } catch (DIDException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+    /* DID did = vc.getSubject().getId();//issueFor()的did 被发布的did
+                vc.getId();//didurl
+                String id = vc.getId().getFragment();//.id
+                 DIDURL didurl = new DIDURL(did, "outPut");
+               VerifiableCredential vc1 = didStore.loadCredential(did, didurl);
+               if (vc1 != null) {
+                   didStore.deleteCredential(did, didurl);
+               }*/
+    public void resetCredential(String fromJson, String pwd, Date expires) {
+
+        try {
+            VerifiableCredential vcFrom = VerifiableCredential.fromJson(fromJson);//结果
+            String props = vcFrom.getSubject().getPropertiesAsString();//properties(String json)
+
+            Issuer issuer = new Issuer(did, didStore);//发布者的did
+            String[] SelfProclaimedCredential = {"BasicProfileCredential"};
+            VerifiableCredential vc = issuer.issueFor(did)//被发布的did
+                    .id("outPut")//唯一标识一个VerifiableCredential 相同会覆盖
+                    .type(SelfProclaimedCredential)
+                    .expirationDate(expires)
+                    .properties(props)
+                    .seal(pwd);
+            didStore.storeCredential(vc);
+
+        } catch (DIDStoreException | MalformedCredentialException | InvalidKeyException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+    public void setDIDDocument(Date expires, String pwd, String name) {
 
         try {
             DIDDocument document = didStore.loadDid(did);
@@ -242,13 +322,19 @@ public class MyDID {
 
     public BaseEntity DIDResolve(String didString) {
         try {
-            return new CommmonObjEntity(SUCCESSCODE, new DID(didString).resolve());
+            return new CommmonObjEntity(SUCCESSCODE, new DID(didString).resolve(true));
         } catch (DIDException e) {
             return exceptionProcess(e, "DIDResolve");
 
         }
     }
 
+    /**
+     * resolve() resolve(fdlse)先在didcash查没有或者过期链上查
+     *
+     * @param didString
+     * @return
+     */
     public BaseEntity DIDResolveWithTip(String didString) {
         try {
             if (TextUtils.isEmpty(didString)) {
@@ -302,7 +388,8 @@ public class MyDID {
         e.printStackTrace();
         String message = "method:" + methodName + "\nwalletId:" + walletId + "\nException:" + e.getClass().getName() +
                 "\nmes:" + e.getMessage();
-        return new CommonEntity(DIDSDKEXCEPTIOM, message);
+        Log.i(methodName, message);
+        return new CommonEntity(DIDSDKEXCEPTIOM, e.getClass().getName() + e.getMessage());
 
     }
 

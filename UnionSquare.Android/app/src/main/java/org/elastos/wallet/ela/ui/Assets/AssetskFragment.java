@@ -25,6 +25,7 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.elastos.did.DIDDocument;
+import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -293,7 +294,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             // String unSignature = base64Header + "." + base64Payload;
             //  String signature = jwtParts[2];
             //  String header = new String(org.elastos.did.util.Base64.decode(base64Header));
-            String payload = new String(Base64.decode(base64Payload, Base64.DEFAULT));
+            String payload = new String(Base64.decode(base64Payload, Base64.URL_SAFE));
             RecieveJwtEntity recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
             String elaString = recieveJwtEntity.getIss();
             elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
@@ -888,11 +889,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     private void curentHasDID(DIDDocument didDocument) {
         if (didDocument != null) {
-            //  getMyDID().getDidStore().storeDid(didDocument);//存储本地
-            Bundle bundle = new Bundle();
-            bundle.putString("scanResult", scanResult);
-            bundle.putString("walletId", wallet.getWalletId());
-            ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
+                //getMyDID().getDidStore().storeDid(didDocument);//存储本地
+                Bundle bundle = new Bundle();
+                bundle.putString("scanResult", scanResult);
+                bundle.putString("walletId", wallet.getWalletId());
+                ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
 
         }
     }

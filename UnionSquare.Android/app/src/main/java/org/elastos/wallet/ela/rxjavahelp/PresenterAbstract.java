@@ -270,7 +270,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             int id = getResourceId(context, "error_" + entity.getCode(), "string");
             msg = context.getString(id);
         } catch (Exception e) {
-            msg = entity.getMsg();
+            msg = entity.toString();
         }
 
 

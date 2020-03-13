@@ -465,7 +465,6 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
 
         }
         result.setEditTime(new Date().getTime());
-        Log.d("???", result.toString());
         return result;
     }
     @Override

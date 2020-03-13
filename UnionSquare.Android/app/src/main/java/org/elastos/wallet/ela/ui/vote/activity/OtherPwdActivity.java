@@ -125,7 +125,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, CID, this);
                         break;
                     case Constant.DIDSIGNUP:
-                        getMyDID().setDIDDocumentExprise(didEndDate, pwd, didName);
+                        getMyDID().setDIDDocument(didEndDate, pwd, didName);
                         getMyDID().getMyDIDAdapter().setMyDIDTransactionCallback(this);
                         presenter.DIDPublish(pwd, this);
                         break;

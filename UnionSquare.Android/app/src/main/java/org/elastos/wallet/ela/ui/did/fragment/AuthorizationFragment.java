@@ -64,7 +64,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         walletId = data.getString("walletId");
         String result = scanResult.replace("elastos://credaccess/", "");
         jwtParts = result.split("\\.");
-        String payload = new String(Base64.decode(jwtParts[1], Base64.DEFAULT));
+        String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
         recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
         tvDid.setText(recieveJwtEntity.getIss());
         tvName.setText(recieveJwtEntity.getWebsite().getDomain());
@@ -143,8 +143,9 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         callBackJwtEntity.setReq(scanResult);
         callBackJwtEntity.setPresentation("");
         String header = jwtParts[0];
-        String payload = Base64.encodeToString(JSON.toJSONString(callBackJwtEntity).getBytes(), Base64.DEFAULT);
-        payload = payload.replaceAll("\r\n", "").replaceAll("\r", "").replaceAll("\n", "");
+        // Base64
+        String payload = Base64.encodeToString(JSON.toJSONString(callBackJwtEntity).getBytes(), Base64.URL_SAFE|Base64.NO_WRAP);
+        payload = payload.replaceAll("=", "");
         try {
             String signature = getMyDID().getDIDDocument().sign(payPasswd, (header + "." + payload).getBytes());
             new AuthorizationPresenter().postData(callBackUrl, header + "." + payload + "." + signature, this);

@@ -19,6 +19,7 @@ import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
@@ -39,12 +40,14 @@ import org.elastos.wallet.ela.ui.did.fragment.AddDIDFragment;
 import org.elastos.wallet.ela.ui.did.fragment.DidDetailFragment;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.FileUtile;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener2;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -294,6 +297,8 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
         RealmUtil realmUtil = new RealmUtil();
         realmUtil.deleteWallet(wallet.getWalletId());//删除钱包和其子钱包
         // realmUtil.deleteSubWallet(wallet.getWalletId());
+        File file = new File(MyApplication.getRoutDir() + File.separator + wallet.getWalletId() + File.separator + "store");
+        FileUtile.delFile(file);
         List<Wallet> wallets = realmUtil.queryUserAllWallet();
         if (wallets == null || wallets.size() == 0) {
             //没有其他钱包了

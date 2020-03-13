@@ -24,6 +24,7 @@ import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewDa
 import org.elastos.wallet.ela.ui.mine.presenter.AboutPresenter;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.FileUtile;
 import org.elastos.wallet.ela.utils.MyUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
@@ -78,7 +79,7 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
 
                 for (Wallet wallet : new RealmUtil().queryUserAllWallet()) {
                     File file = new File(MyApplication.getRoutDir() + File.separator + wallet.getWalletId() + File.separator + "store");
-                    delFile(file);
+                    FileUtile.delFile(file);
                 }
 
                 break;
@@ -89,19 +90,7 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
         }
     }
 
-    static boolean delFile(File file) {
-        if (!file.exists()) {
-            return false;
-        }
 
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            for (File f : files) {
-                delFile(f);
-            }
-        }
-        return file.delete();
-    }
 
     @Override
     protected void requstPermissionOk() {
