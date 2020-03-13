@@ -35,7 +35,7 @@ public class DIDURL {
             throw DIDError.illegalArgument()
         }
 
-        var usedFragment = fragment
+        var realFragment = fragment
         if fragment.hasPrefix("did:") {
             do {
                 try ParserHelper.parse(fragment, false, DIDURL.Listener(self))
@@ -50,12 +50,12 @@ public class DIDURL {
         }
 
         if fragment.hasPrefix("#") {
-            let starIndex = usedFragment.index(usedFragment.startIndex, offsetBy: 1)
-            let endIndex = usedFragment.index(starIndex, offsetBy: usedFragment.count - 2)
-            usedFragment = String(usedFragment[starIndex...endIndex])
+            let starIndex = realFragment.index(realFragment.startIndex, offsetBy: 1)
+            let endIndex  = realFragment.index(starIndex, offsetBy: realFragment.count - 2)
+            realFragment  = String(realFragment[starIndex...endIndex])
         }
         self._did = id
-        self._fragment = usedFragment
+        self._fragment = realFragment
     }
     
     public init(_ url: String) throws {
@@ -169,7 +169,11 @@ public class DIDURL {
         try getMeta().store?.storeCredentialMeta(for: did, key: self, meta: getMeta())
     }
 
-    public func setAlias(_ newValue: String?) throws {
+    public func setAlias(_ newValue: String) throws {
+        guard !newValue.isEmpty else {
+            throw DIDError.illegalArgument()
+        }
+
         try setAliasName(newValue)
     }
 
