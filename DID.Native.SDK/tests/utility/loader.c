@@ -18,7 +18,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <assert.h>
+#include <pwd.h>
 
+#include "ela_did.h"
 #include "constant.h"
 #include "loader.h"
 #include "didtest_adapter.h"
@@ -27,7 +29,6 @@
 #include "did.h"
 #include "diddocument.h"
 #include "didstore.h"
-#include "ela_did.h"
 #include "credential.h"
 #include "credmeta.h"
 
@@ -380,12 +381,16 @@ void TestData_Deinit(void)
 
 DIDStore *TestData_SetupStore(const char *root)
 {
+    char cachedir[PATH_MAX];
+
     if (!root || !*root)
         return NULL;
 
+    sprintf(cachedir, "%s%s", getenv("HOME"), "/.cache.did.elastos");
+
     delete_file(root);
     testdata.store = DIDStore_Open(root, adapter);
-    DIDBackend_InitializeDefault(resolver);
+    DIDBackend_InitializeDefault(resolver, cachedir);
     return testdata.store;
 }
 
@@ -616,8 +621,8 @@ DIDDocument *TestData_LoadDoc(void)
     if (rc)
         return NULL;
 
-    if (!DID_Resolve(subject) &&
-            !DIDStore_PublishDID(testdata.store, storepass, subject, NULL))
+    if (!DID_Resolve(subject, true) &&
+            !DIDStore_PublishDID(testdata.store, storepass, subject, NULL, false))
         return NULL;
 
     return testdata.doc;
@@ -639,8 +644,8 @@ DIDDocument *TestData_LoadIssuerDoc(void)
     if (rc)
         return NULL;
 
-    if (!DID_Resolve(subject) &&
-            !DIDStore_PublishDID(testdata.store, storepass, subject, NULL))
+    if (!DID_Resolve(subject, true) &&
+            !DIDStore_PublishDID(testdata.store, storepass, subject, NULL, false))
         return NULL;
 
     return testdata.issuerdoc;

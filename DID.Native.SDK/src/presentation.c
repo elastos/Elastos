@@ -355,7 +355,7 @@ int Presentation_Verify(Presentation *pre)
             return -1;
     }
 
-    doc = DID_Resolve(signer);
+    doc = DID_Resolve(signer, false);
     if (!doc)
         return -1;
 
@@ -511,7 +511,7 @@ bool Presentation_IsGenuine(Presentation *pre)
     if (!signer)
         return false;
 
-    doc = DID_Resolve(signer);
+    doc = DID_Resolve(signer, false);
     if (!doc)
         return false;
 
@@ -554,7 +554,7 @@ bool Presentation_IsValid(Presentation *pre)
     if (!signer)
         return false;
 
-    doc = DID_Resolve(signer);
+    doc = DID_Resolve(signer, false);
     if (!doc)
         return false;
 

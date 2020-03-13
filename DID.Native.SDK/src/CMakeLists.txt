@@ -37,21 +37,21 @@ if(HAVE_SYS_TIME_H)
 endif()
 
 file(GLOB utility-SOURCES "utility/*.c")
+file(GLOB backend-SOURCES "backend/*.c")
 
 set(SRC
     did.c
     diddocument.c
     credential.c
     didstore.c
-    didrequest.c
     didbackend.c
     mnemonic.c
     presentation.c
     issuer.c
     credmeta.c
     didmeta.c
-    didresolver.c
-    ${utility-SOURCES})
+    ${utility-SOURCES}
+    ${backend-SOURCES})
 
 set(HEADERS
     ela_did.h)
@@ -65,6 +65,7 @@ endif()
 include_directories(
     BEFORE
     utility
+    backend
     .
     ../hdkey
     ${PROJECT_INT_DIST_DIR}/include)

@@ -55,6 +55,8 @@ int JsonGenerator_WriteFieldName(JsonGenerator *generator, const char *name);
 
 int JsonGenerator_WriteString(JsonGenerator *generator, const char *value);
 
+int JsonGenerator_WriteNumber(JsonGenerator *generator, int number);
+
 int JsonGenerator_WriteStringField(JsonGenerator *generator,
         const char *name, const char *value);
 

@@ -388,10 +388,10 @@ time_t Credential_GetExpirationDate(Credential *cred)
     if (!cred)
         return -1;
 
-    doc = DID_Resolve(&cred->id.did);
+    doc = DID_Resolve(&cred->id.did, false);
     expire = DIDDocument_GetExpires(doc);
 
-    doc = DID_Resolve(&cred->issuer);
+    doc = DID_Resolve(&cred->issuer, false);
     _expire = DIDDocument_GetExpires(doc);
 
     expire = expire < _expire ? expire : _expire;
@@ -697,7 +697,7 @@ int Credential_Verify(Credential *cred)
         return -1;
 
     issuer = Credential_GetIssuer(cred);
-    doc = DID_Resolve(issuer);
+    doc = DID_Resolve(issuer, false);
     if (!doc)
         return -1;
 
@@ -734,7 +734,7 @@ bool Credential_IsGenuine(Credential *cred)
     if (!cred)
         return false;
 
-    doc = DID_Resolve(&cred->issuer);
+    doc = DID_Resolve(&cred->issuer, false);
     if (!DIDDocument_IsAuthenticationKey(doc, &cred->proof.verificationMethod))
         return false;
 
@@ -757,7 +757,7 @@ bool Credential_IsValid(Credential *cred)
     if (!did)
         return false;
 
-    doc = DID_Resolve(did);
+    doc = DID_Resolve(did, false);
     if (!doc || !DIDDocument_IsValid(doc)) {
         DIDDocument_Destroy(doc);
         return false;
@@ -770,7 +770,7 @@ bool Credential_IsValid(Credential *cred)
         if (!did)
             return false;
 
-        doc = DID_Resolve(did);
+        doc = DID_Resolve(did, false);
         if (!doc || !DIDDocument_IsValid(doc)) {
             DIDDocument_Destroy(doc);
             return false;

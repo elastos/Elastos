@@ -20,45 +20,41 @@
  * SOFTWARE.
  */
 
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#ifndef __DIDTRANSACTIONINFO_H__
+#define __DIDTRANSACTIONINFO_H__
 
-#include <stdio.h>
-#include <time.h>
-#include <stdbool.h>
-#include <sys/stat.h>
+#include <cjson/cJSON.h>
+
+#include "ela_did.h"
+#include "didrequest.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define DOC_BUFFER_LEN   512
+typedef struct DIDTransactionInfo {
+    char txid[ELA_MAX_TXID_LEN];
+    time_t timestamp;
 
-const char *get_time_string(char *timestring, size_t len, time_t *p_time);
+    DIDRequest request;
+} DIDTransactionInfo;
 
-int parse_time(time_t *time, const char *string);
+int DIDTransactionInfo_FromJson(DIDTransactionInfo *txinfo, cJSON *json);
 
-int test_path(const char *path);
+void DIDTransactionInfo_Destroy(DIDTransactionInfo *txinfo);
 
-int list_dir(const char *path, const char *pattern,
-        int (*callback)(const char *name, void *context), void *context);
+int DIDTransactionInfo_ToJson_Internal(JsonGenerator *gen, DIDTransactionInfo *info);
 
-void delete_file(const char *path);
+const char *DIDTransactionInfo_ToJson(DIDTransactionInfo *txinfo);
 
-int get_dir(char* path, bool create, int count, ...);
+DIDRequest *DIDTransactionInfo_GetRequest(DIDTransactionInfo *txinfo);
 
-int get_file(char *path, bool create, int count, ...);
+const char *DIDTransactionInfo_GetTransactionId(DIDTransactionInfo *txinfo);
 
-int store_file(const char *path, const char *string);
-
-const char *load_file(const char *path);
-
-bool is_empty(const char *path);
-
-int mkdirs(const char *path, mode_t mode);
+time_t DIDTransactionInfo_GetTimeStamp(DIDTransactionInfo *txinfo);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__COMMON_H__
+#endif //__DIDTRANSACTIONINFO_H__

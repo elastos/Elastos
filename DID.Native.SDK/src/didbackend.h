@@ -33,8 +33,6 @@ typedef struct DIDBackend {
     DIDAdapter *adapter;
 } DIDBackend;
 
-DIDDocument *DIDBackend_Resolve(DID *did);
-
 const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
         DIDURL *signkey, const char *storepass);
 
@@ -43,6 +41,10 @@ const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document,
 
 const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did,
         DIDURL *signKey, const char *storepass);
+
+DIDDocument *DIDBackend_Resolve(DID *did, bool force);
+
+DIDDocument **DIDBackend_ResolveAll(DID *did);
 
 #ifdef __cplusplus
 }

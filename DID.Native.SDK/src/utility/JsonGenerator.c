@@ -291,6 +291,38 @@ int JsonGenerator_WriteString(JsonGenerator *generator, const char *value)
     return 0;
 }
 
+int JsonGenerator_WriteNumber(JsonGenerator *generator, int number)
+{
+    size_t len;
+    int is_sticky;
+    char value[32];
+
+    if (!generator || !generator->buffer)
+        return -1;
+
+    assert(get_state(generator) == STATE_FIELD
+           || get_state(generator) == STATE_ARRAY);
+
+    is_sticky = is_state_sticky(generator);
+
+    len = snprintf(value, sizeof(value), "%d", number);
+    if (ensure_capacity(generator, len + is_sticky) == -1)
+        return -1;
+
+    if (is_sticky)
+        generator->buffer[generator->pos++] = comma_symbol;
+
+    strcpy(generator->buffer + generator->pos, value);
+    generator->pos += len;
+
+    if (get_state(generator) == STATE_FIELD)
+        pop_state(generator);
+    else
+        set_state_sticky(generator);
+
+    return 0;
+}
+
 int JsonGenerator_WriteStringField(JsonGenerator *generator,
                                    const char *name, const char *value)
 {

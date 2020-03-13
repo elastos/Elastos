@@ -33,14 +33,14 @@ static void test_idchain_publishdid(void)
     CU_ASSERT_PTR_NOT_NULL(did);
 
     printf("\n-------------------------------------\n-- publish begin(create), waiting....\n");
-    txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey);
+    txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey, false);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
     printf("-- publish result:\n   did = %s\n   txid = %s\n", did->idstring, txid);
     free(txid);
 
     printf("-- resolve begin(create)");
     while(!doc) {
-        doc = DID_Resolve(did);
+        doc = DID_Resolve(did, true);
         if (!doc) {
             ++i;
             printf(".");
@@ -57,7 +57,7 @@ static void test_idchain_publishdid(void)
     signkey = DIDDocument_GetDefaultPublicKey(doc);
     CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
 
-    txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey);
+    txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey, false);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
     printf("-- publish result:\n   did = %s\n   txid = %s\n", did->idstring, txid);
     free(txid);
@@ -67,7 +67,7 @@ static void test_idchain_publishdid(void)
         if (updatedoc)
             DIDDocument_Destroy(updatedoc);
 
-        updatedoc = DID_Resolve(did);
+        updatedoc = DID_Resolve(did, true);
         if (!updatedoc) {
             ++i;
             printf(".");
@@ -119,6 +119,11 @@ static void test_idchain_deactivedid_with_authorization(void)
     return;
 }
 
+static void test_idchain_resolveall(void)
+{
+    return;
+}
+
 static int idchain_operation_test_suite_init(void)
 {
     int rc;
@@ -161,6 +166,7 @@ static CU_TestInfo cases[] = {
     { "test_idchain_deactivedid_after_create",       test_idchain_deactivedid_after_create        },
     { "test_idchain_deactivedid_after_update",       test_idchain_deactivedid_after_update        },
     { "test_idchain_deactivedid_with_authorization", test_idchain_deactivedid_with_authorization  },
+    { "test_idchain_resolveall",                     test_idchain_resolveall                      },
     {  NULL,                                         NULL                                         }
 };
 

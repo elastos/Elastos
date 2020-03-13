@@ -20,45 +20,52 @@
  * SOFTWARE.
  */
 
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#ifndef __RESOLVERRESULT_H__
+#define __RESOLVERRESULT_H__
 
-#include <stdio.h>
-#include <time.h>
-#include <stdbool.h>
-#include <sys/stat.h>
+#include "ela_did.h"
+#include "didtransactioninfo.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define DOC_BUFFER_LEN   512
+typedef enum DIDStatus
+{
+    STATUS_VALID,
+    STATUS_EXPIRED,
+    STATUS_DEACTIVATED,
+    STATUS_NOT_FOUND
+} DIDStatus;
 
-const char *get_time_string(char *timestring, size_t len, time_t *p_time);
+typedef struct ResolveResult {
+    DID did;
+    DIDStatus status;
 
-int parse_time(time_t *time, const char *string);
+    struct {
+        size_t size;
+        DIDTransactionInfo *infos;
+    } txinfos;
+} ResolveResult;
 
-int test_path(const char *path);
+int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all);
 
-int list_dir(const char *path, const char *pattern,
-        int (*callback)(const char *name, void *context), void *context);
+void ResolveResult_Destroy(ResolveResult *result);
 
-void delete_file(const char *path);
+void ResolveResult_Free(ResolveResult *result);
 
-int get_dir(char* path, bool create, int count, ...);
+const char *ResolveResult_ToJson(ResolveResult *result);
 
-int get_file(char *path, bool create, int count, ...);
+DID *ResolveResult_GetDID(ResolveResult *result);
 
-int store_file(const char *path, const char *string);
+DIDStatus ResolveResult_GetStatus(ResolveResult *result);
 
-const char *load_file(const char *path);
+ssize_t ResolveResult_GetTransactionCount(ResolveResult *result);
 
-bool is_empty(const char *path);
-
-int mkdirs(const char *path, mode_t mode);
+DIDTransactionInfo *ResolveResult_GetTransactionInfo(ResolveResult *result, int index);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__COMMON_H__
+#endif //__RESOLVERRESULT_H__

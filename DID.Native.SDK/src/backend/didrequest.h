@@ -20,45 +20,57 @@
  * SOFTWARE.
  */
 
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#ifndef __DIDREQUEST_H__
+#define __DIDREQUEST_H__
 
-#include <stdio.h>
-#include <time.h>
-#include <stdbool.h>
-#include <sys/stat.h>
+#include <cjson/cJSON.h>
+
+#include "ela_did.h"
+#include "JsonGenerator.h"
+#include "did.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define DOC_BUFFER_LEN   512
+typedef struct DIDRequest {
+    struct {
+        char *spec;
+        char *op;
+        char *prevtxid;
+    } header;
 
-const char *get_time_string(char *timestring, size_t len, time_t *p_time);
+    const char *payload;
+    DIDDocument *doc;
 
-int parse_time(time_t *time, const char *string);
+    struct {
+        DIDURL verificationMethod;
+        const char *signature;
+    } proof;
+} DIDRequest;
 
-int test_path(const char *path);
+typedef enum DIDRequest_Type
+{
+   RequestType_Create,
+   RequestType_Update,
+   RequestType_Deactivate
+} DIDRequest_Type;
 
-int list_dir(const char *path, const char *pattern,
-        int (*callback)(const char *name, void *context), void *context);
+DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json);
 
-void delete_file(const char *path);
+void DIDRequest_Destroy(DIDRequest *request);
 
-int get_dir(char* path, bool create, int count, ...);
+const char* DIDRequest_Sign(DIDRequest_Type type, DID *did,
+        DIDURL *signKey, const char* data, DIDStore *store, const char *storepass);
 
-int get_file(char *path, bool create, int count, ...);
+int DIDRequest_Verify(DIDRequest *request);
 
-int store_file(const char *path, const char *string);
+DIDDocument *DIDRequest_GetDocument(DIDRequest *request);
 
-const char *load_file(const char *path);
-
-bool is_empty(const char *path);
-
-int mkdirs(const char *path, mode_t mode);
+int DIDRequest_ToJson_Internal(JsonGenerator *gen, DIDRequest *req);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__COMMON_H__
+#endif //__DIDREQUEST_H__

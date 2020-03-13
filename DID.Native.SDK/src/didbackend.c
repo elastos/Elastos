@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <cjson/cJSON.h>
 
 #include "ela_did.h"
@@ -32,9 +33,15 @@
 #include "didmeta.h"
 #include "diddocument.h"
 #include "didresolver.h"
+#include "resolveresult.h"
+#include "resolvercache.h"
+
+#define DEFAULT_TTL    (24 * 60 * 60 * 1000)
 
 static DIDResolver *resolverInstance;
 static bool defaultInstance;
+
+long ttl = DEFAULT_TTL;
 
 static void DIDBackend_Deinitialize(void)
 {
@@ -44,7 +51,7 @@ static void DIDBackend_Deinitialize(void)
     }
 }
 
-int DIDBackend_InitializeDefault(const char *url)
+int DIDBackend_InitializeDefault(const char *url, const char *cachedir)
 {
     if (!url || !*url || strlen(url) >= URL_LEN)
         return -1;
@@ -55,13 +62,14 @@ int DIDBackend_InitializeDefault(const char *url)
     if (!resolverInstance)
         return -1;
 
+    ResolverCache_SetCacheDir(cachedir);
     defaultInstance = true;
 
     atexit(DIDBackend_Deinitialize);
     return 0;
 }
 
-int DIDBackend_Initialize(DIDResolver *resolver)
+int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir)
 {
     if (!resolver)
         return -1;
@@ -69,6 +77,7 @@ int DIDBackend_Initialize(DIDResolver *resolver)
     DIDBackend_Deinitialize();
 
     resolverInstance = resolver;
+    ResolverCache_SetCacheDir(cachedir);
     defaultInstance = false;
 
     return 0;
@@ -159,89 +168,126 @@ const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey
     return ret;
 }
 
-DIDDocument *DIDBackend_Resolve(DID *did)
+static int resolve_from_backend(ResolveResult *result, DID *did, bool all)
 {
-    int rc;
-    const char *data;
-    cJSON *root, *item, *field;
-    DIDDocument *document = NULL;
+    const char *data = NULL;
+    cJSON *root = NULL, *item;
     char _idstring[ELA_MAX_DID_LEN];
-    time_t timestamp;
-    bool deactivated;
+    int rc = -1;
 
-    if (!did || !resolverInstance || !resolverInstance->resolve)
-        return NULL;
+    assert(result);
+    assert(did);
 
     data = resolverInstance->resolve(resolverInstance,
-            DID_ToString(did, _idstring, sizeof(_idstring)), 0);
+            DID_ToString(did, _idstring, sizeof(_idstring)), true);
     if (!data)
-        return NULL;
+        return rc;
 
     root = cJSON_Parse(data);
     if (!root)
-        return NULL;
+        goto errorExit;
 
     item = cJSON_GetObjectItem(root, "error");
     if (!item || !cJSON_IsNull(item))
-        return NULL;
+        goto errorExit;
 
     item = cJSON_GetObjectItem(root, "result");
     if (!item || !cJSON_IsObject(item))
         goto errorExit;
 
-    field = cJSON_GetObjectItem(item, "did");
-    if (!field || !cJSON_IsString(field))
+    if (ResolveResult_FromJson(result, item, all) == -1)
         goto errorExit;
 
-    if (strcmp(DID_ToString(did, _idstring, sizeof(_idstring)), field->valuestring))
+    if (!all && ResolveCache_Store(result, did) == -1)
         goto errorExit;
-
-    field = cJSON_GetObjectItem(item, "status");
-    if (!field || !cJSON_IsNumber(field))
-        goto errorExit;
-
-    if (field->valueint != 0)
-        goto errorExit;
-    deactivated = field->valueint;
-
-    field = cJSON_GetObjectItem(item, "transaction");
-    if (!field || !cJSON_IsArray(field))
-        goto errorExit;
-
-    item = cJSON_GetArrayItem(field, 0);
-    if (!item || !cJSON_IsObject(item))
-        goto errorExit;
-
-    field = cJSON_GetObjectItem(item, "operation");
-    if (!field || !cJSON_IsObject(field))
-        goto errorExit;
-
-    document = DIDRequest_FromJson(field);
-    if (!document)
-        goto errorExit;
-
-    field = cJSON_GetObjectItem(item, "txid");
-    if (!field || !cJSON_IsString(field))
-        goto errorExit;
-    DIDMeta_SetTxid(&document->meta, field->valuestring);
-
-    field = cJSON_GetObjectItem(item, "timestamp");
-    if (!field || !cJSON_IsString(field))
-        goto errorExit;
-    if (parse_time(&timestamp, field->valuestring) == -1)
-        goto errorExit;
-    DIDMeta_SetTimestamp(&document->meta, timestamp);
-    DIDMeta_SetDeactived(&document->meta, deactivated);
-    DIDMeta_SetAlias(&document->meta, "");
-    DIDMeta_Copy(&document->did.meta, &document->meta);
-
-    cJSON_Delete(root);
-    return document;
+    rc = 0;
 
 errorExit:
-    if (document)
-        DIDDocument_Destroy(document);
-    cJSON_Delete(root);
-    return NULL;
+    if (root)
+        cJSON_Delete(root);
+    if (data)
+        free((char*)data);
+    return rc;
 }
 
+static int resolve_internal(ResolveResult *result, DID *did, bool all, bool force)
+{
+    assert(result);
+    assert(did);
+    assert(!all || (all && force));
+
+    if (!force && ResolverCache_Load(result, did, ttl) == 0)
+        return 0;
+
+    if (resolve_from_backend(result, did, all) == -1)
+        return -1;
+
+    return 0;
+}
+
+DIDDocument *DIDBackend_Resolve(DID *did, bool force)
+{
+    DIDDocument *doc;
+    ResolveResult result;
+
+    if (!did || !resolverInstance || !resolverInstance->resolve)
+        return NULL;
+
+    memset(&result, 0, sizeof(ResolveResult));
+    if (resolve_internal(&result, did, false, force) == -1)
+        return NULL;
+
+    //todo: add error code
+    if (ResolveResult_GetStatus(&result) > STATUS_EXPIRED) {
+        ResolveResult_Destroy(&result);
+        return NULL;
+    }
+
+    doc = result.txinfos.infos[0].request.doc;
+    ResolveResult_Free(&result);
+    return doc;
+}
+
+DIDDocument **DIDBackend_ResolveAll(DID *did)
+{
+    DIDDocument **docs;
+    ResolveResult result;
+    ssize_t size;
+
+    if (!did || !resolverInstance || !resolverInstance->resolve)
+        return NULL;
+
+    memset(&result, 0, sizeof(ResolveResult));
+    if (resolve_internal(&result, did, true, true) == -1)
+        return NULL;
+
+    //todo: add error code
+    if (ResolveResult_GetStatus(&result) > STATUS_EXPIRED) {
+        ResolveResult_Destroy(&result);
+        return NULL;
+    }
+
+    size = ResolveResult_GetTransactionCount(&result);
+    if (size == -1) {
+        ResolveResult_Destroy(&result);
+        return NULL;
+    }
+
+    docs = (DIDDocument**)calloc(size + 1, sizeof(DIDDocument*));
+    if (!docs) {
+        ResolveResult_Destroy(&result);
+        return NULL;
+    }
+
+    for (int i = 0; i < size; i++)
+        docs[i] = result.txinfos.infos[i].request.doc;
+
+    docs[size] = NULL;
+    ResolveResult_Free(&result);
+    return docs;
+}
+
+void DIDBackend_SetTTL(long _ttl)
+{
+    ttl = _ttl;
+}

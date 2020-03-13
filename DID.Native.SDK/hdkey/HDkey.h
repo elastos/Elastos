@@ -78,7 +78,7 @@ HDKey *HDKey_FromExtendedKey(const uint8_t *extendedkey, size_t size, HDKey *hdk
 // Convert to extended private key format
 ssize_t HDKey_SerializePrv(HDKey *hdkey, uint8_t *extendedkey, size_t size);
 
-ssize_t HDKey_SerializePub(HDKey *hdkey, uint8_t *pubkey, size_t size);
+ssize_t HDKey_SerializePub(HDKey *hdkey, uint8_t *extendedkey, size_t size);
 
 void HDKey_Wipe(HDKey *hdkey);
 

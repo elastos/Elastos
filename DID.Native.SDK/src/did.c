@@ -375,12 +375,20 @@ void DIDURL_Destroy(DIDURL *id)
     id = NULL;
 }
 
-DIDDocument *DID_Resolve(DID *did)
+DIDDocument **DID_ResolveAll(DID *did)
 {
     if (!did)
         return NULL;
 
-    return DIDBackend_Resolve(did);
+    return DIDBackend_ResolveAll(did);
+}
+
+DIDDocument *DID_Resolve(DID *did, bool force)
+{
+    if (!did)
+        return NULL;
+
+    return DIDBackend_Resolve(did, force);
 }
 
 int DID_SetAlias(DID *did, const char *alias)

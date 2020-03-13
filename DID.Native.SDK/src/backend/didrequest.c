@@ -40,7 +40,7 @@
 static const char *spec = "elastos/did/1.0";
 static const char* operation[] = {"create", "update", "deactivate"};
 
-static int header_toJson(JsonGenerator *gen, DIDRequest *req, DIDRequest_Type type)
+static int header_toJson(JsonGenerator *gen, DIDRequest *req)
 {
     assert(gen);
     assert(req);
@@ -48,7 +48,7 @@ static int header_toJson(JsonGenerator *gen, DIDRequest *req, DIDRequest_Type ty
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "specification", req->header.spec));
     CHECK(JsonGenerator_WriteStringField(gen, "operation", req->header.op));
-    if (type != RequestType_Create)
+    if (strcmp(req->header.op, operation[0]))
         CHECK(JsonGenerator_WriteStringField(gen, "previousTxid", req->header.prevtxid));
 
     CHECK(JsonGenerator_WriteEndObject(gen));
@@ -73,15 +73,14 @@ static int proof_toJson(JsonGenerator *gen, DIDRequest *req)
     return 0;
 }
 
-static int didrequest_toJson_internal(JsonGenerator *gen, DIDRequest *req,
-        DIDRequest_Type type)
+int DIDRequest_ToJson_Internal(JsonGenerator *gen, DIDRequest *req)
 {
     assert(gen);
     assert(req);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteFieldName(gen, "header"));
-    CHECK(header_toJson(gen, req, type));
+    CHECK(header_toJson(gen, req));
     CHECK(JsonGenerator_WriteStringField(gen, "payload", req->payload));
     CHECK(JsonGenerator_WriteFieldName(gen, "proof"));
     CHECK(proof_toJson(gen, req));
@@ -89,7 +88,7 @@ static int didrequest_toJson_internal(JsonGenerator *gen, DIDRequest *req,
     return 0;
 }
 
-static const char *didRequest_toJson(DIDRequest *req, DIDRequest_Type type)
+const char *DIDRequest_ToJson(DIDRequest *req)
 {
     JsonGenerator g, *gen;
 
@@ -99,7 +98,7 @@ static const char *didRequest_toJson(DIDRequest *req, DIDRequest_Type type)
     if (!gen)
         return NULL;
 
-    if (didrequest_toJson_internal(gen, req, type) < 0) {
+    if (DIDRequest_ToJson_Internal(gen, req) < 0) {
         JsonGenerator_Destroy(gen);
         return NULL;
     }
@@ -153,7 +152,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
     req.proof.signature = signature;
     DIDURL_Copy(&req.proof.verificationMethod, signKey);
 
-    requestJson = didRequest_toJson(&req, type);
+    requestJson = DIDRequest_ToJson(&req);
     free((char*)payload);
     return requestJson;
 }
@@ -168,9 +167,8 @@ int DIDRequest_Verify(DIDRequest *request)
             (unsigned char*)request->payload, strlen(request->payload));
 }
 
-DIDDocument *DIDRequest_FromJson(cJSON *json)
+DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
 {
-    DIDRequest req;
     cJSON *item, *field = NULL;
     char *op, *docJson, *previousTxid;
     DID *subject;
@@ -187,7 +185,7 @@ DIDDocument *DIDRequest_FromJson(cJSON *json)
     if (!field || !cJSON_IsString(field) ||
             strcmp(cJSON_GetStringValue(field), spec))
         return NULL;
-    req.header.spec = (char *)spec;
+    request->header.spec = (char *)spec;
 
     field = cJSON_GetObjectItem(item, "operation");
     if (!field)
@@ -196,66 +194,75 @@ DIDDocument *DIDRequest_FromJson(cJSON *json)
     op = cJSON_GetStringValue(field);
     if (!strcmp(op, "create") || !strcmp(op, "update") ||
             !strcmp(op, "deactivate"))
-        req.header.op = op;
+        request->header.op = op;
     else
         return NULL;
 
     field = cJSON_GetObjectItem(item, "previousTxid");
     if (!strcmp(op, "create") && !field)
-        req.header.prevtxid = "";
+        request->header.prevtxid = "";
     else
-        req.header.prevtxid = cJSON_GetStringValue(field);
+        request->header.prevtxid = cJSON_GetStringValue(field);
 
     item = cJSON_GetObjectItem(json, "payload");
     if (!item || !cJSON_IsString(item))
         return NULL;
 
-    req.payload = cJSON_GetStringValue(item);
+    request->payload = cJSON_GetStringValue(item);
 
-    len = strlen(req.payload) + 1;
+    len = strlen(request->payload) + 1;
     docJson = (char*)malloc(len);
-    len = base64_url_decode((uint8_t *)docJson, req.payload);
+    len = base64_url_decode((uint8_t *)docJson, request->payload);
     if (len <= 0) {
         free(docJson);
         return NULL;
     }
     docJson[len] = 0;
 
-    req.doc = DIDDocument_FromJson(docJson);
+    request->doc = DIDDocument_FromJson(docJson);
     free(docJson);
-    if (!req.doc)
+    if (!request->doc)
         return NULL;
 
     item = cJSON_GetObjectItem(json, "proof");
     if (!item || !cJSON_IsObject(item)) {
-        DIDDocument_Destroy(req.doc);
+        DIDDocument_Destroy(request->doc);
         return NULL;
     }
 
     field = cJSON_GetObjectItem(item, "verificationMethod");
     if (!field || !cJSON_IsString(field)) {
-        DIDDocument_Destroy(req.doc);
+        DIDDocument_Destroy(request->doc);
         return NULL;
     }
 
-    subject = DIDDocument_GetSubject(req.doc);
-    if (parse_didurl(&req.proof.verificationMethod, cJSON_GetStringValue(field), subject) < 0) {
-        DIDDocument_Destroy(req.doc);
+    subject = DIDDocument_GetSubject(request->doc);
+    if (parse_didurl(&request->proof.verificationMethod, cJSON_GetStringValue(field), subject) < 0) {
+        DIDDocument_Destroy(request->doc);
         return NULL;
     }
 
     field = cJSON_GetObjectItem(item, "signature");
     if (!field || !cJSON_IsString(field)) {
-        DIDDocument_Destroy(req.doc);
+        DIDDocument_Destroy(request->doc);
         return NULL;
     }
 
-    req.proof.signature = cJSON_GetStringValue(field);
+    request->proof.signature = cJSON_GetStringValue(field);
 
-    if (DIDRequest_Verify(&req) == -1) {
-        DIDDocument_Destroy(req.doc);
+    if (DIDRequest_Verify(request) == -1) {
+        DIDDocument_Destroy(request->doc);
         return NULL;
     }
 
-    return req.doc;
+    return request->doc;
+}
+
+void DIDRequest_Destroy(DIDRequest *request)
+{
+    if (!request)
+       return;
+
+    if (request->doc)
+        DIDDocument_Destroy(request->doc);
 }

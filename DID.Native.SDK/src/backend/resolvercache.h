@@ -20,51 +20,28 @@
  * SOFTWARE.
  */
 
-#ifndef __DIDREQUEST_H__
-#define __DIDREQUEST_H__
-
-#include <cjson/cJSON.h>
+#ifndef __RESOLVERCACHE_H__
+#define __RESOLVERCACHE_H__
 
 #include "ela_did.h"
+#include "resolveresult.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct DIDRequest {
-    struct {
-        char *spec;
-        char *op;
-        char *prevtxid;
-    } header;
+int ResolverCache_SetCacheDir(const char *root);
 
-    const char *payload;
-    DIDDocument *doc;
+const char *ResolverCache_GetCacheDir(void);
 
-    struct {
-        DIDURL verificationMethod;
-        const char *signature;
-    } proof;
-} DIDRequest;
+int ResolverCache_Reset(void);
 
-typedef enum DIDRequest_Type
-{
-   RequestType_Create,
-   RequestType_Update,
-   RequestType_Deactivate
-} DIDRequest_Type;
+int ResolverCache_Load(ResolveResult *result, DID *did, long ttl);
 
-DIDDocument *DIDRequest_FromJson(cJSON *json);
-
-const char* DIDRequest_Sign(DIDRequest_Type type, DID *did,
-        DIDURL *signKey, const char* data, DIDStore *store, const char *storepass);
-
-int DIDRequest_Verify(DIDRequest *request);
-
-DIDDocument *DIDRequest_GetDocument(DIDRequest *request);
+int ResolveCache_Store(ResolveResult *result, DID *did);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__DIDREQUEST_H__
+#endif //__RESOLVERCACHE_H__

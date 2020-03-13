@@ -1356,7 +1356,7 @@ int DIDDocumentBuilder_AuthorizationDid(DIDDocumentBuilder *builder, DIDURL *key
     if (!builder || !builder->document || !keyid || !controller || !authorkeyid)
         return -1;
 
-    doc = DID_Resolve(controller);
+    doc = DID_Resolve(controller, false);
     if (!doc)
         return -1;
 

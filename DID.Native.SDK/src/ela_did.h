@@ -331,15 +331,34 @@ DID_API void DID_Destroy(DID *did);
 
 /**
  * \~English
- * Get DID Document from chain.
+ * Get the newest DID Document from chain.
+ *
+ * @param
+ *      did                      [in] The handle of DID.
+ * @param
+ *      force                    [in] Indicate if load document from cache or not.
+ *                               force = true, document gets only from chain.
+ *                               force = false, document can get from cache,
+ *                               if no document is in the cache, resolve it from chain.
+ * @return
+ *      If no error occurs, return the handle to DID Document.
+ *      Otherwise, return NULL.
+ * @ User need to destroy DID Document.
+ */
+DID_API DIDDocument *DID_Resolve(DID *did, bool force);
+
+/**
+ * \~English
+ * Get all DID Documents from chain.
  *
  * @param
  *      did                      [in] The handle of DID.
  * @return
- *      If no error occurs, return the handle to DID Document.
+ *      If no error occurs, return the handle to DID Document buffter. Free
  *      Otherwise, return NULL.
+ * @ User need to free the return value and destroy every DID Document.
  */
-DID_API DIDDocument *DID_Resolve(DID *did);
+DID_API DIDDocument **DID_ResolveAll(DID *did);
 
 /**
  * \~English
@@ -2349,12 +2368,13 @@ DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid)
  *      did                      [in] The handle to DID.
  * @param
  *      signKey                  [in] The public key to sign.
-
+ * @param
+ *      force                    [in] Force document into chain.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API const char *DIDStore_PublishDID(DIDStore *store, const char *storepass,
-        DID *did, DIDURL *signKey);
+        DID *did, DIDURL *signKey, bool force);
 
 /**
  * \~English
@@ -2635,7 +2655,7 @@ DID_API bool Presentation_IsValid(Presentation *pre);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDBackend_InitializeDefault(const char *url);
+DID_API int DIDBackend_InitializeDefault(const char *url, const char *cachedir);
 
 /**
  * \~English
@@ -2646,7 +2666,16 @@ DID_API int DIDBackend_InitializeDefault(const char *url);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDBackend_Initialize(DIDResolver *resolver);
+DID_API int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir);
+
+/**
+ * \~English
+ * Set ttl for resolve cache.
+ *
+ * @param
+ *      ttl            [in] The time for cache.
+ */
+DID_API void DIDBackend_SetTTL(long ttl);
 
 #ifdef __cplusplus
 }

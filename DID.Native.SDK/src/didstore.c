@@ -35,17 +35,9 @@
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
-#ifdef HAVE_GLOB_H
-#include <glob.h>
-#endif
 #include <fcntl.h>
-#include <errno.h>
 #include <assert.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <stdarg.h>
-#include <fnmatch.h>
-#include <pthread.h>
 #include <openssl/opensslv.h>
 #include <cjson/cJSON.h>
 
@@ -96,279 +88,6 @@ typedef struct Cred_List_Helper {
     DID did;
     const char *type;
 } Cred_List_Helper;
-
-static int test_path(const char *path)
-{
-    struct stat s;
-
-    assert(path);
-
-    if (stat(path, &s) < 0)
-        return -1;
-
-    if (s.st_mode & S_IFDIR)
-        return S_IFDIR;
-    else if (s.st_mode & S_IFREG)
-        return S_IFREG;
-    else
-        return -1;
-}
-
-static int list_dir(const char *path, const char *pattern,
-        int (*callback)(const char *name, void *context), void *context)
-{
-    char full_pattern[PATH_MAX];
-    size_t len;
-    int rc = 0;
-
-    assert(path);
-    assert(pattern);
-
-    len = snprintf(full_pattern, sizeof(full_pattern), "%s/%s", path, pattern);
-    if (len == sizeof(full_pattern))
-        full_pattern[len-1] = 0;
-
-#if defined(_WIN32) || defined(_WIN64)
-    struct _finddata_t c_file;
-    intptr_t hFile;
-
-    if ((hFile = _findfirst(full_pattern, &c_file )) == -1L)
-        return -1;
-
-    do {
-        rc = callback(c_file.name, context);
-        if(rc < 0) {
-            break;
-        }
-    } while (_findnext(hFile, &c_file) == 0);
-
-    _findclose(hFile);
-#else
-    glob_t gl;
-    size_t pos = strlen(path) + 1;
-
-    memset(&gl, 0, sizeof(gl));
-    glob(full_pattern, GLOB_DOOFFS, NULL, &gl);
-    for (int i = 0; i < gl.gl_pathc; i++) {
-        char *fn = gl.gl_pathv[i] + pos;
-        rc = callback(fn, context);
-        if(rc < 0)
-            break;
-    }
-
-    globfree(&gl);
-#endif
-
-    if (!rc)
-        callback(NULL, context);
-
-    return rc;
-}
-
-static void delete_file(const char *path);
-
-static int delete_file_helper(const char *path, void *context)
-{
-    char fullpath[PATH_MAX];
-    int len;
-
-    if (!path)
-        return 0;
-
-    if (strcmp(path, ".") != 0 && strcmp(path, "..") != 0) {
-        len = snprintf(fullpath, sizeof(fullpath), "%s/%s", (char *)context, path);
-        if (len < 0 || len > PATH_MAX)
-            return -1;
-
-        delete_file(fullpath);
-    }
-
-    return 0;
-}
-
-static void delete_file(const char *path)
-{
-    int rc;
-
-    assert(path);
-
-    rc = test_path(path);
-    if (rc < 0)
-        return;
-
-    if (rc == S_IFDIR) {
-        list_dir(path, ".*", delete_file_helper, (void *)path);
-
-        if (list_dir(path, "*", delete_file_helper, (void *)path) == 0)
-            rmdir(path);
-    } else {
-        remove(path);
-    }
-}
-
-static int get_dirv(char *path, bool create, int count, va_list components)
-{
-    struct stat st;
-    int rc;
-
-    assert(path);
-    assert(count > 0);
-
-    *path = 0;
-    for (int i = 0; i < count; i++) {
-        const char *component = va_arg(components, const char *);
-        assert(component != NULL);
-        strcat(path, component);
-
-        rc = stat(path, &st);
-        if (!create && rc < 0)
-            return -1;
-
-        if (create) {
-            if (rc < 0) {
-                if (errno != ENOENT || (errno == ENOENT && mkdir(path, S_IRWXU) < 0))
-                    return -1;
-            } else {
-                if (!S_ISDIR(st.st_mode)) {
-                    if (remove(path) < 0)
-                        return -1;
-
-                    if (mkdir(path, S_IRWXU) < 0)
-                        return -1;
-                }
-            }
-        }
-
-        if (i < (count - 1))
-            strcat(path, PATH_SEP);
-    }
-
-    return 0;
-}
-
-static int get_dir(char* path, bool create, int count, ...)
-{
-    va_list components;
-    int rc;
-
-    assert(path);
-    assert(count > 0);
-
-    va_start(components, count);
-    rc = get_dirv(path, create, count, components);
-    va_end(components);
-
-    return rc;
-}
-
-static int get_file(char *path, bool create, int count, ...)
-{
-    const char *filename;
-    va_list components;
-    int rc;
-
-    assert(path);
-    assert(count > 0);
-
-    va_start(components, count);
-    rc = get_dirv(path, create, count - 1, components);
-    va_end(components);
-    if (rc < 0)
-        return -1;
-
-    va_start(components, count);
-    for (int i = 0; i < count - 1; i++)
-        va_arg(components, const char *);
-
-    filename = va_arg(components, const char *);
-    strcat(path, PATH_SEP);
-    strcat(path, filename);
-
-    va_end(components);
-    return 0;
-}
-
-static int store_file(const char *path, const char *string)
-{
-    int fd;
-    size_t len, size;
-
-    assert(path);
-    assert(string);
-
-    fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
-    if (fd == -1)
-        return -1;
-
-    len = strlen(string);
-    size = write(fd, string, len);
-    if (size < len) {
-        close(fd);
-        return -1;
-    }
-
-    close(fd);
-    return 0;
-}
-
-static const char *load_file(const char *path)
-{
-    int fd;
-    size_t size;
-    struct stat st;
-    const char *data;
-
-    if (!path)
-        return NULL;
-
-    fd = open(path, O_RDONLY);
-    if (fd == -1)
-        return NULL;
-
-    if (fstat(fd, &st) < 0) {
-        close(fd);
-        return NULL;
-    }
-
-    size = st.st_size;
-    data = (const char*)calloc(1, size + 1);
-    if (!data) {
-        close(fd);
-        return NULL;
-    }
-
-    if (read(fd, (char*)data, size) != size) {
-        free((char*)data);
-        close(fd);
-        return NULL;
-    }
-
-    close(fd);
-    return data;
-}
-
-static int is_empty_helper(const char *path, void *context)
-{
-    if (!path) {
-        *(int *)context = 0;
-        return 0;
-    }
-
-    *(int *)context = 1;
-    return -1;
-}
-
-static bool is_empty(const char *path)
-{
-    int flag = 0;
-
-    assert(path);
-
-    if (list_dir(path, "*", is_empty_helper, &flag) < 0 && flag)
-        return false;
-
-    return true;
-}
 
 static int store_didmeta(DIDStore *store, DIDMeta *meta, DID *did)
 {
@@ -1701,7 +1420,7 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass)
             continue;
 
         if (init_did(&did, DerivedKey_GetAddress(derivedkey)) == 0) {
-            document = DID_Resolve(&did);
+            document = DID_Resolve(&did, true);
             if (document) {
                 if (DIDStore_StoreDID(store, document, "") == 0) {
                     if (store_default_privatekey(store, storepass,
@@ -2004,49 +1723,63 @@ int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did, DIDURL *key,
 }
 
 const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *signKey)
+        DIDURL *signKey, bool force)
 {
     const char *alias, *txid, *resolvetxid;
     DIDDocument *doc, *resolvedoc;
-    int rc;
+    int rc = -1;
 
     if (!store || !storepass || !*storepass || !did)
         return NULL;
 
     doc = DIDStore_LoadDID(store, did);
-    if (!doc || DIDDocument_IsDeactivated(doc))
+    if (!doc)
         return NULL;
+
+    if (DIDDocument_IsDeactivated(doc) || (!force && DIDDocument_IsExpires(doc))) {
+        DIDDocument_Destroy(doc);
+        return NULL;
+    }
 
     alias = DIDDocument_GetAlias(doc);
 
     if (!signKey)
         signKey = DIDDocument_GetDefaultPublicKey(doc);
 
-    resolvedoc = DID_Resolve(did);
+    resolvedoc = DID_Resolve(did, true);
     if (!resolvedoc) {
         txid = DIDBackend_Create(&store->backend, doc, signKey, storepass);
     } else {
-        if (DIDStore_StoreDID(store, resolvedoc, alias) == -1 ||
-                DIDDocument_IsDeactivated(resolvedoc))
-            return NULL;
-
-        txid = DIDDocument_GetTxid(doc);
         resolvetxid = DIDDocument_GetTxid(resolvedoc);
-        if (!txid || !resolvetxid || strcmp(txid, resolvetxid))
-            return NULL;
+        if (!resolvetxid)
+            goto errorExit;
 
-        DIDDocument_Destroy(resolvedoc);
+        if (force) {
+            DIDMeta_SetTxid(&doc->did.meta, resolvetxid);
+            DIDMeta_SetTxid(&doc->meta, resolvetxid);
+        } else {
+            if (DIDStore_StoreDID(store, resolvedoc, alias) == -1 ||
+                    DIDDocument_IsDeactivated(resolvedoc))
+                goto errorExit;
+
+            txid = DIDDocument_GetTxid(doc);
+            if (!txid || strcmp(txid, resolvetxid))
+                goto errorExit;
+        }
         txid = DIDBackend_Update(&store->backend, doc, signKey, storepass);
     }
 
-    if (!txid || !*txid) {
-        DIDDocument_Destroy(doc);
-        return NULL;
-    }
+    if (!txid || !*txid)
+        goto errorExit;
 
     DIDMeta_SetTxid(&doc->meta, txid);
     rc = store_didmeta(store, &doc->meta, &doc->did);
-    DIDDocument_Destroy(doc);
+
+errorExit:
+    if (resolvedoc)
+        DIDDocument_Destroy(resolvedoc);
+    if (doc)
+        DIDDocument_Destroy(doc);
     return rc == -1 ? NULL : txid;
 }
 
@@ -2060,7 +1793,7 @@ const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         return NULL;
 
     if (!signKey) {
-        doc = DID_Resolve(did);
+        doc = DID_Resolve(did, false);
         if (!doc || DIDStore_StoreDID(store, doc, "") == -1)
             return NULL;
 

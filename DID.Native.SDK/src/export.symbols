@@ -16,6 +16,7 @@ _DID_GetTxid
 _DID_GetDeactived
 _DID_GetLastTransactionTimestamp
 _DID_Resolve
+_DID_ResolveAll
 
 # DIDURL
 _DIDURL_FromString
@@ -159,6 +160,7 @@ _DIDStore_Synchronize
 # Backend
 _DIDBackend_InitializeDefault
 _DIDBackend_Initialize
+_DIDBackend_SetTTL
 
 # Mnemonic
 _Mnemonic_Generate
