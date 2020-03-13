@@ -53,7 +53,8 @@ namespace Elastos {
 			size_t len;
 			char string_copy[DID_MAX_LEN];
 
-			if (!timeStamp || utcTime.empty())
+			timeStamp = 0;
+			if (utcTime.empty())
 				return false;
 
 			memset(&ptm, 0, sizeof(ptm));

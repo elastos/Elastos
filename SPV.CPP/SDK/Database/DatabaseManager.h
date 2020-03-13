@@ -172,23 +172,6 @@ namespace Elastos {
 
 			std::vector<AssetEntity> GetAllAssets() const;
 
-			// DID
-			bool PutDID(const DIDEntity &didEntity);
-
-			bool UpdateDID(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
-
-			bool DeleteDID(const std::string &did);
-
-			bool DeleteDIDByTxHash(const std::string &txHash);
-
-			bool GetDIDDetails(const std::string &did, DIDEntity &didEntity) const;
-
-			std::string GetDIDByTxHash(const std::string &txHash) const;
-
-			std::vector<DIDEntity> GetAllDID() const;
-
-			bool DeleteAllDID();
-
 			// UTXO store
 			bool PutUTXOs(const std::vector<UTXOEntity> &entities);
 

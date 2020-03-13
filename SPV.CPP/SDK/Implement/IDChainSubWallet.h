@@ -1,7 +1,24 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #ifndef __ELASTOS_SDK_IDCHAINSUBWALLET_H__
 #define __ELASTOS_SDK_IDCHAINSUBWALLET_H__
 
@@ -13,43 +30,6 @@ namespace Elastos {
 		class CredentialSubject;
 		class VerifiableCredential;
 		class DIDInfo;
-
-		class DIDDetail {
-		public:
-			DIDDetail();
-
-			~DIDDetail();
-
-			void SetDIDInfo(const PayloadPtr &didInfo);
-
-			const PayloadPtr &GetDIDInfo() const;
-
-			void SetIssuanceTime(time_t issuanceTime);
-
-			time_t GetIssuanceTime() const;
-
-			void SetTxTimeStamp(time_t timeStamp);
-
-			time_t GetTxTimeStamp() const;
-
-			void SetBlockHeighht(uint32_t blockHeight);
-
-			uint32_t GetBlockHeight() const;
-
-			void SetTxHash(const std::string &txHash);
-
-			const std::string &GetTxHash() const;
-
-			uint32_t GetConfirms(uint32_t walletBlockHeight) const;
-		private:
-			PayloadPtr _didInfo;
-			time_t _issuanceTime;
-			time_t _txTimeStamp;
-			uint32_t _blockHeight;
-			std::string _txHash;
-		};
-
-		typedef boost::shared_ptr<DIDDetail> DIDDetailPtr;
 
 		class IDChainSubWallet : public SidechainSubWallet, public IIDChainSubWallet {
 		public:
@@ -74,33 +54,6 @@ namespace Elastos {
 
 			virtual std::string GetPublicKeyCID(const std::string &pubkey) const;
 
-			virtual nlohmann::json GenerateDIDInfoPayload(
-				const nlohmann::json &didInfo,
-				const std::string &paypasswd);
-
-			virtual nlohmann::json GetResolveDIDInfo(uint32_t start, uint32_t count, const std::string &did) const;
-
-		protected:
-			virtual void onTxAdded(const TransactionPtr &tx);
-
-			virtual void onTxUpdated(const std::vector<TransactionPtr> &txns);
-
-			virtual void onTxDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan);
-
-		private:
-			std::vector<std::string> GetVerifiableCredentialTypes(const CredentialSubject &subject) const;
-
-			nlohmann::json ToDIDInfoJson(const DIDDetailPtr &didDetailPtr, bool isDetail) const;
-
-			void InitDIDList();
-
-			void InsertDID(const DIDDetailPtr &didDetailPtr);
-
-			VerifiableCredential GetSelfProclaimedCredential(const std::string &did, const std::string &didName, const std::string &operation) const;
-
-			VerifiableCredential GetPersonalInfoCredential(const nlohmann::json &didInfo) const;
-
-			DIDDetailPtr GetDIDInfo(const std::string &did) const;
 		protected:
 			friend class MasterWallet;
 
@@ -108,9 +61,6 @@ namespace Elastos {
 							 const ChainConfigPtr &config,
 							 MasterWallet *parent,
 							 const std::string &netType);
-
-		private:
-			std::vector<DIDDetailPtr> _didList;
 		};
 
 	}

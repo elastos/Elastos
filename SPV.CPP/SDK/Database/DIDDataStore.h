@@ -31,27 +31,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		struct DIDEntity {
-			DIDEntity() {}
-
-			DIDEntity(const std::string &did, const bytes_t &payloadInfo, time_t timestamp, uint32_t blockHeight,
-			          const std::string &txHash, time_t createTime) :
-					DID(did),
-					PayloadInfo(payloadInfo),
-					TimeStamp(timestamp),
-					BlockHeight(blockHeight),
-					TxHash(txHash),
-					CreateTime(createTime) {
-			}
-
-			std::string DID;
-			bytes_t PayloadInfo;
-			time_t TimeStamp;
-			uint32_t BlockHeight;
-			std::string TxHash;
-			time_t CreateTime;
-		};
-
 		class DIDDataStore : public TableBase {
 		public:
 			DIDDataStore(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
@@ -59,31 +38,6 @@ namespace Elastos {
 			~DIDDataStore();
 
 			virtual void InitializeTable();
-
-			bool PutDID(const DIDEntity &didEntity);
-
-			bool UpdateDID(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
-
-			bool DeleteDID(const std::string &did);
-
-			bool DeleteDIDByTxHash(const std::string &txHash);
-
-			bool DeleteAllDID();
-
-			std::vector<DIDEntity> GetAllDID() const;
-
-			std::string GetDIDByTxHash(const std::string &txHash) const;
-
-			bool GetDIDDetails(const std::string &did, DIDEntity &didEntity) const;
-
-		private:
-			bool SelectDID(const std::string &did, DIDEntity &didEntity) const;
-
-			bool InsertDID(const DIDEntity &didEntity);
-
-			bool UpdateDID(const DIDEntity &didEntity);
-
-			bool ContainTxHash(const std::string &txHash) const;
 
 		private:
 			const std::string DID_OLD_TABLE_NAME = "didTable";

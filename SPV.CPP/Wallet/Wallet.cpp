@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -856,57 +877,6 @@ static int withdraw(int argc, char *argv[]) {
 	return 0;
 }
 
-// diddoc
-static int diddoc(int argc, char *argv[]) {
-	checkCurrentWallet();
-
-	try {
-		IIDChainSubWallet *subWallet;
-		getSubWallet(subWallet, currentWallet, CHAINID_ID);
-
-		std::string id;
-		std::string didName;
-		std::string operation;
-		std::string publicKey;
-		uint64_t expires;
-		nlohmann::json pubKey = R"({"id":"#primary"})"_json;
-		nlohmann::json publicKeys;
-
-		std::cout << "Enter id: ";
-		std::getline(std::cin, id);
-
-		std::cout << "Enter did name: ";
-		std::getline(std::cin, didName);
-
-		std::cout << "Enter operation: ";
-		std::getline(std::cin, operation);
-
-		std::cout << "Enter public key: ";
-		std::getline(std::cin, publicKey);
-		pubKey["publicKey"] = publicKey;
-		publicKeys.push_back(pubKey);
-
-		std::cout << "Enter expires date: ";
-		std::cin >> expires;
-
-		nlohmann::json j;
-		j["id"] = id;
-		j["didName"] = didName;
-		j["operation"] = operation;
-		j["publicKey"] = publicKeys;
-		j["expires"] = expires;
-
-		std::string password = getpass("Enter payment password: ");
-		nlohmann::json payload = subWallet->GenerateDIDInfoPayload(j, password);
-
-		std::cout << payload.dump() << std::endl;
-	} catch (const std::exception &e) {
-		exceptionError(e);
-		return ERRNO_APP;
-	}
-	return 0;
-}
-
 // didtx [dodDocFilePath]
 static int didtx(int argc, char *argv[]) {
 	checkCurrentWallet();
@@ -959,25 +929,6 @@ static int didsign(int argc, char *argv[]) {
 		exceptionError(e);
 		return ERRNO_APP;
 	}
-	return 0;
-}
-
-// didInfo
-static int didInfo(int argc, char *argv[]) {
-	checkParam(2);
-	checkCurrentWallet();
-	std::string did = argv[1];
-	try {
-		IIDChainSubWallet *subWallet;
-		getSubWallet(subWallet, currentWallet, CHAINID_ID);
-
-		nlohmann::json info = subWallet->GetResolveDIDInfo(0, 1, did);
-		std::cout << info.dump(4) << std::endl;
-	} catch (const std::exception &e) {
-		exceptionError(e);
-		return ERRNO_APP;
-	}
-
 	return 0;
 }
 
@@ -1995,9 +1946,7 @@ struct command {
 	{"switch",     _switch,        "walletName                                       Switch current wallet."},
 	{"list",       list,           "[all]                                            List all wallets or current wallet."},
 	{"passwd",     passwd,         "                                                 Change password of wallet."},
-	{"diddoc",     diddoc,         "                                                 Create DID document."},
 	{"didtx",      didtx,          "[didDocFilepath]                                 Create DID transaction."},
-	{"didinfo",    didInfo,        "[did]                                            Get Resolve DID Info."},
 	{"didsign",    didsign,        "DID digest                                       Sign `digest` with private key of DID."},
 	{"did",        did,            "                                                 List did of IDChain"},
 	{"cid",        _cid,           "                                                 List cid of IDChain"},

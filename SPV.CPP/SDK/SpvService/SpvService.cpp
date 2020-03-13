@@ -290,26 +290,6 @@ namespace Elastos {
 			_databaseManager->DeletePeer(entity);
 		}
 
-		void SpvService::saveDIDInfo(const DIDEntity &didEntity) {
-			_databaseManager->PutDID(didEntity);
-		}
-
-		void SpvService::updateDIDInfo(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
-			_databaseManager->UpdateDID(hashes, blockHeight, timeStamp);
-		}
-
-		void SpvService::deleteDIDInfo(const std::string &txHash) {
-			_databaseManager->DeleteDIDByTxHash(txHash);
-		}
-
-		std::string SpvService::GetDIDByTxHash(const std::string &txHash) const {
-			return _databaseManager->GetDIDByTxHash(txHash);
-		}
-
-		std::vector<DIDEntity> SpvService::loadDIDList() const {
-			return _databaseManager->GetAllDID();
-		}
-
 		bool SpvService::networkIsReachable() {
 
 			bool reachable = true;

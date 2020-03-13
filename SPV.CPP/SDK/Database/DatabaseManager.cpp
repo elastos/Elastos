@@ -363,38 +363,6 @@ namespace Elastos {
 			return _assetDataStore.GetAllAssets();
 		}
 
-		bool DatabaseManager::PutDID(const DIDEntity &didEntity) {
-			return _didDataStore.PutDID(didEntity);
-		}
-
-		bool DatabaseManager::UpdateDID(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
-			return _didDataStore.UpdateDID(hashes, blockHeight, timestamp);
-		}
-
-		bool DatabaseManager::DeleteDID(const std::string &did) {
-			return _didDataStore.DeleteDID(did);
-		}
-
-		bool DatabaseManager::DeleteDIDByTxHash(const std::string &txHash) {
-			return _didDataStore.DeleteDIDByTxHash(txHash);
-		}
-
-		std::string DatabaseManager::GetDIDByTxHash(const std::string &txHash) const {
-			return _didDataStore.GetDIDByTxHash(txHash);
-		}
-
-		bool DatabaseManager::GetDIDDetails(const std::string &did, DIDEntity &didEntity) const {
-			return _didDataStore.GetDIDDetails(did, didEntity);
-		}
-
-		std::vector<DIDEntity> DatabaseManager::GetAllDID() const {
-			return _didDataStore.GetAllDID();
-		}
-
-		bool DatabaseManager::DeleteAllDID() {
-			return _didDataStore.DeleteAllDID();
-		}
-
 		bool DatabaseManager::PutUTXOs(const std::vector<UTXOEntity> &entities) {
 			return _utxoStore.Puts(entities);
 		}
