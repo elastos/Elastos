@@ -20,7 +20,7 @@ public enum DIDError: Error {
 
     case invalidState   (_ des: String? = nil)
 
-    case notFound       (_ des: String? = nil)
+    case notFoundError  (_ des: String? = nil)
 }
 
 extension DIDError {

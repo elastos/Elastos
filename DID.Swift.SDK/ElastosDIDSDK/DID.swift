@@ -58,9 +58,7 @@ public class DID {
         }
 
         getMeta().setExtra(value, name)
-        if getMeta().attachedStore {
-            try getMeta().store!.storeDidMeta(getMeta(), for: self)
-        }
+        try getMeta().store?.storeDidMeta(getMeta(), for: self)
     }
 
     public func getExtra(forName name: String) -> String? {
@@ -78,6 +76,10 @@ public class DID {
     }
 
     public func setAlias(_ newValue: String) throws {
+        guard !newValue.isEmpty else {
+            throw DIDError.illegalArgument()
+        }
+
         try setAliasName(newValue)
     }
 
@@ -101,7 +103,7 @@ public class DID {
         let doc: DIDDocument?
         doc = try DIDBackend.resolve(self, force)
         guard let _ = doc else {
-            throw DIDError.notFound()
+            throw DIDError.notFoundError()
         }
 
         setMeta(doc!.getMeta())
@@ -112,7 +114,7 @@ public class DID {
         return try resolve(false)
     }
 
-    func resolveAsync(_ force: Bool) -> Promise<DIDDocument> {
+    public func resolveAsync(_ force: Bool) -> Promise<DIDDocument> {
         return Promise<DIDDocument> { resolver in
             do {
                 resolver.fulfill(try resolve(force))
@@ -122,9 +124,19 @@ public class DID {
         }
     }
 
-    func resolveAsync() -> Promise<DIDDocument> {
+    public func resolveAsync() -> Promise<DIDDocument> {
         return resolveAsync(false)
     }
+
+    /*
+    public func resolveHistory() throws -> DIDHistory {
+        // TODO:
+    }
+
+    public func resolveHistoryAsync() -> Promise<DIDHistory> {
+        // TODO:
+    }
+    */
 }
 
 extension DID: CustomStringConvertible {
