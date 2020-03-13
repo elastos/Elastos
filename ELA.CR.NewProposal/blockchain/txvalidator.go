@@ -1710,6 +1710,12 @@ func getCode(publicKey []byte) []byte {
 func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	references map[*Input]Output, blockHeight uint32) error {
 
+	for _, output := range references {
+		if output.ProgramHash != b.chainParams.CRCCommitteeAddress {
+			return errors.New("proposal withdrawal transaction for non-crc committee address")
+		}
+	}
+
 	withdrawPayload, ok := txn.Payload.(*payload.CRCProposalWithdraw)
 	if !ok {
 		return errors.New("invalid payload")
