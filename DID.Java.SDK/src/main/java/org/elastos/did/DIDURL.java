@@ -41,25 +41,25 @@ public class DIDURL implements Comparable<DIDURL> {
 
 	private CredentialMeta meta;
 
-	public DIDURL(DID id, String fragment) {
-		if (id == null || fragment == null || fragment.isEmpty())
+	public DIDURL(DID base, String url) {
+		if (base == null || url == null || url.isEmpty())
 			throw new IllegalArgumentException();
 
-		if (fragment != null) {
-			if (fragment.startsWith("did:")) {
-				ParserHelper.parse(fragment, false, new Listener());
-				if (!getDid().equals(id))
+		if (url != null) {
+			if (url.startsWith("did:")) {
+				ParserHelper.parse(url, false, new Listener());
+				if (!getDid().equals(base))
 					throw new IllegalArgumentException("Mismatched arguments");
 
 				return;
 			}
 
-			if (fragment.startsWith("#"))
-				fragment = fragment.substring(1);
+			if (url.startsWith("#"))
+				url = url.substring(1);
 		}
 
-		this.did = id;
-		this.fragment = fragment;
+		this.did = base;
+		this.fragment = url;
 	}
 
 	public DIDURL(String url) throws MalformedDIDURLException {

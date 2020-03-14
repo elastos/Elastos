@@ -147,6 +147,12 @@ public class HDKeyTest {
 	    			.setSigningKey(keypair.getPublic())
 	    			.build()
 	    			.parseClaimsJws(token);
+
+	    	String[] parts = token.split("\\.");
+	    	Boolean success = EcdsaSigner.verify(key.getPublicKeyBytes(),
+	    			Base64.decode(parts[2], Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP),
+	    			parts[0].getBytes(), ".".getBytes(), parts[1].getBytes());
+	    	assertTrue(success);
 		}
 	}
 }

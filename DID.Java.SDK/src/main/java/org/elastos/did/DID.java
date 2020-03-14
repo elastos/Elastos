@@ -155,7 +155,7 @@ public class DID implements Comparable<DID> {
 		return future;
 	}
 
-	public CompletableFuture<DIDDocument> resolveAsync(DID did) {
+	public CompletableFuture<DIDDocument> resolveAsync() {
 		return resolveAsync(false);
 	}
 

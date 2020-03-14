@@ -478,7 +478,7 @@ public final class DIDStore {
 			throw new DIDStoreException("DID already deactivated.");
 		}
 
-		if (doc.isExpired()) {
+		if (doc.isExpired() && !force) {
 			log.error("{} already expired, use force mode to publish anyway.", did.toString());
 			throw new DIDStoreException("DID already expired.");
 		}
