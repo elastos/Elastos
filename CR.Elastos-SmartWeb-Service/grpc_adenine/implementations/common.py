@@ -21,11 +21,14 @@ class Common(common_pb2_grpc.CommonServicer):
         self.rate_limiter = RateLimiter(self.session)
 
     def GenerateAPIRequestMnemonic(self, request, context):
-        secret_key = config('SHARED_SECRET_ADENINE')
-        jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
         metadata = dict(context.invocation_metadata())
         input_did = metadata["did"]
-
+        secret_key = config('SHARED_SECRET_ADENINE')
+        try:
+            jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+        except:
+            return common_pb2.Response(output='', status_message='Authentication Error', status=False)
+        
         mnemonic = jwt_info['mnemonic']
 
         private_key, did = get_info_from_mnemonics(mnemonic)
@@ -39,22 +42,25 @@ class Common(common_pb2_grpc.CommonServicer):
         return response
 
     def GenerateAPIRequest(self, request, context):
-        secret_key = config('SHARED_SECRET_ADENINE')
-        jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
         metadata = dict(context.invocation_metadata())
-        did = metadata["did"]
-
-        if secret_key != jwt_info['secret_key']:
+        input_did = metadata["did"]
+        secret_key = config('SHARED_SECRET_ADENINE')
+        try:
+            jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+        except:
             return common_pb2.Response(output='', status_message='Authentication Error', status=False)
 
-        response = generate_api_key(self.session, self.rate_limiter, did)
+        response = generate_api_key(self.session, self.rate_limiter, input_did)
         return response
 
     def GetAPIKeyMnemonic(self, request, context):
-        secret_key = config('SHARED_SECRET_ADENINE')
-        jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
         metadata = dict(context.invocation_metadata())
         input_did = metadata["did"]
+        secret_key = config('SHARED_SECRET_ADENINE')
+        try:
+            jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+        except:
+            return common_pb2.Response(output='', status_message='Authentication Error', status=False)
 
         mnemonic = jwt_info['mnemonic']
 
@@ -69,15 +75,15 @@ class Common(common_pb2_grpc.CommonServicer):
         return response
 
     def GetAPIKey(self, request, context):
-        secret_key = config('SHARED_SECRET_ADENINE')
-        jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
         metadata = dict(context.invocation_metadata())
-        did = metadata["did"]
-
-        if secret_key != jwt_info['secret_key']:
+        input_did = metadata["did"]
+        secret_key = config('SHARED_SECRET_ADENINE')
+        try:
+            jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+        except:
             return common_pb2.Response(output='', status_message='Authentication Error', status=False)
 
-        response = get_api_key(self.session, did)
+        response = get_api_key(self.session, input_did)
         return response
 
 TOKEN_EXPIRATION = 24 * 30

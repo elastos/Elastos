@@ -10,10 +10,7 @@ service Hive {
 
 // The request message
 message Request {
-  string api_key = 1;
-  string network = 2;
-  string input = 3;
-  bytes file_content = 4;
+  string input = 1;
 }
 
 // The response message
@@ -21,5 +18,4 @@ message Response {
   string output = 1;
   string status_message = 2;
   bool status = 3;
-  bytes file_content = 4;
 }
