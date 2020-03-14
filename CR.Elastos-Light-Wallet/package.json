@@ -1,14 +1,15 @@
 {
   "name": "elastos-light-wallet",
-  "version": "1.0.0-RC14",
+  "version": "1.0.0-RC15",
   "description": "elastos light wallet",
   "productName": "elastos-light-wallet",
   "main": "index.js",
   "scripts": {
+    "eslint": "eslint --fix 'scripts/**/*'",
     "coverage": "nyc -x 'test/**' ./node_modules/mocha/bin/mocha --experimental-worker --recursive -t 100000 test",
     "start": "electron . --enable-logging --remote-debugging-port=9222",
-    "test": "check-node-version --node 8 --npm 6 && ./node_modules/mocha/bin/mocha test",
-    "test-ledger": "check-node-version --node 8 --npm 6 && ./node_modules/mocha/bin/mocha --timeout 100000 ledger-test -g 'ledger'",
+    "test": "check-node-version --node 12 --npm 6 && ./node_modules/mocha/bin/mocha test",
+    "test-ledger": "check-node-version --node 12 --npm 6 && ./node_modules/mocha/bin/mocha --timeout 100000 ledger-test -g 'ledger'",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "dist-all": "electron-builder -mwl",

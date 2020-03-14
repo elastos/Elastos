@@ -11,12 +11,12 @@ const mainConsole = new mainConsoleUtil.Console(process.stdout, process.stderr);
 
 mainConsole.log('Ledger Console Logging Enabled.');
 
-const bip44_path =
-  "8000002C" +
-  "80000901" +
-  "80000000" +
-  "00000000" +
-  "00000000";
+const bip44Path =
+  '8000002C' +
+  '80000901' +
+  '80000000' +
+  '00000000' +
+  '00000000';
 
 const LOG_LEDGER_MESSAGE = true;
 
@@ -24,7 +24,7 @@ const getPublicKey = (callback) => {
   const deviceThenCallback = (device) => {
     try {
       mainConsole.log('sending message ');
-      const message = Buffer.from("8004000000" + bip44_path, "hex");
+      const message = Buffer.from('8004000000' + bip44Path, 'hex');
       mainConsole.log(`STARTED sending message ${message.toString('hex').toUpperCase()}`);
       mainConsole.log(`STARTED sending device ${JSON.stringify(device)}`);
       device.exchange(message).then((response) => {
@@ -35,7 +35,7 @@ const getPublicKey = (callback) => {
         let message = '';
         let publicKey = '';
         mainConsole.log(`INTERIM sending message: responseStr:${responseStr}`);
-        if (responseStr.endsWith("9000")) {
+        if (responseStr.endsWith('9000')) {
           success = true;
           message = responseStr;
           publicKey = responseStr.substring(0, 130);
@@ -49,39 +49,39 @@ const getPublicKey = (callback) => {
         callback({
           success: success,
           message: message,
-          publicKey: publicKey
+          publicKey: publicKey,
         });
       }).catch((error) => {
         mainConsole.trace(error);
         mainConsole.log(`FAILURE sending message. error:${error}`);
         callback({
           success: false,
-          message: 'Error ' + JSON.stringify(error)
+          message: 'Error ' + JSON.stringify(error),
         });
       });
     } catch (error) {
       mainConsole.log(`FAILURE creating and sending message. error:${error}`);
       callback({
         success: false,
-        message: 'Error ' + JSON.stringify(error)
+        message: 'Error ' + JSON.stringify(error),
       });
     }
-  }
+  };
   const deviceErrorCallback = (error) => {
     callback({
       success: false,
-      message: 'Error ' + JSON.stringify(error)
+      message: 'Error ' + JSON.stringify(error),
     });
-  }
+  };
   getLedgerInfo(deviceThenCallback, deviceErrorCallback);
-}
+};
 
 const finishLedgerDeviceInfo = (msg) => {
   if (LOG_LEDGER_MESSAGE) {
     mainConsole.log('finishLedgerDeviceInfo : ', JSON.stringify(msg));
   }
   return msg;
-}
+};
 
 
 const getLedgerDeviceInfo = (callback) => {
@@ -92,23 +92,23 @@ const getLedgerDeviceInfo = (callback) => {
       callback(finishLedgerDeviceInfo({
         enabled: true,
         error: false,
-        message: `Ledger Device Found.${deviceInfoStr}`
+        message: `Ledger Device Found.${deviceInfoStr}`,
       }));
     } catch (error) {
       callback(finishLedgerDeviceInfo({
         enabled: false,
         error: true,
-        message: error
+        message: error,
       }));
     } finally {
       device.close();
     }
-  }
+  };
   const deviceErrorCallback = (error) => {
     callback(finishLedgerDeviceInfo(error));
-  }
+  };
   getLedgerInfo(deviceThenCallback, deviceErrorCallback);
-}
+};
 
 const getLedgerInfo = (deviceThenCallback, deviceErrorCallback) => {
   const supported = TransportNodeHid.default.isSupported();
@@ -116,7 +116,7 @@ const getLedgerInfo = (deviceThenCallback, deviceErrorCallback) => {
     deviceErrorCallback(finishLedgerDeviceInfo({
       enabled: false,
       error: true,
-      message: 'Your computer does not support the ledger device.'
+      message: 'Your computer does not support the ledger device.',
     }));
     return;
   }
@@ -130,7 +130,7 @@ const getLedgerInfo = (deviceThenCallback, deviceErrorCallback) => {
       deviceErrorCallback(finishLedgerDeviceInfo({
         enabled: false,
         error: true,
-        message: 'USB Error: No device found.'
+        message: 'USB Error: No device found.',
       }));
     } else {
       TransportNodeHid.default.open(paths[0]).then((device) => {
@@ -146,7 +146,7 @@ const getLedgerInfo = (deviceThenCallback, deviceErrorCallback) => {
 
 const splitMessageIntoChunks = (ledgerMessage) => {
   const messages = [];
-  let bufferSize = 255 * 2;
+  const bufferSize = 255 * 2;
   let offset = 0;
   while (offset < ledgerMessage.length) {
     let chunk;
@@ -157,28 +157,28 @@ const splitMessageIntoChunks = (ledgerMessage) => {
       chunk = ledgerMessage.substring(offset);
     }
     if ((offset + chunk.length) == ledgerMessage.length) {
-      p1 = "80";
+      p1 = '80';
     } else {
-      p1 = "00";
+      p1 = '00';
     }
 
-    let chunkLength = chunk.length / 2;
+    const chunkLength = chunk.length / 2;
 
     mainConsole.log(`Ledger Signature chunkLength ${chunkLength}`);
 
     let chunkLengthHex = chunkLength.toString(16);
     while (chunkLengthHex.length < 2) {
-      chunkLengthHex = "0" + chunkLengthHex;
+      chunkLengthHex = '0' + chunkLengthHex;
     }
 
     mainConsole.log(`Ledger Signature chunkLength hex ${chunkLengthHex}`);
 
-    messages.push("8002" + p1 + "00" + chunkLengthHex + chunk);
+    messages.push('8002' + p1 + '00' + chunkLengthHex + chunk);
     offset += chunk.length;
   }
 
   return messages;
-}
+};
 
 const decodeSignature = (response) => {
   /**
@@ -207,7 +207,7 @@ const decodeSignature = (response) => {
   const rEnd = rStart + rLen;
   mainConsole.log(`Ledger Signature rEnd ${rEnd}`);
 
-  while ((response.substring(rStart, rStart + 2) == "00") && ((rEnd - rStart) > 64)) {
+  while ((response.substring(rStart, rStart + 2) == '00') && ((rEnd - rStart) > 64)) {
     rStart += 2;
   }
 
@@ -222,7 +222,7 @@ const decodeSignature = (response) => {
   const sEnd = sStart + sLen;
   mainConsole.log(`Ledger Signature sEnd ${sEnd}`);
 
-  while ((response.substring(sStart, sStart + 2) == "00") && ((sEnd - sStart) > 64)) {
+  while ((response.substring(sStart, sStart + 2) == '00') && ((sEnd - sStart) > 64)) {
     sStart += 2;
   }
 
@@ -237,7 +237,7 @@ const decodeSignature = (response) => {
   const SignerLength = 32;
   const SignatureLength = 64;
 
-  var signatureHex = r;
+  let signatureHex = r;
   while (signatureHex.length < SignerLength) {
     signatureHex = '0' + signatureHex;
   }
@@ -249,10 +249,10 @@ const decodeSignature = (response) => {
   }
 
   return signatureHex;
-}
+};
 
 const sign = (transactionHex, callback) => {
-  const ledgerMessage = transactionHex + bip44_path;
+  const ledgerMessage = transactionHex + bip44Path;
 
   mainConsole.log(`sign ${ledgerMessage}`);
 
@@ -260,9 +260,9 @@ const sign = (transactionHex, callback) => {
 
   const deviceThenCallback = async (device) => {
     try {
-      var lastResponse = undefined;
+      let lastResponse = undefined;
       for (let ix = 0; ix < messages.length; ix++) {
-        const message = Buffer.from(messages[ix], "hex");
+        const message = Buffer.from(messages[ix], 'hex');
         mainConsole.log(`STARTED sending message ${ix+1} of ${messages.length}: ${message.toString('hex').toUpperCase()}`);
         const response = await device.exchange(message);
         const responseStr = response.toString('hex').toUpperCase();
@@ -272,10 +272,10 @@ const sign = (transactionHex, callback) => {
       }
       device.close();
 
-      var signature = undefined;
-      var success = false;
+      let signature = undefined;
+      let success = false;
       if (lastResponse !== undefined) {
-        if (lastResponse != "9000") {
+        if (lastResponse != '9000') {
           signature = decodeSignature(lastResponse);
           success = true;
         }
@@ -284,25 +284,25 @@ const sign = (transactionHex, callback) => {
       callback({
         success: success,
         message: lastResponse,
-        signature: signature
+        signature: signature,
       });
     } catch (error) {
       mainConsole.log(`FAILURE creating and sending message. error:${error}`);
       mainConsole.log(error.stack);
       callback({
         success: false,
-        message: 'Error ' + JSON.stringify(error)
+        message: 'Error ' + JSON.stringify(error),
       });
     }
-  }
+  };
   const deviceErrorCallback = (error) => {
     callback({
       success: false,
-      message: 'Error ' + JSON.stringify(error)
+      message: 'Error ' + JSON.stringify(error),
     });
-  }
+  };
   getLedgerInfo(deviceThenCallback, deviceErrorCallback);
-}
+};
 
 exports.getLedgerDeviceInfo = getLedgerDeviceInfo;
 exports.getPublicKey = getPublicKey;

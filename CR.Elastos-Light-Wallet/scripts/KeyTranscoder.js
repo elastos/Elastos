@@ -7,7 +7,7 @@ const getPublic = (privateKey) => {
   const keypair = curve.keyFromPrivate(rawPrivateKey);
   const publicKey = getPublicEncoded(keypair, true);
   return publicKey.toString('hex');
-}
+};
 
 const getPublicKeyEncoded = (publicKey) => {
   if (!Buffer.isBuffer(publicKey)) {
@@ -30,7 +30,7 @@ const getPublicKeyEncoded = (publicKey) => {
     encoded = '02' + publicKey.slice(1, 33).toString('hex').toUpperCase();
   }
   return Buffer.from(encoded, 'hex');
-}
+};
 
 const getPublicEncoded = (keypair, encode) => {
   //   const unencodedPubKey = keypair.getPublic().encode('hex');
@@ -44,7 +44,7 @@ const getPublicEncoded = (keypair, encode) => {
   } else {
     return unencodedPubKey;
   }
-}
+};
 
 exports.getPublic = getPublic;
 exports.getPublicKeyEncoded = getPublicKeyEncoded;

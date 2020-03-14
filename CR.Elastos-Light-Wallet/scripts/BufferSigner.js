@@ -1,7 +1,7 @@
 const EC = require('elliptic').ec;
 const curve = new EC('p256');
 
-const Sha256Hash = require('./Sha256Hash.js')
+const sha256Hash = require('./Sha256Hash.js');
 
 
 const SignerLength = 32;
@@ -10,9 +10,9 @@ const SignatureLength = 64;
 const getHash = (bufferHex) => {
   const buffer = Buffer.from(bufferHex, 'hex');
 
-  const hashSha = Sha256Hash.Sha256Hash(buffer);
+  const hashSha = sha256Hash.sha256Hash(buffer);
   return hashSha;
-}
+};
 
 const sign = (bufferHex, privateKeyHex) => {
   const privateKey = Buffer.from(privateKeyHex, 'hex');
@@ -29,7 +29,7 @@ const sign = (bufferHex, privateKeyHex) => {
   // console.log('sign.r',r);
   // console.log('sign.s',s);
 
-  var signatureHex = r;
+  let signatureHex = r;
   while (signatureHex.length < SignerLength) {
     signatureHex = '0' + signatureHex;
   }

@@ -14,7 +14,7 @@
   },
   "rules": {
     "max-len": ["error", {
-      "code": 120
+      "code": 160
     }]
   }
 }

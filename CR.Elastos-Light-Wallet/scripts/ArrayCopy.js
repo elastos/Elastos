@@ -7,6 +7,6 @@ const arraycopy = (from, fromIx, to, toIx, length) => {
   for (let i = 0; i < length; i++) {
     to[i + toIx] = from[i + fromIx];
   }
-}
+};
 
 exports.arraycopy = arraycopy;

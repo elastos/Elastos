@@ -110,7 +110,9 @@ exports.decodeTx = (encodedTx, includePrograms) => {
     // console.log('decodeTx.value', value);
     const valueHex = value.reverse().toString('hex');
     // console.log('decodeTx.valueHex', valueHex);
+    /* eslint-disable */
     const valueBigNumber = BigNumber(valueHex, 16);
+    /* eslint-enable */
     // console.log('decodeTx.valueBigNumber', valueBigNumber);
     // console.log('decodeTx.valueBigNumber.Hex', valueBigNumber.toString(16));
     Output.Value = valueBigNumber.toString(10);
@@ -230,7 +232,9 @@ exports.encodeTx = (decodedTx, includePrograms) => {
     encodedTx.writeBuffer(assetID);
 
     // console.log('encodeTx.Value', Output.Value);
+    /* eslint-disable */
     const valueBigNumber = BigNumber(Output.Value, 10);
+    /* eslint-enable */
     // console.log('encodeTx.valueBigNumber', valueBigNumber);
     // console.log('encodeTx.valueBigNumber.Hex', valueBigNumber.toString(16));
     const valueHex = valueBigNumber.toString(16).padStart(16, '0');

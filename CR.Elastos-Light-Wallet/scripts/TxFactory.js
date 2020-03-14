@@ -1,11 +1,13 @@
 const KeyTranscoder = require('./KeyTranscoder.js');
-const TxTranscoder = require('./TxTranscoder.js');
 const TxSigner = require('./TxSigner.js');
 const AddressTranscoder = require('./AddressTranscoder.js');
 const Asset = require('./Asset.js');
 const BigNumber = require('bignumber.js');
 
+
+/* eslint-disable */
 const ZERO = BigNumber(0, 10);
+/* eslint-enable */
 
 const createSignedSendToTx = (privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmountSats) => {
   if (Number.isNaN(sendAmount)) {
@@ -41,7 +43,9 @@ const createUnsignedSendToTx = (unspentTransactionOutputs, sendToAddress, sendAm
   if (feeAmountSats == undefined) {
     throw new Error(`feeAmount is undefined`);
   }
+  /* eslint-disable */
   const sendAmountSats = BigNumber(sendAmount, 10).times(Asset.satoshis);
+  /* eslint-enable */
   return createUnsignedSendToTxSats(unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats);
 };
 
@@ -70,7 +74,9 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
     tx.TxAttributes.push(txAttribute);
   }
 
+  /* eslint-disable */
   const feeSats = BigNumber(feeAmountSats, 10);
+  /* eslint-enable */
 
   // console.log(`createUnsignedSendToTx.inputValueSats[${sendAmountSats}]`);
 
@@ -78,7 +84,9 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
 
   // console.log(`createUnsignedSendToTx.sendAmountAndFeeSats[${sendAmountAndFeeSats}]`);
 
+  /* eslint-disable */
   let inputValueSats = BigNumber(0, 10);
+  /* eslint-enable */
   const usedUtxos = new Set();
 
   unspentTransactionOutputs.forEach((utxo) => {
@@ -139,14 +147,18 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
 };
 
 const updateValueSats = (utxo, utxoIx) => {
+  /* eslint-disable */
   const valueBigNumber = BigNumber(utxo.Value, 10);
+  /* eslint-enable */
   utxo.utxoIx = utxoIx;
   utxo.valueSats = valueBigNumber.times(Asset.satoshis);
 };
 
 const createUnsignedVoteTx = (unspentTransactionOutputs, publicKey, feeAmountSats, candidates) => {
   const sendToAddress = AddressTranscoder.getAddressFromPublicKey(publicKey);
+  /* eslint-disable */
   let sendAmountSats = BigNumber(0, 10);
+  /* eslint-enable */
 
   const usedUtxos = new Set();
   unspentTransactionOutputs.forEach((utxo) => {

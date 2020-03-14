@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
-const Sha256Hash = (buffer) => {
+const sha256Hash = (buffer) => {
   return crypto.createHash('sha256').update(buffer).digest();
-}
+};
 
-exports.Sha256Hash = Sha256Hash;
+exports.sha256Hash = sha256Hash;

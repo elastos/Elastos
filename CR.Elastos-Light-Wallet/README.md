@@ -57,4 +57,32 @@ openssl sha -sha256 dist/elastos-light-wallet-1.0.0.dmg;
 don't forget testnet and mainnet config files are in github at: https://github.com/elastos/Elastos.ELA/blob/master/docs/
 
 ## todo:
-1. add warning when local node is behind explorer's block height.
+
+2. support nodes with REST/RPC on nonstandard ports, and https:
+  https://api-wallet-ela.elastos.org/api/v1/node/state
+3. only support elephant node servers, and only REST, no RPC.
+  https://walletservice.readthedocs.io/en/latest/api_guide.html#send-offline-transaction
+  replace
+    getutxosbyamount
+      https://walletservice.readthedocs.io/en/latest/api_guide.html#get--api-1-utxos-(string-%60address%60)
+
+    sendrawtransaction
+      https://walletservice.readthedocs.io/en/latest/api_guide.html#post--api-1-sendRawTx
+
+    listproducers
+      https://api-wallet-ela.elastos.org/api/v1/dpos/rank/height/0
+
+    (new one, after you vote)
+      https://elephantnode.readthedocs.io/en/latest/enhancement_api.html#get-dpos-voter-s-statistics
+
+    change REST to REST
+      /api/v1/txs/?pageNum=0&address=
+      vs
+      /api/1/history/address
+        https://walletservice.readthedocs.io/en/latest/api_guide.html#get-address-transaction-history
+
+elastos rss feed        
+    https://news.elastos.org/feed/
+
+price feed
+    https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd
