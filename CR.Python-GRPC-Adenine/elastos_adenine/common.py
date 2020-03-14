@@ -38,7 +38,7 @@ class Common:
 
     def generate_api_request(self, secret_key, did):
         jwt_info = {
-            'secret_key': secret_key
+            'pass': 'pass'
         }
 
         jwt_token = jwt.encode({
@@ -65,7 +65,7 @@ class Common:
 
     def get_api_key_request(self, secret_key, did):
         jwt_info = {
-            'secret_key': secret_key
+            'pass': 'pass'
         }
 
         jwt_token = jwt.encode({

@@ -34,7 +34,7 @@ def main():
     ela_to_use = 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN'
     ela_eth_to_use = '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'QHvQMh5pV7OwrJInmEa9SYkoV6xib66nkQKlG6LrIszBNqIMadQ30UO15warAVOq'
+    api_key_to_use = 'ijc5qzLCpj2on7CE3x1afYzCOm3yyQtiwHfKFGrUQiHGcb2hu7iuBSOOeWzoDWGp'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -144,12 +144,12 @@ def main():
             hive = Hive(host, port, production)
             # Upload and Sign
             print("\n--> Upload and Sign")
-            response = hive.upload_and_sign(api_key_to_use, network, private_key_to_use, 'test/sample.txt')
-            if response.output:
-                json_output = json.loads(response.output)
+            response = hive.upload_and_sign(api_key_to_use, did_to_use, network, private_key_to_use, 'test/sample.txt')
+            if response.status:
+                jwt_info = jwt.decode(response.output, key=api_key_to_use, algorithms=['HS256']).get('jwt_info')
                 print("Status Message :", response.status_message)
-                for i in json_output['result']:
-                    print(i, ':', json_output['result'][i])
+                for i in jwt_info['result']:
+                    print(i, ':', jwt_info['result'][i])
             else:
                 print("Status Message :", response.status_message)
         except Exception as e:
@@ -162,19 +162,23 @@ def main():
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D56663975624D6B6B61374478556B4539327A65316663466166755169466A5664663345377A32737359736E43",
+                "msg": "516D614C55377A6B56784554396451316D4544464C677A7466564B6D53683343523641656265533774557764766A",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "2AD102BEE15190CEF4578D1322FACAA618F1C4E73D2B2194CFFA573396FD8C77692C50CD38CF77DB990994F9D92C58C7FC082400A6C8D8DAA4EF42AFB0C72CED",
-                "hash": "QmVf9ubMkka7DxUkE92ze1fcFafuQiFjVdf3E7z2ssYsnC",
+                "sig": "15FD3D976CF619CCF372F5752754A4EB25D861BF56D143FB8E07E45836D16795BBA80D070955BAF425995BA29AD6A11381A5B67D8E3CDA53F943CC080C693638",
+                "hash": "QmaLU7zkVxET9dQ1mEDFLgztfVKmSh3CR6AebeS7tUwdvj",
                 "privateKey": private_key_to_use
             }
-            response = hive.verify_and_show(api_key_to_use, network, request_input)
-            if response.output:
+            response = hive.verify_and_show(api_key_to_use, did_to_use,  network, request_input)
+
+            if response['status']:
                 download_path = 'test/sample_from_hive.txt'
-                print("Status Message :", response.status_message)
+                print("Status Message :", response['status_message'])
                 print("File Path :", download_path)
+                
                 with open(download_path, 'wb') as file:
-                    file.write(response.file_content)
+                    file.write(response['file_content'])
+            else:
+                print("Error Message: " + response['status_message'])
         except Exception as e:
             print(e)
         finally:
