@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/coranos/elastos-light-wallet#readme",
   "dependencies": {
-    "@ledgerhq/hw-transport-node-hid": "^5.10.0",
+    "@ledgerhq/hw-transport-node-hid": "^5.11.0",
     "babel-polyfill": "^6.26.0",
     "bignumber.js": "^9.0.0",
     "bs58": "^4.0.1",
@@ -44,7 +44,7 @@
     "react": "^16.13.0",
     "react-bootstrap": "^1.0.0-beta.17",
     "react-dom": "^16.13.0",
-    "regenerator-runtime": "^0.13.3",
+    "regenerator-runtime": "^0.13.5",
     "ripemd160": "^2.0.2",
     "smart-buffer": "^4.1.0",
     "usb": "^1.6.2",
@@ -52,8 +52,8 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "electron": "^8.1.0",
-    "electron-builder": "^22.4.0",
+    "electron": "^8.1.1",
+    "electron-builder": "^22.4.1",
     "eslint": "^6.8.0",
     "eslint-config-google": "^0.14.0",
     "mocha": "^7.1.0",
