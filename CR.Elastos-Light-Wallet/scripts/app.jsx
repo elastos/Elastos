@@ -348,10 +348,10 @@ const sendAmountToAddressErrorCallback = (error) => {
 
 const sendAmountToAddressReadyCallback = (transactionJson) => {
   mainConsole.log('sendAmountToAddressReadyCallback ' + JSON.stringify(transactionJson));
-  sendToAddressStatuses.length = 0;
-  if (transactionJson.error) {
-    sendToAddressStatuses.push(transactionJson.error.message);
+  if (transactionJson.Error) {
+    sendToAddressStatuses.push(`${transactionJson.Error} ${transactionJson.Result}`);
   } else {
+    sendToAddressStatuses.length = 0;
     const link = getTransactionHistoryLink(transactionJson.result);
     const elt = {};
     elt.txDetailsUrl = link;
@@ -459,8 +459,9 @@ const sendAmountToAddress = () => {
 const sendAmountToAddressCallback = (encodedTx) => {
   const txUrl = `${REST_SERVICE}/api/v1/sendRawTx`;
 
-  const jsonString = `{""data": "${encodedTx}"}`;
+  const jsonString = `{"data": "${encodedTx}"}`;
 
+  mainConsole.log('sendAmountToAddress.txUrl ' + txUrl);
   mainConsole.log('sendAmountToAddress.encodedTx ' + JSON.stringify(encodedTx));
 
   const decodedTx = TxTranscoder.decodeTx(Buffer.from(encodedTx, 'hex'), true);
@@ -488,19 +489,19 @@ const requestListOfProducersReadyCallback = (response) => {
   parsedProducerList = {};
   parsedProducerList.producersCandidateCount = 0;
   parsedProducerList.producers = [];
-  if (response.error !== null) {
+  if (response.status !== 200) {
     producerListStatus = `Producers Error: ${JSON.stringify(response)}`;
   } else {
-    parsedProducerList.totalvotes = response.result.totalvotes;
-    parsedProducerList.totalcounts = response.result.totalcounts;
-    response.result.producers.forEach((producer) => {
+    parsedProducerList.totalvotes = 0;
+    parsedProducerList.totalcounts = 0;
+    response.result.forEach((producer) => {
       const parsedProducer = {};
       // mainConsole.log('INTERIM Producers Callback', producer);
       parsedProducer.n = parsedProducerList.producers.length + 1;
-      parsedProducer.nickname = producer.nickname;
-      parsedProducer.active = producer.active.toString();
-      parsedProducer.votes = producer.votes;
-      parsedProducer.ownerpublickey = producer.ownerpublickey;
+      parsedProducer.nickname = producer.Nickname;
+      parsedProducer.active = producer.Active.toString();
+      parsedProducer.votes = producer.Votes;
+      parsedProducer.ownerpublickey = producer.Ownerpublickey;
       parsedProducer.isCandidate = false;
       // mainConsole.log('INTERIM Producers Callback', parsedProducer);
       parsedProducerList.producers.push(parsedProducer);
@@ -543,12 +544,6 @@ const toggleProducerSelection = (item) => {
 
 const requestListOfCandidateVotesErrorCallback = (response) => {
   let displayRawError = true;
-  if(response.error) {
-    if(response.error.code == 45002) {
-      displayRawError = false;
-      candidateVoteListStatus = `Candidate Votes Error: ${response.message}`;
-    }
-  }
   if(displayRawError) {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
   }
@@ -561,22 +556,24 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
   mainConsole.log('STARTED Candidate Votes Callback', response);
   parsedCandidateVoteList = {};
   parsedCandidateVoteList.candidateVotes = [];
-  if (response.error !== null) {
+  if (response.status !== 200) {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
   } else {
-    // response.result.producers.forEach((producer) => {
-    //   const parsedProducer = {};
-    //    mainConsole.log('INTERIM Producers Callback', producer);
-    //   parsedProducer.n = parsedProducerList.producers.length + 1;
-    //   parsedProducer.nickname = producer.nickname;
-    //   parsedProducer.active = producer.active.toString();
-    //   parsedProducer.votes = producer.votes;
-    //   parsedProducer.ownerpublickey = producer.ownerpublickey;
-    //   parsedProducer.isCandidate = false;
-    //    mainConsole.log('INTERIM Producers Callback', parsedProducer);
-    //   parsedProducerList.producers.push(parsedProducer);
-    // });
-    // mainConsole.log('INTERIM Producers Callback', response.result.producers[0]);
+    response.result.forEach((candidateVote) => {
+       mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
+     const body = candidateVote.Vote_Body;
+     body.forEach((candidateVoteElt) => {
+       const parsedCandidateVote = {};
+        parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
+        parsedCandidateVote.nickname = candidateVoteElt.Nickname;
+        parsedCandidateVote.active = candidateVoteElt.Active.toString();
+        parsedCandidateVote.votes = candidateVoteElt.Votes;
+        parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
+        mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
+        parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
+     })
+    });
+    mainConsole.log('INTERIM Candidate Votes Callback', response.result);
   }
   mainConsole.log('SUCCESS Candidate Votes Callback');
 
@@ -586,7 +583,7 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
 const requestListOfCandidateVotes = () => {
   candidateVoteListStatus = 'Candidate Votes Requested';
 
-  const txUrl = `${REST_SERVICE}/api/1/utxos/${address}`
+  const txUrl = `${REST_SERVICE}/api/v1/dpos/address/${address}?pageSize=5000&pageNum=1`;
 
   renderApp();
   getJson(txUrl, requestListOfCandidateVotesReadyCallback, requestListOfCandidateVotesErrorCallback);
@@ -660,7 +657,7 @@ const sendVoteTx = () => {
 const sendVoteCallback = (encodedTx) => {
   const txUrl = `${REST_SERVICE}/api/v1/sendRawTx`;
 
-  const jsonString = `{""data": "${encodedTx}"}`;
+  const jsonString = `{"data": "${encodedTx}"}`;
 
   mainConsole.log('sendVoteCallback.encodedTx ' + JSON.stringify(encodedTx));
 
@@ -685,8 +682,8 @@ const senVoteErrorCallback = (error) => {
 
 const sendVoteReadyCallback = (transactionJson) => {
   mainConsole.log('sendVoteReadyCallback ' + JSON.stringify(transactionJson));
-  if (transactionJson.error) {
-    candidateVoteListStatus = `Vote Error: ${transactionJson.error.message}`;
+  if (transactionJson.Error) {
+    candidateVoteListStatus(`Vote Error: ${transactionJson.Error} ${transactionJson.Result}`);
   } else {
     candidateVoteListStatus = `Vote Success TX: ${transactionJson.result}`;
   }
