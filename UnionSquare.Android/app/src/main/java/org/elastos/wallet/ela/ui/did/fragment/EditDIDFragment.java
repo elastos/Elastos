@@ -135,7 +135,7 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", MyWallet.IDChain);
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
-                intent.putExtra("type", Constant.DIDSIGNUP);
+                intent.putExtra("type", Constant.DIDUPDEATE);
                 intent.putExtra("transType", 10);
                 startActivity(intent);
                 break;

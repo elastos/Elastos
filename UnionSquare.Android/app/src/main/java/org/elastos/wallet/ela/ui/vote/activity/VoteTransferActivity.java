@@ -78,6 +78,7 @@ public class VoteTransferActivity extends BaseActivity {
             case Constant.UNREGISTERSUPRRNODE:
             case Constant.UNREGISTERCR:
             case Constant.DIDSIGNUP:
+            case Constant.DIDUPDEATE:
                 llAmount.setVisibility(View.GONE);
 
                 break;

@@ -14,7 +14,6 @@ import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
 
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,7 +36,7 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<PersonalShowRec
 
     private List<PersonalInfoItemEntity> list;
 
-    public PersonalShowRecAdapetr(Context context,  List<PersonalInfoItemEntity> list) {
+    public PersonalShowRecAdapetr(Context context, List<PersonalInfoItemEntity> list) {
         this.context = context;
 
         this.list = list;
@@ -47,7 +46,10 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<PersonalShowRec
 
     @Override
     public ViewHolderParent onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == 2)
+        if (viewType == 3)
+            //两个textview
+            return new ViewHolder3(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_personalinfo_2textviewt, parent, false));
+        else if (viewType == 2)
             //两个输入框
             return new ViewHolder2(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_personalinfo_2input, parent, false));
         else if (viewType == 1)
@@ -61,8 +63,9 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<PersonalShowRec
     @Override
     public void onBindViewHolder(ViewHolderParent holder, int position) {
         PersonalInfoItemEntity personalInfoItemEntity = list.get(position);
-        int index=personalInfoItemEntity.getIndex();
-        if (index == 1 || index == 2 || index == 6|| index == 7) {
+        int index = personalInfoItemEntity.getIndex();
+        int type = holder.getItemViewType();
+        if (holder instanceof ViewHolder1) {
             ((ViewHolder1) holder).tv.setText(personalInfoItemEntity.getText1());
             ((ViewHolder1) holder).tv.setHint(personalInfoItemEntity.getHintShow1());
             ((ViewHolder1) holder).tv.setOnClickListener(new View.OnClickListener() {
@@ -73,11 +76,23 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<PersonalShowRec
                 }
             });
 
-        } else if (index == 5) {
+        } else if (holder instanceof ViewHolder2) {
+            //手机号
             ((ViewHolder2) holder).et1.setText(personalInfoItemEntity.getText1());
             ((ViewHolder2) holder).et2.setText(personalInfoItemEntity.getText2());
-            ((ViewHolder2) holder).et1.setHint(context.getString(R.string.plzinputcode));
-            ((ViewHolder2) holder).et2.setHint(context.getString(R.string.pleaseinputmobile));
+            ((ViewHolder2) holder).et1.setHint(personalInfoItemEntity.getHintShow1());
+            ((ViewHolder2) holder).et2.setHint(personalInfoItemEntity.getHintShow2());
+        } else if (holder instanceof ViewHolder3) {
+            //个人简介
+            ((ViewHolder3) holder).tv1.setHint(personalInfoItemEntity.getHintShow1());
+            ((ViewHolder3) holder).tv2.setText(personalInfoItemEntity.getText2());
+            ((ViewHolder3) holder).itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (commonRvListener != null)
+                        commonRvListener.onRvItemClick( ((ViewHolder3) holder).tv2, position, personalInfoItemEntity);
+                }
+            });
         } else {
             ((ViewHolder0) holder).et.setText(personalInfoItemEntity.getText1());
             ((ViewHolder0) holder).et.setHint(personalInfoItemEntity.getHintShow1());
@@ -96,10 +111,16 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<PersonalShowRec
     @Override
     public int getItemViewType(int position) {
         int index = list.get(position).getIndex();
-        if (index == 1 || index == 2 || index == 6|| index == 7) {
+        if (index == 1 || index == 2 || index == 6) {
             return 1;
-        } if (index == 5) {
+        }
+        if (index == 5) {
+            //手机号
             return 2;
+        }
+        if (index == 7) {
+            //个人简介
+            return 3;
         }
         return 0;
     }
@@ -149,6 +170,18 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<PersonalShowRec
         EditText et2;
 
         ViewHolder2(View view) {
+            super(view);
+            ButterKnife.bind(this, view);
+        }
+    }
+
+    public static class ViewHolder3 extends ViewHolderParent {
+        @BindView(R.id.tv1)
+        TextView tv1;
+        @BindView(R.id.tv2)
+        TextView tv2;
+
+        ViewHolder3(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }

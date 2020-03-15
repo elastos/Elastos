@@ -2,9 +2,9 @@ package org.elastos.wallet.ela.ui.did.entity;
 
 public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity> {
     private int index;
-    private String hintShow1;
-    private String hintShow2;
-    private String hintChose;
+    private String hintShow1;//初始化后不会再修改
+    private String hintShow2;//初始化后不会再修改
+    private String hintChose;//初始化后不会再修改
     private String text1;
     private String text2;
 

@@ -84,7 +84,8 @@ public class PersonalIntroFragment extends BaseFragment {
         switch (view.getId()) {
             case R.id.tv_title_right:
             case R.id.tv_next:
-                setData();
+                //setData();
+                post(RxEnum.EDITPERSONALINTRO.ordinal(), null, getText(etIntro));
                 popBackFragment();
                 break;
 

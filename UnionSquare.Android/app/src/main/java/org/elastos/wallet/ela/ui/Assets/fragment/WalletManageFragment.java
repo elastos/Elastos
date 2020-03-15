@@ -14,7 +14,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDStore;
-import org.elastos.did.exception.DIDBackendException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
@@ -261,9 +260,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
         }
         if (integer == RxEnum.ADDPROPERTY.ordinal()) {
             //增加子钱包后
-            //did初始化获得密码
-            dialog = dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
-            dialogAction = DIDINIT;
+            initDid();
         }
     }
 
@@ -275,7 +272,9 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
                 resolve();
             } else {
                 //获得私钥用于初始化did
-                new CreatMulWalletPresenter().exportxPrivateKey(wallet.getWalletId(), payPasswd, this);
+                //did初始化获得密码
+                dialog = dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
+                dialogAction = DIDINIT;
             }
         } catch (DIDException e) {
             e.printStackTrace();
@@ -283,7 +282,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
 
     }
 
-    private void resolve() throws DIDStoreException, DIDBackendException {
+    private void resolve() {
         DID did = getMyDID().initDID(payPasswd);
         if (TextUtils.isEmpty(wallet.getDid()))
             new RealmUtil().upDataWalletDid(wallet.getWalletId(), did.toString());
@@ -364,9 +363,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
                 ISubWalletListEntity subWalletListEntity = (ISubWalletListEntity) baseEntity;
                 for (SubWallet subWallet : subWalletListEntity.getData()) {
                     if (subWallet.getChainId().equals(MyWallet.IDChain)) {
-                        //did初始化获得密码
-                        dialog = dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
-                        dialogAction = DIDINIT;
+                        initDid();
                         return;
                     }
                 }
@@ -416,7 +413,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
                         //目前只在删除一种情况调用
                         presenter.getMasterWalletBasicInfo(wallet.getWalletId(), this);
                     } else if (DIDINIT.equals(dialogAction)) {
-                        initDid();
+                        new CreatMulWalletPresenter().exportxPrivateKey(wallet.getWalletId(), payPasswd, this);
                     }
                 } else {
                     showToastMessage(getString(R.string.error_20003));

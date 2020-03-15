@@ -2,13 +2,14 @@ package org.elastos.wallet.ela.ui.did.entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 public class CredentialSubjectBean implements Parcelable {
-
+    //一共17
     private String did;
     private String nickname;
-    private int gender;//0未设置  1男2nv
-    private long birthday;
+    private String gender;// 1男2nv
+    private String birthday;//毫秒值
     private String avatar;
     private String email;
     private String phone;
@@ -22,6 +23,14 @@ public class CredentialSubjectBean implements Parcelable {
     private String facebook;
     private String googleAccount;
     private long editTime;
+
+    public boolean whetherEmpty() {
+        return TextUtils.isEmpty(nickname) && TextUtils.isEmpty(gender) && TextUtils.isEmpty(birthday)
+                && TextUtils.isEmpty(avatar) && TextUtils.isEmpty(email) && TextUtils.isEmpty(phone)
+                && TextUtils.isEmpty(phoneCode) && TextUtils.isEmpty(nation) && TextUtils.isEmpty(introduction)
+                && TextUtils.isEmpty(homePage) && TextUtils.isEmpty(wechat) && TextUtils.isEmpty(twitter)
+                && TextUtils.isEmpty(weibo) && TextUtils.isEmpty(facebook) && TextUtils.isEmpty(googleAccount);
+    }
 
     public String getDid() {
         return did;
@@ -47,19 +56,19 @@ public class CredentialSubjectBean implements Parcelable {
         this.nickname = nickname;
     }
 
-    public int getGender() {
+    public String getGender() {
         return gender;
     }
 
-    public void setGender(int gender) {
+    public void setGender(String gender) {
         this.gender = gender;
     }
 
-    public long getBirthday() {
+    public String getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(long birthday) {
+    public void setBirthday(String birthday) {
         this.birthday = birthday;
     }
 
@@ -165,6 +174,8 @@ public class CredentialSubjectBean implements Parcelable {
     public CredentialSubjectBean(String did) {
         this.did = did;
     }
+    public CredentialSubjectBean() {
+    }
 
     @Override
     public int describeContents() {
@@ -175,8 +186,8 @@ public class CredentialSubjectBean implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.did);
         dest.writeString(this.nickname);
-        dest.writeInt(this.gender);
-        dest.writeLong(this.birthday);
+        dest.writeString(this.gender);
+        dest.writeString(this.birthday);
         dest.writeString(this.avatar);
         dest.writeString(this.email);
         dest.writeString(this.phone);
@@ -195,8 +206,8 @@ public class CredentialSubjectBean implements Parcelable {
     protected CredentialSubjectBean(Parcel in) {
         this.did = in.readString();
         this.nickname = in.readString();
-        this.gender = in.readInt();
-        this.birthday = in.readLong();
+        this.gender = in.readString();
+        this.birthday = in.readString();
         this.avatar = in.readString();
         this.email = in.readString();
         this.phone = in.readString();

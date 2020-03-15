@@ -51,6 +51,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     private JSONObject paylodJson;
     private String didName;
     private Date didEndDate;
+    private String credentialSubjectBean;
 
     @Override
     protected int getLayoutId() {
@@ -90,6 +91,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         didEndDate = (Date) data.getSerializableExtra("didEndDate");
 
         transType = data.getIntExtra("transType", 13);
+        credentialSubjectBean = data.getStringExtra("credentialSubjectBean");
 
 
     }
@@ -125,12 +127,11 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, CID, this);
                         break;
                     case Constant.DIDSIGNUP:
+                    case Constant.DIDUPDEATE:
                         getMyDID().setDIDDocument(didEndDate, pwd, didName);
                         getMyDID().getMyDIDAdapter().setMyDIDTransactionCallback(this);
                         presenter.DIDPublish(pwd, this);
                         break;
-
-
                 }
                 break;
 
@@ -151,7 +152,12 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 try {
                     JSONObject pulishdata = JSON.parseObject(data);
                     hash = pulishdata.getString("TxHash");
-                    getMyDID().getMyDIDAdapter().setTxId(hash);
+                    if (Constant.DIDSIGNUP.equals(type)) {
+                        getMyDID().setCredential(credentialSubjectBean, pwd, didEndDate);
+                        getMyDID().getMyDIDAdapter().setTxId(hash);
+                    } else if (Constant.DIDUPDEATE.equals(type)) {
+                        getMyDID().getMyDIDAdapter().setTxId(hash);
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

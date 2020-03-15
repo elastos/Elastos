@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.utils;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -77,6 +78,23 @@ public class DateUtil {
         return null;
     }
 
+    public static String parseToLongWithLanguage(String sd, Context context) {
+        if (TextUtils.isEmpty(sd)) {
+            return null;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        int Language = new SPUtil(context).getLanguage();
+        try {
+            if (Language != 0) {
+                format = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
+            }
+            return format.parse(sd).getTime()+"";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static String timeNYR(long time, Context context, boolean isSecond) {
         if (time == 0) return null;
         if (isSecond) {
@@ -134,7 +152,7 @@ public class DateUtil {
     }
 
     public static String timeNYR(Date date, Context context) {
-        if (date==null){
+        if (date == null) {
             return "";
         }
         int Language = new SPUtil(context).getLanguage();

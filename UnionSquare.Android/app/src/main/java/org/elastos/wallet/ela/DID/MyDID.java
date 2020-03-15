@@ -95,18 +95,20 @@ public class MyDID {
      * @return
      */
     public DID initDID(String payPasswd) {
-        if (did == null) {
-            try {
+
+        try {
+            if (did == null) {
                 this.did = didStore.getDid(0);
-                DIDURL didurl = new DIDURL(did, "primary");
-                if (!didStore.containsDid(did) || !didStore.containsPrivateKey(did, didurl)) {
-                    didStore.deleteDid(did);
-                    didStore.newDid(0, payPasswd);//为了什么  我直接new DID(String) 为了生成doc 是的能够loaddoc
-                }
-            } catch (DIDStoreException e) {
-                e.printStackTrace();
             }
+            DIDURL didurl = new DIDURL(did, "primary");
+            if (!didStore.containsDid(did) || !didStore.containsPrivateKey(did, didurl)) {
+                didStore.deleteDid(did);
+                didStore.newDid(0, payPasswd);//为了什么  我直接new DID(String) 为了生成doc 是的能够loaddoc
+            }
+        } catch (DIDStoreException e) {
+            e.printStackTrace();
         }
+
         return did;
     }
 
@@ -198,7 +200,11 @@ public class MyDID {
     public void setCredential(String json, String pwd, Date expires) {
 
         try {
-
+            if (TextUtils.isEmpty(json) || json.equals("null")) {
+                //如果上次发送失败但是 setCredential保存成功   若重新发布时为空判空覆盖
+                didStore.deleteCredential(did.toString(), "outPut");
+                return;
+            }
             Issuer issuer = new Issuer(did, didStore);//发布者的did
             String[] SelfProclaimedCredential = {"BasicProfileCredential"};
             VerifiableCredential vc = issuer.issueFor(did)//被发布的did
@@ -226,6 +232,9 @@ public class MyDID {
 
         try {
             VerifiableCredential vc1 = didStore.loadCredential(didString, "outPut");
+            if(vc1==null){
+                return null;
+            }
             return vc1.toString(true);
 
         } catch (DIDException e) {
@@ -234,6 +243,7 @@ public class MyDID {
 
         return null;
     }
+
     /* DID did = vc.getSubject().getId();//issueFor()的did 被发布的did
                 vc.getId();//didurl
                 String id = vc.getId().getFragment();//.id

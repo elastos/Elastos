@@ -134,6 +134,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
     }
 
     private void generBackJwt() {
+        getMyDID().initDID(payPasswd);
         CallBackJwtEntity callBackJwtEntity = new CallBackJwtEntity();
         callBackJwtEntity.setType("credaccess");
         callBackJwtEntity.setIss(getMyDID().getDidString());
@@ -159,7 +160,6 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
 
         try {
             store = getMyDID().getDidStore();
-            getMyDID().initDID(payPasswd);
             if (store.containsPrivateIdentity()) {
                 generBackJwt();
             } else {
