@@ -23,6 +23,7 @@ import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
@@ -51,7 +52,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     private JSONObject paylodJson;
     private String didName;
     private Date didEndDate;
-    private String credentialSubjectBean;
+    private CredentialSubjectBean credentialSubjectBean;
 
     @Override
     protected int getLayoutId() {
@@ -91,7 +92,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         didEndDate = (Date) data.getSerializableExtra("didEndDate");
 
         transType = data.getIntExtra("transType", 13);
-        credentialSubjectBean = data.getStringExtra("credentialSubjectBean");
+        credentialSubjectBean = data.getParcelableExtra("credentialSubjectBean");
 
 
     }
@@ -109,6 +110,12 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 }
                 presenter = new PwdPresenter();
                 switch (type) {
+                    case Constant.EDITCREDENTIAL:
+                        if (getMyDID().setCredential(JSON.toJSONString(credentialSubjectBean), pwd, didEndDate)) {
+                            post(RxEnum.EDITPERSONALINFO.ordinal(), null, null);
+                            finish();
+                        }
+                        break;
                     case Constant.SUPERNODESIGN:
                     case Constant.UPDATENODEINFO:
                         presenter.generateProducerPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, nodePublicKey, name, url, "", code, pwd, this);
@@ -153,7 +160,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                     JSONObject pulishdata = JSON.parseObject(data);
                     hash = pulishdata.getString("TxHash");
                     if (Constant.DIDSIGNUP.equals(type)) {
-                        getMyDID().setCredential(credentialSubjectBean, pwd, didEndDate);
+                        getMyDID().setCredential(JSON.toJSONString(credentialSubjectBean), pwd, didEndDate);
                         getMyDID().getMyDIDAdapter().setTxId(hash);
                     } else if (Constant.DIDUPDEATE.equals(type)) {
                         getMyDID().getMyDIDAdapter().setTxId(hash);

@@ -617,4 +617,6 @@
     <string name="didoutofdate">DID已过期</string>
     <string name="createdid">创建DID</string>
     <string name="updatedidinfo">更新DID信息</string>
+    <string name="phonecode">区号</string>
+    <string name="savesucess">保存成功</string>
 </resources>

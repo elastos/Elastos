@@ -53,7 +53,7 @@ public class ShowSocialAccountFragemnt /*extends BaseFragment*/ {
 
     @Override
     protected void setExtraData(Bundle data) {
-        info = data.getParcelable("CredentialSubjectBean");
+        info = data.getParcelable("credentialSubjectBean");
     }
 
     @Override
@@ -90,7 +90,7 @@ public class ShowSocialAccountFragemnt /*extends BaseFragment*/ {
     @OnClick({R.id.iv_title_right})
     public void onViewClicked(View view) {
         Bundle bundle = new Bundle();
-        bundle.putParcelable("CredentialSubjectBean", info);
+        bundle.putParcelable("credentialSubjectBean", info);
         switch (view.getId()) {
             case R.id.iv_title_right:
                 bundle.putString("type", Constant.EDITCREDENTIAL);

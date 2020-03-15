@@ -261,18 +261,25 @@ public class DialogUtil {
         return dialog;
     }
 
-    public void showTransferSucess(BaseActivity activity) {
+    public void showTransferSucess(String dec,BaseActivity activity, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity, R.style.coustom_dialog);
         dialog.setContentView(R.layout.dialog_transfersuccess);
+        TextView tv = dialog.findViewById(R.id.tv);
+        if (!TextUtils.isEmpty(dec)){
+            tv.setText(dec);
+        }
+        dialog.setCancelable(false);
         setDialogAttributes(activity, dialog);
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (dialog != null)
+                if (dialog.isShowing()) {
                     dialog.dismiss();
+                    listener.affireBtnClick(null);
+                }
             }
-        }, 2000);//3秒后执行Runnable中的run方法
+        }, 2888);//3秒后执行Runnable中的run方法
         dialog.show();
     }
 

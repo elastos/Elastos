@@ -30,7 +30,7 @@ public class CredentialFragment extends BaseFragment {
     @BindView(R.id.tv_title)
     TextView tvTitle;
 
-    private CredentialSubjectBean info;
+    private CredentialSubjectBean credentialSubjectBean;
 
     @Override
     protected int getLayoutId() {
@@ -47,12 +47,12 @@ public class CredentialFragment extends BaseFragment {
 
     private void viewInfo() {
         String json = getMyDID().getCredentialJSon(getMyDID().getDidString());
-        info = JSON.parseObject(json, CredentialSubjectBean.class);
-       // Log.i("??",  (JSON.parseObject("{}", CredentialSubjectBean.class) == null));//false
-        if (info != null) {
+        credentialSubjectBean = JSON.parseObject(json, CredentialSubjectBean.class);
+        Log.i("??", json + "\n" + (JSON.parseObject("{}", CredentialSubjectBean.class) == null));//false
+        if (credentialSubjectBean != null) {
             tvPersonlinfoNo.setVisibility(View.GONE);
             tvPersonlinfoTime.setVisibility(View.VISIBLE);
-            tvPersonlinfoTime.setText(getString(R.string.keeptime) + DateUtil.timeNYR(info.getEditTime(), getContext(), false));
+            tvPersonlinfoTime.setText(getString(R.string.keeptime) + DateUtil.timeNYR(credentialSubjectBean.getEditTime(), getContext(), false));
 
         } else {
             tvPersonlinfoNo.setVisibility(View.VISIBLE);
@@ -64,15 +64,15 @@ public class CredentialFragment extends BaseFragment {
     @OnClick({R.id.ll_personalinfo, R.id.tv_out, R.id.tv_in})
     public void onViewClicked(View view) {
         Bundle bundle = new Bundle();
-        bundle.putParcelable("CredentialSubjectBean", info);
+
         switch (view.getId()) {
             case R.id.ll_personalinfo:
-              /*  if (info != null) {
-                    start(ShowPersonalInfoFragemnt.class, bundle);
+                if (credentialSubjectBean == null) {
+                    start(EditPersonalInfoFragemnt.class, bundle);
                 } else {
-                    bundle.putString("type", Constant.ADDCREDENTIAL);
-                    start(PersonalInfoFragment.class, bundle);
-                }*/
+                    bundle.putParcelable("credentialSubjectBean", credentialSubjectBean);
+                    start(ShowPersonalInfoFragemnt.class, bundle);
+                }
                 break;
 
             case R.id.tv_out:

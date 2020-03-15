@@ -88,7 +88,7 @@ public class DateUtil {
             if (Language != 0) {
                 format = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
             }
-            return format.parse(sd).getTime()+"";
+            return format.parse(sd).getTime() + "";
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -111,6 +111,9 @@ public class DateUtil {
     }
 
     public static String timeNYR(String time, Context context, boolean isSecond) {
+        if (TextUtils.isEmpty(time)) {
+            return null;
+        }
         long milliseconds;
         if (isSecond) {
             milliseconds = Long.parseLong(time) * 1000L;

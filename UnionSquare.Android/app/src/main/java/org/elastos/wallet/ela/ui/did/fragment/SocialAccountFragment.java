@@ -97,7 +97,7 @@ public class SocialAccountFragment /*extends BaseFragment implements NewBaseView
     }
 
     private void onAddPartCredential(Bundle data) {
-        credentialSubjectBean = data.getParcelable("CredentialSubjectBean");
+        credentialSubjectBean = data.getParcelable("credentialSubjectBean");
         tvTitle.setText(getString(R.string.editsocialaccount));
         tvTip.setVisibility(View.GONE);
         tvPublic.setVisibility(View.GONE);

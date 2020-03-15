@@ -1,127 +1,203 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
+import org.elastos.wallet.ela.ui.did.adapter.PersonalShowShowRecAdapetr;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
+import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
-import org.elastos.wallet.ela.utils.svg.GlideApp;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class ShowPersonalInfoFragemnt extends BaseFragment {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
-    @BindView(R.id.iv_icon)
-    ImageView ivIcon;
     @BindView(R.id.iv_title_right)
     ImageView ivTitleRight;
-    @BindView(R.id.tv_name)
-    TextView tvName;
-    @BindView(R.id.tv_nick)
-    TextView tvNick;
-    @BindView(R.id.tv_sex)
-    TextView tvSex;
-    @BindView(R.id.tv_birthday)
-    TextView tvBirthday;
-    @BindView(R.id.tv_email)
-    TextView tvEmail;
-    @BindView(R.id.tv_phonenumber)
-    TextView tvPhonenumber;
-    @BindView(R.id.tv_area)
-    TextView tvArea;
-    Unbinder unbinder;
+    @BindView(R.id.rv_show)
+    RecyclerView rvShow;
 
 
-    private CredentialSubjectBean info;
+    private CredentialSubjectBean credentialSubjectBean;
+
+
+    private ArrayList<PersonalInfoItemEntity> listShow;
+
 
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_personalinfo_show;
     }
 
+
     @Override
     protected void setExtraData(Bundle data) {
-        info = data.getParcelable("CredentialSubjectBean");
+        credentialSubjectBean = data.getParcelable("credentialSubjectBean");
+        ivTitleRight.setVisibility(View.VISIBLE);
+        ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
+        tvTitle.setText(getString(R.string.personalindo));
     }
+
 
     @Override
     protected void initView(View view) {
-        tvTitle.setText(R.string.personalindo);
-        ivTitleRight.setVisibility(View.VISIBLE);
-        ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
-        setData();
+        initItemDate();
     }
 
-    private void setData() {
-      /*  CredentialSubjectBean.Info personal = info.getInfo();
-        GlideApp.with(this).load(personal.getAvatar())
-                .error(R.mipmap.mine_did_default_avator).circleCrop().into(ivIcon);
-        setText(personal.getName(), tvName);
-        setText(personal.getNickname(), tvNick);
-        setText(personal.getGender(), tvSex);
-        setText(DateUtil.timeNYR(personal.getBirthday(), getContext()), tvBirthday);
-        setText(personal.getEmail(), tvEmail);
-        String phone = null;
-        if (!TextUtils.isEmpty(personal.getPhoneCode()) && !TextUtils.isEmpty(personal.getPhone())) {
-            phone = "+" + personal.getPhoneCode() + personal.getPhone();
+    private void initItemDate() {
+        String showData[] = getResources().getStringArray(R.array.personalinfo_chose);
+        //  String choseData[] = getResources().getStringArray(R.array.personalinfo_chose);
+        /*  Map<Integer, String>*/
+        listShow = new ArrayList<>();
 
-        } else if (TextUtils.isEmpty(personal.getPhoneCode())) {
-            phone = personal.getPhone();
-        } else if (TextUtils.isEmpty(personal.getPhone())) {
-            phone = "+" + personal.getPhoneCode();
+        for (int i = 0; i < showData.length; i++) {
+            PersonalInfoItemEntity personalInfoItemEntity = new PersonalInfoItemEntity();
+            personalInfoItemEntity.setIndex(i);
+            personalInfoItemEntity.setHintChose(showData[i]);
+            personalInfoItemEntity.setHintShow1(showData[i]);
+            if (i == 5) {
+                personalInfoItemEntity.setHintShow1(getString(R.string.phonecode));
+                personalInfoItemEntity.setHintShow2(getString(R.string.phonenumber));
+            }
+            listShow.add(personalInfoItemEntity);
         }
-
-        setText(phone, tvPhonenumber);
-        setText(AppUtlis.getLoc(getContext(), personal.getNation()), tvArea);*/
-    }
-
-    private void setText(String text, TextView textView) {
-        if (TextUtils.isEmpty(text)) {
-            ((ViewGroup) (textView.getParent())).setVisibility(View.GONE);
-        } else {
-            textView.setText(text);
-        }
+        convertCredentialSubjectBean();
+        setRecycleViewShow();
 
     }
+
+    private void setRecycleViewShow() {
+        PersonalShowShowRecAdapetr adapterShow = new PersonalShowShowRecAdapetr(getContext(), listShow);
+        rvShow.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        adapterShow.setCommonRvListener(new CommonRvListener1() {
+            @Override
+            public void onRvItemClick(View view, int position, Object o) {
+                PersonalInfoItemEntity personalInfoItemEntity= (PersonalInfoItemEntity) o;
+                if (personalInfoItemEntity.getIndex()==7){
+                    //去个人简介详情
+                    Bundle bundle=new Bundle();
+                    bundle.putString("personalIntro",personalInfoItemEntity.getText1());
+                    start(ShowPersonalIntroFragemnt.class,bundle);
+                }
+            }
+        });
+        rvShow.setAdapter(adapterShow);
+    }
+
 
     @OnClick({R.id.iv_title_right})
     public void onViewClicked(View view) {
-        Bundle bundle = new Bundle();
-        bundle.putParcelable("CredentialSubjectBean", info);
         switch (view.getId()) {
             case R.id.iv_title_right:
+                //编辑个人信息
+                Bundle bundle = new Bundle();
+                bundle.putParcelableArrayList("listShow", listShow);
                 bundle.putString("type", Constant.EDITCREDENTIAL);
-                start(PersonalInfoFragment.class, bundle);
+                start(EditPersonalInfoFragemnt.class, bundle);
                 break;
+        }
+    }
+
+    /**
+     * 将CredentialSubjectBean的数据转换到listShow
+     *
+     * @return
+     */
+    private void convertCredentialSubjectBean() {
+        Iterator<PersonalInfoItemEntity> iterator = listShow.iterator();
+        while (iterator.hasNext()) {
+            //只遍历show的数据
+            PersonalInfoItemEntity personalInfoItemEntity = iterator.next();
+            int index = personalInfoItemEntity.getIndex();
+            switch (index) {
+                case 0:
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getNickname());
+                    break;
+                case 1:
+                    String gender = credentialSubjectBean.getGender();
+                    if ("1".equals(gender))
+                        gender = getString(R.string.man);
+                    else if ("2".equals(gender))
+                        gender = getString(R.string.woman);
+                    resetShowList(iterator, personalInfoItemEntity, gender);
+                    break;
+                case 2:
+                    String birthday = credentialSubjectBean.getBirthday();
+                    String birthDate = DateUtil.timeNYR(birthday, getContext(), false);
+                    resetShowList(iterator, personalInfoItemEntity, birthDate);
+                    break;
+                case 3:
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getAvatar());
+                    break;
+                case 4:
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getEmail());
+                    break;
+                case 5:
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getPhoneCode(), credentialSubjectBean.getPhone());
+                    break;
+                case 6:
+                    String areaCode = credentialSubjectBean.getNation();
+                    resetShowList(iterator, personalInfoItemEntity, AppUtlis.getLoc(getContext(), areaCode));
+                    break;
+                case 7:
+
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getIntroduction());
+
+                    break;
+                case 8:
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getHomePage());
+                    break;
+                case 9:
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getWechat());
+                    break;
+                case 10:
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getTwitter());
+                    break;
+                case 11:
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getWeibo());
+                    break;
+                case 12:
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getFacebook());
+                    break;
+                case 13:
+                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getGoogleAccount());
+                    break;
+            }
 
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
+    private void resetShowList(Iterator<PersonalInfoItemEntity> iterator, PersonalInfoItemEntity personalInfoItemEntity, String text1) {
+        if (text1 == null) {
+            iterator.remove();
+        } else {
+            personalInfoItemEntity.setText1(text1);
+        }
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    private void resetShowList(Iterator<PersonalInfoItemEntity> iterator, PersonalInfoItemEntity personalInfoItemEntity, String text1, String text2) {
+        if (text1 == null && text2 == null) {
+            iterator.remove();
+        } else {
+            personalInfoItemEntity.setText1(text1);
+            personalInfoItemEntity.setText2(text2);
+        }
     }
+
+
 }

@@ -1,16 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/settingItem_pading15"
-    >
+    style="@style/settingItem_pading15">
 
-    <EditText
-        android:gravity="center_vertical"
-        android:id="@+id/et"
-        android:layout_width="match_parent"
+
+    <TextView
+        android:id="@+id/tv1"
+        android:layout_width="160dp"
         android:layout_height="match_parent"
-        android:layout_toLeftOf="@+id/iv_cancel"
-        android:background="@null"
+        android:gravity="center_vertical"
+        android:text="@string/personalintro"
+        android:textColorHint="@color/whiter50" />
+
+
+    <TextView
+        android:id="@+id/tv2"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@+id/iv"
+        android:layout_toRightOf="@+id/tv1"
+        android:ellipsize="end"
+        android:gravity="center_vertical|right"
         android:singleLine="true" />
+
 
     <ImageView
         android:id="@+id/iv"
@@ -18,10 +29,12 @@
         android:layout_height="match_parent"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
+        android:layout_marginLeft="2dp"
         android:paddingLeft="3dp"
         android:src="@mipmap/asset_cancel" />
 
     <View
         style="@style/line1"
+        android:layout_width="match_parent"
         android:layout_alignParentBottom="true" />
 </RelativeLayout>

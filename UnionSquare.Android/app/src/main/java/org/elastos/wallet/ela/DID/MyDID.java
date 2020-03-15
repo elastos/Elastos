@@ -197,13 +197,13 @@ public class MyDID {
      * @param pwd
      * @param expires
      */
-    public void setCredential(String json, String pwd, Date expires) {
+    public boolean setCredential(String json, String pwd, Date expires) {
 
         try {
             if (TextUtils.isEmpty(json) || json.equals("null")) {
                 //如果上次发送失败但是 setCredential保存成功   若重新发布时为空判空覆盖
                 didStore.deleteCredential(did.toString(), "outPut");
-                return;
+                return true;
             }
             Issuer issuer = new Issuer(did, didStore);//发布者的did
             String[] SelfProclaimedCredential = {"BasicProfileCredential"};
@@ -214,12 +214,12 @@ public class MyDID {
                     .properties(json)
                     .seal(pwd);
             didStore.storeCredential(vc);
-
+            return true;
 
         } catch (DIDException e) {
             e.printStackTrace();
         }
-
+        return false;
 
     }
 
@@ -232,10 +232,11 @@ public class MyDID {
 
         try {
             VerifiableCredential vc1 = didStore.loadCredential(didString, "outPut");
-            if(vc1==null){
+            if (vc1 == null || vc1.getSubject() == null) {
                 return null;
             }
-            return vc1.toString(true);
+
+            return vc1.getSubject().getPropertiesAsString();
 
         } catch (DIDException e) {
             e.printStackTrace();

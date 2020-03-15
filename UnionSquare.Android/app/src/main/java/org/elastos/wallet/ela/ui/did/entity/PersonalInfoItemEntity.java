@@ -1,12 +1,16 @@
 package org.elastos.wallet.ela.ui.did.entity;
 
-public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity> {
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
+
+public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity>, Parcelable {
     private int index;
-    private String hintShow1;//初始化后不会再修改
-    private String hintShow2;//初始化后不会再修改
-    private String hintChose;//初始化后不会再修改
-    private String text1;
-    private String text2;
+    private String hintShow1;//初始化后不会再修改 提示语句
+    private String hintShow2;//初始化后不会再修改 提示语句
+    private String hintChose;//初始化后不会再修改 提示语句
+    private String text1;//第一个可编辑的结果
+    private String text2;//第二个可编辑的结果
 
     public int getIndex() {
         return index;
@@ -59,5 +63,49 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
     @Override
     public int compareTo(PersonalInfoItemEntity o) {
         return this.index - o.index;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.index);
+        dest.writeString(this.hintShow1);
+        dest.writeString(this.hintShow2);
+        dest.writeString(this.hintChose);
+        dest.writeString(this.text1);
+        dest.writeString(this.text2);
+    }
+
+    public PersonalInfoItemEntity() {
+    }
+
+    protected PersonalInfoItemEntity(Parcel in) {
+        this.index = in.readInt();
+        this.hintShow1 = in.readString();
+        this.hintShow2 = in.readString();
+        this.hintChose = in.readString();
+        this.text1 = in.readString();
+        this.text2 = in.readString();
+    }
+
+    public static final Parcelable.Creator<PersonalInfoItemEntity> CREATOR = new Parcelable.Creator<PersonalInfoItemEntity>() {
+        @Override
+        public PersonalInfoItemEntity createFromParcel(Parcel source) {
+            return new PersonalInfoItemEntity(source);
+        }
+
+        @Override
+        public PersonalInfoItemEntity[] newArray(int size) {
+            return new PersonalInfoItemEntity[size];
+        }
+    };
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return this.getIndex() == ((PersonalInfoItemEntity) obj).getIndex();
     }
 }
