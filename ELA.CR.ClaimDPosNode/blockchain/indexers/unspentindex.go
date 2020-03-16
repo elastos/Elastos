@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package indexers
 
@@ -285,9 +285,9 @@ func NewUnspentIndex(db database.DB, params *config.Params) *UnspentIndex {
 		db:      db,
 		txCache: NewTxCache(params),
 	}
-	if params.NodeProfileStrategy !=
-		config.MemoryFirst.String() {
-		params.CkpManager.Register(NewCheckpoint(unspentIndex))
-	}
+	//if params.NodeProfileStrategy !=
+	//	config.MemoryFirst.String() {
+	//	params.CkpManager.Register(NewCheckpoint(unspentIndex))
+	//}
 	return unspentIndex
 }
