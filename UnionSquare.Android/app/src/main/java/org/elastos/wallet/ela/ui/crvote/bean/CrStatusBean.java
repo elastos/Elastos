@@ -3,7 +3,7 @@ package org.elastos.wallet.ela.ui.crvote.bean;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class CrStatusBean {
+public class CrStatusBean implements Parcelable {
 
     /**
      * Info : {"BondedDID":false,"CID":"ihNSAaGACbGucnXjvPKCRA7Ei7puUyUnrd","CROwnerPublicKey":"0221d3e27c9636ee31b894ef3648df8ec8a266807144beb7ac7dbad43897630fb8","Confirms":4584,"DID":"","Location":1268,"NickName":"linda-reg17","URL":"www.baidu.com"}
@@ -157,4 +157,35 @@ public class CrStatusBean {
             }
         };
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(this.Info, flags);
+        dest.writeString(this.Status);
+    }
+
+    public CrStatusBean() {
+    }
+
+    protected CrStatusBean(Parcel in) {
+        this.Info = in.readParcelable(InfoBean.class.getClassLoader());
+        this.Status = in.readString();
+    }
+
+    public static final Parcelable.Creator<CrStatusBean> CREATOR = new Parcelable.Creator<CrStatusBean>() {
+        @Override
+        public CrStatusBean createFromParcel(Parcel source) {
+            return new CrStatusBean(source);
+        }
+
+        @Override
+        public CrStatusBean[] newArray(int size) {
+            return new CrStatusBean[size];
+        }
+    };
 }

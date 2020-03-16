@@ -66,7 +66,7 @@ public class DIDRecordRecAdapetr extends RecyclerView.Adapter<DIDRecordRecAdapet
                 break;
             default:
                 holder.tvDid.setVisibility(View.VISIBLE);
-                holder.tvDid.setText("did:ela:" + didInfoEntity.getId());
+                holder.tvDid.setText("did:elastos:" + didInfoEntity.getId());
                 holder.tvStatus.setTextColor(context.getResources().getColor(R.color.whiter50));
                 if (didInfoEntity.getExpires() > new Date().getTime()) {
                     //过期

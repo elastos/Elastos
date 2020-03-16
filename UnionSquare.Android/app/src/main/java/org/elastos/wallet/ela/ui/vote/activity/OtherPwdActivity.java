@@ -111,7 +111,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 presenter = new PwdPresenter();
                 switch (type) {
                     case Constant.EDITCREDENTIAL:
-                        if (getMyDID().setCredential(JSON.toJSONString(credentialSubjectBean), pwd, didEndDate)) {
+                        if (getMyDID().storeCredential(JSON.toJSONString(credentialSubjectBean), pwd, didEndDate)) {
                             post(RxEnum.EDITPERSONALINFO.ordinal(), null, null);
                             finish();
                         }
@@ -160,10 +160,12 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                     JSONObject pulishdata = JSON.parseObject(data);
                     hash = pulishdata.getString("TxHash");
                     if (Constant.DIDSIGNUP.equals(type)) {
-                        getMyDID().setCredential(JSON.toJSONString(credentialSubjectBean), pwd, didEndDate);
+                        getMyDID().storeCredential(JSON.toJSONString(credentialSubjectBean), pwd, didEndDate);
                         getMyDID().getMyDIDAdapter().setTxId(hash);
                     } else if (Constant.DIDUPDEATE.equals(type)) {
                         getMyDID().getMyDIDAdapter().setTxId(hash);
+                    }else if (Constant.CRUPDATE.equals(type)) {
+                        post(RxEnum.VERTIFYPAYPASS.ordinal(), type, pwd);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

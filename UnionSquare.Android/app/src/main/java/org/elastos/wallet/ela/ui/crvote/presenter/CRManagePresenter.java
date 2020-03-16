@@ -21,6 +21,15 @@ public class CRManagePresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
+ public void jwtGet(String did,BaseFragment baseFragment) {
+        Map<String, String> map = new HashMap();
+        map.put("id", did);
+        map.put("id", did);
+        Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).jwtGet(map);
+        Observer observer = createObserver(baseFragment, "jwtGet");
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
     //取回押金交易
     public void createRetrieveCRDepositTransaction(String masterWalletID, String chainID, String crPublickey, String amount, String memo, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "createRetrieveCRDepositTransaction");

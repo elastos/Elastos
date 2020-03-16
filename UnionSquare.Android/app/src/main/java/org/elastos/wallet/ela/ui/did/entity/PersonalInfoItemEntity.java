@@ -11,6 +11,15 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
     private String hintChose;//初始化后不会再修改 提示语句
     private String text1;//第一个可编辑的结果
     private String text2;//第二个可编辑的结果
+    private boolean check;//第二个可编辑的结果
+
+    public boolean isCheck() {
+        return check;
+    }
+
+    public void setCheck(boolean check) {
+        this.check = check;
+    }
 
     public int getIndex() {
         return index;
@@ -65,6 +74,14 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
         return this.index - o.index;
     }
 
+    public PersonalInfoItemEntity() {
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return this.getIndex() == ((PersonalInfoItemEntity) obj).getIndex();
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -78,9 +95,7 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
         dest.writeString(this.hintChose);
         dest.writeString(this.text1);
         dest.writeString(this.text2);
-    }
-
-    public PersonalInfoItemEntity() {
+        dest.writeByte(this.check ? (byte) 1 : (byte) 0);
     }
 
     protected PersonalInfoItemEntity(Parcel in) {
@@ -90,9 +105,10 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
         this.hintChose = in.readString();
         this.text1 = in.readString();
         this.text2 = in.readString();
+        this.check = in.readByte() != 0;
     }
 
-    public static final Parcelable.Creator<PersonalInfoItemEntity> CREATOR = new Parcelable.Creator<PersonalInfoItemEntity>() {
+    public static final Creator<PersonalInfoItemEntity> CREATOR = new Creator<PersonalInfoItemEntity>() {
         @Override
         public PersonalInfoItemEntity createFromParcel(Parcel source) {
             return new PersonalInfoItemEntity(source);
@@ -103,9 +119,4 @@ public class PersonalInfoItemEntity implements Comparable<PersonalInfoItemEntity
             return new PersonalInfoItemEntity[size];
         }
     };
-
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        return this.getIndex() == ((PersonalInfoItemEntity) obj).getIndex();
-    }
 }

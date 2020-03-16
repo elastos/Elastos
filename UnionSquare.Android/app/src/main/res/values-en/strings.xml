@@ -614,4 +614,6 @@
     <string name="updatedidinfo">更新DID信息</string>
     <string name="phonecode">区号</string>
     <string name="savesucess">保存成功</string>
+    <string name="updatesignforinfo">更新报名信息</string>
+    <string name="authoriizesuccess">授权成功</string>
 </resources>

@@ -30,6 +30,7 @@ import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRManagePresenter;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
+import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
@@ -108,12 +109,10 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     TextView tvTitleRight;
     private Wallet wallet;
     CRManagePresenter presenter;
-    String status;
     private String CID, DID;
     private String ownerPublicKey;
     private String name, url;
     private long code;
-
 
     @Override
     protected int getLayoutId() {
@@ -129,7 +128,6 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.electoral_affairs));
-
         tvTitleRight.setText(getString(R.string.quitcr));
         registReceiver();
     }
@@ -137,20 +135,22 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     protected void setExtraData(Bundle data) {
-        ownerPublicKey = data.getString("publickey");
+
         wallet = data.getParcelable("wallet");
-        CID = data.getString("CID", "");
-        status = data.getString("status", "Canceled");
-        CrStatusBean.InfoBean info = data.getParcelable("info");
+        CrStatusBean crStatusBean = data.getParcelable("crStatusBean");
+        CrStatusBean.InfoBean info = crStatusBean.getInfo();
+        ownerPublicKey = info.getCROwnerPublicKey();
+        CID = info.getCID();
         DID = info.getDID();
         CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentNode");
+        //curentNode只是用来展示信息
         if (curentNode == null) {
             return;
         }
 
         presenter = new CRManagePresenter();
         //这里只会有 "Registered", "Canceled"分别代表, 已注册过, 已注销(不知道可不可提取)
-        if (status.equals("Canceled")) {
+        if (crStatusBean.getStatus().equals("Canceled")) {
             //已经注销了
             setToobar(toolbar, toolbarTitle, getString(R.string.electoral_affairs));
             ll_xggl.setVisibility(View.GONE);
@@ -174,16 +174,16 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             case R.id.sb_zx:
                 //更新did
                 if (!TextUtils.isEmpty(DID)) {
-                    //更新凭证到中心化服务器 todo
+                    //已经绑定did
+                    //直接授权页更新凭证到中心化服务器
+                    Bundle bundle = new Bundle();
+                    bundle.putString("type", "authorization");
+                    bundle.putParcelable("wallet", wallet);
+                    start(AuthorizationFragment.class, bundle);
                     return;
                 }
                 //先绑定did  再更新到服务器
-                String didString = wallet.getDid();
-                if (TextUtils.isEmpty(didString)) {
-                    showToast(getString(R.string.notcreatedid));
-                    return;
-                }
-                new WalletManagePresenter().DIDResolveWithTip(didString, this);
+                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, "1");
                 break;
             case R.id.ll_info:
                 lineInfo.setVisibility(View.VISIBLE);
@@ -222,7 +222,11 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 break;
 
             case R.id.sb_up:
-                start(UpdateCRInformationFragment.class, getArguments());
+                if (!TextUtils.isEmpty(DID)) {
+                    start(UpdateCRInformationFragment.class, getArguments());
+                    return;
+                }
+                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, "2");
                 break;
         }
     }
@@ -273,7 +277,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
         });
         tvUrl.setText(url);
         if (!TextUtils.isEmpty(DID))
-            tvDid.setText("did:ela:" +DID);
+            tvDid.setText("did:elastos:" + DID);
         if (curentNode != null) {
             tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
             tv_zb.setText(curentNode.getVoterate() + "%");
@@ -305,21 +309,9 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 intent.putExtra("type", type);
                 intent.putExtra("chainId", MyWallet.ELA);
                 intent.putExtra("CID", CID);
-
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
-                if (Constant.UNREGISTERCR.equals(type)) {
-                    //注销按钮
-                    intent.putExtra("transType", 34);
-
-                } else if (Constant.CRUPDATE.equals(type)) {
-                    //绑定did
-                    intent.putExtra("name", name);
-                    intent.putExtra("CID", CID);
-                    intent.putExtra("url", url);
-                    intent.putExtra("code", code);
-                    intent.putExtra("transType", 35);
-                    intent.putExtra("ownerPublicKey", ownerPublicKey);
-                }
+                //注销按钮
+                intent.putExtra("transType", 34);
                 startActivity(intent);
 
                 break;
@@ -332,10 +324,19 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 sbtq.setVisibility(View.VISIBLE);
                 break;
             case "DIDResolveWithTip":
+                String resolveType = (String) o;
                 DIDDocument didDocument = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
                 if (didDocument != null) {
-                    //绑定 did
-                    new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", Constant.CRUPDATE, this);
+                    //已经注册did  且未绑定
+                    if ("1".equals(resolveType)) {
+                        //在授权页面绑定并授权
+                        Bundle bundle = getArguments();
+                        bundle.putString("type", "authorization&bind");
+                        start(AuthorizationFragment.class, bundle);
+                    } else {
+                        //在升级页面绑定并更新(更新包含绑定)
+                        start(UpdateCRInformationFragment.class, getArguments());
+                    }
                 }
                 break;
 
@@ -346,16 +347,14 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
-            if (result.getName().equals("35")) {
-                //同步中心化服务器
-            } else {
-                new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
-                    @Override
-                    public void affireBtnClick(View view) {
-                        popBackFragment();
-                    }
-                });
-            }
+
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    popBackFragment();
+                }
+            });
+
 
         }
     }

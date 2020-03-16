@@ -6,6 +6,7 @@ import android.text.TextUtils;
 
 public class CredentialSubjectBean implements Parcelable {
     //一共17
+    private String didName;
     private String did;
     private String nickname;
     private String gender;// 1男2nv
@@ -30,6 +31,14 @@ public class CredentialSubjectBean implements Parcelable {
                 && TextUtils.isEmpty(phoneCode) && TextUtils.isEmpty(nation) && TextUtils.isEmpty(introduction)
                 && TextUtils.isEmpty(homePage) && TextUtils.isEmpty(wechat) && TextUtils.isEmpty(twitter)
                 && TextUtils.isEmpty(weibo) && TextUtils.isEmpty(facebook) && TextUtils.isEmpty(googleAccount);
+    }
+
+    public String getDidName() {
+        return didName;
+    }
+
+    public void setDidName(String didName) {
+        this.didName = didName;
     }
 
     public String getDid() {
@@ -170,11 +179,35 @@ public class CredentialSubjectBean implements Parcelable {
 
     /* public CredentialSubjectBean() {
     }*/
-
-    public CredentialSubjectBean(String did) {
+    public CredentialSubjectBean(String did, String didName) {
         this.did = did;
+        this.didName = didName;
     }
+
     public CredentialSubjectBean() {
+    }
+
+    @Override
+    public String toString() {
+        return "CredentialSubjectBean{" +
+                "did='" + did + '\'' +
+                ", nickname='" + nickname + '\'' +
+                ", gender=" + gender +
+                ", birthday=" + birthday +
+                ", avatar='" + avatar + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", phoneCode='" + phoneCode + '\'' +
+                ", nation='" + nation + '\'' +
+                ", introduction='" + introduction + '\'' +
+                ", homePage='" + homePage + '\'' +
+                ", wechat='" + wechat + '\'' +
+                ", twitter='" + twitter + '\'' +
+                ", weibo='" + weibo + '\'' +
+                ", facebook='" + facebook + '\'' +
+                ", googleAccount='" + googleAccount + '\'' +
+                ", editTime=" + editTime +
+                '}';
     }
 
     @Override
@@ -184,6 +217,7 @@ public class CredentialSubjectBean implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.didName);
         dest.writeString(this.did);
         dest.writeString(this.nickname);
         dest.writeString(this.gender);
@@ -204,6 +238,7 @@ public class CredentialSubjectBean implements Parcelable {
     }
 
     protected CredentialSubjectBean(Parcel in) {
+        this.didName = in.readString();
         this.did = in.readString();
         this.nickname = in.readString();
         this.gender = in.readString();
@@ -234,28 +269,5 @@ public class CredentialSubjectBean implements Parcelable {
             return new CredentialSubjectBean[size];
         }
     };
-
-    @Override
-    public String toString() {
-        return "CredentialSubjectBean{" +
-                "did='" + did + '\'' +
-                ", nickname='" + nickname + '\'' +
-                ", gender=" + gender +
-                ", birthday=" + birthday +
-                ", avatar='" + avatar + '\'' +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
-                ", phoneCode='" + phoneCode + '\'' +
-                ", nation='" + nation + '\'' +
-                ", introduction='" + introduction + '\'' +
-                ", homePage='" + homePage + '\'' +
-                ", wechat='" + wechat + '\'' +
-                ", twitter='" + twitter + '\'' +
-                ", weibo='" + weibo + '\'' +
-                ", facebook='" + facebook + '\'' +
-                ", googleAccount='" + googleAccount + '\'' +
-                ", editTime=" + editTime +
-                '}';
-    }
 }
 

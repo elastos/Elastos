@@ -136,7 +136,7 @@ public class CRInformationFragment extends BaseFragment {
         tvName.setText(bean.getNickname());
         tvNumVote.setText(bean.getVotes().split("\\.")[0] + " " + getString(R.string.ticket));
         if (!TextUtils.isEmpty(bean.getCid()))
-            tvDid.setText("did:ela:" + bean.getCid());
+            tvDid.setText("did:elastos:" + bean.getCid());
         tv_addrs.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         tvUrl.setText(bean.getUrl());
         tvZl.setText(bean.getVoterate() + "%");

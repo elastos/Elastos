@@ -67,7 +67,7 @@ public class DIDNetRecordRecAdapetr extends RecyclerView.Adapter<DIDNetRecordRec
             default:
                 //已确认
                 holder.tvDid.setVisibility(View.VISIBLE);
-                holder.tvDid.setText("did:ela:" + didInfoEntity.getId());
+                holder.tvDid.setText("did:elastos:" + didInfoEntity.getId());
                 holder.tvStatus.setTextColor(context.getResources().getColor(R.color.whiter50));
                 Calendar calendar = Calendar.getInstance();
                 calendar.set(Calendar.HOUR_OF_DAY, 0);

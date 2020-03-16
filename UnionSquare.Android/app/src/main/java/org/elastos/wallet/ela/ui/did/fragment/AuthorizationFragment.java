@@ -3,6 +3,8 @@ package org.elastos.wallet.ela.ui.did.fragment;
 import android.content.Intent;
 import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
@@ -14,23 +16,35 @@ import org.elastos.did.DIDStore;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.bean.CallBackJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.RecieveJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
+import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
+import org.elastos.wallet.ela.ui.did.adapter.AuthorizationRecAdapetr;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
+import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AuthorizationPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VertifyPwdActivity;
+import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
+import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.elastos.wallet.ela.utils.svg.SvgSoftwareLayerSetter;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import butterknife.BindView;
@@ -44,53 +58,207 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
     TextView tvName;
     @BindView(R.id.tv_did)
     TextView tvDid;
+    @BindView(R.id.rv)
+    RecyclerView rv;
     Unbinder unbinder;
     private String[] jwtParts;
     RecieveJwtEntity recieveJwtEntity;
     private String scanResult;
-    private String payPasswd;
-    String callBackUrl, walletId;
+    String callBackUrl;
     private DIDStore store;
+    private String type;
+    private Wallet wallet;
+    private String name;
+    private int code;
+    private String url;
+    private String ownerPublicKey;
+    private String CID;
+    private ArrayList<PersonalInfoItemEntity> listShow;
 
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_did_authorization;
     }
 
+    private void initAuthorization() {
+        ivLogo.setImageResource(R.mipmap.found_cr_vote);
+        tvName.setText(R.string.findlistup4);
+        tvDid.setVisibility(View.GONE);
+    }
 
     @Override
     protected void setExtraData(Bundle data) {
-        scanResult = data.getString("scanResult");
-        walletId = data.getString("walletId");
-        String result = scanResult.replace("elastos://credaccess/", "");
-        jwtParts = result.split("\\.");
-        String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
-        recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
-        tvDid.setText(recieveJwtEntity.getIss());
-        tvName.setText(recieveJwtEntity.getWebsite().getDomain());
-
-        String logo = recieveJwtEntity.getWebsite().getLogo();
-        if (logo.endsWith(".svg")) {
-            GlideApp.with(this).as(PictureDrawable.class).listener(new SvgSoftwareLayerSetter()).load(logo).into(ivLogo);
-
+        wallet = data.getParcelable("wallet");
+        type = data.getString("type");
+        if ("authorization".equals(type)) {
+            //授权同时绑定did
+            initItemDate();
+            initAuthorization();
+        } else if ("authorization&bind".equals(type)) {
+            initItemDate();
+            CrStatusBean crStatusBean = data.getParcelable("crStatusBean");
+            CrStatusBean.InfoBean bean = crStatusBean.getInfo();
+            name = bean.getNickName();
+            code = bean.getLocation();
+            url = bean.getURL();
+            ownerPublicKey = bean.getCROwnerPublicKey();
+            CID = bean.getCID();
         } else {
-            GlideApp.with(this).load(logo).into(ivLogo);
+            //扫描授权
+            scanResult = data.getString("scanResult");
+
+            String result = scanResult.replace("elastos://credaccess/", "");
+            jwtParts = result.split("\\.");
+            String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
+            recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
+            tvDid.setText(recieveJwtEntity.getIss());
+            tvName.setText(recieveJwtEntity.getWebsite().getDomain());
+            String logo = recieveJwtEntity.getWebsite().getLogo();
+            if (logo.endsWith(".svg")) {
+                GlideApp.with(this).as(PictureDrawable.class).listener(new SvgSoftwareLayerSetter()).load(logo).into(ivLogo);
+
+            } else {
+                GlideApp.with(this).load(logo).into(ivLogo);
+            }
+            callBackUrl = recieveJwtEntity.getCallbackurl();
         }
-        registReceiver();
     }
 
     @Override
     protected void initView(View view) {
-        callBackUrl = recieveJwtEntity.getCallbackurl();
+        registReceiver();
+    }
 
+    private void initItemDate() {
 
+        String showData[] = getResources().getStringArray(R.array.personalinfo_chose);
+        /*  Map<Integer, String>*/
+        listShow = new ArrayList<>();
+
+        for (int i = 0; i < showData.length; i++) {
+            PersonalInfoItemEntity personalInfoItemEntity = new PersonalInfoItemEntity();
+            personalInfoItemEntity.setIndex(i);
+            personalInfoItemEntity.setHintShow1("-" + showData[i]);
+            personalInfoItemEntity.setCheck(true);
+            if (i == 1 || i == 2 || i == 4 || i == 7 || i == 8 || i == 9 || i == 10 || i == 11 || i == 12 || i == 13)
+                listShow.add(personalInfoItemEntity);
+
+        }
+
+        setRecycleViewShow();
+    }
+
+    private void setRecycleViewShow() {
+
+        AuthorizationRecAdapetr adapterShow = new AuthorizationRecAdapetr(getContext(), listShow);
+        rv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        rv.setAdapter(adapterShow);
+
+    }
+
+    private CredentialSubjectBean convertCredentialSubjectBean() {
+        //这种情况考虑去除全局变量credentialSubjectBean
+        if (listShow.size() == 0) {
+            return null;
+        }
+        String json = getMyDID().getCredentialProFromStore(getMyDID().getDidString());
+        CredentialSubjectBean result = JSON.parseObject(json, CredentialSubjectBean.class);
+        for (int i = 0; i < listShow.size(); i++) {
+            //只遍历show的数据
+            PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
+            int index = personalInfoItemEntity.getIndex();
+            boolean check = personalInfoItemEntity.isCheck();
+            switch (index) {
+                case 0:
+                    if (!check)
+                        result.setNickname(null);
+                    break;
+                case 1:
+                    if (!check)
+                        result.setGender(null);
+                    break;
+                case 2:
+                    if (!check)
+
+                        result.setBirthday(null);
+                    break;
+                case 3:
+                    if (!check)
+                        result.setAvatar(null);
+                    break;
+                case 4:
+                    if (!check)
+                        result.setEmail(null);
+                    break;
+                case 5:
+                    if (!check) {
+                        result.setPhoneCode(null);
+                        result.setPhone(null);
+                    }
+                    break;
+                case 6:
+                    if (!check)
+                        result.setNation(null);
+                    break;
+                case 7:
+                    if (!check)
+                        result.setIntroduction(null);
+
+                    break;
+                case 8:
+                    if (!check)
+                        result.setHomePage(null);
+                    break;
+                case 9:
+                    if (!check)
+                        result.setWechat(null);
+                    break;
+                case 10:
+                    if (!check)
+                        result.setTwitter(null);
+                    break;
+                case 11:
+                    if (!check)
+                        result.setWeibo(null);
+                    break;
+                case 12:
+                    if (!check)
+                        result.setFacebook(null);
+                    break;
+                case 13:
+                    if (!check)
+                        result.setGoogleAccount(null);
+                    break;
+            }
+
+        }
+        Log.i("??", JSON.toJSONString(result));
+        return result;
     }
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "getFee":
+                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("type", Constant.CRUPDATE);
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("ownerPublicKey", ownerPublicKey);
+                intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
+                intent.putExtra("name", name);
+                intent.putExtra("CID", CID);
+                intent.putExtra("url", url);
+                intent.putExtra("code", code);
+                intent.putExtra("transType", 35);
+
+                break;
+            case "jwtSave":
+                showToast(getString(R.string.update_successful));
+                popBackFragment();
+                break;
             case "postData":
-                showToast("授权成功");
+                showToast(getString(R.string.authoriizesuccess));
                 popBackFragment();
                 break;
             case "exportxPrivateKey":
@@ -98,7 +266,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
                 String payPasswd = (String) o;
                 try {
                     store.initPrivateIdentity(privateKey, payPasswd);
-                    generBackJwt();
+                    generBackJwt(payPasswd);
                 } catch (DIDException e) {
                     e.printStackTrace();
                     showToast(getString(R.string.didinitfaile));
@@ -117,15 +285,17 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
                 ClipboardUtil.copyClipboar(getBaseActivity(), tvDid.getText().toString());
                 break;
             case R.id.tv_agree:
-                Intent intent = new Intent(getActivity(), VertifyPwdActivity.class);
-                intent.putExtra("walletId", walletId);
-                intent.putExtra("type", this.getClass().getSimpleName());
-                startActivity(intent);
-
-
+                if (type.equals("authorization&bind")) {
+                    //绑定并授权需要展示手续费
+                    new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", type, this);
+                } else {
+                    Intent intent = new Intent(getActivity(), VertifyPwdActivity.class);
+                    intent.putExtra("walletId", wallet.getWalletId());
+                    intent.putExtra("type", this.getClass().getSimpleName());
+                    startActivity(intent);
+                }
                 break;
             case R.id.tv_refuse:
-
                 popBackFragment();
                 break;
 
@@ -133,8 +303,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         }
     }
 
-    private void generBackJwt() {
-        getMyDID().initDID(payPasswd);
+    private void scanJwt(String payPasswd) {
         CallBackJwtEntity callBackJwtEntity = new CallBackJwtEntity();
         callBackJwtEntity.setType("credaccess");
         callBackJwtEntity.setIss(getMyDID().getDidString());
@@ -145,7 +314,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         callBackJwtEntity.setPresentation("");
         String header = jwtParts[0];
         // Base64
-        String payload = Base64.encodeToString(JSON.toJSONString(callBackJwtEntity).getBytes(), Base64.URL_SAFE|Base64.NO_WRAP);
+        String payload = Base64.encodeToString(JSON.toJSONString(callBackJwtEntity).getBytes(), Base64.URL_SAFE | Base64.NO_WRAP);
         payload = payload.replaceAll("=", "");
         try {
             String signature = getMyDID().getDIDDocument().sign(payPasswd, (header + "." + payload).getBytes());
@@ -153,18 +322,43 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         } catch (DIDStoreException e) {
             e.printStackTrace();
         }
+    }
 
+    private void authorizationJwt(String payPasswd) {
+        String header = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9";
+        // Base64
+        String payload = Base64.encodeToString(JSON.toJSONString(convertCredentialSubjectBean()).getBytes(), Base64.URL_SAFE | Base64.NO_WRAP);
+        payload = payload.replaceAll("=", "");
+        try {
+            String signature = getMyDID().getDIDDocument().sign(payPasswd, (header + "." + payload).getBytes());
+            new AuthorizationPresenter().jwtSave(getMyDID().getDidString(), header + "." + payload + "." + signature, this);
+        } catch (DIDStoreException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * 生成jwt并给相应的服务器
+     *
+     * @param payPasswd
+     */
+    private void generBackJwt(String payPasswd) {
+        getMyDID().initDID(payPasswd);
+        if ("authorization".equals(type) || "authorization&bind".equals(type)) {
+            authorizationJwt(payPasswd);
+        } else
+            scanJwt(payPasswd);
     }
 
     private void initDid(String payPasswd) {
-
         try {
             store = getMyDID().getDidStore();
             if (store.containsPrivateIdentity()) {
-                generBackJwt();
+                generBackJwt(payPasswd);
             } else {
                 //获得私钥用于初始化did
-                new CreatMulWalletPresenter().exportxPrivateKey(walletId, payPasswd, this);
+                new CreatMulWalletPresenter().exportxPrivateKey(wallet.getWalletId(), payPasswd, this);
             }
         } catch (DIDException e) {
             e.printStackTrace();
@@ -178,7 +372,6 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
 
         if (integer == RxEnum.VERTIFYPAYPASS.ordinal()) {
             //验证密码成功
-            payPasswd = (String) result.getObj();
             initDid((String) result.getObj());
         }
 

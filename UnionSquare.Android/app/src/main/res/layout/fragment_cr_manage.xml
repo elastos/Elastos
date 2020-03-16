@@ -272,27 +272,23 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/px80"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="28dp"
             android:layout_marginRight="28dp"
             android:layout_marginBottom="28dp"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
 
             <com.allen.library.SuperButton
                 android:id="@+id/sb_up"
                 style="@style/PublicButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="@string/update_information"
+                android:text="@string/updatesignforinfo"
                 app:sCornersRadius="0dp" />
 
             <com.allen.library.SuperButton
                 android:id="@+id/sb_zx"
                 style="@style/PublicButton"
-                android:layout_width="0dp"
-                android:layout_marginLeft="15dp"
-                android:layout_weight="1"
+                android:layout_marginTop="20dp"
                 android:text="@string/updatedidinfo"
                 app:sCornersRadius="0dp" />
 
@@ -331,11 +327,11 @@
             <TextView
                 android:id="@+id/tv_quit"
                 android:layout_width="match_parent"
-                android:layout_marginRight="15dp"
-                android:layout_marginLeft="15dp"
-                android:gravity="center"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
                 android:layout_marginTop="20dp"
+                android:layout_marginRight="15dp"
+                android:gravity="center"
                 android:text="@string/hasquit"
                 android:textColor="#ffffffff"
                 android:textSize="14sp" />

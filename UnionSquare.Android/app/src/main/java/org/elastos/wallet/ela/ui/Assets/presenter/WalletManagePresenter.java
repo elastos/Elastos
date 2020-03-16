@@ -113,8 +113,8 @@ public class WalletManagePresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void DIDResolveWithTip(String didString, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "DIDResolveWithTip");
+    public void DIDResolveWithTip(String didString, BaseFragment baseFragment,String type) {
+        Observer observer = createObserver(baseFragment, "DIDResolveWithTip",type);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

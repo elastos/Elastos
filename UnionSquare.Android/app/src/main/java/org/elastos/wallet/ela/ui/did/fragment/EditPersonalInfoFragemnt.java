@@ -65,7 +65,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
     @BindView(R.id.sv_chose)
     ScrollView svChose;
 
-    private CredentialSubjectBean credentialSubjectBean;
+
     private long birthday;
 
     private List<PersonalInfoItemEntity> listShow;
@@ -88,7 +88,6 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
             getChoseItem(listShow);
         } else {
             //从创建did 进入
-            credentialSubjectBean = new CredentialSubjectBean(getMyDID().getDidString());
             initItemDate();
 
         }
@@ -182,7 +181,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         switch (view.getId()) {
             case R.id.tv_title_right:
                 //发布  保留在重写的方法里
-                credentialSubjectBean = convertCredentialSubjectBean();
+                CredentialSubjectBean credentialSubjectBean = convertCredentialSubjectBean();
                 Log.i("??", JSON.toJSONString(credentialSubjectBean));
                 DIDDocument doc = getMyDID().getDIDDocument();
                 //String didName = getMyDID().getName(doc);
@@ -345,7 +344,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         if (listShow.size() == 0) {
             return null;
         }
-        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString());
+        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(),getMyDID().getName(getMyDID().getDIDDocument()));
         for (int i = 0; i < listShow.size(); i++) {
             //只遍历show的数据
             PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);

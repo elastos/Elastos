@@ -26,7 +26,7 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="20dp" />
+        android:layout_marginTop="15dp" />
 
     <TextView
         android:id="@+id/tv_name"
@@ -36,20 +36,21 @@
         android:layout_marginTop="20dp"
         android:gravity="center"
         android:textSize="16sp" />
+
     <TextView
         android:id="@+id/tv_did"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:layout_gravity="center_horizontal"
         android:drawableRight="@mipmap/mine_did_list_copy"
         android:drawablePadding="10dp"
-        android:textColor="@color/whiter50"
-         />
+        android:gravity="center"
+        android:textColor="@color/whiter50" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
         android:text="@string/tipdidauthorization"
         android:textColor="@color/whiter50"
         android:textSize="12sp" />
@@ -61,12 +62,12 @@
         android:text="@string/didbaseinfo" />
 
     <LinearLayout
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="22dp"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="0dp"
@@ -83,64 +84,25 @@
             android:textColor="@color/white" />
     </LinearLayout>
 
-    <LinearLayout
-        android:visibility="gone"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="22dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/personalintro_" />
-
-        <CheckBox
-            android:id="@+id/cb_personalintro"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8dp"
-            android:padding="2dp"
-            android:textColor="@color/white" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:visibility="gone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="22dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/socialaccount_" />
-
-        <CheckBox
-            android:id="@+id/cb_socialaccount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8dp"
-            android:padding="2dp"
-            android:textColor="@color/white" />
-    </LinearLayout>
+        android:layout_height="0dp"
+        android:layout_weight="12"/>
 
     <TextView
         android:id="@+id/tv_agree"
         style="@style/button1"
         android:layout_width="180dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="20dp"
         android:text="@string/agree" />
 
     <TextView
         android:id="@+id/tv_refuse"
         style="@style/button1"
         android:layout_width="180dp"
+        android:layout_marginBottom="20dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="20dp"
         android:text="@string/refuse" />

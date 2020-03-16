@@ -29,7 +29,7 @@ public class Constant {
     public static final int SIGN = 0x3;//打开签名页面
     public static final int TRANSFER = 0x4;//打开转账页面
     public static final String SERVERLIST_BASE = "http://54.223.158.189:5739/";
-    public static final String SERVERLIST = "api/dposNodeRPC/getProducerNodesList";
+
 
     public static final String EDITCREDENTIAL = "editPersonalinfo";//编辑did  从凭证信息进入三部分凭证
     public static final String ADDCREDENTIAL = "addPersonalinfo";  //新增did  从凭证信息进入三部分凭证

@@ -136,7 +136,7 @@ public class MyDID {
         return didStore;
     }
 
-    // 获得did的字符串的放"did:ela:"
+    // 获得did的字符串的放"did:elastos:"
     public String getDidString() {
         if (did == null) {
             return null;
@@ -193,14 +193,14 @@ public class MyDID {
     /**
      * 设置凭证信息  不上链
      *
-     * @param json
+     * @param credencialJson
      * @param pwd
      * @param expires
      */
-    public boolean setCredential(String json, String pwd, Date expires) {
+    public boolean storeCredential(String credencialJson, String pwd, Date expires) {
 
         try {
-            if (TextUtils.isEmpty(json) || json.equals("null")) {
+            if (TextUtils.isEmpty(credencialJson) || credencialJson.equals("null")) {
                 //如果上次发送失败但是 setCredential保存成功   若重新发布时为空判空覆盖
                 didStore.deleteCredential(did.toString(), "outPut");
                 return true;
@@ -211,7 +211,7 @@ public class MyDID {
                     .id("outPut")//唯一标识一个VerifiableCredential 相同会覆盖
                     .type(SelfProclaimedCredential)
                     .expirationDate(expires)
-                    .properties(json)
+                    .properties(credencialJson)
                     .seal(pwd);
             didStore.storeCredential(vc);
             return true;
@@ -235,10 +235,39 @@ public class MyDID {
             if (vc1 == null || vc1.getSubject() == null) {
                 return null;
             }
+            return vc1.toString();
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public String getCredentialProFromStore(String didString) {
+
+        try {
+            VerifiableCredential vc1 = didStore.loadCredential(didString, "outPut");
+            if (vc1 == null || vc1.getSubject() == null) {
+                return null;
+            }
+            //Log.i("??", vc1.toString());
             return vc1.getSubject().getPropertiesAsString();
 
-        } catch (DIDException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public String getCredentialProFromJson(String credencialJson) {
+
+        try {
+            VerifiableCredential vcFrom = VerifiableCredential.fromJson(credencialJson);//结果
+            return vcFrom.getSubject().getPropertiesAsString();
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -253,10 +282,12 @@ public class MyDID {
                if (vc1 != null) {
                    didStore.deleteCredential(did, didurl);
                }*/
-    public void resetCredential(String fromJson, String pwd, Date expires) {
+    public void restoreCredential(String fromJson, String pwd, Date expires) {
 
         try {
             VerifiableCredential vcFrom = VerifiableCredential.fromJson(fromJson);//结果
+            // vcFrom.isGenuine()判断数据完整性
+            //  vcFrom.toString()
             String props = vcFrom.getSubject().getPropertiesAsString();//properties(String json)
 
             Issuer issuer = new Issuer(did, didStore);//发布者的did

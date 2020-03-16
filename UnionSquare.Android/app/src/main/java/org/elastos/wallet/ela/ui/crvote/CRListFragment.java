@@ -117,6 +117,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     private AddDIDPresenter addDIDPresenter;
 
     private String publickey;
+    private CrStatusBean crStatusBean;
 
     @Override
     protected int getLayoutId() {
@@ -197,7 +198,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 start(CRNodeCartFragment.class, bundle);
                 break;
             case R.id.tv_signupfor:
-                if (status.equals("Unregistered")) {
+                if (crStatusBean.getStatus().equals("Unregistered")) {
                     start(CRAgreementFragment.class);
                 } else {
                     addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
@@ -343,7 +344,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 netList.remove(curentNode);
             }
             //只有active  并且Registered时候添加
-            if (!is && curentNode != null && status.equals("Registered") && curentNode.getState().equals("Active")) {
+            if (!is && curentNode != null && crStatusBean.getStatus().equals("Registered") && curentNode.getState().equals("Active")) {
                 if (netList.indexOf(curentNode) != 0) {
                     netList.add(0, curentNode);
                 }
@@ -389,9 +390,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
 
     }
-
-    private String status;
-    private CrStatusBean.InfoBean info;
 
 
     private Drawable getDrawable(int id) {
@@ -467,15 +465,15 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 CID = ((CommmonStringEntity) baseEntity).getData();
                 //无论是点击创建或者管理  还是打开页面就加载的  did肯定都为null 不为null的上层已经拦截    两种情况互斥
                 Bundle bundle = new Bundle();
-                bundle.putString("CID", CID);
-                bundle.putString("publickey", publickey);
+
                 bundle.putParcelable("wallet", wallet);
-                if (status.equals("Unregistered")) {
+                if (crStatusBean.getStatus().equals("Unregistered")) {
+                    bundle.putString("CID", CID);
+                    bundle.putString("publickey", publickey);
                     bundle.putSerializable("netList", netList);
                     start(CRSignUpForFragment.class, bundle);
                 } else {
-                    bundle.putString("status", status);
-                    bundle.putParcelable("info", info);
+                    bundle.putParcelable("crStatusBean", crStatusBean);
                     bundle.putParcelable("curentNode", curentNode);
                     start(CRManageFragment.class, bundle);
                 }
@@ -495,9 +493,9 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
                 break;
             case "getRegisteredCRInfo":
-                CrStatusBean crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
-                status = crStatusBean.getStatus();
-                info = crStatusBean.getInfo();
+                crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
+                String status = crStatusBean.getStatus();
+                CrStatusBean.InfoBean info = crStatusBean.getInfo();
                 if (!TextUtils.isEmpty(status)) {
                     switch (status) {
                         case "Unregistered":
@@ -575,7 +573,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         if (integer == RxEnum.AGREE.ordinal()) {
             //注册did同意了协议
             //注册cr前的判断
-            new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this);
+            new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this,null);
 
 
         }

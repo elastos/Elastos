@@ -18,4 +18,12 @@ public class AuthorizationPresenter extends NewPresenterAbstract {
         Observer observer = createObserver(baseFragment, "postData");
         subscriberObservable(observer, observable, baseFragment);
     }
+    public void jwtSave(String did, String jwt,BaseFragment baseFragment) {
+        Map<String, String> map = new HashMap();
+        map.put("id", did);
+        map.put("jwt", jwt);
+        Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).jwtSave(map);
+        Observer observer = createObserver(baseFragment, "jwtSave");
+        subscriberObservable(observer, observable, baseFragment);
+    }
 }

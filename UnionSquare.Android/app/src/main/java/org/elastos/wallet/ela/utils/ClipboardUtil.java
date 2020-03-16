@@ -28,9 +28,9 @@ public class ClipboardUtil {
             ClipData mClipData = ClipData.newPlainText("Label", wallrtAddr);
             cm.setPrimaryClip(mClipData);
             context.showToastMessage(context.getString(R.string.copysucess));
-        } else {
+        } /*else {
             context.showToastMessage(context.getString(R.string.copyfail));
-        }
+        }*/
     }
 
     public static void copyClipboar(BaseActivity context, String wallrtAddr, String text) {

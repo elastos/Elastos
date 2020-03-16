@@ -879,7 +879,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 // 验签成功
                 // 验签成功
                 //先判断本地是否有did
-                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this);
+                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this,null);
             } else {
                 //验签失败
                 toErroScan(scanResult);
@@ -892,7 +892,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 //getMyDID().getDidStore().storeDid(didDocument);//存储本地
                 Bundle bundle = new Bundle();
                 bundle.putString("scanResult", scanResult);
-                bundle.putString("walletId", wallet.getWalletId());
+                bundle.putParcelable("wallet", wallet);
                 ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
 
         }

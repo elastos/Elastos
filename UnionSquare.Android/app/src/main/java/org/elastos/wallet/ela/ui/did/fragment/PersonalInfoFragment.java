@@ -96,7 +96,7 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
         tvTitleRight.setVisibility(View.VISIBLE);
         tvTitleRight.setText(getString(R.string.publish));
         tvTitle.setText(getString(R.string.addpersonalindo));
-        credentialSubjectBean = new CredentialSubjectBean(getMyDID().getDidString());
+        credentialSubjectBean = new CredentialSubjectBean(getMyDID().getDidString(),didName);
     }
 
 
@@ -333,7 +333,7 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
         if (listShow.size() == 0) {
             return null;
         }
-        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString());
+        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(),didName);
         for (int i = 0; i < listShow.size(); i++) {
             //只遍历show的数据
             PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);

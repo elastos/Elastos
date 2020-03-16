@@ -46,7 +46,7 @@ public class CredentialFragment extends BaseFragment {
     }
 
     private void viewInfo() {
-        String json = getMyDID().getCredentialJSon(getMyDID().getDidString());
+        String json = getMyDID().getCredentialProFromStore(getMyDID().getDidString());
         credentialSubjectBean = JSON.parseObject(json, CredentialSubjectBean.class);
         Log.i("??", json + "\n" + (JSON.parseObject("{}", CredentialSubjectBean.class) == null));//false
         if (credentialSubjectBean != null) {

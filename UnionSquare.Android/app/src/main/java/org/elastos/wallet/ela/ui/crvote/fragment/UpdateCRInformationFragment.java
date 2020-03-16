@@ -75,7 +75,8 @@ public class UpdateCRInformationFragment extends BaseFragment implements NewBase
 
     @Override
     protected void setExtraData(Bundle data) {
-        CrStatusBean.InfoBean bean = data.getParcelable("info");
+        CrStatusBean crStatusBean = data.getParcelable("crStatusBean");
+        CrStatusBean.InfoBean bean=crStatusBean.getInfo();
         etDotname.setText(bean.getNickName());
         etDotname.setEnabled(false);
         code = bean.getLocation();
