@@ -39,7 +39,6 @@ public class Group {
 	public static final int MAX_GROUP_TITLE_LEN = 127;
 
 	private String groupId;
-	private GroupHandler handler;
 	private Carrier carrier;
 
 	private static native String new_group(Carrier carrier);
@@ -55,21 +54,24 @@ public class Group {
 
 	private static native int get_error_code();
 
-	Group(Carrier carrier, GroupHandler handler) throws CarrierException {
+	Group(Carrier carrier, String groupId) {
+		this.carrier = carrier;
+		this.groupId = groupId;
+	}
+
+	Group(Carrier carrier) throws CarrierException {
 		groupId = new_group(carrier);
 		if (groupId == null)
 			throw CarrierException.fromErrorCode(get_error_code());
 
-		this.handler = handler;
 		this.carrier = carrier;
 	}
 
-	Group(Carrier carrier, GroupHandler handler, String friendId, byte[] cookie) throws CarrierException {
+	Group(Carrier carrier, String friendId, byte[] cookie) throws CarrierException {
 		groupId = group_join(carrier, friendId, cookie);
 		if (groupId == null)
 			throw CarrierException.fromErrorCode(get_error_code());
 
-		this.handler = handler;
 		this.carrier = carrier;
 	}
 
@@ -80,26 +82,6 @@ public class Group {
 
 	String getId() {
 		return groupId;
-	}
-
-	void connected() {
-		handler.onGroupConnected(this);
-	}
-
-	void messageReceived(String from, byte[] message) {
-		handler.onGroupMessage(this, from, message);
-	}
-
-	void titleChanged(String from, String title) {
-		handler.onGroupTitle(this, from, title);
-	}
-
-	void peerNameChanged(String peerId, String newName) {
-		handler.onPeerName(this, peerId, newName);
-	}
-
-	void peerListChanged() {
-		handler.onPeerListChanged(this);
 	}
 
 	/**

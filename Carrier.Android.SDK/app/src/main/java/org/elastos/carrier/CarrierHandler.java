@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * The interface to Carrier node.
  */
-public interface CarrierHandler {
+public interface CarrierHandler extends GroupHandler {
 	/**
 	 * The callback function that perform idle work.
 	 *

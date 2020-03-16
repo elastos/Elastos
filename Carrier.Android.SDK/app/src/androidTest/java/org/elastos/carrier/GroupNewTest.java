@@ -56,9 +56,7 @@ public class GroupNewTest {
 		public void onGroupInvite(Carrier carrier, String from, byte[] cookie) {
 			Log.d(TAG, String.format("Group invite from: %s", from));
 		}
-	}
 
-	static class TestGroupHandler implements GroupHandler {
 		@Override
 		public void onGroupConnected(Group group) {
 			Log.d(TAG, "onGroupConnected");
@@ -88,8 +86,7 @@ public class GroupNewTest {
 	@Test
 	public void testNewGroup() {
 		try {
-			TestGroupHandler groupHandler = new TestGroupHandler();
-			Group group = carrier.newGroup(groupHandler);
+			Group group = carrier.newGroup();
 			carrier.groupLeave(group);
 		}
 		catch (CarrierException e) {
@@ -100,8 +97,7 @@ public class GroupNewTest {
 	@Test
 	public void testLeaveGroupTwice() {
 		try {
-			TestGroupHandler groupHandler = new TestGroupHandler();
-			Group group = carrier.newGroup(groupHandler);
+			Group group = carrier.newGroup();
 			carrier.groupLeave(group);
 
 			try {

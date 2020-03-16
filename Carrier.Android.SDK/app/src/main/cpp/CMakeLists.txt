@@ -12,6 +12,7 @@ set(SOURCES
     utils.c
     utilsExt.c
     group.c
+    groupUtils.c
     carrier.c
     carrierHandler.c
     carrierUtils.c

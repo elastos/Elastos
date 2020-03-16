@@ -30,8 +30,76 @@
 #include "log.h"
 #include "utils.h"
 #include "carrierUtils.h"
+#include "groupUtils.h"
 #include "carrierHandler.h"
 #include "carrierCookie.h"
+
+static
+int put_into_groups(JNIEnv *env, jobject jcarrier, jobject jgroupId, jobject jgroup)
+{
+    jobject jgroups;
+    jclass clazz;
+    jobject tmp;
+    int rc;
+
+    if (!getObjectField(env, jcarrier, "groups", "Ljava/util/Hashtable;", &jgroups)) {
+        logE("Carrier::groups field not found");
+        return 0;
+    }
+
+    clazz = (*env)->GetObjectClass(env, jgroups);
+    if (!clazz) {
+        (*env)->DeleteLocalRef(env, jgroups);
+        logE("Java class 'Hashtable' not found");
+        return 0;
+    }
+
+    rc = callObjectMethod(env, clazz, jgroups, "put",
+                          "("_J("Object;")_J("Object;)")_J("Object;"),
+                          &tmp, jgroupId, jgroup);
+    (*env)->DeleteLocalRef(env, jgroups);
+    (*env)->DeleteLocalRef(env, clazz);
+    if (!rc) {
+        logE("call method Hashtable::put error");
+        return 0;
+    }
+
+    (*env)->DeleteLocalRef(env, tmp);
+    return 1;
+}
+
+static
+bool load_group(const char *groupId, void *context)
+{
+    JNIEnv *env = ((JNIEnv **)context)[0];
+    jobject jcarrier = *(((jobject **)context)[1]);
+    jstring jgroupId;
+    jobject jgroup;
+    int rc;
+
+    if (!groupId)
+        return true;
+
+    jgroupId = (*env)->NewStringUTF(env, groupId);
+    if (!jgroupId) {
+        logE("Can not convert C-string(%s) to JAVA-String", groupId);
+        return false;
+    }
+
+    rc = newJavaGroup(env, jcarrier, jgroupId, &jgroup);
+    if (!rc) {
+        (*env)->DeleteLocalRef(env, jgroupId);
+        logE("Failed to construct Group instance");
+        return false;
+    }
+
+    rc = put_into_groups(env, jcarrier, jgroupId, jgroup);
+
+    (*env)->DeleteLocalRef(env, jgroupId);
+    (*env)->DeleteLocalRef(env, jgroup);
+
+    return rc ? true : false;
+}
 
 static
 jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallbacks)
@@ -39,6 +107,7 @@ jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallb
     OptionsHelper helper;
     ElaCarrier *carrier;
     HandlerContext *hc;
+    int rc;
 
     memset(&helper, 0, sizeof(helper));
 
@@ -77,6 +146,16 @@ jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallb
     if (!carrier) {
         handlerCtxtCleanup(hc, env);
         logE("Call ela_new API error");
+        setErrorCode(ela_get_error());
+        return JNI_FALSE;
+    }
+
+    void *args[] = {env, &thiz};
+    rc = ela_get_groups(carrier, load_group, args);
+    if (rc < 0) {
+        ela_kill(carrier);
+        handlerCtxtCleanup(hc, env);
+        logE("Load persistent groups error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
     }

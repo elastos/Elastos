@@ -136,31 +136,31 @@ public class Carrier {
 		void onGroupConnected(Carrier carrier, String groupId) {
 			Group group = carrier.groups.get(groupId);
 			if (group != null)
-				group.connected();
+				carrier.handler.onGroupConnected(group);
 		}
 
 		void onGroupMessage(Carrier carrier, String groupId, String from, byte[] message) {
 			Group group = carrier.groups.get(groupId);
 			if (group != null)
-				group.messageReceived(from, message);
+				carrier.handler.onGroupMessage(group, from, message);
 		}
 
 		void onGroupTitle(Carrier carrier, String groupId, String from, String title) {
 			Group group = carrier.groups.get(groupId);
 			if (group != null)
-				group.titleChanged(from, title);
+				carrier.handler.onGroupTitle(group, from, title);
 		}
 
 		void onPeerName(Carrier carrier, String groupId, String peerId, String peerName) {
 			Group group = carrier.groups.get(groupId);
 			if (group != null)
-				group.peerNameChanged(peerId, peerName);
+				carrier.handler.onPeerName(group, peerId, peerName);
 		}
 
 		void onPeerListChanged(Carrier carrier, String groupId) {
 			Group group = carrier.groups.get(groupId);
 			if (group != null)
-				group.peerListChanged();
+				carrier.handler.onPeerListChanged(group);
 		}
 	}
 
@@ -981,16 +981,13 @@ public class Carrier {
 	/**
 	 * Create a new group.
 	 *
-	 * @param
-	 * 		handler		The interface handler of carrier group
-	 *
 	 * @return
 	 *	  The instance of the newly created group
 	 *
 	 * @throws CarrierException  carrier exception.
 	 */
-	public Group newGroup(GroupHandler handler) throws CarrierException {
-		Group group = new Group(this, handler);
+	public Group newGroup() throws CarrierException {
+		Group group = new Group(this);
 		groups.put(group.getId(), group);
 		return group;
 	}
@@ -1005,8 +1002,6 @@ public class Carrier {
 	 *	  friendId	The friend who send a group invitation
 	 * @param
 	 *	  cookie	The cookie information to join group
-	 * @param
-	 *	  handler	The interface handler of carrier group
 	 *
 	 * @return
 	 *		The instance of the group joined in
@@ -1014,13 +1009,13 @@ public class Carrier {
 	 * @throws IllegalArgumentException illegal exception.
 	 * @throws CarrierException  carrier exception.
 	 */
-	public Group groupJoin(String friendId, byte[] cookie, GroupHandler handler )
+	public Group groupJoin(String friendId, byte[] cookie)
 		throws CarrierException {
-		if (friendId == null || cookie == null || handler == null ||
+		if (friendId == null || cookie == null ||
 				friendId.length() == 0 || cookie.length == 0)
 			throw new IllegalArgumentException();
 
-		Group group = new Group(this, handler, friendId, cookie);
+		Group group = new Group(this, friendId, cookie);
 		groups.put(group.getId(), group);
 		return group;
 	}

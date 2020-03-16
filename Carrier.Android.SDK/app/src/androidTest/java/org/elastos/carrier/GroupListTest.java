@@ -63,9 +63,7 @@ public class GroupListTest {
 		public void onGroupInvite(Carrier carrier, String from, byte[] cookie) {
 			Log.d(TAG, String.format("Group invite from: %s", from));
 		}
-	}
 
-	static class TestGroupHandler implements GroupHandler {
 		@Override
 		public void onGroupConnected(Group group) {
 			Log.d(TAG, "onGroupConnected");
@@ -98,8 +96,7 @@ public class GroupListTest {
 			final int LEN = 3;
 			List<Group> groups = new ArrayList<>();
 			for (int i = 0; i < LEN; i++) {
-				TestGroupHandler groupHandler = new TestGroupHandler();
-				Group group = carrier.newGroup(groupHandler);
+				Group group = carrier.newGroup();
 				assertNotNull(group);
 				groups.add(group);
 			}

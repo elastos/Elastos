@@ -28,7 +28,7 @@ import java.util.List;
  * The abstract carrier node handler class.
  */
 
-public abstract class AbstractCarrierHandler implements CarrierHandler {
+public abstract class AbstractCarrierHandler extends AbstractGroupHandler implements CarrierHandler {
 	/**
 	 * The callback function that perform idle work.
 	 *

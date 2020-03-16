@@ -82,9 +82,7 @@ public class GroupInviteJoinTest {
 			commonSyncher.wakeup();
 			Log.d(TAG, String.format("Group invite from: %s", from));
 		}
-	}
 
-	static class TestGroupHandler implements GroupHandler {
 		@Override
 		public void onGroupConnected(Group group) {
 			Log.d(TAG, "onGroupConnected");
@@ -122,8 +120,7 @@ public class GroupInviteJoinTest {
 			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
 			assertTrue((carrier.isFriend(robot.getNodeid())));
 
-			TestGroupHandler groupHandler = new TestGroupHandler();
-			Group group = carrier.newGroup(groupHandler);
+			Group group = carrier.newGroup();
 			assertNotNull(group);
 
 			group.invite(robot.getNodeid());
@@ -174,8 +171,7 @@ public class GroupInviteJoinTest {
 			assertTrue(TestHelper.removeFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
 			assertFalse(carrier.isFriend(robot.getNodeid()));
 
-			TestGroupHandler groupHandler = new TestGroupHandler();
-			Group group = carrier.newGroup(groupHandler);
+			Group group = carrier.newGroup();
 			assertNotNull(group);
 
 			try {
@@ -204,8 +200,7 @@ public class GroupInviteJoinTest {
 			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
 			assertTrue((carrier.isFriend(robot.getNodeid())));
 
-			TestGroupHandler groupHandler = new TestGroupHandler();
-			Group group = carrier.newGroup(groupHandler);
+			Group group = carrier.newGroup();
 			assertNotNull(group);
 
 			try {
@@ -234,8 +229,7 @@ public class GroupInviteJoinTest {
 			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
 			assertTrue((carrier.isFriend(robot.getNodeid())));
 
-			TestGroupHandler groupHandler = new TestGroupHandler();
-			Group group = carrier.newGroup(groupHandler);
+			Group group = carrier.newGroup();
 			assertNotNull(group);
 
 			// once
@@ -295,8 +289,7 @@ public class GroupInviteJoinTest {
 			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
 			assertTrue((carrier.isFriend(robot.getNodeid())));
 
-			TestGroupHandler groupHandler = new TestGroupHandler();
-			Group group = carrier.newGroup(groupHandler);
+			Group group = carrier.newGroup();
 			assertNotNull(group);
 
 			group.invite(robot.getNodeid());
@@ -354,8 +347,7 @@ public class GroupInviteJoinTest {
 			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
 			assertTrue((carrier.isFriend(robot.getNodeid())));
 
-			TestGroupHandler groupHandler = new TestGroupHandler();
-			Group group = carrier.newGroup(groupHandler);
+			Group group = carrier.newGroup();
 			assertNotNull(group);
 
 			group.invite(robot.getNodeid());

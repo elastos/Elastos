@@ -56,6 +56,7 @@ int setIntField(JNIEnv* env, jobject jobj, const char* name, int value);
 
 int setLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t value);
 int getLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t* value);
+int getObjectField(JNIEnv* env, jobject jobj, const char* name, const char *sig, jobject* value);
 
 int getStaticObjectField(JNIEnv* env, jobject jobj, const char* name, const char* sig, jobject* value);
 

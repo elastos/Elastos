@@ -47,7 +47,7 @@ jstring newGroup(JNIEnv* env, jclass clazz, jobject carrier)
         return NULL;
     }
 
-    jgroupid= (*env)->NewStringUTF(env, groupid);
+    jgroupid = (*env)->NewStringUTF(env, groupid);
     if (!jgroupid) {
         logE("Can not convert C-string(%s) to JAVA-String", groupid);
         ela_leave_group(getCarrier(env, carrier), groupid);
