@@ -41,9 +41,7 @@ public class Carrier: NSObject {
     private static let TAG: String = "Carrier"
     private static let MAX_ADDRESS_LEN: Int = 52;
     private static let MAX_ID_LEN: Int = 45
-    
-    private static var carrierInst: Carrier?
-    
+
     internal var ccarrier: OpaquePointer?
     private  var didKill : Bool
     private  let semaph  : DispatchSemaphore
@@ -96,7 +94,7 @@ public class Carrier: NSObject {
         }
     }
     
-    /// Create node singleton instance. After initialize the instance,
+    /// Create node  instance. After initialize the instance,
     /// it's ready to start and therefore connect to the carrier network.
     ///
     /// - Parameters:
@@ -104,42 +102,29 @@ public class Carrier: NSObject {
     ///   - delegate: The delegate for carrier node to comply with
     ///
     /// - Throws: CarrierError
-    @objc(initializeSharedInstance:delegate:error:)
-    public static func initializeSharedInstance(options: CarrierOptions,
-                                                delegate: CarrierDelegate) throws {
-        if (carrierInst == nil) {
-            Log.d(TAG, "Attempt to create native carrier instance ...")
-            
-            var copts = convertCarrierOptionsToCOptions(options);
-            defer {
-                cleanupCOptions(copts)
-            }
-            
-            let carrier = Carrier(delegate)
-            var chandler = getNativeHandlers()
-            let cctxt = Unmanaged.passUnretained(carrier).toOpaque()
-            let ccarrier = ela_new(&copts, &chandler, cctxt)
-            
-            guard ccarrier != nil else {
-                let errno = getErrorCode()
-                Log.e(TAG, "Create native carrier instance error: 0x%X", errno)
-                throw CarrierError.FromErrorCode(errno: errno)
-            }
-            
-            carrier.ccarrier = ccarrier
-            carrier.didKill = false
-            
-            Log.i(TAG, "Native carrier node instance created.")
-            carrierInst = carrier
+    @objc(createInstance:delegate:error:)
+    public static func createInstance(options: CarrierOptions, delegate: CarrierDelegate) throws -> Carrier {
+        var copts = convertCarrierOptionsToCOptions(options)
+        defer {
+            cleanupCOptions(copts)
         }
-    }
-    
-    /// Get a carrier node singleton instance.
-    ///
-    /// - Returns: The carrier node instance or ni
-    @objc(sharedInstance)
-    public static func sharedInstance() -> Carrier? {
-        return carrierInst
+
+        let carrier = Carrier(delegate)
+        var chandler = getNativeHandlers()
+        let cctx = Unmanaged.passUnretained(carrier).toOpaque()
+
+        let ccarrier = ela_new(&copts, &chandler, cctx)
+        guard let _ = ccarrier else {
+            let errno = getErrorCode()
+            Log.e(TAG, "Create native carrier instance error: 0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno)
+        }
+
+        carrier.ccarrier = ccarrier
+        carrier.didKill = false
+
+        Log.i(TAG, "Native carrier node instance created.")
+        return carrier
     }
     
     private init(_ delegate: CarrierDelegate) {
@@ -198,7 +183,6 @@ public class Carrier: NSObject {
             ela_kill(ccarrier)
             ccarrier = nil
             semaph.wait()
-            Carrier.carrierInst = nil
             delegate = nil
             didKill = true
             Log.i(Carrier.TAG, "Native carrier node killed and exited")

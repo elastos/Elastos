@@ -31,13 +31,11 @@ public typealias CarrierSessionRequestHandler = (_ carrier: Carrier,
 @objc(ELACarrierSessionManager)
 public class CarrierSessionManager: NSObject {
 
-    private static var sessionMgr: CarrierSessionManager?
-
     private var carrier: Carrier?
     private var handler: CarrierSessionRequestHandler?
     private var didCleanup: Bool
 
-    /// Get a carrier session manager instance.
+    /// Get a session  manager instance.
     ///
     /// This function is convinience way to get instance without interest to
     /// session request from friends.
@@ -47,37 +45,33 @@ public class CarrierSessionManager: NSObject {
     ///   - options: The options to set for carrier session manager
     ///
     /// - Throws: CarrierError
-    @objc(initializeSharedInstance:error:)
-    public static func initializeSharedInstance(carrier: Carrier) throws {
-        if (sessionMgr != nil && sessionMgr!.carrier != carrier) {
-            sessionMgr!.cleanup()
+    @objc(createInsance:error:)
+    public static func createInsance(carrier: Carrier) throws -> CarrierSessionManager {
+        Log.d(TAG(), "Begin to initialize native carrier session manager...")
+
+        var result = ela_session_init(carrier.ccarrier)
+        guard result >= 0 else {
+            let errno = getErrorCode()
+            Log.e(TAG(), "Initialize native session manager error:0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
-        if (sessionMgr == nil) {
-            Log.d(TAG(), "Begin to initialize native carrier session manager...")
+        Log.d(TAG(), "The native carrier session manager initialized.")
 
-            var result = ela_session_init(carrier.ccarrier)
-            guard result >= 0 else {
-                let errno = getErrorCode()
-                Log.e(TAG(), "Initialize native session manager error:0x%X", errno)
-                throw CarrierError.FromErrorCode(errno: errno)
-            }
-
-            Log.d(TAG(), "The native carrier session manager initialized.")
-
-            result = ela_session_set_callback(carrier.ccarrier, nil, nil, nil)
-            guard result >= 0 else {
-                let errno = getErrorCode()
-                Log.e(TAG(), "Set session callback error: 0x%x", errno)
-                ela_session_cleanup(carrier.ccarrier)
-                throw CarrierError.FromErrorCode(errno: errno)
-            }
-
-            sessionMgr = CarrierSessionManager(carrier)
-            sessionMgr!.didCleanup = false
-
-            Log.i(TAG(), "Native carrier session manager instance created.");
+        result = ela_session_set_callback(carrier.ccarrier, nil, nil, nil)
+        guard result >= 0 else {
+            let errno = getErrorCode()
+            Log.e(TAG(), "Set session callback error: 0x%x", errno)
+            ela_session_cleanup(carrier.ccarrier)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
+
+        let sessionMgr = CarrierSessionManager(carrier)
+        sessionMgr.didCleanup = false
+
+        Log.i(TAG(), "Native carrier session manager instance created.");
+
+        return sessionMgr
     }
 
     /// Get a carrier session manager instance.
@@ -89,66 +83,54 @@ public class CarrierSessionManager: NSObject {
     ///              request from friends.
     ///
     /// - Throws: CarrierError
-    @objc(initializeSharedInstance:sessionRequestHandler:error:)
-    public static func initializeSharedInstance(carrier: Carrier,
-                       sessionRequestHandler handler: @escaping CarrierSessionRequestHandler) throws {
-        if (sessionMgr != nil && sessionMgr!.carrier != carrier) {
-            sessionMgr!.cleanup()
+    @objc(createInsance:sessionRequestHandler:error:)
+    public static func createInsance(carrier: Carrier,
+                    sessionRequestHandler handler: @escaping CarrierSessionRequestHandler) throws
+                    -> CarrierSessionManager {
+
+        Log.d(TAG(), "Begin to initialize native carrier session manager...")
+
+        let sessionManager = CarrierSessionManager(carrier)
+        sessionManager.handler = handler
+
+        var result = ela_session_init(carrier.ccarrier)
+
+        guard result >= 0 else {
+            let errno = getErrorCode()
+            Log.e(TAG(), "Initialize native session manager error: 0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
-        if (sessionMgr == nil) {
+        let cb: CSessionRequestCallback = { (_, cfrom, _, csdp, _, cctxt) in
+            let manager = Unmanaged<CarrierSessionManager>
+                    .fromOpaque(cctxt!).takeUnretainedValue()
 
-            Log.d(TAG(), "Begin to initialize native carrier session manager...")
+            let carrier = manager.carrier
+            let handler = manager.handler
 
-            let sessionManager = CarrierSessionManager(carrier)
-            sessionManager.handler = handler
+            let from = String(cString: cfrom!)
+            let  sdp = String(cString: csdp!)
 
-            var result = ela_session_init(carrier.ccarrier)
+            handler!(carrier!, from, sdp)
 
-            guard result >= 0 else {
-                let errno = getErrorCode()
-                Log.e(TAG(), "Initialize native session manager error: 0x%X", errno)
-                throw CarrierError.FromErrorCode(errno: errno)
-            }
-
-            let cb: CSessionRequestCallback = { (_, cfrom, _, csdp, _, cctxt) in
-                let manager = Unmanaged<CarrierSessionManager>
-                        .fromOpaque(cctxt!).takeUnretainedValue()
-
-                let carrier = manager.carrier
-                let handler = manager.handler
-
-                let from = String(cString: cfrom!)
-                let  sdp = String(cString: csdp!)
-
-                handler!(carrier!, from, sdp)
-
-            }
-            let cctxt = Unmanaged.passUnretained(sessionManager).toOpaque()
-
-            result = ela_session_set_callback(carrier.ccarrier, nil, cb, cctxt);
-            guard result >= 0 else {
-                let errno = getErrorCode()
-                Log.e(TAG(), "Set session callback error: 0x%X", errno)
-                ela_session_cleanup(carrier.ccarrier)
-                throw CarrierError.FromErrorCode(errno: errno)
-            }
-
-            Log.d(TAG(), "The native carrier session manager initialized.")
-
-            sessionManager.didCleanup = false
-            sessionMgr = sessionManager
-
-            Log.i(TAG(), "Native carrier session manager instance created.");
         }
-    }
+        let cctxt = Unmanaged.passUnretained(sessionManager).toOpaque()
 
-    /// Get a carrier session manager instance.
-    ///
-    /// - Returns: The carrier session manager or nil
-    @objc(sharedInstance)
-    public static func sharedInstance() -> CarrierSessionManager? {
-        return sessionMgr;
+        result = ela_session_set_callback(carrier.ccarrier, nil, cb, cctxt);
+        guard result >= 0 else {
+            let errno = getErrorCode()
+            Log.e(TAG(), "Set session callback error: 0x%X", errno)
+            ela_session_cleanup(carrier.ccarrier)
+            throw CarrierError.FromErrorCode(errno: errno)
+        }
+
+        Log.d(TAG(), "The native carrier session manager initialized.")
+
+        sessionManager.didCleanup = false
+
+        Log.i(TAG(), "Native carrier session manager instance created.")
+
+        return sessionManager
     }
 
     private init(_ carrier: Carrier) {
@@ -171,7 +153,6 @@ public class CarrierSessionManager: NSObject {
 
             ela_session_cleanup(carrier!.ccarrier)
             carrier = nil
-            CarrierSessionManager.sessionMgr = nil
             didCleanup = true
 
             Log.i(TAG(), "Native carrier session managed cleanuped.")

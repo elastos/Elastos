@@ -154,8 +154,6 @@ public typealias CarrierFileTransferConnectHandler = (_ carrier: Carrier,
 @objc(ELAFileTransferManager)
 public class CarrierFileTransferManager: NSObject {
 
-    private static var filetransferManager: CarrierFileTransferManager?
-
     private var carrier: Carrier?
     private var handler: CarrierFileTransferConnectHandler?
     private var didCleanup: Bool
@@ -171,29 +169,26 @@ public class CarrierFileTransferManager: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
-    @objc(initializeSharedInstance:error:)
-    public static func initializeSharedInstance(carrier: Carrier) throws {
-        if (filetransferManager != nil && filetransferManager!.carrier != carrier) {
-            filetransferManager?.cleanup()
+    @objc(createInstance:error:)
+    public static func createInstance(carrier: Carrier) throws -> CarrierFileTransferManager {
+
+        Log.d(TAG(), "Begin to initialize filetransfer manager ...")
+
+        let result = ela_filetransfer_init(carrier.ccarrier, nil, nil)
+        guard result >= 0 else {
+            let errno = getErrorCode()
+            Log.e(TAG(), "Initialize filetransfer manager error:0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
-        if (filetransferManager == nil) {
-            Log.d(TAG(), "Begin to initialize filetransfer manager ...")
+        Log.d(TAG(), "The native filetransfer manager initialized.")
 
-            let result = ela_filetransfer_init(carrier.ccarrier, nil, nil)
-            guard result >= 0 else {
-                let errno = getErrorCode()
-                Log.e(TAG(), "Initialize filetransfer manager error:0x%X", errno)
-                throw CarrierError.FromErrorCode(errno: errno)
-            }
+        let filetransferManager = CarrierFileTransferManager(carrier)
+        filetransferManager.didCleanup = false
 
-            Log.d(TAG(), "The native filetransfer manager initialized.")
+        Log.i(TAG(), "Native session manager instance created.")
 
-            filetransferManager = CarrierFileTransferManager(carrier)
-            filetransferManager!.didCleanup = false
-
-            Log.i(TAG(), "Native session manager instance created.");
-        }
+        return filetransferManager
     }
 
     /// Get a carrier filetransfer manager instance.
@@ -203,52 +198,41 @@ public class CarrierFileTransferManager: NSObject {
     ///
     /// - Throws:
     ///     CarrierError
-    @objc(initializeSharedInstance:connectHandler:error:)
-    public static func initializeSharedInstance(carrier: Carrier,
-                       connectHandler handler: @escaping CarrierFileTransferConnectHandler) throws {
-        if (filetransferManager != nil && filetransferManager!.carrier != carrier) {
-            filetransferManager?.cleanup()
+    @objc(createInstance:connectHandler:error:)
+    public static func createInstance(carrier: Carrier,
+                       connectHandler handler: @escaping CarrierFileTransferConnectHandler) throws
+                    -> CarrierFileTransferManager {
+
+        Log.d(TAG(), "Begin to initialize native carrier filetransfer manager ...")
+
+        let cb: CFileTransferConnectCallback? = {(_, cfrom, cfileInfo, cctxt) in
+            let manager = Unmanaged<CarrierFileTransferManager>
+                    .fromOpaque(cctxt!).takeUnretainedValue()
+
+            let carrier = manager.carrier
+            let handler = manager.handler
+
+            let from = String(cString: cfrom!)
+            let cf = cfileInfo?.load(as: CFileTransferInfo.self)
+            let fileinfo = convertCFileTransferInfoToCarrierFileTransferInfo(cf!)
+            handler!(carrier!, from, fileinfo)
         }
 
-        if (filetransferManager == nil) {
-            Log.d(TAG(), "Begin to initialize native carrier filetransfer manager ...")
+        let filetransferManager = CarrierFileTransferManager(carrier)
+        filetransferManager.handler = handler
+        let cctxt = Unmanaged.passUnretained(filetransferManager).toOpaque()
 
-            let cb: CFileTransferConnectCallback? = {(_, cfrom, cfileInfo, cctxt) in
-                let manager = Unmanaged<CarrierFileTransferManager>
-                        .fromOpaque(cctxt!).takeUnretainedValue()
-
-                let carrier = manager.carrier
-                let handler = manager.handler
-
-                let from = String(cString: cfrom!)
-                let cf = cfileInfo?.load(as: CFileTransferInfo.self)
-                let fileinfo = convertCFileTransferInfoToCarrierFileTransferInfo(cf!)
-                handler!(carrier!, from, fileinfo)
-            }
-
-            let filetransferManager = CarrierFileTransferManager(carrier)
-            filetransferManager.handler = handler
-            let cctxt = Unmanaged.passUnretained(filetransferManager).toOpaque()
-
-            let result = ela_filetransfer_init(carrier.ccarrier, cb, cctxt)
-            guard result >= 0 else {
-                let errno = getErrorCode()
-                Log.e(TAG(), "Initialize filetransfer manager error:0x%X", errno)
-                throw CarrierError.FromErrorCode(errno: errno)
-            }
-
-            filetransferManager.didCleanup = false
-            self.filetransferManager = filetransferManager
-
-            Log.d(TAG(), "The native filetransfer manager initialized.")
+        let result = ela_filetransfer_init(carrier.ccarrier, cb, cctxt)
+        guard result >= 0 else {
+            let errno = getErrorCode()
+            Log.e(TAG(), "Initialize filetransfer manager error:0x%X", errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
-    }
 
-    /// Get a carrier filetransfer manager instance.
-    ///
-    /// - Returns: The carrier filetransfer manager or nil
-    @objc(sharedInstance)
-    public static func sharedInstance() -> CarrierFileTransferManager? {
+        filetransferManager.didCleanup = false
+
+        Log.d(TAG(), "The native filetransfer manager initialized.")
+
         return filetransferManager
     }
 
@@ -273,7 +257,6 @@ public class CarrierFileTransferManager: NSObject {
             ela_filetransfer_cleanup(carrier!.ccarrier)
             carrier = nil
             didCleanup = true
-            CarrierFileTransferManager.filetransferManager = nil
 
             Log.i(TAG(), "Native carrier session managed cleanuped.")
         }
