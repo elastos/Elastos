@@ -2495,7 +2495,15 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.NoError(err)
 
-	//recipient is empty
+	// register cr proposal in voting period
+	tenureHeight = config.DefaultParams.CRCommitteeStartHeight +
+		config.DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
+	txn.Payload.(*payload.CRCProposal).Recipient = common.Uint168{}
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "cr proposal tx must not during voting period")
+
+	// recipient is empty
+	tenureHeight = config.DefaultParams.CRCommitteeStartHeight
 	txn.Payload.(*payload.CRCProposal).Recipient = common.Uint168{}
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "recipient is empty")
