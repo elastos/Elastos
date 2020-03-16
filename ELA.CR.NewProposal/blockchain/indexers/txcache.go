@@ -146,8 +146,7 @@ func (t *TxCache) trim() {
 
 func NewTxCache(params *config.Params) *TxCache {
 	return &TxCache{
-		txns: make(map[common.Uint256]*TxInfo, params.TxCacheVolume+
-			TrimmingInterval),
+		txns:   make(map[common.Uint256]*TxInfo),
 		params: params,
 	}
 }
