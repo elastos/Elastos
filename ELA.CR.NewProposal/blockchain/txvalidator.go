@@ -2062,6 +2062,10 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		return errors.New("invalid payload")
 	}
 
+	if b.crCommittee.IsInVotingPeriod(blockHeight) {
+		return errors.New("cr proposal tx must not during voting period")
+	}
+
 	// Check type of proposal.
 	if proposal.ProposalType.Name() == "Unknown" {
 		return errors.New("type of proposal should be known")
