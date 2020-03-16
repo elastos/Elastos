@@ -119,8 +119,32 @@ public class Carrier: NSObject {
             Log.e(TAG, "Create native carrier instance error: 0x%X", errno)
             throw CarrierError.FromErrorCode(errno: errno)
         }
-
         carrier.ccarrier = ccarrier
+
+        let cb: CGroupsIterateCallback = { (cgroupId, ctxt) in
+            if cgroupId != nil {
+                let carrier = ctxt!.assumingMemoryBound(to: Carrier.self).pointee
+                let groupId = String(cString: cgroupId!)
+                let group = CarrierGroup(carrier.ccarrier, groupId, carrier.delegate!)
+
+                carrier.groups[groupId] = group
+            }
+            return true
+        }
+
+        var _carrier = carrier
+        let result = withUnsafeMutablePointer(to: &_carrier) { (ptr) -> Int32 in
+            let cctxt = UnsafeMutableRawPointer(ptr)
+            return ela_get_groups(ccarrier, cb, cctxt)
+        }
+
+        guard result >= 0 else {
+            let errno: Int = getErrorCode()
+            Log.e(Carrier.TAG, "Get current user's friends error: 0x%X", errno)
+            ela_kill(ccarrier)
+            throw CarrierError.FromErrorCode(errno: errno)
+        }
+
         carrier.didKill = false
 
         Log.i(TAG, "Native carrier node instance created.")
@@ -896,8 +920,8 @@ public class Carrier: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
-    @objc(createGroupwithDelegate:error:)
-    public func createGroup(withDelegate delegate: CarrierGroupDelegate) throws -> CarrierGroup {
+    @objc(createGroup:)
+    public func createGroup() throws -> CarrierGroup {
         let len  = Carrier.MAX_ID_LEN + 1
         var data = Data(count: len);
         
@@ -917,7 +941,7 @@ public class Carrier: NSObject {
             return String(cString: ptr)
         }
         
-        let group = CarrierGroup(ccarrier, groupid, delegate)
+        let group = CarrierGroup(ccarrier, groupid, self.delegate!)
         groups[groupid] = group
         return group
     }
@@ -938,9 +962,8 @@ public class Carrier: NSObject {
     /// - Throws:
     ///     CarrierError
     ///
-    @objc(joinGroupCreatedBy:withCookie:delegate:error:)
-    public func joinGroup(createdBy friendId: String, withCookie cookie: Data,
-                          delegate: CarrierGroupDelegate) throws -> CarrierGroup {
+    @objc(joinGroupCreatedBy:withCookie:error:)
+    public func joinGroup(createdBy friendId: String, withCookie cookie: Data) throws -> CarrierGroup {
         
         let len  = Carrier.MAX_ID_LEN + 1
         var data = Data(count: len);
@@ -966,7 +989,7 @@ public class Carrier: NSObject {
             return String(cString: ptr)
         }
         
-        let group = CarrierGroup(ccarrier, groupid, delegate)
+        let group = CarrierGroup(ccarrier, groupid, self.delegate!)
         groups[groupid] = group
         return group
     }

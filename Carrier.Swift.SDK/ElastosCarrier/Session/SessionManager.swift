@@ -45,8 +45,8 @@ public class CarrierSessionManager: NSObject {
     ///   - options: The options to set for carrier session manager
     ///
     /// - Throws: CarrierError
-    @objc(createInsance:error:)
-    public static func createInsance(carrier: Carrier) throws -> CarrierSessionManager {
+    @objc(createInstance:error:)
+    public static func createInstance(carrier: Carrier) throws -> CarrierSessionManager {
         Log.d(TAG(), "Begin to initialize native carrier session manager...")
 
         var result = ela_session_init(carrier.ccarrier)
@@ -83,8 +83,8 @@ public class CarrierSessionManager: NSObject {
     ///              request from friends.
     ///
     /// - Throws: CarrierError
-    @objc(createInsance:sessionRequestHandler:error:)
-    public static func createInsance(carrier: Carrier,
+    @objc(createInstance:sessionRequestHandler:error:)
+    public static func createInstance(carrier: Carrier,
                     sessionRequestHandler handler: @escaping CarrierSessionRequestHandler) throws
                     -> CarrierSessionManager {
 

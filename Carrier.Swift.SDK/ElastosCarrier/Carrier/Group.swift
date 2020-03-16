@@ -36,10 +36,9 @@ public class CarrierGroup: NSObject {
     internal var ccarrier: OpaquePointer?
     internal var groupid : String
     private  var didLeave : Bool
-    weak var delegate: CarrierGroupDelegate?
+    weak var delegate: CarrierDelegate?
     
-    init(_ ccarrier: OpaquePointer!, _ groupid: String,
-         _ delegate: CarrierGroupDelegate) {
+    init(_ ccarrier: OpaquePointer!, _ groupid: String, _ delegate: CarrierDelegate) {
         
         self.ccarrier = ccarrier
         self.groupid  = groupid

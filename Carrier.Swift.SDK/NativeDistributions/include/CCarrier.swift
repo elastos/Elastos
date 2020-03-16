@@ -1623,7 +1623,7 @@ internal func ela_group_get_peer(_ carrier: OpaquePointer!,
  *      iteration.
  */
 internal typealias CGroupsIterateCallback = @convention(c)
-    (UnsafeRawPointer?, UnsafeMutableRawPointer?) -> Bool
+    (UnsafePointer<Int8>?, UnsafeMutableRawPointer?) -> Bool
 
 /**
  * \~English

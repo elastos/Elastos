@@ -26,7 +26,7 @@ import Foundation
     The protocol to Carrier node instance.
  */
 @objc(ELACarrierDelegate)
-public protocol CarrierDelegate {
+public protocol CarrierDelegate: CarrierGroupDelegate {
 
     /// Tell the delegate that Carrier node will become idle for a while,
     /// during which application can perform instant idle work.
