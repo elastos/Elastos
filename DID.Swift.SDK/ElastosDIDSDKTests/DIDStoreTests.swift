@@ -667,13 +667,13 @@ class DIDStoreTests: XCTestCase {
                 + "/" + "credentials" + "/" + "passport" + "/" + ".meta"
             XCTAssertTrue(testData.existsFile(path))
             
-            var deleted: Bool = try store.deleteCredential(test.subject!, DIDURL(test.subject!, "twitter"))
+            var deleted: Bool = store.deleteCredential(test.subject!, DIDURL(test.subject!, "twitter"))
             XCTAssertTrue(deleted)
             
-            deleted = try store.deleteCredential(test.subject!.description, "passport")
+            deleted = store.deleteCredential(test.subject!.description, "passport")
             XCTAssertTrue(deleted)
             
-            deleted = try store.deleteCredential(test.subject!.description, "notExist")
+            deleted = store.deleteCredential(test.subject!.description, "notExist")
             XCTAssertFalse(deleted)
             
             path = storeRoot + "/" + "ids"

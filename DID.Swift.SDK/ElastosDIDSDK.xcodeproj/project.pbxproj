@@ -10,6 +10,7 @@
 		0E568F5F89CD94B76CE6213E /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED7485A64A06C161BCD31D48 /* Pods_ElastosDIDSDK.framework */; };
 		11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1C239D1B31008A4500 /* DIDURLTest.swift */; };
 		11054F1F239D2088008A4500 /* DIDTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1E239D2088008A4500 /* DIDTest.swift */; };
+		110830CF241FA0E4000FDD2B /* ResolverCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110830CA241FA0E4000FDD2B /* ResolverCache.swift */; };
 		110AD2FF234E44C8006578D6 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
 		111215C023ED63BD009B068C /* document.key2.sk in Resources */ = {isa = PBXBuildFile; fileRef = 111215B423ED63BA009B068C /* document.key2.sk */; };
 		111215C123ED63BD009B068C /* document.json in Resources */ = {isa = PBXBuildFile; fileRef = 111215B523ED63BA009B068C /* document.json */; };
@@ -53,6 +54,7 @@
 		1155D94B2352FACE00DF8C9D /* ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */; };
 		11641BB523B702FC0037016B /* AbstractAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11641BB423B702FC0037016B /* AbstractAdapter.swift */; };
 		11641BBB23B715CF0037016B /* TestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11641BBA23B715CF0037016B /* TestError.swift */; };
+		11795211241B3A7100A1C55B /* RegexHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1179520C241B3A7100A1C55B /* RegexHelper.swift */; };
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
 		11B096DA241930690065228B /* SHA256Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B096D5241930690065228B /* SHA256Helper.swift */; };
 		11B096E324193E200065228B /* OrderedDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B096E224193E200065228B /* OrderedDictionary.swift */; };
@@ -197,6 +199,7 @@
 /* Begin PBXFileReference section */
 		11054F1C239D1B31008A4500 /* DIDURLTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDURLTest.swift; sourceTree = "<group>"; };
 		11054F1E239D2088008A4500 /* DIDTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDTest.swift; sourceTree = "<group>"; };
+		110830CA241FA0E4000FDD2B /* ResolverCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResolverCache.swift; sourceTree = "<group>"; };
 		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
 		110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Antlr4.xcodeproj; path = Antlr4/Antlr4.xcodeproj; sourceTree = "<group>"; };
 		110AD2FE234E44C8006578D6 /* Base58.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
@@ -255,6 +258,7 @@
 		1155D94A2352FACE00DF8C9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		11641BB423B702FC0037016B /* AbstractAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractAdapter.swift; sourceTree = "<group>"; };
 		11641BBA23B715CF0037016B /* TestError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestError.swift; sourceTree = "<group>"; };
+		1179520C241B3A7100A1C55B /* RegexHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegexHelper.swift; sourceTree = "<group>"; };
 		119338DC237E4DB800C4998E /* TestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestConfig.swift; path = TestUtils/TestConfig.swift; sourceTree = "<group>"; };
 		119338E2237E622300C4998E /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E4237E623100C4998E /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
@@ -658,6 +662,7 @@
 		A31ACE2923F19A10008EC032 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				1179520C241B3A7100A1C55B /* RegexHelper.swift */,
 				11B096E224193E200065228B /* OrderedDictionary.swift */,
 				11B096D5241930690065228B /* SHA256Helper.swift */,
 				A31ACE3323F19A22008EC032 /* DateHelper.swift */,
@@ -706,6 +711,7 @@
 		A31ACE6223F19A58008EC032 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				110830CA241FA0E4000FDD2B /* ResolverCache.swift */,
 				A31ACE6723F19A66008EC032 /* IDChainRequest.swift */,
 				A31ACE6623F19A66008EC032 /* IDChainRequestOperation.swift */,
 				A31ACE6423F19A66008EC032 /* IDTransactionInfo.swift */,
@@ -977,6 +983,7 @@
 				A31ACE0923F199AE008EC032 /* DIDStorage.swift in Sources */,
 				A31ACE2323F199BA008EC032 /* VerifiableCredential.swift in Sources */,
 				A31ACE5923F19A3A008EC032 /* DIDURLLexer.swift in Sources */,
+				110830CF241FA0E4000FDD2B /* ResolverCache.swift in Sources */,
 				A31ACE3B23F19A22008EC032 /* DateFormatter.swift in Sources */,
 				A31ACE5423F19A3A008EC032 /* DIDURLLexerATN.swift in Sources */,
 				A31801AB240281B00087E074 /* LRUCache.swift in Sources */,
@@ -997,6 +1004,7 @@
 				A31ACE0B23F199AE008EC032 /* DIDStore.swift in Sources */,
 				A31ACE1023F199AE008EC032 /* DIDDocument.swift in Sources */,
 				A31ACE2823F19A04008EC032 /* Errors.swift in Sources */,
+				11795211241B3A7100A1C55B /* RegexHelper.swift in Sources */,
 				A31ACE5223F19A3A008EC032 /* DIDURLBaseListener.swift in Sources */,
 				A31ACE5123F19A3A008EC032 /* DIDURLListener.swift in Sources */,
 				A31ACE3723F19A22008EC032 /* ExtensionInt.swift in Sources */,

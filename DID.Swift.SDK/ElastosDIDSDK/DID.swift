@@ -5,7 +5,8 @@ public class DID {
     private var _method: String?
     private var _methodSpecificId: String?
     private var _meta: DIDMeta?
-
+    static let METHOD: String = "elastos"
+    
     init() {}
 
     init(_ method: String, _ methodSpecificId: String) {
@@ -171,7 +172,7 @@ extension DID: Equatable {
 
 extension DID: Hashable {
     public func hash(into hasher: inout Hasher) {
-        //TODO:
+        hasher.combine(self.toString())
     }
 }
 

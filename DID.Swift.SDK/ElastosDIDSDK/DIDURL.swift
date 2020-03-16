@@ -232,7 +232,7 @@ extension DIDURL: Equatable {
 // DIDURL used as hash key.
 extension DIDURL: Hashable {
     public func hash(into hasher: inout Hasher) {
-        //TODO:
+        hasher.combine(self.toString())
     }
 }
 

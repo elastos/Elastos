@@ -53,6 +53,11 @@ final class LRUCache<Key: Hashable, Value> {
         return node.payload.value
     }
     
+    func containsKey(for key: Key) -> Bool {
+        let value = nodesDict[key]
+        return value != nil
+    }
+    
     func clear() {
         dispatchQueue.async(flags: .barrier) { [weak self] in
             self!.list.clear()

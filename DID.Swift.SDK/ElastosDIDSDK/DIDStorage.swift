@@ -24,7 +24,7 @@ protocol DIDStorage {
     func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential
     func containsCredentials(_ did: DID) -> Bool
     func containsCredential(_ did: DID, _ id: DIDURL) -> Bool
-    func deleteCredential(_ did: DID, _ id: DIDURL) throws -> Bool
+    func deleteCredential(_ did: DID, _ id: DIDURL) -> Bool
     func listCredentials(_ did: DID) throws -> Array<DIDURL>
     func selectCredentials(_ did: DID, _ id: DIDURL, _ type: Array<Any>)
         throws -> Array<DIDURL>

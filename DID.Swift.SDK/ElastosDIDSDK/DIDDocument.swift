@@ -189,8 +189,12 @@ public class DIDDocument {
         return store.containsPrivateKey(for: self.subject, id: forId)
     }
 
-    public func containsPrivateKey(forId: String) throws -> Bool {
-        return containsPrivateKey(forId: try DIDURL(self.subject, forId))
+    public func containsPrivateKey(forId: String) -> Bool {
+        do {
+            return containsPrivateKey(forId: try DIDURL(self.subject, forId))
+        } catch {
+            return false
+        }
     }
 
     private func getDefaultPublicKey() -> DIDURL? {
@@ -223,7 +227,7 @@ public class DIDDocument {
         return true
     }
 
-    func removePublicKey(_ id: DIDURL, _ force: Bool) -> Bool {
+    func removePublicKey(_ id: DIDURL, _ force: Bool) throws -> Bool {
         let key = publicKey(ofId: id)
         guard let _ = key else {
             return false

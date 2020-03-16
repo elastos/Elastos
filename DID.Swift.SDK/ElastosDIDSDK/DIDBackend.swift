@@ -63,12 +63,54 @@ public class DIDBackend {
     }
 
     class DefaultResolver: DIDResolver {
+        private var url: URL
+
         init(_ resolver: String) throws {
-            // TODO:
+            guard resolver.isEmpty else {
+                throw DIDError.illegalArgument()
+            }
+            url = URL(string: resolver)!
         }
 
         func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> Data {
-            // TODO:
+            print("Resolving {}...\(did.description)")
+            var resuleString: String?
+//            let url:URL! = URL(string: "http://api.elastos.io:21606")
+            var request:URLRequest! = URLRequest.init(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+            let parameters: [String: Any] = [
+                "jsonrpc": "2.0",
+                "method": "resolvedid",
+                "params": ["did":did, "all": all],
+                "id": requestId
+            ]
+            request.httpBody = try! JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
+            let semaphore = DispatchSemaphore(value: 0)
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                guard let data = data,
+                    let response = response as? HTTPURLResponse,
+                    error == nil else { // check for fundamental networking error
+                        semaphore.signal()
+                        return
+                }
+                guard (200 ... 299) ~= response.statusCode else { // check for http errors
+                    semaphore.signal()
+                    return
+                }
+                let responseString = String(data: data, encoding: .utf8)
+                print("responseString = \(String(describing: responseString))")
+                resuleString = responseString
+                semaphore.signal()
+            }
+            task.resume()
+            semaphore.wait()
+            
+            guard resuleString != nil else {
+                throw DIDError.didResolveError("Unkonw error.")
+            }
+            
             return Data()
         }
     }
@@ -78,19 +120,30 @@ public class DIDBackend {
     }
 
     class func initializeInstance(_ resolverURL: String, _ file: FileHandle) throws {
-        // TODO:
+        guard !resolverURL.isEmpty else {
+            throw DIDError.didResolveError()
+        }
+        try initializeInstance(DefaultResolver(resolverURL), file)
     }
 
     class func initializeInstance(_ resolverURL: String, _ cacheDir: String) throws {
-        // TODO
+        guard !resolverURL.isEmpty else {
+            throw DIDError.didResolveError()
+        }
+        try initializeInstance(DefaultResolver(resolverURL), cacheDir)
     }
 
     class func initializeInstance(_ resolver: DIDResolver, _ file: FileHandle) throws {
-        // TODO:
+        file.seekToEndOfFile()
+        let data = file.readDataToEndOfFile()
+        try initializeInstance(resolver, String(data: data, encoding: .utf8)!)
     }
 
     class func initializeInstance(_ resolver: DIDResolver, _ cacheDir: String) throws {
-        // TODO:
+        
+        DIDBackend.resolver = resolver
+        //        ResolverCache.setCacheDir(cacheDir);
+        try ResolverCache.setCacheDir(cacheDir)
     }
 
     class func getInstance(_ adapter: DIDAdapter) -> DIDBackend {

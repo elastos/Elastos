@@ -51,7 +51,7 @@ public class DIDDocumentBuilder {
         guard let _ = document else {
             throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
         }
-        guard document!.removePublicKey(id, force) else {
+        guard try document!.removePublicKey(id, force) else {
             throw DIDError.illegalArgument()
         }
 
