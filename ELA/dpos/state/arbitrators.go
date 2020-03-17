@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -490,8 +490,16 @@ func (a *arbitrators) distributeWithNormalArbitratorsV(reward common.Fixed64) (
 		var r common.Fixed64
 		if member, ok := a.crcArbiters[ownerHash]; ok {
 			r = individualBlockConfirmReward
-			if member.(*crcArbiter).crMember.MemberState != state.MemberElected {
+			if member == nil || member.(*crcArbiter).crMember.MemberState != state.MemberElected {
 				rewardHash = a.chainParams.DestroyELAAddress
+			} else {
+				pk := arbiter.GetOwnerPublicKey()
+				programHash, err := contract.PublicKeyToStandardProgramHash(pk)
+				if err != nil {
+					rewardHash = a.chainParams.DestroyELAAddress
+				} else {
+					rewardHash = *programHash
+				}
 			}
 		} else {
 			votes := a.CurrentReward.OwnerVotesInRound[ownerHash]
@@ -921,7 +929,7 @@ func (a *arbitrators) updateNextArbitrators(versionHeight, height uint32) error 
 }
 
 func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32) error {
-	if versionHeight >= a.chainParams.CRCommitteeStartHeight {
+	if a.crCommittee != nil && a.crCommittee.IsInElectionPeriod() {
 		crMembers := a.crCommittee.GetAllMembers()
 		if len(crMembers) != len(a.chainParams.CRCArbiters) {
 			return errors.New("CRC members count mismatch with CRC arbiters")
@@ -934,6 +942,29 @@ func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32)
 				return err
 			}
 			ar, err := NewCRCArbiter(pk, crMembers[i])
+			if err != nil {
+				return err
+			}
+			crcArbiters[ar.GetOwnerProgramHash()] = ar
+		}
+
+		oriArbiters := a.crcArbiters
+		oriCRCChangedHeight := a.crcChangedHeight
+		a.history.Append(height, func() {
+			a.crcArbiters = crcArbiters
+			a.crcChangedHeight = a.crCommittee.LastCommitteeHeight
+		}, func() {
+			a.crcArbiters = oriArbiters
+			a.crcChangedHeight = oriCRCChangedHeight
+		})
+	} else if versionHeight >= a.chainParams.CRCommitteeStartHeight {
+		crcArbiters := map[common.Uint168]ArbiterMember{}
+		for _, v := range a.chainParams.CRCArbiters {
+			pk, err := common.HexStringToBytes(v)
+			if err != nil {
+				return err
+			}
+			ar, err := NewCRCArbiter(pk, nil)
 			if err != nil {
 				return err
 			}
