@@ -181,7 +181,8 @@ export default class extends BaseComponent {
       5: I18N.get('council.voting.type.process'),
       6: I18N.get('council.voting.type.information')
     }
-    const { canManage, isSecretary } = this.props
+    const { canManage, isSecretary, isCouncil } = this.props
+    const canCreateProposal = (!isCouncil && !isSecretary)
     const { isVisitableFilter } = this.state
 
     const columns = [
@@ -264,7 +265,8 @@ export default class extends BaseComponent {
       </List>
     )
 
-    const createBtn = canManage && (
+    // no one can see this button
+    const createBtn = canManage && canCreateProposal && (
       <Row type="flex" align="middle" justify="end">
         <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
           <StyledButton
@@ -352,7 +354,7 @@ export default class extends BaseComponent {
          )
        */
     }
-    
+
     return (
       <div>
         <Meta title="Cyber Republic - Elastos" />
@@ -395,7 +397,7 @@ export default class extends BaseComponent {
             pagination={{
               current: page,
               pageSize: 10,
-              total: total,// list && list.length,
+              total, // list && list.length,
               onChange: this.onPageChange
             }}
           />
@@ -513,7 +515,7 @@ export default class extends BaseComponent {
         I18N.get('council.voting.proposedAt')
       ])
       _.map(allListData, v => {
-        dataCSV.push( 
+        dataCSV.push(
           [
             v.vid,
             v.title,
@@ -527,12 +529,14 @@ export default class extends BaseComponent {
               ',',
               ' '
             )
-      ])})
+          ]
+        )
+      })
 
       // const page = sessionStorage.getItem('proposalPage')
       param.page = page
       param.results = 10
-      const {list,total} = await listData(param, canManage)
+      const {list, total} = await listData(param, canManage)
       this.setState({ list, alllist: dataCSV, total, page: (page && parseInt(page)) || 1 })
     } catch (error) {
       logger.error(error)
@@ -540,7 +544,7 @@ export default class extends BaseComponent {
 
     this.ord_loading(false)
   }
-  
+
   loadPage = async (page, pageSize) => {
     this.ord_loading(true)
     const { listData, canManage } = this.props
@@ -550,7 +554,7 @@ export default class extends BaseComponent {
       results: pageSize
     }
     try {
-      const {list,total} = await listData(query, canManage)
+      const {list, total} = await listData(query, canManage)
       // const page = sessionStorage.getItem('proposalPage')
       this.setState({ list, total, page: (page && parseInt(page)) || 1 })
       sessionStorage.setItem('proposalPage', page)

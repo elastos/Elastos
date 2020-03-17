@@ -31,6 +31,10 @@ export default class extends Base {
     const { title, proposedBy, proposer, suggestionId, payment } = param
 
     const vid = await this.getNewVid()
+    const userRole = _.get(this.currentUser, 'role')
+    if(!this.canCreateProposal()) {
+      throw 'cvoteservice.create - no permission'
+    }
 
     const doc: any = {
       title,
@@ -217,8 +221,8 @@ export default class extends Base {
 
     const vid = await this.getNewVid()
     const status = published
-      ? constant.CVOTE_STATUS.PROPOSED
-      : constant.CVOTE_STATUS.DRAFT
+                 ? constant.CVOTE_STATUS.PROPOSED
+                 : constant.CVOTE_STATUS.DRAFT
 
     const doc: any = {
       title,
@@ -927,6 +931,10 @@ export default class extends Base {
   private canManageProposal() {
     const userRole = _.get(this.currentUser, 'role')
     return permissions.isCouncil(userRole) || permissions.isSecretary(userRole)
+  }
+  private canCreateProposal() {
+    const userRole = _.get(this.currentUser, 'role')
+    return !permissions.isCouncil(userRole) && !permissions.isSecretary(userRole)
   }
 
   public async listcrcandidates(param) {
