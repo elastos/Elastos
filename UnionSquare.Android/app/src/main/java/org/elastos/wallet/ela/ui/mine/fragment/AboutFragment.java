@@ -103,8 +103,7 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
         share_intent.setAction(Intent.ACTION_SEND);//设置分享行为
         share_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         share_intent.setType("*/*");//设置分享内容的类型
-        File file1 = new File(Environment.getExternalStoragePublicDirectory(
-                getContext().getPackageName()), "log");
+        File file1 =getContext().getExternalFilesDir("log");
         File file = new File(file1, "/spvsdk.log");
         if (!file.exists()) {
             return;

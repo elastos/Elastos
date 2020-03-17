@@ -4,6 +4,7 @@ import org.elastos.wallet.ela.bean.GetdePositcoinBean;
 import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
 import org.elastos.wallet.ela.ui.did.entity.SaveJwtRespondBean;
 import org.elastos.wallet.ela.ui.did.entity.WebBackEntity;
 import org.elastos.wallet.ela.ui.main.entity.ServerListEntity;
@@ -66,5 +67,5 @@ public interface ApiServer {
     @FormUrlEncoded
     @POST("api/dposnoderpc/check/jwtget")
     @Headers("Content-Type:application/x-www-form-urlencoded; charset=utf-8")
-    Observable<GetdePositcoinBean> jwtGet(@FieldMap Map<String, String> map);
+    Observable<GetJwtRespondBean> jwtGet(@FieldMap Map<String, String> map);
 }

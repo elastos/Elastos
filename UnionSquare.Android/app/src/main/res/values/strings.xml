@@ -480,9 +480,9 @@
     <string name="plzselctoutdate">请选择失效日期</string>
     <string name="validtime">有效期至&#160;</string>
     <string name="keepeditornot">是否保留本次编辑？</string>
-    <string name="keep">保留</string>
-    <string name="nokeep">不保留</string>
-    <string name="keepsucess">保留成功</string>
+    <string name="keep">保存</string>
+    <string name="nokeep">不保存</string>
+    <string name="keepsucess">保存成功</string>
     <string name="jump">跳过</string>
     <string name="tipcanjump">温馨提示：本页内容均为非必填项。</string>
     <string name="plzinputname">请输入姓名</string>
@@ -621,4 +621,15 @@
     <string name="savesucess">保存成功</string>
     <string name="updatesignforinfo">更新报名信息</string>
     <string name="authoriizesuccess">授权成功</string>
+    <string name="whetherdeletethisitem">是否删除本项</string>
+    <string name="keepinloacal">保存至本地</string>
+    <string name="share">分享</string>
+    <string name="keepfaile">保存失败</string>
+    <string name="sharefaile">分享失败</string>
+    <string name="exportcredencial">导出凭证</string>
+    <string name="chosefile">选择文件</string>
+    <string name="importcredencial">导入凭证</string>
+    <string name="unactive">[未激活]</string>
+    <string name="personalzl">个人资料</string>
+    <string name="menberintro">委员简介</string>
 </resources>

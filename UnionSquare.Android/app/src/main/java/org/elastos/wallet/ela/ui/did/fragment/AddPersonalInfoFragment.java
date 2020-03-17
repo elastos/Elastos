@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 
+import org.elastos.did.DIDDocument;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -23,9 +24,10 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalChoseRecAdapetr;
-import org.elastos.wallet.ela.ui.did.adapter.PersonalShowRecAdapetr;
+import org.elastos.wallet.ela.ui.did.adapter.PersonalAddRecAdapetr;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
+import org.elastos.wallet.ela.ui.vote.activity.OtherPwdActivity;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
@@ -51,7 +53,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class PersonalInfoFragment extends BaseFragment implements CommonRvListener1, NewBaseViewData {
+public class AddPersonalInfoFragment extends BaseFragment implements CommonRvListener1, NewBaseViewData {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
@@ -78,7 +80,7 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
     private Date didEndDate;
     private List<PersonalInfoItemEntity> listShow;
     private List<PersonalInfoItemEntity> listChose;
-    private PersonalShowRecAdapetr adapterShow;
+    private PersonalAddRecAdapetr adapterShow;
     private PersonalChoseRecAdapetr adapterChose;
     private TextView tvPersonalIntro;
 
@@ -90,15 +92,37 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
 
     @Override
     protected void setExtraData(Bundle data) {
-        wallet = data.getParcelable("wallet");
-        didName = data.getString("didName");
-        didEndDate = (Date) data.getSerializable("didEndDate");
-        tvTitleRight.setVisibility(View.VISIBLE);
-        tvTitleRight.setText(getString(R.string.publish));
-        tvTitle.setText(getString(R.string.addpersonalindo));
-        credentialSubjectBean = new CredentialSubjectBean(getMyDID().getDidString(),didName);
+
+        String type = data.getString("type");
+        if (Constant.EDITCREDENTIAL.equals(type)) {
+            //新增did凭证  从凭证信息进入
+            onAddPartCredential();
+        } else {
+            //新增did凭证  从新增did进入
+            wallet = data.getParcelable("wallet");
+            didName = data.getString("didName");
+            didEndDate = (Date) data.getSerializable("didEndDate");
+            tvTitleRight.setText(getString(R.string.publish));
+        }
     }
 
+    private void onAddPartCredential() {
+        tvTitleRight.setText(getString(R.string.keep));
+        tvTitleRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CredentialSubjectBean credentialSubjectBean = convertCredentialSubjectBean();
+                Log.i("??", JSON.toJSONString(credentialSubjectBean));
+                DIDDocument doc = getMyDID().getDIDDocument();
+                Date didEndDate = getMyDID().getExpires(doc);
+                Intent intent = new Intent(getActivity(), OtherPwdActivity.class);
+                intent.putExtra("didEndDate", didEndDate);
+                intent.putExtra("credentialSubjectBean", credentialSubjectBean);
+                intent.putExtra("type", Constant.EDITCREDENTIAL);
+                startActivity(intent);
+            }
+        });
+    }
 
     @Override
     protected void initView(View view) {
@@ -111,6 +135,8 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
         //            rvCnto.setNestedScrollingEnabled(false);
         //            rvCnto.setFocusableInTouchMode(false);
         //            rvCnto.requestFocus();
+        tvTitle.setText(getString(R.string.addpersonalindo));
+        tvTitleRight.setVisibility(View.VISIBLE);
         initItemDate();
         sexs = new String[]{getString(R.string.man), getString(R.string.woman)};
         registReceiver();
@@ -143,7 +169,7 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
 
     private void setRecycleViewShow() {
         if (adapterShow == null) {
-            adapterShow = new PersonalShowRecAdapetr(getContext(), listShow);
+            adapterShow = new PersonalAddRecAdapetr(getContext(), listShow);
             rvShow.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             rvShow.setAdapter(adapterShow);
             adapterShow.setCommonRvListener(this);
@@ -174,8 +200,6 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
                 Log.i("??", JSON.toJSONString(credentialSubjectBean));
                 //模拟手续费
                 new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
-
-
                 break;
             case R.id.iv_add:
                 svChose.setVisibility(View.VISIBLE);
@@ -211,6 +235,15 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
                 @Override
                 public void affireBtnClick(View view) {
                     toMainFragment();
+                }
+            });
+        }
+        if (integer == RxEnum.EDITPERSONALINFO.ordinal()) {
+            //保留did成功
+            new DialogUtil().showTransferSucess(getString(R.string.savesucess), getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    popTo(CredentialFragment.class, false);
                 }
             });
         }
@@ -333,7 +366,7 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
         if (listShow.size() == 0) {
             return null;
         }
-        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(),didName);
+        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(), didName);
         for (int i = 0; i < listShow.size(); i++) {
             //只遍历show的数据
             PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
@@ -394,7 +427,7 @@ public class PersonalInfoFragment extends BaseFragment implements CommonRvListen
 
         }
         if (!result.whetherEmpty()) {
-            result.setEditTime(new Date().getTime());
+            result.setEditTime(Calendar.getInstance().get(Calendar.SECOND));
             return result;
         }
         return null;

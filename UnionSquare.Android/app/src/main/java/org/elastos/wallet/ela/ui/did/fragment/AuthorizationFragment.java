@@ -45,6 +45,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import butterknife.BindView;
@@ -302,13 +303,12 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
 
         }
     }
-
     private void scanJwt(String payPasswd) {
         CallBackJwtEntity callBackJwtEntity = new CallBackJwtEntity();
         callBackJwtEntity.setType("credaccess");
         callBackJwtEntity.setIss(getMyDID().getDidString());
         callBackJwtEntity.setIat(new Date().getTime());
-        callBackJwtEntity.setExp(new Date().getTime() + 5 * 60 * 1000);
+        callBackJwtEntity.setExp(Calendar.getInstance().get(Calendar.SECOND) + 5 * 60 * 1000);
         callBackJwtEntity.setAud(recieveJwtEntity.getIss());
         callBackJwtEntity.setReq(scanResult);
         callBackJwtEntity.setPresentation("");
@@ -325,13 +325,20 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
     }
 
     private void authorizationJwt(String payPasswd) {
+        /* {
+            "alg": "ES256",
+                "typ": "JWT"
+        }的base64 "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9"*/
+
         String header = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9";
+
         // Base64
         String payload = Base64.encodeToString(JSON.toJSONString(convertCredentialSubjectBean()).getBytes(), Base64.URL_SAFE | Base64.NO_WRAP);
         payload = payload.replaceAll("=", "");
         try {
             String signature = getMyDID().getDIDDocument().sign(payPasswd, (header + "." + payload).getBytes());
             new AuthorizationPresenter().jwtSave(getMyDID().getDidString(), header + "." + payload + "." + signature, this);
+       Log.i("??",header + "." + payload + "." + signature);
         } catch (DIDStoreException e) {
             e.printStackTrace();
         }

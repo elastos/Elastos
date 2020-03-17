@@ -14,7 +14,7 @@
 
     <EditText
         android:id="@+id/et1"
-        android:layout_width="100dp"
+        android:layout_width="50dp"
         android:layout_height="match_parent"
         android:layout_toRightOf="@id/tv1"
         android:background="@null"
@@ -25,7 +25,7 @@
     <View
         android:id="@+id/view1"
         style="@style/line1"
-        android:layout_width="150dp"
+        android:layout_width="100dp"
         android:layout_alignParentBottom="true" />
 
     <TextView

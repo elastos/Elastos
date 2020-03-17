@@ -82,15 +82,8 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
 
     @Override
     protected void setExtraData(Bundle data) {
-        String type = data.getString("type");
-        if (Constant.EDITCREDENTIAL.equals(type)) {
-            listShow = data.getParcelableArrayList("listShow");
-            getChoseItem(listShow);
-        } else {
-            //从创建did 进入
-            initItemDate();
-
-        }
+        listShow = data.getParcelableArrayList("listShow");
+        getChoseItem(listShow);
     }
 
 
@@ -106,10 +99,10 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         registReceiver();
     }
 
-    private void initItemDate() {
+/*    private void initItemDate() {
         String showData[] = getResources().getStringArray(R.array.personalinfo_chose);
         String choseData[] = showData;
-        /*  Map<Integer, String>*/
+        *//*  Map<Integer, String>*//*
         listShow = new ArrayList<>();
         listChose = new ArrayList<>();
         for (int i = 0; i < showData.length; i++) {
@@ -122,7 +115,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         }
 
 
-    }
+    }*/
 
     private void getChoseItem(List<PersonalInfoItemEntity> listShow) {
         String choseData[] = getResources().getStringArray(R.array.personalinfo_chose);
@@ -257,16 +250,23 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         } else {
             if (v instanceof ImageView) {
                 //去除某一项 数据会重新渲染
-                storePersonalInfo();
-                personalInfoItemEntity.setText1(null);
-                personalInfoItemEntity.setText2(null);
-                //通过右边的iv类型判断是条目的增减还是特殊条目数据填充
-                listChose.add(personalInfoItemEntity);
-                Collections.sort(listChose);
-                listShow.remove(personalInfoItemEntity);
-                adapterShow.notifyItemRemoved(position);//加动画
-                adapterShow.notifyItemRangeChanged(position, listShow.size() - position);
-                adapterChose.notifyDataSetChanged();
+                //提示是否删除
+                new DialogUtil().showWarmPrompt1(getBaseActivity(), getString(R.string.whetherdeletethisitem), new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        storePersonalInfo();
+                        personalInfoItemEntity.setText1(null);
+                        personalInfoItemEntity.setText2(null);
+                        //通过右边的iv类型判断是条目的增减还是特殊条目数据填充
+                        listChose.add(personalInfoItemEntity);
+                        Collections.sort(listChose);
+                        listShow.remove(personalInfoItemEntity);
+                        adapterShow.notifyItemRemoved(position);//加动画
+                        adapterShow.notifyItemRangeChanged(position, listShow.size() - position);
+                        adapterChose.notifyDataSetChanged();
+                    }
+                });
+
             } else {
                 //特殊条目数据填充 序号是 1 2 6 7
                 onRvTextViewClick((TextView) v, personalInfoItemEntity.getIndex());
@@ -344,7 +344,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         if (listShow.size() == 0) {
             return null;
         }
-        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(),getMyDID().getName(getMyDID().getDIDDocument()));
+        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(), getMyDID().getName(getMyDID().getDIDDocument()));
         for (int i = 0; i < listShow.size(); i++) {
             //只遍历show的数据
             PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
@@ -405,7 +405,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
 
         }
         if (!result.whetherEmpty()) {
-            result.setEditTime(new Date().getTime());
+            result.setEditTime(Calendar.getInstance().get(Calendar.SECOND));
             return result;
         }
         return null;

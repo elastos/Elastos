@@ -6,10 +6,13 @@ import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.allen.library.SuperButton;
 
 import org.elastos.did.DIDDocument;
@@ -30,6 +33,8 @@ import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRManagePresenter;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
+import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
@@ -41,7 +46,6 @@ import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
-import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.greenrobot.eventbus.Subscribe;
@@ -104,15 +108,15 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     TextView tvIntroDetail;
     @BindView(R.id.ll_infodetail)
     LinearLayout llInfodetail;
-
+    @BindView(R.id.iv_detail)
+    ImageView ivDetail;
     @BindView(R.id.tv_title_right)
     TextView tvTitleRight;
     private Wallet wallet;
     CRManagePresenter presenter;
     private String CID, DID;
     private String ownerPublicKey;
-    private String name, url;
-    private long code;
+    private CredentialSubjectBean credentialSubjectBean;
 
     @Override
     protected int getLayoutId() {
@@ -168,15 +172,25 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
         super.setExtraData(data);
     }
 
-    @OnClick({R.id.tv_url, R.id.sb_zx, R.id.sb_tq, R.id.sb_up, R.id.ll_info, R.id.ll_intro, R.id.tv_title_right})
+    @OnClick({R.id.tv_url, R.id.sb_zx, R.id.sb_tq, R.id.sb_up, R.id.ll_info, R.id.ll_intro, R.id.tv_title_right, R.id.iv_detail, R.id.tv_did})
     public void onViewClicked(View view) {
+        Bundle bundle;
         switch (view.getId()) {
+            case R.id.tv_did:
+                if (!TextUtils.isEmpty(DID))
+                    ClipboardUtil.copyClipboar(getBaseActivity(), tvDid.getText().toString());
+                break;
+            case R.id.iv_detail:
+                bundle = new Bundle();
+                bundle.putParcelable("credentialSubjectBean", credentialSubjectBean);
+                start(CredentialInfoFragemnt.class, bundle);
+                break;
             case R.id.sb_zx:
                 //更新did
                 if (!TextUtils.isEmpty(DID)) {
                     //已经绑定did
                     //直接授权页更新凭证到中心化服务器
-                    Bundle bundle = new Bundle();
+                    bundle = new Bundle();
                     bundle.putString("type", "authorization");
                     bundle.putParcelable("wallet", wallet);
                     start(AuthorizationFragment.class, bundle);
@@ -240,14 +254,27 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
 
 
     private void onJustRegistered(CrStatusBean.InfoBean bean, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode) {
-
-        name = bean.getNickName();
-        url = bean.getURL();
-        code = bean.getLocation();
         tvTitleRight.setVisibility(View.VISIBLE);
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         String url = bean.getURL();
+        initInfoFromWeb(url);
+        tvUrl.setText(url);
+        if (!TextUtils.isEmpty(DID)) {
+            tvDid.setText(DID);
+            //从服务器获得凭证信息
+            new CRManagePresenter().jwtGet(DID, this);
+        } else {
+            tvDid.setText(getString(R.string.unactive));
+            tvDid.setCompoundDrawables(null, null, null, null);
+        }
+        if (curentNode != null) {
+            tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
+            tv_zb.setText(curentNode.getVoterate() + "%");
+        }
+    }
+
+    private void initInfoFromWeb(String url) {
         new SuperNodeListPresenter().getCRUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
             public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
@@ -261,29 +288,10 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                             .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon1);
                 } catch (Exception e) {
                 }
-                try {
-                    //获取节点简介
-                    NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
-
-                    String info = new SPUtil(CRManageFragment.this.getContext()).getLanguage() == 0 ? infoBean.getZh() : infoBean.getEn();
-                    if (!TextUtils.isEmpty(info)) {
-                        llTab.setVisibility(View.VISIBLE);
-                        tvIntroDetail.setText(info);
-                    }
-
-                } catch (Exception e) {
-                }
             }
         });
-        tvUrl.setText(url);
-        if (!TextUtils.isEmpty(DID))
-            tvDid.setText("did:elastos:" + DID);
-        if (curentNode != null) {
-            tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
-            tv_zb.setText(curentNode.getVoterate() + "%");
-        }
-    }
 
+    }
 
     String available;
 
@@ -292,6 +300,20 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         Intent intent;
         switch (methodName) {
+            case "jwtGet":
+                GetJwtRespondBean getJwtRespondBean = (GetJwtRespondBean) baseEntity;
+                String jwt = getJwtRespondBean.getData().getJwt();
+                if (!TextUtils.isEmpty(jwt)) {
+                    String[] jwtParts = jwt.split("\\.");
+                    String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
+                    credentialSubjectBean = JSON.parseObject(payload, CredentialSubjectBean.class);
+                    ivDetail.setVisibility(View.VISIBLE);
+                    if (!TextUtils.isEmpty(credentialSubjectBean.getIntroduction())) {
+                        llTab.setVisibility(View.VISIBLE);
+                        tvIntroDetail.setText(credentialSubjectBean.getIntroduction());
+                    }
+                }
+                break;
             case "createRetrieveCRDepositTransaction":
                 intent = new Intent(getActivity(), TransferActivity.class);
                 intent.putExtra("wallet", wallet);

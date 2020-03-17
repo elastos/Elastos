@@ -23,7 +23,7 @@ public class CredentialSubjectBean implements Parcelable {
     private String weibo;
     private String facebook;
     private String googleAccount;
-    private long editTime;
+    private long editTime;//s
 
     public boolean whetherEmpty() {
         return TextUtils.isEmpty(nickname) && TextUtils.isEmpty(gender) && TextUtils.isEmpty(birthday)

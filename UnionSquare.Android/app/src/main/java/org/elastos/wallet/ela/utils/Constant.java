@@ -31,7 +31,5 @@ public class Constant {
     public static final String SERVERLIST_BASE = "http://54.223.158.189:5739/";
 
 
-    public static final String EDITCREDENTIAL = "editPersonalinfo";//编辑did  从凭证信息进入三部分凭证
-    public static final String ADDCREDENTIAL = "addPersonalinfo";  //新增did  从凭证信息进入三部分凭证
-    public static final String EDITDID = "editdid";//编辑修改已注册的did信息
+    public static final String EDITCREDENTIAL = "editPersonalinfo";//保留凭证  新增或编辑did  从凭证信息进入三部分凭证
 }

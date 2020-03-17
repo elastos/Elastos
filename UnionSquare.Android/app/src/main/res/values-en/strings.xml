@@ -616,4 +616,15 @@
     <string name="savesucess">保存成功</string>
     <string name="updatesignforinfo">更新报名信息</string>
     <string name="authoriizesuccess">授权成功</string>
+    <string name="whetherdeletethisitem">是否删除本项</string>
+    <string name="keepinloacal">保存至本地</string>
+    <string name="share">分享</string>
+    <string name="keepfaile">保存失败</string>
+    <string name="sharefaile">分享失败</string>
+    <string name="exportcredencial">导出凭证</string>
+    <string name="chosefile">选择文件</string>
+    <string name="importcredencial">导入凭证</string>
+    <string name="unactive">[未激活]</string>
+    <string name="personalzl">个人资料</string>
+    <string name="menberintro">委员简介</string>
 </resources>

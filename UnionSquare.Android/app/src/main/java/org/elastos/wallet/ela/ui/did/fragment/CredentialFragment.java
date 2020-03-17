@@ -10,6 +10,7 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -52,7 +53,7 @@ public class CredentialFragment extends BaseFragment {
         if (credentialSubjectBean != null) {
             tvPersonlinfoNo.setVisibility(View.GONE);
             tvPersonlinfoTime.setVisibility(View.VISIBLE);
-            tvPersonlinfoTime.setText(getString(R.string.keeptime) + DateUtil.timeNYR(credentialSubjectBean.getEditTime(), getContext(), false));
+            tvPersonlinfoTime.setText(getString(R.string.keeptime) + DateUtil.timeNYR(credentialSubjectBean.getEditTime(), getContext(), true));
 
         } else {
             tvPersonlinfoNo.setVisibility(View.VISIBLE);
@@ -63,12 +64,13 @@ public class CredentialFragment extends BaseFragment {
 
     @OnClick({R.id.ll_personalinfo, R.id.tv_out, R.id.tv_in})
     public void onViewClicked(View view) {
-        Bundle bundle = new Bundle();
+        Bundle bundle = getArguments();
 
         switch (view.getId()) {
             case R.id.ll_personalinfo:
                 if (credentialSubjectBean == null) {
-                    start(EditPersonalInfoFragemnt.class, bundle);
+                    bundle.putString("type", Constant.EDITCREDENTIAL);
+                    start(AddPersonalInfoFragment.class, bundle);
                 } else {
                     bundle.putParcelable("credentialSubjectBean", credentialSubjectBean);
                     start(ShowPersonalInfoFragemnt.class, bundle);
@@ -76,10 +78,10 @@ public class CredentialFragment extends BaseFragment {
                 break;
 
             case R.id.tv_out:
-
+                start(ExportCredencialFragment.class,getArguments());
                 break;
             case R.id.tv_in:
-
+                start(ImportCredencialFragment.class,getArguments());
                 break;
         }
     }

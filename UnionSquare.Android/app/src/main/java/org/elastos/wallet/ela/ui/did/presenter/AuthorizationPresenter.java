@@ -20,7 +20,7 @@ public class AuthorizationPresenter extends NewPresenterAbstract {
     }
     public void jwtSave(String did, String jwt,BaseFragment baseFragment) {
         Map<String, String> map = new HashMap();
-        map.put("id", did);
+        map.put("did", did);
         map.put("jwt", jwt);
         Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).jwtSave(map);
         Observer observer = createObserver(baseFragment, "jwtSave");

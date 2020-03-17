@@ -83,6 +83,7 @@ public class DidDetailFragment extends BaseFragment {
             case R.id.tv_credentialinfo:
                 //凭证信息
                 bundle = new Bundle();
+                bundle.putParcelable("wallet", wallet);
                 start(CredentialFragment.class, bundle);
                 break;
             case R.id.iv_title_right:
