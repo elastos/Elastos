@@ -1,18 +1,19 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
 import (
+	"errors"
+
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
@@ -90,24 +91,46 @@ func (s *State) getPenalty(cid common.Uint168) common.Fixed64 {
 }
 
 // getAvailableDepositAmount returns available deposit amount with specified
-// candidate or member did.
-func (s *State) getAvailableDepositAmount(cid common.Uint168,
-	currentHeight uint32, isInVotingPeriod bool) common.Fixed64 {
-
-	var lockedDepositAmount common.Fixed64
-	if isInVotingPeriod {
-		c := s.getCandidate(cid)
-		if c != nil && c.state == Canceled && currentHeight-c.cancelHeight <
-			s.params.CRDepositLockupBlocks {
-			lockedDepositAmount = MinDepositAmount
-		}
-	}
+// candidate or member cid.
+func (s *State) getAvailableDepositAmount(cid common.Uint168) common.Fixed64 {
 	depositInfo, ok := s.depositInfo[cid]
 	if !ok {
 		return 0
 	}
 	return depositInfo.TotalAmount - depositInfo.DepositAmount -
-		depositInfo.Penalty - lockedDepositAmount
+		depositInfo.Penalty
+}
+
+// getDepositAmountByID returns available deposit amount and penalty with
+// specified cid or did.
+func (s *State) getDepositAmountByID(
+	id common.Uint168) (common.Fixed64, common.Fixed64, error) {
+	cid, exist := s.getExistCIDByID(id)
+	if !exist {
+		return 0, 0, errors.New("ID does not exist")
+	}
+	depositInfo, ok := s.depositInfo[*cid]
+	if !ok {
+		return 0, 0, errors.New("deposit information does not exist")
+	}
+	return depositInfo.TotalAmount - depositInfo.DepositAmount -
+		depositInfo.Penalty, depositInfo.Penalty, nil
+}
+
+// getDepositAmountByPublicKey return available deposit amount and
+// penalty by the given public key.
+func (s *State) getDepositAmountByPublicKey(
+	publicKey []byte) (common.Fixed64, common.Fixed64, error) {
+	cid, err := getCIDByPublicKey(publicKey)
+	if err != nil {
+		return 0, 0, err
+	}
+	depositInfo, ok := s.depositInfo[*cid]
+	if !ok {
+		return 0, 0, errors.New("CID does not exist")
+	}
+	return depositInfo.TotalAmount - depositInfo.DepositAmount -
+		depositInfo.Penalty, depositInfo.Penalty, nil
 }
 
 // existCandidate judges if there is a candidate with specified program code.
@@ -475,17 +498,20 @@ func (s *State) getCandidate(cid common.Uint168) *Candidate {
 	return nil
 }
 
+// getExistCIDByPublicKey return existing candidate by the given CID or DID.
 func (s *State) getCandidateByID(id common.Uint168) *Candidate {
 	for k, v := range s.CodeCIDMap {
 		if v.IsEqual(id) {
 			return s.getCandidate(v)
 		}
-		code, _ := common.HexStringToBytes(k)
-		newCode := make([]byte, len(code))
-		copy(newCode, code)
-		didCode := append(newCode[:len(newCode)-1], common.DID)
-		ct, _ := contract.CreateCRIDContractByCode(didCode)
-		did := ct.ToProgramHash()
+		code, err := common.HexStringToBytes(k)
+		if err != nil {
+			return nil
+		}
+		did, err := getDIDByCode(code)
+		if err != nil {
+			return nil
+		}
 		if did.IsEqual(id) {
 			return s.getCandidate(v)
 		}
@@ -493,20 +519,34 @@ func (s *State) getCandidateByID(id common.Uint168) *Candidate {
 	return nil
 }
 
+// getExistCIDByID return existing CID by the given CID or DID.
+func (s *State) getExistCIDByID(id common.Uint168) (*common.Uint168, bool) {
+	for k, v := range s.CodeCIDMap {
+		cid := v
+		if cid.IsEqual(id) {
+			return &cid, true
+		}
+		code, err := common.HexStringToBytes(k)
+		if err != nil {
+			return nil, false
+		}
+		did, err := getDIDByCode(code)
+		if err != nil {
+			return nil, false
+		}
+		if did.IsEqual(id) {
+			return &cid, true
+		}
+	}
+	return nil, false
+}
+
+// getExistCIDByID return existing candidate by the given public key.
 func (s *State) getCandidateByPublicKey(publicKey []byte) *Candidate {
-	pubkey, err := crypto.DecodePoint(publicKey)
+	cid, err := getCIDByPublicKey(publicKey)
 	if err != nil {
 		return nil
 	}
-	code, err := contract.CreateStandardRedeemScript(pubkey)
-	if err != nil {
-		return nil
-	}
-	ct, err := contract.CreateCRIDContractByCode(code)
-	if err != nil {
-		return nil
-	}
-	cid := ct.ToProgramHash()
 	return s.getCandidate(*cid)
 }
 

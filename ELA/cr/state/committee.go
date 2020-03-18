@@ -132,7 +132,7 @@ func (c *Committee) GetAllMembers() []*CRMember {
 	return result
 }
 
-//get all elected CRMembers
+// get all elected CRMembers
 func (c *Committee) GetElectedMembers() []*CRMember {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -140,7 +140,7 @@ func (c *Committee) GetElectedMembers() []*CRMember {
 	return getElectedCRMembers(c.Members)
 }
 
-//get all impeachable CRMembers
+// get all impeachable CRMembers
 func (c *Committee) GetImpeachableMembers() []*CRMember {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -148,7 +148,7 @@ func (c *Committee) GetImpeachableMembers() []*CRMember {
 	return getImpeachableCRMembers(c.Members)
 }
 
-//get all history CRMembers
+// get all history CRMembers
 func (c *Committee) GetAllHistoryMembers() []*CRMember {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -183,7 +183,7 @@ func (c *Committee) getMember(did common.Uint168) *CRMember {
 	return nil
 }
 
-//update Candidates state in voting period
+// update Candidates state in voting period
 func (c *Committee) updateVotingCandidatesState(height uint32) {
 	if c.isInVotingPeriod(height) {
 		// Check if any pending candidates has got 6 confirms, set them to activate.
@@ -210,6 +210,28 @@ func (c *Committee) updateVotingCandidatesState(height uint32) {
 	}
 }
 
+// update Candidates deposit coin
+func (c *Committee) updateCandidatesDepositCoin(height uint32) {
+	updateDepositCoin := func(key common.Uint168, candidate *Candidate) {
+		oriRefundable := c.state.depositInfo[key].Refundable
+		oriDepositAmount := c.state.depositInfo[key].DepositAmount
+		c.state.history.Append(height, func() {
+			c.state.depositInfo[key].DepositAmount -= MinDepositAmount
+			c.state.depositInfo[key].Refundable = true
+		}, func() {
+			c.state.depositInfo[key].DepositAmount = oriDepositAmount
+			c.state.depositInfo[key].Refundable = oriRefundable
+		})
+	}
+
+	canceledCandidates := c.state.getCandidates(Canceled)
+	for _, candidate := range canceledCandidates {
+		if height-candidate.CancelHeight() == c.params.CRDepositLockupBlocks {
+			updateDepositCoin(candidate.info.CID, candidate)
+		}
+	}
+}
+
 func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
@@ -226,6 +248,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 	c.processTransactions(block.Transactions, block.Height)
 	c.updateVotingCandidatesState(block.Height)
+	c.updateCandidatesDepositCoin(block.Height)
 	c.state.history.Commit(block.Height)
 
 	c.manager.updateProposals(block.Height, c.CirculationAmount)
@@ -452,13 +475,30 @@ func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32
 	})
 }
 
+func (c *Committee) GetDepositAmountByPublicKey(
+	publicKey string) (common.Fixed64, common.Fixed64, error) {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	pubkey, err := common.HexStringToBytes(publicKey)
+	if err != nil {
+		return 0, 0, errors.New("invalid public key")
+	}
+	return c.state.getDepositAmountByPublicKey(pubkey)
+}
+
+func (c *Committee) GetDepositAmountByID(
+	id common.Uint168) (common.Fixed64, common.Fixed64, error) {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	return c.state.getDepositAmountByID(id)
+}
+
 func (c *Committee) GetAvailableDepositAmount(cid common.Uint168) common.Fixed64 {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
-	currentHeight := c.getHeight()
-	inVoting := c.isInVotingPeriod(currentHeight)
-	return c.state.getAvailableDepositAmount(cid, currentHeight, inVoting)
+	return c.state.getAvailableDepositAmount(cid)
 }
 
 func (c *Committee) getHistoryMember(code []byte) []*CRMember {
@@ -658,11 +698,15 @@ func (c *Committee) processCurrentCandidates(height uint32,
 	currentSession := c.state.CurrentSession
 	for _, candidate := range oriCandidate {
 		ca := *candidate
+		// if candidate changed to member, no need to update deposit coin again.
 		if _, ok := newMembers[ca.info.DID]; ok {
 			continue
 		}
+		// if canceled enough blocks, no need to update deposit coin again.
+		if height-candidate.CancelHeight() >= c.params.CRDepositLockupBlocks {
+			continue
+		}
 		oriRefundable := c.state.depositInfo[ca.info.CID].Refundable
-
 		c.lastHistory.Append(height, func() {
 			c.state.depositInfo[ca.info.CID].Refundable = true
 			c.state.depositInfo[ca.info.CID].DepositAmount -= MinDepositAmount
