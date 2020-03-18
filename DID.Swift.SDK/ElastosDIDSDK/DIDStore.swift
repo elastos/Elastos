@@ -48,18 +48,18 @@ public class DIDStore: NSObject {
         return DIDStore(initialCacheCapacity, maxCacheCapacity, adapter, try FileSystemStorage(path))
     }
 
-    public class func openStore(atPath: String,
-                              withType: String,
-                  initialCacheCapacity: Int,
-                      maxCacheCapacity: Int,
-                               adapter: DIDAdapter) throws -> DIDStore {
+    public class func open(atPath: String,
+                         withType: String,
+             initialCacheCapacity: Int,
+                 maxCacheCapacity: Int,
+                          adapter: DIDAdapter) throws -> DIDStore {
 
         return try openStore(atPath, withType, initialCacheCapacity, maxCacheCapacity, adapter)
     }
     
-    public class func openStore(atPath: String,
-                              withType: String,
-                               adapter: DIDAdapter) throws -> DIDStore {
+    public class func open(atPath: String,
+                         withType: String,
+                          adapter: DIDAdapter) throws -> DIDStore {
 
         return try openStore(atPath, withType, CACHE_INITIAL_CAPACITY, CACHE_MAX_CAPACITY, adapter)
     }
@@ -217,6 +217,17 @@ public class DIDStore: NSObject {
             throw DIDError.didStoreError("invalid private identity")
         }
         return privateIdentity
+    }
+
+    func loadPublicIdentity() throws -> HDKey {
+        guard try containsPrivateIdentity() else {
+            throw DIDError.didStoreError("no private identity contained")
+        }
+
+        let keyData = try storage.loadPublicIdentity()
+        let publicIdentity = try HDKey.deserialize(keyData.data(using: .utf8)!)
+
+        return publicIdentity
     }
 
     private func synchronize(_ storePassword: String,
@@ -1171,7 +1182,9 @@ public class DIDStore: NSObject {
         return dids
     }
     
-    public func storeCredential(using credential: VerifiableCredential, with alias: String) throws {
+    public func storeCredential(using credential: VerifiableCredential,
+                                      with alias: String) throws {
+
         credential.getMeta().setAlias(alias)
         try storeCredential(using: credential)
     }
@@ -1267,16 +1280,16 @@ public class DIDStore: NSObject {
     }
 
     public func selectCredentials(for did: DID,
-                                  byId id: DIDURL,
-                             andType type: Array<String>) throws -> Array<DIDURL> {
+                                  byId id: DIDURL?,
+                             andType type: Array<String>?) throws -> Array<DIDURL> {
         return try storage.selectCredentials(did, id, type)
     }
     
     public func selectCredentials(for did: String,
-                                  byId id: String,
-                             andType type: Array<String>) throws -> Array<DIDURL> {
+                                  byId id: String?,
+                             andType type: Array<String>?) throws -> Array<DIDURL> {
         let _did = try DID(did)
-        let _key = try DIDURL(_did, id)
+        let _key = id != nil ? try DIDURL(_did, id!) : nil
 
         return try selectCredentials(for: _did, byId: _key, andType: type)
     }

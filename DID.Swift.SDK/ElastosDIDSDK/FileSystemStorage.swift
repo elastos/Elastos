@@ -31,7 +31,6 @@ import Foundation
  *
  */
 public class FileSystemStorage: DIDStorage {
-
     typealias ReEncryptor = (String) throws -> String
 
     private static let STORE_MAGIC:   [UInt8] = [0x00, 0x0D, 0x01, 0x0D]
@@ -267,6 +266,20 @@ public class FileSystemStorage: DIDStorage {
         }
     }
 
+    func containsPublicIdentity() -> Bool {
+        // TODO:
+        return false
+    }
+
+    func storePublicIdentity(_ key: String) throws {
+        // TODO:
+    }
+
+    func loadPublicIdentity() throws -> String {
+        // TODOD
+        return "TODO"
+    }
+
     private func openPrivateIdentityIndexFile(_ forWrite: Bool) throws -> FileHandle {
         return try openFileHandle(forWrite, Constants.PRIVATE_DIR, Constants.INDEX_FILE)
     }
@@ -312,6 +325,11 @@ public class FileSystemStorage: DIDStorage {
 
     private func openMnemonicFile() throws -> FileHandle {
         return try openMnemonicFile(false)
+    }
+
+    func containMnemonic() -> Bool {
+        // TODO:
+        return false
     }
 
     func storeMnemonic(_ mnemonic: String) throws {
@@ -653,7 +671,7 @@ public class FileSystemStorage: DIDStorage {
         return didurls
     }
 
-    func selectCredentials(_ did: DID, _ id: DIDURL, _ type: Array<Any>) throws -> Array<DIDURL> {
+    func selectCredentials(_ did: DID, _ id: DIDURL?, _ type: Array<Any>?) throws -> Array<DIDURL> {
         // TODO:
         return Array<DIDURL>()
     }
