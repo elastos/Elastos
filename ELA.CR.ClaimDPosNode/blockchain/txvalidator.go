@@ -2099,15 +2099,32 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	}
 	stage := proposal.Budgets[0].Stage
 	var amount common.Fixed64
+	var imprestPaymentCount int
+	var finalPaymentCount int
 	for _, b := range proposal.Budgets {
-		if b.Type.Name() == "Unknown" {
+		switch b.Type {
+		case payload.Imprest:
+			imprestPaymentCount++
+		case payload.NormalPayment:
+		case payload.FinalPayment:
+			finalPaymentCount++
+		default:
 			return errors.New("type of budget should be known")
 		}
 		if b.Stage != stage {
 			return errors.New("the first phase starts incrementing")
 		}
+		if b.Amount < 0 {
+			return errors.New("invalid amount")
+		}
 		stage++
 		amount += b.Amount
+	}
+	if imprestPaymentCount > 1 {
+		return errors.New("imprest payment count invalid")
+	}
+	if finalPaymentCount != 1 {
+		return errors.New("final payment count invalid")
 	}
 	if amount > b.crCommittee.CRCCurrentStageAmount*CRCProposalBudgetsPercentage/100 {
 		return errors.New("budgets exceeds 10% of CRC committee balance")

@@ -2853,36 +2853,45 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	pubkey2, _ := crypto.DecodePoint(pubKeyBytes2)
 	code2, _ := contract.CreateStandardRedeemScript(pubkey2)
 
-	// check a return cr deposit coin transaction with wrong code in voting period.
-	rdTx.Programs[0].Code = code2
-	s.CurrentHeight = 2160 + canceledHeight
-	err = s.Chain.checkReturnCRDepositCoinTransaction(
-		rdTx, references, 2160+canceledHeight)
-	s.EqualError(err, "signer must be candidate or member")
-
 	// check a return cr deposit coin transaction when not reached the
 	// count of DepositLockupBlocks in voting period.
 	rdTx.Programs[0].Code = code
 	s.CurrentHeight = 2159 + canceledHeight
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2159+canceledHeight)
-	s.EqualError(err, "candidate overspend deposit")
+	s.EqualError(err, "signer must be refundable")
+
+	s.CurrentHeight = 2160 + canceledHeight
+	s.Chain.crCommittee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: s.CurrentHeight,
+		},
+		Transactions: []*types.Transaction{},
+	}, nil)
+
+	// check a return cr deposit coin transaction with wrong code in voting period.
+	rdTx.Programs[0].Code = code2
+	err = s.Chain.checkReturnCRDepositCoinTransaction(
+		rdTx, references, 2160+canceledHeight)
+	s.EqualError(err, "signer must be candidate or member")
 
 	// check a return cr deposit coin transaction with wrong output amount.
 	rdTx.Outputs[0].Value = 5000 * 100000000
 	s.CurrentHeight = 2160 + canceledHeight
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight)
-	s.EqualError(err, "candidate overspend deposit")
+	s.EqualError(err, "signer must be candidate or member")
 
 	// check a correct return cr deposit coin transaction.
 	rdTx.Outputs[0].Value = 4999 * 100000000
+	rdTx.Programs[0].Code = code
 	s.CurrentHeight = s.Chain.chainParams.CRCommitteeStartHeight
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, s.CurrentHeight)
 	s.NoError(err)
 
 	// return CR deposit coin.
+	rdTx.Programs[0].Code = code
 	s.Chain.crCommittee.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: s.CurrentHeight,
