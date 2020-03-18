@@ -36,9 +36,6 @@ import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
-import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
-import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
-import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
@@ -258,7 +255,6 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         String url = bean.getURL();
-        initInfoFromWeb(url);
         tvUrl.setText(url);
         if (!TextUtils.isEmpty(DID)) {
             tvDid.setText(DID);
@@ -274,24 +270,6 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
         }
     }
 
-    private void initInfoFromWeb(String url) {
-        new SuperNodeListPresenter().getCRUrlJson(url, this, new NodeDotJsonViewData() {
-            @Override
-            public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
-                //获取icon
-
-                try {
-                    String imgUrl = t.getOrg().getBranding().getLogo_256();
-                    GlideApp.with(CRManageFragment.this).load(imgUrl)
-                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
-                    GlideApp.with(CRManageFragment.this).load(imgUrl)
-                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon1);
-                } catch (Exception e) {
-                }
-            }
-        });
-
-    }
 
     String available;
 
@@ -308,6 +286,10 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                     String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
                     credentialSubjectBean = JSON.parseObject(payload, CredentialSubjectBean.class);
                     ivDetail.setVisibility(View.VISIBLE);
+                    GlideApp.with(CRManageFragment.this).load(credentialSubjectBean.getAvatar())
+                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+                    GlideApp.with(CRManageFragment.this).load(credentialSubjectBean.getAvatar())
+                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon1);
                     if (!TextUtils.isEmpty(credentialSubjectBean.getIntroduction())) {
                         llTab.setVisibility(View.VISIBLE);
                         tvIntroDetail.setText(credentialSubjectBean.getIntroduction());
@@ -378,6 +360,10 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             });
 
 
+        }
+        if (integer == RxEnum.SAVECREDENCIALTOWEB.ordinal()) {
+            showToast(getString(R.string.update_successful));
+            new CRManagePresenter().jwtGet(DID, CRManageFragment.this);
         }
     }
 

@@ -50,14 +50,15 @@ public class CredentialFragment extends BaseFragment {
         String json = getMyDID().getCredentialProFromStore(getMyDID().getDidString());
         credentialSubjectBean = JSON.parseObject(json, CredentialSubjectBean.class);
         Log.i("??", json + "\n" + (JSON.parseObject("{}", CredentialSubjectBean.class) == null));//false
-        if (credentialSubjectBean != null) {
+        if (credentialSubjectBean == null || credentialSubjectBean.whetherEmpty()) {
+            tvPersonlinfoNo.setVisibility(View.VISIBLE);
+            tvPersonlinfoTime.setVisibility(View.GONE);
+
+        } else {
             tvPersonlinfoNo.setVisibility(View.GONE);
             tvPersonlinfoTime.setVisibility(View.VISIBLE);
             tvPersonlinfoTime.setText(getString(R.string.keeptime) + DateUtil.timeNYR(credentialSubjectBean.getEditTime(), getContext(), true));
 
-        } else {
-            tvPersonlinfoNo.setVisibility(View.VISIBLE);
-            tvPersonlinfoTime.setVisibility(View.GONE);
         }
     }
 
@@ -68,7 +69,7 @@ public class CredentialFragment extends BaseFragment {
 
         switch (view.getId()) {
             case R.id.ll_personalinfo:
-                if (credentialSubjectBean == null) {
+                if (credentialSubjectBean == null || credentialSubjectBean.whetherEmpty()) {
                     bundle.putString("type", Constant.EDITCREDENTIAL);
                     start(AddPersonalInfoFragment.class, bundle);
                 } else {
@@ -78,10 +79,10 @@ public class CredentialFragment extends BaseFragment {
                 break;
 
             case R.id.tv_out:
-                start(ExportCredencialFragment.class,getArguments());
+                start(ExportCredencialFragment.class, getArguments());
                 break;
             case R.id.tv_in:
-                start(ImportCredencialFragment.class,getArguments());
+                start(ImportCredencialFragment.class, getArguments());
                 break;
         }
     }

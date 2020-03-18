@@ -363,9 +363,6 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
     private CredentialSubjectBean convertCredentialSubjectBean() {
         //这种情况考虑去除全局变量credentialSubjectBean
         storePersonalInfo();
-        if (listShow.size() == 0) {
-            return null;
-        }
         CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(), didName);
         for (int i = 0; i < listShow.size(); i++) {
             //只遍历show的数据
@@ -426,11 +423,8 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
             }
 
         }
-        if (!result.whetherEmpty()) {
-            result.setEditTime(Calendar.getInstance().get(Calendar.SECOND));
-            return result;
-        }
-        return null;
+        result.setEditTime(new Date().getTime()/1000);
+        return result;
     }
 
     @Override

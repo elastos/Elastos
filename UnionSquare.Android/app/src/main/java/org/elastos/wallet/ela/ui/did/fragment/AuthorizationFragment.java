@@ -255,7 +255,8 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
 
                 break;
             case "jwtSave":
-                showToast(getString(R.string.update_successful));
+
+                post(RxEnum.SAVECREDENCIALTOWEB.ordinal(), null, null);
                 popBackFragment();
                 break;
             case "postData":
@@ -286,7 +287,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
                 ClipboardUtil.copyClipboar(getBaseActivity(), tvDid.getText().toString());
                 break;
             case R.id.tv_agree:
-                if (type.equals("authorization&bind")) {
+                if ("authorization&bind".equals(type)) {
                     //绑定并授权需要展示手续费
                     new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", type, this);
                 } else {
@@ -307,8 +308,8 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         CallBackJwtEntity callBackJwtEntity = new CallBackJwtEntity();
         callBackJwtEntity.setType("credaccess");
         callBackJwtEntity.setIss(getMyDID().getDidString());
-        callBackJwtEntity.setIat(new Date().getTime());
-        callBackJwtEntity.setExp(Calendar.getInstance().get(Calendar.SECOND) + 5 * 60 * 1000);
+        callBackJwtEntity.setIat(new Date().getTime()/1000);
+        callBackJwtEntity.setExp(new Date().getTime()/1000 + 5 * 60);
         callBackJwtEntity.setAud(recieveJwtEntity.getIss());
         callBackJwtEntity.setReq(scanResult);
         callBackJwtEntity.setPresentation("");

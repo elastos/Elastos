@@ -6,7 +6,7 @@ import android.text.TextUtils;
 
 public class CredentialSubjectBean implements Parcelable {
     //一共17
-    private String didName;
+    private String didName;//did的name
     private String did;
     private String nickname;
     private String gender;// 1男2nv
@@ -190,10 +190,11 @@ public class CredentialSubjectBean implements Parcelable {
     @Override
     public String toString() {
         return "CredentialSubjectBean{" +
-                "did='" + did + '\'' +
+                "didName='" + didName + '\'' +
+                ", did='" + did + '\'' +
                 ", nickname='" + nickname + '\'' +
-                ", gender=" + gender +
-                ", birthday=" + birthday +
+                ", gender='" + gender + '\'' +
+                ", birthday='" + birthday + '\'' +
                 ", avatar='" + avatar + '\'' +
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +

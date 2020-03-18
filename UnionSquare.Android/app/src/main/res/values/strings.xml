@@ -374,7 +374,7 @@
     <string name="currentversionname">当前版本号&#160;</string>
     <string name="feedback">反馈邮件</string>
     <string name="showupdatalog">查看更新日志</string>
-    <string name="tv_elaintroduce">ELA Wallet是安全、可信的SPV轻节点钱包，支持DPoS选举及亦来云全生态数字资产。</string>
+    <string name="tv_elaintroduce">ELA Wallet 是安全、可信的亦来云轻节点（ SPV ) 钱包。</string>
     <string name="earn_records">收益记录</string>
     <string name="copyearnaddress">复制收益地址</string>
     <string name="towhole">零钱换整</string>
@@ -632,4 +632,5 @@
     <string name="unactive">[未激活]</string>
     <string name="personalzl">个人资料</string>
     <string name="menberintro">委员简介</string>
+    <string name="walletmainfunctions"><![CDATA[主要功能： \n· 亦来云全生态数字资产支持 \n· 亦来云 DID 数字身份认证 \n· 亦来云 DPoS 选举 \n· CR 社区委员选举 \n· CR 社区提案&投票等]]></string>
 </resources>

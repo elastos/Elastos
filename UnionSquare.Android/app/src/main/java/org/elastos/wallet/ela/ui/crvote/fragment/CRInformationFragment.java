@@ -116,8 +116,6 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.crinfor));
-        String url = bean.getUrl();
-        initInfoFromWeb(url);
         tvName.setText(bean.getNickname());
         tvNumVote.setText(bean.getVotes().split("\\.")[0] + " " + getString(R.string.ticket));
         if (!TextUtils.isEmpty(bean.getCid())) {
@@ -142,25 +140,6 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
         }
     }
 
-    private void initInfoFromWeb(String url) {
-        new SuperNodeListPresenter().getCRUrlJson(url, this, new NodeDotJsonViewData() {
-            @Override
-            public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
-                //获取icon
-
-                try {
-                    String imgUrl = t.getOrg().getBranding().getLogo_256();
-
-
-                    GlideApp.with(CRInformationFragment.this).load(imgUrl)
-                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
-
-                } catch (Exception e) {
-                }
-            }
-        });
-
-    }
 
     @OnClick({R.id.tv_url, R.id.sb_jrhxlb, R.id.sb_ckhxlb, R.id.ll_info, R.id.ll_intro, R.id.iv_detail, R.id.tv_did})
     public void onViewClicked(View view) {
@@ -237,6 +216,8 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
                     String[] jwtParts = jwt.split("\\.");
                     String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
                     credentialSubjectBean = JSON.parseObject(payload, CredentialSubjectBean.class);
+                    GlideApp.with(CRInformationFragment.this).load(credentialSubjectBean.getAvatar())
+                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
                     ivDetail.setVisibility(View.VISIBLE);
                     if (!TextUtils.isEmpty(credentialSubjectBean.getIntroduction())){
                         llTab.setVisibility(View.VISIBLE);

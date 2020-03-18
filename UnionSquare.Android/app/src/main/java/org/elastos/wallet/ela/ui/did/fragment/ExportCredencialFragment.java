@@ -21,7 +21,7 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.did.presenter.CredencialPresenter;
 
 import java.io.File;
-import java.util.Calendar;
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -83,7 +83,7 @@ public class ExportCredencialFragment extends BaseFragment implements NewBaseVie
 
     private File getCurrentCredentialFile() {
         File file = getBaseActivity().getExternalFilesDir("credentials" + File.separator + wallet.getWalletId());
-        String fileName = getMyDID().getName(getMyDID().getDIDDocument()) + Calendar.getInstance().get(Calendar.SECOND) + ".jwt";
+        String fileName = getMyDID().getName(getMyDID().getDIDDocument()) + new Date().getTime() / 1000 + ".jwt";
         return new File(file, fileName);
 
     }

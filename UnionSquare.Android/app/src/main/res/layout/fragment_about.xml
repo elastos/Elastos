@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/blue1"
     android:orientation="vertical">
     <!--android:background="#f6f6f6"-->
 
     <include layout="@layout/title" />
 
-
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
     <ImageView
         android:layout_width="123dp"
         android:layout_height="123dp"
@@ -29,17 +34,26 @@
         android:textSize="13sp" />
 
     <TextView
-        style="@style/settingItem_margin"
-        android:layout_width="wrap_content"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="38dp"
-        android:gravity="center"
         android:lineSpacingMultiplier="1.2"
         android:text="@string/tv_elaintroduce"
         android:textColor="@color/whiter"
         android:textSize="14sp" />
 
+    <TextView
+        android:lineSpacingMultiplier="1.2"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="@string/walletmainfunctions"
+        android:textSize="12sp" />
 
     <TextView
         android:id="@+id/tv_updatalog"
@@ -47,7 +61,7 @@
         android:layout_width="match_parent"
         android:layout_height="38dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="60dp"
         android:background="@drawable/setting_item_select"
         android:gravity="center"
         android:text="@string/showupdatalog"
@@ -81,12 +95,10 @@
             android:text="@string/runlog" />
     </LinearLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+
 
     <TextView
+        android:layout_marginTop="10dp"
         android:id="@+id/tv_version_sdk"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -95,5 +107,6 @@
         android:text="@string/curentsdkversion"
         android:textColor="#80ffffff"
         android:textSize="10sp" />
-
+    </LinearLayout>
+</ScrollView>
 </LinearLayout>

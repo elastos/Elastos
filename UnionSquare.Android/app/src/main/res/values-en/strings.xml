@@ -369,7 +369,7 @@
     <string name="currentversionname">Version&#160;</string>
     <string name="feedback">Feedback</string>
     <string name="showupdatalog">What\'s New</string>
-    <string name="tv_elaintroduce">ELA Wallet is a secure and reliable SPV Wallet that supports DPoS elections and all digital assets in the Elastos ecosystem. </string>
+    <string name="tv_elaintroduce">ELA Wallet 是安全、可信的亦来云轻节点（ SPV ) 钱包。 </string>
     <string name="earn_records">DPoS Rewards</string>
     <string name="copyearnaddress">Copy Address</string>
     <string name="towhole">Consolidate</string>
@@ -627,4 +627,5 @@
     <string name="unactive">[未激活]</string>
     <string name="personalzl">个人资料</string>
     <string name="menberintro">委员简介</string>
+    <string name="walletmainfunctions"><![CDATA[主要功能： \n· 亦来云全生态数字资产支持 \n· 亦来云 DID 数字身份认证 \n· 亦来云 DPoS 选举 \n· CR 社区委员选举 \n· CR 社区提案&投票等]]></string>
 </resources>

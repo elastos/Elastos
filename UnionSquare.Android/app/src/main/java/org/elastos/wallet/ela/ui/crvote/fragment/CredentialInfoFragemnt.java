@@ -26,7 +26,8 @@ public class CredentialInfoFragemnt extends BaseFragment {
     TextView tvTitle;
     @BindView(R.id.rv_show)
     RecyclerView rvShow;
-
+    @BindView(R.id.tv_didname)
+    TextView tvDidname;
     private ArrayList<PersonalInfoItemEntity> listShow;
     private CredentialSubjectBean credentialSubjectBean;
 
@@ -45,7 +46,7 @@ public class CredentialInfoFragemnt extends BaseFragment {
         tvTitle.setText(getString(R.string.personalzl));
 
         initItemDate();
-
+        tvDidname.setText(credentialSubjectBean.getDidName());
     }
 
     private void initItemDate() {
@@ -96,9 +97,7 @@ public class CredentialInfoFragemnt extends BaseFragment {
                     String birthDate = DateUtil.timeNYR(birthday, getContext(), false);
                     resetShowList(iterator, personalInfoItemEntity, birthDate);
                     break;
-                case 3:
-                    resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getAvatar());
-                    break;
+
                 case 4:
                     resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getEmail());
                     break;
@@ -109,6 +108,8 @@ public class CredentialInfoFragemnt extends BaseFragment {
                     String areaCode = credentialSubjectBean.getNation();
                     resetShowList(iterator, personalInfoItemEntity, AppUtlis.getLoc(getContext(), areaCode));
                     break;
+                case 3:
+                    // resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getAvatar());
                 case 7:
 
                     // resetShowList(iterator, personalInfoItemEntity, credentialSubjectBean.getIntroduction());
