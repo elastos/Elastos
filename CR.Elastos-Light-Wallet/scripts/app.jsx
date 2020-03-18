@@ -41,7 +41,33 @@ const DEFAULT_FEE_SATS = '500';
 /** networks */
 const EXPLORER = 'https://blockchain.elastos.org';
 
-const REST_SERVICE = 'https://api-wallet-ela.elastos.org';
+const REST_SERVICES =  [
+  {
+    name:'api-wallet',
+    url:'https://api-wallet-ela.elastos.org'
+  },
+  {
+    name:'node1',
+    url:'https://node1.elaphant.app/'
+  },
+  {
+    name:'node3',
+    url:'https://node3.elaphant.app/'
+  }
+]
+var currentNetworkIx = 0;
+
+var restService;
+
+const getRestService = () => {
+  return restService;
+}
+
+const setRestService = (ix) => {
+  currentNetworkIx = ix;
+  restService = REST_SERVICES[ix].url;
+  get('nodeUrl').value = restService;
+};
 
 const getTransactionHistoryUrl = (address) => {
   const url = `${EXPLORER}/api/v1/txs/?pageNum=0&address=${address}`;
@@ -56,19 +82,19 @@ const getTransactionHistoryLink = (txid) => {
 }
 
 const getBalanceUrl = (address) => {
-  const url = `${REST_SERVICE}/api/v1/asset/balances/${address}`;
+  const url = `${getRestService()}/api/v1/asset/balances/${address}`;
   // mainConsole.log('getBalanceUrl',url);
   return url;
 }
 
 const getUnspentTransactionOutputsUrl = (address) => {
-  const url = `${REST_SERVICE}/api/v1/asset/utxo/${address}/${Asset.elaAssetId}`;
+  const url = `${getRestService()}/api/v1/asset/utxo/${address}/${Asset.elaAssetId}`;
   // mainConsole.log('getUnspentTransactionOutputsUrl',url);
   return url;
 }
 
 const getStateUrl = () => {
-  const url = `${REST_SERVICE}/api/v1/node/state`;
+  const url = `${getRestService()}/api/v1/node/state`;
   // mainConsole.log('getStateUrl',url);
   return url;
 }
@@ -144,6 +170,22 @@ const formatDate = (date) => {
   };
 
   return [year, month, day].join('-');
+}
+
+const changeNetwork = (event) => {
+  currentNetworkIx = event.target.value;
+  setRestService(currentNetworkIx);
+  refreshBlockchainData();
+}
+
+const resetNodeUrl = () => {
+  setRestService(currentNetworkIx);
+  renderApp();
+}
+
+const changeNodeUrl = () => {
+  restService = get('nodeUrl').value;
+  showLogin();
 }
 
 const refreshBlockchainData = () => {
@@ -457,7 +499,7 @@ const sendAmountToAddress = () => {
 
 // https://walletservice.readthedocs.io/en/latest/api_guide.html#post--api-1-sendRawTx
 const sendAmountToAddressCallback = (encodedTx) => {
-  const txUrl = `${REST_SERVICE}/api/v1/sendRawTx`;
+  const txUrl = `${getRestService()}/api/v1/sendRawTx`;
 
   const jsonString = `{"data": "${encodedTx}"}`;
 
@@ -515,7 +557,7 @@ const requestListOfProducersReadyCallback = (response) => {
 
 const requestListOfProducers = () => {
   producerListStatus = 'Producers Requested';
-  const txUrl = `${REST_SERVICE}/api/v1/dpos/rank/height/0`
+  const txUrl = `${getRestService()}/api/v1/dpos/rank/height/0`
 
   renderApp();
   getJson(txUrl, requestListOfProducersReadyCallback, requestListOfProducersErrorCallback);
@@ -583,7 +625,7 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
 const requestListOfCandidateVotes = () => {
   candidateVoteListStatus = 'Candidate Votes Requested';
 
-  const txUrl = `${REST_SERVICE}/api/v1/dpos/address/${address}?pageSize=5000&pageNum=1`;
+  const txUrl = `${getRestService()}/api/v1/dpos/address/${address}?pageSize=5000&pageNum=1`;
 
   renderApp();
   getJson(txUrl, requestListOfCandidateVotesReadyCallback, requestListOfCandidateVotesErrorCallback);
@@ -655,7 +697,7 @@ const sendVoteTx = () => {
 // signature: signature
 
 const sendVoteCallback = (encodedTx) => {
-  const txUrl = `${REST_SERVICE}/api/v1/sendRawTx`;
+  const txUrl = `${getRestService()}/api/v1/sendRawTx`;
 
   const jsonString = `{"data": "${encodedTx}"}`;
 
@@ -819,6 +861,7 @@ const hideEverything = () => {
   clearButtonSelection('receive');
   clearButtonSelection('transactions');
   clearButtonSelection('voting');
+  hide('change-node');
   hide('private-key-entry');
   hide('cancel-confirm-transaction');
   hide('completed-transaction');
@@ -855,6 +898,13 @@ const openDevTools = () => {
 const copyToClipboard = () => {
   clipboard.writeText(generatedPrivateKeyHex);
   alert(`copied to clipboard:\n${generatedPrivateKeyHex}`)
+}
+
+const showChangeNode = () => {
+  clearGlobalData();
+  hideEverything();
+  clearSendData();
+  show('change-node');
 }
 
 const showLogin = () => {
@@ -980,6 +1030,7 @@ const showGenerateNewPrivateKey = () => {
 const clearGlobalData = () => {
   get('privateKey').value = '';
   get('feeAmount').value = DEFAULT_FEE_SATS;
+  get('nodeUrl').value = '';
 
   useLedgerFlag = false;
   publicKey = undefined;
@@ -1092,6 +1143,18 @@ class App extends React.Component {
                   </tr>
                   <tr>
                     <td id='home' className="white_on_purple_with_hover h20px fake_button" onClick={(e) => showHome()}>
+                    Network
+                    <select value={currentNetworkIx} name="network" onChange={(e) => changeNetwork(e)}>
+                      <option value="0">{REST_SERVICES[0].name}</option>
+                      <option value="1">{REST_SERVICES[1].name}</option>
+                      <option value="2">{REST_SERVICES[2].name}</option>
+                    </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="white_on_purple_with_hover h20px fake_button" onClick={(e) => showChangeNode()}>
+                      <div className="tooltip">Change Node<span className="tooltiptext">{restService}</span>
+                      </div>
                     </td>
                   </tr>
                   <tr>
@@ -1164,6 +1227,21 @@ class App extends React.Component {
                       <p><LedgerMessage/>
                       </p>
                       <UseLedgerButton/>
+                    </td>
+                  </tr>
+                  <tr id="change-node">
+                    <td className="black_on_white h20px darkgray_border">
+                      <div className="gray_on_white">Node URL</div>
+                      <br/>
+                      <input style={{
+                          fontFamily: 'monospace'
+                        }} type="text" size="64" id="nodeUrl" placeholder={restService}></input>
+                      <br/>
+                      <br/>
+                      <br/>
+                      <div className="white_on_gray bordered display_inline_block fake_button rounded padding_5px" onClick={(e) => showLogin()}>Cancel</div>
+                      <div className="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => changeNodeUrl()}>Change Node URL</div>
+                      <div className="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => resetNodeUrl()}>Reset Node URL TO Default</div>
                     </td>
                   </tr>
                   <tr id="private-key-login">
@@ -1513,6 +1591,7 @@ const renderApp = () => {
   ReactDOM.render(<App/>, document.getElementById('main'));
 };
 const onLoad = () => {
+  setRestService(0);
   showLogin();
 }
 

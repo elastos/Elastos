@@ -57,16 +57,9 @@ openssl sha -sha256 dist/elastos-light-wallet-1.0.0.dmg;
 don't forget testnet and mainnet config files are in github at: https://github.com/elastos/Elastos.ELA/blob/master/docs/
 
 ## todo:
-1. voting is buggy, the response changed, need to adjust the arsing code to compensate.
-
-    (new one, after you vote)
-      https://elephantnode.readthedocs.io/en/latest/enhancement_api.html#get-dpos-voter-s-statistics
-
-    change REST to REST
-      /api/v1/txs/?pageNum=0&address=
-      vs
-      /api/1/history/address
-        https://walletservice.readthedocs.io/en/latest/api_guide.html#get-address-transaction-history
+1. re-add the switch-nodes
+  https://node1.elaphant.app/
+  https://node3.elaphant.app/
 
 2. add RSS feed.
     elastos rss feed        
@@ -75,3 +68,8 @@ don't forget testnet and mainnet config files are in github at: https://github.c
 3. add price feed
     price feed
         https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd
+
+4. add mnemonics.
+    https://elaphant.app/mnemonic.html
+
+    0000000000000000000000000000000000000000000000000000000000000000
