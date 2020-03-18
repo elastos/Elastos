@@ -371,7 +371,7 @@ public class DIDStore: NSObject {
         try storePrivateKey(for: did, id: id, privateKey: key.serialize(), using: storePassword)
 
         let builder = DIDDocumentBuilder(did, self)
-        doc = try builder.appendAuthenticationKey(id, key.getPublicKeyBase58()).sealed(using: storePassword)
+        doc = try builder.appendAuthenticationKey(with: id, keyBase58: key.getPublicKeyBase58()).sealed(using: storePassword)
         doc!.getMeta().setAlias(alias)
         try storeDid(using: doc!)
 
