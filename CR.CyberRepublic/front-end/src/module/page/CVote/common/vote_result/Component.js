@@ -21,7 +21,14 @@ const Component = ({ label, type, dataList }) => {
     // show reason for all vote type
     const reasonNode = (
       <Reason>
-        {data.reason}
+        {data.reason.split('\n').map((item) => {
+          return (
+            <span>
+              {item}
+              <br/>
+            </span>
+          )
+        })}
         {googleNode}
       </Reason>
     )
