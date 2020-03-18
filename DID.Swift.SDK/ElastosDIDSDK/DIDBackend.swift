@@ -1,9 +1,10 @@
 import Foundation
 
 public class DIDBackend {
+    private static let TAG = "DIDBackend"
     private static var resolver: DIDResolver?
 
-    private var _ttl: Int = Constants.DEFAULT_TTL // milliseconds
+    private static var _ttl: Int = Constants.DEFAULT_TTL // milliseconds
     private var _adapter: DIDAdapter
     
     class TransactionResult: NSObject {
@@ -11,12 +12,12 @@ public class DIDBackend {
         private var _status: Int
         private var _message: String?
         private var _filled: Bool
-        private let _condition: NSCondition
+        private let _semaphore: DispatchSemaphore
 
         override init() {
             self._status = 0
             self._filled = false
-            self._condition = NSCondition()
+            self._semaphore = DispatchSemaphore(value: 0)
         }
 
         func update(_ transactionId: String, _ status: Int, _ message: String?) {
@@ -25,7 +26,7 @@ public class DIDBackend {
             self._message = message
             self._filled = true
 
-            self._condition.signal()
+            self._semaphore.signal()
         }
 
         func update(_ transactionId: String) {
@@ -50,14 +51,17 @@ public class DIDBackend {
         
         override var description: String {
             var str = ""
+
             str.append("txid: ")
             str.append(transactionId)
             str.append("status: ")
             str.append(String(status))
+
             if status != 0 {
                 str.append("message: ")
                 str.append(message!)
             }
+
             return str
         }
     }
@@ -73,45 +77,57 @@ public class DIDBackend {
         }
 
         func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> Data {
-            print("Resolving {}...\(did.description)")
-            var resuleString: String?
-//            let url:URL! = URL(string: "http://api.elastos.io:21606")
-            var request:URLRequest! = URLRequest.init(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60)
+            Log.i(TAG, "Resolving {}...\(did.description)")
+
+            var request = URLRequest.init(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60)
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.setValue("application/json", forHTTPHeaderField: "Accept")
+
             let parameters: [String: Any] = [
                 "jsonrpc": "2.0",
                 "method": "resolvedid",
                 "params": ["did":did, "all": all],
                 "id": requestId
             ]
-            request.httpBody = try! JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
+
+            do {
+                request.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
+            } catch {
+                throw DIDError.illegalArgument()
+            }
+
             let semaphore = DispatchSemaphore(value: 0)
+            var errDes: String?
+            var result: Data?
+
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
-                guard let data = data,
-                    let response = response as? HTTPURLResponse,
-                    error == nil else { // check for fundamental networking error
-                        semaphore.signal()
-                        return
-                }
-                guard (200 ... 299) ~= response.statusCode else { // check for http errors
+                guard let _ = data,
+                      let response = response as? HTTPURLResponse,
+                      error == nil else { // check for fundamental networking error
+
+                    errDes = error.debugDescription
                     semaphore.signal()
                     return
                 }
-                let responseString = String(data: data, encoding: .utf8)
-                print("responseString = \(String(describing: responseString))")
-                resuleString = responseString
+                guard (200 ... 299) ~= response.statusCode else { // check for http errors
+                    errDes = "Server eror (status code: \(response.statusCode)"
+                    semaphore.signal()
+                    return
+                }
+
+                result = data
                 semaphore.signal()
             }
+
             task.resume()
             semaphore.wait()
-            
-            guard resuleString != nil else {
-                throw DIDError.didResolveError("Unkonw error.")
+
+            guard let _ = result else {
+                throw DIDError.didResolveError(errDes ?? "Unknown error")
             }
             
-            return Data()
+            return result!
         }
     }
 
@@ -119,42 +135,57 @@ public class DIDBackend {
         self._adapter = adapter
     }
 
-    class func initializeInstance(_ resolverURL: String, _ file: FileHandle) throws {
-        guard !resolverURL.isEmpty else {
-            throw DIDError.didResolveError()
-        }
-        try initializeInstance(DefaultResolver(resolverURL), file)
-    }
-
     class func initializeInstance(_ resolverURL: String, _ cacheDir: String) throws {
-        guard !resolverURL.isEmpty else {
-            throw DIDError.didResolveError()
+        guard !resolverURL.isEmpty, !cacheDir.isEmpty else {
+            throw DIDError.illegalArgument()
         }
+
         try initializeInstance(DefaultResolver(resolverURL), cacheDir)
     }
 
-    class func initializeInstance(_ resolver: DIDResolver, _ file: FileHandle) throws {
-        file.seekToEndOfFile()
-        let data = file.readDataToEndOfFile()
-        try initializeInstance(resolver, String(data: data, encoding: .utf8)!)
+    class func initializeInstance(_ resolverURL: String, _ cacheDir: URL) throws {
+        guard !resolverURL.isEmpty, !cacheDir.isFileURL else {
+            throw DIDError.illegalArgument()
+        }
+
+        try initializeInstance(DefaultResolver(resolverURL), cacheDir)
     }
 
     class func initializeInstance(_ resolver: DIDResolver, _ cacheDir: String) throws {
-        
-        DIDBackend.resolver = resolver
-        //        ResolverCache.setCacheDir(cacheDir);
-        try ResolverCache.setCacheDir(cacheDir)
+        guard !cacheDir.isEmpty else {
+            throw DIDError.illegalArgument()
+        }
+
+        do {
+            DIDBackend.resolver = resolver
+            try ResolverCache.setCacheDir(cacheDir)
+        } catch {
+            throw DIDError.illegalArgument()
+        }
+    }
+
+    class func initializeInstance(_ resolver: DIDResolver, _ cacheDir: URL) throws {
+        guard !cacheDir.isFileURL else {
+            throw DIDError.illegalArgument()
+        }
+
+        do {
+            DIDBackend.resolver = resolver
+            try ResolverCache.setCacheDir(cacheDir)
+        } catch {
+            throw DIDError.illegalArgument()
+        }
     }
 
     class func getInstance(_ adapter: DIDAdapter) -> DIDBackend {
         return DIDBackend(adapter)
     }
 
-    func getTtl() -> Int {
-        return self._ttl != 0 ? (self._ttl / 60 / 1000) : 0
+    public class func getTtl() -> Int {
+        return _ttl != 0 ? (_ttl / 60 / 1000) : 0
     }
 
-    func setTtl(_ newValue: Int) {
+    public class func setTtl(_ newValue: Int) {
         self._ttl = newValue > 0 ? (newValue * 60 * 1000) : 0
     }
     
@@ -174,18 +205,16 @@ public class DIDBackend {
             throw DIDError.didResolveError("DID resolver not initialized")
         }
 
-        let data: Data
-        do {
-            data = try DIDBackend.resolver!.resolve(requestId, did.toString(), false)
-        } catch {
-            throw DIDError.didResolveError("Unkown error")
-        }
-
+        let data = try DIDBackend.resolver!.resolve(requestId, did.toString(), false)
         let dict: Dictionary<String, Any>?
         do {
             dict = try JSONSerialization.jsonObject(with: data, options: []) as? Dictionary<String, Any>
         } catch {
             throw DIDError.didResolveError("parse resolved json error.")
+        }
+
+        guard let _ = dict else {
+            throw DIDError.didResolveError("invalid json format")
         }
 
         let node = JsonNode(dict!)
@@ -198,7 +227,7 @@ public class DIDBackend {
         }
 
         let resultNode = node.get(forKey: Constants.RESULT)
-        if  resultNode == nil || resultNode!.isEmpty {
+        guard let _ = resultNode, !resultNode!.isEmpty else {
             let errorNode = node.get(forKey: Constants.ERROR)!
             let errorCode = errorNode.get(forKey: Constants.ERROR_CODE)?.asString() ?? "<null>"
             let errorMsg  = errorNode.get(forKey: Constants.ERROR_MESSAGE)? .asString() ?? "<null>"
@@ -208,17 +237,39 @@ public class DIDBackend {
 
         let result = try ResolveResult.fromJson(resultNode!)
         if result.status != ResolveResultStatus.STATUS_NOT_FOUND {
-            // TODO: Cache.
+            do {
+                try ResolverCache.store(result)
+            } catch {
+                NSLog("!!! cache resolved result error: \(DIDError.desription(error as! DIDError))")
+            }
         }
+
         return result
     }
+
+    /*
+    class resolveHistory(_ did: DID) throws -> DIDHistory {
+        // TODO:
+    }
+    */
     
     class func resolve(_ did: DID, _ force: Bool) throws -> DIDDocument? {
-        let result = try resolveFromBackend(did)
+        Log.i(TAG, "Resolving {\(did.toString())} ...")
 
-        switch result.status {
-        case .STATUS_EXPIRED:
-            throw DIDError.didExpired()
+        var result: ResolveResult?
+        if (!force) {
+            result = try ResolverCache.load(did, _ttl)
+            Log.d(TAG, "Try load {\(did.toString())} from resolver cache");
+        }
+
+        if  result == nil {
+            result = try resolveFromBackend(did)
+        }
+
+        switch result!.status {
+        // When DID expired, we should also return the document.
+        // case .STATUS_EXPIRED:
+        //     throw DIDError.didExpired()
 
         case .STATUS_DEACTIVATED:
             throw DIDError.didDeactivated()
@@ -227,11 +278,12 @@ public class DIDBackend {
             return nil
 
         default:
-            let transactionInfo = result.transactionInfo(0)
+            let transactionInfo = result!.transactionInfo(0)
             let doc = transactionInfo?.request.document
             let meta = DIDMeta()
 
             meta.setTransactionId(transactionInfo!.transactionId)
+            meta.setSignature(doc!.proof.signature)
             meta.setUpdatedDate(transactionInfo!.timestamp)
             doc!.setMeta(meta)
             return doc
@@ -248,14 +300,17 @@ public class DIDBackend {
 
     private func createTransaction(_ payload: String, _ memo: String?, _ confirms: Int) throws -> String {
         let transResult = TransactionResult()
-        let condition = NSCondition()
+        let semaphore = DispatchSemaphore(value: 0)
+
+        Log.i(DIDBackend.TAG, "Create ID transaction...")
+        Log.d(DIDBackend.TAG, "Transaction paload: '{\(payload)}', memo: {\(memo ?? "none")}, confirms: {\(confirms)}")
 
         _adapter.createIdTransaction(payload, memo, confirms) { (txid, status, message) -> Void in
             transResult.update(txid, status, message)
-            condition.signal()
+            semaphore.signal()
         }
 
-        condition.wait()
+        semaphore.wait()
 
         if transResult.status != 0 {
             throw DIDError.transactionError(

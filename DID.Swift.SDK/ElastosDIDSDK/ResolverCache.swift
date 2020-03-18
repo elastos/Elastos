@@ -7,12 +7,16 @@ public class ResolverCache {
     private static var rootDir: String = ""
     private static var cache: LRUCache = LRUCache<AnyHashable, Any>(CACHE_MAX_CAPACITY)
 
-    public class func setCacheDir(_ rootDir: String) throws {
-        ResolverCache.rootDir = rootDir
-        if try !exists_dir(rootDir) {
+    public class func setCacheDir(_ rootPath: String) throws {
+        ResolverCache.rootDir = rootPath
+        if try !exists_dir(rootPath) {
             let fileManager = FileManager.default
             try fileManager.createDirectory(atPath: rootDir, withIntermediateDirectories: true, attributes: nil)
         }
+    }
+
+    public class func setCacheDir(_ url: URL) throws {
+        // TODO:
     }
     
     private class func getCacheDir() throws -> String {
