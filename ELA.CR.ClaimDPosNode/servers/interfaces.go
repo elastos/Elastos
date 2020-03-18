@@ -2060,28 +2060,32 @@ func GetDepositCoin(param Params) map[string]interface{} {
 
 func GetCRDepositCoin(param Params) map[string]interface{} {
 	crCommittee := Chain.GetCRCommittee()
-	var candidate *crstate.Candidate
-	pubkey, ok := param.String("publickey")
-	if ok {
-		candidate = crCommittee.GetCandidateByPublicKey(pubkey)
-		if candidate == nil {
-			return ResponsePack(InvalidParams, "can not find CR candidate")
+	var availableDepositAmount common.Fixed64
+	var penaltyAmount common.Fixed64
+	pubkey, hasPubkey := param.String("publickey")
+	if hasPubkey {
+		available, penalty, err := crCommittee.GetDepositAmountByPublicKey(pubkey)
+		if err != nil {
+			return ResponsePack(InvalidParams, err.Error())
 		}
+		availableDepositAmount = available
+		penaltyAmount = penalty
 	}
-	id, ok := param.String("id")
-	if ok {
+	id, hasID := param.String("id")
+	if hasID {
 		programHash, err := common.Uint168FromAddress(id)
 		if err != nil {
 			return ResponsePack(InvalidParams, "invalid id to programHash")
 		}
-
-		candidate = crCommittee.GetCandidateByID(*programHash)
-		if candidate == nil {
-			return ResponsePack(InvalidParams, "can not find CR candidate")
+		available, penalty, err := crCommittee.GetDepositAmountByID(*programHash)
+		if err != nil {
+			return ResponsePack(InvalidParams, err.Error())
 		}
+		availableDepositAmount = available
+		penaltyAmount = penalty
 	}
 
-	if candidate == nil {
+	if !hasPubkey && !hasID {
 		return ResponsePack(InvalidParams, "need a param called "+
 			"publickey or id")
 	}
@@ -2091,8 +2095,8 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 		Deducted  string `json:"deducted"`
 	}
 	return ResponsePack(Success, &depositCoin{
-		Available: crCommittee.GetAvailableDepositAmount(candidate.Info().CID).String(),
-		Deducted:  crCommittee.GetPenalty(candidate.Info().CID).String(),
+		Available: availableDepositAmount.String(),
+		Deducted:  penaltyAmount.String(),
 	})
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
@@ -326,6 +327,22 @@ func getDIDByCode(code []byte) (*common.Uint168, error) {
 		return nil, err
 	}
 	return ct1.ToProgramHash(), err
+}
+
+func getCIDByPublicKey(publicKey []byte) (*common.Uint168, error) {
+	pubkey, err := crypto.DecodePoint(publicKey)
+	if err != nil {
+		return nil, err
+	}
+	code, err := contract.CreateStandardRedeemScript(pubkey)
+	if err != nil {
+		return nil, err
+	}
+	ct, err := contract.CreateCRIDContractByCode(code)
+	if err != nil {
+		return nil, err
+	}
+	return ct.ToProgramHash(), nil
 }
 
 func (p *ProposalManager) proposalReview(tx *types.Transaction,
