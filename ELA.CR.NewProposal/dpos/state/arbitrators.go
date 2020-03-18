@@ -490,7 +490,8 @@ func (a *arbitrators) distributeWithNormalArbitratorsV(reward common.Fixed64) (
 		var r common.Fixed64
 		if member, ok := a.crcArbiters[ownerHash]; ok {
 			r = individualBlockConfirmReward
-			if member == nil || member.(*crcArbiter).crMember.MemberState != state.MemberElected {
+			m, ok := member.(*crcArbiter)
+			if !ok || m.crMember.MemberState != state.MemberElected {
 				rewardHash = a.chainParams.DestroyELAAddress
 			} else {
 				pk := arbiter.GetOwnerPublicKey()
@@ -959,12 +960,19 @@ func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32)
 		})
 	} else if versionHeight >= a.chainParams.CRCommitteeStartHeight {
 		crcArbiters := map[common.Uint168]ArbiterMember{}
-		for _, v := range a.chainParams.CRCArbiters {
-			pk, err := common.HexStringToBytes(v)
+		for _, pk := range a.chainParams.CRCArbiters {
+			pubKey, err := hex.DecodeString(pk)
 			if err != nil {
 				return err
 			}
-			ar, err := NewCRCArbiter(pk, nil)
+			producer := &Producer{ // here need crc NODE public key
+				info: payload.ProducerInfo{
+					OwnerPublicKey: pubKey,
+					NodePublicKey:  pubKey,
+				},
+				activateRequestHeight: math.MaxUint32,
+			}
+			ar, err := NewDPoSArbiter(CROrigin, producer)
 			if err != nil {
 				return err
 			}

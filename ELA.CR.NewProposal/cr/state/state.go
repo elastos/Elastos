@@ -275,16 +275,11 @@ func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
 		return
 	}
 	oriState := candidate.state
-	oriRefundable := s.depositInfo[info.CID].Refundable
 	s.history.Append(height, func() {
-		s.depositInfo[info.CID].DepositAmount -= MinDepositAmount
-		s.depositInfo[info.CID].Refundable = true
 		candidate.cancelHeight = height
 		candidate.state = Canceled
 		delete(s.Nicknames, candidate.info.NickName)
 	}, func() {
-		s.depositInfo[info.CID].DepositAmount += MinDepositAmount
-		s.depositInfo[info.CID].Refundable = oriRefundable
 		candidate.cancelHeight = 0
 		candidate.state = oriState
 		s.Nicknames[candidate.info.NickName] = struct{}{}
@@ -340,13 +335,13 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 		})
 	}
 
-	updateAmountAction := func(did common.Uint168) {
+	updateAmountAction := func(cid common.Uint168) {
 		s.history.Append(height, func() {
-			s.depositInfo[did].TotalAmount -= inputValue
-			s.depositInfo[did].Refundable = false
+			s.depositInfo[cid].TotalAmount -= inputValue
+			s.depositInfo[cid].Refundable = false
 		}, func() {
-			s.depositInfo[did].TotalAmount += inputValue
-			s.depositInfo[did].Refundable = true
+			s.depositInfo[cid].TotalAmount += inputValue
+			s.depositInfo[cid].Refundable = true
 		})
 	}
 
