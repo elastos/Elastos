@@ -215,7 +215,11 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
                 if (!TextUtils.isEmpty(jwt)) {
                     String[] jwtParts = jwt.split("\\.");
                     String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
-                    credentialSubjectBean = JSON.parseObject(payload, CredentialSubjectBean.class);
+                    String pro=getMyDID().getCredentialProFromJson(payload);
+                    credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
+                    if (credentialSubjectBean==null){
+                        return;
+                    }
                     GlideApp.with(CRInformationFragment.this).load(credentialSubjectBean.getAvatar())
                             .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
                     ivDetail.setVisibility(View.VISIBLE);

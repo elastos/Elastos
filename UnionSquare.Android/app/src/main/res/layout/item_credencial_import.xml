@@ -3,14 +3,13 @@
     style="@style/settingItem_pading15"
     >
 
-    <EditText
+    <TextView
         android:gravity="center_vertical"
-        android:id="@+id/et"
+        android:id="@+id/tv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_toLeftOf="@+id/iv"
         android:background="@null"
-        android:layout_marginRight="5dp"
         android:singleLine="true" />
 
     <ImageView
@@ -19,8 +18,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:paddingLeft="3dp"
-        android:src="@mipmap/asset_cancel" />
+        android:paddingLeft="3dp" />
 
     <View
         style="@style/line1"

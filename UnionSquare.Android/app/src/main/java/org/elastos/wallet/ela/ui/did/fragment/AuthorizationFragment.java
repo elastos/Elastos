@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 
+import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDStore;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
@@ -45,7 +46,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 import butterknife.BindView;
@@ -304,12 +304,13 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
 
         }
     }
+
     private void scanJwt(String payPasswd) {
         CallBackJwtEntity callBackJwtEntity = new CallBackJwtEntity();
         callBackJwtEntity.setType("credaccess");
         callBackJwtEntity.setIss(getMyDID().getDidString());
-        callBackJwtEntity.setIat(new Date().getTime()/1000);
-        callBackJwtEntity.setExp(new Date().getTime()/1000 + 5 * 60);
+        callBackJwtEntity.setIat(new Date().getTime() / 1000);
+        callBackJwtEntity.setExp(new Date().getTime() / 1000 + 5 * 60);
         callBackJwtEntity.setAud(recieveJwtEntity.getIss());
         callBackJwtEntity.setReq(scanResult);
         callBackJwtEntity.setPresentation("");
@@ -334,12 +335,15 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         String header = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9";
 
         // Base64
-        String payload = Base64.encodeToString(JSON.toJSONString(convertCredentialSubjectBean()).getBytes(), Base64.URL_SAFE | Base64.NO_WRAP);
+        DIDDocument doc = getMyDID().getDIDDocument();
+        String pro = JSON.toJSONString(convertCredentialSubjectBean());
+        Date exp = getMyDID().getExpires(doc);
+        String payload = Base64.encodeToString(getMyDID().getCredentialJson(pro, payPasswd, exp).getBytes(), Base64.URL_SAFE | Base64.NO_WRAP);
         payload = payload.replaceAll("=", "");
         try {
-            String signature = getMyDID().getDIDDocument().sign(payPasswd, (header + "." + payload).getBytes());
+            String signature = doc.sign(payPasswd, (header + "." + payload).getBytes());
             new AuthorizationPresenter().jwtSave(getMyDID().getDidString(), header + "." + payload + "." + signature, this);
-       Log.i("??",header + "." + payload + "." + signature);
+            Log.i("??", header + "." + payload + "." + signature);
         } catch (DIDStoreException e) {
             e.printStackTrace();
         }

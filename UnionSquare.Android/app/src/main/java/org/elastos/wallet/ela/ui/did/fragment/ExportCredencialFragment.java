@@ -19,6 +19,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.did.presenter.CredencialPresenter;
+import org.elastos.wallet.ela.utils.Log;
 
 import java.io.File;
 import java.util.Date;
@@ -61,7 +62,7 @@ public class ExportCredencialFragment extends BaseFragment implements NewBaseVie
             case R.id.tv_keep:
                 type = 1;
                 curentFile = getCurrentCredentialFile();
-                new CredencialPresenter().keepFile(curentFile, getMyDID().getCredentialProFromStore(getMyDID().getDidString()), this);
+                new CredencialPresenter().keepFile(curentFile, getMyDID().getCredentialJSon(getMyDID().getDidString()), this);
 
                 break;
             case R.id.tv_share:
@@ -76,7 +77,8 @@ public class ExportCredencialFragment extends BaseFragment implements NewBaseVie
     @Override
     protected void requstPermissionOk() {
         curentFile = getCurrentCredentialFile();
-        new CredencialPresenter().keepFile(curentFile, getMyDID().getCredentialProFromStore(getMyDID().getDidString()), this);
+        Log.i("??",getMyDID().getCredentialJSon(getMyDID().getDidString()));
+        new CredencialPresenter().keepFile(curentFile, getMyDID().getCredentialJSon(getMyDID().getDidString()), this);
 
     }
 

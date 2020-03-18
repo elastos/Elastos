@@ -633,4 +633,8 @@
     <string name="personalzl">个人资料</string>
     <string name="menberintro">委员简介</string>
     <string name="walletmainfunctions"><![CDATA[主要功能： \n· 亦来云全生态数字资产支持 \n· 亦来云 DID 数字身份认证 \n· 亦来云 DPoS 选举 \n· CR 社区委员选举 \n· CR 社区提案&投票等]]></string>
+    <string name="credencialisnull">凭证信息为空</string>
+    <string name="importfailed">导入失败</string>
+    <string name="pleaseinstallfilechose">请安装文件管理器</string>
+    <string name="plesechosejwtfile">请选择正确的文件</string>
 </resources>

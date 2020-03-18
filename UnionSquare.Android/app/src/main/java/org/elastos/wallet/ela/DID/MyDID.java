@@ -262,12 +262,34 @@ public class MyDID {
     }
 
     public String getCredentialProFromJson(String credencialJson) {
-
+        if (TextUtils.isEmpty(credencialJson)) {
+            return null;
+        }
         try {
             VerifiableCredential vcFrom = VerifiableCredential.fromJson(credencialJson);//结果
             return vcFrom.getSubject().getPropertiesAsString();
 
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public String getCredentialJson(String props, String pwd, Date expires) {
+
+        try {
+            Issuer issuer = new Issuer(did, didStore);//发布者的did
+            String[] SelfProclaimedCredential = {"BasicProfileCredential"};
+            VerifiableCredential vc = issuer.issueFor(did)//被发布的did
+                    .id("outPut")//唯一标识一个VerifiableCredential 相同会覆盖
+                    .type(SelfProclaimedCredential)
+                    .expirationDate(expires)
+                    .properties(props)
+                    .seal(pwd);
+            return vc.toString();
+
+        } catch (DIDStoreException | MalformedCredentialException | InvalidKeyException e) {
             e.printStackTrace();
         }
 
@@ -282,7 +304,7 @@ public class MyDID {
                if (vc1 != null) {
                    didStore.deleteCredential(did, didurl);
                }*/
-    public void restoreCredential(String fromJson, String pwd, Date expires) {
+    public boolean restoreCredential(String fromJson, String pwd, Date expires) {
 
         try {
             VerifiableCredential vcFrom = VerifiableCredential.fromJson(fromJson);//结果
@@ -299,12 +321,13 @@ public class MyDID {
                     .properties(props)
                     .seal(pwd);
             didStore.storeCredential(vc);
+            return true;
 
         } catch (DIDStoreException | MalformedCredentialException | InvalidKeyException e) {
             e.printStackTrace();
         }
 
-
+return false;
     }
 
 

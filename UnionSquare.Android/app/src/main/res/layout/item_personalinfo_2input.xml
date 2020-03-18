@@ -20,6 +20,7 @@
         android:layout_alignParentBottom="true" />
 
     <EditText
+        android:layout_marginRight="5dp"
         android:layout_marginLeft="15dp"
         android:inputType="phone"
         android:id="@+id/et2"
@@ -30,6 +31,7 @@
         android:background="@null"
         android:singleLine="true"
         android:hint="@string/pleaseinputmobile"
+
       />
 
 

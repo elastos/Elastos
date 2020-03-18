@@ -79,6 +79,10 @@ public class CredentialFragment extends BaseFragment {
                 break;
 
             case R.id.tv_out:
+                if (credentialSubjectBean == null || credentialSubjectBean.whetherEmpty()) {
+                    showToast(getString(R.string.credencialisnull));
+                    break;
+                }
                 start(ExportCredencialFragment.class, getArguments());
                 break;
             case R.id.tv_in:
