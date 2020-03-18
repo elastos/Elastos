@@ -536,6 +536,12 @@ const requestListOfProducersReadyCallback = (response) => {
   } else {
     parsedProducerList.totalvotes = 0;
     parsedProducerList.totalcounts = 0;
+
+
+    response.result.sort((producer0,producer1) => {
+      return parseFloat(producer1.Votes) - parseFloat(producer0.Votes)
+    })
+
     response.result.forEach((producer) => {
       const parsedProducer = {};
       // mainConsole.log('INTERIM Producers Callback', producer);
@@ -557,7 +563,7 @@ const requestListOfProducersReadyCallback = (response) => {
 
 const requestListOfProducers = () => {
   producerListStatus = 'Producers Requested';
-  const txUrl = `${getRestService()}/api/v1/dpos/rank/height/0`
+  const txUrl = `${getRestService()}/api/v1/dpos/rank/height/0?state=active`
 
   renderApp();
   getJson(txUrl, requestListOfProducersReadyCallback, requestListOfProducersErrorCallback);
@@ -595,7 +601,7 @@ const requestListOfCandidateVotesErrorCallback = (response) => {
 const requestListOfCandidateVotesReadyCallback = (response) => {
   candidateVoteListStatus = 'Candidate Votes Received';
 
-  mainConsole.log('STARTED Candidate Votes Callback', response);
+  // mainConsole.log('STARTED Candidate Votes Callback', response);
   parsedCandidateVoteList = {};
   parsedCandidateVoteList.candidateVotes = [];
   if (response.status !== 200) {

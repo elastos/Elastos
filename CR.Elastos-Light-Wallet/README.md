@@ -57,19 +57,15 @@ openssl sha -sha256 dist/elastos-light-wallet-1.0.0.dmg;
 don't forget testnet and mainnet config files are in github at: https://github.com/elastos/Elastos.ELA/blob/master/docs/
 
 ## todo:
-1. re-add the switch-nodes
-  https://node1.elaphant.app/
-  https://node3.elaphant.app/
-
-2. add RSS feed.
+1. add RSS feed.
     elastos rss feed        
         https://news.elastos.org/feed/
 
-3. add price feed
+2. add price feed
     price feed
         https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd
 
-4. add mnemonics.
+3. add mnemonics.
     https://elaphant.app/mnemonic.html
 
     0000000000000000000000000000000000000000000000000000000000000000
