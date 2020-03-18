@@ -48,11 +48,11 @@ const REST_SERVICES =  [
   },
   {
     name:'node1',
-    url:'https://node1.elaphant.app/'
+    url:'https://node1.elaphant.app'
   },
   {
     name:'node3',
-    url:'https://node3.elaphant.app/'
+    url:'https://node3.elaphant.app'
   }
 ]
 var currentNetworkIx = 0;
