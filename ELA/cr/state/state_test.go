@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -462,6 +462,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 			generateUnregisterCR(code),
 		},
 	}, nil)
+	cancelHeight := currentHeight
 	currentHeight++
 	for i := 0; i < 5; i++ {
 		committee.ProcessBlock(&types.Block{
@@ -473,6 +474,15 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		currentHeight++
 	}
 	assert.Equal(t, Canceled, candidate.state)
+
+	// reached the height to return deposit amount.
+	currentHeight = cancelHeight + committee.params.CRDepositLockupBlocks
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
+		Transactions: []*types.Transaction{},
+	}, nil)
 
 	// return deposit
 	rdTx := generateReturnCRDeposit(code)
@@ -490,6 +500,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 			},
 		},
 	}
+	currentHeight++
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: currentHeight,
