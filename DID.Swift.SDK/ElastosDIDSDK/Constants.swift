@@ -87,5 +87,4 @@ class Constants {
     static let ERROR_CODE = "code"
     static let ERROR_MESSAGE = "message"
     static let DEFAULT_TTL = 24 * 60 * 60 * 1000
-
 }

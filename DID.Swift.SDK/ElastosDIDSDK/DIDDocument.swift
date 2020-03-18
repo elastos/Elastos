@@ -158,8 +158,9 @@ public class DIDDocument {
         return self.publicKeyMap.select(byId, andType) { value -> Bool in return true }
     }
 
-    public func selectPublicKeys(byId: String, andType: String?) throws -> Array<PublicKey> {
-        return selectPublicKeys(byId: try DIDURL(subject, byId), andType: andType)
+    public func selectPublicKeys(byId: String?, andType: String?) throws -> Array<PublicKey> {
+        let id: DIDURL? = byId != nil ? try DIDURL(subject, byId!) : nil
+        return selectPublicKeys(byId: id, andType: andType)
     }
 
     public func publicKey(ofId: DIDURL) -> PublicKey? {
@@ -215,6 +216,23 @@ public class DIDDocument {
         return getDefaultPublicKey()!
     }
 
+    /*
+    public func keyPair(ofId: DIDURL) throws -> KeyPair {
+        // TODO:
+    }
+
+    public func keyPair(ofid: String) throws -> KeyPair {
+        // TODO:
+    }
+
+    public func keyPair(ofId: DIDURL, using storePassword: String) throws {
+        // TODO:
+    }
+
+    public func keyPair(ofId: String, using storePassword: String) throws {
+        // TODO:
+    }*/
+
     func appendPublicKey(_ publicKey: PublicKey) -> Bool {
         for key in publicKeys() {
             if  key.getId() == publicKey.getId() ||
@@ -265,8 +283,9 @@ public class DIDDocument {
         }
     }
 
-    public func selectAuthenticationKeys(byId: String, andType: String?) throws -> Array<PublicKey> {
-        return selectAuthenticationKeys(byId: try DIDURL(subject, byId), andType: andType)
+    public func selectAuthenticationKeys(byId: String?, andType: String?) throws -> Array<PublicKey> {
+        let id: DIDURL? = byId != nil ? try DIDURL(subject, byId!) : nil
+        return selectAuthenticationKeys(byId: id, andType: andType)
     }
 
     public func authenticationKey(ofId: DIDURL) -> PublicKey? {
@@ -335,8 +354,9 @@ public class DIDDocument {
         }
     }
 
-    public func selectAuthorizationKeys(byId: String, andType: String?) throws -> Array<PublicKey> {
-        return selectAuthorizationKeys(byId: try DIDURL(subject, byId), andType: andType)
+    public func selectAuthorizationKeys(byId: String?, andType: String?) throws -> Array<PublicKey> {
+        let id: DIDURL? = byId != nil ? try DIDURL(subject, byId!) : nil
+        return selectAuthorizationKeys(byId: id, andType: andType)
     }
 
     public func authorizationKey(ofId: DIDURL) -> PublicKey? {
@@ -399,8 +419,9 @@ public class DIDDocument {
         return credentialMap.select(byId, andType) { value -> Bool in return true }
     }
 
-    public func selectCredentials(byId: String, andType: String?) throws -> Array<VerifiableCredential>  {
-        return selectCredentials(byId: try DIDURL(subject, byId), andType: andType)
+    public func selectCredentials(byId: String?, andType: String?) throws -> Array<VerifiableCredential>  {
+        let id: DIDURL? = byId != nil ? try DIDURL(subject, byId!) : nil
+        return selectCredentials(byId: id, andType: andType)
     }
 
     public func credential(ofId: DIDURL) -> VerifiableCredential? {
@@ -446,8 +467,9 @@ public class DIDDocument {
         return serviceMap.select(byId, andType) { value -> Bool in return true }
     }
 
-    public func selectServices(byId: String, andType: String?) throws -> Array<Service>  {
-        return selectServices(byId: try DIDURL(subject, byId), andType: andType)
+    public func selectServices(byId: String?, andType: String?) throws -> Array<Service>  {
+        let id: DIDURL? = byId != nil ? try DIDURL(subject, byId!) : nil
+        return selectServices(byId: id, andType: andType)
     }
 
     public func service(ofId: DIDURL) -> Service? {
@@ -804,12 +826,12 @@ public class DIDDocument {
         return doc
     }
 
-    public class func convertToDIDDocument(fromJson json: String) throws -> DIDDocument {
-        return try  convertToDIDDocument(fromData: json.data(using: .utf8)!)
+    public class func convertToDIDDocument(fromJson: String) throws -> DIDDocument {
+        return try  convertToDIDDocument(fromData: fromJson.data(using: .utf8)!)
     }
 
-    public class func convertToDIDDocument(fromFilePath path: String) throws -> DIDDocument {
-        return try convertToDIDDocument(fromJson: String(contentsOfFile: path, encoding: .utf8))
+    public class func convertToDIDDocument(fromFileAtPath : String) throws -> DIDDocument {
+        return try convertToDIDDocument(fromJson: String(contentsOfFile: fromFileAtPath, encoding: .utf8))
     }
 
     public class func convertToDIDDocument(fromUrl url: URL) throws -> DIDDocument {
@@ -935,8 +957,32 @@ public class DIDDocument {
         return try toJson(normalized, false)
     }
 
+    public func convertFromDIDDocument() throws -> String {
+        return try toJson(false, false)
+    }
+
     public func convertFromDIDDocument(_ normalized: Bool) throws -> Data {
         return try toJson(normalized, false)
+    }
+
+    public func convertFromDIDDocument() throws -> Data {
+        return try toJson(false, false)
+    }
+
+    public func convertFromDIDDocument(_ normalized: Bool, asFileAtPath: String) throws {
+        // TODO:
+    }
+
+    public func convertFromDIDDocument(asFileAtPath: String) throws {
+        return try convertFromDIDDocument(false, asFileAtPath: asFileAtPath)
+    }
+
+    public func convertFromDIDDocument(_ normalized: Bool, asURL: String) throws {
+        // TODO
+    }
+
+    public func convertFromDIDDocument(asURL: String) throws {
+        return try convertFromDIDDocument(false, asURL: asURL)
     }
 }
 
