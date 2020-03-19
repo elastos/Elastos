@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
@@ -81,7 +82,7 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
         } else {
             //添加子
             v.setSelected(!v.isSelected());
-            commonCreateSubWalletPresenter.createSubWallet(walletId, (String) o, this,v);
+            commonCreateSubWalletPresenter.createSubWallet(walletId, (String) o, this, v);
         }
     }
 
@@ -90,7 +91,7 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
                 getString(R.string.sure), getString(R.string.cancel), false, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        commonDestorySubWalletPresenter.destroySubWallet(walletId, (String) o, AddAssetFragment.this,v);
+                        commonDestorySubWalletPresenter.destroySubWallet(walletId, (String) o, AddAssetFragment.this, v);
                     }
                 });
     }
@@ -98,7 +99,8 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
     @Override
     public void onGetSupportedChains(String[] data) {
         //获得支持的币种
-        setRecycleView(data, chainIds);
+        String[] data1 = {MyWallet.ELA, MyWallet.IDChain};
+        setRecycleView(data1, chainIds);
     }
 
     @Override

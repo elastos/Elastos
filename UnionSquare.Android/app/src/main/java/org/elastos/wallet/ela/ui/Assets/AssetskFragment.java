@@ -25,7 +25,6 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.elastos.did.DIDDocument;
-import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -145,13 +144,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         getMyDID().init(wallet.getWalletId());//初始化mydid
         tvTitle.setText(wallet.getWalletName());
         setWalletViewNew(wallet);
-       // List<Wallet> wallets = realmUtil.queryUserAllWallet();
+        // List<Wallet> wallets = realmUtil.queryUserAllWallet();
         listMap = new HashMap<>();
         transactionMap = new HashMap<>();
      /*   for (Wallet wallet : wallets) {
             assetsPresenter.getAllSubWallets(wallet.getWalletId(), this);
         }*/
-       // assetsPresenter.getAllSubWallets(wallet.getWalletId(), this);
+        // assetsPresenter.getAllSubWallets(wallet.getWalletId(), this);
         registReceiver();
     }
 
@@ -880,7 +879,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 // 验签成功
                 // 验签成功
                 //先判断本地是否有did
-                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this,null);
+                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, null);
             } else {
                 //验签失败
                 toErroScan(scanResult);
@@ -890,11 +889,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     private void curentHasDID(DIDDocument didDocument) {
         if (didDocument != null) {
-                //getMyDID().getDidStore().storeDid(didDocument);//存储本地
-                Bundle bundle = new Bundle();
-                bundle.putString("scanResult", scanResult);
-                bundle.putParcelable("wallet", wallet);
-                ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
+            //getMyDID().getDidStore().storeDid(didDocument);//存储本地
+            Bundle bundle = new Bundle();
+            bundle.putString("scanResult", scanResult);
+            bundle.putParcelable("wallet", wallet);
+            ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
 
         }
     }

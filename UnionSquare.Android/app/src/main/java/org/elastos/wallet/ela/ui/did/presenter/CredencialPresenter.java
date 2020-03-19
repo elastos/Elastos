@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.did.presenter;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
@@ -25,6 +26,17 @@ public class CredencialPresenter extends NewPresenterAbstract {
             }
         });
         subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void keepFile(File filePath, String content, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "keepFile");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return new CommmonBooleanEntity(MyWallet.SUCCESSCODE, FileUtile.writeFile(filePath, content));
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
     }
 
     public void readFile(File file, BaseFragment baseFragment) {

@@ -10,6 +10,8 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
+import com.alibaba.fastjson.JSON;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.FirstFragment;
@@ -17,6 +19,12 @@ import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
+import org.elastos.wallet.ela.ui.did.presenter.CredencialPresenter;
 import org.elastos.wallet.ela.ui.main.presenter.MainPresenter;
 import org.elastos.wallet.ela.ui.main.viewdata.MainViewData;
 import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
@@ -31,16 +39,18 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 
-public class MainActivity extends BaseActivity implements MainViewData {
+public class MainActivity extends BaseActivity implements MainViewData, NewBaseViewData {
 
     @Override
     protected void onNewIntent(Intent intent) {
 
         getNotify(intent);
+        setIntent(intent);
         super.onNewIntent(intent);
     }
 
@@ -83,14 +93,6 @@ public class MainActivity extends BaseActivity implements MainViewData {
         //initJG();
         Intent mIntent = getIntent();
         String toValue = mIntent.getStringExtra("toValue");
-        String action = mIntent.getAction();
-        if (TextUtils.equals(action, Intent.ACTION_VIEW)) {
-            Uri uri = mIntent.getData();
-            if (TextUtils.equals(uri.getScheme(), "content")) {
-                // readFileByBytes(uri);
-            }
-        }
-        init();
         StatusBarUtil.setTranslucentForImageViewInFragment(this, 0, null);
         if (findFragment(FirstFragment.class) == null) {
             FirstFragment firstFragment = new FirstFragment();
@@ -103,29 +105,6 @@ public class MainActivity extends BaseActivity implements MainViewData {
         }
         flag = false;
         registReceiver();
-    }
-
-
-    public String readFileByBytes(Uri uri) {
-
-        StringBuffer sb = new StringBuffer();
-
-        // 一次读多个字节
-        byte[] tempbytes = new byte[1024];
-        int byteread = 0;
-        try {
-            InputStream in = getContentResolver().openInputStream(uri);
-            // 读入多个字节到字节数组中，byteread为一次读入的字节数
-            while ((byteread = in.read(tempbytes)) != -1) {
-                String str = new String(tempbytes, 0, byteread);
-                sb.append(str);
-
-            }
-            return sb.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
 
@@ -163,6 +142,18 @@ public class MainActivity extends BaseActivity implements MainViewData {
         } else {
             getWallet().onResume(true);
         }
+        Intent mIntent = getIntent();
+        String action = mIntent.getAction();
+        if (TextUtils.equals(action, Intent.ACTION_VIEW)) {
+            Uri uri = mIntent.getData();
+            if (uri == null || !uri.toString().endsWith(".jwt")) {
+                showToastMessage(getString(R.string.savesucess));
+            } else {
+                new MainPresenter().readUri(uri, this);
+            }
+
+
+        }
     }
 
     @Override
@@ -172,9 +163,7 @@ public class MainActivity extends BaseActivity implements MainViewData {
         setLanguage();
     }
 
-    private void init() {
-        // moveTestConfigFiles2RootPath(this);
-    }
+
 
     private void setLanguage() {
         if (new SPUtil(this).getLanguage() == -1) {
@@ -277,5 +266,39 @@ public class MainActivity extends BaseActivity implements MainViewData {
 
             flag = true;
         }
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "keepFile":
+                CommmonBooleanEntity commmonBooleanEntity = (CommmonBooleanEntity) baseEntity;
+                if (commmonBooleanEntity.getData()) {
+                    showToastMessage(getString(R.string.savesucess));
+                } else {
+                    showToastMessage(getString(R.string.keepfaile));
+                }
+                break;
+            case "readUri":
+                CommmonStringEntity entity = (CommmonStringEntity) baseEntity;
+                String credentialJson = entity.getData();
+                String pro = getMyDID().getCredentialProFromJson(credentialJson);
+                CredentialSubjectBean credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
+                if (credentialSubjectBean != null) {
+                    String didName = credentialSubjectBean.getDidName();
+                    String did = credentialSubjectBean.getDid().replace("did:elastos:", "");
+                    new CredencialPresenter().keepFile(getCurrentCredentialFile(did, didName), credentialJson, this);
+                }
+                break;
+        }
+
+
+    }
+
+    private File getCurrentCredentialFile(String did, String didName) {
+        File file = getExternalFilesDir("credentials" + File.separator + did);
+        String fileName = didName + new Date().getTime() / 1000 + ".jwt";
+        return new File(file, fileName);
+
     }
 }

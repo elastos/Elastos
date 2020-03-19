@@ -35,6 +35,7 @@ public class MyWallet {
     private static final String TAG = "Wallet";
     public static final String ELA = "ELA";
     public static final String IDChain = "IDChain";
+    public static final String ETHSC = "ETHSC";
     public static final long RATE = 100000000;
     public static final String RATE_S = RATE + "";
     public static final long feePerKb = 10000L;

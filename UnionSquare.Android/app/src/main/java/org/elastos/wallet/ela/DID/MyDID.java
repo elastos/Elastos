@@ -338,6 +338,17 @@ public class MyDID {
         return false;
     }
 
+    public VerifiableCredential getCredentialFromJson(String fromJson) {
+
+        try {
+            VerifiableCredential vcFrom = VerifiableCredential.fromJson(fromJson);//结果
+            return vcFrom;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
     public void setDIDDocument(Date expires, String pwd, String name) {
 
