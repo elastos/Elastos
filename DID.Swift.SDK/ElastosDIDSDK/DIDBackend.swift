@@ -3,10 +3,9 @@ import Foundation
 public class DIDBackend {
     private static let TAG = "DIDBackend"
     private static var resolver: DIDResolver?
-
     private static var _ttl: Int = Constants.DEFAULT_TTL // milliseconds
     private var _adapter: DIDAdapter
-    
+
     class TransactionResult: NSObject {
         private var _transactionId: String?
         private var _status: Int
@@ -25,7 +24,6 @@ public class DIDBackend {
             self._status = status
             self._message = message
             self._filled = true
-
             self._semaphore.signal()
         }
 
@@ -48,7 +46,7 @@ public class DIDBackend {
         var isEmpty: Bool {
             return !_filled
         }
-        
+
         override var description: String {
             var str = ""
 
@@ -70,7 +68,7 @@ public class DIDBackend {
         private var url: URL
 
         init(_ resolver: String) throws {
-            guard resolver.isEmpty else {
+            guard !resolver.isEmpty else {
                 throw DIDError.illegalArgument()
             }
             url = URL(string: resolver)!
@@ -103,12 +101,12 @@ public class DIDBackend {
 
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
                 guard let _ = data,
-                      let response = response as? HTTPURLResponse,
-                      error == nil else { // check for fundamental networking error
+                    let response = response as? HTTPURLResponse,
+                    error == nil else { // check for fundamental networking error
 
-                    errDes = error.debugDescription
-                    semaphore.signal()
-                    return
+                        errDes = error.debugDescription
+                        semaphore.signal()
+                        return
                 }
                 guard (200 ... 299) ~= response.statusCode else { // check for http errors
                     errDes = "Server eror (status code: \(response.statusCode)"
@@ -126,7 +124,7 @@ public class DIDBackend {
             guard let _ = result else {
                 throw DIDError.didResolveError(errDes ?? "Unknown error")
             }
-            
+
             return result!
         }
     }
@@ -181,14 +179,14 @@ public class DIDBackend {
         return DIDBackend(adapter)
     }
 
-    public class func getTtl() -> Int {
+    class func getTtl() -> Int {
         return _ttl != 0 ? (_ttl / 60 / 1000) : 0
     }
 
-    public class func setTtl(_ newValue: Int) {
+    class func setTtl(_ newValue: Int) {
         self._ttl = newValue > 0 ? (newValue * 60 * 1000) : 0
     }
-    
+
     private class func generateRequestId() -> String {
         var requestId = ""
         while requestId.count < 16 {
@@ -197,7 +195,7 @@ public class DIDBackend {
         }
         return requestId
     }
-    
+
     private class func resolveFromBackend(_ did: DID) throws -> ResolveResult {
         let requestId = generateRequestId()
 
@@ -248,10 +246,10 @@ public class DIDBackend {
     }
 
     /*
-    class resolveHistory(_ did: DID) throws -> DIDHistory {
-        // TODO:
-    }
-    */
+     class resolveHistory(_ did: DID) throws -> DIDHistory {
+     // TODO:
+     }
+     */
     
     class func resolve(_ did: DID, _ force: Bool) throws -> DIDDocument? {
         Log.i(TAG, "Resolving {\(did.toString())} ...")
@@ -267,9 +265,9 @@ public class DIDBackend {
         }
 
         switch result!.status {
-        // When DID expired, we should also return the document.
-        // case .STATUS_EXPIRED:
-        //     throw DIDError.didExpired()
+            // When DID expired, we should also return the document.
+            // case .STATUS_EXPIRED:
+            //     throw DIDError.didExpired()
 
         case .STATUS_DEACTIVATED:
             throw DIDError.didDeactivated()
@@ -289,7 +287,7 @@ public class DIDBackend {
             return doc
         }
     }
-    
+
     public class func resolve(_ did: DID) throws -> DIDDocument? {
         return try resolve(did, false)
     }
@@ -341,7 +339,7 @@ public class DIDBackend {
                 _ storePassword: String) throws -> String {
         return try update(doc, previousTransactionId, 0, signKey, storePassword)
     }
-    
+
     func update(_ doc: DIDDocument,
                 _ previousTransactionId: String,
                 _ confirms: Int,
@@ -353,34 +351,34 @@ public class DIDBackend {
     }
 
     func deactivate(_ doc: DIDDocument,
-                _ signKey: DIDURL,
-                _ storePassword: String) throws -> String {
+                    _ signKey: DIDURL,
+                    _ storePassword: String) throws -> String {
         return try deactivate(doc, 0, signKey, storePassword)
     }
-    
+
     func deactivate(_ doc: DIDDocument,
-                _ confirms: Int,
-                _ signKey: DIDURL,
-                _ storePassword: String) throws -> String {
+                    _ confirms: Int,
+                    _ signKey: DIDURL,
+                    _ storePassword: String) throws -> String {
 
         let request = try IDChainRequest.deactivate(doc, signKey, storePassword)
         return try createTransaction(request.toJson(true), nil, confirms)
     }
 
     func deactivate(_ target: DID,
-                _ targetSignKey: DIDURL,
-                _ doc: DIDDocument,
-                _ signKey: DIDURL,
-                _ storePassword: String) throws -> String {
+                    _ targetSignKey: DIDURL,
+                    _ doc: DIDDocument,
+                    _ signKey: DIDURL,
+                    _ storePassword: String) throws -> String {
         return try deactivate(target, targetSignKey, doc, 0, signKey, storePassword)
     }
-    
+
     func deactivate(_ target: DID,
-                _ targetSignKey: DIDURL,
-                _ doc: DIDDocument,
-                _ confirms: Int,
-                _ signKey: DIDURL,
-                _ storePassword: String) throws -> String {
+                    _ targetSignKey: DIDURL,
+                    _ doc: DIDDocument,
+                    _ confirms: Int,
+                    _ signKey: DIDURL,
+                    _ storePassword: String) throws -> String {
 
         let request = try IDChainRequest.deactivate(target, targetSignKey, doc, signKey, storePassword)
         return try createTransaction(request.toJson(true), nil, confirms)

@@ -195,12 +195,19 @@ public class FileSystemStorage: DIDStorage {
     }
 
     private func openFileHandle(_ forWrite: Bool, _ pathArgs: String...) throws -> FileHandle {
-        var path: String = ""
+        var path: String = _rootPath
         for item in pathArgs {
+            path.append("/")
             path.append(item)
         }
 
         if !FileManager.default.fileExists(atPath: path) && forWrite {
+            let dirPath: String = PathExtracter(path).dirname()
+            let fileM = FileManager.default
+            let re = fileM.fileExists(atPath: dirPath)
+            if !re {
+                try fileM.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
+            }
             FileManager.default.createFile(atPath: path, contents: nil, attributes: nil)
         }
 
@@ -375,10 +382,13 @@ public class FileSystemStorage: DIDStorage {
                 handle.closeFile()
             }
 
-            if metadata.isEmpty {
-                var path: String = ""
+            if metadata.isEmpty || metadata == "{}" {
+                var path: String = _rootPath
+                path.append("/")
                 path.append(Constants.DID_DIR)
+                path.append("/")
                 path.append(did.methodSpecificId)
+                path.append("/")
                 path.append(Constants.META_FILE)
 
                 try FileManager.default.removeItem(atPath: path)
@@ -391,17 +401,13 @@ public class FileSystemStorage: DIDStorage {
     }
 
     func loadDidMeta(_ did: DID) throws -> DIDMeta {
-        do {
-            let handle = try openDidMetaFile(did)
-            defer {
-                handle.closeFile()
-            }
-
-            let data = handle.readDataToEndOfFile()
-            return try DIDMeta.fromJson(String(data: data, encoding: .utf8)!)
-        } catch {
-            throw DIDError.didStoreError("load DID metadata error")
+        let handle = try openDidMetaFile(did)
+        defer {
+            handle.closeFile()
         }
+
+        let data = handle.readDataToEndOfFile()
+        return try DIDMeta.fromJson(String(data: data, encoding: .utf8)!)
     }
 
     private func openDocumentFile(_ did: DID, _ forWrite: Bool) throws -> FileHandle {

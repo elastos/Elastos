@@ -1,5 +1,4 @@
 import Foundation
-
 enum IDChainRequestOperation: Int, CustomStringConvertible {
     case CREATE = 0
     case UPDATE = 1

@@ -4,7 +4,7 @@ private func getFullName(_ name: String) -> String {
     return Constants.EXTRA_PREFIX + name
 }
 
-class Metadata {
+ class Metadata {
     private var _store: DIDStore?
     private var _extra = Dictionary<String, String>()
 
@@ -67,8 +67,22 @@ class Metadata {
     }
 
     func toJson() -> String {
-        // TODO
-        return "TODO"
+        if #available(iOS 11.0, *) {
+            let data = try! JSONSerialization.data(withJSONObject: _extra, options: [.sortedKeys])
+            return String(data: data, encoding: .utf8)!
+        } else {
+            // Fallback on earlier versions
+            let keys = _extra.keys
+            let sortedKeys = keys.sorted()
+            var result: [String] = []
+            for key in sortedKeys {
+                let temp: String = "\"\(key)\":\"\(_extra[key] ?? "")\""
+                result.append(temp)
+            }
+            let jsonString = result.joined(separator: ",")
+            return "{\(jsonString)}"
+
+        }
     }
 
     func merge(_ meta: Metadata) throws {

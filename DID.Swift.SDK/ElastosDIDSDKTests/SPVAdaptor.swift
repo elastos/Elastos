@@ -5,6 +5,10 @@ import SPVWrapper
 
 public typealias PasswordCallback = (_ walletDir: String, _ walletId: String) -> String?
 public class SPVAdaptor: DIDAdapter {
+    public func createIdTransaction(_ payload: String, _ memo: String?, _ confirms: Int, _ callback: (String, Int, String?) -> Void) {
+        
+    }
+    
 
     var walletDir: String!
     var walletId: String!
@@ -34,15 +38,15 @@ public class SPVAdaptor: DIDAdapter {
     public func createIdTransaction(_ payload: String, _ memo: String?) throws -> String {
         let password = passwordCallback!(walletDir, walletId)
         guard password != nil else {
-            throw DIDError.transactionError(_desc: "password is not nil.")
+            throw DIDError.transactionError("password is not nil.")
         }
         
         guard handle != nil else {
-            throw DIDError.transactionError(_desc: "Unkonw error.")
+            throw DIDError.transactionError("Unkonw error.")
         }
         let re = SPV.createIdTransaction(handle, password!, payload, memo)
         guard re != nil else {
-            throw DIDError.transactionError(_desc: "Unkonw error.")
+            throw DIDError.transactionError("Unkonw error.")
         }
         return re!
     }
@@ -82,8 +86,9 @@ public class SPVAdaptor: DIDAdapter {
         semaphore.wait()
         
         guard resuleString != nil else {
-            throw DIDError.didResolveError(_desc: "Unkonw error.") 
+            throw DIDError.didResolveError("Unkonw error.")
         }
         return resuleString!
     }
 }
+

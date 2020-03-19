@@ -68,14 +68,36 @@ public class DIDStore: NSObject {
         return storage.containsPrivateIdentity()
     }
 
-    class func encryptToBase64(_ input: Data, _ storePass: String) throws -> String {
-        // TDDO
-        return "TODO"
+    public class func encryptToBase64(_ input: Data, _ storePass: String) throws -> String {
+        // TODO:
+        let cinput: UnsafePointer<UInt8> = input.withUnsafeBytes{ (by: UnsafePointer<UInt8>) -> UnsafePointer<UInt8> in
+            return by
+        }
+        let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 4096)
+        let re = encrypt_to_base64(base64url, storePass, cinput, input.count)
+        guard re >= 0 else {
+            throw DIDError.didStoreError("encryptToBase64 error.")
+        }
+        var json: String = String(cString: base64url)
+        let endIndex = json.index(json.startIndex, offsetBy: re)
+        json = String(json[json.startIndex..<endIndex])
+        return json
     }
 
-    class func decryptFromBase64(_ input: String, _ storePass: String) throws -> Data {
-        // TODO
-        return Data()
+    public class func decryptFromBase64(_ input: String, _ storePass: String) throws -> Data {
+        // TODO:
+        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
+        let re = decrypt_from_base64(plain, storePass, input)
+        guard re >= 0 else {
+            throw DIDError.didStoreError("decryptFromBase64 error.")
+        }
+        let temp = UnsafeRawPointer(plain)
+        .bindMemory(to: UInt8.self, capacity: re)
+        
+        let data = Data(bytes: temp, count: re)
+        let intArray = [UInt8](data).map { Int8(bitPattern: $0) }
+        print(intArray)
+        return data
     }
 
     // Initialize & create new private identity and save it to DIDStore.
@@ -464,6 +486,7 @@ public class DIDStore: NSObject {
         guard !resolvedDoc.isDeactivated else {
             throw  DIDError.didStoreError("DID already deactivated")
         }
+        // TOOD:
 
         if !force {
             let localTxId = doc.getMeta().transactionId
@@ -1144,10 +1167,18 @@ public class DIDStore: NSObject {
     }
     
     public func loadDid(_ did: DID) throws -> DIDDocument {
-        let doc = try storage.loadDid(did)
-        doc.setMeta(try storage.loadDidMeta(did))
-        doc.getMeta().setStore(self)
-        return doc
+        var doc = documentCache!.getValue(for: did)
+        if doc != nil {
+            return doc!
+        }
+        
+        doc = try storage.loadDid(did)
+        if (doc != nil) {
+            doc!.setMeta(try storage.loadDidMeta(did))
+            doc!.getMeta().setStore(self)
+            documentCache?.setValue(doc!, for: doc!.subject)
+        }
+        return doc!
     }
 
     public func loadDid(_ did: String) throws -> DIDDocument {

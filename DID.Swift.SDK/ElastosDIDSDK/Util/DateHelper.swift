@@ -20,8 +20,11 @@ class DateHelper {
     }
 
     class func formateDate(_ date: Date) -> String {
-        // TODO:
-        return "TODO"
+        let formatter = Foundation.DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
+        let localDate = formatter.string(from: date)
+        return localDate
     }
 
     class func isExipired(_ date: Date) -> Bool {

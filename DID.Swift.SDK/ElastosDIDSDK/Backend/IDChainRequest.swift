@@ -2,7 +2,7 @@ import Foundation
 
 class IDChainRequest: NSObject {
     static let CURRENT_SPECIFICATION = "elastos/did/1.0"
-    
+
     // header
     private var _specification: String                // must have value
     private var _operation: IDChainRequestOperation   // must have value
@@ -12,17 +12,17 @@ class IDChainRequest: NSObject {
     private var _did: DID?
     private var _doc: DIDDocument?
     private var _payload: String?
-    
+
     // signature
     private var _keyType: String?
     private var _signKey: DIDURL?
     private var _signature: String?
-    
+
     private init(_ operation: IDChainRequestOperation) {
         self._specification = IDChainRequest.CURRENT_SPECIFICATION
         self._operation = operation
     }
-    
+
     class func create(_ doc: DIDDocument,
                       _ signKey: DIDURL,
                       _ storePassword: String) throws -> IDChainRequest {
@@ -31,7 +31,7 @@ class IDChainRequest: NSObject {
                 .setPayload(doc)
                 .sealed(signKey, storePassword)
     }
-    
+
     class func update(_ doc: DIDDocument,
                       _ previousTransactionId: String,
                       _ signKey: DIDURL,
@@ -42,7 +42,7 @@ class IDChainRequest: NSObject {
                 .setPayload(doc)
                 .sealed(signKey, storePassword)
     }
-    
+
     class func deactivate(_ doc: DIDDocument,
                       _ signKey: DIDURL,
                       _ storePassword: String) throws -> IDChainRequest {
@@ -51,7 +51,7 @@ class IDChainRequest: NSObject {
                 .setPayload(doc)
                 .sealed(signKey, storePassword)
     }
-    
+
     class func deactivate(_ target: DID,
                       _ targetSignKey: DIDURL,
                       _ doc: DIDDocument,
@@ -87,7 +87,7 @@ class IDChainRequest: NSObject {
         self._previousTransactionId = transactionId
         return self
     }
-    
+
     private func setPayload(_ did: DID) -> IDChainRequest {
         self._did = did
         self._doc = nil
@@ -95,7 +95,7 @@ class IDChainRequest: NSObject {
 
         return self
     }
-    
+
     private func setPayload(_ doc: DIDDocument) throws -> IDChainRequest {
         self._did = doc.subject
         self._doc = doc
@@ -108,11 +108,17 @@ class IDChainRequest: NSObject {
 
         return self
     }
-    
+
     private func setPayload(_ payload: String) throws  -> IDChainRequest {
         do {
             if self._operation != .DEACTIVATE {
-                self._doc = try DIDDocument.convertToDIDDocument(fromJson: payload.base64DecodedString!)
+                let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
+                let cp = payload.toUnsafePointerInt8()
+                let c = base64_url_decode(buffer, cp)
+                var json: String = String(cString: buffer)
+                let endIndex = json.index(json.startIndex, offsetBy: c)
+                json = String(json[json.startIndex..<endIndex])
+                self._doc = try DIDDocument.convertToDIDDocument(fromJson: json)
                 self._did = _doc!.subject
             } else {
                 self._doc = nil
@@ -125,7 +131,7 @@ class IDChainRequest: NSObject {
         self._payload = payload
         return self
     }
-    
+
     private func setProof(_ keyType: String,
                           _ signKey: DIDURL,
                           _ signature: String) -> IDChainRequest {
@@ -135,7 +141,7 @@ class IDChainRequest: NSObject {
         self._signature = signature
         return self
     }
-    
+
     private func sealed(_ signKey: DIDURL,
                         _ storePassword: String) throws -> IDChainRequest {
 
@@ -161,7 +167,7 @@ class IDChainRequest: NSObject {
 
         return self
     }
-    
+
     private func sealed(_ targetSignKey: DIDURL,
                         _ doc: DIDDocument,
                         _ signKey: DIDURL,
@@ -188,7 +194,7 @@ class IDChainRequest: NSObject {
 
         return self
     }
-    
+
     private func checkValid() throws -> Bool {
         // internally using builder pattern "create/update/deactivate" to create
         // new IDChainRequest object.

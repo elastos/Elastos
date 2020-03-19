@@ -14,22 +14,22 @@ class VerifiableCredentialTest: XCTestCase {
             let test: DIDDocument = try testData.loadTestDocument()
             let vc: VerifiableCredential = try testData.loadEmailCredential()
             
-            XCTAssertEqual(try DIDURL(test.subject!, "email"), vc.id)
+            XCTAssertEqual(try DIDURL(test.subject, "email"), vc.getId())
             
-            XCTAssertTrue((vc.types).contains("BasicProfileCredential"))
-            XCTAssertTrue((vc.types).contains("InternetAccountCredential"))
-            XCTAssertTrue((vc.types).contains("EmailCredential"))
+            XCTAssertTrue((vc.getTypes()).contains("BasicProfileCredential"))
+            XCTAssertTrue((vc.getTypes()).contains("InternetAccountCredential"))
+            XCTAssertTrue((vc.getTypes()).contains("EmailCredential"))
             
             XCTAssertEqual(issuer.subject, vc.issuer)
-            XCTAssertEqual(test.subject, vc.subject.id)
-            XCTAssertEqual("john@example.com", vc.subject.getProperty("email") as! String)
+            XCTAssertEqual(test.subject, vc.subject.did)
+            XCTAssertEqual("john@example.com", vc.subject.getPropertyAsString(ofName: "email"))
             
             XCTAssertNotNil(vc.issuanceDate)
             XCTAssertNotNil(vc.expirationDate)
             
-            XCTAssertFalse(try vc.isExpired())
-            XCTAssertTrue(try vc.isGenuine())
-            XCTAssertTrue(try vc.isValid())
+            XCTAssertFalse(vc.isExpired)
+            XCTAssertTrue(vc.isGenuine)
+            XCTAssertTrue(vc.isValid)
         }
         catch {
             XCTFail()
@@ -46,25 +46,25 @@ class VerifiableCredentialTest: XCTestCase {
             
             let vc = try testData.loadProfileCredential()
             
-            XCTAssertEqual(try DIDURL(test.subject!, "profile"), vc!.id)
-            XCTAssertTrue((vc!.types).contains("BasicProfileCredential"))
-            XCTAssertTrue((vc!.types).contains("SelfProclaimedCredential"))
+            XCTAssertEqual(try DIDURL(test.subject, "profile"), vc!.getId())
+            XCTAssertTrue((vc!.getTypes()).contains("BasicProfileCredential"))
+            XCTAssertTrue((vc!.getTypes()).contains("SelfProclaimedCredential"))
             
             XCTAssertEqual(test.subject, vc!.issuer)
-            XCTAssertEqual(test.subject, vc!.subject.id)
+            XCTAssertEqual(test.subject, vc!.subject.did)
             
-            XCTAssertEqual("John", vc!.subject.getProperty("name") as! String)
-            XCTAssertEqual("Male", vc!.subject.getProperty("gender") as! String)
-            XCTAssertEqual("Singapore", vc!.subject.getProperty("nation") as! String)
-            XCTAssertEqual("English", vc!.subject.getProperty("language") as! String)
-            XCTAssertEqual("john@example.com", vc!.subject.getProperty("email") as! String)
-            XCTAssertEqual("@john", vc!.subject.getProperty("twitter") as! String)
+            XCTAssertEqual("John", vc!.subject.getPropertyAsString(ofName: "name"))
+            XCTAssertEqual("Male", vc!.subject.getPropertyAsString(ofName: "gender"))
+            XCTAssertEqual("Singapore", vc!.subject.getPropertyAsString(ofName: "nation"))
+            XCTAssertEqual("English", vc!.subject.getPropertyAsString(ofName: "language"))
+            XCTAssertEqual("john@example.com", vc!.subject.getPropertyAsString(ofName: "email"))
+            XCTAssertEqual("@john", vc!.subject.getPropertyAsString(ofName: "twitter"))
             XCTAssertNotNil(vc!.issuanceDate)
             XCTAssertNotNil(vc!.expirationDate)
             
-            XCTAssertFalse(try vc!.isExpired())
-            XCTAssertTrue(try vc!.isGenuine())
-            XCTAssertTrue(try vc!.isValid())
+            XCTAssertFalse(vc!.isExpired)
+            XCTAssertTrue(vc!.isGenuine)
+            XCTAssertTrue(vc!.isValid)
         }
         catch {
             XCTFail()
@@ -83,13 +83,13 @@ class VerifiableCredentialTest: XCTestCase {
             
             let vc: VerifiableCredential = try testData.loadTwitterCredential()
             
-            XCTAssertEqual(try testData.loadTwitterVcNormalizedJson(), normalized.description(true))
-            XCTAssertEqual(try testData.loadTwitterVcNormalizedJson(), compact.description(true))
-            XCTAssertEqual(try testData.loadTwitterVcNormalizedJson(), vc.description(true))
+            XCTAssertEqual(try testData.loadTwitterVcNormalizedJson(), normalized.toString(true))
+            XCTAssertEqual(try testData.loadTwitterVcNormalizedJson(), compact.toString(true))
+            XCTAssertEqual(try testData.loadTwitterVcNormalizedJson(), vc.toString(true))
             
-            XCTAssertEqual(try testData.loadTwitterVcCompactJson(), normalized.description(false))
-            XCTAssertEqual(try testData.loadTwitterVcCompactJson(), compact.description(false))
-            XCTAssertEqual(try testData.loadTwitterVcCompactJson(), vc.description(false))
+            XCTAssertEqual(try testData.loadTwitterVcCompactJson(), normalized.toString(false))
+            XCTAssertEqual(try testData.loadTwitterVcCompactJson(), compact.toString(false))
+            XCTAssertEqual(try testData.loadTwitterVcCompactJson(), vc.toString(false))
         }
         catch {
          print(error)
@@ -109,13 +109,13 @@ class VerifiableCredentialTest: XCTestCase {
             
             let vc = try testData.loadProfileCredential()
             
-            XCTAssertEqual(try testData.loadProfileVcNormalizedJson(), normalized.description(true))
-            XCTAssertEqual(try testData.loadProfileVcNormalizedJson(), compact.description(true))
-            XCTAssertEqual(try testData.loadProfileVcNormalizedJson(), vc!.description(true))
+            XCTAssertEqual(try testData.loadProfileVcNormalizedJson(), normalized.toString(true))
+            XCTAssertEqual(try testData.loadProfileVcNormalizedJson(), compact.toString(true))
+            XCTAssertEqual(try testData.loadProfileVcNormalizedJson(), vc!.toString(true))
             
-            XCTAssertEqual(try testData.loadProfileVcCompactJson(), normalized.description(false))
-            XCTAssertEqual(try testData.loadProfileVcCompactJson(), compact.description(false))
-            XCTAssertEqual(try testData.loadProfileVcCompactJson(), vc!.description(false))
+            XCTAssertEqual(try testData.loadProfileVcCompactJson(), normalized.toString(false))
+            XCTAssertEqual(try testData.loadProfileVcCompactJson(), compact.toString(false))
+            XCTAssertEqual(try testData.loadProfileVcCompactJson(), vc!.toString(false))
         }
         catch {
             XCTFail()
@@ -130,13 +130,13 @@ class VerifiableCredentialTest: XCTestCase {
             json = try testData.loadJsonVcCompactJson()
             let compact = try VerifiableCredential.fromJson(json)
             let vc = try testData.loadJsonCredential()
-            XCTAssertEqual(try testData.loadJsonVcNormalizedJson(), normalized.description(true))
-            XCTAssertEqual(try testData.loadJsonVcNormalizedJson(), compact.description(true))
-            XCTAssertEqual(try testData.loadJsonVcNormalizedJson(), vc.description(true))
+            XCTAssertEqual(try testData.loadJsonVcNormalizedJson(), normalized.toString(true))
+            XCTAssertEqual(try testData.loadJsonVcNormalizedJson(), compact.toString(true))
+            XCTAssertEqual(try testData.loadJsonVcNormalizedJson(), vc.toString(true))
 
-            XCTAssertEqual(try testData.loadJsonVcCompactJson(), normalized.description(false))
-            XCTAssertEqual(try testData.loadJsonVcCompactJson(), compact.description(false))
-            XCTAssertEqual(try testData.loadJsonVcCompactJson(), vc.description(false))
+            XCTAssertEqual(try testData.loadJsonVcCompactJson(), normalized.toString(false))
+            XCTAssertEqual(try testData.loadJsonVcCompactJson(), compact.toString(false))
+            XCTAssertEqual(try testData.loadJsonVcCompactJson(), vc.toString(false))
         } catch {
             XCTFail()
         }

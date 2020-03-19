@@ -16,22 +16,23 @@ class VerifiablePresentationTest: XCTestCase {
             let vp: VerifiablePresentation = try testData.loadPresentation()
             
             XCTAssertEqual("VerifiablePresentation", vp.type)
-            XCTAssertEqual(testDoc.subject, vp.getSigner())
-            XCTAssertEqual(4, vp.getCredentialCount())
-            let vcs: Array<VerifiableCredential> = vp.getCredentials()
+            XCTAssertEqual(testDoc.subject, vp.signer)
+            XCTAssertEqual(4, vp.cedentialCount)
+            
+            let vcs: Array<VerifiableCredential> = vp.credentials
             for vc in vcs {
-                XCTAssertEqual(testDoc.subject, vc.subject.id)
-                let re = vc.id.fragment == "profile" || vc.id.fragment == "email" || vc.id.fragment == "twitter" || vc.id.fragment == "passport"
+                XCTAssertEqual(testDoc.subject, vc.subject.did)
+                let re = vc.getId().fragment == "profile" || vc.getId().fragment == "email" || vc.getId().fragment == "twitter" || vc.getId().fragment == "passport"
                 XCTAssertTrue(re)
             }
-            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "profile")))
-            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "email")))
-            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "twitter")))
-            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "passport")))
-            XCTAssertNil(try vp.getCredential(DIDURL(vp.getSigner(), "notExist")))
+            XCTAssertNotNil(try vp.credential(ofId: DIDURL(vp.signer, "profile")))
+            XCTAssertNotNil(try vp.credential(ofId:DIDURL(vp.signer, "email")))
+            XCTAssertNotNil(try vp.credential(ofId:DIDURL(vp.signer, "twitter")))
+            XCTAssertNotNil(try vp.credential(ofId:DIDURL(vp.signer, "passport")))
+            XCTAssertNil(try vp.credential(ofId:DIDURL(vp.signer, "notExist")))
             
-            XCTAssertTrue(try vp.isGenuine())
-            XCTAssertTrue(try vp.isValid())
+            XCTAssertTrue(vp.isGenuine)
+            XCTAssertTrue(vp.isValid)
             
         }
         catch {
@@ -47,37 +48,35 @@ class VerifiablePresentationTest: XCTestCase {
             _ = try testData.loadTestIssuer()
             let testDoc = try testData.loadTestDocument()
             
-            let arr: Array<VerifiableCredential> = [
-                try testData.loadProfileCredential()!,
-                try testData.loadEmailCredential(),
-                try testData.loadTwitterCredential(),
-                try testData.loadPassportCredential()!]
-            let pb = try VerifiablePresentation.createFor(testDoc.subject!, store)
-            let vp: VerifiablePresentation = try pb.credentials(arr)
-                .realm("https://example.com/")
-                .nonce("873172f58701a9ee686f0630204fee59")
-                .seal(storePass)
-
+            let pb = try VerifiablePresentation.editingVerifiablePresentation(for: testDoc.subject, using: store)
+            let vp = try pb.withCredentials(testData.loadProfileCredential()!,
+                                            testData.loadEmailCredential(),
+                                            testData.loadTwitterCredential(),
+                                            testData.loadPassportCredential()!)
+                .withRealm("https://example.com/")
+                .withNonce("873172f58701a9ee686f0630204fee59")
+                .sealed(using: storePass)
+            
             XCTAssertNotNil(vp)
             XCTAssertEqual("VerifiablePresentation", vp.type)
-            XCTAssertEqual(testDoc.subject!, vp.getSigner())
+            XCTAssertEqual(testDoc.subject, vp.signer)
 
-            XCTAssertEqual(4, vp.getCredentialCount())
-            let vcs = vp.getCredentials()
+            XCTAssertEqual(4, vp.cedentialCount)
+            let vcs = vp.credentials
             
             vcs.forEach { vc in
-                let re = vc.id.fragment == "profile" || vc.id.fragment == "email" || vc.id.fragment == "twitter" || vc.id.fragment == "passport"
+                let re = vc.getId().fragment == "profile" || vc.getId().fragment == "email" || vc.getId().fragment == "twitter" || vc.getId().fragment == "passport"
                 XCTAssertTrue(re)
             }
             
-            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "profile")))
-            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "email")))
-            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "twitter")))
-            XCTAssertNotNil(try vp.getCredential(DIDURL(vp.getSigner(), "passport")))
-            XCTAssertNil(try vp.getCredential(DIDURL(vp.getSigner(), "notExist")))
+            XCTAssertNotNil(try vp.credential(ofId: DIDURL(vp.signer, "profile")))
+            XCTAssertNotNil(try vp.credential(ofId: DIDURL(vp.signer, "email")))
+            XCTAssertNotNil(try vp.credential(ofId: DIDURL(vp.signer, "twitter")))
+            XCTAssertNotNil(try vp.credential(ofId: DIDURL(vp.signer, "passport")))
+            XCTAssertNil(try vp.credential(ofId: DIDURL(vp.signer, "notExist")))
 
-            XCTAssertTrue(try vp.isGenuine())
-            XCTAssertTrue(try vp.isValid())
+            XCTAssertTrue(vp.isGenuine)
+            XCTAssertTrue(vp.isValid)
         }
         catch {
             XCTFail()
@@ -94,14 +93,14 @@ class VerifiablePresentationTest: XCTestCase {
             _ = try testData.loadTestDocument()
             let vp: VerifiablePresentation = try testData.loadPresentation()
             XCTAssertNotNil(vp)
-            XCTAssertTrue(try vp.isGenuine())
-            XCTAssertTrue(try vp.isValid())
+            XCTAssertTrue(vp.isGenuine)
+            XCTAssertTrue(vp.isValid)
 
             let normalized: VerifiablePresentation = try VerifiablePresentation.fromJson(
             try testData.loadPresentationNormalizedJson())
             XCTAssertNotNil(normalized)
-            XCTAssertTrue(try normalized.isGenuine())
-            XCTAssertTrue(try normalized.isValid())
+            XCTAssertTrue(normalized.isGenuine)
+            XCTAssertTrue(normalized.isValid)
             XCTAssertEqual(try testData.loadPresentationNormalizedJson(), normalized.description)
             XCTAssertEqual(try testData.loadPresentationNormalizedJson(), vp.description)
         }catch {

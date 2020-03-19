@@ -5,7 +5,7 @@ class JsonGenerator {
     private static let COMMA: Character = ","
     private static let OBJECT_STARTED: Character = "{"
     private static let OBJECT_END: Character = "}"
-    private static let ARRAY_STARTED: Character = "]"
+    private static let ARRAY_STARTED: Character = "["
     private static let ARRAY_END: Character = "]"
     private static let STRING_QUOTE_STARTED: Character = "\""
     private static let STRING_QUOTE_END: Character = "\""
@@ -51,7 +51,12 @@ class JsonGenerator {
     }
 
     private func pushState(_ state: State) {
-        self.state[self.deep] = state.rawValue
+        // TODO: CHECK
+        if self.deep > self.state.count - 1 {
+            self.state.append(state.rawValue)
+        } else {
+            self.state[self.deep] = state.rawValue
+        }
         deep += 1
     }
 
@@ -73,6 +78,13 @@ class JsonGenerator {
     }
 
     private func setSticky() {
+        if deep - 1 < 0 {
+            return
+        }
+        
+        if deep - 1 > self.state.count {
+            state.append(0)
+        }
         state[deep - 1] |= 0x80
     }
 

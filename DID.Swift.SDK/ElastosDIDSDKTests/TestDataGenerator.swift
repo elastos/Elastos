@@ -14,79 +14,81 @@ class TestDataGenerator: XCTestCase {
         let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return walletPassword})
         adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
         //        TestUtils.deleteFile(storeRoot)
-        store = try DIDStore.open("filesystem", storeRoot)
-        try DIDBackend.creatInstance(adapter, TestData.getResolverCacheDir())
+        store = try DIDStore.openStore(atPath: storeRoot, withType: "filesystem", adapter: adapter)
+        try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
         TestData.deleteFile(storeRoot)
-        store = try DIDStore.open("filesystem", storeRoot)
+        store = try DIDStore.openStore(atPath: storeRoot, withType: "filesystem", adapter: adapter)
         
-        let mnemonic: String = HDKey.generateMnemonic(0)
-        try store!.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
+        let mnemonic: String = try Mnemonic.generate("0")
+        try store.initializePrivateIdentity(using: "0", mnemonic: mnemonic, passPhrase: passphrase, storePassword: storePass, true)
         outputDir = tempDir + "/" + "DIDTestFiles"
         
         return mnemonic
     }
     
     func createTestIssuer() throws {
-        let doc: DIDDocument = try store.newDid(storePass)
-        print("Generate issuer DID: \(doc.subject!)...")
-        let selfIssuer = try Issuer(doc)
+        let doc: DIDDocument = try store.newDid(using: storePass)
+        print("Generate issuer DID: \(doc.subject)...")
+//        let selfIssuer = try Issuer(doc)
+        let selfIssuer = try VerifiableCredentialIssuer(doc)
         var props: Dictionary<String, String> = [: ]
         props["name"] = "Test Issuer"
         props["nation"] = "Singapore"
         props["language"] = "English"
         props["email"] = "issuer@example.com"
         
-        let cb: CredentialBuilder = selfIssuer.issueFor(did: doc.subject!)
-        let vc: VerifiableCredential = try cb.idString("profile")
-            .types(["BasicProfileCredential", "SelfProclaimedCredential"])
-            .properties(props)
-            .seal(storepass: storePass)
-        let db: DIDDocumentBuilder = doc.edit()
-        _ = db.addCredential(vc)
-        issuer = try db.seal(storepass: storePass)
-        try store.storeDid(issuer)
-        try store.storeCredential(vc, "Profile")
+        let cb = selfIssuer.editingVerifiableCredentialFor(did: doc.subject)
+        let vc = try cb.withId("profile")
+            .withTypes("BasicProfileCredential","SelfProclaimedCredential")
+            .withProperties(props)
+            .sealed(using: storePass)
+
+        let db: DIDDocumentBuilder = doc.editing()
+        _ = try db.appendCredential(vc)
+        issuer = try db.sealed(using: storePass)
+        try store.storeDid(using: issuer)
+        try store.storeCredential(using: vc, with: "Profile")
         
-        let id: DIDURL = issuer.getDefaultPublicKey()
-        let sk: String = try store.loadPrivateKey(issuer.subject!, id: id)
+        let id: DIDURL = issuer.defaultPublicKey
+        let sk: String = try store.loadPrivateKey(for: issuer.subject, byId: id)
         let data: Data = try DIDStore.decryptFromBase64(storePass, sk)
         let binSk: [UInt8] = [UInt8](data)
-        writeTo("issuer." + id.fragment + ".sk", Base58.base58FromBytes(binSk))
+        writeTo("issuer." + id.fragment! + ".sk", Base58.base58FromBytes(binSk))
         
-        var json = issuer.description(true)
-        writeTo("issuer.normalized.json", json);
+        var json = issuer.toString(true)
+        writeTo("issuer.normalized.json", json)
         
         json = try formatJson(json)
         writeTo("issuer.json", json);
         
-        json = issuer.description(false)
+        json = issuer.toString()
         writeTo("issuer.compact.json", json);
-        print(try issuer.isValid())
+        print(issuer.isValid)
     }
     
     func createTestDocument() throws {
-        let doc = try store.newDid(storePass)
+        let doc = try store.newDid(using: storePass)
         
         // Test document with two embedded credentials
-        print("Generate test DID: \(doc.subject!)...")
-        let db: DIDDocumentBuilder = doc.edit()
+        print("Generate test DID: \(doc.subject)...")
+        let db: DIDDocumentBuilder = doc.editing()
         var temp = try TestData.generateKeypair()
-        _ = try db.addAuthenticationKey("key2", temp.getPublicKeyBase58())
+        _ = try db.appendAuthenticationKey("key2", temp.getPublicKeyBase58())
         //            writeTo("document.key2.sk", Base58.encode(temp.serialize()))
         
         temp = try TestData.generateKeypair()
-        _ = try db.addAuthenticationKey("key3", temp.getPublicKeyBase58())
+        _ = try db.appendAuthenticationKey("key3", temp.getPublicKeyBase58())
         //            writeTo("document.key3.sk", Base58.encode(temp.serialize()))
         
         temp = try TestData.generateKeypair()
-        let controller = DerivedKey.getIdString(try temp.getPublicKeyBytes())
-        _ = try db.addAuthorizationKey("recovery", controller, temp.getPublicKeyBase58())
+        let controller  = HDKey.DerivedKey.getAddress(temp.getPublicKeyBytes())
+        _ = try db.appendAuthorizationKey("recovery", controller, temp.getPublicKeyBase58())
         
-        _ = try db.addService("openid", "OpenIdConnectVersion1.0Service", "https://openid.example.com/");
-        _ = try db.addService("vcr", "CredentialRepositoryService", "https://did.example.com/credentials");
-        _ = try db.addService("carrier", "CarrierAddress", "carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d");
+        _ = try db.appendService("openid", "OpenIdConnectVersion1.0Service", "https://openid.example.com/");
+        _ = try db.appendService("vcr", "CredentialRepositoryService", "https://did.example.com/credentials");
+        _ = try db.appendService("carrier", "CarrierAddress", "carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d");
         
-        let selfIssuer = try Issuer(doc)
+        let selfIssuer = try VerifiableCredentialIssuer(doc)
         var props: Dictionary<String, String> = [: ]
         props["name"] = "John"
         props["gender"] = "Male"
@@ -94,131 +96,133 @@ class TestDataGenerator: XCTestCase {
         props["language"] = "English"
         props["email"] = "john@example.com"
         props["twitter"] = "@john"
-        var cb: CredentialBuilder = selfIssuer.issueFor(did: doc.subject!)
-        let vcProfile: VerifiableCredential = try cb.idString("profile")
-            .types(["BasicProfileCredential", "SelfProclaimedCredential"])
-            .properties(props)
-            .seal(storepass: storePass)
-        _ = try Issuer(issuer)
+        var cb = selfIssuer.editingVerifiableCredentialFor(did: doc.subject)
         
-        let kycIssuer = try Issuer(issuer)
-        cb = kycIssuer.issueFor(did: doc.subject!)
+        let vcProfile = try cb.withId("profile")
+            .withTypes("BasicProfileCredential", "SelfProclaimedCredential")
+            .withProperties(props)
+            .sealed(using: storePass)
+        
+        let kycIssuer = try VerifiableCredentialIssuer(issuer)
+        cb = kycIssuer.editingVerifiableCredentialFor(did: doc.subject)
         props = [: ]
         props["email"] = "john@example.com"
-        let vcEmail: VerifiableCredential = try cb.idString("email")
-            .types(["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"])
-            .properties(props)
-            .seal(storepass: storePass)
+        let vcEmail: VerifiableCredential = try cb.withId("email")
+            .withTypes("BasicProfileCredential", "InternetAccountCredential", "EmailCredential")
+            .withProperties(props)
+            .sealed(using: storePass)
+
+        _ = try db.appendCredential(vcProfile)
+        _ = try db.appendCredential(vcEmail)
+
+        test = try db.sealed(using: storePass)
+        try store.storeDid(using: test)
         
-        _ = db.addCredential(vcProfile)
-        _ = db.addCredential(vcEmail)
-        test = try db.seal(storepass: storePass)
-        try store.storeDid(test)
-        
-        var id = test.getDefaultPublicKey()
-        let sk = try store.loadPrivateKey(test.subject!, id: id)
+        var id = test.defaultPublicKey
+        let sk = try store.loadPrivateKey(for: test.subject, byId: id)
         let data: Data = try DIDStore.decryptFromBase64(storePass, sk)
         let binSk = [UInt8](data)
-        writeTo("document." + id.fragment + ".sk", Base58.base58FromBytes(binSk))
+        writeTo("document." + id.fragment! + ".sk", Base58.base58FromBytes(binSk))
         
-        var json = test.description(true)
+        var json = test.toString(true)
         writeTo("document.normalized.json", json)
         
         json = try formatJson(json)
         writeTo("document.json", json);
         
-        json = test.description(false)
+        json = test.toString()
         writeTo("document.compact.json", json);
-        print(try test.isValid())
+        print(test.isValid)
         
         // Profile credential
-        print("Generate credential:  \(vcProfile.id!)...")
-        json = vcProfile.description(true)
+        print("Generate credential:  \(vcProfile.getId())...")
+        json = vcProfile.toString(true)
         writeTo("vc-profile.normalized.json", json);
         
         json = try formatJson(json)
         writeTo("vc-profile.json", json);
         
-        json = vcProfile.description(false)
+        json = vcProfile.toString()
         writeTo("vc-profile.compact.json", json);
-        print(try vcProfile.isValid())
+        print(vcProfile.isValid)
         
         // email credential
-        print("Generate credential:  \(vcEmail.id!)...")
-        json = vcEmail.description(true)
+        print("Generate credential:  \(vcEmail.getId())...")
+        json = vcEmail.toString(true)
         writeTo("vc-email.normalized.json", json);
         
         json = try formatJson(json)
         writeTo("vc-email.json", json);
         
-        json = vcEmail.description(false)
+        json = vcEmail.toString()
         writeTo("vc-email.compact.json", json);
-        print(try vcEmail.isValid())
+        print(vcEmail.isValid)
         
         // Passport credential
-        id = try DIDURL(test.subject!, "passport")
+        id = try DIDURL(test.subject, "passport")
         print("Generate credential:  \(id)...")
         props = [: ]
         props["nation"] = "Singapore"
         props["passport"] = "S653258Z07"
         
-        let vcPassport = try cb.idString("passport")
-            .types(["BasicProfileCredential", "SelfProclaimedCredential"])
-            .properties(props)
-            .seal(storepass: storePass)
+        let vcPassport = try cb.withId("passport")
+            .withTypes("BasicProfileCredential", "SelfProclaimedCredential")
+            .withProperties(props)
+            .sealed(using: storePass)
         
-        json = vcPassport.description(true)
+        json = vcPassport.toString(true)
         writeTo("vc-passport.normalized.json", json)
         
         json = try formatJson(json)
         writeTo("vc-passport.json", json)
         
-        json = vcPassport.description(false)
+        json = vcPassport.toString()
         writeTo("vc-passport.compact.json", json)
-        print(try vcPassport.isValid())
+        print(vcPassport.isValid)
         
         // Twitter credential
-        id = try DIDURL(test.subject!, "twitter")
+        id = try DIDURL(test.subject, "twitter")
         print("Generate credential:  \(id)...")
         
         props = [: ]
         props["twitter"] = "@john"
-        let vcTwitter = try cb.idString("twitter")
-            .types(["InternetAccountCredential", "TwitterCredential"])
-            .properties(props)
-            .seal(storepass: storePass)
+        let vcTwitter = try cb.withId("twitter")
+            .withTypes("InternetAccountCredential", "TwitterCredential")
+            .withProperties(props)
+            .sealed(using: storePass)
         
-        json = vcTwitter.description(true)
+        json = vcTwitter.toString(true)
         writeTo("vc-twitter.normalized.json", json)
         
         json = try formatJson(json)
         writeTo("vc-twitter.json", json)
         
-        json = vcTwitter.description(false)
+        json = vcTwitter.toString()
         writeTo("vc-twitter.compact.json", json)
         
-        print(try vcPassport.isValid())
+        print(vcPassport.isValid)
         //
         print("OK")
         
         // Json format credential
-        id = try DIDURL(test.subject!, "json")
+        id = try DIDURL(test.subject, "json")
         print("Generate credential: \(id)...")
         
-        cb = kycIssuer.issueFor(did: doc.subject!)
+        cb = kycIssuer.editingVerifiableCredentialFor(did: doc.subject)
         let jsonProps: String = "{\"name\":\"Jay Holtslander\",\"alternateName\":\"Jason Holtslander\",\"booleanValue\":true,\"numberValue\":1234,\"doubleValue\":9.5,\"nationality\":\"Canadian\",\"birthPlace\":{\"type\":\"Place\",\"address\":{\"type\":\"PostalAddress\",\"addressLocality\":\"Vancouver\",\"addressRegion\":\"BC\",\"addressCountry\":\"Canada\"}},\"affiliation\":[{\"type\":\"Organization\",\"name\":\"Futurpreneur\",\"sameAs\":[\"https://twitter.com/futurpreneur\",\"https://www.facebook.com/futurpreneur/\",\"https://www.linkedin.com/company-beta/100369/\",\"https://www.youtube.com/user/CYBF\"]}],\"alumniOf\":[{\"type\":\"CollegeOrUniversity\",\"name\":\"Vancouver Film School\",\"sameAs\":\"https://en.wikipedia.org/wiki/Vancouver_Film_School\",\"year\":2000},{\"type\":\"CollegeOrUniversity\",\"name\":\"CodeCore Bootcamp\"}],\"gender\":\"Male\",\"Description\":\"Technologist\",\"disambiguatingDescription\":\"Co-founder of CodeCore Bootcamp\",\"jobTitle\":\"Technical Director\",\"worksFor\":[{\"type\":\"Organization\",\"name\":\"Skunkworks Creative Group Inc.\",\"sameAs\":[\"https://twitter.com/skunkworks_ca\",\"https://www.facebook.com/skunkworks.ca\",\"https://www.linkedin.com/company/skunkworks-creative-group-inc-\",\"https://plus.google.com/+SkunkworksCa\"]}],\"url\":\"https://jay.holtslander.ca\",\"image\":\"https://s.gravatar.com/avatar/961997eb7fd5c22b3e12fb3c8ca14e11?s=512&r=g\",\"address\":{\"type\":\"PostalAddress\",\"addressLocality\":\"Vancouver\",\"addressRegion\":\"BC\",\"addressCountry\":\"Canada\"},\"sameAs\":[\"https://twitter.com/j_holtslander\",\"https://pinterest.com/j_holtslander\",\"https://instagram.com/j_holtslander\",\"https://www.facebook.com/jay.holtslander\",\"https://ca.linkedin.com/in/holtslander/en\",\"https://plus.google.com/+JayHoltslander\",\"https://www.youtube.com/user/jasonh1234\",\"https://github.com/JayHoltslander\",\"https://profiles.wordpress.org/jasonh1234\",\"https://angel.co/j_holtslander\",\"https://www.foursquare.com/user/184843\",\"https://jholtslander.yelp.ca\",\"https://codepen.io/j_holtslander/\",\"https://stackoverflow.com/users/751570/jay\",\"https://dribbble.com/j_holtslander\",\"http://jasonh1234.deviantart.com/\",\"https://www.behance.net/j_holtslander\",\"https://www.flickr.com/people/jasonh1234/\",\"https://medium.com/@j_holtslander\"]}"
-        let vcJson = try cb.id(id)
-            .types(["InternetAccountCredential", "TwitterCredential"])
-            .properties(properties: jsonProps)
-            .seal(storepass: storePass)
-        try store.storeCredential(vcTwitter, "json")
-        json = vcJson.description(true)
+        let vcJson = try cb.withId(id)
+            .withTypes("InternetAccountCredential", "TwitterCredential")
+            .withProperties(jsonProps)
+            .sealed(using: storePass)
+
+        try store.storeCredential(using: vcTwitter, with: "json")
+        json = vcJson.toString(true)
         writeTo("vc-json.normalized.json", json)
         
         json = try formatJson(json)
         writeTo("vc-json.json", json)
 
-        json = vcJson.description(false)
+        json = vcJson.toString()
         writeTo("vc-json.compact.json", json)
         
         print("OK")
@@ -226,18 +230,19 @@ class TestDataGenerator: XCTestCase {
         // Presentation with above credentials
         print("Generate presentation...")
         
-        let pb = try VerifiablePresentation.createFor(test.subject!, store)
-        let vp = try pb.credentials([vcProfile, vcEmail, vcPassport, vcTwitter])
-            .realm("https://example.com/")
-            .nonce("873172f58701a9ee686f0630204fee59")
-            .seal(storePass)
+        let pb = try VerifiablePresentation.editingVerifiablePresentation(for: test.subject, using: store)
+        let vp = try pb.withCredentials(vcProfile, vcEmail, vcPassport, vcTwitter)
+            .withRealm("https://example.com/")
+            .withNonce("873172f58701a9ee686f0630204fee59")
+            .sealed(using: storePass)
+
         json = vp.description
         writeTo("vp.normalized.json", json)
         
         json = try formatJson(json)
         writeTo("vp.json", json)
         
-        print(try vcPassport.isValid())
+        print(vcPassport.isValid)
     }
     
     func writeTo(_ fileName: String, _ content: String) {
@@ -286,66 +291,65 @@ class TestDataGenerator: XCTestCase {
                     wait(interval: 30)
                 }
                 
-                let doc = try store.newDid(storePass)
-                let selfIssuer: Issuer = try Issuer(doc)
+                let doc = try store.newDid(using: storePass)
+                let selfIssuer: VerifiableCredentialIssuer = try VerifiableCredentialIssuer(doc)
                 
-                let did: DID = doc.subject!
-                var properties: Dictionary<String, String> = ["name": "John", "nation": "Singapore", "language": "English", "email": "john@example.com"]
+                let did: DID = doc.subject
+                var properties: [String: String] = ["name": "John", "nation": "Singapore", "language": "English", "email": "john@example.com"]
                 
-                let cb: CredentialBuilder = selfIssuer.issueFor(did: did)
-                let vcProfile: VerifiableCredential = try cb.idString("profile")
-                    .types(["BasicProfileCredential", "SelfProclaimedCredential"])
-                    .properties(properties)
-                    .seal(storepass: storePass)
+                let cb = selfIssuer.editingVerifiableCredentialFor(did: did)
+                let vcProfile: VerifiableCredential = try cb.withId("profile")
+                    .withTypes("BasicProfileCredential", "SelfProclaimedCredential")
+                    .withProperties(properties)
+                    .sealed(using: storePass)
                 
                 properties.removeAll()
                 properties = ["email": "john@gmail.com"]
                 
-                let vcEmail: VerifiableCredential = try cb.idString("email")
-                    .types(["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"])
-                    .properties(properties)
-                    .seal(storepass: storePass)
+                let vcEmail: VerifiableCredential = try cb.withId("email")
+                    .withTypes("BasicProfileCredential", "InternetAccountCredential", "EmailCredential")
+                    .withProperties(properties)
+                    .sealed(using: storePass)
                 
                 properties.removeAll()
                 properties = ["nation": "Singapore", "passport": "S653258Z07"]
                 
-                let vcPassport: VerifiableCredential = try cb.idString("passport")
-                    .types(["BasicProfileCredential", "SelfProclaimedCredential"])
-                    .properties(properties)
-                    .seal(storepass: storePass)
+                let vcPassport: VerifiableCredential = try cb.withId("passport")
+                    .withTypes("BasicProfileCredential", "SelfProclaimedCredential")
+                    .withProperties(properties)
+                    .sealed(using: storePass)
                 
                 properties.removeAll()
                 properties = ["twitter": "@john"]
                 
-                let vcTwitter: VerifiableCredential = try cb.idString("twitter")
-                    .types(["InternetAccountCredential", "TwitterCredential"])
-                    .properties(properties)
-                    .seal(storepass: storePass)
+                let vcTwitter: VerifiableCredential = try cb.withId("twitter")
+                    .withTypes("InternetAccountCredential", "TwitterCredential")
+                    .withProperties(properties)
+                    .sealed(using: storePass)
                 
-                let db: DIDDocumentBuilder = doc.edit()
-                _ = db.addCredential(vcProfile)
-                _ = db.addCredential(vcEmail)
-                _ = db.addCredential(vcPassport)
-                _ = db.addCredential(vcTwitter)
-                _ = try db.seal(storepass: storePass)
-                try store.storeDid(doc)
+                let db: DIDDocumentBuilder = doc.editing()
+                _ = try db.appendCredential(vcProfile)
+                _ = try db.appendCredential(vcEmail)
+                _ = try db.appendCredential(vcPassport)
+                _ = try db.appendCredential(vcTwitter)
+                _ = try db.sealed(using: storePass)
+                try store.storeDid(using: doc)
                 
-                print("******** Publishing DID:\(doc.subject!)")
-                _ = try store.publishDid(doc.subject!, storePass)
+                print("******** Publishing DID:\(doc.subject)")
+                _ = try store.publishDid(for: doc.subject, using: storePass)
                 
                 while true {
                     wait(interval: 30)
-                    let d = try doc.subject?.resolve(true)
-                    if d != nil {
-                        try store.storeDid(d!)
+                    do {
+                        let d = try doc.subject.resolve(true)
+                        try store.storeDid(using: d)
                         print(" OK")
                         break
-                    }
-                    else {
+                    } catch {
                         print("...")
                     }
                 }
-                dids = "\(dids)\(doc.subject!)\n"
+                dids = "\(dids)\(doc.subject)\n"
             }
             writeTo("dids.restore", dids)
             print("Generate DIDs for restore......OK")

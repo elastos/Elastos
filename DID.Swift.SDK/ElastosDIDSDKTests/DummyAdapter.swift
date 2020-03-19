@@ -3,7 +3,11 @@ import Foundation
 import ElastosDIDSDK
 import SPVWrapper
 
-class DummyAdapter: DIDAdapter {
+class DummyAdapter: DIDAdapter, DIDResolver {
+    func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> Data {
+        return Data()
+    }
+    
 
     private var verbose: Bool = false
     private var idtxs: Array<IDTransactionInfo> = []
@@ -27,8 +31,12 @@ class DummyAdapter: DIDAdapter {
 
         return str
     }
+    func createIdTransaction(_ payload: String, _ memo: String?, _ confirms: Int, _ callback: (String, Int, String?) -> Void) {
+        
+    }
     
     func createIdTransaction(_ payload: String, _ memo: String?) throws -> String {
+        /*
         do {
             let request: IDChainRequest = try IDChainRequest.fromJson(payload)
             
@@ -90,9 +98,12 @@ class DummyAdapter: DIDAdapter {
             print(error)
             throw error
         }
+        */
+        return ""
     }
     
     func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String {
+        /*
         if (verbose) {
             print("Resolve: " + did + "...")
         }
@@ -152,6 +163,8 @@ class DummyAdapter: DIDAdapter {
         }
         let json = JsonHelper.creatJsonString(dic: dic)
         return json
+        */
+        return ""
     }
     
     public func reset() {
@@ -159,13 +172,14 @@ class DummyAdapter: DIDAdapter {
     }
     
     private func getLastTransaction(_ did: DID) -> IDTransactionInfo? {
+        /*
         let reversedArr = idtxs.reversed()
         for ti in reversedArr {
             if ti.did == did {
                 return ti
             }
         }
-        
+        */
         return nil
     }
     
@@ -192,9 +206,8 @@ class IDTx {
     
     init(_ request: IDChainRequest) {
         self.txId = IDTx.generateTxId()
-        self.timestamp = DateFormater.currentDate()
+        self.timestamp = Date() // TODO:
         self.request = request
-        
     }
     
     public func getDid() -> DID {
@@ -213,7 +226,7 @@ class IDTx {
         return str
     }
     
-    public func getOperation() -> IDChainRequest.Operation {
+    public func getOperation() -> IDChainRequestOperation {
         return request.operation
     }
 

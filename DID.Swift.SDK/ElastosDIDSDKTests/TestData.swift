@@ -54,6 +54,7 @@ class TestData: XCTestCase {
                 TestData.dummyAdapter!.reset()
             }
             adapter = TestData.dummyAdapter!
+            try DIDBackend.initializeInstance((adapter as! DIDResolver), TestData.getResolverCacheDir())
         }
         else {
             if TestData.spvAdapter == nil {
@@ -61,27 +62,27 @@ class TestData: XCTestCase {
                 TestData.spvAdapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
             }
             adapter = TestData.spvAdapter!
+            try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
         }
-        try DIDBackend.creatInstance(adapter, TestData.getResolverCacheDir())
         try ResolverCache.reset()
         TestData.deleteFile(storeRoot)
-        store = try DIDStore.open("filesystem", storeRoot)
+        store = try DIDStore.openStore(atPath: storeRoot, withType: "filesystem", adapter: adapter)
         return store
     }
     
     public func initIdentity() throws -> String {
-        let mnemonic: String = HDKey.generateMnemonic(0)
-        try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
+        let mnemonic: String = try Mnemonic.generate("0")
+        try store.initializePrivateIdentity(using: passphrase, storePassword: storePass, true)
         return mnemonic
     }
     
     func loadDIDDocument(_ fileName: String, _ type_: String) throws -> DIDDocument {
         let bundle = Bundle(for: type(of: self))
         let jsonPath = bundle.path(forResource: fileName, ofType: type_)
-        let doc: DIDDocument = try DIDDocument.fromJson(path: jsonPath!)
+        let doc = try DIDDocument.convertToDIDDocument(fromFilePath: jsonPath!)
         
         if store != nil {
-            try store.storeDid(doc)
+            try store.storeDid(using: doc)
         }
         return doc
     }
@@ -91,22 +92,20 @@ class TestData: XCTestCase {
         let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 1024)
         let cp = skBase58.toUnsafePointerInt8()
         let re = base58_decode(buffer, cp)
-        print(re)
         let temp = UnsafeRawPointer(buffer)
         .bindMemory(to: UInt8.self, capacity: re)
         
         let data = Data(bytes: temp, count: re)
-        let intArray = [UInt8](data).map { Int8(bitPattern: $0) }
-        print(intArray)
+        _ = [UInt8](data).map { Int8(bitPattern: $0) }
 
-        try store.storePrivateKey(id.did, id, data, storePass)
+        try store.storePrivateKey(for: id.did, id: id, privateKey: data, using: storePass)
     }
     
     func loadTestIssuer() throws -> DIDDocument {
         if testIssuer == nil {
             testIssuer = try loadDIDDocument("issuer", "json")
-            try importPrivateKey((testIssuer?.getDefaultPublicKey())!, "issuer.primary", "sk")
-            _ = try store.publishDid(testIssuer!.subject!, storePass)
+            try importPrivateKey(testIssuer!.defaultPublicKey, "issuer.primary", "sk")
+            _ = try store.publishDid(for: testIssuer!.subject, using: storePass)
         }
         return testIssuer!
     }
@@ -116,10 +115,10 @@ class TestData: XCTestCase {
         if testDocument == nil {
             testDocument = try loadDIDDocument("document", "json")
         }
-        try importPrivateKey((testDocument?.getDefaultPublicKey())!, "document.primary", "sk")
-        try importPrivateKey(testDocument!.getPublicKey("key2")!.id, "document.key2", "sk")
-        try importPrivateKey(testDocument!.getPublicKey("key3")!.id, "document.key3", "sk")
-        _ = try store.publishDid(testDocument!.subject!, storePass)
+        try importPrivateKey(testDocument!.defaultPublicKey, "document.primary", "sk")
+        try importPrivateKey(testDocument!.publicKey(ofId: "key2")!.getId(), "document.key2", "sk")
+        try importPrivateKey(testDocument!.publicKey(ofId: "key3")!.getId(), "document.key3", "sk")
+        _ = try store.publishDid(for: testDocument!.subject, using: storePass)
         return testDocument!
     }
     
@@ -129,7 +128,7 @@ class TestData: XCTestCase {
         let json = try! String(contentsOf: URL(fileURLWithPath: filepath!), encoding: .utf8)
         let vc: VerifiableCredential = try VerifiableCredential.fromJson(json)
         if store != nil {
-            try store.storeCredential(vc)
+            try store.storeCredential(using: vc)
         }
         return vc
     }
@@ -311,14 +310,14 @@ class TestData: XCTestCase {
         return restoreMnemonic!
     }
     
-    public class func generateKeypair() throws -> DerivedKey {
+    public class func generateKeypair() throws -> HDKey.DerivedKey {
         if TestData.rootKey == nil {
-            let mnemonic: String = HDKey.generateMnemonic(0)
-            TestData.rootKey = try HDKey.fromMnemonic(mnemonic, "")
+            let mnemonic: String = try Mnemonic.generate("0")
+            TestData.rootKey = HDKey.fromMnemonic(mnemonic, "", 0)
             TestData.index = 0
         }
         TestData.index = TestData.index! + 1
-        return try TestData.rootKey!.derive(TestData.index!)
+        return TestData.rootKey!.derivedKey(TestData.index!)
     }
 
    class func deleteFile(_ path: String) {
@@ -370,7 +369,7 @@ class TestData: XCTestCase {
         var comps:DateComponents?
         
         comps = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: current)
-        comps?.year = MAX_VALID_YEARS
+        comps?.year = 5 // TODO:
         comps?.month = 0
         comps?.day = 0
         comps?.hour = 0

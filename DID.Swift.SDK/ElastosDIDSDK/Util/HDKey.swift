@@ -17,7 +17,7 @@ class HDKey: NSObject {
             self.cderivedKey = HDKey_GetDerivedKey(chdkey, Int32(index), cderivedKey)
         }
 
-        public class func getAddress(_ pk: [UInt8]) -> String  {
+        class func getAddress(_ pk: [UInt8]) -> String  {
             var pkData: Data = Data(bytes: pk, count: pk.count)
             let cpks: UnsafeMutablePointer<UInt8> = pkData.withUnsafeMutableBytes { (bytes) -> UnsafeMutablePointer<UInt8> in
                 return bytes
@@ -33,14 +33,14 @@ class HDKey: NSObject {
             return (String(cString: cid!))
         }
         
-        public func getPublicKeyData() -> Data {
+        func getPublicKeyData() -> Data {
             let cpublicKeyPointer = DerivedKey_GetPublicKey(self.cderivedKey)
             let publicKeyPointerToArry: UnsafeBufferPointer<UInt8> = UnsafeBufferPointer(start: cpublicKeyPointer, count: PUBLICKEY_BYTES)
             let publicKeyData: Data = Data(buffer: publicKeyPointerToArry)
             return publicKeyData
         }
         
-        public func getPublicKeyBytes() -> [UInt8] {
+        func getPublicKeyBytes() -> [UInt8] {
             let cpublicKeyPointer = DerivedKey_GetPublicKey(self.cderivedKey)
             let publicKeyPointerToArry: UnsafeBufferPointer<UInt8> = UnsafeBufferPointer(start: cpublicKeyPointer, count: PUBLICKEY_BYTES)
             let publicKeyData: Data = Data(buffer: publicKeyPointerToArry)
@@ -53,14 +53,14 @@ class HDKey: NSObject {
             return String(cString: cpublickeybase58)
         }
         
-        public func getPrivateKeyData() -> Data {
+        func getPrivateKeyData() -> Data {
             let privatekeyPointer = DerivedKey_GetPrivateKey(self.cderivedKey)
             let privatekeyPointerToArry: UnsafeBufferPointer<UInt8> = UnsafeBufferPointer(start: privatekeyPointer, count: PRIVATEKEY_BYTES)
             let privatekeyData: Data = Data(buffer: privatekeyPointerToArry)
             return privatekeyData
         }
         
-        public func getPrivateKeyBytes() -> [UInt8] {
+        func getPrivateKeyBytes() -> [UInt8] {
             let privatekeyPointer = DerivedKey_GetPrivateKey(self.cderivedKey)
             let privatekeyPointerToArry: UnsafeBufferPointer<UInt8> = UnsafeBufferPointer(start: privatekeyPointer, count: PRIVATEKEY_BYTES)
             let privatekeyData: Data = Data(buffer: privatekeyPointerToArry)
