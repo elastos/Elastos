@@ -144,13 +144,14 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         wallet = realmUtil.queryDefauleWallet();
         getMyDID().init(wallet.getWalletId());//初始化mydid
         tvTitle.setText(wallet.getWalletName());
-        setWalletView(wallet);
-        List<Wallet> wallets = realmUtil.queryUserAllWallet();
+        setWalletViewNew(wallet);
+       // List<Wallet> wallets = realmUtil.queryUserAllWallet();
         listMap = new HashMap<>();
         transactionMap = new HashMap<>();
-        for (Wallet wallet : wallets) {
+     /*   for (Wallet wallet : wallets) {
             assetsPresenter.getAllSubWallets(wallet.getWalletId(), this);
-        }
+        }*/
+       // assetsPresenter.getAllSubWallets(wallet.getWalletId(), this);
         registReceiver();
     }
 
@@ -680,7 +681,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             if (!wallet.getWalletId().equals(temp.getWalletId())) {
                 wallet = temp;
                 getMyDID().init(wallet.getWalletId());//初始化mydid
-                setWalletView(wallet);
+                setWalletViewNew(wallet);
                 setRecycleView();
                 if (dataMap != null && dataMap.size() > 0) {
                     dataMap.clear();
@@ -711,7 +712,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             if (wallet.getWalletId().equals(walletId)) {
                 wallet = realmUtil.queryDefauleWallet();
                 getMyDID().init(wallet.getWalletId());//初始化mydid
-                setWalletView(wallet);
+                setWalletViewNew(wallet);
                 setRecycleView();
             }
         }

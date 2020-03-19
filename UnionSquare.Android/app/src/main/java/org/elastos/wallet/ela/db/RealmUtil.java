@@ -98,7 +98,7 @@ public class RealmUtil {
 
     /*******************************钱包****************************************/
     /*更新钱包的名称 密码等信息*/
-    private void updateWalletDetial(@NonNull Wallet wallet) {
+    public void updateWalletDetial(@NonNull Wallet wallet) {
         Realm realm = getInstanceRealm();
         realm.beginTransaction();
         realm.copyToRealmOrUpdate(wallet);

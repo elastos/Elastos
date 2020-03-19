@@ -139,7 +139,7 @@ public class MyWallet {
 
     public void onDestroy() {
         if (mMasterWalletManager != null) {
-            ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
+            ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetLoadedMasterWallets();
             for (int i = 0; i < masterWalletList.size(); i++) {
                 MasterWallet masterWallet = masterWalletList.get(i);
                 ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
@@ -203,7 +203,7 @@ public class MyWallet {
             return null;
         }
 
-        return mMasterWalletManager.GetWallet(masterWalletID);
+        return mMasterWalletManager.GetMasterWallet(masterWalletID);
     }
 
     private SubWallet getSubWallet(String masterWalletID, String chainID) {
@@ -291,6 +291,29 @@ public class MyWallet {
         } catch (WalletException e) {
             return exceptionProcess(e, "Get all master wallets");
         }
+
+    }
+
+    public BaseEntity getAllMasterWalletIds() {
+        try {
+            String[] masterWalletIds = mMasterWalletManager.GetAllMasterWalletID();
+
+            return new CommmonObjectWithMethNameEntity(SUCCESSCODE, masterWalletIds, "getAllMasterWalletIds");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Get all master wallets");
+        }
+
+    }
+
+    public BaseEntity getMasterWalletBaseEntity(String masterWalletID) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+
+            return new CommmonObjectWithMethNameEntity(SUCCESSCODE, masterWallet, "getMasterWalletBaseEntity");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Get  master wallets");
+        }
+
 
     }
 
@@ -433,7 +456,7 @@ public class MyWallet {
 
             mMasterWalletManager.DestroyWallet(masterWalletID);
 
-            return new CommmonStringEntity(SUCCESSCODE, "成功");
+            return new CommmonStringEntity(SUCCESSCODE, "sucesss");
         } catch (WalletException e) {
             return exceptionProcess(e, "Destroy " + formatWalletName(masterWalletID));
         }
@@ -843,7 +866,7 @@ public class MyWallet {
             }
 
             masterWallet.ChangePassword(oldPassword, newPassword);
-            return new CommmonStringEntity(SUCCESSCODE, "成功");
+            return new CommmonStringEntity(SUCCESSCODE, "sucesss");
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID) + " change password");
         }
@@ -1262,7 +1285,7 @@ public class MyWallet {
     // args[5]: String url
     // args[6]: String location
     // args[7]: String payPasswd
-    public BaseEntity generateCRInfoPayload(String masterWalletID, String chainID, String crPublickey, String nickName, String url, long location,String did) {
+    public BaseEntity generateCRInfoPayload(String masterWalletID, String chainID, String crPublickey, String nickName, String url, long location, String did) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1635,7 +1658,7 @@ public class MyWallet {
     public BaseEntity flushData() {
         try {
             mMasterWalletManager.FlushData();
-            return new CommmonStringEntity(SUCCESSCODE, "成功");
+            return new CommmonStringEntity(SUCCESSCODE, "sucesss");
         } catch (WalletException e) {
             return exceptionProcess(e, "flushData");
         }

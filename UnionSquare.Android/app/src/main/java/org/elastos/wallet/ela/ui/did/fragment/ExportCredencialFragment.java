@@ -84,7 +84,7 @@ public class ExportCredencialFragment extends BaseFragment implements NewBaseVie
 
 
     private File getCurrentCredentialFile() {
-        File file = getBaseActivity().getExternalFilesDir("credentials" + File.separator + wallet.getWalletId());
+        File file = getBaseActivity().getExternalFilesDir("credentials" + File.separator + getMyDID().getSpecificDidString());
         String fileName = getMyDID().getName(getMyDID().getDIDDocument()) + new Date().getTime() / 1000 + ".jwt";
         return new File(file, fileName);
 

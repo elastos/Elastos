@@ -136,12 +136,20 @@ public class MyDID {
         return didStore;
     }
 
-    // 获得did的字符串的放"did:elastos:"
+    // 获得did的字符串的含"did:elastos:"
     public String getDidString() {
         if (did == null) {
             return null;
         }
         return did.toString();
+    }
+
+    // 获得did的字符串的不含"did:elastos:"
+    public String getSpecificDidString() {
+        if (did == null) {
+            return null;
+        }
+        return did.getMethodSpecificId();
     }
 
    /* public Date getExpre() {
@@ -327,7 +335,7 @@ public class MyDID {
             e.printStackTrace();
         }
 
-return false;
+        return false;
     }
 
 
