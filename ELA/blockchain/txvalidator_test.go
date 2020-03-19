@@ -2522,7 +2522,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	// invalid outputs of ELIP.
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x0100
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
-	s.EqualError(err, "ELIP needs to have and only have two outputs")
+	s.EqualError(err, "ELIP needs to have and only have two budget")
 
 	// invalid budgets.
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x0000
