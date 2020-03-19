@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -820,7 +820,7 @@ func isTransactionExisted(pool *TxPool, tx *types.Transaction) error {
 	if tx.TxType == types.WithdrawFromSideChain {
 		payload := tx.Payload.(*payload.WithdrawFromSideChain)
 		for _, hash := range payload.SideChainTransactionHashes {
-			if pool.conflictSlots[slotSidechainTxHashes].Contains(hash) {
+			if pool.ContainsKey(hash, slotSidechainTxHashes) {
 				return fmt.Errorf("does not have sidechain hash in sidechain list pool" + hash.String())
 			}
 		}
@@ -840,7 +840,7 @@ func isTransactionCleaned(pool *TxPool, tx *types.Transaction) error {
 	if tx.TxType == types.WithdrawFromSideChain {
 		payload := tx.Payload.(*payload.WithdrawFromSideChain)
 		for _, hash := range payload.SideChainTransactionHashes {
-			if pool.conflictSlots[slotSidechainTxHashes].Contains(hash) {
+			if pool.ContainsKey(hash, slotSidechainTxHashes) {
 				return fmt.Errorf("has sidechain hash in sidechain list pool" + hash.String())
 			}
 		}
