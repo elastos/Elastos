@@ -1,6 +1,6 @@
 
 import XCTest
-import ElastosDIDSDK
+@testable import ElastosDIDSDK
 import SPVWrapper
 
 class TestDataGenerator: XCTestCase {
@@ -14,11 +14,9 @@ class TestDataGenerator: XCTestCase {
         let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return walletPassword})
         adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
         //        TestUtils.deleteFile(storeRoot)
-        store = try DIDStore.openStore(atPath: storeRoot, withType: "filesystem", adapter: adapter)
+        store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", adapter: adapter)
         try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
-        TestData.deleteFile(storeRoot)
-        store = try DIDStore.openStore(atPath: storeRoot, withType: "filesystem", adapter: adapter)
-        
+
         let mnemonic: String = try Mnemonic.generate("0")
         try store.initializePrivateIdentity(using: "0", mnemonic: mnemonic, passPhrase: passphrase, storePassword: storePass, true)
         outputDir = tempDir + "/" + "DIDTestFiles"
@@ -44,7 +42,7 @@ class TestDataGenerator: XCTestCase {
             .sealed(using: storePass)
 
         let db: DIDDocumentBuilder = doc.editing()
-        _ = try db.appendCredential(vc)
+        _ = try db.appendCredential(with: vc)
         issuer = try db.sealed(using: storePass)
         try store.storeDid(using: issuer)
         try store.storeCredential(using: vc, with: "Profile")
@@ -73,20 +71,20 @@ class TestDataGenerator: XCTestCase {
         print("Generate test DID: \(doc.subject)...")
         let db: DIDDocumentBuilder = doc.editing()
         var temp = try TestData.generateKeypair()
-        _ = try db.appendAuthenticationKey("key2", temp.getPublicKeyBase58())
+        _ = try db.appendAuthenticationKey(with: "key2", keyBase58: temp.getPublicKeyBase58())
         //            writeTo("document.key2.sk", Base58.encode(temp.serialize()))
         
         temp = try TestData.generateKeypair()
-        _ = try db.appendAuthenticationKey("key3", temp.getPublicKeyBase58())
+        _ = try db.appendAuthenticationKey(with: "key3", keyBase58: temp.getPublicKeyBase58())
         //            writeTo("document.key3.sk", Base58.encode(temp.serialize()))
         
         temp = try TestData.generateKeypair()
         let controller  = HDKey.DerivedKey.getAddress(temp.getPublicKeyBytes())
-        _ = try db.appendAuthorizationKey("recovery", controller, temp.getPublicKeyBase58())
+        _ = try db.appendAuthorizationKey(with: "recovery", controller: controller, keyBase58: temp.getPublicKeyBase58())
         
-        _ = try db.appendService("openid", "OpenIdConnectVersion1.0Service", "https://openid.example.com/");
-        _ = try db.appendService("vcr", "CredentialRepositoryService", "https://did.example.com/credentials");
-        _ = try db.appendService("carrier", "CarrierAddress", "carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d");
+        _ = try db.appendService(with: "openid", type: "OpenIdConnectVersion1.0Service", endpoint: "https://openid.example.com/")
+        _ = try db.appendService(with: "vcr", type: "CredentialRepositoryService", endpoint: "https://did.example.com/credentials")
+        _ = try db.appendService(with: "carrier", type: "CarrierAddress", endpoint: "carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d")
         
         let selfIssuer = try VerifiableCredentialIssuer(doc)
         var props: Dictionary<String, String> = [: ]
@@ -112,8 +110,8 @@ class TestDataGenerator: XCTestCase {
             .withProperties(props)
             .sealed(using: storePass)
 
-        _ = try db.appendCredential(vcProfile)
-        _ = try db.appendCredential(vcEmail)
+        _ = try db.appendCredential(with: vcProfile)
+        _ = try db.appendCredential(with: vcEmail)
 
         test = try db.sealed(using: storePass)
         try store.storeDid(using: test)
@@ -328,10 +326,10 @@ class TestDataGenerator: XCTestCase {
                     .sealed(using: storePass)
                 
                 let db: DIDDocumentBuilder = doc.editing()
-                _ = try db.appendCredential(vcProfile)
-                _ = try db.appendCredential(vcEmail)
-                _ = try db.appendCredential(vcPassport)
-                _ = try db.appendCredential(vcTwitter)
+                _ = try db.appendCredential(with: vcProfile)
+                _ = try db.appendCredential(with: vcEmail)
+                _ = try db.appendCredential(with: vcPassport)
+                _ = try db.appendCredential(with: vcTwitter)
                 _ = try db.sealed(using: storePass)
                 try store.storeDid(using: doc)
                 

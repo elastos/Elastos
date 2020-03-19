@@ -1,6 +1,6 @@
 
 import XCTest
-import ElastosDIDSDK
+@testable import ElastosDIDSDK
 /*
 class IDChainOperationsTest: XCTestCase {
 

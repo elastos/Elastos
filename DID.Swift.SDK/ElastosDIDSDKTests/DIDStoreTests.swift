@@ -1,6 +1,6 @@
 
 import XCTest
-import ElastosDIDSDK
+@testable import ElastosDIDSDK
 
 class DIDStoreTests: XCTestCase {
     
@@ -50,8 +50,7 @@ class DIDStoreTests: XCTestCase {
             path = storeRoot + "/" + "private" + "/" + "index"
             XCTAssertTrue(testData.existsFile(path))
             
-            store = try DIDStore.openStore(atPath: storeRoot, withType: "filesystem", adapter: adapter)
-            
+            store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", adapter: adapter)
             XCTAssertTrue(try store.containsPrivateIdentity())
         } catch {
             print(error)
@@ -143,7 +142,7 @@ class DIDStoreTests: XCTestCase {
             // Update
             var db: DIDDocumentBuilder = resolved.editing()
             var key = try TestData.generateKeypair()
-            _ = try db.appendAuthenticationKey("key1", key.getPublicKeyBase58())
+            _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
             var newDoc = try db.sealed(using: storePass)
             XCTAssertEqual(2, newDoc.publicKeyCount)
             XCTAssertEqual(2, newDoc.authenticationKeyCount)
@@ -160,7 +159,7 @@ class DIDStoreTests: XCTestCase {
             // Update again
             db = resolved.editing()
             key = try TestData.generateKeypair()
-            _ = try db.appendAuthenticationKey("key2", key.getPublicKeyBase58())
+            _ = try db.appendAuthenticationKey(with: "key2", keyBase58: key.getPublicKeyBase58())
             newDoc = try! db.sealed(using: storePass)
             XCTAssertEqual(3, newDoc.publicKeyCount)
             XCTAssertEqual(3, newDoc.authenticationKeyCount)
@@ -246,7 +245,7 @@ class DIDStoreTests: XCTestCase {
             // update
             let db = resolved.editing()
             let key = try TestData.generateKeypair()
-            _ = try db.appendAuthenticationKey("key2", key.getPublicKeyBase58())
+            _ = try db.appendAuthenticationKey(with: "key2", keyBase58: key.getPublicKeyBase58())
             let newDoc = try db.sealed(using: storePass)
             XCTAssertEqual(2, newDoc.publicKeyCount)
             XCTAssertEqual(2, newDoc.authenticationKeyCount)
@@ -293,7 +292,7 @@ class DIDStoreTests: XCTestCase {
             
             var target = try store.newDid(using: storePass)
             let db: DIDDocumentBuilder = target.editing()
-            _ = try db.authorizationDid("recovery", doc.subject.description)
+            _ = try db.authorizationDid(with: "recovery", controller: doc.subject.description)
             target = try db.sealed(using: storePass)
             XCTAssertNotNil(target)
             XCTAssertEqual(1, target.authorizationKeyCount)
@@ -330,7 +329,7 @@ class DIDStoreTests: XCTestCase {
             let key = try TestData.generateKeypair()
             var db: DIDDocumentBuilder = doc.editing()
             let id = try DIDURL(doc.subject, "key-2")
-            _ = try db.appendAuthenticationKey(id, key.getPublicKeyBase58())
+            _ = try db.appendAuthenticationKey(with: id, keyBase58: key.getPublicKeyBase58())
             try store.storePrivateKey(for: doc.subject, id: id, privateKey: key.getPrivateKeyData(), using: storePass)
             doc = try db.sealed(using: storePass)
             XCTAssertTrue(doc.isValid)
@@ -345,7 +344,7 @@ class DIDStoreTests: XCTestCase {
             
             var target: DIDDocument = try store.newDid(using: storePass)
             db = target.editing()
-            _ = try db.appendAuthorizationKey("recovery", doc.subject.description, key.getPublicKeyBase58())
+            _ = try db.appendAuthorizationKey(with: "recovery", controller: doc.subject.toString(), keyBase58: key.getPublicKeyBase58())
             target = try db.sealed(using: storePass)
             XCTAssertNotNil(target)
             XCTAssertEqual(1, target.authorizationKeyCount)
@@ -385,7 +384,7 @@ class DIDStoreTests: XCTestCase {
             
             let key = try TestData.generateKeypair()
             let id: DIDURL = try DIDURL(doc.subject, "key-2")
-            _ = try db.appendAuthenticationKey(id, key.getPublicKeyBase58())
+            _ = try db.appendAuthenticationKey(with: id, keyBase58: key.getPublicKeyBase58())
             
             try store.storePrivateKey(for: doc.subject, id: id, privateKey: key.getPrivateKeyData(), using: storePass)
             doc = try db.sealed(using: storePass)
@@ -401,7 +400,7 @@ class DIDStoreTests: XCTestCase {
             
             var target = try store.newDid(using: storePass)
             db = target.editing()
-            _ = try db.appendAuthorizationKey("recovery", doc.subject.description, key.getPublicKeyBase58())
+            _ = try db.appendAuthorizationKey(with: "recovery", controller: doc.subject.toString(), keyBase58: key.getPublicKeyBase58())
             target = try db.sealed(using: storePass)
             XCTAssertNotNil(target)
             XCTAssertEqual(1, target.authorizationKeyCount)
@@ -706,8 +705,7 @@ class DIDStoreTests: XCTestCase {
         
         let adapter = DummyAdapter()
         try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
-        let store = try DIDStore.openStore(atPath: jsonPath, withType: "filesystem", adapter: adapter)
-
+        let store = try DIDStore.open(atPath: jsonPath, withType: "filesystem", adapter: adapter)
         
         let dids = try! store.listDids(using: DIDStore.DID_ALL)
         XCTAssertEqual(2, dids.count)
@@ -742,7 +740,7 @@ class DIDStoreTests: XCTestCase {
             try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
             let bundle = Bundle(for: type(of: self))
             let jsonPath = bundle.path(forResource: "teststore", ofType: "")
-            let store = try DIDStore.openStore(atPath: jsonPath!, withType: "filesystem", adapter: DummyAdapter())
+            let store = try DIDStore.open(atPath: jsonPath!, withType: "filesystem", adapter: DummyAdapter())
 
             _ = try store.newDid(using: "wrongpass")
         } catch {
@@ -762,7 +760,7 @@ class DIDStoreTests: XCTestCase {
         try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
         let bundle = Bundle(for: type(of: self))
         let jsonPath = bundle.path(forResource: "teststore", ofType: "")
-        let store = try DIDStore.openStore(atPath: jsonPath!, withType: "filesystem", adapter: DummyAdapter())
+        let store = try DIDStore.open(atPath: jsonPath!, withType: "filesystem", adapter: DummyAdapter())
         
         let doc: DIDDocument = try! store.newDid(using: storePass)
         XCTAssertNotNil(doc)
@@ -805,10 +803,10 @@ class DIDStoreTests: XCTestCase {
             TestData.deleteFile(storeRoot)
             var store: DIDStore
             if (cached){
-                store = try DIDStore.openStore(atPath: storeRoot, withType: "filesystem", adapter: adapter)
+                store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", adapter: adapter)
             }
             else {
-                store = try DIDStore.openStore(atPath: storeRoot, withType: "filesystem", initialCacheCapacity: 0, maxCacheCapacity: 0, adapter: adapter)
+                store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", initialCacheCapacity: 0, maxCacheCapacity: 0, adapter: adapter)
             }
                         
             let mnemonic: String = try Mnemonic.generate("0")
@@ -862,7 +860,7 @@ class DIDStoreTests: XCTestCase {
             for i in 0..<10 {
                 let path = storeRoot + String(i)
                 TestData.deleteFile(path)
-                let store = try DIDStore.openStore(atPath: storeRoot + String(i), withType: "filesystem", adapter: DummyAdapter())
+                let store = try DIDStore.open(atPath: storeRoot + String(i), withType: "filesystem", adapter: DummyAdapter())
                 stores.append(store)
                 let mnemonic: String = try Mnemonic.generate("0")
                 try store.initializePrivateIdentity(using: "0", mnemonic: mnemonic, passPhrase: passphrase, storePassword: storePass, true)

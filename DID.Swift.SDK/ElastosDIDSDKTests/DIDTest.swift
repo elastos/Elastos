@@ -1,6 +1,6 @@
 
 import XCTest
-import ElastosDIDSDK
+@testable import ElastosDIDSDK
 
 class DIDTest: XCTestCase {
     let testMethodSpecificID = "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN"

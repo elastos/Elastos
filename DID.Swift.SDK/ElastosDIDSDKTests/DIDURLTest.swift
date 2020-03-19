@@ -1,6 +1,6 @@
 
 import XCTest
-import ElastosDIDSDK
+@testable import ElastosDIDSDK
 
 let testDID: String = "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN"
 let params: String = "elastos:foo=testvalue;bar=123;keyonly;elastos:foobar=12345"

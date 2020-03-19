@@ -1,6 +1,6 @@
 
 import XCTest
-import ElastosDIDSDK
+@testable import ElastosDIDSDK
 
 class IssuerTest: XCTestCase {
     
@@ -42,7 +42,7 @@ class IssuerTest: XCTestCase {
             let key: HDKey.DerivedKey = try TestData.generateKeypair()
             let signKey: DIDURL = try DIDURL(issuerDoc.subject, "testKey")
             let db: DIDDocumentBuilder = issuerDoc.editing()
-            _ = try db.appendAuthenticationKey(signKey, key.getPublicKeyBase58())
+            _ = try db.appendAuthenticationKey(with: signKey, keyBase58: key.getPublicKeyBase58())
             
             issuerDoc = try db.sealed(using: storePass)
             XCTAssertTrue(issuerDoc.isValid)

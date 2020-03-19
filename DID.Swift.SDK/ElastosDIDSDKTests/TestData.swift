@@ -1,6 +1,6 @@
 
 import XCTest
-import ElastosDIDSDK
+@testable import ElastosDIDSDK
 
 class TestData: XCTestCase {
     private static var dummyAdapter: DummyAdapter?
@@ -62,11 +62,11 @@ class TestData: XCTestCase {
                 TestData.spvAdapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
             }
             adapter = TestData.spvAdapter!
-            try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
+            try DIDBackend.initializeInstance((adapter as! DIDResolver), TestData.getResolverCacheDir())
         }
         try ResolverCache.reset()
         TestData.deleteFile(storeRoot)
-        store = try DIDStore.openStore(atPath: storeRoot, withType: "filesystem", adapter: adapter)
+        store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", adapter: adapter)
         return store
     }
     
@@ -79,7 +79,7 @@ class TestData: XCTestCase {
     func loadDIDDocument(_ fileName: String, _ type_: String) throws -> DIDDocument {
         let bundle = Bundle(for: type(of: self))
         let jsonPath = bundle.path(forResource: fileName, ofType: type_)
-        let doc = try DIDDocument.convertToDIDDocument(fromFilePath: jsonPath!)
+        let doc = try DIDDocument.convertToDIDDocument(fromFileAtPath: jsonPath!)
         
         if store != nil {
             try store.storeDid(using: doc)

@@ -1,14 +1,9 @@
-
 import Foundation
-import ElastosDIDSDK
+@testable import ElastosDIDSDK
 import SPVWrapper
 
 class DummyAdapter: DIDAdapter, DIDResolver {
-    func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> Data {
-        return Data()
-    }
     
-
     private var verbose: Bool = false
     private var idtxs: Array<IDTransactionInfo> = []
     
@@ -31,25 +26,38 @@ class DummyAdapter: DIDAdapter, DIDResolver {
 
         return str
     }
+    
     func createIdTransaction(_ payload: String, _ memo: String?, _ confirms: Int, _ callback: (String, Int, String?) -> Void) {
         
+        do {
+            let txid = try createIdTransaction(payload, memo)
+            callback(txid, 0, nil);
+        }
+        catch {
+            // TODO: callback("")
+            callback("", -1, error.localizedDescription);
+        }
     }
     
     func createIdTransaction(_ payload: String, _ memo: String?) throws -> String {
-        /*
+        
         do {
             let request: IDChainRequest = try IDChainRequest.fromJson(payload)
             
             if (verbose) {
                 print("ID Transaction: \(request.operation)\(request.did!)")
                 print("     \(request.toJson(false))\(request.did!)" )
+                
+                if request.operation != IDChainRequestOperation.DEACTIVATE {
+                    print("     \(request.document!.toString(true))" )
+                }
             }
             
-            if try !request.isValid() {
+            if !request.isValid {
                 throw TestError.failue("Invalid ID transaction request.")
             }
-            if request.operation != IDChainRequest.Operation.DEACTIVATE {
-                if try !request.doc!.isValid() {
+            if request.operation != IDChainRequestOperation.DEACTIVATE {
+                if !request.document!.isValid {
                     throw TestError.failue("Invalid DID Document.")
                 }
             }
@@ -67,11 +75,11 @@ class DummyAdapter: DIDAdapter, DIDResolver {
                     throw TestError.failue("DID not exist.")
                 }
                 
-                guard ti!.operation != IDChainRequest.Operation.DEACTIVATE else {
+                guard ti!.operation != IDChainRequestOperation.DEACTIVATE else {
                     throw TestError.failue("DID already dactivated.")
                 }
                 
-                guard request.previousTxid == ti!.transactionId else {
+                guard request.previousTransactionId == ti!.transactionId else {
                     throw TestError.failue("Previous transaction id missmatch.")
                 }
                 break
@@ -81,16 +89,14 @@ class DummyAdapter: DIDAdapter, DIDResolver {
                     throw TestError.failue("DID not exist.")
                 }
                 
-                guard ti!.operation != IDChainRequest.Operation.DEACTIVATE else {
+                guard ti!.operation != IDChainRequestOperation.DEACTIVATE else {
                     throw TestError.failue("DID already dactivated.")
                 }
                 break
                 }
-            default: break
-                
             }
-            
-            ti = IDTransactionInfo(DummyAdapter.generateTxId(), DateFormater.currentDate(), request)
+            //TODO: Date()
+            ti = IDTransactionInfo(DummyAdapter.generateTxId(), Date(), request)
             idtxs.append(ti!)
             
             return ti!.transactionId
@@ -98,12 +104,10 @@ class DummyAdapter: DIDAdapter, DIDResolver {
             print(error)
             throw error
         }
-        */
-        return ""
     }
-    
-    func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String {
-        /*
+
+    func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> Data {
+        
         if (verbose) {
             print("Resolve: " + did + "...")
         }
@@ -116,22 +120,22 @@ class DummyAdapter: DIDAdapter, DIDResolver {
         }
         let target: DID = try DID(d)
         var matched: Bool = false
-        
-        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
-        dic["id"] = requestId
-        dic["jsonrpc"] = "2.0"
+        let generator = JsonGenerator()
+        generator.writeStartObject()
+        generator.writeStringField("id", requestId)
+        generator.writeStringField("jsonrpc", "2.0")
+        generator.writeFieldName("result")
+        generator.writeStartObject()
+        generator.writeStringField("did", target.toString())
 
-        var redic: OrderedDictionary<String, Any> = OrderedDictionary()
-        redic["did"] = target.description
-        var status:Int = 3
+        var status = 3
         let last = getLastTransaction(target)
-        
         if last != nil {
-            if last!.operation == IDChainRequest.Operation.DEACTIVATE {
+            if last!.operation == IDChainRequestOperation.DEACTIVATE {
                 status = 2
             }
             else {
-                if last!.request.doc!.isExpired() {
+                if last!.request.document!.isExpired {
                     status = 1
                 }
                 else {
@@ -140,31 +144,29 @@ class DummyAdapter: DIDAdapter, DIDResolver {
             }
             matched = true
         }
+        generator.writeNumberField("status", status)
 
-        redic["status"] = String("\(status)")
         if status != 3 {
+            generator.writeFieldName("transaction")
+            generator.writeStartArray()
             let reversedArr: Array = idtxs.reversed()
-            var arr: Array<OrderedDictionary<String, Any>> = [ ]
             for ti in reversedArr {
                 if ti.did == target {
-                    let dic = ti.toJson()
-                    arr.append(dic)
+                    ti.toJson(generator)
                     if (!all) {
                         break
                     }
                 }
             }
-            redic["transaction"] = arr
+            generator.writeEndArray()
         }
+        generator.writeEndObject()
+        generator.writeEndObject()
 
-        dic["result"] = redic
         if (verbose) {
             print(matched ? "success" : "failed")
         }
-        let json = JsonHelper.creatJsonString(dic: dic)
-        return json
-        */
-        return ""
+        return generator.toString().data(using: .utf8)!
     }
     
     public func reset() {
@@ -172,14 +174,12 @@ class DummyAdapter: DIDAdapter, DIDResolver {
     }
     
     private func getLastTransaction(_ did: DID) -> IDTransactionInfo? {
-        /*
         let reversedArr = idtxs.reversed()
         for ti in reversedArr {
             if ti.did == did {
                 return ti
             }
         }
-        */
         return nil
     }
     

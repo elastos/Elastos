@@ -78,10 +78,9 @@ public class FileSystemStorage: DIDStorage {
 
             var data = Data(capacity: 8)
             data.append(contentsOf: FileSystemStorage.STORE_MAGIC)
-
-            let version = [UInt8]()
+            
             // TODO: do with version
-            data.append(contentsOf: version)
+            data.append(contentsOf: intToByteArray(i: FileSystemStorage.STORE_VERSION))
 
             let file = try openFileHandle(true, Constants.META_FILE)
             file.write(data)
@@ -866,5 +865,14 @@ public class FileSystemStorage: DIDStorage {
         fileManager.createFile(atPath: path, contents:nil, attributes:nil)
         let handle = FileHandle(forWritingAtPath:path)
         handle?.write(text.data(using: String.Encoding.utf8)!)
+    }
+    
+    func intToByteArray(i : Int) -> [UInt8] {
+        var result: [UInt8] = []
+        result.append(UInt8((i >> 24) & 0xFF))
+        result.append(UInt8((i >> 16) & 0xFF))
+        result.append(UInt8((i >> 8) & 0xFF))
+        result.append(UInt8(i & 0xFF))
+        return result
     }
 }

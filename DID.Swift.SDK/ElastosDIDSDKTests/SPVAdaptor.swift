@@ -1,6 +1,6 @@
 
 import Foundation
-import ElastosDIDSDK
+@testable import ElastosDIDSDK
 import SPVWrapper
 
 public typealias PasswordCallback = (_ walletDir: String, _ walletId: String) -> String?
@@ -8,7 +8,6 @@ public class SPVAdaptor: DIDAdapter {
     public func createIdTransaction(_ payload: String, _ memo: String?, _ confirms: Int, _ callback: (String, Int, String?) -> Void) {
         
     }
-    
 
     var walletDir: String!
     var walletId: String!
