@@ -858,6 +858,7 @@ func TestCommittee_RollbackCRCProposal(t *testing.T) {
 	cfg := &config.DefaultParams
 	cfg.CRCArbiters = cfg.CRCArbiters[0:2]
 	cfg.CRMemberCount = 2
+	cfg.CRAgreementCount = 2
 
 	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
@@ -2132,8 +2133,9 @@ func TestCommitee_RollbackCRCBlendTx(t *testing.T) {
 	cfg := &config.DefaultParams
 	cfg.CRCArbiters = cfg.CRCArbiters[0:2]
 	cfg.CRMemberCount = 2
-	// avoid getting UTXOs from database
+	cfg.CRAgreementCount = 2
 
+	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -2192,6 +2194,14 @@ func TestCommitee_RollbackCRCBlendTx(t *testing.T) {
 		Header: types.Header{
 			Height: currentHeight,
 		},
+		Transactions: []*types.Transaction{},
+	}, nil)
+
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
 		Transactions: []*types.Transaction{
 			proposalTxA,
 			proposalTxB,
@@ -2201,9 +2211,6 @@ func TestCommitee_RollbackCRCBlendTx(t *testing.T) {
 	assert.Equal(t, 3, len(committee.GetProposals(Registered)))
 	assert.Equal(t, 2, len(committee.GetAllMembers()))
 
-	//
-	// set CR agreement count
-	committee.params.CRAgreementCount = 2
 	// review proposal
 	proposalReviewTxB1 := getCRCProposalReviewTx(proposalBHash, payload.Approve,
 		publicKeyStr1, privateKeyStr1)
@@ -2356,8 +2363,9 @@ func TestCommitee_RollbackCRCBlendAppropriationTx(t *testing.T) {
 	cfg := &config.DefaultParams
 	cfg.CRCArbiters = cfg.CRCArbiters[0:2]
 	cfg.CRMemberCount = 2
-	// avoid getting UTXOs from database
+	cfg.CRAgreementCount = 2
 
+	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -2416,6 +2424,14 @@ func TestCommitee_RollbackCRCBlendAppropriationTx(t *testing.T) {
 		Header: types.Header{
 			Height: currentHeight,
 		},
+		Transactions: []*types.Transaction{},
+	}, nil)
+
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
 		Transactions: []*types.Transaction{
 			proposalTxA,
 			proposalTxB,
@@ -2425,9 +2441,6 @@ func TestCommitee_RollbackCRCBlendAppropriationTx(t *testing.T) {
 	assert.Equal(t, 3, len(committee.GetProposals(Registered)))
 	assert.Equal(t, 2, len(committee.GetAllMembers()))
 
-	//
-	// set CR agreement count
-	committee.params.CRAgreementCount = 2
 	// review proposal
 	proposalReviewTxB1 := getCRCProposalReviewTx(proposalBHash, payload.Approve,
 		publicKeyStr1, privateKeyStr1)
@@ -2611,8 +2624,9 @@ func TestCommitee_RollbackCRCBlendTxPropoalVert(t *testing.T) {
 	cfg := &config.DefaultParams
 	cfg.CRCArbiters = cfg.CRCArbiters[0:2]
 	cfg.CRMemberCount = 2
-	// avoid getting UTXOs from database
+	cfg.CRAgreementCount = 2
 
+	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
 
 	// register cr
@@ -2667,6 +2681,14 @@ func TestCommitee_RollbackCRCBlendTxPropoalVert(t *testing.T) {
 		Header: types.Header{
 			Height: currentHeight,
 		},
+		Transactions: []*types.Transaction{},
+	}, nil)
+
+	currentHeight++
+	committee.ProcessBlock(&types.Block{
+		Header: types.Header{
+			Height: currentHeight,
+		},
 		Transactions: []*types.Transaction{
 			proposalTxB,
 			proposalTxC,
@@ -2674,9 +2696,6 @@ func TestCommitee_RollbackCRCBlendTxPropoalVert(t *testing.T) {
 	}, nil)
 	assert.Equal(t, 2, len(committee.GetProposals(Registered)))
 	assert.Equal(t, 2, len(committee.GetAllMembers()))
-
-	// set CR agreement count
-	committee.params.CRAgreementCount = 2
 
 	// review proposal
 	proposalReviewTxB1 := getCRCProposalReviewTx(proposalBHash, payload.Approve,

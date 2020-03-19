@@ -10,8 +10,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math"
-
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -27,6 +25,8 @@ import (
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/vm"
+	"math"
+	"sort"
 )
 
 const (
@@ -2079,29 +2079,42 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		return errors.New("budgets exceeded the maximum limit")
 	}
 
-	if proposal.ProposalType == payload.ELIP &&
-		len(proposal.Budgets) != ELIPBudgetsCount {
-		return errors.New("ELIP needs to have and only have two outputs")
+	if proposal.ProposalType == payload.ELIP {
+		if len(proposal.Budgets) != ELIPBudgetsCount {
+			return errors.New("ELIP needs to have and only have two outputs")
+		}
+		for _, budget := range proposal.Budgets {
+			if budget.Type == payload.NormalPayment {
+				return errors.New("ELIP needs to have no normal payment")
+			}
+		}
 	}
 
 	// Check budgets of proposal
 	if len(proposal.Budgets) < 1 {
 		return errors.New("a proposal cannot be without a Budget")
 	}
-	if proposal.Budgets[0].Type == payload.Imprest && proposal.Budgets[0].Stage != 0 {
+	budgets := make([]payload.Budget, len(proposal.Budgets))
+	for i, budget := range proposal.Budgets {
+		budgets[i] = budget
+	}
+	sort.Slice(budgets, func(i, j int) bool {
+		return budgets[i].Stage < budgets[j].Stage
+	})
+	if budgets[0].Type == payload.Imprest && budgets[0].Stage != 0 {
 		return errors.New("proposal imprest can only be in the first phase")
 	}
-	if proposal.Budgets[0].Type != payload.Imprest && proposal.Budgets[0].Stage != 1 {
+	if budgets[0].Type != payload.Imprest && budgets[0].Stage != 1 {
 		return errors.New("the first general type budget needs to start at the beginning")
 	}
-	if proposal.Budgets[len(proposal.Budgets)-1].Type != payload.FinalPayment {
-		return errors.New("proposal finalpayment can only be in the last phase")
+	if budgets[len(budgets)-1].Type != payload.FinalPayment {
+		return errors.New("proposal final payment can only be in the last phase")
 	}
-	stage := proposal.Budgets[0].Stage
+	stage := budgets[0].Stage
 	var amount common.Fixed64
 	var imprestPaymentCount int
 	var finalPaymentCount int
-	for _, b := range proposal.Budgets {
+	for _, b := range budgets {
 		switch b.Type {
 		case payload.Imprest:
 			imprestPaymentCount++
