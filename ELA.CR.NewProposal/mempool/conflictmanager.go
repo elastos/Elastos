@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -29,36 +29,41 @@ const (
 	slotTxInputsReferKeys       = "TxInputsReferKeys"
 )
 
+type conflict struct {
+	name string
+	slot *conflictSlot
+}
+
 // conflictManager hold a set of conflict slots, and refer some query methods.
 type conflictManager struct {
-	conflictSlots map[string]*conflictSlot
+	conflictSlots []*conflict
 }
 
 func (m *conflictManager) VerifyTx(tx *types.Transaction) errors.ELAError {
-	for k, v := range m.conflictSlots {
-		if err := v.VerifyTx(tx); err != nil {
+	for _, v := range m.conflictSlots {
+		if err := v.slot.VerifyTx(tx); err != nil {
 			return errors.SimpleWithMessage(errors.ErrTxPoolFailure, err,
-				fmt.Sprintf("slot %s verify tx error", k))
+				fmt.Sprintf("slot %s verify tx error", v.name))
 		}
 	}
 	return nil
 }
 
 func (m *conflictManager) AppendTx(tx *types.Transaction) errors.ELAError {
-	for k, v := range m.conflictSlots {
-		if err := v.AppendTx(tx); err != nil {
+	for _, v := range m.conflictSlots {
+		if err := v.slot.AppendTx(tx); err != nil {
 			return errors.SimpleWithMessage(errors.ErrTxPoolFailure, err,
-				fmt.Sprintf("slot %s append tx error", k))
+				fmt.Sprintf("slot %s append tx error", v.name))
 		}
 	}
 	return nil
 }
 
 func (m *conflictManager) RemoveTx(tx *types.Transaction) errors.ELAError {
-	for k, v := range m.conflictSlots {
-		if err := v.RemoveTx(tx); err != nil {
+	for _, v := range m.conflictSlots {
+		if err := v.slot.RemoveTx(tx); err != nil {
 			return errors.SimpleWithMessage(errors.ErrTxPoolFailure, err,
-				fmt.Sprintf("slot %s remove tx error", k))
+				fmt.Sprintf("slot %s remove tx error", v.name))
 		}
 	}
 	return nil
@@ -66,34 +71,37 @@ func (m *conflictManager) RemoveTx(tx *types.Transaction) errors.ELAError {
 
 func (m *conflictManager) GetTx(key interface{},
 	slotName string) *types.Transaction {
-	slot, ok := m.conflictSlots[slotName]
-	if !ok {
-		return nil
+	for _, v := range m.conflictSlots {
+		if v.name == slotName {
+			return v.slot.GetTx(key)
+		}
 	}
-	return slot.GetTx(key)
+	return nil
 }
 
 func (m *conflictManager) ContainsKey(key interface{}, slotName string) bool {
-	slot, ok := m.conflictSlots[slotName]
-	if !ok {
-		return false
+	for _, v := range m.conflictSlots {
+		if v.name == slotName {
+			return v.slot.Contains(key)
+		}
 	}
-	return slot.Contains(key)
+	return false
 }
 
 func (m *conflictManager) RemoveKey(key interface{},
 	slotName string) errors.ELAError {
-	slot, ok := m.conflictSlots[slotName]
-	if !ok {
-		return errors.SimpleWithMessage(errors.ErrTxPoolFailure, nil,
-			fmt.Sprintf("slot %s not exist", slotName))
+	for _, v := range m.conflictSlots {
+		if v.name == slotName {
+			return v.slot.removeKey(key)
+		}
 	}
-	return slot.removeKey(key)
+	return errors.SimpleWithMessage(errors.ErrTxPoolFailure, nil,
+		fmt.Sprintf("slot %s not exist", slotName))
 }
 
 func (m *conflictManager) Empty() bool {
 	for _, v := range m.conflictSlots {
-		if !v.Empty() {
+		if !v.slot.Empty() {
 			return false
 		}
 	}
@@ -102,165 +110,207 @@ func (m *conflictManager) Empty() bool {
 
 func newConflictManager() conflictManager {
 	return conflictManager{
-		conflictSlots: map[string]*conflictSlot{
+		conflictSlots: []*conflict{
 			// DPoS owner public key
-			slotDPoSOwnerPublicKey: newConflictSlot(str,
-				keyTypeFuncPair{
-					Type: types.RegisterProducer,
-					Func: strProducerInfoOwnerPublicKey,
-				},
-				keyTypeFuncPair{
-					Type: types.UpdateProducer,
-					Func: strProducerInfoOwnerPublicKey,
-				},
-				keyTypeFuncPair{
-					Type: types.CancelProducer,
-					Func: strCancelProducerOwnerPublicKey,
-				},
-				keyTypeFuncPair{
-					Type: types.RegisterCR,
-					Func: strRegisterCRPublicKey,
-				},
-			),
+			{
+				name: slotDPoSOwnerPublicKey,
+				slot: newConflictSlot(str,
+					keyTypeFuncPair{
+						Type: types.RegisterProducer,
+						Func: strProducerInfoOwnerPublicKey,
+					},
+					keyTypeFuncPair{
+						Type: types.UpdateProducer,
+						Func: strProducerInfoOwnerPublicKey,
+					},
+					keyTypeFuncPair{
+						Type: types.CancelProducer,
+						Func: strCancelProducerOwnerPublicKey,
+					},
+					keyTypeFuncPair{
+						Type: types.RegisterCR,
+						Func: strRegisterCRPublicKey,
+					},
+				),
+			},
 			// DPoS node public key
-			slotDPoSNodePublicKey: newConflictSlot(str,
-				keyTypeFuncPair{
-					Type: types.RegisterProducer,
-					Func: strProducerInfoNodePublicKey,
-				},
-				keyTypeFuncPair{
-					Type: types.UpdateProducer,
-					Func: strProducerInfoNodePublicKey,
-				},
-				keyTypeFuncPair{
-					Type: types.ActivateProducer,
-					Func: strActivateProducerNodePublicKey,
-				},
-				keyTypeFuncPair{
-					Type: types.RegisterCR,
-					Func: strRegisterCRPublicKey,
-				},
-			),
+			{
+				name: slotDPoSNodePublicKey,
+				slot: newConflictSlot(str,
+					keyTypeFuncPair{
+						Type: types.RegisterProducer,
+						Func: strProducerInfoNodePublicKey,
+					},
+					keyTypeFuncPair{
+						Type: types.UpdateProducer,
+						Func: strProducerInfoNodePublicKey,
+					},
+					keyTypeFuncPair{
+						Type: types.ActivateProducer,
+						Func: strActivateProducerNodePublicKey,
+					},
+					keyTypeFuncPair{
+						Type: types.RegisterCR,
+						Func: strRegisterCRPublicKey,
+					},
+				),
+			},
 			// DPoS nickname
-			slotDPoSNickname: newConflictSlot(str,
-				keyTypeFuncPair{
-					Type: types.RegisterProducer,
-					Func: strProducerInfoNickname,
-				},
-				keyTypeFuncPair{
-					Type: types.UpdateProducer,
-					Func: strProducerInfoNickname,
-				},
-			),
+			{
+				name: slotDPoSNickname,
+				slot: newConflictSlot(str,
+					keyTypeFuncPair{
+						Type: types.RegisterProducer,
+						Func: strProducerInfoNickname,
+					},
+					keyTypeFuncPair{
+						Type: types.UpdateProducer,
+						Func: strProducerInfoNickname,
+					},
+				),
+			},
 			// CR CID
-			slotCRDID: newConflictSlot(programHash,
-				keyTypeFuncPair{
-					Type: types.RegisterCR,
-					Func: addrCRInfoCRCID,
-				},
-				keyTypeFuncPair{
-					Type: types.UpdateCR,
-					Func: addrCRInfoCRCID,
-				},
-				keyTypeFuncPair{
-					Type: types.UnregisterCR,
-					Func: addrUnregisterCRCID,
-				},
-			),
+			{
+				name: slotCRDID,
+				slot: newConflictSlot(programHash,
+					keyTypeFuncPair{
+						Type: types.RegisterCR,
+						Func: addrCRInfoCRCID,
+					},
+					keyTypeFuncPair{
+						Type: types.UpdateCR,
+						Func: addrCRInfoCRCID,
+					},
+					keyTypeFuncPair{
+						Type: types.UnregisterCR,
+						Func: addrUnregisterCRCID,
+					},
+				),
+			},
 			// CR nickname
-			slotCRNickname: newConflictSlot(str,
-				keyTypeFuncPair{
-					Type: types.RegisterCR,
-					Func: strCRInfoNickname,
-				},
-				keyTypeFuncPair{
-					Type: types.UpdateCR,
-					Func: strCRInfoNickname,
-				},
-			),
+			{
+				name: slotCRNickname,
+				slot: newConflictSlot(str,
+					keyTypeFuncPair{
+						Type: types.RegisterCR,
+						Func: strCRInfoNickname,
+					},
+					keyTypeFuncPair{
+						Type: types.UpdateCR,
+						Func: strCRInfoNickname,
+					},
+				),
+			},
 			// CR and DPoS program code
-			slotProgramCode: newConflictSlot(str,
-				keyTypeFuncPair{
-					Type: types.ReturnDepositCoin,
-					Func: strTxProgramCode,
-				},
-				keyTypeFuncPair{
-					Type: types.ReturnCRDepositCoin,
-					Func: strTxProgramCode,
-				},
-			),
+			{
+				name: slotProgramCode,
+				slot: newConflictSlot(str,
+					keyTypeFuncPair{
+						Type: types.ReturnDepositCoin,
+						Func: strTxProgramCode,
+					},
+					keyTypeFuncPair{
+						Type: types.ReturnCRDepositCoin,
+						Func: strTxProgramCode,
+					},
+				),
+			},
 			// CRC proposal draft hash
-			slotCRCProposalDraftHash: newConflictSlot(hash,
-				keyTypeFuncPair{
-					Type: types.CRCProposal,
-					Func: hashCRCProposalDraftHash,
-				},
-			),
+			{
+				name: slotCRCProposalDraftHash,
+				slot: newConflictSlot(hash,
+					keyTypeFuncPair{
+						Type: types.CRCProposal,
+						Func: hashCRCProposalDraftHash,
+					},
+				),
+			},
 			// CRC proposal hash
-			slotCRCProposalHash: newConflictSlot(hash,
-				keyTypeFuncPair{
-					Type: types.CRCProposalWithdraw,
-					Func: hashCRCProposalWithdrawProposalHash,
-				},
-			),
+			{
+				name: slotCRCProposalHash,
+				slot: newConflictSlot(hash,
+					keyTypeFuncPair{
+						Type: types.CRCProposalWithdraw,
+						Func: hashCRCProposalWithdrawProposalHash,
+					},
+				),
+			},
 			// CRC proposal tracking hash
-			slotCRCProposalTrackingHash: newConflictSlot(hash,
-				keyTypeFuncPair{
-					Type: types.CRCProposalTracking,
-					Func: hashCRCProposalTrackingProposalHash,
-				},
-			),
+			{
+				name: slotCRCProposalTrackingHash,
+				slot: newConflictSlot(hash,
+					keyTypeFuncPair{
+						Type: types.CRCProposalTracking,
+						Func: hashCRCProposalTrackingProposalHash,
+					},
+				),
+			},
 			// CRC proposal review key
-			slotCRCProposalReviewKey: newConflictSlot(str,
-				keyTypeFuncPair{
-					Type: types.CRCProposalReview,
-					Func: strProposalReviewKey,
-				},
-			),
+			{
+				name: slotCRCProposalReviewKey,
+				slot: newConflictSlot(str,
+					keyTypeFuncPair{
+						Type: types.CRCProposalReview,
+						Func: strProposalReviewKey,
+					},
+				),
+			},
 			// CRC appropriation key
-			slotCRCAppropriationKey: newConflictSlot(str,
-				keyTypeFuncPair{
-					Type: types.CRCAppropriation,
-					Func: strCRCAppropriation,
-				},
-			),
+			{
+				name: slotCRCAppropriationKey,
+				slot: newConflictSlot(str,
+					keyTypeFuncPair{
+						Type: types.CRCAppropriation,
+						Func: strCRCAppropriation,
+					},
+				),
+			},
 			// special tx hash
-			slotSpecialTxHash: newConflictSlot(hash,
-				keyTypeFuncPair{
-					Type: types.IllegalProposalEvidence,
-					Func: hashSpecialTxHash,
-				},
-				keyTypeFuncPair{
-					Type: types.IllegalVoteEvidence,
-					Func: hashSpecialTxHash,
-				},
-				keyTypeFuncPair{
-					Type: types.IllegalBlockEvidence,
-					Func: hashSpecialTxHash,
-				},
-				keyTypeFuncPair{
-					Type: types.IllegalSidechainEvidence,
-					Func: hashSpecialTxHash,
-				},
-				keyTypeFuncPair{
-					Type: types.InactiveArbitrators,
-					Func: hashSpecialTxHash,
-				},
-			),
+			{
+				name: slotSpecialTxHash,
+				slot: newConflictSlot(hash,
+					keyTypeFuncPair{
+						Type: types.IllegalProposalEvidence,
+						Func: hashSpecialTxHash,
+					},
+					keyTypeFuncPair{
+						Type: types.IllegalVoteEvidence,
+						Func: hashSpecialTxHash,
+					},
+					keyTypeFuncPair{
+						Type: types.IllegalBlockEvidence,
+						Func: hashSpecialTxHash,
+					},
+					keyTypeFuncPair{
+						Type: types.IllegalSidechainEvidence,
+						Func: hashSpecialTxHash,
+					},
+					keyTypeFuncPair{
+						Type: types.InactiveArbitrators,
+						Func: hashSpecialTxHash,
+					},
+				),
+			},
 			// side chain transaction hashes
-			slotSidechainTxHashes: newConflictSlot(hashArray,
-				keyTypeFuncPair{
-					Type: types.WithdrawFromSideChain,
-					Func: hashArraySidechainTransactionHashes,
-				},
-			),
+			{
+				name: slotSidechainTxHashes,
+				slot: newConflictSlot(hashArray,
+					keyTypeFuncPair{
+						Type: types.WithdrawFromSideChain,
+						Func: hashArraySidechainTransactionHashes,
+					},
+				),
+			},
 			// tx inputs refer keys
-			slotTxInputsReferKeys: newConflictSlot(strArray,
-				keyTypeFuncPair{
-					Type: allType,
-					Func: strArrayTxReferences,
-				},
-			),
+			{
+				name: slotTxInputsReferKeys,
+				slot: newConflictSlot(strArray,
+					keyTypeFuncPair{
+						Type: allType,
+						Func: strArrayTxReferences,
+					},
+				),
+			},
 		},
 	}
 }
