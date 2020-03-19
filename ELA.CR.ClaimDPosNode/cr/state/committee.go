@@ -520,18 +520,22 @@ func (c *Committee) getHistoryMember(code []byte) []*CRMember {
 func (c *Committee) RollbackTo(height uint32) error {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
-	if err := c.lastHistory.RollbackTo(height); err != nil {
-		log.Debug("committee last history rollback err:", err)
+	currentHeight := c.lastHistory.Height()
+	for i := currentHeight - 1; i >= height; i-- {
+		if err := c.lastHistory.RollbackTo(i); err != nil {
+			log.Debug("committee last history rollback err:", err)
+		}
+		if err := c.manager.history.RollbackTo(i); err != nil {
+			log.Debug("manager rollback err:", err)
+		}
+		if err := c.state.rollbackTo(i); err != nil {
+			log.Debug("state rollback err:", err)
+		}
+		if err := c.firstHistory.RollbackTo(i); err != nil {
+			log.Debug("committee first history rollback err:", err)
+		}
 	}
-	if err := c.manager.history.RollbackTo(height); err != nil {
-		log.Debug("manager rollback err:", err)
-	}
-	if err := c.state.rollbackTo(height); err != nil {
-		log.Debug("state rollback err:", err)
-	}
-	if err := c.firstHistory.RollbackTo(height); err != nil {
-		log.Debug("committee first history rollback err:", err)
-	}
+
 	return nil
 }
 
