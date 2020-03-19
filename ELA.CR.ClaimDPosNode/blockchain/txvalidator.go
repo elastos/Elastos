@@ -10,6 +10,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
+	"sort"
+
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -25,8 +28,6 @@ import (
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/vm"
-	"math"
-	"sort"
 )
 
 const (
@@ -2081,7 +2082,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 
 	if proposal.ProposalType == payload.ELIP {
 		if len(proposal.Budgets) != ELIPBudgetsCount {
-			return errors.New("ELIP needs to have and only have two outputs")
+			return errors.New("ELIP needs to have and only have two budget")
 		}
 		for _, budget := range proposal.Budgets {
 			if budget.Type == payload.NormalPayment {
@@ -2144,7 +2145,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	} else if amount > b.crCommittee.CRCCommitteeBalance-
 		b.crCommittee.CRCCommitteeUsedAmount {
 		return errors.New("budgets exceeds the balance of CRC committee")
-	} else if amount <= 0 {
+	} else if amount < 0 {
 		return errors.New("budgets is invalid")
 	}
 	emptyUint168 := common.Uint168{}

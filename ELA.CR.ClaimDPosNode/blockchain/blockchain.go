@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -1342,9 +1342,13 @@ func (b *BlockChain) BlockExists(hash *Uint256) bool {
 
 	// Check in database (rest of main chain not in memory).
 	exist, height, _ := b.db.GetFFLDB().BlockExists(hash)
+	if !exist {
+		return false
+	}
 
-	if !exist || uint32(len(b.Nodes)) <= height ||
-		!b.Nodes[height].Hash.IsEqual(*hash) {
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+	if uint32(len(b.Nodes)) <= height || !b.Nodes[height].Hash.IsEqual(*hash) {
 		return false
 	}
 
