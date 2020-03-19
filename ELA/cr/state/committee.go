@@ -251,8 +251,8 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.updateCandidatesDepositCoin(block.Height)
 	c.state.history.Commit(block.Height)
 
-	c.manager.updateProposals(block.Height, c.CirculationAmount)
-	c.tryStartVotingPeriod(block.Height)
+	inElectionPeriod := c.tryStartVotingPeriod(block.Height)
+	c.manager.updateProposals(block.Height, c.CirculationAmount, inElectionPeriod)
 	c.freshCirculationAmount(c.lastHistory, block.Height, block.Height)
 
 	if c.shouldChange(block.Height) {
@@ -402,30 +402,34 @@ func (c *Committee) recordLastVotingStartHeight(height uint32) {
 	}
 }
 
-func (c *Committee) tryStartVotingPeriod(height uint32) {
+func (c *Committee) tryStartVotingPeriod(height uint32) (inElection bool) {
+	inElection = c.InElectionPeriod
 	if !c.InElectionPeriod {
 		return
 	}
 
-	lastVotingStartHeight := c.LastVotingStartHeight
-	inElectionPeriod := c.InElectionPeriod
-	c.lastHistory.Append(height, func() {
-		var normalCount uint32
-		for _, m := range c.Members {
-			if m.MemberState == MemberElected {
-				normalCount++
-			}
+	var normalCount uint32
+	for _, m := range c.Members {
+		if m.MemberState == MemberElected {
+			normalCount++
 		}
-		if normalCount < c.params.CRAgreementCount {
+	}
+	if normalCount < c.params.CRAgreementCount {
+		lastVotingStartHeight := c.LastVotingStartHeight
+		inElectionPeriod := c.InElectionPeriod
+		c.lastHistory.Append(height, func() {
 			c.InElectionPeriod = false
 			if !c.isInVotingPeriod(height) {
 				c.LastVotingStartHeight = height
 			}
-		}
-	}, func() {
-		c.InElectionPeriod = inElectionPeriod
-		c.LastVotingStartHeight = lastVotingStartHeight
-	})
+		}, func() {
+			c.InElectionPeriod = inElectionPeriod
+			c.LastVotingStartHeight = lastVotingStartHeight
+		})
+		inElection = false
+	}
+
+	return
 }
 
 func (c *Committee) processImpeachment(height uint32, member []byte,

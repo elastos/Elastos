@@ -145,20 +145,39 @@ func (p *ProposalManager) availableWithdrawalAmount(hash common.Uint256) common.
 
 // updateProposals will update proposals' status.
 func (p *ProposalManager) updateProposals(height uint32,
-	circulation common.Fixed64) {
+	circulation common.Fixed64, inElectionPeriod bool) {
 	for _, v := range p.Proposals {
 		switch v.Status {
 		case Registered:
+			if !inElectionPeriod {
+				p.abortProposal(v, height)
+				break
+			}
 			if p.shouldEndCRCVote(v.RegisterHeight, height) {
 				p.transferRegisteredState(v, height)
 			}
 		case CRAgreed:
+			if !inElectionPeriod {
+				p.abortProposal(v, height)
+				break
+			}
 			if p.shouldEndPublicVote(v.VoteStartHeight, height) {
 				p.transferCRAgreedState(v, height, circulation)
 			}
 		}
 	}
 	p.history.Commit(height)
+}
+
+// abortProposal will transfer the status to aborted.
+func (p *ProposalManager) abortProposal(proposal *ProposalState,
+	height uint32) {
+	oriStatus := proposal.Status
+	p.history.Append(height, func() {
+		proposal.Status = Aborted
+	}, func() {
+		proposal.Status = oriStatus
+	})
 }
 
 // transferRegisteredState will transfer the Registered state by CR agreement
@@ -173,7 +192,6 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 	}
 
 	oriVoteStartHeight := proposal.VoteStartHeight
-
 	if agreedCount >= p.params.CRAgreementCount {
 		p.history.Append(height, func() {
 			proposal.Status = CRAgreed
