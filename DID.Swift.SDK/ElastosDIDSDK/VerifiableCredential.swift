@@ -104,7 +104,7 @@ public class VerifiableCredential: DIDObject {
     }
 
     func getExpirationDate() -> Date? {
-        return _issuanceDate
+        return _expirationDate
     }
 
     func setExpirationDate(_ expirationDate: Date) {
@@ -327,11 +327,17 @@ public class VerifiableCredential: DIDObject {
         let issuer = try serializer.getDID(Constants.ISSUER, options)
 
         options = JsonSerializer.Options()
-                                .withHint("credential expirationDate")
+                                .withHint("credential issuanceDate")
                                 .withError(error)
         let issuanceDate = try serializer.getDate(Constants.ISSUANCE_DATE, options)
 
         options = JsonSerializer.Options()
+                                .withHint("credential expirationDate")
+                                .withError(error)
+        let expirationDate = try serializer.getDate(Constants.EXPIRATION_DATE, options)
+
+        options = JsonSerializer.Options()
+                                .withRef(ref)
                                 .withHint("credential id")
                                 .withError(error)
         let id = try serializer.getDIDURL(Constants.ID, options)
@@ -350,6 +356,7 @@ public class VerifiableCredential: DIDObject {
 
         setIssuer(issuer)
         setIssuanceDate(issuanceDate)
+        setExpirationDate(expirationDate)
         setSubject(subject)
         setId(id!)
         setProof(proof)

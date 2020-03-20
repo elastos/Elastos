@@ -1,5 +1,13 @@
 import Foundation
 
+public enum JsonNodeType: Int {
+    case ARRAY
+    case BOOLEAN
+    case NIL
+    case NUMBER
+    case DICTIONARY
+    case STRING
+}
 public class JsonNode {
     private var node: Any
 
@@ -64,8 +72,7 @@ public class JsonNode {
     }
 
     public func toString() -> String {
-        // TODO:
-        return "TODO"
+        return self.node as! String 
     }
 
     func deepCopy() -> JsonNode? {
@@ -158,6 +165,15 @@ public class JsonNode {
         // TODO:
     }
 
+    func remove(_ key: String) {
+        guard self.node is [String: Any] else {
+            return
+        }
+        var dictionary = self.node as! [String: Any]
+        dictionary.removeValue(forKey: key)
+        self.node = dictionary
+    }
+
     public func asString() -> String? {
         return self.node as? String
     }
@@ -172,5 +188,22 @@ public class JsonNode {
 
     public func asDictionary() -> [String: JsonNode]? {
         return self.node as? [String: JsonNode]
+    }
+
+    public func getNodeType() -> JsonNodeType {
+
+        if self.node is Array<Any> {
+            return JsonNodeType.ARRAY
+        } else if self.node is [String: Any] {
+            return JsonNodeType.DICTIONARY
+        } else if self.node is String {
+            return JsonNodeType.STRING
+        } else if self.node is Int {
+            return JsonNodeType.NUMBER
+        } else if self.node is Float {
+            return JsonNodeType.NUMBER
+        } else {
+            return JsonNodeType.NIL
+        }
     }
 }

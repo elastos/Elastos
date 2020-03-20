@@ -94,7 +94,8 @@ class JsonSerializer {
         do {
             let ref: DID? = options.refValue as? DID
             if ref != nil && value!.hasPrefix("#") {
-                id = try DIDURL(ref!, "TODO")   // TODO:
+                let fragment = String(value!.suffix(value!.count - 1))
+                id = try DIDURL(ref!, fragment)
             } else {
                 id = try DIDURL(value!)
             }

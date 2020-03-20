@@ -34,6 +34,8 @@ public class VerifiableCredentialSubject {
 
     func setProperties(_ properties: JsonNode) {
         self._properties = properties.deepCopy()
+        // remote ID field, avoid conflict with subject's id property.
+        self._properties!.remove("id")
     }
 
     class func fromJson(_ node: JsonNode, _ ref: DID?) throws -> VerifiableCredentialSubject {
@@ -60,9 +62,52 @@ public class VerifiableCredentialSubject {
         }
 
         if self.propertyCount > 0 {
-            //TODO: JsonHelper.toJson(generator, self._properties, true)
+            toJson(generator, self._properties!, true)
         }
 
         generator.writeEndObject()
+    }
+
+    func toJson(_ generator: JsonGenerator, _ node: JsonNode) {
+        toJson(generator, node, false)
+    }
+
+    func toJson(_ generator: JsonGenerator, _ node: JsonNode, _ objectContext: Bool) {
+        switch node.getNodeType() {
+        case .ARRAY:
+            generator.writeStartArray()
+            let elems: [JsonNode] = node.asArray()!
+            for elem in elems {
+                toJson(generator, elem)
+            }
+            generator.writeEndArray()
+            break
+
+        case .STRING:
+            generator.writeString(node.asString()!)
+            break
+
+        case .NUMBER:
+            generator.writeNumber(node.asInteger()!)
+            break
+
+        case .DICTIONARY:
+            if !objectContext {
+                generator.writeStartObject()
+            }
+            let dictionary: [String: JsonNode] = node.asDictionary()!
+            let sortedKeys = dictionary.keys.sorted()
+            for key in sortedKeys {
+                generator.writeFieldName(key)
+                toJson(generator, node.get(forKey: key)!)
+            }
+            if !objectContext {
+                generator.writeEndObject()
+            }
+
+            break
+        default: break
+
+        }
     }
 }

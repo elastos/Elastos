@@ -101,7 +101,14 @@ class IDChainRequest: NSObject {
         self._doc = doc
 
         if self._operation != .DEACTIVATE {
-            self._payload = doc.toString().base64EncodedString
+            let json = doc.toString()
+            let c_input = (json.toUnsafePointerUInt8())!
+            var pd = json + "\0"
+            pd = String(cString: pd.toUnsafePointerUInt8()!)
+            let c_payload = UnsafeMutablePointer<Int8>.allocate(capacity: pd.count * 3)
+            let re = base64_url_encode(c_payload, c_input, pd.count)
+            c_payload[re] = 0
+            self._payload = String(cString: c_payload)
         } else {
             self._payload = doc.subject.toString()
         }

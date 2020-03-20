@@ -481,35 +481,35 @@ public class DIDStore: NSObject {
         }
 
         var lastTransactionId: String? = nil
-        let resolvedDoc = try did.resolve()
+        let resolvedDoc = try? did.resolve()
 
-        guard !resolvedDoc.isDeactivated else {
-            throw  DIDError.didStoreError("DID already deactivated")
+        if resolvedDoc != nil {
+            guard !resolvedDoc!.isDeactivated else {
+                throw  DIDError.didStoreError("DID already deactivated")
+            }
+
+            if !force {
+                let localTxId = doc.getMeta().transactionId
+                let localSignature = doc.getMeta().signature
+
+                let resolvedTxId = resolvedDoc!.getMeta().transactionId!
+                let resolvedSignature = resolvedDoc!.getMeta().signature!
+
+                guard localTxId != nil || localSignature != nil else {
+                    throw DIDError.didStoreError("DID document not up-to-date")
+                }
+
+                guard localTxId == nil || localTxId == resolvedTxId else {
+                    throw DIDError.didStoreError("DID document not up-to-date")
+                }
+
+                guard localSignature == nil || localSignature == resolvedSignature else {
+                    throw DIDError.didStoreError("DID document not up-to-date")
+                }
+            }
+
+            lastTransactionId = resolvedDoc!.transactionId!
         }
-        // TOOD:
-
-        if !force {
-            let localTxId = doc.getMeta().transactionId
-            let localSignature = doc.getMeta().signature
-
-            let resolvedTxId = resolvedDoc.getMeta().transactionId!
-            let resolvedSignature = resolvedDoc.getMeta().signature!
-
-            guard localTxId != nil || localSignature != nil else {
-                throw DIDError.didStoreError("DID document not up-to-date")
-            }
-
-            guard localTxId == nil || localTxId == resolvedTxId else {
-                throw DIDError.didStoreError("DID document not up-to-date")
-            }
-
-            guard localSignature == nil || localSignature == resolvedSignature else {
-                throw DIDError.didStoreError("DID document not up-to-date")
-            }
-        }
-
-        lastTransactionId = resolvedDoc.transactionId!
-
         var usedSignKey = signKey
         if  usedSignKey == nil {
             usedSignKey = doc.defaultPublicKey
@@ -1142,11 +1142,13 @@ public class DIDStore: NSObject {
         try meta.merge(doc.getMeta())
         meta.setStore(self)
         doc.setMeta(meta)
-
         try storage.storeDidMeta(doc.subject, meta)
 
         for credential in doc.credentials() {
             try storeCredential(using: credential)
+        }
+        if (documentCache != nil) {
+            documentCache!.setValue(doc, for: doc.subject)
         }
     }
     
@@ -1159,13 +1161,31 @@ public class DIDStore: NSObject {
     }
     
     func loadDidMeta(for did: DID) throws -> DIDMeta {
-        return try storage.loadDidMeta(did)
+        var doc: DIDDocument? = nil
+        var meta: DIDMeta?
+        if documentCache != nil {
+            doc = documentCache!.getValue(for: did)
+            if doc != nil {
+                meta = doc!.getMeta()
+                if meta!.isEmpty() {
+                    return meta!
+                }
+            }
+        }
+        meta = try? storage.loadDidMeta(did)
+        if meta == nil {
+            meta = DIDMeta()
+        }
+        if doc != nil {
+            doc!.setMeta(meta!)
+        }
+        return meta!
     }
 
     func loadDidMeta(for did: String) throws -> DIDMeta {
         return try loadDidMeta(for: DID(did))
     }
-    
+
     public func loadDid(_ did: DID) throws -> DIDDocument {
         var doc = documentCache!.getValue(for: did)
         if doc != nil {
@@ -1174,9 +1194,12 @@ public class DIDStore: NSObject {
         
         doc = try storage.loadDid(did)
         if (doc != nil) {
-            doc!.setMeta(try storage.loadDidMeta(did))
-            doc!.getMeta().setStore(self)
-            documentCache?.setValue(doc!, for: doc!.subject)
+            let meta = try? storage.loadDidMeta(did)
+            if meta != nil {
+                doc!.setMeta(meta!)
+                doc!.getMeta().setStore(self)
+                documentCache?.setValue(doc!, for: doc!.subject)
+            }
         }
         return doc!
     }
@@ -1229,6 +1252,9 @@ public class DIDStore: NSObject {
         credential.setMeta(meta)
         credential.getMeta().setStore(self)
         try storage.storeCredentialMeta(credential.subject.did, credential.getId(), meta)
+        if (credentialCache != nil) {
+            credentialCache!.setValue(credential, for: credential.getId())
+        }
     }
 
     func storeCredentialMeta(for did: DID, key id: DIDURL, meta: CredentialMeta) throws {
@@ -1242,7 +1268,25 @@ public class DIDStore: NSObject {
     }
     
     func loadCredentialMeta(for did: DID, byId: DIDURL) throws -> CredentialMeta {
-        return try storage.loadCredentialMeta(did, byId)
+        var meta: CredentialMeta?
+        var vc: VerifiableCredential?
+        if credentialCache != nil {
+            vc = credentialCache!.getValue(for: byId)
+            if vc != nil {
+                meta = vc!.getMeta()
+                if !meta!.isEmpty() {
+                    return meta!
+                }
+            }
+        }
+        meta = try? storage.loadCredentialMeta(did, byId)
+        if meta == nil {
+            meta = CredentialMeta()
+        }
+        if vc != nil {
+            vc!.setMeta(meta!)
+        }
+        return meta!
     }
 
     func loadCredentialMeta(for did: String, byId: String) throws -> CredentialMeta? {
@@ -1410,14 +1454,14 @@ public class DIDStore: NSObject {
         }
 
         let privatekeys = try DIDStore.decryptFromBase64(loadPrivateKey(for: did, byId: usedId!), storePassword)
-
         var cinputs: [CVarArg] = []
         data.forEach { data in
-            let cdata = data.withUnsafeBytes { cdata -> UnsafePointer<Int8> in
-                return cdata
-            }
-            cinputs.append(cdata)
-            cinputs.append(data.count)
+            let json = String(data: data, encoding: .utf8)
+             if json != "" {
+                 let cjson = json!.toUnsafePointerInt8()!
+                 cinputs.append(cjson)
+                 cinputs.append(json!.count)
+             }
         }
         
         let toPPointer = privatekeys.toPointer()

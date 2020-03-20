@@ -433,15 +433,15 @@ public class DIDDocument {
     }
 
     func appendCredential(_ vc: VerifiableCredential) -> Bool {
+        guard vc.subject.did == subject else {
+            return false
+        }
         let _vc = credential(ofId: vc.getId())
-        guard let _ = _vc else {
+        guard _vc == nil else {
+            // TODO: Throw ERROR
+            print(DIDError.unknownFailure("Credential \(vc.getId()) already exist."))
             return false
         }
-
-        guard vc.subject.did != subject else {
-            return false
-        }
-
         credentialMap.append(vc)
         return true
     }
@@ -576,11 +576,11 @@ public class DIDDocument {
 
     public var isGenuine: Bool {
         // Document should be signed (only) by default public key.
-        guard proof.creator != defaultPublicKey else {
+        guard proof.creator == defaultPublicKey else {
             return false
         }
         // Unsupported public key type;
-        guard proof.type != Constants.DEFAULT_PUBLICKEY_TYPE else {
+        guard proof.type == Constants.DEFAULT_PUBLICKEY_TYPE else {
             return false
         }
 
@@ -653,11 +653,12 @@ public class DIDDocument {
 
         var cinputs: [CVarArg] = []
         data.forEach { data in
-            let cdata = data.withUnsafeBytes { cdata -> UnsafePointer<Int8> in
-                return cdata
+            let json = String(data: data, encoding: .utf8)
+            if json != "" {
+                let cjson = json!.toUnsafePointerInt8()!
+                cinputs.append(cjson)
+                cinputs.append(json!.count)
             }
-            cinputs.append(cdata)
-            cinputs.append(data.count)
         }
         let pks: [UInt8] = pubKey!.publicKeyBytes
         var pkData: Data = Data(bytes: pks, count: pks.count)
@@ -780,7 +781,7 @@ public class DIDDocument {
 
     private func parseCredential(_ arrayNode: JsonNode) throws {
         let array = arrayNode.asArray()
-        guard array?.count ?? 0 < 0 else {
+        guard array?.count ?? 0 > 0 else {
             return
         }
 
@@ -869,9 +870,11 @@ public class DIDDocument {
     private func toJson(_ generator: JsonGenerator, _ normalized: Bool, _ forSign: Bool) throws {
         generator.writeStartObject()
 
+        // subject
         generator.writeFieldName(Constants.ID)
         generator.writeString(self.subject.toString())
 
+        // publicKey
         generator.writeFieldName(Constants.PUBLICKEY)
         generator.writeStartArray()
         for pubKey in publicKeys() {
@@ -879,6 +882,7 @@ public class DIDDocument {
         }
         generator.writeEndArray()
 
+        // authentication
         generator.writeFieldName(Constants.AUTHENTICATION)
         generator.writeStartArray()
         for pubKey in authenticationKeys() {
@@ -908,6 +912,7 @@ public class DIDDocument {
             generator.writeEndArray()
         }
 
+        // credential
         if self.credentialCount > 0 {
             generator.writeFieldName(Constants.VERIFIABLE_CREDENTIAL)
             generator.writeStartArray()
