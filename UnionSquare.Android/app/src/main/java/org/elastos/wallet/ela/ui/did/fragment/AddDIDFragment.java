@@ -29,6 +29,8 @@ public class AddDIDFragment extends BaseFragment {
     @BindView(R.id.tv_date)
     TextView tvDate;
     private Date didEndDate;
+    private long minData;
+    private long endDate;
 
     @Override
     protected int getLayoutId() {
@@ -40,8 +42,15 @@ public class AddDIDFragment extends BaseFragment {
     protected void initView(View view) {
 
         tvTitle.setText(R.string.createdid);
-
-
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        minData = calendar.getTimeInMillis();
+        calendar.add(Calendar.YEAR, 5);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        didEndDate = calendar.getTime();
+        endDate = calendar.getTimeInMillis();
+        tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(didEndDate, getContext()));
     }
 
 
@@ -66,13 +75,7 @@ public class AddDIDFragment extends BaseFragment {
                 break;
 
             case R.id.rl_outdate:
-                Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.DAY_OF_MONTH, 1);
-                calendar.set(Calendar.HOUR_OF_DAY, 0);
-                long minData = calendar.getTimeInMillis();
-                calendar.add(Calendar.YEAR, 5);
-                calendar.add(Calendar.DAY_OF_MONTH, -1);
-                new DialogUtil().showTime(getBaseActivity(),getString(R.string.plzselctoutdate), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
+                new DialogUtil().showTime(getBaseActivity(), getString(R.string.plzselctoutdate), minData, endDate, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
                         String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)

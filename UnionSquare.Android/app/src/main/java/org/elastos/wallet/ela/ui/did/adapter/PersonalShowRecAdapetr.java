@@ -63,9 +63,11 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<RecyclerView.Vi
             ((ViewHolder1) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
             String logo = personalInfoItemEntity.getText1();
             if (logo.endsWith(".svg")) {
-                GlideApp.with(context).as(PictureDrawable.class).listener(new SvgSoftwareLayerSetter()).load(logo).into(((ViewHolder1) holder).iv1);
+                GlideApp.with(context).as(PictureDrawable.class).error(R.mipmap.mine_did_default_avator)
+                        .placeholder(R.mipmap.mine_did_default_avator).listener(new SvgSoftwareLayerSetter()).load(logo).into(((ViewHolder1) holder).iv1);
             } else {
-                GlideApp.with(context).load(logo).into(((ViewHolder1) holder).iv1);
+                GlideApp.with(context).load(logo).error(R.mipmap.mine_did_default_avator)
+                        .placeholder(R.mipmap.mine_did_default_avator).into(((ViewHolder1) holder).iv1);
             }
 
         } else {
@@ -73,7 +75,8 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<RecyclerView.Vi
             ((ViewHolder0) holder).tv2.setText(personalInfoItemEntity.getText1());
             if (index == 5) {
                 //电话
-                String result = personalInfoItemEntity.getText1() + personalInfoItemEntity.getText2();
+                ((ViewHolder0) holder).tv1.setText(personalInfoItemEntity.getHintShow2());
+                String result = personalInfoItemEntity.getText1() + " " + personalInfoItemEntity.getText2();
                 if (personalInfoItemEntity.getText1() == null) {
                     result = personalInfoItemEntity.getText2();
                 } else if (personalInfoItemEntity.getText2() == null) {

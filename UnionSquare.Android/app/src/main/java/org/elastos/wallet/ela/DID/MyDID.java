@@ -68,6 +68,7 @@ public class MyDID {
      * @param walletId
      */
     public void init(String walletId) {
+        Log.i("??", "1");
         if (!walletId.equals(this.walletId) || didStore == null) {
             try {
                 String didResolveUrl = WalletNet.MAINDID;
@@ -80,11 +81,15 @@ public class MyDID {
                 }
                 DIDBackend.initialize(didResolveUrl, MyApplication.getRoutDir() + File.separator + walletId + File.separator + ".cache");
                 myDIDAdapter = new MyDIDAdapter();
+                Log.i("??", "2");
                 didStore = DIDStore.open("filesystem", MyApplication.getRoutDir() + File.separator + walletId + File.separator + "store", myDIDAdapter);//通过TestConfig.storeRoot管理多个DIDStore
+                Log.i("??", "3");
+                Log.i("??", didStore.containsPrivateIdentity()+"");
                 this.did = null;
                 this.walletId = walletId;
             } catch (DIDException e) {
                 e.printStackTrace();
+                ToastUtils.showShort(e.getMessage());
             }
         }
     }
@@ -107,6 +112,7 @@ public class MyDID {
             }
         } catch (DIDStoreException e) {
             e.printStackTrace();
+            ToastUtils.showShort(e.getMessage());
         }
 
         return did;
@@ -183,6 +189,7 @@ public class MyDID {
             VerifiableCredential cre = doc.getCredential("name");
             return cre.getSubject().getPropertyAsString("name");
         } catch (Exception e) {
+            ToastUtils.showShort(e.getMessage());
             return null;
         }
 
@@ -193,6 +200,7 @@ public class MyDID {
         try {
             return didStore.loadDid(did);
         } catch (DIDStoreException e) {
+            ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -225,6 +233,7 @@ public class MyDID {
             return true;
 
         } catch (DIDException e) {
+            ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -246,6 +255,7 @@ public class MyDID {
             return vc1.toString();
 
         } catch (Exception e) {
+            ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
 
@@ -263,6 +273,7 @@ public class MyDID {
             return vc1.getSubject().getPropertiesAsString();
 
         } catch (Exception e) {
+            ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
 
@@ -278,6 +289,7 @@ public class MyDID {
             return vcFrom.getSubject().getPropertiesAsString();
 
         } catch (Exception e) {
+            ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
 
@@ -297,7 +309,8 @@ public class MyDID {
                     .seal(pwd);
             return vc.toString();
 
-        } catch (DIDStoreException | MalformedCredentialException | InvalidKeyException e) {
+        } catch (DIDException e) {
+            ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
 
@@ -331,7 +344,8 @@ public class MyDID {
             didStore.storeCredential(vc);
             return true;
 
-        } catch (DIDStoreException | MalformedCredentialException | InvalidKeyException e) {
+        } catch (DIDException e) {
+            ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
 
@@ -344,6 +358,7 @@ public class MyDID {
             VerifiableCredential vcFrom = VerifiableCredential.fromJson(fromJson);//结果
             return vcFrom;
         } catch (Exception e) {
+            ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
 
@@ -367,7 +382,8 @@ public class MyDID {
             build.addCredential(didurl, SelfProclaimedCredential, props, pwd);
             DIDDocument newDoc = build.seal(pwd);
             didStore.storeDid(newDoc);//存储本地
-        } catch (DIDStoreException | InvalidKeyException e) {
+        } catch (DIDException e) {
+            ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
 
@@ -408,6 +424,7 @@ public class MyDID {
         try {
             return new CommmonObjEntity(SUCCESSCODE, new DID(didString).resolve(true));
         } catch (DIDException e) {
+            ToastUtils.showShort(e.getMessage());
             return exceptionProcess(e, "DIDResolve");
 
         }
@@ -443,6 +460,7 @@ public class MyDID {
             }
             return new CommmonObjEntity(SUCCESSCODE, doc);
         } catch (DIDException e) {
+            ToastUtils.showShort(e.getMessage());
             return exceptionProcess(e, "DIDResolve");
 
         }
@@ -463,6 +481,7 @@ public class MyDID {
             String lastTxid = didStore.publishDid(did, 0, pwd);
             return new CommmonStringEntity(SUCCESSCODE, lastTxid);
         } catch (DIDException e) {
+            ToastUtils.showShort(e.getMessage());
             return exceptionProcess(e, "DIDPublish");
 
         }

@@ -636,5 +636,4 @@
     <string name="credencialisnull">凭证信息为空</string>
     <string name="importfailed">导入失败</string>
     <string name="pleaseinstallfilechose">请安装文件管理器</string>
-    <string name="plesechosejwtfile">请选择正确的文件</string>
 </resources>

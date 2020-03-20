@@ -135,6 +135,7 @@
             </LinearLayout>
 
             <TextView
+                android:scrollbars="vertical"
                 android:id="@+id/tv_intro_detail"
                 android:layout_width="match_parent"
                 android:layout_height="240dp"

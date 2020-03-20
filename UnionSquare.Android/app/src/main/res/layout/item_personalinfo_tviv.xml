@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/settingItem_pading15">
+    style="@style/settingItem_pading15"
+    android:layout_height="@dimen/px140"
+   >
 
 
     <TextView
@@ -12,6 +14,7 @@
 
 
     <ImageView
+        android:layout_centerVertical="true"
         android:id="@+id/iv1"
         android:layout_width="60dp"
         android:layout_height="60dp"

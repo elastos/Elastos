@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
@@ -130,6 +131,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.electoral_affairs));
         tvTitleRight.setText(getString(R.string.quitcr));
+        tvIntroDetail.setMovementMethod(ScrollingMovementMethod.getInstance());
         registReceiver();
     }
 
@@ -284,9 +286,9 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 if (!TextUtils.isEmpty(jwt)) {
                     String[] jwtParts = jwt.split("\\.");
                     String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
-                    String pro=getMyDID().getCredentialProFromJson(payload);
+                    String pro = getMyDID().getCredentialProFromJson(payload);
                     credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
-                    if (credentialSubjectBean==null){
+                    if (credentialSubjectBean == null) {
                         return;
                     }
                     ivDetail.setVisibility(View.VISIBLE);

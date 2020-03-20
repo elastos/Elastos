@@ -124,7 +124,7 @@ public class ImportCredencialFragment extends BaseFragment implements NewBaseVie
             Log.d("??", "选择文件返回：" + chooseFilePath);
             File file = new File(chooseFilePath);
             if (!file.getName().endsWith(".jwt")) {
-                showToast(getString(R.string.plesechosejwtfile));
+                showToast(getString(R.string.importfailed));
             } else {
                 //读取并保存本地
                 new CredencialPresenter().readFile(file, this);
