@@ -30,10 +30,6 @@ namespace Elastos {
 
 			void FromJson(const nlohmann::json &j);
 
-			friend void to_json(nlohmann::json&, const PublicKeyRing &p);
-
-			friend void from_json(const nlohmann::json&, PublicKeyRing &p);
-
 		private:
 			std::string _xPubKey;
 			std::string _requestPubKey;
@@ -94,10 +90,6 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &j);
 
-			friend void to_json(nlohmann::json &j, const BitcoreWalletClientJson &p);
-
-			friend void from_json(const nlohmann::json &j, BitcoreWalletClientJson &p);
-
 		protected:
 			std::string _coin;
 			std::string _network;
@@ -123,6 +115,19 @@ namespace Elastos {
 			std::string _addressType;
 		};
 	}
+}
+
+namespace nlohmann {
+	template<>
+	struct adl_serializer<Elastos::ElaWallet::PublicKeyRing> {
+		static void to_json(json &j, const Elastos::ElaWallet::PublicKeyRing &r) {
+			j = r.ToJson();
+		}
+
+		static void from_json(const json &j, Elastos::ElaWallet::PublicKeyRing &r) {
+			r.FromJson(j);
+		}
+	};
 }
 
 #endif //__ELASTOS_SDK_BITCOREWALLETCLIENTJSON_H__

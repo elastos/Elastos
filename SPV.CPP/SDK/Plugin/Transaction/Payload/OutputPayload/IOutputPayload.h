@@ -8,25 +8,17 @@
 #include <Common/ByteStream.h>
 #include <nlohmann/json.hpp>
 #include <boost/shared_ptr.hpp>
+#include <Common/JsonSerializer.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IOutputPayload {
+		class IOutputPayload : public ELAMessageSerializable, public JsonSerializer {
 		public:
 			virtual ~IOutputPayload();
 
 			virtual bytes_t getData() const;
-
-			virtual size_t EstimateSize() const = 0;
-
-			virtual void Serialize(ByteStream &ostream) const = 0;
-
-			virtual bool Deserialize(const ByteStream &istream) = 0;
-
-			virtual nlohmann::json ToJson() const = 0;
-
-			virtual void FromJson(const nlohmann::json &j) = 0;
 
 			virtual IOutputPayload &operator=(const IOutputPayload &payload) = 0;
 		};

@@ -15,30 +15,32 @@ namespace Elastos {
 
 		}
 
-		void to_json(nlohmann::json &j, const SjclFile &p) {
-			j["iv"] = p.GetIv();
-			j["v"] = p.GetV();
-			j["iter"] = p.GetIter();
-			j["ks"] = p.GetKs();
-			j["ts"] = p.GetTs();
-			j["mode"] = p.GetMode();
-			j["adata"] = p.GetAdata();
-			j["cipher"] = p.GetCipher();
-			j["salt"] = p.GetSalt();
-			j["ct"] = p.GetCt();
+		nlohmann::json SjclFile::ToJson() const {
+			nlohmann::json j;
+			j["iv"] = _iv;
+			j["v"] = _v;
+			j["iter"] = _iter;
+			j["ks"] = _ks;
+			j["ts"] = _ts;
+			j["mode"] = _mode;
+			j["adata"] = _adata;
+			j["cipher"] = _cipher;
+			j["salt"] = _salt;
+			j["ct"] = _ct;
+			return j;
 		}
 
-		void from_json(const nlohmann::json &j, SjclFile &p) {
-			p.SetIv(j["iv"].get<std::string>());
-			p.SetV(j["v"].get<uint32_t>());
-			p.SetIter(j["iter"].get<uint32_t>());
-			p.SetKs(j["ks"].get<uint32_t>());
-			p.SetTs(j["ts"].get<uint32_t>());
-			p.SetMode(j["mode"].get<std::string>());
-			p.SetAdata(j["adata"].get<std::string>());
-			p.SetCipher(j["cipher"].get<std::string>());
-			p.SetSalt(j["salt"].get<std::string>());
-			p.SetCt(j["ct"].get<std::string>());
+		void SjclFile::FromJson(const nlohmann::json &j) {
+			_iv = j["iv"].get<std::string>();
+			_v = j["v"].get<uint32_t>();
+			_iter = j["iter"].get<uint32_t>();
+			_ks = j["ks"].get<uint32_t>();
+			_ts = j["ts"].get<uint32_t>();
+			_mode = j["mode"].get<std::string>();
+			_adata = j["adata"].get<std::string>();
+			_cipher = j["cipher"].get<std::string>();
+			_salt = j["salt"].get<std::string>();
+			_ct = j["ct"].get<std::string>();
 		}
 	}
 }

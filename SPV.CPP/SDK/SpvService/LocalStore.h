@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_LOCALSTORE_H__
 #define __ELASTOS_SDK_LOCALSTORE_H__
 
-#include <Common/Mstream.h>
 #include <WalletCore/KeyStore.h>
+#include <Common/JsonSerializer.h>
 
 #include <boost/filesystem.hpp>
 #include <vector>
@@ -18,7 +18,7 @@ namespace Elastos {
 
 		typedef boost::shared_ptr<CoinInfo> CoinInfoPtr;
 
-		class LocalStore {
+		class LocalStore : public JsonSerializer {
 		public:
 			// for test case
 			LocalStore(const nlohmann::json &store);
@@ -116,9 +116,9 @@ namespace Elastos {
 			void ClearSubWalletInfoList();
 
 		private:
-			TO_JSON(LocalStore);
+			virtual nlohmann::json ToJson() const;
 
-			FROM_JSON(LocalStore);
+			virtual void FromJson(const nlohmann::json &j);
 
 		private:
 			// encrypted

@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_SPVSDK_ASSET_H
 
 #include <Plugin/Interface/ELAMessageSerializable.h>
+#include <Common/JsonSerializer.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -13,7 +14,7 @@ namespace Elastos {
 #define TOKEN_ASSET_PRECISION "1000000000000000000"
 
 		class Asset :
-				public ELAMessageSerializable {
+				public ELAMessageSerializable, public JsonSerializer {
 		public:
 			enum AssetType {
 				Token = 0x00,

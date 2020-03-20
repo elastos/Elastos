@@ -5,6 +5,7 @@
 #ifndef __ELASTOS_SDK_TRANSACTION_H__
 #define __ELASTOS_SDK_TRANSACTION_H__
 
+#include <Common/JsonSerializer.h>
 #include <Plugin/Interface/ELAMessageSerializable.h>
 #include <Plugin/Transaction/Payload/IPayload.h>
 
@@ -28,7 +29,7 @@ namespace Elastos {
 		typedef boost::shared_ptr<Attribute> AttributePtr;
 		typedef std::vector<AttributePtr> AttributeArray;
 
-		class Transaction {
+		class Transaction : public JsonSerializer {
 		public:
 			enum {
 				coinBase                 = 0x00,
@@ -228,6 +229,19 @@ namespace Elastos {
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
 
 	}
+}
+
+namespace nlohmann {
+	template<>
+	struct adl_serializer<Elastos::ElaWallet::Transaction> {
+		static void to_json(json &j, const Elastos::ElaWallet::Transaction &tx) {
+			j = tx.ToJson();
+		}
+
+		static void from_json(const json &j, Elastos::ElaWallet::Transaction &tx) {
+			tx.FromJson(j);
+		}
+	};
 }
 
 #endif //__ELASTOS_SDK_TRANSACTION_H__

@@ -19,25 +19,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-#ifndef __ELASTOS_SDK__MSTREAM_H__
-#define __ELASTOS_SDK__MSTREAM_H__
+#ifndef __ELASTOS_SDK__ADLSERIALIZER_H__
+#define __ELASTOS_SDK__ADLSERIALIZER_H__
 
 #include <nlohmann/json.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-#define JSON_SM_LS(T) \
-        friend nlohmann::json &operator<<(nlohmann::json&, const T&);
-#define JSON_SM_RS(T) \
-        friend const nlohmann::json &operator>>(const nlohmann::json&, T&);
-#define TO_JSON(T) \
-		friend void to_json(nlohmann::json&, const T&);
-#define FROM_JSON(T) \
-		friend void from_json(const nlohmann::json&, T&);
+		class JsonSerializer {
+		public:
+			virtual nlohmann::json ToJson() const = 0;
+
+			virtual void FromJson(const nlohmann::json &j) = 0;
+		};
 
 	}
 }
 
-#endif //__ELASTOS_SDK__MSTREAM_H__
+namespace nlohmann {
+	template<typename T>
+	struct adl_serializer<boost::shared_ptr<T>> {
+		static void to_json(json &j, const boost::shared_ptr<T> &p) {
+			j = p->ToJson();
+		}
+
+		static void from_json(const json &j, boost::shared_ptr<T> &p) {
+			p = boost::shared_ptr<T>(new T());
+			p->FromJson(j);
+		}
+	};
+
+}
+#endif //__ELASTOS_SDK__ADLSERIALIZER_H__

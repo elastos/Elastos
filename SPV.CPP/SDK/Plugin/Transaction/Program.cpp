@@ -238,12 +238,12 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void Program::FromJson(const nlohmann::json &jsonData) {
+		void Program::FromJson(const nlohmann::json &j) {
 
-			_path = jsonData.find("Path") != jsonData.end() ? jsonData["Path"].get<std::string>() : "";
+			_path = j.find("Path") != j.end() ? j["Path"].get<std::string>() : "";
 
-			_parameter.setHex(jsonData["Parameter"].get<std::string>());
-			_code.setHex(jsonData["Code"].get<std::string>());
+			_parameter.setHex(j["Parameter"].get<std::string>());
+			_code.setHex(j["Code"].get<std::string>());
 		}
 
 	}

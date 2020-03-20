@@ -31,15 +31,5 @@ namespace Elastos {
 				_mnemonic = j["mnemonic"].get<std::string>();
 		}
 
-		void to_json(nlohmann::json &j, const ElaWebWalletJson &p) {
-			to_json(j, dynamic_cast<const BitcoreWalletClientJson &>(p));
-			j["mnemonic"] = p._mnemonic;
-		}
-
-		void from_json(const nlohmann::json &j, ElaWebWalletJson &p) {
-			from_json(j, dynamic_cast<BitcoreWalletClientJson &>(p));
-			if (j.find("mnemonic") != j.end())
-				p._mnemonic = j["mnemonic"].get<std::string>();
-		}
 	}
 }

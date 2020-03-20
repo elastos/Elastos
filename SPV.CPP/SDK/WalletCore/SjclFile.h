@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_SJCLFILE_H__
 #define __ELASTOS_SDK_SJCLFILE_H__
 
-#include <Common/Mstream.h>
+#include <Common/JsonSerializer.h>
 
 #include <nlohmann/json.hpp>
 #include <string>
@@ -13,7 +13,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class SjclFile {
+		class SjclFile : public JsonSerializer {
 		public:
 			SjclFile();
 
@@ -59,19 +59,9 @@ namespace Elastos {
 
 			void SetCt(const std::string &ct) { _ct = ct; }
 
-			nlohmann::json ToJson() const {
-				nlohmann::json j;
-				to_json(j, *this);
-				return j;
-			}
+			virtual nlohmann::json ToJson() const;
 
-			void FromJson(const nlohmann::json &j) {
-				from_json(j, *this);
-			}
-
-			TO_JSON(SjclFile);
-
-			FROM_JSON(SjclFile);
+			virtual void FromJson(const nlohmann::json &j);
 
 		private:
 			std::string _iv;

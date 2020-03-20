@@ -8,12 +8,13 @@
 #include <Plugin/Interface/ELAMessageSerializable.h>
 
 #include <boost/shared_ptr.hpp>
+#include <Common/JsonSerializer.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class Attribute :
-				public ELAMessageSerializable {
+				public ELAMessageSerializable, public JsonSerializer {
 		public:
 			enum Usage {
 				Nonce = 0x00,
@@ -49,7 +50,7 @@ namespace Elastos {
 
 			virtual nlohmann::json ToJson() const;
 
-			virtual void FromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &j);
 
 		private:
 			Usage _usage;

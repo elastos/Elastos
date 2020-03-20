@@ -73,16 +73,6 @@ namespace Elastos {
 			FromJsonCommon(j);
 		}
 
-		void to_json(nlohmann::json &j, const ElaNewWalletJson &p) {
-			to_json(j, dynamic_cast<const ElaWebWalletJson &>(p));
-			p.ToJsonCommon(j);
-		}
-
-		void from_json(const nlohmann::json &j, ElaNewWalletJson &p) {
-			from_json(j, dynamic_cast<ElaWebWalletJson &>(p));
-			p.FromJsonCommon(j);
-		}
-
 		void ElaNewWalletJson::ToJsonCommon(nlohmann::json &j) const {
 			nlohmann::json coinInfoList;
 			for (size_t i = 0; i < _coinInfoList.size(); ++i)

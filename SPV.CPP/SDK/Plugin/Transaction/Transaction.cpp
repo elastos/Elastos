@@ -29,6 +29,7 @@
 #include <Common/Log.h>
 #include <Common/ErrorChecker.h>
 #include <Common/hash.h>
+#include <Common/JsonSerializer.h>
 
 #include <boost/make_shared.hpp>
 #include <cstring>
@@ -574,28 +575,12 @@ namespace Elastos {
 			j["LockTime"] = _lockTime;
 			j["BlockHeight"] = _blockHeight;
 			j["Timestamp"] = _timestamp;
-
-			std::vector<nlohmann::json> inputsJson(_inputs.size());
-			for (size_t i = 0; i < _inputs.size(); ++i) {
-				inputsJson[i] = _inputs[i]->ToJson();
-			}
-			j["Inputs"] = inputsJson;
-
+			j["Inputs"] = _inputs;
 			j["Type"] = _type;
 			j["PayloadVersion"] = _payloadVersion;
 			j["PayLoad"] = _payload->ToJson(_payloadVersion);
-
-			std::vector<nlohmann::json> attributesJson(_attributes.size());
-			for (size_t i = 0; i < _attributes.size(); ++i) {
-				attributesJson[i] = _attributes[i]->ToJson();
-			}
-			j["Attributes"] = attributesJson;
-
-			std::vector<nlohmann::json> programsJson(_programs.size());
-			for (size_t i = 0; i < _programs.size(); ++i) {
-				programsJson[i] = _programs[i]->ToJson();
-			}
-			j["Programs"] = programsJson;
+			j["Attributes"] = _attributes;
+			j["Programs"] = _programs;
 
 			std::vector<nlohmann::json> outputsJson(_outputs.size());
 			for (size_t i = 0; i < _outputs.size(); ++i) {
@@ -619,14 +604,7 @@ namespace Elastos {
 				_lockTime = j["LockTime"].get<uint32_t>();
 				_blockHeight = j["BlockHeight"].get<uint32_t>();
 				_timestamp = j["Timestamp"].get<uint32_t>();
-
-				std::vector<nlohmann::json> inputJsons = j["Inputs"];
-				for (size_t i = 0; i < inputJsons.size(); ++i) {
-					InputPtr input(new TransactionInput());
-					input->FromJson(inputJsons[i]);
-					_inputs.push_back(input);
-				}
-
+				_inputs = j["Inputs"].get<InputArray>();
 				_type = j["Type"].get<uint8_t>();
 				_payloadVersion = j["PayloadVersion"];
 				_payload = InitPayload(_type);
@@ -637,20 +615,8 @@ namespace Elastos {
 					_payload->FromJson(j["PayLoad"], _payloadVersion);
 				}
 
-				std::vector<nlohmann::json> attributesJson = j["Attributes"];
-				for (size_t i = 0; i < attributesJson.size(); ++i) {
-					AttributePtr attribute(new Attribute());
-					attribute->FromJson(attributesJson[i]);
-					_attributes.push_back(attribute);
-				}
-
-				std::vector<nlohmann::json> programsJson = j["Programs"];
-				for (size_t i = 0; i < programsJson.size(); ++i) {
-					ProgramPtr program(new Program());
-					program->FromJson(programsJson[i]);
-					_programs.push_back(program);
-				}
-
+				_attributes = j["Attributes"].get<AttributeArray>();
+				_programs = j["Programs"].get<ProgramArray>();
 				std::vector<nlohmann::json> outputsJson = j["Outputs"];
 				for (size_t i = 0; i < outputsJson.size(); ++i) {
 					OutputPtr output(new TransactionOutput());

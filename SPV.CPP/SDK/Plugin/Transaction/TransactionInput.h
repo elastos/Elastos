@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_TRANSACTIONINPUT_H__
 
 #include <Common/ByteStream.h>
+#include <Common/JsonSerializer.h>
 #include <Plugin/Interface/ELAMessageSerializable.h>
 
 #include <nlohmann/json.hpp>
@@ -15,7 +16,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class TransactionInput : public ELAMessageSerializable {
+		class TransactionInput : public ELAMessageSerializable, public JsonSerializer {
 		public:
 			TransactionInput();
 

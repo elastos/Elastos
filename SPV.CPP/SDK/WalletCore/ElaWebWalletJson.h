@@ -24,10 +24,6 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &j);
 
-			friend void to_json(nlohmann::json &j, const ElaWebWalletJson &p);
-
-			friend void from_json(const nlohmann::json &j, ElaWebWalletJson &p);
-
 		protected:
 			std::string _mnemonic;
 		};

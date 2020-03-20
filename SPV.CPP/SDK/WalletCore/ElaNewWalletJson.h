@@ -47,10 +47,6 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &j);
 
-			friend void to_json(nlohmann::json &j, const ElaNewWalletJson &p);
-
-			friend void from_json(const nlohmann::json &j, ElaNewWalletJson &p);
-
 		private:
 			void ToJsonCommon(nlohmann::json &j) const;
 

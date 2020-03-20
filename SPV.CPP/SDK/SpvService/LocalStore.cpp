@@ -7,6 +7,7 @@
 #include <Common/ByteStream.h>
 #include <Common/ErrorChecker.h>
 #include <Common/Utils.h>
+#include <Common/JsonSerializer.h>
 #include <WalletCore/Base58.h>
 #include <WalletCore/BIP39.h>
 #include <WalletCore/AES.h>
@@ -22,82 +23,68 @@ namespace Elastos {
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define LOCAL_STORE_FILE "LocalStore.json"
 
-		void to_json(nlohmann::json &j, const LocalStore &p) {
-			j["xPrivKey"] = p._xPrivKey;
-			j["xPubKey"] = p._xPubKey;
-			j["xPubKeyHDPM"] = p._xPubKeyHDPM;
-			j["requestPrivKey"] = p._requestPrivKey;
-			j["requestPubKey"] = p._requestPubKey;
-			j["publicKeyRing"] = p._publicKeyRing;
-			j["m"] = p._m;
-			j["n"] = p._n;
-			j["mnemonicHasPassphrase"] = p._mnemonicHasPassphrase;
-			j["derivationStrategy"] = p._derivationStrategy;
-			j["account"] = p._account;
-			j["mnemonic"] = p._mnemonic;
-			j["passphrase"] = p._passphrase;
-			j["ownerPubKey"] = p._ownerPubKey;
-			j["singleAddress"] = p._singleAddress;
-			j["readonly"] = p._readonly;
-
-			nlohmann::json jCoinInfo;
-			for (size_t i = 0; i < p._subWalletsInfoList.size(); ++i) {
-				jCoinInfo.push_back(p._subWalletsInfoList[i]->ToJson());
-			}
-			j["coinInfo"] = jCoinInfo;
+		nlohmann::json LocalStore::ToJson() const {
+			nlohmann::json j;
+			j["xPrivKey"] = _xPrivKey;
+			j["xPubKey"] = _xPubKey;
+			j["xPubKeyHDPM"] = _xPubKeyHDPM;
+			j["requestPrivKey"] = _requestPrivKey;
+			j["requestPubKey"] = _requestPubKey;
+			j["publicKeyRing"] = _publicKeyRing;
+			j["m"] = _m;
+			j["n"] = _n;
+			j["mnemonicHasPassphrase"] = _mnemonicHasPassphrase;
+			j["derivationStrategy"] = _derivationStrategy;
+			j["account"] = _account;
+			j["mnemonic"] = _mnemonic;
+			j["passphrase"] = _passphrase;
+			j["ownerPubKey"] = _ownerPubKey;
+			j["singleAddress"] = _singleAddress;
+			j["readonly"] = _readonly;
+			j["coinInfo"] = _subWalletsInfoList;
+			return j;
 		}
 
-		void from_json(const nlohmann::json &j, LocalStore &p) {
+		void LocalStore::FromJson(const nlohmann::json &j) {
 			try {
 				if (j.find("publicKeyRing") != j.end()) {
 					// new version of localstore
-					p._xPrivKey = j["xPrivKey"].get<std::string>();
-					p._mnemonic = j["mnemonic"].get<std::string>();
-					p._xPubKey = j["xPubKey"].get<std::string>();
-					p._requestPrivKey = j["requestPrivKey"].get<std::string>();
-					p._requestPubKey = j["requestPubKey"].get<std::string>();
-					nlohmann::json jpubkeyRing = j["publicKeyRing"];
-					for (nlohmann::json::iterator it = jpubkeyRing.begin(); it != jpubkeyRing.end(); ++it) {
-						PublicKeyRing pubkeyRing;
-						pubkeyRing.FromJson(*it);
-						p._publicKeyRing.push_back(pubkeyRing);
-					}
-					p._m = j["m"].get<int>();
-					p._n = j["n"].get<int>();
-					p._mnemonicHasPassphrase = j["mnemonicHasPassphrase"].get<bool>();
-					p._derivationStrategy = j["derivationStrategy"].get<std::string>();
-					p._account = j["account"].get<int>();
-					p._passphrase = j["passphrase"].get<std::string>();
-					p._ownerPubKey = j["ownerPubKey"].get<std::string>();
-					p._singleAddress = j["singleAddress"].get<bool>();
-					p._readonly = j["readonly"].get<bool>();
+					_xPrivKey = j["xPrivKey"].get<std::string>();
+					_mnemonic = j["mnemonic"].get<std::string>();
+					_xPubKey = j["xPubKey"].get<std::string>();
+					_requestPrivKey = j["requestPrivKey"].get<std::string>();
+					_requestPubKey = j["requestPubKey"].get<std::string>();
+					_publicKeyRing = j["publicKeyRing"].get<std::vector<PublicKeyRing>>();
+					_m = j["m"].get<int>();
+					_n = j["n"].get<int>();
+					_mnemonicHasPassphrase = j["mnemonicHasPassphrase"].get<bool>();
+					_derivationStrategy = j["derivationStrategy"].get<std::string>();
+					_account = j["account"].get<int>();
+					_passphrase = j["passphrase"].get<std::string>();
+					_ownerPubKey = j["ownerPubKey"].get<std::string>();
+					_singleAddress = j["singleAddress"].get<bool>();
+					_readonly = j["readonly"].get<bool>();
 
 					if (j.find("xPubKeyHDPM") != j.end()) {
-						p._xPubKeyHDPM = j["xPubKeyHDPM"].get<std::string>();
+						_xPubKeyHDPM = j["xPubKeyHDPM"].get<std::string>();
 					} else {
-						p._xPubKeyHDPM.clear();
+						_xPubKeyHDPM.clear();
 					}
 
-					p._subWalletsInfoList.clear();
-					nlohmann::json jCoinInfo = j["coinInfo"];
-					for (nlohmann::json::iterator it = jCoinInfo.begin(); it != jCoinInfo.end(); ++it) {
-						CoinInfoPtr coinInfo(new CoinInfo());
-						coinInfo->FromJson((*it));
-						p._subWalletsInfoList.push_back(coinInfo);
-					}
+					_subWalletsInfoList = j["coinInfo"].get<std::vector<CoinInfoPtr>>();
 				} else {
 					// old version of localstore
 					bytes_t bytes;
 					nlohmann::json mpk = j["MasterPubKey"];
 
-					p._derivationStrategy = "BIP44";
-					p._account = 0;
-					p._xPrivKey.clear();
-					p._requestPubKey.clear();
-					p._requestPrivKey.clear();
-					p._ownerPubKey.clear();
-					p._xPubKey.clear();
-					p._xPubKeyHDPM.clear();
+					_derivationStrategy = "BIP44";
+					_account = 0;
+					_xPrivKey.clear();
+					_requestPubKey.clear();
+					_requestPrivKey.clear();
+					_ownerPubKey.clear();
+					_xPubKey.clear();
+					_xPubKeyHDPM.clear();
 
 					if (mpk.is_object()) {
 						bytes.setHex(mpk["ELA"]);
@@ -109,20 +96,14 @@ namespace Elastos {
 							stream.ReadBytes(pubKey, 33);
 
 							bytes = HDKeychain(pubKey, chainCode).extkey();
-							p._xPubKey = Base58::CheckEncode(bytes);
+							_xPubKey = Base58::CheckEncode(bytes);
 						}
 					}
 
 					nlohmann::json jaccount = j["Account"];
 
 					if (j.find("SubWallets") != j.end()) {
-						p._subWalletsInfoList.clear();
-						nlohmann::json jCoinInfo = j["SubWallets"];
-						for (nlohmann::json::iterator it = jCoinInfo.begin(); it != jCoinInfo.end(); ++it) {
-							CoinInfoPtr coinInfo(new CoinInfo());
-							coinInfo->FromJson((*it));
-							p._subWalletsInfoList.push_back(coinInfo);
-						}
+						_subWalletsInfoList = j["SubWallets"].get<std::vector<CoinInfoPtr>>();
 					}
 
 
@@ -131,28 +112,28 @@ namespace Elastos {
 						ErrorChecker::ThrowLogicException(Error::InvalidLocalStore, "Localstore too old, re-import please");
 					} else {
 						// 2. standard hd
-						p._readonly = false;
-						p._mnemonic = jaccount["Mnemonic"].get<std::string>();
-						p._passphrase = jaccount["PhrasePassword"].get<std::string>();
+						_readonly = false;
+						_mnemonic = jaccount["Mnemonic"].get<std::string>();
+						_passphrase = jaccount["PhrasePassword"].get<std::string>();
 
-						bytes.setBase64(p._passphrase);
+						bytes.setBase64(_passphrase);
 						if (bytes.size() <= 8) {
-							p._mnemonicHasPassphrase = false;
-							p._passphrase.clear();
+							_mnemonicHasPassphrase = false;
+							_passphrase.clear();
 						} else {
-							p._mnemonicHasPassphrase = true;
+							_mnemonicHasPassphrase = true;
 						}
 
-						p._m = p._n = 1;
-						p._requestPubKey = jaccount["PublicKey"].get<std::string>();
-						if (!p._xPubKey.empty())
-							p._publicKeyRing.emplace_back(p._requestPubKey, p._xPubKey);
+						_m = _n = 1;
+						_requestPubKey = jaccount["PublicKey"].get<std::string>();
+						if (!_xPubKey.empty())
+							_publicKeyRing.emplace_back(_requestPubKey, _xPubKey);
 
 						nlohmann::json votePubkey = j["VotePublicKey"];
 						if (votePubkey.is_object() && votePubkey["ELA"].get<std::string>() != "") {
-							p._ownerPubKey = votePubkey["ELA"].get<std::string>();
+							_ownerPubKey = votePubkey["ELA"].get<std::string>();
 						}
-						p._singleAddress = j["IsSingleAddress"].get<bool>();
+						_singleAddress = j["IsSingleAddress"].get<bool>();
 					}
 				}
 			} catch (const nlohmann::detail::exception &e) {
@@ -161,7 +142,7 @@ namespace Elastos {
 		}
 
 		LocalStore::LocalStore(const nlohmann::json &store) {
-			from_json(store, *this);
+			FromJson(store);
 		}
 
 		LocalStore::LocalStore(const std::string &path) :
@@ -205,15 +186,14 @@ namespace Elastos {
 
 			ErrorChecker::CheckLogic(j.is_null() || j.empty(), Error::InvalidLocalStore, "local store file is empty");
 
-			from_json(j, *this);
+			FromJson(j);
 
 			return true;
 		}
 
 		void LocalStore::Save() {
 
-			nlohmann::json j;
-			to_json(j, *this);
+			nlohmann::json j = ToJson();
 
 			if (!j.is_null() && !j.empty() && !_path.empty()) {
 				boost::filesystem::path path = _path;

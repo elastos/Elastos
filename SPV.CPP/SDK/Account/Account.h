@@ -25,7 +25,6 @@
 #include "IAccount.h"
 
 #include <WalletCore/Mnemonic.h>
-#include <Common/Mstream.h>
 #include <WalletCore/Address.h>
 #include <SpvService/LocalStore.h>
 

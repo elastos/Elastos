@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_PROGRAM_H__
 
 #include <Plugin/Interface/ELAMessageSerializable.h>
+#include <Common/JsonSerializer.h>
 #include <WalletCore/Address.h>
 
 #include <boost/shared_ptr.hpp>
@@ -16,7 +17,7 @@ namespace Elastos {
 		class Transaction;
 		class Address;
 
-		class Program {
+		class Program : public JsonSerializer {
 		public:
 			Program();
 
@@ -54,7 +55,7 @@ namespace Elastos {
 
 			virtual nlohmann::json ToJson() const;
 
-			virtual void FromJson(const nlohmann::json &jsonData);
+			virtual void FromJson(const nlohmann::json &j);
 
 		private:
 			std::string _path;

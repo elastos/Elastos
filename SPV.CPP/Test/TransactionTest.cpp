@@ -70,10 +70,9 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 
 		initTransaction(tx1, Transaction::TxVersion::V09);
 
-		nlohmann::json txJson = tx1.ToJson();
+		nlohmann::json txJson = tx1;
 
-		Transaction tx2;
-		tx2.FromJson(txJson);
+		Transaction tx2 = txJson;
 
 		verifyTransaction(tx1, tx2, true);
 	}
@@ -158,8 +157,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 			"Version":9
 		})"_json;
 
-		Transaction tx;
-		tx.FromJson(j);
+		Transaction tx = j;
 
 		uint256 hash = tx.GetHash();
 
