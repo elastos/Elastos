@@ -269,10 +269,9 @@ export default class extends Base {
     public async findUserByDid(did: string): Promise<Document>{
         const db_user = this.getDBModel('User')
         const query = {
-            'dids.id': did,
-            'dids.active': true
+            dids: { $elemMatch: { id: did, active: true } }
         }
-        return await db_user.getDBInstance().find(query, selectFields)
+        return await db_user.getDBInstance().findOne(query, selectFields)
     }
 
     public async findUsers(query): Promise<Document[]>{
@@ -953,11 +952,11 @@ export default class extends Base {
                 try {
                     const db_did = this.getDBModel('Did')
                     const doc = await db_did.findOne({ number: decoded.nonce })
-                if (doc) {
-                    return { success: true, did: doc.did }
-                } else {
-                    return { success: false }
-                }
+                    if (doc) {
+                        return { success: true, did: doc.did }
+                    } else {
+                        return { success: false }
+                    }
                 } catch (err) {
                     return { success: false }
                 }

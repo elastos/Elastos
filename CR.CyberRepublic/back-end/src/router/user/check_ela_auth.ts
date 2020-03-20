@@ -8,9 +8,8 @@ export default class extends Base {
     const userService = this.buildService(UserService)
     const rs: any = await userService.checkElaAuth(this.getParam())
     if (rs && rs.success && rs.did) {
-      const docs: any = await userService.findUserByDid(rs.did)
-      if (docs.length) {
-        const user = docs[0]
+      const user: any = await userService.findUserByDid(rs.did)
+      if (user) {
         const resultData = { user }
         // record user login date
         userService.recordLogin({ userId: user.id })
