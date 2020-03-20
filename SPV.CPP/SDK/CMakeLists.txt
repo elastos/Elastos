@@ -11,9 +11,11 @@ set(SPVSDK_SOURCE_FILES
 	${BRETH_SOURCE_FILES})
 
 set(SPVSDK_DEPENDS boost libressl libfruit libsqlite json libspdlog secp256k1)
-set(LIBS boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3 spdlog resolv)
+set(LIBS boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3 spdlog)
 if(ANDROID)
 	set(LIBS ${LIBS} log)
+else()
+	set(LIBS ${LIBS} resolv)
 endif()
 
 add_custom_target(libspvsdk)

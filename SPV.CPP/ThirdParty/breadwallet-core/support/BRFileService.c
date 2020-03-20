@@ -235,7 +235,7 @@ fileServiceFailedUnix(BRFileService fs,
     return fileServiceFailedInternal (fs, bufferToFree, fileToClose,
                                           (BRFileServiceError) {
                                               FILE_SERVICE_UNIX,
-                                              { .unix = { error }}
+                                              { ._unix = {error }}
                                           });
 }
 

@@ -60,7 +60,7 @@ typedef struct {
 
         struct {
             int error;
-        } unix;
+        } _unix;
 
         struct {
             const char *type;
