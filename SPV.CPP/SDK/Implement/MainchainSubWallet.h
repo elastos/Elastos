@@ -42,6 +42,43 @@ namespace Elastos {
 					const std::string &sideChainAddress,
 					const std::string &memo);
 
+		public:
+			//////////////////////////////////////////////////
+			/*                      Vote                    */
+			//////////////////////////////////////////////////
+			virtual nlohmann::json CreateVoteProducerTransaction(
+				const std::string &fromAddress,
+				const std::string &stake,
+				const nlohmann::json &publicKeys,
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates);
+
+			virtual	nlohmann::json GetVotedProducerList() const;
+
+			virtual nlohmann::json CreateVoteCRTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &votes,
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates);
+
+			virtual	nlohmann::json GetVotedCRList() const;
+
+			virtual nlohmann::json CreateVoteCRCProposalTransaction(const std::string &fromAddress,
+																	const nlohmann::json &votes,
+																	const std::string &memo,
+																	const nlohmann::json &invalidCandidates);
+
+			virtual nlohmann::json CreateImpeachmentCRCTransaction(const std::string &fromAddress,
+																   const nlohmann::json &votes,
+																   const std::string &memo,
+																   const nlohmann::json &invalidCandidates);
+
+			virtual nlohmann::json GetVoteInfo(const std::string &type) const;
+
+		public:
+			//////////////////////////////////////////////////
+			/*                    Producer                  */
+			//////////////////////////////////////////////////
 			virtual nlohmann::json GenerateProducerPayload(
 				const std::string &ownerPublicKey,
 				const std::string &nodePublicKey,
@@ -79,17 +116,12 @@ namespace Elastos {
 
 			virtual std::string GetOwnerAddress() const;
 
-			virtual nlohmann::json CreateVoteProducerTransaction(
-					const std::string &fromAddress,
-					const std::string &stake,
-					const nlohmann::json &publicKeys,
-					const std::string &memo,
-					const nlohmann::json &invalidCandidates);
-
-			virtual	nlohmann::json GetVotedProducerList() const;
-
 			virtual nlohmann::json GetRegisteredProducerInfo() const;
 
+		public:
+			//////////////////////////////////////////////////
+			/*                      CRC                     */
+			//////////////////////////////////////////////////
 			virtual nlohmann::json GenerateCRInfoPayload(
 					const std::string &crPublicKey,
 					const std::string &did,
@@ -120,18 +152,12 @@ namespace Elastos {
 					const std::string &amount,
 					const std::string &memo);
 
-			virtual nlohmann::json CreateVoteCRTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &votes,
-				const std::string &memo,
-				const nlohmann::json &invalidCandidates);
-
-			virtual	nlohmann::json GetVotedCRList() const;
-
 			virtual nlohmann::json GetRegisteredCRInfo() const;
 
-			virtual nlohmann::json GetVoteInfo(const std::string &type) const;
-
+		public:
+			//////////////////////////////////////////////////
+			/*                     Proposal                 */
+			//////////////////////////////////////////////////
 			virtual nlohmann::json SponsorProposalDigest(uint16_t type,
 			                                             const std::string &categoryData,
 			                                             const std::string &sponsorPublicKey,
@@ -152,16 +178,6 @@ namespace Elastos {
 
 			virtual nlohmann::json CreateCRCProposalReviewTransaction(const nlohmann::json &proposalReview,
 			                                                          const std::string &memo);
-
-			virtual nlohmann::json CreateVoteCRCProposalTransaction(const std::string &fromAddress,
-			                                                        const nlohmann::json &votes,
-			                                                        const std::string &memo,
-			                                                        const nlohmann::json &invalidCandidates);
-
-			virtual nlohmann::json CreateImpeachmentCRCTransaction(const std::string &fromAddress,
-			                                                       const nlohmann::json &votes,
-			                                                       const std::string &memo,
-			                                                       const nlohmann::json &invalidCandidates);
 
 			virtual nlohmann::json LeaderProposalTrackDigest(uint8_t type,
 			                                                 const std::string &proposalHash,
