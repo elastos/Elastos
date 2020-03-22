@@ -852,10 +852,10 @@ func (c *Committee) AvailableWithdrawalAmount(hash common.Uint256) common.Fixed6
 	return c.manager.availableWithdrawalAmount(hash)
 }
 
-func (c *Committee) IsProposalFull(cid common.Uint168) bool {
+func (c *Committee) IsProposalFull(did common.Uint168) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
-	return c.manager.isProposalFull(cid)
+	return c.manager.isProposalFull(did)
 }
 
 func (c *Committee) ExistDraft(hash common.Uint256) bool {

@@ -2320,6 +2320,25 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 							Votes:     cv.Votes.String(),
 						})
 				}
+			case outputpayload.CRCProposal:
+				for _, cv := range content.CandidateVotes {
+					c, _ := common.Uint256FromBytes(cv.Candidate)
+					contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
+						CandidateVotes{
+							Candidate: c.String(),
+							Votes:     cv.Votes.String(),
+						})
+				}
+			case outputpayload.CRCImpeachment:
+				for _, cv := range content.CandidateVotes {
+					c, _ := common.Uint168FromBytes(cv.Candidate)
+					addr, _ := c.ToAddress()
+					contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
+						CandidateVotes{
+							Candidate: addr,
+							Votes:     cv.Votes.String(),
+						})
+				}
 			}
 			obj.Contents = append(obj.Contents, contentInfo)
 		}
