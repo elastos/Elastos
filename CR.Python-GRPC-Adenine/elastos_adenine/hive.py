@@ -4,7 +4,7 @@ import jwt
 import datetime
 from decouple import config
 from .stubs import hive_pb2, hive_pb2_grpc
-from elastos_adenine.settings import REQUEST_TIMEOUT
+from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION
 import base64
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
@@ -23,7 +23,6 @@ class Hive:
         self._channel = grpc.secure_channel('{}:{}'.format(host, port), credentials)
 
         self.stub = hive_pb2_grpc.HiveStub(self._channel)
-        self.TOKEN_EXPIRATION = 24 * 30
 
     def close(self):
         self._channel.close()
@@ -46,7 +45,7 @@ class Hive:
 
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=self.TOKEN_EXPIRATION)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
         }, api_key, algorithm='HS256')
 
 
@@ -61,7 +60,7 @@ class Hive:
 
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=self.TOKEN_EXPIRATION)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
         }, api_key, algorithm='HS256')
 
         response = self.stub.VerifyAndShow(hive_pb2.Request(input=jwt_token), timeout=REQUEST_TIMEOUT, metadata=[('did', did)])

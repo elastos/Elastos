@@ -3,7 +3,7 @@ import jwt
 import datetime
 from decouple import config
 from .stubs import common_pb2, common_pb2_grpc
-from elastos_adenine.settings import REQUEST_TIMEOUT
+from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION
 
 
 class Common:
@@ -17,7 +17,6 @@ class Common:
         self._channel = grpc.secure_channel('{}:{}'.format(host, port), credentials)
         
         self.stub = common_pb2_grpc.CommonStub(self._channel)
-        self.TOKEN_EXPIRATION = 24 * 30
 
     def close(self):
         self._channel.close()
@@ -30,7 +29,7 @@ class Common:
 
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=self.TOKEN_EXPIRATION)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
         }, secret_key, algorithm='HS256')
 
         response = self.stub.GenerateAPIRequestMnemonic(common_pb2.Request(input=jwt_token), timeout=REQUEST_TIMEOUT, metadata=[('did', did)])
@@ -43,7 +42,7 @@ class Common:
 
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=self.TOKEN_EXPIRATION)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
         }, secret_key, algorithm='HS256')
 
         response = self.stub.GenerateAPIRequest(common_pb2.Request(input=jwt_token), timeout=REQUEST_TIMEOUT, metadata=[('did', did)])
@@ -57,7 +56,7 @@ class Common:
 
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=self.TOKEN_EXPIRATION)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
         }, secret_key, algorithm='HS256')
 
         response = self.stub.GetAPIKeyMnemonic(common_pb2.Request(input=jwt_token), timeout=REQUEST_TIMEOUT, metadata=[('did', did)])
@@ -70,7 +69,7 @@ class Common:
 
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=self.TOKEN_EXPIRATION)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
         }, secret_key, algorithm='HS256')
 
         response = self.stub.GetAPIKey(common_pb2.Request(input=jwt_token), timeout=REQUEST_TIMEOUT, metadata=[('did', did)])
