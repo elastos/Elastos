@@ -71,8 +71,8 @@ class TestData: XCTestCase {
     }
     
     public func initIdentity() throws -> String {
-        let mnemonic: String = try Mnemonic.generate("0")
-        try store.initializePrivateIdentity(using: passphrase, storePassword: storePass, true)
+        let mnemonic: String = try Mnemonic.generate(Mnemonic.ENGLISH)
+        try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passPhrase: passphrase, storePassword: storePass, true)
         return mnemonic
     }
     
@@ -312,8 +312,8 @@ class TestData: XCTestCase {
     
     public class func generateKeypair() throws -> HDKey.DerivedKey {
         if TestData.rootKey == nil {
-            let mnemonic: String = try Mnemonic.generate("0")
-            TestData.rootKey = HDKey.fromMnemonic(mnemonic, "", 0)
+            let mnemonic: String = try Mnemonic.generate(Mnemonic.ENGLISH)
+            TestData.rootKey = HDKey.fromMnemonic(mnemonic, "", Mnemonic.ENGLISH)
             TestData.index = 0
         }
         TestData.index = TestData.index! + 1

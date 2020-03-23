@@ -49,12 +49,7 @@ public class Mnemonic {
     }
 
     public class func generate(_ language: String) throws -> String {
-        let lang = Language.valueOf(language)
-        guard let _ = lang else {
-            throw DIDError.illegalArgument()
-        }
-
-        return String(cString: HDKey_GenerateMnemonic(Int32(lang!.rawValue)))
+        return String(cString: HDKey_GenerateMnemonic(language.toUnsafePointerInt8()!))
     }
     
     public class func isValid(_ language: String, _ mnemonic: String) throws -> Bool {
@@ -64,12 +59,8 @@ public class Mnemonic {
         guard !mnemonic.isEmpty else {
             throw DIDError.illegalArgument()
         }
-        let lang = Language.valueOf(language)
-        guard let _ = lang else {
-            throw DIDError.illegalArgument()
-        }
 
-        return HDKey_MnemonicIsValid(mnemonic.toUnsafePointerInt8()!, Int32(lang!.rawValue))
+        return HDKey_MnemonicIsValid(mnemonic.toUnsafePointerInt8()!, language.toUnsafePointerInt8()!)
     }
 
     class func getLanguageId(_ language: String) -> Int {

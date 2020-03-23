@@ -52,16 +52,27 @@ public class DIDDocument {
 
         func values(_ fulfill: (T) -> Bool) -> Array<T> {
             var result = Array<T>()
+            var preKeys = Array<DIDURL>()
 
             guard let _ = map else {
                 return result
             }
 
-            for value in map!.values {
+            for (key, value) in map! {
                 if fulfill(value) {
-                    result.append(value)
+                    preKeys.append(key)
                 }
             }
+
+            let sortedKeys = preKeys.sorted { (d1, d2) -> Bool in
+                let compareResult = d1.toString().compare(d2.toString())
+                return compareResult == ComparisonResult.orderedAscending
+            }
+
+            for key in sortedKeys {
+                result.append(map![key]!)
+            }
+
             return result
         }
 
@@ -71,7 +82,7 @@ public class DIDDocument {
             guard id != nil || type != nil else {
                 return result
             }
-            guard map?.isEmpty ?? true else {
+            if map?.isEmpty ?? true {
                 return result
             }
 
@@ -384,7 +395,7 @@ public class DIDDocument {
         }
 
         // Make sure that controller should be current DID subject.
-        guard key!.controller == self.subject else {
+        guard key!.controller != self.subject else {
             return false
         }
 
@@ -403,7 +414,7 @@ public class DIDDocument {
             return false
         }
 
-        key!.setAuthenticationKey(false)
+        key!.setAthorizationKey(false)
         return true
     }
 
@@ -751,13 +762,25 @@ public class DIDDocument {
 
     private func parseAuthenticationKeys(_ arrayNode: JsonNode) throws {
         let array = arrayNode.asArray()
-        guard array?.count ?? 0 < 0 else {
+        guard array?.count ?? 0 > 0 else {
             return
         }
 
         for node in array! {
             do {
-                _ = appendAuthenticationKey(try PublicKey.fromJson(node, self.subject).getId())
+                var pk: PublicKey
+                if let _ = node.asDictionary() {
+                  pk =  try PublicKey.fromJson(node, self.subject)
+                }
+                else {
+                    let serializer = JsonSerializer(node)
+                    var options: JsonSerializer.Options
+                    options = JsonSerializer.Options()
+                                            .withRef(subject)
+                    let didUrl = try serializer.getDIDURL(options)
+                    pk = publicKey(ofId: didUrl!)!
+                }
+                _ = appendAuthenticationKey(pk.getId())
             } catch {
                 throw DIDError.malformedDocument()
             }
@@ -766,13 +789,25 @@ public class DIDDocument {
 
     private func parseAuthorizationKeys(_ arrayNode: JsonNode) throws {
         let array = arrayNode.asArray()
-        guard array?.count ?? 0 < 0 else {
+        guard array?.count ?? 0 > 0 else {
             return
         }
 
         for node in array! {
             do {
-                _ = appendAuthorizationKey(try PublicKey.fromJson(node, self.subject).getId())
+                var pk: PublicKey
+                if let _ = node.asDictionary() {
+                    pk =  try PublicKey.fromJson(node, self.subject)
+                }
+                else {
+                    let serializer = JsonSerializer(node)
+                    var options: JsonSerializer.Options
+                    options = JsonSerializer.Options()
+                                            .withRef(subject)
+                    let didUrl = try serializer.getDIDURL(options)
+                    pk = publicKey(ofId: didUrl!)!
+                }
+                _ = appendAuthorizationKey(pk.getId())
             } catch {
                 throw DIDError.malformedDocument()
             }
@@ -796,7 +831,7 @@ public class DIDDocument {
 
     private func parseService(_ arrayNode: JsonNode) throws {
         let array = arrayNode.asArray()
-        guard array?.count ?? 0 < 0 else {
+        guard array?.count ?? 0 > 0 else {
             return
         }
 
@@ -903,7 +938,7 @@ public class DIDDocument {
             for pubKey in authorizationKeys() {
                 var value: String
                 if normalized || pubKey.getId().did != self.subject {
-                    value = pubKey.getId().did.toString()
+                    value = pubKey.getId().toString()
                 } else {
                     value = "#" + pubKey.getId().fragment!
                 }

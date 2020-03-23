@@ -117,7 +117,9 @@ public class DIDDocumentBuilder {
             throw DIDError.illegalArgument()
         }
 
-        guard document!.appendAuthorizationKey(id) else {
+        let key = PublicKey(id, try getSubject(), keyBase58)
+        key.setAuthenticationKey(true)
+        guard document!.appendPublicKey(key) else {
             throw DIDError.illegalArgument()
         }
 

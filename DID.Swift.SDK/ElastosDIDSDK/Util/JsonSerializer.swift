@@ -105,6 +105,36 @@ class JsonSerializer {
         return id
     }
 
+    func getDIDURL(_ options: Options) throws -> DIDURL? {
+        let value = node.asString()
+
+        guard let _ = value else {
+            if options.optional {
+                return nil
+            } else {
+                throw options.error("missing \(options.hint)")
+            }
+        }
+
+        guard !(value!.isEmpty) else {
+            throw options.error("invalid \(options.hint)")
+        }
+
+        let id: DIDURL
+        do {
+            let ref: DID? = options.refValue as? DID
+            if ref != nil && value!.hasPrefix("#") {
+                let fragment = String(value!.suffix(value!.count - 1))
+                id = try DIDURL(ref!, fragment)
+            } else {
+                id = try DIDURL(value!)
+            }
+        } catch {
+            throw options.error("invalid \(options.hint)")
+        }
+        return id
+    }
+
     func getDate(_ keyName: String, _ options: Options) throws -> Date {
         let child = node.get(forKey: keyName)
 

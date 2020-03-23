@@ -84,11 +84,11 @@ class HDKey: NSObject {
         self.chdKey = chdKey
     }
 
-    class func fromMnemonic(_ mnemonic: String, _ passPhrase: String, _ language: Int) -> HDKey {
+    class func fromMnemonic(_ mnemonic: String, _ passPhrase: String, _ language: String) -> HDKey {
         let cmnemonic = mnemonic.toUnsafePointerInt8()!
         let cpassphrase = passPhrase.toUnsafePointerInt8()!
         let chdKey: UnsafeMutablePointer<CHDKey> = UnsafeMutablePointer<CHDKey>.allocate(capacity: 66)
-        let chdkey = HDKey_FromMnemonic(cmnemonic, cpassphrase, Int32(language), chdKey)
+        let chdkey = HDKey_FromMnemonic(cmnemonic, cpassphrase, language.toUnsafePointerInt8()!, chdKey)
         return HDKey(chdkey)
     }
 
@@ -116,9 +116,9 @@ class HDKey: NSObject {
         return DerivedKey(self.chdKey, index)
     }
 
-    func serialize() throws -> Data {
+    func serializePrv() throws -> Data {
         let cextendedkey = UnsafeMutablePointer<UInt8>.allocate(capacity: HDKey.EXTENDED_PRIVATE_BYTES)
-        let csize = HDKey_Serialize(self.chdKey, cextendedkey, Int32(HDKey.EXTENDED_PRIVATE_BYTES))
+        let csize = HDKey_SerializePrv(self.chdKey, cextendedkey, Int32(HDKey.EXTENDED_PRIVATE_BYTES))
         if csize <= -1 {
             throw DIDError.didStoreError("HDKey_Serialize error.")
         }
@@ -126,9 +126,14 @@ class HDKey: NSObject {
         return Data(buffer: extendedkeyPointerToArry)
     }
 
-    func serialize() -> String {
-        // TODO:
-        return "TODO"
+    func serializePub() throws -> Data {
+        let cextendedkey = UnsafeMutablePointer<UInt8>.allocate(capacity: HDKey.EXTENDED_PRIVATE_BYTES)
+        let csize = HDKey_SerializePub(self.chdKey, cextendedkey, Int32(HDKey.EXTENDED_PRIVATE_BYTES))
+        if csize <= -1 {
+            throw DIDError.didStoreError("HDKey_Serialize error.")
+        }
+        let extendedkeyPointerToArry: UnsafeBufferPointer<UInt8> = UnsafeBufferPointer(start: cextendedkey, count: HDKey.EXTENDED_PRIVATE_BYTES)
+        return Data(buffer: extendedkeyPointerToArry)
     }
     
     class func deserialize(_ keyData: Data) throws -> HDKey {

@@ -9,11 +9,11 @@ internal struct CHDKey {
 
     var fingerPrint: UInt32?
     
-    var chainCodeForSk: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    var prvChainCode: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-    var privateKey: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    var privatekey: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-    var chainCodeForPk: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    var pubChainCode: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     var publicKey: (Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8, Int8) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     
@@ -32,13 +32,13 @@ internal struct CDerivedKey {
 }
 
 @_silgen_name("HDKey_GenerateMnemonic")
-internal func HDKey_GenerateMnemonic(_ language: Int32) -> UnsafePointer<Int8>!
+internal func HDKey_GenerateMnemonic(_ language: UnsafePointer<Int8>) -> UnsafePointer<Int8>!
 
 @_silgen_name("HDKey_MnemonicIsValid")
-internal func HDKey_MnemonicIsValid(_ mnemonic: UnsafePointer<Int8>, _ language: Int32) -> Bool
+internal func HDKey_MnemonicIsValid(_ mnemonic: UnsafePointer<Int8>, _ language: UnsafePointer<Int8>) -> Bool
 
 @_silgen_name("HDKey_FromMnemonic")
-internal func HDKey_FromMnemonic(_ mmemonic: UnsafePointer<Int8>, _ passphrase: UnsafePointer<Int8>, _ language: Int32!,_ hdkey: UnsafeMutablePointer<CHDKey>!
+internal func HDKey_FromMnemonic(_ mmemonic: UnsafePointer<Int8>, _ passphrase: UnsafePointer<Int8>, _ language: UnsafePointer<Int8>,_ hdkey: UnsafeMutablePointer<CHDKey>!
 ) ->  UnsafeMutablePointer<CHDKey>
 
 @_silgen_name("HDKey_FromSeed")
@@ -49,8 +49,11 @@ internal func HDKey_FromSeed(_ seed: UnsafePointer<UInt8>, _ size: Int32, _ hdke
 internal func HDKey_FromExtendedKey(_ extendedkey: UnsafePointer<UInt8>, _ size: Int32, _ hdkey: UnsafeMutablePointer<CHDKey>!
 ) ->  UnsafeMutablePointer<CHDKey>
 
-@_silgen_name("HDKey_Serialize")
-internal func HDKey_Serialize(_ hdkey: UnsafeMutablePointer<CHDKey>, _ extendedkey: UnsafeMutablePointer<UInt8>, _ size: Int32) -> Int32
+@_silgen_name("HDKey_SerializePrv")
+internal func HDKey_SerializePrv(_ hdkey: UnsafeMutablePointer<CHDKey>, _ extendedkey: UnsafeMutablePointer<UInt8>, _ size: Int32) -> Int32
+
+@_silgen_name("HDKey_SerializePrv")
+internal func HDKey_SerializePub(_ hdkey: UnsafeMutablePointer<CHDKey>, _ extendedkey: UnsafeMutablePointer<UInt8>, _ size: Int32) -> Int32
 
 @_silgen_name("HDKey_Wipe")
 internal func HDKey_Wipe(_ hdkey: UnsafeMutablePointer<CHDKey>)

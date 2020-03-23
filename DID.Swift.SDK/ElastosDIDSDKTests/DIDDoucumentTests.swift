@@ -142,20 +142,40 @@ class DIDDoucumentTests: XCTestCase {
             let db: DIDDocumentBuilder = doc.editing()
             
             // recovery used by authorization, should failed.
-            let id: DIDURL = try DIDURL(doc.subject, "recovery")
-            _ = try db.removePublicKey(with: id)
-            
+            let id = try DIDURL(doc.subject, "recovery")
+            XCTAssertThrowsError(try db.removePublicKey(with: id)) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
+
             // force remove public key, should success
             _ = try db.removePublicKey(with: id, true)
             
             _ = try db.removePublicKey(with: "key2", true)
             
             // Key not exist, should fail.
-            _ = try db.removePublicKey(with: "notExistKey", true)
-            
-            // Can not remove default publickey, should fail.
-            _ = try db.removePublicKey(with: doc.defaultPublicKey, true)
-            
+            XCTAssertThrowsError(try db.removePublicKey(with: "notExistKey", true)) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
+
+            XCTAssertThrowsError(try db.removePublicKey(with: doc.defaultPublicKey, true)) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
+
             doc = try db.sealed(using: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(doc.isValid)
@@ -280,11 +300,24 @@ class DIDDoucumentTests: XCTestCase {
             _ = try db.appendAuthenticationKey(with: "test4", keyBase58: key.getPublicKeyBase58())
             
             // Try to add a non existing key, should fail.
-            _ = try db.appendAuthenticationKey(with: "notExistKey")
-            
-            // Try to add a key not owned by self, should fail.
-            _ = try db.appendAuthenticationKey(with: "recovery")
+            XCTAssertThrowsError(try db.appendAuthenticationKey(with: "notExistKey")) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
 
+            // Try to add a key not owned by self, should fail.
+            XCTAssertThrowsError(try db.appendAuthenticationKey(with: "recovery")) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
             
             doc = try db.sealed(using: storePass)
             XCTAssertNotNil(doc)
@@ -346,11 +379,24 @@ class DIDDoucumentTests: XCTestCase {
             _ = try db.removeAuthenticationKey(with: "key2")
             
             // Key not exist, should fail.
-            _ = try db.removeAuthenticationKey(with: "notExistKey")
+            XCTAssertThrowsError(try db.removeAuthenticationKey(with: "notExistKey")) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
             
             // Default publickey, can not remove, should fail.
-            _ = try db.removeAuthenticationKey(with: doc.defaultPublicKey)
-            
+            XCTAssertThrowsError(try db.removeAuthenticationKey(with: doc.defaultPublicKey)) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
             doc = try db.sealed(using: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(doc.isValid)
@@ -470,10 +516,24 @@ class DIDDoucumentTests: XCTestCase {
             _ = try db.appendAuthorizationKey(with: "test4", controller: did.toString(), keyBase58: key.getPublicKeyBase58())
             
             // Try to add a non existing key, should fail.
-            _ = try db.appendAuthorizationKey(with: "notExistKey")
+            XCTAssertThrowsError(try db.appendAuthorizationKey(with: "notExistKey")) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
             
             // Try to add key owned by self, should fail.
-            _ = try db.appendAuthorizationKey(with: "key2")
+            XCTAssertThrowsError(try db.appendAuthorizationKey(with: "key2")) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
             
             doc = try db.sealed(using: storePass)
             XCTAssertNotNil(doc)
@@ -531,7 +591,14 @@ class DIDDoucumentTests: XCTestCase {
             _ = try db.removeAuthorizationKey(with: "recovery")
             
             // Key not exist, should fail.
-            _ = try db.removeAuthorizationKey(with: "notExistKey")
+            XCTAssertThrowsError(try db.removeAuthorizationKey(with: "notExistKey")) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
             
             doc = try db.sealed(using: storePass)
             XCTAssertNotNil(doc)
@@ -634,7 +701,14 @@ class DIDDoucumentTests: XCTestCase {
 
             
             // Credential already exist, should fail.
-            _ = try db.appendCredential(with: vc!)
+            XCTAssertThrowsError(try db.appendCredential(with: vc!)) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                    //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
             
             doc = try db.sealed(using: storePass)
             XCTAssertNotNil(doc)
@@ -683,10 +757,26 @@ class DIDDoucumentTests: XCTestCase {
             _ = try db.removeCredential(with: try DIDURL(doc.subject, "twitter"))
             
             // Credential not exist, should fail.
-            _ = try db.removeCredential(with: "notExistCredential")
-            _ = try db.removeCredential(with: try DIDURL(doc.subject,
-                                                  "notExistCredential"))
-            
+            XCTAssertThrowsError(try db.removeCredential(with: "notExistCredential")) { (error) in
+                switch error {
+                case DIDError.illegalArgument: break
+                //everything is fine
+                default:
+                    XCTFail("Unexpected error thrown")
+                }
+            }
+            XCTAssertThrowsError(
+                try db.removeCredential(with:
+                    try DIDURL(doc.subject,
+                               "notExistCredential"))) { (error) in
+                                switch error {
+                                case DIDError.illegalArgument: break
+                                //everything is fine
+                                default:
+                                    XCTFail("Unexpected error thrown")
+                                }
+            }
+
             doc = try db.sealed(using: storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(doc.isValid)
@@ -827,7 +917,14 @@ class DIDDoucumentTests: XCTestCase {
             _ = try db.removeService(with: try DIDURL(doc.subject, "vcr"))
             
             // Service not exist, should fail.
-            _ = try db.removeService(with: "notExistService")
+            XCTAssertThrowsError(try db.removeService(with: "notExistService")) { (error) in
+                switch error {
+                case DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED): break
+                //everything is fine
+                default:
+                XCTFail("Unexpected error thrown")
+                }
+            }
             
             doc = try db.sealed(using: storePass)
             XCTAssertNotNil(doc)

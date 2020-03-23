@@ -1,6 +1,6 @@
 import Foundation
 
-private func mapToString(_ dict: Dictionary<String, String>?, _ sep: String) -> String? {
+private func mapToString(_ dict: OrderedDictionary<String, String>?, _ sep: String) -> String? {
     guard let _ = dict else {
         return nil
     }
@@ -11,7 +11,9 @@ private func mapToString(_ dict: Dictionary<String, String>?, _ sep: String) -> 
     for (key, value) in dict! {
         result.append(!first ? sep : "")
         result.append(key)
-        result.append("=")
+        if value != "" {
+            result.append("=")
+        }
         result.append(value)
 
         if  first {
@@ -25,9 +27,9 @@ public class DIDURL {
     private var _did: DID?
     private var _fragment: String?
 
-    private var _parameters: Dictionary<String, String>?
+    private var _parameters: OrderedDictionary<String, String>?
     private var _path: String?
-    private var _queryParameters: Dictionary<String, String>?
+    private var _queryParameters: OrderedDictionary<String, String>?
     private var _meta: CredentialMeta?
 
     public init(_ id: DID, _ fragment: String) throws {
@@ -104,7 +106,7 @@ public class DIDURL {
 
     public func appendParameter(_ value: String?, forKey: String) {
         if  self._parameters == nil {
-            self._parameters = Dictionary<String, String>()
+            self._parameters = OrderedDictionary()
         }
         self._parameters![forKey] = value
     }
@@ -131,7 +133,7 @@ public class DIDURL {
     
     public func appendQueryParameter(_ value: String?, forKey: String) {
         if  self._queryParameters == nil {
-            self._queryParameters = Dictionary<String, String>()
+            self._queryParameters = OrderedDictionary()
         }
         self._queryParameters![forKey] = value
     }
@@ -187,19 +189,19 @@ extension DIDURL: CustomStringConvertible {
         var builder: String = ""
 
         builder.append(did.toString())
-        if !(_parameters?.isEmpty ?? true) {
-            builder.append(":")
+        if (parameters() != nil) {
+            builder.append(";")
             builder.append(parameters()!)
         }
         if !(path?.isEmpty ?? true) {
             builder.append(path!)
         }
-        if !(_queryParameters?.isEmpty ?? true) {
+        if (queryParameters() != nil) {
             builder.append("?")
             builder.append(queryParameters()!)
         }
 
-        if !(fragment?.isEmpty ?? true) {
+        if !(_fragment?.isEmpty ?? true) {
             builder.append("#")
             builder.append(fragment!)
         }
@@ -267,7 +269,7 @@ extension DIDURL {
         }
 
         override func enterParams(_ ctx: DIDURLParser.ParamsContext) {
-            self.didURL?._parameters = Dictionary<String, String>()
+            self.didURL?._parameters = OrderedDictionary()
         }
 
         override func exitParamMethod(_ ctx: DIDURLParser.ParamMethodContext) {
@@ -287,9 +289,11 @@ extension DIDURL {
         }
 
         override func exitParam(_ ctx: DIDURLParser.ParamContext) {
-            self.didURL?.appendParameter(self.value, forKey: self.name!)
-            self.value = nil
+            let name = self.name ?? ""
+            let value = self.value ?? ""
+            self.didURL?.appendParameter(value, forKey: name)
             self.name = nil
+            self.value = nil
         }
 
         override func exitPath(_ ctx: DIDURLParser.PathContext) {
@@ -297,7 +301,7 @@ extension DIDURL {
         }
 
         override func enterQuery(_ ctx: DIDURLParser.QueryContext) {
-            self.didURL?._queryParameters = Dictionary<String, String>()
+            self.didURL?._queryParameters = OrderedDictionary()
         }
 
         override func exitQueryParamName(_ ctx: DIDURLParser.QueryParamNameContext) {
@@ -309,7 +313,9 @@ extension DIDURL {
         }
 
         override func exitQueryParam(_ ctx: DIDURLParser.QueryParamContext) {
-            self.didURL?.appendQueryParameter(self.value, forKey: self.name!)
+            let name = self.name ?? ""
+            let value = self.value ?? ""
+            self.didURL?.appendQueryParameter(value, forKey: name)
             self.name = nil
             self.value = nil
         }

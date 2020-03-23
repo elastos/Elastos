@@ -352,7 +352,7 @@ public class VerifiableCredential: DIDObject {
         guard let _ = subNode else {
             throw DIDError.malformedCredential("missing credential proof")
         }
-        let proof = try VerifiableCredentialProof.fromJson(subNode!, ref)
+        let proof = try VerifiableCredentialProof.fromJson(subNode!, issuer)
 
         setIssuer(issuer)
         setIssuanceDate(issuanceDate)
@@ -361,8 +361,9 @@ public class VerifiableCredential: DIDObject {
         setId(id!)
         setProof(proof)
 
-        if let _ = getIssuer() {
+        guard let _ = getIssuer() else {
             setIssuer(self.subject.did)
+            return
         }
     }
 

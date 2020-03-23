@@ -101,7 +101,7 @@ public class DIDStore: NSObject {
     }
 
     // Initialize & create new private identity and save it to DIDStore.
-    private func initializePrivateIdentity(_ language: String,
+    public func initializePrivateIdentity(_ language: String,
                                            _ mnemonic: String,
                                            _ passPhrase: String?,
                                            _ storePassword: String,
@@ -123,7 +123,7 @@ public class DIDStore: NSObject {
             usedPhrase = ""
         }
 
-        let privateIdentity = HDKey.fromMnemonic(mnemonic, usedPhrase!, Mnemonic.getLanguageId(language))
+        let privateIdentity = HDKey.fromMnemonic(mnemonic, usedPhrase!, language)
         try initializePrivateIdentity(privateIdentity, storePassword)
 
         // Save mnemonic
@@ -167,7 +167,7 @@ public class DIDStore: NSObject {
     private func initializePrivateIdentity(_ privateIdentity: HDKey,
                                            _ storePassword: String) throws {
 
-        let encryptedIdentity = try DIDStore.encryptToBase64(privateIdentity.serialize(), storePassword)
+        let encryptedIdentity = try DIDStore.encryptToBase64(privateIdentity.serializePrv(), storePassword)
         try storage.storePrivateIdentity(encryptedIdentity)
 
         try storage.storePrivateIdentityIndex(0)
@@ -231,7 +231,7 @@ public class DIDStore: NSObject {
             privateIdentity = HDKey.fromSeed(keyData)
 
             // convert to extended root private key.
-            let encryptedIdentity = try DIDStore.encryptToBase64(privateIdentity.serialize(), storePassword)
+            let encryptedIdentity = try DIDStore.encryptToBase64(privateIdentity.serializePrv(), storePassword)
             try storage.storePrivateIdentity(encryptedIdentity)
         } else if keyData.count == HDKey.EXTENDED_PRIVATE_BYTES {
             privateIdentity = try HDKey.deserialize(keyData)
