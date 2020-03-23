@@ -32,7 +32,6 @@ class Hive(hive_pb2_grpc.HiveServicer):
         self.session = Session()
         session_maker = sessionmaker(bind=db_engine)
         self.rate_limiter = RateLimiter(session_maker())
-        self.TOKEN_EXPIRATION = 24 * 30
 
     def UploadAndSign(self, request, context):
 
@@ -119,7 +118,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=self.TOKEN_EXPIRATION)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
         }, api_key, algorithm='HS256')
 
         return hive_pb2.Response(output=jwt_token, status_message=status_message, status=status)
@@ -206,7 +205,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=self.TOKEN_EXPIRATION)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
         }, api_key, algorithm='HS256')
 
         return hive_pb2.Response(output=jwt_token, status_message='Successfully retrieved file from Elastos Hive', status=True)

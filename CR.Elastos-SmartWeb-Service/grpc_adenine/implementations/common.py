@@ -86,11 +86,9 @@ class Common(common_pb2_grpc.CommonServicer):
         response = get_api_key(self.session, input_did)
         return response
 
-TOKEN_EXPIRATION = 24 * 30
 
 def get_api_key(session, did):
     secret_key = config('SHARED_SECRET_ADENINE')
-    global TOKEN_EXPIRATION
     result = session.query(Users).filter_by(did=did).first()
     if result:
         api_present = session.query(UserApiRelations).filter_by(user_id=result.id).first()
@@ -103,7 +101,7 @@ def get_api_key(session, did):
 
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
         }, secret_key, algorithm='HS256')
 
         return common_pb2.Response(output=jwt_token, status_message='Success', status=True)
@@ -114,7 +112,6 @@ def generate_api_key(session, rate_limiter, did):
     string_length = 64
     date_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S %z")
     secret_key = config('SHARED_SECRET_ADENINE')
-    global TOKEN_EXPIRATION
 
     api_key = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(string_length))
     api_present = session.query(UserApiRelations).filter_by(api_key=api_key).first()
@@ -166,7 +163,7 @@ def generate_api_key(session, rate_limiter, did):
 
     jwt_token = jwt.encode({
         'jwt_info': jwt_info,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
     }, secret_key, algorithm='HS256')
 
     return common_pb2.Response(output=jwt_token, status_message='Success', status=True)
