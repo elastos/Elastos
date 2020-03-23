@@ -1,6 +1,8 @@
 import json
 import secrets
 import logging
+import jwt
+import datetime
 from requests import Session
 from decouple import config
 from sqlalchemy.orm import sessionmaker
@@ -12,7 +14,7 @@ from grpc_adenine import settings
 from grpc_adenine.database import db_engine
 from grpc_adenine.implementations import WalletAddresses, WalletAddressesETH
 from grpc_adenine.implementations.rate_limiter import RateLimiter
-from grpc_adenine.implementations.utils import validate_api_key, get_did_from_api
+from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key, get_did_from_api, get_api_from_did
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs.python import wallet_pb2, wallet_pb2_grpc
 
@@ -31,19 +33,22 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
 
     def CreateWallet(self, request, context):
 
-        api_key = request.api_key
-        network = request.network
-        did = get_did_from_api(api_key)
+        metadata = dict(context.invocation_metadata())
+        did = metadata["did"]
+        api_key = get_api_from_did(did)
+
+        try:
+            jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
+        except:
+            return hive_pb2.Response(output='', status_message='Authentication Error', status=False)
+
+        network = jwt_info['network']
 
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
-            response = {
-                'result': {
-                    'API_Key': api_key
-                }
-            }
-            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified',
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return wallet_pb2.Response(output='', status_message='API Key could not be verified',
                                        status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
@@ -107,22 +112,36 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         status_message = 'Successfully created wallets'
         status = True
 
-        return wallet_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)
+        #generate jwt token
+        jwt_info = {
+            'result': response
+        }
+
+        jwt_token = jwt.encode({
+            'jwt_info': jwt_info,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
+        }, api_key, algorithm='HS256')
+
+        return wallet_pb2.Response(output=jwt_token, status_message=status_message, status=status)
 
     def ViewWallet(self, request, context):
 
-        api_key = request.api_key
-        network = request.network
+        metadata = dict(context.invocation_metadata())
+        did = metadata["did"]
+        api_key = get_api_from_did(did)
+
+        try:
+            jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
+        except:
+            return hive_pb2.Response(output='', status_message='Authentication Error', status=False)
+
+        network = jwt_info['network']
 
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
-            response = {
-                'result': {
-                    'API_Key': api_key
-                }
-            }
-            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified',
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return wallet_pb2.Response(output='', status_message='API Key could not be verified',
                                        status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
@@ -132,7 +151,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                                        status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
                                        status=False)
 
-        request_input = json.loads(request.input)
+        request_input = jwt_info['request_input']
         chain = request_input['chain']
         address = request_input['address']
         if chain == "eth":
@@ -149,21 +168,34 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         status_message = 'Successfuly retrieved wallet balance'
         status = True
 
-        return wallet_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)
+        #generate jwt token
+        jwt_info = {
+            'result': response
+        }
+
+        jwt_token = jwt.encode({
+            'jwt_info': jwt_info,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
+        }, api_key, algorithm='HS256')
+
+        return wallet_pb2.Response(output=jwt_token, status_message=status_message, status=status)
 
     def RequestELA(self, request, context):
 
-        api_key = request.api_key
+        metadata = dict(context.invocation_metadata())
+        did = metadata["did"]
+        api_key = get_api_from_did(did)
+
+        try:
+            jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
+        except:
+            return hive_pb2.Response(output='', status_message='Authentication Error', status=False)
 
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
-            response = {
-                'result': {
-                    'API_Key': api_key
-                }
-            }
-            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified',
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return wallet_pb2.Response(output='', status_message='API Key could not be verified',
                                        status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
@@ -173,7 +205,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                                        status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
                                        status=False)
 
-        request_input = json.loads(request.input)
+        request_input = jwt_info['request_input']
         chain = request_input['chain']
         address = request_input['address']
 
@@ -209,7 +241,17 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
             }
         }
 
-        return wallet_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)
+        #generate jwt token
+        jwt_info = {
+            'result': response
+        }
+
+        jwt_token = jwt.encode({
+            'jwt_info': jwt_info,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
+        }, api_key, algorithm='HS256')
+
+        return wallet_pb2.Response(output=jwt_token, status_message=status_message, status=status)
 
 
 def create_wallet_mainchain(session, network):

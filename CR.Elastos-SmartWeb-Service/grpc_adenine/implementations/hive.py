@@ -49,14 +49,9 @@ class Hive(hive_pb2_grpc.HiveServicer):
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
-            response = {
-                'result': {
-                    'API_Key': api_key
-                }
-            }
             status_message = "API Key could not be verified"
             logging.debug(f"{did} : {api_key} : {status_message}")
-            return hive_pb2.Response(output=json.dumps(response), status_message=status_message, status=False)
+            return hive_pb2.Response(output='', status_message=status_message, status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = self.rate_limiter.check_rate_limit(settings.UPLOAD_AND_SIGN_LIMIT, api_key,
@@ -139,12 +134,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
-            response = {
-                'result': {
-                    'API_Key': api_key
-                }
-            }
-            return hive_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified',
+            return hive_pb2.Response(output='', status_message='API Key could not be verified',
                                      status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
