@@ -112,7 +112,7 @@ class NodeRpc:
 
         if response.status:
             output = jwt.decode(response.output, key=secret_key, algorithms=['HS256']).get('jwt_info')
-            data = json.dumps(output)
+            data = output['result']
         
         return data
 

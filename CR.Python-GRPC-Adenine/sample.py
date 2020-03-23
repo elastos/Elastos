@@ -33,7 +33,7 @@ def main():
     ela_to_use = 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN'
     ela_eth_to_use = '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'JGFwpMw3bEHf8W5CkHFbouhHQdHsLxFMRjhuV1aYE14VtlVSPeKAY54SmiPZTx4e'
+    api_key_to_use = 'vJBPlfMuwqF93fwr6YvcecrNQf68nNplwRgr6mhESkn3vYlHfykDABlTuebF6Hlx'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -59,6 +59,7 @@ def main():
             print("Current Height - did sidechain: ", current_height)
             current_height = node_rpc.get_current_height(network, "token")
             print("Current Height - token sidechain: ", current_height)
+            
             print("--> Get current balance")
             current_balance = node_rpc.get_current_balance(network, "mainchain", ela_to_use)
             print("Current balance - mainchain:", current_balance)
@@ -66,6 +67,7 @@ def main():
             print("Current balance - did sidechain:", current_balance)
             current_balance = node_rpc.get_current_balance(network, "token", ela_to_use)
             print("Current balance - token sidechain:", current_balance)
+            
             print("--> Get current block details")
             current_block_details = node_rpc.get_current_block_details(network, "mainchain")
             print("Current block details - mainchain: ", current_block_details)
@@ -77,12 +79,15 @@ def main():
             print("--> Get current mining info - mainchain")
             current_mining_info = node_rpc.get_current_mining_info(network)
             print("Current mining info: ", current_mining_info)
+            
             print("--> Get current block confirm - mainchain")
             current_block_confirm = node_rpc.get_current_block_confirm(network)
             print("Current block confirm: ", current_block_confirm)
+            
             print("--> Get current arbitrator info - mainchain")
             current_arbitrator_info = node_rpc.get_current_arbitrators_info(network)
             print("Current arbitrator info: ", current_arbitrator_info)
+            
             print("--> Get current arbitrator group - mainchain")
             current_arbitrator_group = node_rpc.get_current_arbitrator_group(network)
             print("Current arbitrator group: ", current_arbitrator_group)
@@ -169,10 +174,10 @@ def main():
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D614C55377A6B56784554396451316D4544464C677A7466564B6D53683343523641656265533774557764766A",
+                "msg": "516D574B79577745317848746B484D65655A4155434557593138697954726A3353785568586735773437744D6442",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "15FD3D976CF619CCF372F5752754A4EB25D861BF56D143FB8E07E45836D16795BBA80D070955BAF425995BA29AD6A11381A5B67D8E3CDA53F943CC080C693638",
-                "hash": "QmaLU7zkVxET9dQ1mEDFLgztfVKmSh3CR6AebeS7tUwdvj",
+                "sig": "EBE2710D6A8443E1E1F9E2CDE51DE6E4A0DE73EEFB2D36B9937402E5EB3997C3156DDD8B17CA2E6D5E2C6ED8DB0164738C68F5CDC18DD12F613EC849A974AC76",
+                "hash": "QmWKyWwE1xHtkHMeeZAUCEWY18iyTrj3SxUhXg5w47tMdB",
                 "privateKey": private_key_to_use
             }
             response = hive.verify_and_show(api_key_to_use, did_to_use,  network, request_input)
