@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package payload
 
@@ -52,16 +52,16 @@ func (pt CRCProposalType) Name() string {
 		return "Normal"
 	case ELIP:
 		return "ELIP"
-	case MainChainUpgradeCode:
-		return "MainChainUpgradeCode"
-	case SideChainUpgradeCode:
-		return "SideChainUpgradeCode"
-	case ChangeSponsor:
-		return "ChangeSponsor"
-	case CloseProposal:
-		return "CloseProposal"
-	case SecretaryGeneral:
-		return "SecretaryGeneral"
+	//case MainChainUpgradeCode:
+	//	return "MainChainUpgradeCode"
+	//case SideChainUpgradeCode:
+	//	return "SideChainUpgradeCode"
+	//case ChangeSponsor:
+	//	return "ChangeSponsor"
+	//case CloseProposal:
+	//	return "CloseProposal"
+	//case SecretaryGeneral:
+	//	return "SecretaryGeneral"
 	default:
 		return "Unknown"
 	}
