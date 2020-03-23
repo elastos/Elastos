@@ -94,9 +94,13 @@ def get_api_key(session, did):
         api_present = session.query(UserApiRelations).filter_by(user_id=result.id).first()
         api_key = api_present.api_key
 
+        response = {
+            'API Key':api_key
+        }
+
         #generate jwt token
         jwt_info = {
-            'api_key': api_key
+            'result': response
         }
 
         jwt_token = jwt.encode({
@@ -156,9 +160,13 @@ def generate_api_key(session, rate_limiter, did):
         # insert into SERVICES LISTS table
         rate_limiter.add_new_access_entry(api_key, generate_api_key.__name__)
 
+    response = {
+        'API Key':api_key
+    }
+
     #generate jwt token
     jwt_info = {
-        'api_key': api_key
+        'result': response
     }
 
     jwt_token = jwt.encode({
