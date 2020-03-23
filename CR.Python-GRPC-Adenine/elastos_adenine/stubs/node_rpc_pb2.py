@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='node_rpc',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0enode_rpc.proto\x12\x08node_rpc\")\n\x07Request\x12\x0f\n\x07network\x18\x02 \x01(\t\x12\r\n\x05input\x18\x03 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32?\n\x07NodeRpc\x12\x34\n\tRpcMethod\x12\x11.node_rpc.Request\x1a\x12.node_rpc.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0enode_rpc.proto\x12\x08node_rpc\"\x18\n\x07Request\x12\r\n\x05input\x18\x01 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32?\n\x07NodeRpc\x12\x34\n\tRpcMethod\x12\x11.node_rpc.Request\x1a\x12.node_rpc.Response\"\x00\x62\x06proto3')
 )
 
 
@@ -34,15 +34,8 @@ _REQUEST = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='network', full_name='node_rpc.Request.network', index=0,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='input', full_name='node_rpc.Request.input', index=1,
-      number=3, type=9, cpp_type=9, label=1,
+      name='input', full_name='node_rpc.Request.input', index=0,
+      number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -60,7 +53,7 @@ _REQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=28,
-  serialized_end=69,
+  serialized_end=52,
 )
 
 
@@ -104,8 +97,8 @@ _RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=71,
-  serialized_end=137,
+  serialized_start=54,
+  serialized_end=120,
 )
 
 DESCRIPTOR.message_types_by_name['Request'] = _REQUEST
@@ -134,8 +127,8 @@ _NODERPC = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=139,
-  serialized_end=202,
+  serialized_start=122,
+  serialized_end=185,
   methods=[
   _descriptor.MethodDescriptor(
     name='RpcMethod',
