@@ -1,5 +1,7 @@
 import json
 import logging
+import datetime
+import jwt
 from requests import Session
 from decouple import config
 from sqlalchemy.orm import sessionmaker
@@ -24,8 +26,14 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
 
     def RpcMethod(self, request, context):
 
-        network = request.network
-        request_input = json.loads(request.input)
+        secret_key = config('SHARED_SECRET_ADENINE')
+        try:
+            jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+        except:
+            return hive_pb2.Response(output='', status_message='Authentication Error', status=False)
+
+        network = jwt_info['network']
+        request_input = jwt_info['request_input']
 
         chain = request_input["chain"]
         method = request_input["method"]
@@ -65,6 +73,16 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
             'result': data['result']
         }
 
-        return node_rpc_pb2.Response(output=json.dumps(response),
+        #generate jwt token
+        jwt_info = {
+            'result': response
+        }
+
+        jwt_token = jwt.encode({
+            'jwt_info': jwt_info,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
+        }, secret_key, algorithm='HS256')
+
+        return node_rpc_pb2.Response(output=jwt_token,
                                      status_message=f'Successfully called the method {method} for the chain {chain} in network {network}',
                                      status=True)
