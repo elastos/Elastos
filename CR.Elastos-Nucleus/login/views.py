@@ -105,7 +105,7 @@ def feed(request):
     suggest_form = SuggestServiceForm()
     did = request.session['did']
     recent_services = get_recent_services(did)
-    recent_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-last_visited')[:7]
+    recent_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-last_visited')[:9]
     most_visited_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-number_visits')[:5]
     your_activity_list = []
     all_apps = settings.ALL_APPS

@@ -167,3 +167,53 @@
   padding-left: 25px !important; 
   padding-right: 25px !important;
 }
+
+.col-md-3 .container {
+  border-radius: 4px;
+  background-color: #181b22;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.16);
+  height: 135px;
+}
+
+.container img.rounded {
+  object-fit: contain;
+  width: 25%;
+  max-width: 25%;
+  margin-bottom: 15px; 
+  margin-top: 30px;
+}
+
+.btn.btn-secondary.download {
+  width: 115px;
+  margin-left: 15px;
+  background-color: #3a4255;
+  border: solid 1px #3a4255;
+  color: #a0a0a0;
+  font-family: Roboto;
+}
+
+.dapp-title {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-family: Overpass;
+  font-size: 15px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.dapp-description {
+  height: 86px;
+  max-height: 86px;
+  font-family: Roboto;
+  font-size: 14px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.52;
+  letter-spacing: normal;
+  color: #ffffff;
+}

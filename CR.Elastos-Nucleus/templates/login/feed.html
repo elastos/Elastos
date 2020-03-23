@@ -220,12 +220,12 @@
                     <img src="{% static 'images/common/show.svg' %}"/>
                 </p>
                 <p class="console-services-title" style="margin: 20px;">
-                    MOST VIEWED PAGES
+                    MOST RECENT PAGES
                 </p>
                 <div class="divider" style="background-color: #000000"></div>
                 <p style="margin: 0px 20px 20px 20px;">
-                    {% if most_visited_pages.exists %}
-                    {% for item in most_visited_pages %}
+                    {% if recent_pages.exists %}
+                    {% for item in recent_pages %}
                         <div class="container">
                             <p class="console-services-image">
                                 <img src="{% static 'images/common/show.svg' %}" width="110%"/>
@@ -352,33 +352,62 @@
                     UNDERSTAND THE NUCLEUS CONSOLE
                 </p>
                 <div class="divider"></div>
-                <div class="row">
-                    <div class="col-4">
-                        <p class="console-services-image">
-                            <img src="{% static 'images/common/icon.svg' %}" width="250%"/>
+                <div class="row justify-content-center" style="margin-left: 10px; margin-right: 10px;">
+                    <div class="col-md-3 mh-100" style="margin-bottom: 45px;">
+                        <div class="container align-items-center justify-content-center border border-secondary">
+                            <img class="rounded mx-auto d-block" src="{% static 'images/feed/bx-bookmarks.svg' %}" alt="Card image">
+                        </div>
+                        <p class="dapp-title">Tutorial Title</p>
+                        <p class="dapp-description">
+                            Lorem ipsum dolor sit amet, consectetur 
+                            adipiscing elit, sed do eiusmod tempor incididunt 
+                            ut labore et dolore magna aliqua. 
                         </p>
-                        <p class="console-services-name" style="margin-top: 20px;">
-                            Tutorial #1<br><br>
-                            <span class="console-services-category">Coming soon</span>
-                        </p>
+                        <div class="row">
+                            <a class="btn btn-secondary rounded-pill download">Learn More</a>
+                        </div>
                     </div>
-                    <div class="col-4">
-                        <p class="console-services-image">
-                            <img src="{% static 'images/common/icon.svg' %}" width="250%"/>
+                    <div class="col-md-3 mh-100" style="margin-bottom: 45px;">
+                        <div class="container align-items-center justify-content-center border border-secondary">
+                            <img class="rounded mx-auto d-block" src="{% static 'images/feed/bx-bookmarks.svg' %}" alt="Card image">
+                        </div>
+                        <p class="dapp-title">Tutorial Title</p>
+                        <p class="dapp-description">
+                            Lorem ipsum dolor sit amet, consectetur 
+                            adipiscing elit, sed do eiusmod tempor incididunt 
+                            ut labore et dolore magna aliqua. 
                         </p>
-                        <p class="console-services-name" style="margin-top: 20px;">
-                            Tutorial #2<br><br>
-                            <span class="console-services-category">COMING SOON</span>
-                        </p>
+                        <div class="row">
+                            <a class="btn btn-secondary rounded-pill download">Learn More</a>
+                        </div>
                     </div>
-                    <div class="col-4">
-                        <p class="console-services-image">
-                            <img src="{% static 'images/common/icon.svg' %}" width="250%"/>
+                    <div class="col-md-3 mh-100" style="margin-bottom: 45px;">
+                        <div class="container align-items-center justify-content-center border border-secondary">
+                            <img class="rounded mx-auto d-block" src="{% static 'images/feed/bx-bookmarks.svg' %}" alt="Card image">
+                        </div>
+                        <p class="dapp-title">Tutorial Title</p>
+                        <p class="dapp-description">
+                            Lorem ipsum dolor sit amet, consectetur 
+                            adipiscing elit, sed do eiusmod tempor incididunt 
+                            ut labore et dolore magna aliqua. 
                         </p>
-                        <p class="console-services-name" style="margin-top: 20px;">
-                            Tutorial #3<br><br>
-                            <span class="console-services-category">COMING SOON</span>
+                        <div class="row">
+                            <a class="btn btn-secondary rounded-pill download">Learn More</a>
+                        </div>
+                    </div>
+                        <div class="col-md-3 mh-100" style="margin-bottom: 45px;">
+                        <div class="container align-items-center justify-content-center border border-secondary">
+                            <img class="rounded mx-auto d-block" src="{% static 'images/feed/bx-bookmarks.svg' %}" alt="Card image">
+                        </div>
+                        <p class="dapp-title">Tutorial Title</p>
+                        <p class="dapp-description">
+                            Lorem ipsum dolor sit amet, consectetur 
+                            adipiscing elit, sed do eiusmod tempor incididunt 
+                            ut labore et dolore magna aliqua. 
                         </p>
+                        <div class="row">
+                            <a class="btn btn-secondary rounded-pill download">Learn More</a>
+                        </div>
                     </div>
                 </div>
             </div>
