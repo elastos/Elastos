@@ -42,9 +42,9 @@ vote_result = getVoteResult()
 code = getCode()
 --sign = getSign()
 
-print(proposal_hash)
-print(vote_result)
-print(code)
+print("proposal_hash:", proposal_hash)
+print("vote_result:", vote_result)
+print("code:", code)
 
 print(crcproposalreview)
 

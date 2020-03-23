@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"errors"
 	"sort"
+	"strconv"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -435,10 +436,9 @@ func (c *Committee) tryStartVotingPeriod(height uint32) (inElection bool) {
 func (c *Committee) processImpeachment(height uint32, member []byte,
 	votes common.Fixed64, history *utils.History) {
 	circulation := c.CirculationAmount
-
 	var crMember *CRMember
 	for _, v := range c.Members {
-		if bytes.Equal(v.Info.DID.Bytes(), member) {
+		if bytes.Equal(v.Info.CID.Bytes(), member) {
 			crMember = v
 			break
 		}
@@ -451,6 +451,7 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
 	oriMemberState := crMember.MemberState
 	penalty := c.getMemberPenalty(height, crMember)
+
 	history.Append(height, func() {
 		crMember.ImpeachmentVotes += votes
 		if crMember.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
@@ -578,7 +579,6 @@ func (c *Committee) isInVotingPeriod(height uint32) bool {
 		return height >= committeeUpdateHeight-c.params.CRVotingPeriod &&
 			height < committeeUpdateHeight
 	}
-
 	if c.LastCommitteeHeight < c.params.CRCommitteeStartHeight &&
 		height <= c.params.CRCommitteeStartHeight {
 		return height >= c.params.CRVotingStartHeight &&
@@ -606,7 +606,7 @@ func (c *Committee) changeCommitteeMembers(height uint32) error {
 			c.InElectionPeriod = oriInElectionPeriod
 			c.LastVotingStartHeight = oriLastVotingStartHeight
 		})
-		return errors.New("candidates count less than required count")
+		return errors.New("candidates count less than required count height" + strconv.Itoa(int(height)))
 	}
 	// Process current members.
 	newMembers := c.processCurrentMembers(height, candidates)
@@ -767,9 +767,9 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 	currentPenalty := MinDepositAmount * common.Fixed64(1-electionRate*voteRate)
 	finalPenalty := penalty + currentPenalty
 
-	log.Infof("member %s impeached, not election and not vote proposal"+
+	log.Infof("height %d member %s impeached, not election and not vote proposal"+
 		" penalty: %s, old penalty: %s, final penalty: %s",
-		member.Info.DID, currentPenalty, penalty, finalPenalty)
+		height, member.Info.DID, currentPenalty, penalty, finalPenalty)
 
 	return finalPenalty
 }
