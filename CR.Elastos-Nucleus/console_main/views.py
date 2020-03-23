@@ -77,6 +77,7 @@ def did_callback_elaphant(request):
         valid = ecdsa.verify((r, s), response['Data'], public_key)
         if not valid:
             return JsonResponse({'message': 'Unauthorized'}, status=401)
+        
         try:
             recently_created_time = timezone.now() - timedelta(minutes=1)
             did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
@@ -86,8 +87,8 @@ def did_callback_elaphant(request):
             data["auth"] = True
             DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
         except Exception as e:
-            logging.debug(f" Method: did_callback_elaphant Error: {e}")
-            JsonResponse({'error': str(e)}, status=404)
+            logging.debug(f"Method: did_callback_elaphant Error: {e}")
+            return JsonResponse({'error': str(e)}, status=404)
 
     return JsonResponse({'result': True}, status=200)
 
@@ -95,14 +96,11 @@ def did_callback_elaphant(request):
 @csrf_exempt
 def did_callback_elastos(request):
     if request.method == 'POST':
-        response = request.body.decode()
-        if 'jwt=' not in response:
-            return JsonResponse({'error': 'Could not parse response'}, status=400)
-
-        jwt_result = response.replace('jwt=', '')
         try:
-            #data = jwt.decode(jwt_result, 'secret', algorithms=['HS256'])
-            data = jwt.decode(jwt_result, verify=False)
+            response = request.body.decode()
+            data = json.loads(response)
+            # data = jwt.decode(data["jwt"], 'secret', algorithms=['HS256'])
+            data = jwt.decode(data["jwt"], verify=False)
         except Exception as e:
             logging.debug(f"Method: did_callback_elastos Error: {e}")
             return JsonResponse({'error': str(e)}, status=404)
