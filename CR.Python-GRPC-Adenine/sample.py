@@ -301,15 +301,17 @@ def main():
             # you must first run https://github.com/cyber-republic/elastos-privnet locally
             # For production GMUnet, this won't work
             print("\n--> Deploy ETH Contract")
-            response = sidechain_eth.deploy_eth_contract(api_key_to_use, network,
+            response = sidechain_eth.deploy_eth_contract(api_key_to_use, did_to_use, network,
                                                          ela_eth_to_use,
                                                          '0x35a12175385b24b2f906d6027d440aac7bd31e1097311fa8e3cf21ceac7c4809',
                                                          2000000, 'test/HelloWorld.sol')
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
         except Exception as e:
             print(e)
         finally:
@@ -318,14 +320,16 @@ def main():
         try:
             sidechain_eth = SidechainEth(host, port, production)
             print("\n--> Watch ETH Contract")
-            response = sidechain_eth.watch_eth_contract(api_key_to_use, network,
+            response = sidechain_eth.watch_eth_contract(api_key_to_use, did_to_use, network,
                                                         '0xc0ba7D9CF73c0410FfC9FB5b768F5257906B13c1', 'HelloWorld',
                                                         'QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd')
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
         except Exception as e:
             print(e)
         finally:
