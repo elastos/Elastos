@@ -34,7 +34,7 @@ def main():
     ela_to_use = 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN'
     ela_eth_to_use = '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'KfBoNvibcRrhec9IE1sAl3pIL7SecOLyE1oe8VuUgM21IjwRybibAmBPB8PoVokj'
+    api_key_to_use = 'JGFwpMw3bEHf8W5CkHFbouhHQdHsLxFMRjhuV1aYE14VtlVSPeKAY54SmiPZTx4e'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -145,13 +145,13 @@ def main():
             # Upload and Sign
             print("\n--> Upload and Sign")
             response = hive.upload_and_sign(api_key_to_use, did_to_use, network, private_key_to_use, 'test/sample.txt')
-            if response.status:
-                jwt_info = jwt.decode(response.output, key=api_key_to_use, algorithms=['HS256']).get('jwt_info')
-                print("Status Message :", response.status_message)
-                for i in jwt_info['result']:
-                    print(i, ':', jwt_info['result'][i])
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
+                for i in json_output['result']:
+                    print(i, ':', json_output['result'][i])
             else:
-                print("Status Message :", response.status_message)
+                print("Error Message: " + response['status_message'])
         except Exception as e:
             print(e)
         finally:
@@ -187,12 +187,14 @@ def main():
         try:
             wallet = Wallet(host, port, production)
             print("\n--> Create Wallet")
-            response = wallet.create_wallet(api_key_to_use, network)
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            response = wallet.create_wallet(api_key_to_use, did_to_use, network)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
         except Exception as e:
             print(e)
         finally:
@@ -202,36 +204,44 @@ def main():
             wallet = Wallet(host, port, production)
             print("\n--> View Wallet")
             # Mainchain
-            response = wallet.view_wallet(api_key_to_use, network, 'mainchain', ela_to_use)
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            response = wallet.view_wallet(api_key_to_use, did_to_use, network, 'mainchain', ela_to_use)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
 
             # DID sidechain
-            response = wallet.view_wallet(api_key_to_use, network, 'did', ela_to_use)
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            response = wallet.view_wallet(api_key_to_use, did_to_use, network, 'did', ela_to_use)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
 
             # Token sidechain
-            response = wallet.view_wallet(api_key_to_use, network, 'token', ela_to_use)
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            response = wallet.view_wallet(api_key_to_use, did_to_use, network, 'token', ela_to_use)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
 
             # Eth sidechain
-            response = wallet.view_wallet(api_key_to_use, network, 'eth', ela_eth_to_use)
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            response = wallet.view_wallet(api_key_to_use, did_to_use, network, 'eth', ela_eth_to_use)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
         except Exception as e:
             print(e)
         finally:
@@ -241,36 +251,44 @@ def main():
             wallet = Wallet(host, port, production)
             print("\n--> Request ELA")
             # Mainchain
-            response = wallet.request_ela(api_key_to_use, 'mainchain', ela_to_use)
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            response = wallet.request_ela(api_key_to_use, did_to_use, 'mainchain', ela_to_use)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
 
             # DID sidechain
-            response = wallet.request_ela(api_key_to_use, 'did', ela_to_use)
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            response = wallet.request_ela(api_key_to_use, did_to_use, 'did', ela_to_use)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
 
             # Token sidechain
-            response = wallet.request_ela(api_key_to_use, 'token', ela_to_use)
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            response = wallet.request_ela(api_key_to_use, did_to_use, 'token', ela_to_use)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
 
             # Eth sidechain
-            response = wallet.request_ela(api_key_to_use, 'eth', ela_eth_to_use)
-            if response.output:
-                json_output = json.loads(response.output)
-                print("Status Message :", response.status_message)
+            response = wallet.request_ela(api_key_to_use, did_to_use, 'eth', ela_eth_to_use)
+            if response['status']:
+                json_output = json.loads(response['output'])
+                print("Status Message :", response['status_message'])
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: " + response['status_message'])
         except Exception as e:
             print(e)
         finally:

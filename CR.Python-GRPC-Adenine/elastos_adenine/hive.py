@@ -50,7 +50,22 @@ class Hive:
 
 
         response = self.stub.UploadAndSign(hive_pb2.Request(input=jwt_token), timeout=REQUEST_TIMEOUT, metadata=[('did', did)])
-        return response
+        
+        if response.status:
+            output = jwt.decode(response.output, key=api_key, algorithms=['HS256']).get('jwt_info')
+            result = {
+                'output': json.dumps(output),
+                'status_message': response.status_message,
+                'status': response.status
+            }
+            return result
+        else:
+            result = {
+                'output': '',
+                'status_message': response.status_message,
+                'status': response.status
+            }
+            return result
 
     def verify_and_show(self, api_key, did, network, request_input):
         jwt_info = {
@@ -82,6 +97,7 @@ class Hive:
             return result
         else:
             result = {
+                'output': '',
                 'status_message': response.status_message,
                 'status': response.status
             }
