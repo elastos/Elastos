@@ -69,13 +69,10 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
 
         response = self.session.post(url, data=json.dumps(d), timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
-        response = {
-            'result': data['result']
-        }
 
         #generate jwt token
         jwt_info = {
-            'result': response
+            'result': data['result']
         }
 
         jwt_token = jwt.encode({
