@@ -67,22 +67,12 @@ private func getFullName(_ name: String) -> String {
     }
 
     func toJson() -> String {
-        if #available(iOS 11.0, *) {
-            let data = try! JSONSerialization.data(withJSONObject: _extra, options: [.sortedKeys])
-            return String(data: data, encoding: .utf8)!
-        } else {
-            // Fallback on earlier versions
-            let keys = _extra.keys
-            let sortedKeys = keys.sorted()
-            var result: [String] = []
-            for key in sortedKeys {
-                let temp: String = "\"\(key)\":\"\(_extra[key] ?? "")\""
-                result.append(temp)
-            }
-            let jsonString = result.joined(separator: ",")
-            return "{\(jsonString)}"
-
+        let node = JsonNode()
+        toNode(node)
+        _extra.forEach { (key, value) in
+            node.put(forKey: key, value: value)
         }
+      return node.toString()
     }
 
     func merge(_ meta: Metadata) throws {

@@ -16,6 +16,9 @@ public class DIDDocument {
         init() {}
 
         init(_ source: EntryMap) {
+            guard source.map != nil else {
+                return
+            }
             map = Dictionary<DIDURL, T>()
             for (id, value) in source.map! {
                 map![id] = value

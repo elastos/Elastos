@@ -218,7 +218,7 @@ public class DIDDocumentBuilder {
         guard let _ = document else {
             throw DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED)
         }
-        guard try! controller != getSubject() else {
+        guard try controller != getSubject() else {
             throw DIDError.illegalArgument()
         }
 
@@ -235,7 +235,7 @@ public class DIDDocumentBuilder {
         }
 
         // Check the key should be a authentication key
-        let targetKey = controllerDoc.authorizationKey(ofId: usedKey!)
+        let targetKey = controllerDoc.authenticationKey(ofId: usedKey!)
         guard let _ = targetKey else {
             throw DIDError.illegalArgument()
         }

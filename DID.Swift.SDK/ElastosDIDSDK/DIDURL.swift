@@ -289,9 +289,8 @@ extension DIDURL {
         }
 
         override func exitParam(_ ctx: DIDURLParser.ParamContext) {
-            let name = self.name ?? ""
             let value = self.value ?? ""
-            self.didURL?.appendParameter(value, forKey: name)
+            self.didURL?.appendParameter(value, forKey: self.name!)
             self.name = nil
             self.value = nil
         }
@@ -313,9 +312,8 @@ extension DIDURL {
         }
 
         override func exitQueryParam(_ ctx: DIDURLParser.QueryParamContext) {
-            let name = self.name ?? ""
             let value = self.value ?? ""
-            self.didURL?.appendQueryParameter(value, forKey: name)
+            self.didURL?.appendQueryParameter(value, forKey: self.name!)
             self.name = nil
             self.value = nil
         }

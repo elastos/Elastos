@@ -72,7 +72,37 @@ public class JsonNode {
     }
 
     public func toString() -> String {
-        return self.node as! String 
+        var resultString: String
+
+        if node is [JsonNode] {
+            let temp = node as? [JsonNode]
+            var result: Array<String> = []
+            for subNode in temp! {
+                result.append(subNode.toString())
+                print(subNode.toString())
+            }
+            let data = try! JSONSerialization.data(withJSONObject: result, options: [])
+            resultString = String(data: data, encoding: String.Encoding.utf8)!
+            resultString = resultString.replacingOccurrences(of: "\\\"", with: "\"")
+            return resultString;
+
+        } else if node is [String: JsonNode] {
+            let temp = node as? [String: JsonNode]
+            var result: [String: String] = [: ]
+            for (key, value) in temp! {
+                result[key] = value.toString()
+                print(value.toString())
+            }
+            let data = try! JSONSerialization.data(withJSONObject: result, options: [])
+            resultString = String(data: data, encoding: String.Encoding.utf8)!
+            resultString = resultString.replacingOccurrences(of: "\\\"", with: "\"")
+            return resultString;
+
+        } else {
+            resultString = "\(node)"
+        }
+        resultString = resultString.replacingOccurrences(of: "\\\"", with: "\"")
+        return resultString;
     }
 
     func deepCopy() -> JsonNode? {
@@ -145,11 +175,12 @@ public class JsonNode {
             temp = [: ]
         }
         temp![key] = node
+        self.node = temp as Any
     }
     
     func put(forKey key: String, value: String) {
         
-        guard self.node is [String: JsonNode] else {
+        guard self.node is [String: String] else {
             return
         }
         
@@ -159,6 +190,7 @@ public class JsonNode {
             temp = [: ]
         }
         temp![key] = node
+        self.node = temp as Any
     }
 
     func put(forKey key: String, value: Bool) {

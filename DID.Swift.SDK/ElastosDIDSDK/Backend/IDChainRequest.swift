@@ -195,7 +195,7 @@ class IDChainRequest: NSObject {
             inputs.append(data)
         }
 
-        self._signature = try _doc!.sign(signKey, storePassword, inputs)
+        self._signature = try doc.sign(signKey, storePassword, inputs)
         self._signKey = targetSignKey
         self._keyType = Constants.DEFAULT_PUBLICKEY_TYPE
 

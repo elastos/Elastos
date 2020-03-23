@@ -2,10 +2,12 @@ import Foundation
 
 extension DateFormatter {
     class func convertToUTCDateFromString(_ dateToConvert: String) -> Date? {
-        let formatter = DateFormatter()
+        let formatter = Foundation.DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        return formatter.date(from: dateToConvert)
+        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
+        let date: Date  = formatter.date(from: dateToConvert) ?? Date()
+
+        return date
     }
     
     class func convertToUTCStringFromDate(_ dateToConvert: Date) -> String {

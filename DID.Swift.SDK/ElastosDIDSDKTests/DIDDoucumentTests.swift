@@ -919,7 +919,7 @@ class DIDDoucumentTests: XCTestCase {
             // Service not exist, should fail.
             XCTAssertThrowsError(try db.removeService(with: "notExistService")) { (error) in
                 switch error {
-                case DIDError.invalidState(Errors.DOCUMENT_ALREADY_SEALED): break
+                case DIDError.illegalArgument: break
                 //everything is fine
                 default:
                 XCTFail("Unexpected error thrown")

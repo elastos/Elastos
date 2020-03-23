@@ -392,19 +392,17 @@ public class DIDStore: NSObject {
         }
 
         let did = DID(Constants.METHOD, key.getAddress())
-        var doc: DIDDocument?
-        do {
-            doc = try loadDid(did)
-            // TODO: throw error
-        } catch {
-            doc = nil
+        var doc = try? loadDid(did)
+        if doc != nil {
+            throw DIDError.didStoreError("DID already exists.")
         }
 
         let id  = try DIDURL(did, "primary")
         try storePrivateKey(for: did, id: id, privateKey: key.serialize(), using: storePassword)
 
         let builder = DIDDocumentBuilder(did, self)
-        doc = try builder.appendAuthenticationKey(with: id, keyBase58: key.getPublicKeyBase58()).sealed(using: storePassword)
+        doc = try builder.appendAuthenticationKey(with: id, keyBase58: key.getPublicKeyBase58())
+            .sealed(using: storePassword)
         doc!.getMeta().setAlias(alias)
         try storeDid(using: doc!)
 
@@ -930,7 +928,7 @@ public class DIDStore: NSObject {
         if let _ = signKey {
             signPk = doc!.authenticationKey(ofId: signKey!)
             guard let _ = signPk else {
-                throw DIDError.unknownFailure("Not authentication key.") // TODO:
+                throw DIDError.unknownFailure("Not an authentication key.") // TODO:
             }
         }
 
