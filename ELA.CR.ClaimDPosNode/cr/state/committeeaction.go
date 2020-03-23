@@ -97,7 +97,6 @@ func (c *Committee) processVotes(tx *types.Transaction, height uint32) {
 			if p.Version < outputpayload.VoteProducerAndCRVersion {
 				continue
 			}
-
 			// process CRC content
 			var exist bool
 			for _, content := range p.Contents {
