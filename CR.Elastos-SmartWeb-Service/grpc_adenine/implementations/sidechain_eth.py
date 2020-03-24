@@ -12,7 +12,7 @@ from solc import compile_standard
 from grpc_adenine import settings
 from grpc_adenine.database import db_engine
 from grpc_adenine.implementations.rate_limiter import RateLimiter
-from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key, get_did_from_api, get_api_from_did
+from grpc_adenine.implementations.utils import validate_api_key, get_api_from_did
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs.python import sidechain_eth_pb2, sidechain_eth_pb2_grpc
 
@@ -37,22 +37,27 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
         except:
-            return hive_pb2.Response(output='', status_message='Authentication Error', status=False)
+            status_message = 'Authentication Error'
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
         network = jwt_info['network']
 
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
+            status_message = 'API Key could not be verified'
             logging.debug(f"{did} : {api_key} : {status_message}")
-            return sidechain_eth_pb2.Response('', status_message='API Key could not be verified', status=False)
+            return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = self.rate_limiter.check_rate_limit(settings.DEPLOY_ETH_CONTRACT_LIMIT, api_key,
                                     self.DeployEthContract.__name__)
         if response:
+            status_message = f'Number of daily access limit exceeded {response["result"]["daily_limit"]}'
+            logging.debug(f"{did} : {api_key} : {status_message}")
             return sidechain_eth_pb2.Response(output=json.dumps(response),
-                                              status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
+                                              status_message=status_message,
                                               status=False)
 
         # reading the file content
@@ -71,8 +76,8 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
 
         if not response:
             status_message = 'Error: Smart contract code could not be uploaded'
-            status = False
-            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=status)
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
 
         if network == "testnet":
             # web3.py instance
@@ -85,8 +90,8 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         web3.middleware_onion.inject(geth_poa_middleware, layer=0)
         if not web3.isConnected():
             status_message = 'Error: Could not connect to Eth Sidechain node'
-            status = False
-            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=status)
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
 
         compiled_sol = compile_standard({
             "language": "Solidity",
@@ -128,19 +133,13 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         # Wait for the transaction to be mined, and get the transaction receipt
         tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
 
-        response = {
+        # generate jwt token
+        jwt_info = {
             'result': {
                 'contract_address': tx_receipt.contractAddress,
                 'contract_name': contract_name,
                 'contract_code_hash': hive_hash,
             }
-        }
-        status_message = 'Successfully deployed Eth Smart Contract'
-        status = True
-
-        #generate jwt token
-        jwt_info = {
-            'result': response
         }
 
         jwt_token = jwt.encode({
@@ -148,7 +147,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
         }, api_key, algorithm='HS256')
 
-        return sidechain_eth_pb2.Response(output=jwt_token, status_message=status_message, status=status)
+        return sidechain_eth_pb2.Response(output=jwt_token, status_message='Successfully deployed Eth Smart Contract', status=True)
 
     def WatchEthContract(self, request, context):
 
@@ -159,22 +158,27 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
         except:
-            return hive_pb2.Response(output='', status_message='Authentication Error', status=False)
+            status_message = 'Authentication Error'
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
         network = jwt_info['network']
 
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
+            status_message = 'API Key could not be verified'
             logging.debug(f"{did} : {api_key} : {status_message}")
-            return sidechain_eth_pb2.Response('', status_message='API Key could not be verified', status=False)
+            return sidechain_eth_pb2.Response('', status_message=status_message, status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = self.rate_limiter.check_rate_limit(settings.WATCH_ETH_CONTRACT_LIMIT, api_key,
                                     self.WatchEthContract.__name__)
         if response:
+            status_message = f'Number of daily access limit exceeded {response["result"]["daily_limit"]}'
+            logging.debug(f"{did} : {api_key} : {status_message}")
             return sidechain_eth_pb2.Response(output=json.dumps(response),
-                                              status_message=f'Number of daily access limit exceeded {response["result"]["daily_limit"]}',
+                                              status_message=status_message,
                                               status=False)
 
         # reading the file content
@@ -190,8 +194,8 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
 
         if not response:
             status_message = 'Error: Smart contract code could not be retrieved from Hive'
-            status = False
-            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=status)
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
 
         # Get smart contract details
         compiled_sol = compile_standard({
@@ -227,19 +231,13 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             contract_function = repr(function)[1:-1].split()[1]
             contract_functions.append(contract_function)
 
-        response = {
+        # generate jwt token
+        jwt_info = {
             'result': {
                 'contract_address': contract_address,
                 'contract_functions': contract_functions,
                 'contract_source': contract_source
             }
-        }
-        status_message = 'Successfuly viewed Eth Smart Contract'
-        status = True
-
-        #generate jwt token
-        jwt_info = {
-            'result': response
         }
 
         jwt_token = jwt.encode({
@@ -247,4 +245,4 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
         }, api_key, algorithm='HS256')
 
-        return sidechain_eth_pb2.Response(output=jwt_token, status_message=status_message, status=status)
+        return sidechain_eth_pb2.Response(output=jwt_token, status_message='Successfully viewed Eth Smart Contract', status=True)

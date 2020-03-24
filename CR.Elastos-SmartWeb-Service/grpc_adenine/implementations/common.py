@@ -1,3 +1,4 @@
+import logging
 import random
 import string
 import datetime
@@ -21,22 +22,19 @@ class Common(common_pb2_grpc.CommonServicer):
         self.rate_limiter = RateLimiter(self.session)
 
     def GenerateAPIRequestMnemonic(self, request, context):
-        metadata = dict(context.invocation_metadata())
-        input_did = metadata["did"]
         secret_key = config('SHARED_SECRET_ADENINE')
         try:
             jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
         except:
-            return common_pb2.Response(output='', status_message='Authentication Error', status=False)
-        
+            status_message = 'Authentication Error'
+            logging.debug(f"{secret_key} : {status_message}")
+            return common_pb2.Response(output='', status_message=status_message, status=False)
+
         mnemonic = jwt_info['mnemonic']
 
         private_key, did = get_info_from_mnemonics(mnemonic)
         if not (private_key and did):
             return common_pb2.Response(output='', status_message='Invalid Mnemonics Error', status=False)
-
-        #if (input_did != did):
-        #    return common_pb2.Response(output='', status_message='Invalid DID', status=False)
 
         response = generate_api_key(self.session, self.rate_limiter, did)
         return response
@@ -46,30 +44,29 @@ class Common(common_pb2_grpc.CommonServicer):
         input_did = metadata["did"]
         secret_key = config('SHARED_SECRET_ADENINE')
         try:
-            jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+            jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
         except:
-            return common_pb2.Response(output='', status_message='Authentication Error', status=False)
+            status_message = 'Authentication Error'
+            logging.debug(f"{secret_key} : {status_message}")
+            return common_pb2.Response(output='', status_message=status_message, status=False)
 
         response = generate_api_key(self.session, self.rate_limiter, input_did)
         return response
 
     def GetAPIKeyMnemonic(self, request, context):
-        metadata = dict(context.invocation_metadata())
-        input_did = metadata["did"]
         secret_key = config('SHARED_SECRET_ADENINE')
         try:
             jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
         except:
-            return common_pb2.Response(output='', status_message='Authentication Error', status=False)
+            status_message = 'Authentication Error'
+            logging.debug(f"{secret_key} : {status_message}")
+            return common_pb2.Response(output='', status_message=status_message, status=False)
 
         mnemonic = jwt_info['mnemonic']
 
         private_key, did = get_info_from_mnemonics(mnemonic)
         if not (private_key and did):
             return common_pb2.Response(output='', status_message='Invalid Mnemonics Error', status=False)
-
-        #if (input_did != did):
-        #    return common_pb2.Response(output='', status_message='Invalid DID', status=False)
 
         response = get_api_key(self.session, did)
         return response
@@ -79,9 +76,11 @@ class Common(common_pb2_grpc.CommonServicer):
         input_did = metadata["did"]
         secret_key = config('SHARED_SECRET_ADENINE')
         try:
-            jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+            jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
         except:
-            return common_pb2.Response(output='', status_message='Authentication Error', status=False)
+            status_message = 'Authentication Error'
+            logging.debug(f"{secret_key} : {status_message}")
+            return common_pb2.Response(output='', status_message=status_message, status=False)
 
         response = get_api_key(self.session, input_did)
         return response
@@ -95,10 +94,10 @@ def get_api_key(session, did):
         api_key = api_present.api_key
 
         response = {
-            'API Key':api_key
+            'api_key': api_key
         }
 
-        #generate jwt token
+        # generate jwt token
         jwt_info = {
             'result': response
         }
@@ -111,6 +110,7 @@ def get_api_key(session, did):
         return common_pb2.Response(output=jwt_token, status_message='Success', status=True)
     else:
         return common_pb2.Response(output='', status_message='No such API Key exists', status=False)
+
 
 def generate_api_key(session, rate_limiter, did):
     string_length = 64
@@ -132,7 +132,7 @@ def generate_api_key(session, rate_limiter, did):
         insert = session.query(UserApiRelations).filter_by(user_id=result.id).first()
         # check rate limit
         response = rate_limiter.check_rate_limit(settings.GENERATE_API_LIMIT, insert.api_key,
-                                    generate_api_key.__name__)
+                                                 generate_api_key.__name__)
         if response:
             return common_pb2.Response(output='', status_message='Number of daily access limit exceeded',
                                        status=False)
@@ -161,10 +161,10 @@ def generate_api_key(session, rate_limiter, did):
         rate_limiter.add_new_access_entry(api_key, generate_api_key.__name__)
 
     response = {
-        'API Key':api_key
+        'api_key': api_key
     }
 
-    #generate jwt token
+    # generate jwt token
     jwt_info = {
         'result': response
     }

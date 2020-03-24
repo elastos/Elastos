@@ -4,13 +4,9 @@ import datetime
 import jwt
 from requests import Session
 from decouple import config
-from sqlalchemy.orm import sessionmaker
 
 from grpc_adenine import settings
-from grpc_adenine.database import db_engine
 from grpc_adenine.settings import REQUEST_TIMEOUT
-from grpc_adenine.implementations.rate_limiter import RateLimiter
-from grpc_adenine.implementations.utils import validate_api_key, get_did_from_api
 from grpc_adenine.stubs.python import node_rpc_pb2, node_rpc_pb2_grpc
 
 
@@ -30,7 +26,9 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
         try:
             jwt_info = jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
         except:
-            return hive_pb2.Response(output='', status_message='Authentication Error', status=False)
+            status_message = 'Authentication Error'
+            logging.debug(f"{secret_key} : {status_message}")
+            return node_rpc_pb2.Response(output='', status_message=status_message, status=False)
 
         network = jwt_info['network']
         request_input = jwt_info['request_input']
@@ -43,13 +41,17 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
         if params:
             d["params"] = params
         if chain == "mainchain" and not (method in settings.NODE_COMMON_RPC_METHODS or method in settings.NODE_MAIN_RPC_METHODS):
+            status_message = f'The method {method} is not available for the chain {chain}'
+            logging.debug(f"{secret_key} : {status_message}")
             return node_rpc_pb2.Response(output=json.dumps({}),
-                                         status_message=f'The method {method} is not available for the chain {chain}',
+                                         status_message=status_message,
                                          status=False)
 
         if chain != "mainchain" and method not in settings.NODE_COMMON_RPC_METHODS:
+            status_message = f'The method {method} is not available for the chain {chain}'
+            logging.debug(f"{secret_key} : {status_message}")
             return node_rpc_pb2.Response(output=json.dumps({}),
-                                         status_message=f'The method {method} is not available for the chain {chain}',
+                                         status_message=status_message,
                                          status=False)
 
         if network == "testnet":
@@ -70,7 +72,7 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
         response = self.session.post(url, data=json.dumps(d), timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
 
-        #generate jwt token
+        # generate jwt token
         jwt_info = {
             'result': data['result']
         }
