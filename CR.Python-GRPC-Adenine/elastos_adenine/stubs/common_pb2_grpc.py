@@ -16,7 +16,7 @@ class CommonStub(object):
     """
     self.GenerateAPIRequestMnemonic = channel.unary_unary(
         '/common.Common/GenerateAPIRequestMnemonic',
-        request_serializer=common__pb2.RequestMnemonic.SerializeToString,
+        request_serializer=common__pb2.Request.SerializeToString,
         response_deserializer=common__pb2.Response.FromString,
         )
     self.GenerateAPIRequest = channel.unary_unary(
@@ -26,7 +26,7 @@ class CommonStub(object):
         )
     self.GetAPIKeyMnemonic = channel.unary_unary(
         '/common.Common/GetAPIKeyMnemonic',
-        request_serializer=common__pb2.RequestMnemonic.SerializeToString,
+        request_serializer=common__pb2.Request.SerializeToString,
         response_deserializer=common__pb2.Response.FromString,
         )
     self.GetAPIKey = channel.unary_unary(
@@ -73,7 +73,7 @@ def add_CommonServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'GenerateAPIRequestMnemonic': grpc.unary_unary_rpc_method_handler(
           servicer.GenerateAPIRequestMnemonic,
-          request_deserializer=common__pb2.RequestMnemonic.FromString,
+          request_deserializer=common__pb2.Request.FromString,
           response_serializer=common__pb2.Response.SerializeToString,
       ),
       'GenerateAPIRequest': grpc.unary_unary_rpc_method_handler(
@@ -83,7 +83,7 @@ def add_CommonServicer_to_server(servicer, server):
       ),
       'GetAPIKeyMnemonic': grpc.unary_unary_rpc_method_handler(
           servicer.GetAPIKeyMnemonic,
-          request_deserializer=common__pb2.RequestMnemonic.FromString,
+          request_deserializer=common__pb2.Request.FromString,
           response_serializer=common__pb2.Response.SerializeToString,
       ),
       'GetAPIKey': grpc.unary_unary_rpc_method_handler(

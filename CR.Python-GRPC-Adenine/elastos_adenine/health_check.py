@@ -1,5 +1,6 @@
 import grpc
 
+from .settings import GRPC_SERVER_CRT
 from .stubs import health_check_pb2, health_check_pb2_grpc
 
 
@@ -9,8 +10,12 @@ class HealthCheck:
         if not production:
             self._channel = grpc.insecure_channel('{}:{}'.format(host, port))
         else:
-            credentials = grpc.ssl_channel_credentials()
+            with open(GRPC_SERVER_CRT, 'rb') as f:
+                trusted_certs = f.read()
+            # create credentials
+            credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
             self._channel = grpc.secure_channel('{}:{}'.format(host, port), credentials)
+
         self.stub = health_check_pb2_grpc.HealthStub(self._channel)
 
     def close(self):
