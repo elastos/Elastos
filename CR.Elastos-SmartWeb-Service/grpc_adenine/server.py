@@ -30,9 +30,9 @@ def serve():
     logging.debug("Initializing the grpc server")
 
     # read in key and certificate
-    with open('tools/server.key', 'rb') as f:
+    with open(config('GRPC_SERVER_KEY'), 'rb') as f:
         private_key = f.read()
-    with open('tools/server.crt', 'rb') as f:
+    with open(config('GRPC_SERVER_CRT'), 'rb') as f:
         certificate_chain = f.read()
 
     # create server credentials
