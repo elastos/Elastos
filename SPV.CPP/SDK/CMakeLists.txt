@@ -5,10 +5,16 @@ file(GLOB_RECURSE BRETH_SOURCE_FILES
 	"../ThirdParty/breadwallet-core/bitcoin/*.c"
 #	"../ThirdParty/breadwallet-core/ethereum/*.c"
 	"../ThirdParty/breadwallet-core/support/*.c")
+unset(BRETH_SOURCE_FILES_REMOVE_TEST)
+foreach(src ${BRETH_SOURCE_FILES})
+	if (NOT src MATCHES ".*test.*.c")
+		set(BRETH_SOURCE_FILES_REMOVE_TEST ${src} ${BRETH_SOURCE_FILES_REMOVE_TEST})
+	endif()
+endforeach()
 
 set(SPVSDK_SOURCE_FILES
 	${SPVSDK_SOURCE_FILES}
-	${BRETH_SOURCE_FILES})
+	${BRETH_SOURCE_FILES_REMOVE_TEST})
 
 set(SPVSDK_DEPENDS boost libressl libfruit libsqlite json libspdlog secp256k1)
 set(LIBS boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3 spdlog)
