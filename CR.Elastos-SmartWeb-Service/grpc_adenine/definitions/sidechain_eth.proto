@@ -10,9 +10,7 @@ service SidechainEth {
 
 // The request message
 message Request {
-  string api_key = 1;
-  string network = 2;
-  string input = 3;
+  string input = 1;
 }
 
 // The response message

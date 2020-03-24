@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='wallet',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0cwallet.proto\x12\x06wallet\":\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\x0f\n\x07network\x18\x02 \x01(\t\x12\r\n\x05input\x18\x03 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\xa3\x01\n\x06Wallet\x12\x33\n\x0c\x43reateWallet\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x12\x31\n\nViewWallet\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x12\x31\n\nRequestELA\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0cwallet.proto\x12\x06wallet\"\x18\n\x07Request\x12\r\n\x05input\x18\x01 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\xa3\x01\n\x06Wallet\x12\x33\n\x0c\x43reateWallet\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x12\x31\n\nViewWallet\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x12\x31\n\nRequestELA\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x62\x06proto3')
 )
 
 
@@ -34,22 +34,8 @@ _REQUEST = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='api_key', full_name='wallet.Request.api_key', index=0,
+      name='input', full_name='wallet.Request.input', index=0,
       number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='network', full_name='wallet.Request.network', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='input', full_name='wallet.Request.input', index=2,
-      number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -67,7 +53,7 @@ _REQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=24,
-  serialized_end=82,
+  serialized_end=48,
 )
 
 
@@ -111,8 +97,8 @@ _RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=84,
-  serialized_end=150,
+  serialized_start=50,
+  serialized_end=116,
 )
 
 DESCRIPTOR.message_types_by_name['Request'] = _REQUEST
@@ -141,8 +127,8 @@ _WALLET = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=153,
-  serialized_end=316,
+  serialized_start=119,
+  serialized_end=282,
   methods=[
   _descriptor.MethodDescriptor(
     name='CreateWallet',

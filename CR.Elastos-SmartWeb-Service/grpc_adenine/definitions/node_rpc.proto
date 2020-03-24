@@ -9,8 +9,7 @@ service NodeRpc {
 
 // The request message
 message Request {
-  string network = 2;
-  string input = 3;
+  string input = 1;
 }
 
 // The response message
