@@ -23,8 +23,6 @@ __pycache__
 .idea/
 
 # tools
-tools/privkey.pem
-tools/server.*
 tools/.postgres-data
 
 # static files

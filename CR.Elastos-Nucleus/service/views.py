@@ -48,8 +48,9 @@ def generate_key(request):
                 output = {}
                 if 'submit_get_api_key' in request.POST:
                     response = common.get_api_key_request(SHARED_SECRET_ADENINE, did)
-                    if response.status:
-                        api_key = response.api_key
+                    if response['status']:
+                        data = json.loads(response['output'])
+                        api_key = data['result']['api_key']
                         obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
                                                                                        defaults={'did': did,
                                                                                                  'api_key': api_key})
@@ -57,11 +58,12 @@ def generate_key(request):
                         populate_session_vars_from_database(request, did)
                         output['get_api_key'] = True
                     else:
-                        error_message = response.status_message
+                        error_message = response['status_message']
                 elif 'submit_generate_api_key' in request.POST:
                     response = common.generate_api_request(SHARED_SECRET_ADENINE, did)
-                    if response.status:
-                        api_key = response.api_key
+                    if response['status']:
+                        data = json.loads(response['output'])
+                        api_key = data['result']['api_key']
                         obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
                                                                                        defaults={'did': did,
                                                                                                  'api_key': api_key})
@@ -69,7 +71,7 @@ def generate_key(request):
                         populate_session_vars_from_database(request, did)
                         output['generate_api_key'] = True
                     else:
-                        error_message = response.status_message
+                        error_message = response['status_message']
                 else:
                     error_message = "Invalid form submission. Please refresh the page and try generating a new API " \
                                     "key again "
@@ -107,8 +109,8 @@ def upload_and_sign(request):
     if request.is_ajax():
         boolean = request.POST.get('delete')
         if boolean:
-                SavedFileInformation.objects.filter(did = did).delete()
-                return HttpResponse("Files have been deleted")
+            SavedFileInformation.objects.filter(did=did).delete()
+            return HttpResponse("Files have been deleted")
         return HttpResponse("files have not been deleted")
     elif request.method == 'POST':
         userFileCount = len(SavedFileInformation.objects.filter(did=did))
@@ -158,10 +160,10 @@ def upload_and_sign(request):
                     return redirect(reverse('service:upload_and_sign'))
                 try:
                     hive = Hive(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
-                    response = hive.upload_and_sign(api_key, network, private_key, file_path)
-                    data = json.loads(response.output)
-                    if response.status:
+                    response = hive.upload_and_sign(api_key, did, network, private_key, file_path)
+                    if response['status']:
                         request.session['upload_and_sign_submit'] = True
+                        data = json.loads(response['output'])
                         message_hash = data['result']['msg']
                         public_key = data['result']['pub']
                         signature = data['result']['sig']
@@ -175,7 +177,7 @@ def upload_and_sign(request):
                                        "file_hash": file_hash, 'output': True, 'sample_code': sample_code,
                                        'recent_services': recent_services})
                     else:
-                        messages.success(request, response.status_message)
+                        messages.success(request, response['status_message'])
                         return redirect(reverse('service:upload_and_sign'))
                 except Exception as e:
                     logging.debug(f"did: {did} Method: upload_and_sign Error: {e}")
@@ -231,20 +233,22 @@ def verify_and_show(request):
                 }
                 try:
                     hive = Hive(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
-                    response = hive.verify_and_show(api_key, network, request_input)
-                    if response.status:
+                    response = hive.verify_and_show(api_key, did, network, request_input)
+
+                    if response['status']:
                         request.session['verify_and_show_submit'] = True
+                        file_content = response['file_content']
                         try:
-                            content = response.file_content.decode()
+                            content = file_content.decode()
                         except UnicodeDecodeError:
-                            response = HttpResponse(response.file_content, content_type='application/octet-stream')
+                            response = HttpResponse(file_content, content_type='application/octet-stream')
                             response['Content-Disposition'] = 'attachment; filename=file_from_hive'
                             return response
                         return render(request, 'service/verify_and_show.html',
                                       {'output': True, 'content': content, 'sample_code': sample_code,
                                        'recent_services': recent_services})
                     else:
-                        messages.success(request, response.status_message)
+                        messages.success(request, response['status_message'])
                         return redirect(reverse('service:verify_and_show'))
                 except Exception as e:
                     logging.debug(f"did: {did} Method: verify_and_show Error: {e}")
@@ -282,10 +286,10 @@ def create_wallet(request):
                 api_key = form.cleaned_data.get('api_key')
                 try:
                     wallet = Wallet(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
-                    response = wallet.create_wallet(api_key, network)
-                    if response.status:
+                    response = wallet.create_wallet(api_key, did, network)
+                    if response['status']:
                         request.session['create_wallet_submit'] = True
-                        content = json.loads(response.output)['result']
+                        content = json.loads(response['output'])['result']
                         wallet_mainchain = content['mainchain']
                         wallet_did = content['sidechain']['did']
                         wallet_token = content['sidechain']['token']
@@ -329,7 +333,7 @@ def create_wallet(request):
                                        'wallet_did': wallet_did, 'wallet_token': wallet_token, 'wallet_eth': wallet_eth,
                                        'sample_code': sample_code, 'recent_services': recent_services})
                     else:
-                        messages.success(request, response.status_message)
+                        messages.success(request, response['status_message'])
                         return redirect(reverse('service:create_wallet'))
                 except Exception as e:
                     logging.debug(f"did: {did} Method: create_wallet Error: {e}")
@@ -405,10 +409,10 @@ def view_wallet(request):
             addr = form.cleaned_data.get('address')
             try:
                 wallet = Wallet(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
-                response = wallet.view_wallet(api_key, network, chain, addr)
-                if response.status:
+                response = wallet.view_wallet(api_key, did, network, chain, addr)
+                if response['status']:
                     output[chain] = True
-                    content = json.loads(response.output)['result']
+                    content = json.loads(response['output'])['result']
                     address[chain] = content['address']
                     balance[chain] = content['balance']
                     return render(request, "service/view_wallet.html", {'output': output, 'form': form_to_display,
@@ -416,7 +420,7 @@ def view_wallet(request):
                                                                         'sample_code': sample_code,
                                                                         'recent_services': recent_services})
                 else:
-                    messages.success(request, response.status_message)
+                    messages.success(request, response['status_message'])
                     return redirect(reverse('service:view_wallet'))
             except Exception as e:
                 logging.debug(f"did: {did} Method: view_wallet Error: {e}")
@@ -489,10 +493,10 @@ def request_ela(request):
             addr = form.cleaned_data.get('address')
             try:
                 wallet = Wallet(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
-                response = wallet.request_ela(api_key, chain, addr)
-                if response.status:
+                response = wallet.request_ela(api_key, did, chain, addr)
+                if response['status']:
                     output[chain] = True
-                    content = json.loads(response.output)['result']
+                    content = json.loads(response['output'])['result']
                     address[chain] = content['address']
                     deposit_amount[chain] = content['deposit_amount']
                     return render(request, "service/request_ela.html", {'output': output, 'form': form_to_display,
@@ -501,7 +505,7 @@ def request_ela(request):
                                                                         'sample_code': sample_code,
                                                                         'recent_services': recent_services})
                 else:
-                    messages.success(request, response.status_message)
+                    messages.success(request, response['status_message'])
                     return redirect(reverse('service:request_ela'))
             except Exception as e:
                 logging.debug(f"did: {did} Method: request_ela Error: {e}")
@@ -550,12 +554,13 @@ def deploy_eth_contract(request):
                     return redirect(reverse('service:upload_and_sign'))
                 try:
                     sidechain_eth = SidechainEth(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
-                    response = sidechain_eth.deploy_eth_contract(api_key, network, eth_account_address, eth_private_key, eth_gas,
+                    response = sidechain_eth.deploy_eth_contract(api_key, did, network, eth_account_address, eth_private_key,
+                                                                 eth_gas,
                                                                  file_path)
-                    data = json.loads(response.output)
-                    if response.status:
+                    if response['status']:
                         request.session['deploy_eth_contract_submit'] = True
                         temp_file.delete()
+                        data = json.loads(response['output'])
                         contract_address = data['result']['contract_address']
                         contract_name = data['result']['contract_name']
                         contract_code_hash = data['result']['contract_code_hash']
@@ -565,7 +570,7 @@ def deploy_eth_contract(request):
                                        'sample_code': sample_code,
                                        'recent_services': recent_services})
                     else:
-                        messages.success(request, response.status_message)
+                        messages.success(request, response['status_message'])
                         return redirect(reverse('service:deploy_eth_contract'))
                 except Exception as e:
                     logging.debug(f"did: {did} Method: deploy_eth_contract Error: {e}")
@@ -607,11 +612,11 @@ def watch_eth_contract(request):
                 contract_code_hash = form.cleaned_data.get('contract_code_hash')
                 try:
                     sidechain_eth = SidechainEth(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
-                    response = sidechain_eth.watch_eth_contract(api_key, network, contract_address, contract_name,
+                    response = sidechain_eth.watch_eth_contract(api_key, did, network, contract_address, contract_name,
                                                                 contract_code_hash)
-                    data = json.loads(response.output)
-                    if response.status:
+                    if response['status']:
                         request.session['watch_eth_contract_submit'] = True
+                        data = json.loads(response['output'])
                         contract_address = data['result']['contract_address']
                         contract_functions = data['result']['contract_functions']
                         contract_source = data['result']['contract_source']
@@ -622,7 +627,7 @@ def watch_eth_contract(request):
                                        'sample_code': sample_code,
                                        'recent_services': recent_services})
                     else:
-                        messages.success(request, response.status_message)
+                        messages.success(request, response['status_message'])
                         return redirect(reverse('service:watch_eth_contract'))
                 except Exception as e:
                     logging.debug(f"did={did} Method: watch_eth_contract Error: {e}")
@@ -652,12 +657,3 @@ def run_eth_contract(request):
         sample_code['go'] = myfile.read()
     return render(request, "service/run_eth_contract.html",
                   {'sample_code': sample_code, 'recent_services': recent_services})
-
-
-
-
-
-
-
-
-
