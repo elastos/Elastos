@@ -1,6 +1,6 @@
 import grpc
+from decouple import config
 
-from .settings import GRPC_SERVER_CRT
 from .stubs import health_check_pb2, health_check_pb2_grpc
 
 
@@ -10,7 +10,7 @@ class HealthCheck:
         if not production:
             self._channel = grpc.insecure_channel('{}:{}'.format(host, port))
         else:
-            with open(GRPC_SERVER_CRT, 'rb') as f:
+            with open(config('GRPC_SERVER_CRT'), 'rb') as f:
                 trusted_certs = f.read()
             # create credentials
             credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)

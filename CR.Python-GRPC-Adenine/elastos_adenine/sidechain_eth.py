@@ -5,7 +5,7 @@ import datetime
 from solidity_parser import parser
 
 from .stubs import sidechain_eth_pb2, sidechain_eth_pb2_grpc
-from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION, GRPC_SERVER_CRT
+from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION
 
 
 class SidechainEth:
@@ -14,7 +14,7 @@ class SidechainEth:
         if not production:
             self._channel = grpc.insecure_channel('{}:{}'.format(host, port))
         else:
-            with open(GRPC_SERVER_CRT, 'rb') as f:
+            with open(config('GRPC_SERVER_CRT'), 'rb') as f:
                 trusted_certs = f.read()
             # create credentials
             credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)

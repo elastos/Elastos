@@ -2,8 +2,11 @@ import json
 import grpc
 import jwt
 import datetime
+
+from decouple import config
+
 from .stubs import wallet_pb2, wallet_pb2_grpc
-from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION, GRPC_SERVER_CRT
+from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION
 
 
 class Wallet:
@@ -12,7 +15,7 @@ class Wallet:
         if not production:
             self._channel = grpc.insecure_channel('{}:{}'.format(host, port))
         else:
-            with open(GRPC_SERVER_CRT, 'rb') as f:
+            with open(config('GRPC_SERVER_CRT'), 'rb') as f:
                 trusted_certs = f.read()
             # create credentials
             credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
