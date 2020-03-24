@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="elastos_adenine",
-    version="1.1.0",
+    version="1.1.1",
     license='MIT',
     author="Kiran Pachhai",
     author_email="kiran@tuum.tech",

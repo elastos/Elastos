@@ -12,10 +12,7 @@ class NodeRpc:
         if not production:
             self._channel = grpc.insecure_channel('{}:{}'.format(host, port))
         else:
-            with open(config('GRPC_SERVER_CRT'), 'rb') as f:
-                trusted_certs = f.read()
-            # create credentials
-            credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
+            credentials = grpc.ssl_channel_credentials()
             self._channel = grpc.secure_channel('{}:{}'.format(host, port), credentials)
 
         self.stub = node_rpc_pb2_grpc.NodeRpcStub(self._channel)
