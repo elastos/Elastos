@@ -711,7 +711,11 @@ func (c *Committee) processCurrentCandidates(height uint32,
 			continue
 		}
 		// if canceled enough blocks, no need to update deposit coin again.
-		if height-candidate.CancelHeight() >= c.params.CRDepositLockupBlocks {
+		if ca.state == Canceled && height-ca.CancelHeight() >= c.params.CRDepositLockupBlocks {
+			continue
+		}
+		// if CR deposit coin is returned, no need to update deposit coin again.
+		if ca.state == Returned {
 			continue
 		}
 		oriRefundable := c.state.depositInfo[ca.info.CID].Refundable
