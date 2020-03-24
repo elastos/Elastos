@@ -53,6 +53,223 @@ namespace Elastos {
 					const std::string &sideChainAddress,
 					const std::string &memo) = 0;
 
+		public:
+			//////////////////////////////////////////////////
+			/*                      Vote                    */
+			//////////////////////////////////////////////////
+			/**
+			 * Create vote transaction.
+			 *
+			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+			 *                     Otherwise, pick UTXO from the specific address.
+			 * @param stake        Vote amount in sela. "-1" means max.
+			 * @param publicKeys   Public keys array in JSON format.
+			 * @param memo         Remarks string. Can be empty string.
+			 * @invalidCandidates  invalid candidate except current vote candidates. Such as:
+			  						[
+								      	{
+								            "Type":"CRC",
+								            "Candidates":[
+								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+								            ]
+								        },
+								        {
+								            "Type":"Delegate",
+								            "Candidates":[
+								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+								            ]
+								        }
+								    ]
+			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
+			 */
+			virtual nlohmann::json CreateVoteProducerTransaction(
+				const std::string &fromAddress,
+				const std::string &stake,
+				const nlohmann::json &pubicKeys,
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates) = 0;
+
+			/**
+			 * Get vote information of current wallet.
+			 *
+			 * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
+			 * {
+			 * 	 "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000",
+			 * 	 "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000",
+			 * 	 "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA": "5000000000"
+			 * }
+			 */
+			virtual	nlohmann::json GetVotedProducerList() const = 0;
+
+			/**
+			 * Create vote cr transaction.
+			 *
+			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+			 *                     Otherwise, pick UTXO from the specific address.
+			 * @param votes        Candidate code and votes in JSON format. Such as:
+			 *                     {
+			 *                          "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "100000000",
+			 *                          "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
+			 *                     }
+			 * @param memo         Remarks string. Can be empty string.
+			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
+			  						[
+								      	{
+								            "Type":"CRC",
+								            "Candidates":[
+								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+								            ]
+								        },
+								        {
+								            "Type":"Delegate",
+								            "Candidates":[
+								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+								            ]
+								        }
+								    ]
+			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
+			 */
+			virtual nlohmann::json CreateVoteCRTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &votes,
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates) = 0;
+
+			/**
+			 * Get CR vote information of current wallet.
+			 *
+			 * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
+			 * {
+			 * 	 "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000",
+			 * 	 "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
+			 * }
+			 */
+			virtual	nlohmann::json GetVotedCRList() const = 0;
+
+			/**
+			 * Create vote crc proposal transaction.
+			 *
+			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+			 *                     Otherwise, pick UTXO from the specific address.
+			 * @param votes        Proposal hash and votes in JSON format. Such as:
+			 *                     {
+			 *                          "109780cf45c7a6178ad674ac647545b47b10c2c3e3b0020266d0707e5ca8af7c": "100000000",
+			 *                          "92990788d66bf558052d112f5498111747b3e28c55984d43fed8c8822ad9f1a7": "200000000"
+			 *                     }
+			 * @param memo         Remarks string. Can be empty string.
+			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
+			  						[
+								      	{
+								            "Type":"CRC",
+								            "Candidates":[
+								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+								            ]
+								        },
+								        {
+								            "Type":"Delegate",
+								            "Candidates":[
+								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+								            ]
+								        }
+								    ]
+			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
+			 */
+			virtual nlohmann::json CreateVoteCRCProposalTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &votes,
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates) = 0;
+
+			/**
+			 * Create impeachment crc transaction.
+			 *
+			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+			 *                     Otherwise, pick UTXO from the specific address.
+			 * @param votes        CRC did and votes in JSON format. Such as:
+			 *                     {
+			 *                          "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs": "100000000",
+			 *                          "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww": "200000000"
+			 *                     }
+			 * @param memo         Remarks string. Can be empty string.
+			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
+			  						[
+								      	{
+								            "Type":"CRC",
+								            "Candidates":[
+								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+								            ]
+								        },
+								        {
+								            "Type":"Delegate",
+								            "Candidates":[
+								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+								            ]
+								        }
+								    ]
+			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
+			 */
+			virtual nlohmann::json CreateImpeachmentCRCTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &votes,
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates) = 0;
+
+			/**
+			 * Get summary or details of all types of votes
+			 * @type if the type is empty, a summary of all types of votes will return. Otherwise, the details of the specified type will return.
+			 * @return vote info in JSON format. Such as:
+			 *
+			 * summary:
+			 *  [
+			 *      {"Type": "Delegate", "Amount": "12345", "Timestamp": 1560888482, "Expiry": null},
+			 *      {"Type": "CRC", "Amount": "56789", "Timestamp": 1560888482, "Expiry": 1561888000}
+			 *  ]
+			 *
+			 * details:
+			 *  [{
+			 *      "Type": "Delegate",
+			 *      "Amount": "200000000",
+			 *      "Timestamp": 1560888482,
+			 *      "Expiry": null,
+			 *      "Votes": {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000","02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000"}
+			 *  },
+			 *  {
+			 *      ...
+			 *  }]
+			 * or:
+			 *  [{
+			 *      "Type": "CRC",
+			 *      "Amount": "300000000",
+			 *      "Timestamp": 1560888482,
+			 *      "Expiry": null,
+			 *      "Votes": {"iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000","iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"}
+			 *  },
+			 *  {
+			 *      ...
+			 *  }]
+			 */
+			virtual nlohmann::json GetVoteInfo(const std::string &type) const = 0;
+
+		public:
+			//////////////////////////////////////////////////
+			/*                    Producer                  */
+			//////////////////////////////////////////////////
 			/**
 			 * Generate payload for registering or updating producer.
 			 *
@@ -160,54 +377,6 @@ namespace Elastos {
 			virtual std::string GetOwnerAddress() const = 0;
 
 			/**
-			 * Create vote transaction.
-			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param stake        Vote amount in sela. "-1" means max.
-			 * @param publicKeys   Public keys array in JSON format.
-			 * @param memo         Remarks string. Can be empty string.
-			 * @invalidCandidates  invalid candidate except current vote candidates. Such as:
-			  						[
-								      	{
-								            "Type":"CRC",
-								            "Candidates":[
-								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-								            ]
-								        },
-								        {
-								            "Type":"Delegate",
-								            "Candidates":[
-								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
-								            ]
-								        }
-								    ]
-			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-			 */
-			virtual nlohmann::json CreateVoteProducerTransaction(
-					const std::string &fromAddress,
-					const std::string &stake,
-					const nlohmann::json &pubicKeys,
-					const std::string &memo,
-					const nlohmann::json &invalidCandidates) = 0;
-
-			/**
-			 * Get vote information of current wallet.
-			 *
-			 * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
-			 * {
-			 * 	 "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000",
-			 * 	 "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000",
-			 * 	 "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA": "5000000000"
-			 * }
-			 */
-			virtual	nlohmann::json GetVotedProducerList() const = 0;
-
-			/**
 			 * Get information about whether the current wallet has been registered the producer.
 			 *
 			 * @return Information in JSON format. Such as:
@@ -230,6 +399,13 @@ namespace Elastos {
 			 * { "Status": "ReturnDeposit", "Info": null }
 			 */
 			virtual nlohmann::json GetRegisteredProducerInfo() const = 0;
+
+
+		public:
+			//////////////////////////////////////////////////
+			/*                      CRC                     */
+			//////////////////////////////////////////////////
+
 			/**
 			 * Generate cr info payload digest for signature.
 			 *
@@ -329,55 +505,6 @@ namespace Elastos {
 					const std::string &memo) = 0;
 
 			/**
-			 * Create vote cr transaction.
-			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param votes        Candidate code and votes in JSON format. Such as:
-			 *                     {
-			 *                          "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "100000000",
-			 *                          "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
-			 *                     }
-			 * @param memo         Remarks string. Can be empty string.
-			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
-			  						[
-								      	{
-								            "Type":"CRC",
-								            "Candidates":[
-								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-								            ]
-								        },
-								        {
-								            "Type":"Delegate",
-								            "Candidates":[
-								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
-								            ]
-								        }
-								    ]
-			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-			 */
-			virtual nlohmann::json CreateVoteCRTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &votes,
-				const std::string &memo,
-				const nlohmann::json &invalidCandidates) = 0;
-
-			/**
-			 * Get CR vote information of current wallet.
-			 *
-			 * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
-			 * {
-			 * 	 "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000",
-			 * 	 "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
-			 * }
-			 */
-			virtual	nlohmann::json GetVotedCRList() const = 0;
-
-			/**
 			 * Get information about whether the current wallet has been registered the producer.
 			 *
 			 * @return Information in JSON format. Such as:
@@ -402,43 +529,11 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GetRegisteredCRInfo() const = 0;
 
-			/**
-			 * Get summary or details of all types of votes
-			 * @type if the type is empty, a summary of all types of votes will return. Otherwise, the details of the specified type will return.
-			 * @return vote info in JSON format. Such as:
-			 *
-			 * summary:
-			 *  [
-			 *      {"Type": "Delegate", "Amount": "12345", "Timestamp": 1560888482, "Expiry": null},
-			 *      {"Type": "CRC", "Amount": "56789", "Timestamp": 1560888482, "Expiry": 1561888000}
-			 *  ]
-			 *
-			 * details:
-			 *  [{
-			 *      "Type": "Delegate",
-			 *      "Amount": "200000000",
-			 *      "Timestamp": 1560888482,
-			 *      "Expiry": null,
-			 *      "Votes": {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000","02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000"}
-			 *  },
-			 *  {
-			 *      ...
-			 *  }]
-			 * or:
-			 *  [{
-			 *      "Type": "CRC",
-			 *      "Amount": "300000000",
-			 *      "Timestamp": 1560888482,
-			 *      "Expiry": null,
-			 *      "Votes": {"iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000","iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"}
-			 *  },
-			 *  {
-			 *      ...
-			 *  }]
-			 */
-			virtual nlohmann::json GetVoteInfo(const std::string &type) const = 0;
 
-
+		public:
+			//////////////////////////////////////////////////
+			/*                     Proposal                 */
+			//////////////////////////////////////////////////
 			/**
 			 *Sponsor generate proposal digest for sponsor signature.
 			 *
@@ -549,82 +644,6 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateCRCProposalReviewTransaction(const nlohmann::json &proposalReview,
 			                                                          const std::string &memo) = 0;
-
-			/**
-			 * Create vote crc proposal transaction.
-			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param votes        Proposal hash and votes in JSON format. Such as:
-			 *                     {
-			 *                          "109780cf45c7a6178ad674ac647545b47b10c2c3e3b0020266d0707e5ca8af7c": "100000000",
-			 *                          "92990788d66bf558052d112f5498111747b3e28c55984d43fed8c8822ad9f1a7": "200000000"
-			 *                     }
-			 * @param memo         Remarks string. Can be empty string.
-			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
-			  						[
-								      	{
-								            "Type":"CRC",
-								            "Candidates":[
-								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-								            ]
-								        },
-								        {
-								            "Type":"Delegate",
-								            "Candidates":[
-								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
-								            ]
-								        }
-								    ]
-			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-			 */
-			virtual nlohmann::json CreateVoteCRCProposalTransaction(
-					const std::string &fromAddress,
-					const nlohmann::json &votes,
-					const std::string &memo,
-					const nlohmann::json &invalidCandidates) = 0;
-
-			/**
-			 * Create impeachment crc transaction.
-			 *
-			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param votes        CRC did and votes in JSON format. Such as:
-			 *                     {
-			 *                          "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs": "100000000",
-			 *                          "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww": "200000000"
-			 *                     }
-			 * @param memo         Remarks string. Can be empty string.
-			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
-			  						[
-								      	{
-								            "Type":"CRC",
-								            "Candidates":[
-								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-								            ]
-								        },
-								        {
-								            "Type":"Delegate",
-								            "Candidates":[
-								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
-								            ]
-								        }
-								    ]
-			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-			 */
-			virtual nlohmann::json CreateImpeachmentCRCTransaction(
-					const std::string &fromAddress,
-					const nlohmann::json &votes,
-					const std::string &memo,
-					const nlohmann::json &invalidCandidates) = 0;
 
 
 			/**
