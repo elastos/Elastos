@@ -53,21 +53,7 @@ def serve():
     logging.debug("Added Eth Sidechain Service to server")
 
     port = config('GRPC_SERVER_PORT')
-
-    production = config('PRODUCTION', default=False, cast=bool)
-    if production:
-        # read in key and certificate
-        with open(config('GRPC_SERVER_KEY'), 'rb') as f:
-            private_key = f.read()
-        with open(config('GRPC_SERVER_CRT'), 'rb') as f:
-            certificate_chain = f.read()
-
-        # create server credentials
-        server_credentials = grpc.ssl_server_credentials(((private_key, certificate_chain,),))
-
-        server.add_secure_port('{0}:{1}'.format(config('GRPC_SERVER_HOST'), port), server_credentials)
-    else:
-        server.add_insecure_port('[::]:{}'.format(port))
+    server.add_insecure_port('[::]:{}'.format(port))
     server.start()
     server.wait_for_termination()
 
