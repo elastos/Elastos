@@ -261,9 +261,10 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
                         listChose.add(personalInfoItemEntity);
                         Collections.sort(listChose);
                         listShow.remove(personalInfoItemEntity);
-                        adapterShow.notifyItemRemoved(position);//加动画
-                        adapterShow.notifyItemRangeChanged(position, listShow.size() - position);
+                       // adapterShow.notifyItemRemoved(position);//加动画
+                       // adapterShow.notifyItemRangeChanged(position, listShow.size() - position);
                         adapterChose.notifyDataSetChanged();
+                        adapterShow.notifyDataSetChanged();
                     }
                 });
 
@@ -325,6 +326,9 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
         for (int i = 0; i < listShow.size(); i++) {
             PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
             ViewGroup view = (ViewGroup) (rvShow.getLayoutManager().findViewByPosition(i));
+            if (view == null) {
+                break;
+            }
             TextView child1 = (TextView) view.getChildAt(1);
 
             personalInfoItemEntity.setText1(getText(child1));
@@ -359,7 +363,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
                         result.setGender("2");
                     break;
                 case 2:
-                    String birthDate = DateUtil.parseToLongWithLanguage(text1, getContext());
+                    String birthDate = DateUtil.parseToLongWithLanguage(text1, getContext(), true);
                     result.setBirthday(birthDate);
                     break;
                 case 3:
@@ -401,7 +405,7 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
             }
 
         }
-        result.setEditTime(new Date().getTime()/1000);
+        result.setEditTime(new Date().getTime() / 1000);
         return result;
     }
 

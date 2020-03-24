@@ -36,6 +36,7 @@ public class RealmUtil {
                 .name(DB_NAME)
                 .schemaVersion(DB_VERSION_CODE)
                 .migration(new CustomMigration())
+                //.modules(new MySchemaModule())
                 .build();
         return config;
     }

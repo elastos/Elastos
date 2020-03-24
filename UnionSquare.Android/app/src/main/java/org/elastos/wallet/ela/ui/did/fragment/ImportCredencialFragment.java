@@ -65,16 +65,11 @@ public class ImportCredencialFragment extends BaseFragment implements NewBaseVie
     }
 
     private void getFileList() {
-        files = getBaseActivity().getExternalFilesDir("credentials" + File.separator +getMyDID().getSpecificDidString());
+        files = getBaseActivity().getExternalFilesDir("credentials" + File.separator + getMyDID().getSpecificDidString());
         if (!files.exists() || !files.isDirectory()) {
             return;
         }
         setRecycleView();
-      /*for (File s : files.listFiles()) {
-            if (s.isFile()) {
-                Log.i("??", s.getName());
-            }
-        }*/
     }
 
     private void setRecycleView() {
@@ -187,8 +182,12 @@ public class ImportCredencialFragment extends BaseFragment implements NewBaseVie
     }
 
     private File getCurrentCredentialFile() {
-        File file = getBaseActivity().getExternalFilesDir("credentials" + File.separator + getMyDID().getSpecificDidString());
-        String fileName = getMyDID().getName(getMyDID().getDIDDocument()) + new Date().getTime() / 1000 + ".jwt";
+        String did = getMyDID().getSpecificDidString();
+        File file = getBaseActivity().getExternalFilesDir("credentials" + File.separator + did);
+        did = did.substring(did.length() - 6);
+        //    String fileName =  + new Date().getTime() / 1000 + ".jwt";
+        String fileName = did +"_"+ new Date().getTime() / 1000 +"_"+ getMyDID().getName(getMyDID().getDIDDocument()) + ".jwt";
+
         return new File(file, fileName);
 
     }

@@ -217,7 +217,7 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
                     String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
                     String pro=getMyDID().getCredentialProFromJson(payload);
                     credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
-                    if (credentialSubjectBean==null){
+                    if (credentialSubjectBean==null||credentialSubjectBean.whetherEmpty()){
                         return;
                     }
                     GlideApp.with(CRInformationFragment.this).load(credentialSubjectBean.getAvatar())

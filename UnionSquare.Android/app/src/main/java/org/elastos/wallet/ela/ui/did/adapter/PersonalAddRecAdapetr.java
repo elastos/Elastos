@@ -2,6 +2,7 @@ package org.elastos.wallet.ela.ui.did.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,7 +64,7 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
     @Override
     public void onBindViewHolder(ViewHolderParent holder, int position) {
         PersonalInfoItemEntity personalInfoItemEntity = list.get(position);
-        //int index = personalInfoItemEntity.getIndex();
+        int index = personalInfoItemEntity.getIndex();
         //int type = holder.getItemViewType();
         if (holder instanceof ViewHolder1) {
             ((ViewHolder1) holder).tv.setText(personalInfoItemEntity.getText1());
@@ -90,12 +91,16 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
                 @Override
                 public void onClick(View v) {
                     if (commonRvListener != null)
-                        commonRvListener.onRvItemClick( ((ViewHolder3) holder).tv2, position, personalInfoItemEntity);
+                        commonRvListener.onRvItemClick(((ViewHolder3) holder).tv2, position, personalInfoItemEntity);
                 }
             });
         } else {
+            ((ViewHolder0) holder).et.setFilters(new InputFilter[]{});
             ((ViewHolder0) holder).et.setText(personalInfoItemEntity.getText1());
             ((ViewHolder0) holder).et.setHint(personalInfoItemEntity.getHintShow1());
+            if (index == 0) {
+                ((ViewHolder0) holder).et.setFilters(new InputFilter[]{new InputFilter.LengthFilter(16)});
+            }
         }
         if (commonRvListener != null) {
             holder.iv.setOnClickListener(new View.OnClickListener() {

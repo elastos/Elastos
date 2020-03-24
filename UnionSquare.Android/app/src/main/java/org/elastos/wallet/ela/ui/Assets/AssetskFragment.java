@@ -25,6 +25,7 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.elastos.did.DIDDocument;
+import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -889,7 +890,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     private void curentHasDID(DIDDocument didDocument) {
         if (didDocument != null) {
-            //getMyDID().getDidStore().storeDid(didDocument);//存储本地
+            try {
+                getMyDID().getDidStore().storeDid(didDocument);//存储本地
+            } catch (DIDStoreException e) {
+                e.printStackTrace();
+            }
             Bundle bundle = new Bundle();
             bundle.putString("scanResult", scanResult);
             bundle.putParcelable("wallet", wallet);

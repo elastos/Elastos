@@ -269,7 +269,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
         try {
             store = getMyDID().getDidStore();
             if (store.containsPrivateIdentity()) {//什么时候必须containsPrivateIdentity3
-                resolve();
+                initDIDAndresolve();
             } else {
                 //获得私钥用于初始化did
                 //did初始化获得密码
@@ -282,10 +282,10 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
 
     }
 
-    private void resolve() {
+    private void initDIDAndresolve() {
         DID did = getMyDID().initDID(payPasswd);
         if (TextUtils.isEmpty(wallet.getDid()))
-            new RealmUtil().upDataWalletDid(wallet.getWalletId(), did.toString());
+            new RealmUtil().upDataWalletDid(wallet.getWalletId(), getMyDID().getDidString());
         presenter.DIDResolve(did.toString(), this);
 
     }
@@ -335,7 +335,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
                 dialog.dismiss();
                 try {
                     store.initPrivateIdentity(privateKey, payPasswd);
-                    resolve();
+                    initDIDAndresolve();
                 } catch (DIDException e) {
                     e.printStackTrace();
                     showToast(getString(R.string.didinitfaile));

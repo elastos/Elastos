@@ -164,7 +164,6 @@ public class MainActivity extends BaseActivity implements MainViewData, NewBaseV
     }
 
 
-
     private void setLanguage() {
         if (new SPUtil(this).getLanguage() == -1) {
             if (Locale.getDefault().getLanguage().equals("zh")) {
@@ -297,7 +296,8 @@ public class MainActivity extends BaseActivity implements MainViewData, NewBaseV
 
     private File getCurrentCredentialFile(String did, String didName) {
         File file = getExternalFilesDir("credentials" + File.separator + did);
-        String fileName = didName + new Date().getTime() / 1000 + ".jwt";
+        did = did.substring(did.length() - 6);
+        String fileName = did +"_"+ new Date().getTime() / 1000 + "_"+didName + ".jwt";
         return new File(file, fileName);
 
     }

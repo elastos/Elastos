@@ -1,17 +1,15 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
-import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.view.View;
 import android.widget.TextView;
 
+import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.table.Wallet;
@@ -19,7 +17,6 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.did.presenter.CredencialPresenter;
-import org.elastos.wallet.ela.utils.Log;
 
 import java.io.File;
 import java.util.Date;
@@ -67,25 +64,22 @@ public class ExportCredencialFragment extends BaseFragment implements NewBaseVie
                 break;
             case R.id.tv_share:
                 type = 2;
-                requstManifestPermission(getString(R.string.needpermissionstorage));
+                curentFile = getCurrentCredentialFile();
+                new CredencialPresenter().keepFile(curentFile, getMyDID().getCredentialJSon(getMyDID().getDidString()), this);
+
                 break;
 
 
         }
     }
 
-    @Override
-    protected void requstPermissionOk() {
-        curentFile = getCurrentCredentialFile();
-        Log.i("??",getMyDID().getCredentialJSon(getMyDID().getDidString()));
-        new CredencialPresenter().keepFile(curentFile, getMyDID().getCredentialJSon(getMyDID().getDidString()), this);
-
-    }
-
 
     private File getCurrentCredentialFile() {
-        File file = getBaseActivity().getExternalFilesDir("credentials" + File.separator + getMyDID().getSpecificDidString());
-        String fileName = getMyDID().getName(getMyDID().getDIDDocument()) + new Date().getTime() / 1000 + ".jwt";
+        String did = getMyDID().getSpecificDidString();
+        File file = getBaseActivity().getExternalFilesDir("credentials" + File.separator + did);
+        did = did.substring(did.length() - 6);
+        String fileName = did + "_" + new Date().getTime() / 1000 + "_" + getMyDID().getName(getMyDID().getDIDDocument()) + ".jwt";
+        //String fileName = getMyDID().getName(getMyDID().getDIDDocument()) + new Date().getTime() / 1000 + ".jwt";
         return new File(file, fileName);
 
     }
@@ -110,52 +104,32 @@ public class ExportCredencialFragment extends BaseFragment implements NewBaseVie
     }
 
     private void shareFile() {
-        checkFileUriExposure();
         Intent share_intent = new Intent();
         share_intent.setAction(Intent.ACTION_SEND);//设置分享行为
         share_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         share_intent.setType("*/*");//设置分享内容的类型
-   /*     File file1 = new File(Environment.getExternalStoragePublicDirectory(
-                getContext().getPackageName()), "log");
-        File file = new File(file1, "/spvsdk.log");
-        if (!file.exists()) {
+        if (!curentFile.exists()) {
             return;
-        }*/
-        share_intent.putExtra(Intent.EXTRA_STREAM, getImageContentUri(getContext(), curentFile));//添加分享内容
-        startActivity(share_intent);
+        }
+        Uri uri = getUri(getContext(), BuildConfig.APPLICATION_ID + ".fileProvider", curentFile);
+
+        share_intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        share_intent.putExtra(Intent.EXTRA_STREAM, uri);//添加分享内容
+        //  startActivity(share_intent);
+        startActivity(Intent.createChooser(share_intent, "share"));
     }
 
-    private static void checkFileUriExposure() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-            StrictMode.setVmPolicy(builder.build());
-            builder.detectFileUriExposure();
+    public static Uri getUri(Context context, String authorites, File file) {
+        Uri uri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            //设置7.0以上共享文件，分享路径定义在xml/file_paths.xml
+            uri = FileProvider.getUriForFile(context, authorites, file);
+        } else {
+            // 7.0以下,共享文件
+            uri = Uri.fromFile(file);
         }
-    }
-
-    public static Uri getImageContentUri(Context context, File imageFile) {
-        String filePath = imageFile.getAbsolutePath();
-        Cursor cursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=? ",
-                new String[]{filePath}, null);
-        Uri uri = null;
-
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
-                Uri baseUri = Uri.parse("content://media/external/images/media");
-                uri = Uri.withAppendedPath(baseUri, "" + id);
-            }
-
-            cursor.close();
-        }
-
-        if (uri == null) {
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Images.Media.DATA, filePath);
-            uri = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-        }
-
         return uri;
     }
+
 }

@@ -281,9 +281,10 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 listChose.add(personalInfoItemEntity);
                 Collections.sort(listChose);
                 listShow.remove(personalInfoItemEntity);
-                adapterShow.notifyItemRemoved(position);//加动画
-                adapterShow.notifyItemRangeChanged(position, listShow.size() - position);
+               // adapterShow.notifyItemRemoved(position);//加动画
+                //adapterShow.notifyItemRangeChanged(position, listShow.size() - position);
                 adapterChose.notifyDataSetChanged();
+                adapterShow.notifyDataSetChanged();
             } else {
                 //特殊条目数据填充 序号是 1 2 6 7
                 onRvTextViewClick((TextView) v, personalInfoItemEntity.getIndex());
@@ -342,6 +343,9 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
         for (int i = 0; i < listShow.size(); i++) {
             PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
             ViewGroup view = (ViewGroup) (rvShow.getLayoutManager().findViewByPosition(i));
+            if (view==null){
+                break;
+            }
             TextView child0 = (TextView) view.getChildAt(0);
 
             personalInfoItemEntity.setText1(getText(child0));
@@ -381,7 +385,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                         result.setGender("2");
                     break;
                 case 2:
-                    String birthDate = DateUtil.parseToLongWithLanguage(text1, getContext());
+                    String birthDate = DateUtil.parseToLongWithLanguage(text1, getContext(),true);
                     result.setBirthday(birthDate);
                     break;
                 case 3:

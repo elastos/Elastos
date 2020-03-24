@@ -10,7 +10,7 @@ public class CredentialSubjectBean implements Parcelable {
     private String did;
     private String nickname;
     private String gender;// 1男2nv
-    private String birthday;//毫秒值
+    private String birthday;//秒值
     private String avatar;
     private String email;
     private String phone;

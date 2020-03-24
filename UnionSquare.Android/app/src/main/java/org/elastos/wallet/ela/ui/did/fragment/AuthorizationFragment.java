@@ -97,6 +97,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
             initAuthorization();
         } else if ("authorization&bind".equals(type)) {
             initItemDate();
+            initAuthorization();
             CrStatusBean crStatusBean = data.getParcelable("crStatusBean");
             CrStatusBean.InfoBean bean = crStatusBean.getInfo();
             name = bean.getNickName();
@@ -137,12 +138,13 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         listShow = new ArrayList<>();
 
         for (int i = 0; i < showData.length; i++) {
-            PersonalInfoItemEntity personalInfoItemEntity = new PersonalInfoItemEntity();
-            personalInfoItemEntity.setIndex(i);
-            personalInfoItemEntity.setHintShow1("-" + showData[i]);
-            personalInfoItemEntity.setCheck(true);
-            if (i == 1 || i == 2 || i == 4 || i == 7 || i == 8 || i == 9 || i == 10 || i == 11 || i == 12 || i == 13)
+            if (i == 1 || i == 2 || i == 3 || i == 4 || i == 7 || i == 8 || i == 9 || i == 10 || i == 11 || i == 12 || i == 13) {
+                PersonalInfoItemEntity personalInfoItemEntity = new PersonalInfoItemEntity();
+                personalInfoItemEntity.setIndex(i);
+                personalInfoItemEntity.setHintShow1("-" + showData[i]);
+                personalInfoItemEntity.setCheck(true);
                 listShow.add(personalInfoItemEntity);
+            }
 
         }
 
@@ -157,13 +159,16 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
 
     }
 
-    private CredentialSubjectBean convertCredentialSubjectBean() {
+    private CredentialSubjectBean convertCredentialSubjectBean(DIDDocument doc) {
         //这种情况考虑去除全局变量credentialSubjectBean
-        if (listShow.size() == 0) {
-            return null;
-        }
         String json = getMyDID().getCredentialProFromStore(getMyDID().getDidString());
         CredentialSubjectBean result = JSON.parseObject(json, CredentialSubjectBean.class);
+        if (result == null) {
+            result = new CredentialSubjectBean(getMyDID().getDidString(), getMyDID().getName(doc));
+            return result;
+        } else {
+            result.setDidName(getMyDID().getName(doc));//单独更新姓名
+        }
         for (int i = 0; i < listShow.size(); i++) {
             //只遍历show的数据
             PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
@@ -336,7 +341,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
 
         // Base64
         DIDDocument doc = getMyDID().getDIDDocument();
-        String pro = JSON.toJSONString(convertCredentialSubjectBean());
+        String pro = JSON.toJSONString(convertCredentialSubjectBean(doc));
         Date exp = getMyDID().getExpires(doc);
         String payload = Base64.encodeToString(getMyDID().getCredentialJson(pro, payPasswd, exp).getBytes(), Base64.URL_SAFE | Base64.NO_WRAP);
         payload = payload.replaceAll("=", "");

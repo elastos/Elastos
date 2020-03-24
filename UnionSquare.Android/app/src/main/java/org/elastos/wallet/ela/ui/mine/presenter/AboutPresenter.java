@@ -47,7 +47,7 @@ public class AboutPresenter extends PresenterAbstract {
                     moveWalletFile(baseFragment.getContext());
                 }
                 //moveLogFile(baseFragment.getContext(), "/spvsdk.1.log");
-                return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext(), "/spvsdk.log") + "", "moveLogFile");
+                return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext(), "spvsdk.log") + "", "moveLogFile");
             }
         });
         subscriberObservable(observer, observable, baseFragment);
@@ -66,7 +66,6 @@ public class AboutPresenter extends PresenterAbstract {
             if (file1.mkdirs()) {
                 Log.e("moveLogFile", "Directory  created");
             }
-
 
             OutputStream fosto = new FileOutputStream(file1 + File.separator + logName);
             byte bt[] = new byte[1024];

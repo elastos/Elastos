@@ -2,6 +2,7 @@ package org.elastos.wallet.ela.ui.did.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,6 +63,7 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
     public void onBindViewHolder(ViewHolderParent holder, int position) {
         //  holder.setIsRecyclable(false);
         PersonalInfoItemEntity personalInfoItemEntity = list.get(position);
+        int index = personalInfoItemEntity.getIndex();
         if (holder instanceof ViewHolder2) {
             ((ViewHolder2) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
             ((ViewHolder2) holder).tv2.setText(personalInfoItemEntity.getHintShow2());
@@ -80,8 +82,12 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
             });
 
         } else {
+            ((ViewHolder0) holder).et1.setFilters(new InputFilter[]{});
             ((ViewHolder0) holder).tv1.setHint(personalInfoItemEntity.getHintShow1());
             ((ViewHolder0) holder).et1.setText(personalInfoItemEntity.getText1());
+            if (index == 0) {
+                ((ViewHolder0) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(16)});
+            }
         }
         if (commonRvListener != null) {
             holder.iv.setOnClickListener(new View.OnClickListener() {

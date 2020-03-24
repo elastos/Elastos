@@ -136,7 +136,7 @@ public class ShowPersonalInfoFragemnt extends BaseFragment {
                     break;
                 case 2:
                     String birthday = credentialSubjectBean.getBirthday();
-                    String birthDate = DateUtil.timeNYR(birthday, getContext(), false);
+                    String birthDate = DateUtil.timeNYR(birthday, getContext(), true);
                     resetShowList(iterator, personalInfoItemEntity, birthDate);
                     break;
                 case 3:

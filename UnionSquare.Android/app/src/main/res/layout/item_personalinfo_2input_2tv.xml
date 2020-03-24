@@ -36,6 +36,7 @@
         android:layout_toRightOf="@id/et1"
         android:gravity="center_vertical"
         android:text="@string/phonenumber"
+        android:maxLength="15"
         android:textColor="@color/whiter50"
 
         />

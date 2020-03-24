@@ -185,7 +185,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 start(CredentialInfoFragemnt.class, bundle);
                 break;
             case R.id.sb_zx:
-                //更新did
+                //更新did信息
                 if (!TextUtils.isEmpty(DID)) {
                     //已经绑定did
                     //直接授权页更新凭证到中心化服务器
@@ -259,6 +259,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
         String url = bean.getURL();
         tvUrl.setText(url);
         if (!TextUtils.isEmpty(DID)) {
+            DID = "did:elastos:" + DID;
             tvDid.setText(DID);
             //从服务器获得凭证信息
             new CRManagePresenter().jwtGet(DID, this);
@@ -288,7 +289,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                     String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
                     String pro = getMyDID().getCredentialProFromJson(payload);
                     credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
-                    if (credentialSubjectBean == null) {
+                    if (credentialSubjectBean == null||credentialSubjectBean.whetherEmpty()) {
                         return;
                     }
                     ivDetail.setVisibility(View.VISIBLE);

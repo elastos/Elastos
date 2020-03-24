@@ -24,6 +24,7 @@
         android:layout_marginLeft="15dp"
         android:inputType="phone"
         android:id="@+id/et2"
+        android:maxLength="15"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_toLeftOf="@+id/iv"

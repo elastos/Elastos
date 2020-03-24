@@ -78,7 +78,7 @@ public class DateUtil {
         return null;
     }
 
-    public static String parseToLongWithLanguage(String sd, Context context) {
+    public static String parseToLongWithLanguage(String sd, Context context, boolean isSecond) {
         if (TextUtils.isEmpty(sd)) {
             return null;
         }
@@ -88,7 +88,10 @@ public class DateUtil {
             if (Language != 0) {
                 format = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
             }
-            return format.parse(sd).getTime() + "";
+            if (isSecond) {
+                return format.parse(sd).getTime()/1000 + "";
+            } else
+                return format.parse(sd).getTime() + "";
         } catch (Exception e) {
             e.printStackTrace();
         }
