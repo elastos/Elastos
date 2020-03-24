@@ -29,15 +29,6 @@ def serve():
 
     logging.debug("Initializing the grpc server")
 
-    # read in key and certificate
-    with open(config('GRPC_SERVER_KEY'), 'rb') as f:
-        private_key = f.read()
-    with open(config('GRPC_SERVER_CRT'), 'rb') as f:
-        certificate_chain = f.read()
-
-    # create server credentials
-    server_credentials = grpc.ssl_server_credentials(((private_key, certificate_chain,),))
-    
     # Initialize the server
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), maximum_concurrent_rpcs=10000)
 
@@ -62,7 +53,21 @@ def serve():
     logging.debug("Added Eth Sidechain Service to server")
 
     port = config('GRPC_SERVER_PORT')
-    server.add_secure_port('[::]:{}'.format(port), server_credentials)
+
+    production = config('PRODUCTION', default=False, cast=bool)
+    if production:
+        # read in key and certificate
+        with open(config('GRPC_SERVER_KEY'), 'rb') as f:
+            private_key = f.read()
+        with open(config('GRPC_SERVER_CRT'), 'rb') as f:
+            certificate_chain = f.read()
+
+        # create server credentials
+        server_credentials = grpc.ssl_server_credentials(((private_key, certificate_chain,),))
+
+        server.add_secure_port('[::]:{}'.format(port), server_credentials)
+    else:
+        server.add_insecure_port('[::]:{}'.format(port))
     server.start()
     server.wait_for_termination()
 
