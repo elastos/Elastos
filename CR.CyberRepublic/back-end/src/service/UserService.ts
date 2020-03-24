@@ -746,6 +746,16 @@ export default class extends Base {
                             }
                         }
                         const db_user = this.getDBModel('User')
+
+                        const doc = await this.findUserByDid(decoded.iss)
+                        if (doc && !doc._id.equals(result.userId)) {
+                            return {
+                                code: 400,
+                                success: false,
+                                message: 'This DID had been used by other user.'
+                            }
+                        }
+
                         const user = await db_user.findById({ _id: result.userId })
                         if (user) { 
                             let dids: object[]
