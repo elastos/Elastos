@@ -1,21 +1,23 @@
-import json
 import grpc
 import jwt
 import datetime
 from decouple import config
 from .stubs import node_rpc_pb2, node_rpc_pb2_grpc
-from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION
+from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION, GRPC_SERVER_CRT
 
 
 class NodeRpc:
 
     def __init__(self, host, port, production):
-        with open('tools/server.crt', 'rb') as f:
-            trusted_certs = f.read()
+        if not production:
+            self._channel = grpc.insecure_channel('{}:{}'.format(host, port))
+        else:
+            with open(GRPC_SERVER_CRT, 'rb') as f:
+                trusted_certs = f.read()
+            # create credentials
+            credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
+            self._channel = grpc.secure_channel('{}:{}'.format(host, port), credentials)
 
-        # create credentials
-        credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
-        self._channel = grpc.secure_channel('{}:{}'.format(host, port), credentials)
         self.stub = node_rpc_pb2_grpc.NodeRpcStub(self._channel)
 
     def close(self):

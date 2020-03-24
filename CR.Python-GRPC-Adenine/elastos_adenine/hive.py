@@ -4,7 +4,7 @@ import jwt
 import datetime
 from decouple import config
 from .stubs import hive_pb2, hive_pb2_grpc
-from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION
+from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION, GRPC_SERVER_CRT
 import base64
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
@@ -15,12 +15,14 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 class Hive:
 
     def __init__(self, host, port, production):
-        with open('tools/server.crt', 'rb') as f:
-            trusted_certs = f.read()
-
-        # create credentials
-        credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
-        self._channel = grpc.secure_channel('{}:{}'.format(host, port), credentials)
+        if not production:
+            self._channel = grpc.insecure_channel('{}:{}'.format(host, port))
+        else:
+            with open(GRPC_SERVER_CRT, 'rb') as f:
+                trusted_certs = f.read()
+            # create credentials
+            credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
+            self._channel = grpc.secure_channel('{}:{}'.format(host, port), credentials)
 
         self.stub = hive_pb2_grpc.HiveStub(self._channel)
 
@@ -36,7 +38,7 @@ class Hive:
         fernet = Fernet(key)
         encrypted_message = fernet.encrypt(file_contents)
 
-        #generate JWT token
+        # generate JWT token
         jwt_info = {
             'network': network,
             'privateKey': private_key,
