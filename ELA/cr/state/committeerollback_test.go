@@ -2297,7 +2297,7 @@ func TestCommitee_RollbackCRCBlendTx(t *testing.T) {
 	assert.Equal(t, 3, len(committee.GetCandidates(Pending)))
 	assert.Equal(t, 0, len(committee.GetCandidates(Active)))
 	assert.Equal(t, common.Fixed64(1), committee.GetCandidate(*did1).votes)
-	assert.Equal(t, 1, len(committee.GetProposals(Registered)))
+	assert.Equal(t, 1, len(committee.GetProposals(Aborted)))
 	assert.Equal(t, 2, len(committee.GetProposal(proposalBHash).
 		WithdrawableBudgets))
 	assert.Equal(t, 1, len(committee.GetProposal(proposalCHash).
@@ -2528,7 +2528,7 @@ func TestCommitee_RollbackCRCBlendAppropriationTx(t *testing.T) {
 	assert.Equal(t, 3, len(committee.GetCandidates(Pending)))
 	assert.Equal(t, 0, len(committee.GetCandidates(Active)))
 	assert.Equal(t, common.Fixed64(1), committee.GetCandidate(*did1).votes)
-	assert.Equal(t, 1, len(committee.GetProposals(Registered)))
+	assert.Equal(t, 1, len(committee.GetProposals(Aborted)))
 	assert.Equal(t, 2, len(committee.GetProposal(proposalBHash).
 		WithdrawableBudgets))
 	assert.Equal(t, 1, len(committee.GetProposal(proposalCHash).
