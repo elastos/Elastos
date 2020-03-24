@@ -141,8 +141,11 @@ const Did = styled.div`
   }
 `
 const Reassociate = styled.span`
-  display: block;
+  display: inline-block;
   font-size: 13px;
   color: #008d85;
   cursor: pointer;
+  border: 1px solid #008d85;
+  padding: 0 8px;
+  margin-bottom: 16px;
 `
