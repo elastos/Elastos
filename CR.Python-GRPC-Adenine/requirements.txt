@@ -1,8 +1,8 @@
+cryptography==2.8
 grpcio==1.24.3
 grpcio-tools==1.24.3
-python-decouple==3.3
-twine==3.1.1
-solidity-parser==0.0.7
-pytest==5.3.5
 PyJWT==1.7.1
-cryptography==2.8
+pytest==5.3.5
+python-decouple==3.3
+solidity-parser==0.0.7
+twine==3.1.1
