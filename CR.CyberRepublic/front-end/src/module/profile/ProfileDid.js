@@ -9,7 +9,8 @@ class ProfileDid extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      url: ''
+      url: '',
+      visible: false
     }
     this.timerDid = null
   }
@@ -30,7 +31,7 @@ class ProfileDid extends Component {
       if (rs && rs.success) {
         clearInterval(this.timerDid)
         this.timerDid = null
-        this.setState({ url: '' })
+        this.setState({ url: '', visible: false })
       }
     }, 3000)
   }
@@ -71,6 +72,10 @@ class ProfileDid extends Component {
     clearInterval(this.timerDid)
   }
 
+  handleVisibleChange = visible => {
+    this.setState({ visible })
+  }
+
   render() {
     const { did } = this.props
     let domain
@@ -82,7 +87,13 @@ class ProfileDid extends Component {
     if (did && did.id) {
       return (
         <Did>
-          <Popover content={this.elaQrCode()} trigger="click" placement="top">
+          <Popover
+            content={this.elaQrCode()}
+            trigger="click"
+            placement="top"
+            visible={this.state.visible}
+            onVisibleChange={this.handleVisibleChange}
+          >
             <Reassociate onClick={this.handleReassociate}>
               {I18N.get('profile.reassociateDid')}
             </Reassociate>
