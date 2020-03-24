@@ -65,7 +65,7 @@ def serve():
         # create server credentials
         server_credentials = grpc.ssl_server_credentials(((private_key, certificate_chain,),))
 
-        server.add_secure_port('[::]:{}'.format(port), server_credentials)
+        server.add_secure_port('{0}:{1}'.format(config('GRPC_SERVER_HOST'), port), server_credentials)
     else:
         server.add_insecure_port('[::]:{}'.format(port))
     server.start()
