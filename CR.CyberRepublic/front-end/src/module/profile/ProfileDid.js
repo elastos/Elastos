@@ -100,7 +100,7 @@ class ProfileDid extends Component {
           </Popover>
           <span>DID:</span>
           <a
-            href={`https://${domain}.elastos.org/address/${did.id}`}
+            href={`https://${domain}.elastos.org/address/${did.id.slice('did:elastos:'.length)}`}
             target="_blank"
           >
             {did.id} <ExternalLinkSvg />
