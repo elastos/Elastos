@@ -484,7 +484,7 @@
     <string name="nokeep">不保存</string>
     <string name="keepsucess">保存成功</string>
     <string name="jump">跳过</string>
-    <string name="tipcanjump">温馨提示：本页内容均为非必填项。</string>
+    <string name="tipcanjump">温馨提示：本页内容均非必填，仅保存在本地，供用户授权使用。</string>
     <string name="plzinputname">请输入姓名</string>
     <string name="plzinputnick">请输入昵称</string>
     <string name="plzselcetsex">请选择性别</string>
@@ -493,7 +493,7 @@
     <string name="plzinputcode">请输入区号（如+86）</string>
     <string name="man">男</string>
     <string name="woman">女</string>
-    <string name="plzinputinti800">请输入个人简介（不超过800个字符）</string>
+    <string name="plzinputinti800">请输入个人简介</string>
     <string name="addpersonalintro">添加个人简介</string>
     <string name="addsocialaccount">添加社交账号</string>
     <string name="plzinputpersonalurl">请输入个人主页网址</string>

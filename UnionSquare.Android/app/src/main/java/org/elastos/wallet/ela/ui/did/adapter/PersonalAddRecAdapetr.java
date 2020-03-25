@@ -95,11 +95,14 @@ public class PersonalAddRecAdapetr extends RecyclerView.Adapter<PersonalAddRecAd
                 }
             });
         } else {
-            ((ViewHolder0) holder).et.setFilters(new InputFilter[]{});
             ((ViewHolder0) holder).et.setText(personalInfoItemEntity.getText1());
             ((ViewHolder0) holder).et.setHint(personalInfoItemEntity.getHintShow1());
             if (index == 0) {
                 ((ViewHolder0) holder).et.setFilters(new InputFilter[]{new InputFilter.LengthFilter(16)});
+            } else if (index < 9) {
+                ((ViewHolder0) holder).et.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
+            } else {
+                ((ViewHolder0) holder).et.setFilters(new InputFilter[]{new InputFilter.LengthFilter(50)});
             }
         }
         if (commonRvListener != null) {

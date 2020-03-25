@@ -70,6 +70,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -406,10 +407,17 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         switch (methodName) {
             case "DIDResolveWithTip":
                 DIDDocument didDocument = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
-                if (didDocument != null) {
-                    //已经注册过did
-                    addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
+                if (didDocument == null) {
+                    showToast(getString(R.string.notcreatedid));
+                    return;
                 }
+                if (getMyDID().getExpires(didDocument).before(new Date())) {
+                    //did过期
+                    showToast(getString(R.string.didoutofdate));
+                    return;
+
+                }
+                addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
                 break;
             case "getDepositVoteList":
                 List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();

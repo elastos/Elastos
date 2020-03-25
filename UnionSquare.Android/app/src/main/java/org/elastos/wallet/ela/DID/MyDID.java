@@ -13,9 +13,6 @@ import org.elastos.did.Issuer;
 import org.elastos.did.VerifiableCredential;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
-import org.elastos.did.exception.InvalidKeyException;
-import org.elastos.did.exception.MalformedCredentialException;
-import org.elastos.wallet.R;
 import org.elastos.wallet.ela.DID.adapter.MyDIDAdapter;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
@@ -31,7 +28,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.blankj.utilcode.util.StringUtils.getString;
 import static org.elastos.wallet.ela.ElaWallet.MyWallet.SUCCESSCODE;
 
 public class MyDID {
@@ -68,7 +64,7 @@ public class MyDID {
      * @param walletId
      */
     public void init(String walletId) {
-        Log.i("??", "1");
+        // Log.i("??", "1");
         if (!walletId.equals(this.walletId) || didStore == null) {
             try {
                 String didResolveUrl = WalletNet.MAINDID;
@@ -81,10 +77,10 @@ public class MyDID {
                 }
                 DIDBackend.initialize(didResolveUrl, MyApplication.getRoutDir() + File.separator + walletId + File.separator + ".cache");
                 myDIDAdapter = new MyDIDAdapter();
-                Log.i("??", "2");
+                // Log.i("??", "2");
                 didStore = DIDStore.open("filesystem", MyApplication.getRoutDir() + File.separator + walletId + File.separator + "store", myDIDAdapter);//通过TestConfig.storeRoot管理多个DIDStore
-                Log.i("??", "3");
-                Log.i("??", didStore.containsPrivateIdentity()+"");
+                // Log.i("??", "3");
+                // Log.i("??", didStore.containsPrivateIdentity() + "");
                 this.did = null;
                 this.walletId = walletId;
             } catch (DIDException e) {
@@ -289,7 +285,7 @@ public class MyDID {
             return vcFrom.getSubject().getPropertiesAsString();
 
         } catch (Exception e) {
-            ToastUtils.showShort(e.getMessage());
+            // ToastUtils.showShort(e.getMessage());
             e.printStackTrace();
         }
 
@@ -439,8 +435,6 @@ public class MyDID {
     public BaseEntity DIDResolveWithTip(String didString) {
         try {
             if (TextUtils.isEmpty(didString)) {
-                ToastUtils.showShort(getString(R.string.notcreatedid));
-                // Toast.makeText(baseFragment.getContext(), baseFragment.getString(R.string.notcreatedid), Toast.LENGTH_SHORT).show();
                 return new CommmonObjEntity(SUCCESSCODE, null);
             }
             DID did = new DID(didString);
@@ -448,15 +442,7 @@ public class MyDID {
 
             if (doc == null) {
                 //没注册did
-                ToastUtils.showShort(getString(R.string.notcreatedid));
-                // Toast.makeText(baseFragment.getContext(), baseFragment.getString(R.string.notcreatedid), Toast.LENGTH_SHORT).show();
                 return new CommmonObjEntity(SUCCESSCODE, null);
-            }
-            if (getExpires(doc).before(new Date())) {
-                //did过期
-                ToastUtils.showShort(getString(R.string.didoutofdate));
-                return new CommmonObjEntity(SUCCESSCODE, null);
-
             }
             return new CommmonObjEntity(SUCCESSCODE, doc);
         } catch (DIDException e) {

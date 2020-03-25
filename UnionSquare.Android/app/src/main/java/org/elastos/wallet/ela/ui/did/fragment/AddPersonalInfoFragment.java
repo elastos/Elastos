@@ -23,8 +23,8 @@ import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
-import org.elastos.wallet.ela.ui.did.adapter.PersonalChoseRecAdapetr;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalAddRecAdapetr;
+import org.elastos.wallet.ela.ui.did.adapter.PersonalChoseRecAdapetr;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
 import org.elastos.wallet.ela.ui.vote.activity.OtherPwdActivity;
@@ -270,6 +270,9 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
             listChose.remove(personalInfoItemEntity);
             adapterChose.notifyDataSetChanged();
             svChose.setVisibility(View.GONE);
+            if (listChose.size() == 0) {
+                ivAdd.setVisibility(View.GONE);
+            }
 
         } else {
             if (v instanceof ImageView) {
@@ -281,10 +284,13 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 listChose.add(personalInfoItemEntity);
                 Collections.sort(listChose);
                 listShow.remove(personalInfoItemEntity);
-               // adapterShow.notifyItemRemoved(position);//加动画
+                // adapterShow.notifyItemRemoved(position);//加动画
                 //adapterShow.notifyItemRangeChanged(position, listShow.size() - position);
                 adapterChose.notifyDataSetChanged();
                 adapterShow.notifyDataSetChanged();
+                if (ivAdd.getVisibility() == View.GONE) {
+                    ivAdd.setVisibility(View.VISIBLE);
+                }
             } else {
                 //特殊条目数据填充 序号是 1 2 6 7
                 onRvTextViewClick((TextView) v, personalInfoItemEntity.getIndex());
@@ -343,7 +349,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
         for (int i = 0; i < listShow.size(); i++) {
             PersonalInfoItemEntity personalInfoItemEntity = listShow.get(i);
             ViewGroup view = (ViewGroup) (rvShow.getLayoutManager().findViewByPosition(i));
-            if (view==null){
+            if (view == null) {
                 break;
             }
             TextView child0 = (TextView) view.getChildAt(0);
@@ -385,7 +391,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                         result.setGender("2");
                     break;
                 case 2:
-                    String birthDate = DateUtil.parseToLongWithLanguage(text1, getContext(),true);
+                    String birthDate = DateUtil.parseToLongWithLanguage(text1, getContext(), true);
                     result.setBirthday(birthDate);
                     break;
                 case 3:
@@ -427,7 +433,7 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
             }
 
         }
-        result.setEditTime(new Date().getTime()/1000);
+        result.setEditTime(new Date().getTime() / 1000);
         return result;
     }
 

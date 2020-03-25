@@ -479,7 +479,7 @@
     <string name="nokeep">Abandon</string>
     <string name="keepsucess">Saved Successfully</string>
     <string name="jump">Jump</string>
-    <string name="tipcanjump">Note: this is optional</string>
+    <string name="tipcanjump">温馨提示：本页内容均非必填，仅保存在本地，供用户授权使用。</string>
     <string name="plzinputname">Enter Name</string>
     <string name="plzinputnick">Enter Nickname</string>
     <string name="plzselcetsex">Gender</string>
@@ -488,7 +488,7 @@
     <string name="plzinputcode">Enter country code（e.g +86）</string>
     <string name="man">Male</string>
     <string name="woman">Female</string>
-    <string name="plzinputinti800">Enter your bios（less than 800 words）</string>
+    <string name="plzinputinti800">Enter your bios</string>
     <string name="addpersonalintro">Add your bios</string>
     <string name="addsocialaccount">Add Social Media Account</string>
     <string name="plzinputpersonalurl">Enter your profile URL</string>
@@ -548,7 +548,7 @@
     <string name="didname">DID Name</string>
     <string name="mainpkmanage">Primary public key</string>
     <string name="credentialinfo">Credentials</string>
-    <string name="to">to</string>
+    <string name="to">&#160;to&#160;</string>
     <string name="noavailablewalllet">No wallets available</string>
     <string name="didregisted">DID registered</string>
     <string name="closeidchainornot">The DID function cannot be used if the DID Sidechain is closed. Do you still want to proceed??</string>

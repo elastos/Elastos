@@ -1,6 +1,5 @@
 package org.elastos.wallet.ela.ui.Assets.presenter;
 
-import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
@@ -114,8 +113,8 @@ public class WalletManagePresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void DIDResolveWithTip(String didString, BaseFragment baseFragment,String type) {
-        Observer observer = createObserver(baseFragment, "DIDResolveWithTip",type);
+    public void DIDResolveWithTip(String didString, BaseFragment baseFragment, String type) {
+        Observer observer = createObserver(baseFragment, "DIDResolveWithTip", type);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
@@ -123,7 +122,7 @@ public class WalletManagePresenter extends NewPresenterAbstract {
             }
         });
         subscriberObservable(observer, observable, baseFragment);
-    }public void DIDResolveWithTip(String didString, BaseActivity baseActivity, String type) {
+    }/*public void DIDResolveWithTip(String didString, BaseActivity baseActivity, String type) {
         Observer observer = createObserver(baseActivity, "DIDResolveWithTip",type);
         Observable observable = createObservable(new ObservableListener() {
             @Override
@@ -132,5 +131,5 @@ public class WalletManagePresenter extends NewPresenterAbstract {
             }
         });
         subscriberObservable(observer, observable, baseActivity);
-    }
+    }*/
 }

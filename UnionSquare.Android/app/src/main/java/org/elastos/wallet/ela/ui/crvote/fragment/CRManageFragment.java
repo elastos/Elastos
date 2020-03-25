@@ -49,6 +49,8 @@ import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Date;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 
@@ -289,7 +291,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                     String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
                     String pro = getMyDID().getCredentialProFromJson(payload);
                     credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
-                    if (credentialSubjectBean == null||credentialSubjectBean.whetherEmpty()) {
+                    if (credentialSubjectBean == null || credentialSubjectBean.whetherEmpty()) {
                         return;
                     }
                     ivDetail.setVisibility(View.VISIBLE);
@@ -337,18 +339,27 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             case "DIDResolveWithTip":
                 String resolveType = (String) o;
                 DIDDocument didDocument = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
-                if (didDocument != null) {
-                    //已经注册did  且未绑定
-                    if ("1".equals(resolveType)) {
-                        //在授权页面绑定并授权
-                        Bundle bundle = getArguments();
-                        bundle.putString("type", "authorization&bind");
-                        start(AuthorizationFragment.class, bundle);
-                    } else {
-                        //在升级页面绑定并更新(更新包含绑定)
-                        start(UpdateCRInformationFragment.class, getArguments());
-                    }
+                if (didDocument == null) {
+                    showToast(getString(R.string.notcreatedid));
+                    return;
                 }
+                if (getMyDID().getExpires(didDocument).before(new Date())) {
+                    //did过期
+                    showToast(getString(R.string.didoutofdate));
+                    return;
+
+                }
+                //已经注册did  且未绑定
+                if ("1".equals(resolveType)) {
+                    //在授权页面绑定并授权
+                    Bundle bundle = getArguments();
+                    bundle.putString("type", "authorization&bind");
+                    start(AuthorizationFragment.class, bundle);
+                } else {
+                    //在升级页面绑定并更新(更新包含绑定)
+                    start(UpdateCRInformationFragment.class, getArguments());
+                }
+
                 break;
 
         }

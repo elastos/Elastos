@@ -889,18 +889,25 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     private void curentHasDID(DIDDocument didDocument) {
-        if (didDocument != null) {
-            try {
-                getMyDID().getDidStore().storeDid(didDocument);//存储本地
-            } catch (DIDStoreException e) {
-                e.printStackTrace();
-            }
-            Bundle bundle = new Bundle();
-            bundle.putString("scanResult", scanResult);
-            bundle.putParcelable("wallet", wallet);
-            ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
+        if (didDocument == null) {
+            showToast(getString(R.string.notcreatedid));
+            return;
+        }
+        if (getMyDID().getExpires(didDocument).before(new Date())) {
+            //did过期
+            showToast(getString(R.string.didoutofdate));
+            return;
 
         }
+        try {
+            getMyDID().getDidStore().storeDid(didDocument);//存储本地
+        } catch (DIDStoreException e) {
+            e.printStackTrace();
+        }
+        Bundle bundle = new Bundle();
+        bundle.putString("scanResult", scanResult);
+        bundle.putParcelable("wallet", wallet);
+        ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
     }
 
     @Override

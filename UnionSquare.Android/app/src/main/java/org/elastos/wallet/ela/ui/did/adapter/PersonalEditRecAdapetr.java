@@ -82,11 +82,15 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
             });
 
         } else {
-            ((ViewHolder0) holder).et1.setFilters(new InputFilter[]{});
+
             ((ViewHolder0) holder).tv1.setHint(personalInfoItemEntity.getHintShow1());
             ((ViewHolder0) holder).et1.setText(personalInfoItemEntity.getText1());
             if (index == 0) {
                 ((ViewHolder0) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(16)});
+            } else if (index < 9) {
+                ((ViewHolder0) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
+            } else {
+                ((ViewHolder0) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(50)});
             }
         }
         if (commonRvListener != null) {
@@ -157,7 +161,7 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
         }
     }
 
-     class ViewHolder2 extends ViewHolderParent {
+    class ViewHolder2 extends ViewHolderParent {
         @BindView(R.id.et1)
         EditText et1;
         @BindView(R.id.et2)

@@ -64,7 +64,8 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
     RecyclerView rvChose;
     @BindView(R.id.sv_chose)
     ScrollView svChose;
-
+    @BindView(R.id.iv_add)
+    ImageView ivAdd;
 
     private long birthday;
 
@@ -246,7 +247,9 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
             listChose.remove(personalInfoItemEntity);
             adapterChose.notifyDataSetChanged();
             svChose.setVisibility(View.GONE);
-
+            if (listChose.size() == 0) {
+                ivAdd.setVisibility(View.GONE);
+            }
         } else {
             if (v instanceof ImageView) {
                 //去除某一项 数据会重新渲染
@@ -261,10 +264,13 @@ public class EditPersonalInfoFragemnt extends BaseFragment implements CommonRvLi
                         listChose.add(personalInfoItemEntity);
                         Collections.sort(listChose);
                         listShow.remove(personalInfoItemEntity);
-                       // adapterShow.notifyItemRemoved(position);//加动画
-                       // adapterShow.notifyItemRangeChanged(position, listShow.size() - position);
+                        // adapterShow.notifyItemRemoved(position);//加动画
+                        // adapterShow.notifyItemRangeChanged(position, listShow.size() - position);
                         adapterChose.notifyDataSetChanged();
                         adapterShow.notifyDataSetChanged();
+                        if (ivAdd.getVisibility() == View.GONE) {
+                            ivAdd.setVisibility(View.VISIBLE);
+                        }
                     }
                 });
 
