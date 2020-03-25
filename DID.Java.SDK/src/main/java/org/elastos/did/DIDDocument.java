@@ -30,6 +30,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -54,6 +55,9 @@ import org.elastos.did.exception.InvalidKeyException;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDIDException;
 import org.elastos.did.exception.MalformedDocumentException;
+import org.elastos.did.jwt.JwtBuilder;
+import org.elastos.did.jwt.JwtParserBuilder;
+import org.elastos.did.jwt.KeyProvider;
 import org.elastos.did.meta.DIDMeta;
 import org.elastos.did.util.JsonHelper;
 
@@ -541,7 +545,7 @@ public class DIDDocument {
 		return getKeyPair(_id);
 	}
 
-	public KeyPair getKeyPair(DIDURL id, String storepass)
+	private KeyPair getKeyPair(DIDURL id, String storepass)
 			throws InvalidKeyException, DIDStoreException {
 		if (id == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
@@ -559,7 +563,8 @@ public class DIDDocument {
 				getMeta().getStore().loadPrivateKey(getSubject(), id, storepass));
 	}
 
-	public KeyPair getKeyPair(String id, String storepass)
+	@SuppressWarnings("unused")
+	private KeyPair getKeyPair(String id, String storepass)
 			throws InvalidKeyException, DIDStoreException {
 		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
 		return getKeyPair(_id, storepass);
@@ -1423,6 +1428,48 @@ public class DIDDocument {
 	@Override
 	public String toString() {
 		return toString(false);
+	}
+
+	public JwtBuilder jwtBuilder() {
+		return new JwtBuilder(new KeyProvider() {
+
+			@Override
+			public java.security.PublicKey getPublicKey(String id)
+					throws InvalidKeyException {
+				DIDURL _id = id == null ? getDefaultPublicKey() :
+					new DIDURL(getSubject(), id);
+
+				return getKeyPair(_id).getPublic();
+			}
+
+			@Override
+			public PrivateKey getPrivateKey(String id, String storepass)
+					throws InvalidKeyException, DIDStoreException {
+				DIDURL _id = id == null ? getDefaultPublicKey() :
+					new DIDURL(getSubject(), id);
+
+				return getKeyPair(_id, storepass).getPrivate();
+			}
+		});
+	}
+
+	public JwtParserBuilder jwtParserBuilder() {
+		return new JwtParserBuilder(new KeyProvider() {
+
+			@Override
+			public java.security.PublicKey getPublicKey(String id)
+					throws InvalidKeyException {
+				DIDURL _id = id == null ? getDefaultPublicKey() :
+					new DIDURL(getSubject(), id);
+
+				return getKeyPair(_id).getPublic();
+			}
+
+			@Override
+			public PrivateKey getPrivateKey(String id, String storepass) {
+				return null;
+			}
+		});
 	}
 
 	public static class Builder {

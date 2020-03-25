@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.security.KeyPair;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +42,6 @@ import org.elastos.did.crypto.HDKey;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDObjectAlreadyExistException;
 import org.elastos.did.exception.DIDObjectNotExistException;
-import org.elastos.did.exception.InvalidKeyException;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -601,6 +599,7 @@ public class DIDDocumentTest {
 		assertEquals(1, doc.getAuthorizationKeyCount());
 	}
 
+	/*
 	@Test
 	public void testGetJceKeyPair() throws DIDException, IOException {
 		TestData testData = new TestData();
@@ -641,6 +640,7 @@ public class DIDDocumentTest {
 		});
 		assertEquals("Don't have private key", e.getMessage());
 	}
+	*/
 
 	@Test
 	public void testGetCredential() throws DIDException, IOException {
