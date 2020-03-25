@@ -51,6 +51,8 @@ namespace Elastos {
 
 			size_t GetAllCount() const;
 
+			time_t GetEarliestTxnTimestamp() const;
+
 			TransactionPtr Get(const uint256 &hash, const std::string &chainID) const;
 
 			std::vector<TransactionPtr> GetAfter(const std::string &chainID, uint32_t height) const;

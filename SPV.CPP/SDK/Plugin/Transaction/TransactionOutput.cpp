@@ -237,7 +237,7 @@ namespace Elastos {
 			return payload;
 		}
 
-		nlohmann::json TransactionOutput::ToJson(uint8_t txVersion) const {
+		nlohmann::json TransactionOutput::ToJson() const {
 			nlohmann::json j;
 
 			j["FixedIndex"] = _fixedIndex;
@@ -246,16 +246,13 @@ namespace Elastos {
 			j["OutputLock"] = _outputLock;
 			j["ProgramHash"] = _addr->ProgramHash().GetHex();
 			j["Address"] = _addr->String();
-
-			if (txVersion >= Transaction::TxVersion::V09) {
-				j["OutputType"] = _outputType;
-				j["Payload"] = _payload->ToJson();
-			}
+			j["OutputType"] = _outputType;
+			j["Payload"] = _payload->ToJson();
 
 			return j;
 		}
 
-		void TransactionOutput::FromJson(const nlohmann::json &j, uint8_t txVersion) {
+		void TransactionOutput::FromJson(const nlohmann::json &j) {
 			_fixedIndex = j["FixedIndex"].get<uint16_t>();
 			if (j["Amount"].is_number()) {
 				_amount.setUint64(j["Amount"].get<uint64_t>());
@@ -268,11 +265,9 @@ namespace Elastos {
 			programHash.SetHex(j["ProgramHash"].get<std::string>());
 			_addr->SetProgramHash(programHash);
 
-			if (txVersion >= Transaction::TxVersion::V09) {
-				_outputType = j["OutputType"];
-				_payload = GeneratePayload(_outputType);
-				_payload->FromJson(j["Payload"]);
-			}
+			_outputType = Type(j["OutputType"].get<uint8_t>());
+			_payload = GeneratePayload(_outputType);
+			_payload->FromJson(j["Payload"]);
 		}
 
 		size_t TransactionOutput::GetSize() const {

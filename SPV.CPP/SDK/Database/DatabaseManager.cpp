@@ -206,6 +206,10 @@ namespace Elastos {
 			return _transactionNormal.GetAllCount();
 		}
 
+		time_t DatabaseManager::GetNormalEarliestTxnTimestamp() const {
+			return _transactionNormal.GetEarliestTxnTimestamp();
+		}
+
 		TransactionPtr DatabaseManager::GetNormalTxn(const uint256 &hash, const std::string &chainID) const {
 			return _transactionNormal.Get(hash, chainID);
 		}

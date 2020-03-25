@@ -90,6 +90,8 @@ namespace Elastos {
 
 			size_t GetNormalTotalCount() const;
 
+			time_t GetNormalEarliestTxnTimestamp() const;
+
 			TransactionPtr GetNormalTxn(const uint256 &hash, const std::string &chainID) const;
 
 			std::vector<TransactionPtr> GetNormalTxns(const std::string &chainID, uint32_t height) const;

@@ -306,6 +306,10 @@ namespace Elastos {
 						  });
 		}
 
+		time_t SpvService::GetFirstTxnTimestamp() const {
+			return _databaseManager->GetNormalEarliestTxnTimestamp();
+		}
+
 		TransactionPtr SpvService::GetTransaction(const uint256 &hash, const std::string &chainID) {
 			return _databaseManager->GetNormalTxn(hash, chainID);
 		}

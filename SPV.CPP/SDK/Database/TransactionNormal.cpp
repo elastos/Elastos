@@ -73,7 +73,7 @@ namespace Elastos {
 				  _assetID + "," +
 				  _iso + ") VALUES (?, ?, ?, ?, ?, ?, ?);";
 
-			sqlite3_stmt *stmt;
+			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}" + sql);
 				return false;
@@ -131,7 +131,7 @@ namespace Elastos {
 
 			sql = "SELECT COUNT(" + _txHash + ") AS nums FROM " + _tableName + ";";
 
-			sqlite3_stmt *stmt;
+			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}", sql);
 				return 0;
@@ -147,6 +147,29 @@ namespace Elastos {
 			}
 
 			return count;
+		}
+
+		time_t TransactionNormal::GetEarliestTxnTimestamp() const {
+			time_t timestamp = 0;
+			std::string sql;
+			sql = "SELECT " + _timestamp + " FROM " + _tableName + " ORDER BY " + _timestamp + " ASC LIMIT 1;";
+
+			sqlite3_stmt *stmt = NULL;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return timestamp;
+			}
+
+			while (SQLITE_ROW == _sqlite->Step(stmt)) {
+				timestamp = _sqlite->ColumnInt(stmt, 0);
+			}
+
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Tx get all finalize");
+				return timestamp;
+			}
+
+			return timestamp;
 		}
 
 		TransactionPtr TransactionNormal::Get(const uint256 &hash, const std::string &chainID) const {
@@ -165,7 +188,7 @@ namespace Elastos {
 				  _iso +
 				  " FROM " + _tableName + " WHERE " + _blockHeight + " >= ?;";
 
-			sqlite3_stmt *stmt;
+			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}", sql);
 				return txns;
@@ -197,7 +220,7 @@ namespace Elastos {
 				  _iso +
 				  " FROM " + _tableName + ";";
 
-			sqlite3_stmt *stmt;
+			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}", sql);
 				return txns;
@@ -231,7 +254,7 @@ namespace Elastos {
 				  _iso +
 				  " FROM " + _tableName + " ORDER BY " + _blockHeight + order + "LIMIT ? OFFSET ?;";
 
-			sqlite3_stmt *stmt;
+			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}", sql);
 				return txns;
@@ -267,7 +290,7 @@ namespace Elastos {
 				  " FROM " + _tableName + "," + utxoTableName + " WHERE " +
 				  _tableName + "." + _txHash + " = " + utxoTableName + "." + utxoTxHashColumnName + ";";
 
-			sqlite3_stmt *stmt;
+			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}", sql);
 				return {};
@@ -320,7 +343,7 @@ namespace Elastos {
 				  " FROM " + _tableName +
 				  " WHERE " + _txHash + " = ?;";
 
-			sqlite3_stmt *stmt;
+			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}", sql);
 				return nullptr;
@@ -381,7 +404,7 @@ namespace Elastos {
 
 			sql = "SELECT " + _txHash + " FROM " + _tableName + " WHERE " + _txHash + " = ?;";
 
-			sqlite3_stmt *stmt;
+			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}" + sql);
 				return false;
@@ -413,7 +436,7 @@ namespace Elastos {
 				  _timestamp + " = ? " +
 				  " WHERE " + _txHash + " = ?;";
 
-			sqlite3_stmt *stmt;
+			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}", sql);
 				return false;
@@ -452,7 +475,7 @@ namespace Elastos {
 
 			sql = "DELETE FROM " + _tableName + " WHERE " + _txHash + " = ?;";
 
-			sqlite3_stmt *stmt;
+			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
 				Log::error("prepare sql: {}", sql);
 				return false;

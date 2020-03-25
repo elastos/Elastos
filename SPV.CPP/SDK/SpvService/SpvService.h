@@ -18,7 +18,6 @@ namespace Elastos {
 
 		class DatabaseManager;
 		class Transaction;
-		struct DIDEntity;
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
 		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;
@@ -42,6 +41,8 @@ namespace Elastos {
 			void SyncStop();
 
 			void ExecutorStop();
+
+			time_t GetFirstTxnTimestamp() const;
 
 			TransactionPtr GetTransaction(const uint256 &hash, const std::string &chainID);
 

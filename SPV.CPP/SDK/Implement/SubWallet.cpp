@@ -628,6 +628,10 @@ namespace Elastos {
 			_walletManager->DatabaseFlush();
 		}
 
+		time_t SubWallet::GetFirstTxnTimestamp() const {
+			return _walletManager->GetFirstTxnTimestamp();
+		}
+
 		bool SubWallet::SetFixedPeer(const std::string &address, uint16_t port) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("address: {}", address);

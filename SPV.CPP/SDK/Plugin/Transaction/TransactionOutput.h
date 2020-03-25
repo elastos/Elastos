@@ -16,7 +16,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class TransactionOutput {
+		class TransactionOutput : public JsonSerializer {
 
 		public:
 			enum Type {
@@ -70,9 +70,9 @@ namespace Elastos {
 
 			OutputPayloadPtr GeneratePayload(const Type &type);
 
-			nlohmann::json ToJson(uint8_t txVersion) const;
+			nlohmann::json ToJson() const;
 
-			void FromJson(const nlohmann::json &j, uint8_t txVersion);
+			void FromJson(const nlohmann::json &j);
 
 			size_t GetSize() const;
 

@@ -67,6 +67,8 @@ namespace Elastos {
 
 			void FlushData();
 
+			time_t GetFirstTxnTimestamp() const;
+
 			virtual const std::string &GetInfoChainID() const;
 
 		public: //implement ISubWallet

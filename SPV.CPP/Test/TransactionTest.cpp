@@ -159,6 +159,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 
 		Transaction tx = j;
 
+		tx.ResetHash();
 		uint256 hash = tx.GetHash();
 
 		REQUIRE(j["TxHash"] == hash.GetHex());

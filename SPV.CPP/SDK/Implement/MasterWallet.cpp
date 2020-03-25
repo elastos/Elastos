@@ -344,6 +344,23 @@ namespace Elastos {
 			ArgInfo("payPassword: *");
 			ErrorChecker::CheckPassword(backupPassword, "Backup");
 
+			std::vector<CoinInfoPtr> coinInfo = _account->SubWalletInfoList();
+			for (CoinInfoPtr &info : coinInfo) {
+				WalletMap::iterator it = _createdWallets.find(info->GetChainID());
+				if (it == _createdWallets.end())
+					continue;
+
+				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				if (subWallet == nullptr)
+					continue;
+
+				time_t timestamp = subWallet->GetFirstTxnTimestamp();
+				if (timestamp > 0)
+					info->SetEaliestPeerTime(timestamp);
+			}
+			_account->SetSubWalletInfoList(coinInfo);
+			_account->Save();
+
 			KeyStore keyStore = _account->ExportKeystore(payPassword);
 			nlohmann::json j = keyStore.Export(backupPassword, true);
 

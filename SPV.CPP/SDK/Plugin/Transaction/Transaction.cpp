@@ -581,13 +581,7 @@ namespace Elastos {
 			j["PayLoad"] = _payload->ToJson(_payloadVersion);
 			j["Attributes"] = _attributes;
 			j["Programs"] = _programs;
-
-			std::vector<nlohmann::json> outputsJson(_outputs.size());
-			for (size_t i = 0; i < _outputs.size(); ++i) {
-				outputsJson[i] = _outputs[i]->ToJson(_version);
-			}
-			j["Outputs"] = outputsJson;
-
+			j["Outputs"] = _outputs;
 			j["Fee"] = _fee;
 
 			return j;
@@ -617,13 +611,7 @@ namespace Elastos {
 
 				_attributes = j["Attributes"].get<AttributeArray>();
 				_programs = j["Programs"].get<ProgramArray>();
-				std::vector<nlohmann::json> outputsJson = j["Outputs"];
-				for (size_t i = 0; i < outputsJson.size(); ++i) {
-					OutputPtr output(new TransactionOutput());
-					output->FromJson(outputsJson[i], _version);
-					_outputs.push_back(output);
-				}
-
+				_outputs = j["Outputs"].get<OutputArray>();
 				_fee = j["Fee"].get<uint64_t>();
 
 				_txHash.SetHex(j["TxHash"].get<std::string>());
