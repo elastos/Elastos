@@ -291,13 +291,14 @@ func (c *Committee) changeCommittee(height uint32) {
 	}
 
 	c.resetCRCCommitteeUsedAmount(height)
+	c.resetProposalHashesSet(height)
 }
 
 func (c *Committee) createAppropriationTransaction(height uint32) {
 	if c.createCRCAppropriationTx != nil && height == c.getHeight() {
 		tx, err := c.createCRCAppropriationTx()
 		if err != nil {
-			log.Error("create appropriation tx failed")
+			log.Error("create appropriation tx failed:", err.Error())
 			return
 		} else if tx == nil {
 			log.Info("no need to create appropriation")
@@ -347,6 +348,15 @@ func (c *Committee) resetCRCCommitteeUsedAmount(height uint32) {
 		c.CRCCommitteeUsedAmount = oriUsedAmount
 	})
 
+}
+
+func (c *Committee) resetProposalHashesSet(height uint32) {
+	oriHashesSet := c.manager.ProposalHashes
+	c.lastHistory.Append(height, func() {
+		c.manager.ProposalHashes = make(map[common.Uint168]ProposalHashSet)
+	}, func() {
+		c.manager.ProposalHashes = oriHashesSet
+	})
 }
 
 func (c *Committee) recordCurrentStageAmount(height uint32) {
