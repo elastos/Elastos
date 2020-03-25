@@ -2480,7 +2480,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
 
-	tenureHeight := config.DefaultParams.CRCommitteeStartHeight
+	tenureHeight := config.DefaultParams.CRCommitteeStartHeight + 1
 	nickName1 := "nickname 1"
 
 	member1 := s.getCRMember(publicKeyStr1, privateKeyStr1, nickName1)
@@ -2489,6 +2489,8 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	s.Chain.crCommittee.Members = memebers
 	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(100 * 1e8)
 	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(100 * 1e8)
+	s.Chain.crCommittee.InElectionPeriod = true
+	s.Chain.crCommittee.NeedAppropriation = false
 
 	// ok
 	txn := s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
@@ -2498,11 +2500,12 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	// register cr proposal in voting period
 	tenureHeight = config.DefaultParams.CRCommitteeStartHeight +
 		config.DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
-	txn.Payload.(*payload.CRCProposal).Recipient = common.Uint168{}
+	s.Chain.crCommittee.InElectionPeriod = false
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "cr proposal tx must during election period")
 
 	// recipient is empty
+	s.Chain.crCommittee.InElectionPeriod = true
 	tenureHeight = config.DefaultParams.CRCommitteeStartHeight
 	txn.Payload.(*payload.CRCProposal).Recipient = common.Uint168{}
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
