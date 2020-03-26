@@ -1493,9 +1493,8 @@ public class DIDStore: NSObject {
         guard re >= 0 else {
             throw DIDError.didStoreError("sign error.")
         }
-        let jsonStr: String = String(cString: csig)
-        let endIndex = jsonStr.index(jsonStr.startIndex, offsetBy: re)
-        let sig = String(jsonStr[jsonStr.startIndex..<endIndex])
+        csig[re] = 0
+        let sig: String = String(cString: csig)
         return sig
     }
 

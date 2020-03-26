@@ -17,8 +17,8 @@ class TestDataGenerator: XCTestCase {
         store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", adapter: adapter)
         try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
 
-        let mnemonic: String = try Mnemonic.generate("0")
-        try store.initializePrivateIdentity(using: "0", mnemonic: mnemonic, passPhrase: passphrase, storePassword: storePass, true)
+        let mnemonic: String = try Mnemonic.generate(Mnemonic.ENGLISH)
+        try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passPhrase: passphrase, storePassword: storePass, true)
         outputDir = tempDir + "/" + "DIDTestFiles"
         
         return mnemonic
@@ -49,7 +49,7 @@ class TestDataGenerator: XCTestCase {
         
         let id: DIDURL = issuer.defaultPublicKey
         let sk: String = try store.loadPrivateKey(for: issuer.subject, byId: id)
-        let data: Data = try DIDStore.decryptFromBase64(storePass, sk)
+        let data: Data = try DIDStore.decryptFromBase64(sk, storePass)
         let binSk: [UInt8] = [UInt8](data)
         writeTo("issuer." + id.fragment! + ".sk", Base58.base58FromBytes(binSk))
         
@@ -118,7 +118,7 @@ class TestDataGenerator: XCTestCase {
         
         var id = test.defaultPublicKey
         let sk = try store.loadPrivateKey(for: test.subject, byId: id)
-        let data: Data = try DIDStore.decryptFromBase64(storePass, sk)
+        let data: Data = try DIDStore.decryptFromBase64(sk, storePass)
         let binSk = [UInt8](data)
         writeTo("document." + id.fragment! + ".sk", Base58.base58FromBytes(binSk))
         
@@ -159,10 +159,12 @@ class TestDataGenerator: XCTestCase {
         // Passport credential
         id = try DIDURL(test.subject, "passport")
         print("Generate credential:  \(id)...")
+
+        cb = selfIssuer.editingVerifiableCredentialFor(did: doc.subject)
         props = [: ]
         props["nation"] = "Singapore"
         props["passport"] = "S653258Z07"
-        
+
         let vcPassport = try cb.withId("passport")
             .withTypes("BasicProfileCredential", "SelfProclaimedCredential")
             .withProperties(props)
@@ -181,7 +183,8 @@ class TestDataGenerator: XCTestCase {
         // Twitter credential
         id = try DIDURL(test.subject, "twitter")
         print("Generate credential:  \(id)...")
-        
+
+        cb = kycIssuer.editingVerifiableCredentialFor(did: doc.subject)
         props = [: ]
         props["twitter"] = "@john"
         let vcTwitter = try cb.withId("twitter")
