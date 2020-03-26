@@ -74,8 +74,8 @@ ExternalProject_Add(
 	boost
 
 	PREFIX ${PROJECT_DEPS_BUILD_PREFIX}
-	URL "https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.bz2"
-	URL_HASH SHA256=8f32d4617390d1c2d16f26a27ab60d97807b35440d45891fa340fc2648b04406
+	URL "https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.bz2"
+	URL_HASH SHA256=59c9b274bc451cf91a9ba1dd2c7fdcaf5d60b1b3aa83f2c9fa143417cc660722
 	DOWNLOAD_DIR ${PROJECT_DEPS_TARBALL_DIR}
 	DOWNLOAD_NO_PROGRESS 1
 	BUILD_IN_SOURCE 1

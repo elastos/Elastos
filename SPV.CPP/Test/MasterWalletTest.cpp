@@ -123,6 +123,8 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 
 	std::vector<std::string> chainIDs = masterWallet->GetSupportedChains();
 	for (int i = 0; i < chainIDs.size(); ++i) {
+		if (chainIDs[i] == CHAINID_ESC)
+			continue;
 		subWallet = masterWallet->CreateSubWallet(chainIDs[i]);
 		REQUIRE(subWallet != nullptr);
 	}
