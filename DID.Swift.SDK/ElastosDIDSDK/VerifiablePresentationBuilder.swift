@@ -24,7 +24,7 @@ public class VerifiablePresentationBuilder {
 
         for credential in credentials {
             // Presentation should be signed by the subject of Credentials
-            guard credential.subject.did != self._signer.subject else {
+            guard credential.subject.did == self._signer.subject else {
                 throw DIDError.illegalArgument(
                     "Credential \(credential.getId()) not match with requested id")
             }

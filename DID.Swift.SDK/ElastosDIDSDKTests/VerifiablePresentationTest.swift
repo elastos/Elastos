@@ -43,13 +43,13 @@ class VerifiablePresentationTest: XCTestCase {
     func testBuild() {
         do {
             let testData = TestData()
-            let store = try testData.setupStore(true)
+            let store = try! testData.setupStore(true)
             // For integrity check
-            _ = try testData.loadTestIssuer()
-            let testDoc = try testData.loadTestDocument()
+            _ = try! testData.loadTestIssuer()
+            let testDoc = try! testData.loadTestDocument()
             
-            let pb = try VerifiablePresentation.editingVerifiablePresentation(for: testDoc.subject, using: store)
-            let vp = try pb.withCredentials(testData.loadProfileCredential()!,
+            let pb = try! VerifiablePresentation.editingVerifiablePresentation(for: testDoc.subject, using: store)
+            let vp = try! pb.withCredentials(testData.loadProfileCredential()!,
                                             testData.loadEmailCredential(),
                                             testData.loadTwitterCredential(),
                                             testData.loadPassportCredential()!)
@@ -69,11 +69,12 @@ class VerifiablePresentationTest: XCTestCase {
                 XCTAssertTrue(re)
             }
             
-            XCTAssertNotNil(try vp.credential(ofId: DIDURL(vp.signer, "profile")))
-            XCTAssertNotNil(try vp.credential(ofId: DIDURL(vp.signer, "email")))
-            XCTAssertNotNil(try vp.credential(ofId: DIDURL(vp.signer, "twitter")))
-            XCTAssertNotNil(try vp.credential(ofId: DIDURL(vp.signer, "passport")))
-            XCTAssertNil(try vp.credential(ofId: DIDURL(vp.signer, "notExist")))
+            XCTAssertNotNil(try! vp.credential(ofId: DIDURL(vp.signer, "profile")))
+            XCTAssertNotNil(try! vp.credential(ofId: DIDURL(vp.signer, "email")))
+            XCTAssertNotNil(try! vp.credential(ofId: DIDURL(vp.signer, "twitter")))
+            XCTAssertNotNil(try! vp.credential(ofId: DIDURL(vp.signer, "passport")))
+            let re = try vp.credential(ofId: DIDURL(vp.signer, "notExist"))
+            XCTAssertNil(re)
 
             XCTAssertTrue(vp.isGenuine)
             XCTAssertTrue(vp.isValid)

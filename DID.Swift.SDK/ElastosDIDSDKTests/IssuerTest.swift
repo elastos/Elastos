@@ -46,19 +46,19 @@ class IssuerTest: XCTestCase {
             
             issuerDoc = try db.sealed(using: storePass)
             XCTAssertTrue(issuerDoc.isValid)
-            
-            let issuer = try VerifiableCredentialIssuer(issuerDoc, signKey)
-            XCTAssertEqual(issuer.did, issuer.did)
-        } catch {
-            if error is DIDError {
-                let err = error as! DIDError
-                switch err {
-                case  DIDError.notFoundError("No private key."):
+
+            let doc = issuerDoc
+            XCTAssertThrowsError(try VerifiableCredentialIssuer(doc, signKey)) { (error) in
+                switch error {
+                case DIDError.illegalArgument:
+                //everything is fine
                     XCTAssertTrue(true)
                 default:
-                    XCTFail()
+                    XCTFail("Unexpected error thrown")
                 }
             }
+        } catch {
+            XCTFail()
         }
     }
     
@@ -69,19 +69,19 @@ class IssuerTest: XCTestCase {
             
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             let signKey: DIDURL = try DIDURL(issuerDoc.subject, "recovery")
-            let issuer = try VerifiableCredentialIssuer(issuerDoc, signKey)
-            XCTAssertEqual(issuer.did, issuer.did)
-        }
-        catch {
-            if error is DIDError {
-                let err = error as! DIDError
-                switch err {
-                case  DIDError.notFoundError("No private key."):
+            let doc = issuerDoc
+            XCTAssertThrowsError(try VerifiableCredentialIssuer(doc, signKey)) { (error) in
+                switch error {
+                case DIDError.illegalArgument:
+                //everything is fine
                     XCTAssertTrue(true)
                 default:
-                    XCTFail()
+                    XCTFail("Unexpected error thrown")
                 }
             }
+        }
+        catch {
+            XCTFail()
         }
     }
     

@@ -33,7 +33,7 @@ class TestData: XCTestCase {
     private var jsonVc: VerifiableCredential?
     private var jsonVcCompactJson: String?
     private var jsonVcNormalizedJson: String?
-
+    var adapter: DIDAdapter?
     let verbose: Bool = true
     
     private var store: DIDStore!
@@ -43,8 +43,6 @@ class TestData: XCTestCase {
     }
         
     public func setupStore(_ dummyBackend: Bool) throws -> DIDStore {
-        var adapter: DIDAdapter = DummyAdapter()
-        
         if dummyBackend {
             if TestData.dummyAdapter == nil {
                 TestData.dummyAdapter = DummyAdapter(verbose)
@@ -66,7 +64,7 @@ class TestData: XCTestCase {
         }
         try ResolverCache.reset()
         TestData.deleteFile(storeRoot)
-        store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", adapter: adapter)
+        store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", adapter: adapter!)
         return store
     }
     

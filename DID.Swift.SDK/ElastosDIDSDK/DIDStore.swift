@@ -64,7 +64,7 @@ public class DIDStore: NSObject {
         return try openStore(atPath, withType, CACHE_INITIAL_CAPACITY, CACHE_MAX_CAPACITY, adapter)
     }
     
-    public func containsPrivateIdentity() throws -> Bool {
+    public func containsPrivateIdentity() -> Bool {
         return storage.containsPrivateIdentity()
     }
 
@@ -1185,19 +1185,27 @@ public class DIDStore: NSObject {
     }
 
     public func loadDid(_ did: DID) throws -> DIDDocument {
-        var doc = documentCache!.getValue(for: did)
-        if doc != nil {
-            return doc!
-        }
-        
-        doc = try storage.loadDid(did)
-        if (doc != nil) {
-            let meta = try? storage.loadDidMeta(did)
-            if meta != nil {
-                doc!.setMeta(meta!)
-                doc!.getMeta().setStore(self)
-                documentCache?.setValue(doc!, for: doc!.subject)
+        var doc: DIDDocument?
+        if documentCache != nil {
+            doc = documentCache!.getValue(for: did)
+            if doc != nil {
+                return doc!
             }
+        }
+
+        doc = try? storage.loadDid(did)
+        guard doc != nil else {
+            throw DIDError.notFoundError()
+        }
+
+        var meta = try? storage.loadDidMeta(did)
+        if meta == nil {
+            meta = DIDMeta()
+        }
+        doc!.setMeta(meta!)
+        doc!.getMeta().setStore(self)
+        if documentCache != nil {
+            documentCache!.setValue(doc!, for: doc!.subject)
         }
         return doc!
     }
@@ -1294,7 +1302,20 @@ public class DIDStore: NSObject {
     }
 
     public func loadCredential(for did: DID, byId: DIDURL) throws -> VerifiableCredential? {
-        return try storage.loadCredential(did, byId)
+        var vc: VerifiableCredential?
+        if credentialCache != nil {
+            vc = credentialCache?.getValue(for: byId)
+            if vc != nil {
+                return vc
+            }
+        }
+
+        vc = try? storage.loadCredential(did, byId)
+        if vc != nil && credentialCache != nil {
+            credentialCache?.setValue(vc!, for: vc!.getId())
+        }
+
+        return vc
     }
     
     public func loadCredential(for did: String, byId: String) throws -> VerifiableCredential? {

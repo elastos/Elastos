@@ -250,8 +250,16 @@ public class VerifiablePresentation {
         // verifiable credentials
         generator.writeFieldName(Constants.VERIFIABLE_CREDENTIAL)
         generator.writeStartArray()
-        for credential in self._verifiableCredentials.values {
-            credential.toJson(generator, nil, true)
+
+        let sortedKeys = self._verifiableCredentials.keys.sorted { (a, b) -> Bool in
+            let aStr = a.toString()
+            let bStr = b.toString()
+            return aStr.compare(bStr) == ComparisonResult.orderedAscending
+        }
+
+        for key in sortedKeys {
+            let credential = self._verifiableCredentials[key]
+            credential!.toJson(generator, nil, true)
         }
         generator.writeEndArray()
 

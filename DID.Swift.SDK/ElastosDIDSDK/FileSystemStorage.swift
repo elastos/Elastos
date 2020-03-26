@@ -108,7 +108,7 @@ public class FileSystemStorage: DIDStorage {
 
         // Check 'META_FILE' file size is equal to STORE_META_FILE.
         let data = file.readDataToEndOfFile()
-        guard data.count != FileSystemStorage.STORE_META_SIZE else {
+        guard data.count == FileSystemStorage.STORE_META_SIZE else {
             throw DIDError.didStoreError("Directory \(_rootPath) is not DIDStore directory")
         }
 
@@ -116,8 +116,15 @@ public class FileSystemStorage: DIDStorage {
         guard data[0...3].elementsEqual(FileSystemStorage.STORE_MAGIC) else {
             throw DIDError.didStoreError("Directory \(_rootPath) is not DIDStore file")
         }
-        
-        guard (String(data: data[4...7], encoding: .utf8))!.elementsEqual(String(FileSystemStorage.STORE_VERSION)) else {
+
+
+        let array : [UInt8] = [UInt8](data[4...7])
+        var value : UInt32 = 0
+        let storeVersion = NSData(bytes: array, length: 4)
+        storeVersion.getBytes(&value, length: 4)
+        value = UInt32(bigEndian: value)
+
+        guard value == FileSystemStorage.STORE_VERSION else {
             throw DIDError.didStoreError("Directory \(_rootPath) unsupported version.")
         }
 
@@ -459,7 +466,7 @@ public class FileSystemStorage: DIDStorage {
 
     func deleteDid(_ did: DID) -> Bool {
         do {
-            let path = Constants.DID_DIR + did.methodSpecificId
+            let path = _rootPath + "/" + Constants.DID_DIR + "/" + did.methodSpecificId
             try FileManager.default.removeItem(atPath: path)
             return true
         } catch {

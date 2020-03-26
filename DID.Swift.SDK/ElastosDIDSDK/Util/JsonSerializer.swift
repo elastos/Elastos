@@ -54,6 +54,9 @@ class JsonSerializer {
 
         guard let _ = child else {
             if options.optional {
+                if options.refValue == nil {
+                    throw options.error("missing \(options.hint)")
+                }
                 return options.refValue as! DID
             } else {
                 throw options.error("missing \(options.hint)")

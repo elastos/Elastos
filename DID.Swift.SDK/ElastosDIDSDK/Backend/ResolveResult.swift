@@ -1,7 +1,7 @@
 import Foundation
 
 public class ResolveResult {
-    private var _did: DID
+    private var _did: DID!
     private var _status: ResolveResultStatus
     private var _idtransactionInfos: [IDTransactionInfo] = []
     

@@ -214,6 +214,14 @@ public class JsonNode {
         return self.node as? Int
     }
 
+    public func asNumber() -> Any? {
+        return self.node
+    }
+
+    public func asBool() -> Bool? {
+        return self.node as? Bool
+    }
+
     public func asArray() -> [JsonNode]? {
         return self.node as? Array
     }
@@ -230,11 +238,13 @@ public class JsonNode {
             return JsonNodeType.DICTIONARY
         } else if self.node is String {
             return JsonNodeType.STRING
+        }  else if self.node is Bool {
+            return JsonNodeType.BOOLEAN
         } else if self.node is Int {
             return JsonNodeType.NUMBER
         } else if self.node is Float {
             return JsonNodeType.NUMBER
-        } else {
+        }else {
             return JsonNodeType.NIL
         }
     }

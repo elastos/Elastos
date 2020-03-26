@@ -241,7 +241,7 @@ public class VerifiableCredential: DIDObject {
             return false
         }
         // Unsupported public key type;
-        guard proof.type != Constants.DEFAULT_PUBLICKEY_TYPE else {
+        guard proof.type == Constants.DEFAULT_PUBLICKEY_TYPE else {
             return false
         }
 
@@ -253,7 +253,10 @@ public class VerifiableCredential: DIDObject {
 
     public var isGenuine: Bool {
         do {
-            return try !traceCheck(RULE_GENUINE) ? checkGenuine(): false
+            if try !traceCheck(RULE_GENUINE) {
+                return false
+            }
+            return try checkGenuine()
         } catch {
             return false
         }
@@ -265,7 +268,10 @@ public class VerifiableCredential: DIDObject {
 
     public var isValid: Bool {
         do {
-            return try !traceCheck(RULE_VALID) ? !checkExpired() && checkGenuine() : false
+            if try !traceCheck(RULE_VALID) {
+                return false
+            }
+            return try !checkExpired() && checkGenuine()
         } catch {
             return false
         }
@@ -320,26 +326,14 @@ public class VerifiableCredential: DIDObject {
         }
 
         options = JsonSerializer.Options()
-                                .withOptional()
-                                .withRef(ref)
-                                .withHint("credential issuer")
-                                .withError(error)
-        let issuer = try serializer.getDID(Constants.ISSUER, options)
-
-        options = JsonSerializer.Options()
-                                .withHint("credential issuanceDate")
-                                .withError(error)
-        let issuanceDate = try serializer.getDate(Constants.ISSUANCE_DATE, options)
-
-        options = JsonSerializer.Options()
-                                .withHint("credential expirationDate")
-                                .withError(error)
+            .withHint("credential expirationDate")
+            .withError(error)
         let expirationDate = try serializer.getDate(Constants.EXPIRATION_DATE, options)
 
         options = JsonSerializer.Options()
-                                .withRef(ref)
-                                .withHint("credential id")
-                                .withError(error)
+            .withRef(ref)
+            .withHint("credential id")
+            .withError(error)
         let id = try serializer.getDIDURL(Constants.ID, options)
 
         var subNode = node.get(forKey: Constants.CREDENTIAL_SUBJECT)
@@ -352,9 +346,26 @@ public class VerifiableCredential: DIDObject {
         guard let _ = subNode else {
             throw DIDError.malformedCredential("missing credential proof")
         }
+
+        options = JsonSerializer.Options()
+            .withOptional()
+            .withHint("credential issuer")
+            .withError(error)
+        if ref != nil {
+            options.withRef(ref)
+        }
+        var issuer = try? serializer.getDID(Constants.ISSUER, options)
+        options = JsonSerializer.Options()
+            .withHint("credential issuanceDate")
+            .withError(error)
+        let issuanceDate = try serializer.getDate(Constants.ISSUANCE_DATE, options)
+
+        if issuer == nil {
+            issuer = subject.did
+        }
         let proof = try VerifiableCredentialProof.fromJson(subNode!, issuer)
 
-        setIssuer(issuer)
+        setIssuer(issuer!)
         setIssuanceDate(issuanceDate)
         setExpirationDate(expirationDate)
         setSubject(subject)
@@ -461,7 +472,7 @@ public class VerifiableCredential: DIDObject {
 
     func toJson(_ normalized: Bool, _ forSign: Bool) -> String {
         let generator = JsonGenerator()
-        toJson(generator, nil, forSign)
+        toJson(generator, nil, normalized, forSign)
         return generator.toString()
     }
 }

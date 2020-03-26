@@ -8,7 +8,6 @@ final class LRUCache<Key: Hashable, Value> {
 
     private let list = DoubleLinkedList<CachePayload>()
     private var nodesDict = [Key: DoubleLinkedListNode<CachePayload>]()
-    private let dispatchQueue = DispatchQueue(label: "com.elastos.LRUCache.queue", attributes: .concurrent)
 
     private let initCapacity: Int
     private let maxCapacity: Int
@@ -24,22 +23,20 @@ final class LRUCache<Key: Hashable, Value> {
     }
 
     func setValue(_ value: Value, for key: Key) {
-        dispatchQueue.async(flags: .barrier) { [weak self] in
-            let payload = CachePayload(key: key, value: value)
+        let payload = CachePayload(key: key, value: value)
 
-            if let node = self!.nodesDict[key] {
-                node.payload = payload
-                self!.list.moveToHead(node)
-            } else {
-                let node = self!.list.addHead(payload)
-                self!.nodesDict[key] = node
-            }
+        if let node = self.nodesDict[key] {
+            node.payload = payload
+            self.list.moveToHead(node)
+        } else {
+            let node = self.list.addHead(payload)
+            self.nodesDict[key] = node
+        }
 
-            if self!.list.count > self!.maxCapacity {
-                let nodeRemoved = self!.list.removeLast()
-                if let key = nodeRemoved?.payload.key {
-                    self!.nodesDict[key] = nil
-                }
+        if self.list.count > self.maxCapacity {
+            let nodeRemoved = self.list.removeLast()
+            if let key = nodeRemoved?.payload.key {
+                self.nodesDict[key] = nil
             }
         }
     }
@@ -59,10 +56,8 @@ final class LRUCache<Key: Hashable, Value> {
     }
     
     func clear() {
-        dispatchQueue.async(flags: .barrier) { [weak self] in
-            self!.list.clear()
-            self!.nodesDict.removeAll()
-        }
+        self.list.clear()
+        self.nodesDict.removeAll()
     }
 }
 

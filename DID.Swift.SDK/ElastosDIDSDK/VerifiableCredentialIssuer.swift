@@ -4,7 +4,7 @@ public class VerifiableCredentialIssuer {
     private var _issuerDoc: DIDDocument
     private var _signKey: DIDURL
 
-    private init(_ doc: DIDDocument, _ signKey: DIDURL? = nil) throws {
+    private init(doc: DIDDocument, signKey: DIDURL?) throws {
         // use the default public key if no signKey provided.
         var key = signKey
         if  key == nil {
@@ -26,30 +26,30 @@ public class VerifiableCredentialIssuer {
         self._signKey = key!
     }
 
-    private convenience init(_ did: DID, signKey: DIDURL?=nil, _ store: DIDStore) throws {
+    private convenience init(_ did: DID, signKey: DIDURL? , _ store: DIDStore) throws {
         let doc: DIDDocument
         do {
             doc = try store.loadDid(did)
         } catch {
             throw DIDError.didResolveError("Can not resolve did")
         }
-        try self.init(doc, signKey)
+        try self.init(doc: doc, signKey: signKey)
     }
 
     public convenience init(_ doc: DIDDocument, _ signKey: DIDURL) throws {
-        try self.init(doc, signKey)
+        try self.init(doc: doc, signKey: signKey)
     }
 
     public convenience init(_ doc: DIDDocument) throws {
-        try self.init(doc)
+        try self.init(doc: doc, signKey: nil)
     }
 
     public convenience init(_ did: DID, _ signKey: DIDURL, _ store: DIDStore) throws {
-        try self.init(did, signKey, store)
+        try self.init(did, signKey: signKey, store)
     }
 
     public convenience init(_ did: DID, _ store: DIDStore) throws {
-        try self.init(did, store)
+        try self.init(did, signKey: nil, store)
     }
 
     public var did: DID {
