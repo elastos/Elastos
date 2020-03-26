@@ -11,59 +11,26 @@ public class Mnemonic {
     public static let KOREAN = "Korean";
     public static let SPANISH = "Spanish";
 
-    enum Language: Int {
-        case LANGUAGE_ENGLISH = 0
-        case LANGUAGE_FRENCH = 1
-        case LANGUAGE_SPANISH = 2
-        case LANGUAGE_JAPANESE = 3
-        case LANGUAGE_CHINESE_SIMPLIFIED = 4
-        case LANGUAGE_CHINESE_TRADITIONAL = 5
-
-        static func valueOf(_ str: String) -> Language? {
-            let language: Language?
-
-            switch str.lowercased() {
-            case Mnemonic.ENGLISH:
-                language = .LANGUAGE_ENGLISH
-
-            case Mnemonic.FRENCH:
-                language = .LANGUAGE_FRENCH
-
-            case Mnemonic.SPANISH:
-                language = .LANGUAGE_SPANISH
-
-            case Mnemonic.JAPANESE:
-                language = .LANGUAGE_JAPANESE
-
-            case Mnemonic.CHINESE_SIMPLIFIED:
-                language = .LANGUAGE_CHINESE_SIMPLIFIED
-
-            case Mnemonic.CHINESE_TRADITIONAL:
-                language = .LANGUAGE_CHINESE_TRADITIONAL
-
-            default:
-                language = nil
-            }
-            return language
-        }
-    }
-
     public class func generate(_ language: String) throws -> String {
-        return String(cString: HDKey_GenerateMnemonic(language.toUnsafePointerInt8()!))
+        let result = language.withCString { (clanuage) in
+            return HDKey_GenerateMnemonic(clanuage)
+        }
+        guard let _ = result else {
+            throw DIDError.illegalArgument()
+        }
+
+        return String(cString: result!)
     }
     
     public class func isValid(_ language: String, _ mnemonic: String) throws -> Bool {
-        guard !language.isEmpty else {
-            throw DIDError.illegalArgument()
-        }
-        guard !mnemonic.isEmpty else {
+        guard !language.isEmpty, !mnemonic.isEmpty else {
             throw DIDError.illegalArgument()
         }
 
-        return HDKey_MnemonicIsValid(mnemonic.toUnsafePointerInt8()!, language.toUnsafePointerInt8()!)
-    }
-
-    class func getLanguageId(_ language: String) -> Int {
-        return Language.valueOf(language)?.rawValue ?? -1
+        return language.withCString { (clang) in
+            return mnemonic.withCString { (cmnemonic) in
+                return HDKey_MnemonicIsValid(cmnemonic, clang)
+            }
+        }
     }
 }
