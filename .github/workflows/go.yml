@@ -24,3 +24,12 @@ jobs:
 
     - name: Test
       run: go test `go list ./... | grep -v benchmark` -short
+
+    - name: Check code quality
+      run: |
+        export PATH=$PATH:$(go env GOPATH)/bin
+        go get -u github.com/mgechev/revive
+        revive -config .revive.toml -formatter friendly -exclude vendor/... $(go list ./...)
+
+    - name: Make
+      run: make all
