@@ -2,9 +2,12 @@ import Foundation
 import PromiseKit
 
 public class DID {
-    private var _method: String? // TODO:
-    private var _methodSpecificId: String? // TODO:
-    private var _meta: DIDMeta!
+    private static let TAG = "DID"
+
+    private var _method: String?
+    private var _methodSpecificId: String?
+    private var _meta: DIDMeta?
+
     public static let METHOD: String = "elastos"
 
     init() {}
@@ -16,12 +19,13 @@ public class DID {
 
     public init(_ did: String) throws {
         guard !did.isEmpty else {
-            throw DIDError.illegalArgument()
+            throw DIDError.illegalArgument("empty did string")
         }
 
         do {
             try ParserHelper.parse(did, true, DID.Listener(self))
         } catch {
+            Log.e(DID.TAG, "Parsing did error: malformed did string \(did)")
             throw DIDError.malformedDID(did)
         }
     }
@@ -101,8 +105,7 @@ public class DID {
     }
 
     public func resolve(_ force: Bool) throws -> DIDDocument {
-        let doc: DIDDocument?
-        doc = try DIDBackend.resolve(self, force)
+        let doc = try DIDBackend.resolve(self, force)
         guard let _ = doc else {
             throw DIDError.notFoundError()
         }
@@ -152,7 +155,6 @@ extension DID: CustomStringConvertible {
 
 extension DID: Equatable {
     func equalsTo(_ other: DID) -> Bool {
-        // TODO:
         return aliasName == other.aliasName &&
                methodSpecificId == other.methodSpecificId
     }
@@ -190,7 +192,7 @@ extension DID {
             let method = ctx.getText()
             if (method != Constants.METHOD){
                 // can't throw , print...
-                print(DIDError.unknownFailure("Unknown method: \(method)"))
+                Log.e(DID.TAG, "unsupported method: \(method)")
             }
             self.did._method = Constants.METHOD
         }

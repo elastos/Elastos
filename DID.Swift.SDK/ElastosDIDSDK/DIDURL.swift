@@ -24,6 +24,8 @@ private func mapToString(_ dict: OrderedDictionary<String, String>?, _ sep: Stri
 }
 
 public class DIDURL {
+    private static let TAG = "DIDURL"
+
     private var _did: DID?
     private var _fragment: String?
 
@@ -32,17 +34,18 @@ public class DIDURL {
     private var _queryParameters: OrderedDictionary<String, String>?
     private var _meta: CredentialMeta?
 
-    public init(_ id: DID, _ fragment: String) throws {
-        guard !fragment.isEmpty else {
-            throw DIDError.illegalArgument()
+    public init(_ id: DID, _ url: String) throws {
+        guard !url.isEmpty else {
+            throw DIDError.illegalArgument("empty didurl string")
         }
 
-        var realFragment = fragment
-        if fragment.hasPrefix("did:") {
+        var fragment = url
+        if url.hasPrefix("did:") {
             do {
-                try ParserHelper.parse(fragment, false, DIDURL.Listener(self))
+                try ParserHelper.parse(url, false, DIDURL.Listener(self))
             } catch {
-                throw DIDError.malformedDIDURL(fragment)
+                Log.e(DIDURL.TAG, "Parsing didurl error: malformed didurl string \(url)")
+                throw DIDError.malformedDIDURL("malformed DIDURL \(url)")
             }
 
             guard did == id else {
@@ -51,13 +54,13 @@ public class DIDURL {
             return
         }
 
-        if fragment.hasPrefix("#") {
-            let starIndex = realFragment.index(realFragment.startIndex, offsetBy: 1)
-            let endIndex  = realFragment.index(starIndex, offsetBy: realFragment.count - 2)
-            realFragment  = String(realFragment[starIndex...endIndex])
+        if url.hasPrefix("#") {
+            let starIndex = fragment.index(fragment.startIndex, offsetBy: 1)
+            let endIndex  = fragment.index(starIndex, offsetBy: fragment.count - 2)
+            fragment  = String(fragment[starIndex...endIndex])
         }
         self._did = id
-        self._fragment = realFragment
+        self._fragment = fragment
     }
     
     public init(_ url: String) throws {
@@ -67,8 +70,9 @@ public class DIDURL {
 
         do {
             try ParserHelper.parse(url, false, DIDURL.Listener(self))
+            Log.e(DIDURL.TAG, "Parsing didurl error: malformed didurl string \(url)")
         } catch {
-            throw DIDError.malformedDIDURL("Malformed DIDURL \(url)")
+            throw DIDError.malformedDIDURL("malformed DIDURL \(url)")
         }
     }
 
@@ -215,7 +219,6 @@ extension DIDURL: CustomStringConvertible {
 
 extension DIDURL: Equatable {
     func equalsTo(_ other: DIDURL) -> Bool {
-        // TODO:
         return toString() == other.toString()
     }
 
@@ -275,7 +278,7 @@ extension DIDURL {
         override func exitParamMethod(_ ctx: DIDURLParser.ParamMethodContext) {
             let method = ctx.getText()
             if  method != Constants.METHOD {
-                print("Unknown parameter method: \(method)")
+                Log.e(DIDURL.TAG, "Unknown parameter method: \(method)")
             }
             self.didURL?.did.setMethod(method)
         }

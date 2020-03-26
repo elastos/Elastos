@@ -12,9 +12,14 @@ public class Mnemonic {
     public static let SPANISH = "Spanish";
 
     public class func generate(_ language: String) throws -> String {
+        guard language.isEmpty else {
+            throw DIDError.illegalArgument()
+        }
+
         let result = language.withCString { (clanuage) in
             return HDKey_GenerateMnemonic(clanuage)
         }
+
         guard let _ = result else {
             throw DIDError.illegalArgument()
         }
