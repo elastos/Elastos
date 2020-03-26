@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package pow
 
@@ -249,7 +249,7 @@ func (pow *Service) GenerateBlock(minerAddr string,
 	isHighPriority := func(tx *types.Transaction) bool {
 		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() ||
 			tx.IsSideChainPowTx() || tx.IsUpdateVersion() ||
-			tx.IsActivateProducerTx() {
+			tx.IsActivateProducerTx() || tx.IsCRCAppropriationTx() {
 			return true
 		}
 		return false
