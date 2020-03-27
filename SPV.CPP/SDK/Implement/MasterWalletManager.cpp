@@ -132,12 +132,11 @@ namespace Elastos {
 		}
 
 		void MasterWalletManager::LoadMasterWalletID() {
-			directory_iterator it{_dataPath};
-			while (it != directory_iterator{}) {
+			boost::filesystem::path rootpath(_dataPath);
+			for (directory_iterator it(rootpath); it != directory_iterator(); ++it) {
 
 				path temp = *it;
 				if (!exists(temp) || !is_directory(temp)) {
-					++it;
 					continue;
 				}
 
@@ -145,7 +144,6 @@ namespace Elastos {
 				if (exists((*it) / LOCAL_STORE_FILE) || exists((*it) / MASTER_WALLET_STORE_FILE)) {
 					_masterWalletMap[masterWalletID] = nullptr;
 				}
-				++it;
 			}
 		}
 
