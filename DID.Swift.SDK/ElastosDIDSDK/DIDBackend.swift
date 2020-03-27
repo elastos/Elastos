@@ -311,7 +311,7 @@ public class DIDBackend {
         semaphore.wait()
 
         if transResult.status != 0 {
-            throw DIDError.transactionError(
+            throw DIDError.didtransactionError(
                 "create transaction failed (\(transResult.status):)\(transResult.message ?? "")")
         }
 

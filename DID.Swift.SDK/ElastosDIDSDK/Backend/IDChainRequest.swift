@@ -102,13 +102,21 @@ class IDChainRequest: NSObject {
 
         if self._operation != .DEACTIVATE {
             let json = doc.toString()
-            let c_input = (json.toUnsafePointerUInt8())!
-            var pd = json + "\0"
-            pd = String(cString: pd.toUnsafePointerUInt8()!)
-            let c_payload = UnsafeMutablePointer<Int8>.allocate(capacity: pd.count * 3)
-            let re = base64_url_encode(c_payload, c_input, pd.count)
-            c_payload[re] = 0
-            self._payload = String(cString: c_payload)
+            let capacity = json.count * 3
+
+            let cPayload = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
+            memset(cPayload, 0, capacity)
+
+            var ref = json
+            let ssz = ref.withUTF8 { ptr in
+                return base64_url_encode(cPayload, ptr.baseAddress!, json.count)
+            }
+
+            guard ssz > 0 else {
+                throw DIDError.unknownFailure("base58 encoding error")
+            }
+
+            self._payload = String(cString: cPayload)
         } else {
             self._payload = doc.subject.toString()
         }
@@ -119,12 +127,23 @@ class IDChainRequest: NSObject {
     private func setPayload(_ payload: String) throws  -> IDChainRequest {
         do {
             if self._operation != .DEACTIVATE {
-                let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
-                let cp = payload.toUnsafePointerInt8()
-                let c = base64_url_decode(buffer, cp)
-                var json: String = String(cString: buffer)
-                let endIndex = json.index(json.startIndex, offsetBy: c)
+                let capacity = payload.count * 3
+                let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
+                memset(buffer, 0, capacity)
+
+                var ref = payload
+                let ssz = ref.withUTF8 { (ptr) in
+                    return base64_url_encode(buffer, ptr.baseAddress!, payload.count)
+                }
+
+                guard ssz > 0 else {
+                    throw DIDError.unknownFailure("base58 encoding error")
+                }
+
+                var json = String(cString: buffer)
+                let endIndex = json.index(json.startIndex, offsetBy: ssz)
                 json = String(json[json.startIndex..<endIndex])
+
                 self._doc = try DIDDocument.convertToDIDDocument(fromJson: json)
                 self._did = _doc!.subject
             } else {
@@ -132,7 +151,7 @@ class IDChainRequest: NSObject {
                 self._did = try DID(payload)
             }
         } catch {
-            throw DIDError.didResolveError("Parse playload error.")
+            throw DIDError.didtransactionError("Parse playload error.")
         }
 
         self._payload = payload

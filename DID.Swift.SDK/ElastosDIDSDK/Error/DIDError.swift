@@ -16,7 +16,7 @@ public enum DIDError: Error {
     case didResolveError(_ des: String? = nil)
     case didDeactivated (_ des: String? = nil)
     case didExpired     (_ des: String? = nil)
-    case transactionError(_ des: String? = nil)
+    case didtransactionError(_ des: String? = nil)
 
     case invalidState   (_ des: String? = nil)
 
@@ -54,7 +54,7 @@ extension DIDError {
         case .didExpired(let des):
             return des ?? "did was expired"
 
-        case .transactionError(let des):
+        case .didtransactionError(let des):
             return des ?? "did transaction failure"
 
         case .invalidState(let des):
