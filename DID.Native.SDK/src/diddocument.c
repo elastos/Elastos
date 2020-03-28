@@ -934,17 +934,7 @@ static int credential_copy(Credential *cred1, Credential *cred2)
     if (!DID_Copy(&cred1->subject.id, &cred2->subject.id))
         return -1;
 
-    cred1->subject.infos.properties = (Property*)calloc(cred2->subject.infos.size, sizeof(Property));
-    if (!cred1->subject.infos.properties)
-        return -1;
-
-    for (i = 0; i < cred2->subject.infos.size; i++) {
-        cred1->subject.infos.properties[i].key =
-                strdup(cred2->subject.infos.properties[i].key);
-        cred1->subject.infos.properties[i].value =
-                strdup(cred2->subject.infos.properties[i].value);
-    }
-    cred1->subject.infos.size = cred2->subject.infos.size;
+    cred1->subject.properties = cJSON_Duplicate(cred2->subject.properties, 1);
 
     memcpy(&cred1->proof, &cred2->proof, sizeof(CredentialProof));
     memcpy(&cred1->meta, &cred2->meta, sizeof(CredentialMeta));

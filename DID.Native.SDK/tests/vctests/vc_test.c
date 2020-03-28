@@ -153,8 +153,7 @@ static void test_vc_parse_selfclaimvc(void)
     CU_ASSERT_STRING_EQUAL(TestData_LoadProfileVcCompJson(), Credential_ToJson(cred, false));
 }
 
-//not support
-/*static void test_vc_parse_jsonvc(void)
+static void test_vc_parse_jsonvc(void)
 {
     const char *data;
     Credential *compactvc, *normvc, *cred;
@@ -179,7 +178,7 @@ static void test_vc_parse_selfclaimvc(void)
     CU_ASSERT_STRING_EQUAL(TestData_LoadVcCompJson(), Credential_ToJson(normvc, false));
     CU_ASSERT_STRING_EQUAL(TestData_LoadVcCompJson(), Credential_ToJson(compactvc, false));
     CU_ASSERT_STRING_EQUAL(TestData_LoadVcCompJson(), Credential_ToJson(cred, false));
-}*/
+}
 
 static int vc_test_suite_init(void)
 {
@@ -218,7 +217,7 @@ static CU_TestInfo cases[] = {
     { "test_vc_selfclaimvc",           test_vc_selfclaimvc          },
     { "test_vc_parse_kycvc",           test_vc_parse_kycvc          },
     { "test_vc_parse_selfclaimvc",     test_vc_parse_selfclaimvc    },
-    //{ "test_vc_parse_jsonvc",          test_vc_parse_jsonvc         },
+    { "test_vc_parse_jsonvc",          test_vc_parse_jsonvc         },
     { NULL,                            NULL                         }
 };
 

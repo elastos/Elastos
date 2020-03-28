@@ -39,6 +39,7 @@ static void test_issuer_issuevc(void)
     bool isEquals;
     ssize_t size;
     int rc;
+    const char* provalue;
 
     doc = TestData_LoadDoc();
     rc = DIDStore_StoreDID(store, doc, "credential doc");
@@ -90,13 +91,27 @@ static void test_issuer_issuevc(void)
     CU_ASSERT_TRUE(has_type(tmptypes, 2, "PhoneCredential"));
 
     CU_ASSERT_EQUAL(Credential_GetPropertyCount(vc), 7);
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "name"), "John");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "gender"), "Male");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "nation"), "Singapore");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "language"), "English");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "email"), "john@example.com");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "twitter"), "@john");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "phone"), "132780456");
+    provalue = Credential_GetProperty(vc, "name");
+    CU_ASSERT_STRING_EQUAL(provalue, "John");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "gender");
+    CU_ASSERT_STRING_EQUAL(provalue, "Male");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "nation");
+    CU_ASSERT_STRING_EQUAL(provalue, "Singapore");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "language");
+    CU_ASSERT_STRING_EQUAL(provalue, "English");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "email");
+    CU_ASSERT_STRING_EQUAL(provalue, "john@example.com");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "twitter");
+    CU_ASSERT_STRING_EQUAL(provalue, "@john");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "phone");
+    CU_ASSERT_STRING_EQUAL(provalue, "132780456");
+    free((char*)provalue);
 
     DIDURL_Destroy(credid);
     Credential_Destroy(vc);
@@ -111,6 +126,7 @@ static void test_issuer_issueselfvc(void)
     time_t expires;
     bool isEquals;
     ssize_t size;
+    const char* provalue;
 
     expires = DIDDocument_GetExpires(issuerdoc);
 
@@ -159,16 +175,87 @@ static void test_issuer_issueselfvc(void)
     CU_ASSERT_TRUE(has_type(tmptypes, 3, "SelfProclaimedCredential"));
 
     CU_ASSERT_EQUAL(Credential_GetPropertyCount(vc), 7);
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "name"), "John");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "gender"), "Male");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "nation"), "Singapore");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "language"), "English");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "email"), "john@example.com");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "twitter"), "@john");
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "phone"), "132780456");
+    provalue = Credential_GetProperty(vc, "name");
+    CU_ASSERT_STRING_EQUAL(provalue, "John");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "gender");
+    CU_ASSERT_STRING_EQUAL(provalue, "Male");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "nation");
+    CU_ASSERT_STRING_EQUAL(provalue, "Singapore");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "language");
+    CU_ASSERT_STRING_EQUAL(provalue, "English");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "email");
+    CU_ASSERT_STRING_EQUAL(provalue, "john@example.com");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "twitter");
+    CU_ASSERT_STRING_EQUAL(provalue, "@john");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "phone");
+    CU_ASSERT_STRING_EQUAL(provalue, "132780456");
+    free((char*)provalue);
 
     DIDURL_Destroy(credid);
     Credential_Destroy(vc);
+}
+
+static void test_issuer_issuerbystring(void)
+{
+    Credential *vc;
+    DIDURL *credid;
+    DID *vcdid;
+    time_t expires;
+    bool isEquals;
+    ssize_t size;
+    const char *provalue;
+
+    expires = DIDDocument_GetExpires(issuerdoc);
+
+    credid = DIDURL_NewByDid(issuerid, "mycredential");
+    CU_ASSERT_PTR_NOT_NULL(credid);
+
+    const char *types[] = {"BasicProfileCredential",
+            "SelfProclaimedCredential"};
+
+    const char *propdata = "{\"name\":\"Jay Holtslander\",\"alternateName\":\"Jason Holtslander\",\"booleanValue\":true,\"numberValue\":1234,\"doubleValue\":9.5,\"nationality\":\"Canadian\",\"birthPlace\":{\"type\":\"Place\",\"address\":{\"type\":\"PostalAddress\",\"addressLocality\":\"Vancouver\",\"addressRegion\":\"BC\",\"addressCountry\":\"Canada\"}},\"affiliation\":[{\"type\":\"Organization\",\"name\":\"Futurpreneur\",\"sameAs\":[\"https://twitter.com/futurpreneur\",\"https://www.facebook.com/futurpreneur/\",\"https://www.linkedin.com/company-beta/100369/\",\"https://www.youtube.com/user/CYBF\"]}],\"alumniOf\":[{\"type\":\"CollegeOrUniversity\",\"name\":\"Vancouver Film School\",\"sameAs\":\"https://en.wikipedia.org/wiki/Vancouver_Film_School\",\"year\":2000},{\"type\":\"CollegeOrUniversity\",\"name\":\"CodeCore Bootcamp\"}],\"gender\":\"Male\",\"Description\":\"Technologist\",\"disambiguatingDescription\":\"Co-founder of CodeCore Bootcamp\",\"jobTitle\":\"Technical Director\",\"worksFor\":[{\"type\":\"Organization\",\"name\":\"Skunkworks Creative Group Inc.\",\"sameAs\":[\"https://twitter.com/skunkworks_ca\",\"https://www.facebook.com/skunkworks.ca\",\"https://www.linkedin.com/company/skunkworks-creative-group-inc-\",\"https://plus.google.com/+SkunkworksCa\"]}],\"url\":\"https://jay.holtslander.ca\",\"image\":\"https://s.gravatar.com/avatar/961997eb7fd5c22b3e12fb3c8ca14e11?s=512&r=g\",\"address\":{\"type\":\"PostalAddress\",\"addressLocality\":\"Vancouver\",\"addressRegion\":\"BC\",\"addressCountry\":\"Canada\"},\"sameAs\":[\"https://twitter.com/j_holtslander\",\"https://pinterest.com/j_holtslander\",\"https://instagram.com/j_holtslander\",\"https://www.facebook.com/jay.holtslander\",\"https://ca.linkedin.com/in/holtslander/en\",\"https://plus.google.com/+JayHoltslander\",\"https://www.youtube.com/user/jasonh1234\",\"https://github.com/JayHoltslander\",\"https://profiles.wordpress.org/jasonh1234\",\"https://angel.co/j_holtslander\",\"https://www.foursquare.com/user/184843\",\"https://jholtslander.yelp.ca\",\"https://codepen.io/j_holtslander/\",\"https://stackoverflow.com/users/751570/jay\",\"https://dribbble.com/j_holtslander\",\"http://jasonh1234.deviantart.com/\",\"https://www.behance.net/j_holtslander\",\"https://www.flickr.com/people/jasonh1234/\",\"https://medium.com/@j_holtslander\"]}";    
+
+    vc = Issuer_CreateCredentialByString(issuer, issuerid, credid, types, 2,
+            propdata, expires, storepass);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(vc);
+    CU_ASSERT_FALSE(Credential_IsExpired(vc));
+    CU_ASSERT_TRUE(Credential_IsGenuine(vc));
+    CU_ASSERT_TRUE(Credential_IsValid(vc));
+
+    vcdid = DIDURL_GetDid(Credential_GetId(vc));
+    isEquals = DID_Equals(vcdid, issuerid);
+    CU_ASSERT_TRUE(isEquals);
+    isEquals = DID_Equals(Credential_GetOwner(vc), issuerid);
+    CU_ASSERT_TRUE(isEquals);
+    isEquals = DID_Equals(Credential_GetIssuer(vc), issuerid);
+    CU_ASSERT_TRUE(isEquals);
+
+    CU_ASSERT_EQUAL(Credential_GetTypeCount(vc), 2);
+    const char *tmptypes[2];
+    size = Credential_GetTypes(vc, tmptypes, 2);
+    CU_ASSERT_EQUAL(size, 2);
+    CU_ASSERT_TRUE(has_type(tmptypes, 2, "BasicProfileCredential"));
+    CU_ASSERT_TRUE(has_type(tmptypes, 2, "SelfProclaimedCredential"));
+    CU_ASSERT_FALSE(has_type(tmptypes, 2, "PhoneCredential"));
+
+    provalue = Credential_GetProperty(vc, "Description");
+    CU_ASSERT_STRING_EQUAL(provalue, "Technologist");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "alternateName");
+    CU_ASSERT_STRING_EQUAL(provalue, "Jason Holtslander");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "numberValue");
+    CU_ASSERT_STRING_EQUAL(provalue, "1234");
+    free((char*)provalue);
+    provalue = Credential_GetProperty(vc, "doubleValue");
+    CU_ASSERT_STRING_EQUAL(provalue, "9.5");
+    free((char*)provalue);
 }
 
 static int issuer_issuevc_test_suite_init(void)
@@ -226,6 +313,7 @@ static int issuer_issuevc_test_suite_cleanup(void)
 static CU_TestInfo cases[] = {
     { "test_issuer_issuevc",                   test_issuer_issuevc       },
     { "test_issuer_issueselfvc",               test_issuer_issueselfvc   },
+    { "test_issuer_issuerbystring",            test_issuer_issuerbystring},
     { NULL,                                    NULL                      }
 };
 

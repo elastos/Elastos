@@ -38,8 +38,6 @@ extern "C" {
 #define MAX_DOC_TYPE                    64
 #define MAX_DOC_SIGN                    128
 
-#define CHECK(func)        do { if (func == -1) return -1; } while(0)
-
 typedef struct DocumentProof {
     char type[MAX_DOC_TYPE];
     time_t created;

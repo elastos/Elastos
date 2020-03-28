@@ -26,6 +26,7 @@
 
 #include "ela_did.h"
 #include "did.h"
+#include "common.h"
 #include "credmeta.h"
 #include "JsonGenerator.h"
 #include "diddocument.h"

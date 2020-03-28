@@ -29,6 +29,7 @@
 #include "ela_did.h"
 #include "common.h"
 #include "JsonGenerator.h"
+#include "JsonHelper.h"
 #include "did.h"
 #include "diddocument.h"
 #include "didstore.h"
@@ -40,77 +41,12 @@ extern const char *ProofType;
 
 static void free_subject(Credential *cred)
 {
-    Property *prop;
-    size_t i;
-
     assert(cred);
 
-    prop = cred->subject.infos.properties;
-    if (!prop)
-        return;
-
-    for (i = 0; i < cred->subject.infos.size; i++, prop++) {
-        if (prop->key)
-            free(prop->key);
-        if (prop->value)
-            free(prop->value);
-    }
-
-    free(cred->subject.infos.properties);
+    if (cred->subject.properties)
+        cJSON_Delete(cred->subject.properties);
 }
 
-static int parse_subject(cJSON *json, Credential *credential)
-{
-    cJSON *element = NULL;
-    int i = 0, j, size;
-    Property *properties;
-
-    assert(json);
-    assert(credential);
-
-    size = cJSON_GetArraySize(json);
-    if (size < 1)
-        return -1;
-
-    properties = (Property*)calloc(size, sizeof(Property));
-    if (!properties)
-        return -1;
-
-    cJSON_ArrayForEach(element, json)
-    {
-        Property pro;
-        if (!element->string || !element->valuestring || !strcmp(element->string, "id"))
-            continue;
-
-        pro.key = strdup(element->string);
-        if (!pro.key)
-            goto errorExit;
-
-        pro.value = strdup(element->valuestring);
-        if (!pro.value)
-            goto errorExit;
-
-        memcpy(&properties[i++], &pro, sizeof(Property));
-    }
-
-    credential->subject.infos.properties = properties;
-    credential->subject.infos.size = i;
-    return 0;
-
-errorExit:
-    if (properties) {
-        for (j = 0; j < i; j++) {
-            if (properties[j].key)
-                free(properties[j].key);
-            if (properties[j].value)
-                free(properties[j].value);
-        }
-        free(properties);
-    }
-
-    return -1;
-
-}
 static void free_types(Credential *credential)
 {
     size_t i;
@@ -198,36 +134,20 @@ static int types_toJson(JsonGenerator *generator, Credential *cred)
     return 0;
 }
 
-static int property_compr(const void *a, const void *b)
-{
-    Property *proa = (Property*)a;
-    Property *prob = (Property*)b;
-
-    return strcmp(proa->key, prob->key);
-}
-
 static int subject_toJson(JsonGenerator *generator, Credential *cred, DID *did, int compact)
 {
-    Property *properties;
-    size_t i, size;
     char id[ELA_MAX_DID_LEN];
 
     assert(generator);
     assert(generator->buffer);
     assert(cred);
 
-    properties = cred->subject.infos.properties;
-    size = cred->subject.infos.size;
-
-    qsort(properties, size, sizeof(Property), property_compr);
-
     CHECK(JsonGenerator_WriteStartObject(generator));
     if (!compact || !did)
         CHECK(JsonGenerator_WriteStringField(generator, "id",
                 DID_ToString(&cred->subject.id, id, sizeof(id))));
 
-    for (i = 0; i < size; i++)
-        CHECK(JsonGenerator_WriteStringField(generator, properties[i].key, properties[i].value));
+    CHECK(JsonHelper_ToJson(generator, cred->subject.properties, true));
     CHECK(JsonGenerator_WriteEndObject(generator));
     return 0;
 }
@@ -311,7 +231,9 @@ void Credential_Destroy(Credential *cred)
         return;
 
     free_types(cred);
-    free_subject(cred);
+    if (cred->subject.properties)
+        cJSON_Delete(cred->subject.properties);
+
     free(cred);
 }
 
@@ -403,44 +325,63 @@ time_t Credential_GetExpirationDate(Credential *cred)
 
 ssize_t Credential_GetPropertyCount(Credential *cred)
 {
-    if (!cred)
+    if (!cred || !cred->subject.properties)
         return -1;
 
-    return (ssize_t)cred->subject.infos.size;
+    return cJSON_GetArraySize(cred->subject.properties);
 }
 
-ssize_t Credential_GetProperties(Credential *cred, Property *properties,
-                                 size_t size)
+const char *Credential_GetProperties(Credential *cred)
 {
-    size_t actual_size;
+    if (!cred || !cred->subject.properties)
+        return NULL;
 
-    if (!cred || !properties || !size)
-        return -1;
+    return JsonHelper_ToString(cred->subject.properties);
+}
 
-    actual_size = cred->subject.infos.size;
-    if (actual_size > size)
-        return -1;
+static const char *item_astext(cJSON *item)
+{
+    char *value;
+    char buffer[64];
 
-    memcpy(properties, cred->subject.infos.properties, sizeof(Property) * actual_size);
-    return (ssize_t)actual_size;
+    assert(item);
+
+    if (cJSON_IsObject(item) || cJSON_IsRaw(item) || cJSON_IsArray(item))
+        return JsonHelper_ToString(item);
+
+    if (cJSON_IsString(item)) {
+        value = item->valuestring;
+    } else if (cJSON_IsFalse(item)) {
+        value = "false";
+    } else if (cJSON_IsTrue(item)) {
+        value = "true";
+    } else if (cJSON_IsNull(item)) {
+        value = "null";
+    } else if (cJSON_IsInt(item)) {
+        snprintf(buffer, sizeof(buffer), "%d", item->valueint);
+        value = buffer;
+    } else if (cJSON_IsDouble(item)) {
+        snprintf(buffer, sizeof(buffer), "%g", item->valuedouble);
+        value = buffer;
+    } else {
+        value = "";
+    }
+
+    return strdup(value);
 }
 
 const char *Credential_GetProperty(Credential *cred, const char *name)
 {
-    Property *property;
-    size_t i;
+    cJSON *item;
 
-    if (!cred || !name || !*name)
+    if (!cred || !cred->subject.properties || !name || !*name )
         return NULL;
 
-    property = cred->subject.infos.properties;
+    item = cJSON_GetObjectItem(cred->subject.properties, name);
+    if (!item)
+        return NULL;
 
-    for (i = 0; i < cred->subject.infos.size; i++, property++) {
-        if (!strcmp(name, property->key))
-            return property->value;
-    }
-
-    return NULL;
+    return item_astext(item);
 }
 
 DIDURL *Credential_GetProofMethod(Credential *cred)
@@ -562,8 +503,9 @@ Credential *Parser_Credential(cJSON *json, DID *did)
             goto errorExit;
     }
 
-    if (parse_subject(item, credential) == -1)
-        goto errorExit;
+    // properties exclude "id".
+    cJSON_DeleteItemFromObject(item, "id");
+    credential->subject.properties = cJSON_Duplicate(item, 1);
 
     //type
     item = cJSON_GetObjectItem(json, "type");
@@ -634,7 +576,6 @@ int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds, size_t size,
 const char* Credential_ToJson_ForSign(Credential *cred, bool compact, bool forsign)
 {
     JsonGenerator g, *gen;
-    char id[ELA_MAX_DIDURL_LEN];
 
     if (!cred)
         return NULL;

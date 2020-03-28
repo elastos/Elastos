@@ -291,11 +291,11 @@ int JsonGenerator_WriteString(JsonGenerator *generator, const char *value)
     return 0;
 }
 
-int JsonGenerator_WriteNumber(JsonGenerator *generator, int number)
+int JsonGenerator_WriteNumber(JsonGenerator *generator, int value)
 {
     size_t len;
     int is_sticky;
-    char value[32];
+    char valuestring[32];
 
     if (!generator || !generator->buffer)
         return -1;
@@ -305,14 +305,79 @@ int JsonGenerator_WriteNumber(JsonGenerator *generator, int number)
 
     is_sticky = is_state_sticky(generator);
 
-    len = snprintf(value, sizeof(value), "%d", number);
+    len = snprintf(valuestring, sizeof(valuestring), "%d", value);
     if (ensure_capacity(generator, len + is_sticky) == -1)
         return -1;
 
     if (is_sticky)
         generator->buffer[generator->pos++] = comma_symbol;
 
-    strcpy(generator->buffer + generator->pos, value);
+    strcpy(generator->buffer + generator->pos, valuestring);
+    generator->pos += len;
+
+    if (get_state(generator) == STATE_FIELD)
+        pop_state(generator);
+    else
+        set_state_sticky(generator);
+
+    return 0;
+}
+
+int JsonGenerator_WriteDouble(JsonGenerator *generator, double value)
+{
+    size_t len;
+    int is_sticky;
+    char valuestring[64];
+
+    if (!generator || !generator->buffer)
+        return -1;
+
+    assert(get_state(generator) == STATE_FIELD
+           || get_state(generator) == STATE_ARRAY);
+
+    is_sticky = is_state_sticky(generator);
+
+    len = snprintf(valuestring, sizeof(valuestring), "%g", value);
+    if (ensure_capacity(generator, len + is_sticky) == -1)
+        return -1;
+
+    if (is_sticky)
+        generator->buffer[generator->pos++] = comma_symbol;
+
+    strcpy(generator->buffer + generator->pos, valuestring);
+    generator->pos += len;
+
+    if (get_state(generator) == STATE_FIELD)
+        pop_state(generator);
+    else
+        set_state_sticky(generator);
+
+    return 0;
+}
+
+int JsonGenerator_WriteBoolean(JsonGenerator *generator, bool value)
+{
+    size_t len;
+    int is_sticky;
+    char *valuestring;
+
+    if (!generator || !generator->buffer)
+        return -1;
+
+    assert(get_state(generator) == STATE_FIELD
+           || get_state(generator) == STATE_ARRAY);
+
+    is_sticky = is_state_sticky(generator);
+
+    valuestring = value ? "true" : "false";
+    len = strlen(valuestring);
+    if (ensure_capacity(generator, len + is_sticky) == -1)
+        return -1;
+
+    if (is_sticky)
+        generator->buffer[generator->pos++] = comma_symbol;
+
+    strcpy(generator->buffer + generator->pos, valuestring);
     generator->pos += len;
 
     if (get_state(generator) == STATE_FIELD)

@@ -858,6 +858,7 @@ static void test_diddoc_add_selfclaimed_credential(void)
     Credential *vc;
     bool isEquals;
     int rc;
+    const char *provalue;
 
     // Add self claim credential.
     builder = DIDDocument_Edit(doc);
@@ -888,7 +889,9 @@ static void test_diddoc_add_selfclaimed_credential(void)
     CU_ASSERT_TRUE(Credential_IsSelfProclaimed(vc));
     CU_ASSERT_EQUAL(Credential_GetTypeCount(vc), 2);
     CU_ASSERT_EQUAL(Credential_GetPropertyCount(vc), 2);
-    CU_ASSERT_STRING_EQUAL(Credential_GetProperty(vc, "passport"), "S653258Z07");
+    provalue = Credential_GetProperty(vc, "passport");
+    CU_ASSERT_STRING_EQUAL(provalue, "S653258Z07");
+    free((char*)provalue);
 
     const char *types1[2];
     rc = Credential_GetTypes(vc, types1, sizeof(types1));

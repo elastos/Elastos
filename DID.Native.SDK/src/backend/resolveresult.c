@@ -26,6 +26,7 @@
 #include <cjson/cJSON.h>
 
 #include "ela_did.h"
+#include "common.h"
 #include "diddocument.h"
 #include "JsonGenerator.h"
 #include "resolveresult.h"

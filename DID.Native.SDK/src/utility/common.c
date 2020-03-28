@@ -402,3 +402,13 @@ int mkdirs(const char *path, mode_t mode)
 
     return rc;
 }
+
+bool cJSON_IsDouble(cJSON *item)
+{
+    return (item && cJSON_IsNumber(item) && (double)item->valueint != item->valuedouble);
+}
+
+bool cJSON_IsInt(cJSON *item)
+{
+    return (item && cJSON_IsNumber(item) && (double)item->valueint == item->valuedouble);
+}

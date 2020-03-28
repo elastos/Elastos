@@ -10,6 +10,7 @@ include(ExternalConfigureArgs)
 set(CONFIGURE_CMD "./configure")
 set(CONFIGURE_ARGS
     "--prefix=${PROJECT_INT_DIST_DIR}"
+    "--with-ssl=${PROJECT_INT_DIST_DIR}"
     "--disable-shared"
     "--enable-static"
     "--without-brotli"

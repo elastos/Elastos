@@ -110,7 +110,7 @@ typedef struct Property {
  * a centralized registration authority.
  * It includes method specific string. (elastos:id:ixxxxxxxxxx).
  */
-typedef struct DID                 DID;
+typedef struct DID                  DID;
 /**
  * \~English
  * DID URL defines by the did-url rule, refers to a URL that begins with a DID
@@ -1740,7 +1740,7 @@ DID_API ssize_t Credential_GetPropertyCount(Credential *cred);
  * @return
  *      size of subject porperties on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_GetProperties(Credential *cred, Property *properties, size_t size);
+DID_API const char *Credential_GetProperties(Credential *cred);
 
 /**
  * \~English
@@ -1751,7 +1751,7 @@ DID_API ssize_t Credential_GetProperties(Credential *cred, Property *properties,
  * @param
  *      name                 [in] The key of property.
  * @return
- *      If no error occurs, return property string.
+ *      If no error occurs, return property value string. Free retuan value after used this api.
  *      Otherwise, return NULL.
  */
 DID_API const char *Credential_GetProperty(Credential *cred, const char *name);
@@ -1911,7 +1911,7 @@ DID_API void Issuer_Destroy(Issuer *issuer);
  * @param
  *      typesize             [in] The size of credential types.
  * @param
- *      properties           [in] The array of credential subject property.
+ *      subject              [in] The array of credential subject property.
  * @param
  *      size                 [in] The size of credential subject property.
  * @param
@@ -1923,7 +1923,11 @@ DID_API void Issuer_Destroy(Issuer *issuer);
  *      Otherwise, return NULL.
  */
 DID_API Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
-        const char **types, size_t typesize, Property *properties, int size,
+        const char **types, size_t typesize, Property *subject, int size,
+        time_t expires, const char *storepass);
+
+DID_API Credential *Issuer_CreateCredentialByString(Issuer *issuer, DID *owner, DIDURL *credid,
+        const char **types, size_t typesize, const char *subject,
         time_t expires, const char *storepass);
 
 /**
@@ -2371,7 +2375,7 @@ DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid)
  * @param
  *      force                    [in] Force document into chain.
  * @return
- *      0 on success, -1 if an error occurred.
+ *      0 on success, -1 if an error occurred. Caller should free the returned value.
  */
 DID_API const char *DIDStore_PublishDID(DIDStore *store, const char *storepass,
         DID *did, DIDURL *signKey, bool force);
@@ -2389,7 +2393,7 @@ DID_API const char *DIDStore_PublishDID(DIDStore *store, const char *storepass,
  * @param
  *      signKey                  [in] The public key to sign.
  * @return
- *      0 on success, -1 if an error occurred.
+ *      0 on success, -1 if an error occurred. Caller should free the returned value.
  */
 DID_API const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         DID *did, DIDURL *signKey);

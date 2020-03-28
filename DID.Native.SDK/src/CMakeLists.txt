@@ -71,6 +71,7 @@ include_directories(
     ${PROJECT_INT_DIST_DIR}/include)
 
 link_directories(
+    BEFORE
     ../hdkey
     ${PROJECT_INT_DIST_DIR}/lib)
 
@@ -142,6 +143,7 @@ if(ENABLE_SHARED)
 
     target_compile_definitions(eladid-shared PRIVATE DID_DYNAMIC)
     set_target_properties(eladid-shared PROPERTIES
+        LINK_FLAGS "-Wl,--no-undefined"
         OUTPUT_NAME eladid
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR})

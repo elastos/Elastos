@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <assert.h>
 
 #include "ela_did.h"
 #include "did.h"
@@ -95,31 +96,35 @@ DIDURL *Issuer_GetSignKey(Issuer *issuer)
     return &issuer->signkey;
 }
 
-Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
-        const char **types, size_t typesize, Property *properties, int propsize,
+static Credential *issuer_generate_credential(Issuer *issuer, DID *owner,
+        DIDURL *credid, const char **types, size_t typesize, cJSON *json,
         time_t expires, const char *storepass)
 {
-    Credential *cred;
+    Credential *cred = NULL;
     const char *data;
     char signature[SIGNATURE_BYTES * 2];
-    DIDStore *store;
     int i, rc;
 
-    if (!issuer ||!owner || !credid || !types || typesize <= 0||
-            !properties || propsize <= 0 || expires <= 0 ||
-            !storepass || !*storepass)
-        return NULL;
+    assert(issuer && owner && credid);
+    assert(types && typesize > 0);
+    assert(json);
+    assert(expires > 0);
+    assert(storepass && *storepass);
 
     if (!DID_Equals(owner, &credid->did))
-        return NULL;
+        goto errorExit;
 
     cred = (Credential*)calloc(1, sizeof(Credential));
     if (!cred)
-        return NULL;
+        goto errorExit;
 
     if (!DIDURL_Copy(&cred->id, credid))
         goto errorExit;
 
+    //subject
+    strcpy(cred->subject.id.idstring, owner->idstring);
+    cred->subject.properties = json;
+    
     //set type
     cred->type.size = typesize;
     cred->type.types = (char**)calloc(typesize, sizeof(char*));
@@ -134,19 +139,6 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
     //expire and issue date
     cred->expirationDate = expires;
     time(&cred->issuanceDate);
-
-    //subject
-    strcpy(cred->subject.id.idstring, owner->idstring);
-
-    cred->subject.infos.size = propsize;
-    cred->subject.infos.properties = (Property*)calloc(propsize, sizeof(Property));
-    if (!cred->subject.infos.properties)
-        goto errorExit;
-    for (i = 0; i < propsize; i++) {
-        Property *pro = &(properties[i]);
-        cred->subject.infos.properties[i].key = strdup(pro->key);
-        cred->subject.infos.properties[i].value = strdup(pro->value);
-    }
 
     //proof
     data = Credential_ToJson_ForSign(cred, false, true);
@@ -164,6 +156,55 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
     return cred;
 
 errorExit:
-    Credential_Destroy(cred);
+    if (cred)
+        Credential_Destroy(cred);
+    else
+        cJSON_Delete(json);
+
     return NULL;
+}
+
+Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
+        const char **types, size_t typesize, Property *subject, int size,
+        time_t expires, const char *storepass)
+{
+    cJSON *root, *item;
+
+    if (!issuer ||!owner || !credid || !types || typesize <= 0||
+            !subject || size <= 0 || expires <= 0 ||
+            !storepass || !*storepass)
+        return NULL;
+
+    root = cJSON_CreateObject();
+    if (!root)
+        return NULL;
+
+    for (int i = 0; i < size; i++) {
+        item = cJSON_AddStringToObject(root, subject[i].key, subject[i].value);
+        if (!item) {
+           cJSON_Delete(root);
+           return NULL;        
+        }
+    }
+
+    return issuer_generate_credential(issuer, owner, credid, types, typesize, root,
+            expires, storepass);
+}
+
+Credential *Issuer_CreateCredentialByString(Issuer *issuer, DID *owner,
+        DIDURL *credid, const char **types, size_t typesize, const char *subject,
+        time_t expires, const char *storepass)
+{
+    cJSON *root;
+
+    if (!issuer ||!owner || !credid || !types || typesize <= 0||
+            !subject || !*subject || expires <= 0 || !storepass || !*storepass)
+        return NULL;
+
+    root = cJSON_Parse(subject);
+    if (!root)
+        return NULL;
+
+    return issuer_generate_credential(issuer, owner, credid, types, typesize, root,
+            expires, storepass);
 }

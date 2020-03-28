@@ -31,9 +31,9 @@ const char *service_type = "CarrierAddress";
 const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
 const char *language = "english";
 
-const char *testdid_string = "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu";
-const char *testid_string = "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#default";
-const char *method_specific_string = "iYpQMwheDxySqivocSJaoprcoDTqQsDYAu";
+const char *testdid_string = "did:elastos:iWFAUYhTa35c1fPe3iCJvihZHx6quumnym";
+const char *testid_string = "did:elastos:iWFAUYhTa35c1fPe3iCJvihZHx6quumnym#default";
+const char *method_specific_string = "iWFAUYhTa35c1fPe3iCJvihZHx6quumnym";
 const char *fragment = "default";
 const char *compact_idstring = "#default";
 

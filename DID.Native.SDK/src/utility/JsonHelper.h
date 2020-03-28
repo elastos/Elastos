@@ -20,63 +20,26 @@
  * SOFTWARE.
  */
 
-#ifndef __CREDENTIAL_H__
-#define __CREDENTIAL_H__
+#ifndef __JSON_HELPER_H__
+#define __JSON_HELPER_H__
 
+#include <stddef.h>
+#include <stdio.h>
+#include <stdbool.h>
 #include <cjson/cJSON.h>
 
-#include "ela_did.h"
-#include "did.h"
 #include "JsonGenerator.h"
-#include "credmeta.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_CRED_TYPE        64
-#define MAX_CRED_SIGN        128
+int JsonHelper_ToJson(JsonGenerator *generator, cJSON *object, bool objectcontext);
 
-typedef struct CredentialSubject {
-    DID id;
-    cJSON *properties;
-} CredentialSubject;
-
-typedef struct CredentialProof {
-    char type[MAX_CRED_TYPE];
-    DIDURL verificationMethod;
-    char signatureValue[MAX_CRED_SIGN];
-} CredentialProof;
-
-struct Credential {
-    DIDURL id;
-
-    struct {
-        char **types;
-        size_t size;
-    } type;
-
-    DID issuer;
-    time_t issuanceDate;
-    time_t expirationDate;
-    CredentialSubject subject;
-    CredentialProof proof;
-    CredentialMeta meta;
-};
-
-int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds, size_t size,
-        DID *did, bool compact);
-
-Credential *Parser_Credential(cJSON *json, DID *did);
-
-ssize_t Parser_Credentials(DID *did, Credential **creds, size_t size, cJSON *json);
-
-CredentialMeta *Credential_GetMeta(Credential *credential);
-
-const char* Credential_ToJson_ForSign(Credential *cred, bool compact, bool forsign);
+const char *JsonHelper_ToString(cJSON *object);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__CREDENTIAL_H__
+#endif //__JSON_HELPER_H__

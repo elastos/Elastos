@@ -187,6 +187,7 @@ _Presentation_IsValid
 
 # Issuer
 _Issuer_CreateCredential
+_Issuer_CreateCredentialByString
 _Issuer_GetSigner
 _Issuer_GetSignKey
 _Issuer_Create

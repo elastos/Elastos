@@ -27,12 +27,14 @@
 #include <time.h>
 #include <stdbool.h>
 #include <sys/stat.h>
+#include <cjson/cJSON.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define DOC_BUFFER_LEN   512
+#define CHECK(func)        do { if (func == -1) return -1; } while(0)
 
 const char *get_time_string(char *timestring, size_t len, time_t *p_time);
 
@@ -56,6 +58,11 @@ const char *load_file(const char *path);
 bool is_empty(const char *path);
 
 int mkdirs(const char *path, mode_t mode);
+
+//for json
+bool cJSON_IsDouble(cJSON *item);
+
+bool cJSON_IsInt(cJSON *item);
 
 #ifdef __cplusplus
 }

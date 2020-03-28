@@ -555,7 +555,7 @@ Credential *TestData_LoadVc(void)
     if (!testdata.Vc)
         testdata.Vc = store_credential("vc-json.json", "test vc");
 
-    return testdata.twitterVc;
+    return testdata.Vc;
 }
 
 const char *TestData_LoadVcCompJson(void)
