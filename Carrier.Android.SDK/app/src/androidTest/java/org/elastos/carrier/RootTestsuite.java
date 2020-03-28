@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 		FriendMessageTest.class,
 		GetIDTest.class,
 		GetInfoTest.class,
+		GetVersionTest.class,
 
 		//Group
 		GroupNewTest.class,

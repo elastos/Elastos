@@ -352,6 +352,7 @@ public class Carrier {
 											   String data);
 
 	private static native int get_error_code();
+	private static native String get_version();
 
 	private Carrier(CarrierHandler handler) {
 		this.handler = handler;
@@ -364,7 +365,7 @@ public class Carrier {
 	 * 		The version of carrier node.
 	 */
 	public static String getVersion() {
-		return "5.0/Android";
+		return get_version();
 	}
 
 	/**

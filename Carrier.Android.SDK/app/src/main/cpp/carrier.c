@@ -799,6 +799,20 @@ jboolean replyFriendInvite(JNIEnv* env, jobject thiz, jstring jto, jint jstatus,
 }
 
 static
+jstring getVersion(JNIEnv* env, jclass clazz)
+{
+    const char *ver;
+    jstring jver;
+
+    (void)clazz;
+
+    ver = ela_get_version();
+    jver = (*env)->NewStringUTF(env, ver);
+
+    return jver;
+}
+
+static
 jint getErrorCode(JNIEnv* env, jclass clazz)
 {
     (void)env;
@@ -834,6 +848,7 @@ static JNINativeMethod gMethods[] = {
                                                                    (void*)inviteFriend         },
         {"reply_friend_invite","("_J("String;I")_J("String;")_J("String;)Z"),\
                                                                    (void*)replyFriendInvite    },
+        {"get_version",        "()"_J("String;"),                  (void*)getVersion           },
         {"get_error_code",     "()I",                              (void*)getErrorCode         }
 };
 
