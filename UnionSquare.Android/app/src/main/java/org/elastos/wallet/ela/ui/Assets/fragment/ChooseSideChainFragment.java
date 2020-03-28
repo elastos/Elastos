@@ -42,7 +42,7 @@ public class ChooseSideChainFragment extends BaseFragment implements CommonRvLis
         tvTitle.setText(R.string.choosesidechain);
         list = new ArrayList<>();
         list.add(MyWallet.IDChain);
-        list.add(MyWallet.ETHSC);
+        //list.add(MyWallet.ETHSC);
         setRecycleView();
     }
 

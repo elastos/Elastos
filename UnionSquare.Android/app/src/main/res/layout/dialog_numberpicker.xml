@@ -21,7 +21,7 @@
         android:layout_height="48dp"
         android:layout_alignParentRight="true"
         android:gravity="center_vertical"
-        android:text="确认"
+        android:text="@string/sure1"
         android:textColor="@color/white"
         android:textSize="15sp" />
 

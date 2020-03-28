@@ -605,9 +605,6 @@
     <string name="transactionfinish">交易完成</string>
     <string name="tipdidauthorization">申请使用您的DID信息（包括但不限于存储、展示等用途）：</string>
     <string name="didbaseinfo">- DID基本信息</string>
-    <string name="personalinfo">- 个人信息</string>
-    <string name="personalintro_">- 个人简介</string>
-    <string name="socialaccount_">- 社交账号</string>
     <string name="plzinputnamemust">请输入姓名（必填）</string>
     <string name="headurl">头像网址</string>
     <string name="abandondidornot">是否永久弃用当前DID？</string>
@@ -636,4 +633,6 @@
     <string name="credencialisnull">凭证信息为空</string>
     <string name="importfailed">导入失败</string>
     <string name="pleaseinstallfilechose">请安装文件管理器</string>
+    <string name="serviceprovider">服务提供方</string>
+    <string name="sure1">确认</string>
 </resources>

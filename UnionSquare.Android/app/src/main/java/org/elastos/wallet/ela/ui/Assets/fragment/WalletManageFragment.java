@@ -286,7 +286,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
         DID did = getMyDID().initDID(payPasswd);
         if (TextUtils.isEmpty(wallet.getDid()))
             new RealmUtil().upDataWalletDid(wallet.getWalletId(), getMyDID().getDidString());
-        presenter.DIDResolve(did.toString(), this);
+        presenter.forceDIDResolve(did.toString(), this);
 
     }
 
@@ -341,7 +341,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
                     showToast(getString(R.string.didinitfaile));
                 }
                 break;
-            case "DIDResolve":
+            case "forceDIDResolve":
                 Bundle bundle1 = new Bundle();
                 bundle1.putParcelable("wallet", wallet);
                 DIDDocument doc = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();

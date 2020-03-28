@@ -1,6 +1,5 @@
 package org.elastos.wallet.ela.ui.vote.SuperNodeList;
 
-import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
@@ -14,9 +13,8 @@ import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
-import org.elastos.wallet.ela.utils.svg.GlideApp;
-import org.elastos.wallet.ela.utils.svg.GlideRequest;
 import org.elastos.wallet.ela.utils.NumberiUtil;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -25,7 +23,6 @@ import java.util.Map;
 
 public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBean.ResultBean.ProducersBean, BaseViewHolder> {
 
-    private final GlideRequest<Bitmap> glideRequest;
     private BaseFragment context;
     private Map<String, String> map;
 
@@ -35,11 +32,7 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
     public SuperNodeListAdapter1(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, boolean is) {
         super(R.layout.item_super_node_list1, data);
         this.context = context;
-
         this.is = is;
-
-        glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle)
-                .placeholder(R.mipmap.found_vote_initial_circle).circleCrop();
         if (map == null) {
             map = new HashMap<>();
         } else {
@@ -82,7 +75,8 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
             if ("".equals(map.get(baseUrl))) {
                 return;
             }
-            glideRequest.load(map.get(baseUrl)).into(iv);
+            GlideApp.with(context).load(map.get(baseUrl)).error(R.mipmap.found_vote_initial_circle)
+                    .circleCrop().into(iv);
             return;
         }
         if (presenter == null) {
@@ -123,7 +117,8 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
                         }
                         String newimgUrl = MyApplication.REQUEST_BASE_URL + "/" + imageBean.getData();
                         map.put(url, newimgUrl);
-                        glideRequest.load(newimgUrl).into(iv1);
+                        GlideApp.with(context).load(newimgUrl).error(R.mipmap.found_vote_initial_circle)
+                                .circleCrop().into(iv1);
                     }
                 });
             }

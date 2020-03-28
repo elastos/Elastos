@@ -166,7 +166,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         getMyDID().getMyDIDAdapter().setTxId(hash);
                     }else if (Constant.CRUPDATE.equals(type)) {
                         //凭证授权页面更新did同时上传中心化服务器的情况
-                        post(RxEnum.VERTIFYPAYPASS.ordinal(), type, pwd);
+                        post(RxEnum.TRANSFERSUCESSPWD.ordinal(), type, pwd);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

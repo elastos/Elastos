@@ -369,7 +369,7 @@
     <string name="currentversionname">Version&#160;</string>
     <string name="feedback">Feedback</string>
     <string name="showupdatalog">What\'s New</string>
-    <string name="tv_elaintroduce">ELA Wallet 是安全、可信的亦来云轻节点（ SPV ) 钱包。 </string>
+    <string name="tv_elaintroduce">ELA Wallet is a secure and trusted Elastos Light Node (SPV). </string>
     <string name="earn_records">DPoS Rewards</string>
     <string name="copyearnaddress">Copy Address</string>
     <string name="towhole">Consolidate</string>
@@ -426,7 +426,7 @@
     <string name="currentpk">My Public Key</string>
     <string name="scanallqr">Scan all QR codes continuously</string>
     <string name="backtostart">Back</string>
-    <string name="joininfo">Candidate Information</string>
+    <string name="joininfo">Self-Info</string>
     <string name="nodeintro">Node Introduction</string>
     <string name="selectlist">Selected</string>
     <string name="unseletList">Unselected</string>
@@ -448,7 +448,7 @@
     <string name="currentpage">Page %1$s </string>
     <string name="addsucess">Added Successfully</string>
     <string name="crinfor">About Council Members</string>
-    <string name="quitcr">Withdraw From Election</string>
+    <string name="quitcr">Withdraw</string>
     <string name="officeweb">Election URL</string>
     <string name="quitcrornot">Quitting from the CR Election?\nAfter quitting, votes are permanently cleared.</string>
     <string name="plzinputcrurl">Input Election URL</string>
@@ -479,7 +479,7 @@
     <string name="nokeep">Abandon</string>
     <string name="keepsucess">Saved Successfully</string>
     <string name="jump">Jump</string>
-    <string name="tipcanjump">温馨提示：本页内容均非必填，仅保存在本地，供用户授权使用。</string>
+    <string name="tipcanjump">Note: All fields on this page are non-mandatory. Content is saved locally and can only be shared by user authorization.</string>
     <string name="plzinputname">Enter Name</string>
     <string name="plzinputnick">Enter Nickname</string>
     <string name="plzselcetsex">Gender</string>
@@ -600,9 +600,6 @@
     <string name="transactionfinish">Transaction successful</string>
     <string name="tipdidauthorization">Apply for your DID information (Including but not limited to storage, display, etc.)：</string>
     <string name="didbaseinfo">- DID Basic Information</string>
-    <string name="personalinfo">- Personal information</string>
-    <string name="personalintro_">- Personal Profile</string>
-    <string name="socialaccount_">- Social Account</string>
     <string name="plzinputnamemust">Name (required)</string>
     <string name="headurl">Avatar URL</string>
     <string name="abandondidornot">Permanently abandon current DID?</string>
@@ -626,9 +623,11 @@
     <string name="importcredencial">Import credentials</string>
     <string name="unactive">[inactivated]</string>
     <string name="personalzl">Profile</string>
-    <string name="menberintro">Council member introduction</string>
+    <string name="menberintro">Introduction</string>
     <string name="walletmainfunctions"><![CDATA[Main functions： \n· Intra-ecosystem digital asset support \n· Elastos DID authentication \n· Elastos DPoS Supernode elections \n· CR council elections \n· CR Suggestion & Proposal processes]]></string>
     <string name="credencialisnull">Credentials not available</string>
     <string name="importfailed">Export failed</string>
     <string name="pleaseinstallfilechose">Install file manager</string>
+    <string name="serviceprovider">Service provider</string>
+    <string name="sure1">sure</string>
 </resources>

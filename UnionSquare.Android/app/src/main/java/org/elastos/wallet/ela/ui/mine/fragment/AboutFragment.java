@@ -74,10 +74,10 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
             case R.id.tv_feedback:
                 ClipboardUtil.copyClipboar(getBaseActivity(), Constant.Email, getResources().getString(R.string.copyemailsuccess));
 
-                for (Wallet wallet : new RealmUtil().queryUserAllWallet()) {
+                /*for (Wallet wallet : new RealmUtil().queryUserAllWallet()) {
                     File file = new File(MyApplication.getRoutDir() + File.separator + wallet.getWalletId() + File.separator + "store");
                     FileUtile.delFile(file);
-                }
+                }*/
 
                 break;
             case R.id.tv_runlog:

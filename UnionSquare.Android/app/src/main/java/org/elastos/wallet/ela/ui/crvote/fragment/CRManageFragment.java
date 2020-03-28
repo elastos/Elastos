@@ -270,7 +270,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             tvDid.setCompoundDrawables(null, null, null, null);
         }
         if (curentNode != null) {
-            tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
+            tvNum.setText(curentNode.getVotes().split("\\.")[0] + " " + getString(R.string.ticket));
             tv_zb.setText(curentNode.getVoterate() + "%");
         }
     }
@@ -368,8 +368,8 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
-        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
-
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal() && "34".equals(result.getName())) {
+            //退出参选成功
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
@@ -380,8 +380,10 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
 
         }
         if (integer == RxEnum.SAVECREDENCIALTOWEB.ordinal()) {
-            showToast(getString(R.string.update_successful));
-            new CRManagePresenter().jwtGet(DID, CRManageFragment.this);
+            if (!TextUtils.isEmpty(DID)) {
+                showToast(getString(R.string.update_successful));
+                new CRManagePresenter().jwtGet(DID, this);
+            }
         }
     }
 

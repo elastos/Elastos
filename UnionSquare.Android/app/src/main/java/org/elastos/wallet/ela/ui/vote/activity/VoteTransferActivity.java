@@ -39,6 +39,8 @@ public class VoteTransferActivity extends BaseActivity {
     TextView tvCharge;
     @BindView(R.id.ll_amount)
     LinearLayout llAmount;
+    @BindView(R.id.line1)
+    View line1;
     private String amount, chainId;
     private long fee;
 
@@ -59,7 +61,6 @@ public class VoteTransferActivity extends BaseActivity {
     }
 
 
-
     @Override
     protected void setExtraData(Intent data) {
 
@@ -70,7 +71,11 @@ public class VoteTransferActivity extends BaseActivity {
             chainId = MyWallet.ELA;
         }
         tvAmount.setText(amount + " " + MyWallet.ELA);
-        tvCharge.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S).toPlainString(), 12) + " " + MyWallet.ELA);//0.0001
+        if (MyWallet.IDChain.equals(chainId)) {
+            tvCharge.setText("0.0002 " + MyWallet.ELA);
+        } else {
+            tvCharge.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S).toPlainString(), 12) + " " + MyWallet.ELA);//0.0001
+        }
         String type = data.getStringExtra("type");
         switch (type) {
             case Constant.CRUPDATE:
@@ -80,7 +85,7 @@ public class VoteTransferActivity extends BaseActivity {
             case Constant.DIDSIGNUP:
             case Constant.DIDUPDEATE:
                 llAmount.setVisibility(View.GONE);
-
+                line1.setVisibility(View.GONE);
                 break;
             case Constant.CRSIGNUP:
             case Constant.SUPERNODESIGN:

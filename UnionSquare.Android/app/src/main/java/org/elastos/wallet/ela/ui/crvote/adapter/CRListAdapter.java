@@ -1,6 +1,5 @@
 package org.elastos.wallet.ela.ui.crvote.adapter;
 
-import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -18,23 +17,20 @@ import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
-import org.elastos.wallet.ela.utils.svg.GlideRequest;
 
 import java.util.List;
 
 public class CRListAdapter extends CRListAdapterFather {
 
-    private final GlideRequest<Bitmap> glideRequest;
     private SuperNodeListPresenter presenter;
 
     public CRListAdapter(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data, boolean is) {
         super(R.layout.item_cr_list, context, data, is);
-        glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial);
-
 
     }
 
     @Override
+
     protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean) {
         helper.setBackgroundColor(R.id.ll, mContext.getResources().getColor(R.color.a26ffffff));
         super.convert(helper, bean);
@@ -65,7 +61,7 @@ public class CRListAdapter extends CRListAdapterFather {
             if ("".equals(map.get(baseUrl))) {
                 return;
             }
-            glideRequest.load(map.get(baseUrl)).into(iv);
+            GlideApp.with(context).load(map.get(baseUrl)).error(R.mipmap.found_vote_initial).into(iv);
             return;
         }
         if (presenter == null) {
@@ -99,7 +95,7 @@ public class CRListAdapter extends CRListAdapterFather {
                     }
                     String imgUrl = credentialSubjectBean.getAvatar();
                     map.put(url, imgUrl);
-                    glideRequest.load(imgUrl).into(iv1);
+                    GlideApp.with(context).load(imgUrl).error(R.mipmap.found_vote_initial).into(iv1);
                 }
 
             }

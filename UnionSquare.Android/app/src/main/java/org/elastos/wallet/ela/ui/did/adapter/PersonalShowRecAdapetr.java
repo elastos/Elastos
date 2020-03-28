@@ -1,7 +1,6 @@
 package org.elastos.wallet.ela.ui.did.adapter;
 
 import android.content.Context;
-import android.graphics.drawable.PictureDrawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +12,6 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.did.entity.PersonalInfoItemEntity;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
-import org.elastos.wallet.ela.utils.svg.SvgSoftwareLayerSetter;
 
 import java.util.List;
 
@@ -62,14 +60,8 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<RecyclerView.Vi
             //手机号
             ((ViewHolder1) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
             String logo = personalInfoItemEntity.getText1();
-            if (logo.endsWith(".svg")) {
-                GlideApp.with(context).as(PictureDrawable.class).error(R.mipmap.mine_did_default_avator)
-                        .placeholder(R.mipmap.mine_did_default_avator).listener(new SvgSoftwareLayerSetter()).load(logo).into(((ViewHolder1) holder).iv1);
-            } else {
-                GlideApp.with(context).load(logo).error(R.mipmap.mine_did_default_avator)
-                        .placeholder(R.mipmap.mine_did_default_avator).into(((ViewHolder1) holder).iv1);
-            }
-
+            GlideApp.with(context).load(logo).error(R.mipmap.mine_did_default_avator)
+                    .into(((ViewHolder1) holder).iv1);
         } else {
             ((ViewHolder0) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
             ((ViewHolder0) holder).tv2.setText(personalInfoItemEntity.getText1());

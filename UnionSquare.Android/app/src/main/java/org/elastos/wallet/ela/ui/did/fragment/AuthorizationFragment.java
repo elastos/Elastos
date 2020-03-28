@@ -1,7 +1,6 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
 import android.content.Intent;
-import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,10 +37,11 @@ import org.elastos.wallet.ela.ui.vote.activity.VertifyPwdActivity;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
-import org.elastos.wallet.ela.utils.svg.SvgSoftwareLayerSetter;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -50,7 +50,6 @@ import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class AuthorizationFragment extends BaseFragment implements NewBaseViewData {
     @BindView(R.id.iv_logo)
@@ -61,7 +60,6 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
     TextView tvDid;
     @BindView(R.id.rv)
     RecyclerView rv;
-    Unbinder unbinder;
     private String[] jwtParts;
     RecieveJwtEntity recieveJwtEntity;
     private String scanResult;
@@ -108,20 +106,16 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         } else {
             //扫描授权
             scanResult = data.getString("scanResult");
+            String webName = data.getString("webName", getString(R.string.serviceprovider));
 
             String result = scanResult.replace("elastos://credaccess/", "");
             jwtParts = result.split("\\.");
             String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
             recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
             tvDid.setText(recieveJwtEntity.getIss());
-            tvName.setText(recieveJwtEntity.getWebsite().getDomain());
+            tvName.setText(webName);
             String logo = recieveJwtEntity.getWebsite().getLogo();
-            if (logo.endsWith(".svg")) {
-                GlideApp.with(this).as(PictureDrawable.class).listener(new SvgSoftwareLayerSetter()).load(logo).into(ivLogo);
-
-            } else {
-                GlideApp.with(this).load(logo).into(ivLogo);
-            }
+            GlideApp.with(this).load(logo).dontAnimate().into(ivLogo);
             callBackUrl = recieveJwtEntity.getCallbackurl();
         }
     }
@@ -141,7 +135,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
             if (i == 1 || i == 2 || i == 3 || i == 4 || i == 7 || i == 8 || i == 9 || i == 10 || i == 11 || i == 12 || i == 13) {
                 PersonalInfoItemEntity personalInfoItemEntity = new PersonalInfoItemEntity();
                 personalInfoItemEntity.setIndex(i);
-                personalInfoItemEntity.setHintShow1("-" + showData[i]);
+                personalInfoItemEntity.setHintShow1("- " + showData[i]);
                 personalInfoItemEntity.setCheck(true);
                 listShow.add(personalInfoItemEntity);
             }
@@ -162,12 +156,10 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
     private CredentialSubjectBean convertCredentialSubjectBean(DIDDocument doc) {
         //这种情况考虑去除全局变量credentialSubjectBean
         String json = getMyDID().getCredentialProFromStore(getMyDID().getDidString());
-        CredentialSubjectBean result = JSON.parseObject(json, CredentialSubjectBean.class);
-        if (result == null) {
-            result = new CredentialSubjectBean(getMyDID().getDidString(), getMyDID().getName(doc));
+        CredentialSubjectBean from = JSON.parseObject(json, CredentialSubjectBean.class);
+        CredentialSubjectBean result = new CredentialSubjectBean(getMyDID().getDidString(), getMyDID().getName(doc));
+        if (from == null || listShow.size() == 0) {
             return result;
-        } else {
-            result.setDidName(getMyDID().getName(doc));//单独更新姓名
         }
         for (int i = 0; i < listShow.size(); i++) {
             //只遍历show的数据
@@ -176,64 +168,63 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
             boolean check = personalInfoItemEntity.isCheck();
             switch (index) {
                 case 0:
-                    if (!check)
-                        result.setNickname(null);
+                    if (check)
+                        result.setNickname(from.getNickname());
                     break;
                 case 1:
-                    if (!check)
-                        result.setGender(null);
+                    if (check)
+                        result.setGender(from.getGender());
                     break;
                 case 2:
-                    if (!check)
-
-                        result.setBirthday(null);
+                    if (check)
+                        result.setBirthday(from.getBirthday());
                     break;
                 case 3:
-                    if (!check)
-                        result.setAvatar(null);
+                    if (check)
+                        result.setAvatar(from.getAvatar());
                     break;
                 case 4:
-                    if (!check)
-                        result.setEmail(null);
+                    if (check)
+                        result.setEmail(from.getEmail());
                     break;
                 case 5:
-                    if (!check) {
-                        result.setPhoneCode(null);
-                        result.setPhone(null);
+                    if (check) {
+                        result.setPhoneCode(from.getPhoneCode());
+                        result.setPhone(from.getPhone());
                     }
                     break;
                 case 6:
-                    if (!check)
-                        result.setNation(null);
+                    if (check)
+                        result.setNation(from.getNation());
                     break;
                 case 7:
-                    if (!check)
-                        result.setIntroduction(null);
+                    if (check)
+                        result.setIntroduction(from.getIntroduction());
 
                     break;
                 case 8:
-                    if (!check)
-                        result.setHomePage(null);
+                    if (check)
+                        result.setHomePage(from.getHomePage());
                     break;
                 case 9:
-                    if (!check)
-                        result.setWechat(null);
+                    if (check)
+                        result.setWechat(from.getWechat());
                     break;
                 case 10:
-                    if (!check)
-                        result.setTwitter(null);
+                    if (check)
+                        result.setTwitter(from.getTwitter());
                     break;
                 case 11:
-                    if (!check)
-                        result.setWeibo(null);
+                    if (check)
+                        result.setWeibo(from.getWeibo());
                     break;
                 case 12:
-                    if (!check)
-                        result.setFacebook(null);
+                    if (check)
+                        result.setFacebook(from.getFacebook());
                     break;
                 case 13:
-                    if (!check)
-                        result.setGoogleAccount(null);
+                    if (check)
+                        result.setGoogleAccount(from.getGoogleAccount());
                     break;
             }
 
@@ -257,7 +248,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
                 intent.putExtra("url", url);
                 intent.putExtra("code", code);
                 intent.putExtra("transType", 35);
-
+                startActivity(intent);
                 break;
             case "jwtSave":
 
@@ -390,6 +381,17 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         if (integer == RxEnum.VERTIFYPAYPASS.ordinal()) {
             //验证密码成功
             initDid((String) result.getObj());
+        }
+        if (integer == RxEnum.TRANSFERSUCESSPWD.ordinal()) {
+
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    initDid((String) result.getObj());
+                }
+            });
+
+
         }
 
     }

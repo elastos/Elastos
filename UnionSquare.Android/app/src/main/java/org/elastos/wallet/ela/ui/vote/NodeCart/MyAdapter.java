@@ -19,9 +19,9 @@ import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.elastos.wallet.ela.utils.svg.GlideRequest;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -33,9 +33,6 @@ import java.util.Map;
  * 通过每个条目的点击事件确定是否选中
  */
 public class MyAdapter extends BaseAdapter {
-    private final GlideRequest<Bitmap> glideRequest;
-
-
     // 填充数据的list
     private List<VoteListBean.DataBean.ResultBean.ProducersBean> list;
     // 用来控制CheckBox的选中状况
@@ -53,7 +50,6 @@ public class MyAdapter extends BaseAdapter {
         dataMap = new HashMap<Integer, Boolean>();
         // 初始化数据
         initDateStaus(false);
-        glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle).circleCrop();
         if (map == null) {
             map = new HashMap<>();
         } else {
@@ -154,7 +150,7 @@ public class MyAdapter extends BaseAdapter {
             if ("".equals(map.get(baseUrl))) {
                 return convertView;
             }
-            glideRequest.load(map.get(baseUrl)).into(iv);
+            GlideApp.with(context).load(map.get(baseUrl)).error(R.mipmap.found_vote_initial_circle).circleCrop().into(iv);
             return convertView;
         }
 
@@ -177,7 +173,7 @@ public class MyAdapter extends BaseAdapter {
 
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
                 map.put(url, imgUrl);
-                glideRequest.load(imgUrl).into(iv1);
+                GlideApp.with(context).load(imgUrl).error(R.mipmap.found_vote_initial_circle).circleCrop().into(iv1);
             }
         });
 

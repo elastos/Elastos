@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
@@ -138,6 +139,7 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
                 }
             }
         }
+        tvIntroDetail.setMovementMethod(ScrollingMovementMethod.getInstance());
     }
 
 

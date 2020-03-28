@@ -22,6 +22,7 @@
         android:src="@mipmap/window_750_close" />
 
     <ImageView
+        android:background="@drawable/sc_ffffff_cr10"
         android:id="@+id/iv_logo"
         android:layout_width="100dp"
         android:layout_height="100dp"
@@ -40,11 +41,15 @@
     <TextView
         android:id="@+id/tv_did"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="23dp"
         android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
         android:drawableRight="@mipmap/mine_did_list_copy"
         android:drawablePadding="10dp"
+        android:ellipsize="middle"
         android:gravity="center"
+        android:singleLine="true"
         android:textColor="@color/whiter50" />
 
     <TextView
@@ -55,40 +60,31 @@
         android:textColor="@color/whiter50"
         android:textSize="12sp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:text="@string/didbaseinfo" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="22dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:layout_marginTop="25dp"
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/personalinfo" />
+            android:text="@string/didbaseinfo" />
 
-        <CheckBox
-            android:id="@+id/cb_personalinfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageView
+
+            android:layout_width="19dp"
+            android:layout_height="19dp"
             android:layout_marginRight="8dp"
-            android:padding="2dp"
-            android:textColor="@color/white" />
+            android:src="@mipmap/authorization_locked" />
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="12"/>
+        android:layout_weight="1" />
 
     <TextView
         android:id="@+id/tv_agree"
@@ -102,8 +98,8 @@
         android:id="@+id/tv_refuse"
         style="@style/button1"
         android:layout_width="180dp"
-        android:layout_marginBottom="20dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:text="@string/refuse" />
 </LinearLayout>

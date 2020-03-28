@@ -1,6 +1,5 @@
 package org.elastos.wallet.ela.ui.vote.SuperNodeList;
 
-import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
@@ -13,7 +12,6 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
-import org.elastos.wallet.ela.utils.svg.GlideRequest;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -23,7 +21,6 @@ import java.util.Map;
 public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean.ResultBean.ProducersBean, BaseViewHolder> {
 
 
-    private final GlideRequest<Bitmap> glideRequest;
     private BaseFragment context;
     private Map<String, String> map;
 
@@ -36,7 +33,6 @@ public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean
         this.context = context;
         //this.mContext = context.getContext();
         this.is = is;
-        glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial);
         if (map == null) {
             map = new HashMap<>();
         } else {
@@ -70,7 +66,7 @@ public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean
             if ("".equals(map.get(baseUrl))) {
                 return;
             }
-            glideRequest.load(map.get(baseUrl)).into(iv);
+            GlideApp.with(context).load(map.get(baseUrl)).error(R.mipmap.found_vote_initial).into(iv);
             return;
         }
         if (presenter == null) {
@@ -113,7 +109,7 @@ public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean
                         }
                         String newimgUrl = MyApplication.REQUEST_BASE_URL + "/" + imageBean.getData();
                         map.put(url, newimgUrl);
-                        glideRequest.load(newimgUrl).into(iv1);
+                        GlideApp.with(context).load(newimgUrl).error(R.mipmap.found_vote_initial).into(iv1);
                     }
                 });
 

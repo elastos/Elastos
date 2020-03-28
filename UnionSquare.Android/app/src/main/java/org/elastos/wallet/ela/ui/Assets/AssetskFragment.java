@@ -300,7 +300,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             String elaString = recieveJwtEntity.getIss();
             elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
             // Log.e("Base64", "Base64---->" + header + "\n" + payload + "\n" + signature);.0
-            new WalletManagePresenter().DIDResolve(elaString, this);
+            new WalletManagePresenter().forceDIDResolve(elaString, this);
         } catch (Exception e) {
             toErroScan(scanResult);
         }
@@ -854,7 +854,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
-            case "DIDResolve":
+            case "forceDIDResolve":
                 //未传递paypas网站提供的did验签
                 verifyDID((DIDDocument) ((CommmonObjEntity) baseEntity).getData());
 
@@ -862,7 +862,8 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 break;
             case "DIDResolveWithTip":
                 //传递paypas是判断当前钱包有没有did
-                curentHasDID((DIDDocument) ((CommmonObjEntity) baseEntity).getData());
+                String webName= (String) o;//网站did的name
+                curentHasDID((DIDDocument) ((CommmonObjEntity) baseEntity).getData(),webName);
                 break;
         }
     }
@@ -880,7 +881,8 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 // 验签成功
                 // 验签成功
                 //先判断本地是否有did
-                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, null);
+                String name=getMyDID().getName(didDocument);
+                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, name);
             } else {
                 //验签失败
                 toErroScan(scanResult);
@@ -888,7 +890,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
     }
 
-    private void curentHasDID(DIDDocument didDocument) {
+    private void curentHasDID(DIDDocument didDocument,String webName) {
         if (didDocument == null) {
             showToast(getString(R.string.notcreatedid));
             return;
@@ -907,6 +909,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         Bundle bundle = new Bundle();
         bundle.putString("scanResult", scanResult);
         bundle.putParcelable("wallet", wallet);
+        bundle.putString("webName", webName);
         ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
     }
 

@@ -102,12 +102,12 @@ public class WalletManagePresenter extends NewPresenterAbstract {
     }
 
 
-    public void DIDResolve(String didString, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "DIDResolve");
+    public void forceDIDResolve(String didString, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "forceDIDResolve");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyDID().DIDResolve(didString);
+                return baseFragment.getMyDID().forceDIDResolve(didString);
             }
         });
         subscriberObservable(observer, observable, baseFragment);

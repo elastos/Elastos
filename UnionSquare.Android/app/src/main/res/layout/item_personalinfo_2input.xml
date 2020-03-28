@@ -6,7 +6,7 @@
 
     <EditText
         android:id="@+id/et1"
-        android:layout_width="100dp"
+        android:layout_width="90dp"
         android:layout_height="match_parent"
         android:background="@null"
         android:hint="@string/plzinputcode"

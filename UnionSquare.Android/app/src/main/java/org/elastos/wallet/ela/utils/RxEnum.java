@@ -76,6 +76,7 @@ public enum RxEnum {
     GETDEPOSITVOTR,//列表其他获得非active数据
     REFRESHMESSAGE,//刷新消息中心的数据
     VERTIFYPAYPASS,//回传密码
+    TRANSFERSUCESSPWD,//交易成功并回传密码
     SAVECREDENCIALTOWEB,//上传凭证到服务器
 
    /* enum Type {

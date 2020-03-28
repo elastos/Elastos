@@ -185,7 +185,7 @@ public class MyDID {
             VerifiableCredential cre = doc.getCredential("name");
             return cre.getSubject().getPropertyAsString("name");
         } catch (Exception e) {
-            ToastUtils.showShort(e.getMessage());
+            //ToastUtils.showShort(e.getMessage());
             return null;
         }
 
@@ -416,8 +416,11 @@ public class MyDID {
     }*/
 
 
-    public BaseEntity DIDResolve(String didString) {
+    public BaseEntity forceDIDResolve(String didString) {
         try {
+            if (TextUtils.isEmpty(didString)) {
+                return new CommmonObjEntity(SUCCESSCODE, null);
+            }
             return new CommmonObjEntity(SUCCESSCODE, new DID(didString).resolve(true));
         } catch (DIDException e) {
             ToastUtils.showShort(e.getMessage());
@@ -438,13 +441,7 @@ public class MyDID {
                 return new CommmonObjEntity(SUCCESSCODE, null);
             }
             DID did = new DID(didString);
-            DIDDocument doc = did.resolve();
-
-            if (doc == null) {
-                //没注册did
-                return new CommmonObjEntity(SUCCESSCODE, null);
-            }
-            return new CommmonObjEntity(SUCCESSCODE, doc);
+            return new CommmonObjEntity(SUCCESSCODE, did.resolve());
         } catch (DIDException e) {
             ToastUtils.showShort(e.getMessage());
             return exceptionProcess(e, "DIDResolve");
