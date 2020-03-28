@@ -92,7 +92,7 @@ script:
         return -1;
       fi;
       echo "--"${Failures}"--";
-      if [[ "${Failures}" -ge 3 ]]; then
+      if [[ "${Failures}" -gt 5 ]]; then
         echo "too much Failures";
         return $Failures;
       else
