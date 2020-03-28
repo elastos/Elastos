@@ -122,7 +122,7 @@ namespace Elastos {
 				if (_transactionCoinbase.ContainHash(tx->GetHash())) {
 					r = _transactionCoinbase._Update(tx) && r;
 				} else {
-					r = _transactionCoinbase._Put(tx);
+					r = _transactionCoinbase._Put(tx) && r;
 				}
 			}
 			for (TransactionPtr &tx : txNormal) {

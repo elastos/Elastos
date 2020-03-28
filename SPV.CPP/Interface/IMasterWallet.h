@@ -24,6 +24,7 @@
 #define __ELASTOS_SDK_IMASTERWALLET_H__
 
 #include "ISubWallet.h"
+#include "IEthSidechainSubWallet.h"
 
 namespace Elastos {
 	namespace ElaWallet {

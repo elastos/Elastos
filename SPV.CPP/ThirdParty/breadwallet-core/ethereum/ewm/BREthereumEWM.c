@@ -307,7 +307,7 @@ ewmFileServiceErrorHandler (BRFileServiceContext context,
             eth_log ("EWM", "FileService Error: IMPL: %s", error.u.impl.reason);
             break;
         case FILE_SERVICE_UNIX:
-            eth_log ("EWM", "FileService Error: UNIX: %s", strerror(error.u.unix.error));
+            eth_log ("EWM", "FileService Error: UNIX: %s", strerror(error.u._unix.error));
             break;
         case FILE_SERVICE_ENTITY:
             // This is likely a coding error too.

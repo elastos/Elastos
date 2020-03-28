@@ -95,6 +95,8 @@ namespace Elastos {
 				DepositNotFound = 20059,
 				TooMuchInputs = 20060,
 				LastVoteConfirming = 20061,
+				// ethereum side chain error code
+				InvalidUnitType = 21000,
 				Other = 29999,
 			} Code;
 		}

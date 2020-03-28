@@ -30,13 +30,10 @@
 #include <Plugin/Transaction/IDTransaction.h>
 #include <Plugin/Transaction/Payload/TransferAsset.h>
 #include <Account/SubAccount.h>
-#include <WalletCore/Base58.h>
 #include <WalletCore/CoinInfo.h>
 #include <SpvService/Config.h>
-#include <Wallet/UTXO.h>
 
 #include <algorithm>
-#include <boost/scoped_ptr.hpp>
 
 namespace fs = boost::filesystem;
 

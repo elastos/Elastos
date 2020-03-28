@@ -39,11 +39,8 @@ namespace Elastos {
 #define SELA_PER_ELA 100000000
 
 		class MasterWallet;
-
 		class Transaction;
-
 		class ChainConfig;
-
 		class CoinInfo;
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
