@@ -353,6 +353,11 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 					return err
 				}
 			case outputpayload.CRCImpeachment:
+				err := b.checkCRImpeachmentContent(
+					content, votePayload.Version, o.Value)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -360,12 +365,18 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 	return nil
 }
 
-func (b *BlockChain) checkCRImpeachmentContent(content outputpayload.VoteContent) error {
-	crMembersMap := getCRMembersMap(b.crCommittee.GetImpeachableMembers())
+func (b *BlockChain) checkCRImpeachmentContent(content outputpayload.VoteContent,
+	payloadVersion byte, amount common.Fixed64) error {
+	if payloadVersion < outputpayload.VoteProducerAndCRVersion {
+		return errors.New("payload VoteProducerVersion not support vote CRCProposal")
+	}
+
+	var totalVotes common.Fixed64
 	for _, cv := range content.CandidateVotes {
-		if _, ok := crMembersMap[common.BytesToHexString(cv.Candidate)]; !ok {
-			return errors.New("candidate should be one of the CR members")
-		}
+		totalVotes += cv.Votes
+	}
+	if totalVotes > amount {
+		return errors.New("total votes larger than output amount")
 	}
 	return nil
 }
@@ -425,9 +436,6 @@ func (b *BlockChain) checkVoteCRCProposalContent(
 	}
 
 	for _, cv := range content.CandidateVotes {
-		if cv.Votes > amount {
-			return errors.New("votes larger than output amount")
-		}
 		proposalHash, err := common.Uint256FromBytes(cv.Candidate)
 		if err != nil {
 			return err
