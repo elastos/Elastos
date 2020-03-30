@@ -115,15 +115,19 @@ public class ImportCredencialFragment extends BaseFragment implements NewBaseVie
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
             Uri uri = data.getData();
-            String chooseFilePath = FileChooseUtil.getInstance(getContext()).getChooseFileResultPath(uri);
-            Log.d("??", "选择文件返回：" + chooseFilePath);
-            File file = new File(chooseFilePath);
-            if (!file.getName().endsWith(".jwt")) {
+            try {
+                String chooseFilePath = FileChooseUtil.getInstance(getContext()).getChooseFileResultPath(uri);
+                Log.d("??", "选择文件返回：" + chooseFilePath);
+                File file = new File(chooseFilePath);
+                if (!file.getName().endsWith(".jwt")) {
+                    showToast(getString(R.string.importfailed));
+                } else {
+                    //读取并保存本地
+                    new CredencialPresenter().readFile(file, this);
+                    keep = true;
+                }
+            } catch (Exception e) {
                 showToast(getString(R.string.importfailed));
-            } else {
-                //读取并保存本地
-                new CredencialPresenter().readFile(file, this);
-                keep = true;
             }
         }
     }
@@ -186,7 +190,7 @@ public class ImportCredencialFragment extends BaseFragment implements NewBaseVie
         File file = getBaseActivity().getExternalFilesDir("credentials" + File.separator + did);
         did = did.substring(did.length() - 6);
         //    String fileName =  + new Date().getTime() / 1000 + ".jwt";
-        String fileName = did +"_"+ new Date().getTime() / 1000 +"_"+ getMyDID().getName(getMyDID().getDIDDocument()) + ".jwt";
+        String fileName = did + "_" + new Date().getTime() / 1000 + "_" + getMyDID().getName(getMyDID().getDIDDocument()) + ".jwt";
 
         return new File(file, fileName);
 

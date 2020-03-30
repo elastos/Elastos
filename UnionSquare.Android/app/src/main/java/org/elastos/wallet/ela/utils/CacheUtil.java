@@ -7,7 +7,6 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.bean.IPEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
-import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.mine.bean.MessageEntity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
@@ -27,14 +26,18 @@ public class CacheUtil {
     }
 
     public static void setArea(List<Area> list) {
-        if (list == null ) {
+        if (list == null) {
             return;
         }
         if (list.size() == 0) {
-            CacheDiskUtils.getInstance(file).remove("area" );
+            CacheDiskUtils.getInstance(file).remove("area");
             return;
         }
         CacheDiskUtils.getInstance(file).put("area", (Serializable) list, CacheDiskUtils.DAY * 360);
+    }
+
+    public static void clear() {
+        CacheDiskUtils.getInstance(file).clear();
     }
 
     public static ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> getProducerList() {
@@ -91,7 +94,7 @@ public class CacheUtil {
             return;
         }
         if (list.size() == 0) {
-            CacheDiskUtils.getInstance(file).remove("DIDInfoList" );
+            CacheDiskUtils.getInstance(file).remove("DIDInfoList");
             return;
         }
         CacheDiskUtils.getInstance(file).put("DIDInfoList", (Serializable) list, CacheDiskUtils.DAY * 360);
@@ -111,11 +114,11 @@ public class CacheUtil {
 
     //Set<String> serverList = new HashSet<>();
     public static void setIps(List<IPEntity> list) {
-        if (list == null ) {
+        if (list == null) {
             return;
         }
-        if ( list.size() == 0) {
-            CacheDiskUtils.getInstance(file).remove("ips" );
+        if (list.size() == 0) {
+            CacheDiskUtils.getInstance(file).remove("ips");
             return;
         }
         CacheDiskUtils.getInstance(file).put("ips", (Serializable) list, CacheDiskUtils.DAY * 360);
@@ -123,11 +126,11 @@ public class CacheUtil {
 
 
     private static void setMessage(List<MessageEntity> list, String key) {
-        if (list == null ) {
+        if (list == null) {
             return;
         }
-        if ( list.size() == 0) {
-            CacheDiskUtils.getInstance(file).remove(key );
+        if (list.size() == 0) {
+            CacheDiskUtils.getInstance(file).remove(key);
             return;
         }
         CacheDiskUtils.getInstance(file).put(key, (Serializable) list, CacheDiskUtils.DAY * 360);

@@ -148,13 +148,14 @@ public class SPUtil {
 
     //是不是第一次登陆
     public boolean getFristLogin() {
-        return getSharedPreferences(detrust_fileName).getBoolean("isfrist", true);
+        return getSharedPreferences(detrust_fileName).getBoolean("isfrist1", true);
     }
 
     //设置不是第一次登陆
     public void setFristLogin() {
         SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
-        edit.putBoolean("isfrist", false);
+        edit.remove("isfrist");
+        edit.putBoolean("isfrist1", false);
         edit.commit();
     }
 

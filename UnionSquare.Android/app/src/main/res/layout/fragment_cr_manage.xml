@@ -138,7 +138,7 @@
             <TextView
                 android:id="@+id/tv_intro_detail"
                 android:layout_width="match_parent"
-                android:layout_height="240dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
                 android:padding="15dp"
                 android:scrollbars="vertical"
@@ -245,7 +245,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:layout_marginBottom="25dp"
                     android:gravity="center"
                     android:orientation="horizontal">
 
@@ -280,7 +279,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="28dp"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="60dp"
             android:layout_marginRight="28dp"
             android:layout_marginBottom="28dp"
             android:orientation="vertical">
@@ -360,10 +359,10 @@
             android:id="@+id/sb_tq"
             style="@style/PublicButton"
             android:layout_height="@dimen/px80"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="120dp"
             android:layout_marginBottom="28dp"
             android:text="@string/withdraw_registration_deposit"
-            android:visibility="gone"
+            android:visibility="invisible"
             app:sCornersRadius="0dp" />
 
 
