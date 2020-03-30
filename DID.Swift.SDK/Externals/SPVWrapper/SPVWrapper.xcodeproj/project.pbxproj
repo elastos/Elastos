@@ -7,20 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11107CCE2396AC1700AE3B42 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC92396AC0000AE3B42 /* libboost_filesystem.a */; };
-		11107CCF2396AC1700AE3B42 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC02396AC0000AE3B42 /* libboost_system.a */; };
-		11107CD02396AC1700AE3B42 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC42396AC0000AE3B42 /* libboost_thread.a */; };
-		11107CD12396AC1700AE3B42 /* libcjson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC22396AC0000AE3B42 /* libcjson.a */; };
-		11107CD22396AC1700AE3B42 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC62396AC0000AE3B42 /* libcrypto.a */; };
-		11107CD32396AC1700AE3B42 /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC52396AC0000AE3B42 /* libcrystal.a */; };
-		11107CD52396AC1700AE3B42 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCD2396AC0000AE3B42 /* libcurl.a */; };
-		11107CD62396AC1700AE3B42 /* libfruit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC32396AC0000AE3B42 /* libfruit.a */; };
-		11107CD72396AC1700AE3B42 /* libspdlog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC72396AC0000AE3B42 /* libspdlog.a */; };
-		11107CD82396AC1700AE3B42 /* libspvadapter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCA2396AC0000AE3B42 /* libspvadapter.a */; };
-		11107CD92396AC1800AE3B42 /* libspvsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC12396AC0000AE3B42 /* libspvsdk.a */; };
-		11107CDA2396AC1800AE3B42 /* libsqlite3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CBF2396AC0000AE3B42 /* libsqlite3.a */; };
-		11107CDB2396AC1800AE3B42 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCB2396AC0000AE3B42 /* libssl.a */; };
-		11107CDC2396AC1800AE3B42 /* libtls.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCC2396AC0000AE3B42 /* libtls.a */; };
 		11267029238CC7120086740D /* SPVWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 11267027238CC7120086740D /* SPVWrapper.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1126705A238CCB4C0086740D /* CSPVWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11267059238CCB4C0086740D /* CSPVWrapper.swift */; };
 		1126705C238CCBEE0086740D /* SPV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1126705B238CCBEE0086740D /* SPV.swift */; };
@@ -30,6 +16,21 @@
 		11267064238CCCA60086740D /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267063238CCC9C0086740D /* libz.tbd */; };
 		11601C9D2393712F008E407C /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11601C9C2393712F008E407C /* ExtensionInt.swift */; };
 		11641BBD23B729490037016B /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 11641BBC23B729480037016B /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1170A7E6242DC1B7009904B7 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC92396AC0000AE3B42 /* libboost_filesystem.a */; };
+		1170A7E7242DC1B7009904B7 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC02396AC0000AE3B42 /* libboost_system.a */; };
+		1170A7E8242DC1B7009904B7 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC42396AC0000AE3B42 /* libboost_thread.a */; };
+		1170A7E9242DC1B7009904B7 /* libcjson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC22396AC0000AE3B42 /* libcjson.a */; };
+		1170A7EA242DC1B7009904B7 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC62396AC0000AE3B42 /* libcrypto.a */; };
+		1170A7EB242DC1B7009904B7 /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC52396AC0000AE3B42 /* libcrystal.a */; };
+		1170A7EC242DC1B7009904B7 /* libcunit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC82396AC0000AE3B42 /* libcunit.a */; };
+		1170A7ED242DC1B7009904B7 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCD2396AC0000AE3B42 /* libcurl.a */; };
+		1170A7EE242DC1B7009904B7 /* libfruit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC32396AC0000AE3B42 /* libfruit.a */; };
+		1170A7EF242DC1B7009904B7 /* libspdlog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC72396AC0000AE3B42 /* libspdlog.a */; };
+		1170A7F0242DC1B7009904B7 /* libspvadapter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCA2396AC0000AE3B42 /* libspvadapter.a */; };
+		1170A7F1242DC1B8009904B7 /* libspvsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC12396AC0000AE3B42 /* libspvsdk.a */; };
+		1170A7F2242DC1B8009904B7 /* libsqlite3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CBF2396AC0000AE3B42 /* libsqlite3.a */; };
+		1170A7F3242DC1B8009904B7 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCB2396AC0000AE3B42 /* libssl.a */; };
+		1170A7F4242DC1B8009904B7 /* libtls.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCC2396AC0000AE3B42 /* libtls.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -97,24 +98,25 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11107CCF2396AC1700AE3B42 /* libboost_system.a in Frameworks */,
+				1170A7E7242DC1B7009904B7 /* libboost_system.a in Frameworks */,
 				11267062238CCC930086740D /* libc++abi.tbd in Frameworks */,
-				11107CDC2396AC1800AE3B42 /* libtls.a in Frameworks */,
-				11107CDB2396AC1800AE3B42 /* libssl.a in Frameworks */,
+				1170A7F4242DC1B8009904B7 /* libtls.a in Frameworks */,
+				1170A7F3242DC1B8009904B7 /* libssl.a in Frameworks */,
 				11267061238CCC930086740D /* libc++.tbd in Frameworks */,
-				11107CD82396AC1700AE3B42 /* libspvadapter.a in Frameworks */,
-				11107CCE2396AC1700AE3B42 /* libboost_filesystem.a in Frameworks */,
-				11107CD52396AC1700AE3B42 /* libcurl.a in Frameworks */,
-				11107CD32396AC1700AE3B42 /* libcrystal.a in Frameworks */,
-				11107CD02396AC1700AE3B42 /* libboost_thread.a in Frameworks */,
-				11107CD12396AC1700AE3B42 /* libcjson.a in Frameworks */,
+				1170A7F0242DC1B7009904B7 /* libspvadapter.a in Frameworks */,
+				1170A7EC242DC1B7009904B7 /* libcunit.a in Frameworks */,
+				1170A7E6242DC1B7009904B7 /* libboost_filesystem.a in Frameworks */,
+				1170A7ED242DC1B7009904B7 /* libcurl.a in Frameworks */,
+				1170A7EB242DC1B7009904B7 /* libcrystal.a in Frameworks */,
+				1170A7E8242DC1B7009904B7 /* libboost_thread.a in Frameworks */,
+				1170A7E9242DC1B7009904B7 /* libcjson.a in Frameworks */,
 				11267064238CCCA60086740D /* libz.tbd in Frameworks */,
 				11267060238CCC930086740D /* libc++.1.tbd in Frameworks */,
-				11107CD92396AC1800AE3B42 /* libspvsdk.a in Frameworks */,
-				11107CD62396AC1700AE3B42 /* libfruit.a in Frameworks */,
-				11107CDA2396AC1800AE3B42 /* libsqlite3.a in Frameworks */,
-				11107CD72396AC1700AE3B42 /* libspdlog.a in Frameworks */,
-				11107CD22396AC1700AE3B42 /* libcrypto.a in Frameworks */,
+				1170A7F1242DC1B8009904B7 /* libspvsdk.a in Frameworks */,
+				1170A7EE242DC1B7009904B7 /* libfruit.a in Frameworks */,
+				1170A7F2242DC1B8009904B7 /* libsqlite3.a in Frameworks */,
+				1170A7EF242DC1B7009904B7 /* libspdlog.a in Frameworks */,
+				1170A7EA242DC1B7009904B7 /* libcrypto.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

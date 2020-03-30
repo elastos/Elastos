@@ -27,8 +27,11 @@ extern "C" {
 
 typedef struct SpvDidAdapter SpvDidAdapter;
 
-DID_API SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
-        const char *network, const char *resolver);
+typedef void SpvTransactionCallback(const char *txid, int status,
+        const char *msg, void *context);
+
+DID_API SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir,
+        const char *walletId, const char *network);
 
 DID_API void SpvDidAdapter_Destroy(SpvDidAdapter *adapter);
 
@@ -37,8 +40,10 @@ DID_API int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter);
 DID_API const char *SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         const char *payload, const char *memo, const char *password);
 
-DID_API const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter,
-        const char *did, int all);
+DID_API void SpvDidAdapter_CreateIdTransactionEx(SpvDidAdapter *adapter,
+        const char *payload, const char *memo, int confirms,
+        SpvTransactionCallback *txCallback, void *context,
+        const char *password);
 
 DID_API void SpvDidAdapter_FreeMemory(SpvDidAdapter *adapter, void *mem);
 

@@ -590,7 +590,7 @@ public class DIDStore: NSObject {
                    waitForConfirms: Int,
                using storePassword: String) throws -> String {
 
-        return try publishDid(did, 0, nil, storePassword, false)
+        return try publishDid(did, waitForConfirms, nil, storePassword, false)
     }
 
     public func publishDid(for did: String,

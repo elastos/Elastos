@@ -6,5 +6,5 @@ public protocol DIDAdapter {
     func createIdTransaction(_ payload: String,
                              _ memo: String?,
                              _ confirms: Int,
-                             _ callback: TransactionCallback)
+                             _ callback: @escaping TransactionCallback)
 }

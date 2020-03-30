@@ -436,6 +436,10 @@ public class VerifiableCredential: DIDObject {
 
         // type
         generator.writeFieldName(Constants.TYPE)
+        _types.sort { (a, b) -> Bool in
+            let compareResult = a.compare(b)
+            return compareResult == ComparisonResult.orderedAscending
+        }
         generator.writeStartArray()
         for type in getTypes() {
             generator.writeString(type)

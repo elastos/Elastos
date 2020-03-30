@@ -5,8 +5,22 @@ import SPVWrapper
 
 public typealias PasswordCallback = (_ walletDir: String, _ walletId: String) -> String?
 public class SPVAdaptor: DIDAdapter {
-    public func createIdTransaction(_ payload: String, _ memo: String?, _ confirms: Int, _ callback: (String, Int, String?) -> Void) {
+    public func createIdTransaction(_ payload: String, _ memo: String?, _ confirms: Int, _ callback: @escaping (String, Int, String?) -> Void) {
         
+        var password = passwordCallback!(walletDir, walletId)
+        if password == nil {
+            password = ""
+        }
+
+        var confirm = confirms
+        if confirm < 0 {
+            confirm = 0
+        } else if confirm > 1 {
+            confirm = 1
+        }
+        SPV.createIdTransactionEx(handle, payload, memo, confirm, password!) { (txid, status, msg) in
+            callback(txid, status, msg)
+        }
     }
 
     var walletDir: String!
@@ -33,23 +47,7 @@ public class SPVAdaptor: DIDAdapter {
     public func isAvailable() throws -> Bool {
        return SPV.isAvailable(handle)
     }
-    
-    public func createIdTransaction(_ payload: String, _ memo: String?) throws -> String {
-        let password = passwordCallback!(walletDir, walletId)
-        guard password != nil else {
-            throw DIDError.transactionError("password is not nil.")
-        }
-        
-        guard handle != nil else {
-            throw DIDError.transactionError("Unkonw error.")
-        }
-        let re = SPV.createIdTransaction(handle, password!, payload, memo)
-        guard re != nil else {
-            throw DIDError.transactionError("Unkonw error.")
-        }
-        return re!
-    }
-    
+
     public func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String {
         var resuleString: String?
         let url:URL! = URL(string: "http://api.elastos.io:21606")

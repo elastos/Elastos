@@ -80,8 +80,8 @@ class TestDataGenerator: XCTestCase {
         
         temp = try TestData.generateKeypair()
         let controller  = HDKey.DerivedKey.getAddress(temp.getPublicKeyBytes())
-        _ = try db.appendAuthorizationKey(with: "recovery", controller: controller, keyBase58: temp.getPublicKeyBase58())
         
+        _ = try db.appendAuthorizationKey(with: "recovery", controller: DID(DID.METHOD, controller), keyBase58: temp.getPublicKeyBase58())
         _ = try db.appendService(with: "openid", type: "OpenIdConnectVersion1.0Service", endpoint: "https://openid.example.com/")
         _ = try db.appendService(with: "vcr", type: "CredentialRepositoryService", endpoint: "https://did.example.com/credentials")
         _ = try db.appendService(with: "carrier", type: "CarrierAddress", endpoint: "carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d")
@@ -287,23 +287,24 @@ class TestDataGenerator: XCTestCase {
                         break
                     }
                     else {
-                        print("...")
+                        print(".")
                     }
                     wait(interval: 30)
                 }
                 
-                let doc = try store.newDid(using: storePass)
+                var doc = try store.newDid(using: storePass)
                 let selfIssuer: VerifiableCredentialIssuer = try VerifiableCredentialIssuer(doc)
                 
                 let did: DID = doc.subject
                 var properties: [String: String] = ["name": "John", "nation": "Singapore", "language": "English", "email": "john@example.com"]
                 
-                let cb = selfIssuer.editingVerifiableCredentialFor(did: did)
+                var cb = selfIssuer.editingVerifiableCredentialFor(did: did)
                 let vcProfile: VerifiableCredential = try cb.withId("profile")
                     .withTypes("BasicProfileCredential", "SelfProclaimedCredential")
                     .withProperties(properties)
                     .sealed(using: storePass)
                 
+                cb = selfIssuer.editingVerifiableCredentialFor(did: doc.subject)
                 properties.removeAll()
                 properties = ["email": "john@gmail.com"]
                 
@@ -312,6 +313,7 @@ class TestDataGenerator: XCTestCase {
                     .withProperties(properties)
                     .sealed(using: storePass)
                 
+                cb = selfIssuer.editingVerifiableCredentialFor(did: doc.subject)
                 properties.removeAll()
                 properties = ["nation": "Singapore", "passport": "S653258Z07"]
                 
@@ -320,6 +322,7 @@ class TestDataGenerator: XCTestCase {
                     .withProperties(properties)
                     .sealed(using: storePass)
                 
+                cb = selfIssuer.editingVerifiableCredentialFor(did: doc.subject)
                 properties.removeAll()
                 properties = ["twitter": "@john"]
                 
@@ -329,11 +332,11 @@ class TestDataGenerator: XCTestCase {
                     .sealed(using: storePass)
                 
                 let db: DIDDocumentBuilder = doc.editing()
-                _ = try db.appendCredential(with: vcProfile)
-                _ = try db.appendCredential(with: vcEmail)
-                _ = try db.appendCredential(with: vcPassport)
-                _ = try db.appendCredential(with: vcTwitter)
-                _ = try db.sealed(using: storePass)
+                doc = try db.appendCredential(with: vcProfile)
+                    .appendCredential(with: vcEmail)
+                    .appendCredential(with: vcPassport)
+                    .appendCredential(with: vcTwitter)
+                    .sealed(using: storePass)
                 try store.storeDid(using: doc)
                 
                 print("******** Publishing DID:\(doc.subject)")
@@ -347,7 +350,7 @@ class TestDataGenerator: XCTestCase {
                         print(" OK")
                         break
                     } catch {
-                        print("...")
+                        print(".")
                     }
                 }
                 dids = "\(dids)\(doc.subject)\n"

@@ -212,6 +212,13 @@ public class DIDDocumentBuilder {
         return try appendAuthorizationKey(DIDURL(getSubject(), id), DID(controller), keyBase58)
     }
 
+    public func appendAuthorizationKey(with id: String,
+                                    controller: DID,
+                                     keyBase58: String) throws -> DIDDocumentBuilder {
+
+        return try appendAuthorizationKey(DIDURL(getSubject(), id), controller, keyBase58)
+    }
+
     private func authorizationDid(_ id: DIDURL,
                                   _ controller: DID,
                                   _ key: DIDURL?) throws -> DIDDocumentBuilder {

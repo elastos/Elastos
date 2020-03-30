@@ -27,7 +27,7 @@ class DummyAdapter: DIDAdapter, DIDResolver {
         return str
     }
     
-    func createIdTransaction(_ payload: String, _ memo: String?, _ confirms: Int, _ callback: (String, Int, String?) -> Void) {
+    func createIdTransaction(_ payload: String, _ memo: String?, _ confirms: Int, _ callback: @escaping (String, Int, String?) -> Void) {
         
         do {
             let txid = try createIdTransaction(payload, memo)

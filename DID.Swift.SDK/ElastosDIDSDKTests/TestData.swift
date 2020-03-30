@@ -59,8 +59,8 @@ class TestData: XCTestCase {
                 let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return walletPassword})
                 TestData.spvAdapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
             }
-            adapter = TestData.spvAdapter!
-            try DIDBackend.initializeInstance((adapter as! DIDResolver), TestData.getResolverCacheDir())
+                adapter = TestData.spvAdapter!
+            try DIDBackend.initializeInstance(resolver, TestData.getResolverCacheDir())
         }
         try ResolverCache.reset()
         TestData.deleteFile(storeRoot)
@@ -83,6 +83,35 @@ class TestData: XCTestCase {
             try store.storeDid(using: doc)
         }
         return doc
+    }
+
+    func waitForWalletAvaliable() throws {
+        var spvAdapter: SPVAdaptor? = nil
+        if adapter is SPVAdaptor {
+            spvAdapter = adapter as? SPVAdaptor
+        }
+        if spvAdapter != nil {
+            while true {
+                if try spvAdapter!.isAvailable() {
+                    print("OK")
+                    break
+                }
+                else {
+                    print(".")
+                }
+                wait(interval: 30)
+            }
+        }
+    }
+
+    func wait(interval: Double) {
+
+        let lock = XCTestExpectation(description: "")
+
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + interval) {
+            lock.fulfill()
+        }
+        wait(for: [lock], timeout: interval + 10)
     }
     
     func importPrivateKey(_ id: DIDURL, _ fileName: String, _ type: String) throws {

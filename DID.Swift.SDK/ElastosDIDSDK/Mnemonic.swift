@@ -12,7 +12,7 @@ public class Mnemonic {
     public static let SPANISH = "Spanish";
 
     public class func generate(_ language: String) throws -> String {
-        guard language.isEmpty else {
+        guard !language.isEmpty else {
             throw DIDError.illegalArgument()
         }
 

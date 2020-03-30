@@ -4,7 +4,7 @@ import Foundation
 public class SPV {
     
     public class func create(_ walletDir: String, _ walletId: String, _ network: String, _ resolver: String) -> OpaquePointer {
-        return SpvDidAdapter_Create(walletDir, walletId, network, resolver)
+        return SpvDidAdapter_Create(walletDir, walletId, network)
     }
     
     public class func destroy(_ handle: OpaquePointer) {
@@ -22,5 +22,33 @@ public class SPV {
            return String(cString: re!)
         }
         return nil
+    }
+
+    public typealias CSpvTransactionCallbackHandler = (String, Int, String?) -> Void
+
+    public class func createIdTransactionEx(_ handle: OpaquePointer, _ payload: String, _ memo: String?, _ confirms: Int, _ passwd: String, callback: @escaping CSpvTransactionCallbackHandler) {
+
+        let cCallback: CSpvTransactionCallback = { (ctxid, cstatus, cmsg, ccontext) in
+
+            let ectxt = Unmanaged<AnyObject>.fromOpaque(ccontext!)
+                .takeRetainedValue() as! [AnyObject?]
+            let handler = ectxt[1] as! CSpvTransactionCallbackHandler
+            let status: Int = Int(cstatus)
+            var txid: String = ""
+            if ctxid != nil {
+                txid = String(cString: ctxid!)
+            }
+            var msg: String? = nil
+            if cmsg != nil {
+                msg = String(cString: cmsg!)
+            }
+            handler(txid, status, msg)
+        }
+
+        let econtext: [AnyObject?] = [self, callback as AnyObject]
+        let unmanaged = Unmanaged.passRetained(econtext as AnyObject)
+        let cctxt = unmanaged.toOpaque()
+
+        SpvDidAdapter_CreateIdTransactionEx(handle, payload, memo, confirms, cCallback, cctxt, passwd)
     }
 }
