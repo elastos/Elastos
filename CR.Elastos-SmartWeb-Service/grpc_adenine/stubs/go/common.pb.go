@@ -25,49 +25,8 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 // The request message.
-type RequestMnemonic struct {
-	Mnemonic             string   `protobuf:"bytes,1,opt,name=mnemonic,proto3" json:"mnemonic,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *RequestMnemonic) Reset()         { *m = RequestMnemonic{} }
-func (m *RequestMnemonic) String() string { return proto.CompactTextString(m) }
-func (*RequestMnemonic) ProtoMessage()    {}
-func (*RequestMnemonic) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{0}
-}
-
-func (m *RequestMnemonic) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_RequestMnemonic.Unmarshal(m, b)
-}
-func (m *RequestMnemonic) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_RequestMnemonic.Marshal(b, m, deterministic)
-}
-func (m *RequestMnemonic) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RequestMnemonic.Merge(m, src)
-}
-func (m *RequestMnemonic) XXX_Size() int {
-	return xxx_messageInfo_RequestMnemonic.Size(m)
-}
-func (m *RequestMnemonic) XXX_DiscardUnknown() {
-	xxx_messageInfo_RequestMnemonic.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_RequestMnemonic proto.InternalMessageInfo
-
-func (m *RequestMnemonic) GetMnemonic() string {
-	if m != nil {
-		return m.Mnemonic
-	}
-	return ""
-}
-
-// The request message.
 type Request struct {
-	SecretKey            string   `protobuf:"bytes,1,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
-	Did                  string   `protobuf:"bytes,2,opt,name=did,proto3" json:"did,omitempty"`
+	Input                string   `protobuf:"bytes,1,opt,name=input,proto3" json:"input,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -77,7 +36,7 @@ func (m *Request) Reset()         { *m = Request{} }
 func (m *Request) String() string { return proto.CompactTextString(m) }
 func (*Request) ProtoMessage()    {}
 func (*Request) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{1}
+	return fileDescriptor_555bd8c177793206, []int{0}
 }
 
 func (m *Request) XXX_Unmarshal(b []byte) error {
@@ -98,23 +57,16 @@ func (m *Request) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Request proto.InternalMessageInfo
 
-func (m *Request) GetSecretKey() string {
+func (m *Request) GetInput() string {
 	if m != nil {
-		return m.SecretKey
-	}
-	return ""
-}
-
-func (m *Request) GetDid() string {
-	if m != nil {
-		return m.Did
+		return m.Input
 	}
 	return ""
 }
 
 // The response message
 type Response struct {
-	ApiKey               string   `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
+	Output               string   `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"`
 	StatusMessage        string   `protobuf:"bytes,2,opt,name=status_message,json=statusMessage,proto3" json:"status_message,omitempty"`
 	Status               bool     `protobuf:"varint,3,opt,name=status,proto3" json:"status,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -126,7 +78,7 @@ func (m *Response) Reset()         { *m = Response{} }
 func (m *Response) String() string { return proto.CompactTextString(m) }
 func (*Response) ProtoMessage()    {}
 func (*Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{2}
+	return fileDescriptor_555bd8c177793206, []int{1}
 }
 
 func (m *Response) XXX_Unmarshal(b []byte) error {
@@ -147,9 +99,9 @@ func (m *Response) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Response proto.InternalMessageInfo
 
-func (m *Response) GetApiKey() string {
+func (m *Response) GetOutput() string {
 	if m != nil {
-		return m.ApiKey
+		return m.Output
 	}
 	return ""
 }
@@ -169,61 +121,59 @@ func (m *Response) GetStatus() bool {
 }
 
 func init() {
-	proto.RegisterType((*RequestMnemonic)(nil), "common.RequestMnemonic")
 	proto.RegisterType((*Request)(nil), "common.Request")
 	proto.RegisterType((*Response)(nil), "common.Response")
 }
 
-func init() { proto.RegisterFile("common.proto", fileDescriptor_555bd8c177793206) }
+func init() {
+	proto.RegisterFile("common.proto", fileDescriptor_555bd8c177793206)
+}
 
 var fileDescriptor_555bd8c177793206 = []byte{
-	// 262 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x91, 0x41, 0x4b, 0xc3, 0x40,
-	0x10, 0x85, 0x4d, 0x0b, 0xdb, 0x64, 0x50, 0x5b, 0xe7, 0x60, 0x43, 0x40, 0x28, 0x01, 0xa1, 0x17,
-	0x8b, 0xe8, 0x49, 0x4f, 0x16, 0x0f, 0x25, 0x94, 0x42, 0xc9, 0x1f, 0x28, 0xdb, 0x74, 0x90, 0x20,
-	0xbb, 0x1b, 0x33, 0xdb, 0x43, 0xae, 0xfe, 0x72, 0x69, 0x76, 0xa9, 0x12, 0x3d, 0x48, 0x6f, 0xf3,
-	0xbe, 0x99, 0xf7, 0x26, 0x93, 0x85, 0xf3, 0xc2, 0x28, 0x65, 0xf4, 0xac, 0xaa, 0x8d, 0x35, 0x28,
-	0x9c, 0x4a, 0xef, 0x60, 0x98, 0xd3, 0xc7, 0x9e, 0xd8, 0xae, 0x34, 0x29, 0xa3, 0xcb, 0x02, 0x13,
-	0x08, 0x95, 0xaf, 0xe3, 0x60, 0x12, 0x4c, 0xa3, 0xfc, 0xa8, 0xd3, 0x67, 0x18, 0xf8, 0x71, 0xbc,
-	0x01, 0x60, 0x2a, 0x6a, 0xb2, 0x9b, 0x77, 0x6a, 0xfc, 0x60, 0xe4, 0xc8, 0x92, 0x1a, 0x1c, 0x41,
-	0x7f, 0x57, 0xee, 0xe2, 0x5e, 0xcb, 0x0f, 0x65, 0xba, 0x85, 0x30, 0x27, 0xae, 0x8c, 0x66, 0xc2,
-	0x31, 0x0c, 0x64, 0x55, 0xfe, 0x70, 0x0a, 0x59, 0x95, 0x07, 0xdb, 0x2d, 0x5c, 0xb2, 0x95, 0x76,
-	0xcf, 0x1b, 0x45, 0xcc, 0xf2, 0x8d, 0x7c, 0xc2, 0x85, 0xa3, 0x2b, 0x07, 0xf1, 0x1a, 0x84, 0x03,
-	0x71, 0x7f, 0x12, 0x4c, 0xc3, 0xdc, 0xab, 0x87, 0xcf, 0x1e, 0x88, 0xd7, 0xf6, 0x32, 0xcc, 0x20,
-	0x59, 0x90, 0xa6, 0x5a, 0x5a, 0x9a, 0xaf, 0xb3, 0xee, 0x91, 0xe3, 0x99, 0xff, 0x1d, 0x9d, 0x46,
-	0x32, 0xfa, 0x6e, 0xb8, 0x6f, 0x4d, 0xcf, 0xf0, 0x09, 0xf0, 0x77, 0x14, 0x0e, 0x3b, 0x11, 0x7f,
-	0x5a, 0x5f, 0xe0, 0x6a, 0x41, 0x76, 0xbe, 0xce, 0x96, 0xd4, 0x9c, 0xb6, 0xfc, 0x1e, 0xa2, 0x63,
-	0xc2, 0xbf, 0x76, 0x6e, 0x45, 0xfb, 0xc4, 0x8f, 0x5f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x94, 0x82,
-	0x36, 0x59, 0xf2, 0x01, 0x00, 0x00,
+	// 218 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x49, 0xce, 0xcf, 0xcd,
+	0xcd, 0xcf, 0xd3, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x83, 0xf0, 0x94, 0xe4, 0xb9, 0xd8,
+	0x83, 0x52, 0x0b, 0x4b, 0x53, 0x8b, 0x4b, 0x84, 0x44, 0xb8, 0x58, 0x33, 0xf3, 0x0a, 0x4a, 0x4b,
+	0x24, 0x18, 0x15, 0x18, 0x35, 0x38, 0x83, 0x20, 0x1c, 0xa5, 0x44, 0x2e, 0x8e, 0xa0, 0xd4, 0xe2,
+	0x82, 0xfc, 0xbc, 0xe2, 0x54, 0x21, 0x31, 0x2e, 0xb6, 0xfc, 0xd2, 0x12, 0x84, 0x12, 0x28, 0x4f,
+	0x48, 0x95, 0x8b, 0xaf, 0xb8, 0x24, 0xb1, 0xa4, 0xb4, 0x38, 0x3e, 0x37, 0xb5, 0xb8, 0x38, 0x31,
+	0x3d, 0x55, 0x82, 0x09, 0x2c, 0xcf, 0x0b, 0x11, 0xf5, 0x85, 0x08, 0x82, 0xb4, 0x43, 0x04, 0x24,
+	0x98, 0x15, 0x18, 0x35, 0x38, 0x82, 0xa0, 0x3c, 0xa3, 0x4f, 0x8c, 0x5c, 0x6c, 0xce, 0x60, 0xe7,
+	0x08, 0x39, 0x72, 0x49, 0xb9, 0xa7, 0xe6, 0xa5, 0x16, 0x25, 0x96, 0xa4, 0x3a, 0x06, 0x78, 0x42,
+	0x5d, 0xe6, 0x9b, 0x97, 0x9a, 0x9b, 0x9f, 0x97, 0x99, 0x2c, 0xc4, 0xaf, 0x07, 0xf5, 0x03, 0x54,
+	0x42, 0x4a, 0x00, 0x21, 0x00, 0x71, 0xa2, 0x12, 0x83, 0x90, 0x25, 0x97, 0x10, 0xa6, 0x11, 0xc4,
+	0x69, 0xb5, 0xe0, 0x12, 0x74, 0x4f, 0x2d, 0x71, 0x0c, 0xf0, 0xf4, 0x4e, 0xad, 0x24, 0xcd, 0x52,
+	0x03, 0x2e, 0x4e, 0xb8, 0x4e, 0xa2, 0x74, 0x24, 0xb1, 0x81, 0xe3, 0xc1, 0x18, 0x10, 0x00, 0x00,
+	0xff, 0xff, 0x0e, 0x71, 0xa6, 0x45, 0x97, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // CommonClient is the client API for Common service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CommonClient interface {
-	GenerateAPIRequestMnemonic(ctx context.Context, in *RequestMnemonic, opts ...grpc.CallOption) (*Response, error)
+	GenerateAPIRequestMnemonic(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 	GenerateAPIRequest(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
-	GetAPIKeyMnemonic(ctx context.Context, in *RequestMnemonic, opts ...grpc.CallOption) (*Response, error)
+	GetAPIKeyMnemonic(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 	GetAPIKey(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 }
 
 type commonClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewCommonClient(cc *grpc.ClientConn) CommonClient {
+func NewCommonClient(cc grpc.ClientConnInterface) CommonClient {
 	return &commonClient{cc}
 }
 
-func (c *commonClient) GenerateAPIRequestMnemonic(ctx context.Context, in *RequestMnemonic, opts ...grpc.CallOption) (*Response, error) {
+func (c *commonClient) GenerateAPIRequestMnemonic(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
 	err := c.cc.Invoke(ctx, "/common.Common/GenerateAPIRequestMnemonic", in, out, opts...)
 	if err != nil {
@@ -241,7 +191,7 @@ func (c *commonClient) GenerateAPIRequest(ctx context.Context, in *Request, opts
 	return out, nil
 }
 
-func (c *commonClient) GetAPIKeyMnemonic(ctx context.Context, in *RequestMnemonic, opts ...grpc.CallOption) (*Response, error) {
+func (c *commonClient) GetAPIKeyMnemonic(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
 	err := c.cc.Invoke(ctx, "/common.Common/GetAPIKeyMnemonic", in, out, opts...)
 	if err != nil {
@@ -261,9 +211,9 @@ func (c *commonClient) GetAPIKey(ctx context.Context, in *Request, opts ...grpc.
 
 // CommonServer is the server API for Common service.
 type CommonServer interface {
-	GenerateAPIRequestMnemonic(context.Context, *RequestMnemonic) (*Response, error)
+	GenerateAPIRequestMnemonic(context.Context, *Request) (*Response, error)
 	GenerateAPIRequest(context.Context, *Request) (*Response, error)
-	GetAPIKeyMnemonic(context.Context, *RequestMnemonic) (*Response, error)
+	GetAPIKeyMnemonic(context.Context, *Request) (*Response, error)
 	GetAPIKey(context.Context, *Request) (*Response, error)
 }
 
@@ -271,13 +221,13 @@ type CommonServer interface {
 type UnimplementedCommonServer struct {
 }
 
-func (*UnimplementedCommonServer) GenerateAPIRequestMnemonic(ctx context.Context, req *RequestMnemonic) (*Response, error) {
+func (*UnimplementedCommonServer) GenerateAPIRequestMnemonic(ctx context.Context, req *Request) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateAPIRequestMnemonic not implemented")
 }
 func (*UnimplementedCommonServer) GenerateAPIRequest(ctx context.Context, req *Request) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateAPIRequest not implemented")
 }
-func (*UnimplementedCommonServer) GetAPIKeyMnemonic(ctx context.Context, req *RequestMnemonic) (*Response, error) {
+func (*UnimplementedCommonServer) GetAPIKeyMnemonic(ctx context.Context, req *Request) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAPIKeyMnemonic not implemented")
 }
 func (*UnimplementedCommonServer) GetAPIKey(ctx context.Context, req *Request) (*Response, error) {
@@ -289,7 +239,7 @@ func RegisterCommonServer(s *grpc.Server, srv CommonServer) {
 }
 
 func _Common_GenerateAPIRequestMnemonic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RequestMnemonic)
+	in := new(Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -301,7 +251,7 @@ func _Common_GenerateAPIRequestMnemonic_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/common.Common/GenerateAPIRequestMnemonic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommonServer).GenerateAPIRequestMnemonic(ctx, req.(*RequestMnemonic))
+		return srv.(CommonServer).GenerateAPIRequestMnemonic(ctx, req.(*Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -325,7 +275,7 @@ func _Common_GenerateAPIRequest_Handler(srv interface{}, ctx context.Context, de
 }
 
 func _Common_GetAPIKeyMnemonic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RequestMnemonic)
+	in := new(Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -337,7 +287,7 @@ func _Common_GetAPIKeyMnemonic_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/common.Common/GetAPIKeyMnemonic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommonServer).GetAPIKeyMnemonic(ctx, req.(*RequestMnemonic))
+		return srv.(CommonServer).GetAPIKeyMnemonic(ctx, req.(*Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }

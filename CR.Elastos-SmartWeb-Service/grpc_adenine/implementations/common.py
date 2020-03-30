@@ -3,6 +3,7 @@ import random
 import string
 import datetime
 import jwt
+import json
 from decouple import config
 from grpc_adenine.database import db_engine
 from grpc_adenine.database.user import Users
@@ -29,6 +30,9 @@ class Common(common_pb2_grpc.CommonServicer):
             status_message = 'Authentication Error'
             logging.debug(f"{secret_key} : {status_message}")
             return common_pb2.Response(output='', status_message=status_message, status=False)
+
+        if(type(jwt_info)==str):
+            jwt_info = json.loads(jwt_info)
 
         mnemonic = jwt_info['mnemonic']
 
@@ -62,6 +66,9 @@ class Common(common_pb2_grpc.CommonServicer):
             logging.debug(f"{secret_key} : {status_message}")
             return common_pb2.Response(output='', status_message=status_message, status=False)
 
+        if(type(jwt_info)==str):
+            jwt_info = json.loads(jwt_info)
+            
         mnemonic = jwt_info['mnemonic']
 
         private_key, did = get_info_from_mnemonics(mnemonic)
