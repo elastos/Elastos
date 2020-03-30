@@ -32,4 +32,10 @@ jobs:
         revive -config .revive.toml -formatter friendly -exclude vendor/... $(go list ./...)
 
     - name: Make
-      run: make all
+      run: make dev
+
+    - name : Upload artifact
+      uses: actions/upload-artifact@master
+      with:
+        name: ela
+        path: ela
