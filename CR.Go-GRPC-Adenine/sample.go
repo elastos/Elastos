@@ -88,15 +88,15 @@ func generateAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bo
 	sharedSecretAdenine := os.Getenv("SHARED_SECRET_ADENINE")
 	responseSSAdenine := common.GenerateAPIRequest(sharedSecretAdenine, didToUse)
 	if responseSSAdenine.Status {
-		log.Printf("Api Key: %s", responseSSAdenine.ApiKey)
+		log.Printf("Output: %s", responseSSAdenine.Output)
 	} else {
 		log.Printf("Error Message: %s", responseSSAdenine.StatusMessage)
 	}
 
 	log.Println("--> Generate API Key - MNEMONICS")
-	responseMnemonics := common.GenerateAPIRequestMnemonic(mnemonicToUse)
+	responseMnemonics := common.GenerateAPIRequestMnemonic(mnemonicToUse, didToUse)
 	if responseMnemonics.Status {
-		log.Printf("Api Key: %s", responseMnemonics.ApiKey)
+		log.Printf("Output: %s", responseMnemonics.Output)
 	} else {
 		log.Printf("Error Message: %s", responseMnemonics.StatusMessage)
 	}
@@ -110,15 +110,15 @@ func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, m
 	sharedSecretAdenine := os.Getenv("SHARED_SECRET_ADENINE")
 	responseSSAdenine := common.GetAPIKey(sharedSecretAdenine, didToUse)
 	if responseSSAdenine.Status {
-		log.Printf("Api Key: %s", responseSSAdenine.ApiKey)
+		log.Printf("Output: %s", responseSSAdenine.Output)
 	} else {
 		log.Printf("Error Message: %s", responseSSAdenine.StatusMessage)
 	}
 
 	log.Println("--> Get API Key - MNEMONICS")
-	responseMnemonics := common.GetAPIKeyMnemonic(mnemonicToUse)
+	responseMnemonics := common.GetAPIKeyMnemonic(mnemonicToUse, didToUse)
 	if responseMnemonics.Status {
-		log.Printf("Api Key: %s", responseMnemonics.ApiKey)
+		log.Printf("Output: %s", responseMnemonics.Output)
 	} else {
 		log.Printf("Error Message: %s", responseMnemonics.StatusMessage)
 	}
