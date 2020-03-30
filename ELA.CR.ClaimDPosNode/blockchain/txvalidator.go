@@ -436,6 +436,9 @@ func (b *BlockChain) checkVoteCRCProposalContent(
 	}
 
 	for _, cv := range content.CandidateVotes {
+		if cv.Votes > amount {
+			return errors.New("votes larger than output amount")
+		}
 		proposalHash, err := common.Uint256FromBytes(cv.Candidate)
 		if err != nil {
 			return err
@@ -445,14 +448,6 @@ func (b *BlockChain) checkVoteCRCProposalContent(
 			return fmt.Errorf("invalid CRCProposal: %s",
 				common.BytesToHexString(cv.Candidate))
 		}
-	}
-
-	var totalVotes common.Fixed64
-	for _, cv := range content.CandidateVotes {
-		totalVotes += cv.Votes
-	}
-	if totalVotes > amount {
-		return errors.New("total votes larger than output amount")
 	}
 
 	return nil
