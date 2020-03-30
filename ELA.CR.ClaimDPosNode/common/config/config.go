@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package config
 
@@ -69,7 +69,6 @@ type Configuration struct {
 	CheckRewardHeight           uint32            `json:"CheckRewardHeight"`
 	CRVotingStartHeight         uint32            `json:"CRVotingStartHeight"`
 	CRCommitteeStartHeight      uint32            `json:"CRCommitteeStartHeight"`
-	MaxCommitteeProposalCount   uint32            `json:"MaxCommitteeProposalCount"`
 	VoteStatisticsHeight        uint32            `json:"VoteStatisticsHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
 	MaxBlockSize                uint32            `json:"MaxBlockSize"`
