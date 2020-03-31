@@ -15,13 +15,14 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Contact;
+import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
-import org.elastos.wallet.ela.ui.did.fragment.AddDIDFragment;
-import org.elastos.wallet.ela.ui.did.fragment.DIDListFragment;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.adapter.ContactRecAdapetr;
 import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.ContactDetailFragment;
+import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
+import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -40,9 +41,6 @@ import butterknife.OnClick;
 
 public class MineFragment extends BaseFragment implements CommonRvListener {
 
-
-    @BindView(R.id.statusbarutil_fake_status_bar_view)
-    View statusbarutilFakeStatusBarView;
     @BindView(R.id.iv_title_left)
     ImageView ivTitleLeft;
     @BindView(R.id.tv_title)
@@ -67,8 +65,6 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
     RelativeLayout rlContact;
     @BindView(R.id.tv_contact_none)
     TextView tvContactNone;
-    @BindView(R.id.tv_did)
-    TextView tvDid;
     @BindView(R.id.rv)
     RecyclerView rv;
     @BindView(R.id.iv_contact_add)
@@ -77,6 +73,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
     private RealmUtil realmUtil;
     private List<Contact> contacts = new ArrayList<>();
     private ContactRecAdapetr adapter;
+
 
     @Override
     protected int getLayoutId() {
@@ -90,8 +87,9 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
 
     @Override
     protected void initView(View view) {
-
-        tvTitle.setText(R.string.setting);
+        ivTitleRight.setVisibility(View.VISIBLE);
+        ivTitleRight.setImageResource(R.mipmap.mine_message_center);
+        tvTitle.setText(R.string.mine);
         ivTitleLeft.setVisibility(View.GONE);
         sp = new SPUtil(getContext());
         llLanguge.getChildAt(sp.getLanguage()).setSelected(true);
@@ -99,10 +97,14 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
         llLanguge.getChildAt(sp.getLanguage()).setSelected(true);
         realmUtil = new RealmUtil();
         registReceiver();
+        if (sp.isOpenRedPoint() && ((AssetskFragment.messageList != null && AssetskFragment.messageList.size() > 0) || CacheUtil.getUnReadMessage().size() > 0)) {
+            //有新消息
+            ivTitleRight.setImageResource(R.mipmap.mine_message_center_red);
+        }
     }
 
     @OnClick({R.id.rl_language, R.id.rl_contact, R.id.tv_chinese, R.id.tv_english,
-            R.id.iv_contact_add, R.id.rl_about, R.id.rl_did})
+            R.id.iv_contact_add, R.id.rl_about, R.id.iv_title_right})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_chinese:
@@ -169,11 +171,9 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
             case R.id.rl_about:
                 ((BaseFragment) getParentFragment()).start(AboutFragment.class);
                 break;
-            case R.id.rl_did:
-                // ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
-                ((BaseFragment) getParentFragment()).start(DIDListFragment.class);
-                ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
-                // ((BaseFragment) getParentFragment()).start(DIDListFragment.class);
+            case R.id.iv_title_right:
+                //消息中心
+                ((BaseFragment) getParentFragment()).start(MessageListFragment.class);
                 break;
         }
     }
@@ -211,6 +211,18 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
                 contacts.addAll(tempContacts);
                 rv.setVisibility(View.VISIBLE);
                 setRecycleView();
+            }
+        }
+        if (integer == RxEnum.NOTICE.ordinal()) {
+            //新的消息通知
+            if (sp.isOpenRedPoint()) {
+                ivTitleRight.setImageResource(R.mipmap.mine_message_center_red);
+            }
+        }
+        if (integer == RxEnum.READNOTICE.ordinal()) {
+            //新的消息通知
+            if (sp.isOpenRedPoint()) {
+                ivTitleRight.setImageResource(R.mipmap.mine_message_center);
             }
         }
     }
@@ -254,9 +266,6 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
             adapter.notifyDataSetChanged();
         }
     }
-
-    private static final long WAIT_TIME = 2000L;
-    private long TOUCH_TIME = 0;
 
     /**
      * 处理回退事件

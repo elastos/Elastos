@@ -41,68 +41,6 @@ static jstring JNICALL CreateIDTransaction(JNIEnv *env, jobject clazz, jlong ins
     return tx;
 }
 
-#define JNI_GetResolveDIDInfo "(JIILjava/lang/String;)Ljava/lang/String;"
-
-static jstring GetResolveDIDInfo(JNIEnv *env, jobject clazz, jlong instance,
-                                 jint jstart,
-                                 jint jcount,
-                                 jstring jdid) {
-    bool exception = false;
-    std::string msgException;
-
-    const char *did = env->GetStringUTFChars(jdid, NULL);
-    jstring didInfo = NULL;
-
-    try {
-        IIDChainSubWallet *wallet = (IIDChainSubWallet *) instance;
-        nlohmann::json result = wallet->GetResolveDIDInfo(jstart, jcount, did);
-        didInfo = env->NewStringUTF(result.dump().c_str());
-    } catch (const std::exception &e) {
-        exception = true;
-        msgException = e.what();
-    }
-
-    env->ReleaseStringUTFChars(jdid, did);
-
-    if (exception) {
-        ThrowWalletException(env, msgException.c_str());
-    }
-
-    return didInfo;
-}
-
-#define JNI_GenerateDIDInfoPayload "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
-
-static jstring JNICALL GenerateDIDInfoPayload(JNIEnv *env, jobject clazz, jlong instance,
-                                              jstring jinputInfo,
-                                              jstring jpaypasswd) {
-    bool exception = false;
-    std::string msgException;
-    jstring didPayload = NULL;
-
-    const char *payloadJson = env->GetStringUTFChars(jinputInfo, NULL);
-    const char *paypasswd = env->GetStringUTFChars(jpaypasswd, NULL);
-
-    IIDChainSubWallet *wallet = (IIDChainSubWallet *) instance;
-    try {
-        nlohmann::json payload = wallet->GenerateDIDInfoPayload(nlohmann::json::parse(payloadJson),
-                                                                paypasswd);
-        didPayload = env->NewStringUTF(payload.dump().c_str());
-    } catch (const std::exception &e) {
-        exception = true;
-        msgException = e.what();
-    }
-
-    env->ReleaseStringUTFChars(jinputInfo, payloadJson);
-    env->ReleaseStringUTFChars(jpaypasswd, paypasswd);
-
-    if (exception) {
-        ThrowWalletException(env, msgException.c_str());
-    }
-
-    return didPayload;
-}
-
 #define JNI_GetAllDID "(JII)Ljava/lang/String;"
 
 static jstring JNICALL GetAllDID(JNIEnv *env, jobject clazz, jlong instance,
@@ -119,6 +57,24 @@ static jstring JNICALL GetAllDID(JNIEnv *env, jobject clazz, jlong instance,
     }
 
     return didString;
+}
+
+#define JNI_GetAllCID "(JII)Ljava/lang/String;"
+
+static jstring JNICALL GetAllCID(JNIEnv *env, jobject clazz, jlong instance,
+                                 jint jStart,
+                                 jint jCount) {
+    jstring cidString = NULL;
+
+    try {
+        IIDChainSubWallet *wallet = (IIDChainSubWallet *) instance;
+        nlohmann::json didJson = wallet->GetAllCID(jStart, jCount);
+        cidString = env->NewStringUTF(didJson.dump().c_str());
+    } catch (const std::exception &e) {
+        ThrowWalletException(env, e.what());
+    }
+
+    return cidString;
 }
 
 #define JNI_Sign "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
@@ -216,6 +172,34 @@ static jstring JNICALL GetPublicKeyDID(JNIEnv *env, jobject clazz, jlong instanc
     return jdid;
 }
 
+#define JNI_GetPublicKeyCID "(JLjava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL GetPublicKeyCID(JNIEnv *env, jobject clazz, jlong instance,
+                                       jstring jpublicKey) {
+    bool exception = false;
+    std::string msgException;
+    jstring jcid = NULL;
+
+    const char *publicKey = env->GetStringUTFChars(jpublicKey, NULL);
+
+    try {
+        IIDChainSubWallet *wallet = (IIDChainSubWallet *) instance;
+        std::string cid = wallet->GetPublicKeyCID(publicKey);
+        jcid = env->NewStringUTF(cid.c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jpublicKey, publicKey);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return jcid;
+}
+
 #define JNI_SignDigest "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL SignDigest(JNIEnv *env, jobject clazz, jlong instance,
@@ -251,12 +235,12 @@ static jstring JNICALL SignDigest(JNIEnv *env, jobject clazz, jlong instance,
 
 static const JNINativeMethod methods[] = {
         REGISTER_METHOD(CreateIDTransaction),
-        REGISTER_METHOD(GenerateDIDInfoPayload),
         REGISTER_METHOD(GetAllDID),
+        REGISTER_METHOD(GetAllCID),
         REGISTER_METHOD(Sign),
         REGISTER_METHOD(VerifySignature),
         REGISTER_METHOD(GetPublicKeyDID),
-        REGISTER_METHOD(GetResolveDIDInfo),
+        REGISTER_METHOD(GetPublicKeyCID),
         REGISTER_METHOD(SignDigest),
 };
 

@@ -6,19 +6,19 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.gson.JsonArray;
+import com.alibaba.fastjson.JSONArray;
 
 import org.elastos.wallet.ela.utils.ScreenUtil;
 
 public class PublicKeyRecAdapter extends RecyclerView.Adapter<PublicKeyRecAdapter.MyViewHolder> {
 
 
-    private JsonArray datas;
+    private JSONArray datas;
 
     private Context context;
 
 
-    public PublicKeyRecAdapter(Context context, JsonArray datas) {
+    public PublicKeyRecAdapter(Context context, JSONArray datas) {
         this.datas = datas;
         this.context = context;
 
@@ -31,7 +31,7 @@ public class PublicKeyRecAdapter extends RecyclerView.Adapter<PublicKeyRecAdapte
         textView.setTextSize(11);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        textView.setPadding(0, ScreenUtil.dp2px(context,15), 0,  ScreenUtil.dp2px(context,15));
+        textView.setPadding(0, ScreenUtil.dp2px(context, 15), 0, ScreenUtil.dp2px(context, 15));
         textView.setLayoutParams(params);
         return new MyViewHolder(textView);
     }
@@ -40,7 +40,7 @@ public class PublicKeyRecAdapter extends RecyclerView.Adapter<PublicKeyRecAdapte
     public void onBindViewHolder(MyViewHolder holder, final int position) {
         String data;
         try {
-            data = datas.get(position).getAsString();
+            data = datas.getString(position);
             ((TextView) (holder.itemView)).setText(data);
         } catch (Exception e) {
             e.printStackTrace();

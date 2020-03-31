@@ -1,7 +1,7 @@
 package org.elastos.wallet.ela.net;
 
+import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
-import org.elastos.wallet.ela.utils.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
@@ -111,8 +110,9 @@ public class OkhttpManager {
         HostnameVerifier hostnameVerifier = new HostnameVerifier() {
             @Override
             public boolean verify(String hostname, SSLSession session) {
-               // Log.i("???????????", hostname);
-                if (MyApplication.chainID > 0) {
+                // Log.i("???????????", hostname);
+                if (MyApplication.currentWalletNet != WalletNet.MAINNET
+                        && MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET) {
                     return true;
                 }
                 return true;

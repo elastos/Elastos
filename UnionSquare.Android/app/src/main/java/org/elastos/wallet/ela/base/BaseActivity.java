@@ -14,6 +14,7 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.trello.rxlifecycle2.LifecycleTransformer;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.DID.MyDID;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportActivity;
@@ -161,6 +162,10 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
             MyApplication.setMyWallet(new MyWallet());
         }
         return MyApplication.getMyWallet();
+    }
+
+    public synchronized MyDID getMyDID() {
+        return MyDID.getInstance();
     }
 
 

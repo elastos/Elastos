@@ -8,8 +8,37 @@
     <include layout="@layout/title" />
 
     <LinearLayout
+        android:id="@+id/ll_did"
+        style="@style/settingItem_margin"
+        android:background="@color/mainitembg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:text="DID"
+            android:textColor="@color/whiter"
+            android:textSize="14dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="@dimen/px40"
+            android:src="@mipmap/asset_list_arrow" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/ll_updatename"
         style="@style/settingItem_margin"
+        android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
         android:orientation="horizontal">
@@ -164,8 +193,8 @@
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
@@ -195,8 +224,8 @@
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
@@ -225,8 +254,8 @@
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
@@ -255,8 +284,7 @@
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"

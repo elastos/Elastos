@@ -8,10 +8,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.constant.RefreshState;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
@@ -27,15 +32,18 @@ import org.elastos.wallet.ela.ui.did.entity.DIDListEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
 import org.elastos.wallet.ela.ui.did.presenter.DIDListPresenter;
 import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.RxEnum;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
-public class DIDListFragment extends BaseFragment implements NewBaseViewData, CommonRvListener {
+public class DIDListFragment extends BaseFragment implements NewBaseViewData, CommonRvListener, OnRefreshListener {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
@@ -57,7 +65,10 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
     private DIDRecordRecAdapetr adapter1;
     private DIDNetRecordRecAdapetr adapter;
     ArrayList<DIDInfoEntity> draftList;
-    ArrayList<DIDListEntity.DIDBean> netList;
+    ArrayList<DIDInfoEntity> netList;
+    @BindView(R.id.srl)
+    SmartRefreshLayout srl;
+    private List<Wallet> wallets;
 
     @Override
     protected int getLayoutId() {
@@ -68,16 +79,20 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
     protected void setExtraData(Bundle data) {
 
         draftList = data.getParcelableArrayList("draftInfo");
+        if (draftList == null) {
+            draftList = CacheUtil.getDIDInfoList();
+        }
         netList = data.getParcelableArrayList("netList");
         if (netList == null) {
             //重新获取数据
-            draftList = CacheUtil.getDIDInfoList();
-            List<Wallet> wallets = new RealmUtil().queryUserAllWallet();
+            wallets = new RealmUtil().queryTypeUserAllWallet(0);
             netList = new ArrayList<>();
             for (Wallet wallet : wallets) {
                 new AddDIDPresenter().getAllSubWallets(wallet.getWalletId(), this);
 
             }
+        } else {
+            setNetRecycleView();
         }
     }
 
@@ -86,6 +101,8 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
         tvTitle.setText("DID");
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.mine_did_add);
+        srl.setOnRefreshListener(this);
+        registReceiver();
     }
 
 
@@ -133,7 +150,11 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
 
                 DIDListEntity didListEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), DIDListEntity.class);
                 if (didListEntity != null && didListEntity.getDID() != null && didListEntity.getDID().size() > 0) {
+                    for (DIDInfoEntity didBean : didListEntity.getDID()) {
+                        didBean.setWalletId((String) o);
+                    }
                     netList.addAll(didListEntity.getDID());
+                    setNetRecycleView();
                 }
                 break;
 
@@ -142,6 +163,15 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
     }
 
     private void setNetRecycleView() {
+        Iterator<DIDInfoEntity> iterator = netList.iterator();
+        while (iterator.hasNext()) {
+            DIDInfoEntity entity = iterator.next();
+            if (entity.getOperation().equals("deactivate") && entity.getStatus().equals("Confirmed")) {
+                iterator.remove();
+                CacheUtil.remove(entity.getId());
+            }
+
+        }
         if (adapter == null) {
             adapter = new DIDNetRecordRecAdapetr(getContext(), netList);
             rv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
@@ -158,8 +188,8 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
         if (adapter1 == null) {
             adapter1 = new DIDRecordRecAdapetr(getContext(), draftList);
             rv1.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-            rv1.setAdapter(adapter1);
             adapter1.setCommonRvListener(this);
+            rv1.setAdapter(adapter1);
 
         } else {
             adapter1.notifyDataSetChanged();
@@ -169,18 +199,18 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
 
     @Override
     public void onRvItemClick(int position, Object o) {
-        DIDInfoEntity didInfoEntity = (DIDInfoEntity) o;
-        if ("Unpublished".equals(didInfoEntity.getStatus())) {
-            //草稿
-            Wallet wallet = new RealmUtil().queryUserWallet(didInfoEntity.getWalletId());
-            if (wallet == null) {
 
-            }
-            Bundle bundle = new Bundle();
+        Bundle bundle = new Bundle();
+        if (rv1.getVisibility() == View.GONE) {
+            //api获取的数据
+            DIDInfoEntity didBean = (DIDInfoEntity) o;
+            bundle.putParcelable("didInfo", didBean);
+            start(DidDetailFragment.class, bundle);
+        } else {
+            //草稿
+            DIDInfoEntity didInfoEntity = (DIDInfoEntity) o;
             bundle.putParcelable("didInfo", didInfoEntity);
             bundle.putBoolean("useDraft", true);
-
-            bundle.putParcelable("wallet", wallet);
             start(AddDIDFragment.class, bundle);
         }
 
@@ -188,4 +218,41 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
     }
 
 
+    @Override
+    public void onRefresh(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
+        if (rv1.getVisibility() == View.GONE) {
+            netList.clear();
+            List<Wallet> wallets = new RealmUtil().queryTypeUserAllWallet(0);
+            for (Wallet wallet : wallets) {
+                new AddDIDPresenter().getAllSubWallets(wallet.getWalletId(), this);
+            }
+        } else {
+            draftList.clear();
+            draftList.addAll(CacheUtil.getDIDInfoList());
+            setRecycleView();
+            if (refreshLayout.getState() == RefreshState.Refreshing) {
+                refreshLayout.finishRefresh();
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+
+        if (integer == RxEnum.KEEPDRAFT.ordinal()) {
+            draftList.clear();
+            draftList.addAll(CacheUtil.getDIDInfoList());
+            setRecycleView();
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+
+            netList.clear();
+            List<Wallet> wallets = new RealmUtil().queryTypeUserAllWallet(0);
+            for (Wallet wallet : wallets) {
+                new AddDIDPresenter().getAllSubWallets(wallet.getWalletId(), this);
+            }
+        }
+    }
 }

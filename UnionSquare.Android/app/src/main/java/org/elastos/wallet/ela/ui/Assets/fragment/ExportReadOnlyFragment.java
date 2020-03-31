@@ -6,12 +6,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.gson.JsonObject;
-
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.QRCodeUtils;
@@ -41,7 +39,7 @@ public class ExportReadOnlyFragment extends BaseFragment implements CommmonStrin
 
     @Override
     protected void initView(View view) {
-        new WallletManagePresenter().exportReadonlyWallet(wallet.getWalletId(), this);
+        new WalletManagePresenter().exportReadonlyWallet(wallet.getWalletId(), this);
         tvTitle.setText(R.string.exportreadonly);
 
     }
@@ -49,7 +47,7 @@ public class ExportReadOnlyFragment extends BaseFragment implements CommmonStrin
 
     @Override
     public void onGetCommonData(String methodname, String data) {
-        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 240), ScreenUtil.dp2px(getContext(), 240), Constant.CREATEREADONLY,null);
+        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 240), ScreenUtil.dp2px(getContext(), 240), Constant.CREATEREADONLY, null, -1);
         ivQr.setImageBitmap(mBitmap);
     }
 }

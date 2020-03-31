@@ -11,30 +11,66 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:background="@drawable/black_50_white"
         android:gravity="center|top"
         android:orientation="vertical">
 
-        <android.support.v7.widget.AppCompatImageView
-            android:id="@+id/iv_icon"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginTop="26dp"
-            android:src="@mipmap/found_vote_initial_circle" />
-
-        <TextView
-            android:id="@+id/tv_name"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
-            android:layout_marginTop="@dimen/px30"
-            android:layout_marginRight="15dp"
-            android:gravity="center"
-            android:textColor="@color/white"
-            android:textSize="13sp" />
+            android:layout_marginTop="26dp"
+            android:layout_marginRight="15dp">
+
+            <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/iv_icon"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@mipmap/found_vote_initial_circle" />
+
+            <LinearLayout
+                android:layout_toLeftOf="@id/iv_detail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@id/iv_icon"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tv_did"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:drawableRight="@mipmap/mine_did_list_copy"
+                    android:drawablePadding="10dp"
+                    android:ellipsize="middle"
+                    android:singleLine="true"
+                    android:textColor="@color/whiter50"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:visibility="gone"
+                android:padding="2dp"
+                android:id="@+id/iv_detail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@mipmap/found_vote_nation_list" />
+        </RelativeLayout>
 
         <LinearLayout
             android:id="@+id/ll_tab"
@@ -86,7 +122,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/px30"
-                    android:text="@string/nodeintro"
+                    android:text="@string/menberintro"
                     android:textColor="@color/whiter50" />
 
             </LinearLayout>
@@ -94,9 +130,10 @@
         </LinearLayout>
 
         <TextView
+            android:scrollbars="vertical"
             android:id="@+id/tv_intro_detail"
             android:layout_width="match_parent"
-            android:layout_height="220dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
             android:padding="15dp"
             android:visibility="gone" />
@@ -107,34 +144,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
             android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="15dp"
-                    android:layout_weight="1"
-                    android:text="@string/menberdid"
-                    android:textColor="@color/qmui_config_color_50_white"
-                    android:textSize="13sp" />
-
-                <TextView
-                    android:id="@+id/tv_did"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginRight="15dp"
-                    android:layout_weight="3"
-                    android:gravity="right"
-                    android:textColor="@color/qmui_config_color_white"
-                    android:textSize="13sp" />
-
-            </LinearLayout>
 
 
             <LinearLayout
@@ -231,7 +240,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:layout_marginBottom="@dimen/px25"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -252,7 +260,7 @@
                     android:layout_marginLeft="15dp"
                     android:layout_marginRight="15dp"
                     android:layout_weight="3"
-                    android:drawableRight="@mipmap/asset_transfer_copy"
+                    android:drawableRight="@mipmap/mine_did_list_copy"
                     android:drawablePadding="10dp"
                     android:ellipsize="end"
                     android:gravity="right"
@@ -266,12 +274,10 @@
         </LinearLayout>
     </LinearLayout>
 
-    <View
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+
 
     <com.allen.library.SuperButton
+        android:layout_marginTop="60dp"
         android:id="@+id/sb_jrhxlb"
         style="@style/PublicButton"
         android:layout_height="@dimen/px80"

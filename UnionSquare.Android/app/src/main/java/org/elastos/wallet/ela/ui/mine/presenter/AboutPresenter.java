@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -41,37 +42,32 @@ public class AboutPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                if (MyApplication.chainID > 0) {
+                if (MyApplication.currentWalletNet != WalletNet.MAINNET
+                        && MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET) {
                     moveWalletFile(baseFragment.getContext());
                 }
-                moveLogFile(baseFragment.getContext(),"/spvsdk.1.log");
-                return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext(),"/spvsdk.log") + "", "moveLogFile");
+                //moveLogFile(baseFragment.getContext(), "/spvsdk.1.log");
+                return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext(), "spvsdk.log") + "", "moveLogFile");
             }
         });
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    private static String moveLogFile(Context context,String logName) {
+    private static String moveLogFile(Context context, String logName) {
         String rootPath = context.getFilesDir().getParent();
-        File file = new File(rootPath +logName );
+        File file = new File(rootPath, logName);
         if (!file.exists()) {
             return null;
         }
 
         try {
             InputStream is = new FileInputStream(file);
-            String state = Environment.getExternalStorageState();
-            if (!Environment.MEDIA_MOUNTED.equals(state)) {
-                return null;
-            }
-            File file1 = new File(Environment.getExternalStoragePublicDirectory(
-                    context.getPackageName()), "log");
+            File file1 = context.getExternalFilesDir("log");
             if (file1.mkdirs()) {
                 Log.e("moveLogFile", "Directory  created");
             }
 
-
-            OutputStream fosto = new FileOutputStream(file1 + logName);
+            OutputStream fosto = new FileOutputStream(file1 + File.separator + logName);
             byte bt[] = new byte[1024];
             int c = 0;
             while ((c = is.read(bt)) > 0) {
@@ -91,24 +87,23 @@ public class AboutPresenter extends PresenterAbstract {
         String rootPath = context.getFilesDir().getParent();
 
         String root = "RegTest";
-        switch (MyApplication.chainID) {
-            case 1:
+        switch (MyApplication.currentWalletNet) {
+            case WalletNet.TESTNET:
                 root = "TestNet";
                 break;
-            case 2:
+            case WalletNet.REGTESTNET:
                 root = "RegTest";
                 break;
-            case 3:
+            case WalletNet.PRVNET:
                 root = "PrvNet";
                 break;
 
         }
 
-        String target = Environment.getExternalStoragePublicDirectory(
-                context.getPackageName()).getAbsolutePath();
+        File target = context.getExternalFilesDir(root);
         try {
-            CopyFile.dirCopy(rootPath + "/" + root, target + "/" + root);
-            return target;
+            CopyFile.dirCopy(rootPath + "/" + root, target.getAbsolutePath());
+            return target.getAbsolutePath();
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;

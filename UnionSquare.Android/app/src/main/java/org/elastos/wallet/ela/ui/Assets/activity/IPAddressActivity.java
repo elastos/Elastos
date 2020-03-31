@@ -10,16 +10,21 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.ElaWallet.WalletNet;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.bean.IPEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.IPPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.ClearEditText;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.adpter.TextAdapter;
 
@@ -29,12 +34,14 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 public class IPAddressActivity extends BaseActivity implements NewBaseViewData, TextAdapter.OnItemClickListner, View.OnClickListener {
+    @BindView(R.id.et_port)
+    ClearEditText etPort;
     @BindView(R.id.et_ip)
     ClearEditText etIp;
     @BindView(R.id.rv)
     RecyclerView recyclerView;
     private SubWallet subWallet;
-    private List<String> ips;
+    private List<IPEntity> ips;
 
     @Override
     protected int getLayoutId() {
@@ -83,12 +90,21 @@ public class IPAddressActivity extends BaseActivity implements NewBaseViewData, 
                     showToastMessage(getString(R.string.addressformarterro));
                     return;
                 }
+                int port = getDefaultPort();
+                if (!TextUtils.isEmpty(etPort.getText())) {
+                    try {
+                        port = Integer.parseInt(etPort.getText().toString().trim());
+                    } catch (Exception e) {
+                        Log.i(this.getClass().getSimpleName(), "port" + e.getMessage());
+                    }
+
+                }
 
 
                 //ping一下
+               // new IPPresenter().ping(new IPEntity(ip, port), this);
+                new IPPresenter().setFixedPeer(subWallet.getBelongId(), subWallet.getChainId(),new IPEntity(ip, port), this);
 
-
-                new IPPresenter().ping(ip, this);
                 break;
 
         }
@@ -102,7 +118,7 @@ public class IPAddressActivity extends BaseActivity implements NewBaseViewData, 
             case "ping":
 
                 if (commmonBooleanEntity.getData()) {
-                    new IPPresenter().setFixedPeer(subWallet.getBelongId(), subWallet.getChainId(), (String) o, 0, this);
+                    new IPPresenter().setFixedPeer(subWallet.getBelongId(), subWallet.getChainId(), (IPEntity) o, this);
                 } else {
                     showToastMessage(getString(R.string.currentaddressnotconnect));
                 }
@@ -112,19 +128,8 @@ public class IPAddressActivity extends BaseActivity implements NewBaseViewData, 
                     showToastMessage(getString(R.string.currentaddressnotconnect));
                 } else {
                     if (!ips.contains(o)) {
-                        ips.add((String) o);
+                        ips.add((IPEntity) o);
                     }
-                   /* ips.add("192.168.0.2");
-                    ips.add("192.168.0.3");
-                    ips.add("192.168.0.4");
-                    ips.add("192.168.0.5");
-                    ips.add("192.168.0.6");
-                    ips.add("192.168.0.7");
-                    ips.add("192.168.0.8");
-                    ips.add("192.168.0.11");
-                    ips.add("192.168.0.111");
-                    ips.add("192.168.0.1111");*/
-
                     post(RxEnum.IPVALID.ordinal(), null, null);
                     finish();
                 }
@@ -134,13 +139,14 @@ public class IPAddressActivity extends BaseActivity implements NewBaseViewData, 
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         CacheUtil.setIps(ips);
+        super.onDestroy();
     }
 
     @Override
-    public void onItemClick(View v, int position, String text) {
-        etIp.setText(text);
+    public void onItemClick(View v, int position, IPEntity ipEntity) {
+        etIp.setText(ipEntity.getAddress());
+        etPort.setText(ipEntity.getPort() + "");
         recyclerView.setVisibility(View.INVISIBLE);
     }
 
@@ -149,4 +155,39 @@ public class IPAddressActivity extends BaseActivity implements NewBaseViewData, 
     public void onClick(View v) {
         recyclerView.setVisibility(View.VISIBLE);
     }
+
+    private int getDefaultPort() {
+        int port = 0;
+        switch (MyApplication.currentWalletNet) {
+            case WalletNet.MAINNET:
+            case WalletNet.ALPHAMAINNET:
+                port = getPort(20338, 20608);
+                break;
+            case WalletNet.TESTNET:
+                port = getPort(21338, 21608);
+                break;
+            case WalletNet.REGTESTNET:
+                port = getPort(22338, 22608);
+                break;
+            default:
+                showToastMessage("please set por" + subWallet.getChainId());
+                break;
+        }
+        return port;
+    }
+
+    private int getPort(int elaPort, int IDChainPort) {
+        switch (subWallet.getChainId()) {
+            case MyWallet.IDChain:
+                return elaPort;
+            case MyWallet.ELA:
+                return IDChainPort;
+            default:
+                showToastMessage("please set por" + subWallet.getChainId());
+                return 0;
+
+        }
+    }
+
+
 }

@@ -100,11 +100,15 @@ public class Arith {
         BigDecimal b2;
         if (v1 instanceof BigDecimal) {
             b1 = (BigDecimal) v1;
+        } else if (v1 instanceof Integer) {
+            b1 = new BigDecimal((Integer) v1);
         } else {
             b1 = new BigDecimal(v1.toString());
         }
         if (v2 instanceof BigDecimal) {
             b2 = (BigDecimal) v2;
+        } else if (v2 instanceof Integer) {
+            b2 = new BigDecimal((Integer) v2);
         } else {
             b2 = new BigDecimal(v2.toString());
         }
@@ -180,7 +184,17 @@ public class Arith {
 
         return v1.divide(b2, scale, BigDecimal.ROUND_DOWN);
     }
+    public static BigDecimal div(BigDecimal v1, String v2, int scale) {
+        if (scale < 0) {
+            return new BigDecimal("-1");
+            /*throw new IllegalArgumentException(
+                    "The scale must be a positive integer or zero");*/
+        }
 
+        BigDecimal b2 = new BigDecimal(v2);
+
+        return v1.divide(b2, scale, BigDecimal.ROUND_DOWN);
+    }
     /**
      * 提供精确的小数位四舍五入处理。
      *

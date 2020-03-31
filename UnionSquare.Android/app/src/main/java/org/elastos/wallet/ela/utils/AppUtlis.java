@@ -56,6 +56,23 @@ public class AppUtlis {
         return val;
     }
 
+    public static String getLocCode(String area) {
+        if (TextUtils.isEmpty(area)) {
+            return null;
+        }
+
+        List<Area> listArea = CacheUtil.getArea();
+        String adder = null;
+        if (listArea != null) {
+            for (int i = 0; i < listArea.size(); i++) {
+                if (area.equals(listArea.get(i).getEn()) || area.equals(listArea.get(i).getZh())) {
+                    adder = listArea.get(i).getCode() + "";
+                }
+            }
+        }
+
+        return TextUtils.isEmpty(adder) ? null : adder;
+    }
 
     public static String getLoc(Context context, String code) {
         if (TextUtils.isEmpty(code)) {
@@ -149,7 +166,8 @@ public class AppUtlis {
         }
         return false;
     }
-    public static boolean isURL(String str){
+
+    public static boolean isURL(String str) {
         //转换为小写
         str = str.toLowerCase();
         String regex = "^((https|http|ftp|rtsp|mms)?://)"  //https、http、ftp、rtsp、mms
@@ -162,6 +180,6 @@ public class AppUtlis {
                 + "(:[0-9]{1,5})?" // 端口号最大为65535,5位数
                 + "((/?)|" // a slash isn't required if there is no file name
                 + "(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$";
-        return  str.matches(regex);
+        return str.matches(regex);
     }
 }

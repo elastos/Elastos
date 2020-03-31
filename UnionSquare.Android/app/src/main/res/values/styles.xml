@@ -13,7 +13,7 @@
         <item name="android:textColorHint">#80ffffff</item>
         <!--默认 Button,TextView的文字颜色-->
         <item name="android:textColor">#ffffff</item>
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">14sp</item>
         <item name="android:editTextStyle">@style/Widget.EditText.White</item>
     </style>
 
@@ -127,10 +127,15 @@
         <item name="android:layout_marginRight">15dp</item>
     </style>
 
+    <style name="settingItem_pading15" parent="settingItem">
+        <item name="android:paddingLeft">15dp</item>
+        <item name="android:paddingRight">15dp</item>
+    </style>
+
     <style name="line1">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">0.5dp</item>
-        <item name="android:background">#ffffffff</item>
+        <item name="android:background">@color/whiter50</item>
 
     </style>
 
@@ -169,6 +174,14 @@
     <style name="Widget.EditText.White" parent="@android:style/Widget.EditText">
         <item name="android:textColor">@color/whiter</item>
         <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="mTablayout" parent="Base.Widget.Design.TabLayout">
+        <item name="tabIndicatorColor">@color/whiter</item>
+        <item name="tabIndicatorHeight">2dp</item>
+        <item name="tabSelectedTextColor">@color/whiter</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/whiter</item>
     </style>
 
 </resources>

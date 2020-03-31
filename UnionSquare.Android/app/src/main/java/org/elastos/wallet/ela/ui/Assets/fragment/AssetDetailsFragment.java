@@ -353,6 +353,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",2);
             start(SignFragment.class, bundle);
 
         }
@@ -362,6 +363,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",2);
             bundle.putBoolean("signStatus", true);
             start(SignFragment.class, bundle);
 
@@ -434,6 +436,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 intent.putExtra("attributes", data);
                 intent.putExtra("chainId", chainId);
                 intent.putExtra("type", Constant.TOWHOL);
+                intent.putExtra("transType",2);
                 startActivity(intent);
                 break;
             case "getAllCoinBaseTransaction":

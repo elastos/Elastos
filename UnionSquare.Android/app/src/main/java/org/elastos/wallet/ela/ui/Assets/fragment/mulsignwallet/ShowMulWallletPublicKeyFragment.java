@@ -8,9 +8,9 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -18,7 +18,7 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.adapter.PublicKeyRecAdapter;
-import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
 import org.elastos.wallet.ela.utils.ScreenUtil;
@@ -55,11 +55,11 @@ public class ShowMulWallletPublicKeyFragment extends BaseFragment implements New
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.pklist));
-        new WallletManagePresenter().getPubKeyInfo(wallet.getWalletId(), this);
+        new WalletManagePresenter().getPubKeyInfo(wallet.getWalletId(), this);
     }
 
 
-    private void setRecycleView(JsonArray publicKeyRing) {
+    private void setRecycleView(JSONArray publicKeyRing) {
         rv.setNestedScrollingEnabled(false);
         rv.setFocusableInTouchMode(false);
         PublicKeyRecAdapter adapter = new PublicKeyRecAdapter(getContext(), publicKeyRing);
@@ -83,18 +83,18 @@ public class ShowMulWallletPublicKeyFragment extends BaseFragment implements New
         //}
         String data = ((CommmonStringEntity) baseEntity).getData();
         try {
-            JsonObject jsonData = new JsonParser().parse(data).getAsJsonObject();
-            String derivationStrategy = jsonData.get("derivationStrategy").getAsString();
-            int n = jsonData.get("n").getAsInt();
+            JSONObject jsonData = JSON.parseObject(data);
+            String derivationStrategy = jsonData.getString("derivationStrategy");
+            int n = jsonData.getIntValue("n");
             tvPknum.setText(n + "");
-            String m = jsonData.get("m").getAsString();
+            String m = jsonData.getString("m");
             tvSignnum.setText(m);
             String requestPubKey;
             if ("BIP44".equals(derivationStrategy) && n > 1) {
-                requestPubKey = jsonData.get("xPubKey").getAsString();
+                requestPubKey = jsonData.getString("xPubKey");
 
             } else {
-                requestPubKey = jsonData.get("xPubKeyHDPM").getAsString();
+                requestPubKey = jsonData.getString("xPubKeyHDPM");
             }
             if (!TextUtils.isEmpty(requestPubKey)) {
                 llCurrentpk.setVisibility(View.VISIBLE);
@@ -102,7 +102,7 @@ public class ShowMulWallletPublicKeyFragment extends BaseFragment implements New
             }
 
 
-            JsonArray publicKeyRing = jsonData.get("publicKeyRing").getAsJsonArray();
+            JSONArray publicKeyRing = jsonData.getJSONArray("publicKeyRing");
             setRecycleView(publicKeyRing);
         } catch (Exception e) {
             showToast(getString(R.string.error_30000));

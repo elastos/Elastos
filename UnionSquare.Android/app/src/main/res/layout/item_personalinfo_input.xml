@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/settingItem_pading15"
+    >
+
+    <EditText
+        android:gravity="center_vertical"
+        android:id="@+id/et"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@+id/iv"
+        android:background="@null"
+        android:layout_marginRight="5dp"
+        android:singleLine="true" />
+
+    <ImageView
+        android:id="@+id/iv"
+        android:layout_width="25dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:paddingLeft="3dp"
+        android:src="@mipmap/asset_cancel" />
+
+    <View
+        style="@style/line1"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>

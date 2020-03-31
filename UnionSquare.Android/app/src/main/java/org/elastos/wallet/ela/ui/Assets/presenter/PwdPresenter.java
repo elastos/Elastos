@@ -24,12 +24,12 @@ public class PwdPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable);
     }
 
-    public void signDigest(String walletId, String did, String digest, String pwd, BaseActivity baseActivity) {
+    public void signDigest(String walletId, String cid, String digest, String pwd, BaseActivity baseActivity) {
         Observer observer = createObserver(baseActivity, "signDigest");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getWallet().signDigest(walletId, did, digest, pwd);
+                return baseActivity.getWallet().signDigest(walletId, cid, digest, pwd);
             }
         });
         subscriberObservable(observer, observable, baseActivity);
@@ -126,13 +126,13 @@ public class PwdPresenter extends NewPresenterAbstract {
 
     /************************************CR**************************************/
     //验证交易
-    public void generateCRInfoPayload(String masterWalletID, String chainID, String publicKey, String nickName, String url, long location
+    public void generateCRInfoPayload(String masterWalletID, String chainID, String publicKey, String nickName, String url, long location,String did
             , BaseActivity baseActivity) {
         Observer observer = createObserver(baseActivity, "generateCRInfoPayload");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().generateCRInfoPayload(masterWalletID, chainID, publicKey, nickName, url, location);
+                return baseActivity.getMyWallet().generateCRInfoPayload(masterWalletID, chainID, publicKey, nickName, url, location,did);
             }
         });
         subscriberObservable(observer, observable, baseActivity);
@@ -191,12 +191,12 @@ public class PwdPresenter extends NewPresenterAbstract {
     }
 
     //cr
-    public void generateUnregisterCRPayload(String masterWalletID, String chainID, String crDID, BaseActivity baseActivity) {
+    public void generateUnregisterCRPayload(String masterWalletID, String chainID, String cid, BaseActivity baseActivity) {
         Observer observer = createObserver(baseActivity, "generateUnregisterCRPayload");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().generateUnregisterCRPayload(masterWalletID, chainID, crDID);
+                return baseActivity.getMyWallet().generateUnregisterCRPayload(masterWalletID, chainID, cid);
             }
         });
         subscriberObservable(observer, observable, baseActivity);
@@ -233,6 +233,16 @@ public class PwdPresenter extends NewPresenterAbstract {
             @Override
             public BaseEntity subscribe() {
                 return baseActivity.getMyWallet().createIDTransaction(masterWalletID, inputJson);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+    public void DIDPublish(String pwd,BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "DIDPublish",false);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyDID().DIDPublish(pwd);
             }
         });
         subscriberObservable(observer, observable, baseActivity);

@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
@@ -18,9 +19,14 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.AddAssetViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonDestorySubWalletViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
+import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
+import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import butterknife.BindView;
 
@@ -67,21 +73,34 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
     }
 
     @Override
-    public void onRvItemClick(View view, int position, Object o) {
+    public void onRvItemClick(View v, int position, Object o) {
         //条目的点击事件
-        if (view.isSelected()) {
+        if (v.isSelected()) {
             //删除子
-            commonDestorySubWalletPresenter.destroySubWallet(walletId, (String) o, this, view);
+            showOpenDraftWarm((String) o, v);
+
         } else {
             //添加子
-            commonCreateSubWalletPresenter.createSubWallet(walletId, (String) o, this, view);
+            v.setSelected(!v.isSelected());
+            commonCreateSubWalletPresenter.createSubWallet(walletId, (String) o, this, v);
         }
+    }
+
+    private void showOpenDraftWarm(String o, View v) {
+        new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.closeidchainornot),
+                getString(R.string.sure), getString(R.string.cancel), false, new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        commonDestorySubWalletPresenter.destroySubWallet(walletId, (String) o, AddAssetFragment.this, v);
+                    }
+                });
     }
 
     @Override
     public void onGetSupportedChains(String[] data) {
         //获得支持的币种
-        setRecycleView(data, chainIds);
+        String[] data1 = {MyWallet.ELA, MyWallet.IDChain};
+        setRecycleView(data1, chainIds);
     }
 
     @Override
@@ -89,7 +108,7 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
         new RealmUtil().updateSubWalletDetial(walletId, data, new RealmTransactionAbs() {
             @Override
             public void onSuccess() {
-                post(RxEnum.UPDATAPROPERTY.ordinal(), null, null);
+                post(RxEnum.UPDATAPROPERTY.ordinal(), null, walletId);
                 post(RxEnum.ADDPROPERTY.ordinal(), null, null);
                 ((View) o).setSelected(true);
                 popBackFragment();
@@ -101,9 +120,20 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
     @Override
     public void onDestorySubWallet(String data, Object o) {
         new RealmUtil().deleteSubWallet(walletId, data);
-        post(RxEnum.UPDATAPROPERTY.ordinal(), null, null);
+        //删除did草稿
+        ArrayList<DIDInfoEntity> info = CacheUtil.getDIDInfoList();
+        Iterator<DIDInfoEntity> iterator = info.iterator();
+        while (iterator.hasNext()) {
+            DIDInfoEntity entity = iterator.next();
+            if (entity.getWalletId().equals(walletId)) {
+                iterator.remove();
+            }
+        }
+        CacheUtil.setDIDInfoList(info);
+        post(RxEnum.UPDATAPROPERTY.ordinal(), null, walletId);
         post(RxEnum.DELETEPROPERTY.ordinal(), null, null);
         ((View) o).setSelected(false);
+
         popBackFragment();
     }
 }

@@ -1,6 +1,24 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #ifndef __ELASTOS_SDK_MASTERWALLETMANAGER_H__
 #define __ELASTOS_SDK_MASTERWALLETMANAGER_H__
@@ -58,14 +76,14 @@ namespace Elastos {
 			virtual std::string GenerateMnemonic(const std::string &language, int wordCount = 12) const;
 
 			virtual IMasterWallet *CreateMasterWallet(
-				const std::string &masterWalletId,
+				const std::string &masterWalletID,
 				const std::string &mnemonic,
 				const std::string &phrasePassword,
 				const std::string &payPassword,
 				bool singleAddress);
 
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
-				const std::string &masterWalletId,
+				const std::string &masterWalletID,
 				const nlohmann::json &cosigners,
 				uint32_t m,
 				bool singleAddress,
@@ -73,7 +91,7 @@ namespace Elastos {
 				time_t timestamp = 0);
 
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
-				const std::string &masterWalletId,
+				const std::string &masterWalletID,
 				const std::string &xprv,
 				const std::string &payPassword,
 				const nlohmann::json &cosigners,
@@ -83,7 +101,7 @@ namespace Elastos {
 				time_t timestamp = 0);
 
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
-				const std::string &masterWalletId,
+				const std::string &masterWalletID,
 				const std::string &mnemonic,
 				const std::string &passphrase,
 				const std::string &payPassword,
@@ -97,20 +115,22 @@ namespace Elastos {
 
 			virtual std::vector<std::string> GetAllMasterWalletID() const;
 
+			virtual bool WalletLoaded(const std::string &masterWalletID) const;
+
 			virtual IMasterWallet *GetMasterWallet(
-				const std::string &masterWalletId) const;
+				const std::string &masterWalletID) const;
 
 			virtual void DestroyWallet(
-				const std::string &masterWalletId);
+				const std::string &masterWalletID);
 
 			virtual IMasterWallet *ImportWalletWithKeystore(
-				const std::string &masterWalletId,
+				const std::string &masterWalletID,
 				const nlohmann::json &keystoreContent,
 				const std::string &backupPassword,
 				const std::string &payPassword);
 
 			virtual IMasterWallet *ImportWalletWithMnemonic(
-				const std::string &masterWalletId,
+				const std::string &masterWalletID,
 				const std::string &mnemonic,
 				const std::string &phrasePassword,
 				const std::string &payPassword,
@@ -131,7 +151,9 @@ namespace Elastos {
 			MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath,
 								const std::string &dataPath);
 
-			void Load();
+			void LoadMasterWalletID();
+
+			IMasterWallet *LoadMasterWallet(const std::string &masterWalletID) const;
 
 			void checkRedundant(IMasterWallet *wallet) const;
 

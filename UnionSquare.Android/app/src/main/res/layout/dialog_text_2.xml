@@ -28,6 +28,7 @@
         android:visibility="gone" />
 
     <TextView
+        android:gravity="center"
         android:id="@+id/tv_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

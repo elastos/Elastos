@@ -105,6 +105,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     private Dialog dialog;
     Runnable runable;
     Handler handler;
+    private int transType = 1001;
 
     @Override
     protected int getLayoutId() {
@@ -290,7 +291,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     //查询余额结果
     @Override
     public void onBalance(BalanceEntity data) {
-        balance = Arith.sub(Arith.div(data.getBalance(), MyWallet.RATE_S), "0.01").setScale(8, BigDecimal.ROUND_DOWN);
+        balance = Arith.div(Arith.sub(data.getBalance(), 1000000), MyWallet.RATE_S, 8);
         if ((balance.compareTo(new BigDecimal(1)) < 0)) {
             //小于1
             if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
@@ -413,10 +414,12 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
                 JSONObject attributesJson = JSON.parseObject(attributes);
                 String status = attributesJson.getString("DropVotes");
                 if (!TextUtils.isEmpty(status) && !status.equals("[]")) {
-                    showOpenDraftWarm(attributes, status);
+                    transType = 1003;
+                    showOpenDraftWarm(attributes);
                     break;
                 }
-                goTransferActivity(attributes, status);
+                transType = 1001;
+                goTransferActivity(attributes);
                 break;
             case "getDepositVoteList":
                 if (handler != null && runable != null) {
@@ -458,23 +461,23 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         }
     }
 
-    private void goTransferActivity(String attributesJson, String status) {
+    private void goTransferActivity(String attributesJson) {
         Intent intent = new Intent(getActivity(), TransferActivity.class);
         intent.putExtra("amount", mAdapter.getCountEla().toPlainString());
         intent.putExtra("wallet", wallet);
         intent.putExtra("attributes", attributesJson);
         intent.putExtra("chainId", MyWallet.ELA);
         intent.putExtra("type", Constant.CRVOTE);
-        intent.putExtra("transType", status);
+        intent.putExtra("transType", transType);
         startActivity(intent);
     }
 
-    private void showOpenDraftWarm(String attributesJson, String status) {
+    private void showOpenDraftWarm(String attributesJson) {
         new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.notsufficientfundskeepornot),
                 getString(R.string.sure), getString(R.string.cancel), false, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        goTransferActivity(attributesJson, status);
+                        goTransferActivity(attributesJson);
                     }
                 });
     }
@@ -497,6 +500,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType", transType);
             start(SignFragment.class, bundle);
 
         }
@@ -507,6 +511,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
             bundle.putBoolean("signStatus", true);
+            bundle.putInt("transType", transType);
             start(SignFragment.class, bundle);
 
         }

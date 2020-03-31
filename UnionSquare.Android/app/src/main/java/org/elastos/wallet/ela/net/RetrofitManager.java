@@ -5,6 +5,7 @@ import android.content.Context;
 import com.blankj.utilcode.util.NetworkUtils;
 
 import org.elastos.wallet.BuildConfig;
+import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -47,7 +48,8 @@ public class RetrofitManager {
     private static ApiServer apiService1;
 
     public static synchronized ApiServer getApiService(Context context) {
-        if (MyApplication.chainID <= 0) {
+        if (MyApplication.currentWalletNet == WalletNet.MAINNET
+                ||MyApplication.currentWalletNet == WalletNet.ALPHAMAINNET) {
             String address = new SPUtil(context).getDefaultServer(MyApplication.serverList.iterator().next());
             if (!address.equals(MyApplication.REQUEST_BASE_URL)) {
                 //主网高可用导致差异 强制刷新apiService1
@@ -112,7 +114,9 @@ public class RetrofitManager {
             logInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
         }
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        if (MyApplication.chainID > 0) {
+        if (MyApplication.currentWalletNet != WalletNet.MAINNET
+                &&MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET
+                &&MyApplication.currentWalletNet != WalletNet.REGTESTNET) {
             try {
                 OkhttpManager.getInstance().setTrustrCertificates(context.getAssets().open("server.cer"));
             } catch (IOException e) {

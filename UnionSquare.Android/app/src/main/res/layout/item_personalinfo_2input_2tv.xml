@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/settingItem_pading15">
+
+    <TextView
+        android:id="@+id/tv1"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:text="@string/phonecode"
+        android:textColor="@color/whiter50"
+
+        />
+
+    <EditText
+        android:id="@+id/et1"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@id/tv1"
+        android:background="@null"
+        android:gravity="right|center_vertical"
+        android:inputType="number"
+        android:maxLength="6" />
+
+    <View
+        android:id="@+id/view1"
+        style="@style/line1"
+        android:layout_width="100dp"
+        android:layout_alignParentBottom="true" />
+
+    <TextView
+        android:layout_marginLeft="15dp"
+        android:id="@+id/tv2"
+        android:layout_width="80dp"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@id/et1"
+        android:gravity="center_vertical"
+        android:text="@string/phonenumber"
+        android:maxLength="15"
+        android:textColor="@color/whiter50"
+
+        />
+
+    <EditText
+        android:id="@+id/et2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@+id/iv"
+        android:layout_toRightOf="@id/tv2"
+        android:background="@null"
+        android:gravity="right|center_vertical"
+        android:inputType="phone"
+        android:singleLine="true" />
+
+
+    <ImageView
+        android:id="@+id/iv"
+        android:layout_width="25dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:paddingLeft="3dp"
+        android:src="@mipmap/asset_cancel" />
+
+    <View
+        android:layout_marginLeft="15dp"
+        style="@style/line1"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@id/view1" />
+</RelativeLayout>

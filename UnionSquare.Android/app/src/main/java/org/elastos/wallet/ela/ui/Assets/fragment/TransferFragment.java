@@ -173,6 +173,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",2 );
             start(SignFragment.class, bundle);
 
         }
@@ -182,6 +183,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",2 );
             bundle.putBoolean("signStatus", true);
             start(SignFragment.class, bundle);
 
@@ -244,6 +246,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         intent.putExtra("chainId", chainId);
         intent.putExtra("attributes", data);
         intent.putExtra("type", Constant.TRANFER);
+        intent.putExtra("transType", 2);
         startActivity(intent);
 
     }

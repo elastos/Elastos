@@ -59,7 +59,7 @@ public class UpdateCRInformationFragment extends BaseFragment implements NewBase
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     private String ownerPublicKey;
-    private String did;
+    private String CID;
 
     @Override
     protected int getLayoutId() {
@@ -75,14 +75,15 @@ public class UpdateCRInformationFragment extends BaseFragment implements NewBase
 
     @Override
     protected void setExtraData(Bundle data) {
-        CrStatusBean.InfoBean bean = data.getParcelable("info");
+        CrStatusBean crStatusBean = data.getParcelable("crStatusBean");
+        CrStatusBean.InfoBean bean=crStatusBean.getInfo();
         etDotname.setText(bean.getNickName());
         etDotname.setEnabled(false);
         code = bean.getLocation();
         tvArea.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         etUrl.setText(bean.getURL());
         ownerPublicKey = bean.getCROwnerPublicKey();
-        did = bean.getCROwnerDID();
+        CID = bean.getCID();
         super.setExtraData(data);
 
     }
@@ -164,9 +165,10 @@ public class UpdateCRInformationFragment extends BaseFragment implements NewBase
                 intent.putExtra("ownerPublicKey", ownerPublicKey);
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
                 intent.putExtra("name", name);
-                intent.putExtra("did", did);
+                intent.putExtra("CID", CID);
                 intent.putExtra("url", url);
                 intent.putExtra("code", code);
+                intent.putExtra("transType", 35);
                 startActivity(intent);
                 break;
 

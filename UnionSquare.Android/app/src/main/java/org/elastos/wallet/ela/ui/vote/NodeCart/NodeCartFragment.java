@@ -127,6 +127,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     private Dialog dialog;
     Runnable runable;
     Handler handler;
+    private int transType = 1001;
 
     @Override
     protected int getLayoutId() {
@@ -351,6 +352,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 nodelist.add(list.get(i).getOwnerpublickey());
             }
         }
+      //  nodelist.add("03d835419df96c76b4b7bd5e56b1ed9362c80186ce3b35cd962dec2232040b0f8m");
         if (nodelist.size() > 36) {
             showToast(getString(R.string.max36dot));
             return;
@@ -438,14 +440,14 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         Intent intent = new Intent(getContext(), VoteActivity.class);
         BigDecimal balance = Arith.div(Arith.sub(data.getBalance(), 1000000), MyWallet.RATE_S, 8);
         maxBalance = NumberiUtil.removeZero(balance.toPlainString());
-        intent.putExtra("maxBalance", maxBalance);
-
-        //小于1
+        //小于1 huo 0
         if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
             maxBalance = "0";
-            intent.putExtra("maxBalance", maxBalance);
+            intent.putExtra("maxBalance", "0");
         } else if ((balance.compareTo(new BigDecimal(1)) < 0)) {
             intent.putExtra("maxBalance", "< 1");
+        } else {
+            intent.putExtra("maxBalance", maxBalance);
         }
 
         startActivity(intent);
@@ -483,6 +485,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType", transType);
             start(SignFragment.class, bundle);
 
         }
@@ -493,29 +496,31 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
             bundle.putBoolean("signStatus", true);
+            bundle.putInt("transType", transType);
             start(SignFragment.class, bundle);
 
         }
     }
 
 
-    private void showOpenDraftWarm(String attributesJson, String status) {
+    private void showOpenDraftWarm(String attributesJson) {
         new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.notsufficientfundskeepornot),
                 getString(R.string.sure), getString(R.string.cancel), false, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        goTransferActivity(attributesJson, status);
+                        goTransferActivity(attributesJson);
                     }
                 });
     }
 
-    private void goTransferActivity(String attributesJson, String status) {
+    private void goTransferActivity(String attributesJson) {
         Intent intent = new Intent(getActivity(), TransferActivity.class);
         intent.putExtra("amount", num);
         intent.putExtra("wallet", wallet);
         intent.putExtra("chainId", MyWallet.ELA);
         intent.putExtra("attributes", attributesJson);
         intent.putExtra("type", Constant.SUPERNODEVOTE);
+        intent.putExtra("transType", transType);
         startActivity(intent);
     }
 
@@ -591,10 +596,12 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 JSONObject attributesJson = JSON.parseObject(attributes);
                 String status = attributesJson.getString("DropVotes");
                 if (!TextUtils.isEmpty(status) && !status.equals("[]")) {
-                    showOpenDraftWarm(attributes, status);
+                    transType = 1002;
+                    showOpenDraftWarm(attributes);
                     break;
                 }
-                goTransferActivity(attributes, status);
+                transType = 1001;
+                goTransferActivity(attributes);
                 break;
             case "getCRlist":
                 if (handler != null && runable != null) {

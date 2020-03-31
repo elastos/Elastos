@@ -47,7 +47,7 @@ public class AreaCodeFragment extends BaseFragment implements CommonRvListener {
     @Override
     protected void initView(View view) {
         registReceiver();
-        tvTitle.setText(getString(R.string.choosearea));
+        tvTitle.setText(getString(R.string.pleasechoosearea));
         AppUtlis.getArea(getContext(), new AppUtlis.OnGetAreaListner() {
             @Override
             public void onGetArea(List<Area> listArea) {

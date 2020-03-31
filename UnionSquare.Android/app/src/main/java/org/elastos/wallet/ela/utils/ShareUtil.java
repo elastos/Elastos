@@ -59,8 +59,7 @@ public class ShareUtil {
     private static Uri saveBitmap(BaseActivity context, Bitmap bm, String picName) {
         //
         try {
-            File file1 = new File(Environment.getExternalStoragePublicDirectory(
-                    context.getPackageName()), "img");
+            File file1 = context.getExternalFilesDir("img");
             File f = new File(file1, "/" + picName + ".jpg");
             if (!f.exists()) {
                 f.getParentFile().mkdirs();

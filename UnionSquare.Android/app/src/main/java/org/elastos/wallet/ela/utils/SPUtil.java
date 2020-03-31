@@ -148,13 +148,14 @@ public class SPUtil {
 
     //是不是第一次登陆
     public boolean getFristLogin() {
-        return getSharedPreferences(detrust_fileName).getBoolean("isfrist", true);
+        return getSharedPreferences(detrust_fileName).getBoolean("isfrist1", true);
     }
 
     //设置不是第一次登陆
     public void setFristLogin() {
         SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
-        edit.putBoolean("isfrist", false);
+        edit.remove("isfrist");
+        edit.putBoolean("isfrist1", false);
         edit.commit();
     }
 
@@ -167,6 +168,28 @@ public class SPUtil {
     public void setDeviceId(String id) {
         SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
         edit.putString("deviceId", id);
+        edit.commit();
+    }
+
+    //是不是打开消息通知红点
+    public boolean isOpenRedPoint() {
+        return getSharedPreferences(detrust_fileName).getBoolean("openReadPoint", true);
+    }
+
+    //设置是不是打开消息通知红点
+    public void setOpenRedPoint(boolean tag) {
+        SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
+        edit.putBoolean("openReadPoint", tag);
+        edit.commit();
+    } //是不是打开消息通知
+    public boolean isOpenSendMsg() {
+        return getSharedPreferences(detrust_fileName).getBoolean("openSendMsg", true);
+    }
+
+    //设置是不是打开消息通知
+    public void setOpenSendMsg(boolean tag) {
+        SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
+        edit.putBoolean("openSendMsg", tag);
         edit.commit();
     }
 }

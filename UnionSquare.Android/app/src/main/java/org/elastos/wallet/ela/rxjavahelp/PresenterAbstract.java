@@ -215,9 +215,13 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
 
 
     protected void dismissProgessDialog(Dialog dialog) {
-        if (dialog != null && dialog.isShowing()) {
-            dialog.dismiss();
+        try {
+            if (dialog != null && dialog.isShowing())
+                dialog.dismiss();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
     }
 
 /*
@@ -231,7 +235,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
 
     protected Dialog initProgressDialog(Context context) {
         Dialog dialog = new DialogUtil().getHttpDialog(context, "loading...");
-        if (dialog==null){
+        if (dialog == null) {
             return null;
         }
         dialog.setOnCancelListener(this);
@@ -270,7 +274,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             int id = getResourceId(context, "error_" + entity.getCode(), "string");
             msg = context.getString(id);
         } catch (Exception e) {
-            msg = entity.getMsg();
+            msg = entity.toString();
         }
 
 

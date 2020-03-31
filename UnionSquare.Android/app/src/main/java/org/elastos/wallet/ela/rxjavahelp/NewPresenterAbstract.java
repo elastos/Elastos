@@ -68,7 +68,7 @@ public class NewPresenterAbstract extends PresenterAbstract {
                 if (isShowDialog) {
                     dismissProgessDialog(dialog);
                 }
-                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())
+                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())||"200".equals(value.getCode())
                         ||MyWallet.errorCodeDoInMeathed.equals(value.getCode())) {
                     ((NewBaseViewData) baseFragment).onGetData(methodName, value, o);
                 } else {

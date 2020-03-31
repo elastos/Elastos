@@ -7,7 +7,7 @@
     android:paddingRight="30dp">
 
     <TextView
-
+        android:id="@+id/tv_dec"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:gravity="center_vertical"
@@ -21,17 +21,17 @@
         android:layout_height="48dp"
         android:layout_alignParentRight="true"
         android:gravity="center_vertical"
-        android:text="确认"
+        android:text="@string/sure1"
         android:textColor="@color/white"
         android:textSize="15sp" />
 
     <org.elastos.wallet.ela.utils.widget.TextConfigDataPicker
-        style="@style/MyDatePicker"
         android:id="@+id/np"
-        android:background="@null"
+        style="@style/MyDatePicker"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/tv_sure"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:background="@null" />
 
 </RelativeLayout>

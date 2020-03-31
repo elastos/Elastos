@@ -17,6 +17,7 @@ public class Wallet extends RealmObject implements Parcelable {
     private String walletId;//钱包id
     private String walletName;//钱包名称
     private String mainWalletAddr;//主钱包地址
+    private String did;//钱包生成的didstring
 
     private boolean isDefault;//默認錢包 是否是默認的
     private boolean singleAddress;//是否单地址
@@ -35,6 +36,7 @@ public class Wallet extends RealmObject implements Parcelable {
         this.walletId = wallet.getWalletId();
         this.walletName = wallet.getWalletName();
         this.mainWalletAddr = wallet.getMainWalletAddr();
+        this.did = wallet.getDid();
         this.isDefault = wallet.isDefault();
         this.singleAddress = wallet.isSingleAddress();
         this.walletAddrList = wallet.getWalletAddrList();
@@ -67,6 +69,7 @@ public class Wallet extends RealmObject implements Parcelable {
         dest.writeString(walletId);
         dest.writeString(walletName);
         dest.writeString(mainWalletAddr);
+        dest.writeString(did);
         dest.writeByte((byte) (isDefault ? 1 : 0));
         dest.writeByte((byte) (singleAddress ? 1 : 0));
         //dest.writeList(walletAddrList);
@@ -80,6 +83,7 @@ public class Wallet extends RealmObject implements Parcelable {
         walletId = in.readString();
         walletName = in.readString();
         mainWalletAddr = in.readString();
+        did = in.readString();
         isDefault = in.readByte() != 0;
         singleAddress = in.readByte() != 0;
       /*  if (walletAddrList == null) {
@@ -117,10 +121,13 @@ public class Wallet extends RealmObject implements Parcelable {
     }
 
 
+    public String getDid() {
+        return did;
+    }
 
-
-
-
+    public void setDid(String did) {
+        this.did = did;
+    }
 
     public boolean isDefault() {
         return isDefault;
@@ -184,6 +191,7 @@ public class Wallet extends RealmObject implements Parcelable {
                 "walletId='" + walletId + '\'' +
                 ", walletName='" + walletName + '\'' +
                 ", mainWalletAddr='" + mainWalletAddr + '\'' +
+                ", did='" + did + '\'' +
                 ", isDefault=" + isDefault +
                 ", singleAddress=" + singleAddress +
                 ", walletAddrList=" + walletAddrList +

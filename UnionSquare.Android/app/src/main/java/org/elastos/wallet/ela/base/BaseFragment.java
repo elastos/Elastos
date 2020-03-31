@@ -26,11 +26,16 @@ import com.scwang.smartrefresh.layout.header.ClassicsHeader;
 import com.trello.rxlifecycle2.LifecycleTransformer;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.DID.MyDID;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
+import org.elastos.wallet.ela.ui.Assets.fragment.WalletManageFragment;
+import org.elastos.wallet.ela.ui.did.fragment.DIDListFragment;
+import org.elastos.wallet.ela.ui.did.fragment.DidDetailFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.greenrobot.eventbus.EventBus;
@@ -79,6 +84,10 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         return getBaseActivity().getWallet();
     }
 
+    public MyDID getMyDID() {
+        return getBaseActivity().getMyDID();
+    }
+
     protected String getText(TextView et) {
         String text = et.getText().toString().trim();
         if (!TextUtils.isEmpty(text)) {
@@ -92,13 +101,13 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         inflaterView(inflater, container);
         int Language = new SPUtil(getContext()).getLanguage();
-        int id = R.drawable.commonbg;
-        if (Language == 0) {
-            id = MyApplication.chainID > 0 ? R.mipmap.bg_test : id;
-        } else {
-            id = MyApplication.chainID > 0 ? R.mipmap.bg_e_test : id;
-
+        int bg = R.mipmap.bg_test;
+        if (Language != 0) {
+            bg = R.mipmap.bg_e_test;
         }
+        int id = (MyApplication.currentWalletNet != WalletNet.MAINNET
+                && MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET) ? bg : R.drawable.commonbg;
+
         mRootView.setBackgroundResource(id);//为每个页面设置默认背景
         unbinder = ButterKnife.bind(this, mRootView);
         showLoading();
@@ -330,7 +339,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     }
 
 
-    protected void post(int code, String name, Object obj) {
+    public void post(int code, String name, Object obj) {
         EventBus.getDefault().post(new BusEvent(code, name, obj));
     }
 
@@ -469,6 +478,26 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
             Toast.makeText(_mActivity, getString(R.string.press_exit_again), Toast.LENGTH_SHORT).show();
         }
         return true;
+    }
+
+    public void toDIDListFragment() {
+        Fragment fragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(DIDListFragment.class.getName());
+        if (fragment != null) {
+            popTo(DIDListFragment.class, false);
+        } else {
+            startWithPopTo(new DIDListFragment(), MainFragment.class, false);
+
+        }
+    }
+
+    public void toDIDDetailFragment() {
+        Fragment fragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(DidDetailFragment.class.getName());
+        if (fragment != null) {
+            popTo(DidDetailFragment.class, false);
+        } else {
+            startWithPopTo(new DIDListFragment(), WalletManageFragment.class, false);
+
+        }
     }
 
 }

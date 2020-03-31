@@ -4,20 +4,15 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -32,14 +27,11 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseActivity;
-import org.elastos.wallet.ela.utils.adpter.TextAdapter;
 import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener2;
 import org.elastos.wallet.ela.utils.widget.TextConfigDataPicker;
 import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -269,18 +261,25 @@ public class DialogUtil {
         return dialog;
     }
 
-    public void showTransferSucess(BaseActivity activity) {
+    public void showTransferSucess(String dec,BaseActivity activity, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity, R.style.coustom_dialog);
         dialog.setContentView(R.layout.dialog_transfersuccess);
+        TextView tv = dialog.findViewById(R.id.tv);
+        if (!TextUtils.isEmpty(dec)){
+            tv.setText(dec);
+        }
+        dialog.setCancelable(false);
         setDialogAttributes(activity, dialog);
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (dialog != null)
+                if (dialog.isShowing()) {
                     dialog.dismiss();
+                    listener.affireBtnClick(null);
+                }
             }
-        }, 2000);//3秒后执行Runnable中的run方法
+        }, 2888);//3秒后执行Runnable中的run方法
         dialog.show();
     }
 
@@ -340,12 +339,16 @@ public class DialogUtil {
         dialog.show();
     }
 
-    public void showCommonSelect(BaseActivity activity, String[] strings, WarmPromptListener listener) {
+    public void showCommonSelect(BaseActivity activity, String dec,String[] strings, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.dialog_numberpicker);
         dialog.setCancelable(true);
         dialog.setCanceledOnTouchOutside(true);
         TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextView tvDec = dialog.findViewById(R.id.tv_dec);
+        if (dec!=null){
+            tvDec.setText(dec);
+        }
         TextConfigNumberPicker numberPicker = dialog.findViewById(R.id.np);
         tvSure.setOnClickListener(v -> {
             dialog.dismiss();
@@ -380,12 +383,16 @@ public class DialogUtil {
         dialog.show();
     }
 
-    public void showTime(BaseActivity activity, long minDate, long maxDate, WarmPromptListener listener) {
+    public void showTime(BaseActivity activity,String dec, long minDate, long maxDate, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.dialog_timepicker);
         dialog.setCancelable(true);
         dialog.setCanceledOnTouchOutside(true);
         TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextView tvDec = dialog.findViewById(R.id.tv_dec);
+        if (dec!=null){
+            tvDec.setText(dec);
+        }
         TextConfigDataPicker datePicker = dialog.findViewById(R.id.np);
         //datePicker.updateUI(datePicker);
         datePicker.setMinDate(minDate);
@@ -499,8 +506,7 @@ public class DialogUtil {
         });
         dialog.show();
     }
-
-    public static void showComTextPopup(EditText view, Context context, List<String> textList) {
+/*    public static void showComTextPopup(EditText view, Context context, List<String> textList) {
         int x = view.getWidth();
         RecyclerView recyclerView = (RecyclerView) LayoutInflater.from(context).inflate(R.layout.popup_text, null);
         PopupWindow popupWindow = new PopupWindow(recyclerView, x, ViewGroup.LayoutParams.WRAP_CONTENT, true);
@@ -521,5 +527,5 @@ public class DialogUtil {
         recyclerView.setAdapter(adapter);
         popupWindow.showAsDropDown(view, 0, 0);
         //  return popupWindow;
-    }
+    }*/
 }

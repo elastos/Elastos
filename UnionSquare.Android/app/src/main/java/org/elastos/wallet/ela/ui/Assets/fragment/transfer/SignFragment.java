@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -31,6 +32,8 @@ import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.widget.ScaleTransformer;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -65,6 +68,8 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
     private String signData;
     private String chainID;
     private PwdPresenter presenter;
+    int transType;
+
 
     @Override
     protected int getLayoutId() {
@@ -76,6 +81,7 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
         super.setExtraData(data);
         wallet = data.getParcelable("wallet");
         signData = data.getString("attributes");
+        transType = data.getInt("transType");
         setQr(signData);
         boolean signStatus = data.getBoolean("signStatus");
         if (signStatus) {
@@ -83,8 +89,8 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
         }
 
         try {
-            JsonObject JsonAttribute = new JsonParser().parse(signData).getAsJsonObject();
-            chainID = JsonAttribute.get("ChainID").getAsString();
+            com.alibaba.fastjson.JSONObject JsonAttribute = JSON.parseObject(signData);
+            chainID = JsonAttribute.getString("ChainID");
             //判断签名状态
             presenter = new PwdPresenter();
             presenter.getTransactionSignedInfo(wallet.getWalletId(), chainID, signData, this);
@@ -127,17 +133,23 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
                 new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-
+                        popBackFragment();
                     }
                 });
+                String hash = "";
+                try {
+                    JSONObject pulishdata = new JSONObject(data);
+                    hash = pulishdata.getString("TxHash");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                post(RxEnum.TRANSFERSUCESS.ordinal(), transType + "", hash);
                 break;
             case "getTransactionSignedInfo":
                 //判断签名状态
                 if (TextUtils.isEmpty(data)) {
                     return;
                 }
-
-                //try {
                 JsonObject signJson = new JsonParser().parse(data).getAsJsonArray().get(0).getAsJsonObject();
                 int N = 1;
                 int M = 1;
@@ -184,7 +196,8 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", chainID);
                 intent.putExtra("attributes", signData);
-                intent.putExtra("type", 1);
+                intent.putExtra("onlySign", true);
+                intent.putExtra("transType", transType);
                 startActivity(intent);
                 registReceiver();
                 break;
@@ -212,7 +225,7 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
     public void setQr(String data) {
         //encodeTransaction  加密后的结果
         List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 240)
-                , ScreenUtil.dp2px(getContext(), 240), Constant.SIGN);
+                , ScreenUtil.dp2px(getContext(), 240), Constant.SIGN, transType);
         if (images.size() == 1) {
             ivQr.setVisibility(View.VISIBLE);
             llVp.setVisibility(View.GONE);
@@ -223,8 +236,8 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
             return;
         }
         try {
-            JsonObject JsonAttribute = new JsonParser().parse(data).getAsJsonObject();
-            String msg = String.format(getString(R.string.onlyid), JsonAttribute.get("ID").getAsString());
+            com.alibaba.fastjson.JSONObject JsonAttribute = JSON.parseObject(data);
+            String msg = String.format(getString(R.string.onlyid), JsonAttribute.getString("ID"));
             tvOnlycode.setText(msg);
             tvOnlycode.setVisibility(View.VISIBLE);
             tvMultip.setVisibility(View.VISIBLE);

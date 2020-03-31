@@ -197,6 +197,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
         intent.putExtra("name", name);
         intent.putExtra("url", url);
         intent.putExtra("code", code);
+        intent.putExtra("transType", 9);
 
         startActivity(intent);
     }

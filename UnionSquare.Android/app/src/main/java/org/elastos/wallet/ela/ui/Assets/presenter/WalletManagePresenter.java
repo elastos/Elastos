@@ -10,7 +10,7 @@ import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListen
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 
-public class WallletManagePresenter extends NewPresenterAbstract {
+public class WalletManagePresenter extends NewPresenterAbstract {
 
 
     public void exportWalletWithMnemonic(String walletId, String pwd, BaseFragment baseFragment) {
@@ -88,7 +88,9 @@ public class WallletManagePresenter extends NewPresenterAbstract {
             }
         });
         subscriberObservable(observer, observable, baseFragment);
-    } public void verifyPassPhrase(String walletId, String passphrase, String payPasswd, BaseFragment baseFragment) {
+    }
+
+    public void verifyPassPhrase(String walletId, String passphrase, String payPasswd, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "verifyPassPhrase");
         Observable observable = createObservable(new ObservableListener() {
             @Override
@@ -98,4 +100,36 @@ public class WallletManagePresenter extends NewPresenterAbstract {
         });
         subscriberObservable(observer, observable, baseFragment);
     }
+
+
+    public void forceDIDResolve(String didString, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "forceDIDResolve");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyDID().forceDIDResolve(didString);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void DIDResolveWithTip(String didString, BaseFragment baseFragment, String type) {
+        Observer observer = createObserver(baseFragment, "DIDResolveWithTip", type);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyDID().DIDResolveWithTip(didString);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }/*public void DIDResolveWithTip(String didString, BaseActivity baseActivity, String type) {
+        Observer observer = createObserver(baseActivity, "DIDResolveWithTip",type);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyDID().DIDResolveWithTip(didString);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }*/
 }

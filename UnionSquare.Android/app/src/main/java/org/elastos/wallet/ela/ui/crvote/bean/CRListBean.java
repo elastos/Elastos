@@ -136,7 +136,7 @@ public class CRListBean extends BaseEntity {
                 this.crcandidatesinfo = crcandidatesinfo;
             }
 
-            public static class CrcandidatesinfoBean implements Comparable<CrcandidatesinfoBean>, Parcelable, Serializable {
+            public static class CrcandidatesinfoBean implements Comparable<CrcandidatesinfoBean>, Serializable, Parcelable {
                 /**
                  * code : 2102c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331ac
                  * did : im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH
@@ -163,6 +163,7 @@ public class CRListBean extends BaseEntity {
                 private boolean isSelect;//为了列表容易展示   是否已经加入购物车
                 private String code;
                 private String did;
+                private String cid;
                 private String nickname;
                 private String url;
                 private int location;
@@ -170,6 +171,14 @@ public class CRListBean extends BaseEntity {
                 private String votes;
                 private int index;
                 private String voterate;
+
+                public String getCid() {
+                    return cid;
+                }
+
+                public void setCid(String cid) {
+                    this.cid = cid;
+                }
 
                 public BigDecimal getCurentBalance() {
                     return curentBalance;
@@ -279,6 +288,7 @@ public class CRListBean extends BaseEntity {
                     dest.writeByte(this.isSelect ? (byte) 1 : (byte) 0);
                     dest.writeString(this.code);
                     dest.writeString(this.did);
+                    dest.writeString(this.cid);
                     dest.writeString(this.nickname);
                     dest.writeString(this.url);
                     dest.writeInt(this.location);
@@ -297,6 +307,7 @@ public class CRListBean extends BaseEntity {
                     this.isSelect = in.readByte() != 0;
                     this.code = in.readString();
                     this.did = in.readString();
+                    this.cid = in.readString();
                     this.nickname = in.readString();
                     this.url = in.readString();
                     this.location = in.readInt();

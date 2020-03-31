@@ -24,4 +24,11 @@ public class CommmonStringEntity extends BaseEntity {
     }
 
     private String data;
+
+    @Override
+    public String toString() {
+        return "CommmonStringEntity{" +
+                "data='" + data + '\'' +
+                '}';
+    }
 }

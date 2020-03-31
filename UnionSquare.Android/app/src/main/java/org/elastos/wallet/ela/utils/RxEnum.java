@@ -65,9 +65,19 @@ public enum RxEnum {
 
     //did
     KEEPDRAFT,//保存草稿
+    RETURCER,//返回cerdential数据
+    EDITPERSONALINFO,//编辑个人信息
+    EDITPERSONALINTRO,//编辑个人简介
+    EDITSOCIAL,//编辑社交账号
     IPVALID,//节点ip可用
     AGREE,//cr注册同意协议
+    NOTICE,//消息通知
+    READNOTICE,//看完消息通知
     GETDEPOSITVOTR,//列表其他获得非active数据
+    REFRESHMESSAGE,//刷新消息中心的数据
+    VERTIFYPAYPASS,//回传密码
+    TRANSFERSUCESSPWD,//交易成功并回传密码
+    SAVECREDENCIALTOWEB,//上传凭证到服务器
 
    /* enum Type {
         CoinBase, // 创币交易

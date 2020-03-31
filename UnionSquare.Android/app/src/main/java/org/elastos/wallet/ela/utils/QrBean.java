@@ -1,6 +1,9 @@
 package org.elastos.wallet.ela.utils;
 
-public class QrBean {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class QrBean implements Parcelable {
 
     /**
      * version : 0
@@ -9,7 +12,7 @@ public class QrBean {
      * index : 1.0
      * data : ads
      * md5 : 2deb000b57bfac9d72c14d4ed967b572
-     * extra : {"Type":1,"SubWallet":"ELA"}
+     * extra : {"Type":1,"SubWallet":"ELA","transType":1}
      */
 
     private int version;
@@ -76,7 +79,7 @@ public class QrBean {
         this.extra = extra;
     }
 
-    public static class ExtraBean {
+    public static class ExtraBean implements Parcelable {
         /**
          * Type : 1
          * SubWallet : ELA
@@ -84,6 +87,7 @@ public class QrBean {
 
         private int Type;
         private String SubWallet;
+        private int transType;
 
         public int getType() {
             return Type;
@@ -100,5 +104,92 @@ public class QrBean {
         public void setSubWallet(String SubWallet) {
             this.SubWallet = SubWallet;
         }
+
+        public int getTransType() {
+            return transType;
+        }
+
+        public void setTransType(int transType) {
+            this.transType = transType;
+        }
+
+
+
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeInt(this.Type);
+            dest.writeString(this.SubWallet);
+            dest.writeInt(this.transType);
+
+        }
+
+        public ExtraBean() {
+        }
+
+        protected ExtraBean(Parcel in) {
+            this.Type = in.readInt();
+            this.SubWallet = in.readString();
+            this.transType = in.readInt();
+           
+        }
+
+        public static final Creator<ExtraBean> CREATOR = new Creator<ExtraBean>() {
+            @Override
+            public ExtraBean createFromParcel(Parcel source) {
+                return new ExtraBean(source);
+            }
+
+            @Override
+            public ExtraBean[] newArray(int size) {
+                return new ExtraBean[size];
+            }
+        };
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.version);
+        dest.writeString(this.name);
+        dest.writeInt(this.total);
+        dest.writeInt(this.index);
+        dest.writeString(this.data);
+        dest.writeString(this.md5);
+        dest.writeParcelable(this.extra, flags);
+    }
+
+    public QrBean() {
+    }
+
+    protected QrBean(Parcel in) {
+        this.version = in.readInt();
+        this.name = in.readString();
+        this.total = in.readInt();
+        this.index = in.readInt();
+        this.data = in.readString();
+        this.md5 = in.readString();
+        this.extra = in.readParcelable(ExtraBean.class.getClassLoader());
+    }
+
+    public static final Parcelable.Creator<QrBean> CREATOR = new Parcelable.Creator<QrBean>() {
+        @Override
+        public QrBean createFromParcel(Parcel source) {
+            return new QrBean(source);
+        }
+
+        @Override
+        public QrBean[] newArray(int size) {
+            return new QrBean[size];
+        }
+    };
 }

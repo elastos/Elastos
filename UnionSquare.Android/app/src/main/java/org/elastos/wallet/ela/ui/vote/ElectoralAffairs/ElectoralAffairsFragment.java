@@ -40,7 +40,7 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.GlideApp;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -233,9 +233,11 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
                     //提取按钮
                     intent.putExtra("type", Constant.WITHDRAWSUPERNODE);
                     intent.putExtra("amount", available);
+                    intent.putExtra("transType",12);
                 } else {
                     //注销按钮
                     intent.putExtra("type", Constant.UNREGISTERSUPRRNODE);
+                    intent.putExtra("transType", 10);
                 }
                 intent.putExtra("chainId", MyWallet.ELA);
                 intent.putExtra("ownerPublicKey", curentNode.getOwnerpublickey());

@@ -155,6 +155,7 @@ public class UpdateInformationFragment extends BaseFragment implements NewBaseVi
                 intent.putExtra("name", name);
                 intent.putExtra("url", url);
                 intent.putExtra("code", code);
+                intent.putExtra("transType", 11);
                 startActivity(intent);
                 break;
 

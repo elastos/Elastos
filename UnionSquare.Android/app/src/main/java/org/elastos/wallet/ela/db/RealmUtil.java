@@ -23,7 +23,7 @@ import io.realm.RealmResults;
 
 public class RealmUtil {
 
-    public static final long DB_VERSION_CODE = 5;//当前数据库版本号
+    public static final long DB_VERSION_CODE = 6;//当前数据库版本号
     public static final String DB_NAME = "DB";//BuildConfig
 
     @Inject
@@ -36,6 +36,7 @@ public class RealmUtil {
                 .name(DB_NAME)
                 .schemaVersion(DB_VERSION_CODE)
                 .migration(new CustomMigration())
+                //.modules(new MySchemaModule())
                 .build();
         return config;
     }
@@ -98,7 +99,7 @@ public class RealmUtil {
 
     /*******************************钱包****************************************/
     /*更新钱包的名称 密码等信息*/
-    private void updateWalletDetial(@NonNull Wallet wallet) {
+    public void updateWalletDetial(@NonNull Wallet wallet) {
         Realm realm = getInstanceRealm();
         realm.beginTransaction();
         realm.copyToRealmOrUpdate(wallet);
@@ -114,6 +115,20 @@ public class RealmUtil {
         Wallet masterWallet = new Wallet();
         masterWallet.setWalletName(walletName);
         masterWallet.setWalletId(masterWalletID);
+        masterWallet.setSingleAddress(account.isSingleAddress());
+        masterWallet.setType(getType(account));
+        updateWalletDetial(masterWallet);
+        return masterWallet;
+    }
+
+    public Wallet updateWalletDetial(String walletName, String masterWalletID, String basecInfo, String did) {
+        SubWalletBasicInfo walletBasicInfo = JSON.parseObject(basecInfo, SubWalletBasicInfo.class);
+        SubWalletBasicInfo.InfoBean.AccountBean account = walletBasicInfo.getInfo().getAccount();
+
+        Wallet masterWallet = new Wallet();
+        masterWallet.setWalletName(walletName);
+        masterWallet.setWalletId(masterWalletID);
+        masterWallet.setDid(did);
         masterWallet.setSingleAddress(account.isSingleAddress());
         masterWallet.setType(getType(account));
         updateWalletDetial(masterWallet);
@@ -276,8 +291,16 @@ public class RealmUtil {
         closeRealm(realm);
     }
 
+    public void upDataWalletDid(String walletId, String didString) {
+        Realm realm = getInstanceRealm();
+        Wallet wallet = realm.where(Wallet.class).equalTo("walletId", walletId).findFirst();
+        realm.beginTransaction();
+        wallet.setDid(didString);
+        realm.commitTransaction();
+        closeRealm(realm);
+    }
 
-    public void deleteAllWallet() {
+/*    public void deleteAllWallet() {
         Realm realm = getInstanceRealm();
         try {
             realm.beginTransaction();
@@ -289,7 +312,7 @@ public class RealmUtil {
         } finally {
             closeRealm(realm);
         }
-    }
+    }*/
 
 
     private List<Wallet> getWalletList(RealmResults<Wallet> list) {

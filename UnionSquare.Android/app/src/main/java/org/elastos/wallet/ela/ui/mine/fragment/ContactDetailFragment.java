@@ -11,8 +11,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -207,7 +205,7 @@ public class ContactDetailFragment extends BaseFragment {
                     ClipboardUtil.copyClipboar(getBaseActivity(), walletAddr);
                 } else {
                     //显示二维码
-                    Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(walletAddr, ScreenUtil.dp2px(getContext(), 240), ScreenUtil.dp2px(getContext(), 240), Constant.TRANSFER, "ELA");
+                    Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(walletAddr, ScreenUtil.dp2px(getContext(), 240), ScreenUtil.dp2px(getContext(), 240));
                     dialogUtil.showImage(getBaseActivity(), mBitmap);
                 }
 

@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
+import org.elastos.did.exception.DIDException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -16,14 +17,18 @@ import org.elastos.wallet.ela.bean.CreateWalletBean;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.adapter.CommonTextViewAdapter;
 import org.elastos.wallet.ela.ui.Assets.adapter.CommonTextViewTwoAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.Word;
 import org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet.CreateMulWalletFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonCreateSubWalletPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CreateMasterWalletPresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CreaterWalletViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.utils.RxEnum;
 
 import java.util.ArrayList;
@@ -37,7 +42,7 @@ import io.github.xudaojie.qrcodelib.BuildConfig;
 /**
  * 验证助记词
  */
-public class VerifyMnemonicWordsFragment extends BaseFragment implements CreaterWalletViewData, CommonCreateSubWalletViewData {
+public class VerifyMnemonicWordsFragment extends BaseFragment implements CreaterWalletViewData, CommonCreateSubWalletViewData, NewBaseViewData {
 
 
     @BindView(R.id.toolbar_title)
@@ -122,7 +127,7 @@ public class VerifyMnemonicWordsFragment extends BaseFragment implements Creater
         if (BuildConfig.DEBUG || putList.toString().equals(readList.toString())) {
             if (openType == RxEnum.MANAGER.ordinal()) {
                 //钱包管理的导出助记词
-                popTo(WallletManageFragment.class, false);
+                popTo(WalletManageFragment.class, false);
             } else if (openType == RxEnum.PRIVATEKEY.ordinal()) {
                 popTo(CreateMulWalletFragment.class, false);
                 post(RxEnum.CREATEPRIVATEKEY.ordinal(), null, createWalletBean);
@@ -146,27 +151,48 @@ public class VerifyMnemonicWordsFragment extends BaseFragment implements Creater
 
         }
     }
-
+    String basecInfo;
     @Override
     public void onCreateSubWallet(String data,Object o) {
         if (data != null) {
             //创建Mainchain子钱包
-            Wallet masterWallet = realmUtil.updateWalletDetial(createWalletBean.getMasterWalletName(), createWalletBean.getMasterWalletID(), data);
-            realmUtil.updateSubWalletDetial(createWalletBean.getMasterWalletID(), data, new RealmTransactionAbs() {
-                @Override
-                public void onSuccess() {
-                    realmUtil.updateWalletDefault(createWalletBean.getMasterWalletID(), new RealmTransactionAbs() {
-                        @Override
-                        public void onSuccess() {
-                            post(RxEnum.ONE.ordinal(), null, masterWallet);
-                            //成功跳转首页
-                            toMainFragment();
-                        }
-                    });
+            new CreatMulWalletPresenter().exportxPrivateKey(createWalletBean.getMasterWalletID(),  createWalletBean.getPayPassword(), this);
+            basecInfo = data;
+
+
+
+        }
+    }
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "exportxPrivateKey":
+                //保存did
+                String privateKey = ((CommmonStringEntity) baseEntity).getData();
+                try {
+                    getMyDID().init(createWalletBean.getMasterWalletID());//初始化mydid
+                    getMyDID().getDidStore().initPrivateIdentity(privateKey, createWalletBean.getPayPassword());
+                    getMyDID().initDID(createWalletBean.getPayPassword());
+                } catch (DIDException e) {
+                    e.printStackTrace();
+                    showToast(getString(R.string.didinitfaile));
                 }
-            });
-
-
+                //通知首页
+                Wallet masterWallet = realmUtil.updateWalletDetial(createWalletBean.getMasterWalletName(), createWalletBean.getMasterWalletID(), basecInfo,getMyDID().getDidString());
+                realmUtil.updateSubWalletDetial(createWalletBean.getMasterWalletID(), basecInfo, new RealmTransactionAbs() {
+                    @Override
+                    public void onSuccess() {
+                        realmUtil.updateWalletDefault(createWalletBean.getMasterWalletID(), new RealmTransactionAbs() {
+                            @Override
+                            public void onSuccess() {
+                                post(RxEnum.ONE.ordinal(), null, masterWallet);
+                                //成功跳转首页
+                                toMainFragment();
+                            }
+                        });
+                    }
+                });
+                break;
         }
     }
 }

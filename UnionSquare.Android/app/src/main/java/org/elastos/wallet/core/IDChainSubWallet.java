@@ -14,12 +14,12 @@ public class IDChainSubWallet extends SidechainSubWallet {
         return CreateIDTransaction(mInstance, payloadJson, memo);
     }
 
-    public String GenerateDIDInfoPayload(String inputJson, String passwd) throws WalletException {
-        return GenerateDIDInfoPayload(mInstance, inputJson, passwd);
-    }
-
     public String GetAllDID(int start, int count) throws WalletException {
         return GetAllDID(mInstance, start, count);
+    }
+
+    public String GetAllCID(int start, int count) throws WalletException {
+        return GetAllCID(mInstance, start, count);
     }
 
     public String Sign(String did, String message, String payPassword) throws WalletException {
@@ -34,8 +34,8 @@ public class IDChainSubWallet extends SidechainSubWallet {
         return GetPublicKeyDID(mInstance, publicKey);
     }
 
-    public String GetResolveDIDInfo(int start, int count, String did) throws WalletException {
-        return GetResolveDIDInfo(mInstance, start, count, did);
+    public String GetPublicKeyCID(String publicKey) throws WalletException {
+        return GetPublicKeyCID(mInstance, publicKey);
     }
 
     public String SignDigest(String did, String digest, String payPassword) throws WalletException {
@@ -49,9 +49,9 @@ public class IDChainSubWallet extends SidechainSubWallet {
 
     private native String CreateIDTransaction(long instance, String payloadJSON, String memo);
 
-    private native String GenerateDIDInfoPayload(long instance, String inputJson, String passwd);
-
     private native String GetAllDID(long instance, int start, int count);
+
+    private native String GetAllCID(long instance, int start, int count);
 
     private native String Sign(long instance, String did, String message, String payPassword);
 
@@ -59,7 +59,7 @@ public class IDChainSubWallet extends SidechainSubWallet {
 
     private native String GetPublicKeyDID(long instance, String publicKey);
 
-    private native String GetResolveDIDInfo(long instance, int start, int count, String did);
+    private native String GetPublicKeyCID(long instance, String publicKey);
 
     private native String SignDigest(long instance, String did, String digest, String payPassword);
 }

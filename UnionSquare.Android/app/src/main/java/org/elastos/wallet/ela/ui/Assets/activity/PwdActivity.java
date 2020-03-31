@@ -15,6 +15,8 @@ import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewDa
 import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -27,7 +29,8 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     private PwdPresenter presenter;
     private String attributes;
     private String pwd;
-    private int type;
+    private boolean onlySign;//为1时候只需要签名然后post出去
+    private int transType;
 
     @Override
     protected int getLayoutId() {
@@ -51,7 +54,10 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
         chainId = data.getStringExtra("chainId");
         attributes = data.getStringExtra("attributes");
         wallet = data.getParcelableExtra("wallet");
-        type = data.getIntExtra("type", 0);//1签名成功不publish
+        onlySign = data.getBooleanExtra("onlySign", false);//onlySign签名成功不publish
+        transType = data.getIntExtra("transType", 13);
+
+
       /*  tvAddress.setText(toAddress);
         tvAmount.setText(amount + " " + chainId);
         tvCharge.setText(NumberiUtil.maxNumberFormat(new BigDecimal(((double) fee) / MyWallet.RATE + "").toPlainString(), 12) + " " + chainId);//0.0001
@@ -79,7 +85,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
     public void onGetCommonData(String methodname, String data) {
         switch (methodname) {
             case "signTransaction":
-                if (type == 1) {
+                if (onlySign) {
                     post(RxEnum.SIGNSUCCESS.ordinal(), "签名成功", data);
                     finish();
                     return;
@@ -98,7 +104,14 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
 
                 break;
             case "publishTransaction":
-                post(RxEnum.TRANSFERSUCESS.ordinal(), "", null);
+                String hash = "";
+                try {
+                    JSONObject pulishdata = new JSONObject(data);
+                    hash = pulishdata.getString("TxHash");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                post(RxEnum.TRANSFERSUCESS.ordinal(), transType+"", hash);
                 finish();
                 break;
         }

@@ -19,5 +19,14 @@ public class CRSignUpPresenter extends NewPresenterAbstract {
             }
         });
         subscriberObservable(observer, observable, baseFragment);
+    }public void getFee(String walletId, String chainId, String s, String address, String amount,String type, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "getFee",type);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().getFee(walletId, chainId, s, address, amount);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
     }
 }

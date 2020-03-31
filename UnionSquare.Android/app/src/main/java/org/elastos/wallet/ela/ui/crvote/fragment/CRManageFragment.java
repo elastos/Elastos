@@ -6,43 +6,50 @@ import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.text.method.ScrollingMovementMethod;
+import android.util.Base64;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.allen.library.SuperButton;
 
+import org.elastos.did.DIDDocument;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
-import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
+import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRManagePresenter;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
-import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
-import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
-import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
+import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
+import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.RxEnum;
-import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -101,16 +108,15 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     TextView tvIntroDetail;
     @BindView(R.id.ll_infodetail)
     LinearLayout llInfodetail;
-
-    @BindView(R.id.sb_zx)
-    SuperButton sbZx;
-    private RealmUtil realmUtil = new RealmUtil();
-    private Wallet wallet = realmUtil.queryDefauleWallet();
+    @BindView(R.id.iv_detail)
+    ImageView ivDetail;
+    @BindView(R.id.tv_title_right)
+    TextView tvTitleRight;
+    private Wallet wallet;
     CRManagePresenter presenter;
-    String status;
-    private String did;
+    private String CID, DID;
     private String ownerPublicKey;
-
+    private CredentialSubjectBean credentialSubjectBean;
 
     @Override
     protected int getLayoutId() {
@@ -126,34 +132,39 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.electoral_affairs));
+        tvTitleRight.setText(getString(R.string.quitcr));
+        tvIntroDetail.setMovementMethod(ScrollingMovementMethod.getInstance());
         registReceiver();
     }
 
 
     @Override
     protected void setExtraData(Bundle data) {
-        ownerPublicKey = data.getString("publickey");
-        status = data.getString("status", "Canceled");
-        did = data.getString("did", "");
-        CrStatusBean.InfoBean info = data.getParcelable("info");
+
+        wallet = data.getParcelable("wallet");
+        CrStatusBean crStatusBean = data.getParcelable("crStatusBean");
+        CrStatusBean.InfoBean info = crStatusBean.getInfo();
+        ownerPublicKey = info.getCROwnerPublicKey();
+        CID = info.getCID();
+        DID = info.getDID();
         CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentNode");
+        //curentNode只是用来展示信息
         if (curentNode == null) {
             return;
         }
 
         presenter = new CRManagePresenter();
         //这里只会有 "Registered", "Canceled"分别代表, 已注册过, 已注销(不知道可不可提取)
-        if (status.equals("Canceled")) {
+        if (crStatusBean.getStatus().equals("Canceled")) {
             //已经注销了
             setToobar(toolbar, toolbarTitle, getString(R.string.electoral_affairs));
             ll_xggl.setVisibility(View.GONE);
             ll_tq.setVisibility(View.VISIBLE);
             tvQuit.setText(curentNode.getNickname() + getString(R.string.hasquit));
-
             long height = info.getConfirms();
             if (height >= 2160) {
                 //获取赎回金额
-                presenter.getCRDepositcoin(did, this);
+                presenter.getCRDepositcoin(CID, this);
             }
         } else {
             //Registered 未注销展示选举信息
@@ -162,9 +173,33 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
         super.setExtraData(data);
     }
 
-    @OnClick({R.id.tv_url, R.id.sb_zx, R.id.sb_tq, R.id.sb_up, R.id.ll_info, R.id.ll_intro})
+    @OnClick({R.id.tv_url, R.id.sb_zx, R.id.sb_tq, R.id.sb_up, R.id.ll_info, R.id.ll_intro, R.id.tv_title_right, R.id.iv_detail, R.id.tv_did})
     public void onViewClicked(View view) {
+        Bundle bundle;
         switch (view.getId()) {
+            case R.id.tv_did:
+                if (!TextUtils.isEmpty(DID))
+                    ClipboardUtil.copyClipboar(getBaseActivity(), tvDid.getText().toString());
+                break;
+            case R.id.iv_detail:
+                bundle = new Bundle();
+                bundle.putParcelable("credentialSubjectBean", credentialSubjectBean);
+                start(CredentialInfoFragemnt.class, bundle);
+                break;
+            case R.id.sb_zx:
+                //更新did信息
+                if (!TextUtils.isEmpty(DID)) {
+                    //已经绑定did
+                    //直接授权页更新凭证到中心化服务器
+                    bundle = new Bundle();
+                    bundle.putString("type", "authorization");
+                    bundle.putParcelable("wallet", wallet);
+                    start(AuthorizationFragment.class, bundle);
+                    return;
+                }
+                //先绑定did  再更新到服务器
+                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, "1");
+                break;
             case R.id.ll_info:
                 lineInfo.setVisibility(View.VISIBLE);
                 lineIntro.setVisibility(View.GONE);
@@ -186,11 +221,11 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 ClipboardUtil.copyClipboar(getBaseActivity(), tvUrl.getText().toString());
                 break;
 
-            case R.id.sb_zx:
+            case R.id.tv_title_right:
                 dialogUtil.showWarmPrompt2(getBaseActivity(), getString(R.string.quitcrornot), new WarmPromptListener() {
                             @Override
                             public void affireBtnClick(View view) {
-                                showWarmPromptInput();
+                                showWarmPromptInput(Constant.UNREGISTERCR);
                             }
                         }
                 );
@@ -202,56 +237,40 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 break;
 
             case R.id.sb_up:
-                start(UpdateCRInformationFragment.class, getArguments());
+                if (!TextUtils.isEmpty(DID)) {
+                    start(UpdateCRInformationFragment.class, getArguments());
+                    return;
+                }
+                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, "2");
                 break;
         }
     }
 
 
-    private void showWarmPromptInput() {
-        new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+    private void showWarmPromptInput(String type) {
+        new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", type, this);
 
 
     }
 
 
     private void onJustRegistered(CrStatusBean.InfoBean bean, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode) {
-
-
+        tvTitleRight.setVisibility(View.VISIBLE);
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         String url = bean.getURL();
-        new SuperNodeListPresenter().getCRUrlJson(url, this, new NodeDotJsonViewData() {
-            @Override
-            public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
-                //获取icon
-
-                try {
-                    String imgUrl = t.getOrg().getBranding().getLogo_256();
-                    GlideApp.with(CRManageFragment.this).load(imgUrl)
-                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
-                    GlideApp.with(CRManageFragment.this).load(imgUrl)
-                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon1);
-                } catch (Exception e) {
-                }
-                try {
-                    //获取节点简介
-                    NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
-
-                    String info = new SPUtil(CRManageFragment.this.getContext()).getLanguage() == 0 ? infoBean.getZh() : infoBean.getEn();
-                    if (!TextUtils.isEmpty(info)) {
-                        llTab.setVisibility(View.VISIBLE);
-                        tvIntroDetail.setText(info);
-                    }
-
-                } catch (Exception e) {
-                }
-            }
-        });
         tvUrl.setText(url);
-        tvDid.setText(bean.getCROwnerDID());
+        if (!TextUtils.isEmpty(DID)) {
+            DID = "did:elastos:" + DID;
+            tvDid.setText(DID);
+            //从服务器获得凭证信息
+            new CRManagePresenter().jwtGet(DID, this);
+        } else {
+            tvDid.setText(getString(R.string.unactive));
+            tvDid.setCompoundDrawables(null, null, null, null);
+        }
         if (curentNode != null) {
-            tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
+            tvNum.setText(curentNode.getVotes().split("\\.")[0] + " " + getString(R.string.ticket));
             tv_zb.setText(curentNode.getVoterate() + "%");
         }
     }
@@ -264,31 +283,50 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         Intent intent;
         switch (methodName) {
+            case "jwtGet":
+                GetJwtRespondBean getJwtRespondBean = (GetJwtRespondBean) baseEntity;
+                String jwt = getJwtRespondBean.getData().getJwt();
+                if (!TextUtils.isEmpty(jwt)) {
+                    String[] jwtParts = jwt.split("\\.");
+                    String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
+                    String pro = getMyDID().getCredentialProFromJson(payload);
+                    credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
+                    if (credentialSubjectBean == null || credentialSubjectBean.whetherEmpty()) {
+                        return;
+                    }
+                    ivDetail.setVisibility(View.VISIBLE);
+                    GlideApp.with(CRManageFragment.this).load(credentialSubjectBean.getAvatar())
+                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+                    GlideApp.with(CRManageFragment.this).load(credentialSubjectBean.getAvatar())
+                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon1);
+                    if (!TextUtils.isEmpty(credentialSubjectBean.getIntroduction())) {
+                        llTab.setVisibility(View.VISIBLE);
+                        tvIntroDetail.setText(credentialSubjectBean.getIntroduction());
+                    }
+                }
+                break;
             case "createRetrieveCRDepositTransaction":
                 intent = new Intent(getActivity(), TransferActivity.class);
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("type", Constant.WITHDRAWCR);
                 intent.putExtra("amount", available);
                 intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("transType", 36);
                 intent.putExtra("attributes", ((CommmonStringEntity) baseEntity).getData());
                 startActivity(intent);
                 break;
             case "getFee":
+                String type = (String) o;
                 intent = new Intent(getActivity(), VoteTransferActivity.class);
                 intent.putExtra("wallet", wallet);
-                if (status.equals("Canceled")) {
-                    //提取按钮
-                    intent.putExtra("type", Constant.WITHDRAWCR);
-                    intent.putExtra("amount", available);
-                    intent.putExtra("ownerPublicKey", ownerPublicKey);
-                } else {
-                    //注销按钮
-                    intent.putExtra("type", Constant.UNREGISTERCR);
-                }
+                intent.putExtra("type", type);
                 intent.putExtra("chainId", MyWallet.ELA);
-                intent.putExtra("did", did);
+                intent.putExtra("CID", CID);
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
+                //注销按钮
+                intent.putExtra("transType", 34);
                 startActivity(intent);
+
                 break;
 
 
@@ -298,7 +336,31 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 //注销可提取
                 sbtq.setVisibility(View.VISIBLE);
                 break;
+            case "DIDResolveWithTip":
+                String resolveType = (String) o;
+                DIDDocument didDocument = (DIDDocument) ((CommmonObjEntity) baseEntity).getData();
+                if (didDocument == null) {
+                    showToast(getString(R.string.notcreatedid));
+                    return;
+                }
+                if (getMyDID().getExpires(didDocument).before(new Date())) {
+                    //did过期
+                    showToast(getString(R.string.didoutofdate));
+                    return;
 
+                }
+                //已经注册did  且未绑定
+                if ("1".equals(resolveType)) {
+                    //在授权页面绑定并授权
+                    Bundle bundle = getArguments();
+                    bundle.putString("type", "authorization&bind");
+                    start(AuthorizationFragment.class, bundle);
+                } else {
+                    //在升级页面绑定并更新(更新包含绑定)
+                    start(UpdateCRInformationFragment.class, getArguments());
+                }
+
+                break;
 
         }
     }
@@ -306,13 +368,24 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
-        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal() && "34".equals(result.getName())) {
+            //退出参选成功
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
                     popBackFragment();
                 }
             });
+
+
+        }
+        if (integer == RxEnum.SAVECREDENCIALTOWEB.ordinal()) {
+            if (!TextUtils.isEmpty(DID)) {
+                showToast(getString(R.string.update_successful));
+                new CRManagePresenter().jwtGet(DID, this);
+            }
         }
     }
+
+
 }
