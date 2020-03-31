@@ -79,10 +79,10 @@ class ProfileDid extends Component {
   render() {
     const { did } = this.props
     let domain
-    if (process.env.NODE_ENV === 'production') {
-      domain = 'blockchain-did-mainnet'
-    } else {
+    if (process.env.NODE_ENV === 'development') {
       domain = 'blockchain-did-regtest'
+    } else {
+      domain = 'idchain'
     }
     if (did && did.id) {
       return (
@@ -100,7 +100,9 @@ class ProfileDid extends Component {
           </Popover>
           <span>DID:</span>
           <a
-            href={`https://${domain}.elastos.org/address/${did.id.slice('did:elastos:'.length)}`}
+            href={`https://${domain}.elastos.org/address/${did.id.slice(
+              'did:elastos:'.length
+            )}`}
             target="_blank"
           >
             {did.id} <ExternalLinkSvg />

@@ -9,8 +9,6 @@ import sso from './sso'
 import user from './user'
 import * as permissions from './permissions'
 import * as logger from './logger'
-import * as fs from 'fs'
-import * as path from 'path'
 const _ = require('lodash')
 const { PublicKey } = require('bitcore-lib-p256')
 const jwkToPem = require('jwk-to-pem')
@@ -18,10 +16,6 @@ const jwkToPem = require('jwk-to-pem')
 export { utilCrypto, sso, user, validate, permissions, mail, logger }
 
 export const getEnv = () => process.env.NODE_ENV
-
-export const loadKey = (filename: string) => {
-  return fs.readFileSync(path.join(__dirname, filename));
-}
 
 export const uncompressPubKey = (key: any) => {
   if (!key.compressed) {
@@ -34,7 +28,7 @@ export const uncompressPubKey = (key: any) => {
   return Buffer.concat([Buffer.from([0x04]), xbuf, ybuf])
 }
 
-export const getPemPubKey = async (key: any) => {
+export const getPemPubKey = (key: any) => {
   if (!key.compressed) {
     throw new Error('Public key is not compressed.')
   }
@@ -63,11 +57,9 @@ export const getDidPublicKey = async (did: string) => {
     }
   }
   try {
-    const res = await axios.post(
-      process.env.DID_SIDECHAIN_URL,
-      data,
-      { headers }
-    )
+    const res = await axios.post(process.env.DID_SIDECHAIN_URL, data, {
+      headers
+    })
     if (res && res.data && res.data.result) {
       const base64 = _.get(res.data.result, 'transaction[0].operation.payload')
       const payload: any = base64url.decode(base64)
@@ -75,7 +67,7 @@ export const getDidPublicKey = async (did: string) => {
       const matched = pubKeys.find(el => el.id === '#primary')
       // compressed public key beginning with 02
       const publicKey = bs58.decode(matched.publicKeyBase58).toString('hex')
-      const pemPubKey = await getPemPubKey(PublicKey.fromString(publicKey))
+      const pemPubKey = getPemPubKey(PublicKey.fromString(publicKey))
       return {
         expirationDate: moment(payload.expires),
         publicKey: pemPubKey
