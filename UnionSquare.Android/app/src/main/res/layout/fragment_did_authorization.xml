@@ -22,6 +22,7 @@
         android:src="@mipmap/window_750_close" />
 
     <ImageView
+        android:src="@mipmap/cyber_republic"
         android:background="@drawable/sc_ffffff_cr10"
         android:id="@+id/iv_logo"
         android:layout_width="100dp"

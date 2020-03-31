@@ -4,8 +4,6 @@ import android.content.Context;
 import android.support.multidex.MultiDexApplication;
 import android.webkit.WebView;
 
-import com.tencent.bugly.crashreport.CrashReport;
-
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
@@ -59,7 +57,7 @@ public class MyApplication extends MultiDexApplication {
 
     private void useBugly() {
         if (!BuildConfig.DEBUG) {
-            CrashReport.initCrashReport(getApplicationContext(), "9c89947c00", false);
+            //CrashReport.initCrashReport(getApplicationContext(), "9c89947c00", false);
         }
     }
 
