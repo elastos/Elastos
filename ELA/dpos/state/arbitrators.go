@@ -488,10 +488,12 @@ func (a *arbitrators) distributeWithNormalArbitratorsV(reward common.Fixed64) (
 		ownerHash := arbiter.GetOwnerProgramHash()
 		rewardHash := ownerHash
 		var r common.Fixed64
-		if member, ok := a.crcArbiters[ownerHash]; ok {
+		if _, ok := a.crcArbiters[ownerHash]; ok {
 			r = individualBlockConfirmReward
-			m, ok := member.(*crcArbiter)
-			if !ok || m.crMember.MemberState != state.MemberElected {
+			m, ok := arbiter.(*crcArbiter)
+			if !ok {
+				rewardHash = a.chainParams.CRCAddress
+			} else if m.crMember.MemberState != state.MemberElected {
 				rewardHash = a.chainParams.DestroyELAAddress
 			} else {
 				pk := arbiter.GetOwnerPublicKey()
@@ -508,7 +510,7 @@ func (a *arbitrators) distributeWithNormalArbitratorsV(reward common.Fixed64) (
 				votes) * rewardPerVote))
 			r = individualBlockConfirmReward + individualProducerReward
 		}
-		roundReward[rewardHash] = r
+		roundReward[rewardHash] += r
 		realDPOSReward += r
 	}
 	for _, candidate := range a.currentCandidates {
