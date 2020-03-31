@@ -42,6 +42,7 @@ class Constants {
     // FileSystemStorage
     static let PRIVATE_DIR = "private"
     static let HDKEY_FILE = "key"
+    static let HDPUBKEY_FILE = "key.pub"
     static let INDEX_FILE = "index"
     static let MNEMONIC_FILE = "mnemonic";
 

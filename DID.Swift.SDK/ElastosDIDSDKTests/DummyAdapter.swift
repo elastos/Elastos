@@ -21,7 +21,6 @@ class DummyAdapter: DIDAdapter, DIDResolver {
             let re = randomCustom(min: 0, max: 9)
             let r = decTohex(number: re)
             str = "\(str)\(r)"
-            print(str)
         }
 
         return str
@@ -189,7 +188,6 @@ class DummyAdapter: DIDAdapter, DIDResolver {
         //        return Int(x)
         // [min, max）
         let y = arc4random() % UInt32(max) + UInt32(min)
-        print(Int(y))
         return Int(y)
     }
     
@@ -220,7 +218,6 @@ class IDTx {
             let re = randomCustom(min: 0, max: 9)
             let r = decTohex(number: re)
             str = "\(str)\(r)"
-            print(str)
         }
 
         return str
@@ -240,7 +237,6 @@ class IDTx {
             //        return Int(x)
             // [min, max）
             let y = arc4random() % UInt32(max) + UInt32(min)
-            print(Int(y))
             return Int(y)
     }
     

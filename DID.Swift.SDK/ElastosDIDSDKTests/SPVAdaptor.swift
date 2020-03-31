@@ -32,7 +32,6 @@ public class SPVAdaptor: DIDAdapter {
     public init(_ walletDir: String, _ walletId: String, _ network: String, _ resolver: String, _ passwordCallback: @escaping PasswordCallback) {
         
        handle = SPV.create(walletDir, walletId, network, resolver)
-        print(handle)
         self.walletDir = walletDir
         self.walletId = walletId
         self.network = network

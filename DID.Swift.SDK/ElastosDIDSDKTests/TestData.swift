@@ -116,7 +116,8 @@ class TestData: XCTestCase {
     
     func importPrivateKey(_ id: DIDURL, _ fileName: String, _ type: String) throws {
         let skBase58: String = try loadText(fileName, type)
-        let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 1024)
+        let capacity = skBase58.count * 3
+        let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: capacity)
         let cp = skBase58.toUnsafePointerInt8()
         let re = base58_decode(buffer, cp)
         let temp = UnsafeRawPointer(buffer)

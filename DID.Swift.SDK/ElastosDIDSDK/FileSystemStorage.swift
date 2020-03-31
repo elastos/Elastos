@@ -235,6 +235,14 @@ public class FileSystemStorage: DIDStorage {
         return try openFileHandle(forWrite, Constants.PRIVATE_DIR, Constants.HDKEY_FILE)
     }
 
+    private func openPublicIdentityFile() throws -> FileHandle {
+        return try openPublicIdentityFile(false)
+    }
+
+    private func openPublicIdentityFile(_ forWrite: Bool) throws -> FileHandle {
+        return try openFileHandle(forWrite, Constants.PRIVATE_DIR, Constants.HDPUBKEY_FILE)
+    }
+
     private func openPrivateIdentityFile() throws -> FileHandle {
         return try openPrivateIdentityFile(false)
     }
@@ -280,17 +288,41 @@ public class FileSystemStorage: DIDStorage {
     }
 
     func containsPublicIdentity() -> Bool {
-        // TODO:
-        return false
+        do {
+            let handle = try openPublicIdentityFile()
+            defer {
+                handle.closeFile()
+            }
+
+            return handle.readDataToEndOfFile().count > 0
+        } catch {
+            return false
+        }
     }
 
     func storePublicIdentity(_ key: String) throws {
-        // TODO:
+        do {
+            let handle = try openPublicIdentityFile(true)
+            defer {
+                handle.closeFile()
+            }
+            handle.write(key.data(using: .utf8)!)
+        } catch {
+            throw DIDError.didStoreError("store public key identity error")
+        }
     }
 
     func loadPublicIdentity() throws -> String {
-        // TODOD
-        return "TODO"
+        do {
+            let handle = try openPublicIdentityFile()
+            defer {
+                handle.closeFile()
+            }
+            let data = handle.readDataToEndOfFile()
+            return String(data: data, encoding: .utf8)!
+        } catch {
+            throw DIDError.didStoreError("load public key identity error")
+        }
     }
 
     private func openPrivateIdentityIndexFile(_ forWrite: Bool) throws -> FileHandle {

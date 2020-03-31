@@ -79,7 +79,6 @@ public class JsonNode {
             var result: Array<String> = []
             for subNode in temp! {
                 result.append(subNode.toString())
-                print(subNode.toString())
             }
             let data = try! JSONSerialization.data(withJSONObject: result, options: [])
             resultString = String(data: data, encoding: String.Encoding.utf8)!
@@ -91,7 +90,6 @@ public class JsonNode {
             var result: [String: String] = [: ]
             for (key, value) in temp! {
                 result[key] = value.toString()
-                print(value.toString())
             }
             let data = try! JSONSerialization.data(withJSONObject: result, options: [])
             resultString = String(data: data, encoding: String.Encoding.utf8)!
