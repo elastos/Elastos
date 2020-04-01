@@ -19,12 +19,12 @@ type Common struct {
 	Connection *grpc.ClientConn
 }
 
-type GenerateAPIRequest struct {
+type APIRequest struct {
     Pass string `json:"pass"`
     jwt.StandardClaims
 }
 
-type GenerateAPIRequestMnemonic struct {
+type APIRequestMnemonic struct {
     Mnemonic string `json:"mnemonic"`
 }
 
@@ -70,7 +70,7 @@ func (c *Common) GenerateAPIRequestMnemonic(mnemonic, did string) Response {
 	secretKey := os.Getenv("SHARED_SECRET_ADENINE")
 	client := common.NewCommonClient(c.Connection)
 
-	jwtInfo, _ := json.Marshal(GenerateAPIRequestMnemonic{
+	jwtInfo, _ := json.Marshal(APIRequestMnemonic{
 		Mnemonic: mnemonic,
 	})
 
@@ -120,7 +120,7 @@ func (c *Common) GenerateAPIRequest(secretKey, did string) Response {
 	var outputData string
 	client := common.NewCommonClient(c.Connection)
 
-	jwtInfo, _ := json.Marshal(GenerateAPIRequest{
+	jwtInfo, _ := json.Marshal(APIRequest{
 		Pass: "pass",
 	})
 
@@ -171,7 +171,7 @@ func (c *Common) GetAPIKeyMnemonic(mnemonic, did string) Response {
 	secretKey := os.Getenv("SHARED_SECRET_ADENINE")
 	client := common.NewCommonClient(c.Connection)
 
-	jwtInfo, _ := json.Marshal(GenerateAPIRequestMnemonic{
+	jwtInfo, _ := json.Marshal(APIRequestMnemonic{
 		Mnemonic: mnemonic,
 	})
 
@@ -221,7 +221,7 @@ func (c *Common) GetAPIKey(secretKey, did string) Response {
 	var outputData string
 	client := common.NewCommonClient(c.Connection)
 
-	jwtInfo, _ := json.Marshal(GenerateAPIRequest{
+	jwtInfo, _ := json.Marshal(APIRequest{
 		Pass: "pass",
 	})
 
