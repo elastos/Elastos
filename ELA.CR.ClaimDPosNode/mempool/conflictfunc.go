@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -26,6 +26,15 @@ func hashCRCProposalDraftHash(tx *types.Transaction) (interface{}, error) {
 			"CRC proposal payload cast failed, tx:%s", tx.Hash())
 	}
 	return p.DraftHash, nil
+}
+
+func hashCRCProposalDID(tx *types.Transaction) (interface{}, error) {
+	p, ok := tx.Payload.(*payload.CRCProposal)
+	if !ok {
+		return nil, fmt.Errorf(
+			"CRC proposal payload cast failed, tx:%s", tx.Hash())
+	}
+	return p.CRSponsorDID, nil
 }
 
 func hashCRCProposalWithdrawProposalHash(
