@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -217,6 +217,22 @@ func TestConflictManager_CR_DraftHash(t *testing.T) {
 				TxType: types.CRCProposal,
 				Payload: &payload.CRCProposal{
 					DraftHash: hash,
+				},
+			},
+		}
+
+		verifyTxListWithConflictManager(txs, db, true, t)
+	})
+}
+
+func TestConflictManager_CR_SponsorDID(t *testing.T) {
+	did := *randomProgramHash()
+	conflictTestProc(func(db *UtxoCacheDB) {
+		txs := []*types.Transaction{
+			{
+				TxType: types.CRCProposal,
+				Payload: &payload.CRCProposal{
+					CRSponsorDID: did,
 				},
 			},
 		}

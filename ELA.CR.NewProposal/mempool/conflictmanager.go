@@ -20,6 +20,7 @@ const (
 	slotCRNickname              = "CrNickname"
 	slotProgramCode             = "ProgramCode"
 	slotCRCProposalDraftHash    = "CRCProposalDraftHash"
+	slotCRCProposalDID          = "CRCProposalDID"
 	slotCRCProposalHash         = "CRCProposalHash"
 	slotCRCProposalTrackingHash = "CRCProposalTrackingHash"
 	slotCRCProposalReviewKey    = "CRCProposalReviewKey"
@@ -222,6 +223,16 @@ func newConflictManager() conflictManager {
 					keyTypeFuncPair{
 						Type: types.CRCProposal,
 						Func: hashCRCProposalDraftHash,
+					},
+				),
+			},
+			// CRC proposal draft hash
+			{
+				name: slotCRCProposalDID,
+				slot: newConflictSlot(programHash,
+					keyTypeFuncPair{
+						Type: types.CRCProposal,
+						Func: hashCRCProposalDID,
 					},
 				),
 			},
