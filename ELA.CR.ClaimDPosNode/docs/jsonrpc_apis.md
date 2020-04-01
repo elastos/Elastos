@@ -2110,7 +2110,7 @@ Response:
                 "proposalhash": "7868943061e77bd29a6aafa4426d5f14c85e0bb0e40e333bcaa2ca4bc702fcac",
                 "txhash": "fd957410f85c6a4691bf60ccbd8c1d25901631941dc17ae6af91541b7695b265",
                 "crvotes": {
-                    "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
+                    "670f11c336563d31ed1cf81ac4a83f9df7306f9967": "approve"
                 },
                 "votersrejectamount": 0,
                 "RegisterHeight": 1468,
