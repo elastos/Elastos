@@ -19,9 +19,9 @@ def dapp_store_dashboard(request):
     for dapp in dapps_list:
         createdAt = dapp["createdAt"][:10]
         dapp["createdAt"] = createdAt
-        id = dapp["_id"]
-        dapp["id"] = id
-        dapp["icon_url"] = f"{dapp_store_url}/apps/{id}/icon"
+        dapp_id = dapp["_id"]
+        dapp["id"] = dapp["_id"]
+        dapp["icon_url"] = f"{dapp_store_url}/apps/{dapp_id}/icon"
     context['dapps_list'] = dapps_list
     context['downloads'] = dapps_list
     context['downloads'] = sorted(

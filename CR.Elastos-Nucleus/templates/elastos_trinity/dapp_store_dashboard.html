@@ -22,7 +22,7 @@ elastOS - dApp Store Dashboard
             {% for dapp in dapps_list %}
                 <div class="col-md-3 mh-100" style="margin-bottom: 45px;">
                     <div class="container align-items-center justify-content-center border border-secondary">
-                        <img class="rounded mx-auto d-block" src="{{ dapp.icon_url }}" alt="Card image">
+                        <img class="rounded mx-auto d-block" src="{{ dapp.icon_url }}" alt="Card image" style="max-width: 100px; max-height: 150px; object-fit: contain">
                     </div>
                     <p class="dapp-title">{{ dapp.appName }}</p>
                     <p class="dapp-description font-weight-light">{{ dapp.appDescription }}</p>
