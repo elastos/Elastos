@@ -2067,7 +2067,6 @@ Show current cr proposal base state information
 | CRVotes            | map[string]VoteResult | per cr VoteResult                                  |
 | VotersRejectAmount | common.Fixed64        | voters reject amount                               |
 | RegisterHeight     | uint32                | the proposal register height                       |
-| VoteStartHeight    | uint32                | the proposal vote start height                     |
 | Index              | uint64                | the index of the cr proposal                       |
 
 #### Example
@@ -2115,7 +2114,6 @@ Response:
                 },
                 "votersrejectamount": 0,
                 "RegisterHeight": 1468,
-                "votestartheight": 0,
                 "index": 1
             }
         ],
@@ -2147,7 +2145,6 @@ Get one cr proposal detail state information by proposalhash or drafthash
 | CRVotes            | map[string]VoteResult | per cr VoteResult                                  |
 | VotersRejectAmount | common.Fixed64        | voters reject amount                               |
 | RegisterHeight     | uint32                | the proposal register height                       |
-| VoteStartHeight    | uint32                | the proposal vote start height                     |
 | ProposalType       | CRCProposalType       | the type of cr proposal                            |
 | SponsorPublicKey   | string                | the public key of sponsor                          |
 | CRSponsorDID       | string                | the did of sponsor                                 |
@@ -2200,8 +2197,7 @@ Response:
                 "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
             },
             "votersrejectamount": 0,
-            "RegisterHeight": 1277,
-            "votestartheight": 0
+            "RegisterHeight": 1277
         }
     }
 }
