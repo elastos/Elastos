@@ -6,10 +6,12 @@
 package state
 
 import (
+	"bytes"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/utils"
 )
 
 // processTransactions takes the transactions and the height when they have been
@@ -81,12 +83,12 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 		c.processCRCAppropriation(tx, height, c.state.history)
 	}
 
-	c.state.processCancelVotes(tx, height)
+	c.processCancelVotes(tx, height)
 	c.processCRCAddressRelatedTx(tx, height)
 }
 
 // processVotes takes a transaction, if the transaction including any vote
-// inputs or outputs, validate and update CR votes.
+// outputs, validate and update CR votes.
 func (c *Committee) processVotes(tx *types.Transaction, height uint32) {
 	if tx.Version >= types.TxVersion09 {
 		for i, output := range tx.Outputs {
@@ -137,6 +139,97 @@ func (c *Committee) processVoteOutput(output *types.Output, height uint32) {
 			}
 		}
 	}
+}
+
+// processCancelVotes takes a transaction, if the transaction takes a previous
+// vote output then try to subtract the vote.
+func (c *Committee) processCancelVotes(tx *types.Transaction, height uint32) {
+	var exist bool
+	for _, input := range tx.Inputs {
+		referKey := input.ReferKey()
+		if _, ok := c.state.Votes[referKey]; ok {
+			exist = true
+		}
+	}
+	if !exist {
+		return
+	}
+
+	references, err := c.state.getTxReference(tx)
+	if err != nil {
+		log.Errorf("get tx reference failed, tx hash:%s", tx.Hash())
+		return
+	}
+	for _, input := range tx.Inputs {
+		referKey := input.ReferKey()
+		_, ok := c.state.Votes[referKey]
+		if ok {
+			out := references[input]
+			c.processVoteCancel(&out, height)
+		}
+	}
+}
+
+// processVoteCancel takes a previous vote output and decrease CR votes.
+func (c *Committee) processVoteCancel(output *types.Output, height uint32) {
+	p := output.Payload.(*outputpayload.VoteOutput)
+	for _, vote := range p.Contents {
+		for _, cv := range vote.CandidateVotes {
+			switch vote.VoteType {
+			case outputpayload.CRC:
+				did, err := common.Uint168FromBytes(cv.Candidate)
+				if err != nil {
+					continue
+				}
+				candidate := c.state.getCandidate(*did)
+				if candidate == nil {
+					continue
+				}
+				v := cv.Votes
+				c.state.history.Append(height, func() {
+					candidate.votes -= v
+				}, func() {
+					candidate.votes += v
+				})
+
+			case outputpayload.CRCProposal:
+				proposalHash, err := common.Uint256FromBytes(cv.Candidate)
+				if err != nil {
+					continue
+				}
+				proposalState := c.manager.getProposal(*proposalHash)
+				v := cv.Votes
+				c.state.history.Append(height, func() {
+					proposalState.VotersRejectAmount -= v
+				}, func() {
+					proposalState.VotersRejectAmount += v
+				})
+
+			case outputpayload.CRCImpeachment:
+				c.processCancelImpeachment(height, cv.Candidate, cv.Votes, c.state.history)
+			}
+		}
+	}
+}
+
+func (c *Committee) processCancelImpeachment(height uint32, member []byte,
+	votes common.Fixed64, history *utils.History) {
+	var crMember *CRMember
+	for _, v := range c.Members {
+		if bytes.Equal(v.Info.CID.Bytes(), member) {
+			crMember = v
+			break
+		}
+	}
+	if crMember == nil {
+		return
+	}
+	history.Append(height, func() {
+		crMember.ImpeachmentVotes -= votes
+	}, func() {
+		crMember.ImpeachmentVotes += votes
+	})
+	return
 }
 
 // processCRCRelatedAmount takes a transaction, if the transaction takes a previous
