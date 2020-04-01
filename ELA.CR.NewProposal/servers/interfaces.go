@@ -1511,16 +1511,16 @@ type RpcCrMembersInfo struct {
 }
 
 type RpcProposalBaseState struct {
-	Status             string                        `json:"status"`
-	ProposalHash       string                        `json:"proposalhash"`
-	TxHash             string                        `json:"txhash"`
-	CRVotes            map[string]payload.VoteResult `json:"crvotes"`
-	VotersRejectAmount string                        `json:"votersrejectamount"`
-	RegisterHeight     uint32                        `json:"registerHeight"`
-	TerminatedHeight   uint32                        `json:"terminatedheight"`
-	TrackingCount      uint8                         `json:"trackingcount"`
-	ProposalLeader     string                        `json:"proposalleader"`
-	Index              uint64                        `json:"index"`
+	Status             string            `json:"status"`
+	ProposalHash       string            `json:"proposalhash"`
+	TxHash             string            `json:"txhash"`
+	CRVotes            map[string]string `json:"crvotes"`
+	VotersRejectAmount string            `json:"votersrejectamount"`
+	RegisterHeight     uint32            `json:"registerHeight"`
+	TerminatedHeight   uint32            `json:"terminatedheight"`
+	TrackingCount      uint8             `json:"trackingcount"`
+	ProposalLeader     string            `json:"proposalleader"`
+	Index              uint64            `json:"index"`
 }
 
 type RpcCRProposalBaseStateInfo struct {
@@ -1812,14 +1812,14 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "invalidate state")
 	}
 
-	var crVotes map[string]payload.VoteResult
+	var crVotes map[string]string
 	var RpcProposalBaseStates []RpcProposalBaseState
 
 	var index uint64
 	for _, proposal := range proposalMap {
-		crVotes = make(map[string]payload.VoteResult)
+		crVotes = make(map[string]string)
 		for k, v := range proposal.CRVotes {
-			crVotes[k.String()] = v
+			crVotes[k.String()] = v.Name()
 		}
 		RpcProposalBaseState := RpcProposalBaseState{
 			Status:             proposal.Status.String(),
