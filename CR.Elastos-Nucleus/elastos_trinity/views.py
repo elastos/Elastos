@@ -19,11 +19,10 @@ def dapp_store_dashboard(request):
     for dapp in dapps_list:
         createdAt = dapp["createdAt"][:10]
         dapp["createdAt"] = createdAt
-        dapp_id = dapp["_id"]
         dapp["id"] = dapp["_id"]
-        dapp["icon_url"] = f"{dapp_store_url}/apps/{dapp_id}/icon"
+        dapp["icon_url"] = f"{dapp_store_url}/apps/{dapp['id']}/icon"
+        dapp["download_url"] = f"https://scheme.elastos.org/app?id={dapp['packageName']}"
     context['dapps_list'] = dapps_list
-    context['downloads'] = dapps_list
-    context['downloads'] = sorted(
-        context['downloads'], key=lambda k: k['downloadsCount'], reverse=True)[:4]
+    context['top_downloads'] = sorted(dapps_list, key=lambda k: k['downloadsCount'], reverse=True)[:4]
     return render(request, "elastos_trinity/dapp_store_dashboard.html", context)
+

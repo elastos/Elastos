@@ -1,6 +1,7 @@
 {% extends 'base.html' %} 
 {% load static %}
 {% load django_simple_cookie_consent_tags %}
+{% load qr_code %}
 {% block title %}
   <title>Landing - Elastos Nucleus</title>
     {% display_cookie_consent %}
@@ -23,9 +24,7 @@
         };
     </script>
     <script src="{% static '/javascript/elaauth.js' %}"></script>
-{% endblock %} 
-
-{% load qr_code %} 
+{% endblock %}
 
 {% block content %}
 <main class="bd-masthead" role="main" style="background-color: #181b22;">

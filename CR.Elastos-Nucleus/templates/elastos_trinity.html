@@ -18,7 +18,7 @@
                         <p class="dashboard-header" style="margin: 20px 20px 32px 20px">
                             Top By Download
                         </p>
-                        {% for app in downloads %}
+                        {% for app in top_downloads %}
                             <div class="row" style="margin-left: 15px; margin-right: 15px">
                                 <div class="col d-flex align-items-center justify-content-left">
                                     <img class="rounded mx-auto d-block" src="{{ app.icon_url }}" alt="Card image" style="max-width: 100px; max-height: 150px; object-fit: contain">
@@ -32,7 +32,7 @@
                                     </p>
                                 </div>
                                 <div class="col" style="display: flex; align-items: center;">
-                                    <a class="btn btn-secondary rounded-pill download" style="margin: 0px">Download</a>
+                                    <a href="{{ app.download_url }}" class="btn btn-secondary rounded-pill download" style="margin: 0px">Download</a>
                                 </div>
                             </div>
                             <div class="divider" style="margin-top: 20px !important;"></div>
@@ -42,7 +42,7 @@
                         <p class="dashboard-header" style="margin: 20px 20px 32px 20px">
                             Top By Category
                         </p>
-                        {% for app in downloads %}
+                        {% for app in top_downloads %}
                             <div class="row" style="margin-left: 15px; margin-right: 15px">
                                 <div class="col d-flex align-items-center justify-content-left">
                                     <img class="rounded mx-auto d-block" src="{{ app.icon_url }}" alt="Card image" style="max-width: 100px; max-height: 150px; object-fit: contain">
@@ -56,7 +56,7 @@
                                     </p>
                                 </div>
                                 <div class="col" style="display: flex; align-items: center;">
-                                    <a class="btn btn-secondary rounded-pill download" style="margin: 0px">Download</a>
+                                    <a href="{{ app.download_url }}" class="btn btn-secondary rounded-pill download" style="margin: 0px">Download</a>
                                 </div>
                             </div>
                             <div class="divider" style="margin-top: 20px !important;"></div>
