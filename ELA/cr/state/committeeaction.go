@@ -7,6 +7,7 @@ package state
 
 import (
 	"bytes"
+
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
@@ -216,7 +217,8 @@ func (c *Committee) processCancelImpeachment(height uint32, member []byte,
 	votes common.Fixed64, history *utils.History) {
 	var crMember *CRMember
 	for _, v := range c.Members {
-		if bytes.Equal(v.Info.CID.Bytes(), member) {
+		if bytes.Equal(v.Info.CID.Bytes(), member) &&
+			v.MemberState == MemberElected {
 			crMember = v
 			break
 		}
