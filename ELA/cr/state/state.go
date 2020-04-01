@@ -388,35 +388,6 @@ func (s *State) getCIDByDepositHash(hash common.Uint168) (common.Uint168, bool) 
 	return cid, ok
 }
 
-// processCancelVotes takes a transaction, if the transaction takes a previous
-// vote output then try to subtract the vote.
-func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
-	var exist bool
-	for _, input := range tx.Inputs {
-		referKey := input.ReferKey()
-		if _, ok := s.Votes[referKey]; ok {
-			exist = true
-		}
-	}
-	if !exist {
-		return
-	}
-
-	references, err := s.getTxReference(tx)
-	if err != nil {
-		log.Errorf("get tx reference failed, tx hash:%s", tx.Hash())
-		return
-	}
-	for _, input := range tx.Inputs {
-		referKey := input.ReferKey()
-		_, ok := s.Votes[referKey]
-		if ok {
-			out := references[input]
-			s.processVoteCancel(&out, height)
-		}
-	}
-}
-
 // processVoteCRC record candidate votes.
 func (s *State) processVoteCRC(height uint32, cv outputpayload.CandidateVotes) {
 	cid, err := common.Uint168FromBytes(cv.Candidate)
@@ -446,42 +417,6 @@ func (s *State) processVoteCRCProposal(height uint32,
 	}, func() {
 		proposalState.VotersRejectAmount -= v
 	})
-}
-
-// processVoteCancel takes a previous vote output and decrease CR votes.
-func (s *State) processVoteCancel(output *types.Output, height uint32) {
-	p := output.Payload.(*outputpayload.VoteOutput)
-	for _, vote := range p.Contents {
-		for _, cv := range vote.CandidateVotes {
-			switch vote.VoteType {
-			case outputpayload.CRC:
-				did, err := common.Uint168FromBytes(cv.Candidate)
-				if err != nil {
-					continue
-				}
-				candidate := s.getCandidate(*did)
-				if candidate == nil {
-					continue
-				}
-				v := cv.Votes
-				s.history.Append(height, func() {
-					candidate.votes -= v
-				}, func() {
-					candidate.votes += v
-				})
-
-			case outputpayload.CRCProposal:
-				proposalHash, _ := common.Uint256FromBytes(cv.Candidate)
-				proposalState := s.manager.getProposal(*proposalHash)
-				v := cv.Votes
-				s.history.Append(height, func() {
-					proposalState.VotersRejectAmount -= v
-				}, func() {
-					proposalState.VotersRejectAmount += v
-				})
-			}
-		}
-	}
 }
 
 // getCandidate returns candidate with specified cid, it will return nil
