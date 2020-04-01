@@ -1517,7 +1517,6 @@ type RpcProposalBaseState struct {
 	CRVotes            map[string]payload.VoteResult `json:"crvotes"`
 	VotersRejectAmount string                        `json:"votersrejectamount"`
 	RegisterHeight     uint32                        `json:"registerHeight"`
-	VoteStartHeight    uint32                        `json:"votestartheight"`
 	TerminatedHeight   uint32                        `json:"terminatedheight"`
 	TrackingCount      uint8                         `json:"trackingcount"`
 	ProposalLeader     string                        `json:"proposalleader"`
@@ -1547,7 +1546,6 @@ type RpcProposalState struct {
 	CRVotes            map[string]payload.VoteResult `json:"crvotes"`
 	VotersRejectAmount string                        `json:"votersrejectamount"`
 	RegisterHeight     uint32                        `json:"registerheight"`
-	VoteStartHeight    uint32                        `json:"votestartheight"`
 	TerminatedHeight   uint32                        `json:"terminatedheight"`
 	TrackingCount      uint8                         `json:"trackingcount"`
 	ProposalLeader     string                        `json:"proposalleader"`
@@ -1830,7 +1828,6 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 			CRVotes:            crVotes,
 			VotersRejectAmount: proposal.VotersRejectAmount.String(),
 			RegisterHeight:     proposal.RegisterHeight,
-			VoteStartHeight:    proposal.VoteStartHeight,
 			TrackingCount:      proposal.TrackingCount,
 			TerminatedHeight:   proposal.TerminatedHeight,
 			ProposalLeader:     hex.EncodeToString(proposal.ProposalLeader),
@@ -1935,7 +1932,6 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		CRVotes:            crVotes,
 		VotersRejectAmount: proposalState.VotersRejectAmount.String(),
 		RegisterHeight:     proposalState.RegisterHeight,
-		VoteStartHeight:    proposalState.VoteStartHeight,
 		TrackingCount:      proposalState.TrackingCount,
 		TerminatedHeight:   proposalState.TerminatedHeight,
 		ProposalLeader:     hex.EncodeToString(proposalState.ProposalLeader),
