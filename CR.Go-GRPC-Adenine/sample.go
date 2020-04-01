@@ -42,7 +42,7 @@ optional arguments:
 	network := "gmunet"
 	mnemonicToUse := "obtain pill nest sample caution stone candy habit silk husband give net"
 	didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
-	apiKeyToUse := "1htfwNmjePvE6blvXPc3YjD8Iqkst53ZF8EwnCZxbvyIcOoHt8wQHxPq4y501awz"
+	apiKeyToUse := "y2YcDgzLLQdtoie0rXbg3V1nD4YptAmvExEGT7ydtnSf4hR7gqHMBQbXWZrHFK3K"
 	privateKeyToUse := "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
 
 	healthCheckTest(grpcServerHost, grpcServerPort, production)
