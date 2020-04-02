@@ -52,14 +52,10 @@ class Wallet:
             return result
 
     def view_wallet(self, api_key, did, network, chain, address):
-        req_data = {
-            'address': address,
-            'chain': chain
-        }
-
         jwt_info = {
             'network': network,
-            'request_input': req_data
+            'address': address,
+            'chain': chain
         }
 
         jwt_token = jwt.encode({
@@ -86,13 +82,9 @@ class Wallet:
             return result
 
     def request_ela(self, api_key, did, chain, address):
-        req_data = {
+        jwt_info = {
             'address': address,
             'chain': chain
-        }
-
-        jwt_info = {
-            'request_input': req_data
         }
 
         jwt_token = jwt.encode({
