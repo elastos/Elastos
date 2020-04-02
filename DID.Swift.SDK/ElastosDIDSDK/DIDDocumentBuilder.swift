@@ -79,7 +79,7 @@ public class DIDDocumentBuilder {
     }
 
     public func removePublicKey(with id: String) throws -> DIDDocumentBuilder {
-        return try removePublicKey(DIDURL(id), false)
+        return try removePublicKey(DIDURL(getSubject(), id), false)
     }
 
     // authenticationKey scope
@@ -492,7 +492,7 @@ public class DIDDocumentBuilder {
                           expirationDate: Date,
                      using storePassword: String) throws -> DIDDocumentBuilder {
 
-        return try appendCredential(DIDURL(id), nil, json, expirationDate, storePassword)
+        return try appendCredential(DIDURL(getSubject(), id), nil, json, expirationDate, storePassword)
     }
 
     public func appendCredential(with id: DIDURL,
@@ -508,7 +508,7 @@ public class DIDDocumentBuilder {
                                     json: String,
                      using storePassword: String) throws -> DIDDocumentBuilder {
 
-        return try appendCredential(DIDURL(id), types, json, nil, storePassword)
+        return try appendCredential(DIDURL(getSubject(), id), types, json, nil, storePassword)
     }
 
     public func appendCredential(with id: DIDURL,
@@ -522,7 +522,7 @@ public class DIDDocumentBuilder {
                                     json: String,
                      using storePassword: String) throws -> DIDDocumentBuilder {
 
-        return try appendCredential(DIDURL(id), nil, json, nil, storePassword)
+        return try appendCredential(DIDURL(getSubject(), id), nil, json, nil, storePassword)
     }
 
     private func removeCredential(_ id: DIDURL) throws -> DIDDocumentBuilder {

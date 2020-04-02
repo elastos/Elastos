@@ -71,11 +71,11 @@ public class VerifiableCredentialBuilder {
             throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
         }
 
-        let maxExpirationDate = DateHelper.maxExpirationDate(credential!.issuanceDate)
-        guard !DateHelper.isExpired(expirationDate, maxExpirationDate) else {
+        guard !DateHelper.isExpired(expirationDate, maxExpirationDate()) else {
             throw DIDError.illegalArgument()
         }
 
+        // TODO: check
         credential!.setExpirationDate(expirationDate)
         return self
     }
@@ -160,6 +160,9 @@ public class VerifiableCredentialBuilder {
     }
 
     private func maxExpirationDate() -> Date {
-        return DateHelper.maxExpirationDate(credential!.issuanceDate)
+        guard credential?.getIssuanceDate() == nil else {
+            return DateFormatter.convertToWantDate(credential!.issuanceDate, Constants.MAX_VALID_YEARS)
+        }
+        return DateFormatter.convertToWantDate(Date(), Constants.MAX_VALID_YEARS)
     }
 }

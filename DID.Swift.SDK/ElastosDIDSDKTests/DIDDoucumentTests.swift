@@ -68,10 +68,9 @@ class DIDDoucumentTests: XCTestCase {
             pks = doc.selectPublicKeys(byId: id, andType: nil)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(try DIDURL(doc.subject, "primary"), pks[0].getId())
-            
-            // TODO:
-//            pks = doc.selectPublicKeys(byId: nil, andType: "ECDSAsecp256r1")
-//            XCTAssertEqual(4, pks.count)
+
+            pks = doc.selectPublicKeys(byType: "ECDSAsecp256r1")
+            XCTAssertEqual(4, pks.count)
             
             pks = try doc.selectPublicKeys(byId: "key2", andType: "ECDSAsecp256r1")
             XCTAssertEqual(1, pks.count)
@@ -99,7 +98,6 @@ class DIDDoucumentTests: XCTestCase {
             // Add 2 public keys
             let id: DIDURL = try DIDURL(doc.subject, "test1")
             var key: HDKey.DerivedKey = try TestData.generateKeypair()
-//            db = try db.appendPublicKey(id, doc.subject, key.getPublicKeyBase58())
             db = try db.appendPublicKey(with: id, controller: doc.subject.toString(), keyBase58: key.getPublicKeyBase58())
             
             key = try TestData.generateKeypair()
@@ -247,10 +245,9 @@ class DIDDoucumentTests: XCTestCase {
             pks = doc.selectAuthenticationKeys(byId: id, andType: nil)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(id, pks[0].getId())
-            
-            // TODO:
-//            pks = doc.selectAuthenticationKeys(byId: nil, andType: "ECDSAsecp256r1")
-//            XCTAssertEqual(3, pks.count)
+
+            pks = doc.selectAuthenticationKeys(byType: "ECDSAsecp256r1")
+            XCTAssertEqual(3, pks.count)
             
             pks = try doc.selectAuthenticationKeys(byId: "key2", andType: "ECDSAsecp256r1")
             XCTAssertEqual(1, pks.count)
@@ -471,10 +468,9 @@ class DIDDoucumentTests: XCTestCase {
             pks = doc.selectAuthorizationKeys(byId: id, andType: nil)
             XCTAssertEqual(1, pks.count)
             XCTAssertEqual(id, pks[0].getId())
-            
-            // TODO:
-//            pks = doc.selectAuthorizationKeys(byId: nil, andType: "ECDSAsecp256r1")
-//            XCTAssertEqual(1, pks.count)
+
+            pks = doc.selectAuthorizationKeys(byType: "ECDSAsecp256r1")
+            XCTAssertEqual(1, pks.count)
         } catch {
             print(error)
             XCTFail()
@@ -666,14 +662,13 @@ class DIDDoucumentTests: XCTestCase {
             vcs = try doc.selectCredentials(byId: DIDURL(doc.subject, "profile"), andType: nil)
             XCTAssertEqual(1, vcs.count)
             XCTAssertEqual(try DIDURL(doc.subject, "profile"), vcs[0].getId())
-            
-            // TODO:
-//            vcs = doc.selectCredentials(byId: nil, andType: "SelfProclaimedCredential")
-//            XCTAssertEqual(1, vcs.count)
-//            XCTAssertEqual(try DIDURL(doc.subject, "profile"), vcs[0].getId())
-//
-//            vcs = doc.selectCredentials(byId: nil, andType: "TestingCredential")
-//            XCTAssertEqual(0, vcs.count)
+
+            vcs = doc.selectCredentials(byType: "SelfProclaimedCredential")
+            XCTAssertEqual(1, vcs.count)
+            XCTAssertEqual(try DIDURL(doc.subject, "profile"), vcs[0].getId())
+
+            vcs = doc.selectCredentials(byType: "TestingCredential")
+            XCTAssertEqual(0, vcs.count)
         } catch {
             print(error)
             XCTFail()
@@ -732,6 +727,57 @@ class DIDDoucumentTests: XCTestCase {
         }
     }
     
+    func testAddSelfClaimedCredential() {
+        do {
+            let testData = TestData()
+            _ = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+
+            var doc: DIDDocument = try testData.loadTestDocument()
+            XCTAssertNotNil(doc)
+            XCTAssertTrue(doc.isValid)
+
+            let db = doc.editing()
+            // Add credentials.
+            var subject: [String: String] = [: ]
+            subject["passport"] = "S653258Z07"
+            _ = try db.appendCredential(with: "passport", subject: subject, using: storePass)
+
+            let subjectjson = "{\"name\":\"Jay Holtslander\",\"alternateName\":\"Jason Holtslander\"}"
+            _ = try db.appendCredential(with: "name", json: subjectjson, using: storePass)
+            let json = "{\"twitter\":\"@john\"}"
+            let jsonDict = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: []) as? [String: String]
+            _ = try db.appendCredential(with: "twitter", subject: jsonDict!, using: storePass)
+
+            doc = try db.sealed(using: storePass)
+            XCTAssertNotNil(doc)
+            XCTAssertTrue(doc.isValid)
+
+            // Check new added credential.
+            var vc = try doc.credential(ofId: "passport")
+            XCTAssertNotNil(vc)
+            XCTAssertEqual(try DIDURL(doc.subject, "passport"), vc!.getId())
+            XCTAssertTrue(vc!.isSelfProclaimed())
+
+            var id = try DIDURL(doc.subject, "name")
+            vc = doc.credential(ofId: id)
+            XCTAssertNotNil(vc)
+            XCTAssertEqual(id, vc!.getId())
+            XCTAssertTrue(vc!.isSelfProclaimed())
+
+            id = try DIDURL(doc.subject, "twitter")
+            vc = doc.credential(ofId: id)
+            XCTAssertNotNil(vc)
+            XCTAssertEqual(id, vc!.getId())
+            XCTAssertTrue(vc!.isSelfProclaimed())
+
+            // Should contains 3 credentials.
+            XCTAssertEqual(5, doc.credentialCount)
+        } catch {
+            XCTFail()
+        }
+    }
+
     func testRemoveCredential() {
         do {
             let testData: TestData = TestData()
@@ -839,19 +885,17 @@ class DIDDoucumentTests: XCTestCase {
             svcs = try doc.selectServices(byId: DIDURL(doc.subject, "openid"), andType: nil)
             XCTAssertEqual(1, svcs.count)
             XCTAssertEqual(try DIDURL(doc.subject, "openid"), svcs[0].getId())
-            
-            // TODO:
-//            svcs = doc.selectServices(byId: nil, andType: "CarrierAddress")
-//            XCTAssertEqual(1, svcs.count)
-//            XCTAssertEqual(try DIDURL(doc.subject, "carrier"), svcs[0].getId())
+
+            svcs = doc.selectServices(byType: "CarrierAddress")
+            XCTAssertEqual(1, svcs.count)
+            XCTAssertEqual(try DIDURL(doc.subject, "carrier"), svcs[0].getId())
             
             // Service not exist, should return a empty list.
             svcs = try doc.selectServices(byId: "notExistService", andType: "CredentialRepositoryService")
             XCTAssertEqual(0, svcs.count)
-            
-            // TODO:
-//            svcs = doc.selectServices(byId: nil, andType: "notExistType")
-//            XCTAssertEqual(0, svcs.count)
+
+            svcs = doc.selectServices(byType: "notExistType")
+            XCTAssertEqual(0, svcs.count)
         } catch {
             print(error)
             XCTFail()
@@ -888,11 +932,10 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(5, doc.serviceCount)
             
             // Try to select new added 2 services
-            // TODO:
-//            let svcs: Array<Service> = doc.selectServices(byId: nil, andType: "Service.Testing")
-//            XCTAssertEqual(2, svcs.count)
-//            XCTAssertEqual("Service.Testing", svcs[0].getType())
-//            XCTAssertEqual("Service.Testing", svcs[0].getType())
+            let svcs: Array<Service> = doc.selectServices(byType: "Service.Testing")
+            XCTAssertEqual(2, svcs.count)
+            XCTAssertEqual("Service.Testing", svcs[0].getType())
+            XCTAssertEqual("Service.Testing", svcs[0].getType())
         } catch {
             print(error)
             XCTFail()
@@ -988,7 +1031,7 @@ class DIDDoucumentTests: XCTestCase {
         }
     }
     
-    func test31SignAndVerify() {
+    func testSignAndVerify() {
         do {
             let testData: TestData = TestData()
             _ = try testData.setupStore(true)

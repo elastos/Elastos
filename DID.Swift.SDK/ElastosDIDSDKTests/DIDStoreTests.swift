@@ -56,6 +56,72 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
+    func testInitPrivateIdentityWithMnemonic() {
+        do {
+            let expectedIDString = "iY4Ghz9tCuWvB5rNwvn4ngWvthZMNzEA7U"
+            let mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe"
+
+            let testData = TestData()
+            var store = try testData.setupStore(true)
+            XCTAssertFalse(store.containsPrivateIdentity())
+
+            try store.initializePrivateIdentity(using: Mnemonic.ENGLISH, mnemonic: mnemonic, passPhrase: "", storePassword: storePass)
+            XCTAssertTrue(store.containsPrivateIdentity())
+
+            var path = storeRoot + "/" + "private" + "/" + "key"
+            XCTAssertTrue(testData.existsFile(path))
+
+            path = storeRoot + "/" + "private" + "/" + "index"
+            XCTAssertTrue(testData.existsFile(path))
+
+            path = storeRoot + "/" + "private" + "/" + "mnemonic"
+            XCTAssertTrue(testData.existsFile(path))
+
+            store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", adapter: testData.adapter!)
+            XCTAssertTrue(store.containsPrivateIdentity())
+            let exportedMnemonic = try store.exportMnemonic(using: storePass)
+            XCTAssertEqual(mnemonic, exportedMnemonic)
+
+            let doc = try store.newDid(using: storePass)
+            XCTAssertNotNil(doc)
+            XCTAssertEqual(expectedIDString, doc.subject.methodSpecificId)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testInitPrivateIdentityWithRootKey() {
+        do {
+            let expectedIDString = "iYbPqEA98rwvDyA5YT6a3mu8UZy87DLEMR";
+            let rootKey = "xprv9s21ZrQH143K4biiQbUq8369meTb1R8KnstYFAKtfwk3vF8uvFd1EC2s49bMQsbdbmdJxUWRkuC48CXPutFfynYFVGnoeq8LJZhfd9QjvUt";
+
+            let testData = TestData()
+            var store = try testData.setupStore(true)
+            XCTAssertFalse(store.containsPrivateIdentity())
+
+            try store.initializePrivateIdentity(using: rootKey, storePassword: storePass)
+            XCTAssertTrue(store.containsPrivateIdentity())
+
+            var path = storeRoot + "/" + "private" + "/" + "key"
+            XCTAssertTrue(testData.existsFile(path))
+
+            path = storeRoot + "/" + "private" + "/" + "index"
+            XCTAssertTrue(testData.existsFile(path))
+
+            path = storeRoot + "/" + "private" + "/" + "mnemonic"
+            XCTAssertFalse(testData.existsFile(path))
+
+            store = try DIDStore.open(atPath: storeRoot, withType: "filesystem", adapter: testData.adapter!)
+            XCTAssertTrue(store.containsPrivateIdentity())
+
+            let doc = try store.newDid(using: storePass)
+            XCTAssertNotNil(doc)
+            XCTAssertEqual(expectedIDString, doc.subject.methodSpecificId)
+        } catch {
+            XCTFail()
+        }
+    }
+
     func testCreateDIDWithAlias() throws {
         do {
             let testData: TestData = TestData()
@@ -121,6 +187,54 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
+    func testCreateDIDByIndex() {
+        do {
+            let testData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+
+            let alias = "my first did"
+            let did = try store.getDid(byPrivateIdentityIndex: 0)
+            var doc = try store.newDid(withPrivateIdentityIndex: 0, alias: alias, using: storePass)
+            XCTAssertTrue(doc.isValid)
+            XCTAssertEqual(did, doc.subject)
+
+            XCTAssertThrowsError(try store.newDid(withAlias: alias, using: storePass)){ (error) in
+                switch error {
+                case DIDError.didStoreError("DID already exists."): break
+                //everything is fine
+                default:
+                XCTFail("Unexpected error thrown")
+                }
+            }
+
+            let success = store.deleteDid(did)
+            XCTAssertTrue(success)
+            doc = try store.newDid(withAlias: alias, using: storePass)
+            XCTAssertTrue(doc.isValid)
+            XCTAssertEqual(did, doc.subject)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testGetDid() {
+        do {
+            let testData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+            for i in 0...100 {
+                let alias = "did#\(i)"
+                let doc = try store.newDid(withPrivateIdentityIndex: i, alias: alias, using: storePass)
+                XCTAssertTrue(doc.isValid)
+                let did = try store.getDid(byPrivateIdentityIndex: i)
+                XCTAssertEqual(doc.subject, did)
+            }
+        } catch {
+            XCTFail()
+        }
+    }
+
     func testUpdateDid() {
         do {
             let testData: TestData = TestData()
@@ -170,23 +284,351 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func testUpdateNonExistedDid() {
 
+    func testUpdateDidWithoutTxid() {
         do {
-            let testData: TestData = TestData()
-            let store: DIDStore = try testData.setupStore(true)
+            let testData = TestData()
+            let store = try testData.setupStore(true)
             _ = try testData.initIdentity()
 
-            let doc = try store.newDid(using: storePass)
+            var doc = try store.newDid(using: storePass)
             XCTAssertTrue(doc.isValid)
-            // fake a txid
-            let meta = DIDMeta()
 
-            // Update will fail
             _ = try store.publishDid(for: doc.subject, using: storePass)
-        } catch  {
-            // todo:  Create ID transaction error.
-            XCTAssertTrue(true)
+
+            var resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+            doc.getMeta().setTransactionId(nil)
+            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+
+            // Update
+            var db = doc.editing()
+            var key = try TestData.generateKeypair()
+            _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(2, doc.publicKeyCount)
+            XCTAssertEqual(2, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+            doc.getMeta().setTransactionId(nil)
+            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+
+            // Update again
+            db = doc.editing()
+            key = try TestData.generateKeypair()
+            _ = try db.appendAuthenticationKey(with: "key2", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(3, doc.publicKeyCount)
+            XCTAssertEqual(3, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+            resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testUpdateDidWithoutSignature() {
+        do {
+            let testData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+
+            var doc = try store.newDid(using: storePass)
+            XCTAssertTrue(doc.isValid)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            var resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+//            doc.getMeta().setSignature(nil) // seeting Signature withour storepass
+            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+
+            // Update
+            var db = doc.editing()
+            var key = try TestData.generateKeypair()
+            _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(2, doc.publicKeyCount)
+            XCTAssertEqual(2, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+//            doc.getMeta().setSignature(nil)
+            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+
+            // Update again
+            db = doc.editing()
+            key = try TestData.generateKeypair()
+            _ = try db.appendAuthenticationKey(with: "key2", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(3, doc.publicKeyCount)
+            XCTAssertEqual(3, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testUpdateDidWithoutTxidAndSignature() {
+        do {
+            let testData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+
+            var doc = try store.newDid(using: storePass)
+            XCTAssertTrue(doc.isValid)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            let resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+            doc.getMeta().setTransactionId(nil)
+//            doc.getMeta().setSignature(nil)
+            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+
+            // Update
+            let db = doc.editing()
+            let key = try TestData.generateKeypair()
+            _ =  try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(2, doc.publicKeyCount)
+            XCTAssertEqual(2, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+            let did = doc.subject
+            try store.publishDid(for: did, using: storePass)
+            // java reference
+//            XCTAssertThrowsError(try store.publishDid(for: did, using: storePass)) { error in
+//                switch error as! DIDError{
+//                case .didStoreError("DID document not up-to-date"):
+//                    XCTAssertTrue(true)
+//                default:
+//                    XCTFail()
+//                }
+//            }
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testForceUpdateDidWithoutTxidAndSignature() {
+        do {
+            let testData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+
+            var doc = try store.newDid(using: storePass)
+            XCTAssertTrue(doc.isValid)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            var resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+            doc.getMeta().setTransactionId(nil)
+//            doc.getMeta().setSignature(nil)
+            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+
+            // Update
+            let db = doc.editing()
+            let key = try TestData.generateKeypair()
+            _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(2, doc.publicKeyCount)
+            XCTAssertEqual(2, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            _ = try store.publishDid(for: doc.subject, waitForConfirms: 1, using: doc.defaultPublicKey, storePassword: storePass, true)
+
+            resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testUpdateDidWithWrongTxid() {
+        do {
+            let testData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+
+            var doc = try store.newDid(using: storePass)
+            XCTAssertTrue(doc.isValid)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            let resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+            doc.getMeta().setTransactionId("1234567890")
+            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+
+            // Update
+            let db = doc.editing()
+            let key = try TestData.generateKeypair()
+            _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(2, doc.publicKeyCount)
+            XCTAssertEqual(2, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            let did = doc.subject
+
+            XCTAssertThrowsError(try store.publishDid(for: did, using: storePass)) { error in
+                switch error as! DIDError {
+                case .didStoreError("DID document not up-to-date"):
+                    XCTAssertTrue(true)
+                default:
+                    XCTFail()
+                }
+            }
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testUpdateDidWithWrongSignature() {
+        do {
+            let testData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+
+            var doc = try store.newDid(using: storePass)
+            XCTAssertTrue(doc.isValid)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            let resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+            doc.getMeta().setSignature("1234567890")
+            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+
+            // Update
+            let db = doc.editing()
+            let key = try TestData.generateKeypair()
+             _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(2, doc.publicKeyCount)
+            XCTAssertEqual(2, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            let did = doc.subject
+            XCTAssertThrowsError(try store.publishDid(for: did, using: storePass)) { error in
+                switch error as! DIDError{
+                case .didStoreError("DID document not up-to-date"):
+                    XCTAssertTrue(true)
+                default:
+                    XCTFail()
+                }
+            }
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testForceUpdateDidWithWrongTxid() {
+        do {
+            let testData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+
+            var doc = try store.newDid(using: storePass)
+            XCTAssertTrue(doc.isValid)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            var resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+            doc.getMeta().setTransactionId("1234567890")
+            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+
+            // Update
+            let db = doc.editing()
+            let key = try TestData.generateKeypair()
+            _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(2, doc.publicKeyCount)
+            XCTAssertEqual(2, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            _ = try store.publishDid(for: doc.subject, waitForConfirms: 1, using: doc.defaultPublicKey, storePassword: storePass, true)
+            resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testForceUpdateDidWithWrongSignature() {
+        do {
+            let testData = TestData()
+            let store = try testData.setupStore(true)
+            _ = try testData.initIdentity()
+
+            var doc = try store.newDid(using: storePass)
+            XCTAssertTrue(doc.isValid)
+
+            _ = try store.publishDid(for: doc.subject, using: storePass)
+
+            var resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+
+            doc.getMeta().setSignature("1234567890")
+            try store.storeDidMeta(doc.getMeta(), for: doc.subject)
+
+            // Update
+            let db = doc.editing()
+            let key = try TestData.generateKeypair()
+            _ = try db.appendAuthenticationKey(with: "key1", keyBase58: key.getPublicKeyBase58())
+            doc = try db.sealed(using: storePass)
+            XCTAssertEqual(2, doc.publicKeyCount)
+            XCTAssertEqual(2, doc.authenticationKeyCount)
+            try store.storeDid(using: doc)
+
+            _ = try store.publishDid(for: doc.subject, waitForConfirms: 1, using: doc.defaultPublicKey, storePassword: storePass, true)
+
+            resolved = try doc.subject.resolve(true)
+            XCTAssertNotNil(resolved)
+            XCTAssertEqual(doc.toString(), resolved.toString())
+        } catch {
+            XCTFail()
         }
     }
     
@@ -298,7 +740,7 @@ class DIDStoreTests: XCTestCase {
                 switch error {
                 case DIDError.didDeactivated: break
                 //everything is fine
-                default: break //TODO:
+                default: //TODO:
                     XCTFail("Unexpected error thrown")
                 }
             }
@@ -722,6 +1164,32 @@ class DIDStoreTests: XCTestCase {
             }
         }
     }
+
+    func testCompatibilityNewDIDandGetDID() {
+        do {
+            let bundle = Bundle(for: type(of: self))
+            let jsonPath: String = bundle.path(forResource: "teststore", ofType: "")!
+
+            let adapter = DummyAdapter()
+            try DIDBackend.initializeInstance(adapter, TestData.getResolverCacheDir())
+            let store = try DIDStore.open(atPath: jsonPath, withType: "filesystem", adapter: adapter)
+
+            var doc = try store.newDid(using: storePass)
+            XCTAssertNotNil(doc)
+
+            _ = store.deleteDid(doc.subject)
+
+            let did = try store.getDid(byPrivateIdentityIndex: 1000)
+
+            doc = try store.newDid(withPrivateIdentityIndex: 1000, using: storePass)
+            XCTAssertNotNil(doc)
+            XCTAssertEqual(doc.subject, did)
+
+            _ = store.deleteDid(doc.subject)
+        } catch {
+            XCTFail()
+        }
+    }
     
     func testCompatibilityNewDIDWithWrongPass() {
         do {
@@ -906,27 +1374,26 @@ class DIDStoreTests: XCTestCase {
 
             dids = try store.listDids(using: DIDStore.DID_NO_PRIVATEKEY);
             XCTAssertEqual(0, dids.count)
-//
-//            try store.changePassword(storePass, "newpasswd")
-//            try store
-//
-//            dids = try store.listDids(DIDStore.DID_ALL)
-//            XCTAssertEqual(10, dids.count)
-//
-//            dids = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
-//            XCTAssertEqual(10, dids.count)
-//
-//            dids = try store.listDids(DIDStore.DID_NO_PRIVATEKEY)
-//            XCTAssertEqual(0, dids.count)
-//
-//            let doc = try store.newDid("newpasswd")
-//            XCTAssertNotNil(doc)
+
+            try store.changePassword(storePass, "newpasswd")
+
+            dids = try store.listDids(using: DIDStore.DID_ALL)
+            XCTAssertEqual(10, dids.count)
+
+            dids = try store.listDids(using: DIDStore.DID_HAS_PRIVATEKEY)
+            XCTAssertEqual(10, dids.count)
+
+            dids = try store.listDids(using: DIDStore.DID_NO_PRIVATEKEY)
+            XCTAssertEqual(0, dids.count)
+
+            let doc = try store.newDid(using: "newpasswd")
+            XCTAssertNotNil(doc)
         } catch {
             print(error)
             XCTFail()
         }
     }
-    /*
+
     func testChangePasswordWithWrongPassword() {
         do {
             let testData: TestData = TestData()
@@ -934,50 +1401,77 @@ class DIDStoreTests: XCTestCase {
             _ = try testData.initIdentity()
             for i in 0..<10 {
                 let alias = "my did \(i)"
-                let doc = try store.newDid(storepass: storePass, alias: alias)
-                XCTAssertTrue(try doc.isValid())
-                var resolved = try doc.subject!.resolve(true)
+                let doc = try store.newDid(withAlias: alias, using: storePass)
+                XCTAssertTrue(doc.isValid)
+                var resolved = try? doc.subject.resolve(true)
                 XCTAssertNil(resolved)
-                _ = try store.publishDid(doc.subject!, storePass)
-                var path: String = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/document"
+                _ = try store.publishDid(for: doc.subject, using: storePass)
+                var path: String = storeRoot + "/ids/" + doc.subject.methodSpecificId + "/document"
                 XCTAssertTrue(testData.existsFile(path))
                 
-                path = storeRoot + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
+                path = storeRoot + "/ids/" + doc.subject.methodSpecificId + "/.meta"
                 XCTAssertTrue(testData.existsFile(path))
-                resolved = try doc.subject!.resolve(true)
+                resolved = try doc.subject.resolve(true)
                 XCTAssertNotNil(resolved)
-                try store.storeDid(resolved!)
-                XCTAssertEqual(alias, try resolved?.getAlias())
-                XCTAssertEqual(doc.subject, resolved?.subject)
-                XCTAssertEqual(doc.proof.signature, resolved?.proof.signature)
-                XCTAssertTrue(try resolved!.isValid())
+                try store.storeDid(using: resolved!)
+                XCTAssertEqual(alias, resolved!.aliasName)
+                XCTAssertEqual(doc.subject, resolved!.subject)
+                XCTAssertEqual(doc.proof.signature, resolved!.proof.signature)
+                XCTAssertTrue(resolved!.isValid)
             }
-            var dids = try store.listDids(DIDStore.DID_ALL)
+
+            var dids = try store.listDids(using: DIDStore.DID_ALL)
             XCTAssertEqual(10, dids.count)
 
-            dids = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
+            dids = try store.listDids(using: DIDStore.DID_HAS_PRIVATEKEY)
             XCTAssertEqual(10, dids.count)
 
-            dids = try store.listDids(DIDStore.DID_NO_PRIVATEKEY)
+            dids = try store.listDids(using: DIDStore.DID_NO_PRIVATEKEY)
             XCTAssertEqual(0, dids.count)
 
-            try store.changePassword("wrongpasswd", "newpasswd")
-
-            // Dead code
-            let doc = try store.newDid("newpasswd")
-            XCTAssertNotNil(doc)
-        } catch {
-            if error is DIDError {
-                let err = error as! DIDError
-                switch err {
-                case .didStoreError(_desc: "Change store password failed."):
+            XCTAssertThrowsError(try store.changePassword("wrongpasswd", "newpasswd")) { error in
+                switch error as! DIDError{
+                case .didStoreError("Change store password failed."):
                     XCTAssertTrue(true)
                 default:
                     XCTFail()
                 }
             }
+        } catch {
+            XCTFail()
         }
     }
-    */
+
+    func testExportAndImportDid() {
+        do {
+            let bundle = Bundle(for: type(of: self))
+            let jsonPath: String = bundle.path(forResource: "teststore", ofType: "")!
+
+            let adapter = DummyAdapter()
+            try DIDBackend.initializeInstance(adapter, TestData.getResolverCacheDir())
+            let store = try DIDStore.open(atPath: jsonPath, withType: "filesystem", adapter: adapter)
+
+            let did = try store.listDids(using: DIDStore.DID_ALL)[0]
+
+            let path = tempDir + "/" + "didexport.json"
+            try create(path, forWrite: true)
+            // TODO: keep writing
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func create(_ path: String, forWrite: Bool) throws {
+
+        if !FileManager.default.fileExists(atPath: path) && forWrite {
+            let dirPath: String = PathExtracter(path).dirname()
+            let fileM = FileManager.default
+            let re = fileM.fileExists(atPath: dirPath)
+            if !re {
+                try fileM.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
+            }
+            FileManager.default.createFile(atPath: path, contents: nil, attributes: nil)
+        }
+    }
 }
 

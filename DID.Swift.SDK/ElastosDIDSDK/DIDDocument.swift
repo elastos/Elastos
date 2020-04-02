@@ -168,13 +168,17 @@ public class DIDDocument {
         return self.publicKeyMap.values() { value -> Bool in return true }
     }
 
-    public func selectPublicKeys(byId: DIDURL?, andType: String?) -> Array<PublicKey> {
+    public func selectPublicKeys(byId: DIDURL, andType: String?) -> Array<PublicKey> {
         return self.publicKeyMap.select(byId, andType) { value -> Bool in return true }
     }
 
-    public func selectPublicKeys(byId: String?, andType: String?) throws -> Array<PublicKey> {
-        let id: DIDURL? = byId != nil ? try DIDURL(subject, byId!) : nil
+    public func selectPublicKeys(byId: String, andType: String?) throws -> Array<PublicKey> {
+        let id = try DIDURL(subject, byId)
         return selectPublicKeys(byId: id, andType: andType)
+    }
+
+    public func selectPublicKeys(byType: String) -> Array<PublicKey> {
+        return self.publicKeyMap.select(nil, byType) { value -> Bool in return true }
     }
 
     public func publicKey(ofId: DIDURL) -> PublicKey? {
@@ -291,15 +295,21 @@ public class DIDDocument {
         }
     }
 
-    public func selectAuthenticationKeys(byId: DIDURL?, andType: String?) -> Array<PublicKey> {
+    public func selectAuthenticationKeys(byId: DIDURL, andType: String?) -> Array<PublicKey> {
         return publicKeyMap.select(byId, andType) { value -> Bool in
             return (value as PublicKey).isAuthenticationKey
         }
     }
 
-    public func selectAuthenticationKeys(byId: String?, andType: String?) throws -> Array<PublicKey> {
-        let id: DIDURL? = byId != nil ? try DIDURL(subject, byId!) : nil
+    public func selectAuthenticationKeys(byId: String, andType: String?) throws -> Array<PublicKey> {
+        let id = try DIDURL(subject, byId)
         return selectAuthenticationKeys(byId: id, andType: andType)
+    }
+
+    public func selectAuthenticationKeys(byType: String) -> Array<PublicKey> {
+        return publicKeyMap.select(nil, byType) { value -> Bool in
+            return (value as PublicKey).isAuthenticationKey
+        }
     }
 
     public func authenticationKey(ofId: DIDURL) -> PublicKey? {
@@ -362,15 +372,21 @@ public class DIDDocument {
         }
     }
 
-    public func selectAuthorizationKeys(byId: DIDURL?, andType: String?) -> Array<PublicKey> {
+    public func selectAuthorizationKeys(byId: DIDURL, andType: String?) -> Array<PublicKey> {
         return publicKeyMap.select(byId, andType) { value -> Bool in
             return (value as PublicKey).isAthorizationKey
         }
     }
 
-    public func selectAuthorizationKeys(byId: String?, andType: String?) throws -> Array<PublicKey> {
-        let id: DIDURL? = byId != nil ? try DIDURL(subject, byId!) : nil
+    public func selectAuthorizationKeys(byId: String, andType: String?) throws -> Array<PublicKey> {
+        let id = try DIDURL(subject, byId)
         return selectAuthorizationKeys(byId: id, andType: andType)
+    }
+
+    public func selectAuthorizationKeys(byType: String) -> Array<PublicKey> {
+        return publicKeyMap.select(nil, byType) { value -> Bool in
+            return (value as PublicKey).isAthorizationKey
+        }
     }
 
     public func authorizationKey(ofId: DIDURL) -> PublicKey? {
@@ -429,13 +445,17 @@ public class DIDDocument {
         return credentialMap.values() { value -> Bool in return true }
     }
 
-    public func selectCredentials(byId: DIDURL?, andType: String?) -> Array<VerifiableCredential>  {
+    public func selectCredentials(byId: DIDURL, andType: String?) -> Array<VerifiableCredential>  {
         return credentialMap.select(byId, andType) { value -> Bool in return true }
     }
 
-    public func selectCredentials(byId: String?, andType: String?) throws -> Array<VerifiableCredential>  {
-        let id: DIDURL? = byId != nil ? try DIDURL(subject, byId!) : nil
+    public func selectCredentials(byId: String, andType: String?) throws -> Array<VerifiableCredential>  {
+        let id = try DIDURL(subject, byId)
         return selectCredentials(byId: id, andType: andType)
+    }
+
+    public func selectCredentials(byType: String) -> Array<VerifiableCredential>  {
+        return credentialMap.select(nil, byType) { value -> Bool in return true }
     }
 
     public func credential(ofId: DIDURL) -> VerifiableCredential? {
@@ -477,13 +497,17 @@ public class DIDDocument {
         return serviceMap.values() { value -> Bool in return true }
     }
 
-    public func selectServices(byId: DIDURL?, andType: String?) -> Array<Service>  {
+    public func selectServices(byId: DIDURL, andType: String?) -> Array<Service>  {
         return serviceMap.select(byId, andType) { value -> Bool in return true }
     }
 
-    public func selectServices(byId: String?, andType: String?) throws -> Array<Service>  {
-        let id: DIDURL? = byId != nil ? try DIDURL(subject, byId!) : nil
+    public func selectServices(byId: String, andType: String?) throws -> Array<Service>  {
+        let id = try DIDURL(subject, byId)
         return selectServices(byId: id, andType: andType)
+    }
+
+    public func selectServices(byType: String) -> Array<Service>  {
+        return serviceMap.select(nil, byType) { value -> Bool in return true }
     }
 
     public func service(ofId: DIDURL) -> Service? {

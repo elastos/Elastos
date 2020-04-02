@@ -59,6 +59,14 @@ final class LRUCache<Key: Hashable, Value> {
         self.list.clear()
         self.nodesDict.removeAll()
     }
+
+    func removeValue(for key: Key) {
+        guard let node = nodesDict[key] else {
+            return
+        }
+        list.removeNode(node)
+        nodesDict.removeValue(forKey: key)
+    }
 }
 
 typealias DoubleLinkedListNode<T> = DoubleLinkedList<T>.Node<T>
@@ -97,6 +105,24 @@ final class DoubleLinkedList<T> {
         return node
     }
 
+    func removeNode(_ node: Node<T>) {
+        var curNode = head
+        while curNode != nil {
+            if curNode === node {
+                let preNode = curNode?.previous
+                let nextNode = curNode?.next
+
+                if preNode == nil {
+                    head = nextNode
+                } else {
+                    preNode?.next = nextNode
+                }
+                break
+            } else {
+                curNode = curNode?.next
+            }
+        }
+    }
     func moveToHead(_ node: Node<T>) {
         guard node !== head else {
             return

@@ -2,29 +2,6 @@
 import Foundation
 
 extension Int {
-    
-    static prefix  func ++(num:inout Int) -> Int  {
-        num += 1
-        return num
-    }
-    
-    static postfix  func ++(num:inout Int) -> Int  {
-        let temp = num
-        num += 1
-        return temp
-    }
-    
-    static prefix  func --(num:inout Int) -> Int  {
-        num -= 1
-        return num
-    }
-    
-    static postfix  func --(num:inout Int) -> Int  {
-        let temp = num
-        num -= 1
-        return temp
-    }
-    
     static func randomCustom(min: Int, max: Int) -> Int {
             //  [min, max)  [0, 100)
             //        var x = arc4random() % UInt32(max);
