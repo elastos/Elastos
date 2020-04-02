@@ -5,8 +5,9 @@
   "productName": "elastos-light-wallet",
   "main": "index.js",
   "scripts": {
-    "eslint": "eslint --fix 'scripts/**/*'",
-    "eslin-lib": "eslint --fix 'libraries/**/*'",
+    "eslint": "eslint --fix 'scripts/**/*.js'",
+    "eslint-lib": "eslint --fix 'libraries/**/*.js'",
+    "eslint-test": "eslint --fix 'test/**/*.js'",
     "coverage": "nyc -x 'test/**' ./node_modules/mocha/bin/mocha --experimental-worker --recursive -t 100000 test",
     "start": "electron . --enable-logging --remote-debugging-port=9222",
     "test": "check-node-version --node 12 --npm 6 && ./node_modules/mocha/bin/mocha test",
