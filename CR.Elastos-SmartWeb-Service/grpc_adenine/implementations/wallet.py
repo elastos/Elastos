@@ -44,6 +44,9 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
             logging.debug(f"{did} : {api_key} : {status_message}")
             return wallet_pb2.Response(output='', status_message=status_message, status=False)
 
+        if type(jwt_info) == str:
+            jwt_info = json.loads(jwt_info)
+
         network = jwt_info['network']
 
         # Validate the API Key
@@ -136,6 +139,9 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
             logging.debug(f"{did} : {api_key} : {status_message}")
             return wallet_pb2.Response(output='', status_message=status_message, status=False)
 
+        if type(jwt_info) == str:
+            jwt_info = json.loads(jwt_info)
+
         network = jwt_info['network']
 
         # Validate the API Key
@@ -155,13 +161,18 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                                        status_message=status_message,
                                        status=False)
 
-        request_input = jwt_info['request_input']
-        chain = request_input['chain']
-        address = request_input['address']
-        if chain == "eth":
-            balance = view_wallet_eth(network, address)
-        else:
-            balance = view_wallet_general(self.session, network, chain, address)
+        chain = jwt_info['chain']
+        address = jwt_info['address']
+
+        try:
+            if chain == "eth":
+                balance = view_wallet_eth(network, address)
+            else:
+                balance = view_wallet_general(self.session, network, chain, address)
+        except:
+            status_message = 'Error in retrieving the balance'
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return wallet_pb2.Response(output='', status_message=status_message, status=False)
 
         # generate jwt token
         jwt_info = {
@@ -208,9 +219,11 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                                        status_message=status_message,
                                        status=False)
 
-        request_input = jwt_info['request_input']
-        chain = request_input['chain']
-        address = request_input['address']
+        if type(jwt_info) == str:
+            jwt_info = json.loads(jwt_info)
+
+        chain = jwt_info['chain']
+        address = jwt_info['address']
 
         status_message = 'Successfully deposited ELA. Please wait 2-4 minutes for the ELA to arrive on main chain and ' \
                          '12-15 minutes to arrive on PoW sidechains'
