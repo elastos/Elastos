@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package indexers
 
@@ -26,8 +26,10 @@ import (
 var (
 	unspentIndexReferTx1    = common.Uint256{1}
 	unspentIndexReferTx2    = common.Uint256{2}
+	unspentIndexReferTx3    = common.Uint256{3}
 	unspentIndexReferIndex1 = uint16(1)
 	unspentIndexReferIndex2 = uint16(2)
+	unspentIndexReferIndex3 = uint16(3)
 	unspentIndexCoinbase    = &types.Transaction{
 		TxType:  types.CoinBase,
 		Payload: new(payload.CoinBase),
@@ -81,15 +83,85 @@ var (
 			},
 		},
 	}
+	testUnspentIndexTx3 = &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: new(payload.TransferAsset),
+		Inputs: []*types.Input{
+			{
+				Previous: types.OutPoint{
+					TxID:  unspentIndexReferTx3,
+					Index: unspentIndexReferIndex3,
+				},
+			},
+		},
+		Outputs: []*types.Output{
+			{
+				Value: 0,
+			},
+			{
+				Value: 50,
+			},
+		},
+	}
 	unspentIndexBlock = &types.Block{
 		Header: types.Header{},
 		Transactions: []*types.Transaction{
 			unspentIndexCoinbase,
 			testUnspentIndexTx1,
 			testUnspentIndexTx2,
+			testUnspentIndexTx3,
 		},
 	}
-
+	testUnspentIndexTx4 = &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: new(payload.TransferAsset),
+		Inputs: []*types.Input{
+			{
+				Previous: types.OutPoint{
+					TxID:  testUnspentIndexTx3.Hash(),
+					Index: 0,
+				},
+			},
+			{
+				Previous: types.OutPoint{
+					TxID:  testUnspentIndexTx3.Hash(),
+					Index: 1,
+				},
+			},
+		},
+		Outputs: []*types.Output{
+			{
+				Value: 40,
+			},
+		},
+	}
+	testUnspentIndexTx5 = &types.Transaction{
+		TxType:  types.TransferAsset,
+		Payload: new(payload.TransferAsset),
+		Inputs:  []*types.Input{},
+		Outputs: []*types.Output{},
+	}
+	unspentIndexCoinbase2 = &types.Transaction{
+		TxType:  types.CoinBase,
+		Payload: new(payload.CoinBase),
+		Inputs:  nil,
+		Outputs: []*types.Output{
+			{
+				Value: 30,
+			},
+			{
+				Value: 40,
+			},
+		},
+	}
+	unspentIndexBlock2 = &types.Block{
+		Header: types.Header{},
+		Transactions: []*types.Transaction{
+			unspentIndexCoinbase2,
+			testUnspentIndexTx4,
+			testUnspentIndexTx5,
+		},
+	}
 	testUnspentIndex *UnspentIndex
 	unspentIndexDB   database.DB
 )
@@ -113,6 +185,8 @@ func TestUnspentIndexInit(t *testing.T) {
 		assert.NoError(t, err)
 		err = dbPutUnspentIndexEntry(dbTx, &unspentIndexReferTx2, []uint16{unspentIndexReferIndex2})
 		assert.NoError(t, err)
+		err = dbPutUnspentIndexEntry(dbTx, &unspentIndexReferTx3, []uint16{unspentIndexReferIndex3})
+		assert.NoError(t, err)
 		//testUnspentIndex.txCache.setTxn(1, &types.Transaction{
 		//	LockTime: 10,
 		//})
@@ -134,6 +208,8 @@ func TestUnspentIndexInit(t *testing.T) {
 func TestUnspentIndex_ConnectBlock(t *testing.T) {
 	_ = unspentIndexDB.Update(func(dbTx database.Tx) error {
 		err := testUnspentIndex.ConnectBlock(dbTx, unspentIndexBlock)
+		assert.NoError(t, err)
+		err = testUnspentIndex.ConnectBlock(dbTx, unspentIndexBlock2)
 		assert.NoError(t, err)
 
 		// the unspent txn should be cached
@@ -182,7 +258,10 @@ func TestUnspentIndex_ConnectBlock(t *testing.T) {
 
 func TestUnspentIndex_DisconnectBlock(t *testing.T) {
 	_ = unspentIndexDB.Update(func(dbTx database.Tx) error {
-		err := testUnspentIndex.DisconnectBlock(dbTx, unspentIndexBlock)
+		err := testUnspentIndex.DisconnectBlock(dbTx, unspentIndexBlock2)
+		assert.NoError(t, err)
+
+		err = testUnspentIndex.DisconnectBlock(dbTx, unspentIndexBlock)
 		assert.NoError(t, err)
 
 		// the spent txn should be removed
