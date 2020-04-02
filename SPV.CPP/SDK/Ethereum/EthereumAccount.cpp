@@ -41,7 +41,7 @@ namespace Elastos {
 		}
 
 		std::string EthereumAccount::getPrimaryAddress() const {
-			return ewmGetAccountPrimaryAddress(GetEWM()->getRaw());
+			return GetCString(ewmGetAccountPrimaryAddress(GetEWM()->getRaw()));
 		}
 
 		bytes_t EthereumAccount::getPrimaryAddressPublicKey() const {

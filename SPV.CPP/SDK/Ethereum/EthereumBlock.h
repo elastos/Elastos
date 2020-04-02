@@ -1,4 +1,8 @@
 /*
+ * EthereumBlock
+ *
+ * Created by Ed Gamble <ed@breadwallet.com> on 4/24/18.
+ * Copyright (c) 2018 Breadwinner AG.  All right reserved.
  * Copyright (c) 2020 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

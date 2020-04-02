@@ -25,6 +25,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include <string>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -39,6 +40,8 @@ namespace Elastos {
 
 		public:
 			EthereumEWMPtr GetEWM() const;
+
+			std::string GetCString(char *data) const;
 
 		protected:
 			EthereumEWMWeakPtr _ewm;

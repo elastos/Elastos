@@ -33,5 +33,12 @@ namespace Elastos {
 			return _ewm.expired() ? nullptr : _ewm.lock();
 		}
 
+		std::string Reference::GetCString(char *data) const {
+			std::string result = data;
+			free(data);
+			data = NULL;
+			return result;
+		}
+
 	}
 }

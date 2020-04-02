@@ -1,4 +1,8 @@
 /*
+ * EthereumToken
+ *
+ * Created by Ed Gamble <ed@breadwallet.com> on 3/20/18.
+ * Copyright (c) 2018 Breadwinner AG.  All right reserved.
  * Copyright (c) 2020 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,6 +44,10 @@ namespace Elastos {
 			std::hash<std::string> hash;
 			std::string addr = tokenGetAddress(_token);
 			return hash(addr);
+		}
+
+		std::string EthereumToken::toString() const {
+			return std::string("EthereumToken{") + tokenGetSymbol(_token) + + "}";
 		}
 
 	}
