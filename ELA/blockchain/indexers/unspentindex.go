@@ -199,9 +199,11 @@ func (idx *UnspentIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) e
 		// remove all utxos created by this transaction
 		txnHash := txn.Hash()
 		idx.txCache.deleteTxn(txnHash)
-		err := dbRemoveUnspentIndexEntry(dbTx, &txnHash)
-		if err != nil {
-			return err
+		if len(txn.Outputs) != 0 {
+			err := dbRemoveUnspentIndexEntry(dbTx, &txnHash)
+			if err != nil {
+				return err
+			}
 		}
 		if !txn.IsCoinBaseTx() {
 			for _, input := range txn.Inputs {
