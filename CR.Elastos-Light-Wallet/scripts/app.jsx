@@ -5,6 +5,7 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 
 const electron = require('electron');
+const bip39 = require('bip39');
 const shell = electron.shell;
 const remote = electron.remote;
 const clipboard = electron.clipboard;
@@ -122,6 +123,8 @@ var isLoggedIn = false;
 var useLedgerFlag = false;
 
 var generatedPrivateKeyHex = undefined;
+
+var generatedMnemonic = undefined;
 
 const sendToAddressStatuses = [];
 sendToAddressStatuses.push('No Send-To Transaction Requested Yet');
@@ -367,6 +370,25 @@ const requestBlockchainDataAndShowHome = () => {
   requestUnspentTransactionOutputs();
   requestBlockchainState();
   showHome();
+}
+
+const getPublicKeyFromMnemonic = () => {
+  useLedgerFlag = false;
+  isLoggedIn = true;
+  show('mnemonic');
+  const mnemonicElt = document.getElementById('mnemonic');
+  const mnemonic = mnemonicElt.value;
+  if (!bip39.validateMnemonic(mnemonic)) {
+    alert(`mnemonic is not valid.`);
+    return;
+  }
+  const privateKey = bip39.mnemonicToEntropy(mnemonic);
+  if (privateKey.length != PRIVATE_KEY_LENGTH) {
+    alert(`mnemonic must create a of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`);
+    return;
+  }
+  publicKey = KeyTranscoder.getPublic(privateKey);
+  requestBlockchainDataAndShowHome();
 }
 
 const getPublicKeyFromPrivateKey = () => {
@@ -869,6 +891,7 @@ const hideEverything = () => {
   clearButtonSelection('voting');
   hide('change-node');
   hide('private-key-entry');
+  hide('mnemonic-entry');
   hide('cancel-confirm-transaction');
   hide('completed-transaction');
   hide('fees');
@@ -882,11 +905,14 @@ const hideEverything = () => {
   hide('transaction-list-large');
   hide('your-address');
   hide('private-key-login');
+  hide('mnemonic-login');
   hide('ledger-login');
   hide('elastos-branding');
   hide('send-spacer-01');
   hide('private-key-generate');
   hide('private-key-generator');
+  hide('mnemonic-generate');
+  hide('mnemonic-generator');
   hide('candidate-list');
   hide('candidate-vote-button');
   hide('candidate-vote-list');
@@ -901,7 +927,12 @@ const openDevTools = () => {
   }
 }
 
-const copyToClipboard = () => {
+const copyMnemonicToClipboard = () => {
+  clipboard.writeText(generatedMnemonic);
+  alert(`copied to clipboard:\n${generatedMnemonic}`)
+}
+
+const copyToPrivateKeyClipboard = () => {
   clipboard.writeText(generatedPrivateKeyHex);
   alert(`copied to clipboard:\n${generatedPrivateKeyHex}`)
 }
@@ -918,8 +949,10 @@ const showLogin = () => {
   hideEverything();
   clearSendData();
   show('private-key-login');
+  show('mnemonic-login');
   show('ledger-login');
   show('elastos-branding');
+  show('mnemonic-generate');
   show('private-key-generate');
 }
 
@@ -1025,6 +1058,20 @@ const showPrivateKeyEntry = () => {
   show('private-key-entry');
 }
 
+const showMnemonicEntry = () => {
+  hideEverything();
+  clearSendData();
+  show('mnemonic-entry');
+}
+
+const showGenerateNewMnemonic = () => {
+  hideEverything();
+  clearSendData();
+  show('mnemonic-generator');
+  generatedMnemonic = bip39.entropyToMnemonic(crypto.randomBytes(32).toString('hex'));
+  renderApp();
+}
+
 const showGenerateNewPrivateKey = () => {
   hideEverything();
   clearSendData();
@@ -1035,6 +1082,7 @@ const showGenerateNewPrivateKey = () => {
 
 const clearGlobalData = () => {
   get('privateKey').value = '';
+  get('mnemonic').value = '';
   get('feeAmount').value = DEFAULT_FEE_SATS;
   get('nodeUrl').value = '';
 
@@ -1043,6 +1091,7 @@ const clearGlobalData = () => {
   address = undefined;
   balance = undefined;
   generatedPrivateKeyHex = undefined;
+  generatedMnemonic = undefined;
 
   sendAmount = '';
   feeAmountSats = '';
@@ -1212,7 +1261,7 @@ class App extends React.Component {
               <table className="w626px black_on_offwhite no_border no_padding">
                 <tbody>
                   <tr id="elastos-branding" className="no_border no_padding">
-                    <td className="h325px w595px no_border no_padding">
+                    <td className="h225px w595px no_border no_padding">
                       <div className="branding_container">
                         <a href="https://elastos.org" onClick={(e) => onLinkClick(e)}>
                           <img className="branding_image" style={{
@@ -1221,7 +1270,7 @@ class App extends React.Component {
                             }} src="artwork/elastos-branding.svg"></img>
                           <img style={{
                               left: '380px',
-                              top: '130px'
+                              top: '30px'
                             }} className="branding_image" src="artwork/elastos-white-large.svg"></img>
                         </a>
                       </div>
@@ -1295,7 +1344,58 @@ class App extends React.Component {
                       <br/>
                       </strong>
                       <br/>
-                      <div className="white_on_gray bordered display_inline_block float_left fake_button rounded padding_5px" onClick={(e) => copyToClipboard()}>Copy</div>
+                      <div className="white_on_gray bordered display_inline_block float_left fake_button rounded padding_5px" onClick={(e) => copyPrivateKeyToClipboard()}>Copy</div>
+                      <br/>
+                      <div className="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => showLogin()}>Done</div>
+                      <br/>
+                    </td>
+                  </tr>
+                  <tr id="mnemonic-login">
+                    <td className="black_on_white h20px darkgray_border">
+                      <div className="gray_on_white">Mnemonic</div>
+                      <p>Enter mnemonic manually.</p>
+                      <div className="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => showMnemonicEntry()}>Enter Mnemonic</div>
+                    </td>
+                  </tr>
+                  <tr id="mnemonic-entry">
+                    <td className="black_on_white h20px darkgray_border">
+                      <div className="gray_on_white">Mnemonic</div>
+                      <br/>
+                      <textarea style={{
+                          fontFamily: 'monospace'
+                        }} type="text" rows="4" cols="50" id="mnemonic" placeholder="Mnemonic"></textarea>
+                      <br/>
+                      <div className="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => getPublicKeyFromMnemonic()}>Use Mnemonic</div>
+                    </td>
+                  </tr>
+                  <tr id="mnemonic-generate">
+                    <td className="black_on_white h20px darkgray_border">
+                      <div className="gray_on_white">Generate New Mnemonic</div>
+                      <p>Generate new mnemonic.</p>
+                      <div className="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => showGenerateNewMnemonic()}>Generate Mnemonic</div>
+                    </td>
+                  </tr>
+                  <tr id="mnemonic-generator">
+                    <td className="black_on_white h20px darkgray_border">
+                      <div className="gray_on_white">New Mnemonic</div>
+                      <br/>
+                      <br/>
+                      {generatedMnemonic}
+                      <br/>
+                      <br/>
+                      <hr/>
+                      <strong>
+                      Reminder: Save this mnemonic.
+                      <br/>
+                      If you lose this mnemonic, there will be no way to recover your coins.
+                      <br/>
+                      Keep a backup of it in a safe place.
+                      <br/>
+                      To use this mnemonic, copy it (you can use the convenient copy button), and use to log in to the wallet.
+                      <br/>
+                      </strong>
+                      <br/>
+                      <div className="white_on_gray bordered display_inline_block float_left fake_button rounded padding_5px" onClick={(e) => copyMnemonicToClipboard()}>Copy</div>
                       <br/>
                       <div className="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => showLogin()}>Done</div>
                       <br/>
