@@ -45,6 +45,9 @@ class Hive(hive_pb2_grpc.HiveServicer):
             logging.debug(f"{did} : {api_key} : {status_message}")
             return hive_pb2.Response(output='', status_message=status_message, status=False)
 
+        if type(jwt_info) == str:
+            jwt_info = json.loads(jwt_info)
+
         network = jwt_info['network']
 
         # Validate the API Key
@@ -136,6 +139,10 @@ class Hive(hive_pb2_grpc.HiveServicer):
             logging.debug(f"{did} : {api_key} : {status_message}")
             return hive_pb2.Response(output='', status_message=status_message, status=False)
 
+        print(type(jwt_info))
+        if type(jwt_info) == str:
+            jwt_info = json.loads(jwt_info)
+
         network = jwt_info['network']
 
         # Validate the API Key
@@ -157,13 +164,11 @@ class Hive(hive_pb2_grpc.HiveServicer):
                                      status=False)
 
         # verify the hash key
-        request_input = jwt_info['request_input']
-
-        signed_message = request_input['msg']
+        signed_message = jwt_info['msg']
         json_data = {
             "msg": signed_message,
-            "pub": request_input['pub'],
-            "sig": request_input['sig']
+            "pub": jwt_info['pub'],
+            "sig": jwt_info['sig']
         }
         if network == "testnet":
             api_url_base = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_VERIFY
@@ -181,8 +186,8 @@ class Hive(hive_pb2_grpc.HiveServicer):
         else:
             api_url_base = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
         req_data = {
-            "privateKey": request_input['privateKey'],
-            "msg": request_input['hash']
+            "privateKey": jwt_info['privateKey'],
+            "msg": jwt_info['hash']
         }
         response = self.session.post(api_url_base, data=json.dumps(req_data), headers=self.headers['general'],
                                      timeout=REQUEST_TIMEOUT)
@@ -201,7 +206,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         # show content
         api_url_base = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
-        response = self.session.get(api_url_base.format(request_input['hash']), timeout=REQUEST_TIMEOUT)
+        response = self.session.get(api_url_base.format(jwt_info['hash']), timeout=REQUEST_TIMEOUT)
 
         # generate jwt token
         jwt_info = {
