@@ -109,15 +109,15 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
     }
   });
 
-  console.log(`createUnsignedSendToTx.inputValueSats[${inputValueSats}]`);
+  // console.log(`createUnsignedSendToTx.inputValueSats[${inputValueSats}]`);
 
   const changeValueSats = inputValueSats.minus(sendAmountAndFeeSats);
 
-  console.log(`createUnsignedSendToTx.changeValueSats[${changeValueSats}]`);
+  // console.log(`createUnsignedSendToTx.changeValueSats[${changeValueSats}]`);
 
   const computedFeeSats = inputValueSats.minus(changeValueSats);
 
-  console.log(`createUnsignedSendToTx.computedFeeSats[${computedFeeSats}]`);
+  // console.log(`createUnsignedSendToTx.computedFeeSats[${computedFeeSats}]`);
 
   {
     const sendOutput = {};

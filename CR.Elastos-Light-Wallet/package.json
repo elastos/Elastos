@@ -1,6 +1,6 @@
 {
   "name": "elastos-light-wallet",
-  "version": "1.0.0-RC17",
+  "version": "1.0.0-RC18",
   "description": "elastos light wallet",
   "productName": "elastos-light-wallet",
   "main": "index.js",
@@ -37,6 +37,7 @@
     "@ledgerhq/hw-transport-node-hid": "^5.12.0",
     "babel-polyfill": "^6.26.0",
     "bignumber.js": "^9.0.0",
+    "bip39": "^3.0.2",
     "bs58": "^4.0.1",
     "check-node-version": "^4.0.2",
     "elliptic": "^6.5.2",

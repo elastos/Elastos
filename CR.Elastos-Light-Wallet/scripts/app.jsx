@@ -28,6 +28,7 @@ const TxTranscoder = require('./TxTranscoder.js')
 const TxSigner = require('./TxSigner.js')
 const Asset = require('./Asset.js')
 const TxFactory = require('./TxFactory.js')
+const Mnemonic = require('./Mnemonic.js');
 
 /** global constants */
 
@@ -382,7 +383,7 @@ const getPublicKeyFromMnemonic = () => {
     alert(`mnemonic is not valid.`);
     return;
   }
-  const privateKey = bip39.mnemonicToEntropy(mnemonic);
+  const privateKey = Mnemonic.getPrivateKeyFromMnemonic(mnemonic);
   if (privateKey.length != PRIVATE_KEY_LENGTH) {
     alert(`mnemonic must create a of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`);
     return;
