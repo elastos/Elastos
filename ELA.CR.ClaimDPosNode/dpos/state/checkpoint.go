@@ -130,7 +130,7 @@ func (c *CheckPoint) DataExtension() string {
 }
 
 func (c *CheckPoint) Priority() checkpoint.Priority {
-	return checkpoint.MediumHigh
+	return checkpoint.Medium
 }
 
 func (c *CheckPoint) Generator() func(buf []byte) checkpoint.ICheckPoint {

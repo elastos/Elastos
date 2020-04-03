@@ -120,7 +120,7 @@ func (c *Checkpoint) LogError(err error) {
 }
 
 func (c *Checkpoint) Priority() checkpoint.Priority {
-	return checkpoint.Medium
+	return checkpoint.MediumHigh
 }
 
 func (c *Checkpoint) OnInit() {
