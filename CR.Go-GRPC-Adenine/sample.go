@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -52,9 +51,9 @@ optional arguments:
 	} else if *service == "get_api_key" {
 		getAPIKeyDemo(grpcServerHost, grpcServerPort, production, mnemonicToUse, didToUse)
 	} else if *service == "upload_and_sign" {
-		uploadAndSignDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network, privateKeyToUse)
+		uploadAndSignDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network, privateKeyToUse)
 	} else if *service == "verify_and_show" {
-		verifyAndShowDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network, privateKeyToUse)
+		verifyAndShowDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network, privateKeyToUse)
 	} else if *service == "create_wallet" {
 		createWalletDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network)
 	} else if *service == "view_wallet" {
@@ -124,32 +123,31 @@ func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, m
 	}
 }
 
-func uploadAndSignDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network, privateKeyToUse string) {
+func uploadAndSignDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network, privateKeyToUse string) {
 	log.Println("--> Upload and Sign")
 	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
 	defer hive.Close()
-	response := hive.UploadAndSign(apiKeyToUse, network, privateKeyToUse, "test/sample.txt")
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response := hive.UploadAndSign(apiKeyToUse, didToUse, network, privateKeyToUse, "test/sample.txt")
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }
 
-func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network, privateKeyToUse string) {
+func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network, privateKeyToUse string) {
 	log.Println("--> Verify and Show")
 	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
 	defer hive.Close()
-	response := hive.VerifyAndShow(apiKeyToUse, network, privateKeyToUse, "516D6654415770733231556D63734D793632756F6B6A434E566E686533644562366A534257643939506762486948",
+	response := hive.VerifyAndShow(apiKeyToUse, didToUse, network, privateKeyToUse, "516D594354423844666433393575693568644A5874444D5A576D524553796B5A4A5838733235613962694A4C4853",
                 						"022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                						"05D886DF5E9E7659C7E7C1EB3294335951BBF6F5F75F93831C1E654E1A1083C1CDCFB96BFA5A1B647F3548AB41ADB17137FFF9A04E569580518FEC1E55676CE4",
-                						"QmfTAWps21UmcsMy62uokjCNVnhe3dEb6jSBWd99PgbHiH")
-	if response.Output != "" {
-		downloadPath := "test/sample_from_hive.txt"
+                						"CABB589C979B19C5FB3BB544C743024A0F712BD361C6E4F2420FC2C56238D06011A91C446C6B25CF3ED588BAFD2C1B622A0363F50D94AC95401482DC245D8571",
+                						"QmYCTB8Dfd395ui5hdJXtDMZWmRESykZJX8s25a9biJLHS")
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
+		log.Printf("Output: %s", response.Output)
+		downloadPath := "test/sample_from_hive.txt"
 		log.Printf("Download Path : %s", downloadPath)
 		// Open a new file for writing only
     	file, err := os.OpenFile(
@@ -163,12 +161,14 @@ func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production boo
     	defer file.Close()
 
     	// Write bytes to file
-    	byteSlice := response.FileContent
+    	byteSlice := response.Output
     	bytesWritten, err := file.Write(byteSlice)
     	if err != nil {
         	log.Fatal(err)
     	}
     	log.Printf("Wrote %d bytes.\n", bytesWritten)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }
 
