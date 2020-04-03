@@ -28,17 +28,13 @@ class SidechainEth:
         contract_metadata = parser.parse_file(filename)
         contract_name = contract_metadata['children'][1]['name']
         
-        req_data = {
+        jwt_info = {
+            'network': network,
             'eth_account_address': eth_account_address,
             'eth_private_key': eth_private_key,
             'eth_gas': eth_gas,
             'contract_source': contract_source,
             'contract_name': contract_name,
-        }
-
-        jwt_info = {
-            'network': network,
-            'request_input': req_data
         }
 
         jwt_token = jwt.encode({
@@ -65,15 +61,11 @@ class SidechainEth:
             return result
 
     def watch_eth_contract(self, api_key, did, network, contract_address, contract_name, contract_code_hash):
-        req_data = {
+        jwt_info = {
+            'network': network,
             'contract_address': contract_address,
             'contract_name': contract_name,
             'contract_code_hash': contract_code_hash,
-        }
-
-        jwt_info = {
-            'network': network,
-            'request_input': req_data
         }
 
         jwt_token = jwt.encode({
