@@ -62,9 +62,9 @@ optional arguments:
 	} else if *service == "request_ela" {
 		requestELADemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse)
 	} else if *service == "deploy_eth_contract" {
-		deployETHContractDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
+		deployETHContractDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network)
 	} else if *service == "watch_eth_contract" {
-		watchETHContractDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
+		watchETHContractDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network)
 	}
 }
 
@@ -275,7 +275,7 @@ func requestELADemo(grpcServerHost string, grpcServerPort int, production bool, 
 	}
 }
 
-func deployETHContractDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network string) {
+func deployETHContractDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
 	log.Println("--> Deploy ETH Contract")
 	sidechainEth := elastosadenine.NewSidechainEth(grpcServerHost, grpcServerPort, production)
 	defer sidechainEth.Close()
@@ -285,18 +285,16 @@ func deployETHContractDemo(grpcServerHost string, grpcServerPort int, production
 		gas = 2000000
 		fileName = "test/HelloWorld.sol"
 	)
-	response := sidechainEth.DeployEthContract(apiKeyToUse, network, address, privateKey, gas, fileName)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response := sidechainEth.DeployEthContract(apiKeyToUse, didToUse, network, address, privateKey, gas, fileName)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }
 
-func watchETHContractDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network string) {
+func watchETHContractDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
 	log.Println("--> Watch ETH Contract")
 	sidechainEth := elastosadenine.NewSidechainEth(grpcServerHost, grpcServerPort, production)
 	defer sidechainEth.Close()
@@ -305,13 +303,11 @@ func watchETHContractDemo(grpcServerHost string, grpcServerPort int, production 
 		contractName = "HelloWorld"
 		contractCodeHash = "QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd"
 	)
-	response := sidechainEth.WatchEthContract(apiKeyToUse, network, contractAddress, contractName, contractCodeHash)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response := sidechainEth.WatchEthContract(apiKeyToUse, didToUse, network, contractAddress, contractName, contractCodeHash)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }

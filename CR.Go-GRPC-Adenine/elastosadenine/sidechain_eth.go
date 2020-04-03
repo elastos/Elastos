@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"google.golang.org/grpc/credentials"
+	"github.com/dgrijalva/jwt-go"
+	"google.golang.org/grpc/metadata"
 	"log"
-
+	"time"
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/susmit/Solidity-Go-Parser/parser"
 	"google.golang.org/grpc"
-
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/sidechain_eth"
 )
 
@@ -20,6 +21,7 @@ type SidechainEth struct {
 }
 
 type InputSidechainEthDeploy struct {
+	Network string `json:"network"`
 	Address string `json:"eth_account_address"`
 	PrivateKey string `json:"eth_private_key"`
 	Gas int `json:"eth_gas"`
@@ -28,6 +30,7 @@ type InputSidechainEthDeploy struct {
 }
 
 type InputSidechainEthWatch struct {
+	Network string `json:"network"`
 	ContractAddress string `json:"contract_address"`
 	ContractName string `json:"contract_name"`
 	ContractCodeHash string `json:"contract_code_hash"`
@@ -68,10 +71,10 @@ func (e *SidechainEth) Close() {
 	e.Connection.Close()
 }
 
-func (e *SidechainEth) DeployEthContract(apiKey, network, address, privateKey string, gas int, fileName string) *sidechain_eth.Response {
+func (e *SidechainEth) DeployEthContract(apiKey, did, network, address, privateKey string, gas int, fileName string) Response {
+	var outputData string
 	client := sidechain_eth.NewSidechainEthClient(e.Connection)
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	defer cancel()
+
 	// Parse the solidity smart contract
 	contractSource, _ := antlr.NewFileStream(fileName)
 	lexer := parser.NewSolidityLexer(contractSource)
@@ -79,40 +82,107 @@ func (e *SidechainEth) DeployEthContract(apiKey, network, address, privateKey st
 	p := parser.NewSolidityParser(stream)
 	solidityListener := SolidityListener{}
 	antlr.ParseTreeWalkerDefault.Walk(&solidityListener, p.SourceUnit())
-	reqData, _ := json.Marshal(InputSidechainEthDeploy{
+
+	jwtInfo, _ := json.Marshal(InputSidechainEthDeploy{
+		Network: network,
 		Address: address,
 		PrivateKey: privateKey,
 		Gas: gas,
 		ContractSource: fmt.Sprint(contractSource),
 		ContractName: solidityListener.ContractName,
 	})
-	response, err := client.DeployEthContract(ctx, &sidechain_eth.Request{
-		ApiKey:               apiKey,
-		Network:              network,
-		Input:                string(reqData),
-	})
+
+	claims := JWTClaim{
+		JwtInfo: string(jwtInfo),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().UTC().Add(tokenExpiration).Unix(),
+		},
+	}
+
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	jwtTokenString, err := jwtToken.SignedString([]byte(apiKey))
 	if err != nil {
 		log.Fatalf("Failed to execute 'DeployEthContract' method: %v", err)
 	}
-	return response
-}
-
-func (e *SidechainEth) WatchEthContract(apiKey, network, contractAddress, contractName, contractCodeHash string) *sidechain_eth.Response {
-	client := sidechain_eth.NewSidechainEthClient(e.Connection)
+	md := metadata.Pairs("did", did)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
-	reqData, _ := json.Marshal(InputSidechainEthWatch{
+	ctx = metadata.NewOutgoingContext(ctx, md)
+
+	response, err := client.DeployEthContract(ctx, &sidechain_eth.Request{Input: jwtTokenString})
+	if err != nil {
+		log.Fatalf("Failed to execute 'DeployEthContract' method: %v", err)
+	}
+	
+	if response.Status == true {
+		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
+		    if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
+		        return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
+		    }
+		    return []byte(apiKey), nil
+		})
+
+		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
+		    strMap := recvClaims["jwt_info"].(map[string]interface{})
+			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
+			outputData = string(result)
+		} else {
+			log.Fatalf("Failed to execute 'DeployEthContract' method: %v", err)
+		}
+	} 
+	responseData := Response{outputData, response.Status, response.StatusMessage}
+	return responseData
+}
+
+func (e *SidechainEth) WatchEthContract(apiKey, did, network, contractAddress, contractName, contractCodeHash string) Response {
+	var outputData string
+	client := sidechain_eth.NewSidechainEthClient(e.Connection)
+
+	jwtInfo, _ := json.Marshal(InputSidechainEthWatch{
+		Network: network,
 		ContractAddress:  contractAddress,
 		ContractName:     contractName,
 		ContractCodeHash: contractCodeHash,
 	})
-	response, err := client.WatchEthContract(ctx, &sidechain_eth.Request{
-		ApiKey:               apiKey,
-		Network:              network,
-		Input:                string(reqData),
-	})
+
+	claims := JWTClaim{
+		JwtInfo: string(jwtInfo),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().UTC().Add(tokenExpiration).Unix(),
+		},
+	}
+
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	jwtTokenString, err := jwtToken.SignedString([]byte(apiKey))
 	if err != nil {
 		log.Fatalf("Failed to execute 'WatchEthContract' method: %v", err)
 	}
-	return response
+	md := metadata.Pairs("did", did)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	defer cancel()
+	ctx = metadata.NewOutgoingContext(ctx, md)
+
+	response, err := client.WatchEthContract(ctx, &sidechain_eth.Request{Input: jwtTokenString})
+	if err != nil {
+		log.Fatalf("Failed to execute 'WatchEthContract' method: %v", err)
+	}
+	
+	if response.Status == true {
+		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
+		    if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
+		        return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
+		    }
+		    return []byte(apiKey), nil
+		})
+
+		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
+		    strMap := recvClaims["jwt_info"].(map[string]interface{})
+			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
+			outputData = string(result)
+		} else {
+			log.Fatalf("Failed to execute 'WatchEthContract' method: %v", err)
+		}
+	} 
+	responseData := Response{outputData, response.Status, response.StatusMessage}
+	return responseData
 }
