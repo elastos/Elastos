@@ -37,6 +37,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         metadata = dict(context.invocation_metadata())
         did = metadata["did"]
         api_key = get_api_from_did(did)
+        encrypted_message = None
 
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
@@ -45,10 +46,17 @@ class Hive(hive_pb2_grpc.HiveServicer):
             logging.debug(f"{did} : {api_key} : {status_message}")
             return hive_pb2.Response(output='', status_message=status_message, status=False)
 
+        # reading input data
         if type(jwt_info) == str:
+            #request from go package
             jwt_info = json.loads(jwt_info)
+            encrypted_message = jwt_info['file_content']
+        else:
+            #request from python package
+            encrypted_message = jwt_info['file_content'].encode("utf-8")
 
         network = jwt_info['network']
+        private_key = jwt_info['privateKey']
 
         # Validate the API Key
         api_status = validate_api_key(api_key)
@@ -66,12 +74,6 @@ class Hive(hive_pb2_grpc.HiveServicer):
             return hive_pb2.Response(output=json.dumps(response),
                                      status_message=status_message,
                                      status=False)
-
-        # reading the file content
-        encrypted_message = jwt_info['file_content'].encode("utf-8")
-
-        # reading input data
-        private_key = jwt_info['privateKey']
 
         # checking file size
         if sys.getsizeof(encrypted_message) > settings.FILE_UPLOAD_SIZE_LIMIT:
@@ -139,7 +141,6 @@ class Hive(hive_pb2_grpc.HiveServicer):
             logging.debug(f"{did} : {api_key} : {status_message}")
             return hive_pb2.Response(output='', status_message=status_message, status=False)
 
-        print(type(jwt_info))
         if type(jwt_info) == str:
             jwt_info = json.loads(jwt_info)
 
