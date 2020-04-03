@@ -69,7 +69,11 @@ class Hive:
     def verify_and_show(self, api_key, did, network, request_input):
         jwt_info = {
             'network': network,
-            'request_input': request_input
+            'msg': request_input['msg'],
+            'pub': request_input['pub'],
+            'sig': request_input['sig'],
+            'hash': request_input['hash'],
+            'privateKey': request_input['privateKey']
         }
 
         jwt_token = jwt.encode({
