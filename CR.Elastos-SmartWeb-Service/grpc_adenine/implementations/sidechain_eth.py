@@ -41,6 +41,9 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             logging.debug(f"{did} : {api_key} : {status_message}")
             return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
+        if type(jwt_info) == str:
+            jwt_info = json.loads(jwt_info)
+
         network = jwt_info['network']
 
         # Validate the API Key
@@ -61,12 +64,11 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
                                               status=False)
 
         # reading the file content
-        request_input = jwt_info['request_input']
-        eth_account_address = request_input['eth_account_address']
-        eth_gas = request_input['eth_gas']
-        eth_private_key = request_input['eth_private_key']
-        contract_name = request_input['contract_name']
-        contract_source = request_input['contract_source']
+        eth_account_address = jwt_info['eth_account_address']
+        eth_gas = jwt_info['eth_gas']
+        eth_private_key = jwt_info['eth_private_key']
+        contract_name = jwt_info['contract_name']
+        contract_source = jwt_info['contract_source']
 
         # upload smart contract code to hive
         hive_upload_url = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_ADD_FILE
@@ -86,52 +88,58 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         else:
             web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
                                      request_kwargs={'timeout': 60}))
-        # We need this since our eth sidechain is POA
-        web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-        if not web3.isConnected():
-            status_message = 'Error: Could not connect to Eth Sidechain node'
-            logging.debug(f"{did} : {api_key} : {status_message}")
-            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
+        
+        try:
+            # We need this since our eth sidechain is POA
+            web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            if not web3.isConnected():
+                status_message = 'Error: Could not connect to Eth Sidechain node'
+                logging.debug(f"{did} : {api_key} : {status_message}")
+                return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
 
-        compiled_sol = compile_standard({
-            "language": "Solidity",
-            "sources": {
-                contract_name: {
-                    "content": contract_source,
+            compiled_sol = compile_standard({
+                "language": "Solidity",
+                "sources": {
+                    contract_name: {
+                        "content": contract_source,
+                    },
                 },
-            },
-            "settings": {
-                'evmVersion': 'byzantium',
-                "outputSelection": {
-                    "*": {"*": ["*"]}
+                "settings": {
+                    'evmVersion': 'byzantium',
+                    "outputSelection": {
+                        "*": {"*": ["*"]}
+                    }
                 }
+            })
+
+            # get bytecode
+            bytecode = compiled_sol['contracts'][contract_name][contract_name]['evm']['bytecode']['object']
+
+            transaction = {
+                'gas': eth_gas,
+                'gasPrice': web3.eth.gasPrice,
+                'nonce': web3.eth.getTransactionCount(web3.toChecksumAddress(eth_account_address)),
+                'data': '0x' + bytecode
             }
-        })
+            signed_tx = web3.eth.account.sign_transaction(transaction, eth_private_key)
+            if signed_tx is None:
+                status_message = 'Error: Transaction could not be signed'
+                logging.debug(f"{did} : {api_key} : {status_message}")
+                return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
 
-        # get bytecode
-        bytecode = compiled_sol['contracts'][contract_name][contract_name]['evm']['bytecode']['object']
+            # Submit the transaction that deploys the contract
+            tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
+            if tx_hash is None:
+                status_message = 'Error: Transaction could not be send to deploy contract'
+                logging.debug(f"{did} : {api_key} : {status_message}")
+                return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
 
-        transaction = {
-            'gas': eth_gas,
-            'gasPrice': web3.eth.gasPrice,
-            'nonce': web3.eth.getTransactionCount(web3.toChecksumAddress(eth_account_address)),
-            'data': '0x' + bytecode
-        }
-        signed_tx = web3.eth.account.sign_transaction(transaction, eth_private_key)
-        if signed_tx is None:
-            status_message = 'Error: Transaction could not be signed'
+            # Wait for the transaction to be mined, and get the transaction receipt
+            tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
+        except:
+            status_message = 'Error Occurred while deploying the Ethereum Contract'
             logging.debug(f"{did} : {api_key} : {status_message}")
-            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
-
-        # Submit the transaction that deploys the contract
-        tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
-        if tx_hash is None:
-            status_message = 'Error: Transaction could not be send to deploy contract'
-            logging.debug(f"{did} : {api_key} : {status_message}")
-            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
-
-        # Wait for the transaction to be mined, and get the transaction receipt
-        tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
+            return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
         # generate jwt token
         jwt_info = {
@@ -162,6 +170,9 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             logging.debug(f"{did} : {api_key} : {status_message}")
             return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
+        if type(jwt_info) == str:
+            jwt_info = json.loads(jwt_info)
+
         network = jwt_info['network']
 
         # Validate the API Key
@@ -182,10 +193,9 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
                                               status=False)
 
         # reading the file content
-        request_input = jwt_info['request_input']
-        contract_address = request_input['contract_address']
-        contract_name = request_input['contract_name']
-        contract_code_hash = request_input['contract_code_hash']
+        contract_address = jwt_info['contract_address']
+        contract_name = jwt_info['contract_name']
+        contract_code_hash = jwt_info['contract_code_hash']
 
         # show smart contract code from Hive
         hive_show_url = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
@@ -197,39 +207,44 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             logging.debug(f"{did} : {api_key} : {status_message}")
             return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
 
-        # Get smart contract details
-        compiled_sol = compile_standard({
-            "language": "Solidity",
-            "sources": {
-                contract_name: {
-                    "content": contract_source,
+        try:
+            # Get smart contract details
+            compiled_sol = compile_standard({
+                "language": "Solidity",
+                "sources": {
+                    contract_name: {
+                        "content": contract_source,
+                    },
                 },
-            },
-            "settings": {
-                'evmVersion': 'byzantium',
-                "outputSelection": {
-                    "*": {"*": ["*"]}
+                "settings": {
+                    'evmVersion': 'byzantium',
+                    "outputSelection": {
+                        "*": {"*": ["*"]}
+                    }
                 }
-            }
-        })
-        abi = json.loads(compiled_sol['contracts'][contract_name][contract_name]['metadata'])['output']['abi']
+            })
+            abi = json.loads(compiled_sol['contracts'][contract_name][contract_name]['metadata'])['output']['abi']
 
-        if network == "testnet":
-            # web3.py instance
-            web3 = Web3(HTTPProvider(config('TEST_NET_SIDECHAIN_ETH_RPC_PORT'),
-                                     request_kwargs={'timeout': 60}))
-        else:
-            web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
-                                     request_kwargs={'timeout': 60}))
-        # We need this since our eth sidechain is POA
-        web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            if network == "testnet":
+                # web3.py instance
+                web3 = Web3(HTTPProvider(config('TEST_NET_SIDECHAIN_ETH_RPC_PORT'),
+                                         request_kwargs={'timeout': 60}))
+            else:
+                web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
+                                         request_kwargs={'timeout': 60}))
+            # We need this since our eth sidechain is POA
+            web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
-        contract = web3.eth.contract(address=contract_address, abi=abi)
-        functions = contract.all_functions()
-        contract_functions = []
-        for function in functions:
-            contract_function = repr(function)[1:-1].split()[1]
-            contract_functions.append(contract_function)
+            contract = web3.eth.contract(address=contract_address, abi=abi)
+            functions = contract.all_functions()
+            contract_functions = []
+            for function in functions:
+                contract_function = repr(function)[1:-1].split()[1]
+                contract_functions.append(contract_function)
+        except:
+            status_message = 'Error Occurred while watching the Ethereum Contract'
+            logging.debug(f"{did} : {api_key} : {status_message}")
+            return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
         # generate jwt token
         jwt_info = {
