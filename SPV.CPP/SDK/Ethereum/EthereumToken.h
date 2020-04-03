@@ -30,25 +30,44 @@
 #include <ethereum/contract/BREthereumToken.h>
 
 #include <boost/shared_ptr.hpp>
+#include <vector>
 
 namespace Elastos {
 	namespace ElaWallet {
 
+		class EthereumToken;
+		typedef boost::shared_ptr<EthereumToken> EthereumTokenPtr;
+
 		class EthereumToken {
 		public:
-			EthereumToken(BREthereumToken token);
+			explicit EthereumToken(BREthereumToken token);
 
 			~EthereumToken();
+
+			std::string getAddressLowerCase() const;
+
+			std::string getAddress() const;
+
+			std::string getSymbol() const;
+
+			std::string getName() const;
+
+			std::string getDescription() const;
+
+			int getDecimals();
 
 			int hashCode();
 
 			std::string toString() const;
 
+			BREthereumToken getRaw() const;
+
+		protected:
+			std::vector<EthereumTokenPtr> getTokenAll() const;
+
 		private:
 			BREthereumToken _token;
 		};
-
-		typedef boost::shared_ptr<EthereumToken> EthereumTokenPtr;
 
 	}
 }

@@ -31,7 +31,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		EthereumAccount::EthereumAccount(const EthereumEWMPtr &ewm, BREthereumAccount account) :
+		EthereumAccount::EthereumAccount(EthereumEWM *ewm, BREthereumAccount account) :
 			Reference(ewm, account) {
 
 		}
@@ -41,17 +41,17 @@ namespace Elastos {
 		}
 
 		std::string EthereumAccount::getPrimaryAddress() const {
-			return GetCString(ewmGetAccountPrimaryAddress(GetEWM()->getRaw()));
+			return GetCString(ewmGetAccountPrimaryAddress(_ewm->getRaw()));
 		}
 
 		bytes_t EthereumAccount::getPrimaryAddressPublicKey() const {
-			BRKey key = ewmGetAccountPrimaryAddressPublicKey(GetEWM()->getRaw());
+			BRKey key = ewmGetAccountPrimaryAddressPublicKey(_ewm->getRaw());
 			bytes_t pubkey(key.pubKey, sizeof(key.pubKey));
 			return pubkey;
 		}
 
 		bytes_t EthereumAccount::getPrimaryAddressPrivateKey(const std::string &paperKey) const {
-			BRKey key = ewmGetAccountPrimaryAddressPrivateKey(GetEWM()->getRaw(), paperKey.data());
+			BRKey key = ewmGetAccountPrimaryAddressPrivateKey(_ewm->getRaw(), paperKey.data());
 			bytes_t prvkey(&key, sizeof(key));
 			return prvkey;
 		}

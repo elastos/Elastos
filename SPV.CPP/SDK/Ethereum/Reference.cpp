@@ -25,12 +25,11 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		Reference::Reference(const EthereumEWMPtr &ewm, void *identifier) :
+		Reference::Reference(EthereumEWM *ewm, void *identifier) :
 			_ewm(ewm), _identifier(identifier) {
 		}
 
-		EthereumEWMPtr Reference::GetEWM() const {
-			return _ewm.expired() ? nullptr : _ewm.lock();
+		Reference::~Reference() {
 		}
 
 		std::string Reference::GetCString(char *data) const {

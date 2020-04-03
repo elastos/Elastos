@@ -29,14 +29,16 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		EthereumNetwork::EthereumNetwork() {
-			_mainnet = ethereumMainnet;
-			_testnet = ethereumTestnet;
-			_rinkeby = ethereumRinkeby;
+		EthereumNetwork::EthereumNetwork(BREthereumNetwork network) :
+			_network(network) {
 		}
 
 		EthereumNetwork::~EthereumNetwork() {
 
+		}
+
+		BREthereumNetwork EthereumNetwork::getRaw() const {
+			return _network;
 		}
 
 	}

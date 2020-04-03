@@ -96,7 +96,8 @@ namespace Elastos {
 				TooMuchInputs = 20060,
 				LastVoteConfirming = 20061,
 				// ethereum side chain error code
-				InvalidUnitType = 21000,
+				InvalidUnitType = 31000,
+				InvalidEthereumAddress = 32000,
 				Other = 29999,
 			} Code;
 		}

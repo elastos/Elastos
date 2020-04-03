@@ -36,14 +36,14 @@ namespace Elastos {
 
 		class EthereumNetwork {
 		public:
-			EthereumNetwork();
+			EthereumNetwork(BREthereumNetwork network);
 
 			~EthereumNetwork();
 
+			BREthereumNetwork getRaw() const;
+
 		private:
-			BREthereumNetwork _mainnet;
-			BREthereumNetwork _testnet;
-			BREthereumNetwork _rinkeby;
+			BREthereumNetwork _network;
 		};
 
 		typedef boost::shared_ptr<EthereumNetwork> EthereumNetworkPtr;

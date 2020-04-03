@@ -31,20 +31,18 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class EthereumEWM;
-		typedef boost::shared_ptr<EthereumEWM> EthereumEWMPtr;
-		typedef boost::weak_ptr<EthereumEWM> EthereumEWMWeakPtr;
 
 		class Reference {
 		protected:
-			Reference(const EthereumEWMPtr &ewm, void *identifier);
+			Reference(EthereumEWM *ewm, void *identifier);
+
+			virtual ~Reference();
 
 		public:
-			EthereumEWMPtr GetEWM() const;
-
-			std::string GetCString(char *data) const;
+			virtual std::string GetCString(char *data) const;
 
 		protected:
-			EthereumEWMWeakPtr _ewm;
+			EthereumEWM *_ewm;
 			void *_identifier;
 		};
 

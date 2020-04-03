@@ -35,12 +35,15 @@ namespace Elastos {
 			_defaultUnit = unit;
 		}
 
-		ReferenceWithDefaultUnit::ReferenceWithDefaultUnit(const EthereumEWMPtr &ewm,
+		ReferenceWithDefaultUnit::ReferenceWithDefaultUnit(EthereumEWM *ewm,
 														   void *identifier,
 														   EthereumAmount::Unit unit) :
 			Reference(ewm, identifier) {
 			_defaultUnit = unit;
 			_defaultUnitUsesToken = EthereumAmount::isTokenUnit(unit);
+		}
+
+		ReferenceWithDefaultUnit::~ReferenceWithDefaultUnit() {
 		}
 
 		bool ReferenceWithDefaultUnit::validUnit(EthereumAmount::Unit unit) const {

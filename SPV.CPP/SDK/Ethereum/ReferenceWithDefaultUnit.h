@@ -31,16 +31,18 @@ namespace Elastos {
 
 		class ReferenceWithDefaultUnit : public Reference {
 		public:
-			EthereumAmount::Unit getDefaultUnit() const;
+			virtual EthereumAmount::Unit getDefaultUnit() const;
 
-			void setDefaultUnit(EthereumAmount::Unit unit);
+			virtual void setDefaultUnit(EthereumAmount::Unit unit);
 
 		protected:
-			ReferenceWithDefaultUnit(const EthereumEWMPtr &ewm, void *identifier, EthereumAmount::Unit unit);
+			ReferenceWithDefaultUnit(EthereumEWM *ewm, void *identifier, EthereumAmount::Unit unit);
 
-			bool validUnit(EthereumAmount::Unit unit) const;
+			~ReferenceWithDefaultUnit() override;
 
-			void validUnitOrException(EthereumAmount::Unit unit) const;
+			virtual bool validUnit(EthereumAmount::Unit unit) const;
+
+			virtual void validUnitOrException(EthereumAmount::Unit unit) const;
 
 		protected:
 			EthereumAmount::Unit _defaultUnit;

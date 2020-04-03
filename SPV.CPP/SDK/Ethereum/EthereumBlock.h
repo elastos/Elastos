@@ -36,8 +36,10 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class EthereumBlock : public Reference {
-		protected:
-			EthereumBlock(const EthereumEWMPtr &ewm, BREthereumBlock block);
+		public:
+			EthereumBlock(EthereumEWM *ewm, BREthereumBlock block);
+
+			~EthereumBlock() override;
 		};
 
 		typedef boost::shared_ptr<EthereumBlock> EthereumBlockPtr;

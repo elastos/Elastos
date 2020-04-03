@@ -36,8 +36,10 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class EthereumTransfer : public ReferenceWithDefaultUnit {
-		protected:
-			EthereumTransfer(const EthereumEWMPtr &ewm, BREthereumTransfer transfer, EthereumAmount::Unit unit);
+		public:
+			EthereumTransfer(EthereumEWM *ewm, BREthereumTransfer transfer, EthereumAmount::Unit unit);
+
+			~EthereumTransfer();
 
 		public:
 			BREthereumTransfer getRaw() const;
@@ -89,6 +91,7 @@ namespace Elastos {
 		};
 
 		typedef boost::shared_ptr<EthereumTransfer> EthereumTransferPtr;
+		typedef boost::weak_ptr<EthereumTransfer> EthereumTransferWeakPtr;
 
 	}
 }

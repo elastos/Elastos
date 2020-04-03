@@ -29,8 +29,12 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		EthereumBlock::EthereumBlock(const EthereumEWMPtr &ewm, BREthereumBlock block) :
+		EthereumBlock::EthereumBlock(EthereumEWM *ewm, BREthereumBlock block) :
 			Reference(ewm, block) {
+
+		}
+
+		EthereumBlock::~EthereumBlock() {
 
 		}
 

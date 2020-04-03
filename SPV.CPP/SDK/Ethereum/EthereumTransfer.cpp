@@ -30,10 +30,11 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		EthereumTransfer::EthereumTransfer(const EthereumEWMPtr &ewm, BREthereumTransfer transfer,
-										   EthereumAmount::Unit unit) :
+		EthereumTransfer::EthereumTransfer(EthereumEWM *ewm, BREthereumTransfer transfer, EthereumAmount::Unit unit) :
 			ReferenceWithDefaultUnit(ewm, transfer, unit) {
+		}
 
+		EthereumTransfer::~EthereumTransfer() {
 		}
 
 		BREthereumTransfer EthereumTransfer::getRaw() const {
@@ -41,34 +42,34 @@ namespace Elastos {
 		}
 
 		bool EthereumTransfer::isConfirmed() const {
-			return ETHEREUM_BOOLEAN_TRUE == ewmTransferIsConfirmed(GetEWM()->getRaw(), getRaw());
+			return ETHEREUM_BOOLEAN_TRUE == ewmTransferIsConfirmed(_ewm->getRaw(), getRaw());
 		}
 
 		bool EthereumTransfer::isSubmitted() const {
-			return ETHEREUM_BOOLEAN_TRUE == ewmTransferIsSubmitted(GetEWM()->getRaw(), getRaw());
+			return ETHEREUM_BOOLEAN_TRUE == ewmTransferIsSubmitted(_ewm->getRaw(), getRaw());
 		}
 
 		bool EthereumTransfer::isErrored() const {
-			return TRANSFER_STATUS_ERRORED == ewmTransferGetStatus(GetEWM()->getRaw(), getRaw());
+			return TRANSFER_STATUS_ERRORED == ewmTransferGetStatus(_ewm->getRaw(), getRaw());
 		}
 
 		std::string EthereumTransfer::getSourceAddress() const {
-			BREthereumAddress source = ewmTransferGetSource(GetEWM()->getRaw(), getRaw());
+			BREthereumAddress source = ewmTransferGetSource(_ewm->getRaw(), getRaw());
 			return GetCString(addressGetEncodedString(source, 1));
 		}
 
 		std::string EthereumTransfer::getTargetAddress() const {
-			BREthereumAddress target = ewmTransferGetTarget(GetEWM()->getRaw(), getRaw());
+			BREthereumAddress target = ewmTransferGetTarget(_ewm->getRaw(), getRaw());
 			return GetCString(addressGetEncodedString(target, 1));
 		}
 
 		std::string EthereumTransfer::getIdentifier() const {
-			BREthereumHash h = ewmTransferGetIdentifier(GetEWM()->getRaw(), getRaw());
+			BREthereumHash h = ewmTransferGetIdentifier(_ewm->getRaw(), getRaw());
 			return GetCString(hashAsString(h));
 		}
 
 		std::string EthereumTransfer::getOriginationTransactionHash() const {
-			BREthereumHash h = ewmTransferGetOriginatingTransactionHash(GetEWM()->getRaw(), getRaw());
+			BREthereumHash h = ewmTransferGetOriginatingTransactionHash(_ewm->getRaw(), getRaw());
 			return GetCString(hashAsString(h));
 		}
 
@@ -79,15 +80,15 @@ namespace Elastos {
 
 		std::string EthereumTransfer::getAmount(EthereumAmount::Unit unit) const {
 			validUnitOrException(unit);
-			BREthereumAmount amount = ewmTransferGetAmount(GetEWM()->getRaw(), getRaw());
-			BREthereumBoolean holdsToken = ewmTransferHoldsToken(GetEWM()->getRaw(), getRaw(), NULL);
+			BREthereumAmount amount = ewmTransferGetAmount(_ewm->getRaw(), getRaw());
+			BREthereumBoolean holdsToken = ewmTransferHoldsToken(_ewm->getRaw(), getRaw(), NULL);
 
 			std::string amountString;
 			if (ETHEREUM_BOOLEAN_TRUE == holdsToken) {
-				amountString = GetCString(ewmCoerceEtherAmountToString(GetEWM()->getRaw(), amount.u.ether,
+				amountString = GetCString(ewmCoerceEtherAmountToString(_ewm->getRaw(), amount.u.ether,
 																	   (BREthereumEtherUnit) unit));
 			} else {
-				amountString = GetCString(ewmCoerceTokenAmountToString(GetEWM()->getRaw(), amount.u.tokenQuantity,
+				amountString = GetCString(ewmCoerceTokenAmountToString(_ewm->getRaw(), amount.u.tokenQuantity,
 																	   (BREthereumTokenQuantityUnit) unit));
 			}
 
@@ -101,10 +102,10 @@ namespace Elastos {
 		std::string EthereumTransfer::getFee(EthereumAmount::Unit unit) const {
 			assert(!EthereumAmount::isTokenUnit(unit));
 			int overflow = 0;
-			BREthereumEther fee = ewmTransferGetFee(GetEWM()->getRaw(), getRaw(), &overflow);
+			BREthereumEther fee = ewmTransferGetFee(_ewm->getRaw(), getRaw(), &overflow);
 			std::string feeString;
 			if (0 == overflow) {
-				feeString = GetCString(ewmCoerceEtherAmountToString(GetEWM()->getRaw(), fee,
+				feeString = GetCString(ewmCoerceEtherAmountToString(_ewm->getRaw(), fee,
 																	(BREthereumEtherUnit) unit));
 			}
 			return feeString;
@@ -116,44 +117,44 @@ namespace Elastos {
 
 		std::string EthereumTransfer::getGasPrice(EthereumAmount::Unit unit) const {
 			assert(!EthereumAmount::isTokenUnit(unit));
-			BREthereumGasPrice price = ewmTransferGetGasPrice(GetEWM()->getRaw(), getRaw(),
+			BREthereumGasPrice price = ewmTransferGetGasPrice(_ewm->getRaw(), getRaw(),
 															  (BREthereumEtherUnit) unit);
-			return GetCString(ewmCoerceEtherAmountToString(GetEWM()->getRaw(),
+			return GetCString(ewmCoerceEtherAmountToString(_ewm->getRaw(),
 														   price.etherPerGas,
 														   (BREthereumEtherUnit) unit));
 		}
 
 		uint64_t EthereumTransfer::getGasLimit() const {
-			BREthereumGas limit = ewmTransferGetGasLimit(GetEWM()->getRaw(), getRaw());
+			BREthereumGas limit = ewmTransferGetGasLimit(_ewm->getRaw(), getRaw());
 			return limit.amountOfGas;
 		}
 
 		uint64_t EthereumTransfer::getGasUsed() const {
-			BREthereumGas gas = ewmTransferGetGasUsed(GetEWM()->getRaw(), getRaw());
+			BREthereumGas gas = ewmTransferGetGasUsed(_ewm->getRaw(), getRaw());
 			return gas.amountOfGas;
 		}
 
 		// Nonce
 		uint64_t EthereumTransfer::getNonce() const {
-			return ewmTransferGetNonce(GetEWM()->getRaw(), getRaw());
+			return ewmTransferGetNonce(_ewm->getRaw(), getRaw());
 		}
 
 		// Block Number, Timestamp
 		uint64_t EthereumTransfer::getBlockNumber() const {
-			return ewmTransferGetBlockNumber(GetEWM()->getRaw(), getRaw());
+			return ewmTransferGetBlockNumber(_ewm->getRaw(), getRaw());
 		}
 
 		uint64_t EthereumTransfer::getBlockTimestamp() const {
-			return ewmTransferGetBlockTimestamp(GetEWM()->getRaw(), getRaw());
+			return ewmTransferGetBlockTimestamp(_ewm->getRaw(), getRaw());
 		}
 
 		uint64_t EthereumTransfer::getBlockConfirmations() const {
-			return ewmTransferGetBlockConfirmations(GetEWM()->getRaw(), getRaw());
+			return ewmTransferGetBlockConfirmations(_ewm->getRaw(), getRaw());
 		}
 
 		std::string EthereumTransfer::getErrorDescription() const {
 			std::string desc;
-			char *errorDescription = ewmTransferStatusGetError(GetEWM()->getRaw(), getRaw());
+			char *errorDescription = ewmTransferStatusGetError(_ewm->getRaw(), getRaw());
 			if (errorDescription != NULL)
 				desc = GetCString(errorDescription);
 

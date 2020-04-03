@@ -40,6 +40,33 @@ namespace Elastos {
 
 		}
 
+		std::string EthereumToken::getAddressLowerCase() const {
+			std::string address = tokenGetAddress(_token);
+			std::transform(address.begin(), address.end(), address.begin(),
+						   [](unsigned char c) { return std::tolower(c); });
+			return address;
+		}
+
+		std::string EthereumToken::getAddress() const {
+			return tokenGetAddress(_token);
+		}
+
+		std::string EthereumToken::getSymbol() const {
+			return tokenGetSymbol(_token);
+		}
+
+		std::string EthereumToken::getName() const {
+			return tokenGetName(_token);
+		}
+
+		std::string EthereumToken::getDescription() const {
+			return tokenGetDescription(_token);
+		}
+
+		int EthereumToken::getDecimals() {
+			return tokenGetDecimals(_token);
+		}
+
 		int EthereumToken::hashCode() {
 			std::hash<std::string> hash;
 			std::string addr = tokenGetAddress(_token);
@@ -47,7 +74,27 @@ namespace Elastos {
 		}
 
 		std::string EthereumToken::toString() const {
-			return std::string("EthereumToken{") + tokenGetSymbol(_token) + + "}";
+			return std::string("EthereumToken{") + tokenGetSymbol(_token) + +"}";
+		}
+
+		BREthereumToken EthereumToken::getRaw() const {
+			return _token;
+		}
+
+		std::vector<EthereumTokenPtr> EthereumToken::getTokenAll() const {
+			std::vector<EthereumTokenPtr> allTokens;
+			int count = tokenCount();
+			// A uint32_t array on x86 platforms - we *require* a long array
+			BREthereumToken *tokens = tokenGetAll();
+
+			for (int i = 0; i < count; ++i) {
+				EthereumTokenPtr token(new EthereumToken(tokens[i]));
+				allTokens.push_back(token);
+			}
+
+			free(tokens);
+
+			return allTokens;
 		}
 
 	}

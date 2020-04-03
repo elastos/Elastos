@@ -31,18 +31,110 @@
 #include "EthereumAccount.h"
 #include "EthereumNetwork.h"
 #include "EthereumToken.h"
+#include "EthereumTransfer.h"
 #include <ethereum/ewm/BREthereumWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
+// Default Gas Price (ETH in WEI)
+#define MAXIMUM_DEFAULT_GAS_PRICE 100000000000000L // 100 GWEI
+
+#define GAS_PRICE_1_GWEI    1000000000000L
+#define GAS_PRICE_2_GWEI    2000000000000L
+#define GAS_PRICE_4_GWEI    4000000000000L
+#define GAS_PRICE_10_GWEI  10000000000000L
+#define GAS_PRICE_20_GWEI  20000000000000L
+
 		class EthereumWallet : public ReferenceWithDefaultUnit {
-		protected:
-			EthereumWallet(const EthereumEWMPtr &ewm, BREthereumWallet wallet, const EthereumAccountPtr &account,
+		public:
+			// Constructors
+			EthereumWallet(EthereumEWM *ewm, BREthereumWallet wallet, const EthereumAccountPtr &account,
 						   const EthereumNetworkPtr &network);
 
-			EthereumWallet(const EthereumEWMPtr &ewm, BREthereumWallet wallet, const EthereumAccountPtr &account,
+			EthereumWallet(EthereumEWM *ewm, BREthereumWallet wallet, const EthereumAccountPtr &account,
 						   const EthereumNetworkPtr &network, const EthereumTokenPtr &token);
+
+			~EthereumWallet() override;
+
+		private:
+			BREthereumWallet getRaw() const;
+
+		public:
+			// Account
+			EthereumAccountPtr getAccount() const;
+
+			// Network
+			EthereumNetworkPtr getNetwork() const;
+
+			// Token
+			EthereumTokenPtr getToken() const;
+
+			bool walletHoldsEther() const;
+
+			std::string getSymbol() const;
+
+			// Default Gas Price (ETH in WEI)
+			uint64_t getDefaultGasPrice() const;
+
+			void setDefaultGasPrice(uint64_t gasPrice);
+
+			// Default Gas Limit (in 'gas')
+			uint64_t getDefaultGasLimit() const;
+
+			void setDefaultGasLimit(uint64_t gasLimit);
+
+			// Balance
+			std::string getBalance() const;
+
+			std::string getBalance(EthereumAmount::Unit unit) const;
+
+			// Estimate GasPrice and Gas
+			void estimateGasPrice();
+
+			void estimateGas(const EthereumTransferPtr &transaction);
+
+			// Transactions
+			std::string transferEstimatedFee(const std::string &amount, EthereumAmount::Unit amountUnit,
+											 EthereumAmount::Unit resultUnit) const;
+
+			std::string transferEstimatedFee(const std::string &amount) const;
+
+			EthereumTransferPtr createTransfer(const std::string &targetAddress, const std::string &amount,
+											   EthereumAmount::Unit amountUnit) const;
+
+			EthereumTransferPtr createTransferGeneric(const std::string &targetAddress,
+													  const std::string &amount, EthereumAmount::Unit amountUnit,
+													  const std::string &gasPrice, EthereumAmount::Unit gasPriceUnit,
+													  const std::string &gasLimit, const std::string &data) const;
+
+			void sign(EthereumTransferPtr &transaction, const std::string &paperKey) const;
+
+			void signWithPrivateKey(EthereumTransferPtr &transaction, const bytes_t &privateKey) const;
+
+			void submit(const EthereumTransferPtr &transaction);
+
+			std::vector<EthereumTransferPtr> getTransfers() const;
+
+		private:
+			BREthereumTransfer createRawTransaction(const std::string &targetAddress, const std::string &amount,
+													EthereumAmount::Unit unit) const;
+
+			BREthereumTransfer createRawTransactionGeneric(const std::string &to,
+														   const std::string &amount,
+														   EthereumAmount::Unit amountUnit,
+														   const std::string &gasPrice,
+														   EthereumAmount::Unit gasPriceUnit,
+														   const std::string &gasLimit,
+														   const std::string &data) const;
+
+			void signRawTransaction(BREthereumTransfer transaction, const std::string &paperKey) const;
+
+			void signRawTransactionWithPrivateKey(BREthereumTransfer transaction, const bytes_t &prvkey) const;
+
+			void submitRawTransaction(BREthereumTransfer transaction) const;
+
+			std::vector<EthereumTransferPtr> getRawTransactions() const;
 
 		private:
 			EthereumAccountPtr _account;

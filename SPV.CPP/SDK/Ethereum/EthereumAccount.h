@@ -38,7 +38,7 @@ namespace Elastos {
 
 		class EthereumAccount : public Reference {
 		public:
-			EthereumAccount(const EthereumEWMPtr &ewm, BREthereumAccount account);
+			EthereumAccount(EthereumEWM *ewm, BREthereumAccount account);
 
 			~EthereumAccount();
 
