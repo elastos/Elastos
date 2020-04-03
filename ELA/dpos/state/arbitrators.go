@@ -445,9 +445,8 @@ func (a *arbitrators) distributeDPOSReward(height uint32,
 	reward common.Fixed64) (roundReward map[common.Uint168]common.Fixed64,
 	change common.Fixed64, err error) {
 	var realDPOSReward common.Fixed64
-	if height >= a.chainParams.CRCommitteeStartHeight &&
-		a.crcChangedHeight > 0 {
-		roundReward, realDPOSReward, err = a.distributeWithNormalArbitratorsV(reward)
+	if height >= a.chainParams.CRCommitteeStartHeight+2*uint32(len(a.currentArbitrators)) {
+		roundReward, realDPOSReward, err = a.distributeWithNormalArbitratorsV(height, reward)
 	} else {
 		roundReward, realDPOSReward, err = a.distributeWithNormalArbitratorsV0(reward)
 	}
@@ -464,7 +463,7 @@ func (a *arbitrators) distributeDPOSReward(height uint32,
 	return
 }
 
-func (a *arbitrators) distributeWithNormalArbitratorsV(reward common.Fixed64) (
+func (a *arbitrators) distributeWithNormalArbitratorsV(height uint32, reward common.Fixed64) (
 	map[common.Uint168]common.Fixed64, common.Fixed64, error) {
 	if len(a.currentArbitrators) == 0 {
 		return nil, 0, errors.New("not found arbiters when " +
@@ -491,9 +490,7 @@ func (a *arbitrators) distributeWithNormalArbitratorsV(reward common.Fixed64) (
 		if _, ok := a.crcArbiters[ownerHash]; ok {
 			r = individualBlockConfirmReward
 			m, ok := arbiter.(*crcArbiter)
-			if !ok {
-				rewardHash = a.chainParams.CRCAddress
-			} else if m.crMember.MemberState != state.MemberElected {
+			if !ok || m.crMember.MemberState != state.MemberElected {
 				rewardHash = a.chainParams.DestroyELAAddress
 			} else {
 				pk := arbiter.GetOwnerPublicKey()
