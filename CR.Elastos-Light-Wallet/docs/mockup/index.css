@@ -58,6 +58,10 @@ html {
   width: 200px;
 }
 
+.w150px {
+  width: 150px;
+}
+
 .w100px {
   width: 100px;
 }
@@ -92,6 +96,10 @@ html {
 
 .h50px {
   height: 50px;
+}
+
+.h20px {
+  height: 20px;
 }
 
 .exit_link {

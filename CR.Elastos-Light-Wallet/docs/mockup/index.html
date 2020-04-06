@@ -17,6 +17,20 @@
     </table>
     <table class="bordered w750h520px">
       <tr>
+        <td class="bordered w250px h20px ta_center va_top">
+        </td>
+        <td class="bordered w250px h20px ta_center va_top">
+        </td>
+        <td class="bordered w250px h20px ta_center va_top">
+          <button style="background-color:black">
+            <img src="menu.svg" />
+          </button>
+          <button style="background-color:black">
+            <img src="refresh-ccw.svg" />
+          </button>
+        </td>
+      </tr>
+      <tr>
         <td class="bordered w250px h200px ta_center va_top">
           <div id="branding" class="bordered w250px h90px bgcolor_black_hover">
             Branding
@@ -24,10 +38,10 @@
           <div id="balance" class="bordered w250px h90px bgcolor_black_hover position_relative">
             <table>
               <tr>
-                <td class="bordered w50px">
+                <td class="w50px">
                   <a class="rotate_n90 exit_link" target="_blank" href="https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd">Balance</a>
                 </td>
-                <td class="bordered w100px ta_left">
+                <td class="w100px ta_left">
                   <div style="font-size: 24px;">USD</div>
                   <div style="font-size: 24px;">Y</div>
                   <span class="color_orange">X</span>
@@ -43,16 +57,42 @@
           </div>
         </td>
         <td class="bordered w200px h200px ta_center va_top">
-          <div id="receive" class="bordered w200px h200px bgcolor_black_hover">
+          <div id="receive" class="bordered w200px h100px bgcolor_black_hover">
             Receive
+            <div class="ta_left">
+              <div style="font-size: 12px;">Address</div>
+              <button style="background-color:black">
+                <img src="copy.svg" />
+              </button>
+              <span style="font-size: 12px;">ADDRESS</span>
+            </div>
+          </div>
+          <div id="receive" class="bordered w200px h100px bgcolor_black_hover">
+            <div class="ta_left">
+              <div style="font-size: 12px;">Ledger</div>
+              <button style="background-color:black">
+                <img src="smartphone.svg" />
+              </button>
+              <span style="font-size: 12px;">Verify Address on Ledger</span>
+            </div>
           </div>
         </td>
       </tr>
       <tr>
         <td class="bordered w250px h200px ta_center va_top">
           <div id="staking" class="bordered w250px h110px bgcolor_black_hover position_relative">
-            <div class="rotate_n90">Staking</div>
-            <div class="color_orange">Vote Now</div>
+            <table>
+              <tr>
+                <td class="w50px">
+                  <div class="rotate_n90">Staking</div>
+                </td>
+                <td class="w150px ta_left">
+                  <span style="font-size: 12px;">Z</span>
+                  <span style="font-size: 12px;">Candidates Total</span>
+                  <div style="font-size: 24px;">Vote Now</div>
+                </td>
+              </tr>
+            </table>
           </div>
           <div id="news" class="bordered w250px h110px bgcolor_black_hover">
             <a class="exit_link" target="_blank" href="https://news.elastos.org/feed/">News</a>
@@ -60,11 +100,11 @@
           <div class="bordered w250px h50px">
             <table class="w100pct">
               <tr>
-                <td id="facebook" class="bordered w50px h50px ta_center va_bottom bgcolor_black_hover">
-                  <a class="exit_link" target="_blank" href="https://www.facebook.com/elastosorg/">Facebook</a>
+                <td id="facebook" class="w50px h50px ta_center va_bottom bgcolor_black_hover">
+                  <a class="exit_link" target="_blank" href="https://www.facebook.com/elastosorg/"><img src="facebook.svg" /></a>
                 </td>
-                <td id="twitter" class="bordered w50px h50px ta_center va_bottom bgcolor_black_hover">
-                  <a class="exit_link" target="_blank" href="https://twitter.com/Elastos_org">Twitter</a>
+                <td id="twitter" class="w50px h50px ta_center va_bottom bgcolor_black_hover">
+                  <a class="exit_link" target="_blank" href="https://twitter.com/Elastos_org"><img src="twitter.svg" /></a>
                 </td>
                 <td id="logout" class="bordered w100px h50px ta_center va_bottom bgcolor_black_hover">
                   Logout
