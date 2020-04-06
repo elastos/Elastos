@@ -37,6 +37,14 @@ html {
   height: 520px;
 }
 
+.w500px {
+  width: 500px;
+}
+
+.w400px {
+  width: 400px;  
+}
+
 .w250px {
   width: 250px;
 }
@@ -62,7 +70,7 @@ html {
 }
 
 .h300px {
-  height: 300px;  
+  height: 300px;
 }
 
 .h200px {
@@ -71,6 +79,10 @@ html {
 
 .h110px {
   height: 110px;
+}
+
+.h90px {
+  height: 90px;
 }
 
 .h50px {
