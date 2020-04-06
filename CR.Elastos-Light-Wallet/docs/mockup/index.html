@@ -1,5 +1,5 @@
 <!DOCTYPE html5>
-<html>
+<html class="color_white bgcolor_black">
 <meta charset="utf-8" />
 
 <head>
@@ -18,42 +18,44 @@
     <table class="bordered w750h520px">
       <tr>
         <td class="bordered w250px h200px ta_center va_top">
-          <div class="bordered w250px h90px">
+          <div id="branding" class="bordered w250px h90px bgcolor_black_hover">
             Branding
           </div>
-          <div class="bordered w250px h90px">
-            Balance
+          <div id="balance" class="bordered w250px h90px bgcolor_black_hover">
+            <a class="exit_link" target="_blank" href="https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd">Balance</a>
+            <div style="font-size: 18px;">Y USD</div>
+            <div class="color_orange">X ELA</div>
           </div>
         </td>
         <td class="bordered w200px h200px ta_center va_top">
-          <div class="bordered w200px h200px">
+          <div id="send" class="bordered w200px h200px bgcolor_black_hover">
             Send
           </div>
         </td>
         <td class="bordered w200px h200px ta_center va_top">
-          <div class="bordered w200px h200px">
+          <div id="receive" class="bordered w200px h200px bgcolor_black_hover">
             Receive
           </div>
         </td>
       </tr>
       <tr>
         <td class="bordered w250px h200px ta_center va_top">
-          <div class="bordered w250px h110px">
+          <div id="staking" class="bordered w250px h110px bgcolor_black_hover">
             Staking
           </div>
-          <div class="bordered w250px h110px">
-            News
+          <div id="news" class="bordered w250px h110px bgcolor_black_hover">
+            <a class="exit_link" target="_blank" href="https://news.elastos.org/feed/">News</a>
           </div>
           <div class="bordered w250px h50px">
             <table class="w100pct">
               <tr>
-                <td class="bordered w50px h50px ta_center va_bottom">
-                  Facebook
+                <td id="facebook" class="bordered w50px h50px ta_center va_bottom bgcolor_black_hover">
+                  <a class="exit_link" target="_blank" href="https://www.facebook.com/elastosorg/">Facebook</a>
                 </td>
-                <td class="bordered w50px h50px ta_center va_bottom">
-                  Twitter
+                <td id="twitter" class="bordered w50px h50px ta_center va_bottom bgcolor_black_hover">
+                  <a class="exit_link" target="_blank" href="https://twitter.com/Elastos_org">Twitter</a>
                 </td>
-                <td class="bordered w100px h50px ta_center va_bottom">
+                <td id="logout" class="bordered w100px h50px ta_center va_bottom bgcolor_black_hover">
                   Logout
                 </td>
               </tr>
@@ -61,7 +63,7 @@
           </div>
         </td>
         <td colspan="2" class="bordered w400px h200px ta_center va_top">
-          <div class="bordered w400px h300px">
+          <div class="bordered w400px h300px bgcolor_black_hover">
             Transactions
           </div>
         </td>

@@ -30,6 +30,7 @@ html {
 .bordered {
   border: solid;
   border-width: 1px;
+  border-color: gray;
 }
 
 .w750h520px {
@@ -42,7 +43,7 @@ html {
 }
 
 .w400px {
-  width: 400px;  
+  width: 400px;
 }
 
 .w250px {
@@ -87,4 +88,41 @@ html {
 
 .h50px {
   height: 50px;
+}
+
+.exit_link {
+  text-decoration: none;
+  color: white;
+}
+
+.exit_link:visited {
+  color: white;
+}
+
+.exit_link:active {
+  color: #AAA;
+}
+
+.exit_link:hover {
+  color: #AAA;
+}
+
+.color_orange {
+  color: orange;
+}
+
+.color_white {
+  color: white;
+}
+
+.bgcolor_black {
+  background-color: black;
+}
+
+.bgcolor_black_hover {
+  background-color: black;
+}
+
+.bgcolor_black_hover:hover {
+  background-color: #333;
 }
