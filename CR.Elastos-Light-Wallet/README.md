@@ -64,8 +64,3 @@ don't forget testnet and mainnet config files are in github at: https://github.c
 2. add price feed
     price feed
         https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd
-
-3. add mnemonics.
-    https://elaphant.app/mnemonic.html
-
-    0000000000000000000000000000000000000000000000000000000000000000
