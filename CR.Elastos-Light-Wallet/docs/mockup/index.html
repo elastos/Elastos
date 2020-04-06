@@ -21,10 +21,20 @@
           <div id="branding" class="bordered w250px h90px bgcolor_black_hover">
             Branding
           </div>
-          <div id="balance" class="bordered w250px h90px bgcolor_black_hover">
-            <a class="exit_link" target="_blank" href="https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd">Balance</a>
-            <div style="font-size: 18px;">Y USD</div>
-            <div class="color_orange">X ELA</div>
+          <div id="balance" class="bordered w250px h90px bgcolor_black_hover position_relative">
+            <table>
+              <tr>
+                <td class="bordered w50px">
+                  <a class="rotate_n90 exit_link" target="_blank" href="https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd">Balance</a>
+                </td>
+                <td class="bordered w100px ta_left">
+                  <div style="font-size: 24px;">USD</div>
+                  <div style="font-size: 24px;">Y</div>
+                  <span class="color_orange">X</span>
+                  <span class="color_orange">ELA</span>
+                </td>
+              </tr>
+            </table>
           </div>
         </td>
         <td class="bordered w200px h200px ta_center va_top">
@@ -40,8 +50,9 @@
       </tr>
       <tr>
         <td class="bordered w250px h200px ta_center va_top">
-          <div id="staking" class="bordered w250px h110px bgcolor_black_hover">
-            Staking
+          <div id="staking" class="bordered w250px h110px bgcolor_black_hover position_relative">
+            <div class="rotate_n90">Staking</div>
+            <div class="color_orange">Vote Now</div>
           </div>
           <div id="news" class="bordered w250px h110px bgcolor_black_hover">
             <a class="exit_link" target="_blank" href="https://news.elastos.org/feed/">News</a>

@@ -1,6 +1,6 @@
 html {
   font-family: 'Open Sans', sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   overflow-y: scroll;
   text-align: center;
 }
@@ -13,6 +13,10 @@ html {
 
 .display_inline_block {
   display: inline-block;
+}
+
+.ta_left {
+  text-align: left;
 }
 
 .ta_center {
@@ -125,4 +129,16 @@ html {
 
 .bgcolor_black_hover:hover {
   background-color: #333;
+}
+
+.position_relative {
+  position: relative;
+}
+
+.rotate_n90 {
+  position: absolute;
+  top: 75px;
+  left: 0px;
+  transform-origin: 0px 0px;
+  transform: rotate(-90deg);
 }
