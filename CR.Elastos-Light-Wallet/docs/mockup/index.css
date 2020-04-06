@@ -1,0 +1,78 @@
+html {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  overflow-y: scroll;
+  text-align: center;
+}
+
+.background {
+  background-image: url("background.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.display_inline_block {
+  display: inline-block;
+}
+
+.ta_center {
+  text-align: center;
+}
+
+.va_top {
+  vertical-align: top;
+}
+
+.va_bottom {
+  vertical-align: bottom;
+}
+
+.bordered {
+  border: solid;
+  border-width: 1px;
+}
+
+.w750h520px {
+  width: 750px;
+  height: 520px;
+}
+
+.w250px {
+  width: 250px;
+}
+
+.w200px {
+  width: 200px;
+}
+
+.w100px {
+  width: 100px;
+}
+
+.w50px {
+  width: 50px;
+}
+
+.h520px {
+  height: 520px;
+}
+
+.h400px {
+  height: 400px;
+}
+
+.h300px {
+  height: 300px;  
+}
+
+.h200px {
+  height: 200px;
+}
+
+.h110px {
+  height: 110px;
+}
+
+.h50px {
+  height: 50px;
+}
