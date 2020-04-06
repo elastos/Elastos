@@ -42,6 +42,9 @@ class CredentialMeta: Metadata {
     }
 
     override func isEmpty() -> Bool {
-        return aliasName.isEmpty ? false : super.isEmpty()
+        if !aliasName.isEmpty {
+            return false
+        }
+        return super.isEmpty()
     }
 }

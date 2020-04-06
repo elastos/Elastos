@@ -8,7 +8,6 @@ extension Int {
             //        return Int(x)
             // [min, max）
             let y = arc4random() % UInt32(max) + UInt32(min)
-            print(Int(y))
             return Int(y)
     }
     

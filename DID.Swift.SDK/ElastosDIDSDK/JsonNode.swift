@@ -178,7 +178,7 @@ public class JsonNode {
     
     func put(forKey key: String, value: String) {
         
-        guard self.node is [String: String] else {
+        guard self.node is [String: JsonNode] else {
             return
         }
         

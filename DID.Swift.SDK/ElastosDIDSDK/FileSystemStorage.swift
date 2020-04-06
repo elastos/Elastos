@@ -239,6 +239,14 @@ public class FileSystemStorage: DIDStorage {
         return try openPublicIdentityFile(false)
     }
 
+    private func openMnemonicFile() throws -> FileHandle {
+        return try openMnemonicFile(false)
+    }
+
+    private func openMnemonicFile(_ forWrite: Bool) throws -> FileHandle {
+        return try openFileHandle(forWrite, Constants.PRIVATE_DIR, Constants.MNEMONIC_FILE)
+    }
+
     private func openPublicIdentityFile(_ forWrite: Bool) throws -> FileHandle {
         return try openFileHandle(forWrite, Constants.PRIVATE_DIR, Constants.HDPUBKEY_FILE)
     }
@@ -364,17 +372,17 @@ public class FileSystemStorage: DIDStorage {
         }
     }
 
-    private func openMnemonicFile(_ forWrite: Bool) throws -> FileHandle {
-        return try openFileHandle(forWrite, Constants.PRIVATE_DIR, Constants.MNEMONIC_FILE)
-    }
-
-    private func openMnemonicFile() throws -> FileHandle {
-        return try openMnemonicFile(false)
-    }
-
     func containMnemonic() -> Bool {
-        // TODO:
-        return false
+        do {
+            let handle = try openMnemonicFile()
+            defer {
+                handle.closeFile()
+            }
+
+            return handle.readDataToEndOfFile().count > 0
+        } catch {
+            return false
+        }
     }
 
     func storeMnemonic(_ mnemonic: String) throws {
@@ -627,7 +635,7 @@ public class FileSystemStorage: DIDStorage {
     func containsCredentials(_ did: DID) -> Bool {
         do {
             let targetPath = _rootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR
-            let exit = try fileExists(targetPath)
+            let exit = try dirExists(targetPath)
             guard exit else {
                 return false
             }

@@ -1,6 +1,6 @@
 import Foundation
 
-class IDTransactionInfo {
+class IDTransactionInfo: DIDTransaction {
     private var _transactionId: String
     private var _timestamp: Date
     private var _request: IDChainRequest
@@ -9,6 +9,26 @@ class IDTransactionInfo {
         self._transactionId = transactionId;
         self._timestamp = timestamp;
         self._request = request;
+    }
+
+    public func getDid() -> DID {
+        return request.did!
+    }
+
+    public func getTransactionId() -> String {
+        return self.transactionId
+    }
+
+    public func getTimestamp() -> Date {
+        return self.timestamp
+    }
+
+    public func getOperation() -> IDChainRequestOperation {
+        return request.operation
+    }
+
+    public func getDocument() -> DIDDocument {
+        return request.document!
     }
 
     var transactionId: String {

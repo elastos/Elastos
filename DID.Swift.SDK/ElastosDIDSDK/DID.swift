@@ -132,15 +132,20 @@ public class DID {
         return resolveAsync(false)
     }
 
-    /*
+
     public func resolveHistory() throws -> DIDHistory {
-        // TODO:
+        return try DIDBackend.resolveHistory(self)
     }
 
     public func resolveHistoryAsync() -> Promise<DIDHistory> {
-        // TODO:
+        return Promise<DIDHistory> { resolver in
+            do {
+                resolver.fulfill(try resolveHistory())
+            } catch let error  {
+                resolver.reject(error)
+            }
+        }
     }
-    */
 }
 
 extension DID: CustomStringConvertible {

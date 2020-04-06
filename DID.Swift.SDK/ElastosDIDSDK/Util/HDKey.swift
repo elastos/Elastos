@@ -7,12 +7,12 @@ class HDKey: NSObject {
     static let SEED_BYTES: Int = 64
     static let PUBLICKEY_BASE58_BYTES: Int = 64
     
-    private var chdKey: UnsafeMutablePointer<CHDKey>
+    private var chdKey: UnsafePointer<CHDKey>
 
     class DerivedKey {
-        private var cderivedKey: UnsafeMutablePointer<CDerivedKey>
+        private var cderivedKey: UnsafePointer<CDerivedKey>
 
-        init(_ chdkey: UnsafeMutablePointer<CHDKey>, _ index: Int) {
+        init(_ chdkey: UnsafePointer<CHDKey>, _ index: Int) {
             let cderivedKey: UnsafeMutablePointer<CDerivedKey> = UnsafeMutablePointer<CDerivedKey>.allocate(capacity: 66)
             self.cderivedKey = HDKey_GetDerivedKey(chdkey, Int32(index), cderivedKey)
         }
@@ -80,7 +80,7 @@ class HDKey: NSObject {
         }
     }
 
-    init(_ chdKey: UnsafeMutablePointer<CHDKey>) {
+    init(_ chdKey: UnsafePointer<CHDKey>) {
         self.chdKey = chdKey
     }
 

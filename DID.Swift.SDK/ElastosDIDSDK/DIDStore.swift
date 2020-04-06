@@ -1605,8 +1605,11 @@ public class DIDStore: NSObject {
         if storage.containsCredentials(did) {
             generator.writeFieldName("credential")
             generator.writeStartArray()
-            let ids = try listCredentials(for: did)
-            
+            var ids = try listCredentials(for: did)
+            ids.sort { (a, b) -> Bool in
+                let compareResult = a.toString().compare(b.toString())
+                return compareResult == ComparisonResult.orderedAscending
+            }
             for id in ids {
                 var vc: VerifiableCredential? = nil
                 do {
@@ -1633,14 +1636,18 @@ public class DIDStore: NSObject {
             generator.writeFieldName("privatekey")
             generator.writeStartArray()
             
-            let pks: Array<PublicKey> = doc!.publicKeys()
+            var pks: Array<PublicKey> = doc!.publicKeys()
+            pks.sort { (a, b) -> Bool in
+                let compareResult = a.getId().toString().compare(b.getId().toString())
+                return compareResult == ComparisonResult.orderedAscending
+            }
             for pk in pks {
                 let id = pk.getId()
                 if storage.containsPrivateKey(did, id) {
                     print("Exporting private key {}...\(id.toString())")
                     var csk: String = try storage.loadPrivateKey(did, id)
                     let cskData: Data = try DIDStore.decryptFromBase64(csk, storePassword)
-                    csk = try DIDStore.encryptToBase64(cskData, storePassword)
+                    csk = try DIDStore.encryptToBase64(cskData, password)
                     
                     generator.writeStartObject()
                     value = id.toString()
@@ -1654,6 +1661,7 @@ public class DIDStore: NSObject {
                     generator.writeEndObject()
                 }
             }
+            generator.writeEndArray()
         }
 
         // Metadata
@@ -1664,7 +1672,7 @@ public class DIDStore: NSObject {
             if didMeta != nil {
                 generator.writeFieldName("document")
                 value = didMeta!.toString()
-                generator.writeString(value)
+                generator.writeRawValue(value)
                 bytes = [UInt8](value.description.data(using: .utf8)!)
                 sha256.update(&bytes)
             }
@@ -1682,7 +1690,7 @@ public class DIDStore: NSObject {
                     
                     value = v.toString()
                     generator.writeFieldName("metadata");
-                    generator.writeString(value)
+                    generator.writeRawValue(value)
                     bytes = [UInt8](value.description.data(using: .utf8)!)
                     sha256.update(&bytes)
                     generator.writeEndObject()
@@ -1694,15 +1702,10 @@ public class DIDStore: NSObject {
         
         // Fingerprint
         let result = sha256.finalize()
-        let capacity = result.count * 3
-        let cFing = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
-        var dataFing: Data = Data(bytes: result, count: result.count)
-        let cFingerprint: UnsafeMutablePointer<UInt8> = dataFing.withUnsafeMutableBytes { (fing: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
-            return fing
-        }
-        let re = base64_url_encode(cFing, cFingerprint, dataFing.count)
-        cFing[re] = 0
-        let fingerprint = String(cString: cFing)
+
+        let dataFing: Data = Data(bytes: result, count: result.count)
+        let fingerprint = try DIDStore.encryptToBase64(dataFing, storePassword)
+
         generator.writeStringField("fingerprint", fingerprint)
         generator.writeEndObject()
     }
@@ -1759,11 +1762,11 @@ public class DIDStore: NSObject {
         //bool ref hit
         options = JsonSerializer.Options()
             .withHint("export type")
-        let type = try serializer.getString("type", options)
-        guard type == DID_EXPORT else {
+        value = try serializer.getString("type", options)
+        guard value == DID_EXPORT else {
             throw DIDError.didStoreError("Invalid export data, unknown type.")
         }
-        bytes = [UInt8](type.data(using: .utf8)!)
+        bytes = [UInt8](value.data(using: .utf8)!)
         sha256.update(&bytes)
         
         // DID
@@ -1786,13 +1789,13 @@ public class DIDStore: NSObject {
         
         // Document
         var node = root.get(forKey: "document")
-        guard node?.asString() != nil else {
+        guard node?.toString() != nil else {
             throw DIDError.didStoreError("Missing DID document in the export data")
         }
         
         var doc: DIDDocument? = nil
         do {
-            doc = try DIDDocument.convertToDIDDocument(fromJson: node!.asString()!)
+            doc = try DIDDocument.convertToDIDDocument(fromJson: node!)
         } catch  {
             throw DIDError.didStoreError("Invalid export data.\(error)")
         }
@@ -1822,7 +1825,7 @@ public class DIDStore: NSObject {
                     print("Credential {} not blongs to {} \(node) \(did.description)")
                     throw DIDError.didStoreError("Invalid credential in the export data.")
                 }
-                value = vc!.toString()
+                value = vc!.toString(true)
                 bytes = [UInt8](value.data(using: .utf8)!)
                 sha256.update(&bytes)
                 vcs[vc!.getId()] = vc
@@ -1843,13 +1846,13 @@ public class DIDStore: NSObject {
                     .withRef(did)
                     .withHint("privatekey id")
                 let id = try serializer.getDIDURL("id", options)
-                value = id!.description
+                value = id!.toString()
                 bytes = [UInt8](value.data(using: .utf8)!)
                 sha256.update(&bytes)
                 options = JsonSerializer.Options()
                     .withHint("privatekey")
                 var csk = try serializer.getString("key", options)
-                value = csk.description
+                value = csk
                 bytes = [UInt8](value.data(using: .utf8)!)
                 sha256.update(&bytes)
                 let sk: Data = try DIDStore.decryptFromBase64(csk, password)
@@ -1862,8 +1865,8 @@ public class DIDStore: NSObject {
         node = root.get(forKey: "metadata")
         if node != nil {
             var metaNode = node?.get(forKey: "document")
-            if metaNode != nil && metaNode!.asString() != nil {
-                let meta: DIDMeta = try DIDMeta.fromJson(metaNode!.asString()!, DIDMeta.self)
+            if metaNode != nil && metaNode!.toString() != "" {
+                let meta: DIDMeta = try DIDMeta.fromJson(metaNode!, DIDMeta.self)
                 doc!.setMeta(meta)
                 value = meta.description
                 bytes = [UInt8](value.data(using: .utf8)!)
@@ -1885,7 +1888,7 @@ public class DIDStore: NSObject {
                     value = id!.description
                     bytes = [UInt8](value.data(using: .utf8)!)
                     sha256.update(&bytes)
-                    let meta = try CredentialMeta.fromJson(dic.get(forKey: "metadata")!.asString()!, CredentialMeta.self)
+                    let meta = try CredentialMeta.fromJson(dic.get(forKey: "metadata")!.toString(), CredentialMeta.self)
                     value = meta.description
                     bytes = [UInt8](value.data(using: .utf8)!)
                     sha256.update(&bytes)
@@ -1906,15 +1909,9 @@ public class DIDStore: NSObject {
         }
         let refFingerprint = node?.asString()
         let result = sha256.finalize()
-        let capacity = result.count * 3
-        let cFing = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
-        var dateFing: Data = Data(bytes: result, count: result.count)
-        let cFingerprint: UnsafeMutablePointer<UInt8> = dateFing.withUnsafeMutableBytes { (fing: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
-            return fing
-        }
-        let re = base64_url_encode(cFing, cFingerprint, dateFing.count)
-        cFing[re] = 0
-        let fingerprint = String(cString: cFing)
+        let dataFing: Data = Data(bytes: result, count: result.count)
+        let fingerprint = try DIDStore.encryptToBase64(dataFing, storePassword)
+
         guard fingerprint == refFingerprint else {
             throw DIDError.didStoreError("Invalid export data, the fingerprint mismatch.")
         }
@@ -2090,7 +2087,7 @@ public class DIDStore: NSObject {
         bytes = [UInt8](encryptedSeed.data(using: .utf8)!)
         sha256.update(&bytes)
         
-        plain = try DIDStore.decryptFromBase64(password, encryptedSeed)
+        plain = try DIDStore.decryptFromBase64(encryptedSeed, password)
         encryptedSeed = try DIDStore.encryptToBase64(plain, storePassword)
         
         // Key.pub
@@ -2161,7 +2158,6 @@ public class DIDStore: NSObject {
     public func importPrivateIdentity(from handle: FileHandle,
                                    using password: String,
                                     storePassword: String) throws {
-        handle.seekToEndOfFile()
         let data = handle.readDataToEndOfFile()
         try importPrivateIdentity(from: data, using: password, storePassword: storePassword)
     }
@@ -2235,7 +2231,6 @@ public class DIDStore: NSObject {
     public func importStore(from handle: FileHandle,
                              _ password: String,
                         _ storePassword: String) throws {
-        handle.seekToEndOfFile()
         let data = handle.readDataToEndOfFile()
         let dic = try JSONSerialization.jsonObject(with: data,options: JSONSerialization.ReadingOptions.mutableContainers) as? [String: Any]
         guard dic != nil else {
@@ -2249,11 +2244,11 @@ public class DIDStore: NSObject {
         }
         try dic!.forEach{ key, value in
             if key == "privateIdentity" {
-                let node = JsonNode(value)
+                let node = JsonNode(dic as Any)
                 try importPrivateIdentity(node, password, storePassword)
             }
             else {
-               let node = JsonNode(value)
+                let node = JsonNode(dic as Any)
                 try importDid(node, password, storePassword)
             }
         }

@@ -196,14 +196,14 @@ public class DIDBackend {
         return requestId
     }
 
-    private class func resolveFromBackend(_ did: DID) throws -> ResolveResult {
+    private class func resolveFromBackend(_ did: DID, _ all: Bool) throws -> ResolveResult {
         let requestId = generateRequestId()
 
         guard let _ = DIDBackend.resolver else {
             throw DIDError.didResolveError("DID resolver not initialized")
         }
 
-        let data = try DIDBackend.resolver!.resolve(requestId, did.toString(), false)
+        let data = try DIDBackend.resolver!.resolve(requestId, did.toString(), all)
         let dict: Dictionary<String, Any>?
         do {
             dict = try JSONSerialization.jsonObject(with: data, options: []) as? Dictionary<String, Any>
@@ -245,11 +245,15 @@ public class DIDBackend {
         return result
     }
 
-    /*
-     class resolveHistory(_ did: DID) throws -> DIDHistory {
-     // TODO:
+
+     class func resolveHistory(_ did: DID) throws -> DIDHistory {
+        print("Resolving {}...\(did.toString())")
+        let rr = try resolveFromBackend(did, true)
+        guard rr.status != ResolveResultStatus.STATUS_NOT_FOUND else {
+            throw DIDError.didResolveError()
+        }
+        return rr
      }
-     */
     
     class func resolve(_ did: DID, _ force: Bool) throws -> DIDDocument? {
         Log.i(TAG, "Resolving {\(did.toString())} ...")
@@ -261,7 +265,7 @@ public class DIDBackend {
         }
 
         if  result == nil {
-            result = try resolveFromBackend(did)
+            result = try resolveFromBackend(did, false)
         }
 
         switch result!.status {

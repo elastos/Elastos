@@ -39,21 +39,21 @@ internal func HDKey_MnemonicIsValid(_ mnemonic: UnsafePointer<Int8>, _ language:
 
 @_silgen_name("HDKey_FromMnemonic")
 internal func HDKey_FromMnemonic(_ mmemonic: UnsafePointer<Int8>, _ passphrase: UnsafePointer<Int8>, _ language: UnsafePointer<Int8>,_ hdkey: UnsafeMutablePointer<CHDKey>!
-) ->  UnsafeMutablePointer<CHDKey>
+) ->  UnsafePointer<CHDKey>
 
 @_silgen_name("HDKey_FromSeed")
 internal func HDKey_FromSeed(_ seed: UnsafePointer<UInt8>, _ size: Int32, _ hdkey: UnsafeMutablePointer<CHDKey>!
-) ->  UnsafeMutablePointer<CHDKey>
+) ->  UnsafePointer<CHDKey>
 
 @_silgen_name("HDKey_FromExtendedKey")
 internal func HDKey_FromExtendedKey(_ extendedkey: UnsafePointer<UInt8>, _ size: Int32, _ hdkey: UnsafeMutablePointer<CHDKey>!
-) ->  UnsafeMutablePointer<CHDKey>
+) ->  UnsafePointer<CHDKey>
 
 @_silgen_name("HDKey_SerializePrv")
-internal func HDKey_SerializePrv(_ hdkey: UnsafeMutablePointer<CHDKey>, _ extendedkey: UnsafeMutablePointer<UInt8>, _ size: Int32) -> Int32
+internal func HDKey_SerializePrv(_ hdkey: UnsafePointer<CHDKey>, _ extendedkey: UnsafeMutablePointer<UInt8>, _ size: Int32) -> Int32
 
 @_silgen_name("HDKey_SerializePrv")
-internal func HDKey_SerializePub(_ hdkey: UnsafeMutablePointer<CHDKey>, _ extendedkey: UnsafeMutablePointer<UInt8>, _ size: Int32) -> Int32
+internal func HDKey_SerializePub(_ hdkey: UnsafePointer<CHDKey>, _ extendedkey: UnsafeMutablePointer<UInt8>, _ size: Int32) -> Int32
 
 @_silgen_name("HDKey_Wipe")
 internal func HDKey_Wipe(_ hdkey: UnsafeMutablePointer<CHDKey>)
@@ -64,22 +64,22 @@ internal func HDKey_PublicKey2Address(_ publickey: UnsafeMutablePointer<UInt8>,
                                       _ len: Int32) -> UnsafePointer<Int8>!
 
 @_silgen_name("HDKey_GetDerivedKey")
-internal func HDKey_GetDerivedKey(_ hdkey: UnsafeMutablePointer<CHDKey>,
+internal func HDKey_GetDerivedKey(_ hdkey: UnsafePointer<CHDKey>,
                                   _ index: Int32,
-                                  _ derivedkey: UnsafeMutablePointer<CDerivedKey>) -> UnsafeMutablePointer<CDerivedKey>
+                                  _ derivedkey: UnsafeMutablePointer<CDerivedKey>) -> UnsafePointer<CDerivedKey>
 
 @_silgen_name("DerivedKey_GetPublicKey")
-internal func DerivedKey_GetPublicKey(_ derivedkey: UnsafeMutablePointer<CDerivedKey>) -> UnsafeMutablePointer<UInt8>
+internal func DerivedKey_GetPublicKey(_ derivedkey: UnsafePointer<CDerivedKey>) -> UnsafePointer<UInt8>
 
 @_silgen_name("DerivedKey_GetPublicKeyBase58")
-internal func DerivedKey_GetPublicKeyBase58(_ derivedkey: UnsafeMutablePointer<CDerivedKey>, _ base: UnsafeMutablePointer<Int8>, _ size: Int32) -> UnsafePointer<Int8>
+internal func DerivedKey_GetPublicKeyBase58(_ derivedkey: UnsafePointer<CDerivedKey>, _ base: UnsafePointer<Int8>, _ size: Int32) -> UnsafePointer<Int8>
 
 @_silgen_name("DerivedKey_GetPrivateKey")
-internal func DerivedKey_GetPrivateKey(_ derivedkey: UnsafeMutablePointer<CDerivedKey>) -> UnsafeMutablePointer<UInt8>
+internal func DerivedKey_GetPrivateKey(_ derivedkey: UnsafePointer<CDerivedKey>) -> UnsafePointer<UInt8>
 
 @_silgen_name("DerivedKey_GetAddress")
-internal func DerivedKey_GetAddress(_ derivedkey: UnsafeMutablePointer<CDerivedKey>) -> UnsafePointer<Int8>!
+internal func DerivedKey_GetAddress(_ derivedkey: UnsafePointer<CDerivedKey>) -> UnsafePointer<Int8>!
 
 @_silgen_name("DerivedKey_Wipe")
-internal func DerivedKey_Wipe(_ hdkey: UnsafeMutablePointer<CDerivedKey>)
+internal func DerivedKey_Wipe(_ hdkey: UnsafePointer<CDerivedKey>)
 

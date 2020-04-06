@@ -1,13 +1,29 @@
 import Foundation
 
-public class ResolveResult {
-    private var _did: DID!
-    private var _status: ResolveResultStatus
-    private var _idtransactionInfos: [IDTransactionInfo] = []
-    
+public class ResolveResult: DIDHistory{
+    var _did: DID!
+    var _status: ResolveResultStatus
+    var _idtransactionInfos: [IDTransactionInfo] = []
+
     init(_ did: DID, _ status: Int) {
         self._did = did
         self._status = ResolveResultStatus(rawValue: status)!
+    }
+
+    public func getDid() -> DID {
+        return _did
+    }
+
+    public func getsStatus() -> ResolveResultStatus {
+        return _status
+    }
+
+    public func getAllTransactions() -> [DIDTransaction] {
+        return _idtransactionInfos
+    }
+
+    public func getTransactionCount() -> Int {
+        return _idtransactionInfos.count
     }
 
     var did: DID {

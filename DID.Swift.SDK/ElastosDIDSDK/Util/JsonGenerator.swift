@@ -141,6 +141,19 @@ class JsonGenerator {
         pushState(.Field)
     }
 
+    func writeRawValue(_ value: String) {
+        if isSticky() {
+            buffer.append(JsonGenerator.COMMA)
+        }
+
+        buffer.append(value)
+
+        if getState() == .Field {
+            _ = popState()
+        } else {
+            setSticky()
+        }
+    }
     func writeString(_ value: String) {
         if isSticky() {
             buffer.append(JsonGenerator.COMMA)

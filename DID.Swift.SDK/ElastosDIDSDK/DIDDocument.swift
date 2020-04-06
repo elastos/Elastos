@@ -871,6 +871,13 @@ public class DIDDocument {
         }
     }
 
+    class func convertToDIDDocument(fromJson: JsonNode) throws -> DIDDocument {
+        let doc = DIDDocument()
+        try doc.fromJson(fromJson)
+
+        return doc
+    }
+
     public class func convertToDIDDocument(fromData data: Data) throws -> DIDDocument {
         guard !data.isEmpty else {
             throw DIDError.illegalArgument()

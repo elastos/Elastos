@@ -1,6 +1,6 @@
 import Foundation
 
-enum ResolveResultStatus: Int, CustomStringConvertible {
+public enum ResolveResultStatus: Int, CustomStringConvertible {
     case STATUS_VALID = 0
     case STATUS_EXPIRED = 1
     case STATUS_DEACTIVATED = 2
@@ -23,7 +23,7 @@ enum ResolveResultStatus: Int, CustomStringConvertible {
         return desc;
     }
 
-    var description: String {
+    public var description: String {
         return toString()
     }
 }
