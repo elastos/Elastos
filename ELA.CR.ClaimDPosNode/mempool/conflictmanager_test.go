@@ -216,7 +216,15 @@ func TestConflictManager_CR_DraftHash(t *testing.T) {
 			{
 				TxType: types.CRCProposal,
 				Payload: &payload.CRCProposal{
-					DraftHash: hash,
+					DraftHash:    hash,
+					CRSponsorDID: *randomProgramHash(),
+				},
+			},
+			{
+				TxType: types.CRCProposal,
+				Payload: &payload.CRCProposal{
+					DraftHash:    hash,
+					CRSponsorDID: *randomProgramHash(),
 				},
 			},
 		}
@@ -232,6 +240,14 @@ func TestConflictManager_CR_SponsorDID(t *testing.T) {
 			{
 				TxType: types.CRCProposal,
 				Payload: &payload.CRCProposal{
+					DraftHash:    *randomHash(),
+					CRSponsorDID: did,
+				},
+			},
+			{
+				TxType: types.CRCProposal,
+				Payload: &payload.CRCProposal{
+					DraftHash:    *randomHash(),
 					CRSponsorDID: did,
 				},
 			},
