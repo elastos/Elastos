@@ -50,6 +50,10 @@ func (c *Committee) processTransactions(txs []*types.Transaction, height uint32)
 // a block, then update producers state and votes according to the transaction
 // content.
 func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
+
+	// prioritize cancel votes
+	c.processCancelVotes(tx, height)
+
 	switch tx.TxType {
 	case types.RegisterCR:
 		c.state.registerCR(tx, height)
@@ -84,7 +88,6 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 		c.processCRCAppropriation(tx, height, c.state.history)
 	}
 
-	c.processCancelVotes(tx, height)
 	c.processCRCAddressRelatedTx(tx, height)
 }
 
