@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -21,9 +20,9 @@ func main() {
 sample.go 
 						
 optional arguments:
-  -h, --help  Types of services supported: generate_api_key, get_api_key,
-		upload_and_sign, verify_and_show, create_wallet, view_wallet,
-		request_ela, deploy_eth_contract, watch_eth_contract
+  -h, --help  Types of services supported: generate_api_key, get_api_key, 
+		node_rpc_methods, upload_and_sign, verify_and_show, create_wallet, 
+		view_wallet, request_ela, deploy_eth_contract, watch_eth_contract
 -s SERVICE
 `
 		fmt.Printf(helpMessage)
@@ -40,31 +39,32 @@ optional arguments:
 	production, _ := strconv.ParseBool(os.Getenv("PRODUCTION"))
 
 	network := "gmunet"
-	mnemonicToUse := "obtain pill nest sample caution stone candy habit silk husband give net"
 	didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
-	apiKeyToUse := "1htfwNmjePvE6blvXPc3YjD8Iqkst53ZF8EwnCZxbvyIcOoHt8wQHxPq4y501awz"
+	apiKeyToUse := "VRPWZq93E9nSgK21vqRgLTF3kPkqCOiQTBBHMqcFHxglHjiuXRBKkVYwWQXolWKe"
 	privateKeyToUse := "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
 
 	healthCheckTest(grpcServerHost, grpcServerPort, production)
 
 	if *service == "generate_api_key" {
-		generateAPIKeyDemo(grpcServerHost, grpcServerPort, production, mnemonicToUse, didToUse)
+		generateAPIKeyDemo(grpcServerHost, grpcServerPort, production, didToUse)
 	} else if *service == "get_api_key" {
-		getAPIKeyDemo(grpcServerHost, grpcServerPort, production, mnemonicToUse, didToUse)
+		getAPIKeyDemo(grpcServerHost, grpcServerPort, production, didToUse)
+	} else if *service == "node_rpc_methods" {
+		nodeRPCMethodsDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network)
 	} else if *service == "upload_and_sign" {
-		uploadAndSignDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network, privateKeyToUse)
+		uploadAndSignDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network, privateKeyToUse)
 	} else if *service == "verify_and_show" {
-		verifyAndShowDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network, privateKeyToUse)
+		verifyAndShowDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network, privateKeyToUse)
 	} else if *service == "create_wallet" {
-		createWalletDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
+		createWalletDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network)
 	} else if *service == "view_wallet" {
-		viewWalletDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
+		viewWalletDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network)
 	} else if *service == "request_ela" {
-		requestELADemo(grpcServerHost, grpcServerPort, production, apiKeyToUse)
+		requestELADemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse)
 	} else if *service == "deploy_eth_contract" {
-		deployETHContractDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
+		deployETHContractDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network)
 	} else if *service == "watch_eth_contract" {
-		watchETHContractDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, network)
+		watchETHContractDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network)
 	}
 }
 
@@ -80,7 +80,7 @@ func healthCheckTest(grpcServerHost string, grpcServerPort int, production bool)
 	}
 }
 
-func generateAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, mnemonicToUse, didToUse string) {
+func generateAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, didToUse string) {
 	common := elastosadenine.NewCommon(grpcServerHost, grpcServerPort, production)
 	defer common.Close()
 
@@ -88,21 +88,13 @@ func generateAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bo
 	sharedSecretAdenine := os.Getenv("SHARED_SECRET_ADENINE")
 	responseSSAdenine := common.GenerateAPIRequest(sharedSecretAdenine, didToUse)
 	if responseSSAdenine.Status {
-		log.Printf("Api Key: %s", responseSSAdenine.ApiKey)
+		log.Printf("Output: %s", responseSSAdenine.Output)
 	} else {
 		log.Printf("Error Message: %s", responseSSAdenine.StatusMessage)
 	}
-
-	log.Println("--> Generate API Key - MNEMONICS")
-	responseMnemonics := common.GenerateAPIRequestMnemonic(mnemonicToUse)
-	if responseMnemonics.Status {
-		log.Printf("Api Key: %s", responseMnemonics.ApiKey)
-	} else {
-		log.Printf("Error Message: %s", responseMnemonics.StatusMessage)
-	}
 }
 
-func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, mnemonicToUse, didToUse string) {
+func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, didToUse string) {
 	common := elastosadenine.NewCommon(grpcServerHost, grpcServerPort, production)
 	defer common.Close()
 
@@ -110,46 +102,85 @@ func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, m
 	sharedSecretAdenine := os.Getenv("SHARED_SECRET_ADENINE")
 	responseSSAdenine := common.GetAPIKey(sharedSecretAdenine, didToUse)
 	if responseSSAdenine.Status {
-		log.Printf("Api Key: %s", responseSSAdenine.ApiKey)
+		log.Printf("Output: %s", responseSSAdenine.Output)
 	} else {
 		log.Printf("Error Message: %s", responseSSAdenine.StatusMessage)
 	}
-
-	log.Println("--> Get API Key - MNEMONICS")
-	responseMnemonics := common.GetAPIKeyMnemonic(mnemonicToUse)
-	if responseMnemonics.Status {
-		log.Printf("Api Key: %s", responseMnemonics.ApiKey)
-	} else {
-		log.Printf("Error Message: %s", responseMnemonics.StatusMessage)
-	}
 }
 
-func uploadAndSignDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network, privateKeyToUse string) {
+func nodeRPCMethodsDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
+	nodeRpc := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production)
+	defer nodeRpc.Close()
+	var (
+		 address = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"
+		// addressEth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
+	)
+
+	log.Println("--> Get current height")
+	currentHeight := nodeRpc.GetCurrentHeight(apiKeyToUse, didToUse, network, "mainchain")
+	log.Println("Current Height - mainchain: ", currentHeight)
+	currentHeight = nodeRpc.GetCurrentHeight(apiKeyToUse, didToUse, network, "did")
+	log.Println("Current Height - did sidechain: ", currentHeight)
+	currentHeight = nodeRpc.GetCurrentHeight(apiKeyToUse, didToUse, network, "token")
+	log.Println("Current Height - token sidechain: ", currentHeight)
+
+	log.Println("--> Get current balance")
+	currentBalance := nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "mainchain", address).(string)
+	log.Println("Current balance - mainchain:", currentBalance)
+	currentBalance = nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "did", address).(string)
+	log.Println("Current balance - did sidechain:", currentBalance)
+	currentBalanceToken := nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "token", address).(map[string]string)
+	log.Println("Current balance - token sidechain:", currentBalanceToken)
+
+	log.Println("--> Get current block info")
+	currentBlockInfo := nodeRpc.GetCurrentBlockInfo(apiKeyToUse, didToUse, network, "mainchain")
+	log.Println("Current block info - mainchain: ", currentBlockInfo)
+	currentBlockInfo = nodeRpc.GetCurrentBlockInfo(apiKeyToUse, didToUse, network, "did")
+	log.Println("Current block info - did sidechain: ", currentBlockInfo)
+	currentBlockInfo = nodeRpc.GetCurrentBlockInfo(apiKeyToUse, didToUse, network, "token")
+	log.Println("Current block info - token sidechain: ", currentBlockInfo)
+
+	log.Println("--> Get current mining info - mainchain")
+	currentMiningInfo := nodeRpc.GetCurrentMiningInfo(apiKeyToUse, didToUse, network)
+	log.Println("Current mining info: ", currentMiningInfo)
+
+	log.Println("--> Get current block confirm - mainchain")
+	currentBlockConfirm := nodeRpc.GetCurrentBlockConfirm(apiKeyToUse, didToUse, network)
+	log.Println("Current block confirm: ", currentBlockConfirm)
+
+	log.Println("--> Get current arbitrator info - mainchain")
+	currentArbitratorInfo := nodeRpc.GetCurrentArbitratorsInfo(apiKeyToUse, didToUse, network)
+	log.Println("Current arbitrator info: ", currentArbitratorInfo)
+
+	log.Println("--> Get current arbitrator group - mainchain")
+	currentArbitratorGroup := nodeRpc.GetCurrentArbitratorGroup(apiKeyToUse, didToUse, network)
+	log.Println("Current arbitrator group: ", currentArbitratorGroup)
+}
+
+func uploadAndSignDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network, privateKeyToUse string) {
 	log.Println("--> Upload and Sign")
 	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
 	defer hive.Close()
-	response := hive.UploadAndSign(apiKeyToUse, network, privateKeyToUse, "test/sample.txt")
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response := hive.UploadAndSign(apiKeyToUse, didToUse, network, privateKeyToUse, "test/sample.txt")
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }
 
-func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network, privateKeyToUse string) {
+func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network, privateKeyToUse string) {
 	log.Println("--> Verify and Show")
 	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
 	defer hive.Close()
-	response := hive.VerifyAndShow(apiKeyToUse, network, privateKeyToUse, "516D6654415770733231556D63734D793632756F6B6A434E566E686533644562366A534257643939506762486948",
+	response := hive.VerifyAndShow(apiKeyToUse, didToUse, network, privateKeyToUse, "516D53733454546F416F645172355671467654746371676F7768713841645632744C417A4637535472514D584438",
                 						"022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                						"05D886DF5E9E7659C7E7C1EB3294335951BBF6F5F75F93831C1E654E1A1083C1CDCFB96BFA5A1B647F3548AB41ADB17137FFF9A04E569580518FEC1E55676CE4",
-                						"QmfTAWps21UmcsMy62uokjCNVnhe3dEb6jSBWd99PgbHiH")
-	if response.Output != "" {
-		downloadPath := "test/sample_from_hive.txt"
+                						"F97737AD88BD99B3374AB9FD750970A0A6328143765313CD197B2CF9DE01571F4C1FB98567A72A2DB2C9E6469F2A65C1331AC64AC121ECC526D7532BDF1E6DDD",
+                						"QmSs4TToAodQr5VqFvTtcqgowhq8AdV2tLAzF7STrQMXD8")
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
+		downloadPath := "test/sample_from_hive.txt"
 		log.Printf("Download Path : %s", downloadPath)
 		// Open a new file for writing only
     	file, err := os.OpenFile(
@@ -163,31 +194,31 @@ func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production boo
     	defer file.Close()
 
     	// Write bytes to file
-    	byteSlice := response.FileContent
+    	byteSlice := response.Output
     	bytesWritten, err := file.Write(byteSlice)
     	if err != nil {
         	log.Fatal(err)
     	}
     	log.Printf("Wrote %d bytes.\n", bytesWritten)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }
 
-func createWalletDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network string) {
+func createWalletDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse string, didToUse string, network string) {
 	log.Println("--> Create Wallet")
 	wallet := elastosadenine.NewWallet(grpcServerHost, grpcServerPort, production)
 	defer wallet.Close()
-	response := wallet.CreateWallet(apiKeyToUse, network)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response := wallet.CreateWallet(apiKeyToUse, didToUse, network)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }
 
-func viewWalletDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network string) {
+func viewWalletDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
 	log.Println("--> View Wallet")
 	wallet := elastosadenine.NewWallet(grpcServerHost, grpcServerPort, production)
 	defer wallet.Close()
@@ -196,48 +227,43 @@ func viewWalletDemo(grpcServerHost string, grpcServerPort int, production bool, 
 		addressEth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
 	)
 	// Mainchain
-	response := wallet.ViewWallet(apiKeyToUse, network, "mainchain", address)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response := wallet.ViewWallet(apiKeyToUse, didToUse, network, "mainchain", address)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
+
 	// DID Sidechain
-	response = wallet.ViewWallet(apiKeyToUse, network, "did", address)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response = wallet.ViewWallet(apiKeyToUse, didToUse, network, "did", address)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
+
 	// Token Sidechain
-	response = wallet.ViewWallet(apiKeyToUse, network, "token", address)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response = wallet.ViewWallet(apiKeyToUse, didToUse, network, "token", address)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
+
 	// Eth Sidechain
-	response = wallet.ViewWallet(apiKeyToUse, network, "eth", addressEth)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response = wallet.ViewWallet(apiKeyToUse, didToUse, network, "eth", addressEth)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }
 
-func requestELADemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse string) {
+func requestELADemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse string) {
 	log.Println("\n--> Request ELA")
 	wallet := elastosadenine.NewWallet(grpcServerHost, grpcServerPort, production)
 	defer wallet.Close()
@@ -246,48 +272,43 @@ func requestELADemo(grpcServerHost string, grpcServerPort int, production bool, 
 		addressEth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
 	)
 	// Mainchain
-	response := wallet.RequestELA(apiKeyToUse, "mainchain", address)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response := wallet.RequestELA(apiKeyToUse, didToUse, "mainchain", address)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
+
 	// DID Sidechain
-	response = wallet.RequestELA(apiKeyToUse, "did", address)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response = wallet.RequestELA(apiKeyToUse, didToUse, "did", address)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
+
 	// Token Sidechain
-	response = wallet.RequestELA(apiKeyToUse, "token", address)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response = wallet.RequestELA(apiKeyToUse, didToUse, "token", address)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
+	
 	// Eth Sidechain
-	response = wallet.RequestELA(apiKeyToUse, "eth", addressEth)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response = wallet.RequestELA(apiKeyToUse, didToUse, "eth", addressEth)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }
 
-func deployETHContractDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network string) {
+func deployETHContractDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
 	log.Println("--> Deploy ETH Contract")
 	sidechainEth := elastosadenine.NewSidechainEth(grpcServerHost, grpcServerPort, production)
 	defer sidechainEth.Close()
@@ -297,33 +318,29 @@ func deployETHContractDemo(grpcServerHost string, grpcServerPort int, production
 		gas = 2000000
 		fileName = "test/HelloWorld.sol"
 	)
-	response := sidechainEth.DeployEthContract(apiKeyToUse, network, address, privateKey, gas, fileName)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response := sidechainEth.DeployEthContract(apiKeyToUse, didToUse, network, address, privateKey, gas, fileName)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }
 
-func watchETHContractDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, network string) {
+func watchETHContractDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
 	log.Println("--> Watch ETH Contract")
 	sidechainEth := elastosadenine.NewSidechainEth(grpcServerHost, grpcServerPort, production)
 	defer sidechainEth.Close()
 	var (
-		contractAddress = "0xb185Ef1509d82dC163fB0EB727E77A07a3DEd256"
+		contractAddress = "0x192277188DD72f6FAE972fd30381A574C9Dee16F"
 		contractName = "HelloWorld"
 		contractCodeHash = "QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd"
 	)
-	response := sidechainEth.WatchEthContract(apiKeyToUse, network, contractAddress, contractName, contractCodeHash)
-	if response.Output != "" {
-		output := []byte(response.Output)
-		var jsonOutput map[string]interface{}
-		json.Unmarshal(output, &jsonOutput)
+	response := sidechainEth.WatchEthContract(apiKeyToUse, didToUse, network, contractAddress, contractName, contractCodeHash)
+	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-		log.Printf(string(result))
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
 	}
 }

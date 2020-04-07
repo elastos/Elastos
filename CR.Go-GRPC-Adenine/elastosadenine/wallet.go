@@ -6,17 +6,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/wallet"
+	"github.com/dgrijalva/jwt-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 	"log"
+	"time"
 )
 
 type Wallet struct {
 	Connection *grpc.ClientConn
 }
 
-type InputWallet struct {
-	Address string `json:"address"`
+type JWTInfoCreateWallet struct {
+    Network string `json:"network"`
+}
+
+type JWTInfoViewWallet struct {
+    Network string `json:"network"`
+    Address string `json:"address"`
+	Chain string	`json:"chain"`
+}
+
+type JWTInfoRequestELA struct {
+    Address string `json:"address"`
 	Chain string	`json:"chain"`
 }
 
@@ -46,53 +59,155 @@ func (w *Wallet) Close() {
 	w.Connection.Close()
 }
 
-func (w *Wallet) CreateWallet(apiKey, network string) *wallet.Response {
+func (w *Wallet) CreateWallet(apiKey, did, network string) Response {
+	var outputData string
 	client := wallet.NewWalletClient(w.Connection)
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	defer cancel()
-	response, err := client.CreateWallet(ctx, &wallet.Request{
-		ApiKey: apiKey,
+
+	jwtInfo, _ := json.Marshal(JWTInfoCreateWallet{
 		Network: network,
 	})
+
+	claims := JWTClaim{
+		JwtInfo: string(jwtInfo),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().UTC().Add(tokenExpiration).Unix(),
+		},
+	}
+
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	jwtTokenString, err := jwtToken.SignedString([]byte(apiKey))
 	if err != nil {
 		log.Fatalf("Failed to execute 'CreateWallet' method: %v", err)
 	}
-	return response
-}
-
-func (w *Wallet) ViewWallet(apiKey, network, chain, address string) *wallet.Response {
-	client := wallet.NewWalletClient(w.Connection)
+	md := metadata.Pairs("did", did)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
-	reqData, _ := json.Marshal(InputWallet{
+	ctx = metadata.NewOutgoingContext(ctx, md)
+
+	response, err := client.CreateWallet(ctx, &wallet.Request{Input: jwtTokenString})
+	if err != nil {
+		log.Fatalf("Failed to execute 'CreateWallet' method: %v", err)
+	}
+	
+	if response.Status == true {
+		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
+		    if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
+		        return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
+		    }
+		    return []byte(apiKey), nil
+		})
+
+		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
+		    strMap := recvClaims["jwt_info"].(map[string]interface{})
+			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
+			outputData = string(result)
+		} else {
+			log.Fatalf("Failed to execute 'CreateWallet' method: %v", err)
+		}
+	} 
+	responseData := Response{outputData, response.Status, response.StatusMessage}
+	return responseData
+}
+
+func (w *Wallet) ViewWallet(apiKey, did, network, chain, address string) Response {
+	var outputData string
+	client := wallet.NewWalletClient(w.Connection)
+
+	jwtInfo, _ := json.Marshal(JWTInfoViewWallet{
+		Network: network,
 		Address: address,
 		Chain: chain,
 	})
-	response, err := client.ViewWallet(ctx, &wallet.Request{
-		ApiKey: apiKey,
-		Network: network,
-		Input: string(reqData),
-	})
+
+	claims := JWTClaim{
+		JwtInfo: string(jwtInfo),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().UTC().Add(tokenExpiration).Unix(),
+		},
+	}
+
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	jwtTokenString, err := jwtToken.SignedString([]byte(apiKey))
 	if err != nil {
 		log.Fatalf("Failed to execute 'ViewWallet' method: %v", err)
 	}
-	return response
-}
-
-func (w *Wallet) RequestELA(apiKey, chain, address string) *wallet.Response {
-	client := wallet.NewWalletClient(w.Connection)
+	md := metadata.Pairs("did", did)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
-	reqData, _ := json.Marshal(InputWallet{
+	ctx = metadata.NewOutgoingContext(ctx, md)
+
+	response, err := client.ViewWallet(ctx, &wallet.Request{Input: jwtTokenString})
+	if err != nil {
+		log.Fatalf("Failed to execute 'ViewWallet' method: %v", err)
+	}
+	
+	if response.Status == true {
+		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
+		    if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
+		        return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
+		    }
+		    return []byte(apiKey), nil
+		})
+
+		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
+		    strMap := recvClaims["jwt_info"].(map[string]interface{})
+			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
+			outputData = string(result)
+		} else {
+			log.Fatalf("Failed to execute 'ViewWallet' method: %v", err)
+		}
+	} 
+	responseData := Response{outputData, response.Status, response.StatusMessage}
+	return responseData
+}
+
+func (w *Wallet) RequestELA(apiKey, did, chain, address string) Response {
+	var outputData string
+	client := wallet.NewWalletClient(w.Connection)
+
+	jwtInfo, _ := json.Marshal(JWTInfoRequestELA{
 		Address: address,
 		Chain: chain,
 	})
-	response, err := client.RequestELA(ctx, &wallet.Request{
-		ApiKey: apiKey,
-		Input: string(reqData),
-	})
+
+	claims := JWTClaim{
+		JwtInfo: string(jwtInfo),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().UTC().Add(tokenExpiration).Unix(),
+		},
+	}
+
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	jwtTokenString, err := jwtToken.SignedString([]byte(apiKey))
 	if err != nil {
 		log.Fatalf("Failed to execute 'RequestELA' method: %v", err)
 	}
-	return response
+	md := metadata.Pairs("did", did)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	defer cancel()
+	ctx = metadata.NewOutgoingContext(ctx, md)
+
+	response, err := client.RequestELA(ctx, &wallet.Request{Input: jwtTokenString})
+	if err != nil {
+		log.Fatalf("Failed to execute 'RequestELA' method: %v", err)
+	}
+	
+	if response.Status == true {
+		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
+		    if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
+		        return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
+		    }
+		    return []byte(apiKey), nil
+		})
+
+		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
+		    strMap := recvClaims["jwt_info"].(map[string]interface{})
+			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
+			outputData = string(result)
+		} else {
+			log.Fatalf("Failed to execute 'RequestELA' method: %v", err)
+		}
+	} 
+	responseData := Response{outputData, response.Status, response.StatusMessage}
+	return responseData
 }
