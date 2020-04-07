@@ -6,45 +6,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/hive"
+	"github.com/dgrijalva/jwt-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"github.com/dgrijalva/jwt-go"
 	"google.golang.org/grpc/metadata"
-	"log"
-	"time"
-	"os"
 	"io/ioutil"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/md5"
-	"crypto/rand"
-	"encoding/hex"
-	"io"
+	"log"
+	"os"
+	"time"
 )
 
 type Hive struct {
 	Connection *grpc.ClientConn
 }
 
-type InputUploadAndSign struct {
+type JWTInfoHiveUploadAndSign struct {
 	Network string `json:"network"`
 	PrivateKey string `json:"privateKey"`
 	FileContent string `json:"file_content"`
 }
 
-type InputVerifyAndShow struct {
+type JWTInfoVerifyAndShow struct {
 	Network string `json:"network"`
 	Msg string `json:"msg"`
 	Pub string `json:"pub"`
 	Sig string `json:"sig"`
 	Hash string `json:"hash"`
 	PrivateKey string `json:"privateKey"`
-}
-
-type ResponseData struct {
-	Output []byte
-	Status bool
-	StatusMessage string
 }
 
 func NewHive(host string, port int, production bool) *Hive {
@@ -82,19 +70,14 @@ func (h *Hive) UploadAndSign(apiKey, did, network, privateKey, filename string) 
     if err != nil {
         log.Fatal(err)
     }
-    data, err := ioutil.ReadAll(file)
+	fileContent, err := ioutil.ReadAll(file)
     if err != nil {
         log.Fatal(err)
     }
 
-    //encryption and encoding
-    ciphertext := encrypt(data, privateKey)
-	encoded := hex.EncodeToString(ciphertext)
-
-	jwtInfo, _ := json.Marshal(InputUploadAndSign{
+	jwtInfo, _ := json.Marshal(JWTInfoHiveUploadAndSign{
 		Network: network,
 		PrivateKey: privateKey,
-		FileContent: encoded,
 	})
 
 	claims := JWTClaim{
@@ -114,7 +97,7 @@ func (h *Hive) UploadAndSign(apiKey, did, network, privateKey, filename string) 
 	defer cancel()
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
-	response, err := client.UploadAndSign(ctx, &hive.Request{Input: jwtTokenString})
+	response, err := client.UploadAndSign(ctx, &hive.Request{Input: jwtTokenString, FileContent: fileContent})
 	if err != nil {
 		log.Fatalf("Failed to execute 'UploadAndSign' method: %v", err)
 	}
@@ -140,10 +123,10 @@ func (h *Hive) UploadAndSign(apiKey, did, network, privateKey, filename string) 
 }
 
 func (h *Hive) VerifyAndShow(apiKey, did, network, privateKey, msg, pub, sig, hash string) ResponseData {
-	var outputData []byte
+	var fileContent []byte
 	client := hive.NewHiveClient(h.Connection)
 
-	jwtInfo, _ := json.Marshal(InputVerifyAndShow{
+	jwtInfo, _ := json.Marshal(JWTInfoVerifyAndShow{
 		Network: network,
 		Msg: msg,
 		Pub: pub,
@@ -182,59 +165,12 @@ func (h *Hive) VerifyAndShow(apiKey, did, network, privateKey, msg, pub, sig, ha
 		    return []byte(apiKey), nil
 		})
 
-		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
-		    strMap := recvClaims["jwt_info"].(map[string]interface{})
-			ciphertext := strMap["file_content"].(string)
-			
-			//decoding
-			decoded, _ := hex.DecodeString(ciphertext)
-
-			//decryption
-			plaintext := decrypt(decoded, privateKey)
-			outputData = plaintext
+		if _, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
+			fileContent = response.FileContent
 		} else {
 			log.Fatalf("Failed to execute 'VerifyAndShow' method: %v", err)
 		}
 	} 
-	responseData := ResponseData{outputData, response.Status, response.StatusMessage}
+	responseData := ResponseData{fileContent, response.Status, response.StatusMessage}
 	return responseData
-}
-
-func createHash(key string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(key))
-	return hex.EncodeToString(hasher.Sum(nil))
-}
-
-func encrypt(data []byte, passphrase string) []byte {
-	block, _ := aes.NewCipher([]byte(createHash(passphrase)))
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		panic(err.Error())
-	}
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
-	}
-	ciphertext := gcm.Seal(nonce, nonce, data, nil)
-	return ciphertext
-}
-
-func decrypt(data []byte, passphrase string) []byte {
-	key := []byte(createHash(passphrase))
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		panic(err.Error())
-	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		panic(err.Error())
-	}
-	nonceSize := gcm.NonceSize()
-	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		panic(err.Error())
-	}
-	return plaintext
 }

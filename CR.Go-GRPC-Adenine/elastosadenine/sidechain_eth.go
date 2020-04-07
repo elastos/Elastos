@@ -20,7 +20,7 @@ type SidechainEth struct {
 	Connection *grpc.ClientConn
 }
 
-type InputSidechainEthDeploy struct {
+type JWTInfoSidechainEthDeploy struct {
 	Network string `json:"network"`
 	Address string `json:"eth_account_address"`
 	PrivateKey string `json:"eth_private_key"`
@@ -29,7 +29,7 @@ type InputSidechainEthDeploy struct {
 	ContractName string `json:"contract_name"`
 }
 
-type InputSidechainEthWatch struct {
+type JWTInfoSidechainEthWatch struct {
 	Network string `json:"network"`
 	ContractAddress string `json:"contract_address"`
 	ContractName string `json:"contract_name"`
@@ -83,7 +83,7 @@ func (e *SidechainEth) DeployEthContract(apiKey, did, network, address, privateK
 	solidityListener := SolidityListener{}
 	antlr.ParseTreeWalkerDefault.Walk(&solidityListener, p.SourceUnit())
 
-	jwtInfo, _ := json.Marshal(InputSidechainEthDeploy{
+	jwtInfo, _ := json.Marshal(JWTInfoSidechainEthDeploy{
 		Network: network,
 		Address: address,
 		PrivateKey: privateKey,
@@ -138,7 +138,7 @@ func (e *SidechainEth) WatchEthContract(apiKey, did, network, contractAddress, c
 	var outputData string
 	client := sidechain_eth.NewSidechainEthClient(e.Connection)
 
-	jwtInfo, _ := json.Marshal(InputSidechainEthWatch{
+	jwtInfo, _ := json.Marshal(JWTInfoSidechainEthWatch{
 		Network: network,
 		ContractAddress:  contractAddress,
 		ContractName:     contractName,

@@ -20,9 +20,9 @@ func main() {
 sample.go 
 						
 optional arguments:
-  -h, --help  Types of services supported: generate_api_key, get_api_key,
-		upload_and_sign, verify_and_show, create_wallet, view_wallet,
-		request_ela, deploy_eth_contract, watch_eth_contract
+  -h, --help  Types of services supported: generate_api_key, get_api_key, 
+		node_rpc_methods, upload_and_sign, verify_and_show, create_wallet, 
+		view_wallet, request_ela, deploy_eth_contract, watch_eth_contract
 -s SERVICE
 `
 		fmt.Printf(helpMessage)
@@ -39,17 +39,18 @@ optional arguments:
 	production, _ := strconv.ParseBool(os.Getenv("PRODUCTION"))
 
 	network := "gmunet"
-	mnemonicToUse := "obtain pill nest sample caution stone candy habit silk husband give net"
 	didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
-	apiKeyToUse := "XDOoHVrENHOxlzQdt7rO3f3uldYTBpwXGu7xgJiA5GqcCWgaPVQA8XeYyC8JFi1Z"
+	apiKeyToUse := "VRPWZq93E9nSgK21vqRgLTF3kPkqCOiQTBBHMqcFHxglHjiuXRBKkVYwWQXolWKe"
 	privateKeyToUse := "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
 
 	healthCheckTest(grpcServerHost, grpcServerPort, production)
 
 	if *service == "generate_api_key" {
-		generateAPIKeyDemo(grpcServerHost, grpcServerPort, production, mnemonicToUse, didToUse)
+		generateAPIKeyDemo(grpcServerHost, grpcServerPort, production, didToUse)
 	} else if *service == "get_api_key" {
-		getAPIKeyDemo(grpcServerHost, grpcServerPort, production, mnemonicToUse, didToUse)
+		getAPIKeyDemo(grpcServerHost, grpcServerPort, production, didToUse)
+	} else if *service == "node_rpc_methods" {
+		nodeRPCMethodsDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network)
 	} else if *service == "upload_and_sign" {
 		uploadAndSignDemo(grpcServerHost, grpcServerPort, production, apiKeyToUse, didToUse, network, privateKeyToUse)
 	} else if *service == "verify_and_show" {
@@ -79,7 +80,7 @@ func healthCheckTest(grpcServerHost string, grpcServerPort int, production bool)
 	}
 }
 
-func generateAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, mnemonicToUse, didToUse string) {
+func generateAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, didToUse string) {
 	common := elastosadenine.NewCommon(grpcServerHost, grpcServerPort, production)
 	defer common.Close()
 
@@ -91,17 +92,9 @@ func generateAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bo
 	} else {
 		log.Printf("Error Message: %s", responseSSAdenine.StatusMessage)
 	}
-
-	log.Println("--> Generate API Key - MNEMONICS")
-	responseMnemonics := common.GenerateAPIRequestMnemonic(mnemonicToUse, didToUse)
-	if responseMnemonics.Status {
-		log.Printf("Output: %s", responseMnemonics.Output)
-	} else {
-		log.Printf("Error Message: %s", responseMnemonics.StatusMessage)
-	}
 }
 
-func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, mnemonicToUse, didToUse string) {
+func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, didToUse string) {
 	common := elastosadenine.NewCommon(grpcServerHost, grpcServerPort, production)
 	defer common.Close()
 
@@ -113,14 +106,55 @@ func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, m
 	} else {
 		log.Printf("Error Message: %s", responseSSAdenine.StatusMessage)
 	}
+}
 
-	log.Println("--> Get API Key - MNEMONICS")
-	responseMnemonics := common.GetAPIKeyMnemonic(mnemonicToUse, didToUse)
-	if responseMnemonics.Status {
-		log.Printf("Output: %s", responseMnemonics.Output)
-	} else {
-		log.Printf("Error Message: %s", responseMnemonics.StatusMessage)
-	}
+func nodeRPCMethodsDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
+	nodeRpc := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production)
+	defer nodeRpc.Close()
+	var (
+		 address = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"
+		// addressEth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
+	)
+
+	log.Println("--> Get current height")
+	currentHeight := nodeRpc.GetCurrentHeight(apiKeyToUse, didToUse, network, "mainchain")
+	log.Println("Current Height - mainchain: ", currentHeight)
+	currentHeight = nodeRpc.GetCurrentHeight(apiKeyToUse, didToUse, network, "did")
+	log.Println("Current Height - did sidechain: ", currentHeight)
+	currentHeight = nodeRpc.GetCurrentHeight(apiKeyToUse, didToUse, network, "token")
+	log.Println("Current Height - token sidechain: ", currentHeight)
+
+	log.Println("--> Get current balance")
+	currentBalance := nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "mainchain", address).(string)
+	log.Println("Current balance - mainchain:", currentBalance)
+	currentBalance = nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "did", address).(string)
+	log.Println("Current balance - did sidechain:", currentBalance)
+	currentBalanceToken := nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "token", address).(map[string]string)
+	log.Println("Current balance - token sidechain:", currentBalanceToken)
+
+	log.Println("--> Get current block info")
+	currentBlockInfo := nodeRpc.GetCurrentBlockInfo(apiKeyToUse, didToUse, network, "mainchain")
+	log.Println("Current block info - mainchain: ", currentBlockInfo)
+	currentBlockInfo = nodeRpc.GetCurrentBlockInfo(apiKeyToUse, didToUse, network, "did")
+	log.Println("Current block info - did sidechain: ", currentBlockInfo)
+	currentBlockInfo = nodeRpc.GetCurrentBlockInfo(apiKeyToUse, didToUse, network, "token")
+	log.Println("Current block info - token sidechain: ", currentBlockInfo)
+
+	log.Println("--> Get current mining info - mainchain")
+	currentMiningInfo := nodeRpc.GetCurrentMiningInfo(apiKeyToUse, didToUse, network)
+	log.Println("Current mining info: ", currentMiningInfo)
+
+	log.Println("--> Get current block confirm - mainchain")
+	currentBlockConfirm := nodeRpc.GetCurrentBlockConfirm(apiKeyToUse, didToUse, network)
+	log.Println("Current block confirm: ", currentBlockConfirm)
+
+	log.Println("--> Get current arbitrator info - mainchain")
+	currentArbitratorInfo := nodeRpc.GetCurrentArbitratorsInfo(apiKeyToUse, didToUse, network)
+	log.Println("Current arbitrator info: ", currentArbitratorInfo)
+
+	log.Println("--> Get current arbitrator group - mainchain")
+	currentArbitratorGroup := nodeRpc.GetCurrentArbitratorGroup(apiKeyToUse, didToUse, network)
+	log.Println("Current arbitrator group: ", currentArbitratorGroup)
 }
 
 func uploadAndSignDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network, privateKeyToUse string) {
@@ -140,13 +174,12 @@ func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production boo
 	log.Println("--> Verify and Show")
 	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
 	defer hive.Close()
-	response := hive.VerifyAndShow(apiKeyToUse, didToUse, network, privateKeyToUse, "516D594354423844666433393575693568644A5874444D5A576D524553796B5A4A5838733235613962694A4C4853",
+	response := hive.VerifyAndShow(apiKeyToUse, didToUse, network, privateKeyToUse, "516D53733454546F416F645172355671467654746371676F7768713841645632744C417A4637535472514D584438",
                 						"022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                						"CABB589C979B19C5FB3BB544C743024A0F712BD361C6E4F2420FC2C56238D06011A91C446C6B25CF3ED588BAFD2C1B622A0363F50D94AC95401482DC245D8571",
-                						"QmYCTB8Dfd395ui5hdJXtDMZWmRESykZJX8s25a9biJLHS")
+                						"F97737AD88BD99B3374AB9FD750970A0A6328143765313CD197B2CF9DE01571F4C1FB98567A72A2DB2C9E6469F2A65C1331AC64AC121ECC526D7532BDF1E6DDD",
+                						"QmSs4TToAodQr5VqFvTtcqgowhq8AdV2tLAzF7STrQMXD8")
 	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		log.Printf("Output: %s", response.Output)
 		downloadPath := "test/sample_from_hive.txt"
 		log.Printf("Download Path : %s", downloadPath)
 		// Open a new file for writing only
@@ -299,7 +332,7 @@ func watchETHContractDemo(grpcServerHost string, grpcServerPort int, production 
 	sidechainEth := elastosadenine.NewSidechainEth(grpcServerHost, grpcServerPort, production)
 	defer sidechainEth.Close()
 	var (
-		contractAddress = "0xb185Ef1509d82dC163fB0EB727E77A07a3DEd256"
+		contractAddress = "0x192277188DD72f6FAE972fd30381A574C9Dee16F"
 		contractName = "HelloWorld"
 		contractCodeHash = "QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd"
 	)

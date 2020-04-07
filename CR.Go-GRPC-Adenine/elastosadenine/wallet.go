@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/wallet"
+	"github.com/dgrijalva/jwt-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"github.com/dgrijalva/jwt-go"
 	"google.golang.org/grpc/metadata"
 	"log"
 	"time"
@@ -18,17 +18,17 @@ type Wallet struct {
 	Connection *grpc.ClientConn
 }
 
-type APICreate struct {
+type JWTInfoCreateWallet struct {
     Network string `json:"network"`
 }
 
-type APIView struct {
+type JWTInfoViewWallet struct {
     Network string `json:"network"`
     Address string `json:"address"`
 	Chain string	`json:"chain"`
 }
 
-type APIRequestEla struct {
+type JWTInfoRequestELA struct {
     Address string `json:"address"`
 	Chain string	`json:"chain"`
 }
@@ -63,7 +63,7 @@ func (w *Wallet) CreateWallet(apiKey, did, network string) Response {
 	var outputData string
 	client := wallet.NewWalletClient(w.Connection)
 
-	jwtInfo, _ := json.Marshal(APICreate{
+	jwtInfo, _ := json.Marshal(JWTInfoCreateWallet{
 		Network: network,
 	})
 
@@ -113,7 +113,7 @@ func (w *Wallet) ViewWallet(apiKey, did, network, chain, address string) Respons
 	var outputData string
 	client := wallet.NewWalletClient(w.Connection)
 
-	jwtInfo, _ := json.Marshal(APIView{
+	jwtInfo, _ := json.Marshal(JWTInfoViewWallet{
 		Network: network,
 		Address: address,
 		Chain: chain,
@@ -165,7 +165,7 @@ func (w *Wallet) RequestELA(apiKey, did, chain, address string) Response {
 	var outputData string
 	client := wallet.NewWalletClient(w.Connection)
 
-	jwtInfo, _ := json.Marshal(APIRequestEla{
+	jwtInfo, _ := json.Marshal(JWTInfoRequestELA{
 		Address: address,
 		Chain: chain,
 	})

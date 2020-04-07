@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 	"log"
-	"os"
 	"time"
 )
 
@@ -19,24 +18,8 @@ type Common struct {
 	Connection *grpc.ClientConn
 }
 
-type APIRequest struct {
-    Pass string `json:"pass"`
+type JWTInfoCommon struct {
     jwt.StandardClaims
-}
-
-type APIRequestMnemonic struct {
-    Mnemonic string `json:"mnemonic"`
-}
-
-type JWTClaim struct {
-    JwtInfo string `json:"jwt_info"`
-    jwt.StandardClaims
-}
-
-type Response struct {
-	Output string 
-	Status bool
-	StatusMessage string
 }
 
 func NewCommon(host string, port int, production bool) *Common {
@@ -65,64 +48,11 @@ func (c *Common) Close() {
 	c.Connection.Close()
 }
 
-func (c *Common) GenerateAPIRequestMnemonic(mnemonic, did string) Response {
-	var outputData string
-	secretKey := os.Getenv("SHARED_SECRET_ADENINE")
-	client := common.NewCommonClient(c.Connection)
-
-	jwtInfo, _ := json.Marshal(APIRequestMnemonic{
-		Mnemonic: mnemonic,
-	})
-
-	claims := JWTClaim{
-		JwtInfo: string(jwtInfo),
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().UTC().Add(tokenExpiration).Unix(),
-		},
-	}
-
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	jwtTokenString, err := jwtToken.SignedString([]byte(secretKey))
-	if err != nil {
-		log.Fatalf("Failed to execute 'GenerateAPIRequestMnemonic' method: %v", err)
-	}
-	md := metadata.Pairs("did", did)
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	defer cancel()
-	ctx = metadata.NewOutgoingContext(ctx, md)
-
-	response, err := client.GenerateAPIRequestMnemonic(ctx, &common.Request{Input: jwtTokenString})
-	if err != nil {
-		log.Fatalf("Failed to execute 'GenerateAPIRequestMnemonic' method: %v", err)
-	}
-	
-	if response.Status == true {
-		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
-		    if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
-		        return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
-		    }
-		    return []byte(secretKey), nil
-		})
-
-		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
-		    strMap := recvClaims["jwt_info"].(map[string]interface{})
-			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
-			outputData = string(result)
-		} else {
-			log.Fatalf("Failed to execute 'GenerateAPIRequestMnemonic' method: %v", err)
-		}
-	} 
-	responseData := Response{outputData, response.Status, response.StatusMessage}
-	return responseData
-}
-
 func (c *Common) GenerateAPIRequest(secretKey, did string) Response {
 	var outputData string
 	client := common.NewCommonClient(c.Connection)
 
-	jwtInfo, _ := json.Marshal(APIRequest{
-		Pass: "pass",
-	})
+	jwtInfo, _ := json.Marshal(JWTInfoCommon{})
 
 	claims := JWTClaim{
 		JwtInfo: string(jwtInfo),
@@ -159,58 +89,7 @@ func (c *Common) GenerateAPIRequest(secretKey, did string) Response {
 			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
 			outputData = string(result)
 		} else {
-			log.Fatalf("Failed to execute 'GenerateAPIRequestMnemonic' method: %v", err)
-		}
-	}
-	responseData := Response{outputData, response.Status, response.StatusMessage}
-	return responseData
-}
-
-func (c *Common) GetAPIKeyMnemonic(mnemonic, did string) Response {
-	var outputData string
-	secretKey := os.Getenv("SHARED_SECRET_ADENINE")
-	client := common.NewCommonClient(c.Connection)
-
-	jwtInfo, _ := json.Marshal(APIRequestMnemonic{
-		Mnemonic: mnemonic,
-	})
-
-	claims := JWTClaim{
-		JwtInfo: string(jwtInfo),
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().UTC().Add(tokenExpiration).Unix(),
-		},
-	}
-
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	jwtTokenString, err := jwtToken.SignedString([]byte(secretKey))
-	if err != nil {
-		log.Fatalf("Failed to execute 'GetAPIKeyMnemonic' method: %v", err)
-	}
-	md := metadata.Pairs("did", did)
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	defer cancel()
-	ctx = metadata.NewOutgoingContext(ctx, md)
-
-	response, err := client.GetAPIKeyMnemonic(ctx, &common.Request{Input: jwtTokenString})
-	if err != nil {
-		log.Fatalf("Failed to execute 'GetAPIKeyMnemonic' method: %v", err)
-	}
-
-	if response.Status == true {
-		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
-			if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
-			}
-			return []byte(secretKey), nil
-		})
-
-		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
-			strMap := recvClaims["jwt_info"].(map[string]interface{})
-			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
-			outputData = string(result)
-		} else {
-			log.Fatalf("Failed to execute 'GetAPIKeyMnemonic' method: %v", err)
+			log.Fatalf("Failed to execute 'GenerateAPIRequest' method: %v", err)
 		}
 	}
 	responseData := Response{outputData, response.Status, response.StatusMessage}
@@ -221,9 +100,7 @@ func (c *Common) GetAPIKey(secretKey, did string) Response {
 	var outputData string
 	client := common.NewCommonClient(c.Connection)
 
-	jwtInfo, _ := json.Marshal(APIRequest{
-		Pass: "pass",
-	})
+	jwtInfo, _ := json.Marshal(JWTInfoCommon{})
 
 	claims := JWTClaim{
 		JwtInfo: string(jwtInfo),

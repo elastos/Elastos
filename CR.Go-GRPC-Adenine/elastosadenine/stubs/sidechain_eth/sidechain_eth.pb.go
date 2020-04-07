@@ -125,9 +125,7 @@ func init() {
 	proto.RegisterType((*Response)(nil), "sidechain_eth.Response")
 }
 
-func init() {
-	proto.RegisterFile("sidechain_eth.proto", fileDescriptor_21eaa0627d5e5698)
-}
+func init() { proto.RegisterFile("sidechain_eth.proto", fileDescriptor_21eaa0627d5e5698) }
 
 var fileDescriptor_21eaa0627d5e5698 = []byte{
 	// 206 bytes of a gzipped FileDescriptorProto
