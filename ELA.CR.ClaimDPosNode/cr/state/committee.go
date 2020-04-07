@@ -467,12 +467,12 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
 	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
 	oriMemberState := crMember.MemberState
-	penalty := c.getMemberPenalty(height, crMember)
 
 	history.Append(height, func() {
 		crMember.ImpeachmentVotes += votes
 		if crMember.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
 			c.params.VoterRejectPercentage/100.0) {
+			penalty := c.getMemberPenalty(height, crMember)
 			crMember.MemberState = MemberImpeached
 			c.state.depositInfo[crMember.Info.CID].Penalty = penalty
 			c.state.depositInfo[crMember.Info.CID].DepositAmount -= MinDepositAmount
@@ -790,7 +790,7 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 
 	log.Infof("height %d member %s impeached, not election and not vote proposal"+
 		" penalty: %s, old penalty: %s, final penalty: %s",
-		height, member.Info.DID, currentPenalty, penalty, finalPenalty)
+		height, member.Info.NickName, currentPenalty, penalty, finalPenalty)
 
 	return finalPenalty
 }

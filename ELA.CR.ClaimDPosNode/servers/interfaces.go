@@ -1737,15 +1737,15 @@ func ListCRCandidates(param Params) map[string]interface{} {
 func ListCurrentCRs(param Params) map[string]interface{} {
 	cm := Chain.GetCRCommittee()
 	var crMembers []*crstate.CRMember
-	crMembers = cm.GetAllMembers()
-
-	sort.Slice(crMembers, func(i, j int) bool {
-		return crMembers[i].Info.GetCodeHash().Compare(
-			crMembers[j].Info.GetCodeHash()) < 0
-	})
+	if cm.IsInElectionPeriod() {
+		crMembers = cm.GetAllMembers()
+		sort.Slice(crMembers, func(i, j int) bool {
+			return crMembers[i].Info.GetCodeHash().Compare(
+				crMembers[j].Info.GetCodeHash()) < 0
+		})
+	}
 
 	var rsCRMemberInfoSlice []RpcCrMemberInfo
-
 	for i, cr := range crMembers {
 		cidAddress, _ := cr.Info.CID.ToAddress()
 		var didAddress string
