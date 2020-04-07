@@ -63,6 +63,15 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
                                               status_message=status_message,
                                               status=False)
 
+        if network == "mainnet":
+            hive_api_url = config('MAIN_NET_HIVE_PORT') + settings.HIVE_API_ADD_FILE
+            web3 = Web3(HTTPProvider(config('MAIN_NET_SIDECHAIN_ETH_RPC_PORT'),
+                                     request_kwargs={'timeout': 60}))
+        else:
+            hive_api_url = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_ADD_FILE
+            web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
+                                     request_kwargs={'timeout': 60}))
+
         # reading the file content
         eth_account_address = jwt_info['eth_account_address']
         eth_gas = jwt_info['eth_gas']
@@ -71,8 +80,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         contract_source = jwt_info['contract_source']
 
         # upload smart contract code to hive
-        hive_upload_url = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_ADD_FILE
-        response = self.session.get(hive_upload_url, files={'file': contract_source}, timeout=REQUEST_TIMEOUT)
+        response = self.session.get(hive_api_url, files={'file': contract_source}, timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
         hive_hash = data['Hash']
 
@@ -80,14 +88,6 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             status_message = 'Error: Smart contract code could not be uploaded'
             logging.debug(f"{did} : {api_key} : {status_message}")
             return sidechain_eth_pb2.Response(output="", status_message=status_message, status=False)
-
-        if network == "testnet":
-            # web3.py instance
-            web3 = Web3(HTTPProvider(config('TEST_NET_SIDECHAIN_ETH_RPC_PORT'),
-                                     request_kwargs={'timeout': 60}))
-        else:
-            web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
-                                     request_kwargs={'timeout': 60}))
         
         try:
             # We need this since our eth sidechain is POA
@@ -192,14 +192,22 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
                                               status_message=status_message,
                                               status=False)
 
+        if network == "mainnet":
+            hive_api_url = config('MAIN_NET_HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
+            web3 = Web3(HTTPProvider(config('MAIN_NET_SIDECHAIN_ETH_RPC_PORT'),
+                                     request_kwargs={'timeout': 60}))
+        else:
+            hive_api_url = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
+            web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
+                                     request_kwargs={'timeout': 60}))
+
         # reading the file content
         contract_address = jwt_info['contract_address']
         contract_name = jwt_info['contract_name']
         contract_code_hash = jwt_info['contract_code_hash']
 
         # show smart contract code from Hive
-        hive_show_url = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
-        response = self.session.get(hive_show_url.format(contract_code_hash))
+        response = self.session.get(hive_api_url.format(contract_code_hash))
         contract_source = response.text
 
         if not response:
@@ -225,13 +233,6 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             })
             abi = json.loads(compiled_sol['contracts'][contract_name][contract_name]['metadata'])['output']['abi']
 
-            if network == "testnet":
-                # web3.py instance
-                web3 = Web3(HTTPProvider(config('TEST_NET_SIDECHAIN_ETH_RPC_PORT'),
-                                         request_kwargs={'timeout': 60}))
-            else:
-                web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
-                                         request_kwargs={'timeout': 60}))
             # We need this since our eth sidechain is POA
             web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 

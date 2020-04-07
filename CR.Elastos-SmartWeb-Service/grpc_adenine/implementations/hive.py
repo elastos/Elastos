@@ -1,10 +1,17 @@
-import json
-from decouple import config
-from requests import Session
 import logging
 import sys
 import jwt
 import datetime
+import json
+import base64
+
+from cryptography.fernet import Fernet
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+from decouple import config
+from requests import Session
 from sqlalchemy.orm import sessionmaker
 
 from grpc_adenine import settings
@@ -37,7 +44,6 @@ class Hive(hive_pb2_grpc.HiveServicer):
         metadata = dict(context.invocation_metadata())
         did = metadata["did"]
         api_key = get_api_from_did(did)
-        encrypted_message = None
 
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
@@ -48,15 +54,12 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         # reading input data
         if type(jwt_info) == str:
-            #request from go package
+            # request from go package
             jwt_info = json.loads(jwt_info)
-            encrypted_message = jwt_info['file_content']
-        else:
-            #request from python package
-            encrypted_message = jwt_info['file_content'].encode("utf-8")
 
         network = jwt_info['network']
         private_key = jwt_info['privateKey']
+        file_content = request.file_content
 
         # Validate the API Key
         api_status = validate_api_key(api_key)
@@ -67,7 +70,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = self.rate_limiter.check_rate_limit(settings.UPLOAD_AND_SIGN_LIMIT, api_key,
-                                    self.UploadAndSign.__name__)
+                                                      self.UploadAndSign.__name__)
         if response:
             status_message = f'Number of daily access limit exceeded {response["result"]["daily_limit"]}'
             logging.debug(f"{did} : {api_key} : {status_message}")
@@ -76,14 +79,25 @@ class Hive(hive_pb2_grpc.HiveServicer):
                                      status=False)
 
         # checking file size
-        if sys.getsizeof(encrypted_message) > settings.FILE_UPLOAD_SIZE_LIMIT:
+        if sys.getsizeof(file_content) > settings.FILE_UPLOAD_SIZE_LIMIT:
             status_message = "File size limit exceeded"
             logging.debug(f"{did} : {api_key} : {status_message}")
             return hive_pb2.Response(output="", status_message=status_message, status=False)
 
+        if network == "mainnet":
+            did_api_url = config('MAIN_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
+            hive_api_url = config('MAIN_NET_HIVE_PORT') + settings.HIVE_API_ADD_FILE
+        else:
+            did_api_url = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
+            hive_api_url = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_ADD_FILE
+
+        # encoding and encrypting
+        key = get_encrypt_key(private_key)
+        fernet = Fernet(key)
+        file_content_encrypted = fernet.encrypt(file_content)
+
         # upload file to hive
-        api_url_base = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_ADD_FILE
-        response = self.session.get(api_url_base, files={'file': encrypted_message}, headers=self.headers['hive'],
+        response = self.session.get(hive_api_url, files={'file': file_content_encrypted}, headers=self.headers['hive'],
                                     timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
         file_hash = data['Hash']
@@ -94,10 +108,6 @@ class Hive(hive_pb2_grpc.HiveServicer):
             return hive_pb2.Response(output="", status_message=status_message, status=False)
 
         # signing the hash key
-        if network == "testnet":
-            did_api_url = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
-        else:
-            did_api_url = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
         req_data = {
             "privateKey": private_key,
             "msg": file_hash
@@ -145,6 +155,11 @@ class Hive(hive_pb2_grpc.HiveServicer):
             jwt_info = json.loads(jwt_info)
 
         network = jwt_info['network']
+        signed_message = jwt_info['msg']
+        public_key = jwt_info['pub']
+        message_signature = jwt_info['sig']
+        message_hash = jwt_info['hash']
+        private_key = jwt_info['privateKey']
 
         # Validate the API Key
         api_status = validate_api_key(api_key)
@@ -156,7 +171,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = self.rate_limiter.check_rate_limit(settings.VERIFY_AND_SHOW_LIMIT, api_key,
-                                    self.VerifyAndShow.__name__)
+                                                      self.VerifyAndShow.__name__)
         if response:
             status_message = f'Number of daily access limit exceeded {response["result"]["daily_limit"]}'
             logging.debug(f"{did} : {api_key} : {status_message}")
@@ -164,33 +179,33 @@ class Hive(hive_pb2_grpc.HiveServicer):
                                      status_message=status_message,
                                      status=False)
 
+        if network == "mainnet":
+            did_api_sign_url = config('MAIN_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
+            did_api_verify_url = config('MAIN_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_VERIFY
+            hive_api_url = config('MAIN_NET_HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
+        else:
+            did_api_sign_url = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
+            did_api_verify_url = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_VERIFY
+            hive_api_url = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
+
         # verify the hash key
-        signed_message = jwt_info['msg']
         json_data = {
             "msg": signed_message,
-            "pub": jwt_info['pub'],
-            "sig": jwt_info['sig']
+            "pub": public_key,
+            "sig": message_signature
         }
-        if network == "testnet":
-            api_url_base = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_VERIFY
-        else:
-            api_url_base = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_VERIFY
-        response = self.session.post(api_url_base, data=json.dumps(json_data), headers=self.headers['general'],
+        response = self.session.post(did_api_verify_url, data=json.dumps(json_data), headers=self.headers['general'],
                                      timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
         if not data['result']:
             return hive_pb2.Response(output="", status_message='Hash key could not be verified', status=False)
 
         # verify the given input message using private key
-        if network == "testnet":
-            api_url_base = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
-        else:
-            api_url_base = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_SIGN
         req_data = {
-            "privateKey": jwt_info['privateKey'],
-            "msg": jwt_info['hash']
+            "privateKey": private_key,
+            "msg": message_hash
         }
-        response = self.session.post(api_url_base, data=json.dumps(req_data), headers=self.headers['general'],
+        response = self.session.post(did_api_sign_url, data=json.dumps(req_data), headers=self.headers['general'],
                                      timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
         if data['status'] != 200:
@@ -206,17 +221,34 @@ class Hive(hive_pb2_grpc.HiveServicer):
                                      status=False)
 
         # show content
-        api_url_base = config('PRIVATE_NET_HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
-        response = self.session.get(api_url_base.format(jwt_info['hash']), timeout=REQUEST_TIMEOUT)
+        response = self.session.get(hive_api_url.format(jwt_info['hash']), timeout=REQUEST_TIMEOUT)
+
+        # decrypt message
+        key = get_encrypt_key(private_key)
+        fernet = Fernet(key)
+        decrypted_message = fernet.decrypt(response.text.encode())
 
         # generate jwt token
-        jwt_info = {
-            'file_content': response.text
-        }
+        jwt_info = {}
 
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
         }, api_key, algorithm='HS256')
 
-        return hive_pb2.Response(output=jwt_token, status_message='Successfully retrieved file from Elastos Hive', status=True)
+        return hive_pb2.Response(output=jwt_token, file_content=decrypted_message,
+                                 status_message='Successfully retrieved file from Elastos Hive', status=True)
+
+
+def get_encrypt_key(key):
+    encoded = key.encode()
+    salt = config('SHARED_SECRET_ADENINE').encode()
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(encoded))
+    return key

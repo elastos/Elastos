@@ -269,8 +269,8 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
 def create_wallet_mainchain(session, network):
     result = {}
     # Generate mnemonics
-    if network == "testnet":
-        generate_mnemonics_url = config('TEST_NET_WALLET_SERVICE_URL') + settings.WALLET_API_GENERATE_MNEMONIC
+    if network == "mainnet":
+        generate_mnemonics_url = config('MAIN_NET_WALLET_SERVICE_URL') + settings.WALLET_API_GENERATE_MNEMONIC
     else:
         generate_mnemonics_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_GENERATE_MNEMONIC
     response = session.get(generate_mnemonics_url, timeout=REQUEST_TIMEOUT)
@@ -279,8 +279,8 @@ def create_wallet_mainchain(session, network):
     result['mnemonic'] = mnemonic
 
     # Retrieve wallet from mnemonics
-    if network == "testnet":
-        retrieve_wallet_url = config('TEST_NET_WALLET_SERVICE_URL') + settings.WALLET_API_RETRIEVE_WALLET_FROM_MNEMONIC
+    if network == "mainnet":
+        retrieve_wallet_url = config('MAIN_NET_WALLET_SERVICE_URL') + settings.WALLET_API_RETRIEVE_WALLET_FROM_MNEMONIC
     else:
         retrieve_wallet_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_RETRIEVE_WALLET_FROM_MNEMONIC
     req_data = {
@@ -298,8 +298,8 @@ def create_wallet_mainchain(session, network):
 def create_wallet_sidechain_did(session, network):
     result = {}
     # Create DID
-    if network == "testnet":
-        create_did_url = config('TEST_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_CREATE_DID
+    if network == "mainnet":
+        create_did_url = config('MAIN_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_CREATE_DID
     else:
         create_did_url = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_CREATE_DID
     response = session.get(create_did_url, timeout=REQUEST_TIMEOUT)
@@ -316,8 +316,8 @@ def create_wallet_sidechain_eth(network):
     result = {}
     # Create account
     # web3.py instance
-    if network == "testnet":
-        web3 = Web3(HTTPProvider(config('TEST_NET_SIDECHAIN_ETH_RPC_PORT'),
+    if network == "mainnet":
+        web3 = Web3(HTTPProvider(config('MAIN_NET_SIDECHAIN_ETH_RPC_PORT'),
                                  request_kwargs={'timeout': 60}))
     else:
         web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),
@@ -332,8 +332,8 @@ def create_wallet_sidechain_eth(network):
 
 def view_wallet_general(session, network, chain, address):
     if chain == "mainchain":
-        if network == "testnet":
-            get_balance_url = config('TEST_NET_MAINCHAIN_RPC_PORT')
+        if network == "mainnet":
+            get_balance_url = config('MAINNET_MAINCHAIN_RPC_PORT')
         else:
             get_balance_url = config('PRIVATE_NET_MAINCHAIN_RPC_PORT')
         d = {
@@ -343,8 +343,8 @@ def view_wallet_general(session, network, chain, address):
             }
         }
     elif chain == "did":
-        if network == "testnet":
-            get_balance_url = config('TEST_NET_SIDECHAIN_DID_RPC_PORT')
+        if network == "mainnet":
+            get_balance_url = config('MAIN_NET_SIDECHAIN_DID_RPC_PORT')
         else:
             get_balance_url = config('PRIVATE_NET_SIDECHAIN_DID_RPC_PORT')
         d = {
@@ -354,8 +354,8 @@ def view_wallet_general(session, network, chain, address):
             }
         }
     elif chain == "token":
-        if network == "testnet":
-            get_balance_url = config('TEST_NET_SIDECHAIN_TOKEN_RPC_PORT')
+        if network == "mainnet":
+            get_balance_url = config('MAIN_NET_SIDECHAIN_TOKEN_RPC_PORT')
         else:
             get_balance_url = config('PRIVATE_NET_SIDECHAIN_TOKEN_RPC_PORT')
         d = {
@@ -376,8 +376,8 @@ def view_wallet_general(session, network, chain, address):
 
 def view_wallet_eth(network, address):
     # web3.py instance
-    if network == "testnet":
-        web3 = Web3(HTTPProvider(config('TEST_NET_SIDECHAIN_ETH_RPC_PORT'),
+    if network == "mainnet":
+        web3 = Web3(HTTPProvider(config('MAIN_NET_SIDECHAIN_ETH_RPC_PORT'),
                                  request_kwargs={'timeout': 60}))
     else:
         web3 = Web3(HTTPProvider(config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT'),

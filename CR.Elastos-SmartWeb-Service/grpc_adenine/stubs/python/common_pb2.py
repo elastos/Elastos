@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='common',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\x06\x63ommon\"\x18\n\x07Request\x12\r\n\x05input\x18\x01 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\xf2\x01\n\x06\x43ommon\x12\x41\n\x1aGenerateAPIRequestMnemonic\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x12\x39\n\x12GenerateAPIRequest\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x12\x38\n\x11GetAPIKeyMnemonic\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x12\x30\n\tGetAPIKey\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\x06\x63ommon\"\x18\n\x07Request\x12\r\n\x05input\x18\x01 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32u\n\x06\x43ommon\x12\x39\n\x12GenerateAPIRequest\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x12\x30\n\tGetAPIKey\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x62\x06proto3')
 )
 
 
@@ -127,31 +127,13 @@ _COMMON = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=119,
-  serialized_end=361,
+  serialized_start=118,
+  serialized_end=235,
   methods=[
-  _descriptor.MethodDescriptor(
-    name='GenerateAPIRequestMnemonic',
-    full_name='common.Common.GenerateAPIRequestMnemonic',
-    index=0,
-    containing_service=None,
-    input_type=_REQUEST,
-    output_type=_RESPONSE,
-    serialized_options=None,
-  ),
   _descriptor.MethodDescriptor(
     name='GenerateAPIRequest',
     full_name='common.Common.GenerateAPIRequest',
-    index=1,
-    containing_service=None,
-    input_type=_REQUEST,
-    output_type=_RESPONSE,
-    serialized_options=None,
-  ),
-  _descriptor.MethodDescriptor(
-    name='GetAPIKeyMnemonic',
-    full_name='common.Common.GetAPIKeyMnemonic',
-    index=2,
+    index=0,
     containing_service=None,
     input_type=_REQUEST,
     output_type=_RESPONSE,
@@ -160,7 +142,7 @@ _COMMON = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='GetAPIKey',
     full_name='common.Common.GetAPIKey',
-    index=3,
+    index=1,
     containing_service=None,
     input_type=_REQUEST,
     output_type=_RESPONSE,

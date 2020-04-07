@@ -101,7 +101,7 @@ def cronjob_send_ela():
         transfer_ela_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_CROSSCHAIN_TRANSFER
         response = session.post(transfer_ela_url, data=json.dumps(req_data), timeout=REQUEST_TIMEOUT)
         tx_hash = json.loads(response.text)['result']
-        logging.debug("Transferred ELA/DIDSC. Tx Hash: {0}".format(tx_hash))
+        logging.debug("Transferred 5 ELA/DIDSC. Tx Hash: {0}".format(tx_hash))
 
     # Transfer from mainchain to token sidechain
     for address, wallet in addrs_for_token.items():
@@ -119,7 +119,7 @@ def cronjob_send_ela():
                            settings.WALLET_API_CROSSCHAIN_TRANSFER_TOKENSIDECHAIN
         response = session.post(transfer_ela_url, data=json.dumps(req_data), timeout=REQUEST_TIMEOUT)
         tx_hash = json.loads(response.text)['result']
-        logging.debug("Transferred ELA/TOKENSC. Tx Hash: {0}".format(tx_hash))
+        logging.debug("Transferred 5 ELA/TOKENSC. Tx Hash: {0}".format(tx_hash))
 
     WalletAddresses.clear()
 
@@ -146,7 +146,7 @@ def cronjob_send_ela_ethsc():
         }
         signed_tx = web3.eth.account.sign_transaction(transaction, config('SIDECHAIN_ETH_WALLET_PRIVATE_KEY'))
         tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
-        logging.debug("Transferred ELA/ETHSC to: {0} Tx Hash: {1}".format(address, web3.toHex(tx_hash)))
+        logging.debug("Transferred 5 ELA/ETHSC to: {0} Tx Hash: {1}".format(address, web3.toHex(tx_hash)))
     WalletAddressesETH.clear()
 
 

@@ -11,6 +11,7 @@ service Hive {
 // The request message
 message Request {
   string input = 1;
+  bytes file_content = 2;
 }
 
 // The response message
@@ -18,4 +19,5 @@ message Response {
   string output = 1;
   string status_message = 2;
   bool status = 3;
+  bytes file_content = 4;
 }

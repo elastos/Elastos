@@ -125,9 +125,7 @@ func init() {
 	proto.RegisterType((*Response)(nil), "wallet.Response")
 }
 
-func init() {
-	proto.RegisterFile("wallet.proto", fileDescriptor_b88fd140af4deb6f)
-}
+func init() { proto.RegisterFile("wallet.proto", fileDescriptor_b88fd140af4deb6f) }
 
 var fileDescriptor_b88fd140af4deb6f = []byte{
 	// 191 bytes of a gzipped FileDescriptorProto
