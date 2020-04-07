@@ -29,19 +29,16 @@ elastOS - dApp Store Dashboard
                     <p class="dapp-description font-weight-light">{{ dapp.appDescription }}</p>
                     <div class="row">
                         <a href="{{ dapp.download_url }}" class="btn btn-secondary rounded-pill download">Download</a>
-                        <a class="btn btn-secondary rounded-pill more" data-toggle="modal" data-target="#{{ dapp.appName|cut:" " }}">More</a>
+                        <a class="btn btn-secondary rounded-pill more" data-toggle="modal" data-target="#{{ dapp.uniqueName|cut:"-" }}">More</a>
                     </div>
                 </div>
-                <div class="modal fade" id="{{ dapp.appName|cut:" " }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal fade" id="{{ dapp.uniqueName|cut:"-" }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-body" style="padding-left: 25px; padding-right: 25px;">
                                 <h4 class="login-header" style="margin-top: 25px">
                                     {{ dapp.appName }}
                                 </h4>
-                                <div class="row container align-items-center justify-content-center border border-secondary" style="margin-left: 1px;">
-                                    <img class="rounded mx-auto d-block" src="{{ dapp.icon_url }}" alt="Card image">
-                                </div>
                                 <div class="row container align-items-center justify-content-center border border-secondary" style="margin-left: 1px;">
                                     <img src="{% qr_url_from_text dapp.download_url error_correction='Q' size=3 version=10 image_format='png' %}"/>
                                 </div>
