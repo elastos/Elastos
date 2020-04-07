@@ -1,7 +1,6 @@
 import grpc
 import jwt
 import datetime
-from decouple import config
 from .stubs import node_rpc_pb2, node_rpc_pb2_grpc
 from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION
 
@@ -21,97 +20,92 @@ class NodeRpc:
         self._channel.close()
 
     # TODO: Common method for mainchain only
-    def get_current_current_council(self, network):
+    def get_current_crc_council(self, api_key, did, network):
         params = {"state": "all"}
-        return self.rpc_method(network, "mainchain", "listcurrentcrs", params)
+        return self.rpc_method(api_key, did, network, "mainchain", "listcurrentcrs", params)
 
     # TODO: Common method for mainchain only
-    def get_current_crc_candidates(self, network):
+    def get_current_crc_candidates(self, api_key, did, network):
         params = {"start": 0, "state": "all"}
-        return self.rpc_method(network, "mainchain", "listcrcandidates", params)
+        return self.rpc_method(api_key, did, network, "mainchain", "listcrcandidates", params)
 
     # TODO: Common method for mainchain only
-    def get_current_dpos_supernodes(self, network):
+    def get_current_dpos_supernodes(self, api_key, did, network):
         params = {"start": 0, "state": "all"}
-        return self.rpc_method(network, "mainchain", "listproducers", params)
+        return self.rpc_method(api_key, did, network, "mainchain", "listproducers", params)
 
     # Common method for mainchain only
-    def get_current_arbitrator_group(self, network):
-        params = {"height": str(self.get_current_height(network, "mainchain"))}
-        return self.rpc_method(network, "mainchain", "getarbitratorgroupbyheight", params)
+    def get_current_arbitrator_group(self, api_key, did, network):
+        params = {"height": str(self.get_current_height(api_key, did, network, "mainchain"))}
+        return self.rpc_method(api_key, did, network, "mainchain", "getarbitratorgroupbyheight", params)
 
     # Common method for mainchain only
-    def get_arbitrator_group(self, network, height):
+    def get_arbitrator_group(self, api_key, did, network, height):
         params = {"height": height}
-        return self.rpc_method(network, "mainchain", "getarbitratorgroupbyheight", params)
+        return self.rpc_method(api_key, did, network, "mainchain", "getarbitratorgroupbyheight", params)
 
     # Common method for mainchain only
-    def get_current_arbitrators_info(self, network):
-        return self.rpc_method(network, "mainchain", "getarbitersinfo", {})
+    def get_current_arbitrators_info(self, api_key, did, network):
+        return self.rpc_method(api_key, did, network, "mainchain", "getarbitersinfo", {})
 
     # Common method for mainchain only
-    def get_current_block_confirm(self, network):
-        params = {"height": self.get_current_height(network, "mainchain"), "verbosity": 1}
-        return self.rpc_method(network, "mainchain", "getconfirmbyheight", params)
+    def get_current_block_confirm(self, api_key, did, network):
+        height = self.get_current_height(api_key, did, network, "mainchain")
+        return self.get_block_confirm(api_key, did, network, height)
 
     # Common method for mainchain only
-    def get_block_confirm(self, network, height):
+    def get_block_confirm(self, api_key, did, network, height):
         params = {"height": height, "verbosity": 1}
-        return self.rpc_method(network, "mainchain", "getconfirmbyheight", params)
+        return self.rpc_method(api_key, did, network, "mainchain", "getconfirmbyheight", params)
 
     # Common method for mainchain only
-    def get_current_mining_info(self, network):
-        return self.rpc_method(network, "mainchain", "getmininginfo", {})
+    def get_current_mining_info(self, api_key, did, network):
+        return self.rpc_method(api_key, did, network, "mainchain", "getmininginfo", {})
 
     # Common method for mainchain, did sidechain and token sidechain
-    def get_current_block_details(self, network, chain):
-        params = {"height": str(self.get_current_height(network, chain))}
-        return self.rpc_method(network, chain, "getblockbyheight", params)
+    def get_current_block_info(self, api_key, did, network, chain):
+        height = str(self.get_current_height(api_key, did,network, chain))
+        return self.get_block_info(api_key, did, network, chain, height)
 
     # Common method for mainchain, did sidechain and token sidechain
-    def get_block_details(self, network, chain, height):
+    def get_block_info(self, api_key, did, network, chain, height):
         params = {"height": height}
-        return self.rpc_method(network, chain, "getblockbyheight", params)
+        return self.rpc_method(api_key, did, network, chain, "getblockbyheight", params)
 
     # Common method for mainchain, did sidechain and token sidechain
-    def get_current_balance(self, network, chain, address):
+    def get_current_balance(self, api_key, did, network, chain, address):
         params = {"address": address}
-        return self.rpc_method(network, chain, "getreceivedbyaddress", params)
+        return self.rpc_method(api_key, did, network, chain, "getreceivedbyaddress", params)
 
     # Common method for mainchain, did sidechain and token sidechain
-    def get_current_height(self, network, chain):
-        node_state = self.get_current_node_state(network, chain)
+    def get_current_height(self, api_key, did, network, chain):
+        node_state = self.get_current_node_state(api_key, did, network, chain)
         current_height = node_state["height"]
         return current_height
 
     # Common method for mainchain, did sidechain and token sidechain
-    def get_current_node_state(self, network, chain):
-        return self.rpc_method(network, chain, "getnodestate", {})
+    def get_current_node_state(self, api_key, did, network, chain):
+        return self.rpc_method(api_key, did, network, chain, "getnodestate", {})
 
-    def rpc_method(self, network, chain, method, params):
-        secret_key = config('SHARED_SECRET_ADENINE')
-        req_data = {
+    def rpc_method(self, api_key, did, network, chain, method, params):
+        jwt_info = {
+            'network': network,
             'chain': chain,
             'method': method,
             'params': params
         }
 
-        jwt_info = {
-            'network': network,
-            'request_input': req_data
-        }
-
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
-        }, secret_key, algorithm='HS256')
+        }, api_key, algorithm='HS256')
 
-        response = self.stub.RpcMethod(node_rpc_pb2.Request(input=jwt_token), timeout=REQUEST_TIMEOUT)
-        data = {}
+        response = self.stub.RpcMethod(node_rpc_pb2.Request(input=jwt_token), timeout=REQUEST_TIMEOUT, metadata=[('did', did)])
+        data = ''
 
         if response.status:
-            output = jwt.decode(response.output, key=secret_key, algorithms=['HS256']).get('jwt_info')
+            output = jwt.decode(response.output, key=api_key, algorithms=['HS256']).get('jwt_info')
             data = output['result']
-        
+
         return data
 
