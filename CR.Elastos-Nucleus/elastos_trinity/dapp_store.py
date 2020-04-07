@@ -5,7 +5,6 @@ from requests import Session
 
 
 class DAppStore:
-
     def __init__(self):
         headers = {
             'Accepts': 'application/json',

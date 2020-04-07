@@ -1,0 +1,78 @@
+{% extends "elastos_trinity.html" %}
+{% load static %}
+{% load json_processing %}
+
+{%block title%}<title>elastOS - dApp template</title>{% endblock %}
+
+{% block scripts_elastos_trinity %}
+{% endblock scripts_elastos_trinity %}
+
+{% block elastos_trinity_title %}
+elastOS - dApp template
+{% endblock elastos_trinity_title %}
+
+{%block elastos_trinity%}
+    <ul class="nav nav-tabs" role="tablist">
+        <li>
+            <a class="nav-link active text-center" href="#angular-cards" data-toggle="tab">
+                Angular
+            </a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link text-center" href="#react-cards" data-toggle="tab">
+                React
+            </a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        {% for key , value in templates.items%}
+            {% if key == 'angular' %}
+                <div class="tab-pane active" id="angular-cards">
+                    <div class="card-deck">
+                        {% for items in value %}
+                            <div class="col-4 pt-3">
+                                <div class="card">
+                                    <img class="card-img-top" src="{{ items|getval:"logo_url" }}" style="width:25%;margin: 40px;">
+                                    <div class="card-header" style="color: black">
+                                        <p class="card-text">{{items|getval:"name" }}</p>
+                                    </div>
+                                    <div class="card-body" style="color:black;">
+                                        <p class="card-text">Description: {{items|getval:"short_description" }}</p>
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type = "hidden" value="{{items|getval:"id"}}" name="dapp_id">
+                                            <input type = "submit"  class="btn btn-secondary" value="Details">
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="tab-pane" id="react-cards">
+                    <div class="card-deck">
+                        {% for items in value %}
+                            <div class="col-4 pt-3">
+                                <div class="card ">
+                                    <img class="card-img-top" src="{{ items|getval:"logo_url" }}"  style="width:25%;margin: 40px;">
+                                    <div class="card-header" style="color: black">
+                                        <p class="card-text">{{items|getval:"name"}}</p>
+                                    </div>
+                                    <div class="card-body" style="color:black;">
+                                        <p class="card-text">Description: {{items|getval:"short_description" }}</p>
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type = "hidden" value="{{items|getval:"id"}}" name="dapp_id">
+                                            <input type = "submit" class="btn btn-secondary" value="Details">
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{%endblock elastos_trinity%}
