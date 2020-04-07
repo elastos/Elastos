@@ -785,7 +785,7 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 
 	// Calculate the final penalty.
 	penalty := c.state.depositInfo[member.Info.CID].Penalty
-	currentPenalty := MinDepositAmount * common.Fixed64(1-electionRate*voteRate)
+	currentPenalty := common.Fixed64(float64(MinDepositAmount) * (1 - electionRate*voteRate))
 	finalPenalty := penalty + currentPenalty
 
 	log.Infof("height %d member %s impeached, not election and not vote proposal"+
