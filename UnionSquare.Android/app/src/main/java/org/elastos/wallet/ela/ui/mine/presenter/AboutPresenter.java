@@ -1,7 +1,8 @@
 package org.elastos.wallet.ela.ui.mine.presenter;
 
 import android.content.Context;
-import android.os.Environment;
+
+import com.blankj.utilcode.util.ZipUtils;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
@@ -55,18 +56,19 @@ public class AboutPresenter extends PresenterAbstract {
 
     private static String moveLogFile(Context context, String logName) {
         String rootPath = context.getFilesDir().getParent();
-        File file = new File(rootPath, logName);
+        File file = new File(rootPath, logName);//原始文件
         if (!file.exists()) {
             return null;
         }
-
         try {
-            InputStream is = new FileInputStream(file);
-            File file1 = context.getExternalFilesDir("log");
-            if (file1.mkdirs()) {
-                Log.e("moveLogFile", "Directory  created");
+            File file1 = context.getExternalFilesDir("log");//目标文件夹
+            if (file.length() > 10485760) {
+                //大于10m压缩
+                File zipFile = new File(file1, "spvsdk.zip");
+                ZipUtils.zipFile(file, zipFile);
+                return zipFile.getAbsolutePath();
             }
-
+            InputStream is = new FileInputStream(file);
             OutputStream fosto = new FileOutputStream(file1 + File.separator + logName);
             byte bt[] = new byte[1024];
             int c = 0;

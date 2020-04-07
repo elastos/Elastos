@@ -88,13 +88,13 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
         }
     }
 
-    private void shareFile() {
+    private void shareFile(String date) {
         Intent share_intent = new Intent();
         share_intent.setAction(Intent.ACTION_SEND);//设置分享行为
         share_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         share_intent.setType("*/*");//设置分享内容的类型
-        File file1 = getContext().getExternalFilesDir("log");
-        File file = new File(file1, "spvsdk.log");
+      //  File file1 = getContext().getExternalFilesDir("log");
+        File file = new File(date);
         if (!file.exists()) {
             return;
         }
@@ -127,7 +127,7 @@ public class AboutFragment extends BaseFragment implements CommmonStringWithMeth
             case "moveLogFile":
                 if (!TextUtils.isEmpty(data)) {
                     showToast(getContext().getString(R.string.logkeppin) + data);
-                    shareFile();
+                    shareFile(data);
                 } else {
                     showToast(getContext().getString(R.string.logkeepfail));
                 }

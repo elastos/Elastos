@@ -40,7 +40,7 @@
         <com.qmuiteam.qmui.layout.QMUILinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginLeft="3dp"
+            android:layout_marginLeft="12dp"
             android:layout_marginRight="3dp"
             android:layout_weight="5"
             android:gravity="center"
@@ -51,7 +51,7 @@
                 android:id="@+id/tv_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
+                android:gravity="left"
                 android:maxLines="1"
                 android:ellipsize="end"
                 android:textColor="@color/white"
@@ -64,7 +64,7 @@
                 android:layout_marginTop="6dp"
                 android:drawableLeft="@mipmap/found_vote_point_location"
                 android:drawablePadding="6dp"
-                android:gravity="center"
+                android:layout_gravity="left"
                 android:textColor="@color/white"
                 android:textSize="11sp" />
 
@@ -76,17 +76,20 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="3"
+            android:layout_marginRight="15dp"
             android:gravity="center"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tv_num"
+                android:layout_gravity="right"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
                 android:textSize="11sp" />
 
             <TextView
+                android:layout_gravity="right"
                 android:id="@+id/tv_zb"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -635,4 +635,5 @@
     <string name="pleaseinstallfilechose">请安装文件管理器</string>
     <string name="serviceprovider">服务提供方</string>
     <string name="sure1">确认</string>
+    <string name="copyscanresult">复制扫描结果</string>
 </resources>

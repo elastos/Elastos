@@ -142,7 +142,7 @@
             android:drawableTop="@mipmap/bottom_my_vote"
             android:gravity="center"
             android:text="@string/my_vote"
-            android:textColor="#999999"
+            android:textColor="@color/white"
             android:textSize="@dimen/px18" />
 
         <TextView
@@ -155,7 +155,7 @@
             android:drawableTop="@mipmap/vote_attend"
             android:gravity="center"
             android:text="@string/sign_up_for"
-            android:textColor="#999999"
+            android:textColor="@color/white"
             android:textSize="@dimen/px18" />
 
 

@@ -458,7 +458,7 @@
     <string name="transactiondetail">Transaction Details</string>
     <string name="findlistup2">Community Proposal</string>
     <string name="findlistup3">CR Council </string>
-    <string name="findlistup4">CR Council election</string>
+    <string name="findlistup4">CR Council Election</string>
     <string name="findlistdown1">Contribute to the Elastos SmartWeb</string>
     <string name="findlistdown2">Participate in Community Autonomous Operations</string>
     <string name="findlistdown3">Council member profile</string>
@@ -630,4 +630,5 @@
     <string name="pleaseinstallfilechose">Install file manager</string>
     <string name="serviceprovider">Service provider</string>
     <string name="sure1">sure</string>
+    <string name="copyscanresult">Copy Content</string>
 </resources>

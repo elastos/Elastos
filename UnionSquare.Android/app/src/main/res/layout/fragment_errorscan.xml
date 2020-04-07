@@ -22,5 +22,5 @@
         android:id="@+id/tv_copy"
         style="@style/button_margin"
         android:layout_marginTop="100dp"
-        android:text="复制扫描结果" />
+        android:text="@string/copyscanresult" />
 </LinearLayout>
