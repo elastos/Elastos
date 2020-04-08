@@ -342,7 +342,9 @@ export default class extends StandardPage {
   }
 
   renderTitleButton = () => {
-    return (
+    const { detail, currentUserId, isAdmin } = this.props
+    const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
+    return isOwner && (
       <Button
         onClick={this.handleShowVersionHistory}
         className="btn-create-suggestion"

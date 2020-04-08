@@ -9,6 +9,10 @@ const mapState = state => ({
   dataList: state.suggestion.edit_history,
   loading: _.get(state.suggestion.detail, 'loading'),
   detail: state.suggestion.detail,
+  user: state.user,
+  currentUserId: state.user.current_user_id,
+  isCouncil: state.user.is_council,
+  isAdmin: state.user.is_admin,
 })
 
 const mapDispatch = () => {

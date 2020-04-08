@@ -134,7 +134,9 @@ export default class extends DetailPage {
   }
 
   renderTitleButton = () => {
-    return (
+    const { detail, currentUserId, isAdmin } = this.props
+    const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
+    return isOwner && (
       <Button
         onClick={this.handleRevertVersion}
         className="btn-create-suggestion"
