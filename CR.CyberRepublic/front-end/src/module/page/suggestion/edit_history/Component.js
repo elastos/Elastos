@@ -41,7 +41,10 @@ export default class extends DetailPage {
           if (typeof obj1[k] === 'object') {
             diffObj[k] = this.diffObject(obj1[k], obj2[k])
           } if (typeof obj1[k] === 'string') {
-            if (k === '_id' || k === 'createdAt') {
+            if (k === '_id'
+                || k === 'createdAt'
+                || k === 'elaAddress'
+            ) {
               diffObj[k] = obj2[k]
             } else {
               const da = difflib.ndiff(obj1[k].split(''), obj2[k].split(''))
