@@ -720,6 +720,7 @@ export default class extends Base {
   }
 
   public async editHistories(param: any): Promise<Document[]> {
+    await this.fixHistoryVersion(param.id)
     return await this.getDBModel('Suggestion_Edit_History')
                      .getDBInstance()
                      .find({ suggestion: param.id })
