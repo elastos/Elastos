@@ -16,8 +16,10 @@
         <button type="submit">Switch</button>
     </form>
     {% if network == 'mainnet' %}
-        <iframe src="https://ethchain.elastos.org/" style="width:100%; height: 1500px;"></iframe>
+        <embed src="https://idchain.elastos.org/" style="width:100%; height: 1500px;">
     {% else %}
-        <p>There is no browser available yet for {{ network }}</p>  
+        <p>Current Height: {{ current_height }}</p>
+        <p>Previous Block Hash: {{ current_block_info.parentHash }}</p>
+        <p>Current Block Hash: {{ current_block_info.hash }}</p>
     {% endif %}
 {% endblock browser %}

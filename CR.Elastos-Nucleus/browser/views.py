@@ -103,12 +103,11 @@ def sidechain_token(request):
 
 @login_required
 def sidechain_eth(request):
+    api_key = request.session['api_key']
     did = request.session['did']
     track_page_visit(did, 'ETH Sidechain Browser', 'browser:sidechain_eth', False)
     recent_services = get_recent_services(did)
-    network = 'gmunet'
     context = {
-        'network': network,
         'recent_services': recent_services
     }
     if request.method == 'POST':
@@ -117,8 +116,15 @@ def sidechain_eth(request):
             network = form.cleaned_data.get('network')
             context['form'] = SelectNetworkForm(initial={'network': network})
             context['network'] = network
+            data = get_blockchain_node_data(request, api_key, did, network, "eth")
+            for k, v in data.items():
+                context[k] = v
             return render(request, "browser/sidechain_eth.html", context)
     else:
+        network = 'gmunet'
+        data = get_blockchain_node_data(request, api_key, did, network, "eth")
+        for k, v in data.items():
+            context[k] = v
         form = SelectNetworkForm(initial={'network': network})
         context['form'] = form
         return render(request, "browser/sidechain_eth.html", context)
@@ -154,4 +160,3 @@ def get_blockchain_node_data(request, api_key, did, network, chain):
     finally:
         node_rpc.close()
     return data
-

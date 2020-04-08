@@ -16,7 +16,7 @@ django-mathfilters==1.0.0
 django-sass-processor==0.7.4
 django-simple-cookie-consent==0.1.1
 djangorestframework==3.10.3
-elastos-adenine==2.0.1
+elastos-adenine==2.0.2
 ExtensionClass==4.4
 fastecdsa==1.7.5
 grpcio==1.24.3
