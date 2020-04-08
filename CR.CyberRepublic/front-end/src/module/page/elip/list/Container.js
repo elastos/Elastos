@@ -24,7 +24,8 @@ const mapState = state => ({
     : !_.isEqual(
       _.filter(defaultFilters, excludeFilters),
       _.filter(state.elip.filters, excludeFilters)
-    )
+    ),
+  sortBy: state.elip.sortBy
 })
 
 const mapDispatch = () => {
@@ -41,6 +42,9 @@ const mapDispatch = () => {
     },
     async listData(param) {
       return service.listData(param)
+    },
+    async onSortByChanged(sortBy) {
+      return service.saveSortBy(sortBy)
     }
   }
 }

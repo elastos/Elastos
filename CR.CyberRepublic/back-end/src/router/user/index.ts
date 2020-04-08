@@ -19,6 +19,12 @@ import comment from './comment'
 import subscribe from './subscribe'
 import unsubscribe from './unsubscribe'
 import logout from './logout'
+import elaUrl from './ela_url'
+import loginElaUrl from './login_ela_url'
+import didCallbackEla from './did_callback_ela'
+import loginCallbackEla from './login_callback_ela'
+import getDid from './get_did'
+import checkElaAuth from './check_ela_auth'
 
 export default Base.setRouter([
     {
@@ -120,5 +126,35 @@ export default Base.setRouter([
         path : '/:id/unsubscribe',
         router : unsubscribe,
         method : 'post'
+    },
+    {
+        path: '/ela-url',
+        router: elaUrl,
+        method: 'get'
+    },
+    {
+        path: '/did-callback-ela',
+        router: didCallbackEla,
+        method: 'post'
+    },
+    {
+        path: '/did',
+        router: getDid,
+        method: 'get'
+    },
+    {
+        path: '/login-ela-url',
+        router: loginElaUrl,
+        method: 'get'
+    },
+    {
+        path: '/login-callback-ela',
+        router: loginCallbackEla,
+        method: 'post'
+    },
+    {
+        path: '/check-ela-auth',
+        router: checkElaAuth,
+        method: 'post'
     }
 ])

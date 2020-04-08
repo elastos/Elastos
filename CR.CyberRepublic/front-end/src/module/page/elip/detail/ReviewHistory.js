@@ -6,6 +6,7 @@ import I18N from '@/I18N'
 import { breakPoint } from '@/constants/breakPoint'
 import { ELIP_STATUS, DATE_FORMAT } from '@/constant'
 import userUtil from '@/util/user'
+
 const { Panel } = Collapse
 
 const ReviewHistory = ({ reviews }) => {
@@ -24,7 +25,14 @@ const ReviewHistory = ({ reviews }) => {
               <Content status={el.status} style={{ padding: 20 }}>
                 <Comment>
                   {el.status === ELIP_STATUS.REJECTED
-                    ? el.comment
+                    ? el.comment.split('\n').map((item) => {
+                      return (
+                        <span>
+                          {item}
+                          <br/>
+                        </span>
+                      )
+                    })
                     : 'APPROVED'}
                 </Comment>
                 <Meta>

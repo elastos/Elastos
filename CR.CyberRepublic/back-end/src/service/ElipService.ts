@@ -251,7 +251,7 @@ export default class extends Base {
       .getDBInstance()
       .findOne(query)
       .populate('reference')
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
     if (!rs) {
       return { elip: { success: true, empty: true } }
@@ -437,6 +437,16 @@ export default class extends Base {
       }
     }
 
+    // sortBy
+    //      .sort({ createdAt: -1, vid: -1 })
+    const sortObject = {}
+    let sortBy = param.sortBy
+    if(sortBy !== "createdAt"
+       && sortBy !== "updatedAt") {
+      sortBy = "createdAt"
+    }
+    sortObject[sortBy] = -1
+
     if (param.$or && query.$or) {
       query.$and = [{ $or: query.$or }, { $or: param.$or }]
     }
@@ -445,12 +455,12 @@ export default class extends Base {
       query.$or = param.$or
     }
 
-    const fields = 'vid title createdBy createdAt status'
+    const fields = 'vid title createdBy createdAt updatedAt status'
     const list = await db_elip
       .getDBInstance()
       .find(query, fields)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
-      .sort({ createdAt: -1, vid: -1 })
+      .sort(sortObject)
       .limit(100)
 
     return list

@@ -4,10 +4,11 @@ import * as _ from 'lodash'
 import {constant} from '../constant'
 import {geo} from '../utility/geo'
 import * as uuid from 'uuid'
-import { validate, utilCrypto, mail, permissions } from '../utility'
+import { validate, utilCrypto, mail, permissions, getDidPublicKey, logger } from '../utility'
 import CommunityService from './CommunityService'
+import * as jwt from 'jsonwebtoken'
 
-const selectFields = '-salt -password -elaBudget -elaOwed -votePower -resetToken'
+const selectFields = '-logins -salt -password -elaBudget -elaOwed -votePower -resetToken'
 const strictSelectFields = selectFields + ' -email -profile.walletAddress'
 
 const restrictedFields = {
@@ -153,8 +154,11 @@ export default class extends Base {
                 })
             }
         }
-
-        return user
+        const did = user.dids && user.dids.find(el => el.active === true)
+        const temp = { ...user._doc }
+        delete temp.dids
+        temp.did = did
+        return temp
     }
 
     public async updateRole(param) {
@@ -260,6 +264,14 @@ export default class extends Base {
                 {banned: false}
             ]
         }).select(selectFields).populate('circles')
+    }
+
+    public async findUserByDid(did: string): Promise<Document>{
+        const db_user = this.getDBModel('User')
+        const query = {
+            dids: { $elemMatch: { id: did, active: true } }
+        }
+        return await db_user.getDBInstance().findOne(query, selectFields)
     }
 
     public async findUsers(query): Promise<Document[]>{
@@ -638,5 +650,330 @@ export default class extends Base {
         }
 
         return { isExist: false }
+    }
+
+    public async getElaUrl() {
+        try {
+            const userId = _.get(this.currentUser, '_id')
+            const db_user = this.getDBModel('User')
+            const user = await db_user.findById({ _id: userId })
+            if (_.isEmpty(user)) {
+                return { success: false }
+            }
+            // for reassociating DID
+            if (user && !_.isEmpty(user.dids)) {
+                const dids = user.dids.map(el => {
+                    // the mark field will be removed after reassociated DID 
+                    if (el.active === true) {
+                        return {
+                            id: el.id,
+                            expirationDate: el.expirationDate,
+                            active: true,
+                            mark: true
+                        }
+                    }
+                    return el
+                })
+                await db_user.update({ _id: userId }, { $set: { dids } })
+            }
+            const jwtClaims = {
+                iss: process.env.APP_DID,
+                userId: this.currentUser._id,
+                callbackurl: `${process.env.API_URL}/api/user/did-callback-ela`,
+                claims: {},
+                website: {
+                    domain: process.env.SERVER_URL,
+                    logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+                }
+            }
+            const jwtToken = jwt.sign(
+                jwtClaims,
+                process.env.APP_PRIVATE_KEY,
+                { expiresIn: '7d', algorithm: 'ES256' }
+            )
+            const url = `elastos://credaccess/${jwtToken}`
+            return { success: true, url }
+        } catch(err) {
+            logger.error(err)
+            return { success: false }
+        }
+    }
+
+    public async didCallbackEla(param: any) {
+        try {
+            const jwtToken = param.jwt
+            const claims: any = jwt.decode(jwtToken)
+            if (!claims) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Problems parsing jwt token.'
+                }
+            }
+            const rs: any = await getDidPublicKey(claims.iss)
+            if (!rs) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Can not get public key.'
+                }
+            }
+    
+            // verify response data from ela wallet
+            return jwt.verify(jwtToken, rs.publicKey, async (err: any, decoded: any) => {
+                if (err) {
+                    return {
+                        code: 401,
+                        success: false,
+                        message: 'Verify signatrue failed.'
+                    }
+                  } else {
+                    if (!decoded.req) {
+                        return {
+                            code: 400,
+                            success: false,
+                            message: 'The payload of jwt token is not correct.'
+                        }
+                    }
+                    try {
+                        // get user id to find the specific user and save DID
+                        const result: any = jwt.decode(decoded.req.slice('elastos://credaccess/'.length))
+                        if (!result || (result && !result.userId)) {
+                            return {
+                                code: 400,
+                                success: false,
+                                message: 'Problems parsing jwt token of CR website.'
+                            }
+                        }
+                        const db_user = this.getDBModel('User')
+
+                        const doc = await this.findUserByDid(decoded.iss)
+                        if (doc && !doc._id.equals(result.userId)) {
+                            return {
+                                code: 400,
+                                success: false,
+                                message: 'This DID had been used by other user.'
+                            }
+                        }
+
+                        const user = await db_user.findById({ _id: result.userId })
+                        if (user) { 
+                            let dids: object[]
+                            const matched = user.dids.find(el => el.id === decoded.iss)
+                            // associate the same DID
+                            if (matched) {
+                                dids = user.dids.map(el => {
+                                    if (el.id === decoded.iss) {
+                                        return {
+                                            id: el.id,
+                                            active: true,
+                                            expirationDate: rs.expirationDate
+                                        }
+                                    }
+                                    return {
+                                        id: el.id,
+                                        expirationDate: el.expirationDate,
+                                        active: false
+                                    }
+                                })
+                            } else {
+                                // associate different DID
+                                const inactiveDids = user.dids.map(el => {
+                                    if (el.active === true) {
+                                        return {
+                                            id: el.id,
+                                            expirationDate: el.expirationDate,
+                                            active: false
+                                        }
+                                    }
+                                    return el
+                                })
+                                dids = [ ...inactiveDids, { id: decoded.iss, active: true, expirationDate: rs.expirationDate } ]
+                            }
+                            await db_user.update(
+                                { _id: result.userId }, 
+                                { $set: { dids } }
+                            )
+                            return {
+                                code: 200,
+                                success: true, message: 'Ok'
+                            }
+                        } else {
+                            return {
+                                code: 400,
+                                success: false,
+                                message: 'User ID does not exist.'
+                            }
+                        }
+                    } catch (err) {
+                        logger.error(err)
+                        return {
+                            code: 500,
+                            success: false,
+                            message: 'Something went wrong'
+                        }
+                    }
+                  }
+            })
+        } catch(err) {
+            logger.error(err)
+            return {
+                code: 500,
+                success: false,
+                message: 'Something went wrong'
+            }
+        }
+    }
+
+    public async getDid() {
+        const userId = this.currentUser._id
+        const db_user = this.getDBModel('User')
+        const user = await db_user.findById({_id: userId})
+        if (user && user.dids) {
+            const did = user.dids.find(el => el.active === true)
+            if (did && !did.mark) {
+                return { success: true, did }
+            } else {
+                return { success: false }
+            }   
+        } else {
+            return { success: false }
+        }
+    }
+
+    public async loginElaUrl() {
+        try {
+            const jwtClaims = {
+                iss: process.env.APP_DID,
+                callbackurl: `${process.env.API_URL}/api/user/login-callback-ela`,
+                nonce: uuid.v4(),
+                claims: {},
+                website: {
+                    domain: process.env.SERVER_URL,
+                    logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+                }
+            }
+            
+            const jwtToken = jwt.sign(
+                jwtClaims,
+                process.env.APP_PRIVATE_KEY,
+                { expiresIn: '7d', algorithm: 'ES256' }
+            )
+            const url = `elastos://credaccess/${jwtToken}`
+            return { success: true, url }
+        } catch(err) {
+            logger.error(err)
+            return { success: false }
+        }
+    }
+
+    public async loginCallbackEla(param: any) {
+        try {
+            const jwtToken = param.jwt
+            const claims: any = jwt.decode(jwtToken)
+            if (!claims) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Problems parsing jwt token.'
+                }
+            }
+            const rs: any = await getDidPublicKey(claims.iss)
+            if (!rs) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Can not get public key.'
+                }
+            }
+    
+            // verify response data from ela wallet
+            return jwt.verify(jwtToken, rs.publicKey, async (err: any, decoded: any) => {
+                if (err) {
+                    return {
+                        code: 401,
+                        success: false,
+                        message: 'Verify signatrue failed.'
+                    }
+                  } else {
+                    try {
+                        const payload: any = jwt.decode(decoded.req.slice('elastos://credaccess/'.length))
+                        if (!payload || (payload && !payload.nonce)) {
+                            return {
+                                code: 400,
+                                success: false,
+                                message: 'Problems parsing jwt token of CR website.'
+                            }
+                        }
+
+                        const db_did = this.getDBModel('Did')
+                        const didDoc = await db_did.findOne({ nonce: payload.nonce })
+                        if (!_.isEmpty(didDoc)) {
+                            return {
+                                code: 200,
+                                success: true, message: 'Ok'
+                            }
+                        }
+
+                        const doc = {
+                            did: decoded.iss,
+                            expirationDate: rs.expirationDate,
+                            number: payload.nonce
+                        }
+                        await db_did.save(doc)
+                        return {
+                            code: 200,
+                            success: true, message: 'Ok'
+                        }
+                    } catch (err) {
+                        logger.error(err)
+                        return {
+                            code: 500,
+                            success: false,
+                            message: 'Something went wrong'
+                        }
+                    }
+                  }
+            })
+        } catch(err) {
+            logger.error(err)
+            return {
+                code: 500,
+                success: false,
+                message: 'Something went wrong'
+            }
+        }
+    }
+
+    public async checkElaAuth(param: any) {
+        try {
+            if (!param.req) {
+                return { success: false }
+            }
+            const jwtToken = param.req.slice('elastos://credaccess/'.length)
+            if (!jwtToken) {
+                return { success: false }
+            }
+            return jwt.verify(jwtToken, process.env.APP_PUBLIC_KEY, async (err: any, decoded: any) => {
+                if(err) {
+                    console.log('err...', err)
+                    return { success: false }
+                }
+                try {
+                    const db_did = this.getDBModel('Did')
+                    const doc = await db_did.findOne({ number: decoded.nonce })
+                    if (doc) {
+                        return { success: true, did: doc.did }
+                    } else {
+                        return { success: false }
+                    }
+                } catch (err) {
+                    return { success: false }
+                }
+            })
+
+        } catch (err) {
+            return { success: false }
+        }
     }
 }

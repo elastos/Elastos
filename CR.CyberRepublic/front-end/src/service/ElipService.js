@@ -68,4 +68,8 @@ export default class extends BaseService {
   async updateFilters(filters) {
     this.dispatch(this.selfRedux.actions.filters_update(filters))
   }
+
+  async saveSortBy(sortBy) {
+    this.dispatch(this.selfRedux.actions.sortBy_update(sortBy))
+  }
 }

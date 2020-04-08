@@ -23,6 +23,13 @@ import userUtil from '@/util/user'
 import { ReactComponent as UpIcon } from '@/assets/images/icon-up.svg'
 import { ReactComponent as DownIcon } from '@/assets/images/icon-down.svg'
 
+
+const SORT_BY = {
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+}
+const DEFAULT_SORT = SORT_BY.createdAt
+
 const { RangePicker } = DatePicker
 
 export default class extends BaseComponent {
@@ -55,6 +62,7 @@ export default class extends BaseComponent {
   }
 
   getQuery = () => {
+    const sortBy = this.props.sortBy || DEFAULT_SORT
     const { filter, creationDate, author, type } = this.state
     const query = {}
     if (!_.isEmpty(filter)) {
@@ -70,6 +78,9 @@ export default class extends BaseComponent {
     }
     if (!_.isEmpty(type)) {
       query.type = type
+    }
+    if (sortBy) {
+      query.sortBy = sortBy
     }
     const searchStr = this.state.search
     if (searchStr) {
@@ -178,6 +189,38 @@ export default class extends BaseComponent {
       : moment(createdAt).format('YYYY-MM-DD')
   }
 
+  onSortByChanged = async sortBy => {
+    await this.props.onSortByChanged(sortBy)
+    await this.refetch()
+  }
+
+  renderSortActions() {
+    const sortBy = this.props.sortBy || DEFAULT_SORT
+    const SORT_BY_TEXT = {
+      createdAt: I18N.get('elip.fields.createdAt'),
+      updatedAt: I18N.get('elip.fields.updatedAt'),
+    }
+    return (
+      <div style={{paddingBottom: 24}}>
+        {I18N.get('elip.sort')}
+        :
+        {' '}
+        <Select
+          name="type"
+          style={{ width: 200, marginLeft: 16 }}
+          onChange={this.onSortByChanged}
+          value={sortBy}
+        >
+          {_.map(SORT_BY, value => (
+            <Select.Option key={value} value={value}>
+              {SORT_BY_TEXT[value]}
+            </Select.Option>
+          ))}
+        </Select>
+      </div>
+    )
+  }
+
   ord_render() {
     const { isSecretary, isLogin } = this.props
     const { filter, creationDate, author, type, isVisitableFilter } = this.state
@@ -221,6 +264,11 @@ export default class extends BaseComponent {
         title: I18N.get('elip.fields.createdAt'),
         dataIndex: 'createdAt',
         render: createdAt => this.renderCreatedAt(createdAt)
+      },
+      {
+        title: I18N.get('elip.fields.updatedAt'),
+        dataIndex: 'updatedAt',
+        render: updatedAt => this.renderCreatedAt(updatedAt)
       }
     ]
 
@@ -290,22 +338,22 @@ export default class extends BaseComponent {
                 >
                   {isLogin
                     ? _.map(ELIP_STATUS, value => (
+                      <Select.Option key={value} value={value}>
+                        {I18N.get(`elip.status.${value}`)}
+                      </Select.Option>
+                    ))
+                    : _.map(
+                      [
+                        ELIP_STATUS.DRAFT,
+                        ELIP_STATUS.CANCELLED,
+                        ELIP_STATUS.SUBMITTED_AS_PROPOSAL
+                      ],
+                      value => (
                         <Select.Option key={value} value={value}>
                           {I18N.get(`elip.status.${value}`)}
                         </Select.Option>
-                      ))
-                    : _.map(
-                        [
-                          ELIP_STATUS.DRAFT,
-                          ELIP_STATUS.CANCELLED,
-                          ELIP_STATUS.SUBMITTED_AS_PROPOSAL
-                        ],
-                        value => (
-                          <Select.Option key={value} value={value}>
-                            {I18N.get(`elip.status.${value}`)}
-                          </Select.Option>
-                        )
-                      )}
+                      )
+                    )}
                 </Select>
               </FilterItem>
             </FilterContent>
@@ -369,6 +417,7 @@ export default class extends BaseComponent {
         </Row>
       </FilterPanel>
     )
+    const sortActionsNode = this.renderSortActions()
 
     const { list, loading } = this.state
     let dataCSV = []
@@ -387,7 +436,8 @@ export default class extends BaseComponent {
             I18N.get('elip.fields.title'),
             I18N.get('elip.fields.author'),
             I18N.get('elip.fields.status'),
-            I18N.get('elip.fields.createdAt')
+            I18N.get('elip.fields.createdAt'),
+            I18N.get('elip.fields.updatedAt')
           ]
         ],
         itemsCSV
@@ -417,11 +467,19 @@ export default class extends BaseComponent {
             </CSVLink>
           )}
         </Row>
+        <Row
+          type="flex"
+          justify="space-between"
+          align="middle"
+          style={{ borderBottom: '1px solid #E5E5E5' }}
+        >
+          {sortActionsNode}
+        </Row>
         <Table
           columns={columns}
           loading={loading}
           dataSource={list}
-          rowKey={record => record._id}
+          rowKey={(record, index) => index}
         />
       </Container>
     )

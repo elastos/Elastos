@@ -20,6 +20,7 @@ import Elip from './Elip'
 import Elip_Review from './Elip_Review'
 import Suggestion_Edit_History from './Suggestion_Edit_History'
 import Vid from './Vid'
+import Did from './Did'
 
 import Log from './Log'
 
@@ -115,6 +116,7 @@ export default class {
     this.db.Elip_Review = new Elip_Review(db)
     this.db.Suggestion_Edit_History = new Suggestion_Edit_History(db)
     this.db.Vid = new Vid(db)
+    this.db.Did = new Did(db)
   }
 
   public getModel(name: string) {

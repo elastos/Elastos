@@ -19,6 +19,7 @@ import sanitizeHtml from '@/util/html'
 import GenderSvg from './GenderSvg'
 
 import './style.scss'
+import ProfileDid from './ProfileDid'
 
 /**
  * This has 3 views
@@ -70,6 +71,7 @@ export default class extends BaseComponent {
         <div className="profile-info-container profile-info-container-mobile clearfix">
           {this.renderAvatar(true)}
           {this.renderFullName(true)}
+          {this.renderDidBtn()}
           {this.renderRole(true)}
           {this.renderLocation(true)}
           {this.renderLocalTime(true)}
@@ -134,6 +136,7 @@ export default class extends BaseComponent {
           <div className="profile-left pull-left">{this.renderAvatar()}</div>
           <div className="profile-right pull-left">
             {this.renderFullName()}
+            {this.renderDidBtn()}
             <Row>
               <Col span={24} className="profile-right-col">
                 {this.renderRole()}
@@ -282,6 +285,17 @@ export default class extends BaseComponent {
         <Icon type="user" />
         <span>{user.role && USER_ROLE_TO_TEXT[user.role]}</span>
       </div>
+    )
+  }
+
+  renderDidBtn() {
+    const { getElaUrl, getNewActiveDid, user } = this.props
+    return (
+      <ProfileDid
+        getElaUrl={getElaUrl}
+        getNewActiveDid={getNewActiveDid}
+        did={user.did}
+      />
     )
   }
 

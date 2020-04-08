@@ -174,7 +174,16 @@ export default class extends BaseComponent {
       body = (
         <CommentCol span={21} status={item.status}>
           <CommentContent>
-            <div>{item.comment.content}</div>
+            <div>
+              {item.comment.content.split('\n').map((item) => {
+                return (
+                  <span>
+                    {item}
+                    <br/>
+                  </span>
+                )
+              })}
+            </div>
             <CommentFooter>
               {commenterName}
               {moment(item.createdAt).format(DATE_FORMAT)}

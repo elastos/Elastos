@@ -10,6 +10,7 @@ import { logger } from '@/util'
 import Connector from './svg/Connector'
 import Square from './svg/Square'
 import Circle from './svg/Circle'
+import { checkPropTypes } from 'prop-types'
 
 const RANK_TEXT = {
   0: 'TH',
@@ -42,7 +43,7 @@ export default class extends StandardPage {
 
   getQuery = () => {
     const {pageNum} = this.state
-    return {pageNum, pageSize: PAGE_SIZE, state: 'all'}
+    return {pageNum, pageSize: PAGE_SIZE, state: 'active'}
   }
 
   refetch = async (isShowLoading = false) => {
@@ -117,7 +118,9 @@ export default class extends StandardPage {
             <Rank>
               <Number>{col.index + 1}</Number>
               <Suffix>
-                {RANK_TEXT[col.index + 1] ? RANK_TEXT[col.index + 1] : RANK_TEXT[0]}
+                {RANK_TEXT[col.index + 1]
+                  ? RANK_TEXT[col.index + 1]
+                  : RANK_TEXT[0]}
               </Suffix>
             </Rank>
           </StyledAvatar>
@@ -127,26 +130,35 @@ export default class extends StandardPage {
             </Popover>
             <Meta>
               <Popover content={I18N.get(`area.${col.location}`)}>
-                <div className="wrap-content country">{I18N.get(`area.${col.location}`)}</div>
+                <div className="wrap-content country">
+                  {I18N.get(`area.${col.location}`)}
+                </div>
+              </Popover>
+              <Popover content={col.url}>
+                <div className="wrap-content url">
+                  <a href={col.url} target="_blank">
+                    {col.url}
+                  </a>
+                </div>
               </Popover>
               <div className="vote">
                 <Popover content={col.votes}>
                   <div className="wrap-content data data-vote">{col.votes}</div>
                 </Popover>
                 &nbsp;
-                {I18N.get('council.candidate.votes')}
+                {I18N.get("council.candidate.votes")}
               </div>
               <div className="vote">
                 <Popover content={voteRate}>
                   <div className="wrap-content data data-rate">{voteRate}</div>
                 </Popover>
-                {`% ${I18N.get('council.candidate.voteRate')}`}
+                {`% ${I18N.get("council.candidate.voteRate")}`}
               </div>
             </Meta>
           </Info>
         </Card>
       </Col>
-    )
+    );
   }
 }
 
@@ -241,7 +253,11 @@ const Meta = styled.div`
   color: #f6f9fd;
   opacity: 0.9;
   .country {
-    height: 50%;
+    height: 25%;
+  }
+  .url {
+    height: 25%;
+    text-overflow: unset;
   }
   .vote {
     height: 25%;

@@ -383,7 +383,7 @@ export default class extends Base {
       cursor = this.model
         .getDBInstance()
         .find(query, excludedFields.join(' '))
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
         .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
         .sort(sortObject)
     } else {
@@ -539,7 +539,7 @@ export default class extends Base {
       cursor = this.model
         .getDBInstance()
         .find(query /*, excludedFields.join(' ')*/)
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
         .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
         .sort(sortObject)
     } else {
@@ -549,7 +549,7 @@ export default class extends Base {
         .find(
           query /*, 'title activeness commentsNum createdAt dislikesNum displayId likesNum'*/
         )
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
         .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     }
 
@@ -654,7 +654,7 @@ export default class extends Base {
     let doc = await model
       .getDBInstance()
       .findOne(query)
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
       .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
 
     if (!doc) {
@@ -667,7 +667,7 @@ export default class extends Base {
     const cvoteList = await db_cvote
       .getDBInstance()
       .findOne({ reference: { $all: [doc._id] } })
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
     doc = JSON.parse(JSON.stringify(doc))
     if (cvoteList) {

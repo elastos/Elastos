@@ -35,7 +35,7 @@ export default class extends Base {
             throw 'username or password is incorrect'
         }
 
-
+        
         const resultData = {
             user
         }

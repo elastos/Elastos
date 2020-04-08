@@ -76,8 +76,8 @@ const renderRichContent = (data, key, title) => {
         <Subtitle>{I18N.get('suggestion.budget.schedule')}</Subtitle>
         <PaymentList
           list={data.budget}
-          editable={false}
           milestone={data.plan.milestone}
+          editable={false}
         />
       </div>
     )
@@ -184,8 +184,8 @@ class C extends StandardPage {
     const summaryNode = this.renderSummary()
 
     // get the first line pure text of abstract
-    let abstract = data.abstract && data.abstract.trim().split('\n')[0]
- 
+    const abstract = data.abstract && data.abstract.trim().split('\n')[0]
+
     return (
       <div>
         <Meta
@@ -298,10 +298,10 @@ class C extends StandardPage {
           typeof data.budget !== 'string'
         ) {
           return `
-            <h2>${I18N.get(`proposal.fields.budget`)}</h2>
-            <p>${I18N.get(`suggestion.budget.total`)}</p>
+            <h2>${I18N.get('proposal.fields.budget')}</h2>
+            <p>${I18N.get('suggestion.budget.total')}</p>
             <p>${data.budgetAmount}</p>
-            <p>${I18N.get(`suggestion.budget.address`)}</p>
+            <p>${I18N.get('suggestion.budget.address')}</p>
             <p>${data.elaAddress}</p>
             <p>${getBudgetHtml(data.budget)}</p>
           `
@@ -312,7 +312,7 @@ class C extends StandardPage {
           typeof data.plan !== 'string'
         ) {
           return `
-            <h2>${I18N.get(`proposal.fields.plan`)}</h2>
+            <h2>${I18N.get('proposal.fields.plan')}</h2>
             <p>${getPlanHtml(data.plan.teamInfo)}</p>
           `
         }
@@ -354,9 +354,12 @@ class C extends StandardPage {
 
     const trackingTitle = trackingStatus ? (
       <span>
-        {I18N.get('proposal.fields.tracking')}{' '}
+        {I18N.get('proposal.fields.tracking')}
+        {' '}
         <span style={{ fontSize: 10, color: '#aaa' }}>
-          ({I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)})
+          (
+          {I18N.get(`proposal.status.trackingRaw.${trackingStatus}`)}
+)
         </span>
       </span>
     ) : (
@@ -364,9 +367,12 @@ class C extends StandardPage {
     )
     const summaryTitle = summaryStatus ? (
       <span>
-        {I18N.get('proposal.fields.summary')}{' '}
+        {I18N.get('proposal.fields.summary')}
+        {' '}
         <span style={{ fontSize: 10, color: '#aaa' }}>
-          ({I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)})
+          (
+          {I18N.get(`proposal.status.summaryRaw.${summaryStatus}`)}
+)
         </span>
       </span>
     ) : (

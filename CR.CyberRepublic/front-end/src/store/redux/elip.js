@@ -12,6 +12,7 @@ class ElipRedux extends BaseRedux {
       detail: {},
       reviews: [],
       filters: {},
+      sortBy: null,
     }
   }
 }

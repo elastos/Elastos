@@ -147,12 +147,10 @@ describe('Tests for ELIP', () => {
         title: `title ${key}`,
         status: key
       })
-      const rs = await elipService.list({})
     }
 
     // ELIP's author
     const rs = await elipService.list({})
-    console.log("elip.last_length", rs.length)
     expect(rs.length).to.be.equal(1)
 
     // A guest

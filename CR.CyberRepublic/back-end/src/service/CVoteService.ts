@@ -19,7 +19,8 @@ const BASE_FIELDS = [
   'budget',
   'budgetAmount',
   'elaAddress',
-  'plan'
+  'plan',
+  'payment'
 ]
 
 export default class extends Base {
@@ -27,13 +28,18 @@ export default class extends Base {
   public async createDraft(param: any): Promise<Document> {
     const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
-    const { title, proposedBy, proposer, suggestionId } = param
+    const { title, proposedBy, proposer, suggestionId, payment } = param
 
     const vid = await this.getNewVid()
+    const userRole = _.get(this.currentUser, 'role')
+    if(!this.canCreateProposal()) {
+      throw 'cvoteservice.create - no permission'
+    }
 
     const doc: any = {
       title,
       vid,
+      payment,
       status: constant.CVOTE_STATUS.DRAFT,
       published: false,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
@@ -133,7 +139,8 @@ export default class extends Base {
       motivation,
       relevance,
       budget,
-      plan
+      plan,
+      payment
     } = param
 
     if (!this.currentUser || !this.currentUser._id) {
@@ -163,6 +170,7 @@ export default class extends Base {
       doc.budget = budget
     }
     if (plan) doc.plan = plan
+    if (payment) doc.payment = payment
 
     try {
       await db_cvote.update({ _id }, doc)
@@ -207,13 +215,14 @@ export default class extends Base {
       motivation,
       relevance,
       budget,
-      plan
+      plan,
+      payment
     } = param
 
     const vid = await this.getNewVid()
     const status = published
-      ? constant.CVOTE_STATUS.PROPOSED
-      : constant.CVOTE_STATUS.DRAFT
+                 ? constant.CVOTE_STATUS.PROPOSED
+                 : constant.CVOTE_STATUS.DRAFT
 
     const doc: any = {
       title,
@@ -228,6 +237,7 @@ export default class extends Base {
       relevance,
       budget,
       plan,
+      payment,
       proposer,
       createdBy: this.currentUser._id
     }
@@ -433,7 +443,7 @@ export default class extends Base {
    * @param query
    * @returns {Promise<"mongoose".Document>}
    */
-  public async list(param): Promise<Document> {
+  public async list(param): Promise<Object> {
     const db_cvote = this.getDBModel('CVote')
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
@@ -571,8 +581,31 @@ export default class extends Base {
       'voteResult',
       'vote_map'
     ]
-    const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
-    return list
+
+    // const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
+
+    const cursor =  db_cvote
+      .getDBInstance()
+      .find(query, fields.join(' '))
+      .sort({vid: -1})
+
+    if (param.results) {
+      const results = parseInt(param.results, 10)
+      const page = parseInt(param.page, 10)
+      cursor.skip(results * (page - 1)).limit(results)
+    }
+    
+    const rs = await Promise.all([
+      cursor,
+      db_cvote
+        .getDBInstance()
+        .find(query)
+        .count()
+    ])
+    const list = rs[0]
+    const total = rs[1]
+
+    return {list, total}
   }
 
   /**
@@ -731,8 +764,8 @@ export default class extends Base {
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
       )
-      .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
       .populate('referenceElip', 'vid')
     if (!rs) {
@@ -898,6 +931,10 @@ export default class extends Base {
   private canManageProposal() {
     const userRole = _.get(this.currentUser, 'role')
     return permissions.isCouncil(userRole) || permissions.isSecretary(userRole)
+  }
+  private canCreateProposal() {
+    const userRole = _.get(this.currentUser, 'role')
+    return !permissions.isCouncil(userRole) && !permissions.isSecretary(userRole)
   }
 
   public async listcrcandidates(param) {

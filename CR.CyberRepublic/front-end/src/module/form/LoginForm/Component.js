@@ -1,12 +1,9 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import {
-  Form, Icon, Input, Button, Checkbox,
-} from 'antd'
-import ReCAPTCHA from 'react-google-recaptcha'
-import { RECAPTCHA_KEY } from '@/config/constant'
+import { Form, Input, Button, Checkbox } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
+import LoginWithDid from './LoginWithDid'
 
 import './style.scss'
 
@@ -96,6 +93,12 @@ class C extends BaseComponent {
             {I18N.get('login.submit')}
           </Button>
         </FormItem>
+        <LoginWithDid
+          loginElaUrl={this.props.loginElaUrl}
+          checkElaAuth={this.props.checkElaAuth}
+          history={this.props.history}
+          changeTab={this.props.onChangeActiveKey}
+        />
       </Form>
     )
   }

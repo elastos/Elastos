@@ -206,7 +206,9 @@ describe('Tests for CVote', () => {
       published: true
     })
 
-    expect(rs.length).to.be.equal(1)
+    const {list, total} = rs
+
+    expect(list.length).to.be.equal(1)
   })
 
   test('council attempt to make suggestion to proposal should pass', async () => {
