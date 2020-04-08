@@ -1,7 +1,7 @@
 const React = require('react');
 
 module.exports = (props) => {
-  const app = props.app;
+  const App = props.App;
   const openDevTools = props.openDevTools;
   const Version = props.Version;
   return (
@@ -17,7 +17,7 @@ module.exports = (props) => {
           <button className="bgcolor_black_hover" title="menu">
             <img src="artwork/menu.svg" />
           </button>
-          <button className="bgcolor_black_hover" title="Refresh Blockchain Data"  onClick={(e) => app.refreshBlockchainData()}>
+          <button className="bgcolor_black_hover" title="Refresh Blockchain Data"  onClick={(e) => App.refreshBlockchainData()}>
             <img src="artwork/refresh-ccw.svg" />
           </button>
           <button className="bgcolor_black_hover">
@@ -38,10 +38,11 @@ module.exports = (props) => {
                     <a className="rotate_n90 exit_link" target="_blank" href="https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd">Balance</a>
                   </td>
                   <td className="w100px ta_left">
-                    <div className="font_size24">USD</div>
-                    <div className="font_size24">Y</div>
-                    <span className="color_orange">X</span>
-                    <span className="color_orange">ELA</span>
+                    <span className="font_size24">USD&nbsp;</span>
+                    <span className="font_size24">{App.getUSDBalance()}</span>
+                    <br />
+                    <span className="color_orange">{App.getELABalance()}</span>
+                    <span className="color_orange">&nbsp;ELA</span>
                   </td>
                 </tr>
               </tbody>
@@ -61,7 +62,7 @@ module.exports = (props) => {
               <button className="bgcolor_black">
                 <img src="artwork/copy.svg" />
               </button>
-              <span className="font_size12">ADDRESS</span>
+              <span className="font_size12">{App.getAddress()}</span>
             </div>
           </div>
           <div id="receive" className="bordered w200px h100px bgcolor_black_hover">
@@ -109,7 +110,7 @@ module.exports = (props) => {
                   <td id="logout" className="w100px h50px ta_center va_bottom bgcolor_black_hover">
 
                   <button className="bgcolor_black_hover">
-                    <img src="artwork/log-out.svg"  title="Logout" onClick={(e) => app.showLogin()}/>
+                    <img src="artwork/log-out.svg"  title="Logout" onClick={(e) => App.showLogin()}/>
                   </button>
                     Logout
                   </td>

@@ -1,11 +1,11 @@
 const React = require('react');
 
 module.exports = (props) => {
-  const app = props.app;
-  const guiToggles = props.guiToggles;
+  const App = props.App;
+  const GuiToggles = props.GuiToggles;
   const useMnemonic = () => {
-    app.getPublicKeyFromMnemonic();
-    guiToggles.showHome();
+    App.getPublicKeyFromMnemonic();
+    GuiToggles.showHome();
   }
   return (
   <table id="loginMnemonic" className="bordered w750h520px">
@@ -25,7 +25,7 @@ module.exports = (props) => {
           <div className="bordered bgcolor_black_hover display_inline_block" onClick={(e)=> useMnemonic()}>Use Mnemonic</div>
         </td>
         <td className="ta_right">
-          <div className="bordered bgcolor_black_hover display_inline_block" onClick={(e)=> guiToggles.showLanding()}>Back</div>
+          <div className="bordered bgcolor_black_hover display_inline_block" onClick={(e)=> GuiToggles.showLanding()}>Back</div>
         </td>
       </tr>
     </tbody>

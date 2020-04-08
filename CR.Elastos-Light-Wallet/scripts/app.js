@@ -16,6 +16,7 @@ const Asset = require('./Asset.js');
 const TxFactory = require('./TxFactory.js');
 const Mnemonic = require('./Mnemonic.js');
 const GuiUtils = require('./GuiUtils.js');
+const CoinGecko = require('./CoinGecko.js');
 
 /** global constants */
 const LOG_LEDGER_POLLING = true;
@@ -120,6 +121,8 @@ const init = (_GuiToggles) => {
 
   GuiToggles = _GuiToggles;
 
+  setRestService(0);
+
   mainConsole.log('Consone Logging Enabled.');
 };
 
@@ -157,6 +160,7 @@ const getTransactionHistoryLink = (txid) => {
 
 const getBalanceUrl = (address) => {
   const url = `${getRestService()}/api/v1/asset/balances/${address}`;
+  mainConsole.log('getBalanceUrl', url);
   return url;
 };
 
@@ -207,6 +211,7 @@ const refreshBlockchainData = () => {
   requestBalance();
   requestUnspentTransactionOutputs();
   requestBlockchainState();
+  CoinGecko.requestPriceData();
   renderApp();
 };
 
@@ -821,15 +826,18 @@ const requestTransactionHistory = () => {
 
 const getBalanceErrorCallback = (response) => {
   balanceStatus = `Balance Error:${JSON.stringify(response)} `;
+  balance = undefined;
 };
 
 const getBalanceReadyCallback = (balanceResponse) => {
   if (balanceResponse.Error == 0) {
     balanceStatus = `Balance Received.`;
+    balance = balanceResponse.Result;
   } else {
     balanceStatus = `Balance Received Error:${balanceResponse.Error}`;
+    balance = undefined;
   }
-  balance = balanceResponse.Result;
+  mainConsole.log('getBalanceReadyCallback ' + JSON.stringify(balanceResponse));
 
   renderApp();
 };
@@ -1104,6 +1112,34 @@ const getMainConsole = () => {
   return mainConsole;
 };
 
+const getELABalance = () => {
+  if (balance) {
+    return balance;
+  }
+  // mainConsole.log('getELABalance', balanceStatus);
+  return '?';
+};
+
+const getUSDBalance = () => {
+  const data = CoinGecko.getPriceData();
+  if (data) {
+    const elastos = data.elastos;
+    if (elastos) {
+      const usd = elastos.usd;
+
+      mainConsole.log('getUSDBalance', usd, balance, balanceStatus);
+      if (balance) {
+        return (parseFloat(usd) * parseFloat(balance)).toFixed(3);
+      }
+    }
+  }
+  return '?';
+};
+
+const getAddress = () => {
+  return address;
+};
+
 exports.init = init;
 exports.trace = mainConsole.trace;
 exports.setAppClipboard = setAppClipboard;
@@ -1117,3 +1153,6 @@ exports.clearSendData = clearSendData;
 exports.setPollForAllInfoTimer = setPollForAllInfoTimer;
 exports.getPublicKeyFromMnemonic = getPublicKeyFromMnemonic;
 exports.getPublicKeyFromPrivateKey = getPublicKeyFromPrivateKey;
+exports.getAddress = getAddress;
+exports.getELABalance = getELABalance;
+exports.getUSDBalance = getUSDBalance;

@@ -1,11 +1,11 @@
 const React = require('react');
 
 module.exports = (props) => {
-  const app = props.app;
-  const guiToggles = props.guiToggles;
+  const App = props.App;
+  const GuiToggles = props.GuiToggles;
   const usePrivateKey = () => {
-    app.getPublicKeyFromPrivateKey();
-    guiToggles.showHome();
+    App.getPublicKeyFromPrivateKey();
+    GuiToggles.showHome();
   }
   return (
   <table id="loginPrivateKey" className="bordered w750h520px">
@@ -25,7 +25,7 @@ module.exports = (props) => {
           <div className="bordered bgcolor_black_hover display_inline_block" onClick={(e)=> usePrivateKey()}>Use Private Key</div>
         </td>
         <td className="ta_right">
-          <div className="bordered bgcolor_black_hover display_inline_block ta_right" onClick={(e)=> guiToggles.showLanding()}>Back</div>
+          <div className="bordered bgcolor_black_hover display_inline_block ta_right" onClick={(e)=> GuiToggles.showLanding()}>Back</div>
         </td>
       </tr>
     </tbody>

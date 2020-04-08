@@ -1,18 +1,18 @@
 const React = require('react');
 
 const LedgerMessage = (props) => {
-  const app = props.app;
+  const App = props.App;
   let message = '';
-  app.getMainConsole().log('LedgerMessage', app.getLedgerDeviceInfo());
-  if (app.getLedgerDeviceInfo()) {
-    if (app.getLedgerDeviceInfo().error) {
+  App.getMainConsole().log('LedgerMessage', App.getLedgerDeviceInfo());
+  if (App.getLedgerDeviceInfo()) {
+    if (App.getLedgerDeviceInfo().error) {
       message += 'Error:';
-      if (app.getLedgerDeviceInfo().message) {
-        message += app.getLedgerDeviceInfo().message;
+      if (App.getLedgerDeviceInfo().message) {
+        message += App.getLedgerDeviceInfo().message;
       }
     } else {
-      if (app.getLedgerDeviceInfo().message) {
-        message += app.getLedgerDeviceInfo().message;
+      if (App.getLedgerDeviceInfo().message) {
+        message += App.getLedgerDeviceInfo().message;
       }
     }
   }
@@ -20,15 +20,15 @@ const LedgerMessage = (props) => {
 }
 
 const UseLedgerButton = (props) => {
-  const app = props.app;
-  const guiToggles = props.guiToggles;
+  const App = props.App;
+  const GuiToggles = props.GuiToggles;
   const useLedger = () => {
-    app.getPublicKeyFromLedger();
-    guiToggles.showHome();
+    App.getPublicKeyFromLedger();
+    GuiToggles.showHome();
   }
   if (
-    app.getLedgerDeviceInfo()
-    ? app.getLedgerDeviceInfo().enabled
+    App.getLedgerDeviceInfo()
+    ? App.getLedgerDeviceInfo().enabled
     : false) {
     return (<span className="bordered bgcolor_black_hover" onClick={(e) => useLedger()}>Use Ledger</span>);
   } else {
@@ -37,8 +37,8 @@ const UseLedgerButton = (props) => {
 }
 
 module.exports = (props) => {
-  const app = props.app;
-  const guiToggles = props.guiToggles;
+  const App = props.App;
+  const GuiToggles = props.GuiToggles;
   const openDevTools = props.openDevTools;
   const Version = props.Version;
   return (<table id="landing" className="w750h520px color_white no_padding no_border">
@@ -56,7 +56,7 @@ module.exports = (props) => {
                     <Version/>
                   </td>
                   <td>
-                    <div className="bordered bgcolor_black_hover w25px" title="Refresh Blockchain Data"  onClick={(e) => app.refreshBlockchainData()}>
+                    <div className="bordered bgcolor_black_hover w25px" title="Refresh Blockchain Data"  onClick={(e) => App.refreshBlockchainData()}>
                       <img src="artwork/refresh-ccw.svg" />
                     </div>
                   </td>
@@ -72,26 +72,26 @@ module.exports = (props) => {
         </tr>
         <tr>
           <td className="bordered w250px h20px ta_center va_top">
-            <div className="bordered bgcolor_black_hover "  onClick={(e) => guiToggles.showGenerateNewPrivateKey()}>Generate New Private Key</div>
+            <div className="bordered bgcolor_black_hover "  onClick={(e) => GuiToggles.showGenerateNewPrivateKey()}>Generate New Private Key</div>
           </td>
           <td className="bordered w250px h20px ta_center va_top">
-            <div className="bordered bgcolor_black_hover"  onClick={(e) => guiToggles.showGenerateNewMnemonic()}>Generate New Mnemonic</div>
+            <div className="bordered bgcolor_black_hover"  onClick={(e) => GuiToggles.showGenerateNewMnemonic()}>Generate New Mnemonic</div>
           </td>
           <td className="bordered w250px h20px ta_right va_top">
             Ledger Device Info:
             <br/>
-            <LedgerMessage app={app}/>
+            <LedgerMessage App={App}/>
           </td>
         </tr>
           <tr>
             <td className="bordered w250px h20px ta_center va_top">
-              <span className="bordered bgcolor_black_hover"  onClick={(e) => guiToggles.showLoginMnemonic()}>Login Mnemonic</span>
+              <span className="bordered bgcolor_black_hover"  onClick={(e) => GuiToggles.showLoginMnemonic()}>Login Mnemonic</span>
             </td>
             <td className="bordered w250px h20px ta_center va_top">
-              <span className="bordered bgcolor_black_hover"  onClick={(e) => guiToggles.showLoginPrivateKey()}>Login Private Key</span>
+              <span className="bordered bgcolor_black_hover"  onClick={(e) => GuiToggles.showLoginPrivateKey()}>Login Private Key</span>
             </td>
             <td className="bordered w250px h20px ta_right va_top">
-              <UseLedgerButton app={app} />
+              <UseLedgerButton App={App} GuiToggles={GuiToggles} />
             </td>
           </tr>
       </tbody>

@@ -17,8 +17,9 @@ const LoginPrivateKey = require('./login-private-key.jsx');
 const Temp = require('./temp.jsx');
 
 /** modules */
-const app = require('../scripts/app.js');
-const guiToggles = require('../scripts/guiToggles.js');
+const App = require('../scripts/App.js');
+const GuiToggles = require('../scripts/GuiToggles.js');
+const CoinGecko = require('../scripts/CoinGecko.js');
 
 /** functions */
 
@@ -238,30 +239,31 @@ const openDevTools = () => {
 //   </tbody>
 // </table>
 
-class App extends React.Component {
+class AppView extends React.Component {
   render() {
     return (<div className="display_inline_block ta_center va_top font_sans_10">
-      <Home app={app} openDevTools={openDevTools} guiToggles={guiToggles} Version={Version}/>
-      <Landing app={app} openDevTools={openDevTools} guiToggles={guiToggles} Version={Version}/>
-      <LoginMnemonic app={app} openDevTools={openDevTools} guiToggles={guiToggles} Version={Version}/>
-      <LoginPrivateKey app={app} openDevTools={openDevTools} guiToggles={guiToggles} Version={Version}/>
-      <Temp app={app} openDevTools={openDevTools} guiToggles={guiToggles} Version={Version}/>
+      <Home App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
+      <Landing App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
+      <LoginMnemonic App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
+      <LoginPrivateKey App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
+      <Temp App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
     </div>)
   }
 }
 const renderApp = () => {
-  ReactDOM.render(<App/>, document.getElementById('main'));
+  ReactDOM.render(<AppView/>, document.getElementById('main'));
 };
 
 const onLoad = () => {
-  app.init(guiToggles);
-  guiToggles.init(app);
-  app.setAppClipboard(clipboard);
-  app.setAppDocument(document);
-  app.setRenderApp(renderApp);
+  App.init(GuiToggles);
+  GuiToggles.init(App);
+  CoinGecko.init(App);
+  App.setAppClipboard(clipboard);
+  App.setAppDocument(document);
+  App.setRenderApp(renderApp);
   renderApp();
-  guiToggles.showLanding();
-  app.setPollForAllInfoTimer();
+  GuiToggles.showLanding();
+  App.setPollForAllInfoTimer();
 }
 
 /** call initialization functions */
