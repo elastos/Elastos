@@ -120,7 +120,7 @@ export default class extends Base {
                          .update({ _id },
                                  { "$set": { "version": ver }})
     }
-    const detail = this.model
+    const detail = await this.model
                        .getDBInstance()
                        .findOne({_id: id})
     if(detail) {
