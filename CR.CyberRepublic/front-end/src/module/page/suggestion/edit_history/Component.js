@@ -49,21 +49,16 @@ export default class extends DetailPage {
               for (let i = 0; i < da.length; i++) {
                 const c0 = da[i][0]
                 const c2 = da[i][2]
-                if (c0 !== f) {
-                  if (f !== ' ') {
-                    str += '</span>'
-                  }
-                  f = c0
-                  if (f === '-') {
-                    str += '<span style=\'background-color: rgba(252, 192, 192, 0.2)\'>'
-                  } else if (f === '+') {
-                    str += '<span style=\'background-color: #1DE9B633\'>'
-                  }
+                f = c0
+                if (f === '-') {
+                  str += '<span style=\'background-color: rgba(252, 192, 192, 0.2)\'>'
+                } else if (f === '+') {
+                  str += '<span style=\'background-color: #1DE9B633\'>'
                 }
                 str += c2
-              }
-              if (f !== ' ') {
-                str += '</span>'
+                if (f !== ' ') {
+                  str += '</span>'
+                }
               }
               diffObj[k] = str
             }
