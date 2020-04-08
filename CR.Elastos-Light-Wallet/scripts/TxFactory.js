@@ -1,3 +1,5 @@
+'use strict';
+
 const KeyTranscoder = require('./KeyTranscoder.js');
 const TxSigner = require('./TxSigner.js');
 const AddressTranscoder = require('./AddressTranscoder.js');

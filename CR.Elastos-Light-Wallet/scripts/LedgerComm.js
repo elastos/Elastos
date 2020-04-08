@@ -1,3 +1,5 @@
+'use strict';
+
 require('babel-polyfill');
 
 const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid');

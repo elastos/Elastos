@@ -1,3 +1,8 @@
+'use strict';
+
+/* modules */
+const GuiUtils = require('./GuiUtils.js');
+
 let app;
 
 const init = (_app) => {
@@ -5,17 +10,37 @@ const init = (_app) => {
 };
 
 const hide = (id) => {
-  get(id).style = 'display:none;';
+  GuiUtils.get(id).style = 'display:none;';
 };
 
 const show = (id) => {
-  get(id).style = 'display:default;';
+  GuiUtils.get(id).style = 'display:default;';
 };
 
 const hideEverything = () => {
   hide('home');
-  hide('login-private-key');
   hide('landing');
+  hide('loginMnemonic');
+  hide('loginPrivateKey');
+  hide('temp');
+};
+
+const showLanding = () => {
+  hideEverything();
+  app.clearSendData();
+  show('landing');
+};
+
+const showLoginMnemonic = () => {
+  hideEverything();
+  app.clearSendData();
+  show('loginMnemonic');
+};
+
+const showLoginPrivateKey = () => {
+  hideEverything();
+  app.clearSendData();
+  show('loginPrivateKey');
 };
 
 const showHome = () => {
@@ -24,12 +49,8 @@ const showHome = () => {
   show('home');
 };
 
-const showLoginPrivateKey = () => {
-  hideEverything();
-  app.clearSendData();
-  show('login-private-key');
-};
-
 exports.init = init;
+exports.showLanding = showLanding;
+exports.showLoginMnemonic = showLoginMnemonic;
 exports.showLoginPrivateKey = showLoginPrivateKey;
 exports.showHome = showHome;

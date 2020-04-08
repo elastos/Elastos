@@ -104,6 +104,10 @@
   height: 50px;
 }
 
+.h30px {
+  height: 30px;
+}
+
 .h20px {
   height: 20px;
 }
@@ -155,4 +159,8 @@
   left: 0px;
   transform-origin: 0px 0px;
   transform: rotate(-90deg);
+}
+
+.monospace {
+  font-family: 'monospace'
 }

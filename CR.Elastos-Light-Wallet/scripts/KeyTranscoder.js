@@ -1,3 +1,5 @@
+'use strict';
+
 const EC = require('elliptic').ec;
 const curve = new EC('p256');
 

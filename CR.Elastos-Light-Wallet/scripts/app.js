@@ -2,7 +2,7 @@
 
 /** imports */
 const bip39 = require('bip39');
-var mainConsoleLib = require('console');
+const mainConsoleLib = require('console');
 const BigNumber = require('bignumber.js');
 const crypto = require('crypto');
 
@@ -15,6 +15,7 @@ const TxSigner = require('./TxSigner.js');
 const Asset = require('./Asset.js');
 const TxFactory = require('./TxFactory.js');
 const Mnemonic = require('./Mnemonic.js');
+const GuiUtils = require('./GuiUtils.js');
 
 /** global constants */
 const LOG_LEDGER_POLLING = true;
@@ -27,49 +28,49 @@ const DEFAULT_FEE_SATS = '500';
 
 const EXPLORER = 'https://blockchain.elastos.org';
 
-const REST_SERVICES =  [
+const REST_SERVICES = [
   {
-    name:'api-wallet',
-    url:'https://api-wallet-ela.elastos.org'
+    name: 'api-wallet',
+    url: 'https://api-wallet-ela.elastos.org',
   },
   {
-    name:'node1',
-    url:'https://node1.elaphant.app'
+    name: 'node1',
+    url: 'https://node1.elaphant.app',
   },
   {
-    name:'node3',
-    url:'https://node3.elaphant.app'
-  }
-]
+    name: 'node3',
+    url: 'https://node3.elaphant.app',
+  },
+];
 
 /** global variables */
-var currentNetworkIx = 0;
+let currentNetworkIx = 0;
 
-var restService;
+let restService;
 
-var ledgerDeviceInfo = undefined;
+let ledgerDeviceInfo = undefined;
 
-var publicKey = undefined;
+let publicKey = undefined;
 
-var address = undefined;
+let address = undefined;
 
-var pollDataTypeIx = 0;
+let pollDataTypeIx = 0;
 
-var balance = undefined;
+let balance = undefined;
 
-var sendAmount = '';
+let sendAmount = '';
 
-var feeAmountSats = '';
+let feeAmountSats = '';
 
-var feeAmountEla = '';
+let feeAmountEla = '';
 
-var isLoggedIn = false;
+let isLoggedIn = false;
 
-var useLedgerFlag = false;
+let useLedgerFlag = false;
 
-var generatedPrivateKeyHex = undefined;
+let generatedPrivateKeyHex = undefined;
 
-var generatedMnemonic = undefined;
+let generatedMnemonic = undefined;
 
 let appClipboard = undefined;
 
@@ -80,31 +81,31 @@ let renderApp = undefined;
 const sendToAddressStatuses = [];
 const sendToAddressLinks = [];
 
-var balanceStatus = 'No Balance Requested Yet';
+let balanceStatus = 'No Balance Requested Yet';
 
-var transactionHistoryStatus = 'No History Requested Yet';
+let transactionHistoryStatus = 'No History Requested Yet';
 
 const parsedTransactionHistory = [];
 
-var producerListStatus = 'No Producers Requested Yet';
+let producerListStatus = 'No Producers Requested Yet';
 
-var parsedProducerList = {};
+let parsedProducerList = {};
 
-var candidateVoteListStatus = 'No Candidate Votes Requested Yet';
+let candidateVoteListStatus = 'No Candidate Votes Requested Yet';
 
-var parsedCandidateVoteList = {};
+let parsedCandidateVoteList = {};
 
-var unspentTransactionOutputsStatus = 'No UTXOs Requested Yet';
+let unspentTransactionOutputsStatus = 'No UTXOs Requested Yet';
 
 const parsedUnspentTransactionOutputs = [];
 
-var blockchainStatus = 'No Blockchain State Requested Yet';
+let blockchainStatus = 'No Blockchain State Requested Yet';
 
-var blockchainState = {};
+let blockchainState = {};
 
-var blockchainLastActionHeight = 0;
+let blockchainLastActionHeight = 0;
 
-var mainConsole = new mainConsoleLib.Console(process.stdout, process.stderr);
+const mainConsole = new mainConsoleLib.Console(process.stdout, process.stderr);
 
 /** functions */
 const init = () => {
@@ -115,7 +116,7 @@ const init = () => {
   parsedProducerList.producers = [];
   parsedCandidateVoteList.candidateVotes = [];
   mainConsole.log('Consone Logging Enabled.');
-}
+};
 
 const setAppClipboard = (clipboard) => {
   appClipboard = clipboard;
@@ -131,7 +132,7 @@ const setRenderApp = (_renderApp) => {
 
 const getRestService = () => {
   return restService;
-}
+};
 
 const setRestService = (ix) => {
   currentNetworkIx = ix;
@@ -142,27 +143,27 @@ const setRestService = (ix) => {
 const getTransactionHistoryUrl = (address) => {
   const url = `${EXPLORER}/api/v1/txs/?pageNum=0&address=${address}`;
   return url;
-}
+};
 
 const getTransactionHistoryLink = (txid) => {
   const url = `${EXPLORER}/tx/${txid}`;
   return url;
-}
+};
 
 const getBalanceUrl = (address) => {
   const url = `${getRestService()}/api/v1/asset/balances/${address}`;
   return url;
-}
+};
 
 const getUnspentTransactionOutputsUrl = (address) => {
   const url = `${getRestService()}/api/v1/asset/utxo/${address}/${Asset.elaAssetId}`;
   return url;
-}
+};
 
 const getStateUrl = () => {
   const url = `${getRestService()}/api/v1/node/state`;
   return url;
-}
+};
 
 
 const formatDate = (date) => {
@@ -171,30 +172,30 @@ const formatDate = (date) => {
   const year = date.getFullYear();
 
   if (month.length < 2) {
-    month = '0' + month
+    month = '0' + month;
   };
   if (day.length < 2) {
-    day = '0' + day
+    day = '0' + day;
   };
 
   return [year, month, day].join('-');
-}
+};
 
 const changeNetwork = (event) => {
   currentNetworkIx = event.target.value;
   setRestService(currentNetworkIx);
   refreshBlockchainData();
-}
+};
 
 const resetNodeUrl = () => {
   setRestService(currentNetworkIx);
   renderApp();
-}
+};
 
 const changeNodeUrl = () => {
   restService = get('nodeUrl').value;
   showLogin();
-}
+};
 
 const refreshBlockchainData = () => {
   requestTransactionHistory();
@@ -202,7 +203,7 @@ const refreshBlockchainData = () => {
   requestUnspentTransactionOutputs();
   requestBlockchainState();
   renderApp();
-}
+};
 
 const publicKeyCallback = (message) => {
   if (LOG_LEDGER_POLLING) {
@@ -216,7 +217,7 @@ const publicKeyCallback = (message) => {
     ledgerDeviceInfo.message = message.message;
     renderApp();
   }
-}
+};
 
 const pollForDataCallback = (message) => {
   if (LOG_LEDGER_POLLING) {
@@ -226,13 +227,13 @@ const pollForDataCallback = (message) => {
   renderApp();
   pollDataTypeIx++;
   setPollForAllInfoTimer();
-}
+};
 
 const pollForData = () => {
   if (LOG_LEDGER_POLLING) {
     mainConsole.log('getAllLedgerInfo ' + pollDataTypeIx);
   }
-  var resetPollIndex = false;
+  const resetPollIndex = false;
   switch (pollDataTypeIx) {
     case 0:
       pollForDataCallback('Polling...');
@@ -266,10 +267,10 @@ const pollForData = () => {
 
 const setPollForAllInfoTimer = () => {
   setTimeout(pollForData, 1);
-}
+};
 
 const postJson = (url, jsonString, readyCallback, errorCallback) => {
-  var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
+  const xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
 
   const xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
@@ -281,7 +282,7 @@ const postJson = (url, jsonString, readyCallback, errorCallback) => {
         errorCallback(this.response);
       }
     }
-  }
+  };
   xhttp.responseType = 'text';
   xhttp.open('POST', url, true);
   xhttp.setRequestHeader('Content-Type', 'application/json');
@@ -290,7 +291,7 @@ const postJson = (url, jsonString, readyCallback, errorCallback) => {
   // sendToAddressStatuses.push( `XMLHttpRequest: curl ${url} -H "Content-Type: application/json" -d '${jsonString}'` );
 
   xhttp.send(jsonString);
-}
+};
 
 const getJson = (url, readyCallback, errorCallback) => {
   const xhttp = new XMLHttpRequest();
@@ -302,11 +303,11 @@ const getJson = (url, readyCallback, errorCallback) => {
         errorCallback({'status': this.status, 'statusText': this.statusText, 'response': this.response});
       }
     }
-  }
+  };
   xhttp.responseType = 'text';
   xhttp.open('GET', url, true);
   xhttp.send();
-}
+};
 
 const requestUnspentTransactionOutputs = () => {
   unspentTransactionOutputsStatus = 'UTXOs Requested';
@@ -321,7 +322,7 @@ const getUnspentTransactionOutputsErrorCallback = (response) => {
   unspentTransactionOutputsStatus = `UTXOs Error ${JSON.stringify(response)}`;
 
   renderApp();
-}
+};
 
 const getUnspentTransactionOutputsReadyCallback = (response) => {
   unspentTransactionOutputsStatus = 'UTXOs Received';
@@ -337,7 +338,7 @@ const getUnspentTransactionOutputsReadyCallback = (response) => {
   }
 
   renderApp();
-}
+};
 
 const get = (id) => {
   const elt = document.getElementById(id);
@@ -345,21 +346,21 @@ const get = (id) => {
     throw new Error('elt is null:' + id);
   }
   return elt;
-}
+};
 
 const hide = (id) => {
   get(id).style = 'display:none;';
-}
+};
 
 const show = (id) => {
   get(id).style = 'display:default;';
-}
+};
 
 const getPublicKeyFromLedger = () => {
   useLedgerFlag = true;
   isLoggedIn = true;
   LedgerComm.getPublicKey(publicKeyCallback);
-}
+};
 
 const requestBlockchainDataAndShowHome = () => {
   if (publicKey === undefined) {
@@ -371,7 +372,7 @@ const requestBlockchainDataAndShowHome = () => {
   requestUnspentTransactionOutputs();
   requestBlockchainState();
   showHome();
-}
+};
 
 const getPublicKeyFromMnemonic = () => {
   useLedgerFlag = false;
@@ -390,7 +391,7 @@ const getPublicKeyFromMnemonic = () => {
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
   requestBlockchainDataAndShowHome();
-}
+};
 
 const getPublicKeyFromPrivateKey = () => {
   useLedgerFlag = false;
@@ -404,12 +405,12 @@ const getPublicKeyFromPrivateKey = () => {
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
   requestBlockchainDataAndShowHome();
-}
+};
 
 const sendAmountToAddressErrorCallback = (error) => {
   sendToAddressStatuses.push(JSON.stringify(error));
   renderApp();
-}
+};
 
 const sendAmountToAddressReadyCallback = (transactionJson) => {
   mainConsole.log('sendAmountToAddressReadyCallback ' + JSON.stringify(transactionJson));
@@ -428,23 +429,20 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
   showCompletedTransaction();
   setBlockchainLastActionHeight();
   renderApp();
-}
+};
 
 const clearSendData = () => {
   mainConsole.log('STARTED clearSendData');
-  const sendAmountElt = document.getElementById('sendAmount');
-  const sendToAddressElt = document.getElementById('sendToAddress');
-  const feeAmountElt = document.getElementById('feeAmount');
-  sendAmountElt.value = '';
-  sendToAddressElt.value = '';
-  feeAmountElt.value = DEFAULT_FEE_SATS;
+  GuiUtils.setValue('sendAmount', '');
+  GuiUtils.setValue('sendToAddress', '');
+  GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
   sendAmount = '';
   feeAmountSats = '';
   feeAmountEla = '';
   sendToAddressStatuses.length = 0;
   sendToAddressLinks.length = 0;
   mainConsole.log('SUCCESS clearSendData');
-}
+};
 
 const updateAmountAndFees = () => {
   const sendAmountElt = document.getElementById('sendAmount');
@@ -459,12 +457,12 @@ const updateAmountAndFees = () => {
     throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
   }
   feeAmountEla = BigNumber(feeAmountSats, 10).dividedBy(Asset.satoshis).toString();
-}
+};
 
 const updateAmountAndFeesAndRenderApp = () => {
   updateAmountAndFees();
   renderApp();
-}
+};
 
 const sendAmountToAddress = () => {
   updateAmountAndFees();
@@ -483,7 +481,7 @@ const sendAmountToAddress = () => {
     throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
   }
 
-  var encodedTx;
+  let encodedTx;
 
   if (useLedgerFlag) {
     const tx = TxFactory.createUnsignedSendToTx(unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats);
@@ -502,7 +500,7 @@ const sendAmountToAddress = () => {
       const signature = Buffer.from(message.signature, 'hex');
       const encodedTx = TxSigner.addSignatureToTx(tx, publicKey, signature);
       sendAmountToAddressCallback(encodedTx);
-    }
+    };
     LedgerComm.sign(encodedUnsignedTx, sendAmountToAddressLedgerCallback);
   } else {
     const privateKeyElt = document.getElementById('privateKey');
@@ -515,7 +513,7 @@ const sendAmountToAddress = () => {
     sendAmountToAddressCallback(encodedTx);
   }
   renderApp();
-}
+};
 // success: success,
 // message: lastResponse,
 // signature: signature
@@ -540,12 +538,12 @@ const sendAmountToAddressCallback = (encodedTx) => {
   sendToAddressStatuses.push(`Transaction Requested: curl ${txUrl} -H "Content-Type: application/json" -d '${jsonString}'`);
   renderApp();
   postJson(txUrl, jsonString, sendAmountToAddressReadyCallback, sendAmountToAddressErrorCallback);
-}
+};
 
 const requestListOfProducersErrorCallback = (response) => {
   producerListStatus = `Producers Error: ${JSON.stringify(response)}`;
   renderApp();
-}
+};
 
 const requestListOfProducersReadyCallback = (response) => {
   producerListStatus = 'Producers Received';
@@ -561,9 +559,9 @@ const requestListOfProducersReadyCallback = (response) => {
     parsedProducerList.totalcounts = 0;
 
 
-    response.result.sort((producer0,producer1) => {
-      return parseFloat(producer1.Votes) - parseFloat(producer0.Votes)
-    })
+    response.result.sort((producer0, producer1) => {
+      return parseFloat(producer1.Votes) - parseFloat(producer0.Votes);
+    });
 
     response.result.forEach((producer) => {
       const parsedProducer = {};
@@ -582,15 +580,15 @@ const requestListOfProducersReadyCallback = (response) => {
   // mainConsole.log('SUCCESS Producers Callback');
 
   renderApp();
-}
+};
 
 const requestListOfProducers = () => {
   producerListStatus = 'Producers Requested';
-  const txUrl = `${getRestService()}/api/v1/dpos/rank/height/0?state=active`
+  const txUrl = `${getRestService()}/api/v1/dpos/rank/height/0?state=active`;
 
   renderApp();
   getJson(txUrl, requestListOfProducersReadyCallback, requestListOfProducersErrorCallback);
-}
+};
 
 const toggleProducerSelection = (item) => {
   // mainConsole.log('INTERIM toggleProducerSelection item', item);
@@ -605,21 +603,21 @@ const toggleProducerSelection = (item) => {
 
   parsedProducerList.producersCandidateCount = 0;
   parsedProducerList.producers.forEach((parsedProducerElt) => {
-    if(parsedProducerElt.isCandidate) {
+    if (parsedProducerElt.isCandidate) {
       parsedProducerList.producersCandidateCount++;
     }
-  })
+  });
 
   renderApp();
-}
+};
 
 const requestListOfCandidateVotesErrorCallback = (response) => {
-  let displayRawError = true;
-  if(displayRawError) {
+  const displayRawError = true;
+  if (displayRawError) {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
   }
   renderApp();
-}
+};
 
 const requestListOfCandidateVotesReadyCallback = (response) => {
   candidateVoteListStatus = 'Candidate Votes Received';
@@ -631,10 +629,10 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
   } else {
     response.result.forEach((candidateVote) => {
-       mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
-     const body = candidateVote.Vote_Body;
-     body.forEach((candidateVoteElt) => {
-       const parsedCandidateVote = {};
+      mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
+      const body = candidateVote.Vote_Body;
+      body.forEach((candidateVoteElt) => {
+        const parsedCandidateVote = {};
         parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
         parsedCandidateVote.nickname = candidateVoteElt.Nickname;
         parsedCandidateVote.active = candidateVoteElt.Active.toString();
@@ -642,14 +640,14 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
         parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
         mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
         parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
-     })
+      });
     });
     mainConsole.log('INTERIM Candidate Votes Callback', response.result);
   }
   mainConsole.log('SUCCESS Candidate Votes Callback');
 
   renderApp();
-}
+};
 
 const requestListOfCandidateVotes = () => {
   candidateVoteListStatus = 'Candidate Votes Requested';
@@ -658,7 +656,7 @@ const requestListOfCandidateVotes = () => {
 
   renderApp();
   getJson(txUrl, requestListOfCandidateVotesReadyCallback, requestListOfCandidateVotesErrorCallback);
-}
+};
 
 const sendVoteTx = () => {
   updateAmountAndFees();
@@ -674,17 +672,17 @@ const sendVoteTx = () => {
     if (parsedProducer.isCandidate) {
       candidates.push(parsedProducer.ownerpublickey);
     }
-  })
+  });
 
   mainConsole.log('sendVoteTx.candidates ' + JSON.stringify(candidates));
 
-  var encodedTx;
+  let encodedTx;
 
   mainConsole.log('sendVoteTx.useLedgerFlag ' + JSON.stringify(useLedgerFlag));
   mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
   candidateVoteListStatus = `Voting for ${parsedProducerList.producersCandidateCount} candidates.`;
   if (useLedgerFlag) {
-    if(unspentTransactionOutputs) {
+    if (unspentTransactionOutputs) {
       const tx = TxFactory.createUnsignedVoteTx(unspentTransactionOutputs, publicKey, feeAmountSats, candidates);
       const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
       const sendVoteLedgerCallback = (message) => {
@@ -701,7 +699,7 @@ const sendVoteTx = () => {
         const signature = Buffer.from(message.signature, 'hex');
         const encodedTx = TxSigner.addSignatureToTx(tx, publicKey, signature);
         sendVoteCallback(encodedTx);
-      }
+      };
       candidateVoteListStatus += ' please confirm tx on ledger.';
       LedgerComm.sign(encodedUnsignedTx, sendVoteLedgerCallback);
     } else {
@@ -720,7 +718,7 @@ const sendVoteTx = () => {
     sendVoteCallback(encodedTx);
   }
   renderApp();
-}
+};
 // success: success,
 // message: lastResponse,
 // signature: signature
@@ -743,13 +741,13 @@ const sendVoteCallback = (encodedTx) => {
   // sendToAddressStatuses.push(`Transaction Requested: curl ${txUrl} -H "Content-Type: application/json" -d '${jsonString}'`);
   renderApp();
   postJson(txUrl, jsonString, sendVoteReadyCallback, senVoteErrorCallback);
-}
+};
 
 const senVoteErrorCallback = (error) => {
   mainConsole.log('senVoteErrorCallback ' + JSON.stringify(error));
   // sendToAddressStatuses.push(JSON.stringify(error));
   renderApp();
-}
+};
 
 const sendVoteReadyCallback = (transactionJson) => {
   mainConsole.log('sendVoteReadyCallback ' + JSON.stringify(transactionJson));
@@ -759,12 +757,12 @@ const sendVoteReadyCallback = (transactionJson) => {
     candidateVoteListStatus = `Vote Success TX: ${transactionJson.result}`;
   }
   renderApp();
-}
+};
 
 const getTransactionHistoryErrorCallback = (response) => {
   transactionHistoryStatus = `History Error: ${JSON.stringify(response)}`;
   renderApp();
-}
+};
 
 const getTransactionHistoryReadyCallback = (transactionHistory) => {
   transactionHistoryStatus = 'History Received';
@@ -787,7 +785,7 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
       voutElt.scriptPubKey.addresses.forEach((voutAddress) => {
         const parsedTransaction = {};
         parsedTransaction.n = txIx;
-        if(voutAddress == address) {
+        if (voutAddress == address) {
           parsedTransaction.type = 'input';
         } else {
           parsedTransaction.type = 'output';
@@ -804,21 +802,21 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
   });
 
   renderApp();
-}
+};
 
 const requestTransactionHistory = () => {
   transactionHistoryStatus = 'History Requested';
   const transactionHistoryUrl = getTransactionHistoryUrl(address);
-  //mainConsole.log('requestTransactionHistory ' + transactionHistoryUrl);
+  // mainConsole.log('requestTransactionHistory ' + transactionHistoryUrl);
   getJson(transactionHistoryUrl, getTransactionHistoryReadyCallback, getTransactionHistoryErrorCallback);
 };
 
 const getBalanceErrorCallback = (response) => {
   balanceStatus = `Balance Error:${JSON.stringify(response)} `;
-}
+};
 
 const getBalanceReadyCallback = (balanceResponse) => {
-  if(balanceResponse.Error == 0) {
+  if (balanceResponse.Error == 0) {
     balanceStatus = `Balance Received.`;
   } else {
     balanceStatus = `Balance Received Error:${balanceResponse.Error}`;
@@ -826,7 +824,7 @@ const getBalanceReadyCallback = (balanceResponse) => {
   balance = balanceResponse.Result;
 
   renderApp();
-}
+};
 
 const requestBalance = () => {
   const balanceUrl = getBalanceUrl(address);
@@ -836,14 +834,14 @@ const requestBalance = () => {
 
 const getBlockchainStateErrorCallback = (response) => {
   balanceStatus = `Blockchain State Error:${JSON.stringify(response)} `;
-}
+};
 
 const getBlockchainStateReadyCallback = (blockchainStateResponse) => {
   blockchainStatus = `Blockchain State Received:${blockchainStateResponse.Desc} ${blockchainStateResponse.Error} `;
   blockchainState = blockchainStateResponse.Result;
 
   renderApp();
-}
+};
 
 const requestBlockchainState = () => {
   const stateUrl = getStateUrl();
@@ -853,36 +851,36 @@ const requestBlockchainState = () => {
 };
 
 const getConfirmations = () => {
-  if(blockchainState.height) {
+  if (blockchainState.height) {
     return blockchainState.height - blockchainLastActionHeight;
   } else {
     return 0;
   }
-}
+};
 
 const setBlockchainLastActionHeight = () => {
-  if(blockchainState.height) {
+  if (blockchainState.height) {
     blockchainLastActionHeight = blockchainState.height;
   }
-}
+};
 
 const removeClass = (id, cl) => {
   get(id).classList.remove(cl);
-}
+};
 
 const addClass = (id, cl) => {
   get(id).classList.add(cl);
-}
+};
 
 const selectButton = (id) => {
   addClass(id, 'white_on_light_purple');
   removeClass(id, 'white_on_purple_with_hover');
-}
+};
 
 const clearButtonSelection = (id) => {
   removeClass(id, 'white_on_light_purple');
   addClass(id, 'white_on_purple_with_hover');
-}
+};
 
 const hideEverything = () => {
   clearButtonSelection('send');
@@ -917,24 +915,24 @@ const hideEverything = () => {
   hide('candidate-list');
   hide('candidate-vote-button');
   hide('candidate-vote-list');
-}
+};
 
 const copyMnemonicToClipboard = () => {
   clipboard.writeText(generatedMnemonic);
-  alert(`copied to clipboard:\n${generatedMnemonic}`)
-}
+  alert(`copied to clipboard:\n${generatedMnemonic}`);
+};
 
 const copyToPrivateKeyClipboard = () => {
   clipboard.writeText(generatedPrivateKeyHex);
-  alert(`copied to clipboard:\n${generatedPrivateKeyHex}`)
-}
+  alert(`copied to clipboard:\n${generatedPrivateKeyHex}`);
+};
 
 const showChangeNode = () => {
   clearGlobalData();
   hideEverything();
   clearSendData();
   show('change-node');
-}
+};
 
 const showLogin = () => {
   clearGlobalData();
@@ -946,7 +944,7 @@ const showLogin = () => {
   show('elastos-branding');
   show('mnemonic-generate');
   show('private-key-generate');
-}
+};
 
 const showHome = () => {
   if (!isLoggedIn) {
@@ -959,7 +957,7 @@ const showHome = () => {
   show('your-address');
   show('elastos-branding');
   selectButton('home');
-}
+};
 
 const showSend = () => {
   if (!isLoggedIn) {
@@ -973,7 +971,7 @@ const showSend = () => {
   show('to-address');
   show('confirm-and-see-fees');
   selectButton('send');
-}
+};
 
 const cancelSend = () => {
   const sendToAddressElt = document.getElementById('sendToAddress');
@@ -989,7 +987,7 @@ const cancelSend = () => {
   feeAmountEla = '';
 
   showSend();
-}
+};
 
 const showConfirmAndSeeFees = () => {
   hideEverything();
@@ -998,7 +996,7 @@ const showConfirmAndSeeFees = () => {
   show('send-spacer-01');
   selectButton('send');
   updateAmountAndFeesAndRenderApp();
-}
+};
 
 const showCompletedTransaction = () => {
   hideEverything();
@@ -1007,7 +1005,7 @@ const showCompletedTransaction = () => {
   show('send-spacer-01');
   selectButton('send');
   updateAmountAndFeesAndRenderApp();
-}
+};
 
 const showReceive = () => {
   if (!isLoggedIn) {
@@ -1017,7 +1015,7 @@ const showReceive = () => {
   clearSendData();
   show('your-address');
   selectButton('receive');
-}
+};
 
 const showTransactions = () => {
   if (!isLoggedIn) {
@@ -1028,7 +1026,7 @@ const showTransactions = () => {
   show('transaction-more-info');
   show('transaction-list-large');
   selectButton('transactions');
-}
+};
 
 const showVoting = () => {
   if (!isLoggedIn) {
@@ -1042,19 +1040,19 @@ const showVoting = () => {
   show('candidate-vote-button');
   show('candidate-vote-list');
   selectButton('voting');
-}
+};
 
 const showPrivateKeyEntry = () => {
   hideEverything();
   clearSendData();
   show('private-key-entry');
-}
+};
 
 const showMnemonicEntry = () => {
   hideEverything();
   clearSendData();
   show('mnemonic-entry');
-}
+};
 
 const showGenerateNewMnemonic = () => {
   hideEverything();
@@ -1062,7 +1060,7 @@ const showGenerateNewMnemonic = () => {
   show('mnemonic-generator');
   generatedMnemonic = bip39.entropyToMnemonic(crypto.randomBytes(32).toString('hex'));
   renderApp();
-}
+};
 
 const showGenerateNewPrivateKey = () => {
   hideEverything();
@@ -1070,7 +1068,7 @@ const showGenerateNewPrivateKey = () => {
   show('private-key-generator');
   generatedPrivateKeyHex = crypto.randomBytes(32).toString('hex');
   renderApp();
-}
+};
 
 const clearGlobalData = () => {
   get('privateKey').value = '';
@@ -1101,17 +1099,18 @@ const clearGlobalData = () => {
   unspentTransactionOutputsStatus = 'No UTXOs Requested Yet';
   parsedUnspentTransactionOutputs.length = 0;
   renderApp();
-}
+};
 
 const getLedgerDeviceInfo = () => {
   return ledgerDeviceInfo;
-}
+};
 
 const getMainConsole = () => {
   return mainConsole;
-}
+};
 
 exports.init = init;
+exports.trace = mainConsole.trace;
 exports.setAppClipboard = setAppClipboard;
 exports.setAppDocument = setAppDocument;
 exports.setRenderApp = setRenderApp;
@@ -1120,3 +1119,6 @@ exports.getMainConsole = getMainConsole;
 exports.getPublicKeyFromLedger = getPublicKeyFromLedger;
 exports.refreshBlockchainData = refreshBlockchainData;
 exports.clearSendData = clearSendData;
+exports.setPollForAllInfoTimer = setPollForAllInfoTimer;
+exports.getPublicKeyFromMnemonic = getPublicKeyFromMnemonic;
+exports.getPublicKeyFromPrivateKey = getPublicKeyFromPrivateKey;

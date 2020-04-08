@@ -1,3 +1,5 @@
+'use strict';
+
 const arraycopy = (from, fromIx, to, toIx, length) => {
   // console.log('arraycopy.from', from);
   // console.log('arraycopy.fromIx', fromIx);

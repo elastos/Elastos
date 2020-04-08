@@ -1,3 +1,5 @@
+'use strict';
+
 const bitcoreTools = require('../libraries/bitcore-tools.js');
 
 // coin used by elephant wallet

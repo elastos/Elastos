@@ -1,3 +1,5 @@
+'use strict';
+
 /* based on https://github.com/elastos/Elastos.ELA/blob/master/core/types/transaction.go */
 const BigNumber = require('bignumber.js');
 

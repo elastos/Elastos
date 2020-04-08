@@ -11,6 +11,10 @@ const clipboard = electron.clipboard;
 
 /** views */
 const Home = require('./home.jsx');
+const Landing = require('./landing.jsx');
+const LoginMnemonic = require('./login-mnemonic.jsx');
+const LoginPrivateKey = require('./login-private-key.jsx');
+const Temp = require('./temp.jsx');
 
 /** modules */
 const app = require('../scripts/app.js');
@@ -22,25 +26,7 @@ const guiToggles = require('../scripts/guiToggles.js');
 //   return remote.app.getVersion();
 // }
 //
-// const LedgerMessage = () => {
-//   let message = '';
-//   if (LOG_LEDGER_POLLING) {
-//     app.getMainConsole().log('LedgerMessage', app.getLedgerDeviceInfo());
-//   }
-//   if (app.getLedgerDeviceInfo()) {
-//     if (app.getLedgerDeviceInfo().error) {
-//       message += 'Error:';
-//       if (app.getLedgerDeviceInfo().message) {
-//         message += app.getLedgerDeviceInfo().message;
-//       }
-//     } else {
-//       if (app.getLedgerDeviceInfo().message) {
-//         message += app.getLedgerDeviceInfo().message;
-//       }
-//     }
-//   }
-//   return message;
-// }
+
 //
 // const UseLedgerButton = () => {
 //   if (
@@ -266,6 +252,10 @@ class App extends React.Component {
   render() {
     return (<div className="display_inline_block ta_center va_top body">
       <Home app={app} openDevTools={openDevTools} guiToggles={guiToggles}/>
+      <Landing app={app} openDevTools={openDevTools} guiToggles={guiToggles}/>
+      <LoginMnemonic app={app} openDevTools={openDevTools} guiToggles={guiToggles}/>
+      <LoginPrivateKey app={app} openDevTools={openDevTools} guiToggles={guiToggles}/>
+      <Temp app={app} openDevTools={openDevTools} guiToggles={guiToggles}/>
     </div>)
   }
 }
@@ -275,11 +265,12 @@ const renderApp = () => {
 
 const onLoad = () => {
   app.init();
+  guiToggles.init(app);
   app.setAppClipboard(clipboard);
   app.setAppDocument(document);
   app.setRenderApp(renderApp);
   renderApp();
-  app.showLogin();
+  guiToggles.showLanding();
   app.setPollForAllInfoTimer();
 }
 

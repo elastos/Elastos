@@ -1,3 +1,5 @@
+'use strict';
+
 const bs58 = require('bs58');
 const SmartBuffer = require('smart-buffer').SmartBuffer;
 const ripemd160 = require('ripemd160');

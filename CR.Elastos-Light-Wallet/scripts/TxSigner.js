@@ -1,3 +1,5 @@
+'use strict';
+
 const SmartBuffer = require('smart-buffer').SmartBuffer;
 
 const TxTranscoder = require('./TxTranscoder.js');
