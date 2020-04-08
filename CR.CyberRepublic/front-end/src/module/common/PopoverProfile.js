@@ -11,7 +11,8 @@ export default ({ owner, curUser }) => {
   const userId = _.get(owner, '_id')
   const email = _.get(owner, 'email')
   const isAuthor = curUser.current_user_id === userId
-  const did = owner.dids && owner.dids.find(el => el.active === true)
+  const dids = _.get(owner, 'dids')
+  const did = dids && dids.find((el) => el.active === true)
   const content = (
     <PopoverContent>
       <div>
