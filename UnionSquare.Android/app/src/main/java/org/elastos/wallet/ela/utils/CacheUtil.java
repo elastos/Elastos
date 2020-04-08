@@ -36,6 +36,13 @@ public class CacheUtil {
         CacheDiskUtils.getInstance(file).put("area", (Serializable) list, CacheDiskUtils.DAY * 360);
     }
 
+    public static void removeArea() {
+        CacheDiskUtils.getInstance(file).remove("area");
+    }
+
+    /**
+     * 慎用
+     */
     public static void clear() {
         CacheDiskUtils.getInstance(file).clear();
     }
@@ -61,12 +68,16 @@ public class CacheUtil {
         CacheDiskUtils.getInstance(file).put("list" + wallet.getWalletId(), (Serializable) list, CacheDiskUtils.DAY * 360);
     }
 
-    public static ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> getCRProducerList() {
+    public static void converCrBean2String() {
         Wallet wallet = new RealmUtil().queryDefauleWallet();
         ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) CacheDiskUtils.getInstance(file)
                 .getSerializable("CRlist1" + wallet.getWalletId());
-        return list == null ? new ArrayList<>() : list;
+        if (list != null && list.size() > 0) {
+            setCRProducerList(list);
+            CacheDiskUtils.getInstance(file).remove("CRlist1" + wallet.getWalletId());
+        }
     }
+
 
     public static void setCRProducerList(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list) {
         if (list == null) {
@@ -74,13 +85,36 @@ public class CacheUtil {
         }
         Wallet wallet = new RealmUtil().queryDefauleWallet();
         if (list.size() == 0) {
-            CacheDiskUtils.getInstance(file).remove("CRlist1" + wallet.getWalletId());
+            CacheDiskUtils.getInstance(file).remove("CRlistString" + wallet.getWalletId());
+            return;
+        }
+        ArrayList<String> listString = new ArrayList<>();
+        for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : list) {
+            listString.add(bean.getDid());
+        }
+
+        CacheDiskUtils.getInstance(file).put("CRlistString" + wallet.getWalletId(), listString, CacheDiskUtils.DAY * 360);
+    }
+
+    public static ArrayList<String> getCRProducerListString() {
+        Wallet wallet = new RealmUtil().queryDefauleWallet();
+        ArrayList<String> list = (ArrayList<String>) CacheDiskUtils.getInstance(file)
+                .getSerializable("CRlistString" + wallet.getWalletId());
+        return list == null ? new ArrayList<>() : list;
+    }
+
+    public static void setCRProducerListString(List<String> list) {
+        if (list == null) {
+            return;
+        }
+        Wallet wallet = new RealmUtil().queryDefauleWallet();
+        if (list.size() == 0) {
+            CacheDiskUtils.getInstance(file).remove("CRlistString" + wallet.getWalletId());
             return;
         }
 
-        CacheDiskUtils.getInstance(file).put("CRlist1" + wallet.getWalletId(), (Serializable) list, CacheDiskUtils.DAY * 360);
+        CacheDiskUtils.getInstance(file).put("CRlistString" + wallet.getWalletId(), (Serializable) list, CacheDiskUtils.DAY * 360);
     }
-
 
     public static ArrayList<DIDInfoEntity> getDIDInfoList() {
         ArrayList<DIDInfoEntity> list = (ArrayList<DIDInfoEntity>) CacheDiskUtils.getInstance(file)

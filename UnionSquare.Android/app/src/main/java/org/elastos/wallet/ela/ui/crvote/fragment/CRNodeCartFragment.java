@@ -89,7 +89,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
     @BindView(R.id.tv_amount)
     AppCompatTextView tvAmount;
-    List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list;
+    List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list = new ArrayList<>();
     @BindView(R.id.ll_blank)
     LinearLayout ll_blank;
     @BindView(R.id.cb_selectall)
@@ -143,13 +143,13 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
     // 初始化数据
     private void initDate() {
-        list = CacheUtil.getCRProducerList();
-        if (list == null || list.size() == 0) {
+        ArrayList<String> list1 = CacheUtil.getCRProducerListString();
+        if (list1.size() == 0) {
             return;
         }
         ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> newlist = new ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>();
         for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : netList) {
-            if (list.contains(bean)) {
+            if (list1.contains(bean.getDid())) {
                 bean.setCurentBalance(null);
                 newlist.add(bean);
             }

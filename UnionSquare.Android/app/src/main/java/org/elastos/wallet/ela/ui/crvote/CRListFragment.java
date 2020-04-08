@@ -138,6 +138,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
         addDIDPresenter = new AddDIDPresenter();
         registReceiver();
+        CacheUtil.converCrBean2String();
     }
 
     @OnClick({R.id.tv_myvote, R.id.tv_title_right, R.id.tv_going_to_vote, R.id.tv_signupfor, R.id.iv_swichlist, R.id.iv_toselect, R.id.ll_add, R.id.cb_selectall})
@@ -147,16 +148,16 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             case R.id.ll_add:
                 //批量加入
                 boolean tag = false;
-                ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list = CacheUtil.getCRProducerList();
+                ArrayList<String> list = CacheUtil.getCRProducerListString();
                 for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : netList) {
                     //存储选中的=原来的(isSelect)+getChecckPosition
                     if (bean.isChecked()) {
                         tag = true;
-                        list.add(bean);
+                        list.add(bean.getDid());
                     }
                 }
                 if (tag) {
-                    CacheUtil.setCRProducerList(list);
+                    CacheUtil.setCRProducerListString(list);
                     showToast(getString(R.string.addsucess));
                 }
 
@@ -232,10 +233,10 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                     llBottom2.setVisibility(View.VISIBLE);
                     llBottom1.setVisibility(View.GONE);
                     //同步已经加入购物车的数据setSelect
-                    ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list1 = CacheUtil.getCRProducerList();
-                    if (list1 != null && list1.size() > 0) {
+                    ArrayList<String> list1 = CacheUtil.getCRProducerListString();
+                    if (list1.size() > 0) {
                         for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : netList) {
-                            if (list1.contains(bean)) {
+                            if (list1.contains(bean.getDid())) {
                                 bean.setSelect(true);
                             }
                         }
@@ -285,7 +286,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         }
 
         Bundle bundle = new Bundle();
-        bundle.putInt("postion", position);
+        bundle.putSerializable("curentBean", netList.get(position));
         bundle.putSerializable("netList", netList);
         bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
         start(CRInformationFragment.class, bundle);
@@ -399,7 +400,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         return drawable;
     }
 
-    JSONArray otherUnActiveVote = new JSONArray();
+    JSONArray otherUnActiveVote = new JSONArray();//其他类型的unactive的投票
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
@@ -581,7 +582,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         if (integer == RxEnum.AGREE.ordinal()) {
             //注册did同意了协议
             //注册cr前的判断
-            new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this,null);
+            new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, null);
 
 
         }

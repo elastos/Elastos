@@ -20,6 +20,8 @@ import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
+import java.util.ArrayList;
+
 import butterknife.BindView;
 
 /**
@@ -107,16 +109,21 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
             }
         });
 
-        initArea();
+        initCache();
         initServer();
     }
 
 
-    private void initArea() {
+    private void initCache() {
         if (new SPUtil(getContext()).getFristLogin()) {
-            CacheUtil.clear();
             new SPUtil(getContext()).setFristLogin();
+            intAreaCache();
         }
+
+    }
+
+    private void intAreaCache() {
+        CacheUtil.removeArea();
         AppUtlis.getArea(getContext(), null);
     }
 

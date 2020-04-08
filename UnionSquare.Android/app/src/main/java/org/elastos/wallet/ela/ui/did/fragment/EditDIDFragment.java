@@ -150,7 +150,7 @@ public class EditDIDFragment extends BaseFragment implements NewBaseViewData {
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
-                    toDIDDetailFragment();
+                   popBackFragment();
                 }
             });
         }

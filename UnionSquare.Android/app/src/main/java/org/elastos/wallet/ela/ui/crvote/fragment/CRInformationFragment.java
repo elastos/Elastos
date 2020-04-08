@@ -24,16 +24,11 @@ import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRManagePresenter;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
-import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
-import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
-import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
-import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -65,7 +60,7 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
     TextView tvZl;
     @BindView(R.id.tv_addrs)
     TextView tv_addrs;
-    List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list;
+    List<String> list;
     public String type;
     @BindView(R.id.tv_did)
     TextView tvDid;
@@ -91,8 +86,6 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
     TextView tvIntroDetail;
     @BindView(R.id.iv_detail)
     ImageView ivDetail;
-    private ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> netlist;
-
     private String DID;
     private CredentialSubjectBean credentialSubjectBean;
 
@@ -108,10 +101,7 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
 
     @Override
     protected void setExtraData(Bundle data) {
-        int postion = data.getInt("postion");
-
-        netlist = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) data.getSerializable("netList");
-        bean = netlist.get(postion);
+        bean = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentBean");
     }
 
     @Override
@@ -131,13 +121,9 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
         tv_addrs.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         tvUrl.setText(bean.getUrl());
         tvZl.setText(bean.getVoterate() + "%");
-        list = CacheUtil.getCRProducerList();
-        if (list != null) {
-            for (int i = 0; i < list.size(); i++) {
-                if (list.get(i).getDid().equals(bean.getDid())) {
-                    sbJrhxlb.setText(getString(R.string.remove_candidate_list));
-                }
-            }
+        list = CacheUtil.getCRProducerListString();
+        if (list.contains(bean.getDid())) {
+            sbJrhxlb.setText(getString(R.string.remove_candidate_list));
         }
         tvIntroDetail.setMovementMethod(ScrollingMovementMethod.getInstance());
     }
@@ -175,32 +161,17 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
                 ClipboardUtil.copyClipboar(getBaseActivity(), tvUrl.getText().toString().trim());
                 break;
             case R.id.sb_jrhxlb:
-                //移除
-                if (sbJrhxlb.getText().toString().equals(getString(R.string.remove_candidate_list))) {
-                    for (int i = 0; i < list.size(); i++) {
-                        if (list.get(i).getDid().equals(bean.getDid())) {
-                            ToastUtils.showShort(getString(R.string.yi_remove_candidate_list));
-                            sbJrhxlb.setText(getString(R.string.candidate_list));
-                            list.remove(i);
-                            CacheUtil.setCRProducerList(list);
-                        }
-                    }
-                    return;
-                }
-
-                if (sbJrhxlb.getText().toString().equals(getString(R.string.candidate_list))) {
-
-                    if (list == null) {
-                        list = new ArrayList<>();
-                    }
-                    list.add(bean);
-                    CacheUtil.setCRProducerList(list);
-                    sbJrhxlb.setText(getString(R.string.remove_candidate_list));
+                if (list.contains(bean.getDid())) {
+                    //移除
+                    list.remove(bean.getDid());
+                    ToastUtils.showShort(getString(R.string.yi_remove_candidate_list));
+                    sbJrhxlb.setText(getString(R.string.candidate_list));
+                } else {
+                    list.add(bean.getDid());
                     ToastUtils.showShort(getString(R.string.candidate_list));
-                    return;
+                    sbJrhxlb.setText(getString(R.string.remove_candidate_list));
                 }
-
-
+                CacheUtil.setCRProducerListString(list);
                 break;
             case R.id.sb_ckhxlb:
                 start(CRNodeCartFragment.class, getArguments());
@@ -217,15 +188,15 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
                 if (!TextUtils.isEmpty(jwt)) {
                     String[] jwtParts = jwt.split("\\.");
                     String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
-                    String pro=getMyDID().getCredentialProFromJson(payload);
+                    String pro = getMyDID().getCredentialProFromJson(payload);
                     credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
-                    if (credentialSubjectBean==null||credentialSubjectBean.whetherEmpty()){
+                    if (credentialSubjectBean == null || credentialSubjectBean.whetherEmpty()) {
                         return;
                     }
                     GlideApp.with(CRInformationFragment.this).load(credentialSubjectBean.getAvatar())
                             .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
                     ivDetail.setVisibility(View.VISIBLE);
-                    if (!TextUtils.isEmpty(credentialSubjectBean.getIntroduction())){
+                    if (!TextUtils.isEmpty(credentialSubjectBean.getIntroduction())) {
                         llTab.setVisibility(View.VISIBLE);
                         tvIntroDetail.setText(credentialSubjectBean.getIntroduction());
                     }
