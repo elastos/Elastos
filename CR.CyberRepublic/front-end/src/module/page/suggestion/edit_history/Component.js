@@ -30,6 +30,7 @@ export default class extends DetailPage {
   }
 
   diffObject(obj1, obj2) {
+    if (!obj1) return null
     const diffObj = Object.assign(new obj1.constructor(), obj1)
     let f
     let str
