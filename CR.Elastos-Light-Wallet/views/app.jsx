@@ -22,23 +22,13 @@ const guiToggles = require('../scripts/guiToggles.js');
 
 /** functions */
 
-// const Version = () => {
-//   return remote.app.getVersion();
-// }
-//
+const Version = () => {
+  return remote.app.getVersion();
+}
+
 
 //
-// const UseLedgerButton = () => {
-//   if (
-//     app.getLedgerDeviceInfo()
-//     ? app.getLedgerDeviceInfo().enabled
-//     : false) {
-//     return (<div className="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => app.getPublicKeyFromLedger()}>Use Ledger</div>);
-//   } else {
-//     return (<div className="white_on_pink bordered display_inline_block float_right fake_button rounded padding_5px">Use Ledger</div>);
-//   }
-//   return (<div/>);
-// }
+
 //
 // const TransactionHistoryElementIcon = (props) => {
 //   const item = props.item;
@@ -250,12 +240,12 @@ const openDevTools = () => {
 
 class App extends React.Component {
   render() {
-    return (<div className="display_inline_block ta_center va_top body">
-      <Home app={app} openDevTools={openDevTools} guiToggles={guiToggles}/>
-      <Landing app={app} openDevTools={openDevTools} guiToggles={guiToggles}/>
-      <LoginMnemonic app={app} openDevTools={openDevTools} guiToggles={guiToggles}/>
-      <LoginPrivateKey app={app} openDevTools={openDevTools} guiToggles={guiToggles}/>
-      <Temp app={app} openDevTools={openDevTools} guiToggles={guiToggles}/>
+    return (<div className="display_inline_block ta_center va_top font_sans_10">
+      <Home app={app} openDevTools={openDevTools} guiToggles={guiToggles} Version={Version}/>
+      <Landing app={app} openDevTools={openDevTools} guiToggles={guiToggles} Version={Version}/>
+      <LoginMnemonic app={app} openDevTools={openDevTools} guiToggles={guiToggles} Version={Version}/>
+      <LoginPrivateKey app={app} openDevTools={openDevTools} guiToggles={guiToggles} Version={Version}/>
+      <Temp app={app} openDevTools={openDevTools} guiToggles={guiToggles} Version={Version}/>
     </div>)
   }
 }
@@ -264,7 +254,7 @@ const renderApp = () => {
 };
 
 const onLoad = () => {
-  app.init();
+  app.init(guiToggles);
   guiToggles.init(app);
   app.setAppClipboard(clipboard);
   app.setAppDocument(document);

@@ -21,10 +21,10 @@ module.exports = (props) => {
         </td>
       </tr>
       <tr>
-        <td class="ta_left">
+        <td className="ta_left">
           <div className="bordered bgcolor_black_hover display_inline_block" onClick={(e)=> usePrivateKey()}>Use Private Key</div>
         </td>
-        <td class="ta_right">
+        <td className="ta_right">
           <div className="bordered bgcolor_black_hover display_inline_block ta_right" onClick={(e)=> guiToggles.showLanding()}>Back</div>
         </td>
       </tr>

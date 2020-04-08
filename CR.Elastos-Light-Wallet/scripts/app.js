@@ -107,14 +107,19 @@ let blockchainLastActionHeight = 0;
 
 const mainConsole = new mainConsoleLib.Console(process.stdout, process.stderr);
 
+let GuiToggles;
+
 /** functions */
-const init = () => {
+const init = (_GuiToggles) => {
   sendToAddressStatuses.push('No Send-To Transaction Requested Yet');
   parsedProducerList.totalvotes = '-';
   parsedProducerList.totalcounts = '-';
   parsedProducerList.producersCandidateCount = 0;
   parsedProducerList.producers = [];
   parsedCandidateVoteList.candidateVotes = [];
+
+  GuiToggles = _GuiToggles;
+
   mainConsole.log('Consone Logging Enabled.');
 };
 
@@ -371,7 +376,10 @@ const requestBlockchainDataAndShowHome = () => {
   requestBalance();
   requestUnspentTransactionOutputs();
   requestBlockchainState();
-  showHome();
+
+  if (isLoggedIn) {
+    GuiToggles.showHome();
+  }
 };
 
 const getPublicKeyFromMnemonic = () => {
@@ -944,19 +952,6 @@ const showLogin = () => {
   show('elastos-branding');
   show('mnemonic-generate');
   show('private-key-generate');
-};
-
-const showHome = () => {
-  if (!isLoggedIn) {
-    return;
-  }
-  hideEverything();
-  clearSendData();
-  show('transaction-more-info');
-  show('transaction-list-small');
-  show('your-address');
-  show('elastos-branding');
-  selectButton('home');
 };
 
 const showSend = () => {

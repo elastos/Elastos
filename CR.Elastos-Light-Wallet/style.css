@@ -1,8 +1,6 @@
-.body {
+.font_sans_10 {
   font-family: 'Open Sans', sans-serif;
   font-size: 10px;
-  overflow-y: scroll;
-  text-align: center;
 }
 
 .font_size24 {
@@ -29,6 +27,10 @@
   text-align: center;
 }
 
+.margin_none {
+  margin: 0;
+}
+
 .va_top {
   vertical-align: top;
 }
@@ -46,6 +48,18 @@
 .w750h520px {
   width: 750px;
   height: 520px;
+}
+
+.w100pct {
+  width: 100%;
+}
+
+.w40pct {
+  width: 40%;
+}
+
+.w30pct {
+  width: 30%;
 }
 
 .w500px {
@@ -74,6 +88,10 @@
 
 .w50px {
   width: 50px;
+}
+
+.w25px {
+  width: 25px;
 }
 
 .h520px {
@@ -137,6 +155,10 @@
   color: white;
 }
 
+.bgcolor_red {
+  background-color: red;
+}
+
 .bgcolor_black {
   background-color: black;
 }
@@ -153,6 +175,14 @@
   position: relative;
 }
 
+.no_padding {
+  padding: 0;
+}
+
+.no_border {
+  border: 0;
+}
+
 .rotate_n90 {
   position: absolute;
   top: 75px;
@@ -163,4 +193,12 @@
 
 .monospace {
   font-family: 'monospace'
+}
+
+.overflow_auto {
+  overflow: auto;
+}
+
+.td_linethrough {
+  text-decoration: line-through;
 }
