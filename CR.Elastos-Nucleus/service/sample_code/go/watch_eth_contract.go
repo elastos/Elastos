@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine"
@@ -9,25 +8,26 @@ import (
 
 func main() {
     grpcServerHost := "localhost"
-    grpcServerPort := "8001"
+    grpcServerPort := 8001
     production := false
-    
-    apiKey := "9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU"
+
     network := "gmunet"
-    smartContractAddress := "0xdf29327c95b12A37089A6e230d5ce50F23237671"
-    smartContractName := "HelloWorld"
-    smartContractCodeHash := "QmRCn3tQem7UugGLE7tkchXudp4prqLtDhMRs828mUED34"
+    apiKeyToUse := "O2Fjcsk43uUFHqe7ygWbq0tTFj0W5gkiXxoyq1wHIQpJT8MkdKFW2LcJqBTr6AIf"
+    didToUse := "iHdasfhasdflkHdasfasdfD"
     
-    log.Println("--> Watch ETH Contract")
-    sidechainEth := elastosadenine.NewSidechainEth(grpcServerHost, grpcServerPort, production)
-    defer sidechainEth.Close()
-    response := sidechainEth.WatchEthContract(apiKey, network, smartContractAddress, smartContractName, smartContractCodeHash)
-    if response.Output != "" {
-    	output := []byte(response.Output)
-    	var jsonOutput map[string]interface{}
-    	json.Unmarshal(output, &jsonOutput)
-    	log.Printf("Status Message : %s", response.StatusMessage)
-    	result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-    	log.Printf(string(result))
-    }
+	log.Println("--> Watch ETH Contract")
+	sidechainEth := elastosadenine.NewSidechainEth(grpcServerHost, grpcServerPort, production)
+	defer sidechainEth.Close()
+	var (
+		contractAddress = "0x192277188DD72f6FAE972fd30381A574C9Dee16F"
+		contractName = "HelloWorld"
+		contractCodeHash = "QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd"
+	)
+	response := sidechainEth.WatchEthContract(apiKeyToUse, didToUse, network, contractAddress, contractName, contractCodeHash)
+	if response.Status {
+		log.Printf("Status Message : %s", response.StatusMessage)
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
+	}
 }

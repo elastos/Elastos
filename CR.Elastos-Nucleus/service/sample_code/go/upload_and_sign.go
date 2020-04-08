@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 
 	"github.com/cyber-republic/go-grpc-adenine/elastosadenine"
@@ -9,24 +8,23 @@ import (
 
 func main() {
     grpcServerHost := "localhost"
-    grpcServerPort := "8001"
+    grpcServerPort := 8001
     production := false
-    
-    apiKey = "9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU"
-    network = "gmunet"
+
+    network := "gmunet"
+    apiKeyToUse := "O2Fjcsk43uUFHqe7ygWbq0tTFj0W5gkiXxoyq1wHIQpJT8MkdKFW2LcJqBTr6AIf"
+    didToUse := "iHdasfhasdflkHdasfasdfD"
     privateKey = "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
     fileToUpload = "test/sample.txt"
-    
+
     log.Println("--> Upload and Sign")
-    hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
-    defer hive.Close()
-    response := hive.UploadAndSign(apiKey, network, privateKey, fileToUpload)
-    if response.Output != "" {
-    	output := []byte(response.Output)
-    	var jsonOutput map[string]interface{}
-    	json.Unmarshal(output, &jsonOutput)
-    	log.Printf("Status Message : %s", response.StatusMessage)
-    	result, _ := json.Marshal(jsonOutput["result"].(map[string]interface{}))
-    	log.Printf(string(result))
-    }
+	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
+	defer hive.Close()
+	response := hive.UploadAndSign(apiKeyToUse, didToUse, network, privateKey, fileToUpload)
+	if response.Status {
+		log.Printf("Status Message : %s", response.StatusMessage)
+		log.Printf("Output: %s", response.Output)
+	} else {
+		log.Printf("Error Message: %s", response.StatusMessage)
+	}
 }
