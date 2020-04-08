@@ -16,6 +16,7 @@
     "antd": "^3.20.7",
     "codemirror": "^5.49.0",
     "diff": "^4.0.1",
+    "difflib": "^0.2.4",
     "dompurify": "^2.0.6",
     "draft-convert": "^2.1.5",
     "draft-js": "^0.10.5",

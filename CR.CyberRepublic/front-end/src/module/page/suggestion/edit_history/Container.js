@@ -21,6 +21,9 @@ const mapDispatch = () => {
     resetEditHistory() {
       return service.resetEditHistory()
     },
+    revertVersion(id, version) {
+      return service.revertVersion(id, version)
+    }
   }
 }
 

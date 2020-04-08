@@ -6,7 +6,7 @@ import PopoverProfile from '@/module/common/PopoverProfile'
 import './style.scss'
 
 export default ({ data, hideAuthor, postedByText, user, content }) => {
-  const { displayId, createdAt, descUpdatedAt, createdBy } = data
+  const { version, createdAt, descUpdatedAt, createdBy } = data
   const authorNode = hideAuthor ? (
     ''
   ) : (
@@ -18,28 +18,31 @@ export default ({ data, hideAuthor, postedByText, user, content }) => {
   )
 
   return (
-    <div className="c_SuggestionMeta">
-      <span>{`#${displayId}`}</span>
-      {authorNode}
+    <div className="c_SuggestionHistoryMeta">
+      <span>
+        Version
+        {' '}
+        {`${version / 10}${version % 10 === 0 ? '.0' : ''}`}
+      </span>
       <span>
         {I18N.get('suggestion.fields.preambleSub.created')}
         {' '}
-        {moment(createdAt).format('MMM D, YYYY')}
+        {moment(createdAt).format('MMM D, YYYY HH:mm A')}
       </span>
 
+      {content}
       {/**
         * there is a hack here,
         * we set descUpdatedAt always so we only are sorting on that field,
         * remove this when we properly sort on a projected field
-        */}
-      {descUpdatedAt && !moment(descUpdatedAt).isSame(createdAt, 'day') && (
-        <span>
+          {descUpdatedAt && !moment(descUpdatedAt).isSame(createdAt, 'day') && (
+          <span>
           {I18N.get('suggestion.fields.preambleSub.updated')}
           {' '}
           {moment(descUpdatedAt).format('MMM D, YYYY')}
-        </span>
-      )}
-      {content}
+          </span>
+          )}
+        */}
     </div>
   )
 }

@@ -130,7 +130,7 @@ export default class extends StandardPage {
         </div>
       )
     }
-    const detailNode = this.renderDetail()
+    const detailNode = this.renderDetail(detail)
     const translationBtn = this.renderTranslationBtn()
     const actionsNode = this.renderActionsNode()
     const ownerActionsNode = this.renderOwnerActionsNode()
@@ -210,8 +210,8 @@ export default class extends StandardPage {
     )
   }
 
-  renderDetail() {
-    const { detail } = this.props
+  renderDetail(detail) {
+    if (!detail) return
     const sections = [
       'abstract',
       'motivation',
@@ -245,7 +245,7 @@ export default class extends StandardPage {
         <DescLabel id="preamble">
           {I18N.get('suggestion.fields.preamble')}
         </DescLabel>
-        {this.renderPreambleItem(
+        {detail.displayId && this.renderPreambleItem(
           I18N.get('suggestion.fields.preambleSub.suggestion'),
           `#${detail.displayId}`
         )}
@@ -253,7 +253,7 @@ export default class extends StandardPage {
           I18N.get('suggestion.fields.preambleSub.title'),
           detail.title
         )}
-        {this.renderPreambleItem(
+        {detail.createdBy && detail.createdBy.username && this.renderPreambleItem(
           I18N.get('suggestion.fields.preambleSub.creator'),
           detail.createdBy.username,
           'username'
@@ -275,7 +275,7 @@ export default class extends StandardPage {
             return (
               <div key="plan">
                 <DescLabel id="plan">
-                  {I18N.get(`suggestion.fields.plan`)}
+                  {I18N.get('suggestion.fields.plan')}
                 </DescLabel>
                 <Subtitle>{I18N.get('suggestion.plan.milestones')}</Subtitle>
                 <Milestones
@@ -336,9 +336,33 @@ export default class extends StandardPage {
     )
   }
 
+  handleShowVersionHistory = () => {
+    const id = _.get(this.props, 'match.params.id')
+    this.props.history.push(`/suggestion/history/${id}`)
+  }
+
+  renderTitleButton = () => {
+    return (
+      <Button
+        onClick={this.handleShowVersionHistory}
+        className="btn-create-suggestion"
+        htmlType="button"
+        style={{ position: 'relative', top: -5, marginRight: 10 }}
+      >
+        {I18N.get('suggestion.form.button.showVersion')}
+      </Button>
+    )
+  }
+
   renderMetaNode() {
     const { detail, user } = this.props
-    return <MetaContainer data={detail} user={user} />
+    return (
+      <MetaContainer
+        data={detail}
+        user={user}
+        content={this.renderTitleButton()}
+      />
+    )
   }
 
   renderTitleNode() {
@@ -440,7 +464,7 @@ export default class extends StandardPage {
           typeof detail.plan !== 'string'
         ) {
           return `
-            <h2>${I18N.get(`suggestion.fields.plan`)}</h2>
+            <h2>${I18N.get('suggestion.fields.plan')}</h2>
             <p>${getPlanHtml(detail.plan.teamInfo)}</p>
           `
         }
@@ -450,10 +474,10 @@ export default class extends StandardPage {
           typeof detail.budget !== 'string'
         ) {
           return `
-            <h2>${I18N.get(`suggestion.fields.budget`)}</h2>
-            <p>${I18N.get(`suggestion.budget.total`)}</p>
+            <h2>${I18N.get('suggestion.fields.budget')}</h2>
+            <p>${I18N.get('suggestion.budget.total')}</p>
             <p>${detail.budgetAmount}</p>
-            <p>${I18N.get(`suggestion.budget.address`)}</p>
+            <p>${I18N.get('suggestion.budget.address')}</p>
             <p>${detail.elaAddress}</p>
             <p>${getBudgetHtml(detail.budget)}</p>
           `
@@ -461,9 +485,9 @@ export default class extends StandardPage {
         return `
           <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
           <p>${convertMarkdownToHtml(
-            removeImageFromMarkdown(detail[section])
-          )}</p>
-        `
+    removeImageFromMarkdown(detail[section])
+  )}</p>
+          `
       })
       .join('')
     const text = `
@@ -611,9 +635,11 @@ export default class extends StandardPage {
             <CreateProposalText>
               {`${userUtil.formatUsername(detail.proposer)} `}
               {I18N.get('suggestion.label.hasMadeIntoProposal')}
-              <Link to={`/proposals/${_id}`}>{` ${I18N.get(
-                'council.voting.proposal'
-              )} #${vid}`}</Link>
+              <Link to={`/proposals/${_id}`}>
+                {` ${I18N.get(
+                  'council.voting.proposal'
+                )} #${vid}`}
+              </Link>
             </CreateProposalText>
           </Col>
         </Row>

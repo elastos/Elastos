@@ -161,7 +161,7 @@ const en = {
   'login.reset': 'Reset password',
   'login.title': 'Login to Cyber Republic',
   'login.description_1': 'Input your credentials below.',
-  'login.withDid': 'Log in with Elastos DID', 
+  'login.withDid': 'Log in with Elastos DID',
   'login.qrcodeTip': 'Open ELA wallet app and scan to log in.',
 
   // Logout
@@ -281,7 +281,7 @@ const en = {
   'suggestion.cancel': 'Cancel',
   'suggestion.submit': 'Submit',
   'suggestion.header.edit': 'Edit Suggestion',
-  'suggestion.editHistory': 'Edit History',
+  'suggestion.editHistory': 'Version History',
   'suggestion.showEditHistory': 'Show Edit History',
   'suggestion.edited': 'Edited',
   'suggestion.form.mention.allCouncil': 'All Council Members',
