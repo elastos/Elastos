@@ -2,6 +2,7 @@
 NODE_COMMON_RPC_METHODS = ['getreceivedbyaddress', 'getnodestate', 'getblockbyheight',
                            'getarbitratorgroupbyheight']
 NODE_MAIN_RPC_METHODS = ['getconfirmbyheight', 'getmininginfo', 'getarbitersinfo', 'listproducers', 'listcrcandidates', 'listcurrentcrs']
+NODE_SIDECHAIN_ETH_RPC_METHODS = ['eth_getBalance', 'eth_blockNumber', 'eth_getBlockByNumber']
 
 # Mainchain RPC
 MAINCHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'  # Get the balance of an address

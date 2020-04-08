@@ -42,8 +42,6 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
         if type(jwt_info) == str:
             jwt_info = json.loads(jwt_info)
 
-        network = jwt_info['network']
-
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
@@ -78,7 +76,14 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
                                          status_message=status_message,
                                          status=False)
 
-        if chain != "mainchain" and method not in settings.NODE_COMMON_RPC_METHODS:
+        if chain != "mainchain" and chain != "eth" and method not in settings.NODE_COMMON_RPC_METHODS:
+            status_message = f'The method {method} is not available for the chain {chain}'
+            logging.debug(f"{api_key} : {status_message}")
+            return node_rpc_pb2.Response(output=json.dumps({}),
+                                         status_message=status_message,
+                                         status=False)
+
+        if chain == "eth" and method not in settings.NODE_SIDECHAIN_ETH_RPC_METHODS:
             status_message = f'The method {method} is not available for the chain {chain}'
             logging.debug(f"{api_key} : {status_message}")
             return node_rpc_pb2.Response(output=json.dumps({}),
@@ -92,6 +97,14 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
                 url = config('MAIN_NET_SIDECHAIN_DID_RPC_PORT')
             elif chain == "token":
                 url = config('MAIN_NET_SIDECHAIN_TOKEN_RPC_PORT')
+            elif chain == "eth":
+                url = config('MAIN_NET_SIDECHAIN_ETH_RPC_PORT')
+            else:
+                status_message = f'The chain {chain} is not supported for the network {network}'
+                logging.debug(f"{api_key} : {status_message}")
+                return node_rpc_pb2.Response(output=json.dumps({}),
+                                             status_message=status_message,
+                                             status=False)
         else:
             if chain == "mainchain":
                 url = config('PRIVATE_NET_MAINCHAIN_RPC_PORT')
@@ -99,6 +112,15 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
                 url = config('PRIVATE_NET_SIDECHAIN_DID_RPC_PORT')
             elif chain == "token":
                 url = config('PRIVATE_NET_SIDECHAIN_TOKEN_RPC_PORT')
+            elif chain == "eth":
+                url = config('PRIVATE_NET_SIDECHAIN_ETH_RPC_PORT')
+                d["id"] = 1
+            else:
+                status_message = f'The chain {chain} is not supported for the network {network}'
+                logging.debug(f"{api_key} : {status_message}")
+                return node_rpc_pb2.Response(output=json.dumps({}),
+                                             status_message=status_message,
+                                             status=False)
 
         response = self.session.post(url, data=json.dumps(d), timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
