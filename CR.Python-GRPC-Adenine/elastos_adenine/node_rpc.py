@@ -1,6 +1,8 @@
 import grpc
 import jwt
 import datetime
+
+from ast import literal_eval
 from .stubs import node_rpc_pb2, node_rpc_pb2_grpc
 from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION
 
@@ -62,25 +64,41 @@ class NodeRpc:
     def get_current_mining_info(self, api_key, did, network):
         return self.rpc_method(api_key, did, network, "mainchain", "getmininginfo", {})
 
-    # Common method for mainchain, did sidechain and token sidechain
+    # Common method for mainchain, did sidechain, token and eth sidechain
     def get_current_block_info(self, api_key, did, network, chain):
-        height = str(self.get_current_height(api_key, did,network, chain))
+        height = self.get_current_height(api_key, did, network, chain)
         return self.get_block_info(api_key, did, network, chain, height)
 
-    # Common method for mainchain, did sidechain and token sidechain
+    # Common method for mainchain, did sidechain, token and eth sidechain
     def get_block_info(self, api_key, did, network, chain, height):
-        params = {"height": height}
-        return self.rpc_method(api_key, did, network, chain, "getblockbyheight", params)
+        if chain == "eth":
+            method = "eth_getBlockByNumber"
+            params = [hex(height), True]
+        else:
+            method = "getblockbyheight"
+            params = {"height": str(height)}
+        return self.rpc_method(api_key, did, network, chain, method, params)
 
-    # Common method for mainchain, did sidechain and token sidechain
+    # Common method for mainchain, did sidechain, token and eth sidechain
     def get_current_balance(self, api_key, did, network, chain, address):
-        params = {"address": address}
-        return self.rpc_method(api_key, did, network, chain, "getreceivedbyaddress", params)
+        if chain == "eth":
+            method = "eth_getBalance"
+            params = [address, "latest"]
+            current_balance = self.rpc_method(api_key, did, network, chain, method, params)
+            current_balance = literal_eval(current_balance) / 1000000000000000000
+        else:
+            method = "getreceivedbyaddress"
+            params = {"address": address}
+            current_balance = self.rpc_method(api_key, did, network, chain, method, params)
+        return current_balance
 
-    # Common method for mainchain, did sidechain and token sidechain
+    # Common method for mainchain, did sidechain, token and eth sidechain
     def get_current_height(self, api_key, did, network, chain):
-        node_state = self.get_current_node_state(api_key, did, network, chain)
-        current_height = node_state["height"]
+        if chain == "eth":
+            current_height = literal_eval(self.rpc_method(api_key, did, network, chain, "eth_blockNumber", {}))
+        else:
+            node_state = self.get_current_node_state(api_key, did, network, chain)
+            current_height = node_state["height"]
         return current_height
 
     # Common method for mainchain, did sidechain and token sidechain

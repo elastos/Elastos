@@ -58,6 +58,8 @@ def main():
             print("Current Height - did sidechain: ", current_height)
             current_height = node_rpc.get_current_height(api_key_to_use, did_to_use, network, "token")
             print("Current Height - token sidechain: ", current_height)
+            current_height = node_rpc.get_current_height(api_key_to_use, did_to_use, network, "eth")
+            print("Current Height - eth sidechain: ", current_height)
             
             print("--> Get current balance")
             current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "mainchain", ela_to_use)
@@ -66,14 +68,18 @@ def main():
             print("Current balance - did sidechain:", current_balance)
             current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "token", ela_to_use)
             print("Current balance - token sidechain:", current_balance)
+            current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "eth", ela_eth_to_use)
+            print("Current balance - eth sidechain:", current_balance)
             
             print("--> Get current block info")
             current_block_info = node_rpc.get_current_block_info(api_key_to_use, did_to_use, network, "mainchain")
             print("Current block info - mainchain: ", current_block_info)
             current_block_info = node_rpc.get_current_block_info(api_key_to_use, did_to_use, network, "did")
             print("Current block info - did sidechain: ", current_block_info)
-            current_block_details = node_rpc.get_current_block_info(api_key_to_use, did_to_use, network, "token")
+            current_block_info = node_rpc.get_current_block_info(api_key_to_use, did_to_use, network, "token")
             print("Current block info - token sidechain: ", current_block_info)
+            current_block_info = node_rpc.get_current_block_info(api_key_to_use, did_to_use, network, "eth")
+            print("Current block info - eth sidechain: ", current_block_info)
 
             print("--> Get current mining info - mainchain")
             current_mining_info = node_rpc.get_current_mining_info(api_key_to_use, did_to_use, network)
