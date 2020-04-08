@@ -35,7 +35,7 @@ export default class extends Base {
   public async create(param: any): Promise<Document> {
     const doc = {
       ...param,
-      version: 1.0,
+      version: 10,
       createdBy: _.get(this.currentUser, '_id'),
       contentType: constant.CONTENT_TYPE.MARKDOWN,
       // this is a hack for now, we should really be using aggregate pipeline + projection
@@ -46,7 +46,7 @@ export default class extends Base {
     const result = await this.model.save(doc)
     await this.getDBModel('Suggestion_Edit_History').save({
       ...param,
-      version: 1.0,
+      version: 10,
       suggestion: result._id
     })
 
@@ -119,6 +119,14 @@ export default class extends Base {
       await model.getDBInstance()
                          .update({ _id },
                                  { "$set": { "version": ver }})
+    }
+    const detail = this.model
+                       .getDBInstance()
+                       .findOne({_id: id})
+    if(detail) {
+      if(!detail.version || detail.version < 10) {
+        await this.model.update({ _id: id }, { $set: {version: 10}})
+      }
     }
   }
 
@@ -710,6 +718,7 @@ export default class extends Base {
       }
     }
 
+    if(!doc.version || doc.version < 10) doc.version = 10
     return doc
   }
   public async show(param: any): Promise<any> {

@@ -31,6 +31,7 @@ export default class extends DetailPage {
 
   diffObject(obj1, obj2) {
     if (!obj1) return null
+    if (!obj2) return obj1
     const diffObj = Object.assign(new obj1.constructor(), obj1)
     let f
     let str
@@ -148,13 +149,14 @@ export default class extends DetailPage {
   renderMetaNode() {
     const { dataList, detail, user } = this.props
     let {version} = detail
+    if (version < 10) version = 10
     if (this.state.version) version = this.state.version
     const sDetail = dataList.find((e) => {
       if (e.version === version) {
         return e
       }
     })
-    return (
+    return sDetail && (
       <MetaContainer
         data={sDetail}
         user={user}
