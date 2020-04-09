@@ -4,6 +4,7 @@ module.exports = (props) => {
   const App = props.App;
   const openDevTools = props.openDevTools;
   const Version = props.Version;
+  const GuiToggles = props.GuiToggles;
   return (
   <table id="home" className="bordered w750h520px">
     <tbody>
@@ -110,9 +111,9 @@ module.exports = (props) => {
                   <td id="logout" className="w100px h50px ta_center va_bottom bgcolor_black_hover">
 
                   <button className="bgcolor_black_hover">
-                    <img src="artwork/log-out.svg"  title="Logout" onClick={(e) => App.showLogin()}/>
+                    <img src="artwork/log-out.svg"  title="Logout" onClick={(e) =>
+                  GuiToggles.showLanding()}/>
                   </button>
-                    Logout
                   </td>
                 </tr>
               </tbody>

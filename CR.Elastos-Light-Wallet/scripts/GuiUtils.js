@@ -13,5 +13,10 @@ const setValue = (id, value) => {
   get(id).value = value;
 };
 
+const getValue = (id) => {
+  return get(id).value;
+};
+
 exports.get = get;
 exports.setValue = setValue;
+exports.getValue = getValue;

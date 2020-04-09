@@ -28,6 +28,7 @@ const hideEverything = () => {
 const showLanding = () => {
   hideEverything();
   app.clearSendData();
+  app.clearGlobalData();
   app.refreshBlockchainData();
   show('landing');
 };
