@@ -21,10 +21,17 @@ static void test_idchain_publishdid(void)
 {
     char *txid;
     DIDURL *signkey;
-    DIDDocument *doc = NULL, *updatedoc = NULL;
-    const char *createTxid, *updateTxid;
+    DIDDocument *doc = NULL, *updatedoc = NULL, *document;
+    const char *createTxid, *updateTxid, *mnemonic;
     DID *did;
     int i = 0, rc;
+
+    mnemonic = Mnemonic_Generate(language);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", language, true);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    document = DIDStore_NewDID(store, storepass, "littlefish");
+    CU_ASSERT_PTR_NOT_NULL(document);
 
     signkey = DIDDocument_GetDefaultPublicKey(document);
     CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
@@ -84,14 +91,109 @@ static void test_idchain_publishdid(void)
     }
     printf("\n-- resolve result: successfully!\n-------------------------------------\n");
 
+    Mnemonic_Free((void*)mnemonic);
     DIDDocument_Destroy(doc);
     DIDDocument_Destroy(updatedoc);
+    DIDDocument_Destroy(document);
 }
 
 static void test_idchain_publishdid_with_credential(void)
 {
-    //todo
-    return;
+    char *txid;
+    DIDURL *signkey;
+    DIDDocument *doc = NULL, *updatedoc = NULL, *document;
+    const char *createTxid, *updateTxid, *mnemonic;
+    DID *did;
+    int i = 0, rc;
+
+    mnemonic = Mnemonic_Generate(language);
+    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", language, true);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    document = DIDStore_NewDID(store, storepass, "littlefish");
+    CU_ASSERT_PTR_NOT_NULL(document);
+
+    signkey = DIDDocument_GetDefaultPublicKey(document);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
+
+    did = DIDDocument_GetSubject(document);
+    CU_ASSERT_PTR_NOT_NULL(did);
+
+    printf("\n-------------------------------------\n-- publish begin(create), waiting....\n");
+    txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey, false);
+    CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
+    printf("-- publish result:\n   did = %s\n   txid = %s\n", did->idstring, txid);
+    free(txid);
+
+    printf("-- resolve begin(create)");
+    while(!doc) {
+        doc = DID_Resolve(did, true);
+        if (!doc) {
+            ++i;
+            printf(".");
+            sleep(30);
+        }
+        else {
+            rc = DIDStore_StoreDID(store, doc, "");
+            CU_ASSERT_NOT_EQUAL(rc, -1);
+            createTxid = DIDDocument_GetTxid(doc);
+        }
+    }
+    printf("\n-- resolve result: successfully!\n-- publish begin(update), wating...\n");
+
+    DIDDocumentBuilder *builder = DIDDocument_Edit(doc);
+    CU_ASSERT_PTR_NOT_NULL(builder);
+    DIDDocument_Destroy(doc);
+
+    DIDURL *credid = DIDURL_NewByDid(did, "cred-1");
+    CU_ASSERT_PTR_NOT_NULL(credid);
+
+    const char *types[] = {"BasicProfileCredential", "SelfClaimedCredential"};
+
+    Property props[1];
+    props[0].key = "name";
+    props[0].value = "John";
+
+    rc = DIDDocumentBuilder_AddSelfClaimedCredential(builder, credid, types, 2, props, 1, 0, storepass);
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    doc = DIDDocumentBuilder_Seal(builder, storepass);
+    CU_ASSERT_PTR_NOT_NULL(doc);
+
+    signkey = DIDDocument_GetDefaultPublicKey(doc);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
+
+    txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey, true);
+    CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
+    printf("-- publish result:\n   did = %s\n   txid = %s\n", did->idstring, txid);
+    free(txid);
+
+    printf("-- resolve begin(update)");
+    while(!updatedoc || !strcmp(createTxid, updateTxid)) {
+        if (updatedoc)
+            DIDDocument_Destroy(updatedoc);
+
+        updatedoc = DID_Resolve(did, true);
+        if (!updatedoc) {
+            ++i;
+            printf(".");
+            sleep(30);
+            continue;
+        }
+        else {
+            rc = DIDStore_StoreDID(store, updatedoc, "");
+            CU_ASSERT_NOT_EQUAL(rc, -1);
+            updateTxid = DIDDocument_GetTxid(updatedoc);
+            printf(".");
+            continue;
+        }
+    }
+    printf("\n-- resolve result: successfully!\n-------------------------------------\n");
+
+    Mnemonic_Free((void*)mnemonic);
+    DIDDocument_Destroy(doc);
+    DIDDocument_Destroy(updatedoc);
+    DIDDocument_Destroy(document);
 }
 
 static void test_idchain_update_nonexistedid(void)
@@ -128,33 +230,18 @@ static int idchain_operation_test_suite_init(void)
 {
     int rc;
     char _path[PATH_MAX];
-    const char *storePath, *mnemonic;
+    const char *storePath;
 
     storePath = get_store_path(_path, "/idchain");
     store = TestData_SetupStore(storePath);
     if (!store)
         return -1;
 
-    mnemonic = Mnemonic_Generate(language);
-    rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, "", language, true);
-    Mnemonic_Free((char*)mnemonic);
-    if (rc < 0) {
-        TestData_Free();
-        return -1;
-    }
-
-    document = DIDStore_NewDID(store, storepass, "littlefish");
-    if (!document) {
-        TestData_Free();
-        return -1;
-    }
-
     return 0;
 }
 
 static int idchain_operation_test_suite_cleanup(void)
 {
-    DIDDocument_Destroy(document);
     TestData_Free();
     return 0;
 }
