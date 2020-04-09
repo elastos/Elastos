@@ -39,13 +39,11 @@ static void test_idchain_publishdid(void)
     did = DIDDocument_GetSubject(document);
     CU_ASSERT_PTR_NOT_NULL(did);
 
-    printf("\n-------------------------------------\n-- publish begin(create), waiting....\n");
+    printf("\n------------------------------------------------------------\n-- publish begin(create), waiting....\n");
     txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey, false);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
-    printf("-- publish result:\n   did = %s\n   txid = %s\n", did->idstring, txid);
-    free(txid);
+    printf("-- publish result:\n   did = %s\n   txid = %s\n-- resolve begin(create)", did->idstring, txid);
 
-    printf("-- resolve begin(create)");
     while(!doc) {
         doc = DID_Resolve(did, true);
         if (!doc) {
@@ -57,8 +55,10 @@ static void test_idchain_publishdid(void)
             rc = DIDStore_StoreDID(store, doc, "");
             CU_ASSERT_NOT_EQUAL(rc, -1);
             createTxid = DIDDocument_GetTxid(doc);
+            CU_ASSERT_STRING_EQUAL(txid, createTxid);
         }
     }
+    free(txid);
     printf("\n-- resolve result: successfully!\n-- publish begin(update), wating...\n");
 
     signkey = DIDDocument_GetDefaultPublicKey(doc);
@@ -66,10 +66,8 @@ static void test_idchain_publishdid(void)
 
     txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey, false);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
-    printf("-- publish result:\n   did = %s\n   txid = %s\n", did->idstring, txid);
-    free(txid);
+    printf("-- publish result:\n   did = %s\n   txid = %s\n-- resolve begin(update)", did->idstring, txid);
 
-    printf("-- resolve begin(update)");
     while(!updatedoc || !strcmp(createTxid, updateTxid)) {
         if (updatedoc)
             DIDDocument_Destroy(updatedoc);
@@ -89,7 +87,9 @@ static void test_idchain_publishdid(void)
             continue;
         }
     }
-    printf("\n-- resolve result: successfully!\n-------------------------------------\n");
+    CU_ASSERT_STRING_EQUAL(txid, updateTxid);
+    free(txid);
+    printf("\n-- resolve result: successfully!\n------------------------------------------------------------\n");
 
     Mnemonic_Free((void*)mnemonic);
     DIDDocument_Destroy(doc);
@@ -119,13 +119,11 @@ static void test_idchain_publishdid_with_credential(void)
     did = DIDDocument_GetSubject(document);
     CU_ASSERT_PTR_NOT_NULL(did);
 
-    printf("\n-------------------------------------\n-- publish begin(create), waiting....\n");
+    printf("\n------------------------------------------------------------\n-- publish begin(create), waiting....\n");
     txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey, false);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
-    printf("-- publish result:\n   did = %s\n   txid = %s\n", did->idstring, txid);
-    free(txid);
+    printf("-- publish result:\n   did = %s\n   txid = %s\n-- resolve begin(create)", did->idstring, txid);
 
-    printf("-- resolve begin(create)");
     while(!doc) {
         doc = DID_Resolve(did, true);
         if (!doc) {
@@ -137,8 +135,10 @@ static void test_idchain_publishdid_with_credential(void)
             rc = DIDStore_StoreDID(store, doc, "");
             CU_ASSERT_NOT_EQUAL(rc, -1);
             createTxid = DIDDocument_GetTxid(doc);
+            CU_ASSERT_STRING_EQUAL(txid, createTxid);
         }
     }
+    free(txid);
     printf("\n-- resolve result: successfully!\n-- publish begin(update), wating...\n");
 
     DIDDocumentBuilder *builder = DIDDocument_Edit(doc);
@@ -165,10 +165,8 @@ static void test_idchain_publishdid_with_credential(void)
 
     txid = (char *)DIDStore_PublishDID(store, storepass, did, signkey, true);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
-    printf("-- publish result:\n   did = %s\n   txid = %s\n", did->idstring, txid);
-    free(txid);
+    printf("-- publish result:\n   did = %s\n   txid = %s\n-- resolve begin(update)", did->idstring, txid);
 
-    printf("-- resolve begin(update)");
     while(!updatedoc || !strcmp(createTxid, updateTxid)) {
         if (updatedoc)
             DIDDocument_Destroy(updatedoc);
@@ -188,7 +186,9 @@ static void test_idchain_publishdid_with_credential(void)
             continue;
         }
     }
-    printf("\n-- resolve result: successfully!\n-------------------------------------\n");
+    CU_ASSERT_STRING_EQUAL(txid, updateTxid);
+    free(txid);
+    printf("\n-- resolve result: successfully!\n------------------------------------------------------------\n");
 
     Mnemonic_Free((void*)mnemonic);
     DIDDocument_Destroy(doc);

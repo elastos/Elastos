@@ -1725,7 +1725,7 @@ int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did, DIDURL *key,
 const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
         DIDURL *signKey, bool force)
 {
-    const char *alias, *txid, *resolvetxid;
+    const char *txid, *resolvetxid;
     DIDDocument *doc, *resolvedoc;
     int rc = -1;
 
@@ -1741,8 +1741,6 @@ const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did
         return NULL;
     }
 
-    alias = DIDDocument_GetAlias(doc);
-
     if (!signKey)
         signKey = DIDDocument_GetDefaultPublicKey(doc);
 
@@ -1751,15 +1749,14 @@ const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did
         txid = DIDBackend_Create(&store->backend, doc, signKey, storepass);
     } else {
         resolvetxid = DIDDocument_GetTxid(resolvedoc);
-        if (!resolvetxid)
+        if (!*resolvetxid)
             goto errorExit;
 
         if (force) {
             DIDMeta_SetTxid(&doc->did.meta, resolvetxid);
             DIDMeta_SetTxid(&doc->meta, resolvetxid);
         } else {
-            if (DIDStore_StoreDID(store, resolvedoc, alias) == -1 ||
-                    DIDDocument_IsDeactivated(resolvedoc))
+            if (DIDDocument_IsDeactivated(resolvedoc))
                 goto errorExit;
 
             txid = DIDDocument_GetTxid(doc);
