@@ -1691,6 +1691,9 @@ func (b *BlockChain) checkCRCProposalReviewTransaction(txn *Transaction,
 	if crMember == nil {
 		return errors.New("did correspond crMember not exists")
 	}
+	if crMember.MemberState != crstate.MemberElected {
+		return errors.New("should be an elected CR members")
+	}
 	exist := b.crCommittee.ExistProposal(crcProposalReview.
 		ProposalHash)
 	if !exist {
@@ -2168,6 +2171,9 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	crMember := b.crCommittee.GetMember(proposal.CRSponsorDID)
 	if crMember == nil {
 		return errors.New("CR sponsor should be one of the CR members")
+	}
+	if crMember.MemberState != crstate.MemberElected {
+		return errors.New("CR sponsor should be an elected CR members")
 	}
 
 	// Check signature of sponsor.
