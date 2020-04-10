@@ -1636,7 +1636,6 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	code2 := getCodeByPubKeyStr(crPublicKeyStr)
 
 	draftData := randomBytes(10)
-	opinionHash := randomBytes(10)
 	txn := new(types.Transaction)
 	txn.TxType = types.CRCProposal
 	txn.Version = types.TxVersion09
@@ -1646,7 +1645,6 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 		SponsorPublicKey: publicKey1,
 		CRSponsorDID:     *getDIDFromCode(code2),
 		DraftHash:        common.Hash(draftData),
-		CROpinionHash:    common.Hash(opinionHash),
 		Budgets:          createBudgets(3),
 		Recipient:        *randomUint168(),
 	}

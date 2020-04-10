@@ -177,7 +177,6 @@ func getCRCProposalTx(elaAddress string, publicKeyStr, privateKeyStr,
 	recipient, _ := common.Uint168FromAddress(elaAddress)
 
 	draftData := randomBytes(10)
-	opinionHash := randomBytes(10)
 	txn := new(types.Transaction)
 	txn.TxType = types.CRCProposal
 	txn.Version = types.TxVersion09
@@ -186,7 +185,6 @@ func getCRCProposalTx(elaAddress string, publicKeyStr, privateKeyStr,
 		SponsorPublicKey: publicKey1,
 		CRSponsorDID:     *getDID(code2),
 		DraftHash:        common.Hash(draftData),
-		CROpinionHash:    common.Hash(opinionHash),
 		Budgets:          createBudgets(3),
 		Recipient:        *recipient,
 	}

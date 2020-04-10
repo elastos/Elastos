@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package payload
 
@@ -40,6 +40,7 @@ func (v VoteResult) Name() string {
 type CRCProposalReview struct {
 	ProposalHash common.Uint256
 	VoteResult   VoteResult
+	OpinionHash  common.Uint256
 	DID          common.Uint168
 	Sign         []byte
 }
@@ -71,10 +72,13 @@ func (a *CRCProposalReview) SerializeUnsigned(w io.Writer, version byte) error {
 		return err
 	}
 	if err := common.WriteUint8(w, byte(a.VoteResult)); err != nil {
-		return errors.New("[CRCProposalReview], VoteResult serialization error.")
+		return errors.New("[CRCProposalReview], failed to serialize VoteResult")
+	}
+	if err := a.OpinionHash.Serialize(w); err != nil {
+		return errors.New("[CRCProposalReview], failed to serialize OpinionHash")
 	}
 	if err := a.DID.Serialize(w); err != nil {
-		return errors.New("[CRCProposalReview], DID serialize failed")
+		return errors.New("[CRCProposalReview], failed to serialize DID")
 	}
 
 	return nil
@@ -100,12 +104,15 @@ func (a *CRCProposalReview) DeserializeUnsigned(r io.Reader, version byte) error
 	}
 	val, err := common.ReadBytes(r, 1)
 	if err != nil {
-		return errors.New("[CRCProposalReview] VoteResult deserialization error.")
+		return errors.New("[CRCProposalReview], failed to deserialize VoteResult")
 	}
 	a.VoteResult = VoteResult(val[0])
 
+	if err = a.OpinionHash.Deserialize(r); err != nil {
+		return errors.New("[CRCProposalReview], failed to deserialize OpinionHash")
+	}
 	if err := a.DID.Deserialize(r); err != nil {
-		return errors.New("[CRCProposalReview], DID deserialize failed")
+		return errors.New("[CRCProposalReview], failed to deserialize DID")
 	}
 	return nil
 }

@@ -1534,7 +1534,6 @@ type RpcCRCProposal struct {
 	CRSponsorDID     string       `json:"crsponsordid"`
 	DraftHash        string       `json:"drafthash"`
 	Recipient        string       `json:"recipient"`
-	CROpinionHash    string       `json:"cropinionhash"`
 	Budgets          []BudgetInfo `json:"budgets"`
 }
 
@@ -1905,7 +1904,6 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	rpcProposal.DraftHash = proposalState.Proposal.DraftHash.String()
 	rpcProposal.ProposalType = proposalState.Proposal.ProposalType.Name()
 	rpcProposal.SponsorPublicKey = common.BytesToHexString(proposalState.Proposal.SponsorPublicKey)
-	rpcProposal.CROpinionHash = proposalState.Proposal.CROpinionHash.String()
 	rpcProposal.Budgets = make([]BudgetInfo, 0)
 	for _, b := range proposalState.Proposal.Budgets {
 		rpcProposal.Budgets = append(rpcProposal.Budgets, BudgetInfo{
@@ -2252,7 +2250,6 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Recipient = object.Recipient.String()
 		obj.Sign = common.BytesToHexString(object.Sign)
 		obj.CRSponsorDID = object.CRSponsorDID.String()
-		obj.CROpinionHash = object.CROpinionHash.String()
 		obj.CRSign = common.BytesToHexString(object.CRSign)
 		obj.Hash = object.Hash().String()
 		return obj
@@ -2260,6 +2257,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj := new(CRCProposalReviewInfo)
 		obj.ProposalHash = object.ProposalHash.String()
 		obj.VoteResult = object.VoteResult.Name()
+		obj.OpinionHash = object.OpinionHash.String()
 		obj.DID = object.DID.String()
 		obj.Sign = common.BytesToHexString(object.Sign)
 		return obj

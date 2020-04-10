@@ -126,9 +126,6 @@ type CRCProposal struct {
 	// DID of CR sponsor.
 	CRSponsorDID common.Uint168
 
-	// The hash of proposal opinion.
-	CROpinionHash common.Uint256
-
 	// The signature of CR sponsor, check data include signature of sponsor.
 	CRSign []byte
 
@@ -202,10 +199,6 @@ func (p *CRCProposal) Serialize(w io.Writer, version byte) error {
 		return errors.New("failed to serialize CRSponsorDID")
 	}
 
-	if err := p.CROpinionHash.Serialize(w); err != nil {
-		return errors.New("failed to serialize CROpinionHash")
-	}
-
 	return common.WriteVarBytes(w, p.CRSign)
 }
 
@@ -273,10 +266,6 @@ func (p *CRCProposal) Deserialize(r io.Reader, version byte) error {
 
 	if err := p.CRSponsorDID.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize CRSponsorDID")
-	}
-
-	if err = p.CROpinionHash.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize CROpinionHash")
 	}
 
 	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")

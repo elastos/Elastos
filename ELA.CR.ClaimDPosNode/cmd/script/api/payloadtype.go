@@ -959,15 +959,6 @@ func newCRCProposal(L *lua.LState) int {
 		needSign = false
 	}
 	draftHash, err := common.Uint256FromHexString(draftHashStr)
-	crOpinionHashStr := L.ToString(7)
-	opinionHash := &common.Uint256{}
-	if crOpinionHashStr != "" {
-		var err error
-		opinionHash, err = common.Uint256FromHexString(crOpinionHashStr)
-		if err != nil {
-			return 1
-		}
-	}
 	if err != nil {
 		fmt.Println("wrong draft proposal hash")
 		os.Exit(1)
@@ -1024,7 +1015,6 @@ func newCRCProposal(L *lua.LState) int {
 		Budgets:          budgets,
 		Recipient:        *recipient,
 		CRSponsorDID:     *getDID(ct.Code),
-		CROpinionHash:    *opinionHash,
 	}
 
 	if needSign {
@@ -1146,18 +1136,27 @@ func newCRCProposalReview(L *lua.LState) int {
 	proposalHashString := L.ToString(1)
 	voteResult := L.ToInt(2)
 	code := L.ToString(3)
+	opinionHashStr := L.ToString(4)
 
 	needSign := true
-	client, err := checkClient(L, 4)
+	client, err := checkClient(L, 5)
 	if err != nil {
 		needSign = false
 	}
 	proposalHash, _ := common.Uint256FromHexString(proposalHashString)
 	codeByte, _ := common.HexStringToBytes(code)
-
+	opinionHash := &common.Uint256{}
+	if opinionHashStr != "" {
+		var err error
+		opinionHash, err = common.Uint256FromHexString(opinionHashStr)
+		if err != nil {
+			return 1
+		}
+	}
 	crcProposalReview := &payload.CRCProposalReview{
 		ProposalHash: *proposalHash,
 		VoteResult:   payload.VoteResult(voteResult),
+		OpinionHash:  *opinionHash,
 		DID:          *getDID(codeByte),
 	}
 	if needSign {
