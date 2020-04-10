@@ -66,12 +66,14 @@ export default class extends DetailPage {
               }
               diffObj[k] = str
             }
+          } else {
+            diffObj[k] = obj2[k]
           }
         } else {
           diffObj[k] = obj2[k]
         }
       } else {
-        diffObj[k] = obj1[k]
+        diffObj[k] = obj2[k]
       }
     }
     return diffObj
