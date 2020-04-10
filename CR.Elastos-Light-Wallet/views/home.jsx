@@ -4,10 +4,12 @@ module.exports = (props) => {
   const App = props.App;
   const openDevTools = props.openDevTools;
   const Version = props.Version;
+  const GuiToggles = props.GuiToggles;
   return ([
 
     
-  /* <table id="home" className="bordered w750h520px">
+  /* 
+    <table id="home" className="bordered w750h520px">
     <tbody>
       <tr>
         <td className="bordered w250px h20px ta_center va_top">
@@ -88,8 +90,19 @@ module.exports = (props) => {
                     <div className="rotate_n90">Staking</div>
                   </td>
                   <td className="w150px ta_left">
-                    <span className="font_size12">Z</span>
-                    <span className="font_size12">Candidates Total</span>
+                    <span className="font_size12">{App.getProducerListStatus()}</span>
+                    <br/>
+                    <span className="font_size12">{App.getParsedProducerList().totalvotes}</span>
+                    <span className="font_size12">&nbsp;Votes</span>
+                    <br/>
+                    <span className="font_size12">{App.getParsedProducerList().totalcounts}</span>
+                    <span className="font_size12">&nbsp;Counts</span>
+                    <br/>
+                    <span className="font_size12">{App.getParsedProducerList().producersCandidateCount}</span>
+                    <span className="font_size12">&nbsp;Selected Candidates</span>
+                    <br/>
+                    <span className="font_size12">{App.getParsedProducerList().producers.length}</span>
+                    <span className="font_size12">&nbsp;Candidates Total</span>
                     <div className="font_size24">Vote Now</div>
                   </td>
                 </tr>
@@ -112,9 +125,9 @@ module.exports = (props) => {
                   <td id="logout" className="w100px h50px ta_center va_bottom bgcolor_black_hover">
 
                   <button className="bgcolor_black_hover">
-                    <img src="artwork/log-out.svg"  title="Logout" onClick={(e) => App.showLogin()}/>
+                    <img src="artwork/log-out.svg"  title="Logout" onClick={(e) =>
+                  GuiToggles.showLanding()}/>
                   </button>
-                    Logout
                   </td>
                 </tr>
               </tbody>

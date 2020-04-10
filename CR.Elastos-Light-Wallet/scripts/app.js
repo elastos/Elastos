@@ -21,7 +21,7 @@ const CoinGecko = require('./CoinGecko.js');
 /** global constants */
 const LOG_LEDGER_POLLING = true;
 
-const MAX_POLL_DATA_TYPE_IX = 4;
+const MAX_POLL_DATA_TYPE_IX = 5;
 
 const PRIVATE_KEY_LENGTH = 64;
 
@@ -77,7 +77,7 @@ let appClipboard = undefined;
 
 let appDocument = undefined;
 
-let renderApp = undefined;
+let renderApp = () => {};
 
 const sendToAddressStatuses = [];
 const sendToAddressLinks = [];
@@ -90,7 +90,12 @@ const parsedTransactionHistory = [];
 
 let producerListStatus = 'No Producers Requested Yet';
 
-let parsedProducerList = {};
+let parsedProducerList = {
+  totalvotes: '-',
+  totalcounts: '-',
+  producersCandidateCount: 0,
+  producers: [],
+};
 
 let candidateVoteListStatus = 'No Candidate Votes Requested Yet';
 
@@ -113,17 +118,13 @@ let GuiToggles;
 /** functions */
 const init = (_GuiToggles) => {
   sendToAddressStatuses.push('No Send-To Transaction Requested Yet');
-  parsedProducerList.totalvotes = '-';
-  parsedProducerList.totalcounts = '-';
-  parsedProducerList.producersCandidateCount = 0;
-  parsedProducerList.producers = [];
   parsedCandidateVoteList.candidateVotes = [];
 
   GuiToggles = _GuiToggles;
 
   setRestService(0);
 
-  mainConsole.log('Consone Logging Enabled.');
+  mainConsole.log('Console Logging Enabled.');
 };
 
 const setAppClipboard = (clipboard) => {
@@ -145,7 +146,7 @@ const getRestService = () => {
 const setRestService = (ix) => {
   currentNetworkIx = ix;
   restService = REST_SERVICES[ix].url;
-  get('nodeUrl').value = restService;
+  GuiUtils.setValue('nodeUrl', restService);
 };
 
 const getTransactionHistoryUrl = (address) => {
@@ -202,7 +203,7 @@ const resetNodeUrl = () => {
 };
 
 const changeNodeUrl = () => {
-  restService = get('nodeUrl').value;
+  restService = GuiUtils.getValue('nodeUrl');
   showLogin();
 };
 
@@ -227,6 +228,8 @@ const publicKeyCallback = (message) => {
     ledgerDeviceInfo.message = message.message;
     renderApp();
   }
+  pollDataTypeIx++;
+  setPollForAllInfoTimer();
 };
 
 const pollForDataCallback = (message) => {
@@ -240,42 +243,57 @@ const pollForDataCallback = (message) => {
 };
 
 const pollForData = () => {
-  if (LOG_LEDGER_POLLING) {
-    mainConsole.log('getAllLedgerInfo ' + pollDataTypeIx);
-  }
-  const resetPollIndex = false;
-  switch (pollDataTypeIx) {
-    case 0:
-      pollForDataCallback('Polling...');
-      break;
-    case 1:
-      LedgerComm.getLedgerDeviceInfo(pollForDataCallback);
-      break;
-    case 2:
-      if (useLedgerFlag) {
-        LedgerComm.getPublicKey(publicKeyCallback);
-      }
-      break;
-    case 3:
-      if (address != undefined) {
-        requestTransactionHistory();
-        requestBalance();
-        requestUnspentTransactionOutputs();
-        requestBlockchainState();
-      }
-    case 4:
-      requestListOfProducers();
-    case MAX_POLL_DATA_TYPE_IX:
-      // only check every 10 seconds for a change in device status.
-      pollDataTypeIx = 0;
-      setTimeout(pollForData, 10000);
-      break;
-    default:
-      throw Error('poll data index reset failed.');
+  // if (LOG_LEDGER_POLLING) {
+  // mainConsole.log('pollForData', pollDataTypeIx);
+  // }
+  try {
+    const resetPollIndex = false;
+    switch (pollDataTypeIx) {
+      case 0:
+        pollForDataCallback('Polling...');
+        break;
+      case 1:
+        LedgerComm.getLedgerDeviceInfo(pollForDataCallback);
+        break;
+      case 2:
+        if (useLedgerFlag) {
+          LedgerComm.getPublicKey(publicKeyCallback);
+        } else {
+          pollDataTypeIx++;
+          setPollForAllInfoTimer();
+        }
+        break;
+      case 3:
+        if (address != undefined) {
+          requestTransactionHistory();
+          requestBalance();
+          requestUnspentTransactionOutputs();
+          requestBlockchainState();
+        }
+        pollDataTypeIx++;
+        setPollForAllInfoTimer();
+        break;
+      case 4:
+        requestListOfProducers();
+        requestListOfCandidateVotes();
+        pollDataTypeIx++;
+        setPollForAllInfoTimer();
+        break;
+      case MAX_POLL_DATA_TYPE_IX:
+        // only check every 10 seconds for a change in device status.
+        pollDataTypeIx = 0;
+        setTimeout(pollForData, 10000);
+        break;
+      default:
+        throw Error('poll data index reset failed.');
+    }
+  } catch (error) {
+    mainConsole.trace('pollForData', pollDataTypeIx, error);
   }
 };
 
 const setPollForAllInfoTimer = () => {
+  // mainConsole.trace('setPollForAllInfoTimer', pollDataTypeIx);
   setTimeout(pollForData, 1);
 };
 
@@ -350,22 +368,6 @@ const getUnspentTransactionOutputsReadyCallback = (response) => {
   renderApp();
 };
 
-const get = (id) => {
-  const elt = document.getElementById(id);
-  if (elt == null) {
-    throw new Error('elt is null:' + id);
-  }
-  return elt;
-};
-
-const hide = (id) => {
-  get(id).style = 'display:none;';
-};
-
-const show = (id) => {
-  get(id).style = 'display:default;';
-};
-
 const getPublicKeyFromLedger = () => {
   useLedgerFlag = true;
   isLoggedIn = true;
@@ -390,7 +392,6 @@ const requestBlockchainDataAndShowHome = () => {
 const getPublicKeyFromMnemonic = () => {
   useLedgerFlag = false;
   isLoggedIn = true;
-  show('mnemonic');
   const mnemonicElt = document.getElementById('mnemonic');
   const mnemonic = mnemonicElt.value;
   if (!bip39.validateMnemonic(mnemonic)) {
@@ -409,7 +410,6 @@ const getPublicKeyFromMnemonic = () => {
 const getPublicKeyFromPrivateKey = () => {
   useLedgerFlag = false;
   isLoggedIn = true;
-  show('privateKey');
   const privateKeyElt = document.getElementById('privateKey');
   const privateKey = privateKeyElt.value;
   if (privateKey.length != PRIVATE_KEY_LENGTH) {
@@ -562,9 +562,12 @@ const requestListOfProducersReadyCallback = (response) => {
   producerListStatus = 'Producers Received';
 
   // mainConsole.log('STARTED Producers Callback', response);
-  parsedProducerList = {};
-  parsedProducerList.producersCandidateCount = 0;
-  parsedProducerList.producers = [];
+  parsedProducerList = {
+    totalvotes: '-',
+    totalcounts: '-',
+    producersCandidateCount: 0,
+    producers: [],
+  };
   if (response.status !== 200) {
     producerListStatus = `Producers Error: ${JSON.stringify(response)}`;
   } else {
@@ -843,9 +846,11 @@ const getBalanceReadyCallback = (balanceResponse) => {
 };
 
 const requestBalance = () => {
-  const balanceUrl = getBalanceUrl(address);
-  balanceStatus = `Balance Requested ${balanceUrl}`;
-  getJson(balanceUrl, getBalanceReadyCallback, getBalanceErrorCallback);
+  if (address != undefined) {
+    const balanceUrl = getBalanceUrl(address);
+    balanceStatus = `Balance Requested ${balanceUrl}`;
+    getJson(balanceUrl, getBalanceReadyCallback, getBalanceErrorCallback);
+  }
 };
 
 const getBlockchainStateErrorCallback = (response) => {
@@ -880,59 +885,6 @@ const setBlockchainLastActionHeight = () => {
   }
 };
 
-const removeClass = (id, cl) => {
-  get(id).classList.remove(cl);
-};
-
-const addClass = (id, cl) => {
-  get(id).classList.add(cl);
-};
-
-const selectButton = (id) => {
-  addClass(id, 'white_on_light_purple');
-  removeClass(id, 'white_on_purple_with_hover');
-};
-
-const clearButtonSelection = (id) => {
-  removeClass(id, 'white_on_light_purple');
-  addClass(id, 'white_on_purple_with_hover');
-};
-
-const hideEverything = () => {
-  clearButtonSelection('send');
-  clearButtonSelection('home');
-  clearButtonSelection('receive');
-  clearButtonSelection('transactions');
-  clearButtonSelection('voting');
-  hide('change-node');
-  hide('private-key-entry');
-  hide('mnemonic-entry');
-  hide('cancel-confirm-transaction');
-  hide('completed-transaction');
-  hide('fees');
-  hide('confirm-and-see-fees');
-  hide('to-address');
-  hide('send-amount');
-  hide('from-address');
-  hide('balance');
-  hide('transaction-more-info');
-  hide('transaction-list-small');
-  hide('transaction-list-large');
-  hide('your-address');
-  hide('private-key-login');
-  hide('mnemonic-login');
-  hide('ledger-login');
-  hide('elastos-branding');
-  hide('send-spacer-01');
-  hide('private-key-generate');
-  hide('private-key-generator');
-  hide('mnemonic-generate');
-  hide('mnemonic-generator');
-  hide('candidate-list');
-  hide('candidate-vote-button');
-  hide('candidate-vote-list');
-};
-
 const copyMnemonicToClipboard = () => {
   clipboard.writeText(generatedMnemonic);
   alert(`copied to clipboard:\n${generatedMnemonic}`);
@@ -941,39 +893,6 @@ const copyMnemonicToClipboard = () => {
 const copyToPrivateKeyClipboard = () => {
   clipboard.writeText(generatedPrivateKeyHex);
   alert(`copied to clipboard:\n${generatedPrivateKeyHex}`);
-};
-
-const showChangeNode = () => {
-  clearGlobalData();
-  hideEverything();
-  clearSendData();
-  show('change-node');
-};
-
-const showLogin = () => {
-  clearGlobalData();
-  hideEverything();
-  clearSendData();
-  show('private-key-login');
-  show('mnemonic-login');
-  show('ledger-login');
-  show('elastos-branding');
-  show('mnemonic-generate');
-  show('private-key-generate');
-};
-
-const showSend = () => {
-  if (!isLoggedIn) {
-    return;
-  }
-  hideEverything();
-  clearSendData();
-  show('from-address');
-  show('balance');
-  show('send-amount');
-  show('to-address');
-  show('confirm-and-see-fees');
-  selectButton('send');
 };
 
 const cancelSend = () => {
@@ -992,92 +911,11 @@ const cancelSend = () => {
   showSend();
 };
 
-const showConfirmAndSeeFees = () => {
-  hideEverything();
-  show('fees');
-  show('cancel-confirm-transaction');
-  show('send-spacer-01');
-  selectButton('send');
-  updateAmountAndFeesAndRenderApp();
-};
-
-const showCompletedTransaction = () => {
-  hideEverything();
-  show('fees');
-  show('completed-transaction');
-  show('send-spacer-01');
-  selectButton('send');
-  updateAmountAndFeesAndRenderApp();
-};
-
-const showReceive = () => {
-  if (!isLoggedIn) {
-    return;
-  }
-  hideEverything();
-  clearSendData();
-  show('your-address');
-  selectButton('receive');
-};
-
-const showTransactions = () => {
-  if (!isLoggedIn) {
-    return;
-  }
-  hideEverything();
-  clearSendData();
-  show('transaction-more-info');
-  show('transaction-list-large');
-  selectButton('transactions');
-};
-
-const showVoting = () => {
-  if (!isLoggedIn) {
-    return;
-  }
-  hideEverything();
-  clearSendData();
-  requestListOfProducers();
-  requestListOfCandidateVotes();
-  show('candidate-list');
-  show('candidate-vote-button');
-  show('candidate-vote-list');
-  selectButton('voting');
-};
-
-const showPrivateKeyEntry = () => {
-  hideEverything();
-  clearSendData();
-  show('private-key-entry');
-};
-
-const showMnemonicEntry = () => {
-  hideEverything();
-  clearSendData();
-  show('mnemonic-entry');
-};
-
-const showGenerateNewMnemonic = () => {
-  hideEverything();
-  clearSendData();
-  show('mnemonic-generator');
-  generatedMnemonic = bip39.entropyToMnemonic(crypto.randomBytes(32).toString('hex'));
-  renderApp();
-};
-
-const showGenerateNewPrivateKey = () => {
-  hideEverything();
-  clearSendData();
-  show('private-key-generator');
-  generatedPrivateKeyHex = crypto.randomBytes(32).toString('hex');
-  renderApp();
-};
-
 const clearGlobalData = () => {
-  get('privateKey').value = '';
-  get('mnemonic').value = '';
-  get('feeAmount').value = DEFAULT_FEE_SATS;
-  get('nodeUrl').value = '';
+  GuiUtils.setValue('privateKey', '');
+  GuiUtils.setValue('mnemonic', '');
+  GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
+  GuiUtils.setValue('nodeUrl', '');
 
   useLedgerFlag = false;
   publicKey = undefined;
@@ -1140,6 +978,14 @@ const getAddress = () => {
   return address;
 };
 
+const getParsedProducerList = () => {
+  return parsedProducerList;
+};
+
+const getProducerListStatus = () => {
+  return producerListStatus;
+};
+
 exports.init = init;
 exports.trace = mainConsole.trace;
 exports.setAppClipboard = setAppClipboard;
@@ -1150,9 +996,12 @@ exports.getMainConsole = getMainConsole;
 exports.getPublicKeyFromLedger = getPublicKeyFromLedger;
 exports.refreshBlockchainData = refreshBlockchainData;
 exports.clearSendData = clearSendData;
+exports.clearGlobalData = clearGlobalData;
 exports.setPollForAllInfoTimer = setPollForAllInfoTimer;
 exports.getPublicKeyFromMnemonic = getPublicKeyFromMnemonic;
 exports.getPublicKeyFromPrivateKey = getPublicKeyFromPrivateKey;
 exports.getAddress = getAddress;
 exports.getELABalance = getELABalance;
 exports.getUSDBalance = getUSDBalance;
+exports.getParsedProducerList = getParsedProducerList;
+exports.getProducerListStatus = getProducerListStatus;
