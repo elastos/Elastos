@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="17px" height="19px" viewBox="0 0 17 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+    <title>Refresh</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Elastos" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Elastos-Wallet.-Main" transform="translate(-695.000000, -27.000000)" stroke="#5D6065" stroke-width="0.835714286">
+            <g id="Refresh" transform="translate(695.000000, 27.000000)">
+                <g id="Group-3" transform="translate(0.000000, 9.827586)" stroke-linecap="round">
+                    <polyline id="Path-25" points="0.410344828 0.192697769 2.36436782 0.963488844 4.3183908 0.192697769"></polyline>
+                </g>
+                <g id="Group-3-Copy" transform="translate(9.633333, 9.471095) scale(-1, -1) translate(-9.633333, -9.471095) translate(2.266667, 0.250507)">
+                    <path d="M14.6551724,8.28600406 L14.6551724,14.0669371 C14.6551724,16.3018419 12.817996,18.1135903 10.5517241,18.1135903 L6.44827586,18.1135903 C4.18200396,18.1135903 2.34482759,16.3018419 2.34482759,14.0669371 C2.34482759,13.7986582 2.34482759,13.022251 2.34482759,12.8939022 M2.34482759,10.020284 C2.34482759,8.73563218 2.34482759,6.8086545 2.34482759,4.23935091 C2.34482759,2.00444609 4.18200396,0.192697769 6.44827586,0.192697769 L10.5517241,0.192697769 C12.817996,0.192697769 14.6551724,2.00444609 14.6551724,4.23935091 L14.6551724,5.39553753" id="Shape"></path>
+                    <polyline id="Path-25" stroke-linecap="round" points="0.371264368 9.44219067 2.32528736 10.2129817 4.27931034 9.44219067"></polyline>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

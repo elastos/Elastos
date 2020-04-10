@@ -4,8 +4,10 @@ module.exports = (props) => {
   const App = props.App;
   const openDevTools = props.openDevTools;
   const Version = props.Version;
-  return (
-  <table id="home" className="bordered w750h520px">
+  return ([
+
+    
+  /* <table id="home" className="bordered w750h520px">
     <tbody>
       <tr>
         <td className="bordered w250px h20px ta_center va_top">
@@ -126,6 +128,133 @@ module.exports = (props) => {
         </td>
       </tr>
     </tbody>
-  </table>
-  );
+  </table> */
+
+    
+      <div id="home" class="gridback w780h520px">
+
+        <div class="logo-info">
+          <img src="artwork/lightwalletogo.svg" class="logoimage" height="40px" width="123px" />
+          <header>
+            <img src="artwork/system.svg" class="system-icon" />
+            <img src="artwork/refreshicon.svg" class="refresh-icon" />
+            <nav>
+              <img src="artwork/nav.svg" class="nav-icon" onClick={(e) => openDevTools()} />
+            </nav>
+          </header>
+          <div class="pricearea">
+            <p class="balance">balance</p>
+            <p class="usd-head">USD</p>
+            <p class="usd-balance">{App.getUSDBalance()}</p>
+            <p class="ela-balance gradient-font">{App.getELABalance()} ELA</p>
+          </div> 
+
+          <div class="stakingarea">
+            <p class="stakingtitle">staking</p>
+            <p class="candidate-total">95 candidates total</p>
+            <p class="votenow gradient-font">Vote now</p>
+            <img src="" alt="" class="arrow-right" />
+          </div>
+
+          
+          <div id="scroll-radio">
+
+          </div>
+
+          <div>
+            <p class="article-days">3 days ago</p>
+            <p class="article-title">Elastos Financial Report</p>
+          </div>
+
+
+        </div>
+
+        <div class="send-area"> 
+          <img src="artwork/sendicon.svg" class="send-icon" />
+          <p class="send-text">Send</p>
+          <button class="next-button">
+          <p>Next</p>
+          </button>
+          <input type="text" id="ela-address__input" placeholder="Enter ELA Address" />
+          <input type="number" id="ela-send__amount" placeholder="500" />
+          <div class="quick-elaselector">
+            <button class="quick-elaselector__icon quarter">1/4</button>
+            <button class="quick-elaselector__icon half">Half</button>
+            <button class="quick-elaselector__icon all">All</button>
+          </div>
+          <p class="elatext-send">ELA</p>
+        
+        </div>
+        <div class="receive-area">
+          <img src="artwork/sendicon.svg" class="rec-icon" />
+          <p class="rec-text">Receive</p>
+          <p class="address-text">Address</p>
+          <button class="copy-button">
+            <img src="artwork/copyicon.svg" class="copy-icon" height="26px" width="26px" />
+          </button>
+          <p class="address-ex">{App.getAddress()}</p>
+          <img src="artwork/qricon.svg" class="qr-icon" height="54px" width="54px" />
+          <p class="scanqr-text">Scan <strong>QR code</strong> to get <br />ELA Address</p>
+          <p class="howqr-text gradient-font">How QR works?</p>
+          <img src="artwork/separator.svg" class="rec-separator" />
+          <p class="ledger-heading">Ledger</p>
+          <img src="artwork/ledgericon.svg" alt="" class="ledger-icon" height="24px" width="38px" />
+          <p class="verifyledger-text">Verify address on <br /><strong>ledger</strong></p>
+
+        </div>
+          
+        <div class="transaction-area">
+          <p class="transactions-heading">Transactions</p>
+          <p class="blockcount"><span>Blocks:</span><span>500001</span> </p>
+          
+          <table class="txtable">
+            <tr class="txtable-headrow">
+              <td>VALUE</td>
+              <td>DATE</td>
+              <td>TYPE</td>
+              <td>TX</td>
+            </tr>
+
+            <tr class="txtable-row">
+              <td>250 <span class="dark-font">ELA</span></td>
+              <td>2020-02-17 <span class="dark-font">10:50</span></td>
+              <td>Received</td>
+              <td>5bfa9573d7bc89472a4b8ec5f1da0ed0947…</td>
+            </tr>
+
+            <tr class="txtable-row">
+              <td>100 <span class="dark-font">ELA</span></td>
+              <td>2020-02-12 <span class="dark-font">15:40</span></td>
+              <td>Sent</td>
+              <td>de02a581c2af72bee1ca</td>
+            </tr>
+
+            <tr class="txtable-row">
+              <td>1000 <span class="dark-font">ELA</span></td>
+              <td>2020-02-10 <span class="dark-font"> 20:40</span></td>
+              <td>Received</td>
+              <td>5bfa9573d7bc89472a4b</td>
+            </tr>
+          </table>
+
+          <footer>
+            <img src="artwork/tw.svg" height="22px" width="22px" />
+            <img src="artwork/fb.svg" height="22px" width="22px" />
+            <div class="logout-footer">
+              <p class="logout-text">Logout onClick={(e) => App.showLogin()}</p>
+              <img src="artwork/logout.svg" class="logout-image" onClick={(e) => App.showLogin()}/>
+            </div>
+  
+          </footer>
+
+
+
+        </div>
+
+      </div>
+
+
+
+  ]);
+
 }

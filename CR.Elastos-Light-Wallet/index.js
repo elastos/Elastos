@@ -110,14 +110,18 @@ const createMenu = () => {
 app.on( 'ready', () => {
     // Create the browser window.
     mainWindow = new BrowserWindow( {
-        width: 800,
-        height: 600,
+        width: 780,
+        height: 520,
+        frame: false,
+        titleBarStyle: 'hidden',
+        transparent: true,
+        trafficLightPosition: {x: 12, y: 42},
         icon: path.join( __dirname, 'assets/icons/png/64x64.png' ),
         webPreferences: {
             nodeIntegration: true
         }
     } );
-
+    
     // disable navigation window.
     mainWindow.setMenu( null );
 
