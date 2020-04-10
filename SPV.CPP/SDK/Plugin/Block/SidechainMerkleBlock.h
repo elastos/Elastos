@@ -20,9 +20,9 @@ namespace Elastos {
 
 			virtual ~SidechainMerkleBlock();
 
-			virtual void Serialize(ByteStream &ostream) const;
+			virtual void Serialize(ByteStream &ostream, int version) const;
 
-			virtual bool Deserialize(const ByteStream &istream);
+			virtual bool Deserialize(const ByteStream &istream, int version);
 
 			virtual const uint256 &GetHash() const;
 

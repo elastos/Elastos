@@ -15,6 +15,7 @@
 #include <Plugin/Registry.h>
 #include <Plugin/ELAPlugin.h>
 #include <Plugin/IDPlugin.h>
+#include <Plugin/TokenPlugin.h>
 #include <SpvService/Config.h>
 
 using namespace Elastos::ElaWallet;
@@ -96,6 +97,7 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 	Log::info("Registering plugin ...");
 	REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
 	REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
+	REGISTER_MERKLEBLOCKPLUGIN(TokenChain, getTokenPluginComponent);
 #endif
 
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));

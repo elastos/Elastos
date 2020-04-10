@@ -23,8 +23,10 @@
 #ifndef __ELASTOS_SDK_ETHSIDECHAINSUBWALLET_H__
 #define __ELASTOS_SDK_ETHSIDECHAINSUBWALLET_H__
 
-#include <IEthSidechainSubWallet.h>
+#include "IEthSidechainSubWallet.h"
 #include "SubWallet.h"
+
+#include <Ethereum/EthereumEWM.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/path.hpp>
@@ -53,6 +55,8 @@ namespace Elastos {
 								  const std::string &netType);
 
 
+		protected:
+			EthereumEWMPtr _ewm;
 		};
 
 	}

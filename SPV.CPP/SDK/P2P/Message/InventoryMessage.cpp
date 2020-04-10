@@ -14,7 +14,7 @@
 
 #include <float.h>
 
-#define MAX_BLOCKS_COUNT 100  //note max blocks count is 500 in btc while 100 in ela
+#define MAX_BLOCKS_COUNT 500
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -73,6 +73,11 @@ namespace Elastos {
 				_peer->error("non-standard inv, {} is fewer block hash(es) than expected", blocks.size());
 				return false;
 			} else {
+				if (blocks.size() >= MAX_BLOCKS_COUNT && _peer->WaitingBlocks()) {
+					_peer->error("got inv message before previous getdata respond");
+					return false;
+				}
+
 				if (!_peer->SentFilter() && !_peer->SentGetblocks())
 					blocks.clear();
 				if (blocks.size() > 0) {

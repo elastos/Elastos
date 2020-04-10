@@ -39,8 +39,11 @@ namespace Elastos {
 #define SELA_PER_ELA 100000000
 
 		class MasterWallet;
+
 		class Transaction;
+
 		class ChainConfig;
+
 		class CoinInfo;
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
@@ -160,6 +163,7 @@ namespace Elastos {
 			virtual bool onContainTxn(const uint256 &hash) const { return false; }
 
 			virtual std::vector<TransactionPtr> onLoadUTXOTxn(const std::string &chainID) const { return {}; }
+
 		protected: //implement PeerManager::Listener
 			virtual void syncStarted();
 
@@ -189,6 +193,11 @@ namespace Elastos {
 					  const ChainConfigPtr &config,
 					  MasterWallet *parent,
 					  const std::string &netType);
+
+			SubWallet(const std::string &netType,
+					  MasterWallet *parent,
+					  const ChainConfigPtr &config,
+					  const CoinInfoPtr &info);
 
 			TransactionPtr CreateConsolidateTx(
 				const std::string &memo,

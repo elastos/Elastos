@@ -56,6 +56,7 @@ namespace Elastos {
 			stream.WriteUint32(_mainBlockHeader->raw.height);
 
 			_mainBlockHeader->auxPow.Serialize(stream);
+			stream.WriteUint8(1);
 		}
 
 		bool IDAuxPow::Deserialize(const ByteStream &stream) {
@@ -102,7 +103,12 @@ namespace Elastos {
 				return false;
 			}
 
-			return _mainBlockHeader->auxPow.Deserialize(stream);
+			if (!_mainBlockHeader->auxPow.Deserialize(stream)) {
+				return false;
+			}
+
+			uint8_t skipByte = 0;
+			return stream.ReadUint8(skipByte);
 		}
 
 		void IDAuxPow::SetIdAuxMerkleBranch(const std::vector<uint256> &idAuxMerkleBranch) {

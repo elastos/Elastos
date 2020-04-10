@@ -16,6 +16,8 @@
 #include <Plugin/Registry.h>
 #include <Plugin/Block/MerkleBlock.h>
 #include <Plugin/ELAPlugin.h>
+#include <Plugin/IDPlugin.h>
+#include <Plugin/TokenPlugin.h>
 
 #include <fstream>
 
@@ -97,6 +99,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 #define TEST_MERKLEBLOCK_RECORD_CNT DEFAULT_RECORD_CNT
 #ifdef SPV_ENABLE_STATIC
 		REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
+		REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
+		REGISTER_MERKLEBLOCKPLUGIN(TokenChain, getTokenPluginComponent);
 #endif
 		static std::vector<MerkleBlockPtr> blocksToSave;
 

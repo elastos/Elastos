@@ -24,6 +24,7 @@ namespace Elastos {
 
 		bool MerkleBlockMessage::Accept(const bytes_t &msg) {
 			std::vector<uint256> txHashes;
+			int version;
 			ByteStream stream(msg);
 
 			PeerManager *manager = _peer->GetPeerManager();
@@ -34,7 +35,13 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!block->Deserialize(stream)) {
+#ifdef SUPPORT_NEW_INV_TYPE
+			version = MERKLEBLOCK_VERSION_1;
+#else
+			version = MERKLEBLOCK_VERSION_0;
+#endif
+
+			if (!block->Deserialize(stream, version)) {
 				_peer->debug("merkle block orignal data: {}", msg.getHex());
 				_peer->error("merkle block deserialize with type fail");
 				return false;
@@ -47,6 +54,7 @@ namespace Elastos {
 				_peer->error("got merkleblock message before loading a filter");
 				return false;
 			} else {
+				_peer->SetWaitingBlocks(false);
 				block->MerkleBlockTxHashes(txHashes);
 
 				for (size_t i = txHashes.size(); i > 0; i--) { // reverse order for more efficient removal as tx arrive

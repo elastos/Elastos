@@ -25,7 +25,6 @@
 #include <Common/Log.h>
 #include <Plugin/Registry.h>
 #include <Common/ByteStream.h>
-#include <Common/ErrorChecker.h>
 #include <Plugin/Interface/IMerkleBlock.h>
 
 #include <sstream>
@@ -33,6 +32,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#define MERKLEBLOCK_ISO "ela2"
 		MerkleBlockDataSource::MerkleBlockDataSource(Sqlite *sqlite, SqliteTransactionType type) :
 			TableBase(type, sqlite) {
 		}
@@ -89,10 +89,10 @@ namespace Elastos {
 			}
 
 			ByteStream stream;
-			blockPtr->Serialize(stream);
+			blockPtr->Serialize(stream, MERKLEBLOCK_VERSION_1);
 			if (!_sqlite->BindBlob(stmt, 1, stream.GetBytes(), nullptr) ||
 				!_sqlite->BindInt(stmt, 2, blockPtr->GetHeight()) ||
-				!_sqlite->BindText(stmt, 3, ISO, nullptr)) {
+				!_sqlite->BindText(stmt, 3, MERKLEBLOCK_ISO, nullptr)) {
 				Log::error("bind args");
 			}
 
@@ -145,7 +145,7 @@ namespace Elastos {
 			std::vector<MerkleBlockPtr> merkleBlocks;
 
 			std::string sql;
-			sql = "SELECT " + MB_COLUMN_ID + ", " + MB_BUFF + ", " + MB_HEIGHT + " FROM " + MB_TABLE_NAME + ";";
+			sql = "SELECT " + MB_COLUMN_ID + "," + MB_BUFF + "," + MB_HEIGHT + "," + MB_ISO + " FROM " + MB_TABLE_NAME + ";";
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -154,17 +154,21 @@ namespace Elastos {
 			}
 
 			while (SQLITE_ROW == _sqlite->Step(stmt)) {
-				MerkleBlockPtr merkleBlock(Registry::Instance()->CreateMerkleBlock(chainID));
 				// blockBytes
 				const uint8_t *pblob = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 				size_t len = _sqlite->ColumnBytes(stmt, 1);
-				ByteStream stream(pblob, len);
-				merkleBlock->Deserialize(stream);
-
 				// blockHeight
 				uint32_t blockHeight = _sqlite->ColumnInt(stmt, 2);
-				merkleBlock->SetHeight(blockHeight);
+				std::string iso = _sqlite->ColumnText(stmt, 3);
 
+				MerkleBlockPtr merkleBlock(Registry::Instance()->CreateMerkleBlock(chainID));
+				ByteStream stream(pblob, len);
+				if (iso == MERKLEBLOCK_ISO)
+					merkleBlock->Deserialize(stream, MERKLEBLOCK_VERSION_1);
+				else
+					merkleBlock->Deserialize(stream, MERKLEBLOCK_VERSION_0);
+
+				merkleBlock->SetHeight(blockHeight);
 				merkleBlocks.push_back(merkleBlock);
 			}
 

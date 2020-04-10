@@ -907,6 +907,7 @@ namespace Elastos {
 					_downloadPeer->Disconnect();
 				}
 
+				peer->SetWaitingBlocks(false);
 				_downloadPeer = peer;
 				_syncSucceeded = false;
 				_keepAliveTimestamp = time(nullptr);
@@ -916,6 +917,7 @@ namespace Elastos {
 				_connectFailureCount = 0; // reset connect failure count
 				if (_netType != "PrvNet" && _needGetAddr) {
 					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
+					peer->ScheduleDisconnect(PROTOCOL_TIMEOUT); // schedule sync timeout
 				} else {
 					peer->ScheduleDownloadStartTime();
 					LoadBloomFilter(peer);

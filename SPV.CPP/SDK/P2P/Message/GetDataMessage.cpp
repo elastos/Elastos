@@ -5,7 +5,7 @@
 #include "GetDataMessage.h"
 #include "TransactionMessage.h"
 
-#include <P2P/Peer.h>
+#include <P2P/PeerManager.h>
 #include <Common/Log.h>
 #include <Common/Utils.h>
 
@@ -78,6 +78,7 @@ namespace Elastos {
 		void GetDataMessage::Send(const SendMessageParameter &param) {
 			const GetDataParameter &getDataParameter = static_cast<const GetDataParameter &>(param);
 
+			bool containBlocks = false;
 			size_t i;
 			size_t txCount = getDataParameter.txHashes.size();
 			size_t blockCount = getDataParameter.blockHashes.size();
@@ -89,6 +90,7 @@ namespace Elastos {
 			}
 
 			if (count > 0) {
+				bool isMainchain = _peer->GetPeerManager()->GetID().find(CHAINID_MAINCHAIN) != std::string::npos;
 				ByteStream stream;
 				stream.WriteUint32(count);
 
@@ -98,10 +100,18 @@ namespace Elastos {
 				}
 
 				for (i = 0; i < blockCount && txCount + i < count; i++) {
-					stream.WriteUint32(uint32_t(inv_filtered_block));
+#ifdef SUPPORT_NEW_INV_TYPE
+					if (!isMainchain)
+						stream.WriteUint32(uint32_t(inv_filtered_sidechain_block));
+					else
+#endif
+						stream.WriteUint32(uint32_t(inv_filtered_block));
 					stream.WriteBytes(getDataParameter.blockHashes[i]);
+					containBlocks = true;
 				}
 
+				if (containBlocks && blockCount > 1)
+					_peer->SetWaitingBlocks(true);
 				_peer->SetSentGetdata(true);
 				SendMessage(stream.GetBytes(), Type());
 			}

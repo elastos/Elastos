@@ -28,12 +28,12 @@ namespace Elastos {
 		EthSidechainSubWallet::~EthSidechainSubWallet() {
 		}
 
-		EthSidechainSubWallet::EthSidechainSubWallet(
-			const CoinInfoPtr &info,
-			const ChainConfigPtr &config,
-			MasterWallet *parent,
-			const std::string &netType) : SubWallet(info, config, parent, netType) {
-
+		EthSidechainSubWallet::EthSidechainSubWallet(const CoinInfoPtr &info,
+													 const ChainConfigPtr &config,
+													 MasterWallet *parent,
+													 const std::string &netType) :
+			SubWallet(netType, parent, config, info) {
+//			_ewm = EthereumEWMPtr(new EthereumEWM());
 		}
 
 	}

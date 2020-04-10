@@ -68,6 +68,18 @@ namespace Elastos {
 			wallet->SetFeePerKb(_config->FeePerKB());
 		}
 
+		SubWallet::SubWallet(const std::string &netType,
+							 MasterWallet *parent,
+							 const ChainConfigPtr &config,
+							 const CoinInfoPtr &info) :
+			PeerManager::Listener(),
+			_parent(parent),
+			_info(info),
+			_config(config),
+			_callback(nullptr) {
+
+		}
+
 		SubWallet::~SubWallet() {
 
 		}
@@ -426,7 +438,7 @@ namespace Elastos {
 				}
 			} else {
 				size_t realCnt, cur;
-				for (realCnt = 0, cur = start ; cur < txnPending.size() && realCnt < count; ++realCnt, ++cur) {
+				for (realCnt = 0, cur = start; cur < txnPending.size() && realCnt < count; ++realCnt, ++cur) {
 					confirms = txnPending[realCnt]->GetConfirms(wallet->LastBlockHeight());
 					jsonList.push_back(txnPending[realCnt]->GetSummary(wallet, confirms, false));
 				}

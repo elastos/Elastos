@@ -235,6 +235,9 @@ namespace Elastos {
 				socket = _socket;
 				if (socket < 0) error = ENOTCONN;
 
+				gettimeofday(&tv, NULL);
+				double disconnectTime = tv.tv_sec + (double) tv.tv_usec / 1000000 + MESSAGE_TIMEOUT;
+
 				while (socket >= 0 && !error && msgLen < buf.size()) {
 					n = send(socket, &buf[msgLen], buf.size() - msgLen, MSG_NOSIGNAL);
 					if (n >= 0) {
@@ -242,7 +245,7 @@ namespace Elastos {
 					}
 					if (n < 0 && errno != EWOULDBLOCK) error = errno;
 					gettimeofday(&tv, NULL);
-					if (!error && tv.tv_sec + (double) tv.tv_usec / 1000000 >= _disconnectTime) error = ETIMEDOUT;
+					if (!error && tv.tv_sec + (double) tv.tv_usec / 1000000 >= disconnectTime) error = ETIMEDOUT;
 					socket = _socket;
 				}
 
@@ -541,6 +544,14 @@ namespace Elastos {
 
 		void Peer::SetSentGetdata(bool sent) {
 			_sentGetdata = sent;
+		}
+
+		bool Peer::WaitingBlocks() const {
+			return _waitingBlocks;
+		}
+
+		void Peer::SetWaitingBlocks(bool wait) {
+			_waitingBlocks = wait;
 		}
 
 		bool Peer::SentMempool() {

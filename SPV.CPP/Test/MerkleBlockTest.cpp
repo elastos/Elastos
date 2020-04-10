@@ -13,6 +13,7 @@
 #include <Plugin/Block/MerkleBlock.h>
 #include <Plugin/ELAPlugin.h>
 #include <Plugin/IDPlugin.h>
+#include <Plugin/TokenPlugin.h>
 
 #include <catch.hpp>
 #include "TestHelper.h"
@@ -25,7 +26,8 @@ TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 #ifdef SPV_ENABLE_STATIC
 	Log::info("Registering plugin ...");
 	REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
-	REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);
+	REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
+	REGISTER_MERKLEBLOCKPLUGIN(TokenChain, getTokenPluginComponent);
 #endif
 
 	srand(time(nullptr));
@@ -36,10 +38,10 @@ TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 		setMerkleBlockValues(static_cast<MerkleBlock *>(merkleBlock.get()));
 
 		ByteStream stream;
-		merkleBlock->Serialize(stream);
+		merkleBlock->Serialize(stream, MERKLEBLOCK_VERSION_1);
 
 		MerkleBlock mb;
-		mb.Deserialize(stream);
+		mb.Deserialize(stream, MERKLEBLOCK_VERSION_1);
 
 		verifyELAMerkleBlock(static_cast<const MerkleBlock &>(*merkleBlock), mb);
 	}

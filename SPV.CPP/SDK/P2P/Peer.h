@@ -207,6 +207,10 @@ namespace Elastos {
 
 			void SetSentGetdata(bool sent);
 
+			bool WaitingBlocks() const;
+
+			void SetWaitingBlocks(bool wait);
+
 			bool SentMempool();
 
 			void SetSentMempool(bool sent);
@@ -385,7 +389,7 @@ namespace Elastos {
 			uint64_t _downloadStartTime; // millisecond
 			uint32_t _downloadBytes;
 			volatile double _disconnectTime, _mempoolTime;
-			bool _sentVerack, _gotVerack, _sentGetaddr, _sentFilter, _sentGetdata, _sentMempool, _sentGetblocks;
+			bool _sentVerack, _gotVerack, _sentGetaddr, _sentFilter, _sentGetdata, _sentMempool, _sentGetblocks, _waitingBlocks;
 			uint256 _lastBlockHash;
 			MerkleBlockPtr _currentBlock;
 			std::vector<uint256> _currentBlockTxHashes, _knownBlockHashes, _knownTxHashes;

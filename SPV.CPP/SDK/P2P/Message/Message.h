@@ -42,6 +42,8 @@ namespace Elastos {
 
 		class Peer;
 
+//#define SUPPORT_NEW_INV_TYPE
+
 		namespace {
 			typedef enum {
 				inv_undefined = 0,
@@ -49,7 +51,8 @@ namespace Elastos {
 				inv_block = 2,
 				inv_filtered_block = 3,
 				inv_confirmed_block = 4,
-				inv_address = 5
+				inv_address = 5,
+				inv_filtered_sidechain_block = 6
 			} inv_type;
 		}
 

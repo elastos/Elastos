@@ -33,7 +33,11 @@ foreach(src ${TEST_SOURCE_FILES})
 	string(REGEX REPLACE ".*/\(.*\).cpp$" "\\1" TEST_TARGET_NAME ${src})
 	add_executable(${TEST_TARGET_NAME} ${src})
 
-	target_link_libraries(${TEST_TARGET_NAME} spvsdk dl boost_filesystem boost_system boost_thread crypto ssl)
+	if(SPV_ENABLE_STATIC)
+		target_link_libraries(${TEST_TARGET_NAME} spvsdk dl boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3)
+	else()
+		target_link_libraries(${TEST_TARGET_NAME} spvsdk dl)
+	endif()
 	add_dependencies(${TEST_TARGET_NAME} libspvsdk catch2)
 
 	if("${AUTO_TEST_COMMAND}" STREQUAL "")

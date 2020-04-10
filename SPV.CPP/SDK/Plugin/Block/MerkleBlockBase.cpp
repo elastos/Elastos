@@ -36,6 +36,10 @@ namespace Elastos {
 
 		}
 
+		uint32_t MerkleBlockBase::GetTotalTx() const {
+			return _totalTx;
+		}
+
 		uint32_t MerkleBlockBase::GetVersion() const {
 			return _version;
 		}

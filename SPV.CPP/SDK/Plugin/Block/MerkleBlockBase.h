@@ -11,11 +11,15 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#define MAX_PROOF_OF_WORK 0xff7fffff    // highest value for difficulty _target
+
 		class MerkleBlockBase : public IMerkleBlock {
 		public:
 			MerkleBlockBase();
 
 			virtual ~MerkleBlockBase();
+
+			virtual uint32_t GetTotalTx() const;
 
 			uint32_t GetVersion() const;
 

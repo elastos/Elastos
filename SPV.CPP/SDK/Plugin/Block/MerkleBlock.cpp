@@ -7,8 +7,6 @@
 #include <Plugin/Registry.h>
 #include <Common/hash.h>
 
-#define MAX_PROOF_OF_WORK 0xff7fffff    // highest value for difficulty _target
-
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -90,13 +88,13 @@ namespace Elastos {
 			return r;
 		}
 
-		void MerkleBlock::Serialize(ByteStream &ostream) const {
+		void MerkleBlock::Serialize(ByteStream &ostream, int version) const {
 			MerkleBlockBase::SerializeNoAux(ostream);
 			_auxPow.Serialize(ostream);
 			MerkleBlockBase::SerializeAfterAux(ostream);
 		}
 
-		bool MerkleBlock::Deserialize(const ByteStream &istream) {
+		bool MerkleBlock::Deserialize(const ByteStream &istream, int version) {
 			if (!MerkleBlockBase::DeserializeNoAux(istream) || !_auxPow.Deserialize(istream) ||
 				!MerkleBlockBase::DeserializeAfterAux(istream))
 				return false;

@@ -12,13 +12,18 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#define MERKLEBLOCK_VERSION_0 0
+#define MERKLEBLOCK_VERSION_1 1
+
 		class IMerkleBlock {
 		public:
 			virtual ~IMerkleBlock() {}
 
-			virtual void Serialize(ByteStream &ostream) const = 0;
+			virtual void Serialize(ByteStream &ostream, int version) const = 0;
 
-			virtual bool Deserialize(const ByteStream &istream) = 0;
+			virtual bool Deserialize(const ByteStream &istream, int version) = 0;
+
+			virtual uint32_t GetTotalTx() const = 0;
 
 			virtual uint32_t GetHeight() const = 0;
 

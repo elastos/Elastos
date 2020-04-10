@@ -12,8 +12,6 @@
 
 #include <sstream>
 
-#define MAX_PROOF_OF_WORK 0xff7fffff    // highest value for difficulty target
-
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -23,18 +21,26 @@ namespace Elastos {
 		SidechainMerkleBlock::~SidechainMerkleBlock() {
 		}
 
-		void SidechainMerkleBlock::Serialize(ByteStream &ostream) const {
+		void SidechainMerkleBlock::Serialize(ByteStream &ostream, int version) const {
 			MerkleBlockBase::SerializeNoAux(ostream);
-			idAuxPow.Serialize(ostream);
-			ostream.WriteUint8(1);
+
+			if (version == MERKLEBLOCK_VERSION_0)
+				idAuxPow.Serialize(ostream);
+
 			MerkleBlockBase::SerializeAfterAux(ostream);
 		}
 
-		bool SidechainMerkleBlock::Deserialize(const ByteStream &istream) {
-			if (!MerkleBlockBase::DeserializeNoAux(istream) || !idAuxPow.Deserialize(istream))
+		bool SidechainMerkleBlock::Deserialize(const ByteStream &istream, int version) {
+			if (!MerkleBlockBase::DeserializeNoAux(istream)) {
+				Log::error("merkle deserialize side without aux fail");
 				return false;
+			}
 
-			istream.Skip(1);
+			if (version == MERKLEBLOCK_VERSION_0 && !idAuxPow.Deserialize(istream)) {
+				Log::error("merkle deserialize with side aux fail");
+				return false;
+			}
+
 			if (!MerkleBlockBase::DeserializeAfterAux(istream))
 				return false;
 
