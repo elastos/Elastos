@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package types
 
@@ -617,7 +617,6 @@ func crpPayloadEqual(payload1 *payload.CRCProposal, payload2 *payload.CRCProposa
 		bytes.Equal(payload1.SponsorPublicKey, payload2.SponsorPublicKey) &&
 		payload1.CRSponsorDID.IsEqual(payload2.CRSponsorDID) &&
 		payload1.DraftHash.IsEqual(payload2.DraftHash) &&
-		payload1.CROpinionHash.IsEqual(payload2.CROpinionHash) &&
 		bytes.Equal(payload1.Sign, payload2.Sign) &&
 		bytes.Equal(payload1.CRSign, payload2.CRSign)
 }
@@ -650,6 +649,7 @@ func crcProposalReviewPayloadEqual(payload1 *payload.CRCProposalReview,
 	payload2 *payload.CRCProposalReview) bool {
 	if !payload1.ProposalHash.IsEqual(payload2.ProposalHash) ||
 		payload1.VoteResult != payload2.VoteResult ||
+		!payload1.OpinionHash.IsEqual(payload2.OpinionHash) ||
 		!payload1.DID.IsEqual(payload2.DID) ||
 		!bytes.Equal(payload1.Sign, payload2.Sign) {
 		return false
@@ -662,6 +662,7 @@ func randomCRCProposalReviewPayload() *payload.CRCProposalReview {
 	return &payload.CRCProposalReview{
 		ProposalHash: *randomUint256(),
 		VoteResult:   payload.VoteResult(rand.Int() % 3),
+		OpinionHash:  *randomUint256(),
 		DID:          *randomUint168(),
 		Sign:         randomBytes(65),
 	}
@@ -842,7 +843,6 @@ func randomCRCProposalPayload() *payload.CRCProposal {
 		Budgets:          randomBudgets(3),
 		Sign:             randomBytes(64),
 		CRSign:           randomBytes(64),
-		CROpinionHash:    *randomUint256(),
 	}
 }
 

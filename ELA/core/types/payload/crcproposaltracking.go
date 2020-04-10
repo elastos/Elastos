@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package payload
 
@@ -63,9 +63,6 @@ func (pt CRCProposalTrackingType) Name() string {
 const CRCProposalTrackingVersion byte = 0x00
 
 type CRCProposalTracking struct {
-	// The type of current proposal tracking.
-	ProposalTrackingType CRCProposalTrackingType
-
 	// The hash of current tracking proposal.
 	ProposalHash common.Uint256
 
@@ -87,6 +84,9 @@ type CRCProposalTracking struct {
 	// The signature of new proposal leader.
 	NewLeaderSign []byte
 
+	// The type of current proposal tracking.
+	ProposalTrackingType CRCProposalTrackingType
+
 	// The hash of proposal tracking opinion.
 	SecretaryOpinionHash common.Uint256
 
@@ -104,10 +104,6 @@ func (p *CRCProposalTracking) Data(version byte) []byte {
 }
 
 func (p *CRCProposalTracking) SerializeUnsigned(w io.Writer, version byte) error {
-	if _, err := w.Write([]byte{byte(p.ProposalTrackingType)}); err != nil {
-		return errors.New("failed to serialize ProposalTrackingType")
-	}
-
 	if err := p.ProposalHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize ProposalHash")
 	}
@@ -144,6 +140,10 @@ func (p *CRCProposalTracking) Serialize(w io.Writer, version byte) error {
 		return errors.New("failed to serialize NewLeaderSign")
 	}
 
+	if _, err := w.Write([]byte{byte(p.ProposalTrackingType)}); err != nil {
+		return errors.New("failed to serialize ProposalTrackingType")
+	}
+
 	if err := p.SecretaryOpinionHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize SecretaryOpinionHash")
 	}
@@ -156,12 +156,7 @@ func (p *CRCProposalTracking) Serialize(w io.Writer, version byte) error {
 }
 
 func (p *CRCProposalTracking) DeserializeUnSigned(r io.Reader, version byte) error {
-	pType, err := common.ReadBytes(r, 1)
-	if err != nil {
-		return errors.New("failed to deserialize ProposalTrackingType")
-	}
-	p.ProposalTrackingType = CRCProposalTrackingType(pType[0])
-
+	var err error
 	if err = p.ProposalHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize ProposalHash")
 	}
@@ -205,6 +200,12 @@ func (p *CRCProposalTracking) Deserialize(r io.Reader, version byte) error {
 		return errors.New("failed to deserialize newLeaderSign")
 	}
 	p.NewLeaderSign = newLeaderSign
+
+	pType, err := common.ReadBytes(r, 1)
+	if err != nil {
+		return errors.New("failed to deserialize ProposalTrackingType")
+	}
+	p.ProposalTrackingType = CRCProposalTrackingType(pType[0])
 
 	if err = p.SecretaryOpinionHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize SecretaryOpinionHash")
