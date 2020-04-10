@@ -40,10 +40,16 @@ export default class extends DetailPage {
         if ((typeof obj1[k]) === (typeof obj2[k])) {
           if (typeof obj1[k] === 'object') {
             diffObj[k] = this.diffObject(obj1[k], obj2[k])
-          } if (typeof obj1[k] === 'string') {
+          } else if (typeof obj1[k] === 'string') {
             if (k === '_id'
                 || k === 'createdAt'
+                || k === 'updatedAt'
                 || k === 'elaAddress'
+                || k === 'type'
+                || k === 'amount'
+                || k === 'contentType'
+                || k === 'milestoneKey'
+                || k === 'date'
             ) {
               diffObj[k] = obj2[k]
             } else {
