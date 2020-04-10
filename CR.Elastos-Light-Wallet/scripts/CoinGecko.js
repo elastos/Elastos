@@ -12,14 +12,14 @@ const requestPriceData = async () => {
   const url = 'https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd';
   const xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
-    console.log('requestPriceData', this.readyState, this.response);
+    // console.log('requestPriceData', this.readyState, this.response);
     if (this.readyState == 4) {
       if (this.status == 200) {
         priceData = JSON.parse(this.response);
       } else {
         priceData = {'status': this.status, 'statusText': this.statusText, 'response': this.response};
       }
-      App.renderApp();
+      setImmediate(() => { App.renderApp });
     }
   };
   xhttp.responseType = 'text';

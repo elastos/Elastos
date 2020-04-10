@@ -21,7 +21,7 @@ const CoinGecko = require('./CoinGecko.js');
 /** global constants */
 const LOG_LEDGER_POLLING = true;
 
-const MAX_POLL_DATA_TYPE_IX = 4;
+const MAX_POLL_DATA_TYPE_IX = 5;
 
 const PRIVATE_KEY_LENGTH = 64;
 
@@ -77,7 +77,7 @@ let appClipboard = undefined;
 
 let appDocument = undefined;
 
-let renderApp = undefined;
+let renderApp = () => {};
 
 const sendToAddressStatuses = [];
 const sendToAddressLinks = [];
@@ -90,7 +90,12 @@ const parsedTransactionHistory = [];
 
 let producerListStatus = 'No Producers Requested Yet';
 
-let parsedProducerList = {};
+let parsedProducerList = {
+  totalvotes: '-',
+  totalcounts: '-',
+  producersCandidateCount: 0,
+  producers: [],
+};
 
 let candidateVoteListStatus = 'No Candidate Votes Requested Yet';
 
@@ -113,17 +118,13 @@ let GuiToggles;
 /** functions */
 const init = (_GuiToggles) => {
   sendToAddressStatuses.push('No Send-To Transaction Requested Yet');
-  parsedProducerList.totalvotes = '-';
-  parsedProducerList.totalcounts = '-';
-  parsedProducerList.producersCandidateCount = 0;
-  parsedProducerList.producers = [];
   parsedCandidateVoteList.candidateVotes = [];
 
   GuiToggles = _GuiToggles;
 
   setRestService(0);
 
-  mainConsole.log('Consone Logging Enabled.');
+  mainConsole.log('Console Logging Enabled.');
 };
 
 const setAppClipboard = (clipboard) => {
@@ -227,6 +228,8 @@ const publicKeyCallback = (message) => {
     ledgerDeviceInfo.message = message.message;
     renderApp();
   }
+  pollDataTypeIx++;
+  setPollForAllInfoTimer();
 };
 
 const pollForDataCallback = (message) => {
@@ -240,42 +243,57 @@ const pollForDataCallback = (message) => {
 };
 
 const pollForData = () => {
-  if (LOG_LEDGER_POLLING) {
-    mainConsole.log('getAllLedgerInfo ' + pollDataTypeIx);
-  }
-  const resetPollIndex = false;
-  switch (pollDataTypeIx) {
-    case 0:
-      pollForDataCallback('Polling...');
-      break;
-    case 1:
-      LedgerComm.getLedgerDeviceInfo(pollForDataCallback);
-      break;
-    case 2:
-      if (useLedgerFlag) {
-        LedgerComm.getPublicKey(publicKeyCallback);
-      }
-      break;
-    case 3:
-      if (address != undefined) {
-        requestTransactionHistory();
-        requestBalance();
-        requestUnspentTransactionOutputs();
-        requestBlockchainState();
-      }
-    case 4:
-      requestListOfProducers();
-    case MAX_POLL_DATA_TYPE_IX:
-      // only check every 10 seconds for a change in device status.
-      pollDataTypeIx = 0;
-      setTimeout(pollForData, 10000);
-      break;
-    default:
-      throw Error('poll data index reset failed.');
+  // if (LOG_LEDGER_POLLING) {
+  // mainConsole.log('pollForData', pollDataTypeIx);
+  // }
+  try {
+    const resetPollIndex = false;
+    switch (pollDataTypeIx) {
+      case 0:
+        pollForDataCallback('Polling...');
+        break;
+      case 1:
+        LedgerComm.getLedgerDeviceInfo(pollForDataCallback);
+        break;
+      case 2:
+        if (useLedgerFlag) {
+          LedgerComm.getPublicKey(publicKeyCallback);
+        } else {
+          pollDataTypeIx++;
+          setPollForAllInfoTimer();
+        }
+        break;
+      case 3:
+        if (address != undefined) {
+          requestTransactionHistory();
+          requestBalance();
+          requestUnspentTransactionOutputs();
+          requestBlockchainState();
+        }
+        pollDataTypeIx++;
+        setPollForAllInfoTimer();
+        break;
+      case 4:
+        requestListOfProducers();
+        requestListOfCandidateVotes();
+        pollDataTypeIx++;
+        setPollForAllInfoTimer();
+        break;
+      case MAX_POLL_DATA_TYPE_IX:
+        // only check every 10 seconds for a change in device status.
+        pollDataTypeIx = 0;
+        setTimeout(pollForData, 10000);
+        break;
+      default:
+        throw Error('poll data index reset failed.');
+    }
+  } catch (error) {
+    mainConsole.trace('pollForData', pollDataTypeIx, error);
   }
 };
 
 const setPollForAllInfoTimer = () => {
+  // mainConsole.trace('setPollForAllInfoTimer', pollDataTypeIx);
   setTimeout(pollForData, 1);
 };
 
@@ -544,9 +562,12 @@ const requestListOfProducersReadyCallback = (response) => {
   producerListStatus = 'Producers Received';
 
   // mainConsole.log('STARTED Producers Callback', response);
-  parsedProducerList = {};
-  parsedProducerList.producersCandidateCount = 0;
-  parsedProducerList.producers = [];
+  parsedProducerList = {
+    totalvotes: '-',
+    totalcounts: '-',
+    producersCandidateCount: 0,
+    producers: [],
+  };
   if (response.status !== 200) {
     producerListStatus = `Producers Error: ${JSON.stringify(response)}`;
   } else {
@@ -957,6 +978,14 @@ const getAddress = () => {
   return address;
 };
 
+const getParsedProducerList = () => {
+  return parsedProducerList;
+};
+
+const getProducerListStatus = () => {
+  return producerListStatus;
+};
+
 exports.init = init;
 exports.trace = mainConsole.trace;
 exports.setAppClipboard = setAppClipboard;
@@ -967,10 +996,12 @@ exports.getMainConsole = getMainConsole;
 exports.getPublicKeyFromLedger = getPublicKeyFromLedger;
 exports.refreshBlockchainData = refreshBlockchainData;
 exports.clearSendData = clearSendData;
+exports.clearGlobalData = clearGlobalData;
 exports.setPollForAllInfoTimer = setPollForAllInfoTimer;
 exports.getPublicKeyFromMnemonic = getPublicKeyFromMnemonic;
 exports.getPublicKeyFromPrivateKey = getPublicKeyFromPrivateKey;
 exports.getAddress = getAddress;
 exports.getELABalance = getELABalance;
 exports.getUSDBalance = getUSDBalance;
-exports.clearGlobalData = clearGlobalData;
+exports.getParsedProducerList = getParsedProducerList;
+exports.getProducerListStatus = getProducerListStatus;

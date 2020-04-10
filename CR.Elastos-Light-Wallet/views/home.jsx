@@ -87,8 +87,19 @@ module.exports = (props) => {
                     <div className="rotate_n90">Staking</div>
                   </td>
                   <td className="w150px ta_left">
-                    <span className="font_size12">Z</span>
-                    <span className="font_size12">Candidates Total</span>
+                    <span className="font_size12">{App.getProducerListStatus()}</span>
+                    <br/>
+                    <span className="font_size12">{App.getParsedProducerList().totalvotes}</span>
+                    <span className="font_size12">&nbsp;Votes</span>
+                    <br/>
+                    <span className="font_size12">{App.getParsedProducerList().totalcounts}</span>
+                    <span className="font_size12">&nbsp;Counts</span>
+                    <br/>
+                    <span className="font_size12">{App.getParsedProducerList().producersCandidateCount}</span>
+                    <span className="font_size12">&nbsp;Selected Candidates</span>
+                    <br/>
+                    <span className="font_size12">{App.getParsedProducerList().producers.length}</span>
+                    <span className="font_size12">&nbsp;Candidates Total</span>
                     <div className="font_size24">Vote Now</div>
                   </td>
                 </tr>
