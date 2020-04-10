@@ -2263,8 +2263,14 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 	err := s.Chain.checkCRCProposalReviewTransaction(txn, tenureHeight)
 	s.NoError(err)
 
+	// member status is not elected
+	member1.MemberState = crstate.MemberImpeached
+	err = s.Chain.checkCRCProposalReviewTransaction(txn, tenureHeight)
+	s.EqualError(err, "should be an elected CR members")
+
 	// invalid payload
 	txn.Payload = &payload.CRInfo{}
+	member1.MemberState = crstate.MemberElected
 	err = s.Chain.checkCRCProposalReviewTransaction(txn, tenureHeight)
 	s.EqualError(err, "invalid payload")
 
@@ -2497,7 +2503,13 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.NoError(err)
 
+	// member status is not elected
+	member1.MemberState = crstate.MemberImpeached
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "CR sponsor should be an elected CR members")
+
 	// register cr proposal in voting period
+	member1.MemberState = crstate.MemberElected
 	tenureHeight = config.DefaultParams.CRCommitteeStartHeight +
 		config.DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
 	s.Chain.crCommittee.InElectionPeriod = false
