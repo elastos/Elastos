@@ -1893,12 +1893,14 @@ func (b *BlockChain) checkCRCProposalTerminatedTracking(
 func (b *BlockChain) checkCRCProposalFinalizedTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
-	if len(pState.WithdrawableBudgets) != len(pState.Proposal.Budgets)-1 {
-		return errors.New("proposal don't allow finalized")
+	var finalStage byte
+	for _, budget := range pState.Proposal.Budgets {
+		if budget.Type == payload.FinalPayment {
+			finalStage = budget.Stage
+		}
 	}
 
-	// Check stage of proposal
-	if cptPayload.Stage != 0 {
+	if cptPayload.Stage != finalStage {
 		return errors.New("stage should assignment zero value")
 	}
 
