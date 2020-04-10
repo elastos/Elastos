@@ -242,7 +242,6 @@ type CRCProposalInfo struct {
 	Recipient        string       `json:"recipient"`
 	Sign             string       `json:"sign"`
 	CRSponsorDID     string       `json:"crsponsordid"`
-	CROpinionHash    string       `json:"cropinionHash"`
 	CRSign           string       `json:"crsign"`
 	Hash             string       `json:"hash"`
 }
@@ -250,6 +249,7 @@ type CRCProposalInfo struct {
 type CRCProposalReviewInfo struct {
 	ProposalHash string `json:"proposalhash"`
 	VoteResult   string `json:"voteresult"`
+	OpinionHash  string `json:"opinionhash"`
 	DID          string `json:"did"`
 	Sign         string `json:"sign"`
 }
