@@ -409,8 +409,14 @@ func (s *State) processVoteCRC(height uint32, cv outputpayload.CandidateVotes) {
 // processVoteCRCProposal record proposal reject votes.
 func (s *State) processVoteCRCProposal(height uint32,
 	cv outputpayload.CandidateVotes) {
-	proposalHash, _ := common.Uint256FromBytes(cv.Candidate)
+	proposalHash, err := common.Uint256FromBytes(cv.Candidate)
+	if err != nil {
+		return
+	}
 	proposalState := s.manager.getProposal(*proposalHash)
+	if proposalState == nil || proposalState.Status != VoterAgreed {
+		return
+	}
 	v := cv.Votes
 	s.history.Append(height, func() {
 		proposalState.VotersRejectAmount += v
