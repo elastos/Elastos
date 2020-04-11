@@ -11,8 +11,6 @@ const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid');
 const mainConsoleUtil = require('console');
 const mainConsole = new mainConsoleUtil.Console(process.stdout, process.stderr);
 
-mainConsole.log('Ledger Console Logging Enabled.');
-
 const bip44Path =
   '8000002C' +
   '80000901' +
@@ -20,7 +18,12 @@ const bip44Path =
   '00000000' +
   '00000000';
 
-const LOG_LEDGER_MESSAGE = true;
+const LOG_LEDGER_MESSAGE = false;
+if (LOG_LEDGER_MESSAGE) {
+  mainConsole.log('Ledger Console Logging Enabled.');
+} else {
+  mainConsole.log('Ledger Console Logging Disabled.');
+}
 
 const getPublicKey = (callback) => {
   const deviceThenCallback = (device) => {
@@ -123,15 +126,11 @@ const getLedgerInfo = (deviceThenCallback, deviceErrorCallback) => {
     return;
   }
 
-  TransportNodeHid.default.setListenDevicesDebug((msg) => {
-    mainConsole.log(`setListenDevicesDebug ${msg}`);
-  });
-
   TransportNodeHid.default.list().then((paths) => {
     if (paths.length === 0) {
       deviceErrorCallback(finishLedgerDeviceInfo({
         enabled: false,
-        error: true,
+        error: false,
         message: 'USB Error: No device found.',
       }));
     } else {

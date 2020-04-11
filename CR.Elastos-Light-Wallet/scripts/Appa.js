@@ -65,6 +65,8 @@ let feeAmountSats = '';
 
 let feeAmountEla = '';
 
+let sendToAddress = '';
+
 let isLoggedIn = false;
 
 let useLedgerFlag = false;
@@ -222,7 +224,7 @@ const publicKeyCallback = (message) => {
   }
   if (message.success) {
     publicKey = message.publicKey;
-    requestBlockchainDataAndShowHome();
+    requestBlockchainData();
   } else {
     ledgerDeviceInfo.error = true;
     ledgerDeviceInfo.message = message.message;
@@ -374,7 +376,7 @@ const getPublicKeyFromLedger = () => {
   LedgerComm.getPublicKey(publicKeyCallback);
 };
 
-const requestBlockchainDataAndShowHome = () => {
+const requestBlockchainData = () => {
   if (publicKey === undefined) {
     return;
   }
@@ -383,10 +385,6 @@ const requestBlockchainDataAndShowHome = () => {
   requestBalance();
   requestUnspentTransactionOutputs();
   requestBlockchainState();
-
-  if (isLoggedIn) {
-    GuiToggles.showHome();
-  }
 };
 
 const getPublicKeyFromMnemonic = () => {
@@ -404,7 +402,7 @@ const getPublicKeyFromMnemonic = () => {
     return;
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
-  requestBlockchainDataAndShowHome();
+  requestBlockchainData();
 };
 
 const getPublicKeyFromPrivateKey = () => {
@@ -417,7 +415,7 @@ const getPublicKeyFromPrivateKey = () => {
     return;
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
-  requestBlockchainDataAndShowHome();
+  requestBlockchainData();
 };
 
 const sendAmountToAddressErrorCallback = (error) => {
@@ -458,11 +456,21 @@ const clearSendData = () => {
 };
 
 const updateAmountAndFees = () => {
+  mainConsole.log('STARTED updateAmountAndFees');
   const sendAmountElt = document.getElementById('sendAmount');
   const feeAmountElt = document.getElementById('feeAmount');
+  const sendToAddressElt = document.getElementById('sendToAddress');
+
+
+  mainConsole.log('INTERIM updateAmountAndFees',
+    sendAmountElt.value,
+    feeAmountElt.value,
+    sendToAddressElt.value,
+  );
 
   sendAmount = sendAmountElt.value;
   feeAmountSats = feeAmountElt.value;
+  sendToAddress = sendToAddressElt.value;
   if (Number.isNaN(sendAmount)) {
     throw new Error(`sendAmount ${sendAmount} is not a number`);
   }
@@ -470,19 +478,11 @@ const updateAmountAndFees = () => {
     throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
   }
   feeAmountEla = BigNumber(feeAmountSats, 10).dividedBy(Asset.satoshis).toString();
-};
-
-const updateAmountAndFeesAndRenderApp = () => {
-  updateAmountAndFees();
-  renderApp();
+  mainConsole.log('SUCCESS updateAmountAndFees');
 };
 
 const sendAmountToAddress = () => {
   updateAmountAndFees();
-
-  const sendToAddressElt = document.getElementById('sendToAddress');
-
-  const sendToAddress = sendToAddressElt.value;
 
   const unspentTransactionOutputs = parsedUnspentTransactionOutputs;
   mainConsole.log('sendAmountToAddress.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
@@ -507,7 +507,6 @@ const sendAmountToAddress = () => {
         sendToAddressStatuses.length = 0;
         sendToAddressLinks.length = 0;
         sendToAddressStatuses.push(JSON.stringify(message));
-        renderApp();
         return;
       }
       const signature = Buffer.from(message.signature, 'hex');
@@ -525,7 +524,6 @@ const sendAmountToAddress = () => {
     }
     sendAmountToAddressCallback(encodedTx);
   }
-  renderApp();
 };
 // success: success,
 // message: lastResponse,
@@ -554,7 +552,7 @@ const sendAmountToAddressCallback = (encodedTx) => {
 };
 
 const requestListOfProducersErrorCallback = (response) => {
-  producerListStatus = `Producers Error: ${JSON.stringify(response)}`;
+  producerListStatus = `Producers Error, Retrying`;
   renderApp();
 };
 
@@ -785,31 +783,23 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
   parsedTransactionHistory.length = 0;
   transactionHistory.txs.forEach((tx, txIx) => {
     const time = formatDate(new Date(tx.time * 1000));
-    // tx.vin.forEach((vinElt) => {
-    //   const parsedTransaction = {};
-    //   parsedTransaction.n = txIx;
-    //   parsedTransaction.type = 'input';
-    //   parsedTransaction.value = vinElt.value;
-    //   parsedTransaction.valueSat = vinElt.valueSat;
-    //   parsedTransaction.address = vinElt.addr;
-    //   parsedTransaction.txHash = tx.txid;
-    //   parsedTransaction.txDetailsUrl = getTransactionHistoryLink(tx.txid);
-    //   parsedTransaction.time = time;
-    //   parsedTransactionHistory.push(parsedTransaction);
-    // });
     tx.vout.forEach((voutElt) => {
       voutElt.scriptPubKey.addresses.forEach((voutAddress) => {
         const parsedTransaction = {};
         parsedTransaction.n = txIx;
         if (voutAddress == address) {
-          parsedTransaction.type = 'input';
+          parsedTransaction.type = 'Receiving';
         } else {
-          parsedTransaction.type = 'output';
+          parsedTransaction.type = 'Was sent';
         }
         parsedTransaction.value = voutElt.value;
         parsedTransaction.valueSat = voutElt.valueSat;
         parsedTransaction.address = voutAddress;
         parsedTransaction.txHash = tx.txid;
+        parsedTransaction.txHashWithEllipsis = tx.txid;
+        if (parsedTransaction.txHashWithEllipsis.length > 30) {
+          parsedTransaction.txHashWithEllipsis = parsedTransaction.txHashWithEllipsis.substring(0, 30) + '...';
+        }
         parsedTransaction.txDetailsUrl = getTransactionHistoryLink(tx.txid);
         parsedTransaction.time = time;
         parsedTransactionHistory.push(parsedTransaction);
@@ -879,10 +869,12 @@ const requestBlockchainState = () => {
 };
 
 const getConfirmations = () => {
-  if (blockchainState.height) {
-    return blockchainState.height - blockchainLastActionHeight;
-  } else {
-    return 0;
+  if (blockchainState) {
+    if (blockchainState.height) {
+      return blockchainState.height - blockchainLastActionHeight;
+    } else {
+      return 0;
+    }
   }
 };
 
@@ -902,23 +894,8 @@ const copyToPrivateKeyClipboard = () => {
   alert(`copied to clipboard:\n${generatedPrivateKeyHex}`);
 };
 
-const cancelSend = () => {
-  const sendToAddressElt = document.getElementById('sendToAddress');
-  const sendAmountElt = document.getElementById('sendAmount');
-  const feeAmountElt = document.getElementById('feeAmount');
-
-  sendToAddressElt.value = '';
-  sendAmountElt.value = '';
-  feeAmountElt.value = DEFAULT_FEE_SATS;
-
-  sendAmount = '';
-  feeAmountSats = '';
-  feeAmountEla = '';
-
-  showSend();
-};
-
 const clearGlobalData = () => {
+  mainConsole.log('STARTED clearGlobalData');
   GuiUtils.setValue('privateKey', '');
   GuiUtils.setValue('mnemonic', '');
   GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
@@ -947,6 +924,7 @@ const clearGlobalData = () => {
   unspentTransactionOutputsStatus = 'No UTXOs Requested Yet';
   parsedUnspentTransactionOutputs.length = 0;
   renderApp();
+  mainConsole.log('SUCCESS clearGlobalData');
 };
 
 const getLedgerDeviceInfo = () => {
@@ -998,7 +976,10 @@ const getParsedTransactionHistory = () => {
 };
 
 const getBlockchainState = () => {
-  return blockchainState;
+  if (blockchainState) {
+    return blockchainState;
+  }
+  return {};
 };
 
 const getBlockchainStatus = () => {
@@ -1009,8 +990,33 @@ const getTransactionHistoryStatus = () => {
   return transactionHistoryStatus;
 };
 
+const getSendToAddressStatuses = () => {
+  return sendToAddressStatuses;
+}
+
+const getSendToAddressLinks = () => {
+  return sendToAddressLinks;
+}
+
+const getSendAmount = () => {
+  return sendAmount;
+}
+
+const getFeeAmountEla = () => {
+  return feeAmountEla;
+}
+
+const getSendToAddress = () => {
+  return sendToAddress;
+}
+
+const getFeeAmountSats = () => {
+  return feeAmountSats;
+}
+
 exports.init = init;
 exports.trace = mainConsole.trace;
+exports.renderApp = renderApp;
 exports.setAppClipboard = setAppClipboard;
 exports.setAppDocument = setAppDocument;
 exports.setRenderApp = setRenderApp;
@@ -1033,3 +1039,10 @@ exports.getBlockchainState = getBlockchainState;
 exports.getConfirmations = getConfirmations;
 exports.getBlockchainStatus = getBlockchainStatus;
 exports.getTransactionHistoryStatus = getTransactionHistoryStatus;
+exports.updateAmountAndFees = updateAmountAndFees;
+exports.getSendToAddressStatuses = getSendToAddressStatuses;
+exports.getSendToAddressLinks = getSendToAddressLinks;
+exports.getSendAmount = getSendAmount;
+exports.getFeeAmountEla = getFeeAmountEla;
+exports.getSendToAddress = getSendToAddress;
+exports.getFeeAmountSats = getFeeAmountSats;

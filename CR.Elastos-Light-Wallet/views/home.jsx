@@ -1,21 +1,112 @@
 const React = require('react');
 
-const TransactionHistoryElementIcon = (props) => {
-  const item = props.item;
-  if (item.type == 'input') {
-    return (<img src="artwork/received-ela.svg"/>);
-  }
-  if (item.type == 'output') {
-    return (<img src="artwork/sent-ela.svg"/>);
-  }
-  return (<div/>);
-}
-
 module.exports = (props) => {
   const App = props.App;
   const openDevTools = props.openDevTools;
   const Version = props.Version;
   const GuiToggles = props.GuiToggles;
+
+  let sendStep = 1;
+
+  const updateAmountAndFeesAndRenderApp = (e) => {
+    App.trace('updateAmountAndFeesAndRenderApp', e);
+    App.updateAmountAndFees();
+    App.renderApp();
+  }
+
+  const showConfirmAndSeeFees = () => {
+    sendStep = 2;
+    App.updateAmountAndFees();
+    App.renderApp();
+  }
+
+  const cancelSend = () => {
+    sendStep = 1;
+    App.clearSendData();
+    App.renderApp();
+  }
+
+  const sendAmountToAddress = () => {
+    sendStep = 1;
+    App.sendAmountToAddress();
+    App.renderApp();
+  }
+
+  const SendScreen = (props) => {
+    if(sendStep == 1) {
+      return (
+        <div>
+          <SendScreenOne visibility=""/>
+          <SendScreenTwo visibility="display_none"/>
+        </div>
+      )
+    }
+    if(sendStep == 2) {
+      <div>
+        <SendScreenOne visibility="display_none"/>
+        <SendScreenTwo visibility=""/>
+      </div>
+    }
+  }
+
+  const SendScreenOne = (props) => {
+    const visibility = props.visibility;
+    return (
+      <div id="sendOne" className={`bordered w200px h200px bgcolor_black_hover ${visibility}`}>
+        Send
+        <div>Send Amount</div>
+        <br/>
+        <input className="monospace" type="text" size="14" id="sendAmount" placeholder="Send Amount" value={App.getSendAmount()} onChange={(e) => updateAmountAndFeesAndRenderApp(e)}></input>
+        <div className="gray_on_white">To Address</div>
+        <br/>
+        <input className="monospace" type="text" size="34" id="sendToAddress" placeholder="Send To Address" value={App.getSendToAddress()} onChange={(e) => updateAmountAndFeesAndRenderApp(e)}></input>
+        <br/>
+        <div className="gray_on_white">Send Status</div>
+        <br/>
+        <div className="h100px w100pct overflow_auto">
+        <table>
+          <tbody>
+            {
+              App.getSendToAddressStatuses().map((sendToAddressStatus, index) => {
+                return (<tr key={index}>
+                <td>{sendToAddressStatus}</td>
+                </tr>)
+              })
+            }
+            {
+              App.getSendToAddressLinks().map((item, index) => {
+                return (<tr key={index}>
+                  <td>
+                    <a href={item.txDetailsUrl} onClick={(e) => onLinkClick(e)}>{item.txHash}</a>
+                  </td>
+                </tr>)
+              })
+            }
+          </tbody>
+        </table>
+        </div>
+        <div onClick={(e) => showConfirmAndSeeFees()}>Next</div>
+      </div>
+    );
+  }
+
+  const SendScreenTwo = (props) => {
+    const visibility = props.visibility;
+    return (
+      <div id="sendTwo" className={`bordered w200px h200px bgcolor_black_hover ${visibility}`}>
+        Send
+        <div>Fees (in Satoshis)</div>
+        <input className="monospace" type="text" size="14" id="feeAmount" placeholder="Fees" value={App.getFeeAmountSats()} onChange={(e) => updateAmountAndFeesAndRenderApp(e)}></input>
+        <div onClick={(e) => showConfirmAndSeeFees()}>Estimated New Balance</div>
+        <p>Your balance will be deducted {App.getSendAmount()}
+          ELA + {App.getFeeAmountEla()}
+          ELA in fees.</p>
+        <div onClick={(e) => sendAmountToAddress()}>Confirm</div>
+        <div onClick={(e) => cancelSend()}>Back</div>
+      </div>
+    )
+  }
+
   return (
   <table id="home" className="bordered w750h520px">
     <tbody>
@@ -61,10 +152,8 @@ module.exports = (props) => {
             </table>
           </div>
         </td>
-        <td className="bordered w200px h200px ta_center va_top">
-          <div id="send" className="bordered w200px h200px bgcolor_black_hover">
-            Send
-          </div>
+        <td className="bordered w200px h200px ta_center va_top font_size12">
+          <SendScreen />
         </td>
         <td className="bordered w200px h200px ta_center va_top">
           <div id="receive" className="bordered w200px h100px bgcolor_black_hover">
@@ -143,7 +232,7 @@ module.exports = (props) => {
           </div>
         </td>
         <td colSpan="2" className="bordered w400px h200px ta_center va_top">
-          <div id="transactions" className="bordered w400px h300px bgcolor_black_hover font_size12">
+          <div id="transactions" className="bordered w500px h300px bgcolor_black_hover font_size12">
             <div >Transaction List Status</div>
             <br/> {App.getTransactionHistoryStatus()}
             <div >Blockchain Status</div>
@@ -161,25 +250,20 @@ module.exports = (props) => {
                 <tbody>
                   <tr>
                     <td className="no_border no_padding">Nbr</td>
-                    <td className="no_border no_padding">Icon</td>
                     <td className="no_border no_padding">Value</td>
-                    <td className="no_border no_padding">TX</td>
                     <td className="no_border no_padding">Time</td>
+                    <td className="no_border no_padding">Type</td>
+                    <td className="no_border no_padding">TX</td>
                   </tr>
                   {
                     App.getParsedTransactionHistory().map((item, index) => {
                       return (<tr key={index}>
                         <td className="no_border no_padding">{item.n}</td>
+                        <td className="no_border no_padding">{item.value}&nbsp;ELA</td>
+                        <td className="no_border no_padding">{item.time}</td>
+                        <td className="no_border no_padding">{item.type}</td>
                         <td className="no_border no_padding">
-                          <TransactionHistoryElementIcon item={item}/>
-                        </td>
-                        <td className="no_border no_padding">{item.value}
-                          ELA</td>
-                        <td className="no_border no_padding">
-                          <a className="exit_link" href={item.txDetailsUrl} onClick={(e) => onLinkClick(e)}>{item.txHash}</a>
-                        </td>
-                        <td className="no_border no_padding">
-                          {item.time}
+                          <a className="exit_link" href={item.txDetailsUrl} onClick={(e) => onLinkClick(e)}>{item.txHashWithEllipsis}</a>
                         </td>
                       </tr>)
                     })
