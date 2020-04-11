@@ -6,34 +6,44 @@ module.exports = (props) => {
   const Version = props.Version;
   const GuiToggles = props.GuiToggles;
 
-  let sendStep = 1;
+  const sendIsFocus = () => {
+    App.setSendHasFocus(true);
+  }
+
+  const sendIsNotFocus = () => {
+    App.updateAmountAndFees();
+    App.setSendHasFocus(false);
+  }
 
   const updateAmountAndFeesAndRenderApp = (e) => {
-    App.trace('updateAmountAndFeesAndRenderApp', e);
     App.updateAmountAndFees();
     App.renderApp();
   }
 
   const showConfirmAndSeeFees = () => {
-    sendStep = 2;
+    // App.log('STARTED showConfirmAndSeeFees')
+    App.setSendStep(2);
     App.updateAmountAndFees();
+    App.setSendHasFocus(false);
     App.renderApp();
   }
 
   const cancelSend = () => {
-    sendStep = 1;
+    App.setSendStep(1);
     App.clearSendData();
+    App.setSendHasFocus(false);
     App.renderApp();
   }
 
   const sendAmountToAddress = () => {
-    sendStep = 1;
+    App.setSendStep(1);
     App.sendAmountToAddress();
     App.renderApp();
   }
 
   const SendScreen = (props) => {
-    if(sendStep == 1) {
+    // App.log('SendScreen', App.getSendStep());
+    if(App.getSendStep() == 1) {
       return (
         <div>
           <SendScreenOne visibility=""/>
@@ -41,27 +51,29 @@ module.exports = (props) => {
         </div>
       )
     }
-    if(sendStep == 2) {
-      <div>
-        <SendScreenOne visibility="display_none"/>
-        <SendScreenTwo visibility=""/>
-      </div>
+    if(App.getSendStep() == 2) {
+      return (
+        <div>
+          <SendScreenOne visibility="display_none"/>
+          <SendScreenTwo visibility=""/>
+        </div>
+      )
     }
   }
 
   const SendScreenOne = (props) => {
     const visibility = props.visibility;
     return (
-      <div id="sendOne" className={`bordered w200px h200px bgcolor_black_hover ${visibility}`}>
+      <div id="sendOne" className={`bordered w250px h200px bgcolor_black_hover ${visibility}`}>
         Send
         <div>Send Amount</div>
         <br/>
-        <input className="monospace" type="text" size="14" id="sendAmount" placeholder="Send Amount" value={App.getSendAmount()} onChange={(e) => updateAmountAndFeesAndRenderApp(e)}></input>
+        <input className="monospace" type="text" size="14" id="sendAmount" placeholder="Send Amount" defaultValue={App.getSendAmount()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}></input>
         <div className="gray_on_white">To Address</div>
         <br/>
-        <input className="monospace" type="text" size="34" id="sendToAddress" placeholder="Send To Address" value={App.getSendToAddress()} onChange={(e) => updateAmountAndFeesAndRenderApp(e)}></input>
+        <input className="monospace" type="text" size="34" id="sendToAddress" placeholder="Send To Address"  defaultValue={App.getSendToAddress()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}></input>
         <br/>
-        <div className="gray_on_white">Send Status</div>
+        <div>Send Status</div>
         <br/>
         <div className="h100px w100pct overflow_auto">
         <table>
@@ -85,7 +97,7 @@ module.exports = (props) => {
           </tbody>
         </table>
         </div>
-        <div onClick={(e) => showConfirmAndSeeFees()}>Next</div>
+        <span className="bordered bgcolor_black_hover" onClick={(e) => showConfirmAndSeeFees()}>Next</span>
       </div>
     );
   }
@@ -93,16 +105,16 @@ module.exports = (props) => {
   const SendScreenTwo = (props) => {
     const visibility = props.visibility;
     return (
-      <div id="sendTwo" className={`bordered w200px h200px bgcolor_black_hover ${visibility}`}>
+      <div id="sendTwo" className={`bordered w250px h200px bgcolor_black_hover ${visibility}`}>
         Send
         <div>Fees (in Satoshis)</div>
-        <input className="monospace" type="text" size="14" id="feeAmount" placeholder="Fees" value={App.getFeeAmountSats()} onChange={(e) => updateAmountAndFeesAndRenderApp(e)}></input>
+        <input className="monospace" type="text" size="14" id="feeAmount" placeholder="Fees" defaultValue={App.DEFAULT_FEE_SATS} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}></input>
         <div onClick={(e) => showConfirmAndSeeFees()}>Estimated New Balance</div>
         <p>Your balance will be deducted {App.getSendAmount()}
           ELA + {App.getFeeAmountEla()}
           ELA in fees.</p>
-        <div onClick={(e) => sendAmountToAddress()}>Confirm</div>
-        <div onClick={(e) => cancelSend()}>Back</div>
+          <span className="bordered bgcolor_black_hover" onClick={(e) => cancelSend()}>Back</span>
+          <span className="bordered bgcolor_black_hover" onClick={(e) => sendAmountToAddress()}>Confirm</span>
       </div>
     )
   }

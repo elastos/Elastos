@@ -3,7 +3,7 @@ const React = require('react');
 const LedgerMessage = (props) => {
   const App = props.App;
   let message = '';
-  App.getMainConsole().log('LedgerMessage', App.getLedgerDeviceInfo());
+  // App.getMainConsole().log('LedgerMessage', App.getLedgerDeviceInfo());
   if (App.getLedgerDeviceInfo()) {
     if (App.getLedgerDeviceInfo().error) {
       message += 'Error:';

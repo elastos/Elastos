@@ -241,6 +241,7 @@ class AppView extends React.Component {
     </div>)
   }
 }
+
 const renderApp = () => {
   ReactDOM.render(<AppView/>, document.getElementById('main'));
 };

@@ -19,7 +19,7 @@ const GuiUtils = require('./GuiUtils.js');
 const CoinGecko = require('./CoinGecko.js');
 
 /** global constants */
-const LOG_LEDGER_POLLING = true;
+const LOG_LEDGER_POLLING = false;
 
 const MAX_POLL_DATA_TYPE_IX = 5;
 
@@ -59,6 +59,8 @@ let pollDataTypeIx = 0;
 
 let balance = undefined;
 
+let sendHasFocus = false;
+
 let sendAmount = '';
 
 let feeAmountSats = '';
@@ -66,6 +68,8 @@ let feeAmountSats = '';
 let feeAmountEla = '';
 
 let sendToAddress = '';
+
+let sendStep = 1;
 
 let isLoggedIn = false;
 
@@ -138,7 +142,12 @@ const setAppDocument = (_document) => {
 };
 
 const setRenderApp = (_renderApp) => {
-  renderApp = _renderApp;
+  renderApp = () => {
+    // mainConsole.log('renderApp', 'sendHasFocus', sendHasFocus);
+    if (!sendHasFocus) {
+      _renderApp();
+    }
+  };
 };
 
 const getRestService = () => {
@@ -163,7 +172,7 @@ const getTransactionHistoryLink = (txid) => {
 
 const getBalanceUrl = (address) => {
   const url = `${getRestService()}/api/v1/asset/balances/${address}`;
-  mainConsole.log('getBalanceUrl', url);
+  // mainConsole.log('getBalanceUrl', url);
   return url;
 };
 
@@ -358,7 +367,7 @@ const getUnspentTransactionOutputsReadyCallback = (response) => {
   unspentTransactionOutputsStatus = 'UTXOs Received';
   parsedUnspentTransactionOutputs.length = 0;
 
-  mainConsole.log('getUnspentTransactionOutputsCallback ' + JSON.stringify(response), response.Result);
+  // mainConsole.log('getUnspentTransactionOutputsCallback ' + JSON.stringify(response), response.Result);
 
   if ((response.Result != undefined) && (response.Result != null) && (response.Error == 0)) {
     response.Result.forEach((utxo, utxoIx) => {
@@ -437,7 +446,6 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     sendToAddressStatuses.push('Transaction Successful.');
     sendToAddressLinks.push(elt);
   }
-  showCompletedTransaction();
   setBlockchainLastActionHeight();
   renderApp();
 };
@@ -448,7 +456,7 @@ const clearSendData = () => {
   GuiUtils.setValue('sendToAddress', '');
   GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
   sendAmount = '';
-  feeAmountSats = '';
+  feeAmountSats = DEFAULT_FEE_SATS;
   feeAmountEla = '';
   sendToAddressStatuses.length = 0;
   sendToAddressLinks.length = 0;
@@ -456,21 +464,18 @@ const clearSendData = () => {
 };
 
 const updateAmountAndFees = () => {
-  mainConsole.log('STARTED updateAmountAndFees');
-  const sendAmountElt = document.getElementById('sendAmount');
-  const feeAmountElt = document.getElementById('feeAmount');
-  const sendToAddressElt = document.getElementById('sendToAddress');
+  // mainConsole.log('STARTED updateAmountAndFees');
 
+  sendAmount = GuiUtils.getValue('sendAmount');
+  sendToAddress = GuiUtils.getValue('sendToAddress');
+  feeAmountSats = GuiUtils.getValue('feeAmount');
 
-  mainConsole.log('INTERIM updateAmountAndFees',
-    sendAmountElt.value,
-    feeAmountElt.value,
-    sendToAddressElt.value,
-  );
+  // mainConsole.log('INTERIM updateAmountAndFees',
+  //     'sendAmount:', sendAmount,
+  //     'sendToAddress:', sendToAddress,
+  //     'feeAmountSats:', feeAmountSats,
+  // );
 
-  sendAmount = sendAmountElt.value;
-  feeAmountSats = feeAmountElt.value;
-  sendToAddress = sendToAddressElt.value;
   if (Number.isNaN(sendAmount)) {
     throw new Error(`sendAmount ${sendAmount} is not a number`);
   }
@@ -478,7 +483,7 @@ const updateAmountAndFees = () => {
     throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
   }
   feeAmountEla = BigNumber(feeAmountSats, 10).dividedBy(Asset.satoshis).toString();
-  mainConsole.log('SUCCESS updateAmountAndFees');
+  // mainConsole.log('SUCCESS updateAmountAndFees');
 };
 
 const sendAmountToAddress = () => {
@@ -643,7 +648,7 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
   } else {
     response.result.forEach((candidateVote) => {
-      mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
+      // mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
       const body = candidateVote.Vote_Body;
       body.forEach((candidateVoteElt) => {
         const parsedCandidateVote = {};
@@ -652,13 +657,13 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
         parsedCandidateVote.active = candidateVoteElt.Active.toString();
         parsedCandidateVote.votes = candidateVoteElt.Votes;
         parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
-        mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
+        // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
         parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
       });
     });
-    mainConsole.log('INTERIM Candidate Votes Callback', response.result);
+    // mainConsole.log('INTERIM Candidate Votes Callback', response.result);
   }
-  mainConsole.log('SUCCESS Candidate Votes Callback');
+  // mainConsole.log('SUCCESS Candidate Votes Callback');
 
   renderApp();
 };
@@ -830,7 +835,7 @@ const getBalanceReadyCallback = (balanceResponse) => {
     balanceStatus = `Balance Received Error:${balanceResponse.Error}`;
     balance = undefined;
   }
-  mainConsole.log('getBalanceReadyCallback ' + JSON.stringify(balanceResponse));
+  // mainConsole.log('getBalanceReadyCallback ' + JSON.stringify(balanceResponse));
 
   renderApp();
 };
@@ -950,7 +955,7 @@ const getUSDBalance = () => {
     if (elastos) {
       const usd = elastos.usd;
 
-      mainConsole.log('getUSDBalance', usd, balance, balanceStatus);
+      // mainConsole.log('getUSDBalance', usd, balance, balanceStatus);
       if (balance) {
         return (parseFloat(usd) * parseFloat(balance)).toFixed(3);
       }
@@ -992,31 +997,54 @@ const getTransactionHistoryStatus = () => {
 
 const getSendToAddressStatuses = () => {
   return sendToAddressStatuses;
-}
+};
 
 const getSendToAddressLinks = () => {
   return sendToAddressLinks;
-}
+};
 
 const getSendAmount = () => {
   return sendAmount;
-}
+};
 
 const getFeeAmountEla = () => {
   return feeAmountEla;
-}
+};
 
 const getSendToAddress = () => {
   return sendToAddress;
-}
+};
 
 const getFeeAmountSats = () => {
   return feeAmountSats;
-}
+};
 
+const getSendHasFocus = () => {
+  return sendHasFocus;
+};
+
+const setSendHasFocus = (_sendHasFocus) => {
+  sendHasFocus = _sendHasFocus;
+  // mainConsole.log('setSendHasFocus', sendHasFocus);
+};
+
+const getSendStep = () => {
+  return sendStep;
+};
+
+const setSendStep = (_sendStep) => {
+  sendStep = _sendStep;
+};
+
+const renderAppWrapper = () => {
+  renderApp();
+};
+
+exports.DEFAULT_FEE_SATS = DEFAULT_FEE_SATS;
 exports.init = init;
+exports.log = mainConsole.log;
 exports.trace = mainConsole.trace;
-exports.renderApp = renderApp;
+exports.renderApp = renderAppWrapper;
 exports.setAppClipboard = setAppClipboard;
 exports.setAppDocument = setAppDocument;
 exports.setRenderApp = setRenderApp;
@@ -1046,3 +1074,8 @@ exports.getSendAmount = getSendAmount;
 exports.getFeeAmountEla = getFeeAmountEla;
 exports.getSendToAddress = getSendToAddress;
 exports.getFeeAmountSats = getFeeAmountSats;
+exports.getSendHasFocus = getSendHasFocus;
+exports.setSendHasFocus = setSendHasFocus;
+exports.getSendStep = getSendStep;
+exports.setSendStep = setSendStep;
+exports.sendAmountToAddress = sendAmountToAddress;
