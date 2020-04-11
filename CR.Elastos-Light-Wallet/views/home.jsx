@@ -1,5 +1,16 @@
 const React = require('react');
 
+const TransactionHistoryElementIcon = (props) => {
+  const item = props.item;
+  if (item.type == 'input') {
+    return (<img src="artwork/received-ela.svg"/>);
+  }
+  if (item.type == 'output') {
+    return (<img src="artwork/sent-ela.svg"/>);
+  }
+  return (<div/>);
+}
+
 module.exports = (props) => {
   const App = props.App;
   const openDevTools = props.openDevTools;
@@ -132,8 +143,50 @@ module.exports = (props) => {
           </div>
         </td>
         <td colSpan="2" className="bordered w400px h200px ta_center va_top">
-          <div id="transactions" className="bordered w400px h300px bgcolor_black_hover">
-            Transactions
+          <div id="transactions" className="bordered w400px h300px bgcolor_black_hover font_size12">
+            <div >Transaction List Status</div>
+            <br/> {App.getTransactionHistoryStatus()}
+            <div >Blockchain Status</div>
+            <br/> {App.getBlockchainStatus()}
+            <br/>
+            <div className="display_inline_block">Previous Transactions ({App.getParsedTransactionHistory().length}
+              total)</div>
+            <div className="float_right display_inline_block">&nbsp;{App.getConfirmations()}&nbsp;
+              Confirmations</div>
+            <div className="float_right display_inline_block">&nbsp;{App.getBlockchainState().height}&nbsp;
+              Blocks</div>
+            <p></p>
+            <div className="h100px overflow_auto">
+              <table className="w100pct no_border whitespace_nowrap font_size12">
+                <tbody>
+                  <tr>
+                    <td className="no_border no_padding">Nbr</td>
+                    <td className="no_border no_padding">Icon</td>
+                    <td className="no_border no_padding">Value</td>
+                    <td className="no_border no_padding">TX</td>
+                    <td className="no_border no_padding">Time</td>
+                  </tr>
+                  {
+                    App.getParsedTransactionHistory().map((item, index) => {
+                      return (<tr key={index}>
+                        <td className="no_border no_padding">{item.n}</td>
+                        <td className="no_border no_padding">
+                          <TransactionHistoryElementIcon item={item}/>
+                        </td>
+                        <td className="no_border no_padding">{item.value}
+                          ELA</td>
+                        <td className="no_border no_padding">
+                          <a className="exit_link" href={item.txDetailsUrl} onClick={(e) => onLinkClick(e)}>{item.txHash}</a>
+                        </td>
+                        <td className="no_border no_padding">
+                          {item.time}
+                        </td>
+                      </tr>)
+                    })
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
         </td>
       </tr>

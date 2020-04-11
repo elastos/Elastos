@@ -31,16 +31,7 @@ const Version = () => {
 //
 
 //
-// const TransactionHistoryElementIcon = (props) => {
-//   const item = props.item;
-//   if (item.type == 'input') {
-//     return (<img src="artwork/received-ela.svg"/>);
-//   }
-//   if (item.type == 'output') {
-//     return (<img src="artwork/sent-ela.svg"/>);
-//   }
-//   return (<div/>);
-// }
+
 //
 // const ProducerSelectionButtonText = (props) => {
 //   const item = props.item;

@@ -202,3 +202,7 @@
 .td_linethrough {
   text-decoration: line-through;
 }
+
+.whitespace_nowrap {
+  white-space: nowrap;
+}

@@ -853,13 +853,20 @@ const requestBalance = () => {
   }
 };
 
-const getBlockchainStateErrorCallback = (response) => {
-  balanceStatus = `Blockchain State Error:${JSON.stringify(response)} `;
+const getBlockchainStateErrorCallback = (blockchainStateResponse) => {
+  balanceStatus = 'Blockchain State Error ' + blockchainStateResponse.Error;
+  blockchainState = blockchainStateResponse.Result;
 };
 
 const getBlockchainStateReadyCallback = (blockchainStateResponse) => {
-  blockchainStatus = `Blockchain State Received:${blockchainStateResponse.Desc} ${blockchainStateResponse.Error} `;
-  blockchainState = blockchainStateResponse.Result;
+  // mainConsole.log('getBlockchainStateReadyCallback ', blockchainStateResponse);
+  if (blockchainStateResponse.Error == 0) {
+    blockchainStatus = `Blockchain State Received`;
+    blockchainState = blockchainStateResponse.Result;
+  } else {
+    balanceStatus = 'Blockchain State Error ' + blockchainStateResponse.Error;
+    blockchainState = blockchainStateResponse.Result;
+  }
 
   renderApp();
 };
@@ -867,7 +874,7 @@ const getBlockchainStateReadyCallback = (blockchainStateResponse) => {
 const requestBlockchainState = () => {
   const stateUrl = getStateUrl();
   blockchainState = {};
-  blockchainStatus = `Blockchain State Requested ${stateUrl}`;
+  blockchainStatus = `Blockchain State Requested`;
   getJson(stateUrl, getBlockchainStateReadyCallback, getBlockchainStateErrorCallback);
 };
 
@@ -986,6 +993,22 @@ const getProducerListStatus = () => {
   return producerListStatus;
 };
 
+const getParsedTransactionHistory = () => {
+  return parsedTransactionHistory;
+};
+
+const getBlockchainState = () => {
+  return blockchainState;
+};
+
+const getBlockchainStatus = () => {
+  return blockchainStatus;
+};
+
+const getTransactionHistoryStatus = () => {
+  return transactionHistoryStatus;
+};
+
 exports.init = init;
 exports.trace = mainConsole.trace;
 exports.setAppClipboard = setAppClipboard;
@@ -1005,3 +1028,8 @@ exports.getELABalance = getELABalance;
 exports.getUSDBalance = getUSDBalance;
 exports.getParsedProducerList = getParsedProducerList;
 exports.getProducerListStatus = getProducerListStatus;
+exports.getParsedTransactionHistory = getParsedTransactionHistory;
+exports.getBlockchainState = getBlockchainState;
+exports.getConfirmations = getConfirmations;
+exports.getBlockchainStatus = getBlockchainStatus;
+exports.getTransactionHistoryStatus = getTransactionHistoryStatus;
