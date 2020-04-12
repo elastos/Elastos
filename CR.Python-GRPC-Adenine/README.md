@@ -99,10 +99,10 @@ Requires pytest version 5.3.5. Included as part of requirements.txt
 
 If pytest is not installed. Run the following command:
 ```
-$pip install pytest==5.3.5
+pip install pytest==5.3.5
 ```
 
 To run the pytest:
 ```
-$py.test test/py_test.py
+sh test.sh
 ```
