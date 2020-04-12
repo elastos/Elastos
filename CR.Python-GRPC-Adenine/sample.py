@@ -46,6 +46,7 @@ def main():
             print("grpc server is running")
     except Exception as e:
         print(e)
+        print("grpc server is not running properly")
         sys.exit(1)
 
     if service == "node_rpc_methods":

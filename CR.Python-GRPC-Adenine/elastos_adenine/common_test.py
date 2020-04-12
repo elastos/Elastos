@@ -4,6 +4,7 @@ from decouple import config
 import json
 import argparse
 
+from pytest_dependency import depends
 from elastos_adenine.stubs import health_check_pb2
 from elastos_adenine.health_check import HealthCheck
 from elastos_adenine.common import Common
@@ -19,6 +20,18 @@ did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
 api_key_to_use = ''
 private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
+@pytest.mark.dependency()
+def test_health_check():
+	# Health Check
+	try:
+		health_check = HealthCheck(host, port, production)
+		response = health_check.check()
+		assert response.status == health_check_pb2.HealthCheckResponse.SERVING, "grpc server is not running properly"
+	except Exception as e:
+		health_check_status = False
+		assert health_check_status == True, "grpc server is not running properly"
+
+@pytest.mark.dependency(depends=["test_health_check"])
 def test_generate_api_key():
 	# Generate API Key
 	global api_key_to_use
@@ -32,6 +45,7 @@ def test_generate_api_key():
 	assert response['status']==True, "In Generate Api Key-> "+response['status_message']
 	assert len(api_key_to_use) == 64,"Testing API Key length Failed"
 
+@pytest.mark.dependency(depends=["test_health_check"])
 def test_get_api_key():
 	# Get API Key
 	global api_key_to_use
