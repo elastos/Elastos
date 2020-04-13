@@ -215,7 +215,7 @@ const resetNodeUrl = () => {
 
 const changeNodeUrl = () => {
   restService = GuiUtils.getValue('nodeUrl');
-  showLogin();
+  renderApp();
 };
 
 const refreshBlockchainData = () => {
@@ -451,7 +451,7 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
 };
 
 const clearSendData = () => {
-  mainConsole.log('STARTED clearSendData');
+  // mainConsole.log('STARTED clearSendData');
   GuiUtils.setValue('sendAmount', '');
   GuiUtils.setValue('sendToAddress', '');
   GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
@@ -460,7 +460,7 @@ const clearSendData = () => {
   feeAmountEla = '';
   sendToAddressStatuses.length = 0;
   sendToAddressLinks.length = 0;
-  mainConsole.log('SUCCESS clearSendData');
+  // mainConsole.log('SUCCESS clearSendData');
 };
 
 const updateAmountAndFees = () => {
@@ -900,7 +900,7 @@ const copyToPrivateKeyClipboard = () => {
 };
 
 const clearGlobalData = () => {
-  mainConsole.log('STARTED clearGlobalData');
+  // mainConsole.log('STARTED clearGlobalData');
   GuiUtils.setValue('privateKey', '');
   GuiUtils.setValue('mnemonic', '');
   GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
@@ -929,7 +929,7 @@ const clearGlobalData = () => {
   unspentTransactionOutputsStatus = 'No UTXOs Requested Yet';
   parsedUnspentTransactionOutputs.length = 0;
   renderApp();
-  mainConsole.log('SUCCESS clearGlobalData');
+  // mainConsole.log('SUCCESS clearGlobalData');
 };
 
 const getLedgerDeviceInfo = () => {
@@ -1087,3 +1087,5 @@ exports.sendAmountToAddress = sendAmountToAddress;
 exports.getRestService = getRestService;
 exports.setRestService = setRestService;
 exports.getCurrentNetworkIx = getCurrentNetworkIx;
+exports.changeNodeUrl = changeNodeUrl;
+exports.resetNodeUrl = resetNodeUrl;
