@@ -1040,7 +1040,12 @@ const renderAppWrapper = () => {
   renderApp();
 };
 
+const getCurrentNetworkIx = () => {
+  return currentNetworkIx;
+}
+
 exports.DEFAULT_FEE_SATS = DEFAULT_FEE_SATS;
+exports.REST_SERVICES = REST_SERVICES;
 exports.init = init;
 exports.log = mainConsole.log;
 exports.trace = mainConsole.trace;
@@ -1079,3 +1084,6 @@ exports.setSendHasFocus = setSendHasFocus;
 exports.getSendStep = getSendStep;
 exports.setSendStep = setSendStep;
 exports.sendAmountToAddress = sendAmountToAddress;
+exports.getRestService = getRestService;
+exports.setRestService = setRestService;
+exports.getCurrentNetworkIx = getCurrentNetworkIx;

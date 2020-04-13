@@ -46,28 +46,14 @@ module.exports = (props) => {
         <tr>
           <td className="bordered w250px h30px ta_center va_top">
           </td>
-          <td className="bordered w250px h30px ta_center va_top">
-          </td>
-          <td className="bordered w250px h30px ta_right va_top">
-            <table className="w100pct margin_none">
-              <tbody>
-                <tr>
-                  <td>
-                    <Version/>
-                  </td>
-                  <td>
-                    <div className="bordered bgcolor_black_hover w25px" title="Refresh Blockchain Data"  onClick={(e) => App.refreshBlockchainData()}>
-                      <img src="artwork/refresh-ccw.svg" />
-                    </div>
-                  </td>
-                  <td>
-                    <div className="bordered bgcolor_black_hover w25px">
-                      <img src="artwork/code.svg"  title="Show Dev Tools" onClick={(e) => openDevTools()}/>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <td colSpan="2" className="bordered w500px h20px ta_right va_top">
+            <Version/>
+            <div className="h25px bordered display_inline_block bgcolor_black_hover" title="Refresh Blockchain Data"  onClick={(e) => App.refreshBlockchainData()}>
+              <img src="artwork/refresh-ccw.svg" />
+            </div>
+            <div className="h25px bordered display_inline_block bgcolor_black_hover">
+              <img src="artwork/code.svg"  title="Show Dev Tools" onClick={(e) => openDevTools()}/>
+            </div>
           </td>
         </tr>
         <tr>

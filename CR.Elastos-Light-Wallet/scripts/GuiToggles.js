@@ -23,7 +23,10 @@ const hideEverything = () => {
   hide('landing');
   hide('loginMnemonic');
   hide('loginPrivateKey');
-  hide('temp');
+  hide('homeMenu');
+  hide('homeMenuOpen');
+  hide('homeMenuClose');
+  hide('version');
 };
 
 const showLanding = () => {
@@ -50,6 +53,22 @@ const showHome = () => {
   hideEverything();
   app.clearSendData();
   show('home');
+  show('homeMenuOpen');
+  show('version');
+};
+
+const showHomeMenu = () => {
+  show('homeMenu');
+  hide('homeMenuOpen');
+  show('homeMenuClose');
+  hide('version');
+};
+
+const hideHomeMenu = () => {
+  hide('homeMenu');
+  show('homeMenuOpen');
+  hide('homeMenuClose');
+  show('version');
 };
 
 exports.init = init;
@@ -57,3 +76,5 @@ exports.showLanding = showLanding;
 exports.showLoginMnemonic = showLoginMnemonic;
 exports.showLoginPrivateKey = showLoginPrivateKey;
 exports.showHome = showHome;
+exports.showHomeMenu = showHomeMenu;
+exports.hideHomeMenu = hideHomeMenu;
