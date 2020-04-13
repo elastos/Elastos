@@ -61,6 +61,6 @@ don't forget testnet and mainnet config files are in github at: https://github.c
     elastos rss feed        
         https://news.elastos.org/feed/
 
-2. add Voting
+2. wire in the Voting page.
 3. add a fake transaction in the tx list for the 'sent' tx.
 4. add a green 'sent' banner.
