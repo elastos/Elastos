@@ -436,7 +436,9 @@ func (c *Committee) tryStartVotingPeriod(height uint32) (inElection bool) {
 		inElectionPeriod := c.InElectionPeriod
 		c.lastHistory.Append(height, func() {
 			c.InElectionPeriod = false
-			if !c.isInVotingPeriod(height) {
+			if c.LastVotingStartHeight == 0 {
+				c.LastVotingStartHeight = height
+			} else if !c.isInVotingPeriod(height) {
 				c.LastVotingStartHeight = height
 			}
 		}, func() {
