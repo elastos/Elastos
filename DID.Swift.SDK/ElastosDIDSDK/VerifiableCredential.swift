@@ -384,7 +384,7 @@ public class VerifiableCredential: DIDObject {
         return credential
     }
 
-    class func fromJson(_ json: Data) throws -> VerifiableCredential {
+   public class func fromJson(_ json: Data) throws -> VerifiableCredential {
         guard !json.isEmpty else {
             throw DIDError.illegalArgument()
         }
@@ -399,7 +399,7 @@ public class VerifiableCredential: DIDObject {
         return try fromJson(JsonNode(data), nil)
     }
 
-    class func fromJson(_ json: String) throws -> VerifiableCredential {
+    public class func fromJson(_ json: String) throws -> VerifiableCredential {
         return try fromJson(json.data(using: .utf8)!)
     }
 

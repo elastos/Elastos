@@ -133,7 +133,7 @@ public class DIDBackend {
         self._adapter = adapter
     }
 
-    class func initializeInstance(_ resolverURL: String, _ cacheDir: String) throws {
+    public class func initializeInstance(_ resolverURL: String, _ cacheDir: String) throws {
         guard !resolverURL.isEmpty, !cacheDir.isEmpty else {
             throw DIDError.illegalArgument()
         }
@@ -141,7 +141,7 @@ public class DIDBackend {
         try initializeInstance(DefaultResolver(resolverURL), cacheDir)
     }
 
-    class func initializeInstance(_ resolverURL: String, _ cacheDir: URL) throws {
+    public class func initializeInstance(_ resolverURL: String, _ cacheDir: URL) throws {
         guard !resolverURL.isEmpty, !cacheDir.isFileURL else {
             throw DIDError.illegalArgument()
         }
@@ -149,7 +149,7 @@ public class DIDBackend {
         try initializeInstance(DefaultResolver(resolverURL), cacheDir)
     }
 
-    class func initializeInstance(_ resolver: DIDResolver, _ cacheDir: String) throws {
+    public class func initializeInstance(_ resolver: DIDResolver, _ cacheDir: String) throws {
         guard !cacheDir.isEmpty else {
             throw DIDError.illegalArgument()
         }
@@ -162,7 +162,7 @@ public class DIDBackend {
         }
     }
 
-    class func initializeInstance(_ resolver: DIDResolver, _ cacheDir: URL) throws {
+    public class func initializeInstance(_ resolver: DIDResolver, _ cacheDir: URL) throws {
         guard !cacheDir.isFileURL else {
             throw DIDError.illegalArgument()
         }
@@ -175,7 +175,7 @@ public class DIDBackend {
         }
     }
 
-    class func getInstance(_ adapter: DIDAdapter) -> DIDBackend {
+    public class func getInstance(_ adapter: DIDAdapter) -> DIDBackend {
         return DIDBackend(adapter)
     }
 
@@ -292,7 +292,7 @@ public class DIDBackend {
         }
     }
 
-    public class func resolve(_ did: DID) throws -> DIDDocument? {
+    class func resolve(_ did: DID) throws -> DIDDocument? {
         return try resolve(did, false)
     }
 
