@@ -8,14 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		11267029238CC7120086740D /* SPVWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 11267027238CC7120086740D /* SPVWrapper.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1126705A238CCB4C0086740D /* CSPVWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11267059238CCB4C0086740D /* CSPVWrapper.swift */; };
 		1126705C238CCBEE0086740D /* SPV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1126705B238CCBEE0086740D /* SPV.swift */; };
 		11267060238CCC930086740D /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705F238CCC890086740D /* libc++.1.tbd */; };
 		11267061238CCC930086740D /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705D238CCC890086740D /* libc++.tbd */; };
 		11267062238CCC930086740D /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705E238CCC890086740D /* libc++abi.tbd */; };
 		11267064238CCCA60086740D /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267063238CCC9C0086740D /* libz.tbd */; };
+		115A373424404D8F005549CC /* CSPVWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115A373224404D8F005549CC /* CSPVWrapper.swift */; };
+		115A373524404D8F005549CC /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 115A373324404D8F005549CC /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		11601C9D2393712F008E407C /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11601C9C2393712F008E407C /* ExtensionInt.swift */; };
-		11641BBD23B729490037016B /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 11641BBC23B729480037016B /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1170A7E6242DC1B7009904B7 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC92396AC0000AE3B42 /* libboost_filesystem.a */; };
 		1170A7E7242DC1B7009904B7 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC02396AC0000AE3B42 /* libboost_system.a */; };
 		1170A7E8242DC1B7009904B7 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC42396AC0000AE3B42 /* libboost_thread.a */; };
@@ -68,7 +68,6 @@
 		11267046238CCAA80086740D /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = SPVWrapper/lib/libcjson.a; sourceTree = "<group>"; };
 		11267047238CCAA80086740D /* libcurl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl.a; path = SPVWrapper/lib/libcurl.a; sourceTree = "<group>"; };
 		11267048238CCAA80086740D /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = SPVWrapper/lib/libsqlite3.a; sourceTree = "<group>"; };
-		11267059238CCB4C0086740D /* CSPVWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSPVWrapper.swift; sourceTree = "<group>"; };
 		1126705B238CCBEE0086740D /* SPV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SPV.swift; sourceTree = "<group>"; };
 		1126705D238CCC890086740D /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
 		1126705E238CCC890086740D /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++abi.tbd"; sourceTree = DEVELOPER_DIR; };
@@ -89,8 +88,9 @@
 		1139AF302394B20700C609B1 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = "SPVWrapper/lib/-iphoneosimulator/libboost_thread.a"; sourceTree = "<group>"; };
 		1139AF312394B20700C609B1 /* libspvadapter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvadapter.a; path = "SPVWrapper/lib/-iphoneosimulator/libspvadapter.a"; sourceTree = "<group>"; };
 		1139AF322394B20700C609B1 /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = "SPVWrapper/lib/-iphoneosimulator/libspvsdk.a"; sourceTree = "<group>"; };
+		115A373224404D8F005549CC /* CSPVWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSPVWrapper.swift; sourceTree = "<group>"; };
+		115A373324404D8F005549CC /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spvadapter.h; sourceTree = "<group>"; };
 		11601C9C2393712F008E407C /* ExtensionInt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtensionInt.swift; sourceTree = "<group>"; };
-		11641BBC23B729480037016B /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spvadapter.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,22 +143,13 @@
 		11267026238CC7120086740D /* SPVWrapper */ = {
 			isa = PBXGroup;
 			children = (
-				1126702F238CCA930086740D /* header */,
+				115A373124404D8F005549CC /* include */,
 				11601C9C2393712F008E407C /* ExtensionInt.swift */,
 				1126705B238CCBEE0086740D /* SPV.swift */,
 				11267027238CC7120086740D /* SPVWrapper.h */,
 				11267028238CC7120086740D /* Info.plist */,
 			);
 			path = SPVWrapper;
-			sourceTree = "<group>";
-		};
-		1126702F238CCA930086740D /* header */ = {
-			isa = PBXGroup;
-			children = (
-				11641BBC23B729480037016B /* spvadapter.h */,
-				11267059238CCB4C0086740D /* CSPVWrapper.swift */,
-			);
-			path = header;
 			sourceTree = "<group>";
 		};
 		11267038238CCAA70086740D /* Frameworks */ = {
@@ -218,6 +209,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		115A373124404D8F005549CC /* include */ = {
+			isa = PBXGroup;
+			children = (
+				115A373224404D8F005549CC /* CSPVWrapper.swift */,
+				115A373324404D8F005549CC /* spvadapter.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -225,7 +225,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11641BBD23B729490037016B /* spvadapter.h in Headers */,
+				115A373524404D8F005549CC /* spvadapter.h in Headers */,
 				11267029238CC7120086740D /* SPVWrapper.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -299,8 +299,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				1126705C238CCBEE0086740D /* SPV.swift in Sources */,
-				1126705A238CCB4C0086740D /* CSPVWrapper.swift in Sources */,
 				11601C9D2393712F008E407C /* ExtensionInt.swift in Sources */,
+				115A373424404D8F005549CC /* CSPVWrapper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
