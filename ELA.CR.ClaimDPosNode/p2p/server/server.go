@@ -281,12 +281,12 @@ func (sp *serverPeer) OnAddr(_ *peer.Peer, msg *msg.Addr) {
 		return
 	}
 
-	for _, na := range msg.AddrList {
-		// Don't add more address if we're disconnecting.
-		if !sp.Connected() {
-			return
-		}
+	// Don't add more address if we're disconnecting.
+	if !sp.Connected() {
+		return
+	}
 
+	for _, na := range msg.AddrList {
 		// Set the timestamp to 5 days ago if it's more than 24 hours
 		// in the future so this address is one of the first to be
 		// removed when space is needed.
