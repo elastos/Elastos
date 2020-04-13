@@ -43,9 +43,11 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.did.adapter.ImportCredencialRecAdapetr;
 import org.elastos.wallet.ela.ui.did.presenter.CredencialPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VertifyPwdActivity;
+import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.FileChooseUtil;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -173,13 +175,19 @@ public class ImportCredencialFragment extends BaseFragment implements NewBaseVie
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "readFile":
-                CommmonStringEntity entity = (CommmonStringEntity) baseEntity;
-                credentialJson = entity.getData();
-                //输入密码
-                Intent intent = new Intent(getActivity(), VertifyPwdActivity.class);
-                intent.putExtra("walletId", wallet.getWalletId());
-                intent.putExtra("type", this.getClass().getSimpleName());
-                startActivity(intent);
+                new DialogUtil().showWarmPrompt1(getBaseActivity(), getString(R.string.covercredencial), new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        CommmonStringEntity entity = (CommmonStringEntity) baseEntity;
+                        credentialJson = entity.getData();
+                        //输入密码
+                        Intent intent = new Intent(getActivity(), VertifyPwdActivity.class);
+                        intent.putExtra("walletId", wallet.getWalletId());
+                        intent.putExtra("type", this.getClass().getSimpleName());
+                        startActivity(intent);
+                    }
+                });
+
                 break;
         }
     }

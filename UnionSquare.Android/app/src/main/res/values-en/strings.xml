@@ -631,5 +631,5 @@
     <string name="serviceprovider">Service provider</string>
     <string name="sure1">sure</string>
     <string name="copyscanresult">Copy Content</string>
-    <string name="covercredencial">是否覆盖当前凭证信息？</string>
+    <string name="covercredencial">Overwrite current credential?</string>
 </resources>
