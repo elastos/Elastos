@@ -61,6 +61,6 @@ don't forget testnet and mainnet config files are in github at: https://github.c
     elastos rss feed        
         https://news.elastos.org/feed/
 
-2. add price feed
-    price feed
-        https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd
+2. add Voting
+3. add a fake transaction in the tx list for the 'sent' tx.
+4. add a green 'sent' banner.
