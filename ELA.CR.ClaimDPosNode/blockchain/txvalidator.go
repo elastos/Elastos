@@ -689,6 +689,12 @@ func checkOutputProgramHash(height uint32, programHash common.Uint168) error {
 		if programHash.IsEqual(empty) {
 			return nil
 		}
+		if programHash.IsEqual(config.CRCAssetsAddress) {
+			return nil
+		}
+		if programHash.IsEqual(config.CRCExpensesAddress) {
+			return nil
+		}
 
 		prefix := contract.PrefixType(programHash[0])
 		switch prefix {

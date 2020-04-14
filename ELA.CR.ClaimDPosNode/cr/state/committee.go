@@ -407,6 +407,9 @@ func (c *Committee) freshCirculationAmount(history *utils.History,
 }
 
 func (c *Committee) recordLastVotingStartHeight(height uint32) {
+	if c.isInVotingPeriod(height) {
+		return
+	}
 	// Update last voting start height one block ahead.
 	if height == c.LastCommitteeHeight+c.params.CRDutyPeriod-
 		c.params.CRVotingPeriod-1 {
