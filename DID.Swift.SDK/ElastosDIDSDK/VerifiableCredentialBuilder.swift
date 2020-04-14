@@ -45,7 +45,7 @@ public class VerifiableCredentialBuilder {
         return self
     }
     
-    func withTypes(_ types: Array<String>) throws -> VerifiableCredentialBuilder {
+    public func withTypes(_ types: Array<String>) throws -> VerifiableCredentialBuilder {
          guard let _ = credential else {
              throw DIDError.invalidState(Errors.CREDENTIAL_ALREADY_SEALED)
          }

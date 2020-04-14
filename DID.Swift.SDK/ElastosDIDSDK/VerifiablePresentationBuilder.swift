@@ -18,6 +18,12 @@ public class VerifiablePresentationBuilder {
     public func withCredentials(_ credentials: VerifiableCredential...) throws
         -> VerifiablePresentationBuilder {
 
+        return try withCredentials(credentials)
+    }
+
+    public func withCredentials(_ credentials: Array<VerifiableCredential>) throws
+        -> VerifiablePresentationBuilder {
+
         guard let _ = presentation else {
             throw DIDError.invalidState(Errors.PRESENTATION_ALREADY_SEALED)
         }

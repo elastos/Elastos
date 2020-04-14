@@ -16,7 +16,7 @@ public class ResolverCache {
     }
 
     public class func setCacheDir(_ url: URL) throws {
-        // TODO:
+        try setCacheDir(url.absoluteString)
     }
     
     private class func getCacheDir() throws -> String {

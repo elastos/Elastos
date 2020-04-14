@@ -2045,10 +2045,12 @@ public class DIDStore: NSObject {
         handle.write(exportStr.data(using: .utf8)!)
     }
 
-    public func exportPrivateIdentity(to data: Data,
-                                   _ password: String,
-                              _ storePassword: String) throws {
-        // TODO: not implement
+    public func exportPrivateIdentity(_ password: String,
+                                      _ storePassword: String) throws -> Data {
+        let generator = JsonGenerator()
+        try exportPrivateIdentity(generator, password, storePassword)
+        let exportStr = generator.toString()
+        return exportStr.data(using: .utf8)!
     }
     
     private func importPrivateIdentity(_ root: JsonNode,

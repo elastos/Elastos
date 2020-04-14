@@ -1044,18 +1044,28 @@ public class DIDDocument {
     }
 
     public func convertFromDIDDocument(_ normalized: Bool, asFileAtPath: String) throws {
-        // TODO:
+        return try convertFromDIDDocument(normalized, asURL: URL.init(fileURLWithPath: asFileAtPath))
     }
 
     public func convertFromDIDDocument(asFileAtPath: String) throws {
         return try convertFromDIDDocument(false, asFileAtPath: asFileAtPath)
     }
 
-    public func convertFromDIDDocument(_ normalized: Bool, asURL: String) throws {
-        // TODO
+    public func convertFromDIDDocument(_ normalized: Bool, asURL: URL) throws {
+        let data: Data = try convertFromDIDDocument(normalized)
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: asURL.absoluteString) {
+            let dirPath = PathExtracter(asURL.absoluteString).dirname()
+            if !FileManager.default.fileExists(atPath: dirPath) {
+                try fileManager.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
+            }
+            fileManager.createFile(atPath: asURL.absoluteString, contents: nil, attributes: nil)
+        }
+        let handle = try FileHandle(forWritingTo: asURL)
+        handle.write(data)
     }
 
-    public func convertFromDIDDocument(asURL: String) throws {
+    public func convertFromDIDDocument(asURL: URL) throws {
         return try convertFromDIDDocument(false, asURL: asURL)
     }
 }

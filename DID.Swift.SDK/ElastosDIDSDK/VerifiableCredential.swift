@@ -403,6 +403,10 @@ public class VerifiableCredential: DIDObject {
         return try fromJson(json.data(using: .utf8)!)
     }
 
+    public class func fromJson(_ json: [String: Any]) throws -> VerifiableCredential {
+        return try fromJson(JsonNode(json), nil)
+    }
+
     func toJson(_ generator: JsonGenerator, _ ref: DID?, _ normalized: Bool) {
         toJson(generator, ref, normalized, false)
     }
