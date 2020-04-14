@@ -105,7 +105,9 @@ let parsedProducerList = {
 
 let candidateVoteListStatus = 'No Candidate Votes Requested Yet';
 
-let parsedCandidateVoteList = {};
+let parsedCandidateVoteList = {
+  candidateVotes: [],
+};
 
 let unspentTransactionOutputsStatus = 'No UTXOs Requested Yet';
 
@@ -124,7 +126,6 @@ let GuiToggles;
 /** functions */
 const init = (_GuiToggles) => {
   sendToAddressStatuses.push('No Send-To Transaction Requested Yet');
-  parsedCandidateVoteList.candidateVotes = [];
 
   GuiToggles = _GuiToggles;
 
@@ -1042,7 +1043,15 @@ const renderAppWrapper = () => {
 
 const getCurrentNetworkIx = () => {
   return currentNetworkIx;
-}
+};
+
+const getCandidateVoteListStatus = () => {
+  return candidateVoteListStatus;
+};
+
+const getParsedCandidateVoteList = () => {
+  return parsedCandidateVoteList;
+};
 
 exports.DEFAULT_FEE_SATS = DEFAULT_FEE_SATS;
 exports.REST_SERVICES = REST_SERVICES;
@@ -1089,3 +1098,7 @@ exports.setRestService = setRestService;
 exports.getCurrentNetworkIx = getCurrentNetworkIx;
 exports.changeNodeUrl = changeNodeUrl;
 exports.resetNodeUrl = resetNodeUrl;
+exports.getCandidateVoteListStatus = getCandidateVoteListStatus;
+exports.getParsedCandidateVoteList = getParsedCandidateVoteList;
+exports.toggleProducerSelection = toggleProducerSelection;
+exports.sendVoteTx = sendVoteTx;

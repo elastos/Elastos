@@ -27,6 +27,7 @@ const hideEverything = () => {
   hide('homeMenuOpen');
   hide('homeMenuClose');
   hide('version');
+  hide('voting');
 };
 
 const showLanding = () => {
@@ -71,6 +72,12 @@ const hideHomeMenu = () => {
   show('version');
 };
 
+const showVoting = () => {
+  hideEverything();
+  app.clearSendData();
+  show('voting');
+};
+
 exports.init = init;
 exports.showLanding = showLanding;
 exports.showLoginMnemonic = showLoginMnemonic;
@@ -78,3 +85,4 @@ exports.showLoginPrivateKey = showLoginPrivateKey;
 exports.showHome = showHome;
 exports.showHomeMenu = showHomeMenu;
 exports.hideHomeMenu = hideHomeMenu;
+exports.showVoting = showVoting;

@@ -14,6 +14,7 @@ const Home = require('./home.jsx');
 const Landing = require('./landing.jsx');
 const LoginMnemonic = require('./login-mnemonic.jsx');
 const LoginPrivateKey = require('./login-private-key.jsx');
+const Voting = require('./voting.jsx');
 
 /** modules */
 const App = require('../scripts/App.js');
@@ -47,6 +48,7 @@ class AppView extends React.Component {
       <Landing App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <LoginMnemonic App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <LoginPrivateKey App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
+      <Voting App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
     </div>)
   }
 }

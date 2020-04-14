@@ -1,6 +1,16 @@
 const React = require('react');
 
-const Menu = require('./menu.jsx');
+const Menu = require('./partial/menu.jsx');
+
+const Branding = require('./partial/branding.jsx');
+
+const Balance = require('./partial/balance.jsx');
+
+const News = require('./partial/news.jsx');
+
+const Staking = require('./partial/staking.jsx');
+
+const SocialMedia = require('./partial/social-media.jsx');
 
 module.exports = (props) => {
   const App = props.App;
@@ -152,27 +162,8 @@ module.exports = (props) => {
         </tr>
         <tr>
           <td className="bordered w250px h200px ta_center va_top">
-            <div id="branding" className="bordered w250px h90px bgcolor_black_hover">
-              Branding
-            </div>
-            <div id="balance" className="bordered w250px h90px bgcolor_black_hover position_relative">
-              <table>
-                <tbody>
-                  <tr>
-                    <td className="w50px">
-                      <a className="rotate_n90 exit_link" target="_blank" href="https://api.coingecko.com/api/v3/simple/price?ids=elastos&vs_currencies=usd">Balance</a>
-                    </td>
-                    <td className="w100px ta_left">
-                      <span className="font_size24">USD&nbsp;</span>
-                      <span className="font_size24">{App.getUSDBalance()}</span>
-                      <br />
-                      <span className="color_orange">{App.getELABalance()}</span>
-                      <span className="color_orange">&nbsp;ELA</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <Branding/>
+            <Balance App={App}/>
           </td>
           <td className="bordered w200px h200px ta_center va_top font_size12">
             <SendScreen />
@@ -201,57 +192,9 @@ module.exports = (props) => {
         </tr>
         <tr>
           <td className="bordered w250px h200px ta_center va_top">
-            <div id="staking" className="bordered w250px h110px bgcolor_black_hover position_relative">
-              <table>
-                <tbody>
-                  <tr>
-                    <td className="w50px">
-                      <div className="rotate_n90">Staking</div>
-                    </td>
-                    <td className="w150px ta_left">
-                      <span className="font_size12">{App.getProducerListStatus()}</span>
-                      <br/>
-                      <span className="font_size12">{App.getParsedProducerList().totalvotes}</span>
-                      <span className="font_size12">&nbsp;Votes</span>
-                      <br/>
-                      <span className="font_size12">{App.getParsedProducerList().totalcounts}</span>
-                      <span className="font_size12">&nbsp;Counts</span>
-                      <br/>
-                      <span className="font_size12">{App.getParsedProducerList().producersCandidateCount}</span>
-                      <span className="font_size12">&nbsp;Selected Candidates</span>
-                      <br/>
-                      <span className="font_size12">{App.getParsedProducerList().producers.length}</span>
-                      <span className="font_size12">&nbsp;Candidates Total</span>
-                      <div className="font_size24">Vote Now</div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div id="news" className="bordered w250px h110px bgcolor_black_hover">
-              <a className="exit_link" target="_blank" href="https://news.elastos.org/feed/">News</a>
-            </div>
-            <div className="bordered w250px h50px">
-              <table className="w100pct">
-                <tbody>
-                  <tr>
-                    <td id="facebook" className="w50px h50px ta_center va_bottom bgcolor_black_hover">
-                      <a className="exit_link" target="_blank" href="https://www.facebook.com/elastosorg/"><img src="artwork/facebook.svg" /></a>
-                    </td>
-                    <td id="twitter" className="w50px h50px ta_center va_bottom bgcolor_black_hover">
-                      <a className="exit_link" target="_blank" href="https://twitter.com/Elastos_org"><img src="artwork/twitter.svg" /></a>
-                    </td>
-                    <td id="logout" className="w100px h50px ta_center va_bottom bgcolor_black_hover">
-
-                    <span className="bgcolor_black_hover">
-                      <img src="artwork/log-out.svg"  title="Logout" onClick={(e) =>
-                    GuiToggles.showLanding()}/>
-                    </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <Staking App={App} GuiToggles={GuiToggles}/>
+            <News/>
+            <SocialMedia GuiToggles={GuiToggles}/>
           </td>
           <td colSpan="2" className="bordered w400px h200px ta_center va_top">
             <div id="transactions" className="bordered w500px h300px bgcolor_black_hover font_size12">
