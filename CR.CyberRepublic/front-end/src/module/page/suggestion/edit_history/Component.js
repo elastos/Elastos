@@ -35,7 +35,11 @@ export default class extends DetailPage {
     const diffObj = Object.assign(new obj1.constructor(), obj1)
     let f
     let str
-    for (const k in obj1) {
+    let myobj = obj1
+    if (obj2.length > obj1.length) {
+      myobj = obj2
+    }
+    for (const k in myobj) {
       if (obj1.hasOwnProperty(k) && obj2.hasOwnProperty(k)) {
         if ((typeof obj1[k]) === (typeof obj2[k])) {
           if (typeof obj1[k] === 'object') {
@@ -47,6 +51,7 @@ export default class extends DetailPage {
             }
           } else if (typeof obj1[k] === 'string') {
             if (k === '_id'
+                || k === 'title'
                 || k === 'createdAt'
                 || k === 'updatedAt'
                 || k === 'elaAddress'
