@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -16,6 +16,7 @@ import (
 )
 
 type PopBackEvent func(common.Uint256)
+type AppendToTxPoolEvent func(tx *types.Transaction) errors.ELAError
 
 var (
 	addingTxExcluded = errors.SimpleWithMessage(errors.ErrTxPoolFailure,

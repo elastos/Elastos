@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -35,6 +35,7 @@ type txPoolCheckpoint struct {
 
 	height              uint32
 	initConflictManager func(map[common.Uint256]*types.Transaction)
+	appendToTxPoolEvent AppendToTxPoolEvent
 	popBackEvent        PopBackEvent
 }
 
@@ -55,7 +56,7 @@ func (c *txPoolCheckpoint) Snapshot() checkpoint.ICheckPoint {
 		c.LogError(err)
 		return nil
 	}
-	result := newTxPoolCheckpoint(c.popBackEvent, c.initConflictManager)
+	result := newTxPoolCheckpoint(c.popBackEvent, c.initConflictManager, c.appendToTxPoolEvent)
 	if err := result.Deserialize(&buf); err != nil {
 		c.LogError(err)
 		return nil
@@ -88,7 +89,7 @@ func (c *txPoolCheckpoint) Generator() func(buf []byte) checkpoint.ICheckPoint {
 		stream := bytes.Buffer{}
 		stream.Write(buf)
 
-		result := newTxPoolCheckpoint(c.popBackEvent, c.initConflictManager)
+		result := newTxPoolCheckpoint(c.popBackEvent, c.initConflictManager, c.appendToTxPoolEvent)
 		if err := result.Deserialize(&stream); err != nil {
 			c.LogError(err)
 			return nil
@@ -149,7 +150,7 @@ func (c *txPoolCheckpoint) Deserialize(r io.Reader) (err error) {
 		if err = tx.Deserialize(r); err != nil {
 			return
 		}
-		c.txnList[hash] = tx
+		c.appendToTxPoolEvent(tx)
 	}
 
 	c.txFees = newTxFeeOrderedList(c.popBackEvent, pact.MaxTxPoolSize)
@@ -157,12 +158,13 @@ func (c *txPoolCheckpoint) Deserialize(r io.Reader) (err error) {
 }
 
 func newTxPoolCheckpoint(event PopBackEvent, initConflictManager func(
-	map[common.Uint256]*types.Transaction)) *txPoolCheckpoint {
+	map[common.Uint256]*types.Transaction), appendToTxPoolEvent AppendToTxPoolEvent) *txPoolCheckpoint {
 	return &txPoolCheckpoint{
 		txnList:             map[common.Uint256]*types.Transaction{},
 		txFees:              newTxFeeOrderedList(event, pact.MaxTxPoolSize),
 		height:              0,
 		initConflictManager: initConflictManager,
 		popBackEvent:        event,
+		appendToTxPoolEvent: appendToTxPoolEvent,
 	}
 }

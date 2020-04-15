@@ -447,7 +447,7 @@ func NewTxPool(params *config.Params) *TxPool {
 					return
 				}
 			}
-		})
+		}, rtn.appendToTxPool)
 	params.CkpManager.Register(rtn.txPoolCheckpoint)
 	return rtn
 }
