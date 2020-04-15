@@ -443,7 +443,7 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 
 	// 3. Run cleanSidechainTx
 	for _, txn := range txns {
-		assert.NoError(t, txPool.RemoveTx(txn))
+		assert.NoError(t, txPool.removeTx(txn))
 	}
 
 	// Verify sidechian tx pool state

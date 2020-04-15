@@ -630,7 +630,7 @@ func verifyTxListWithConflictManager(txs []*types.Transaction,
 			assert.True(t, manager.VerifyTx(candidate) != nil)
 		}
 
-		assert.NoError(t, manager.RemoveTx(addedTx))
+		assert.NoError(t, manager.removeTx(addedTx))
 		assert.True(t, manager.Empty())
 		for _, candidate := range txs {
 			assert.NoError(t, manager.VerifyTx(candidate))
