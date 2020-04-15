@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -93,7 +93,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 
 	// Add the transaction to mem pool
 	if err := mp.doAddTransaction(tx); err != nil {
-		mp.RemoveTx(tx)
+		mp.removeTx(tx)
 		return err
 	}
 
@@ -180,7 +180,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 			}
 		}
 
-		if err := mp.RemoveTx(blockTx); err != nil {
+		if err := mp.removeTx(blockTx); err != nil {
 			log.Warnf("remove tx %s when delete", blockTx.Hash())
 		}
 	}
@@ -394,9 +394,9 @@ func (mp *TxPool) RemoveTransaction(txn *Transaction) {
 			},
 		}
 
-		txn := mp.getInputUTXOList(&input)
-		if txn != nil {
-			mp.removeTransaction(txn)
+		tx := mp.getInputUTXOList(&input)
+		if tx != nil {
+			mp.removeTransaction(tx)
 		}
 	}
 	mp.Unlock()
@@ -418,6 +418,7 @@ func (mp *TxPool) doRemoveTransaction(tx *Transaction) {
 	if _, exist := mp.txnList[hash]; exist {
 		delete(mp.txnList, hash)
 		mp.txFees.RemoveTx(hash, uint64(txSize), feeRate)
+		mp.removeTx(tx)
 	}
 }
 
@@ -427,7 +428,7 @@ func (mp *TxPool) onPopBack(hash Uint256) {
 		log.Warnf("cannot find tx %s when try to delete", hash)
 		return
 	}
-	if err := mp.RemoveTx(tx); err != nil {
+	if err := mp.removeTx(tx); err != nil {
 		log.Warnf(err.Error())
 		return
 	}

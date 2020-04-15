@@ -60,7 +60,7 @@ func (m *conflictManager) AppendTx(tx *types.Transaction) errors.ELAError {
 	return nil
 }
 
-func (m *conflictManager) RemoveTx(tx *types.Transaction) errors.ELAError {
+func (m *conflictManager) removeTx(tx *types.Transaction) errors.ELAError {
 	for _, v := range m.conflictSlots {
 		if err := v.slot.RemoveTx(tx); err != nil {
 			return errors.SimpleWithMessage(errors.ErrTxPoolFailure, err,
