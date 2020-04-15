@@ -2265,7 +2265,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj := new(CRCProposalTrackingInfo)
 		obj.ProposalTrackingType = object.ProposalTrackingType.Name()
 		obj.ProposalHash = object.ProposalHash.String()
-		obj.DocumentHash = object.ProposalHash.String()
+		obj.DocumentHash = object.DocumentHash.String()
 		obj.Stage = object.Stage
 		obj.LeaderPubKey = common.BytesToHexString(object.LeaderPubKey)
 		obj.NewLeaderPubKey = common.BytesToHexString(object.NewLeaderPubKey)
@@ -2273,6 +2273,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.NewLeaderPubKey = common.BytesToHexString(object.NewLeaderPubKey)
 		obj.SecretaryOpinionHash = object.SecretaryOpinionHash.String()
 		obj.SecretaryGeneralSign = common.BytesToHexString(object.SecretaryGeneralSign)
+		obj.NewLeaderSign = common.BytesToHexString(object.NewLeaderSign)
 		return obj
 	case *payload.CRCProposalWithdraw:
 		obj := new(CRCProposalWithdrawInfo)
