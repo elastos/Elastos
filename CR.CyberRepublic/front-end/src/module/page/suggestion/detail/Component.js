@@ -42,6 +42,7 @@ import PopoverProfile from '@/module/common/PopoverProfile'
 import PaymentList from '@/module/form/SuggestionForm/PaymentList'
 import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
 import Milestones from '@/module/form/SuggestionForm/Milestones'
+import MilestonesReadonly from '@/module/form/SuggestionForm/MilestonesReadonly'
 import {
   Container,
   Title,
@@ -278,10 +279,17 @@ export default class extends StandardPage {
                   {I18N.get('suggestion.fields.plan')}
                 </DescLabel>
                 <Subtitle>{I18N.get('suggestion.plan.milestones')}</Subtitle>
-                <Milestones
-                  initialValue={detail.plan.milestone}
-                  editable={false}
-                />
+                {typeof this.state.version !== 'number' ? (
+                  <Milestones
+                   initialValue={detail.plan.milestone}
+                   editable={false}
+                 />
+                ) : (
+                  <MilestonesReadonly
+                   initialValue={detail.plan.milestone}
+                   editable={false}
+                 />
+                )}
                 <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
                 <TeamInfoList list={detail.plan.teamInfo} editable={false} />
               </div>

@@ -39,7 +39,12 @@ export default class extends DetailPage {
       if (obj1.hasOwnProperty(k) && obj2.hasOwnProperty(k)) {
         if ((typeof obj1[k]) === (typeof obj2[k])) {
           if (typeof obj1[k] === 'object') {
-            diffObj[k] = this.diffObject(obj1[k], obj2[k])
+            if (k === 'milestone'
+            ) {
+              diffObj[k] = obj2[k]
+            } else {
+              diffObj[k] = this.diffObject(obj1[k], obj2[k])
+            }
           } else if (typeof obj1[k] === 'string') {
             if (k === '_id'
                 || k === 'createdAt'
@@ -50,6 +55,15 @@ export default class extends DetailPage {
                 || k === 'contentType'
                 || k === 'milestoneKey'
                 || k === 'date'
+                || k === 'member'
+                || k === 'role'
+                || k === 'reference'
+                || k === 'comments'
+                || k === 'dislikes'
+                || k === 'likes'
+                || k === 'link'
+                || k === 'subscribers'
+                || k === 'tags'
             ) {
               diffObj[k] = obj2[k]
             } else {
