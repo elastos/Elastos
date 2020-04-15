@@ -26,9 +26,9 @@ class Common(common_pb2_grpc.CommonServicer):
         secret_key = config('SHARED_SECRET_ADENINE')
         try:
             jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
-        except:
+        except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"{secret_key} : {status_message}")
+            logging.debug(f"GenerateAPIRequest : {secret_key} : {status_message} : {e}")
             return common_pb2.Response(output='', status_message=status_message, status=False)
 
         string_length = 64
@@ -101,9 +101,9 @@ class Common(common_pb2_grpc.CommonServicer):
         secret_key = config('SHARED_SECRET_ADENINE')
         try:
             jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
-        except:
+        except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"{secret_key} : {status_message}")
+            logging.debug(f"GetAPIKey : {secret_key} : {status_message} : {e}")
             return common_pb2.Response(output='', status_message=status_message, status=False)
 
         secret_key = config('SHARED_SECRET_ADENINE')

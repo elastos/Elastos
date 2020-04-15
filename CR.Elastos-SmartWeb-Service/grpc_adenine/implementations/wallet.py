@@ -39,9 +39,9 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
 
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
-        except:
+        except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"{did} : {api_key} : {status_message}")
+            logging.debug(f"CreateWallet : {did} : {api_key} : {status_message} : {e}")
             return wallet_pb2.Response(output='', status_message=status_message, status=False)
 
         if type(jwt_info) == str:
@@ -134,9 +134,9 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
 
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
-        except:
+        except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"{did} : {api_key} : {status_message}")
+            logging.debug(f"ViewWallet : {did} : {api_key} : {status_message} : {e}")
             return wallet_pb2.Response(output='', status_message=status_message, status=False)
 
         if type(jwt_info) == str:
@@ -169,9 +169,9 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                 balance = view_wallet_eth(network, address)
             else:
                 balance = view_wallet_general(self.session, network, chain, address)
-        except:
+        except Exception as e:
             status_message = 'Error in retrieving the balance'
-            logging.debug(f"{did} : {api_key} : {status_message}")
+            logging.debug(f"ViewWallet : {did} : {api_key} : {status_message} : {e}")
             return wallet_pb2.Response(output='', status_message=status_message, status=False)
 
         # generate jwt token
@@ -197,9 +197,9 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
 
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
-        except:
+        except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"{did} : {api_key} : {status_message}")
+            logging.debug(f"RequestELA : {did} : {api_key} : {status_message} : {e}")
             return wallet_pb2.Response(output='', status_message=status_message, status=False)
 
         # Validate the API Key
@@ -333,7 +333,7 @@ def create_wallet_sidechain_eth(network):
 def view_wallet_general(session, network, chain, address):
     if chain == "mainchain":
         if network == "mainnet":
-            get_balance_url = config('MAINNET_MAINCHAIN_RPC_PORT')
+            get_balance_url = config('MAIN_NET_MAINCHAIN_RPC_PORT')
         else:
             get_balance_url = config('PRIVATE_NET_MAINCHAIN_RPC_PORT')
         d = {

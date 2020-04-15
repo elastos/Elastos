@@ -36,9 +36,9 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
 
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
-        except:
+        except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"{did} : {api_key} : {status_message}")
+            logging.debug(f"DeployEthContract : {did} : {api_key} : {status_message} : {e}")
             return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
         if type(jwt_info) == str:
@@ -136,9 +136,9 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
 
             # Wait for the transaction to be mined, and get the transaction receipt
             tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
-        except:
+        except Exception as e:
             status_message = 'Error Occurred while deploying the Ethereum Contract'
-            logging.debug(f"{did} : {api_key} : {status_message}")
+            logging.debug(f"DeployEthContract : {did} : {api_key} : {status_message} : {e}")
             return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
         # generate jwt token
@@ -165,9 +165,9 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
 
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
-        except:
+        except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"{did} : {api_key} : {status_message}")
+            logging.debug(f"WatchEthContract : {did} : {api_key} : {status_message} : {e}")
             return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
         if type(jwt_info) == str:
@@ -242,9 +242,9 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             for function in functions:
                 contract_function = repr(function)[1:-1].split()[1]
                 contract_functions.append(contract_function)
-        except:
+        except Exception as e:
             status_message = 'Error Occurred while watching the Ethereum Contract'
-            logging.debug(f"{did} : {api_key} : {status_message}")
+            logging.debug(f"WatchEthContract : {did} : {api_key} : {status_message} : {e}")
             return sidechain_eth_pb2.Response(output='', status_message=status_message, status=False)
 
         # generate jwt token

@@ -47,9 +47,9 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
-        except:
+        except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"{did} : {api_key} : {status_message}")
+            logging.debug(f"UploadAndSign : {did} : {api_key} : {status_message} : {e}")
             return hive_pb2.Response(output='', status_message=status_message, status=False)
 
         # reading input data
@@ -146,9 +146,9 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         try:
             jwt_info = jwt.decode(request.input, key=api_key, algorithms=['HS256']).get('jwt_info')
-        except:
+        except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"{did} : {api_key} : {status_message}")
+            logging.debug(f"VerifyAndShow : {did} : {api_key} : {status_message} : {e}")
             return hive_pb2.Response(output='', status_message=status_message, status=False)
 
         if type(jwt_info) == str:
