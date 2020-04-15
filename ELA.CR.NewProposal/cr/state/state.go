@@ -414,7 +414,7 @@ func (s *State) processVoteCRCProposal(height uint32,
 		return
 	}
 	proposalState := s.manager.getProposal(*proposalHash)
-	if proposalState == nil || proposalState.Status != VoterAgreed {
+	if proposalState == nil || proposalState.Status != CRAgreed {
 		return
 	}
 	v := cv.Votes
