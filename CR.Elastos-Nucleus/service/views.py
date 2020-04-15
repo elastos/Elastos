@@ -294,7 +294,8 @@ def create_wallet(request):
                         wallet_did = content['sidechain']['did']
                         wallet_token = content['sidechain']['token']
                         wallet_eth = content['sidechain']['eth']
-                        obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
+                        if network == 'gmunet':
+                            obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
                                                                                        defaults={'did': did,
                                                                                                  'api_key': api_key,
                                                                                                  'mnemonic_mainchain':
@@ -326,7 +327,7 @@ def create_wallet(request):
                                                                                                  'private_key_eth':
                                                                                                      wallet_eth[
                                                                                                          'private_key']})
-                        obj.save()
+                            obj.save()
                         populate_session_vars_from_database(request, did)
                         return render(request, "service/create_wallet.html",
                                       {'output': True, 'wallet_mainchain': wallet_mainchain,

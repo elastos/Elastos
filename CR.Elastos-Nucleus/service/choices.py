@@ -1,6 +1,6 @@
 NETWORK = (
     ('gmunet', "GMUnet"),
-    ('testnet', "Testnet"),
+    ('mainnet', "Mainnet"),
 )
 
 NETWORK_GMU = (
