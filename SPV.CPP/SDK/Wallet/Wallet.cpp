@@ -36,12 +36,14 @@ namespace Elastos {
 					   const std::vector<UTXOPtr> &utxo,
 					   const std::vector<AssetPtr> &assetArray,
 					   const SubAccountPtr &subAccount,
-					   const boost::shared_ptr<Wallet::Listener> &listener) :
+					   const boost::shared_ptr<Wallet::Listener> &listener,
+					   const DatabaseManagerPtr &database) :
 			_walletID(walletID + ":" + chainID),
 			_chainID(chainID),
 			_blockHeight(lastBlockHeight),
 			_feePerKb(DEFAULT_FEE_PER_KB),
-			_subAccount(subAccount) {
+			_subAccount(subAccount),
+			_database(database) {
 
 			_listener = boost::weak_ptr<Listener>(listener);
 
@@ -821,6 +823,29 @@ namespace Elastos {
 			}
 
 			return result;
+		}
+
+		std::map<uint256, TransactionPtr> Wallet::TransactionsForInputs(const InputArray &inputs) const {
+			std::map<uint256, TransactionPtr> txnsInputs;
+			if (_database.expired())
+				return txnsInputs;
+
+			std::set<std::string> hashes;
+			for (const InputPtr &in : inputs)
+				hashes.insert(in->TxHash().GetHex());
+
+			std::vector<TransactionPtr> txns = _database.lock()->GetCoinbaseUniqueTxns(_chainID, hashes);
+
+			std::vector<TransactionPtr> tmp = _database.lock()->GetNormalUniqueTxns(_chainID, hashes);
+			txns.insert(txns.end(), tmp.begin(), tmp.end());
+
+			tmp = _database.lock()->GetPendingUniqueTxns(_chainID, hashes);
+			txns.insert(txns.end(), tmp.begin(), tmp.end());
+
+			for (TransactionPtr &tx : txns)
+				txnsInputs[tx->GetHash()] = tx;
+
+			return txnsInputs;
 		}
 
 		AssetPtr Wallet::GetAsset(const uint256 &assetID) const {

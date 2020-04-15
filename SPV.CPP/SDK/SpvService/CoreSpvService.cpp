@@ -24,7 +24,8 @@ namespace Elastos {
 								  const SubAccountPtr &subAccount,
 								  time_t earliestPeerTime,
 								  const ChainConfigPtr &config,
-								  const std::string &netType) {
+								  const std::string &netType,
+								  const DatabaseManagerPtr &database) {
 
 			if (chainID != CHAINID_MAINCHAIN &&
 				chainID != CHAINID_IDCHAIN &&
@@ -51,7 +52,7 @@ namespace Elastos {
 											   ExistPendingTxnTable(),
 											   walletID, chainID, LoadUsedAddress(),
 											   LoadUTXOs(), loadAssets(),
-											   subAccount, createWalletListener()));
+											   subAccount, createWalletListener(), database));
 				_peerManager->SetWallet(_wallet);
 			}
 		}

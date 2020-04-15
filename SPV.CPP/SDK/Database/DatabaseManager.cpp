@@ -177,6 +177,11 @@ namespace Elastos {
 			return _transactionCoinbase.GetUTXOTxn(chainID, _utxoStore.GetTableName(), _utxoStore.GetTxHashColumnName());
 		}
 
+		std::vector<TransactionPtr> DatabaseManager::GetCoinbaseUniqueTxns(const std::string &chainID,
+																		   const std::set<std::string> &hashes) const {
+			return _transactionCoinbase.GetUniqueTxns(chainID, hashes);
+		}
+
 		std::vector<TransactionPtr> DatabaseManager::GetCoinbaseTxns(const std::string &chainID, size_t offset,
 																	 size_t limit, bool asc) const {
 			return _transactionCoinbase.Gets(chainID, offset, limit, asc);
@@ -226,6 +231,11 @@ namespace Elastos {
 			return _transactionNormal.GetUTXOTxn(chainID, _utxoStore.GetTableName(), _utxoStore.GetTxHashColumnName());
 		}
 
+		std::vector<TransactionPtr> DatabaseManager::GetNormalUniqueTxns(const std::string &chainID,
+																		 const std::set<std::string> &hashes) const {
+			return _transactionNormal.GetUniqueTxns(chainID, hashes);
+		}
+
 		std::vector<TransactionPtr> DatabaseManager::GetNormalTxns(const std::string &chainID, size_t offset,
 																   size_t limit, bool asc) const {
 			return _transactionNormal.Gets(chainID, offset, limit, asc);
@@ -273,6 +283,11 @@ namespace Elastos {
 
 		std::vector<TransactionPtr> DatabaseManager::GetAllPendingTxns(const std::string &chainID) const {
 			return _transactionPending.GetAll(chainID);
+		}
+
+		std::vector<TransactionPtr> DatabaseManager::GetPendingUniqueTxns(const std::string &chainID,
+																		  const std::set<std::string> &hashes) const {
+			return _transactionPending.GetUniqueTxns(chainID, hashes);
 		}
 
 		bool DatabaseManager::ExistPendingTxnTable() const {

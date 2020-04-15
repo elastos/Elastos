@@ -7,6 +7,7 @@
 
 #include "BackgroundExecutor.h"
 #include "CoreSpvService.h"
+#include "Database/DatabaseManager.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/function.hpp>
@@ -20,7 +21,6 @@ namespace Elastos {
 		class Transaction;
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
-		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;
 
 		class SpvService :
 				public CoreSpvService {

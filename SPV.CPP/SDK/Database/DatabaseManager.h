@@ -74,6 +74,9 @@ namespace Elastos {
 
 			std::vector<TransactionPtr> GetCoinbaseUTXOTxn(const std::string &chainID) const;
 
+			std::vector<TransactionPtr> GetCoinbaseUniqueTxns(const std::string &chainID,
+															  const std::set<std::string> &hashes) const;
+
 			std::vector<TransactionPtr>
 			GetCoinbaseTxns(const std::string &chainID, size_t offset, size_t limit, bool asc = false) const;
 
@@ -100,6 +103,9 @@ namespace Elastos {
 
 			std::vector<TransactionPtr> GetNormalUTXOTxn(const std::string &chainID) const;
 
+			std::vector<TransactionPtr> GetNormalUniqueTxns(const std::string &chainID,
+															const std::set<std::string> &hashes) const;
+
 			std::vector<TransactionPtr>
 			GetNormalTxns(const std::string &chainID, size_t offset, size_t limit, bool asc = false) const;
 
@@ -125,6 +131,9 @@ namespace Elastos {
 			TransactionPtr GetPendingTxn(const uint256 &hash, const std::string &chainID) const;
 
 			std::vector<TransactionPtr> GetAllPendingTxns(const std::string &chainID) const;
+
+			std::vector<TransactionPtr> GetPendingUniqueTxns(const std::string &chainID,
+															 const std::set<std::string> &hashes) const;
 
 			bool ExistPendingTxnTable() const;
 
@@ -210,6 +219,9 @@ namespace Elastos {
 			UTXOStore _utxoStore;
 			AddressUsed _addressUsed;
 		};
+
+		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;
+		typedef boost::weak_ptr<DatabaseManager> DatabaseManagerWeakPtr;
 
 	}
 }

@@ -5,6 +5,7 @@
 #ifndef __ELASTOS_SDK_WALLET_H__
 #define __ELASTOS_SDK_WALLET_H__
 
+#include "Database/DatabaseManager.h"
 #include <Common/Lockable.h>
 #include <Common/ElementSet.h>
 #include <Account/SubAccount.h>
@@ -100,7 +101,8 @@ namespace Elastos {
 				   const std::vector<UTXOPtr> &utxo,
 				   const std::vector<AssetPtr> &assetArray,
 				   const SubAccountPtr &subAccount,
-				   const boost::shared_ptr<Wallet::Listener> &listener);
+				   const boost::shared_ptr<Wallet::Listener> &listener,
+				   const DatabaseManagerPtr &database);
 
 			virtual ~Wallet();
 
@@ -173,6 +175,8 @@ namespace Elastos {
 			TransactionPtr TransactionForHash(const uint256 &transactionHash) const;
 
 			std::vector<TransactionPtr> GetTransactions(const bytes_t &types) const;
+
+			std::map<uint256, TransactionPtr> TransactionsForInputs(const InputArray &inputs) const;
 
 			bool TransactionIsValid(const TransactionPtr &transaction);
 
@@ -285,6 +289,8 @@ namespace Elastos {
 //			typedef ElementSet<TransactionPtr> TransactionSet;
 //			std::vector<TransactionPtr> _transactions, _coinbaseTransactions;
 //			TransactionSet _allTx;
+
+			DatabaseManagerWeakPtr _database;
 
 			UTXOSet _spendingOutputs;
 

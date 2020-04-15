@@ -172,6 +172,44 @@ namespace Elastos {
 			return timestamp;
 		}
 
+		std::vector<TransactionPtr> TransactionNormal::GetUniqueTxns(const std::string &chainID,
+																	 const std::set<std::string> &uniqueHash) const {
+			std::vector<TransactionPtr> txns;
+			std::string sql;
+
+			if (uniqueHash.empty())
+				return txns;
+
+			sql = "SELECT " + _txHash + "," + _buff + "," + _blockHeight + "," + _timestamp + "," + _iso +
+				  " FROM " + _tableName + " WHERE " + _txHash + " IN (";
+			for (const std::string &hash : uniqueHash)
+				sql += "?,";
+			sql.back() = ')';
+			sql += ";";
+
+			sqlite3_stmt *stmt = NULL;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return txns;
+			}
+
+			int index = 1;
+			for (const std::string &h: uniqueHash) {
+				if (!_sqlite->BindText(stmt, index++, h, nullptr)) {
+					Log::error("bind args");
+				}
+			}
+
+			GetSelectedTxns(txns, chainID, stmt);
+
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Tx get all finalize");
+				return {};
+			}
+
+			return txns;
+		}
+
 		TransactionPtr TransactionNormal::Get(const uint256 &hash, const std::string &chainID) const {
 			return SelectByHash(hash, chainID);
 		}
@@ -236,7 +274,8 @@ namespace Elastos {
 			return txns;
 		}
 
-		std::vector<TransactionPtr> TransactionNormal::Gets(const std::string &chainID, size_t offset, size_t limit, bool asc) const {
+		std::vector<TransactionPtr> TransactionNormal::Gets(const std::string &chainID, size_t offset,
+															size_t limit, bool asc) const {
 			std::vector<TransactionPtr> txns;
 			std::string sql, order;
 
@@ -281,14 +320,10 @@ namespace Elastos {
 			std::vector<TransactionPtr> txns;
 			std::string sql;
 
-			sql = "SELECT " +
-				  _txHash + "," +
-				  _buff + "," +
-				  _blockHeight + "," +
-				  _timestamp + "," +
-				  _iso +
-				  " FROM " + _tableName + "," + utxoTableName + " WHERE " +
-				  _tableName + "." + _txHash + " = " + utxoTableName + "." + utxoTxHashColumnName + ";";
+			sql = "SELECT " + _txHash + "," + _buff + "," + _blockHeight + "," + _timestamp + "," + _iso +
+				  " FROM " + _tableName + " WHERE " +
+				  _txHash + " IN (SELECT " + utxoTxHashColumnName + " FROM " + utxoTableName + " GROUP BY " +
+				  utxoTxHashColumnName + ");";
 
 			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -363,7 +398,8 @@ namespace Elastos {
 			return txns.empty() ? nullptr : txns[0];
 		}
 
-		void TransactionNormal::GetSelectedTxns(std::vector<TransactionPtr> &txns, const std::string &chainID, sqlite3_stmt *stmt) const {
+		void TransactionNormal::GetSelectedTxns(std::vector<TransactionPtr> &txns, const std::string &chainID,
+												sqlite3_stmt *stmt) const {
 			while (SQLITE_ROW == _sqlite->Step(stmt)) {
 				TransactionPtr tx;
 				if (chainID == CHAINID_MAINCHAIN) {
@@ -431,10 +467,8 @@ namespace Elastos {
 			uint32_t blockHeight = txn->GetBlockHeight();
 			time_t timestamp = txn->GetTimestamp();
 
-			std::string sql = "UPDATE " + _tableName + " SET " +
-				  _blockHeight + " = ?, " +
-				  _timestamp + " = ? " +
-				  " WHERE " + _txHash + " = ?;";
+			std::string sql = "UPDATE " + _tableName + " SET " + _blockHeight + " = ?, " + _timestamp + " = ? " +
+							  " WHERE " + _txHash + " = ?;";
 
 			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {

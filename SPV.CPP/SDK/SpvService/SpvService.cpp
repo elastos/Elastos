@@ -26,7 +26,7 @@ namespace Elastos {
 							   const std::string &netType) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(new DatabaseManager(dbPath)) {
-			Init(walletID, chainID, subAccount, earliestPeerTime, config, netType);
+			Init(walletID, chainID, subAccount, earliestPeerTime, config, netType, _databaseManager);
 		}
 
 		SpvService::~SpvService() {

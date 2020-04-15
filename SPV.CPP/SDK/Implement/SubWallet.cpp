@@ -515,12 +515,6 @@ namespace Elastos {
 			ArgInfo("{} {} size: {}, height: {}, timestamp: {}", _walletManager->GetWallet()->GetWalletID(),
 					GetFunName(), txns.size(), txns.front()->GetBlockHeight(), txns.front()->GetTimestamp());
 
-			// TODO 修改第一笔交易的时间
-//			if (_walletManager->GetAllTransactionsCount() == 1) {
-//				_info->SetEaliestPeerTime(txns.front()->GetTimestamp());
-//				_parent->_account->Save();
-//			}
-
 			uint32_t walletBlockHeight = _walletManager->GetWallet()->LastBlockHeight();
 			for (const TransactionPtr tx : txns) {
 				uint32_t confirm = tx->GetConfirms(walletBlockHeight);

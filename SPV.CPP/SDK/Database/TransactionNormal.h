@@ -53,6 +53,9 @@ namespace Elastos {
 
 			time_t GetEarliestTxnTimestamp() const;
 
+			std::vector<TransactionPtr> GetUniqueTxns(const std::string &chainID,
+													  const std::set<std::string> &uniqueHash) const;
+
 			TransactionPtr Get(const uint256 &hash, const std::string &chainID) const;
 
 			std::vector<TransactionPtr> GetAfter(const std::string &chainID, uint32_t height) const;

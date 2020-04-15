@@ -653,10 +653,11 @@ namespace Elastos {
 			BigInt inputAmount(0), outputAmount(0), changeAmount(0);
 			uint64_t fee = 0;
 			std::map<std::string, BigInt>::iterator it;
+			std::map<uint256, TransactionPtr> txInput = wallet->TransactionsForInputs(_inputs);
 
 			std::map<std::string, BigInt> inputList;
 			for (InputArray::iterator in = _inputs.begin(); in != _inputs.end() && (*in)->TxHash() != 0; ++in) {
-				TransactionPtr tx = wallet->TransactionForHash((*in)->TxHash());
+				TransactionPtr tx = txInput[(*in)->TxHash()];
 				if (tx) {
 					const OutputPtr o = tx->OutputOfIndex((*in)->Index());
 					if (o && wallet->ContainsAddress(o->Addr()) && !wallet->IsDepositAddress(o->Addr())) {
