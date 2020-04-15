@@ -61,6 +61,9 @@ class Footer extends React.Component {
             <a href="https://github.com/elastos" target="_blank">
               Elastos Github
             </a>
+            <a href="https://github.com/elaphantapp/DeveloperDoc/blob/master/export_elaphant_to_metamask.md" target="_blank">
+              Elaphant & Metamask
+            </a>
           </div>
           <div>
             <h5>Community</h5>
