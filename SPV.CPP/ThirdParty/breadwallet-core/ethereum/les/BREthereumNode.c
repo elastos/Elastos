@@ -124,7 +124,7 @@ nodeStateCreateErrorUnix (int error) {
         NODE_ERROR,
         { .error = {
             NODE_ERROR_UNIX,
-            { .unix = error }}}
+            { ._unix = error }}}
     };
 }
 
@@ -201,7 +201,7 @@ nodeStateDescribe (const BREthereumNodeState *state,
             switch (state->u.error.type) {
                 case NODE_ERROR_UNIX:
                     return strcat (strcpy (description, "Unix: "),
-                                   strerror (state->u.error.u.unix));
+                                   strerror (state->u.error.u._unix));
                 case NODE_ERROR_DISCONNECT:
                     return strcat (strcpy (description, "Disconnect : "),
                                    messageP2PDisconnectDescription(state->u.error.u.disconnect));
@@ -227,7 +227,7 @@ nodeStateEncode (const BREthereumNodeState *state,
             BRRlpItem reasonItem;
             switch (state->u.error.type) {
                 case NODE_ERROR_UNIX:
-                    reasonItem = rlpEncodeUInt64(coder, state->u.error.u.unix, 1);
+                    reasonItem = rlpEncodeUInt64(coder, state->u.error.u._unix, 1);
                     break;
                 case NODE_ERROR_DISCONNECT:
                     reasonItem = rlpEncodeUInt64(coder, state->u.error.u.disconnect, 1);

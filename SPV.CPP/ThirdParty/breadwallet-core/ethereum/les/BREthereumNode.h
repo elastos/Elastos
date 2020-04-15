@@ -166,7 +166,7 @@ typedef struct {
         struct {
             BREthereumNodeErrorType type;
             union {
-                int unix;
+                int _unix;
                 BREthereumP2PDisconnectReason disconnect;
                 BREthereumNodeProtocolReason protocol;
             } u;
