@@ -2,14 +2,7 @@ import json
 import grpc
 import jwt
 import datetime
-import base64
 
-from cryptography.fernet import Fernet
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
-from decouple import config
 from .stubs import hive_pb2, hive_pb2_grpc
 from elastos_adenine.settings import REQUEST_TIMEOUT, TOKEN_EXPIRATION
 
