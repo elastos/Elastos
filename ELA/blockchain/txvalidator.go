@@ -401,11 +401,6 @@ func (b *BlockChain) checkVoteProducerContent(content outputpayload.VoteContent,
 
 func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayload.VoteContent,
 	payloadVersion byte, amount common.Fixed64) error {
-
-	if !b.crCommittee.IsInVotingPeriod(blockHeight) {
-		return errors.New("cr vote tx must during voting period")
-	}
-
 	if payloadVersion < outputpayload.VoteProducerAndCRVersion {
 		return errors.New("payload VoteProducerVersion not support vote CR")
 	}
