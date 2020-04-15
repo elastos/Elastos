@@ -215,13 +215,15 @@ public class VerifiablePresentation {
             throw DIDError.illegalArgument()
         }
 
-        let data: Dictionary<String, Any>?
+        let data: [String: Any]?
         do {
-            data = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: []) as? Dictionary<String, Any>
+            data = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: []) as? [String: Any]
         } catch {
             throw DIDError.malformedPresentation("parse presentation json error")
         }
-
+        guard let _ = data else {
+            throw DIDError.malformedPresentation("parse presentation json error")
+        }
         let vp = VerifiablePresentation()
         try vp.parse(JsonNode(data!))
 

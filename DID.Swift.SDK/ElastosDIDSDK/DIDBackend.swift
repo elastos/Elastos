@@ -204,9 +204,9 @@ public class DIDBackend {
         }
 
         let data = try DIDBackend.resolver!.resolve(requestId, did.toString(), all)
-        let dict: Dictionary<String, Any>?
+        let dict: [String: Any]?
         do {
-            dict = try JSONSerialization.jsonObject(with: data, options: []) as? Dictionary<String, Any>
+            dict = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
             throw DIDError.didResolveError("parse resolved json error.")
         }
@@ -245,9 +245,8 @@ public class DIDBackend {
         return result
     }
 
-
      class func resolveHistory(_ did: DID) throws -> DIDHistory {
-        print("Resolving {}...\(did.toString())")
+        Log.i(TAG, "Resolving {}...\(did.toString())")
         let rr = try resolveFromBackend(did, true)
         guard rr.status != ResolveResultStatus.STATUS_NOT_FOUND else {
             throw DIDError.didResolveError()

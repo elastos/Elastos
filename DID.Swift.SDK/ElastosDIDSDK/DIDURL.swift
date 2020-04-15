@@ -108,7 +108,7 @@ public class DIDURL {
         return _parameters?.keys.contains(forKey) ?? false
     }
 
-    public func appendParameter(_ value: String?, forKey: String) {
+    func appendParameter(_ value: String?, forKey: String) {
         if  self._parameters == nil {
             self._parameters = OrderedDictionary()
         }

@@ -104,8 +104,11 @@ public class VerifiableCredentialBuilder {
             throw DIDError.illegalArgument()
         }
         // TODO: CHECK
-        let dic: [String: Any] = try (JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: [JSONSerialization.ReadingOptions.init(rawValue: 0)]) as! [String: Any])
-        let jsonNode = JsonNode(dic)
+        let dic = try (JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: [JSONSerialization.ReadingOptions.init(rawValue: 0)]) as? [String: Any])
+        guard let _ = dic else {
+            throw DIDError.malformedCredential("properties data formed error.")
+        }
+        let jsonNode = JsonNode(dic!)
         let subject = VerifiableCredentialSubject(_target)
         subject.setProperties(jsonNode)
         credential!.setSubject(subject)

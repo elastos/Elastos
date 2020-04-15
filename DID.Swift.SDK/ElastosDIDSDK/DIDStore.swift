@@ -4,6 +4,7 @@ import PromiseKit
 public typealias ConflictHandler = (_ chainCopy: DIDDocument, _ localCopy: DIDDocument) throws -> DIDDocument
 
 public class DIDStore: NSObject {
+    private static let TAG = "DIDStore"
     public static let CACHE_INITIAL_CAPACITY = 16
     public static let CACHE_MAX_CAPACITY = 32
     
@@ -1225,7 +1226,7 @@ public class DIDStore: NSObject {
         }
 
         doc = try? storage.loadDid(did)
-        guard doc != nil else {
+        guard let _ = doc else {
             throw DIDError.notFoundError()
         }
 
@@ -1515,13 +1516,13 @@ public class DIDStore: NSObject {
         let count = cinputs.count / 2
         // UnsafeMutablePointer(mutating: toPPointer)
 
-        let csig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
+        let csig = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
         let re = ecdsa_sign_base64v(csig, UnsafeMutablePointer(mutating: toPPointer), Int32(count), c_inputs)
         guard re >= 0 else {
             throw DIDError.didStoreError("sign error.")
         }
         csig[re] = 0
-        let sig: String = String(cString: csig)
+        let sig = String(cString: csig)
         return sig
     }
 
@@ -1542,8 +1543,8 @@ public class DIDStore: NSObject {
 
     public func changePassword(_ oldPassword: String, _ newPassword: String) throws {
         let re: (String) throws -> String = { (data: String) -> String in
-            let udata: Data = try DIDStore.decryptFromBase64(data, oldPassword)
-            let result: String = try DIDStore.encryptToBase64(udata, newPassword)
+            let udata = try DIDStore.decryptFromBase64(data, oldPassword)
+            let result = try DIDStore.encryptToBase64(udata, newPassword)
             return result
         }
         try storage.changePassword(re)
@@ -1613,7 +1614,7 @@ public class DIDStore: NSObject {
             for id in ids {
                 var vc: VerifiableCredential? = nil
                 do {
-                    print("Exporting credential {}...\(id.toString())")
+                    Log.i(DIDStore.TAG, "Exporting credential {}...\(id.toString())")
                     vc = try storage.loadCredential(did, id)
                 } catch {
                     throw DIDError.didStoreError("Export DID \(did) failed.\(error)")
@@ -1644,7 +1645,7 @@ public class DIDStore: NSObject {
             for pk in pks {
                 let id = pk.getId()
                 if storage.containsPrivateKey(did, id) {
-                    print("Exporting private key {}...\(id.toString())")
+                    Log.i(DIDStore.TAG, "Exporting private key {}...\(id.toString())")
                     var csk: String = try storage.loadPrivateKey(did, id)
                     let cskData: Data = try DIDStore.decryptFromBase64(csk, storePassword)
                     csk = try DIDStore.encryptToBase64(cskData, password)
@@ -1703,8 +1704,15 @@ public class DIDStore: NSObject {
         // Fingerprint
         let result = sha256.finalize()
 
-        let dataFing: Data = Data(bytes: result, count: result.count)
-        let fingerprint = try DIDStore.encryptToBase64(dataFing, storePassword)
+        let capacity = result.count * 3
+        let cFing = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
+        var dateFing = Data(bytes: result, count: result.count)
+        let cFingerprint = dateFing.withUnsafeMutableBytes { fing -> UnsafeMutablePointer<UInt8> in
+            return fing
+        }
+        let re = base64_url_encode(cFing, cFingerprint, dateFing.count)
+        cFing[re] = 0
+        let fingerprint = String(cString: cFing)
 
         generator.writeStringField("fingerprint", fingerprint)
         generator.writeEndObject()
@@ -1776,8 +1784,8 @@ public class DIDStore: NSObject {
         value = did.description
         bytes = [UInt8](value.data(using: .utf8)!)
         sha256.update(&bytes)
-        print("Importing {}...\(did.description)")
-        
+        Log.i(DIDStore.TAG, "Importing {}...\(did.description)")
+
         // Created
         options = JsonSerializer.Options()
             .withOptional()
@@ -1807,7 +1815,7 @@ public class DIDStore: NSObject {
         sha256.update(&bytes)
         
         // Credential
-        var vcs: Dictionary<DIDURL, VerifiableCredential> = [: ]
+        var vcs: [DIDURL: VerifiableCredential] = [: ]
         node = root.get(forKey: "credential")
         if node != nil {
             guard node!.asArray() != nil else {
@@ -1818,11 +1826,11 @@ public class DIDStore: NSObject {
                 do {
                     vc = try VerifiableCredential.fromJson(node, did)
                 } catch {
-                    print("Parse credential \(node) error \(error)")
+                    Log.e(DIDStore.TAG, "Parse credential \(node) error \(error)")
                     throw DIDError.didExpired("Invalid export data.\(error)")
                 }
                 guard vc?.subject.did == did else {
-                    print("Credential {} not blongs to {} \(node) \(did.description)")
+                    Log.e(DIDStore.TAG, "Credential {} not blongs to {} \(node) \(did.description)")
                     throw DIDError.didStoreError("Invalid credential in the export data.")
                 }
                 value = vc!.toString(true)
@@ -1833,11 +1841,11 @@ public class DIDStore: NSObject {
         }
         
         // Private key
-        var sks: Dictionary<DIDURL, String> = [: ]
+        var sks: [DIDURL: String] = [: ]
         node = root.get(forKey: "privatekey")
         if node != nil {
             guard node!.asArray() != nil else {
-                print("Privatekey should be an array.")
+                Log.e(DIDStore.TAG, "Privatekey should be an array.")
                 throw DIDError.didStoreError("Invalid export data, wrong privatekey data.")
             }
             for dic in node!.asArray()! {
@@ -1855,7 +1863,7 @@ public class DIDStore: NSObject {
                 value = csk
                 bytes = [UInt8](value.data(using: .utf8)!)
                 sha256.update(&bytes)
-                let sk: Data = try DIDStore.decryptFromBase64(csk, password)
+                let sk = try DIDStore.decryptFromBase64(csk, password)
                 csk = try DIDStore.encryptToBase64(sk, storePassword)
                 sks[id!] = csk
             }
@@ -1877,7 +1885,7 @@ public class DIDStore: NSObject {
             metaNode = node?.get(forKey: "credential")
             if metaNode != nil {
                 guard metaNode!.asArray() != nil else {
-                    print("Credential's metadata should be an array.")
+                    Log.e(DIDStore.TAG, "Credential's metadata should be an array.")
                     throw DIDError.didStoreError("Invalid export data, wrong metadata.")
                 }
                 for dic in metaNode!.asArray()! {
@@ -1903,15 +1911,21 @@ public class DIDStore: NSObject {
         
         // Fingerprint
         node = root.get(forKey: "fingerprint")
-        guard node != nil else {
-            print("Missing fingerprint")
+        guard let _ = node else {
+            Log.e(DIDStore.TAG, "Missing fingerprint")
             throw DIDError.didStoreError("Missing fingerprint in the export data")
         }
         let refFingerprint = node?.asString()
         let result = sha256.finalize()
-        let dataFing: Data = Data(bytes: result, count: result.count)
-        let fingerprint = try DIDStore.encryptToBase64(dataFing, storePassword)
-
+        let capacity = result.count * 3
+        let cFing = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
+        var dateFing = Data(bytes: result, count: result.count)
+        let cFingerprint = dateFing.withUnsafeMutableBytes { fing -> UnsafeMutablePointer<UInt8>  in
+            return fing
+        }
+        let re = base64_url_encode(cFing, cFingerprint, dateFing.count)
+        cFing[re] = 0
+        let fingerprint = String(cString: cFing)
         guard fingerprint == refFingerprint else {
             throw DIDError.didStoreError("Invalid export data, the fingerprint mismatch.")
         }
@@ -1919,18 +1933,18 @@ public class DIDStore: NSObject {
         // Save
         // All objects should load directly from storage,
         // avoid affects the cached objects.
-        print("Importing document...")
+        Log.i(DIDStore.TAG, "Importing document...")
         try storage.storeDid(doc!)
         try storage.storeDidMeta(doc!.subject, doc!.getMeta())
         
         for vc in vcs.values {
-            print("Importing credential {}...\(vc.getId().description)")
+            Log.i(DIDStore.TAG, "Importing credential {}...\(vc.getId().description)")
             try storage.storeCredential(vc)
             try storage.storeCredentialMeta(did, vc.getId(), vc.getMeta())
         }
         
         try sks.forEach { (key, value) in
-            print("Importing private key {}...\(key.description)")
+            Log.i(DIDStore.TAG, "Importing private key {}...\(key.description)")
             try storage.storePrivateKey(did, key, value)
         }
     }
@@ -1940,7 +1954,7 @@ public class DIDStore: NSObject {
                       storePassword: String) throws {
         
         let dic = try JSONSerialization.jsonObject(with: data,options: JSONSerialization.ReadingOptions.mutableContainers) as? [String: Any]
-        guard dic != nil else {
+        guard let _ = dic else {
             throw DIDError.notFoundError("data is not nil")
         }
         let jsonNode = JsonNode(dic!)
@@ -1966,7 +1980,7 @@ public class DIDStore: NSObject {
                                         _ password: String,
                                    _ storePassword: String) throws {
         var encryptedMnemonic = try storage.loadMnemonic()
-        var plain: Data = try DIDStore.decryptFromBase64(encryptedMnemonic, storePassword)
+        var plain = try DIDStore.decryptFromBase64(encryptedMnemonic, storePassword)
         encryptedMnemonic = try DIDStore.encryptToBase64(plain, password)
         var encryptedSeed = try storage.loadPrivateIdentity()
         
@@ -2014,8 +2028,8 @@ public class DIDStore: NSObject {
         let result = sha256.finalize()
         let capacity = result.count * 3
         let cFing = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
-        var dateFing: Data = Data(bytes: result, count: result.count)
-        let cFingerprint: UnsafeMutablePointer<UInt8> = dateFing.withUnsafeMutableBytes { (fing: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+        var dateFing = Data(bytes: result, count: result.count)
+        let cFingerprint = dateFing.withUnsafeMutableBytes { fing -> UnsafeMutablePointer<UInt8> in
             return fing
         }
         let re = base64_url_encode(cFing, cFingerprint, dateFing.count)
@@ -2079,7 +2093,7 @@ public class DIDStore: NSObject {
         bytes = [UInt8](encryptedMnemonic.data(using: .utf8)!)
         sha256.update(&bytes)
         
-        var plain: Data = try DIDStore.decryptFromBase64(encryptedMnemonic, password)
+        var plain = try DIDStore.decryptFromBase64(encryptedMnemonic, password)
         encryptedMnemonic = try DIDStore.encryptToBase64(plain, storePassword)
         
         // Key
@@ -2119,8 +2133,8 @@ public class DIDStore: NSObject {
         let result = sha256.finalize()
         let capacity = result.count * 3
         let cFing = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
-        var dateFing: Data = Data(bytes: result, count: result.count)
-        let cFingerprint: UnsafeMutablePointer<UInt8> = dateFing.withUnsafeMutableBytes { (fing: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+        var dateFing = Data(bytes: result, count: result.count)
+        let cFingerprint = dateFing.withUnsafeMutableBytes { fing -> UnsafeMutablePointer<UInt8> in
             return fing
         }
         let re = base64_url_encode(cFing, cFingerprint, dateFing.count)
@@ -2143,7 +2157,7 @@ public class DIDStore: NSObject {
                                  using password: String,
                                   storePassword: String) throws {
         let dic = try JSONSerialization.jsonObject(with: data,options: JSONSerialization.ReadingOptions.mutableContainers) as? [String: Any]
-        guard dic != nil else {
+        guard let _ = dic else {
             throw DIDError.notFoundError("data is not nil")
         }
         let jsonNode = JsonNode(dic!)
@@ -2209,7 +2223,7 @@ public class DIDStore: NSObject {
                        _ storePassword: String) throws {
         let data = try readData(input: input)
         let dic = try JSONSerialization.jsonObject(with: data,options: JSONSerialization.ReadingOptions.mutableContainers) as? [String: Any]
-        guard dic != nil else {
+        guard let _ = dic else {
             throw DIDError.notFoundError("data is not nil")
         }
         
@@ -2235,7 +2249,7 @@ public class DIDStore: NSObject {
                         _ storePassword: String) throws {
         let data = handle.readDataToEndOfFile()
         let dic = try JSONSerialization.jsonObject(with: data,options: JSONSerialization.ReadingOptions.mutableContainers) as? [String: Any]
-        guard dic != nil else {
+        guard let _ = dic else {
             throw DIDError.notFoundError("data is not nil")
         }
         

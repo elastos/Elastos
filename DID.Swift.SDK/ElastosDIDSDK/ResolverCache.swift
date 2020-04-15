@@ -2,6 +2,7 @@
 import Foundation
 
 public class ResolverCache {
+    private static let TAG = "ResolverCache"
     private static let CACHE_INITIAL_CAPACITY = 16
     private static let CACHE_MAX_CAPACITY = 32
     private static var rootDir: String = ""
@@ -119,7 +120,7 @@ public class ResolverCache {
              }
              try filemanager.removeItem(atPath: path)
          } catch {
-             print("deleteFile error: \(error)")
+            Log.e(ResolverCache.TAG, "deleteFile error: \(error)")
          }
      }
     

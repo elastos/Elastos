@@ -182,8 +182,8 @@ public class FileSystemStorage: DIDStorage {
         var isDir : ObjCBool = false
         fileManager.fileExists(atPath: dirPath, isDirectory:&isDir)
         let readhandle = FileHandle.init(forReadingAtPath: dirPath)
-        let data: Data = (readhandle?.readDataToEndOfFile()) ?? Data()
-        let str: String = String(data: data, encoding: .utf8) ?? ""
+        let data = (readhandle?.readDataToEndOfFile()) ?? Data()
+        let str = String(data: data, encoding: .utf8) ?? ""
         return str.count > 0 ? true : false
     }
     
@@ -707,7 +707,7 @@ public class FileSystemStorage: DIDStorage {
     }
 
     func listCredentials(_ did: DID) throws -> Array<DIDURL> {
-        let dir: String = _rootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR
+        let dir = _rootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.CREDENTIALS_DIR
         guard try dirExists(dir) else {
             return []
         }
@@ -765,7 +765,7 @@ public class FileSystemStorage: DIDStorage {
     }
 
     func containsPrivateKeys(_ did: DID) -> Bool {
-        let dir: String = _rootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR
+        let dir = _rootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR
         var path = ""
         do {
             path = try getFile(dir)!
@@ -793,9 +793,9 @@ public class FileSystemStorage: DIDStorage {
     }
     
     func containsPrivateKey(_ did: DID, _ id: DIDURL) -> Bool {
-        let dir: String = _rootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR + "/" + id.fragment!
+        let dir = _rootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR + "/" + id.fragment!
         do {
-            let path: String = try getFile(dir)!
+            let path = try getFile(dir)!
             return try fileExists(path)
         } catch {
             return false
@@ -804,7 +804,7 @@ public class FileSystemStorage: DIDStorage {
 
     func deletePrivateKey(_ did: DID, _ id: DIDURL) -> Bool {
         do {
-            let path: String = _rootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR + "/" + id.fragment!
+            let path = _rootPath + "/" + FileSystemStorage.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStorage.PRIVATEKEYS_DIR + "/" + id.fragment!
             if try fileExists(path) {
                 _ = try deleteFile(path)
                 
@@ -854,7 +854,7 @@ public class FileSystemStorage: DIDStorage {
         }
         else {
             if try needReencrypt(src) {
-                let org: String = try readTextFromPath(src)
+                let org = try readTextFromPath(src)
                 try writeTextToPath(dest, callback(org))
             }
             else {
