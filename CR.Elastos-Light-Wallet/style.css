@@ -597,6 +597,25 @@ display: inline-block;
 
 
 
+select, input {
+  background-color: black;
+  color: white;
+  font-size: 12px;
+}
+
+.centered_img {
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  /* position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0; */
+  margin: auto;
+}
+
 .font_sans_10 {
   font-family: 'Open Sans', sans-serif;
   font-size: 10px;
@@ -612,6 +631,14 @@ display: inline-block;
 
 .display_inline_block {
   display: inline-block;
+}
+
+.display_inline {
+  display: inline;
+}
+
+.display_none {
+  display: none;
 }
 
 .ta_left {
@@ -638,6 +665,10 @@ display: inline-block;
   vertical-align: bottom;
 }
 
+.va_center {
+  vertical-align: center;
+}
+
 .bordered {
   border: solid;
   border-width: 1px;
@@ -661,8 +692,16 @@ display: inline-block;
   width: 30%;
 }
 
+.w750px {
+  width: 750px;
+}
+
 .w500px {
   width: 500px;
+}
+
+.w450px {
+  width: 450px;
 }
 
 .w400px {
@@ -721,8 +760,16 @@ display: inline-block;
   height: 50px;
 }
 
+.h40px {
+  height: 40px;
+}
+
 .h30px {
   height: 30px;
+}
+
+.h25px {
+  height: 25px;
 }
 
 .h20px {
@@ -756,6 +803,18 @@ display: inline-block;
 
 .bgcolor_red {
   background-color: red;
+}
+
+.bgcolor_gray {
+  background-color: gray;
+}
+
+.bgcolor_gray_hover {
+  background-color: gray;
+}
+
+.bgcolor_gray_hover:hover {
+  background-color: #333;
 }
 
 .bgcolor_black {
@@ -802,3 +861,10 @@ display: inline-block;
   text-decoration: line-through;
 }
 
+.whitespace_nowrap {
+  white-space: nowrap;
+}
+
+.padding_5px {
+  padding: 5px;
+}

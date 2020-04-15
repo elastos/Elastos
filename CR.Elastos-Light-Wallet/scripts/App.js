@@ -19,7 +19,7 @@ const GuiUtils = require('./GuiUtils.js');
 const CoinGecko = require('./CoinGecko.js');
 
 /** global constants */
-const LOG_LEDGER_POLLING = true;
+const LOG_LEDGER_POLLING = false;
 
 const MAX_POLL_DATA_TYPE_IX = 5;
 
@@ -59,11 +59,17 @@ let pollDataTypeIx = 0;
 
 let balance = undefined;
 
+let sendHasFocus = false;
+
 let sendAmount = '';
 
 let feeAmountSats = '';
 
 let feeAmountEla = '';
+
+let sendToAddress = '';
+
+let sendStep = 1;
 
 let isLoggedIn = false;
 
@@ -99,7 +105,9 @@ let parsedProducerList = {
 
 let candidateVoteListStatus = 'No Candidate Votes Requested Yet';
 
-let parsedCandidateVoteList = {};
+let parsedCandidateVoteList = {
+  candidateVotes: [],
+};
 
 let unspentTransactionOutputsStatus = 'No UTXOs Requested Yet';
 
@@ -118,7 +126,6 @@ let GuiToggles;
 /** functions */
 const init = (_GuiToggles) => {
   sendToAddressStatuses.push('No Send-To Transaction Requested Yet');
-  parsedCandidateVoteList.candidateVotes = [];
 
   GuiToggles = _GuiToggles;
 
@@ -136,7 +143,12 @@ const setAppDocument = (_document) => {
 };
 
 const setRenderApp = (_renderApp) => {
-  renderApp = _renderApp;
+  renderApp = () => {
+    // mainConsole.log('renderApp', 'sendHasFocus', sendHasFocus);
+    if (!sendHasFocus) {
+      _renderApp();
+    }
+  };
 };
 
 const getRestService = () => {
@@ -161,7 +173,7 @@ const getTransactionHistoryLink = (txid) => {
 
 const getBalanceUrl = (address) => {
   const url = `${getRestService()}/api/v1/asset/balances/${address}`;
-  mainConsole.log('getBalanceUrl', url);
+  // mainConsole.log('getBalanceUrl', url);
   return url;
 };
 
@@ -204,7 +216,7 @@ const resetNodeUrl = () => {
 
 const changeNodeUrl = () => {
   restService = GuiUtils.getValue('nodeUrl');
-  showLogin();
+  renderApp();
 };
 
 const refreshBlockchainData = () => {
@@ -222,7 +234,7 @@ const publicKeyCallback = (message) => {
   }
   if (message.success) {
     publicKey = message.publicKey;
-    requestBlockchainDataAndShowHome();
+    requestBlockchainData();
   } else {
     ledgerDeviceInfo.error = true;
     ledgerDeviceInfo.message = message.message;
@@ -356,7 +368,7 @@ const getUnspentTransactionOutputsReadyCallback = (response) => {
   unspentTransactionOutputsStatus = 'UTXOs Received';
   parsedUnspentTransactionOutputs.length = 0;
 
-  mainConsole.log('getUnspentTransactionOutputsCallback ' + JSON.stringify(response), response.Result);
+  // mainConsole.log('getUnspentTransactionOutputsCallback ' + JSON.stringify(response), response.Result);
 
   if ((response.Result != undefined) && (response.Result != null) && (response.Error == 0)) {
     response.Result.forEach((utxo, utxoIx) => {
@@ -374,7 +386,7 @@ const getPublicKeyFromLedger = () => {
   LedgerComm.getPublicKey(publicKeyCallback);
 };
 
-const requestBlockchainDataAndShowHome = () => {
+const requestBlockchainData = () => {
   if (publicKey === undefined) {
     return;
   }
@@ -383,10 +395,6 @@ const requestBlockchainDataAndShowHome = () => {
   requestBalance();
   requestUnspentTransactionOutputs();
   requestBlockchainState();
-
-  if (isLoggedIn) {
-    GuiToggles.showHome();
-  }
 };
 
 const getPublicKeyFromMnemonic = () => {
@@ -404,7 +412,7 @@ const getPublicKeyFromMnemonic = () => {
     return;
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
-  requestBlockchainDataAndShowHome();
+  requestBlockchainData();
 };
 
 const getPublicKeyFromPrivateKey = () => {
@@ -417,7 +425,7 @@ const getPublicKeyFromPrivateKey = () => {
     return;
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
-  requestBlockchainDataAndShowHome();
+  requestBlockchainData();
 };
 
 const sendAmountToAddressErrorCallback = (error) => {
@@ -439,30 +447,36 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     sendToAddressStatuses.push('Transaction Successful.');
     sendToAddressLinks.push(elt);
   }
-  showCompletedTransaction();
   setBlockchainLastActionHeight();
   renderApp();
 };
 
 const clearSendData = () => {
-  mainConsole.log('STARTED clearSendData');
+  // mainConsole.log('STARTED clearSendData');
   GuiUtils.setValue('sendAmount', '');
   GuiUtils.setValue('sendToAddress', '');
   GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
   sendAmount = '';
-  feeAmountSats = '';
+  feeAmountSats = DEFAULT_FEE_SATS;
   feeAmountEla = '';
   sendToAddressStatuses.length = 0;
   sendToAddressLinks.length = 0;
-  mainConsole.log('SUCCESS clearSendData');
+  // mainConsole.log('SUCCESS clearSendData');
 };
 
 const updateAmountAndFees = () => {
-  const sendAmountElt = document.getElementById('sendAmount');
-  const feeAmountElt = document.getElementById('feeAmount');
+  // mainConsole.log('STARTED updateAmountAndFees');
 
-  sendAmount = sendAmountElt.value;
-  feeAmountSats = feeAmountElt.value;
+  sendAmount = GuiUtils.getValue('sendAmount');
+  sendToAddress = GuiUtils.getValue('sendToAddress');
+  feeAmountSats = GuiUtils.getValue('feeAmount');
+
+  // mainConsole.log('INTERIM updateAmountAndFees',
+  //     'sendAmount:', sendAmount,
+  //     'sendToAddress:', sendToAddress,
+  //     'feeAmountSats:', feeAmountSats,
+  // );
+
   if (Number.isNaN(sendAmount)) {
     throw new Error(`sendAmount ${sendAmount} is not a number`);
   }
@@ -470,19 +484,11 @@ const updateAmountAndFees = () => {
     throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
   }
   feeAmountEla = BigNumber(feeAmountSats, 10).dividedBy(Asset.satoshis).toString();
-};
-
-const updateAmountAndFeesAndRenderApp = () => {
-  updateAmountAndFees();
-  renderApp();
+  // mainConsole.log('SUCCESS updateAmountAndFees');
 };
 
 const sendAmountToAddress = () => {
   updateAmountAndFees();
-
-  const sendToAddressElt = document.getElementById('sendToAddress');
-
-  const sendToAddress = sendToAddressElt.value;
 
   const unspentTransactionOutputs = parsedUnspentTransactionOutputs;
   mainConsole.log('sendAmountToAddress.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
@@ -507,7 +513,6 @@ const sendAmountToAddress = () => {
         sendToAddressStatuses.length = 0;
         sendToAddressLinks.length = 0;
         sendToAddressStatuses.push(JSON.stringify(message));
-        renderApp();
         return;
       }
       const signature = Buffer.from(message.signature, 'hex');
@@ -525,7 +530,6 @@ const sendAmountToAddress = () => {
     }
     sendAmountToAddressCallback(encodedTx);
   }
-  renderApp();
 };
 // success: success,
 // message: lastResponse,
@@ -554,7 +558,7 @@ const sendAmountToAddressCallback = (encodedTx) => {
 };
 
 const requestListOfProducersErrorCallback = (response) => {
-  producerListStatus = `Producers Error: ${JSON.stringify(response)}`;
+  producerListStatus = `Producers Error, Retrying`;
   renderApp();
 };
 
@@ -645,7 +649,7 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
   } else {
     response.result.forEach((candidateVote) => {
-      mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
+      // mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
       const body = candidateVote.Vote_Body;
       body.forEach((candidateVoteElt) => {
         const parsedCandidateVote = {};
@@ -654,13 +658,13 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
         parsedCandidateVote.active = candidateVoteElt.Active.toString();
         parsedCandidateVote.votes = candidateVoteElt.Votes;
         parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
-        mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
+        // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
         parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
       });
     });
-    mainConsole.log('INTERIM Candidate Votes Callback', response.result);
+    // mainConsole.log('INTERIM Candidate Votes Callback', response.result);
   }
-  mainConsole.log('SUCCESS Candidate Votes Callback');
+  // mainConsole.log('SUCCESS Candidate Votes Callback');
 
   renderApp();
 };
@@ -785,31 +789,23 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
   parsedTransactionHistory.length = 0;
   transactionHistory.txs.forEach((tx, txIx) => {
     const time = formatDate(new Date(tx.time * 1000));
-    // tx.vin.forEach((vinElt) => {
-    //   const parsedTransaction = {};
-    //   parsedTransaction.n = txIx;
-    //   parsedTransaction.type = 'input';
-    //   parsedTransaction.value = vinElt.value;
-    //   parsedTransaction.valueSat = vinElt.valueSat;
-    //   parsedTransaction.address = vinElt.addr;
-    //   parsedTransaction.txHash = tx.txid;
-    //   parsedTransaction.txDetailsUrl = getTransactionHistoryLink(tx.txid);
-    //   parsedTransaction.time = time;
-    //   parsedTransactionHistory.push(parsedTransaction);
-    // });
     tx.vout.forEach((voutElt) => {
       voutElt.scriptPubKey.addresses.forEach((voutAddress) => {
         const parsedTransaction = {};
         parsedTransaction.n = txIx;
         if (voutAddress == address) {
-          parsedTransaction.type = 'input';
+          parsedTransaction.type = 'Receiving';
         } else {
-          parsedTransaction.type = 'output';
+          parsedTransaction.type = 'Was sent';
         }
         parsedTransaction.value = voutElt.value;
         parsedTransaction.valueSat = voutElt.valueSat;
         parsedTransaction.address = voutAddress;
         parsedTransaction.txHash = tx.txid;
+        parsedTransaction.txHashWithEllipsis = tx.txid;
+        if (parsedTransaction.txHashWithEllipsis.length > 30) {
+          parsedTransaction.txHashWithEllipsis = parsedTransaction.txHashWithEllipsis.substring(0, 30) + '...';
+        }
         parsedTransaction.txDetailsUrl = getTransactionHistoryLink(tx.txid);
         parsedTransaction.time = time;
         parsedTransactionHistory.push(parsedTransaction);
@@ -840,7 +836,7 @@ const getBalanceReadyCallback = (balanceResponse) => {
     balanceStatus = `Balance Received Error:${balanceResponse.Error}`;
     balance = undefined;
   }
-  mainConsole.log('getBalanceReadyCallback ' + JSON.stringify(balanceResponse));
+  // mainConsole.log('getBalanceReadyCallback ' + JSON.stringify(balanceResponse));
 
   renderApp();
 };
@@ -853,13 +849,20 @@ const requestBalance = () => {
   }
 };
 
-const getBlockchainStateErrorCallback = (response) => {
-  balanceStatus = `Blockchain State Error:${JSON.stringify(response)} `;
+const getBlockchainStateErrorCallback = (blockchainStateResponse) => {
+  balanceStatus = 'Blockchain State Error ' + blockchainStateResponse.Error;
+  blockchainState = blockchainStateResponse.Result;
 };
 
 const getBlockchainStateReadyCallback = (blockchainStateResponse) => {
-  blockchainStatus = `Blockchain State Received:${blockchainStateResponse.Desc} ${blockchainStateResponse.Error} `;
-  blockchainState = blockchainStateResponse.Result;
+  // mainConsole.log('getBlockchainStateReadyCallback ', blockchainStateResponse);
+  if (blockchainStateResponse.Error == 0) {
+    blockchainStatus = `Blockchain State Received`;
+    blockchainState = blockchainStateResponse.Result;
+  } else {
+    balanceStatus = 'Blockchain State Error ' + blockchainStateResponse.Error;
+    blockchainState = blockchainStateResponse.Result;
+  }
 
   renderApp();
 };
@@ -867,15 +870,17 @@ const getBlockchainStateReadyCallback = (blockchainStateResponse) => {
 const requestBlockchainState = () => {
   const stateUrl = getStateUrl();
   blockchainState = {};
-  blockchainStatus = `Blockchain State Requested ${stateUrl}`;
+  blockchainStatus = `Blockchain State Requested`;
   getJson(stateUrl, getBlockchainStateReadyCallback, getBlockchainStateErrorCallback);
 };
 
 const getConfirmations = () => {
-  if (blockchainState.height) {
-    return blockchainState.height - blockchainLastActionHeight;
-  } else {
-    return 0;
+  if (blockchainState) {
+    if (blockchainState.height) {
+      return blockchainState.height - blockchainLastActionHeight;
+    } else {
+      return 0;
+    }
   }
 };
 
@@ -895,23 +900,8 @@ const copyToPrivateKeyClipboard = () => {
   alert(`copied to clipboard:\n${generatedPrivateKeyHex}`);
 };
 
-const cancelSend = () => {
-  const sendToAddressElt = document.getElementById('sendToAddress');
-  const sendAmountElt = document.getElementById('sendAmount');
-  const feeAmountElt = document.getElementById('feeAmount');
-
-  sendToAddressElt.value = '';
-  sendAmountElt.value = '';
-  feeAmountElt.value = DEFAULT_FEE_SATS;
-
-  sendAmount = '';
-  feeAmountSats = '';
-  feeAmountEla = '';
-
-  showSend();
-};
-
 const clearGlobalData = () => {
+  // mainConsole.log('STARTED clearGlobalData');
   GuiUtils.setValue('privateKey', '');
   GuiUtils.setValue('mnemonic', '');
   GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
@@ -940,6 +930,7 @@ const clearGlobalData = () => {
   unspentTransactionOutputsStatus = 'No UTXOs Requested Yet';
   parsedUnspentTransactionOutputs.length = 0;
   renderApp();
+  // mainConsole.log('SUCCESS clearGlobalData');
 };
 
 const getLedgerDeviceInfo = () => {
@@ -965,7 +956,7 @@ const getUSDBalance = () => {
     if (elastos) {
       const usd = elastos.usd;
 
-      mainConsole.log('getUSDBalance', usd, balance, balanceStatus);
+      // mainConsole.log('getUSDBalance', usd, balance, balanceStatus);
       if (balance) {
         return (parseFloat(usd) * parseFloat(balance)).toFixed(3);
       }
@@ -986,8 +977,88 @@ const getProducerListStatus = () => {
   return producerListStatus;
 };
 
+const getParsedTransactionHistory = () => {
+  return parsedTransactionHistory;
+};
+
+const getBlockchainState = () => {
+  if (blockchainState) {
+    return blockchainState;
+  }
+  return {};
+};
+
+const getBlockchainStatus = () => {
+  return blockchainStatus;
+};
+
+const getTransactionHistoryStatus = () => {
+  return transactionHistoryStatus;
+};
+
+const getSendToAddressStatuses = () => {
+  return sendToAddressStatuses;
+};
+
+const getSendToAddressLinks = () => {
+  return sendToAddressLinks;
+};
+
+const getSendAmount = () => {
+  return sendAmount;
+};
+
+const getFeeAmountEla = () => {
+  return feeAmountEla;
+};
+
+const getSendToAddress = () => {
+  return sendToAddress;
+};
+
+const getFeeAmountSats = () => {
+  return feeAmountSats;
+};
+
+const getSendHasFocus = () => {
+  return sendHasFocus;
+};
+
+const setSendHasFocus = (_sendHasFocus) => {
+  sendHasFocus = _sendHasFocus;
+  // mainConsole.log('setSendHasFocus', sendHasFocus);
+};
+
+const getSendStep = () => {
+  return sendStep;
+};
+
+const setSendStep = (_sendStep) => {
+  sendStep = _sendStep;
+};
+
+const renderAppWrapper = () => {
+  renderApp();
+};
+
+const getCurrentNetworkIx = () => {
+  return currentNetworkIx;
+};
+
+const getCandidateVoteListStatus = () => {
+  return candidateVoteListStatus;
+};
+
+const getParsedCandidateVoteList = () => {
+  return parsedCandidateVoteList;
+};
+
+exports.DEFAULT_FEE_SATS = DEFAULT_FEE_SATS;
+exports.REST_SERVICES = REST_SERVICES;
 exports.init = init;
+exports.log = mainConsole.log;
 exports.trace = mainConsole.trace;
+exports.renderApp = renderAppWrapper;
 exports.setAppClipboard = setAppClipboard;
 exports.setAppDocument = setAppDocument;
 exports.setRenderApp = setRenderApp;
@@ -1005,3 +1076,29 @@ exports.getELABalance = getELABalance;
 exports.getUSDBalance = getUSDBalance;
 exports.getParsedProducerList = getParsedProducerList;
 exports.getProducerListStatus = getProducerListStatus;
+exports.getParsedTransactionHistory = getParsedTransactionHistory;
+exports.getBlockchainState = getBlockchainState;
+exports.getConfirmations = getConfirmations;
+exports.getBlockchainStatus = getBlockchainStatus;
+exports.getTransactionHistoryStatus = getTransactionHistoryStatus;
+exports.updateAmountAndFees = updateAmountAndFees;
+exports.getSendToAddressStatuses = getSendToAddressStatuses;
+exports.getSendToAddressLinks = getSendToAddressLinks;
+exports.getSendAmount = getSendAmount;
+exports.getFeeAmountEla = getFeeAmountEla;
+exports.getSendToAddress = getSendToAddress;
+exports.getFeeAmountSats = getFeeAmountSats;
+exports.getSendHasFocus = getSendHasFocus;
+exports.setSendHasFocus = setSendHasFocus;
+exports.getSendStep = getSendStep;
+exports.setSendStep = setSendStep;
+exports.sendAmountToAddress = sendAmountToAddress;
+exports.getRestService = getRestService;
+exports.setRestService = setRestService;
+exports.getCurrentNetworkIx = getCurrentNetworkIx;
+exports.changeNodeUrl = changeNodeUrl;
+exports.resetNodeUrl = resetNodeUrl;
+exports.getCandidateVoteListStatus = getCandidateVoteListStatus;
+exports.getParsedCandidateVoteList = getParsedCandidateVoteList;
+exports.toggleProducerSelection = toggleProducerSelection;
+exports.sendVoteTx = sendVoteTx;

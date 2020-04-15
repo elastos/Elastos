@@ -5,6 +5,7 @@ const GuiUtils = require('./GuiUtils.js');
 
 let app;
 
+
 const init = (_app) => {
   app = _app;
 };
@@ -22,7 +23,11 @@ const hideEverything = () => {
   hide('landing');
   hide('loginMnemonic');
   hide('loginPrivateKey');
-  hide('temp');
+  hide('homeMenu');
+  hide('homeMenuOpen');
+  hide('homeMenuClose');
+  hide('version');
+  hide('voting');
 };
 
 const showLanding = () => {
@@ -49,6 +54,28 @@ const showHome = () => {
   hideEverything();
   app.clearSendData();
   show('home');
+  show('homeMenuOpen');
+  show('version');
+};
+
+const showHomeMenu = () => {
+  show('homeMenu');
+  hide('homeMenuOpen');
+  show('homeMenuClose');
+  hide('version');
+};
+
+const hideHomeMenu = () => {
+  hide('homeMenu');
+  show('homeMenuOpen');
+  hide('homeMenuClose');
+  show('version');
+};
+
+const showVoting = () => {
+  hideEverything();
+  app.clearSendData();
+  show('voting');
 };
 
 exports.init = init;
@@ -56,3 +83,6 @@ exports.showLanding = showLanding;
 exports.showLoginMnemonic = showLoginMnemonic;
 exports.showLoginPrivateKey = showLoginPrivateKey;
 exports.showHome = showHome;
+exports.showHomeMenu = showHomeMenu;
+exports.hideHomeMenu = hideHomeMenu;
+exports.showVoting = showVoting;
