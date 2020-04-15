@@ -252,7 +252,7 @@ export default class extends DetailPage {
               {' '}
               <VersionTag>{item.version === version ? 'Current version' : null}</VersionTag>
             </VersionValue>
-            <VersionTime>{moment(item.updatedAt).format('MMM D, YYYY HH:mm A')}</VersionTime>
+            <VersionTime>{moment(item.createdAt).format('MMM D, YYYY HH:mm A')}</VersionTime>
           </div>
         ))}
       </HistoryList>
