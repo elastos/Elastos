@@ -1868,6 +1868,9 @@ func (b *BlockChain) checkCRCProposalCommonTracking(
 func (b *BlockChain) checkCRCProposalProgressTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
+	if int(cptPayload.Stage) >= len(pState.Proposal.Budgets) {
+		return errors.New("invalid tracking Stage")
+	}
 	if _, ok := pState.WithdrawableBudgets[cptPayload.Stage]; ok {
 		return errors.New("invalid budgets with tracking budget")
 	}
