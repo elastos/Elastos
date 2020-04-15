@@ -149,6 +149,10 @@ select, input {
   height: 200px;
 }
 
+.h180px {
+  height: 180px;
+}
+
 .h110px {
   height: 110px;
 }
@@ -256,6 +260,10 @@ select, input {
 
 .overflow_auto {
   overflow: auto;
+}
+
+.overflow_scroll {
+  overflow: scroll;
 }
 
 .td_linethrough {

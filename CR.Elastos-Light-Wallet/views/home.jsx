@@ -96,7 +96,7 @@ module.exports = (props) => {
         <br/>
         <div>Send Status</div>
         <br/>
-        <div className="h100px w100pct overflow_auto">
+        <div className="h90px w100pct overflow_auto">
         <table>
           <tbody>
             {
@@ -168,8 +168,8 @@ module.exports = (props) => {
           <td className="bordered w200px h200px ta_center va_top font_size12">
             <SendScreen />
           </td>
-          <td className="bordered w200px h200px ta_center va_top">
-            <div id="receive" className="bordered w200px h100px bgcolor_black_hover">
+          <td className="bordered w250px h200px ta_center va_top">
+            <div id="receive" className="bordered w250px h90px bgcolor_black_hover">
               Receive
               <div className="ta_left">
                 <div className="font_size12">Address</div>
@@ -179,7 +179,7 @@ module.exports = (props) => {
                 <span className="font_size12">{App.getAddress()}</span>
               </div>
             </div>
-            <div id="receive" className="bordered w200px h100px bgcolor_black_hover">
+            <div id="receive" className="bordered w250px h90px bgcolor_black_hover">
               <div className="ta_left">
                 <div className="font_size12">Ledger</div>
                 <span className="bgcolor_black">
@@ -210,7 +210,7 @@ module.exports = (props) => {
               <div className="float_right display_inline_block">&nbsp;{App.getBlockchainState().height}&nbsp;
                 Blocks</div>
               <p></p>
-              <div className="h100px overflow_auto">
+              <div className="h180px overflow_auto">
                 <table className="w100pct no_border whitespace_nowrap font_size12">
                   <tbody>
                     <tr>
