@@ -99,6 +99,7 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
                 url = config('MAIN_NET_SIDECHAIN_TOKEN_RPC_PORT')
             elif chain == "eth":
                 url = config('MAIN_NET_SIDECHAIN_ETH_RPC_PORT')
+                d["id"] = 1
             else:
                 status_message = f'The chain {chain} is not supported for the network {network}'
                 logging.debug(f"{api_key} : {status_message}")
