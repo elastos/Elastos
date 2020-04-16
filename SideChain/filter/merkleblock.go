@@ -201,11 +201,11 @@ func CheckMerkleBlock(m msg.MerkleBlock) ([]*common.Uint256, error) {
 		// First check if stack operations can be performed
 		// is stack one filled item?  that's complete.
 		if tip == 0 && s[0].h != nil {
-			if s[0].h.IsEqual(header.MerkleRoot) {
+			if s[0].h.IsEqual(header.Base.MerkleRoot) {
 				return r, nil
 			}
 			return nil, fmt.Errorf("computed root %s but expect %s\n",
-				s[0].h.String(), header.MerkleRoot.String())
+				s[0].h.String(), header.Base.MerkleRoot.String())
 		}
 		// is current position in the tree's dead zone? partial parent
 		if inDeadZone(pos, m.Transactions) {

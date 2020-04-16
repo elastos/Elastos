@@ -392,13 +392,15 @@ func GenerateBlock(cfg *Config) (*types.Block, error) {
 	}
 
 	header := types.Header{
-		Version:    0,
-		Previous:   *cfg.Chain.BestChain.Hash,
-		MerkleRoot: common.EmptyHash,
-		Timestamp:  uint32(cfg.Chain.MedianAdjustedTime().Unix()),
-		Bits:       cfg.ChainParams.PowLimitBits,
-		Height:     nextBlockHeight,
-		Nonce:      0,
+		Base: types.BaseHeader{
+			Version:    0,
+			Previous:   *cfg.Chain.BestChain.Hash,
+			MerkleRoot: common.EmptyHash,
+			Timestamp:  uint32(cfg.Chain.MedianAdjustedTime().Unix()),
+			Bits:       cfg.ChainParams.PowLimitBits,
+			Height:     nextBlockHeight,
+			Nonce:      0,
+		},
 	}
 
 	msgBlock := &types.Block{

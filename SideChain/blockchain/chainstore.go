@@ -498,17 +498,17 @@ func (s *ChainStore) GetBlock(hash common.Uint256) (*types.Block, error) {
 // can only be invoked by backend write goroutine
 func (s *ChainStore) addHeader(header *types.Header) {
 
-	log.Debugf("addHeader(), Height=%d", header.Height)
+	log.Debugf("addHeader(), Height=%d", header.Base.Height)
 
 	hash := header.Hash()
 
 	s.mu.Lock()
 	s.headerCache[header.Hash()] = header
-	s.headerIndex[header.Height] = hash
+	s.headerIndex[header.Base.Height] = hash
 	s.headerIdx.PushBack(*header)
 	s.mu.Unlock()
 
-	log.Debug("[addHeader]: finish, header height:", header.Height)
+	log.Debug("[addHeader]: finish, header height:", header.Base.Height)
 }
 
 func (s *ChainStore) SaveBlock(b *types.Block) error {
