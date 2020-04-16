@@ -209,8 +209,16 @@ img {
   white-space: nowrap;
 }
 
-.stakingarea > * {
+.stakingarea {
   position: absolute;
+  width: 230px;
+  top: 281px;
+  height: 60px;
+  border-radius: 10px;
+}
+
+.stakingarea > * {
+  position: fixed;
   margin: 0;
 
 }
@@ -232,6 +240,15 @@ color: #B2B4C3;
 letter-spacing: 0;
 left: 57px;
 top: 291.13px;
+white-space: nowrap;
+}
+
+.candidate-voted {
+font-size: 7.8px;
+color: #B2B4C3;
+letter-spacing: 0;
+left: 57px;
+top: 301.13px;
 white-space: nowrap;
 }
 

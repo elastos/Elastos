@@ -663,19 +663,22 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
   } else {
     response.result.forEach((candidateVote) => {
       // mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
-      const body = candidateVote.Vote_Body;
-      body.forEach((candidateVoteElt) => {
-        const parsedCandidateVote = {};
-        if (candidateVoteElt.Active == 1) {
-          parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
-          parsedCandidateVote.nickname = candidateVoteElt.Nickname;
-          parsedCandidateVote.state = candidateVoteElt.State;
-          parsedCandidateVote.votes = candidateVoteElt.Votes;
-          parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
-          // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
-          parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
-        }
-      });
+      const header = candidateVote.Vote_Header;
+      if (header.Is_valid === 'YES') {
+        const body = candidateVote.Vote_Body;
+        body.forEach((candidateVoteElt) => {
+          const parsedCandidateVote = {};
+          if (candidateVoteElt.Active == 1) {
+            parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
+            parsedCandidateVote.nickname = candidateVoteElt.Nickname;
+            parsedCandidateVote.state = candidateVoteElt.State;
+            parsedCandidateVote.votes = candidateVoteElt.Votes;
+            parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
+            // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
+            parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
+          }
+        });
+      }
     });
     // mainConsole.log('INTERIM Candidate Votes Callback', response.result);
   }

@@ -8,6 +8,7 @@ module.exports = (props) => {
   <div id="staking" class="stakingarea dark-hover" onClick={(e) => GuiToggles.showVoting()}>
     <p class="stakingtitle">staking</p>
     <p class="candidate-total">{App.getParsedProducerList().producers.length} candidates total</p>
+    <p class="candidate-voted">{App.getParsedCandidateVoteList().candidateVotes.length}/36 Active Votes</p>
     <p class="votenow gradient-font" onClick={(e) => GuiToggles.showVoting()} >Vote now</p>
     <img src="" alt="" class="arrow-right" />
   </div>
