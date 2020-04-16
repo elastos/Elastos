@@ -173,14 +173,15 @@ module.exports = (props) => {
       <Branding/>
       <header>
         <img src="artwork/system.svg" class="system-icon" />
-        <img src="artwork/refreshicon.svg" class="refresh-icon" />
+        <img src="artwork/refreshicon.svg" class="refresh-icon" onClick={(e) => App.refreshBlockchainData()} />
         <nav id="homeMenuOpen" title="menu" onClick={(e) => showHomeMenu()}>
-          <img src="artwork/nav.svg" class="nav-icon" onClick={(e) => showHomeMenu()}/>
+          <img src="artwork/nav.svg" class="nav-icon dark-hover" onClick={(e) => showHomeMenu()}/>
         </nav>
       </header>
       <div class="pricearea">
        <Balance App={App}/>
       </div> 
+      
     
       <div class="stakingarea">
        <Staking App={App} GuiToggles={GuiToggles}/>
@@ -195,6 +196,8 @@ module.exports = (props) => {
         <News/>
       </div>
 
+      </div>
+
       <div class="send-area send-bg"></div>
     
       <div class="send-area"> 
@@ -202,7 +205,7 @@ module.exports = (props) => {
 
       </div>
     
-    </div>
+    
     <div class="receive-area">
         <img src="artwork/sendicon.svg" class="rec-icon" />
         <p class="rec-text">Receive</p>
@@ -283,7 +286,9 @@ module.exports = (props) => {
 </div>
 
 </div>
-    {/* <table id="home" className="bordered w750h520px">
+  )
+};
+    /* <table id="home" className="bordered w750h520px">
       <tbody>
         <tr>
           <td colSpan="3" className="bordered w750px h20px ta_right va_top">
@@ -382,9 +387,9 @@ module.exports = (props) => {
           </td>
         </tr>
       </tbody>
-    </table> */}
-  );
-};
+    </table> */
+
+  
 
 
   //     <div id="sendOne" className={`bordered w250px h200px bgcolor_black_hover ${visibility}`}>

@@ -5,10 +5,10 @@ module.exports = (props) => {
   const GuiToggles = props.GuiToggles;
   return (
 
-  <div id="staking" class="stakingarea">
+  <div id="staking" class="stakingarea dark-hover" onClick={(e) => GuiToggles.showVoting()}>
     <p class="stakingtitle">staking</p>
-    <p class="candidate-total">95 candidates total</p>
-    <p class="votenow gradient-font"  onClick={(e) => GuiToggles.showVoting()}>Vote now</p>
+    <p class="candidate-total">{App.getParsedProducerList().producers.length} candidates total</p>
+    <p class="votenow gradient-font" onClick={(e) => GuiToggles.showVoting()} >Vote now</p>
     <img src="" alt="" class="arrow-right" />
   </div>
 

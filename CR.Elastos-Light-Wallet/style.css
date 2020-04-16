@@ -34,6 +34,7 @@ img {
   font-size: 10px;
   text-align: center;
   margin: 0;
+  background-color: rgba (0, 0, 0);
 }
 
 #homeMenu{
@@ -96,6 +97,22 @@ img {
   grid-template-rows: 309px auto;
 }
 
+.gridback-voting {
+  display: grid;
+  grid-template-areas: 
+  'left top-right'
+  'left bottom-right';
+  border-radius: 40px;
+  position: relative;
+  grid-template-columns: 235px auto;
+  grid-template-rows: 345px auto;
+  color: #FFFFFF;
+}
+
+.gridback-voting table {
+  color: #FFFFFF;
+}
+
 .nav-icon {
   top: 13px;
   left: 734px;
@@ -119,11 +136,20 @@ img {
 
 }
 
+.dark-hover:hover {
+  background-image: linear-gradient(-180deg, #33373D 0%, rgba(51,55,61,0.00) 130%);
+
+}
+
 
 .system-icon {
   top: 33px;
   left: 28px;
   position: absolute;
+}
+
+.logo-info {
+  grid-template-areas: left;
 }
 
 .logoimage {
@@ -180,6 +206,7 @@ img {
   left: 57px;
   position: absolute;
   margin: 0;
+  white-space: nowrap;
 }
 
 .stakingarea > * {
@@ -712,7 +739,7 @@ footer {
   display: flex;
   bottom: 15px;
   left: 15px;
-  width: 33%;
+  width: 30%;
   text-align: left;
   height: 30px;
   align-items: center;
