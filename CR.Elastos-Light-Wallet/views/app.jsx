@@ -43,7 +43,9 @@ const openDevTools = () => {
 
 class AppView extends React.Component {
   render() {
-    return (<div id="app" className="display_inline_block ta_center va_top font_sans_10">
+
+    // return (<div id="app" className="display_inline_block ta_center va_top font_sans_10">
+    return (<div id="app">
       <Home App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <Landing App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <LoginMnemonic App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
