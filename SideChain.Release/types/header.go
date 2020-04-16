@@ -9,7 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 )
 
-type Header struct {
+type BaseHeader struct {
 	Version    uint32
 	Previous   common.Uint256
 	MerkleRoot common.Uint256
@@ -17,19 +17,61 @@ type Header struct {
 	Bits       uint32
 	Nonce      uint32
 	Height     uint32
+}
+
+func (header *BaseHeader) serializeNoAux(w io.Writer) error {
+	return common.WriteElements(w,
+		header.Version,
+		&header.Previous,
+		&header.MerkleRoot,
+		header.Timestamp,
+		header.Bits,
+		header.Nonce,
+		header.Height,
+	)
+}
+
+func (header *BaseHeader) Serialize(w io.Writer) error {
+	err := header.serializeNoAux(w)
+	if err != nil {
+		return err
+	}
+
+	w.Write([]byte{byte(1)})
+	return nil
+}
+
+func (header *BaseHeader) Deserialize(r io.Reader) error {
+	err := common.ReadElements(r,
+		&header.Version,
+		&header.Previous,
+		&header.MerkleRoot,
+		&header.Timestamp,
+		&header.Bits,
+		&header.Nonce,
+		&header.Height,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type Header struct {
+	Base       BaseHeader
 	SideAuxPow auxpow.SideAuxPow
 }
 
 func (header *Header) SetVersion(version uint32) {
-	header.Version = version
+	header.Base.Version = version
 }
 
 func (header *Header) GetVersion() uint32 {
-	return header.Version
+	return header.Base.Version
 }
 
 func (header *Header) Serialize(w io.Writer) error {
-	err := header.serializeNoAux(w)
+	err := header.Base.serializeNoAux(w)
 	if err != nil {
 		return err
 	}
@@ -44,15 +86,7 @@ func (header *Header) Serialize(w io.Writer) error {
 }
 
 func (header *Header) Deserialize(r io.Reader) error {
-	err := common.ReadElements(r,
-		&header.Version,
-		&header.Previous,
-		&header.MerkleRoot,
-		&header.Timestamp,
-		&header.Bits,
-		&header.Nonce,
-		&header.Height,
-	)
+	err := header.Base.Deserialize(r)
 	if err != nil {
 		return err
 	}
@@ -68,38 +102,26 @@ func (header *Header) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (header *Header) serializeNoAux(w io.Writer) error {
-	return common.WriteElements(w,
-		header.Version,
-		&header.Previous,
-		&header.MerkleRoot,
-		header.Timestamp,
-		header.Bits,
-		header.Nonce,
-		header.Height,
-	)
-}
-
 func (header *Header) Hash() common.Uint256 {
 	buf := new(bytes.Buffer)
-	header.serializeNoAux(buf)
+	header.Base.serializeNoAux(buf)
 	return common.Sha256D(buf.Bytes())
 }
 
 func (header *Header) SetHeight(height uint32) {
-	header.Height = height
+	header.Base.Height = height
 }
 
 func (header *Header) GetHeight() uint32 {
-	return header.Height
+	return header.Base.Height
 }
 
 func (header *Header) GetBits() uint32 {
-	return header.Bits
+	return header.Base.Bits
 }
 
 func (header *Header) SetBits(bits uint32) {
-	header.Bits = bits
+	header.Base.Bits = bits
 }
 
 func (header *Header) GetAuxPow() *auxpow.SideAuxPow {
@@ -111,33 +133,33 @@ func (header *Header) SetAuxPow(sideAuxPow *auxpow.SideAuxPow) {
 }
 
 func (header *Header) SetPrevious(previous common.Uint256) {
-	header.Previous = previous
+	header.Base.Previous = previous
 }
 
-func (header *Header) GetPrevious() common.Uint256  {
-	return header.Previous
+func (header *Header) GetPrevious() common.Uint256 {
+	return header.Base.Previous
 }
 
 func (header *Header) SetMerkleRoot(root common.Uint256) {
-	header.MerkleRoot = root
+	header.Base.MerkleRoot = root
 }
 
 func (header *Header) GetMerkleRoot() common.Uint256 {
-	return header.MerkleRoot
+	return header.Base.MerkleRoot
 }
 
 func (header *Header) SetTimeStamp(timestamp uint32) {
-	header.Timestamp = timestamp
+	header.Base.Timestamp = timestamp
 }
 
 func (header *Header) GetTimeStamp() uint32 {
-	return header.Timestamp
+	return header.Base.Timestamp
 }
 
 func (header *Header) SetNonce(nonce uint32) {
-	header.Nonce = nonce
+	header.Base.Nonce = nonce
 }
 
 func (header *Header) GetNonce() uint32 {
-	return header.Nonce
+	return header.Base.Nonce
 }

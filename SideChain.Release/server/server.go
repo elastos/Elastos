@@ -27,6 +27,10 @@ const (
 
 	// MaxBlocksPerMsg is the maximum number of blocks allowed per message.
 	MaxBlocksPerMsg = 500
+
+	// InvTypeFilteredSideChainBlock type of inventory message has no
+	// sideAuxPow in header.
+	InvTypeFilteredSideChainBlock msg.InvType = 6
 )
 
 // Config defines the parameters to create a server instance.
@@ -307,8 +311,9 @@ func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
 			err = sp.server.pushBlockMsg(sp, &iv.Hash, c, waitChan)
 		case msg.InvTypeFilteredBlock:
 			err = sp.server.pushMerkleBlockMsg(sp, &iv.Hash, c, waitChan)
+		case InvTypeFilteredSideChainBlock:
+			err = sp.server.pushSideChainMerkleBlockMsg(sp, &iv.Hash, c, waitChan)
 		default:
-			log.Warnf("Unknown type in inventory request %d", iv.Type)
 			continue
 		}
 		if err != nil {
@@ -628,6 +633,66 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 	if len(matchedTxIndices) == 0 {
 		dc = doneChan
 	}
+	sp.QueueMessage(merkle, dc)
+
+	// Finally, send any matched transactions.
+	blkTransactions := blk.Transactions
+	for i, txIndex := range matchedTxIndices {
+		// Only send the done channel on the final transaction.
+		var dc chan<- struct{}
+		if i == len(matchedTxIndices)-1 {
+			dc = doneChan
+		}
+		if txIndex < uint32(len(blkTransactions)) {
+			sp.QueueMessage(msg.NewTx(blkTransactions[txIndex]), dc)
+		}
+	}
+
+	return nil
+}
+
+// pushSideChainMerkleBlockMsg sends a merkleblock message for the provided block hash to
+// the connected peer.  Since a merkle block requires the peer to have a filter
+// loaded, this call will simply be ignored if there is no filter loaded.  An
+// error is returned if the block hash is not known.
+func (s *server) pushSideChainMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
+	doneChan chan<- struct{}, waitChan <-chan struct{}) error {
+
+	// Do not send a response if the peer doesn't have a filter loaded.
+	if !sp.filter.IsLoaded() {
+		if doneChan != nil {
+			doneChan <- struct{}{}
+		}
+		return nil
+	}
+
+	// Fetch the block from the database.
+	blk, err := s.chain.GetBlockByHash(*hash)
+	if err != nil {
+		if doneChan != nil {
+			doneChan <- struct{}{}
+		}
+		return err
+	}
+
+	// Generate a merkle block by filtering the requested block according
+	// to the filter for the peer.
+	merkle, matchedTxIndices := filter.NewMerkleBlock(blk, sp.filter)
+	baseHeader := merkle.Header.(*types.Header).Base
+	merkle.Header = &baseHeader
+
+	// Once we have fetched data wait for any previous operation to finish.
+	if waitChan != nil {
+		<-waitChan
+	}
+
+	// Send the merkleblock.  Only send the done channel with this message
+	// if no transactions will be sent afterwards.
+	var dc chan<- struct{}
+	if len(matchedTxIndices) == 0 {
+		dc = doneChan
+	}
+
 	sp.QueueMessage(merkle, dc)
 
 	// Finally, send any matched transactions.

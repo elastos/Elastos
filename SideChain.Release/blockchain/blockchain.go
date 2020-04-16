@@ -1213,7 +1213,7 @@ func (b *BlockChain) locateBlocks(startHash *common.Uint256, stopHash *common.Ui
 			if err != nil {
 				return nil, err
 			}
-			startHeight = startHeader.Height
+			startHeight = startHeader.Base.Height
 			count = curHeight - startHeight
 			if count > maxBlockHashes {
 				count = maxBlockHashes
@@ -1224,13 +1224,13 @@ func (b *BlockChain) locateBlocks(startHash *common.Uint256, stopHash *common.Ui
 		if err != nil {
 			return nil, err
 		}
-		stopHeight = stopHeader.Height
+		stopHeight = stopHeader.Base.Height
 		if !startHash.IsEqual(common.EmptyHash) {
 			startHeader, err := b.db.GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
-			startHeight = startHeader.Height
+			startHeight = startHeader.Base.Height
 
 			// avoid unsigned integer underflow
 			if stopHeight < startHeight {
