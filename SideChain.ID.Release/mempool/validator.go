@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math"
 	"strings"
+	"time"
 
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -376,7 +377,11 @@ func (v *validator) checkRegisterDID(txn *types.Transaction) error {
 		return errors.New("invalid Operation")
 	}
 
-	//
+	_, err := time.Parse(time.RFC3339, payloadDidInfo.PayloadInfo.Expires)
+	if err != nil {
+		return errors.New("invalid Expires")
+	}
+
 	if err := v.checkDIDOperation(&payloadDidInfo.Header,
 		payloadDidInfo.PayloadInfo.ID); err != nil {
 		return err
