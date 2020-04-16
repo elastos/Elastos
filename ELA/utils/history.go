@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package utils
 
@@ -185,8 +185,7 @@ func (h *History) SeekTo(height uint32) error {
 func (h *History) RollbackTo(height uint32) error {
 	// check whether history is allowed for rollback.
 	if height >= h.height {
-		return fmt.Errorf("rollback to %d overflow history capacity,"+
-			" at least rollback to %d", height, h.height-1)
+		return nil
 	}
 
 	// rollback and reset tempChanges before rollback.
