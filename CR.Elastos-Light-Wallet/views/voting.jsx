@@ -41,24 +41,24 @@ module.exports = (props) => {
           </td>
           <td colSpan="2" className="bordered w400px h200px ta_center va_top">
             <div className="bordered padding_5px bgcolor_black_hover" onClick={(e) => GuiToggles.showHome()}>Home</div>
-            <div className="gray_on_white">Producer List Status</div>
+            <div className="display_inline_block">Producer List Status</div>
             <br/> {App.getProducerListStatus()}
             <br/>
-            <div className="gray_on_white float_right display_inline_block">
+            <div className="display_inline_block">
               <span className="padding_2px">{App.getParsedProducerList().totalvotes}</span>
               Votes</div>
-            <div className="gray_on_white float_right display_inline_block">
+            <div className="display_inline_block">
               <span className="padding_2px">{App.getParsedProducerList().totalcounts}</span>
               Counts</div>
-            <div className="gray_on_white float_right display_inline_block">
+            <div className="display_inline_block">
               <span className="padding_2px">{App.getParsedProducerList().producersCandidateCount}</span>
               Selected Candidates</div>
-            <div className="gray_on_white display_inline_block">
+            <div className="display_inline_block">
               Candidates (
               <span className="padding_2px">{App.getParsedProducerList().producers.length}</span>
               total)</div>
             <p></p>
-            <div className="h200px overflow_auto">
+            <div className="h110px overflow_auto">
               <table className="w100pct no_border whitespace_nowrap font_size12">
                 <tbody>
                   <tr>
@@ -94,21 +94,22 @@ module.exports = (props) => {
             <SocialMedia GuiToggles={GuiToggles}/>
           </td>
           <td colSpan="2" className="bordered w400px h200px ta_center va_top">
-          <div className="gray_on_white">Candidate List Status</div>
+            <div className="display_inline_block">Candidate List Status</div>
             <br/> {App.getCandidateVoteListStatus()}
             <br/>
-            <div className="gray_on_white ` display_inline_block">
+            <div className="display_inline_block">
               Candidate Votes (
               <span>{App.getParsedCandidateVoteList().candidateVotes.length}</span>
               total)</div>
             <p></p>
             <div className="h200px overflow_auto">
-              <table className="w100pct black_on_offwhite no_border whitespace_nowrap">
+              <table className="w100pct no_border whitespace_nowrap font_size12">
                 <tbody>
                   <tr>
                     <td className="no_border no_padding">N</td>
                     <td className="no_border no_padding">Nickname</td>
                     <td className="no_border no_padding">Votes</td>
+                    <td className="no_border no_padding">State</td>
                   </tr>
                   {
                     App.getParsedCandidateVoteList().candidateVotes.map((item, index) => {
@@ -116,6 +117,7 @@ module.exports = (props) => {
                         <td className="no_border no_padding">{item.n}</td>
                         <td className="no_border no_padding">{item.nickname}</td>
                         <td className="no_border no_padding">{item.votes}</td>
+                        <td className="no_border no_padding">{item.state}</td>
                       </tr>)
                     })
                   }

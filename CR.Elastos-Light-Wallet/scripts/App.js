@@ -19,6 +19,10 @@ const GuiUtils = require('./GuiUtils.js');
 const CoinGecko = require('./CoinGecko.js');
 
 /** global constants */
+const POLL_INTERVAL = 70000;
+
+const JSON_TIMEOUT = 60000;
+
 const LOG_LEDGER_POLLING = false;
 
 const MAX_POLL_DATA_TYPE_IX = 5;
@@ -162,7 +166,7 @@ const setRestService = (ix) => {
 };
 
 const getTransactionHistoryUrl = (address) => {
-  const url = `${EXPLORER}/api/v1/txs/?pageNum=0&address=${address}`;
+  const url = `${restService}/api/1/history/${address}`;
   return url;
 };
 
@@ -294,7 +298,7 @@ const pollForData = () => {
       case MAX_POLL_DATA_TYPE_IX:
         // only check every 10 seconds for a change in device status.
         pollDataTypeIx = 0;
-        setTimeout(pollForData, 10000);
+        setTimeout(pollForData, POLL_INTERVAL);
         break;
       default:
         throw Error('poll data index reset failed.');
@@ -324,6 +328,9 @@ const postJson = (url, jsonString, readyCallback, errorCallback) => {
     }
   };
   xhttp.responseType = 'text';
+  if (JSON_TIMEOUT != undefined) {
+    xhttp.timeout = JSON_TIMEOUT;
+  }
   xhttp.open('POST', url, true);
   xhttp.setRequestHeader('Content-Type', 'application/json');
   xhttp.setRequestHeader('Authorization', 'Basic RWxhVXNlcjpFbGExMjM=');
@@ -344,6 +351,9 @@ const getJson = (url, readyCallback, errorCallback) => {
       }
     }
   };
+  if (JSON_TIMEOUT != undefined) {
+    xhttp.timeout = JSON_TIMEOUT;
+  }
   xhttp.responseType = 'text';
   xhttp.open('GET', url, true);
   xhttp.send();
@@ -395,6 +405,8 @@ const requestBlockchainData = () => {
   requestBalance();
   requestUnspentTransactionOutputs();
   requestBlockchainState();
+  requestListOfProducers();
+  requestListOfCandidateVotes();
 };
 
 const getPublicKeyFromMnemonic = () => {
@@ -632,6 +644,7 @@ const toggleProducerSelection = (item) => {
 };
 
 const requestListOfCandidateVotesErrorCallback = (response) => {
+  mainConsole.log('ERRORED Candidate Votes Callback', response);
   const displayRawError = true;
   if (displayRawError) {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
@@ -653,13 +666,15 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
       const body = candidateVote.Vote_Body;
       body.forEach((candidateVoteElt) => {
         const parsedCandidateVote = {};
-        parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
-        parsedCandidateVote.nickname = candidateVoteElt.Nickname;
-        parsedCandidateVote.active = candidateVoteElt.Active.toString();
-        parsedCandidateVote.votes = candidateVoteElt.Votes;
-        parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
-        // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
-        parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
+        if (candidateVoteElt.Active == 1) {
+          parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
+          parsedCandidateVote.nickname = candidateVoteElt.Nickname;
+          parsedCandidateVote.state = candidateVoteElt.State;
+          parsedCandidateVote.votes = candidateVoteElt.Votes;
+          parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
+          // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
+          parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
+        }
       });
     });
     // mainConsole.log('INTERIM Candidate Votes Callback', response.result);
@@ -670,12 +685,15 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
 };
 
 const requestListOfCandidateVotes = () => {
-  candidateVoteListStatus = 'Candidate Votes Requested';
+  if (address !== undefined) {
+    candidateVoteListStatus = 'Candidate Votes Requested';
 
-  const txUrl = `${getRestService()}/api/v1/dpos/address/${address}?pageSize=5000&pageNum=1`;
+    const txUrl = `${getRestService()}/api/v1/dpos/address/${address}?pageSize=5000&pageNum=1`;
+    mainConsole.log('requestListOfCandidateVotes', txUrl);
 
-  renderApp();
-  getJson(txUrl, requestListOfCandidateVotesReadyCallback, requestListOfCandidateVotesErrorCallback);
+    renderApp();
+    getJson(txUrl, requestListOfCandidateVotesReadyCallback, requestListOfCandidateVotesErrorCallback);
+  }
 };
 
 const sendVoteTx = () => {
@@ -785,33 +803,36 @@ const getTransactionHistoryErrorCallback = (response) => {
 };
 
 const getTransactionHistoryReadyCallback = (transactionHistory) => {
+  // mainConsole.log('getTransactionHistoryReadyCallback ' + JSON.stringify(transactionHistory));
   transactionHistoryStatus = 'History Received';
   parsedTransactionHistory.length = 0;
-  transactionHistory.txs.forEach((tx, txIx) => {
-    const time = formatDate(new Date(tx.time * 1000));
-    tx.vout.forEach((voutElt) => {
-      voutElt.scriptPubKey.addresses.forEach((voutAddress) => {
+  if (transactionHistory.result !== undefined) {
+    if (transactionHistory.result.History !== undefined) {
+      transactionHistory.result.History.forEach((tx, txIx) => {
+        const time = formatDate(new Date(tx.CreateTime * 1000));
         const parsedTransaction = {};
         parsedTransaction.n = txIx;
-        if (voutAddress == address) {
+        parsedTransaction.type = tx.Type;
+        if (tx.Type == 'income') {
           parsedTransaction.type = 'Receiving';
-        } else {
+        }
+        if (tx.Type == 'spend') {
           parsedTransaction.type = 'Was sent';
         }
-        parsedTransaction.value = voutElt.value;
-        parsedTransaction.valueSat = voutElt.valueSat;
-        parsedTransaction.address = voutAddress;
-        parsedTransaction.txHash = tx.txid;
-        parsedTransaction.txHashWithEllipsis = tx.txid;
+        parsedTransaction.value = tx.Value;
+        // parsedTransaction.valueSat = voutElt.valueSat;
+        parsedTransaction.address = tx.Address;
+        parsedTransaction.txHash = tx.Txid;
+        parsedTransaction.txHashWithEllipsis = tx.Txid;
         if (parsedTransaction.txHashWithEllipsis.length > 30) {
           parsedTransaction.txHashWithEllipsis = parsedTransaction.txHashWithEllipsis.substring(0, 30) + '...';
         }
-        parsedTransaction.txDetailsUrl = getTransactionHistoryLink(tx.txid);
+        parsedTransaction.txDetailsUrl = getTransactionHistoryLink(tx.Txid);
         parsedTransaction.time = time;
         parsedTransactionHistory.push(parsedTransaction);
       });
-    });
-  });
+    }
+  }
 
   renderApp();
 };
