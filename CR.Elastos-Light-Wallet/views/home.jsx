@@ -18,13 +18,8 @@ module.exports = (props) => {
   const Version = props.Version;
   const GuiToggles = props.GuiToggles;
 
-  const showHomeMenu = () => {
-    GuiToggles.showHomeMenu();
-  }
-
-  const changeNodeUrl = () => {
-    App.changeNodeUrl();
-    GuiToggles.hideHomeMenu();
+  const showMenu = () => {
+    GuiToggles.showMenu('home');
   }
 
   const sendIsFocus = () => {
@@ -85,18 +80,18 @@ module.exports = (props) => {
   const SendScreenOne = (props) => {
     const visibility = props.visibility;
     return (
-      <div  id="sendOne" className={`send-area ${visibility}`} > 
-        <img src="artwork/sendicon.svg" class="send-icon" />
-        <p class="send-text">Send</p>
+      <div  id="sendOne" className={`send-area ${visibility}`} >
+        <img src="artwork/sendicon.svg" className="send-icon" />
+        <p className="send-text">Send</p>
         <input type="text" size="34" id="sendToAddress" className="ela-address__input" placeholder="Enter ELA Address" defaultValue={App.getSendToAddress()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}/>
         <input type="text" size="14" id="sendAmount" className="ela-send__amount" placeholder="Amount" defaultValue={App.getSendAmount()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}/>
-        <div class="quick-elaselector">
-          <button class="quick-elaselector__icon quarter">1/4</button>
-          <button class="quick-elaselector__icon half">Half</button>
-          <button class="quick-elaselector__icon all">All</button>
+        <div className="quick-elaselector">
+          <button className="quick-elaselector__icon quarter">1/4</button>
+          <button className="quick-elaselector__icon half">Half</button>
+          <button className="quick-elaselector__icon all">All</button>
         </div>
-        <p class="elatext-send">ELA</p>
-        <button class="next-button" onClick={(e) => showConfirmAndSeeFees()}>
+        <p className="elatext-send">ELA</p>
+        <button className="next-button" onClick={(e) => showConfirmAndSeeFees()}>
         <p>Next</p>
         </button>
 
@@ -133,24 +128,24 @@ module.exports = (props) => {
             }
           </tbody>
         </table>
-        </div>        
+        </div>
 
       </div>
         );
       }
-  
+
 
   const SendScreenTwo = (props) => {
     const visibility = props.visibility;
     return (
       <div id="sendTwo" className={`send-area ${visibility}`}>
-        <img src="artwork/sendicon.svg" class="send-icon" title="Refresh Blockchain Data"  onClick={(e) => App.refreshBlockchainData()}/>
-        <p class="send-text">Send</p>
-        <div class="fees-text">Fees (in Satoshis)</div>
+        <img src="artwork/sendicon.svg" className="send-icon" title="Refresh Blockchain Data"  onClick={(e) => App.refreshBlockchainData()}/>
+        <p className="send-text">Send</p>
+        <div className="fees-text">Fees (in Satoshis)</div>
         <input type="text" size="14" id="feeAmount" placeholder="Fees" defaultValue={App.DEFAULT_FEE_SATS} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}></input>
-        <div class="estimate-new"onClick={(e) => showConfirmAndSeeFees()}>Estimated New Balance</div>
-        <p class="fees-balance">Your balance will be deducted <span> {App.getSendAmount()} ELA</span>
-          + <br /> <span>{App.getFeeAmountEla()}</span> 
+        <div className="estimate-new"onClick={(e) => showConfirmAndSeeFees()}>Estimated New Balance</div>
+        <p className="fees-balance">Your balance will be deducted <span> {App.getSendAmount()} ELA</span>
+          + <br /> <span>{App.getFeeAmountEla()}</span>
            ELA in fees.</p>
           <span className="send-back" onClick={(e) => cancelSend()}> Back </span>
           <button className="sendela-button" onClick={(e) => sendAmountToAddress()}>
@@ -161,122 +156,124 @@ module.exports = (props) => {
   }
 
   return (
-    <div id="home" class="gridback w780h520px">
-     <Menu App={App} openDevTools={openDevTools} GuiToggles={GuiToggles}/>
+    <div id="home" className="gridback w780h520px">
+     <Menu App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} page="home"/>
      {/* <div id="homeMenuOpen" className="h25px bordered display_inline_block bgcolor_black_hover" title="menu" onClick={(e) => showHomeMenu()}>
        <img src="artwork/more-vertical.svg" />
      </div> */}
         <div id="version" className="display_inline_block hidden">
            <Version/>
        </div>
-    <div class="logo-info">
+    <div className="logo-info">
       <Branding/>
       <header>
-        <img src="artwork/system.svg" class="system-icon" />
-        <img src="artwork/refreshicon.svg" class="refresh-icon" onClick={(e) => App.refreshBlockchainData()} />
-        <nav id="homeMenuOpen" title="menu" onClick={(e) => showHomeMenu()}>
-          <img src="artwork/nav.svg" class="nav-icon dark-hover" onClick={(e) => showHomeMenu()}/>
+        <img src="artwork/system.svg" className="system-icon" />
+        <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()} />
+        <nav id="homeMenuOpen" title="menu" onClick={(e) => showMenu()}>
+          <img src="artwork/nav.svg" className="nav-icon dark-hover" onClick={(e) => showMenu()}/>
         </nav>
       </header>
-      <div class="pricearea">
+      <div className="pricearea">
        <Balance App={App}/>
-      </div> 
-      
-    
-      <div class="stakingarea">
+      </div>
+
+
+      <div className="stakingarea">
        <Staking App={App} GuiToggles={GuiToggles}/>
       </div>
-    
-      
+
+
       <div id="scroll-radio">
-    
+
       </div>
-    
+
       <div>
         <News/>
       </div>
 
       </div>
 
-      <div class="send-area send-bg"></div>
-    
-      <div class="send-area"> 
+      <div className="send-area send-bg"></div>
+
+      <div className="send-area">
                   <SendScreen />
 
       </div>
-    
-    
-    <div class="receive-area">
-        <img src="artwork/sendicon.svg" class="rec-icon" />
-        <p class="rec-text">Receive</p>
-        <p class="address-text">Address</p>
-        <button class="copy-button">
-          <img src="artwork/copyicon.svg" class="copy-icon" height="26px" width="26px" />
+
+
+    <div className="receive-area">
+        <img src="artwork/sendicon.svg" className="rec-icon" />
+        <p className="rec-text">Receive</p>
+        <p className="address-text">Address</p>
+        <button className="copy-button">
+          <img src="artwork/copyicon.svg" className="copy-icon" height="26px" width="26px" />
         </button>
-        <p class="address-ex">{App.getAddress()}</p>
-        <img src="artwork/qricon.svg" class="qr-icon" height="54px" width="54px" />
-        <p class="scanqr-text">Scan <strong>QR code</strong> to get <br />ELA Address</p>
-        <p class="howqr-text gradient-font">How QR works?</p>
-        <img src="artwork/separator.svg" class="rec-separator" />
-        <p class="ledger-heading">Ledger</p>
-        <img src="artwork/ledgericon.svg" alt="" class="ledger-icon" height="24px" width="38px" />
-        <p class="verifyledger-text">Verify address on <br /><strong>ledger</strong></p>
+        <p className="address-ex">{App.getAddress()}</p>
+        <img src="artwork/qricon.svg" className="qr-icon" height="54px" width="54px" />
+        <p className="scanqr-text">Scan <strong>QR code</strong> to get <br />ELA Address</p>
+        <p className="howqr-text gradient-font">How QR works?</p>
+        <img src="artwork/separator.svg" className="rec-separator" />
+        <p className="ledger-heading">Ledger</p>
+        <img src="artwork/ledgericon.svg" alt="" className="ledger-icon" height="24px" width="38px" />
+        <p className="verifyledger-text">Verify address on <br /><strong>ledger</strong></p>
 
 </div>
-  
-<div class="transaction-area">
-  <p class="transactions-heading">Transactions</p>
-  <p class="blockcount"><span>Blocks:</span><span>{App.getBlockchainState().height}</span> </p>
 
-    <div class="txtablediv">
-  
-  <table class="txtable">
-    <tr class="txtable-headrow">
-      <td>VALUE</td>
-      <td>DATE</td>
-      <td>TYPE</td>
-      <td>TX</td>
-    </tr>
+<div className="transaction-area">
+  <p className="transactions-heading">Transactions</p>
+  <p className="blockcount"><span>Blocks:</span><span>{App.getBlockchainState().height}</span> </p>
 
-    {
-      App.getParsedTransactionHistory().map((item, index) => {
-        return (<tr className="txtable-row" key={index}>
-        <td>{item.value}&nbsp;<span class="dark-font">ELA</span></td>
-        <td>{item.time}</td>
-        <td>{item.type}</td>
-        <td>
-            <a className="exit_link" href={item.txDetailsUrl} onClick={(e) => onLinkClick(e)}>{item.txHashWithEllipsis}</a>
-        </td>
-        </tr>)
-      })
-      }
+    <div className="txtablediv">
 
-    {/* <tr class="txtable-row">
-      <td>250 <span class="dark-font">ELA</span></td>
-      <td>2020-02-17 <span class="dark-font">10:50</span></td>
+  <table className="txtable">
+    <tbody>
+      <tr className="txtable-headrow">
+        <td>VALUE</td>
+        <td>DATE</td>
+        <td>TYPE</td>
+        <td>TX</td>
+      </tr>
+
+      {
+        App.getParsedTransactionHistory().map((item, index) => {
+          return (<tr className="txtable-row" key={index}>
+          <td>{item.value}&nbsp;<span className="dark-font">ELA</span></td>
+          <td>{item.time}</td>
+          <td>{item.type}</td>
+          <td>
+              <a className="exit_link" href={item.txDetailsUrl} onClick={(e) => onLinkClick(e)}>{item.txHashWithEllipsis}</a>
+          </td>
+          </tr>)
+        })
+        }
+
+    {/* <tr className="txtable-row">
+      <td>250 <span className="dark-font">ELA</span></td>
+      <td>2020-02-17 <span className="dark-font">10:50</span></td>
       <td>Received</td>
       <td>5bfa9573d7bc89472a4b8ec5f1da0ed0947…</td>
     </tr> */}
 
-    {/* <tr class="txtable-row">
-      <td>100 <span class="dark-font">ELA</span></td>
-      <td>2020-02-12 <span class="dark-font">15:40</span></td>
+    {/* <tr className="txtable-row">
+      <td>100 <span className="dark-font">ELA</span></td>
+      <td>2020-02-12 <span className="dark-font">15:40</span></td>
       <td>Sent</td>
       <td>de02a581c2af72bee1ca</td>
     </tr>
 
-    <tr class="txtable-row">
-      <td>1000 <span class="dark-font">ELA</span></td>
-      <td>2020-02-10 <span class="dark-font"> 20:40</span></td>
+    <tr className="txtable-row">
+      <td>1000 <span className="dark-font">ELA</span></td>
+      <td>2020-02-10 <span className="dark-font"> 20:40</span></td>
       <td>Received</td>
       <td>5bfa9573d7bc89472a4b</td>
     </tr> */}
+    </tbody>
   </table>
 
   </div>
 
   <div>
-    
+
   <SocialMedia GuiToggles={GuiToggles}/>
 
   </div>
@@ -389,7 +386,7 @@ module.exports = (props) => {
       </tbody>
     </table> */
 
-  
+
 
 
   //     <div id="sendOne" className={`bordered w250px h200px bgcolor_black_hover ${visibility}`}>
@@ -533,110 +530,110 @@ module.exports = (props) => {
 //       </tbody>
 //     </table>
 //   );
-// } 
+// }
 
-//  <div id="home" class="gridback w780h520px">
+//  <div id="home" className="gridback w780h520px">
 
-// <div class="logo-info">
-//   <img src="artwork/lightwalletogo.svg" class="logoimage" height="40px" width="123px" />
+// <div className="logo-info">
+//   <img src="artwork/lightwalletogo.svg" className="logoimage" height="40px" width="123px" />
 //   <header>
-//     <img src="artwork/system.svg" class="system-icon" />
-//     <img src="artwork/refreshicon.svg" class="refresh-icon" />
+//     <img src="artwork/system.svg" className="system-icon" />
+//     <img src="artwork/refreshicon.svg" className="refresh-icon" />
 //     <nav>
-//       <img src="artwork/nav.svg" class="nav-icon" onClick={(e) => openDevTools()} />
+//       <img src="artwork/nav.svg" className="nav-icon" onClick={(e) => openDevTools()} />
 //     </nav>
 //   </header>
-//   <div class="pricearea">
-//     <p class="balance">balance</p>
-//     <p class="usd-head">USD</p>
-//     <p class="usd-balance">{App.getUSDBalance()}</p>
-//     <p class="ela-balance gradient-font">{App.getELABalance()} ELA</p>
-//   </div> 
-
-//   <div class="stakingarea">
-//     <p class="stakingtitle">staking</p>
-//     <p class="candidate-total">95 candidates total</p>
-//     <p class="votenow gradient-font">Vote now</p>
-//     <img src="" alt="" class="arrow-right" />
+//   <div className="pricearea">
+//     <p className="balance">balance</p>
+//     <p className="usd-head">USD</p>
+//     <p className="usd-balance">{App.getUSDBalance()}</p>
+//     <p className="ela-balance gradient-font">{App.getELABalance()} ELA</p>
 //   </div>
 
-  
+//   <div className="stakingarea">
+//     <p className="stakingtitle">staking</p>
+//     <p className="candidate-total">95 candidates total</p>
+//     <p className="votenow gradient-font">Vote now</p>
+//     <img src="" alt="" className="arrow-right" />
+//   </div>
+
+
 //   <div id="scroll-radio">
 
 //   </div>
 
 //   <div>
-//     <p class="article-days">3 days ago</p>
-//     <p class="article-title">Elastos Financial Report</p>
+//     <p className="article-days">3 days ago</p>
+//     <p className="article-title">Elastos Financial Report</p>
 //   </div>
 
 
 // </div>
 
-{/* <div class="send-area"> 
-  <img src="artwork/sendicon.svg" class="send-icon" />
-  <p class="send-text">Send</p>
-  <button class="next-button">
+{/* <div className="send-area">
+  <img src="artwork/sendicon.svg" className="send-icon" />
+  <p className="send-text">Send</p>
+  <button className="next-button">
   <p>Next</p>
   </button>
   <input type="text" id="ela-address__input" placeholder="Enter ELA Address" />
   <input type="number" id="ela-send__amount" placeholder="500" />
-  <div class="quick-elaselector">
-    <button class="quick-elaselector__icon quarter">1/4</button>
-    <button class="quick-elaselector__icon half">Half</button>
-    <button class="quick-elaselector__icon all">All</button>
+  <div className="quick-elaselector">
+    <button className="quick-elaselector__icon quarter">1/4</button>
+    <button className="quick-elaselector__icon half">Half</button>
+    <button className="quick-elaselector__icon all">All</button>
   </div>
-  <p class="elatext-send">ELA</p>
+  <p className="elatext-send">ELA</p>
 
 </div> */}
 
-{/* <div class="receive-area">
-  <img src="artwork/sendicon.svg" class="rec-icon" />
-  <p class="rec-text">Receive</p>
-  <p class="address-text">Address</p>
-  <button class="copy-button">
-    <img src="artwork/copyicon.svg" class="copy-icon" height="26px" width="26px" />
+{/* <div className="receive-area">
+  <img src="artwork/sendicon.svg" className="rec-icon" />
+  <p className="rec-text">Receive</p>
+  <p className="address-text">Address</p>
+  <button className="copy-button">
+    <img src="artwork/copyicon.svg" className="copy-icon" height="26px" width="26px" />
   </button>
-  <p class="address-ex">{App.getAddress()}</p>
-  <img src="artwork/qricon.svg" class="qr-icon" height="54px" width="54px" />
-  <p class="scanqr-text">Scan <strong>QR code</strong> to get <br />ELA Address</p>
-  <p class="howqr-text gradient-font">How QR works?</p>
-  <img src="artwork/separator.svg" class="rec-separator" />
-  <p class="ledger-heading">Ledger</p>
-  <img src="artwork/ledgericon.svg" alt="" class="ledger-icon" height="24px" width="38px" />
-  <p class="verifyledger-text">Verify address on <br /><strong>ledger</strong></p>
+  <p className="address-ex">{App.getAddress()}</p>
+  <img src="artwork/qricon.svg" className="qr-icon" height="54px" width="54px" />
+  <p className="scanqr-text">Scan <strong>QR code</strong> to get <br />ELA Address</p>
+  <p className="howqr-text gradient-font">How QR works?</p>
+  <img src="artwork/separator.svg" className="rec-separator" />
+  <p className="ledger-heading">Ledger</p>
+  <img src="artwork/ledgericon.svg" alt="" className="ledger-icon" height="24px" width="38px" />
+  <p className="verifyledger-text">Verify address on <br /><strong>ledger</strong></p>
 
 </div>
-  
-<div class="transaction-area">
-  <p class="transactions-heading">Transactions</p>
-  <p class="blockcount"><span>Blocks:</span><span>500001</span> </p>
-  
-  <table class="txtable">
-    <tr class="txtable-headrow">
+
+<div className="transaction-area">
+  <p className="transactions-heading">Transactions</p>
+  <p className="blockcount"><span>Blocks:</span><span>500001</span> </p>
+
+  <table className="txtable">
+    <tr className="txtable-headrow">
       <td>VALUE</td>
       <td>DATE</td>
       <td>TYPE</td>
       <td>TX</td>
     </tr>
 
-    <tr class="txtable-row">
-      <td>250 <span class="dark-font">ELA</span></td>
-      <td>2020-02-17 <span class="dark-font">10:50</span></td>
+    <tr className="txtable-row">
+      <td>250 <span className="dark-font">ELA</span></td>
+      <td>2020-02-17 <span className="dark-font">10:50</span></td>
       <td>Received</td>
       <td>5bfa9573d7bc89472a4b8ec5f1da0ed0947…</td>
     </tr>
 
-    <tr class="txtable-row">
-      <td>100 <span class="dark-font">ELA</span></td>
-      <td>2020-02-12 <span class="dark-font">15:40</span></td>
+    <tr className="txtable-row">
+      <td>100 <span className="dark-font">ELA</span></td>
+      <td>2020-02-12 <span className="dark-font">15:40</span></td>
       <td>Sent</td>
       <td>de02a581c2af72bee1ca</td>
     </tr>
 
-    <tr class="txtable-row">
-      <td>1000 <span class="dark-font">ELA</span></td>
-      <td>2020-02-10 <span class="dark-font"> 20:40</span></td>
+    <tr className="txtable-row">
+      <td>1000 <span className="dark-font">ELA</span></td>
+      <td>2020-02-10 <span className="dark-font"> 20:40</span></td>
       <td>Received</td>
       <td>5bfa9573d7bc89472a4b</td>
     </tr>
@@ -645,9 +642,9 @@ module.exports = (props) => {
   <footer>
     <img src="artwork/tw.svg" height="22px" width="22px" />
     <img src="artwork/fb.svg" height="22px" width="22px" />
-    <div class="logout-footer">
-      <p class="logout-text">Logout onClick={(e) => App.showLogin()}</p>
-      <img src="artwork/logout.svg" class="logout-image" onClick={(e) => App.showLogin()}/>
+    <div className="logout-footer">
+      <p className="logout-text">Logout onClick={(e) => App.showLogin()}</p>
+      <img src="artwork/logout.svg" className="logout-image" onClick={(e) => App.showLogin()}/>
     </div>
 
   </footer>

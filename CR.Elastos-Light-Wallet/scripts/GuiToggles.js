@@ -26,6 +26,9 @@ const hideEverything = () => {
   hide('homeMenu');
   hide('homeMenuOpen');
   hide('homeMenuClose');
+  hide('votingMenu');
+  hide('votingMenuOpen');
+  hide('votingMenuClose');
   hide('version');
   hide('voting');
 };
@@ -58,17 +61,17 @@ const showHome = () => {
   show('version');
 };
 
-const showHomeMenu = () => {
-  show('homeMenu');
-  hide('homeMenuOpen');
-  show('homeMenuClose');
+const showMenu = (name) => {
+  show(name+'Menu');
+  hide(name+'MenuOpen');
+  show(name+'MenuClose');
   hide('version');
 };
 
-const hideHomeMenu = () => {
-  hide('homeMenu');
-  show('homeMenuOpen');
-  hide('homeMenuClose');
+const hideMenu = (name) => {
+  hide(name+'Menu');
+  show(name+'MenuOpen');
+  hide(name+'MenuClose');
   show('version');
 };
 
@@ -76,6 +79,7 @@ const showVoting = () => {
   hideEverything();
   app.clearSendData();
   show('voting');
+  show('votingMenuOpen');
 };
 
 exports.init = init;
@@ -83,6 +87,6 @@ exports.showLanding = showLanding;
 exports.showLoginMnemonic = showLoginMnemonic;
 exports.showLoginPrivateKey = showLoginPrivateKey;
 exports.showHome = showHome;
-exports.showHomeMenu = showHomeMenu;
-exports.hideHomeMenu = hideHomeMenu;
+exports.showMenu = showMenu;
+exports.hideMenu = hideMenu;
 exports.showVoting = showVoting;

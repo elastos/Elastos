@@ -689,7 +689,7 @@ const requestListOfCandidateVotes = () => {
     candidateVoteListStatus = 'Candidate Votes Requested';
 
     const txUrl = `${getRestService()}/api/v1/dpos/address/${address}?pageSize=5000&pageNum=1`;
-    mainConsole.log('requestListOfCandidateVotes', txUrl);
+    // mainConsole.log('requestListOfCandidateVotes', txUrl);
 
     renderApp();
     getJson(txUrl, requestListOfCandidateVotesReadyCallback, requestListOfCandidateVotesErrorCallback);
@@ -699,7 +699,7 @@ const requestListOfCandidateVotes = () => {
 const sendVoteTx = () => {
   updateAmountAndFees();
   const unspentTransactionOutputs = parsedUnspentTransactionOutputs;
-  mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
+  // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
 
   if (Number.isNaN(feeAmountSats)) {
     throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
@@ -712,12 +712,12 @@ const sendVoteTx = () => {
     }
   });
 
-  mainConsole.log('sendVoteTx.candidates ' + JSON.stringify(candidates));
+  // mainConsole.log('sendVoteTx.candidates ' + JSON.stringify(candidates));
 
   let encodedTx;
 
-  mainConsole.log('sendVoteTx.useLedgerFlag ' + JSON.stringify(useLedgerFlag));
-  mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
+  // mainConsole.log('sendVoteTx.useLedgerFlag ' + JSON.stringify(useLedgerFlag));
+  // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
   candidateVoteListStatus = `Voting for ${parsedProducerList.producersCandidateCount} candidates.`;
   if (useLedgerFlag) {
     if (unspentTransactionOutputs) {
@@ -748,7 +748,7 @@ const sendVoteTx = () => {
     const privateKey = privateKeyElt.value;
     const encodedTx = TxFactory.createSignedVoteTx(privateKey, unspentTransactionOutputs, feeAmountSats, candidates);
 
-    mainConsole.log('sendVoteTx.encodedTx ' + JSON.stringify(encodedTx));
+    // mainConsole.log('sendVoteTx.encodedTx ' + JSON.stringify(encodedTx));
 
     if (encodedTx == undefined) {
       return;

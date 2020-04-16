@@ -3,8 +3,8 @@ const React = require('react');
 module.exports = (props) => {
   return (
   <div id="news">
-    <p class="article-days">3 days ago</p>
-    <p class="article-title">Elastos Financial Report</p>
+    <p className="article-days">3 days ago</p>
+    <p className="article-title">Elastos Financial Report</p>
   </div>
   )
   }
