@@ -42,7 +42,7 @@ namespace Elastos {
 
 		class Peer;
 
-//#define SUPPORT_NEW_INV_TYPE
+#define SUPPORT_NEW_INV_TYPE
 
 		namespace {
 			typedef enum {

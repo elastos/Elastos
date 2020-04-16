@@ -1311,6 +1311,7 @@ namespace Elastos {
 			MerkleBlockPtr b, b2, prev, next;
 			std::vector<MerkleBlockPtr> saveBlocks;
 			std::vector<uint256> txHashes;
+			static uint32_t txTotal = 0; // for test
 			block->MerkleBlockTxHashes(txHashes);
 
 			{
@@ -1392,10 +1393,13 @@ namespace Elastos {
 					_lastBlock = block;
 					_wallet->SetBlockHeight(_lastBlock->GetHeight());
 
+					txTotal += block->GetTotalTx();
 					if ((block->GetHeight() % 500) == 0 || txHashes.size() > 0 ||
 						block->GetHeight() >= peer->GetLastBlock()) {
-						peer->info("adding block #{}, false positive rate: {}", block->GetHeight(), _fpRate);
+						peer->info("adding block #{}, with {} txfalse positive rate: {}",
+								   block->GetHeight(), txTotal, _fpRate);
 						FireSyncProgress(GetSyncProgressInternal(0), peer, block);
+						txTotal = 0;
 					}
 
 					if (txHashes.size() > 0)
