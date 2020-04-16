@@ -164,7 +164,8 @@ class JsonGenerator {
             buffer.append(value)
             buffer.append(JsonGenerator.STRING_QUOTE_END)
         } else {
-            buffer.append("null")
+            buffer.append(JsonGenerator.STRING_QUOTE_STARTED)
+            buffer.append(JsonGenerator.STRING_QUOTE_END)
         }
 
         if getState() == .Field {
