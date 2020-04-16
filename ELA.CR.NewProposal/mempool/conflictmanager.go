@@ -226,7 +226,7 @@ func newConflictManager() conflictManager {
 					},
 				),
 			},
-			// CRC proposal draft hash
+			// CRC proposal DID
 			{
 				name: slotCRCProposalDID,
 				slot: newConflictSlot(programHash,
