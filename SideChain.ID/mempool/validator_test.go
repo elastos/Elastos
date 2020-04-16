@@ -98,6 +98,17 @@ var didPayloadInfoBytes = []byte(
 	 }
 `)
 
+var errDIDPayloadInfoBytes = []byte(
+	`{
+		"header":{"operation":"create","specification":"elastos/did/1.0"},
+		"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlZUTZ1alBjd21UWmZqMmtOZmZXNEJDeXRKenlqbUpkRGQiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJ6S1JYMWtOWGVYeTVuS3NyVTVtdVR3Z2Y3ZlhRYnhXZzdpUUtCdnBlS0dCUCJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXX0",
+		"proof":{
+			"signature":"nrbHEEysMLzBR1mMVRjan9yfQtNGmK6Rqy7v9rvUpsJNoIMsY5JtEUiJvW82jW4xNlvOOEDI-VpLK_GCgjoUdQ",
+			"verificationMethod":"#primary"
+			}
+	 }
+`)
+
 func (s *txValidatorTestSuite) TestIDChainStore_CreateDIDTx() {
 	tx := &types2.Transaction{
 		TxType:         0x0a,
@@ -132,6 +143,30 @@ func (s *txValidatorTestSuite) TestIDChainStore_CreateDIDTx() {
 	tx.Payload = info
 	err = s.validator.checkRegisterDID(tx)
 	s.NoError(err)
+
+	info.PayloadInfo.Expires = "Mon Jan _2 15:04:05 2006"
+	err = s.validator.checkRegisterDID(tx)
+	s.Error(err, "invalid Expires")
+
+	info.PayloadInfo.Expires = "2006-01-02T15:04:05Z07:00"
+	err = s.validator.checkRegisterDID(tx)
+	s.Error(err, "invalid Expires")
+
+	info.PayloadInfo.Expires = "2018-06-30T12:00:00Z"
+	err = s.validator.checkRegisterDID(tx)
+	s.NoError(err)
+
+	info = new(types.Operation)
+	json.Unmarshal(errDIDPayloadInfoBytes, info)
+
+	payloadBase64, _ = base64url.DecodeString(info.Payload)
+	payloadInfo = new(types.DIDPayloadInfo)
+	json.Unmarshal(payloadBase64, payloadInfo)
+	info.PayloadInfo = payloadInfo
+
+	tx.Payload = info
+	err = s.validator.checkRegisterDID(tx)
+	s.Error(err, "invalid Expires")
 }
 
 func (s *txValidatorTestSuite) TestGetIDFromUri() {
