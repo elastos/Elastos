@@ -21,9 +21,10 @@ docker cp ../grpc_adenine/database/scripts/reset_database.sql smartweb-postgres-
 reset=${1-no}
 if [ "$reset" == "yes" ]
 then
-  docker container exec -it smartweb-postgres-test psql -h 172.17.0.1 -d smartweb_test -U gmu -a -q -f /reset_database.sql
+  docker container exec -it smartweb-postgres-test psql -h localhost -d smartweb_test -U gmu -a -q -f /reset_database.sql
 fi
-docker container exec -it smartweb-postgres-test psql -h 172.17.0.1 -d smartweb_test -U gmu -a -q -f /create_table_scripts.sql
+docker container logs smartweb-postgres-test
+docker container exec -it smartweb-postgres-test psql -h localhost -d smartweb_test -U gmu -a -q -f /create_table_scripts.sql
 
 
 
