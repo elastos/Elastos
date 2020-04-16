@@ -7,7 +7,7 @@ require (
 	github.com/cevaris/ordered_map v0.0.0-20190319150403-3adeae072e73 // indirect
 	github.com/elastos/Elastos.ELA v0.3.2
 	github.com/elastos/Elastos.ELA.SPV v0.0.4
-	github.com/elastos/Elastos.ELA.SideChain v0.0.0-20191218093615-8f4bc7bb49c1
+	github.com/elastos/Elastos.ELA.SideChain v0.1.6
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c // indirect
 	github.com/itchyny/base58-go v0.1.0 // indirect
