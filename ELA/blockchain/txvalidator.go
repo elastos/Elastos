@@ -1905,7 +1905,7 @@ func (b *BlockChain) checkCRCProposalFinalizedTracking(
 	}
 
 	if cptPayload.Stage != finalStage {
-		return errors.New("stage should assignment zero value")
+		return errors.New("cptPayload.Stage is not proposal final stage")
 	}
 
 	// Check signature.
