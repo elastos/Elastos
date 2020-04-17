@@ -317,6 +317,8 @@ func (c *Committee) createAppropriationTransaction(height uint32) {
 				if c.isCurrent() {
 					if err := c.appendToTxpool(tx); err == nil {
 						c.broadcast(msg.NewTx(tx))
+					} else {
+						log.Warn("create CRCAppropriation  ", err)
 					}
 				}
 			}()
