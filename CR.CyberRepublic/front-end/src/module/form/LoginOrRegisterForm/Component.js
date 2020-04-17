@@ -25,7 +25,7 @@ export default class extends BaseComponent {
     if (_.isFunction(this.props.onHideModal)) {
       this.props.onHideModal()
     }
-    this.props.history.push('/crcles')
+    this.props.history.push('/')
   }
 
   showPostRegLogScreen() {

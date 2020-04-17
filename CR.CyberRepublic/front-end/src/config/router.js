@@ -6,7 +6,6 @@ import DeveloperLearnPage from '@/module/page/developer/learn/Container'
 import DeveloperSearchPage from '@/module/page/developer/search/Container'
 import LeaderPage from '@/module/page/leader/Container'
 import Cr100Page from '@/module/page/cr_100/Container'
-import Emp35Page from '@/module/page/empower_35/Container'
 import Ambassadors from '@/module/page/ambassadors/Container'
 import CrVideo from '@/module/page/static/cr-video/Container'
 
@@ -124,10 +123,6 @@ export default [
   {
     path: '/cr100',
     page: Cr100Page,
-  },
-  {
-    path: '/crcles',
-    page: Emp35Page,
   },
   {
     path: '/ambassadors',

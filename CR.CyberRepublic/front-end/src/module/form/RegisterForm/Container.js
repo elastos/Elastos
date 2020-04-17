@@ -31,7 +31,7 @@ export default createContainer(
             if (registerRedirect) {
               return true
             }
-            this.history.push('/crcles')
+            this.history.push('/')
           }
         } catch (err) {
           message.error(
