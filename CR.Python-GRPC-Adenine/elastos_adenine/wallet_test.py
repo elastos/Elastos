@@ -58,46 +58,6 @@ def test_create_wallet():
 	assert response['status']==True, "In Create Wallet-> "+response['status_message']
 
 @pytest.mark.dependency(depends=["test_health_check"])
-def test_view_mainchain_wallet():
-	wallet = Wallet(test_input['host'], test_input['port'], test_input['production'])
-	response = wallet.view_wallet(test_input['api_key_to_use'], test_input['did_to_use'], test_input['network'], 'mainchain', test_input['ela_to_use'])
-	if response['status']:
-		json_output = json.loads(response['output'])
-		for i in json_output['result']:
-			assert json_output['result'][i]!=None, "In View Mainchain Wallet-> "+response['status_message']
-	assert response['status']==True, "In View Mainchain Wallet-> "+response['status_message']
-
-@pytest.mark.dependency(depends=["test_health_check"])
-def test_view_did_wallet():
-	wallet = Wallet(test_input['host'], test_input['port'], test_input['production'])
-	response = wallet.view_wallet(test_input['api_key_to_use'], test_input['did_to_use'], test_input['network'], 'did', test_input['ela_to_use'])
-	if response['status']:
-		json_output = json.loads(response['output'])
-		for i in json_output['result']:
-			assert json_output['result'][i]!=None, "In View Did Wallet-> "+response['status_message']
-	assert response['status']==True, "In View Did Wallet-> "+response['status_message']
-
-@pytest.mark.dependency(depends=["test_health_check"])
-def test_view_token_wallet():
-	wallet = Wallet(test_input['host'], test_input['port'], test_input['production'])
-	response = wallet.view_wallet(test_input['api_key_to_use'], test_input['did_to_use'], test_input['network'], 'token', test_input['ela_to_use'])
-	if response['status']:
-		json_output = json.loads(response['output'])
-		for i in json_output['result']:
-			assert json_output['result'][i]!=None, "In View Token Wallet-> "+response['status_message']
-	assert response['status']==True, "In View Token Wallet-> "+response['status_message']
-
-@pytest.mark.dependency(depends=["test_health_check"])
-def test_view_eth_wallet():
-	wallet = Wallet(test_input['host'], test_input['port'], test_input['production'])
-	response = wallet.view_wallet(test_input['api_key_to_use'], test_input['did_to_use'], test_input['network'], 'eth', test_input['ela_to_use'])
-	if response['status']:
-		json_output = json.loads(response['output'])
-		for i in json_output['result']:
-			assert json_output['result'][i]!=None, "In View Eth Wallet-> "+response['status_message']
-	assert response['status']==True, "In View Eth Wallet-> "+response['status_message']
-
-@pytest.mark.dependency(depends=["test_health_check"])
 def test_request_ela_mainchain():
 	wallet = Wallet(test_input['host'], test_input['port'], test_input['production'])
 	response = wallet.request_ela(test_input['api_key_to_use'], test_input['did_to_use'], 'mainchain', test_input['ela_to_use'])
