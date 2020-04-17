@@ -7,9 +7,9 @@ module.exports = (props) => {
 
           <img src="artwork/tw.svg" height="22px" width="22px" />
           <img src="artwork/fb.svg" height="22px" width="22px" />
-          <div class="logout-footer">
+          <div className="logout-footer">
             <p id="logout-text" onClick={(e) => GuiToggles.showLanding()}>Logout </p>
-            <img src="artwork/logout.svg" class="logout-image" onClick={(e) =>
+            <img src="artwork/logout.svg" className="logout-image" onClick={(e) =>
             GuiToggles.showLanding()}/>
           </div>
 

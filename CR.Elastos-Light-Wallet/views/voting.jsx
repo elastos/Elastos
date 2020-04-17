@@ -18,6 +18,10 @@ module.exports = (props) => {
   const Version = props.Version;
   const GuiToggles = props.GuiToggles;
 
+  const showMenu = () => {
+    GuiToggles.showMenu('voting');
+  }
+
 
   const ProducerSelectionButtonText = (props) => {
     // mainConsole.log('INTERIM ProducerSelectionButtonText props', props);
@@ -34,30 +38,31 @@ module.exports = (props) => {
 
   return (
     <div id="voting" className="gridback-voting w780h520px">
+     <Menu App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} page="voting"/>
       {/* <Menu App={App} openDevTools={openDevTools} GuiToggles={GuiToggles}/> */}
-      <div class="logo-info">
+      <div className="logo-info">
       <Branding/>
       <header>
-        <img src="artwork/system.svg" class="system-icon" />
-        <img src="artwork/refreshicon.svg" class="refresh-icon" onClick={(e) => App.refreshBlockchainData()} />
+        <img src="artwork/system.svg" className="system-icon" />
+        <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()} />
         {/* Change to menu below */}
-        <nav id="homeMenuOpen" title="menu" onClick={(e) => openDevTools()}> 
-          <img src="artwork/nav.svg" class="nav-icon dark-hover" onClick={(e) => openDevTools()}/>  
+        <nav id="votingMenuOpen" title="menu" onClick={(e) => showMenu()}>
+          <img src="artwork/nav.svg" className="nav-icon dark-hover" onClick={(e) => showMenu()}/>
         </nav>
       </header>
-      <div class="pricearea">
+      <div className="pricearea">
        <Balance App={App}/>
-      </div> 
-    
-      <div class="stakingarea">
+      </div>
+
+      <div className="stakingarea">
        <Staking App={App} GuiToggles={GuiToggles}/>
       </div>
 
-      
+
       <div id="scroll-radio">
-    
+
       </div>
-    
+
       <div>
         <News/>
       </div>
@@ -156,9 +161,9 @@ module.exports = (props) => {
     </table>
 
     <div>
-    
+
     <SocialMedia GuiToggles={GuiToggles}/>
-  
+
     </div>
     </div>
   );

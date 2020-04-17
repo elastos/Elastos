@@ -1,6 +1,6 @@
 {
   "name": "elastos-light-wallet",
-  "version": "1.0.0-RC18",
+  "version": "1.0.0-RC19",
   "description": "elastos light wallet",
   "productName": "elastos-light-wallet",
   "main": "index.js",
@@ -34,14 +34,14 @@
   },
   "homepage": "https://github.com/coranos/elastos-light-wallet#readme",
   "dependencies": {
-    "@ledgerhq/hw-transport-node-hid": "^5.12.0",
+    "@ledgerhq/hw-transport-node-hid": "^5.13.0",
     "babel-polyfill": "^6.26.0",
     "bignumber.js": "^9.0.0",
     "bip39": "^3.0.2",
     "bs58": "^4.0.1",
-    "check-node-version": "^4.0.2",
+    "check-node-version": "^4.0.3",
     "elliptic": "^6.5.2",
-    "node": "^13.12.0",
+    "node": "^13.13.0",
     "node-jsx": "^0.13.3",
     "prebuild-install": "^5.3.3",
     "react": "^16.13.1",
@@ -50,17 +50,17 @@
     "regenerator-runtime": "^0.13.5",
     "ripemd160": "^2.0.2",
     "smart-buffer": "^4.1.0",
-    "usb": "^1.6.2",
+    "usb": "^1.6.3",
     "wif": "^2.0.6"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "electron": "^8.2.0",
-    "electron-builder": "^22.4.1",
+    "electron": "^8.2.2",
+    "electron-builder": "^22.5.1",
     "eslint": "^6.8.0",
     "eslint-config-google": "^0.14.0",
     "mocha": "^7.1.1",
     "node-abi": "^2.15.0",
-    "nyc": "^15.0.0"
+    "nyc": "^15.0.1"
   }
 }
