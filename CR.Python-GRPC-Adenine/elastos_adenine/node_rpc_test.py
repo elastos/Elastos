@@ -74,7 +74,7 @@ def test_node_rpc_curr_balance():
 	current_balance = node_rpc.get_current_balance(test_input['api_key_to_use'], test_input['did_to_use'], test_input['network'], "token", test_input['ela_to_use'])
 	assert current_balance!=None, "In Current Balance-> "+response['status_message']
 
-	current_balance = node_rpc.get_current_balance(test_input['api_key_to_use'], test_input['did_to_use'], test_input['network'], "eth", test_input['ela_to_use'])
+	current_balance = node_rpc.get_current_balance(test_input['api_key_to_use'], test_input['did_to_use'], test_input['network'], "eth", test_input['ela_eth_to_use'])
 	assert current_balance!=None, "In Current Balance-> "+response['status_message']
 
 @pytest.mark.dependency(depends=["test_health_check"])
