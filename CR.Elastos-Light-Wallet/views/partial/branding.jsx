@@ -2,8 +2,8 @@ const React = require('react');
 
 module.exports = (props) => {
   return (
-    <div id="branding" className="logo-info">
-      <img src="artwork/lightwalletogo.svg" className="logoimage" height="40px" width="123px" />
+    <div id="branding" className="logo-info" >
+      <img src="artwork/logo.svg" className="logoimage" height="41px" width="123px" onClick={(e) => GuiToggles.showHome()} />
      </div>
 )
 }
