@@ -1538,17 +1538,17 @@ type RpcCRCProposal struct {
 }
 
 type RpcProposalState struct {
-	Status             string                        `json:"status"`
-	Proposal           RpcCRCProposal                `json:"proposal"`
-	ProposalHash       string                        `json:"proposalhash"`
-	TxHash             string                        `json:"txhash"`
-	CRVotes            map[string]payload.VoteResult `json:"crvotes"`
-	VotersRejectAmount string                        `json:"votersrejectamount"`
-	RegisterHeight     uint32                        `json:"registerheight"`
-	TerminatedHeight   uint32                        `json:"terminatedheight"`
-	TrackingCount      uint8                         `json:"trackingcount"`
-	ProposalLeader     string                        `json:"proposalleader"`
-	AvailableAmount    string                        `json:"availableamount"`
+	Status             string            `json:"status"`
+	Proposal           RpcCRCProposal    `json:"proposal"`
+	ProposalHash       string            `json:"proposalhash"`
+	TxHash             string            `json:"txhash"`
+	CRVotes            map[string]string `json:"crvotes"`
+	VotersRejectAmount string            `json:"votersrejectamount"`
+	RegisterHeight     uint32            `json:"registerheight"`
+	TerminatedHeight   uint32            `json:"terminatedheight"`
+	TrackingCount      uint8             `json:"trackingcount"`
+	ProposalLeader     string            `json:"proposalleader"`
+	AvailableAmount    string            `json:"availableamount"`
 }
 
 type RpcCRProposalStateInfo struct {
@@ -1918,9 +1918,9 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InternalError, "invalidate Recipient")
 	}
-	crVotes := map[string]payload.VoteResult{}
+	crVotes := make(map[string]string)
 	for k, v := range proposalState.CRVotes {
-		crVotes[k.String()] = v
+		crVotes[k.String()] = v.Name()
 	}
 	RpcProposalState := RpcProposalState{
 		Status:             proposalState.Status.String(),
