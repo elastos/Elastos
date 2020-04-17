@@ -49,36 +49,6 @@ class Wallet:
             }
             return result
 
-    def view_wallet(self, api_key, did, network, chain, address):
-        jwt_info = {
-            'network': network,
-            'address': address,
-            'chain': chain
-        }
-
-        jwt_token = jwt.encode({
-            'jwt_info': jwt_info,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=TOKEN_EXPIRATION)
-        }, api_key, algorithm='HS256')
-
-        response = self.stub.ViewWallet(wallet_pb2.Request(input=jwt_token), timeout=REQUEST_TIMEOUT, metadata=[('did', did)])
-        
-        if response.status:
-            output = jwt.decode(response.output, key=api_key, algorithms=['HS256']).get('jwt_info')
-            result = {
-                'output': json.dumps(output),
-                'status_message': response.status_message,
-                'status': response.status
-            }
-            return result
-        else:
-            result = {
-                'output': '',
-                'status_message': response.status_message,
-                'status': response.status
-            }
-            return result
-
     def request_ela(self, api_key, did, chain, address):
         jwt_info = {
             'address': address,

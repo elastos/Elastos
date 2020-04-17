@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='wallet',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0cwallet.proto\x12\x06wallet\"\x18\n\x07Request\x12\r\n\x05input\x18\x01 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\xa3\x01\n\x06Wallet\x12\x33\n\x0c\x43reateWallet\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x12\x31\n\nViewWallet\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x12\x31\n\nRequestELA\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0cwallet.proto\x12\x06wallet\"\x18\n\x07Request\x12\r\n\x05input\x18\x01 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32p\n\x06Wallet\x12\x33\n\x0c\x43reateWallet\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x12\x31\n\nRequestELA\x12\x0f.wallet.Request\x1a\x10.wallet.Response\"\x00\x62\x06proto3')
 )
 
 
@@ -127,8 +127,8 @@ _WALLET = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=119,
-  serialized_end=282,
+  serialized_start=118,
+  serialized_end=230,
   methods=[
   _descriptor.MethodDescriptor(
     name='CreateWallet',
@@ -140,18 +140,9 @@ _WALLET = _descriptor.ServiceDescriptor(
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
-    name='ViewWallet',
-    full_name='wallet.Wallet.ViewWallet',
-    index=1,
-    containing_service=None,
-    input_type=_REQUEST,
-    output_type=_RESPONSE,
-    serialized_options=None,
-  ),
-  _descriptor.MethodDescriptor(
     name='RequestELA',
     full_name='wallet.Wallet.RequestELA',
-    index=2,
+    index=1,
     containing_service=None,
     input_type=_REQUEST,
     output_type=_RESPONSE,

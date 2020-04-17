@@ -32,7 +32,7 @@ def main():
     ela_to_use = 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN'
     ela_eth_to_use = '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'VRPWZq93E9nSgK21vqRgLTF3kPkqCOiQTBBHMqcFHxglHjiuXRBKkVYwWQXolWKe'
+    api_key_to_use = 'TEwRTpDluPPDPBRiKCkB0IDyWHe2SEW5MOeqm2ogaPVLOLcxHhV9rn9SjOAkRKTZ'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -61,16 +61,6 @@ def main():
             print("Current Height - token sidechain: ", current_height)
             current_height = node_rpc.get_current_height(api_key_to_use, did_to_use, network, "eth")
             print("Current Height - eth sidechain: ", current_height)
-            
-            print("--> Get current balance")
-            current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "mainchain", ela_to_use)
-            print("Current balance - mainchain:", current_balance)
-            current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "did", ela_to_use)
-            print("Current balance - did sidechain:", current_balance)
-            current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "token", ela_to_use)
-            print("Current balance - token sidechain:", current_balance)
-            current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "eth", ela_eth_to_use)
-            print("Current balance - eth sidechain:", current_balance)
             
             print("--> Get current block info")
             current_block_info = node_rpc.get_current_block_info(api_key_to_use, did_to_use, network, "mainchain")
@@ -197,51 +187,22 @@ def main():
             wallet.close()
     elif service == "view_wallet":
         try:
-            wallet = Wallet(host, port, production)
+            node_rpc = NodeRpc(host, port, production)
             print("\n--> View Wallet")
-            # Mainchain
-            response = wallet.view_wallet(api_key_to_use, did_to_use, network, 'mainchain', ela_to_use)
-            if response['status']:
-                json_output = json.loads(response['output'])
-                print("Status Message :", response['status_message'])
-                for i in json_output['result']:
-                    print(i, ':', json_output['result'][i])
-            else:
-                print("Error Message: " + response['status_message'])
 
-            # DID sidechain
-            response = wallet.view_wallet(api_key_to_use, did_to_use, network, 'did', ela_to_use)
-            if response['status']:
-                json_output = json.loads(response['output'])
-                print("Status Message :", response['status_message'])
-                for i in json_output['result']:
-                    print(i, ':', json_output['result'][i])
-            else:
-                print("Error Message: " + response['status_message'])
-
-            # Token sidechain
-            response = wallet.view_wallet(api_key_to_use, did_to_use, network, 'token', ela_to_use)
-            if response['status']:
-                json_output = json.loads(response['output'])
-                print("Status Message :", response['status_message'])
-                for i in json_output['result']:
-                    print(i, ':', json_output['result'][i])
-            else:
-                print("Error Message: " + response['status_message'])
-
-            # Eth sidechain
-            response = wallet.view_wallet(api_key_to_use, did_to_use, network, 'eth', ela_eth_to_use)
-            if response['status']:
-                json_output = json.loads(response['output'])
-                print("Status Message :", response['status_message'])
-                for i in json_output['result']:
-                    print(i, ':', json_output['result'][i])
-            else:
-                print("Error Message: " + response['status_message'])
+            print("--> Get current balance")
+            current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "mainchain", ela_to_use)
+            print("Current balance - mainchain:", current_balance)
+            current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "did", ela_to_use)
+            print("Current balance - did sidechain:", current_balance)
+            current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "token", ela_to_use)
+            print("Current balance - token sidechain:", current_balance)
+            current_balance = node_rpc.get_current_balance(api_key_to_use, did_to_use, network, "eth", ela_eth_to_use)
+            print("Current balance - eth sidechain:", current_balance)
         except Exception as e:
             print(e)
         finally:
-            wallet.close()
+            node_rpc.close()
     elif service == "request_ela":
         try:
             wallet = Wallet(host, port, production)

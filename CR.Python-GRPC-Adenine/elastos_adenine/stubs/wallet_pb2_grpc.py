@@ -19,11 +19,6 @@ class WalletStub(object):
         request_serializer=wallet__pb2.Request.SerializeToString,
         response_deserializer=wallet__pb2.Response.FromString,
         )
-    self.ViewWallet = channel.unary_unary(
-        '/wallet.Wallet/ViewWallet',
-        request_serializer=wallet__pb2.Request.SerializeToString,
-        response_deserializer=wallet__pb2.Response.FromString,
-        )
     self.RequestELA = channel.unary_unary(
         '/wallet.Wallet/RequestELA',
         request_serializer=wallet__pb2.Request.SerializeToString,
@@ -42,13 +37,6 @@ class WalletServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def ViewWallet(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def RequestELA(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -61,11 +49,6 @@ def add_WalletServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'CreateWallet': grpc.unary_unary_rpc_method_handler(
           servicer.CreateWallet,
-          request_deserializer=wallet__pb2.Request.FromString,
-          response_serializer=wallet__pb2.Response.SerializeToString,
-      ),
-      'ViewWallet': grpc.unary_unary_rpc_method_handler(
-          servicer.ViewWallet,
           request_deserializer=wallet__pb2.Request.FromString,
           response_serializer=wallet__pb2.Response.SerializeToString,
       ),
