@@ -2230,6 +2230,8 @@ void notify_group_title_cb(uint32_t group_number, uint32_t peer_number,
                                                 length ?
                                                 (const char *)title : "",
                                                 w->context);
+
+    store_persistence_data(w);
 }
 
 static
@@ -2261,6 +2263,8 @@ void notify_group_peer_name_cb(uint32_t group_number, uint32_t peer_number,
         w->callbacks.group_callbacks.peer_name(w, groupid, peerid,
                                                length ? (char *)name : "",
                                                w->context);
+
+    store_persistence_data(w);
 }
 
 static
@@ -2279,6 +2283,8 @@ void notify_group_peer_list_changed_cb(uint32_t group_number, void *user_data)
 
     if (w->callbacks.group_callbacks.peer_list_changed)
         w->callbacks.group_callbacks.peer_list_changed(w, groupid, w->context);
+
+    store_persistence_data(w);
 }
 
 static void connect_to_bootstraps(ElaCarrier *w)
@@ -3452,6 +3458,8 @@ int ela_new_group(ElaCarrier *w, char *groupid, size_t length)
         return -1;
     }
 
+    store_persistence_data(w);
+
     vlogD("Carrier: Group %s created.", groupid);
 
     return 0;
@@ -3507,6 +3515,8 @@ int ela_leave_group(ElaCarrier *w, const char *groupid)
         ela_set_error(rc);
         return -1;
     }
+
+    store_persistence_data(w);
 
     vlogD("Carrier: Leaved from Group %s", groupid);
 
@@ -3698,6 +3708,8 @@ int ela_group_set_title(ElaCarrier *w, const char *groupid, const char *title)
         ela_set_error(rc);
         return -1;
     }
+
+    store_persistence_data(w);
 
     return 0;
 }
