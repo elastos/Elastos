@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.core.files.base import ContentFile, File
 from django.shortcuts import render, redirect
 from django.utils.crypto import get_random_string
+from elastos_adenine import NodeRpc
 
 from console_main.settings import MEDIA_ROOT, GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION, SHARED_SECRET_ADENINE
 from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
@@ -409,26 +410,25 @@ def view_wallet(request):
             api_key = form.cleaned_data.get('api_key')
             addr = form.cleaned_data.get('address')
             try:
-                wallet = Wallet(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
-                response = wallet.view_wallet(api_key, did, network, chain, addr)
-                if response['status']:
+                node_rpc = NodeRpc(GRPC_SERVER_HOST, GRPC_SERVER_PORT, PRODUCTION)
+                current_balance = node_rpc.get_current_balance(api_key, did, network, chain, addr)
+                if current_balance:
                     output[chain] = True
-                    content = json.loads(response['output'])['result']
-                    address[chain] = content['address']
-                    balance[chain] = content['balance']
+                    address[chain] = addr
+                    balance[chain] = current_balance
                     return render(request, "service/view_wallet.html", {'output': output, 'form': form_to_display,
                                                                         'address': address, 'balance': balance,
                                                                         'sample_code': sample_code,
                                                                         'recent_services': recent_services})
                 else:
-                    messages.success(request, response['status_message'])
+                    messages.success(request, "Balance could not be retrieved")
                     return redirect(reverse('service:view_wallet'))
             except Exception as e:
                 logging.debug(f"did: {did} Method: view_wallet Error: {e}")
                 messages.success(request, "Could not view wallet at this time. Please try again")
                 return redirect(reverse('service:view_wallet'))
             finally:
-                wallet.close()
+                node_rpc.close()
     else:
         return render(request, 'service/view_wallet.html',
                       {'output': output, 'form': form_to_display, 'sample_code': sample_code,
