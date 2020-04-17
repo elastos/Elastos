@@ -813,6 +813,8 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
     if (transactionHistory.result.History !== undefined) {
       transactionHistory.result.History.forEach((tx, txIx) => {
         const time = formatDate(new Date(tx.CreateTime * 1000));
+        const elaFloat = parseInt(tx.Value)/10000000;
+        const elaDisplay = elaFloat.toFixed(7);
         const parsedTransaction = {};
         parsedTransaction.n = txIx;
         parsedTransaction.type = tx.Type;
@@ -822,8 +824,8 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
         if (tx.Type == 'spend') {
           parsedTransaction.type = 'Was sent';
         }
-        parsedTransaction.value = tx.Value;
-        // parsedTransaction.valueSat = voutElt.valueSat;
+        parsedTransaction.valueSat = tx.Value;
+        parsedTransaction.value = elaDisplay;
         parsedTransaction.address = tx.Address;
         parsedTransaction.txHash = tx.Txid;
         parsedTransaction.txHashWithEllipsis = tx.Txid;
@@ -1077,6 +1079,14 @@ const getParsedCandidateVoteList = () => {
   return parsedCandidateVoteList;
 };
 
+const getAddressOrBlank = () => {
+  const address = getAddress();
+  if (address != undefined) {
+    return address;
+  }
+  return '';
+};
+
 exports.DEFAULT_FEE_SATS = DEFAULT_FEE_SATS;
 exports.REST_SERVICES = REST_SERVICES;
 exports.init = init;
@@ -1126,3 +1136,4 @@ exports.getCandidateVoteListStatus = getCandidateVoteListStatus;
 exports.getParsedCandidateVoteList = getParsedCandidateVoteList;
 exports.toggleProducerSelection = toggleProducerSelection;
 exports.sendVoteTx = sendVoteTx;
+exports.getAddressOrBlank = getAddressOrBlank;

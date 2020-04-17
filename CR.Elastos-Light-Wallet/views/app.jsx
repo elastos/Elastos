@@ -15,6 +15,7 @@ const Landing = require('./landing.jsx');
 const LoginMnemonic = require('./login-mnemonic.jsx');
 const LoginPrivateKey = require('./login-private-key.jsx');
 const Voting = require('./voting.jsx');
+const QRCode = require('./qrcode.jsx');
 
 /** modules */
 const App = require('../scripts/App.js');
@@ -51,6 +52,7 @@ class AppView extends React.Component {
       <LoginMnemonic App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <LoginPrivateKey App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <Voting App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
+      <QRCode App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
     </div>)
   }
 }

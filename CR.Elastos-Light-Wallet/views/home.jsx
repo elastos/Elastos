@@ -1,5 +1,7 @@
 const React = require('react');
 
+const QRCode = require('qrcode.react');
+
 const Menu = require('./partial/menu.jsx');
 
 const Branding = require('./partial/branding.jsx');
@@ -209,7 +211,10 @@ module.exports = (props) => {
           <img src="artwork/copyicon.svg" className="copy-icon" height="26px" width="26px" />
         </button>
         <p className="address-ex">{App.getAddress()}</p>
-        <img src="artwork/qricon.svg" className="qr-icon" height="54px" width="54px" />
+        {/*<img id="qricon" src="artwork/qricon.svg" className="qr-icon" height="54px" width="54px" />*/}
+        <div className="qr-icon" onClick={(e) => GuiToggles.showQRCode()}>
+          <QRCode value={App.getAddressOrBlank()} size={54}/>
+        </div>
         <p className="scanqr-text">Scan <strong>QR code</strong> to get <br />ELA Address</p>
         <p className="howqr-text gradient-font">How QR works?</p>
         <img src="artwork/separator.svg" className="rec-separator" />

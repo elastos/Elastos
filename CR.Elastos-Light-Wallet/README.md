@@ -60,6 +60,4 @@ don't forget testnet and mainnet config files are in github at: https://github.c
 1. add RSS feed.
     elastos rss feed        
         https://news.elastos.org/feed/
-
-3. add a fake transaction in the tx list for the 'sent' tx.
-4. add a green 'sent' banner.
+3. add a green 'sent' banner.

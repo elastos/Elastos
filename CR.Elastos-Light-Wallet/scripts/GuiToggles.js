@@ -31,6 +31,7 @@ const hideEverything = () => {
   hide('votingMenuClose');
   hide('version');
   hide('voting');
+  hide('qrcode');
 };
 
 const showLanding = () => {
@@ -82,6 +83,12 @@ const showVoting = () => {
   show('votingMenuOpen');
 };
 
+const showQRCode = () => {
+  hideEverything();
+  app.clearSendData();
+  show('qrcode');
+};
+
 exports.init = init;
 exports.showLanding = showLanding;
 exports.showLoginMnemonic = showLoginMnemonic;
@@ -90,3 +97,4 @@ exports.showHome = showHome;
 exports.showMenu = showMenu;
 exports.hideMenu = hideMenu;
 exports.showVoting = showVoting;
+exports.showQRCode = showQRCode;
