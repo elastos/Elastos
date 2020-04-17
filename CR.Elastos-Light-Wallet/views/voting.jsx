@@ -89,7 +89,7 @@ module.exports = (props) => {
               total)</div>
             <p></p>
             <div className="h110px overflow_auto">
-              <table className="w100pct no_border whitespace_nowrap font_size12">
+              <table className="w100pct no_border whitespace_nowrap font_size12 txtable">
                 <tbody>
                   <tr>
                     <td className="no_border no_padding">N</td>
@@ -100,7 +100,7 @@ module.exports = (props) => {
                   </tr>
                   {
                     App.getParsedProducerList().producers.map((item, index) => {
-                      return (<tr key={index}>
+                      return (<tr className="txtable-row" key={index}>
                         <td className="no_border no_padding">{item.n}</td>
                         <td className="no_border no_padding">{item.nickname}</td>
                         <td className="no_border no_padding">{item.active}</td>
@@ -119,7 +119,7 @@ module.exports = (props) => {
         </tr>
         <tr>
  
-          <td colSpan="2" className="bordered w400px h200px ta_center va_top">
+          <td colSpan="2" className="txtable w400px h200px ta_center va_top">
             <div className="display_inline_block">Candidate List Status</div>
             <br/> {App.getCandidateVoteListStatus()}
             <br/>
@@ -129,7 +129,7 @@ module.exports = (props) => {
               total)</div>
             <p></p>
             <div className="h200px overflow_auto">
-              <table className="w100pct no_border whitespace_nowrap font_size12">
+              <table className="w100pct no_border whitespace_nowrap font_size12 txtable">
                 <tbody>
                   <tr>
                     <td className="no_border no_padding">N</td>
@@ -139,7 +139,7 @@ module.exports = (props) => {
                   </tr>
                   {
                     App.getParsedCandidateVoteList().candidateVotes.map((item, index) => {
-                      return (<tr key={index}>
+                      return (<tr className="txtable-row" key={index}>
                         <td className="no_border no_padding">{item.n}</td>
                         <td className="no_border no_padding">{item.nickname}</td>
                         <td className="no_border no_padding">{item.votes}</td>

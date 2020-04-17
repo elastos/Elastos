@@ -701,7 +701,7 @@ margin: 0;
 }
 
 .txtable-headrow {
-  font-size: 6.13px;
+  font-size: 9px;
   color: #B2B4C3;
   letter-spacing: 0.26px;
 
@@ -712,7 +712,7 @@ margin: 0;
   background-image: linear-gradient(90deg, rgba(23,24,28,0.45) 0%, rgba(26,26,30,0.17) 100%);
   border-top: 2px solid transparent;
   border-radius: 5.57px;
-  font-size: 7.8px;
+  font-size: 10px;
   color: #FFFFFF;
   letter-spacing: 0;
   line-height: 11.14px;
@@ -1081,3 +1081,5 @@ select, input {
 .hidden {
   display: none;
 }
+
+
