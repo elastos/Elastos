@@ -1524,8 +1524,8 @@ type RpcProposalBaseState struct {
 }
 
 type RpcCRProposalBaseStateInfo struct {
-	RpcProposalBaseStates []RpcProposalBaseState `json:"rpcproposalbasestates"`
-	TotalCounts           uint64                 `json:"totalcounts"`
+	ProposalBaseStates []RpcProposalBaseState `json:"proposalbasestates"`
+	TotalCounts        uint64                 `json:"totalcounts"`
 }
 
 type RpcCRCProposal struct {
@@ -1552,7 +1552,7 @@ type RpcProposalState struct {
 }
 
 type RpcCRProposalStateInfo struct {
-	RpcProposalState RpcProposalState `json:"RpcProposalState"`
+	ProposalState RpcProposalState `json:"proposalstate"`
 }
 
 func ListProducers(param Params) map[string]interface{} {
@@ -1860,8 +1860,8 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 	}
 
 	result := &RpcCRProposalBaseStateInfo{
-		RpcProposalBaseStates: rSRpcProposalBaseStates,
-		TotalCounts:           uint64(count),
+		ProposalBaseStates: rSRpcProposalBaseStates,
+		TotalCounts:        uint64(count),
 	}
 
 	return ResponsePack(Success, result)
@@ -1935,7 +1935,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		ProposalLeader:     hex.EncodeToString(proposalState.ProposalLeader),
 		AvailableAmount:    crCommittee.AvailableWithdrawalAmount(proposalHash).String(),
 	}
-	result := &RpcCRProposalStateInfo{RpcProposalState: RpcProposalState}
+	result := &RpcCRProposalStateInfo{ProposalState: RpcProposalState}
 	return ResponsePack(Success, result)
 }
 

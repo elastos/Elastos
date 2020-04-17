@@ -180,7 +180,7 @@ func (c *Committee) processVoteCancel(output *types.Output, height uint32) {
 					continue
 				}
 				proposalState := c.manager.getProposal(*proposalHash)
-				if proposalState == nil || proposalState.Status != VoterAgreed {
+				if proposalState == nil || proposalState.Status != CRAgreed {
 					continue
 				}
 				v := cv.Votes
