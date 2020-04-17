@@ -11,6 +11,8 @@ class TrackUserPageVisits(models.Model):
     last_visited = models.DateTimeField(default=timezone.now)
     number_visits = models.PositiveIntegerField(default=0)
     is_service = models.BooleanField(default=False)
+    activity_completed = models.BooleanField(default=False)
+    additional_field = models.CharField(max_length=200 , default='')
 
     @staticmethod
     def user_name():

@@ -77,7 +77,7 @@ def did_callback_elaphant(request):
         valid = ecdsa.verify((r, s), response['Data'], public_key)
         if not valid:
             return JsonResponse({'message': 'Unauthorized'}, status=401)
-        
+
         try:
             recently_created_time = timezone.now() - timedelta(minutes=1)
             did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
@@ -337,33 +337,28 @@ def populate_session_vars_from_database(request, did):
     request.session['private_key_eth'] = private_key_eth
 
 
-def track_page_visit(did, name, view, is_service):
+def track_page_visit(did, name, view, is_service, activity=False, additional_field=''):
     try:
-        track_obj = TrackUserPageVisits.objects.get(did=did, name=name, view=view, is_service=is_service)
+        track_obj = TrackUserPageVisits.objects.get(did=did, name=name, view=view, is_service=is_service,
+                                                    activity_completed=activity, additional_field=additional_field)
         track_obj.name = name
         track_obj.view = view
         track_obj.last_visited = timezone.now()
         track_obj.number_visits = F('number_visits') + 1
         track_obj.is_service = is_service
+        track_obj.activity_completed = activity
+        track_obj.additional_field = additional_field
         track_obj.save()
     except models.ObjectDoesNotExist:
-        track_obj = TrackUserPageVisits.objects.create(did=did, name=name, view=view, number_visits=1, is_service=is_service)
+        track_obj = TrackUserPageVisits.objects.create(did=did, name=name, view=view, number_visits=1,
+                                                       is_service=is_service, activity_completed=activity,
+                                                       additional_field=additional_field)
         track_obj.save()
     except Exception as e:
         logging.debug(e)
 
 
 def get_recent_services(did):
-    recent_services = TrackUserPageVisits.objects.filter(did=did, is_service=True).order_by('-last_visited')[:5]
+    recent_services = TrackUserPageVisits.objects.filter(did=did, is_service=True, activity_completed=False).order_by(
+        '-last_visited')[:5]
     return recent_services
-
-
-
-
-
-
-
-
-
-
-
