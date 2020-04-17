@@ -15,10 +15,10 @@ from grpc_adenine.implementations.rate_limiter import RateLimiter
 
 class Common(common_pb2_grpc.CommonServicer):
 
-    def __init__(self):
+    def __init__(self, session=None, rate_limiter=None):
         session_maker = sessionmaker(bind=db_engine)
-        self.session = session_maker()
-        self.rate_limiter = RateLimiter(self.session)
+        self.session = session if session else session_maker()
+        self.rate_limiter = rate_limiter if rate_limiter else RateLimiter(self.session)
 
     def GenerateAPIRequest(self, request, context):
         metadata = dict(context.invocation_metadata())
@@ -78,13 +78,13 @@ class Common(common_pb2_grpc.CommonServicer):
             # insert into SERVICES LISTS table
             self.rate_limiter.add_new_access_entry(api_key, self.GenerateAPIRequest.__name__)
 
-        response = {
+        data = {
             'api_key': api_key
         }
 
         # generate jwt token
         jwt_info = {
-            'result': response
+            'result': data
         }
 
         jwt_token = jwt.encode({
@@ -112,13 +112,13 @@ class Common(common_pb2_grpc.CommonServicer):
             api_present = self.session.query(UserApiRelations).filter_by(user_id=result.id).first()
             api_key = api_present.api_key
 
-            response = {
+            data = {
                 'api_key': api_key
             }
 
             # generate jwt token
             jwt_info = {
-                'result': response
+                'result': data
             }
 
             jwt_token = jwt.encode({

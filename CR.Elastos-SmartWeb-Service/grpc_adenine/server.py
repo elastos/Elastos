@@ -18,6 +18,8 @@ from grpc_adenine.implementations.wallet import Wallet
 from grpc_adenine.implementations.hive import Hive
 from grpc_adenine.implementations.sidechain_eth import SidechainEth
 
+from grpc_adenine.implementations.cron import Cron
+
 
 def serve():
     # Set up logging
@@ -55,6 +57,12 @@ def serve():
     port = config('GRPC_SERVER_PORT')
     server.add_insecure_port('[::]:{}'.format(port))
     server.start()
+
+    # Initialize cron job
+    cron = Cron()
+    cron.cronjob_send_ela()
+    cron.cronjob_send_ela_ethsc()
+
     server.wait_for_termination()
 
 

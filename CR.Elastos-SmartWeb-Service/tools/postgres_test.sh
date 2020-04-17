@@ -15,6 +15,7 @@ docker run -d --name smartweb-postgres-test \
 sleep 7
 # Copy .sql files to the running container
 docker cp ../grpc_adenine/database/scripts/create_table_scripts.sql smartweb-postgres-test:/create_table_scripts.sql
+docker cp ../grpc_adenine/database/scripts/insert_rows_scripts.sql smartweb-postgres-test:/insert_rows_scripts.sql
 docker cp ../grpc_adenine/database/scripts/reset_database.sql smartweb-postgres-test:/reset_database.sql
 
 # Run the sql scripts
@@ -23,8 +24,8 @@ if [ "$reset" == "yes" ]
 then
   docker container exec -it smartweb-postgres-test psql -h localhost -d smartweb_test -U gmu -a -q -f /reset_database.sql
 fi
-docker container logs smartweb-postgres-test
 docker container exec -it smartweb-postgres-test psql -h localhost -d smartweb_test -U gmu -a -q -f /create_table_scripts.sql
+docker container exec -it smartweb-postgres-test psql -h localhost -d smartweb_test -U gmu -a -q -f /insert_rows_scripts.sql
 
 
 
