@@ -2061,12 +2061,15 @@ Show current cr proposal base state information
 
 | name               | type                  | description                                        |
 | ------------------ | --------------------- | -------------------------------------------------- |
-| Status             | string                | the proposal status                                |
-| ProposalHash       | string                | the cr proposal hash                               |
-| TxHash             | string                | the transacion's hash which cr proposal located in |
-| CRVotes            | map[string]VoteResult | per cr VoteResult                                  |
-| VotersRejectAmount | common.Fixed64        | voters reject amount                               |
-| RegisterHeight     | uint32                | the proposal register height                       |
+| status             | string                | the proposal status                                |
+| proposalhash       | string                | the cr proposal hash                               |
+| txhash             | string                | the transacion's hash which cr proposal located in |
+| crvotes            | map[string]VoteResult | per cr VoteResult                                  |
+| votersrejectamount | common.Fixed64        | voters reject amount                               |
+| registerheight     | uint32                | register height of proposal                        |
+| terminatedheight   | uint32                | terminated height of proposal                      |
+| trackingcounts     | uint32                | tracking counts of proposal                        |
+| proposalleader     | string                | leader of proposal                                 |
 | Index              | uint64                | the index of the cr proposal                       |
 
 #### Example
@@ -2092,32 +2095,26 @@ Response:
     "id": null,
     "jsonrpc": "2.0",
     "result": {
-        "RpcProposalBaseStates": [
+        "proposalbasestates": [
             {
-                "status": "Registered",
-                "proposalhash": "42de0adf2b3673d712fc3efdaf643889ef8442fe25987b25add8c0c961b13612",
-                "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
+                "status": "CRAgreed",
+                "proposalhash": "e6942385c899889d4afd4b093e44a29f7d374c25c21432347faf3f82af2e5a88",
+                "txhash": "a859222538901eb656ad293483bb361dc0ec2835ce804fb7dffc67241c0ee965",
                 "crvotes": {
-                    "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
+                    "671ea45f83da61bad2a1d807bc41ee9933ae55345a": "approve",
+                    "67501a0f8b4744d8e2fda6dfc32c72d7c911573362": "approve",
+                    "67e9f9289ee606be597e222125910586091b8d3695": "approve",
+                    "67fbac33fd09d0891d87367091deae13fe8c0fd83b": "approve"
                 },
-                "votersrejectamount": 0,
-                "RegisterHeight": 1277,
-                "votestartheight": 0,
-                "index": 0
-            },
-            {
-                "status": "Registered",
-                "proposalhash": "7868943061e77bd29a6aafa4426d5f14c85e0bb0e40e333bcaa2ca4bc702fcac",
-                "txhash": "fd957410f85c6a4691bf60ccbd8c1d25901631941dc17ae6af91541b7695b265",
-                "crvotes": {
-                    "670f11c336563d31ed1cf81ac4a83f9df7306f9967": "approve"
-                },
-                "votersrejectamount": 0,
-                "RegisterHeight": 1468,
-                "index": 1
+                "votersrejectamount": "324.22213333",
+                "registerHeight": 1764,
+                "terminatedheight": 0,
+                "trackingcount": 0,
+                "proposalleader": "02de2bdd021fd17418d1696afb4709fb908401c81fa674f26e8ca0afa624a48727",
+                "index": 14
             }
         ],
-        "totalcounts": 2
+        "totalcounts": 1
     }
 }
 ```
