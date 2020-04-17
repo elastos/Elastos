@@ -223,7 +223,7 @@ module.exports = (props) => {
   <p className="transactions-heading">Transactions</p>
   <p className="blockcount"><span>Blocks:</span><span>{App.getBlockchainState().height}</span> </p>
 
-    <div className="txtablediv">
+    <div className="txtablediv scrollbar">
 
   <table className="txtable">
     <tbody>

@@ -68,9 +68,88 @@ module.exports = (props) => {
       </div>
 
       </div>
+      
+      <div className="voting-row1">
+        <div>
+          <img src="artwork/voting-back.svg" onClick={(e) => GuiToggles.showHome()}/>
+          <p className="display_inline_block votes-header">Votes</p>   
+          <p className="display_inline_block candidate-status status-font">Status: {App.getProducerListStatus()} </p>     
+          <p className="display_inline_block status-font">Candidates: {App.getParsedProducerList().producers.length} </p>
+          <p className="display_inline_block status-font">Selected: {App.getParsedProducerList().producersCandidateCount}/36 </p>
+          </div>
+      </div>
 
+      <div className="voting-row2 overflow_auto scrollbar">
+      <table className="w100pct no_border whitespace_nowrap txtable">
+                <tbody>
+                  <tr className="txtable-headrow">
+                    <td className="no_border no_padding">N</td>
+                    <td className="no_border no_padding">Nickname</td>
+                    <td className="no_border no_padding">Active</td>
+                    <td className="no_border no_padding">Votes</td>
+                    <td className="no_border no_padding">Select</td>
+                  </tr>
+                  {
+                    App.getParsedProducerList().producers.map((item, index) => {
+                      return (<tr className="txtable-row" key={index}>
+                        <td className="no_border no_padding">{item.n}</td>
+                        <td className="no_border no_padding">{item.nickname}</td>
+                        <td className="no_border no_padding">{item.active}</td>
+                        <td className="no_border no_padding">{item.votes}</td>
+                        <td className="white_on_purple_with_hover h20px fake_button" onClick={(e) => App.toggleProducerSelection({index})}>
+                          <ProducerSelectionButtonText item={item}/>
+                        </td>
+                      </tr>)
+                    })
+                  }
+                </tbody>
+              </table>
+      </div>
 
-      <table>
+      <div className="voting-row3">
+        <button  onClick={(e) => App.sendVoteTx()} className="dark-hover">Vote</button>
+      </div>
+
+      <div className="voting-row4">
+        <p className="display_inline_block active-heading">Active Votes</p>
+        <p className="display_inline_block candidate-status status-font">Status: {App.getCandidateVoteListStatus()}</p>     
+        <p className="display_inline_block status-font">Voted {App.getParsedCandidateVoteList().candidateVotes.length}/36</p>     
+
+      </div>
+
+      <div className="voting-row5 overflow_auto scrollbar">
+              <table className="w100pct no_border whitespace_nowrap font_size12 txtable">
+                <tbody>
+                  <tr className="txtable-headrow">
+                    <td className="no_border no_padding">N</td>
+                    <td className="no_border no_padding">Nickname</td>
+                    <td className="no_border no_padding">Votes</td>
+                    <td className="no_border no_padding">State</td>
+                  </tr>
+                  {
+                    App.getParsedCandidateVoteList().candidateVotes.map((item, index) => {
+                      return (<tr className="txtable-row" key={index}>
+                        <td className="no_border no_padding">{item.n}</td>
+                        <td className="no_border no_padding">{item.nickname}</td>
+                        <td className="no_border no_padding">{item.votes}</td>
+                        <td className="no_border no_padding">{item.state}</td>
+                      </tr>)
+                    })
+                  }
+                </tbody>
+              </table>
+      </div>
+
+      <div>
+
+         <SocialMedia GuiToggles={GuiToggles}/>
+
+      </div>
+      </div>
+    );
+    }
+
+      {/* <table>
       <tbody>
         <tr>
 
@@ -158,16 +237,9 @@ module.exports = (props) => {
           </td>
         </tr>
       </tbody>
-    </table>
+    </table> */}
 
-    <div>
 
-    <SocialMedia GuiToggles={GuiToggles}/>
-
-    </div>
-    </div>
-  );
-}
 
 {/* <table>
       <tbody>
