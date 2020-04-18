@@ -47,7 +47,7 @@ class AppView extends React.Component {
 
     // return (<div id="app" className="display_inline_block ta_center va_top font_sans_10">
     return (<div id="app">
-      <Home App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
+      <Home App={App} openDevTools={openDevTools} onLinkClick={onLinkClick} GuiToggles={GuiToggles} Version={Version}/>
       <Landing App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <LoginMnemonic App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <LoginPrivateKey App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
