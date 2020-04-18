@@ -7,7 +7,6 @@ package state
 
 import (
 	"errors"
-
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
@@ -233,7 +232,6 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 	if _, ok := s.depositInfo[info.CID]; !ok {
 		firstTimeRegister = true
 	}
-
 	s.history.Append(height, func() {
 		if firstTimeRegister {
 			s.depositInfo[info.CID] = &DepositInfo{}
