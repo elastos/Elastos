@@ -24,12 +24,13 @@ import (
 
 type Committee struct {
 	KeyFrame
-	mtx          sync.RWMutex
-	state        *State
-	params       *config.Params
-	manager      *ProposalManager
-	firstHistory *utils.History
-	lastHistory  *utils.History
+	mtx                      sync.RWMutex
+	state                    *State
+	params                   *config.Params
+	manager                  *ProposalManager
+	firstHistory             *utils.History
+	lastHistory              *utils.History
+	needAppropriationHistory *utils.History
 
 	getCheckpoint            func(height uint32) *Checkpoint
 	getHeight                func() uint32
@@ -261,19 +262,22 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	inElectionPeriod := c.tryStartVotingPeriod(block.Height)
 	c.manager.updateProposals(block.Height, c.CirculationAmount, inElectionPeriod)
 	c.freshCirculationAmount(c.lastHistory, block.Height, block.Height)
-
-	if c.shouldChange(block.Height) {
-		c.changeCommittee(block.Height)
-		c.createAppropriationTransaction(block.Height)
+	needChg := false
+	if c.shouldChange(block.Height) && c.changeCommittee(block.Height) {
+		needChg = true
 	}
 	if c.hasAppropriationTx(block) {
 		c.recordCurrentStageAmount(block.Height)
 	}
-
 	c.lastHistory.Commit(block.Height)
+
+	if needChg {
+		c.createAppropriationTransaction(block.Height)
+		c.needAppropriationHistory.Commit(block.Height)
+	}
 }
 
-func (c *Committee) changeCommittee(height uint32) {
+func (c *Committee) changeCommittee(height uint32) bool {
 	if c.shouldCleanHistory() {
 		oriHistoryMembers := copyHistoryMembersMap(c.HistoryMembers)
 		oriHistoryCandidates := copyHistoryCandidateMap(c.state.HistoryCandidates)
@@ -287,11 +291,12 @@ func (c *Committee) changeCommittee(height uint32) {
 	}
 	if err := c.changeCommitteeMembers(height); err != nil {
 		log.Warn("[ProcessBlock] change committee members error: ", err)
-		return
+		return false
 	}
 
 	c.resetCRCCommitteeUsedAmount(height)
 	c.resetProposalHashesSet(height)
+	return true
 }
 
 func (c *Committee) createAppropriationTransaction(height uint32) {
@@ -303,7 +308,7 @@ func (c *Committee) createAppropriationTransaction(height uint32) {
 		} else if tx == nil {
 			log.Info("no need to create appropriation")
 			oriNeedAppropriation := c.NeedAppropriation
-			c.lastHistory.Append(height, func() {
+			c.needAppropriationHistory.Append(height, func() {
 				c.NeedAppropriation = false
 			}, func() {
 				c.NeedAppropriation = oriNeedAppropriation
@@ -318,7 +323,7 @@ func (c *Committee) createAppropriationTransaction(height uint32) {
 					if err := c.appendToTxpool(tx); err == nil {
 						c.broadcast(msg.NewTx(tx))
 					} else {
-						log.Warn("create CRCAppropriation  ", err)
+						log.Warn("create CRCAppropriation appendToTxpool err ", err)
 					}
 				}
 			}()
@@ -547,6 +552,9 @@ func (c *Committee) RollbackTo(height uint32) error {
 	defer c.mtx.Unlock()
 	currentHeight := c.lastHistory.Height()
 	for i := currentHeight - 1; i >= height; i-- {
+		if err := c.needAppropriationHistory.RollbackTo(i); err != nil {
+			log.Debug("committee needAppropriationHistory rollback err:", err)
+		}
 		if err := c.lastHistory.RollbackTo(i); err != nil {
 			log.Debug("committee last history rollback err:", err)
 		}
@@ -993,12 +1001,13 @@ func (c *Committee) Snapshot() *CommitteeKeyFrame {
 
 func NewCommittee(params *config.Params) *Committee {
 	committee := &Committee{
-		state:        NewState(params),
-		params:       params,
-		KeyFrame:     *NewKeyFrame(),
-		manager:      NewProposalManager(params),
-		firstHistory: utils.NewHistory(maxHistoryCapacity),
-		lastHistory:  utils.NewHistory(maxHistoryCapacity),
+		state:                    NewState(params),
+		params:                   params,
+		KeyFrame:                 *NewKeyFrame(),
+		manager:                  NewProposalManager(params),
+		firstHistory:             utils.NewHistory(maxHistoryCapacity),
+		lastHistory:              utils.NewHistory(maxHistoryCapacity),
+		needAppropriationHistory: utils.NewHistory(maxHistoryCapacity),
 	}
 	committee.state.SetManager(committee.manager)
 	params.CkpManager.Register(NewCheckpoint(committee))

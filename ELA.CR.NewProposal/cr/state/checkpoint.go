@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -47,16 +47,17 @@ func (c *Checkpoint) OnRollbackTo(height uint32) error {
 	keyFrame := NewKeyFrame()
 	if height < c.StartHeight() {
 		committee := &Committee{
-			state:        NewState(c.committee.params),
-			params:       c.committee.params,
-			KeyFrame:     *keyFrame,
-			firstHistory: utils.NewHistory(maxHistoryCapacity),
-			lastHistory:  utils.NewHistory(maxHistoryCapacity),
+			state:                    NewState(c.committee.params),
+			params:                   c.committee.params,
+			KeyFrame:                 *keyFrame,
+			firstHistory:             utils.NewHistory(maxHistoryCapacity),
+			lastHistory:              utils.NewHistory(maxHistoryCapacity),
+			needAppropriationHistory: utils.NewHistory(maxHistoryCapacity),
 		}
 		c.initFromCommittee(committee)
 		c.committee.Recover(c)
 		c.committee.state.registerFunctions(&FunctionsConfig{
-			GetHistoryMember:        committee.getHistoryMember,
+			GetHistoryMember: committee.getHistoryMember,
 		})
 		return nil
 	}
