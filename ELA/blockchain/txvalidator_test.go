@@ -2512,7 +2512,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 		config.DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
 	s.Chain.crCommittee.InElectionPeriod = false
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
-	s.EqualError(err, "cr proposal tx must during election period")
+	s.EqualError(err, "cr proposal tx must not during voting period")
 
 	// recipient is empty
 	s.Chain.crCommittee.InElectionPeriod = true
