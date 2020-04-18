@@ -219,11 +219,22 @@ public class MainActivity extends BaseActivity implements MainViewData, NewBaseV
         if (flag) {
             return;
         }
-        getWallet().onDestroy();
-        getWallet().mMasterWalletManager = null;
-        MyApplication.setMyWallet(null);
+        if (getMyWallet() != null) {
+            getWallet().onDestroy();
+            getWallet().mMasterWalletManager = null;
+            MyApplication.setMyWallet(null);
+        }
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        if (getMyWallet() != null) {
+            getWallet().onDestroy();
+            getWallet().mMasterWalletManager = null;
+            MyApplication.setMyWallet(null);
+        }
+        super.onRestoreInstanceState(savedInstanceState);
+    }
 
     @Override
     public void onGetMyWallet(MyWallet myWallet) {
@@ -319,7 +330,7 @@ public class MainActivity extends BaseActivity implements MainViewData, NewBaseV
     private File getCurrentCredentialFile(String did, String didName) {
         File file = getExternalFilesDir("credentials" + File.separator + did);
         did = did.substring(did.length() - 6);
-        String fileName = did +"_"+ new Date().getTime() / 1000 + "_"+didName + ".jwt";
+        String fileName = did + "_" + new Date().getTime() / 1000 + "_" + didName + ".jwt";
         return new File(file, fileName);
 
     }

@@ -99,7 +99,7 @@ public class AboutPresenter extends PresenterAbstract {
             }
             is.close();
             fosto.close();
-            return file1.getAbsolutePath() + logName;
+            return file1.getAbsolutePath() + File.separator +logName;
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;

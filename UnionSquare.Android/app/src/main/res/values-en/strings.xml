@@ -629,7 +629,7 @@
     <string name="importfailed">Export failed</string>
     <string name="pleaseinstallfilechose">Install file manager</string>
     <string name="serviceprovider">Service provider</string>
-    <string name="sure1">sure</string>
+    <string name="sure1">Confirm</string>
     <string name="copyscanresult">Copy Content</string>
     <string name="covercredencial">Overwrite current credential?</string>
 </resources>
