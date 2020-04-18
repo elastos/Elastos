@@ -1,6 +1,6 @@
 import pytest
 import sys
-from decouple import config
+from decouple import Config, RepositoryEnv
 import json
 import argparse
 from pytest_dependency import depends
@@ -10,17 +10,23 @@ from elastos_adenine.node_rpc import NodeRpc
 from elastos_adenine.common import Common
 
 test_input = {}
+env_config = None
 
 @pytest.fixture(scope="module")
 def set_test_input(request):
-	test_input['host'] = config('GRPC_SERVER_HOST')
-	test_input['port'] = config('GRPC_SERVER_PORT')
-	test_input['production'] = config('PRODUCTION', default=False, cast=bool)
-	test_input['network'] = config('NETWORK')
-	test_input['ela_to_use'] = config('ELA_TO_USE')
-	test_input['ela_eth_to_use'] = config('ELA_ETH_TO_USE')
-	test_input['did_to_use'] = config('DID_TO_USE')
-	test_input['private_key_to_use'] = config('PRIVATE_KEY_TO_USE')
+	global env_config
+	
+	DOTENV_FILE = '.test.env'
+	env_config = Config(RepositoryEnv(DOTENV_FILE))
+	
+	test_input['host'] = env_config('GRPC_SERVER_HOST')
+	test_input['port'] = env_config('GRPC_SERVER_PORT')
+	test_input['production'] = env_config('PRODUCTION', default=False, cast=bool)
+	test_input['network'] = env_config('NETWORK')
+	test_input['ela_to_use'] = env_config('ELA_TO_USE')
+	test_input['ela_eth_to_use'] = env_config('ELA_ETH_TO_USE')
+	test_input['did_to_use'] = env_config('DID_TO_USE')
+	test_input['private_key_to_use'] = env_config('PRIVATE_KEY_TO_USE')
 	return test_input
 
 @pytest.mark.dependency()
@@ -38,7 +44,7 @@ def test_health_check(set_test_input):
 def test_get_api_key():
 	# Get API Key
 	common = Common(test_input['host'], test_input['port'], test_input['production'])
-	response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), test_input['did_to_use'])
+	response = common.get_api_key_request(env_config('SHARED_SECRET_ADENINE'), test_input['did_to_use'])
 	if response['status']:
 		json_output = json.loads(response['output'])
 		for i in json_output['result']:
