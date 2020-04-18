@@ -479,7 +479,6 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
 	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
 	oriMemberState := crMember.MemberState
-
 	history.Append(height, func() {
 		crMember.ImpeachmentVotes += votes
 		if crMember.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
@@ -684,15 +683,18 @@ func (c *Committee) processCurrentMembers(height uint32,
 				dpositAmount = MinDepositAmount
 			}
 			c.lastHistory.Append(height, func() {
-				c.state.depositInfo[m.Info.CID].Penalty = c.getMemberPenalty(height, m)
-				c.state.depositInfo[m.Info.CID].Refundable = true
-				c.state.depositInfo[m.Info.CID].DepositAmount -= dpositAmount
-				c.HistoryMembers[c.state.CurrentSession][m.Info.CID] = &member
+				//MemberImpeached do not recalculate penalty
+				if dpositAmount != 0 {
+					c.state.depositInfo[member.Info.CID].Penalty = c.getMemberPenalty(height, &member)
+				}
+				c.state.depositInfo[member.Info.CID].Refundable = true
+				c.state.depositInfo[member.Info.CID].DepositAmount -= dpositAmount
+				c.HistoryMembers[c.state.CurrentSession][member.Info.CID] = &member
 			}, func() {
-				c.state.depositInfo[m.Info.CID].Penalty = oriPenalty
-				c.state.depositInfo[m.Info.CID].Refundable = oriRefundable
-				c.state.depositInfo[m.Info.CID].DepositAmount = oriDepositAmount
-				delete(c.HistoryMembers[c.state.CurrentSession], m.Info.CID)
+				c.state.depositInfo[member.Info.CID].Penalty = oriPenalty
+				c.state.depositInfo[member.Info.CID].Refundable = oriRefundable
+				c.state.depositInfo[member.Info.CID].DepositAmount = oriDepositAmount
+				delete(c.HistoryMembers[c.state.CurrentSession], member.Info.CID)
 			})
 		}
 	}
