@@ -10,7 +10,7 @@ module.exports = (props) => {
         App.getParsedRssFeed().map((item, index) => {
           return (<tr key={index}>
             <td>
-              <p className="article-days">{item.pubDate.substring}</p>
+              <p className="article-days">{item.pubDate}</p>
               <p className="article-title">{item.title}</p>
             </td>
           </tr>)
