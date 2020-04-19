@@ -263,7 +263,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.state.history.Commit(block.Height)
 
 	inElectionPeriod := c.tryStartVotingPeriod(block.Height)
-	c.manager.updateProposals(block.Height, c.CirculationAmount, inElectionPeriod)
+	c.updateProposals(block.Height, inElectionPeriod)
 	c.freshCirculationAmount(c.lastHistory, block.Height, block.Height)
 	needChg := false
 	if c.shouldChange(block.Height) && c.changeCommittee(block.Height) {
@@ -278,6 +278,17 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		c.createAppropriationTransaction(block.Height)
 		c.needAppropriationHistory.Commit(block.Height)
 	}
+}
+
+func (c *Committee) updateProposals(height uint32, inElectionPeriod bool) {
+	unusedAmount := c.manager.updateProposals(
+		height, c.CirculationAmount, inElectionPeriod)
+	c.manager.history.Append(height, func() {
+		c.CRCCommitteeUsedAmount -= unusedAmount
+	}, func() {
+		c.CRCCommitteeUsedAmount += unusedAmount
+	})
+	c.manager.history.Commit(height)
 }
 
 func (c *Committee) changeCommittee(height uint32) bool {
@@ -338,7 +349,20 @@ func (c *Committee) resetCRCCommitteeUsedAmount(height uint32) {
 	// todo add finished proposals into finished map
 	var budget common.Fixed64
 	for _, v := range c.manager.Proposals {
-		if v.Status == CRCanceled || v.Status == VoterCanceled {
+		if v.Status == CRCanceled || v.Status == VoterCanceled ||
+			v.Status == Aborted {
+			continue
+		}
+		if v.Status == Terminated || v.Status == Finished {
+			for _, b := range v.Proposal.Budgets {
+				if _, ok := v.WithdrawableBudgets[b.Stage]; !ok {
+					continue
+				}
+				if _, ok := v.WithdrawnBudgets[b.Stage]; ok {
+					continue
+				}
+				budget += b.Amount
+			}
 			continue
 		}
 		for _, b := range v.Proposal.Budgets {
@@ -502,8 +526,7 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 	return
 }
 
-func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32,
-	history *utils.History) {
+func (c *Committee) processCRCAppropriation(height uint32, history *utils.History) {
 	history.Append(height, func() {
 		c.NeedAppropriation = false
 	}, func() {

@@ -39,10 +39,13 @@ const (
 	// VoterCanceled means the proposal canceled by voters' reject voting.
 	VoterCanceled ProposalStatus = 0x05
 
-	// Aborted means proposal had been approved by both CR and voters,
-	// whoever the proposal related project has been decided to abort for
+	// Terminated means proposal had been approved by both CR and voters,
+	// whoever the proposal related project has been decided to terminate for
 	// some reason.
-	Aborted ProposalStatus = 0x06
+	Terminated ProposalStatus = 0x06
+
+	// Aborted means the proposal was cancelled because of a snap election.
+	Aborted ProposalStatus = 0x07
 )
 
 func (status ProposalStatus) String() string {
@@ -59,6 +62,8 @@ func (status ProposalStatus) String() string {
 		return "CRCanceled"
 	case VoterCanceled:
 		return "VoterCanceled"
+	case Terminated:
+		return "Terminated"
 	case Aborted:
 		return "Aborted"
 	default:
@@ -143,30 +148,46 @@ func (p *ProposalManager) availableWithdrawalAmount(hash common.Uint256) common.
 	return amount
 }
 
+func getProposalTotalBudgetAmount(proposal payload.CRCProposal) common.Fixed64 {
+	var budget common.Fixed64
+	for _, b := range proposal.Budgets {
+		budget += b.Amount
+	}
+	return budget
+}
+
 // updateProposals will update proposals' status.
 func (p *ProposalManager) updateProposals(height uint32,
-	circulation common.Fixed64, inElectionPeriod bool) {
+	circulation common.Fixed64, inElectionPeriod bool) common.Fixed64 {
+	var unusedAmount common.Fixed64
 	for _, v := range p.Proposals {
 		switch v.Status {
 		case Registered:
 			if !inElectionPeriod {
 				p.abortProposal(v, height)
+				unusedAmount += getProposalTotalBudgetAmount(v.Proposal)
 				break
 			}
 			if p.shouldEndCRCVote(v.RegisterHeight, height) {
-				p.transferRegisteredState(v, height)
+				if p.transferRegisteredState(v, height) == CRCanceled {
+					unusedAmount += getProposalTotalBudgetAmount(v.Proposal)
+				}
 			}
 		case CRAgreed:
 			if !inElectionPeriod {
 				p.abortProposal(v, height)
+				unusedAmount += getProposalTotalBudgetAmount(v.Proposal)
 				break
 			}
 			if p.shouldEndPublicVote(v.VoteStartHeight, height) {
-				p.transferCRAgreedState(v, height, circulation)
+				if p.transferCRAgreedState(v, height, circulation) == VoterCanceled {
+					unusedAmount += getProposalTotalBudgetAmount(v.Proposal)
+				}
 			}
 		}
 	}
-	p.history.Commit(height)
+
+	return unusedAmount
 }
 
 // abortProposal will transfer the status to aborted.
@@ -183,7 +204,7 @@ func (p *ProposalManager) abortProposal(proposal *ProposalState,
 // transferRegisteredState will transfer the Registered state by CR agreement
 // count.
 func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
-	height uint32) {
+	height uint32) (status ProposalStatus) {
 	agreedCount := uint32(0)
 	for _, v := range proposal.CRVotes {
 		if v == payload.Approve {
@@ -193,6 +214,7 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 
 	oriVoteStartHeight := proposal.VoteStartHeight
 	if agreedCount >= p.params.CRAgreementCount {
+		status = CRAgreed
 		p.history.Append(height, func() {
 			proposal.Status = CRAgreed
 			proposal.VoteStartHeight = height
@@ -201,25 +223,29 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 			proposal.VoteStartHeight = oriVoteStartHeight
 		})
 	} else {
+		status = CRCanceled
 		p.history.Append(height, func() {
 			proposal.Status = CRCanceled
 		}, func() {
 			proposal.Status = Registered
 		})
 	}
+	return
 }
 
 // transferCRAgreedState will transfer CRAgreed state by votes' reject amount.
 func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
-	height uint32, circulation common.Fixed64) {
+	height uint32, circulation common.Fixed64) (status ProposalStatus) {
 	if proposal.VotersRejectAmount >= common.Fixed64(float64(circulation)*
 		p.params.VoterRejectPercentage/100.0) {
+		status = VoterCanceled
 		p.history.Append(height, func() {
 			proposal.Status = VoterCanceled
 		}, func() {
 			proposal.Status = CRAgreed
 		})
 	} else {
+		status = VoterAgreed
 		p.history.Append(height, func() {
 			proposal.Status = VoterAgreed
 			for _, b := range proposal.Proposal.Budgets {
@@ -239,6 +265,7 @@ func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 
 		})
 	}
+	return
 }
 
 // shouldEndCRCVote returns if current height should end CRC vote about
@@ -409,7 +436,7 @@ func (p *ProposalManager) proposalWithdraw(tx *types.Transaction,
 }
 
 func (p *ProposalManager) proposalTracking(tx *types.Transaction,
-	height uint32, history *utils.History) {
+	height uint32, history *utils.History) (unusedBudget common.Fixed64) {
 	proposalTracking := tx.Payload.(*payload.CRCProposalTracking)
 	proposalState := p.getProposal(proposalTracking.ProposalHash)
 	if proposalState == nil {
@@ -420,6 +447,24 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 	leader := proposalState.ProposalLeader
 	terminatedHeight := proposalState.TerminatedHeight
 	status := proposalState.Status
+
+	if trackingType == payload.Terminated {
+		for _, budget := range proposalState.Proposal.Budgets {
+			if _, ok := proposalState.WithdrawnBudgets[budget.Stage]; !ok {
+				unusedBudget += budget.Amount
+			}
+		}
+	}
+	if trackingType == payload.Finalized {
+		for _, budget := range proposalState.Proposal.Budgets {
+			if budget.Type == payload.FinalPayment {
+				continue
+			}
+			if _, ok := proposalState.WithdrawnBudgets[budget.Stage]; !ok {
+				unusedBudget += budget.Amount
+			}
+		}
+	}
 
 	history.Append(height, func() {
 		proposalState.TrackingCount++
@@ -440,7 +485,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 			proposalState.ProposalLeader = proposalTracking.NewLeaderPubKey
 		case payload.Terminated:
 			proposalState.TerminatedHeight = height
-			proposalState.Status = Aborted
+			proposalState.Status = Terminated
 		case payload.Finalized:
 			proposalState.Status = Finished
 			for _, budget := range proposalState.Proposal.Budgets {
@@ -473,6 +518,8 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 			}
 		}
 	})
+
+	return
 }
 
 func NewProposalManager(params *config.Params) *ProposalManager {
