@@ -1,18 +1,39 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #ifndef __ELASTOS_SDK_CRCPROPOSAL_H__
 #define __ELASTOS_SDK_CRCPROPOSAL_H__
 
 #include "IPayload.h"
 #include <Common/BigInt.h>
+#include <Common/JsonSerializer.h>
+#include <WalletCore/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {
-		class Budget {
+
+#define CRCProposalDefaultVersion 0
+		class Budget : public JsonSerializer {
 		public:
-			enum BudgetType {
+			enum Type {
 				imprest = 0x00,
 				normalPayment = 0x01,
 				finalPayment = 0x02,
@@ -20,33 +41,35 @@ namespace Elastos {
 			};
 			Budget();
 
-			Budget(BudgetType type, uint8_t stage, BigInt amount);
+			Budget(Budget::Type type, uint8_t stage, const BigInt &amount);
 
 			~Budget();
 
-			BudgetType GetType() const;
+			Budget::Type GetType() const;
 
 			uint8_t GetStage() const;
 
 			BigInt GetAmount() const;
 
-			void Serialize(ByteStream &ostream, uint8_t version) const;
+			void Serialize(ByteStream &ostream) const;
 
-			bool Deserialize(const ByteStream &istream, uint8_t version);
+			bool Deserialize(const ByteStream &istream);
 
-			nlohmann::json ToJson(uint8_t version) const;
+			bool IsValid() const;
 
-			void FromJson(const nlohmann::json &j, uint8_t version);
+			nlohmann::json ToJson() const override;
+
+			void FromJson(const nlohmann::json &j) override;
 
 		private:
-			BudgetType _type;
+			Budget::Type _type;
 			uint8_t _stage;
 			BigInt _amount;
 		};
 
 		class CRCProposal : public IPayload {
 		public:
-			enum CRCProposalType {
+			enum Type {
 				normal = 0x0000,
 				elip = 0x0100,
 				flowElip = 0x0101,
@@ -65,83 +88,114 @@ namespace Elastos {
 
 			~CRCProposal();
 
-			void SetTpye(CRCProposalType type);
+			void SetTpye(CRCProposal::Type type);
 
-			CRCProposalType GetType() const;
+			CRCProposal::Type GetType() const;
 
 			void SetCategoryData(const std::string &categoryData);
 
 			const std::string &GetCategoryData() const;
 
-			void SetSponsorPublicKey(const bytes_t &publicKey);
+			void SetOwnerPublicKey(const bytes_t &publicKey);
 
-			const bytes_t &GetSponsorPublicKey() const;
+			const bytes_t &GetOwnerPublicKey() const;
 
-			void SetCRSponsorDID(const uint168 &crSponsorDID);
+			void SetCRCommitteeDID(const Address &crSponsorDID);
 
-			const uint168 &GetCRSponsorDID() const;
+			const Address &GetCRCommitteeDID() const;
 
 			void SetDraftHash(const uint256 &draftHash);
 
 			const uint256 &GetDraftHash() const;
 
-			void SetBudgets(const std::vector <Budget> &budgets);
+			void SetBudgets(const std::vector<Budget> &budgets);
 
-			const std::vector <Budget> &GetBudgets() const;
+			const std::vector<Budget> &GetBudgets() const;
 
-			void SetRecipient(const uint168 &recipient);
+			void SetRecipient(const Address &recipient);
 
-			const uint168 &GetRecipient() const;
+			const Address &GetRecipient() const;
 
 			void SetSignature(const bytes_t &signature);
 
 			const bytes_t &GetSignature() const;
 
-			void SetCRSignature(const bytes_t &signature);
+			void SetCRCommitteeSignature(const bytes_t &signature);
 
-			const bytes_t &GetCRSignature() const;
+			const bytes_t &GetCRCommitteeSignature() const;
 
-			void SetCROpinionHash(const uint256 &hash);
+			const uint256 &DigestOwnerUnsigned(uint8_t version) const;
 
-			const uint256 &GetCROpinionHash() const;
-
-			uint256 Hash() const;
+			const uint256 &DigestCRCommitteeUnsigned(uint8_t version) const;
 
 		public:
-			virtual size_t EstimateSize(uint8_t version) const;
+			size_t EstimateSize(uint8_t version) const override;
 
-			void SerializeUnsigned(ByteStream &ostream, uint8_t version) const;
+			void SerializeOwnerUnsigned(ByteStream &ostream, uint8_t version) const;
 
-			bool DeserializeUnsigned(const ByteStream &istream, uint8_t version);
+			bool DeserializeOwnerUnsigned(const ByteStream &istream, uint8_t version);
 
-			void SerializeSponsorSigned(ByteStream &ostream, uint8_t version);
+			void SerializeCRCommitteeUnsigned(ByteStream &ostream, uint8_t version) const;
 
-			bool DeserializeSponsorSigned(const ByteStream &istream, uint8_t version);
+			bool DeserializeCRCommitteeUnsigned(const ByteStream &istream, uint8_t version);
 
-			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
+			void Serialize(ByteStream &ostream, uint8_t version) const override;
 
-			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
+			bool Deserialize(const ByteStream &istream, uint8_t version) override;
 
-			virtual nlohmann::json ToJson(uint8_t version) const;
+			nlohmann::json ToJsonOwnerUnsigned(uint8_t version) const;
 
-			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+			void FromJsonOwnerUnsigned(const nlohmann::json &j, uint8_t version);
 
-			virtual IPayload &operator=(const IPayload &payload);
+			nlohmann::json ToJsonCRCommitteeUnsigned(uint8_t version) const;
+
+			void FromJsonCRCommitteeUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJson(uint8_t version) const override;
+
+			void FromJson(const nlohmann::json &j, uint8_t version) override;
+
+			bool IsValidOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidCRCommitteeUnsigned(uint8_t version) const;
+
+			bool IsValid(uint8_t version) const override;
+
+			IPayload &operator=(const IPayload &payload) override;
 
 			CRCProposal &operator=(const CRCProposal &payload);
 
 		private:
-			CRCProposalType _type;
+			mutable uint256 _digestOwnerUnsigned;
+			mutable uint256 _digestCRCommitteeUnsigned;
+
+		private:
+			CRCProposal::Type _type;
 			std::string _categoryData;
-			bytes_t _sponsorPublicKey;
-			uint168 _crSponsorDID;
+			bytes_t _ownerPublicKey;
 			uint256 _draftHash;
 			std::vector <Budget> _budgets;
-			uint168 _recipient;
+			Address _recipient;
 			bytes_t _signature;
-			uint256 _crOpinionHash;
-			bytes_t _crSignature;
+
+			// cr sponsor
+			Address _crCommitteeDID;
+			bytes_t _crCommitteeSignature;
 		};
 	}
 }
+
+namespace nlohmann {
+	template<>
+	struct adl_serializer<Elastos::ElaWallet::Budget> {
+		static void to_json(json &j, const Elastos::ElaWallet::Budget &budget) {
+			j = budget.ToJson();
+		}
+
+		static void from_json(const json &j, Elastos::ElaWallet::Budget &budget) {
+			budget.FromJson(j);
+		}
+	};
+}
+
 #endif //__ELASTOS_SDK_CRCPROPOSAL_H__

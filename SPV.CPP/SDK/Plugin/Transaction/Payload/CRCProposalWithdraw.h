@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Elastos Foundation
+ * Copyright (c) 2020 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,44 +19,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef __ELASTOS_SDK_CRCPROPOSALREVIEW_H__
-#define __ELASTOS_SDK_CRCPROPOSALREVIEW_H__
+
+#ifndef __ELASTOS_SPVSDK_CRCPROPOSALWITHDRAW_H__
+#define __ELASTOS_SPVSDK_CRCPROPOSALWITHDRAW_H__
 
 #include "IPayload.h"
-#include <WalletCore/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-#define CRCProposalReviewDefaultVersion 0
-		class CRCProposalReview : public IPayload {
+#define CRCProposalWithdrawVersion 0
+
+		class CRCProposalWithdraw : public IPayload {
 		public:
-			enum Opinion {
-				approve = 0x00,
-				reject = 0x01,
-				abstain = 0x02,
-				unknownOpinion
-			};
+			CRCProposalWithdraw();
 
-			CRCProposalReview();
-
-			~CRCProposalReview();
+			~CRCProposalWithdraw();
 
 			void SetProposalHash(const uint256 &hash);
 
 			const uint256 &GetProposalHash() const;
 
-			void SetOpinion(Opinion opinion);
+			void SetOwnerPublicKey(const bytes_t &pubkey);
 
-			Opinion GetOpinion() const;
-
-			void SetOpinionHash(const uint256 &hash);
-
-			const uint256 &GetOpinionHash() const;
-
-			void SetCRCommitteeDID(const Address &crDID);
-
-			const Address &GetCRCommitteeDID() const;
+			const bytes_t &GetOwnerPublicKey() const;
 
 			void SetSignature(const bytes_t &signature);
 
@@ -67,40 +53,40 @@ namespace Elastos {
 		public:
 			virtual size_t EstimateSize(uint8_t version) const;
 
-			void SerializeUnsigned(ByteStream &ostream, uint8_t version) const;
+			void SerializeUnsigned(ByteStream &stream, uint8_t version) const;
 
-			bool DeserializeUnsigned(const ByteStream &istream, uint8_t version);
+			virtual void Serialize(ByteStream &stream, uint8_t version) const;
 
-			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
+			bool DeserializeUnsigned(const ByteStream &stream, uint8_t version);
 
-			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
+			virtual bool Deserialize(const ByteStream &stream, uint8_t version);
 
 			nlohmann::json ToJsonUnsigned(uint8_t version) const;
 
-			void FromJsonUnsigned(const nlohmann::json &j, uint8_t version);
-
 			virtual nlohmann::json ToJson(uint8_t version) const;
+
+			void FromJsonUnsigned(const nlohmann::json &j, uint8_t version);
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
-			bool IsValidUnsigned(uint8_t version) const;
+			bool IsValidUnsigned(uint8_t versin) const;
 
 			virtual bool IsValid(uint8_t version) const;
 
 			virtual IPayload &operator=(const IPayload &payload);
 
-			CRCProposalReview &operator=(const CRCProposalReview &payload);
+			CRCProposalWithdraw &operator=(const CRCProposalWithdraw &payload);
 
 		private:
 			mutable uint256 _digest;
 
 		private:
 			uint256 _proposalHash;
-			Opinion _opinion;
-			uint256 _opinionHash;
-			Address _crCommitteeDID;
+			bytes_t _ownerPubkey;
 			bytes_t _signature;
 		};
+
 	}
 }
-#endif //__ELASTOS_SDK_CRCPROPOSALREVIEW_H__
+
+#endif

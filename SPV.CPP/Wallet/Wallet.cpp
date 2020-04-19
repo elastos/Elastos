@@ -1195,11 +1195,10 @@ static int retrieve(int argc, char *argv[]) {
 	return 0;
 }
 
-// proposal (sponsor | crsponsor)
+// proposal
 static int proposal(int argc, char *argv[]) {
-	checkParam(2);
+	checkParam(1);
 	checkCurrentWallet();
-	std::string what = argv[1];
 
 	try {
 		IMainchainSubWallet *subWallet;
@@ -1208,78 +1207,134 @@ static int proposal(int argc, char *argv[]) {
 		IIDChainSubWallet *idSubWallet;
 		getSubWallet(idSubWallet, currentWallet, CHAINID_ID);
 
-		if (what == "sponsor") {
-			int type = 0;
-			std::string categoryData;
-			std::string draftHash;
-			std::string budgetList;
-			std::string receiptAddress;
-			std::string crSponsorDID;
+		nlohmann::json payload;
 
-			std::string sponsorPubKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
-			std::cout << "sponsor public key: " << sponsorPubKey << std::endl;
+		int type = 0;
+		std::cout << "Select proposal type: " << std::endl;
+		std::cout << "1. Normal" << std::endl;
+		std::cout << "2. ELIP" << std::endl;
+		std::cout << "3. Flow ELIP" << std::endl;
+		std::cout << "4. Info ELIP" << std::endl;
+		std::cout << "5. Mainchain Upgrade Code" << std::endl;
+		std::cout << "6. Sidechain Upgrade Code" << std::endl;
+		std::cout << "7. Register Sidechain" << std::endl;
+		std::cout << "8. Secretary General" << std::endl;
+		std::cout << "9. Change Owner" << std::endl;
+		std::cout << "10. Close Proposal" << std::endl;
+		std::cout << "11. Dapp Consensus" << std::endl;
+		std::cin >> type;
 
-			std::string sponsorDID = idSubWallet->GetPublicKeyDID(sponsorPubKey);
-			std::cout << "sponsor DID: " << sponsorDID << std::endl;
-
-			std::cout << "Enter categoryData: ";
-			std::cin >> categoryData;
-
-			std::cout << "Enter proposal draft hash: ";
-			std::cin >> draftHash;
-
-			std::cout << "Enter budget list (eg: [{\"Type\":0,\"Stage\":0,\"Amount\":100.2},{\"Type\":1,\"Stage\":1,\"Amount\":200.3},{\"Type\":2,\"Stage\":2,\"Amount\":300.4}]): \n";
-			std::cin >> budgetList;
-			nlohmann::json budgetJson = nlohmann::json::parse(budgetList);
-			std::vector<std::string> budgets;
-			for (nlohmann::json::iterator it = budgetJson.begin(); it != budgetJson.end(); ++it) {
-				double amount = ((*it)["Amount"].get<double>() * double(SELA_PER_ELA));
-				(*it)["Amount"] = std::to_string(amount);
-			}
-
-			std::cout << "Enter receipt address: ";
-			std::cin >> receiptAddress;
-
-			nlohmann::json proposalJson = subWallet->SponsorProposalDigest(type, categoryData, sponsorPubKey, draftHash,
-			                                                               budgetJson, receiptAddress);
-			std::string digest = proposalJson["Digest"].get<std::string>();
-
-			std::string password = getpass("Enter payment password: ");
-			std::string signature = idSubWallet->SignDigest(sponsorDID, digest, password);
-			proposalJson["Signature"] = signature;
-
-			std::cout << proposalJson.dump() << std::endl;
-		} else if (what == "crsponsor") {
-			std::string tmp;
-			std::cout << "Enter sponsor signed proposal: " << std::endl;
-			std::cin >> tmp;
-
-			nlohmann::json sponsorSignedProposal = nlohmann::json::parse(tmp);
-
-			std::string crSponsorPubKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
-			std::cout << "CR sponsor public key: " << crSponsorPubKey << std::endl;
-			std::string crSponsorDID = idSubWallet->GetPublicKeyDID(crSponsorPubKey);
-			std::cout << "CR sponsor DID: " << crSponsorDID << std::endl;
-
-			std::string CROpinionHash;
-			std::cout << "Enter cr opinion hash: " << std::endl;
-			std::cin >> CROpinionHash;
-
-			nlohmann::json proposalJson = subWallet->CRSponsorProposalDigest(sponsorSignedProposal, crSponsorDID,
-					CROpinionHash);
-			std::string digest = proposalJson["Digest"].get<std::string>();
-
-			std::string password = getpass("Enter payment password: ");
-			std::string signature = idSubWallet->SignDigest(crSponsorDID, digest, password);
-			proposalJson["CRSignature"] = signature;
-
-			nlohmann::json tx = subWallet->CreateCRCProposalTransaction(proposalJson, "");
-
-			signAndPublishTx(subWallet, tx);
-		} else {
-			invalidCmdError();
-			return ERRNO_APP;
+		switch (type) {
+			case 1: payload["Type"] = 0x0000; break;
+			case 2: payload["Type"] = 0x0100; break;
+			case 3: payload["Type"] = 0x0101; break;
+			case 4: payload["Type"] = 0x0102; break;
+			case 5: payload["Type"] = 0x0200; break;
+			case 6: payload["Type"] = 0x0300; break;
+			case 7: payload["Type"] = 0x0301; break;
+			case 8: payload["Type"] = 0x0400; break;
+			case 9: payload["Type"] = 0x0401; break;
+			case 10: payload["Type"] = 0x0402; break;
+			case 11: payload["Type"] = 0x0500; break;
+			default: std::cout << "invalid input" << std::endl;
+				return ERRNO_APP;
 		}
+
+		std::string categoryData;
+		std::cout << "Enter category data (limit bytes 4096): ";
+		std::cin >> categoryData;
+		payload["CategoryData"] = categoryData;
+
+		std::string ownerPubkey;
+		std::cout << "Enter owner public key: ";
+		std::cin >> ownerPubkey;
+		payload["OwnerPublicKey"] = ownerPubkey;
+
+		std::string draftHash;
+		std::cout << "Enter proposal draft hash: ";
+		std::cin >> draftHash;
+		payload["DraftHash"] = draftHash;
+
+		std::string recipient;
+		std::cout << "Enter recipient: ";
+		std::cin >> recipient;
+		payload["Recipient"] = recipient;
+
+		std::cout << "Enter budgets: " << std::endl;
+
+		nlohmann::json budgets;
+		std::string continueAdd = "y";
+		while (continueAdd == "y" || continueAdd == "yes") {
+			nlohmann::json budget;
+			std::cout << "Select Budget Type: " << std::endl;
+			std::cout << "1. Imprest" << std::endl;
+			std::cout << "2. NormalPayment" << std::endl;
+			std::cout << "3. FinalPayment" << std::endl;
+			std::cin >> type;
+			if (type < 1 || type > 3) {
+				std::cout << "invalid input" << std::endl;
+				return ERRNO_APP;
+			}
+			budget["Type"] = type - 1;
+
+			uint8_t stage;
+			std::cout << "Enter stage [0, 128): ";
+			std::cin >> stage;
+			if (stage >= 128) {
+				std::cout << "invalid input" << std::endl;
+				return ERRNO_APP;
+			}
+			budget["Stage"] = stage;
+
+			std::string amount;
+			std::cout << "Enter amount (eg: 1.23 means 1.23 ELA): ";
+			std::cin >> amount;
+			budget["Amount"] = convertAmount(amount);
+
+			budgets.push_back(budget);
+			std::cout << "Budgets preview: " << std::endl << budgets.dump(4) << std::endl;
+
+			do {
+				std::cout << "Continue to add budget, [Y]es or [N]o ? ";
+				std::cin >> continueAdd;
+				transform(continueAdd.begin(), continueAdd.end(), continueAdd.begin(), ::tolower);
+			} while (continueAdd != "y" && continueAdd != "n" && continueAdd != "yes" && continueAdd != "no");
+		}
+		payload["Budgets"] = budgets;
+
+		// Proposal owner sign the payload
+		std::string digest = subWallet->ProposalOwnerDigest(payload);
+
+		std::cout << "Sign the digest by proposal owner with did sdk" << std::endl;
+		std::cout << "Digest: " << digest << std::endl << "Press enter to continue..." << std::endl;
+
+		std::string signature;
+		std::cin >> signature;
+		std::cout << "Enter owner signature: ";
+		std::cin >> signature;
+
+		payload["Signature"] = signature;
+
+		// CR Committee sign the payload
+		std::string did;
+		std::cout << "Enter CR committee's did: ";
+		std::cin >> did;
+		payload["CRCommitteeDID"] = did;
+
+		digest = subWallet->ProposalCRCommitteeDigest(payload);
+
+		std::cout << "Sign the digest by CR committee with did sdk" << std::endl;
+		std::cout << "Digest: " << digest << std::endl << "Press enter to continue..." << std::endl;
+
+		std::cout << "Enter CR committee's signature: ";
+		std::cin >> signature;
+
+		payload["CRCommitteeSignature"] = signature;
+
+		std::cout << "Payload preview: " << std::endl << payload.dump(4) << std::endl;
+		nlohmann::json tx = subWallet->CreateProposalTransaction(payload);
+
+		signAndPublishTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1287,12 +1342,10 @@ static int proposal(int argc, char *argv[]) {
 	return 0;
 }
 
-// tracking (leader | newLeader | secretaryGeneral)
+// tracking
 static int tracking(int argc, char *argv[]) {
-	checkParam(2);
+	checkParam(1);
 	checkCurrentWallet();
-
-	std::string what = argv[1];
 
 	try {
 		IMainchainSubWallet *subWallet;
@@ -1301,102 +1354,99 @@ static int tracking(int argc, char *argv[]) {
 		IIDChainSubWallet *idSubWallet;
 		getSubWallet(idSubWallet, currentWallet, CHAINID_ID);
 
-		if (what == "leader") {
-			int type = 0;
-			std::string proposalHash, documentHash, appropriation, leaderPubKey, newLeaderPubKey;
-			uint8_t stage;
+		nlohmann::json payload;
 
-			std::cout << "Select proposal tracking type: " << std::endl;
-			std::cout << "0 (Default) :" << "common" << std::endl;
-			std::cout << "1 :" << "progress" << std::endl;
-			std::cout << "2 :" << "progressReject" << std::endl;
-			std::cout << "3 :" << "terminated" << std::endl;
-			std::cout << "4 :" << "proposalLeader" << std::endl;
-			std::cout << "5 :" << "appropriation" << std::endl;
-			std::cout << "Enter tracking type (empty for default): ";
+		std::string proposalHash;
+		std::cout << "Enter proposal hash: ";
+		std::cin >> proposalHash;
+		payload["ProposalHash"] = proposalHash;
 
-			std::string trackingType;
-			std::getline(std::cin, trackingType);
-			if (!trackingType.empty())
-				type = std::stoi(trackingType);
+		std::string docHash;
+		std::cout << "Enter document hash: ";
+		std::cin >> docHash;
+		payload["DocumentHash"] = docHash;
 
-			std::cout << "Enter proposal hash: ";
-			std::cin >> proposalHash;
-
-			std::cout << "Enter tracking document hash: ";
-			std::cin >> documentHash;
-
-			std::cout << "Enter tracking proposal stage: ";
-			std::cin >> stage;
-
-			std::cout << "Enter tracking proposal appropriation: ";
-			std::cin >> appropriation;
-
-			leaderPubKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
-			std::string leaderDID = idSubWallet->GetPublicKeyDID(leaderPubKey);
-			std::cout << "leader DID: " << leaderDID << std::endl;
-			std::cout << "leader leaderPubKey: " << leaderPubKey << std::endl;
-
-			if (type == 4) {
-				std::cout << "Enter proposal new leader public key: ";
-				std::cin >> newLeaderPubKey;
-
-				std::string newLeaderDID = idSubWallet->GetPublicKeyDID(newLeaderPubKey);
-				std::cout << "new leader DID: " << newLeaderDID << std::endl;
-			}
-
-			nlohmann::json payloadJson = subWallet->LeaderProposalTrackDigest(type, proposalHash, documentHash,
-					stage, appropriation, leaderPubKey, newLeaderPubKey);
-			std::string digest = payloadJson["Digest"].get<std::string>();
-
-			std::string password = getpass("Enter payment password: ");
-			std::string signature = idSubWallet->SignDigest(leaderDID, digest, password);
-			payloadJson["LeaderSign"] = signature;
-
-			std::cout << payloadJson.dump() << std::endl;
-		} else if (what == "newLeader") {
-			std::string tmp;
-			std::cout << "Enter leader signed proposal tracking json: " << std::endl;
-			std::cin >> tmp;
-
-			nlohmann::json leaderSignedProposalTracking = nlohmann::json::parse(tmp);
-
-			std::string newLeaderPubKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
-			std::cout << "new leader of sponsor public key: " << newLeaderPubKey << std::endl;
-			std::string newLeaderDID = idSubWallet->GetPublicKeyDID(newLeaderPubKey);
-			std::cout << "New leader DID: " << newLeaderDID << std::endl;
-
-			nlohmann::json payloadJson = subWallet->NewLeaderProposalTrackDigest(leaderSignedProposalTracking);
-			std::string digest = payloadJson["Digest"].get<std::string>();
-
-			std::string password = getpass("Enter payment password: ");
-			std::string signature = idSubWallet->SignDigest(newLeaderDID, digest, password);
-			payloadJson["NewLeaderSign"] = signature;
-
-			std::cout << payloadJson.dump() << std::endl;
-		} else if (what == "secretaryGeneral") {
-			std::string tmp;
-			std::cout << "Enter leader signed proposal tracking json: " << std::endl;
-			std::cin >> tmp;
-
-			nlohmann::json leaderSignedProposalTracking = nlohmann::json::parse(tmp);
-
-			std::string did = idSubWallet->GetAllDID(0, 1)["DID"][0];
-			std::cout << "SecretaryGeneral DID: " << did << std::endl;
-
-			nlohmann::json payloadJson = subWallet->SecretaryGeneralProposalTrackDigest(leaderSignedProposalTracking);
-			std::string digest = payloadJson["Digest"].get<std::string>();
-
-			std::string password = getpass("Enter payment password: ");
-			std::string signature = idSubWallet->SignDigest(did, digest, password);
-			payloadJson["SecretaryGeneralSign"] = signature;
-
-			nlohmann::json tx = subWallet->CreateProposalTrackingTransaction(payloadJson, "");
-			signAndPublishTx(subWallet, tx, password);
-		} else {
-			invalidCmdError();
+		uint8_t stage;
+		std::cout << "Enter stage [0, 128): ";
+		std::cin >> stage;
+		if (stage >= 128) {
+			std::cout << "invalid input" << std::endl;
 			return ERRNO_APP;
 		}
+		payload["Stage"] = stage;
+
+		std::string ownerPubKey;
+		std::cout << "Enter proposal owner public key: ";
+		std::cin >> ownerPubKey;
+		payload["OwnerPublicKey"] = ownerPubKey;
+
+		std::string newOwnerPubKey;
+		std::cout << "Enter proposal new owner public key (empty for not change owner): ";
+		std::cin >> newOwnerPubKey;
+		payload["NewOwnerPublicKey"] = newOwnerPubKey;
+
+		// Proposal owner sign
+		std::string digest = subWallet->ProposalTrackingOwnerDigest(payload);
+		std::cout << "Sign the digest by proposal owner with did sdk" << std::endl;
+		std::cout << "Digest: " << digest << std::endl << "Press enter to continue..." << std::endl;
+
+		std::string signature;
+		std::cout << "Enter proposal owner signature: ";
+		std::cin >> signature;
+		payload["OwnerSignature"] = signature;
+
+		// If change proposal owner, then new owner sign
+		if (!newOwnerPubKey.empty()) {
+			digest = subWallet->ProposalTrackingNewOwnerDigest(payload);
+			std::cout << "Sign the digest by proposal new owner with did sdk" << std::endl;
+			std::cout << "Digest: " << digest << std::endl << "Press enter to continue..." << std::endl;
+
+			std::cout << "Enter proposal new owner signature: ";
+			std::cin >> signature;
+			payload["NewOwnerSignature"] = signature;
+		} else {
+			payload["NewOwnerSignature"] = "";
+		}
+
+		// Secretary sign
+		int type;
+		std::cout << "Select proposal type: " << std::endl;
+		std::cout << "1. Common" << std::endl;
+		std::cout << "2. Progress" << std::endl;
+		std::cout << "3. Reject" << std::endl;
+		std::cout << "4. Terminate" << std::endl;
+		std::cout << "5. Change Owner" << std::endl;
+		std::cout << "6. Finalize" << std::endl;
+		std::cin >> type;
+		switch (type) {
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+			case 6: payload["Type"] = type - 1; break;
+			default: std::cout << "invalid input" << std::endl;
+				return ERRNO_APP;
+		}
+
+		std::string opinionHash;
+		std::cout << "Enter secretary opinion hash: ";
+		std::cin >> opinionHash;
+		payload["SecretaryOpinionHash"] = opinionHash;
+
+		digest = subWallet->ProposalTrackingSecretaryDigest(payload);
+		std::cout << "Sign the digest by secretary with did sdk" << std::endl;
+		std::cout << "Digest: " << digest << std::endl << "Press enter to continue..." << std::endl;
+
+		std::cout << "Enter secretary's signature: ";
+		std::cin >> signature;
+		payload["SecretarySignature"] = signature;
+
+		std::cout << "Proposal tracking payload preview: " << std::endl << payload.dump(4) << std::endl;
+
+		nlohmann::json tx = subWallet->CreateProposalTrackingTransaction(payload);
+
+		signAndPublishTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1964,7 +2014,7 @@ struct command {
 	{"transfer",   transfer,       "chainID address amount                           Transfer ELA from `chainID`."},
 	{"receive",    _receive,       "chainID                                          Get receive address of `chainID`."},
 	{"address",    address,        "chainID [internal]                               Get the revceive addresses or change addresses of chainID."},
-	{"proposal",   proposal,       "(sponsor | crsponsor)                            Sponsor sign proposal or cr sponsor create proposal tx."},
+	{"proposal",   proposal,       "                                                 Create proposal tx."},
 	{"deposit",    deposit,        "amount address                                   Deposit to sidechain from mainchain."},
 	{"withdraw",   withdraw,       "amount address                                   Withdraw from sidechain to mainchain."},
 	{"export",     _export,        "(m[nemonic] | k[eystore])                        Export mnemonic or keystore."},
@@ -1975,7 +2025,7 @@ struct command {
 	{"vote",       vote,           "(cr | dpos)                                      CR/DPoS vote."},
 	{"network",    _network,       "[netType]                                        Show current net type or set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},
 	{"verbose",    verbose,        "(on | off)                                       Set verbose mode."},
-	{"tracking",   tracking,       "(leader | newLeader | secretaryGeneral)          Leader of sponsor sign tracking proposal or secretaryGeneral create tracking proposal tx."},
+	{"tracking",   tracking,       "                                                 Create proposal tracking tx."},
 	{"exit", NULL,               "                                                 Quit wallet."},
 	{"quit", NULL,               "                                                 Quit wallet."},
 	{NULL,   NULL, NULL}

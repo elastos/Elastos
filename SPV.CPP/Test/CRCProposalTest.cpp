@@ -12,87 +12,77 @@
 using namespace Elastos::ElaWallet;
 
 static void initCRCProposal(CRCProposal &crcProposal) {
-	CRCProposal::CRCProposalType type = CRCProposal::CRCProposalType(getRandUInt8() % 6);
+	CRCProposal::Type type = CRCProposal::Type(getRandUInt8() % 6);
 	crcProposal.SetTpye(type);
 
+	crcProposal.SetCategoryData(getRandString(100));
+
 	std::string pubKey = "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4";
-	crcProposal.SetSponsorPublicKey(pubKey);
-	crcProposal.SetCRSponsorDID(getRandUInt168());
+	crcProposal.SetOwnerPublicKey(pubKey);
+
 	crcProposal.SetDraftHash(getRanduint256());
 
 	std::vector<Budget> budgets;
 	for (int i = 0; i < 4; ++i) {
-		Budget::BudgetType budgetType = Budget::BudgetType(getRandUInt8() % Budget::maxType);
+		Budget::Type budgetType = Budget::Type(getRandUInt8() % Budget::maxType);
 		Budget budget(budgetType, getRandUInt8(), getRandUInt64());
 		budgets.push_back(budget);
 	}
-
 	crcProposal.SetBudgets(budgets);
-	crcProposal.SetRecipient(getRandUInt168());
-	crcProposal.SetSignature(getRandBytes(50));
-	crcProposal.SetCRSignature(getRandBytes(60));
 
+	crcProposal.SetRecipient(Address("EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"));
+	crcProposal.SetSignature(getRandBytes(50));
+	crcProposal.SetCRCommitteeDID(Address("icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY"));
+	crcProposal.SetCRCommitteeSignature(getRandBytes(60));
+}
+
+static void verifyProposal(CRCProposal &p1, CRCProposal &p2) {
+	REQUIRE(p1.GetType() == p2.GetType());
+	REQUIRE(p1.GetCategoryData() == p2.GetCategoryData());
+	REQUIRE(p1.GetOwnerPublicKey() == p2.GetOwnerPublicKey());
+	REQUIRE(p1.GetDraftHash() == p2.GetDraftHash());
+
+	const std::vector<Budget> &budgets1 = p1.GetBudgets();
+	const std::vector<Budget> &budgets2 = p2.GetBudgets();
+	REQUIRE(budgets1.size() == budgets2.size());
+	for (size_t i = 0; i < budgets1.size(); ++i) {
+		REQUIRE(budgets1[i].GetType() == budgets2[i].GetType());
+		REQUIRE(budgets1[i].GetStage() == budgets2[i].GetStage());
+		REQUIRE(budgets1[i].GetAmount() == budgets2[i].GetAmount());
+	}
+
+	REQUIRE(p1.GetRecipient() == p2.GetRecipient());
+	REQUIRE(p1.GetSignature() == p2.GetSignature());
+	REQUIRE(p1.GetCRCommitteeDID() == p2.GetCRCommitteeDID());
+	REQUIRE(p1.GetCRCommitteeSignature() == p2.GetCRCommitteeSignature());
 }
 
 TEST_CASE("CRCProposal test", "[CRCProposal]") {
 	SECTION("Serialize and Deserialize test") {
-		CRCProposal crcProposal1;
-		initCRCProposal(crcProposal1);
+		CRCProposal p1;
+		initCRCProposal(p1);
 
 		ByteStream byteStream;
-		crcProposal1.Serialize(byteStream, 0);
+		p1.Serialize(byteStream, 0);
 
-		REQUIRE(byteStream.GetBytes().size() == crcProposal1.EstimateSize(0));
+		REQUIRE(byteStream.GetBytes().size() == p1.EstimateSize(0));
 
-		CRCProposal crcProposal2;
-		REQUIRE(crcProposal2.Deserialize(byteStream, 0) == true);
+		CRCProposal p2;
+		REQUIRE(p2.Deserialize(byteStream, 0));
 
-		REQUIRE(crcProposal1.GetType() == crcProposal2.GetType());
-		REQUIRE(crcProposal1.GetSponsorPublicKey() == crcProposal2.GetSponsorPublicKey());
-		REQUIRE(crcProposal1.GetCRSponsorDID() == crcProposal2.GetCRSponsorDID());
-		REQUIRE(crcProposal1.GetDraftHash() == crcProposal2.GetDraftHash());
-
-		std::vector<Budget> budgets1 = crcProposal1.GetBudgets();
-		std::vector<Budget> budgets2 = crcProposal2.GetBudgets();
-		REQUIRE(budgets1.size() == budgets2.size());
-		for (size_t i = 0; i < budgets1.size(); ++i) {
-			REQUIRE(budgets1[i].GetType() == budgets2[i].GetType());
-			REQUIRE(budgets1[i].GetStage() == budgets2[i].GetStage());
-			REQUIRE(budgets1[i].GetAmount() == budgets2[i].GetAmount());
-		}
-
-		REQUIRE(crcProposal1.GetRecipient() == crcProposal2.GetRecipient());
-		REQUIRE(crcProposal1.GetSignature() == crcProposal2.GetSignature());
-		REQUIRE(crcProposal1.GetCRSignature() == crcProposal2.GetCRSignature());
+		verifyProposal(p1, p2);
 	}
 
 	SECTION("ToJson FromJson test") {
-		CRCProposal crcProposal1;
-		initCRCProposal(crcProposal1);
+		CRCProposal p1;
+		initCRCProposal(p1);
 
-		nlohmann::json j = crcProposal1.ToJson(0);
-		REQUIRE(j.empty() == false);
+		nlohmann::json j = p1.ToJson(0);
 
-		CRCProposal crcProposal2;
-		crcProposal2.FromJson(j, 0);
+		CRCProposal p2;
+		p2.FromJson(j, 0);
 
-		REQUIRE(crcProposal1.GetType() == crcProposal2.GetType());
-		REQUIRE(crcProposal1.GetSponsorPublicKey() == crcProposal2.GetSponsorPublicKey());
-		REQUIRE(crcProposal1.GetCRSponsorDID() == crcProposal2.GetCRSponsorDID());
-		REQUIRE(crcProposal1.GetDraftHash() == crcProposal2.GetDraftHash());
-
-		std::vector<Budget> budgets1 = crcProposal1.GetBudgets();
-		std::vector<Budget> budgets2 = crcProposal2.GetBudgets();
-		REQUIRE(budgets1.size() == budgets2.size());
-		for (size_t i = 0; i < budgets1.size(); ++i) {
-			REQUIRE(budgets1[i].GetType() == budgets2[i].GetType());
-			REQUIRE(budgets1[i].GetStage() == budgets2[i].GetStage());
-			REQUIRE(budgets1[i].GetAmount() == budgets2[i].GetAmount());
-		}
-
-		REQUIRE(crcProposal1.GetRecipient() == crcProposal2.GetRecipient());
-		REQUIRE(crcProposal1.GetSignature() == crcProposal2.GetSignature());
-		REQUIRE(crcProposal1.GetCRSignature() == crcProposal2.GetCRSignature());
+		verifyProposal(p1, p2);
 	}
 
 }

@@ -34,7 +34,7 @@ foreach(src ${TEST_SOURCE_FILES})
 	add_executable(${TEST_TARGET_NAME} ${src})
 
 	if(SPV_ENABLE_STATIC)
-		target_link_libraries(${TEST_TARGET_NAME} spvsdk dl boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3)
+		target_link_libraries(${TEST_TARGET_NAME} spvsdk-static dl boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3)
 	else()
 		target_link_libraries(${TEST_TARGET_NAME} spvsdk dl)
 	endif()

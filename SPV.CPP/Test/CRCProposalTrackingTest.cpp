@@ -12,64 +12,58 @@
 using namespace Elastos::ElaWallet;
 
 static void initCRCProposalTracking(CRCProposalTracking &tracking) {
-	CRCProposalTracking::CRCProposalTrackingType type = CRCProposalTracking::CRCProposalTrackingType(getRandUInt8() % 6);
-	tracking.SetType(type);
+	CRCProposalTracking::Type type = CRCProposalTracking::Type(getRandUInt8() % 6);
 	tracking.SetProposalHash(getRanduint256());
 	tracking.SetDocumentHash(getRanduint256());
 	tracking.SetStage(getRandUInt8());
-	tracking.SetAppropriation(getRandUInt64());
-	tracking.SetLeaderPubKey(getRandBytes(33));
-	tracking.SetNewLeaderPubKey(getRandBytes(33));
-	tracking.SetLeaderSign(getRandBytes(64));
-	tracking.SetNewLeaderSign(getRandBytes(64));
-	tracking.SetSecretaryGeneralSign(getRandBytes(64));
+	tracking.SetOwnerPubKey(getRandBytes(33));
+	tracking.SetNewOwnerPubKey(getRandBytes(33));
+	tracking.SetOwnerSign(getRandBytes(64));
+	tracking.SetNewOwnerSign(getRandBytes(64));
+	tracking.SetType(type);
+	tracking.SetSecretaryOpinionHash(getRanduint256());
+	tracking.SetSecretarySignature(getRandBytes(64));
+}
+
+static void verifyProposalTracking(CRCProposalTracking &p1, CRCProposalTracking &p2) {
+	REQUIRE(p1.GetProposalHash() == p2.GetProposalHash());
+	REQUIRE(p1.GetDocumentHash() == p2.GetDocumentHash());
+	REQUIRE(p1.GetStage() == p2.GetStage());
+	REQUIRE(p1.GetOwnerPubKey() == p2.GetOwnerPubKey());
+	REQUIRE(p1.GetNewOwnerPubKey() == p2.GetNewOwnerPubKey());
+	REQUIRE(p1.GetOwnerSign() == p2.GetOwnerSign());
+	REQUIRE(p1.GetNewOwnerSign() == p2.GetNewOwnerSign());
+	REQUIRE(p1.GetType() == p2.GetType());
+	REQUIRE(p1.GetSecretaryOpinionHash() == p2.GetSecretaryOpinionHash());
+	REQUIRE(p1.GetSecretarySignature() == p2.GetSecretarySignature());
 }
 
 TEST_CASE("CRCProposalTracking test", "[CRCProposalTracking]") {
 	SECTION("Serialize and Deserialize test") {
-		CRCProposalTracking tracking1;
-		initCRCProposalTracking(tracking1);
+		CRCProposalTracking p1;
+		initCRCProposalTracking(p1);
 
 		ByteStream byteStream;
-		tracking1.Serialize(byteStream, 0);
+		p1.Serialize(byteStream, 0);
 
-		REQUIRE(byteStream.GetBytes().size() == tracking1.EstimateSize(0));
+		REQUIRE(byteStream.GetBytes().size() == p1.EstimateSize(0));
 
-		CRCProposalTracking tracking2;
-		REQUIRE(tracking2.Deserialize(byteStream, 0) == true);
+		CRCProposalTracking p2;
+		REQUIRE(p2.Deserialize(byteStream, 0));
 
-		REQUIRE(tracking1.GetType() == tracking2.GetType());
-		REQUIRE(tracking1.GetProposalHash() == tracking2.GetProposalHash());
-		REQUIRE(tracking1.GetDocumentHash() == tracking2.GetDocumentHash());
-		REQUIRE(tracking1.GetStage() == tracking2.GetStage());
-		REQUIRE(tracking1.GetAppropriation() == tracking2.GetAppropriation());
-		REQUIRE(tracking1.GetLeaderPubKey() == tracking2.GetLeaderPubKey());
-		REQUIRE(tracking1.GetNewLeaderPubKey() == tracking2.GetNewLeaderPubKey());
-		REQUIRE(tracking1.GetLeaderSign() == tracking2.GetLeaderSign());
-		REQUIRE(tracking1.GetNewLeaderSign() == tracking2.GetNewLeaderSign());
-		REQUIRE(tracking1.GetSecretaryGeneralSign() == tracking2.GetSecretaryGeneralSign());
+		verifyProposalTracking(p1, p2);
 	}
 
 	SECTION("ToJson FromJson test") {
-		CRCProposalTracking tracking1;
-		initCRCProposalTracking(tracking1);
+		CRCProposalTracking p1;
+		initCRCProposalTracking(p1);
 
-		nlohmann::json j = tracking1.ToJson(0);
-		REQUIRE(j.empty() == false);
+		nlohmann::json j = p1.ToJson(0);
 
-		CRCProposalTracking tracking2;
-		tracking2.FromJson(j, 0);
+		CRCProposalTracking p2;
+		p2.FromJson(j, 0);
 
-		REQUIRE(tracking1.GetType() == tracking2.GetType());
-		REQUIRE(tracking1.GetProposalHash() == tracking2.GetProposalHash());
-		REQUIRE(tracking1.GetDocumentHash() == tracking2.GetDocumentHash());
-		REQUIRE(tracking1.GetStage() == tracking2.GetStage());
-		REQUIRE(tracking1.GetAppropriation() == tracking2.GetAppropriation());
-		REQUIRE(tracking1.GetLeaderPubKey() == tracking2.GetLeaderPubKey());
-		REQUIRE(tracking1.GetNewLeaderPubKey() == tracking2.GetNewLeaderPubKey());
-		REQUIRE(tracking1.GetLeaderSign() == tracking2.GetLeaderSign());
-		REQUIRE(tracking1.GetNewLeaderSign() == tracking2.GetNewLeaderSign());
-		REQUIRE(tracking1.GetSecretaryGeneralSign() == tracking2.GetSecretaryGeneralSign());
+		verifyProposalTracking(p1, p2);
 	}
 
 }

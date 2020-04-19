@@ -11,48 +11,48 @@
 
 using namespace Elastos::ElaWallet;
 
-static void initCRCProposalView(CRCProposalReview &review) {
+static void initCRCProposalReview(CRCProposalReview &review) {
 	review.SetProposalHash(getRanduint256());
 	uint8_t result = getRandUInt8() % 3;
-	review.SetResult(CRCProposalReview::VoteResult (result));
-
-	review.SetCRDID(getRandUInt168());
-
+	review.SetOpinion(CRCProposalReview::Opinion(result));
+	review.SetOpinionHash(getRanduint256());
+	review.SetCRCommitteeDID(Address("icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY"));
 	review.SetSignature(getRandBytes(90));
+}
+
+static void verifyProposalReview(CRCProposalReview &p1, CRCProposalReview &p2) {
+	REQUIRE(p2.GetProposalHash() == p1.GetProposalHash());
+	REQUIRE(p2.GetOpinion() == p1.GetOpinion());
+	REQUIRE(p2.GetOpinionHash() == p1.GetOpinionHash());
+	REQUIRE(p2.GetCRCommitteeDID() == p1.GetCRCommitteeDID());
+	REQUIRE(p2.GetSignature() == p1.GetSignature());
 }
 
 TEST_CASE("CRCProposalReview test", "[CRCProposalReview]") {
 	SECTION("Serialize and Deserialize test") {
-		CRCProposalReview review1;
-		initCRCProposalView(review1);
+		CRCProposalReview p1;
+		initCRCProposalReview(p1);
 
 		ByteStream byteStream;
-		review1.Serialize(byteStream, 0);
+		p1.Serialize(byteStream, 0);
 
-		REQUIRE(byteStream.GetBytes().size() == review1.EstimateSize(0));
+		REQUIRE(byteStream.GetBytes().size() == p1.EstimateSize(0));
 
-		CRCProposalReview review2;
-		REQUIRE(review2.Deserialize(byteStream, 0) == true);
+		CRCProposalReview p2;
+		REQUIRE(p2.Deserialize(byteStream, 0));
 
-		REQUIRE(review2.GetProposalHash() == review1.GetProposalHash());
-		REQUIRE(review2.GetResult() == review1.GetResult());
-		REQUIRE(review2.GetCRDID() == review1.GetCRDID());
-		REQUIRE(review2.GetSignature() == review1.GetSignature());
+		verifyProposalReview(p1, p2);
 	}
 
 	SECTION("ToJson FromJson test") {
-		CRCProposalReview review1;
-		initCRCProposalView(review1);
+		CRCProposalReview p1;
+		initCRCProposalReview(p1);
 
-		nlohmann::json j = review1.ToJson(0);
-		REQUIRE(j.empty() == false);
+		nlohmann::json j = p1.ToJson(0);
 
-		CRCProposalReview review2;
-		review2.FromJson(j, 0);
+		CRCProposalReview p2;
+		p2.FromJson(j, 0);
 
-		REQUIRE(review2.GetProposalHash() == review1.GetProposalHash());
-		REQUIRE(review2.GetResult() == review1.GetResult());
-		REQUIRE(review2.GetCRDID() == review1.GetCRDID());
-		REQUIRE(review2.GetSignature() == review1.GetSignature());
+		verifyProposalReview(p1, p2);
 	}
 }

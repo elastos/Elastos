@@ -148,16 +148,19 @@ namespace Elastos {
 
 		};
 
+#define SPVLOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
+#define SPVLOG_INFO(...)  SPDLOG_LOGGER_INFO(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
+#define SPVLOG_WARN(...)  SPDLOG_LOGGER_WARN(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
+#define SPVLOG_ERROR(...)  SPDLOG_LOGGER_ERROR(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
+#define SPVLOG_CRITICAL(...)  SPDLOG_LOGGER_CRITICAL(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
+
 #ifdef ARGUMENT_LOG_ENABLE
 #define __va_first(first, ...) first
 #define __va_rest(first, ...) __VA_ARGS__
-#define ArgInfo(...) Log::info(std::string("+++ ") + __va_first(__VA_ARGS__, NULL), __va_rest(__VA_ARGS__, NULL))
+#define ArgInfo(...) SPVLOG_DEBUG(std::string("+++ ") + __va_first(__VA_ARGS__, NULL), __va_rest(__VA_ARGS__, NULL))
 #else
 #define ArgInfo(...)
 #endif
-
-#define SPVLOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
-#define SPVLOG_INFO(...)  SPDLOG_LOGGER_INFO(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
 
 	}
 }

@@ -571,7 +571,7 @@ namespace Elastos {
 					continue;
 				}
 
-				if (fromAddress->Valid() && *fromAddress != *(*u)->Output()->Addr())
+				if (fromAddress && fromAddress->Valid() && *fromAddress != *(*u)->Output()->Addr())
 					continue;
 
 				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)

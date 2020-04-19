@@ -71,10 +71,7 @@ namespace Elastos {
 		}
 
 		bool Address::IsIDAddress() const {
-			if (_isValid && _programHash.prefix() == PrefixIDChain)
-				return true;
-
-			return false;
+			return _isValid && _programHash.prefix() == PrefixIDChain;
 		}
 
 		std::string Address::String() const {

@@ -35,178 +35,156 @@ namespace Elastos {
 		public:
 			~MainchainSubWallet();
 
-			virtual nlohmann::json CreateDepositTransaction(
+			nlohmann::json CreateDepositTransaction(
 					const std::string &fromAddress,
 					const std::string &sideChainID,
 					const std::string &amount,
 					const std::string &sideChainAddress,
-					const std::string &memo);
+					const std::string &memo) override;
 
 		public:
 			//////////////////////////////////////////////////
 			/*                      Vote                    */
 			//////////////////////////////////////////////////
-			virtual nlohmann::json CreateVoteProducerTransaction(
+			nlohmann::json CreateVoteProducerTransaction(
 				const std::string &fromAddress,
 				const std::string &stake,
 				const nlohmann::json &publicKeys,
 				const std::string &memo,
-				const nlohmann::json &invalidCandidates);
+				const nlohmann::json &invalidCandidates) override;
 
-			virtual	nlohmann::json GetVotedProducerList() const;
+			nlohmann::json GetVotedProducerList() const override;
 
-			virtual nlohmann::json CreateVoteCRTransaction(
+			nlohmann::json CreateVoteCRTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &votes,
 				const std::string &memo,
-				const nlohmann::json &invalidCandidates);
+				const nlohmann::json &invalidCandidates) override;
 
-			virtual	nlohmann::json GetVotedCRList() const;
+			nlohmann::json GetVotedCRList() const override;
 
-			virtual nlohmann::json CreateVoteCRCProposalTransaction(const std::string &fromAddress,
-																	const nlohmann::json &votes,
-																	const std::string &memo,
-																	const nlohmann::json &invalidCandidates);
+			nlohmann::json CreateVoteCRCProposalTransaction(const std::string &fromAddress,
+															const nlohmann::json &votes,
+															const std::string &memo,
+															const nlohmann::json &invalidCandidates) override;
 
-			virtual nlohmann::json CreateImpeachmentCRCTransaction(const std::string &fromAddress,
-																   const nlohmann::json &votes,
-																   const std::string &memo,
-																   const nlohmann::json &invalidCandidates);
+			nlohmann::json CreateImpeachmentCRCTransaction(const std::string &fromAddress,
+														   const nlohmann::json &votes,
+														   const std::string &memo,
+														   const nlohmann::json &invalidCandidates) override;
 
-			virtual nlohmann::json GetVoteInfo(const std::string &type) const;
+			nlohmann::json GetVoteInfo(const std::string &type) const override;
 
 		public:
 			//////////////////////////////////////////////////
 			/*                    Producer                  */
 			//////////////////////////////////////////////////
-			virtual nlohmann::json GenerateProducerPayload(
-				const std::string &ownerPublicKey,
-				const std::string &nodePublicKey,
-				const std::string &nickName,
-				const std::string &url,
-				const std::string &ipAddress,
-				uint64_t location,
-				const std::string &payPasswd) const;
+			nlohmann::json GenerateProducerPayload(const std::string &ownerPublicKey,
+												   const std::string &nodePublicKey,
+												   const std::string &nickName,
+												   const std::string &url,
+												   const std::string &ipAddress,
+												   uint64_t location,
+												   const std::string &payPasswd) const override;
 
-			virtual nlohmann::json GenerateCancelProducerPayload(
-				const std::string &ownerPublicKey,
-				const std::string &payPasswd) const;
+			nlohmann::json GenerateCancelProducerPayload(const std::string &ownerPublicKey,
+														 const std::string &payPasswd) const override;
 
-			virtual nlohmann::json CreateRegisterProducerTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &payload,
-				const std::string &amount,
-				const std::string &memo);
+			nlohmann::json CreateRegisterProducerTransaction(const std::string &fromAddress,
+															 const nlohmann::json &payload,
+															 const std::string &amount,
+															 const std::string &memo) override;
 
-			virtual nlohmann::json CreateUpdateProducerTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &payload,
-				const std::string &memo);
+			nlohmann::json CreateUpdateProducerTransaction(const std::string &fromAddress,
+														   const nlohmann::json &payload,
+														   const std::string &memo) override;
 
-			virtual nlohmann::json CreateCancelProducerTransaction(
-				const std::string &fromAddress,
-				const nlohmann::json &payload,
-				const std::string &emmo);
+			nlohmann::json CreateCancelProducerTransaction(const std::string &fromAddress,
+														   const nlohmann::json &payload,
+														   const std::string &emmo) override;
 
-			virtual nlohmann::json CreateRetrieveDepositTransaction(
-				const std::string &amount,
-				const std::string &memo);
+			nlohmann::json CreateRetrieveDepositTransaction(const std::string &amount,
+															const std::string &memo) override;
 
-			virtual std::string GetOwnerPublicKey() const;
+			std::string GetOwnerPublicKey() const override;
 
-			virtual std::string GetOwnerAddress() const;
+			std::string GetOwnerAddress() const override;
 
-			virtual nlohmann::json GetRegisteredProducerInfo() const;
+			nlohmann::json GetRegisteredProducerInfo() const override;
 
 		public:
 			//////////////////////////////////////////////////
 			/*                      CRC                     */
 			//////////////////////////////////////////////////
-			virtual nlohmann::json GenerateCRInfoPayload(
-					const std::string &crPublicKey,
-					const std::string &did,
-					const std::string &nickName,
-					const std::string &url,
-					uint64_t location) const;
+			nlohmann::json GenerateCRInfoPayload(const std::string &crPublicKey,
+												 const std::string &did,
+												 const std::string &nickName,
+												 const std::string &url,
+												 uint64_t location) const override;
 
-			virtual nlohmann::json GenerateUnregisterCRPayload(const std::string &CID) const;
+			nlohmann::json GenerateUnregisterCRPayload(const std::string &CID) const override;
 
-			virtual nlohmann::json CreateRegisterCRTransaction(
-					const std::string &fromAddress,
-					const nlohmann::json &payloadJSON,
-					const std::string &amount,
-					const std::string &memo);
+			nlohmann::json CreateRegisterCRTransaction(const std::string &fromAddress,
+													   const nlohmann::json &payloadJSON,
+													   const std::string &amount,
+													   const std::string &memo) override;
 
-			virtual nlohmann::json CreateUpdateCRTransaction(
-					const std::string &fromAddress,
-					const nlohmann::json &payloadJSON,
-					const std::string &memo);
+			nlohmann::json CreateUpdateCRTransaction(const std::string &fromAddress,
+													 const nlohmann::json &payloadJSON,
+													 const std::string &memo) override;
 
-			virtual nlohmann::json CreateUnregisterCRTransaction(
-					const std::string &fromAddress,
-					const nlohmann::json &payloadJSON,
-					const std::string &memo);
+			nlohmann::json CreateUnregisterCRTransaction(const std::string &fromAddress,
+														 const nlohmann::json &payloadJSON,
+														 const std::string &memo) override;
 
-			virtual nlohmann::json CreateRetrieveCRDepositTransaction(
-					const std::string &crPublicKey,
-					const std::string &amount,
-					const std::string &memo);
+			nlohmann::json CreateRetrieveCRDepositTransaction(const std::string &crPublicKey,
+															  const std::string &amount,
+															  const std::string &memo) override;
 
-			virtual nlohmann::json GetRegisteredCRInfo() const;
+			nlohmann::json GetRegisteredCRInfo() const override;
 
 		public:
 			//////////////////////////////////////////////////
 			/*                     Proposal                 */
 			//////////////////////////////////////////////////
-			virtual nlohmann::json SponsorProposalDigest(uint16_t type,
-			                                             const std::string &categoryData,
-			                                             const std::string &sponsorPublicKey,
-			                                             const std::string &draftHash,
-			                                             const nlohmann::json &budgets,
-			                                             const std::string &recipient) const;
+			std::string ProposalOwnerDigest(const nlohmann::json &payload) const override;
 
-			virtual nlohmann::json CRSponsorProposalDigest(const nlohmann::json &sponsorSignedProposal,
-			                                               const std::string &crSponsorDID,
-			                                               const std::string &crOpinionHash) const;
+			std::string ProposalCRCommitteeDigest(const nlohmann::json &payload) const override;
 
-			virtual nlohmann::json CreateCRCProposalTransaction(nlohmann::json crSignedProposal,
-			                                                    const std::string &memo);
+			nlohmann::json CreateProposalTransaction(const nlohmann::json &payload,
+													 const std::string &memo) override;
 
-			virtual nlohmann::json GenerateCRCProposalReview(const std::string &proposalHash,
-			                                                 uint8_t voteResult,
-			                                                 const std::string &did) const;
+			//////////////////////////////////////////////////
+			/*               Proposal Review                */
+			//////////////////////////////////////////////////
+			std::string ProposalReviewDigest(const nlohmann::json &payload) const override;
 
-			virtual nlohmann::json CreateCRCProposalReviewTransaction(const nlohmann::json &proposalReview,
-			                                                          const std::string &memo);
+			nlohmann::json CreateProposalReviewTransaction(const nlohmann::json &payload,
+														   const std::string &memo) override;
 
-			virtual nlohmann::json LeaderProposalTrackDigest(uint8_t type,
-			                                                 const std::string &proposalHash,
-			                                                 const std::string &documentHash,
-			                                                 uint8_t stage,
-			                                                 const std::string &appropriation,
-			                                                 const std::string &leaderPubKey,
-			                                                 const std::string &newLeaderPubKey) const;
+			//////////////////////////////////////////////////
+			/*               Proposal Tracking              */
+			//////////////////////////////////////////////////
+			std::string ProposalTrackingOwnerDigest(const nlohmann::json &payload) const override;
 
-			virtual nlohmann::json
-			NewLeaderProposalTrackDigest(const nlohmann::json &leaderSignedProposalTracking) const;
+			std::string ProposalTrackingNewOwnerDigest(const nlohmann::json &payload) const override;
 
-			virtual nlohmann::json
-			SecretaryGeneralProposalTrackDigest(const nlohmann::json &leaderSignedProposalTracking) const;
+			std::string ProposalTrackingSecretaryDigest(const nlohmann::json &payload) const override;
 
-			virtual nlohmann::json
-			CreateProposalTrackingTransaction(const nlohmann::json &SecretaryGeneralSignedPayload,
-			                                  const std::string &memo);
+			nlohmann::json CreateProposalTrackingTransaction(const nlohmann::json &payload,
+															 const std::string &memo) override;
+
+			//////////////////////////////////////////////////
+			/*               Proposal Withdraw              */
+			//////////////////////////////////////////////////
+			std::string ProposalWithdrawDigest(const nlohmann::json &payload) const override;
+
+			nlohmann::json CreateProposalWithdrawTransaction(const nlohmann::json &payload,
+															 const std::string &memo) override;
 
 		private:
-			PayloadPtr GenerateCRCProposalPayload(uint16_t type,
-			                                      const std::string &categoryData,
-			                                      const std::string &sponsorPublicKey,
-			                                      const std::string &crSponsorDID,
-			                                      const std::string &draftHash,
-			                                      const nlohmann::json &budgets,
-			                                      const std::string &recipient) const;
-
 			void FilterVoteCandidates(TransactionPtr &tx, const nlohmann::json &invalidCandidates) const;
+
 		protected:
 			friend class MasterWallet;
 

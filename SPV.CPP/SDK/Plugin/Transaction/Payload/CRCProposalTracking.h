@@ -1,7 +1,24 @@
-// Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #ifndef __ELASTOS_SDK_CRCPROPOSALTRACKING_H__
 #define __ELASTOS_SDK_CRCPROPOSALTRACKING_H__
 
@@ -9,25 +26,24 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+
+#define CRCProposalTrackingDefaultVersion 0
+
 		class CRCProposalTracking : public IPayload {
 		public:
-			enum CRCProposalTrackingType {
+			enum Type {
 				common = 0x00,
 				progress = 0x01,
 				progressReject = 0x02,
 				terminated = 0x03,
 				proposalLeader = 0x04,
 				appropriation = 0x05,
-				maxType
+				unknowTrackingType
 			};
 
 			CRCProposalTracking();
 
 			~CRCProposalTracking();
-
-			void SetType(CRCProposalTrackingType type);
-
-			CRCProposalTrackingType GetType() const;
 
 			void SetProposalHash(const uint256 &proposalHash);
 
@@ -41,61 +57,104 @@ namespace Elastos {
 
 			uint8_t GetStage() const;
 
-			void SetAppropriation(uint64_t appropriation);
+			void SetOwnerPubKey(const bytes_t &ownerPubKey);
 
-			uint64_t GetAppropriation() const;
+			const bytes_t &GetOwnerPubKey() const;
 
-			void SetLeaderPubKey(const bytes_t &leaderPubKey);
+			void SetNewOwnerPubKey(const bytes_t &newOwnerPubKey);
 
-			const bytes_t &GetLeaderPubKey() const;
+			const bytes_t &GetNewOwnerPubKey() const;
 
-			void SetNewLeaderPubKey(const bytes_t &newLeaderPubKey);
+			void SetOwnerSign(const bytes_t &signature);
 
-			const bytes_t &GetNewLeaderPubKey() const;
+			const bytes_t &GetOwnerSign() const;
 
-			void SetLeaderSign(const bytes_t &signature);
+			void SetNewOwnerSign(const bytes_t &signature);
 
-			const bytes_t &GetLeaderSign() const;
+			const bytes_t &GetNewOwnerSign() const;
 
-			void SetNewLeaderSign(const bytes_t &signature);
+			void SetType(CRCProposalTracking::Type type);
 
-			const bytes_t &GetNewLeaderSign() const;
+			CRCProposalTracking::Type GetType() const;
 
-			void SetSecretaryGeneralSign(const bytes_t &signature);
+			void SetSecretaryOpinionHash(const uint256 &hash);
 
-			const bytes_t &GetSecretaryGeneralSign() const;
+			const uint256 &GetSecretaryOpinionHash()  const;
+
+			void SetSecretarySignature(const bytes_t &signature);
+
+			const bytes_t &GetSecretarySignature() const;
+
+			const uint256 &DigestOwnerUnsigned(uint8_t version) const;
+
+			const uint256 &DigestNewOwnerUnsigned(uint8_t version) const;
+
+			const uint256 &DigestSecretaryUnsigned(uint8_t version) const;
 
 		public:
 			virtual size_t EstimateSize(uint8_t version) const;
 
-			void SerializeUnsigned(ByteStream &ostream, uint8_t version) const;
+			void SerializeOwnerUnsigned(ByteStream &stream, uint8_t version) const;
 
-			bool DeserializeUnsigned(const ByteStream &istream, uint8_t version);
+			bool DeserializeOwnerUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeNewOwnerUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeNewOwnerUnsigned(const ByteStream &stream, uint8_t version);
+
+			void SerializeSecretaryUnsigned(ByteStream &stream, uint8_t version) const;
+
+			bool DeserializeSecretaryUnsigned(const ByteStream &stream, uint8_t version);
 
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
 			virtual bool Deserialize(const ByteStream &istream, uint8_t version);
 
+
+			nlohmann::json ToJsonOwnerUnsigned(uint8_t version) const;
+
+			void FromJsonOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonNewOwnerUnsigned(uint8_t version) const;
+
+			void FromJsonNewOwnerUnsigned(const nlohmann::json &j, uint8_t version);
+
+			nlohmann::json ToJsonSecretaryUnsigned(uint8_t version) const;
+
+			void FromJsonSecretaryUnsigned(const nlohmann::json &j, uint8_t version);
+
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+
+			bool IsValidOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidNewOwnerUnsigned(uint8_t version) const;
+
+			bool IsValidSecretaryUnsigned(uint8_t version) const;
+
+			virtual bool IsValid(uint8_t version) const;
 
 			virtual IPayload &operator=(const IPayload &payload);
 
 			CRCProposalTracking &operator=(const CRCProposalTracking &payload);
 
 		private:
-			CRCProposalTrackingType _type;
+			mutable uint256 _digestOwnerUnsigned, _digestNewOwnerUnsigned, _digestSecretaryUnsigned;
+
+		private:
 			uint256 _proposalHash;
 			uint256 _documentHash;
 			uint8_t _stage;
-			uint64_t _appropriation;
-			bytes_t _leaderPubKey;
-			bytes_t _newLeaderPubKey;
-			bytes_t _leaderSign;
-			bytes_t _newLeaderSign;
-			bytes_t _secretaryGeneralSign;
+			bytes_t _ownerPubKey;
+			bytes_t _newOwnerPubKey;
+			bytes_t _ownerSign;
+			bytes_t _newOwnerSign;
+			CRCProposalTracking::Type _type;
+			uint256 _secretaryOpinionHash;
+			bytes_t _secretarySignature;
 		};
+
 	}
 }
 

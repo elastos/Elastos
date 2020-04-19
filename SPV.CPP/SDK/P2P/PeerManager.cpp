@@ -1396,7 +1396,7 @@ namespace Elastos {
 					txTotal += block->GetTotalTx();
 					if ((block->GetHeight() % 500) == 0 || txHashes.size() > 0 ||
 						block->GetHeight() >= peer->GetLastBlock()) {
-						peer->info("adding block #{}, with {} txfalse positive rate: {}",
+						peer->info("adding block #{}, {}, false positive rate: {}",
 								   block->GetHeight(), txTotal, _fpRate);
 						FireSyncProgress(GetSyncProgressInternal(0), peer, block);
 						txTotal = 0;
