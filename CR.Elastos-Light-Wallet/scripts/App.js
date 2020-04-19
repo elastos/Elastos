@@ -1122,7 +1122,7 @@ const getRssFeedReadyCallback = (response) => {
   parsedRssFeedStatus = 'Rss Feed Received';
   parsedRssFeed.length = 0;
 
-  mainConsole.log('getRssFeedReadyCallback ', response);
+  // mainConsole.log('getRssFeedReadyCallback ', response);
 
   if ((response.items != undefined) && (response.items != null)) {
     response.items.forEach((item, itemIx) => {
