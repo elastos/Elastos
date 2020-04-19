@@ -64,16 +64,16 @@ module.exports = (props) => {
       </div>
 
       <div>
-        <News/>
+        <News App={App}/>
       </div>
 
       </div>
-      
+
       <div className="voting-row1">
         <div>
           <img src="artwork/voting-back.svg" onClick={(e) => GuiToggles.showHome()}/>
-          <p className="display_inline_block votes-header">Votes</p>   
-          <p className="display_inline_block candidate-status status-font">Status: {App.getProducerListStatus()} </p>     
+          <p className="display_inline_block votes-header">Votes</p>
+          <p className="display_inline_block candidate-status status-font">Status: {App.getProducerListStatus()} </p>
           <p className="display_inline_block status-font">Candidates: {App.getParsedProducerList().producers.length} </p>
           <p className="display_inline_block status-font">Selected: {App.getParsedProducerList().producersCandidateCount}/36 </p>
           </div>
@@ -112,8 +112,8 @@ module.exports = (props) => {
 
       <div className="voting-row4">
         <p className="display_inline_block active-heading">Active Votes</p>
-        <p className="display_inline_block candidate-status status-font">Status: {App.getCandidateVoteListStatus()}</p>     
-        <p className="display_inline_block status-font">Voted {App.getParsedCandidateVoteList().candidateVotes.length}/36</p>     
+        <p className="display_inline_block candidate-status status-font">Status: {App.getCandidateVoteListStatus()}</p>
+        <p className="display_inline_block status-font">Voted {App.getParsedCandidateVoteList().candidateVotes.length}/36</p>
 
       </div>
 
@@ -202,7 +202,7 @@ module.exports = (props) => {
           </td>
         </tr>
         <tr>
- 
+
           <td colSpan="2" className="txtable w400px h200px ta_center va_top">
             <div className="display_inline_block">Candidate List Status</div>
             <br/> {App.getCandidateVoteListStatus()}

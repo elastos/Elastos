@@ -57,7 +57,8 @@ openssl sha -sha256 dist/elastos-light-wallet-1.0.0.dmg;
 don't forget testnet and mainnet config files are in github at: https://github.com/elastos/Elastos.ELA/blob/master/docs/
 
 ## todo:
-1. add RSS feed.
-    elastos rss feed        
-        https://news.elastos.org/feed/
-3. add a green 'sent' banner.
+2. add a green 'sent' banner.
+3. add a red 'error' banner.
+4. change yes/no vote to a checkbox.
+5. history api needs to change to v3 to show pending tx
+And sort from new to old

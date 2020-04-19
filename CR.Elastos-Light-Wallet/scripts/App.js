@@ -5,6 +5,7 @@ const bip39 = require('bip39');
 const mainConsoleLib = require('console');
 const BigNumber = require('bignumber.js');
 const crypto = require('crypto');
+const Parser = require('rss-parser');
 
 /* modules */
 const LedgerComm = require('./LedgerComm.js');
@@ -32,6 +33,8 @@ const PRIVATE_KEY_LENGTH = 64;
 const DEFAULT_FEE_SATS = '500';
 
 const EXPLORER = 'https://blockchain.elastos.org';
+
+const RSS_FEED_URL = 'https://news.elastos.org/feed/';
 
 const REST_SERVICES = [
   {
@@ -122,6 +125,10 @@ let blockchainStatus = 'No Blockchain State Requested Yet';
 let blockchainState = {};
 
 let blockchainLastActionHeight = 0;
+
+let parsedRssFeedStatus = 'No Rss Feed Requested Yet';
+
+const parsedRssFeed = [];
 
 const mainConsole = new mainConsoleLib.Console(process.stdout, process.stderr);
 
@@ -292,6 +299,7 @@ const pollForData = () => {
       case 4:
         requestListOfProducers();
         requestListOfCandidateVotes();
+        requestRssFeed();
         pollDataTypeIx++;
         setPollForAllInfoTimer();
         break;
@@ -338,6 +346,16 @@ const postJson = (url, jsonString, readyCallback, errorCallback) => {
   // sendToAddressStatuses.push( `XMLHttpRequest: curl ${url} -H "Content-Type: application/json" -d '${jsonString}'` );
 
   xhttp.send(jsonString);
+};
+
+const getRssFeed = async (url, readyCallback, errorCallback) => {
+  const parser = new Parser();
+  try {
+    const feed = await parser.parseURL(url);
+    readyCallback(feed);
+  } catch(error) {
+    errorCallback(error);
+  }
 };
 
 const getJson = (url, readyCallback, errorCallback) => {
@@ -1087,6 +1105,38 @@ const getAddressOrBlank = () => {
   return '';
 };
 
+
+const requestRssFeed = async () => {
+  parsedRssFeedStatus = 'Rss Feed Requested';
+  getRssFeed(RSS_FEED_URL, getRssFeedReadyCallback, getRssFeedErrorCallback);
+};
+
+const getRssFeedErrorCallback = (error) => {
+  mainConsole.log('getRssFeedErrorCallback ', error);
+  parsedRssFeedStatus = `Rss Feed Error ${error.message}`;
+
+  renderApp();
+};
+
+const getRssFeedReadyCallback = (response) => {
+  parsedRssFeedStatus = 'Rss Feed Received';
+  parsedRssFeed.length = 0;
+
+  // mainConsole.log('getRssFeedReadyCallback ', response);
+
+  if ((response.items != undefined) && (response.items != null)) {
+    response.items.forEach((item, itemIx) => {
+      parsedRssFeed.push(item);
+    });
+  }
+
+  renderApp();
+};
+
+const getParsedRssFeed = () => {
+  return parsedRssFeed;
+};
+
 exports.DEFAULT_FEE_SATS = DEFAULT_FEE_SATS;
 exports.REST_SERVICES = REST_SERVICES;
 exports.init = init;
@@ -1137,3 +1187,4 @@ exports.getParsedCandidateVoteList = getParsedCandidateVoteList;
 exports.toggleProducerSelection = toggleProducerSelection;
 exports.sendVoteTx = sendVoteTx;
 exports.getAddressOrBlank = getAddressOrBlank;
+exports.getParsedRssFeed = getParsedRssFeed;
