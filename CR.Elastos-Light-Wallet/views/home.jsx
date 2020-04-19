@@ -196,8 +196,6 @@ module.exports = (props) => {
 
       </div>
 
-      <div className="send-area send-bg"></div>
-
       <div className="send-area">
                   <SendScreen />
 

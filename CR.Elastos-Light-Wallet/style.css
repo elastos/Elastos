@@ -259,13 +259,20 @@ white-space: nowrap;
 
 #scroll-radio input[type="radio"] {}
 
+#news {
+  width: 160px;
+  height: 80px;
+  top: 365px;
+  left: 0;
+  position: absolute;
+  padding-left: 57px;
+}
+
 .article-days {
   font-size: 7.8px;
   color: #9799A6;
   letter-spacing: 0;
-  left: 57px;
-  top: 372.17px;
-  position: absolute;
+
 }
 
 .article-title {
@@ -273,11 +280,11 @@ white-space: nowrap;
   color: #FFFFFF;
   letter-spacing: 0;
   font-weight: 600;
-  left: 57px;
+  /* left: 57px;
   top: 384.43px;
   width: 106px;
   position: absolute;
-  text-align: left;
+  text-align: left; */
 }
 
 .send-area {
@@ -1044,6 +1051,10 @@ select, input {
 
 .paddingleft_10px {
   padding-left: 10px;
+}
+
+.paddingbottom_20px {
+  padding-bottom: 20px;
 }
 
 .hidden {
