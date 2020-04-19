@@ -278,7 +278,7 @@ module.exports = (props) => {
 
   <div>
 
-  <SocialMedia GuiToggles={GuiToggles}/>
+  <SocialMedia GuiToggles={GuiToggles}  onLinkClick={onLinkClick}/>
 
   </div>
 
