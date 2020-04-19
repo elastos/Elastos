@@ -191,7 +191,7 @@ module.exports = (props) => {
       </div>
 
       <div>
-        <News App={App}/>
+        <News App={App} onLinkClick={onLinkClick}/>
       </div>
 
       </div>

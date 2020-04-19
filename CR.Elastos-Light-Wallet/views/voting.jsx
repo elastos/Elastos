@@ -17,6 +17,7 @@ module.exports = (props) => {
   const openDevTools = props.openDevTools;
   const Version = props.Version;
   const GuiToggles = props.GuiToggles;
+  const onLinkClick = props.onLinkClick;
 
   const showMenu = () => {
     GuiToggles.showMenu('voting');
@@ -64,7 +65,7 @@ module.exports = (props) => {
       </div>
 
       <div>
-        <News App={App}/>
+        <News App={App} onLinkClick={onLinkClick}/>
       </div>
 
       </div>
