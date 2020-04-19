@@ -38,10 +38,6 @@ const RSS_FEED_URL = 'https://news.elastos.org/feed/';
 
 const REST_SERVICES = [
   {
-    name: 'api-wallet',
-    url: 'https://api-wallet-ela.elastos.org',
-  },
-  {
     name: 'node1',
     url: 'https://node1.elaphant.app',
   },
@@ -173,7 +169,7 @@ const setRestService = (ix) => {
 };
 
 const getTransactionHistoryUrl = (address) => {
-  const url = `${restService}/api/1/history/${address}`;
+  const url = `${restService}/api/v3/history/${address}`;
   return url;
 };
 
