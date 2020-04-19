@@ -50,6 +50,7 @@
     "react-dom": "^16.13.1",
     "regenerator-runtime": "^0.13.5",
     "ripemd160": "^2.0.2",
+    "rss-parser": "^3.7.6",
     "smart-buffer": "^4.1.0",
     "usb": "^1.6.3",
     "wif": "^2.0.6"

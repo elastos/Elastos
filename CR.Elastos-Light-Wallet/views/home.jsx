@@ -20,7 +20,7 @@ module.exports = (props) => {
   const Version = props.Version;
   const GuiToggles = props.GuiToggles;
   const onLinkClick = props.onLinkClick;
-  
+
   const showMenu = () => {
     GuiToggles.showMenu('home');
   }
@@ -191,7 +191,7 @@ module.exports = (props) => {
       </div>
 
       <div>
-        <News/>
+        <News App={App}/>
       </div>
 
       </div>
