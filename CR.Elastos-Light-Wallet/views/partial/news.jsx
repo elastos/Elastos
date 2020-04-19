@@ -3,13 +3,13 @@ const React = require('react');
 module.exports = (props) => {
   const App = props.App;
   return (
-  <div id="news">
-    <table className="overflow_auto scrollbar">
+  <div id="news" className="overflow_auto scrollbar">
+    <table>
       <tbody>
       {
         App.getParsedRssFeed().map((item, index) => {
           return (<tr key={index}>
-            <td>
+            <td className="paddingbottom_20px">
               <p className="article-days">{item.pubDate}</p>
               <p className="article-title">{item.title}</p>
             </td>
