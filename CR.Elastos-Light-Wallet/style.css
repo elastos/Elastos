@@ -773,6 +773,9 @@ select, input {
   font-family: 'Open Sans', sans-serif;
   font-size: 10px;
 }
+.font_size14 {
+  font-size: 14px;
+}
 
 .font_size24 {
   font-size: 24px;
@@ -808,6 +811,10 @@ select, input {
 
 .margin_none {
   margin: 0;
+}
+
+.margin_auto {
+  margin: auto;
 }
 
 .va_top {
@@ -986,6 +993,11 @@ select, input {
   background-color: #333;
 }
 
+.btn_none {
+  background: none;
+  border: none;
+}
+
 .position_relative {
   position: relative;
 }
@@ -1030,8 +1042,26 @@ select, input {
   padding: 5px;
 }
 
+.paddingleft_10px {
+  padding-left: 10px;
+}
+
 .hidden {
   display: none;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex_center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex1 {
+  flex: 1;
 }
 
 .voting-row1 {
@@ -1143,4 +1173,42 @@ select, input {
 .scrollbar::-webkit-scrollbar-thumb
 {
 	background-color: #000000;
+}
+
+#qrcode {
+  height: 100%;
+  display: flex;
+}
+
+.qrmain-div {
+  margin: auto;
+  display: flex;
+  flex-flow: column;
+  width: 389px;
+  height: 450px;
+  background-image: linear-gradient(2deg, #36373B 0%, #65666E 100%);
+  box-shadow: 6px 30px 60px -13px rgba(0,0,0,0.50);
+  border-radius: 38px;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.qraddress-div {
+  opacity: 0.5;
+  background: rgba(168,170,174,0.22);
+  border-radius: 10px;
+  width: 333px;
+  height: 61px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.br30 {
+  border-radius: 30px;
+}
+
+.br5 {
+  border-radius: 5px;
 }

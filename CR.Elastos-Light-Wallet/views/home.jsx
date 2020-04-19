@@ -171,7 +171,7 @@ module.exports = (props) => {
       <header>
         <img src="artwork/system.svg" className="system-icon" />
         <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()} />
-        <nav id="homeMenuOpen" title="menu" onClick={(e) => showMenu()}>
+        <nav id="homeMenuOpen" title="Menu" onClick={(e) => showMenu()}>
           <img src="artwork/nav.svg" className="nav-icon dark-hover" onClick={(e) => showMenu()}/>
         </nav>
       </header>
@@ -212,9 +212,9 @@ module.exports = (props) => {
         </button>
         <p className="address-ex">{App.getAddress()}</p>
         {/*<img id="qricon" src="artwork/qricon.svg" className="qr-icon" height="54px" width="54px" />*/}
-        <div className="qr-icon" onClick={(e) => GuiToggles.showQRCode()}>
-          <QRCode value={App.getAddressOrBlank()} size={54}/>
-        </div>
+        <button className="qr-icon btn_none" title="Click to enlarge" onClick={(e) => GuiToggles.showQRCode()}>
+          <QRCode value={App.getAddressOrBlank()} size={54} includeMargin={true} className="br5"/>
+        </button>
         <p className="scanqr-text">Scan <strong>QR code</strong> to get <br />ELA Address</p>
         <p className="howqr-text gradient-font">How QR works?</p>
         <img src="artwork/separator.svg" className="rec-separator" />

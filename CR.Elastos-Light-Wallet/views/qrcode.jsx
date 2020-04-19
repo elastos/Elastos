@@ -6,13 +6,23 @@ module.exports = (props) => {
   const App = props.App;
   const GuiToggles = props.GuiToggles;
   return (<div id="qrcode">
-    <p className="address-text">Address</p>
-    <button className="copy-button">
-      <img src="artwork/copyicon.svg" className="copy-icon" height="26px" width="26px" />
-    </button>
-    <p className="address-ex">{App.getAddress()}</p>
-    <img src="artwork/voting-back.svg" onClick={(e) => GuiToggles.showHome()}/>
-    <p className="address-text">QR Code</p>
-    <QRCode value={App.getAddressOrBlank()} size={300}/>
+    <div className="qrmain-div">
+      <div className="flex w100pct">
+      <img className="flex1" src="artwork/voting-back.svg" onClick={(e) => GuiToggles.showHome()}/>
+      <p className="address-text font_size24 margin_none color_white display_inline_block">Address</p>
+      <div className="flex1"></div>
+      </div>
+      <p className="address-text margin_none color_white font_size14">QR Code</p>
+      <QRCode value={App.getAddressOrBlank()} size={200} includeMargin={true} className="br30"/>
+      <div className="qraddress-div">
+        <p className="address-ex display_inline_block font_size14">{App.getAddress()}</p>
+      </div>
+      <div className="flex_center">
+        <button className="btn_none">
+          <img src="artwork/copy36.svg" height="36px" width="36px" />
+        </button>
+        <p className="display_inline_block color_white font_size14 paddingleft_10px">Copy</p>
+      </div>
+    </div>
   </div>);
 }
