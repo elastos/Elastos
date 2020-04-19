@@ -25,7 +25,9 @@ const CoinGecko = require('../scripts/CoinGecko.js');
 /** constants */
 const onLinkClickWhiteList = [
   'https://blockchain.elastos.org',
-  'https://news.elastos.org/'
+  'https://news.elastos.org/',
+  'https://twitter.com/ElastosInfo',
+  'https://www.facebook.com/elastosorg/'
 ];
 
 

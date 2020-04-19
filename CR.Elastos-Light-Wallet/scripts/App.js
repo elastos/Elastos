@@ -830,6 +830,7 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
         const elaFloat = parseInt(tx.Value)/100000000;
         const elaDisplay = elaFloat.toFixed(8);
         const parsedTransaction = {};
+        parsedTransaction.sortTime = tx.CreateTime;
         parsedTransaction.n = txIx;
         parsedTransaction.type = tx.Type;
         if (tx.Type == 'income') {
@@ -852,6 +853,10 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
       });
     }
   }
+
+  parsedTransactionHistory.sort((a,b) => {
+    return b.sortTime - a.sortTime;
+  });
 
   renderApp();
 };
