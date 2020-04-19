@@ -813,8 +813,8 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
     if (transactionHistory.result.History !== undefined) {
       transactionHistory.result.History.forEach((tx, txIx) => {
         const time = formatDate(new Date(tx.CreateTime * 1000));
-        const elaFloat = parseInt(tx.Value)/10000000;
-        const elaDisplay = elaFloat.toFixed(7);
+        const elaFloat = parseInt(tx.Value)/100000000;
+        const elaDisplay = elaFloat.toFixed(8);
         const parsedTransaction = {};
         parsedTransaction.n = txIx;
         parsedTransaction.type = tx.Type;
@@ -825,7 +825,7 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
           parsedTransaction.type = 'Was sent';
         }
         parsedTransaction.valueSat = tx.Value;
-        parsedTransaction.value = elaDisplay;
+        parsedTransaction.value = elaDisplay + '('+tx.Value+')';
         parsedTransaction.address = tx.Address;
         parsedTransaction.txHash = tx.Txid;
         parsedTransaction.txHashWithEllipsis = tx.Txid;
