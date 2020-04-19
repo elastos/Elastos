@@ -57,16 +57,26 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 		c.manager.proposalReview(tx, height, c.state.history)
 
 	case types.CRCProposalTracking:
-		c.manager.proposalTracking(tx, height, c.state.history)
+		c.proposalTracking(tx, height)
 
 	case types.CRCProposalWithdraw:
 		c.manager.proposalWithdraw(tx, height, c.state.history)
 
 	case types.CRCAppropriation:
-		c.processCRCAppropriation(tx, height, c.state.history)
+		c.processCRCAppropriation(height, c.state.history)
 	}
 
 	c.processCRCAddressRelatedTx(tx, height)
+}
+
+// proposalTracking deal with CRC proposal transaction.
+func (c *Committee) proposalTracking(tx *types.Transaction, height uint32) {
+	unusedBudget := c.manager.proposalTracking(tx, height, c.state.history)
+	c.state.history.Append(height, func() {
+		c.CRCCommitteeUsedAmount -= unusedBudget
+	}, func() {
+		c.CRCCommitteeUsedAmount += unusedBudget
+	})
 }
 
 // processVotes takes a transaction, if the transaction including any vote
