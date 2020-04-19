@@ -60,5 +60,3 @@ don't forget testnet and mainnet config files are in github at: https://github.c
 2. add a green 'sent' banner.
 3. add a red 'error' banner.
 4. change yes/no vote to a checkbox.
-5. history api needs to change to v3 to show pending tx
-And sort from new to old

@@ -26,7 +26,6 @@ module.exports = (props) => {
       <select value={App.getCurrentNetworkIx()} name="network" style={{background: "inherit"}} onChange={(e)=> changeNetwork(e)}>
         <option value="0">{App.REST_SERVICES[0].name}</option>
         <option value="1">{App.REST_SERVICES[1].name}</option>
-        <option value="2">{App.REST_SERVICES[2].name}</option>
       </select>
       <div className="display_inline_block">Change Node</div>
       <div className="display_inline_block">

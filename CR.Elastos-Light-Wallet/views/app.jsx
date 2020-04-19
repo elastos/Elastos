@@ -22,6 +22,16 @@ const App = require('../scripts/App.js');
 const GuiToggles = require('../scripts/GuiToggles.js');
 const CoinGecko = require('../scripts/CoinGecko.js');
 
+/** constants */
+const onLinkClickWhiteList = [
+  'https://blockchain.elastos.org',
+  'https://news.elastos.org/',
+  'https://twitter.com/ElastosInfo',
+  'https://www.facebook.com/elastosorg/',
+  'https://t.me/elastosgroup',
+];
+
+
 /** functions */
 
 const Version = () => {
@@ -30,7 +40,20 @@ const Version = () => {
 
 const onLinkClick = (event) => {
   event.preventDefault();
-  shell.openExternal(event.currentTarget.href);
+
+  const url = event.currentTarget.href;
+  let isInWhitelist = false;
+  onLinkClickWhiteList.forEach((prefix) => {
+    if(url.startsWith(prefix)) {
+      isInWhitelist = true;
+    }
+  })
+  if(!isInWhitelist) {
+    alert(url);
+    return;
+  }
+
+  shell.openExternal(url);
 }
 
 const openDevTools = () => {
