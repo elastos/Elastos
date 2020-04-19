@@ -27,7 +27,8 @@ const onLinkClickWhiteList = [
   'https://blockchain.elastos.org',
   'https://news.elastos.org/',
   'https://twitter.com/ElastosInfo',
-  'https://www.facebook.com/elastosorg/'
+  'https://www.facebook.com/elastosorg/',
+  'https://t.me/elastosgroup',
 ];
 
 
