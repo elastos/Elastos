@@ -31,6 +31,7 @@
 #include <Plugin/IDPlugin.h>
 #include <MasterWalletManager.h>
 #include <CMakeConfig.h>
+#include <Common/Lockable.h>
 
 #include <boost/filesystem.hpp>
 
@@ -46,7 +47,8 @@ namespace Elastos {
 												 const nlohmann::json &config, const std::string &dataPath) :
 			_rootPath(rootPath),
 			_dataPath(dataPath),
-			_p2pEnable(true) {
+			_p2pEnable(true),
+			_lock(new Lockable()) {
 
 			if (_dataPath.empty())
 				_dataPath = _rootPath;
@@ -84,7 +86,8 @@ namespace Elastos {
 			_masterWalletMap(walletMap),
 			_rootPath(rootPath),
 			_dataPath(dataPath),
-			_p2pEnable(false) {
+			_p2pEnable(false),
+			_lock(new Lockable()) {
 
 			if (_dataPath.empty())
 				_dataPath = _rootPath;
@@ -129,6 +132,8 @@ namespace Elastos {
 			}
 			delete _config;
 			_config = nullptr;
+			delete _lock;
+			_lock = nullptr;
 		}
 
 		void MasterWalletManager::LoadMasterWalletID() {
@@ -184,12 +189,11 @@ namespace Elastos {
 			return mnemonic;
 		}
 
-		IMasterWallet *MasterWalletManager::CreateMasterWallet(
-			const std::string &masterWalletID,
-			const std::string &mnemonic,
-			const std::string &phrasePassword,
-			const std::string &payPassword,
-			bool singleAddress) {
+		IMasterWallet *MasterWalletManager::CreateMasterWallet(const std::string &masterWalletID,
+															   const std::string &mnemonic,
+															   const std::string &phrasePassword,
+															   const std::string &payPassword,
+															   bool singleAddress) {
 
 			ArgInfo("{}", GetFunName());
 			ArgInfo("masterWalletID: {}", masterWalletID);
@@ -197,6 +201,8 @@ namespace Elastos {
 			ArgInfo("passphrase: *, empty: {}", phrasePassword.empty());
 			ArgInfo("payPasswd: *");
 			ArgInfo("singleAddress: {}", singleAddress);
+
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
 
 			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckParamNotEmpty(mnemonic, "mnemonic");
@@ -223,13 +229,12 @@ namespace Elastos {
 			return masterWallet;
 		}
 
-		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(
-			const std::string &masterWalletID,
-			const nlohmann::json &cosigners,
-			uint32_t m,
-			bool singleAddress,
-			bool compatible,
-			time_t timestamp) {
+		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletID,
+																		const nlohmann::json &cosigners,
+																		uint32_t m,
+																		bool singleAddress,
+																		bool compatible,
+																		time_t timestamp) {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("masterWalletID: {}", masterWalletID);
 			ArgInfo("cosigners: {}", cosigners.dump());
@@ -237,6 +242,8 @@ namespace Elastos {
 			ArgInfo("singleAddress: {}", singleAddress);
 			ArgInfo("compatible: {}", compatible);
 			ArgInfo("timestamp: {}", timestamp);
+
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
 
 			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckParam(!cosigners.is_array(), Error::PubKeyFormat, "cosigners should be JOSN array");
@@ -275,15 +282,14 @@ namespace Elastos {
 			return masterWallet;
 		}
 
-		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(
-			const std::string &masterWalletID,
-			const std::string &xprv,
-			const std::string &payPassword,
-			const nlohmann::json &cosigners,
-			uint32_t m,
-			bool singleAddress,
-			bool compatible,
-			time_t timestamp) {
+		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletID,
+																		const std::string &xprv,
+																		const std::string &payPassword,
+																		const nlohmann::json &cosigners,
+																		uint32_t m,
+																		bool singleAddress,
+																		bool compatible,
+																		time_t timestamp) {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("masterWalletID: {}", masterWalletID);
 			ArgInfo("xprv: *");
@@ -293,6 +299,8 @@ namespace Elastos {
 			ArgInfo("singleAddress: {}", singleAddress);
 			ArgInfo("compatible: {}", compatible);
 			ArgInfo("timestamp: {}", timestamp);
+
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
 
 			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckPassword(payPassword, "Pay");
@@ -355,6 +363,8 @@ namespace Elastos {
 			ArgInfo("compatible: {}", compatible);
 			ArgInfo("timestamp: {}", timestamp);
 
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
+
 			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckParamNotEmpty(mnemonic, "Mnemonic");
 			ErrorChecker::CheckPassword(payPassword, "Pay");
@@ -394,6 +404,8 @@ namespace Elastos {
 		std::vector<IMasterWallet *> MasterWalletManager::GetAllMasterWallets() const {
 			ArgInfo("{}", GetFunName());
 
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
+
 			std::vector<IMasterWallet *> result;
 			for (MasterWalletMap::const_iterator it = _masterWalletMap.cbegin(); it != _masterWalletMap.cend(); ++it) {
 				if (it->second) {
@@ -411,6 +423,8 @@ namespace Elastos {
 		void MasterWalletManager::DestroyWallet(const std::string &masterWalletID) {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("masterWalletID: {}", masterWalletID);
+
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
 
 			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
 				MasterWallet *masterWallet = static_cast<MasterWallet *>(_masterWalletMap[masterWalletID]);
@@ -439,6 +453,8 @@ namespace Elastos {
 			ArgInfo("keystore: *");
 			ArgInfo("backupPasswd: *");
 			ArgInfo("payPasswd: *");
+
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
 
 			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckParam(!keystoreContent.is_object(), Error::KeyStore, "key store should be json object");
@@ -476,6 +492,8 @@ namespace Elastos {
 			ArgInfo("singleAddr: {}", singleAddress);
 			ArgInfo("timestamp: {}", timestamp);
 
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
+
 			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckParamNotEmpty(mnemonic, "Mnemonic");
 			ErrorChecker::CheckPasswordWithNullLegal(phrasePassword, "Phrase");
@@ -507,6 +525,8 @@ namespace Elastos {
 			ArgInfo("masterWalletID: {}", masterWalletID);
 			ArgInfo("walletJson: {}", walletJson.dump());
 
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
+
 			ErrorChecker::CheckParam(!walletJson.is_object(), Error::KeyStore, "wallet json should be json object");
 
 			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
@@ -532,6 +552,9 @@ namespace Elastos {
 		}
 
 		void MasterWalletManager::FlushData() {
+
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
+
 			std::for_each(_masterWalletMap.begin(), _masterWalletMap.end(),
 						  [](const MasterWalletMap::value_type &item) {
 							  if (item.second != nullptr) {
@@ -543,6 +566,8 @@ namespace Elastos {
 
 		std::vector<std::string> MasterWalletManager::GetAllMasterWalletID() const {
 			ArgInfo("{}", GetFunName());
+
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
 
 			std::vector<std::string> result;
 			std::for_each(_masterWalletMap.begin(), _masterWalletMap.end(),
@@ -563,6 +588,8 @@ namespace Elastos {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("masterWalletID: {}", masterWalletID);
 
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
+
 			if (_masterWalletMap.find(masterWalletID) == _masterWalletMap.end()) {
 				Log::error("master wallet {} not found", masterWalletID);
 				return false;
@@ -574,6 +601,8 @@ namespace Elastos {
 		IMasterWallet *MasterWalletManager::GetMasterWallet(const std::string &masterWalletID) const {
 			ArgInfo("{}", GetFunName());
 			ArgInfo("masterWalletID: {}", masterWalletID);
+
+			boost::mutex::scoped_lock scoped_lock(_lock->GetLock());
 
 			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.cend() &&
 				_masterWalletMap[masterWalletID] != nullptr) {

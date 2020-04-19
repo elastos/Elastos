@@ -31,6 +31,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class Config;
+		class Lockable;
 
 		class SPV_API_PUBLIC MasterWalletManager : public IMasterWalletManager {
 		public:
@@ -158,6 +159,7 @@ namespace Elastos {
 			void checkRedundant(IMasterWallet *wallet) const;
 
 		protected:
+			Lockable *_lock;
 			Config *_config;
 			std::string _rootPath;
 			std::string _dataPath;

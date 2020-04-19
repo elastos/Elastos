@@ -33,6 +33,8 @@ namespace Elastos {
 
 			void Unlock() const { lock.unlock(); }
 
+			boost::mutex &GetLock() { return lock; }
+
 		protected:
 			mutable boost::mutex lock;
 		};
