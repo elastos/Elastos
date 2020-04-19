@@ -30,7 +30,7 @@ const MAX_POLL_DATA_TYPE_IX = 5;
 
 const PRIVATE_KEY_LENGTH = 64;
 
-const DEFAULT_FEE_SATS = '500';
+const DEFAULT_FEE_SATS = '5000';
 
 const EXPLORER = 'https://blockchain.elastos.org';
 
@@ -461,8 +461,9 @@ const sendAmountToAddressErrorCallback = (error) => {
 
 const sendAmountToAddressReadyCallback = (transactionJson) => {
   mainConsole.log('sendAmountToAddressReadyCallback ' + JSON.stringify(transactionJson));
-  if (transactionJson.Error) {
-    sendToAddressStatuses.push(`${transactionJson.Error} ${transactionJson.Result}`);
+  if (transactionJson.status == 400) {
+    sendToAddressStatuses.length = 0;
+    sendToAddressStatuses.push(`Transaction Failure. status:${transactionJson.status} result:${transactionJson.result}`);
   } else {
     sendToAddressStatuses.length = 0;
     const link = getTransactionHistoryLink(transactionJson.result);
