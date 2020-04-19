@@ -41,7 +41,7 @@ module.exports = (props) => {
      <Menu App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} page="voting"/>
       {/* <Menu App={App} openDevTools={openDevTools} GuiToggles={GuiToggles}/> */}
       <div className="logo-info">
-      <Branding/>
+      <Branding onClick={(e) => GuiToggles.showHome()}/>
       <header>
         <img src="artwork/system.svg" className="system-icon" />
         <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()} />
