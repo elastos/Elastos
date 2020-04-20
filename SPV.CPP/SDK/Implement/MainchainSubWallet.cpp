@@ -1382,7 +1382,9 @@ namespace Elastos {
 			return digest;
 		}
 
-		nlohmann::json MainchainSubWallet::CreateProposalWithdrawTransaction(const nlohmann::json &payload,
+		nlohmann::json MainchainSubWallet::CreateProposalWithdrawTransaction(const std::string &recipient,
+																			 const std::string &amount,
+																			 const nlohmann::json &payload,
 																			 const std::string &memo) {
 			ErrorChecker::ThrowParamException(Error::InvalidArgument, "interface not ready");
 			return nlohmann::json();

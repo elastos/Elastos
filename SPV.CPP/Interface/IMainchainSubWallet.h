@@ -766,6 +766,8 @@ namespace Elastos {
 			/**
 			 * Create proposal withdraw transaction.
 			 *
+			 * @param recipient Recipient of proposal.
+			 * @param amount Withdraw amount.
 			 * @param payload Proposal payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
@@ -777,8 +779,11 @@ namespace Elastos {
 			 *
 			 * @return Transaction in JSON format.
 			 */
-			 virtual nlohmann::json CreateProposalWithdrawTransaction(const nlohmann::json &payload,
+			 virtual nlohmann::json CreateProposalWithdrawTransaction(const std::string &recipient,
+																	  const std::string &amount,
+																	  const nlohmann::json &payload,
 																	  const std::string &memo = "") = 0;
+
 		};
 
 	}

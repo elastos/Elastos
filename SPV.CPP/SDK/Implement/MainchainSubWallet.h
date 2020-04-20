@@ -179,7 +179,9 @@ namespace Elastos {
 			//////////////////////////////////////////////////
 			std::string ProposalWithdrawDigest(const nlohmann::json &payload) const override;
 
-			nlohmann::json CreateProposalWithdrawTransaction(const nlohmann::json &payload,
+			nlohmann::json CreateProposalWithdrawTransaction(const std::string &recipient,
+															 const std::string &amount,
+															 const nlohmann::json &payload,
 															 const std::string &memo) override;
 
 		private:
