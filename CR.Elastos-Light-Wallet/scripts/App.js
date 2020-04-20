@@ -126,6 +126,10 @@ let parsedRssFeedStatus = 'No Rss Feed Requested Yet';
 
 const parsedRssFeed = [];
 
+let bannerStatus = '';
+
+let bannerClass = '';
+
 const mainConsole = new mainConsoleLib.Console(process.stdout, process.stderr);
 
 let GuiToggles;
@@ -349,7 +353,7 @@ const getRssFeed = async (url, readyCallback, errorCallback) => {
   try {
     const feed = await parser.parseURL(url);
     readyCallback(feed);
-  } catch(error) {
+  } catch (error) {
     errorCallback(error);
   }
 };
@@ -463,7 +467,10 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
   mainConsole.log('sendAmountToAddressReadyCallback ' + JSON.stringify(transactionJson));
   if (transactionJson.status == 400) {
     sendToAddressStatuses.length = 0;
-    sendToAddressStatuses.push(`Transaction Failure. status:${transactionJson.status} result:${transactionJson.result}`);
+    const message = `Transaction Failure. status:${transactionJson.status} result:${transactionJson.result}`;
+    bannerStatus = message;
+    bannerClass = 'bg_red color_white';
+    sendToAddressStatuses.push(message);
   } else {
     sendToAddressStatuses.length = 0;
     const link = getTransactionHistoryLink(transactionJson.result);
@@ -471,9 +478,14 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     elt.txDetailsUrl = link;
     elt.txHash = transactionJson.result;
     sendToAddressStatuses.length = 0;
-    sendToAddressStatuses.push('Transaction Successful.');
+    const message ='Transaction Successful.';
+    bannerClass = 'bg_green color_white';
+    sendToAddressStatuses.push(message);
+    bannerStatus = message;
     sendToAddressLinks.push(elt);
   }
+  GuiUtils.show('homeBanner');
+  GuiUtils.show('votingBanner');
   setBlockchainLastActionHeight();
   renderApp();
 };
@@ -855,7 +867,7 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
     }
   }
 
-  parsedTransactionHistory.sort((a,b) => {
+  parsedTransactionHistory.sort((a, b) => {
     return b.sortTime - a.sortTime;
   });
 
@@ -975,6 +987,13 @@ const clearGlobalData = () => {
 
   unspentTransactionOutputsStatus = 'No UTXOs Requested Yet';
   parsedUnspentTransactionOutputs.length = 0;
+
+  parsedRssFeed.length = 0;
+  parsedRssFeedStatus = 'No Rss Feed Requested Yet';
+
+  bannerStatus = '';
+  bannerClass = '';
+
   renderApp();
   // mainConsole.log('SUCCESS clearGlobalData');
 };
@@ -1139,6 +1158,15 @@ const getParsedRssFeed = () => {
   return parsedRssFeed;
 };
 
+const getBannerStatus = () => {
+  return bannerStatus;
+};
+
+const getBannerClass = () => {
+  return bannerClass;
+};
+
+
 exports.DEFAULT_FEE_SATS = DEFAULT_FEE_SATS;
 exports.REST_SERVICES = REST_SERVICES;
 exports.init = init;
@@ -1190,3 +1218,5 @@ exports.toggleProducerSelection = toggleProducerSelection;
 exports.sendVoteTx = sendVoteTx;
 exports.getAddressOrBlank = getAddressOrBlank;
 exports.getParsedRssFeed = getParsedRssFeed;
+exports.getBannerStatus = getBannerStatus;
+exports.getBannerClass = getBannerClass;

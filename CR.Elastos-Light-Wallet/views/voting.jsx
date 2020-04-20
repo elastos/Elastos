@@ -2,6 +2,8 @@ const React = require('react');
 
 const Menu = require('./partial/menu.jsx');
 
+const Banner = require('./partial/banner.jsx');
+
 const Branding = require('./partial/branding.jsx');
 
 const Balance = require('./partial/balance.jsx');
@@ -23,7 +25,6 @@ module.exports = (props) => {
     GuiToggles.showMenu('voting');
   }
 
-
   const ProducerSelectionButtonText = (props) => {
     // mainConsole.log('INTERIM ProducerSelectionButtonText props', props);
     // mainConsole.log('INTERIM ProducerSelectionButtonText item', props.item);
@@ -31,14 +32,15 @@ module.exports = (props) => {
     const item = props.item;
     const isCandidate = item.isCandidate;
     if (isCandidate) {
-      return ('Yes')
+      return (<img src="artwork/check-square.svg" />)
     } else {
-      return ('No')
+      return (<img src="artwork/square.svg" />)
     }
   }
 
   return (
     <div id="voting" className="gridback-voting w780h520px">
+     <Banner App={App} GuiToggles={GuiToggles} page="voting"/>
      <Menu App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} page="voting"/>
       {/* <Menu App={App} openDevTools={openDevTools} GuiToggles={GuiToggles}/> */}
       <div className="logo-info">
