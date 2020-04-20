@@ -30,7 +30,7 @@ const MAX_POLL_DATA_TYPE_IX = 5;
 
 const PRIVATE_KEY_LENGTH = 64;
 
-const DEFAULT_FEE_SATS = '500';
+const DEFAULT_FEE_SATS = '4860';
 
 const EXPLORER = 'https://blockchain.elastos.org';
 
@@ -828,7 +828,7 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
       transactionHistory.result.History.forEach((tx, txIx) => {
         const time = formatDate(new Date(tx.CreateTime * 1000));
         const elaFloat = parseInt(tx.Value)/100000000;
-        const elaDisplay = elaFloat.toFixed(8);
+        const elaDisplay = Number(elaFloat.toFixed(8));
         const parsedTransaction = {};
         parsedTransaction.sortTime = tx.CreateTime;
         parsedTransaction.n = txIx;
@@ -840,7 +840,7 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
           parsedTransaction.type = 'Was sent';
         }
         parsedTransaction.valueSat = tx.Value;
-        parsedTransaction.value = elaDisplay + '('+tx.Value+')';
+        parsedTransaction.value = elaDisplay;
         parsedTransaction.address = tx.Address;
         parsedTransaction.txHash = tx.Txid;
         parsedTransaction.txHashWithEllipsis = tx.Txid;
