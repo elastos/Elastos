@@ -169,11 +169,11 @@ func (c *Committee) processVoteCancel(output *types.Output, height uint32) {
 		for _, cv := range vote.CandidateVotes {
 			switch vote.VoteType {
 			case outputpayload.CRC:
-				did, err := common.Uint168FromBytes(cv.Candidate)
+				cid, err := common.Uint168FromBytes(cv.Candidate)
 				if err != nil {
 					continue
 				}
-				candidate := c.state.getCandidate(*did)
+				candidate := c.state.getCandidate(*cid)
 				if candidate == nil {
 					continue
 				}
