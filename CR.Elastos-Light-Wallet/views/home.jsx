@@ -4,6 +4,8 @@ const QRCode = require('qrcode.react');
 
 const Menu = require('./partial/menu.jsx');
 
+const Banner = require('./partial/banner.jsx');
+
 const Branding = require('./partial/branding.jsx');
 
 const Balance = require('./partial/balance.jsx');
@@ -160,6 +162,7 @@ module.exports = (props) => {
 
   return (
     <div id="home" className="gridback w780h520px">
+     <Banner App={App} GuiToggles={GuiToggles} page="home"/>
      <Menu App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} page="home"/>
      {/* <div id="homeMenuOpen" className="h25px bordered display_inline_block bgcolor_black_hover" title="menu" onClick={(e) => showHomeMenu()}>
        <img src="artwork/more-vertical.svg" />

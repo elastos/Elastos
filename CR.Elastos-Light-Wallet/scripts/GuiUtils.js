@@ -16,6 +16,17 @@ const getValue = (id) => {
   return get(id).value;
 };
 
+
+const hide = (id) => {
+  get(id).style = 'display:none;';
+};
+
+const show = (id) => {
+  get(id).style = 'display:default;';
+};
+
 exports.get = get;
 exports.setValue = setValue;
 exports.getValue = getValue;
+exports.hide = hide;
+exports.show = show;

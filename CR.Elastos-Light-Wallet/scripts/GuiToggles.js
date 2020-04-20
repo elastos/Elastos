@@ -11,11 +11,11 @@ const init = (_app) => {
 };
 
 const hide = (id) => {
-  GuiUtils.get(id).style = 'display:none;';
+  GuiUtils.hide(id);
 };
 
 const show = (id) => {
-  GuiUtils.get(id).style = 'display:default;';
+  GuiUtils.show(id);
 };
 
 const hideEverything = () => {
@@ -32,6 +32,8 @@ const hideEverything = () => {
   hide('version');
   hide('voting');
   hide('qrcode');
+  hide('homeBanner');
+  hide('votingBanner');
 };
 
 const showLanding = () => {
@@ -89,6 +91,14 @@ const showQRCode = () => {
   show('qrcode');
 };
 
+const showBanner = (name) => {
+  show(name+'Banner');
+};
+
+const hideBanner = (name) => {
+  hide(name+'Banner');
+};
+
 exports.init = init;
 exports.showLanding = showLanding;
 exports.showLoginMnemonic = showLoginMnemonic;
@@ -98,3 +108,5 @@ exports.showMenu = showMenu;
 exports.hideMenu = hideMenu;
 exports.showVoting = showVoting;
 exports.showQRCode = showQRCode;
+exports.showBanner = showBanner;
+exports.hideBanner = hideBanner;

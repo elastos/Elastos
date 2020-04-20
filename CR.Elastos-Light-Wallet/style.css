@@ -104,7 +104,7 @@ html {
   border-radius: 40px;
   position: relative;
   grid-template-columns: 235px auto;
-  grid-template-rows: 110px 195px 45px 40px auto ;
+  grid-template-rows: 110px 195px 45px 40px auto;
   color: #FFFFFF;
 }
 
@@ -207,7 +207,7 @@ html {
   border-radius: 10px;
 }
 
-.stakingarea > * {
+.stakingarea>* {
   position: fixed;
   margin: 0;
 }
@@ -232,12 +232,12 @@ html {
 }
 
 .candidate-voted {
-font-size: 7.8px;
-color: #B2B4C3;
-letter-spacing: 0;
-left: 57px;
-top: 301.13px;
-white-space: nowrap;
+  font-size: 7.8px;
+  color: #B2B4C3;
+  letter-spacing: 0;
+  left: 57px;
+  top: 301.13px;
+  white-space: nowrap;
 }
 
 .votenow {
@@ -272,7 +272,6 @@ white-space: nowrap;
   font-size: 7.8px;
   color: #9799A6;
   letter-spacing: 0;
-
 }
 
 .article-title {
@@ -780,6 +779,7 @@ select, input {
   font-family: 'Open Sans', sans-serif;
   font-size: 10px;
 }
+
 .font_size14 {
   font-size: 14px;
 }
@@ -1076,12 +1076,13 @@ select, input {
 }
 
 .voting-row1 {
-  grid-area: row1;  
+  grid-area: row1;
   display: flex;
   align-items: flex-end;
   padding-right: 60px;
 }
-.voting-row1 > div {
+
+.voting-row1>div {
   display: flex;
   align-items: center;
   padding-left: 20px;
@@ -1089,7 +1090,7 @@ select, input {
   justify-content: space-between;
 }
 
-.votes-header{
+.votes-header {
   font-size: 17.83px;
   color: #FFFFFF;
   letter-spacing: 0;
@@ -1111,7 +1112,6 @@ select, input {
 .voting-row2 {
   grid-area: row2;
   padding-right: 60px;
-
 }
 
 .voting-row3 {
@@ -1120,12 +1120,11 @@ select, input {
   justify-content: flex-end;
   align-items: center;
   padding-right: 60px;
-
 }
 
 .voting-row3 button {
   background-image: linear-gradient(-214deg, #F4D2AE 0%, #E5A776 100%);
-  box-shadow: 0 2px 4px -1px rgba(25,23,41,0.66);
+  box-shadow: 0 2px 4px -1px rgba(25, 23, 41, 0.66);
   border-radius: 5.57px;
   position: absolute;
   margin: 0;
@@ -1142,12 +1141,12 @@ select, input {
 }
 
 .voting-row4 {
-    grid-area: row4;
-    padding-right: 60px;
-    display: flex;
-    justify-content: space-between;
-    padding-left: 25px;
-    align-items: center;
+  grid-area: row4;
+  padding-right: 60px;
+  display: flex;
+  justify-content: space-between;
+  padding-left: 25px;
+  align-items: center;
 }
 
 .active-heading {
@@ -1169,21 +1168,18 @@ select, input {
   margin-bottom: 15px;
 }
 
-.scrollbar::-webkit-scrollbar-track
-{
-	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+.scrollbar::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background: rgba(151, 153, 166, 0.16);
 }
 
-.scrollbar::-webkit-scrollbar
-{
-	width: 10px;
+.scrollbar::-webkit-scrollbar {
+  width: 10px;
   background: rgba(151, 153, 166, 0.16);
 }
 
-.scrollbar::-webkit-scrollbar-thumb
-{
-	background-color: #000000;
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: #000000;
 }
 
 #qrcode {
@@ -1198,7 +1194,7 @@ select, input {
   width: 389px;
   height: 450px;
   background-image: linear-gradient(2deg, #36373B 0%, #65666E 100%);
-  box-shadow: 6px 30px 60px -13px rgba(0,0,0,0.50);
+  box-shadow: 6px 30px 60px -13px rgba(0, 0, 0, 0.50);
   border-radius: 38px;
   justify-content: space-evenly;
   align-items: center;
@@ -1206,7 +1202,7 @@ select, input {
 
 .qraddress-div {
   opacity: 0.5;
-  background: rgba(168,170,174,0.22);
+  background: rgba(168, 170, 174, 0.22);
   border-radius: 10px;
   width: 333px;
   height: 61px;
@@ -1222,4 +1218,12 @@ select, input {
 
 .br5 {
   border-radius: 5px;
+}
+
+.bg_green {
+  background: green;
+}
+
+.bg_red {
+  background: red;
 }
