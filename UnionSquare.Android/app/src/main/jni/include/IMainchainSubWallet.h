@@ -535,212 +535,255 @@ namespace Elastos {
 			/*                     Proposal                 */
 			//////////////////////////////////////////////////
 			/**
-			 *Sponsor generate proposal digest for sponsor signature.
+			 * Generate digest of payload.
 			 *
-			 * @param type             Proposal type, value is [0-5]
-			 * 	enum type {
-			 *		normal = 0x0000,
-			 *		elip = 0x0100,
-			 *		flowElip = 0x0101,
-			 *		infoElip = 0x0102,
-			 *		mainChainUpgradeCode = 0x0200,
-			 *		sideChainUpgradeCode = 0x0300,
-			 *		registerSideChain = 0x0301,
-			 *		secretaryGeneral = 0x0400,
-			 *		changeSponsor = 0x0401,
-			 *		closeProposal = 0x0402,
-			 *		dappConsensus = 0x0500,
-			 *		maxType
-			 * };
-			 * @param categoryData     Used to store category data with a length limit not exceeding 4096 characters
-			 * @param sponsorPublicKey Public key of sponsor
-			 * @param draftHash        The hash of draft proposal
-			 * @param budgets          The budgets of proposal every stage.  Such as [{"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}].
-			 * 						   Budget Type is :
-			 * 						   0 : imprest
-			 * 						   1 : normal payment
-			 * 						   2 : final payment
-			 * @param recipient        Address of budget payee. Such as "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"
-			 *
-			 * @return The proposal in JSON format contains the "Digest" field to be signed and then set the "Signature" field. Such as
+			 * @param payload Proposal payload. Must contain the following:
 			 * {
-			 *    "Budgets":[{"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}],
-			 *    "CategoryData":"testdata",
-			 *    "DraftHash":"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
-			 *    "Recipient":"cbcb4cc55dc3fc6cc6e4663f747d8b75e25d21db21",
-			 *    "SponsorPublicKey":"031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
-			 *    "Type":0,
-			 *    "Digest":"ae9ebae57a176f5d5f8693eee5a8192f219b3ae04922cc096acb7748fe7ceba7",
-			 *    "Signature":""
+			 *    "Type": 0,
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
+			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "Budgets": [{"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}],
+			 *    "Recipient": "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", // address
 			 * }
-			 */
-			virtual nlohmann::json SponsorProposalDigest(uint16_t type,
-			                                             const std::string &categoryData,
-			                                             const std::string &sponsorPublicKey,
-			                                             const std::string &draftHash,
-			                                             const nlohmann::json &budgets,
-			                                             const std::string &recipient) const = 0;
-
-			/**
-			 *CR sponsor generate proposal digest for cr signature.
 			 *
-			 * @param  sponsorSignedProposal Sponsor signed proposal
-			 * @param  crSponsorDID     Did of sponsor. Such as "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-			 * @param  crOpinionHash    The hash of proposal opinion
-			 * @return The proposal in JSON format contains the "Digest" field to be signed and then set the "CRSignature" field. Such as
+			 * Type can be value as below:
 			 * {
-			 * 	  "Budgets":[{"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}],
-			 * 	  "CRSponsorDID":"cbcb4cc55dc3fc6cc6e4663f747d8b75e25d21db67",
-			 * 	  "CategoryData":"testdata",
-			 * 	  "CROpinionHash":"6418be20291bc857c9a01e5ba205445b85a0593d47cc0b576d55a55e464f31b3",
-			 * 	  "DraftHash":"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
-			 * 	  "Recipient":"cbcb4cc55dc3fc6cc6e4663f747d8b75e25d21db21",
-			 * 	  "Signature":"ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76",
-			 * 	  "SponsorPublicKey":"031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
-			 * 	  "Type":0,
-			 * 	  "Digest":"2a65e8ac29f5ba4e16a1def91fc4e210838900f24f0f651c5c414d8fd8aaf55d",
-			 * 	  "CRSignature":""
+			 *	 Normal: 0x0000
+			 *	 Elip: 0x0100
+			 *	 FlowElip: 0x0101
+			 *	 InfoElip: 0x0102
+			 *	 MainChainUpgradeCode: 0x0200
+			 *	 SideChainUpgradeCode: 0x0300
+			 *	 RegisterSideChain: 0x0301
+			 *	 SecretaryGeneral: 0x0400
+			 *	 ChangeOwner: 0x0401
+			 *	 CloseProposal: 0x0402
+			 *	 DappConsensus: 0x0500
 			 * }
-			 */
-			virtual nlohmann::json CRSponsorProposalDigest(const nlohmann::json &sponsorSignedProposal,
-			                                               const std::string &crSponsorDID,
-			                                               const std::string &crOpinionHash) const = 0;
-
-			/**
-			 * Create CRC Proposal transaction.
 			 *
-			 * @param crSignedProposal CR sponsor signed proposal
-			 * @param memo             Remarks string. Can be empty string.
-			 * @return                 The transaction in JSON format to be signed and published.
-			 */
-			virtual nlohmann::json CreateCRCProposalTransaction(nlohmann::json crSignedProposal,
-			                                                    const std::string &memo) = 0;
-
-			/**
-			 * Generate payload for review CRC proposal.
-			 *
-			 * @param proposalHash Hash value of proposal.
-			 * @param voteResult   Opinion of the proposal. approve : 0, reject : 1, abstain : 2
-			 * @param did          DID of CR. Such as  "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7";
-			 * @return             The proposal in JSON format contains the "Digest" field to be signed and then set the "Signature" field. Such as
+			 * Budget must contain the following:
 			 * {
-			 *   "DID":"270589bb89afdbeac2f6788c52386bafb941a24867",
-			 *   "Digest":"01333218d8492fe59c1ee1e0830bf86bf97b37f71f73183f29a31385f3e0ba45",
-			 *   "ProposalHash":"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
-			 *   "Result":1,
-			 *   "Signature":""
+			 *   "Type": 0,             // imprest = 0, normalPayment = 1, finalPayment = 2
+			 *   "Stage": 0,            // value can be [0, 128)
+			 *   "Amount": "100000000"  // sela
 			 * }
+			 *
+			 * @return Digest of payload.
 			 */
-			virtual nlohmann::json GenerateCRCProposalReview(const std::string &proposalHash,
-			                                                 uint8_t voteResult,
-			                                                 const std::string &did) const = 0;
+			virtual std::string ProposalOwnerDigest(const nlohmann::json &payload) const = 0;
 
 			/**
-			 * Create a review proposal transaction.
+			 * Generate digest of payload.
 			 *
-			 * @param proposalReview Generate by GenerateCRCProposalReview() and "Signature" is not empty.
-			 * @param memo           Remarks string. Can be empty string.
-			 * @return               The transaction in JSON format to be signed and published.
+			 * @param payload Proposal payload. Must contain the following:
+			 * {
+			 *    "Type": 0,                   // same as mention on method ProposalOwnerDigest()
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4", // Owner DID public key
+			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "Budgets": [                 // same as mention on method ProposalOwnerDigest()
+			 *      {"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}
+			 *    ],
+			 *    "Recipient": "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", // address
+			 *
+			 *    // signature of owner
+			 *    "Signature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76",
+			 *    "CRCommitteeDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY"
+			 * }
+			 *
+			 * @return Digest of payload.
 			 */
-			virtual nlohmann::json CreateCRCProposalReviewTransaction(const nlohmann::json &proposalReview,
-			                                                          const std::string &memo) = 0;
+			virtual std::string ProposalCRCommitteeDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * Create proposal transaction.
+			 *
+			 * @param payload Proposal payload signed by owner and CR committee.
+			 * {
+			 *    "Type": 0,                   // same as mention on method ProposalOwnerDigest()
+			 *    "CategoryData": "testdata",  // limit: 4096 bytes
+			 *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4", // Owner DID public key
+			 *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *    "Budgets": [                 // same as mention on method ProposalOwnerDigest()
+			 *      {"Type":0,"Stage":0,"Amount":"300"},{"Type":1,"Stage":1,"Amount":"33"},{"Type":2,"Stage":2,"Amount":"344"}
+			 *    ],
+			 *    "Recipient": "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", // address
+			 *
+			 *    // signature of owner
+			 *    "Signature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76",
+			 *    "CRCommitteeDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+			 *    "CRCommitteeSignature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76"
+			 * }
+			 *
+			 * @param memo Remarks string. Can be empty string.
+			 * @return The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json CreateProposalTransaction(const nlohmann::json &payload,
+															 const std::string &memo = "") = 0;
+
+
+			//////////////////////////////////////////////////
+			/*               Proposal Review                */
+			//////////////////////////////////////////////////
+			/**
+			 * Generate digest of payload.
+			 *
+			 * @param payload Payload proposal review.
+			 * {
+			 *   "ProposalHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *   "Opinion": 1,    // approve = 0, reject = 1, abstain = 2
+			 *   "OpinionHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *   "CRCommitteeDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+			 * }
+			 *
+			 * @return Digest of payload.
+			 */
+			virtual std::string ProposalReviewDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * Create proposal review transaction.
+			 *
+			 * @param payload Signed payload.
+ 			 * {
+			 *   "ProposalHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *   "Opinion": 1,    // approve = 0, reject = 1, abstain = 2
+			 *   "OpinionHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *   "CRCommitteeDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+			 *   // signature of committee DID
+			 *   "Signature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76"
+			 * }
+			 *
+			 * @param memo Remarks string. Can be empty string.
+			 * @return The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json CreateProposalReviewTransaction(const nlohmann::json &payload,
+																   const std::string &memo = "") = 0;
+
+
+			//////////////////////////////////////////////////
+			/*               Proposal Tracking              */
+			//////////////////////////////////////////////////
+			/**
+			 * Generate digest of payload.
+			 *
+			 * @param payload Proposal tracking payload.
+			 * {
+			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "DocumentHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "Stage": 0, // value can be [0, 128)
+			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
+			 *   "NewOwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 * }
+			 *
+			 * @return Digest of payload
+			 */
+			virtual std::string ProposalTrackingOwnerDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * Generate digest of payload.
+			 *
+			 * @param payload Proposal tracking payload.
+			 * {
+			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "DocumentHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "Stage": 0, // value can be [0, 128)
+			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
+			 *   "NewOwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   "OwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
+			 * }
+			 *
+			 * @return Digest of payload.
+			 */
+			virtual std::string ProposalTrackingNewOwnerDigest(const nlohmann::json &payload) const = 0;
+
+			/**
+			 * Generate digest of payload.
+			 *
+			 * @param payload Proposal tracking payload.
+			 * {
+			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "DocumentHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "Stage": 0, // value can be [0, 128)
+			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
+			 *   "NewOwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   "OwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
+			 *   // If NewOwnerPubKey is empty, this must be empty.
+			 *   "NewOwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
+			 *   "Type": 0, // common = 0, progress = 1, rejected = 2, terminated = 3, changeOwner = 4, finalized = 5
+			 *   "SecretaryOpinionHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 * }
+			 *
+			 * @return Digest of payload
+			 */
+			virtual std::string ProposalTrackingSecretaryDigest(const nlohmann::json &payload) const = 0;
 
 
 			/**
-			 * Generate proposal tracking digest for leader signature.
+			 * Create proposal tracking transaction.
 			 *
-			 * @param type             Proposal tracking type, value is [0-5]. Details:
-			 * 						   common         : 0x00
-			 *						   progress       : 0x01
-			 *						   progressReject : 0x02
-			 *						   terminated     : 0x03
-			 *						   proposalLeader : 0x04
-			 *						   appropriation  : 0x05
+			 * @param payload Proposal tracking payload.
+			 * {
+			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "DocumentHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "Stage": 0, // value can be [0, 128)
+			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
+			 *   "NewOwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   "OwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
+			 *   // If NewOwnerPubKey is empty, this must be empty.
+			 *   "NewOwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
+			 *   "Type": 0, // common = 0, progress = 1, rejected = 2, terminated = 3, changeOwner = 4, finalized = 5
+			 *   "SecretaryOpinionHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "SecretarySignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
+			 * }
 			 *
-			 * @param proposalHash     The hash of proposal.
-			 * @param documentHash     The hash of tracking proposal document.
-			 * @param stage            The stage of proposal.
-			 * @param appropriation    The appropriation of this stage of proposal.
-			 * @param leaderPubKey     The Public key of this proposal leader
-			 * @param newLeaderPubKey  The public key of this proposal new leader
-			 *
-			 * @return The proposal tracking payload in JSON format contains the "Digest" field to be signed and then set the "LeaderSign" field. Such as
-			*  {
-			 *  	"Appropriation":2342,
-			 *  	"DocumentHash":"7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *  	"LeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
-			 *  	"NewLeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
-			 *  	"ProposalHash":"0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
-			 *  	"Stage":52,
-			 *  	"Type":4,
-			 *  	"Digest":"27531160ac78b6073171d8a9d4c2a78261ecf1c8649822b1a536f0c15bf2d35b",
-			 *  	"LeaderSign":""
-			 *  }
-			 */
-			virtual nlohmann::json LeaderProposalTrackDigest(uint8_t type,
-			                                                 const std::string &proposalHash,
-			                                                 const std::string &documentHash,
-			                                                 uint8_t stage,
-			                                                 const std::string &appropriation,
-			                                                 const std::string &leaderPubKey,
-			                                                 const std::string &newLeaderPubKey) const = 0;
-
-			/**
-			 * Generate proposal tracking digest for new leader signature.
-			 *
-			 * @param leaderSignedProposalTracking Leader Signed proposal tracking payload.
-			 *
-			 * @return The proposal tracking payload in JSON format contains the "Digest" field to be signed and then set the "NewLeaderSign" field. Such as
-			 *  {
-			 *  	"Appropriation":2342,
-			 *  	"DocumentHash":"7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *  	"LeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
-			 *  	"LeaderSign":"82836d2e35dcafd229375e51e66af8b862b8cccee25c86b2524a77d7f28f79972516911819845d69e9fe71b6c255e79058355331bd543c5f5d0f4194aa90242c",
-			 *  	"NewLeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
-			 *  	"ProposalHash":"0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
-			 *  	"Stage":52,
-			 *  	"Type":4,
-			 *  	"Digest":"33d77c7e5943ac6aa1d521c76e47315779fe16ba05a6388022bd5afd561b5790",
-			 *  	"NewLeaderSign":"",
-			 *  }
+			 * @param memo Remarks string. Can be empty string.
+			 * @return The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json
-			NewLeaderProposalTrackDigest(const nlohmann::json &leaderSignedProposalTracking) const = 0;
+			CreateProposalTrackingTransaction(const nlohmann::json &payload, const std::string &memo = "") = 0;
 
+			//////////////////////////////////////////////////
+			/*               Proposal Withdraw              */
+			//////////////////////////////////////////////////
 			/**
-			 * Generate proposal tracking digest for secretaryGeneral signature.
+			 * Generate digest of payload.
 			 *
-			 * @param leaderSignedProposalTracking Leader Signed proposal tracking payload.
-			 *
-			 * @return The proposal tracking payload in JSON format contains the "Digest" field to be signed and then set the "SecretaryGeneralSign" field. Such as
-			 *{
-			 * 	"Appropriation":2342,
-			 * 	"DocumentHash":"7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 * 	"LeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
-			 * 	"LeaderSign":"28e0cb3d4c7c5d19b13f5ce15fc19c636108c47ae25eaa2a9f890dde91940582d7473426100d93c09af9f98233bb0fdfa635a89d03b90e7bfeef68e1408a96b3",
-			 * 	"NewLeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
-			 * 	"NewLeaderSign":"9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
-			 * 	"ProposalHash":"0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
-			 * 	"Stage":52,
-			 * 	"Type":4,
-			 * 	"Digest":"70adb3e1d1f094f313cdfc4d47ff873d9b64094c03b492f38e5be0d3d61dc4df",
-			 * 	"SecretaryGeneralSign":""
+			 * @param payload Proposal payload.
+			 * {
+			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 * }
+			 *
+			 * @return Digest of payload.
 			 */
-			virtual nlohmann::json
-			SecretaryGeneralProposalTrackDigest(const nlohmann::json &leaderSignedProposalTracking) const = 0;
-
+			virtual std::string ProposalWithdrawDigest(const nlohmann::json &payload) const = 0;
 
 			/**
-			 * Create a proposal tracking transaction.
+			 * Create proposal withdraw transaction.
 			 *
-			 * @param SecretaryGeneralSignedPayload Proposal tracking payload with JSON format by SecretaryGeneral signed
-			 * @param memo           Remarks string. Can be empty string.
-			 * @return               The transaction in JSON format to be signed and published.
+			 * @param recipient Recipient of proposal.
+			 * @param amount Withdraw amount.
+			 * @param payload Proposal payload.
+			 * {
+			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *   "Signature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
+			 * }
+			 *
+			 * @param memo Remarks string. Can be empty string.
+			 *
+			 * @return Transaction in JSON format.
 			 */
-			virtual nlohmann::json
-			CreateProposalTrackingTransaction(const nlohmann::json &SecretaryGeneralSignedPayload,
-			                                  const std::string &memo) = 0;
+			 virtual nlohmann::json CreateProposalWithdrawTransaction(const std::string &recipient,
+																	  const std::string &amount,
+																	  const nlohmann::json &payload,
+																	  const std::string &memo = "") = 0;
+
 		};
 
 	}
