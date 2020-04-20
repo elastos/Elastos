@@ -40,6 +40,7 @@ file(GLOB utility-SOURCES "utility/*.c")
 file(GLOB backend-SOURCES "backend/*.c")
 
 set(SRC
+    diderror.c
     did.c
     diddocument.c
     credential.c
@@ -95,6 +96,7 @@ endif()
 set(LIBS
     cjson
     curl
+    #crystal
     ssl
     crypto
     z)
@@ -102,7 +104,7 @@ set(LIBS
 if(WIN32)
     set(LIBS
         ${LIBS}
-        crystal
+        #crystal
         pthread)
 endif()
 
@@ -114,7 +116,7 @@ set(ELADID_DEPENDS libressl libcurl cJSON hdkey)
 
 if(WIN32)
     set(ELADID_DEPENDS
-        libcrystal
+        #libcrystal
         ${ELADID_DEPENDS})
 endif()
 
@@ -122,6 +124,7 @@ if(ENABLE_STATIC)
     add_library(eladid-static STATIC ${SRC})
     add_dependencies(eladid-static ${ELADID_DEPENDS})
 
+    #target_compile_definitions(eladid-static PRIVATE DID_STATIC CRYSTAL_STATIC)
     target_compile_definitions(eladid-static PRIVATE DID_STATIC)
     set_target_properties(eladid-static PROPERTIES OUTPUT_NAME eladid)
     if(WIN32)
@@ -140,6 +143,7 @@ if(ENABLE_SHARED)
     add_library(eladid-shared SHARED ${SRC})
     add_dependencies(eladid-shared ${ELADID_DEPENDS})
 
+    #target_compile_definitions(eladid-shared PRIVATE DID_DYNAMIC CRYSTAL_DYNAMIC)
     target_compile_definitions(eladid-shared PRIVATE DID_DYNAMIC)
     set_target_properties(eladid-shared PROPERTIES
         OUTPUT_NAME eladid

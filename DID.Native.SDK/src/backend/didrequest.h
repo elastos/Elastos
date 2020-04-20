@@ -61,7 +61,7 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json);
 void DIDRequest_Destroy(DIDRequest *request);
 
 const char* DIDRequest_Sign(DIDRequest_Type type, DID *did,
-        DIDURL *signKey, const char* data, DIDStore *store, const char *storepass);
+        DIDURL *signkey, const char* data, DIDStore *store, const char *storepass);
 
 int DIDRequest_Verify(DIDRequest *request);
 

@@ -29,6 +29,7 @@
 #include <assert.h>
 
 #include "ela_did.h"
+#include "diderror.h"
 #include "did.h"
 #include "common.h"
 #include "diddocument.h"
@@ -88,17 +89,20 @@ int DIDRequest_ToJson_Internal(JsonGenerator *gen, DIDRequest *req)
     return 0;
 }
 
-const char *DIDRequest_ToJson(DIDRequest *req)
+static const char *DIDRequest_ToJson(DIDRequest *req)
 {
     JsonGenerator g, *gen;
 
     assert(req);
 
     gen = JsonGenerator_Initialize(&g);
-    if (!gen)
+    if (!gen) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Json generator initialize failed.");
         return NULL;
+    }
 
     if (DIDRequest_ToJson_Internal(gen, req) < 0) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize DIDRequest to json failed.");
         JsonGenerator_Destroy(gen);
         return NULL;
     }
@@ -106,7 +110,7 @@ const char *DIDRequest_ToJson(DIDRequest *req)
     return JsonGenerator_Finish(gen);
 }
 
-const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
+const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signkey,
         const char* data, DIDStore *store, const char *storepass)
 {
     DIDRequest req;
@@ -115,14 +119,23 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
     int rc;
     char signature[SIGNATURE_BYTES * 2 + 16];
 
-    if (!did || !signKey || !data || !storepass || !store || !*storepass
-            || ((type < RequestType_Create) && (type > RequestType_Deactivate)) ||
-            !DIDMeta_AttachedStore(&did->meta))
+    assert(type >= RequestType_Create && type <= RequestType_Deactivate);
+    assert(did);
+    assert(signkey);
+    assert(data);
+    assert(store);
+    assert(storepass && *storepass);
+
+    if (!DIDMeta_AttachedStore(&did->meta)) {
+        DIDError_Set(DIDERR_MALFORMED_DID, "Not attached with DID store.");
         return NULL;
+    }
 
     prevtxid = DID_GetTxid(did);
-    if (!prevtxid)
+    if (!prevtxid) {
+        DIDError_Set(DIDERR_TRANSACTION_ERROR, "Can not determine the previous transaction ID.");
         return NULL;
+    }
 
     if (type == RequestType_Create)
         prevtxid = "";
@@ -136,7 +149,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
     }
 
     op = operation[type];
-    rc = DIDStore_Sign(store, storepass, did, signKey, signature, 4,
+    rc = DIDStore_Sign(store, storepass, did, signkey, signature, 4,
             (unsigned char*)spec, strlen(spec), (unsigned char*)op, strlen(op),
             (unsigned char *)prevtxid, strlen(prevtxid),
             (unsigned char*)payload, strlen(payload));
@@ -150,7 +163,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
     req.header.prevtxid = (char*)prevtxid;
     req.payload = payload;
     req.proof.signature = signature;
-    DIDURL_Copy(&req.proof.verificationMethod, signKey);
+    DIDURL_Copy(&req.proof.verificationMethod, signkey);
 
     requestJson = DIDRequest_ToJson(&req);
     free((char*)payload);
@@ -161,10 +174,10 @@ int DIDRequest_Verify(DIDRequest *request)
 {
     return DIDDocument_Verify(request->doc, &request->proof.verificationMethod,
             (char*)request->proof.signature, 4,
-            (unsigned char*)request->header.spec, strlen(request->header.spec),
-            (unsigned char*)request->header.op, strlen(request->header.op),
-            (unsigned char *)request->header.prevtxid, strlen(request->header.prevtxid),
-            (unsigned char*)request->payload, strlen(request->payload));
+            request->header.spec, strlen(request->header.spec),
+            request->header.op, strlen(request->header.op),
+            request->header.prevtxid, strlen(request->header.prevtxid),
+            request->payload, strlen(request->payload));
 }
 
 DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
@@ -174,29 +187,52 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
     DID *subject;
     size_t len;
 
-    if (!json)
-        return NULL;
+    assert(request);
+    assert(json);
 
     item = cJSON_GetObjectItem(json, "header");
-    if (!item || !cJSON_IsObject(item))
+    if (!item) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing header.");
         return NULL;
+    }
+    if (!cJSON_IsObject(item)) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid header.");
+        return NULL;
+    }
 
     field = cJSON_GetObjectItem(item, "specification");
-    if (!field || !cJSON_IsString(field) ||
-            strcmp(cJSON_GetStringValue(field), spec))
+    if (!field) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing specification.");
         return NULL;
+    }
+    if (!cJSON_IsString(field)) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid specification.");
+        return NULL;
+    }
+    if (strcmp(cJSON_GetStringValue(field), spec)) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Unknown DID specification. \
+                excepted: %s, actual: %s", spec, field->valuestring);
+        return NULL;
+    }
     request->header.spec = (char *)spec;
 
     field = cJSON_GetObjectItem(item, "operation");
-    if (!field)
+    if (!field) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing operation.");
         return NULL;
-
+    }
+    if (!cJSON_IsString(field)) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid operation.");
+        return NULL;
+    }
     op = cJSON_GetStringValue(field);
     if (!strcmp(op, "create") || !strcmp(op, "update") ||
-            !strcmp(op, "deactivate"))
+            !strcmp(op, "deactivate")) {
         request->header.op = op;
-    else
+    } else {
+        DIDError_Set(DIDERR_UNKNOWN, "Unknown DID operaton.");
         return NULL;
+    }
 
     field = cJSON_GetObjectItem(item, "previousTxid");
     if (!strcmp(op, "create") && !field)
@@ -205,15 +241,21 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
         request->header.prevtxid = cJSON_GetStringValue(field);
 
     item = cJSON_GetObjectItem(json, "payload");
-    if (!item || !cJSON_IsString(item))
+    if (!item) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing payload.");
         return NULL;
-
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid payload.");
+        return NULL;
+    }
     request->payload = cJSON_GetStringValue(item);
 
     len = strlen(request->payload) + 1;
     docJson = (char*)malloc(len);
     len = base64_url_decode((uint8_t *)docJson, request->payload);
     if (len <= 0) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Decode the payload failed");
         free(docJson);
         return NULL;
     }
@@ -221,36 +263,58 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
 
     request->doc = DIDDocument_FromJson(docJson);
     free(docJson);
-    if (!request->doc)
+    if (!request->doc) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Deserialize transaction payload from json failed.");
         return NULL;
+    }
 
     item = cJSON_GetObjectItem(json, "proof");
-    if (!item || !cJSON_IsObject(item)) {
+    if (!item) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing proof.");
+        DIDDocument_Destroy(request->doc);
+        return NULL;
+    }
+    if (!cJSON_IsObject(item)) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid proof.");
         DIDDocument_Destroy(request->doc);
         return NULL;
     }
 
     field = cJSON_GetObjectItem(item, "verificationMethod");
-    if (!field || !cJSON_IsString(field)) {
+    if (!field) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing signing key.");
+        DIDDocument_Destroy(request->doc);
+        return NULL;
+    }
+    if (!cJSON_IsString(field)) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid signing key.");
         DIDDocument_Destroy(request->doc);
         return NULL;
     }
 
     subject = DIDDocument_GetSubject(request->doc);
-    if (parse_didurl(&request->proof.verificationMethod, cJSON_GetStringValue(field), subject) < 0) {
+    if (parse_didurl(&request->proof.verificationMethod,
+            cJSON_GetStringValue(field), subject) < 0) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid signing key.");
         DIDDocument_Destroy(request->doc);
         return NULL;
     }
 
     field = cJSON_GetObjectItem(item, "signature");
-    if (!field || !cJSON_IsString(field)) {
+    if (!field) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing signature.");
         DIDDocument_Destroy(request->doc);
         return NULL;
     }
-
+    if (!cJSON_IsString(field)) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid signature.");
+        DIDDocument_Destroy(request->doc);
+        return NULL;
+    }
     request->proof.signature = cJSON_GetStringValue(field);
 
-    if (DIDRequest_Verify(request) == -1) {
+    if (DIDRequest_Verify(request) < 0) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Verify payload failed.");
         DIDDocument_Destroy(request->doc);
         return NULL;
     }

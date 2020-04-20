@@ -35,6 +35,7 @@
 #include "didresolver.h"
 #include "resolveresult.h"
 #include "resolvercache.h"
+#include "diderror.h"
 
 #define DEFAULT_TTL    (24 * 60 * 60 * 1000)
 
@@ -53,8 +54,15 @@ static void DIDBackend_Deinitialize(void)
 
 int DIDBackend_InitializeDefault(const char *url, const char *cachedir)
 {
-    if (!url || !*url || strlen(url) >= URL_LEN)
+    if (!url || !*url || !cachedir || !*cachedir) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
+    
+    if (strlen(url) >= URL_LEN) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "URL is too long.");
+        return -1;        
+    }
 
     DIDBackend_Deinitialize();
 
@@ -62,24 +70,32 @@ int DIDBackend_InitializeDefault(const char *url, const char *cachedir)
     if (!resolverInstance)
         return -1;
 
-    ResolverCache_SetCacheDir(cachedir);
-    defaultInstance = true;
+    if (ResolverCache_SetCacheDir(cachedir) < 0) {
+        DIDError_Set(DIDERR_INVALID_BACKEND, "Set resolve cache failed.");
+        return -1;
+    }
 
+    defaultInstance = true;
     atexit(DIDBackend_Deinitialize);
     return 0;
 }
 
 int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir)
 {
-    if (!resolver)
+    if (!resolver || !cachedir || !*cachedir) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     DIDBackend_Deinitialize();
 
     resolverInstance = resolver;
-    ResolverCache_SetCacheDir(cachedir);
-    defaultInstance = false;
+    if (ResolverCache_SetCacheDir(cachedir) < 0) {
+        DIDError_Set(DIDERR_INVALID_BACKEND, "Set resolve cache failed.");
+        return -1;       
+    }
 
+    defaultInstance = false;
     return 0;
 }
 
@@ -89,12 +105,15 @@ const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
     const char *ret;
     const char *docstring, *reqstring;
 
-    if (!backend || !backend->adapter || !document || !signkey || !storepass ||
-            !*storepass)
+    assert(backend && backend->adapter);
+    assert(document);
+    assert(signkey);
+    assert(storepass && *storepass);
+        
+    if (!DIDMeta_AttachedStore(&document->meta)) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
         return NULL;
-
-    if (!DIDMeta_AttachedStore(&document->meta))
-        return NULL;
+    }
 
     docstring = DIDDocument_ToJson(document, false);
     if (!docstring)
@@ -108,6 +127,9 @@ const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
 
     ret = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
+    if (!ret)
+        DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(create) failed.");
+
     return ret;
 }
 
@@ -117,12 +139,15 @@ const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL
     const char *ret;
     const char *docstring, *reqstring;
 
-    if (!backend || !backend->adapter || !document || !signkey || !storepass ||
-            !*storepass)
-        return NULL;
+    assert(backend && backend->adapter);
+    assert(document);
+    assert(signkey);
+    assert(storepass && *storepass);
 
-    if (!DIDMeta_AttachedStore(&document->meta))
+    if (!DIDMeta_AttachedStore(&document->meta)) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
         return NULL;
+    }
 
     docstring = DIDDocument_ToJson(document, false);
     if (!docstring)
@@ -136,28 +161,34 @@ const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL
 
     ret = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
+    if (!ret)
+        DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(update) failed.");
+
     return ret;
 }
 
-const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey,
+const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signkey,
         const char *storepass)
 {
     const char *ret;
     char data[ELA_MAX_DID_LEN], *datastring;
     const char *reqstring;
 
-    if (!backend || !backend->adapter || !did || !signKey || !storepass ||
-            !*storepass)
-        return NULL;
+    assert(backend && backend->adapter);
+    assert(did);
+    assert(signkey);
+    assert(storepass && *storepass);
 
-    if (!DIDMeta_AttachedStore(&did->meta))
+    if (!DIDMeta_AttachedStore(&did->meta)) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
         return NULL;
+    }
 
     datastring = DID_ToString(did, data, ELA_MAX_DID_LEN);
     if (!datastring)
         return NULL;
 
-    reqstring = DIDRequest_Sign(RequestType_Deactivate, did, signKey, datastring,
+    reqstring = DIDRequest_Sign(RequestType_Deactivate, did, signkey, datastring,
             did->meta.store, storepass);
     free((char*)datastring);
     if (!reqstring)
@@ -165,35 +196,51 @@ const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey
 
     ret = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
+    if (!ret)
+        DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(deactivated) failed.");
+
     return ret;
 }
 
 static int resolve_from_backend(ResolveResult *result, DID *did, bool all)
 {
     const char *data = NULL;
-    cJSON *root = NULL, *item;
+    cJSON *root = NULL, *item, *field;
     char _idstring[ELA_MAX_DID_LEN];
-    int rc = -1;
+    int code = -1, rc = -1;
 
     assert(result);
     assert(did);
 
     data = resolverInstance->resolve(resolverInstance,
             DID_ToString(did, _idstring, sizeof(_idstring)), true);
-    if (!data)
+    if (!data) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Resolve did %s failed.", did->idstring);
         return rc;
+    }
 
     root = cJSON_Parse(data);
-    if (!root)
+    if (!root) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Deserialize resolved data from json failed.");
         goto errorExit;
-
-    item = cJSON_GetObjectItem(root, "error");
-    if (!item || !cJSON_IsNull(item))
-        goto errorExit;
+    }
 
     item = cJSON_GetObjectItem(root, "result");
-    if (!item || !cJSON_IsObject(item))
+    if (!item || !cJSON_IsObject(item)) {
+        item = cJSON_GetObjectItem(root, "error");
+        if (!item || !cJSON_IsNull(item)) {
+            DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing or invalid error field.");
+        } else {
+            field = cJSON_GetObjectItem(item, "code");
+            if (field && cJSON_IsNumber(field)) {
+                code = field->valueint;
+                field = cJSON_GetObjectItem(item, "message");
+                if (field && cJSON_IsString(field))
+                    DIDError_Set(DIDERR_RESOLVE_ERROR, "Resolve did error(%d): %s", code, field->valuestring);
+            }
+        }
         goto errorExit;
+    }
 
     if (ResolveResult_FromJson(result, item, all) == -1)
         goto errorExit;
@@ -219,7 +266,7 @@ static int resolve_internal(ResolveResult *result, DID *did, bool all, bool forc
     if (!force && ResolverCache_Load(result, did, ttl) == 0)
         return 0;
 
-    if (resolve_from_backend(result, did, all) == -1)
+    if (resolve_from_backend(result, did, all) < 0)
         return -1;
 
     return 0;
@@ -229,22 +276,29 @@ DIDDocument *DIDBackend_Resolve(DID *did, bool force)
 {
     DIDDocument *doc;
     ResolveResult result;
+    DIDStatus status;
 
-    if (!did || !resolverInstance || !resolverInstance->resolve)
+    if (!did) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
+
+    if (!resolverInstance || !resolverInstance->resolve) {
+        DIDError_Set(DIDERR_INVALID_BACKEND, "DID resolver not initialized.");
+        return NULL;
+    }
 
     memset(&result, 0, sizeof(ResolveResult));
-    if (resolve_internal(&result, did, false, force) == -1)
-        return NULL;
-
-    //todo: add error code
-    if (ResolveResult_GetStatus(&result) > STATUS_EXPIRED) {
+    if (resolve_internal(&result, did, false, force) == -1) {
         ResolveResult_Destroy(&result);
         return NULL;
     }
 
     doc = result.txinfos.infos[0].request.doc;
     ResolveResult_Free(&result);
+    if (!doc)
+        DIDError_Set(DIDERR_NOT_EXISTS, "No did in chain: %s", did->idstring);
+
     return doc;
 }
 
@@ -254,15 +308,18 @@ DIDDocument **DIDBackend_ResolveAll(DID *did)
     ResolveResult result;
     ssize_t size;
 
-    if (!did || !resolverInstance || !resolverInstance->resolve)
+    if (!did) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
+
+    if (!resolverInstance || !resolverInstance->resolve) {
+        DIDError_Set(DIDERR_INVALID_BACKEND, "DID resolver not initialized.");
+        return NULL;
+    }
 
     memset(&result, 0, sizeof(ResolveResult));
-    if (resolve_internal(&result, did, true, true) == -1)
-        return NULL;
-
-    //todo: add error code
-    if (ResolveResult_GetStatus(&result) > STATUS_EXPIRED) {
+    if (resolve_internal(&result, did, true, true) == -1) {
         ResolveResult_Destroy(&result);
         return NULL;
     }
@@ -275,6 +332,7 @@ DIDDocument **DIDBackend_ResolveAll(DID *did)
 
     docs = (DIDDocument**)calloc(size + 1, sizeof(DIDDocument*));
     if (!docs) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for documents failed.");
         ResolveResult_Destroy(&result);
         return NULL;
     }

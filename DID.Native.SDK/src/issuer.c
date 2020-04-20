@@ -26,6 +26,7 @@
 #include <assert.h>
 
 #include "ela_did.h"
+#include "diderror.h"
 #include "did.h"
 #include "credential.h"
 #include "crypto.h"
@@ -39,8 +40,10 @@ Issuer *Issuer_Create(DID *did, DIDURL *signkey, DIDStore *store)
     DIDDocument *doc;
     bool isAuthKey;
 
-    if (!did)
+    if (!did || !store) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     //doc = DID_Resolve(did);
     doc = DIDStore_LoadDID(store, did);
@@ -52,19 +55,24 @@ Issuer *Issuer_Create(DID *did, DIDURL *signkey, DIDStore *store)
     else {
         isAuthKey = DIDDocument_IsAuthenticationKey(doc, signkey);
         if (!isAuthKey) {
+            DIDError_Set(DIDERR_INVALID_KEY, "Invalid authentication key.");
             DIDDocument_Destroy(doc);
             return NULL;
         }
     }
 
     if (!DIDStore_ContainsPrivateKey(store, did, signkey)) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Missing private key paired with signkey.");
         DIDDocument_Destroy(doc);
         return NULL;
     }
 
     issuer = (Issuer*)calloc(1, sizeof(Issuer));
-    if (!issuer)
+    if (!issuer) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for issuer failed.");
+        DIDDocument_Destroy(doc);
         return NULL;
+    }
 
     DID_Copy(&issuer->signer, DIDDocument_GetSubject(doc));
     DIDURL_Copy(&issuer->signkey, signkey);
@@ -82,16 +90,20 @@ void Issuer_Destroy(Issuer *issuer)
 
 DID *Issuer_GetSigner(Issuer *issuer)
 {
-    if (!issuer)
+    if (!issuer) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return &issuer->signer;
 }
 
 DIDURL *Issuer_GetSignKey(Issuer *issuer)
 {
-    if (!issuer)
+    if (!issuer) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return &issuer->signkey;
 }
@@ -111,12 +123,16 @@ static Credential *issuer_generate_credential(Issuer *issuer, DID *owner,
     assert(expires > 0);
     assert(storepass && *storepass);
 
-    if (!DID_Equals(owner, &credid->did))
+    if (!DID_Equals(owner, &credid->did)) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Credential owner is not match with credential did.");
         goto errorExit;
+    }
 
     cred = (Credential*)calloc(1, sizeof(Credential));
-    if (!cred)
+    if (!cred) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for credential failed.");
         goto errorExit;
+    }
 
     if (!DIDURL_Copy(&cred->id, credid))
         goto errorExit;
@@ -128,8 +144,10 @@ static Credential *issuer_generate_credential(Issuer *issuer, DID *owner,
     //set type
     cred->type.size = typesize;
     cred->type.types = (char**)calloc(typesize, sizeof(char*));
-    if (!cred->type.types)
+    if (!cred->type.types) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for credential types failed.");
         goto errorExit;
+    }
     for (i = 0; i < typesize; i++)
         cred->type.types[i] = strdup(types[i]);
 
@@ -144,6 +162,7 @@ static Credential *issuer_generate_credential(Issuer *issuer, DID *owner,
     data = Credential_ToJson_ForSign(cred, false, true);
     if (!data)
         goto errorExit;
+    
     rc = DIDStore_Sign(issuer->signer.meta.store, storepass, &issuer->signer,
             &issuer->signkey, signature, 1, (unsigned char*)data, strlen(data));
     free((char*)data);
@@ -172,16 +191,21 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
 
     if (!issuer ||!owner || !credid || !types || typesize <= 0||
             !subject || size <= 0 || expires <= 0 ||
-            !storepass || !*storepass)
+            !storepass || !*storepass) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     root = cJSON_CreateObject();
-    if (!root)
+    if (!root) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Create property json failed.");
         return NULL;
+    }
 
     for (int i = 0; i < size; i++) {
         item = cJSON_AddStringToObject(root, subject[i].key, subject[i].value);
         if (!item) {
+           DIDError_Set(DIDERR_OUT_OF_MEMORY, "Add property failed.");
            cJSON_Delete(root);
            return NULL;        
         }
@@ -198,12 +222,16 @@ Credential *Issuer_CreateCredentialByString(Issuer *issuer, DID *owner,
     cJSON *root;
 
     if (!issuer ||!owner || !credid || !types || typesize <= 0||
-            !subject || !*subject || expires <= 0 || !storepass || !*storepass)
+            !subject || !*subject || expires <= 0 || !storepass || !*storepass) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
-
+    }
+        
     root = cJSON_Parse(subject);
-    if (!root)
+    if (!root) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Deserialize property from json failed.");
         return NULL;
+    }
 
     return issuer_generate_credential(issuer, owner, credid, types, typesize, root,
             expires, storepass);

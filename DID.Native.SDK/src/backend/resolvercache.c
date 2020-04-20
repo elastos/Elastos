@@ -24,8 +24,10 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <limits.h>
+#include <assert.h>
 
 #include "ela_did.h"
+#include "diderror.h"
 #include "common.h"
 #include "did.h"
 #include "resolvercache.h"
@@ -36,12 +38,18 @@ int ResolverCache_SetCacheDir(const char *root)
 {
     int rc;
 
-    if (!root || !*root || strlen(root) >= sizeof(rootpath))
+    assert(root && *root);
+
+    if (strlen(root) >= sizeof(rootpath)) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     rc = mkdirs(root, S_IRWXU);
-    if (rc)
+    if (rc < 0) {
+        DIDError_Set(DIDERR_IO_ERROR, "Create cache directory (%s) failed", root);
         return rc;
+    }
 
     strcpy(rootpath, root);
     return rc;
@@ -49,8 +57,10 @@ int ResolverCache_SetCacheDir(const char *root)
 
 const char *ResolverCache_GetCacheDir(void)
 {
-    if (!*rootpath)
+    if (!*rootpath) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "No cache directory.");
         return NULL;
+    }
 
     return rootpath;
 }
@@ -73,8 +83,9 @@ int ResolverCache_Load(ResolveResult *result, DID *did, long ttl)
     cJSON *root;
     int rc;
 
-    if (!did)
-        return -1;
+    assert(result);
+    assert(did);
+    assert(ttl >= 0);
 
     if (get_file(path, 0, 2, rootpath, did->idstring) == -1)
         return -1;
@@ -92,13 +103,12 @@ int ResolverCache_Load(ResolveResult *result, DID *did, long ttl)
         return -1;
 
     root = cJSON_Parse(data);
-    if (!root) {
-        free((char*)data);
-    }
+    free((char*)data);
+    if (!root)
+        return -1;
 
     rc = ResolveResult_FromJson(result, root, false);
     cJSON_Delete(root);
-    free((char*)data);
     return rc;
 }
 
@@ -108,17 +118,24 @@ int ResolveCache_Store(ResolveResult *result, DID *did)
     const char *data;
     int rc;
 
-    if (!did || !result)
+    assert(result);
+    assert(did);
+    
+    if (get_file(path, 1, 2, rootpath, did->idstring) == -1) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create resolver cache entry failed.");
         return -1;
-
-    if (get_file(path, 1, 2, rootpath, did->idstring) == -1)
-        return -1;
+    }
 
     data = ResolveResult_ToJson(result);
-    if (!data)
+    if (!data) {
+        DIDError_Set(DIDERR_MALFORMED_RESOLVE_RESULT, "Serialize the resolve result to json failed.");
         return -1;
+    }
 
     rc = store_file(path, data);
     free((char*)data);
+    if (rc < 0)
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Store resolver result data failed.");
+
     return rc;
 }

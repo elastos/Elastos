@@ -185,16 +185,6 @@ typedef struct DIDAdapter           DIDAdapter;
  * DIDResolver is support method to resolve did document from chain.
  */
 typedef struct DIDResolver          DIDResolver;
-
-struct DIDAdapter {
-    const char* (*createIdTransaction) (DIDAdapter *adapter,
-            const char *payload, const char *memo);
-};
-
-struct DIDResolver {
-    const char* (*resolve) (DIDResolver *resolver, const char *did, int all);
-};
-
 /**
  * \~English
  * DID list callbacks, return alias about did.
@@ -205,6 +195,91 @@ typedef int DIDStore_DIDsCallback(DID *did, void *context);
  * Credential list callbacks, return alias about credential.
  */
 typedef int DIDStore_CredentialsCallback(DIDURL *id, void *context);
+
+struct DIDAdapter {
+    const char* (*createIdTransaction) (DIDAdapter *adapter,
+            const char *payload, const char *memo);
+};
+
+struct DIDResolver {
+    const char* (*resolve) (DIDResolver *resolver, const char *did, int all);
+};
+
+/******************************************************************************
+ * Log configuration.
+ *****************************************************************************/
+/**
+ * \~English
+ * DID log level to control or filter log output.
+ */
+typedef enum DIDLogLevel {
+    /**
+     * \~English
+     * Log level None
+     * Indicate disable log output.
+     */
+    DIDLogLevel_None = 0,
+    /**
+     * \~English
+     * Log level fatal.
+     * Indicate output log with level 'Fatal' only.
+     */
+    DIDLogLevel_Fatal = 1,
+    /**
+     * \~English
+     * Log level error.
+     * Indicate output log above 'Error' level.
+     */
+    DIDLogLevel_Error = 2,
+    /**
+     * \~English
+     * Log level warning.
+     * Indicate output log above 'Warning' level.
+     */
+    DIDLogLevel_Warning = 3,
+    /**
+     * \~English
+     * Log level info.
+     * Indicate output log above 'Info' level.
+     */
+    DIDLogLevel_Info = 4,
+    /**
+     * \~English
+     * Log level debug.
+     * Indicate output log above 'Debug' level.
+     */
+    DIDLogLevel_Debug = 5,
+    /**
+     * \~English
+     * Log level trace.
+     * Indicate output log above 'Trace' level.
+     */
+    DIDLogLevel_Trace = 6,
+    /**
+     * \~English
+     * Log level verbose.
+     * Indicate output log above 'Verbose' level.
+     */
+    DIDLogLevel_Verbose = 7
+} DIDLogLevel;
+
+/**
+ * \~English
+ * Initialize log options for Hive.
+ * If this API is never called, the default log level is 'Info'; The default log
+ * file is stdout.
+ *
+ * @param
+ *      level       [in] The log level to control internal log output.
+ * @param
+ *      log_file    [in] the log file name.
+ *                       If the log_file is NULL, Hive will not write
+ *                       log to file.
+ * @param
+ *      log_printer [in] the user defined log printer. Can be NULL.
+ */
+DID_API void DID_Log_Init(DIDLogLevel level, const char *log_file,
+        void (*log_printer)(const char *format, va_list args));
 
 /******************************************************************************
  * DID
@@ -421,6 +496,7 @@ DID_API bool DID_GetDeactived(DID *did);
  *      Otherwise, return 0.
  */
 DID_API time_t DID_GetLastTransactionTimestamp(DID *did);
+
 /******************************************************************************
  * DIDURL
  *****************************************************************************/
@@ -2371,14 +2447,14 @@ DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid)
  * @param
  *      did                      [in] The handle to DID.
  * @param
- *      signKey                  [in] The public key to sign.
+ *      signkey                  [in] The public key to sign.
  * @param
  *      force                    [in] Force document into chain.
  * @return
  *      0 on success, -1 if an error occurred. Caller should free the returned value.
  */
 DID_API const char *DIDStore_PublishDID(DIDStore *store, const char *storepass,
-        DID *did, DIDURL *signKey, bool force);
+        DID *did, DIDURL *signkey, bool force);
 
 /**
  * \~English
@@ -2391,12 +2467,12 @@ DID_API const char *DIDStore_PublishDID(DIDStore *store, const char *storepass,
  * @param
  *      did                      [in] The handle to DID.
  * @param
- *      signKey                  [in] The public key to sign.
+ *      signkey                  [in] The public key to sign.
  * @return
  *      0 on success, -1 if an error occurred. Caller should free the returned value.
  */
 DID_API const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
-        DID *did, DIDURL *signKey);
+        DID *did, DIDURL *signkey);
 
 /******************************************************************************
  * Mnemonic
@@ -2680,6 +2756,182 @@ DID_API int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir);
  *      ttl            [in] The time for cache.
  */
 DID_API void DIDBackend_SetTTL(long ttl);
+
+/******************************************************************************
+ * Error handling
+ *****************************************************************************/
+
+#define DIDSUCCESS                                  0
+/**
+ * \~English
+ * Argument(s) is(are) invalid.
+ */
+#define DIDERR_INVALID_ARGS                         0x8D000001
+/**
+ * \~English
+ * Runs out of memory.
+ */
+#define DIDERR_OUT_OF_MEMORY                        0x8D000002
+/**
+ * \~English
+ * IO error.
+ */
+#define DIDERR_IO_ERROR                             0x8D000003
+/**
+ * \~English
+ * DID is malformed.
+ */
+#define DIDERR_MALFORMED_DID                        0x8D000004
+/**
+ * \~English
+ * DIDURL is malformed.
+ */
+#define DIDERR_MALFORMED_DIDURL                     0x8D000005
+/**
+ * \~English
+ * DIDDocument is malformed.
+ */
+#define DIDERR_MALFORMED_DOCUMENT                   0x8D000006
+/**
+ * \~English
+ * Credential is malformed.
+ */
+#define DIDERR_MALFORMED_CREDENTIAL                 0x8D000007
+/**
+ * \~English
+ * Presentation is malformed.
+ */
+#define DIDERR_MALFORMED_PRESENTATION               0x8D000008
+/**
+ * \~English
+ * Meta(DIDMeta/CredMeta) is malformed.
+ */
+#define DIDERR_MALFORMED_META                       0x8D000009
+/**
+ * \~English
+ * DID object already exists.
+ */
+#define DIDERR_ALREADY_EXISTS                       0x8D00000A
+/**
+ * \~English
+ * DID object doesn't already exists.
+ */
+#define DIDERR_NOT_EXISTS                           0x8D00000B
+/**
+ * \~English
+ * DID is expired.
+ */
+#define DIDERR_EXPIRED                              0x8D00000C
+/**
+ * \~English
+ * DID is deactivated.
+ */
+#define DIDERR_DID_DEACTIVATED                      0x8D00000D   
+/**
+ * \~English
+ * DID is not genuine.
+ */
+#define DIDERR_NOT_GENUINE                          0x8D00000E
+/**
+ * \~English
+ * Crypto failed.
+ */
+#define DIDERR_CRYPTO_ERROR                         0x8D00000F
+/**
+ * \~English
+ * Error from DIDStore.
+ */
+#define DIDERR_DIDSTORE_ERROR                       0x8D000010  
+/**
+ * \~English
+ * key is invalid.
+ */
+#define DIDERR_INVALID_KEY                          0x8D000011
+/**
+ * \~English
+ * No valid backend to resolve.
+ */
+#define DIDERR_INVALID_BACKEND                      0x8D000012
+/**
+ * \~English
+ * Resolve DID info failed.
+ */
+#define DIDERR_RESOLVE_ERROR                        0x8D000013
+/**
+ * \~English
+ * Resolve result is malformed.
+ */
+#define DIDERR_MALFORMED_RESOLVE_RESULT             0x8D000014
+/**
+ * \~English
+ * Error from id transaction.
+ */
+#define DIDERR_TRANSACTION_ERROR                    0x8D000015
+/**
+ * \~English
+ * Unsupported error.
+ */
+#define DIDERR_UNSUPPOTED                           0x8D000016
+/**
+ * \~English
+ * Unknown error.
+ */
+#define DIDERR_UNKNOWN                              0x8D0000FF
+
+/**
+ * \~English
+ * Get the last error code.
+ */
+#define DIDERRCODE                                 (DIDError_GetCode())
+/**
+ * \~English
+ * Get the last error message.
+ */
+#define DIDERRMSG                                  (DIDError_GetMessage())
+/**
+ * \~English
+ * Get file about the last error.
+ */
+#define DIDERRFILE                                 (DIDError_GetFile())
+/**
+ * \~English
+ * Get line about the last error.
+ */
+#define DIDERRLINE                                 (DIDError_GetLine())
+
+/**
+ * \~English
+ * Clear the last-error code.
+ */
+DID_API void DIDError_Clear(void);
+/**
+ * \~English
+ * Print the whole information of last-error code.
+ */
+DID_API void DIDError_Print(void);
+
+/**
+ * \~English
+ * Get the last-error code.
+ */
+DID_API int DIDError_GetCode(void);
+/**
+ * \~English
+ * Get the last-error message.
+ */
+DID_API const char *DIDError_GetMessage(void);
+
+/**
+ * \~English
+ * Get the file for last-error.
+ */
+DID_API const char *DIDError_GetFile(void);
+/**
+ * \~English
+ * Get line for last-error.
+ */
+DID_API int DIDError_GetLine(void);
+
 
 #ifdef __cplusplus
 }

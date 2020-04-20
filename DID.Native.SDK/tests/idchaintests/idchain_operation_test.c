@@ -103,6 +103,7 @@ static void test_idchain_publishdid_with_credential(void)
     DIDURL *signkey;
     DIDDocument *doc = NULL, *updatedoc = NULL, *document;
     const char *createTxid, *updateTxid, *mnemonic;
+    Credential *cred;
     DID *did;
     int i = 0, rc;
 
@@ -160,6 +161,12 @@ static void test_idchain_publishdid_with_credential(void)
     doc = DIDDocumentBuilder_Seal(builder, storepass);
     CU_ASSERT_PTR_NOT_NULL(doc);
 
+    rc = DIDStore_StoreDID(store, doc, "littlefish");
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+
+    cred = DIDDocument_GetCredential(doc, credid);
+    CU_ASSERT_PTR_NOT_NULL(cred);
+
     signkey = DIDDocument_GetDefaultPublicKey(doc);
     CU_ASSERT_PTR_NOT_NULL_FATAL(signkey);
 
@@ -186,11 +193,14 @@ static void test_idchain_publishdid_with_credential(void)
             continue;
         }
     }
+    printf("\n-- resolve result: successfully!\n------------------------------------------------------------\n");
     CU_ASSERT_STRING_EQUAL(txid, updateTxid);
     free(txid);
-    printf("\n-- resolve result: successfully!\n------------------------------------------------------------\n");
+    cred = DIDDocument_GetCredential(updatedoc, credid);
+    CU_ASSERT_PTR_NOT_NULL(cred);
 
     Mnemonic_Free((void*)mnemonic);
+    DIDURL_Destroy(credid);
     DIDDocument_Destroy(doc);
     DIDDocument_Destroy(updatedoc);
     DIDDocument_Destroy(document);

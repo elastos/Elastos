@@ -31,12 +31,12 @@
 #include "JsonGenerator.h"
 #include "common.h"
 #include "diddocument.h"
+#include "diderror.h"
 
 int DIDMeta_Init(DIDMeta *meta, const char *alias, char *txid,
         bool deactived, time_t timestamp)
 {
-    if (!meta)
-        return -1;
+    assert(meta);
 
     DIDMeta_SetAlias(meta, alias);
     DIDMeta_SetTxid(meta, txid);
@@ -71,14 +71,16 @@ const char *DIDMeta_ToJson(DIDMeta *meta)
 {
     JsonGenerator g, *gen;
 
-    if (!meta)
-        return NULL;
+    assert(meta);
 
     gen = JsonGenerator_Initialize(&g);
-    if (!gen)
+    if (!gen) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Json generator initialize failed.");
         return NULL;
+    }
 
     if (DIDMeta_ToJson_Internal(gen, meta) == -1) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize DID meta to json failed.");
         JsonGenerator_Destroy(gen);
         return NULL;
     }
@@ -93,15 +95,16 @@ int DIDMeta_FromJson(DIDMeta *meta, const char *json)
     time_t timestamp;
     int rc;
 
-    if (!meta)
-        return -1;
+    assert(meta);
 
     if (!json || !*json)
         return 0;
 
     root = cJSON_Parse(json);
-    if (!root)
+    if (!root) {
+        DIDError_Set(DIDERR_MALFORMED_META, "Deserialize did meta from json failed.");
         return -1;
+    }
 
     item = cJSON_GetObjectItem(root, "alias");
     if (item && cJSON_IsString(item) &&
@@ -124,7 +127,7 @@ int DIDMeta_FromJson(DIDMeta *meta, const char *json)
     if (item && cJSON_IsString(item) && (parse_time(&timestamp, item->valuestring) == -1 ||
             DIDMeta_SetTimestamp(meta, timestamp) == -1))
         goto errorExit;
-
+       
     cJSON_Delete(root);
     return 0;
 
@@ -143,8 +146,12 @@ void DIDMeta_Destroy(DIDMeta *meta)
 
 int DIDMeta_SetAlias(DIDMeta *meta, const char *alias)
 {
-    if (!meta || (alias && strlen(alias) >= sizeof(meta->alias)))
+    assert(meta);
+
+    if (alias && strlen(alias) >= sizeof(meta->alias)) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Alias is too long.");
         return -1;
+    }
 
     if (alias)
         strcpy(meta->alias, alias);
@@ -156,8 +163,7 @@ int DIDMeta_SetAlias(DIDMeta *meta, const char *alias)
 
 int DIDMeta_SetDeactived(DIDMeta *meta, bool deactived)
 {
-    if (!meta)
-        return -1;
+    assert(meta);
 
     meta->deactived = deactived;
     return 0;
@@ -165,8 +171,7 @@ int DIDMeta_SetDeactived(DIDMeta *meta, bool deactived)
 
 int DIDMeta_SetTimestamp(DIDMeta *meta, time_t time)
 {
-    if (!meta)
-        return -1;
+    assert(meta);
 
     meta->timestamp = time;
     return 0;
@@ -174,8 +179,11 @@ int DIDMeta_SetTimestamp(DIDMeta *meta, time_t time)
 
 int DIDMeta_SetTxid(DIDMeta *meta, const char *txid)
 {
-    if (!meta || (txid && strlen(txid) >= sizeof(meta->txid)))
+    assert(meta);
+    if (txid && strlen(txid) >= sizeof(meta->txid)) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Id transaction is too long.");
         return -1;
+    }
 
     if (txid)
         strcpy(meta->txid, txid);
@@ -187,40 +195,35 @@ int DIDMeta_SetTxid(DIDMeta *meta, const char *txid)
 
 const char *DIDMeta_GetAlias(DIDMeta *meta)
 {
-    if (!meta)
-        return NULL;
+    assert(meta);
 
     return meta->alias;
 }
 
 const char *DIDMeta_GetTxid(DIDMeta *meta)
 {
-    if (!meta)
-        return NULL;
+    assert(meta);
 
     return meta->txid;
 }
 
 bool DIDMeta_GetDeactived(DIDMeta *meta)
 {
-    if (!meta)
-        return false;
+    assert(meta);
 
     return meta->deactived;
 }
 
 time_t DIDMeta_GetTimestamp(DIDMeta *meta)
 {
-    if (!meta)
-        return 0;
+    assert(meta);
 
     return meta->timestamp;
 }
 
 int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta)
 {
-    if (!meta || !frommeta)
-        return -1;
+    assert(meta && frommeta);
 
     strcpy(meta->alias, frommeta->alias);
     if (*frommeta->txid)
@@ -234,8 +237,7 @@ int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta)
 
 int DIDMeta_Copy(DIDMeta *meta, DIDMeta *frommeta)
 {
-    if (!meta || !frommeta)
-        return -1;
+    assert(meta && frommeta);
 
     memcpy(meta, frommeta, sizeof(DIDMeta));
     return 0;
@@ -243,19 +245,19 @@ int DIDMeta_Copy(DIDMeta *meta, DIDMeta *frommeta)
 
 bool DIDMeta_IsEmpty(DIDMeta *meta)
 {
-    if (!meta)
-        return true;
+    assert(meta);
 
-    if (!*meta->alias && !*meta->txid && !meta->deactived && !meta->timestamp)
+    if (!*meta->alias && !*meta->txid && !meta->deactived && !meta->timestamp) {
         return true;
+    }
 
     return false;
 }
 
 int DIDMeta_SetStore(DIDMeta *meta, DIDStore *store)
 {
-    if (!meta || !store)
-        return -1;
+    assert(meta);
+    assert(store);
 
     meta->store = store;
     return 0;
@@ -263,16 +265,14 @@ int DIDMeta_SetStore(DIDMeta *meta, DIDStore *store)
 
 DIDStore *DIDMeta_GetStore(DIDMeta *meta)
 {
-    if (!meta)
-        return NULL;
+    assert(meta);
 
     return meta->store;
 }
 
 bool DIDMeta_AttachedStore(DIDMeta *meta)
 {
-    if (!meta)
-        return false;
+    assert(meta);
 
     return meta->store != NULL;
 }

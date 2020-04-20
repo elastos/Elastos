@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "ela_did.h"
 #include "did.h"
 #include "diddocument.h"
 #include "didstore.h"
@@ -35,6 +36,7 @@
 #include "crypto.h"
 #include "HDkey.h"
 #include "didmeta.h"
+#include "diderror.h"
 
 #define MAX_EXPIRES              5
 
@@ -211,15 +213,17 @@ static int add_to_publickeys(DIDDocument *document, PublicKey *pk)
         pks = realloc(pk_array,
                      (document->publickeys.size + 1) * sizeof(PublicKey*));
 
-    if (!pks)
+    if (!pks) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Remalloc buffer for public keys failed.");
         return -1;
+    }
 
     pks[document->publickeys.size++] = pk;
     document->publickeys.pks = pks;
     return 0;
 }
 
-static int Parser_PublicKey(DID *did, cJSON *json, PublicKey **publickey)
+static int Parse_PublicKey(DID *did, cJSON *json, PublicKey **publickey)
 {
     PublicKey *pk;
     cJSON *field;
@@ -229,16 +233,20 @@ static int Parser_PublicKey(DID *did, cJSON *json, PublicKey **publickey)
     assert(publickey);
 
     pk = (PublicKey*)calloc(1, sizeof(PublicKey));
-    if (!pk)
+    if (!pk) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for public key failed.");
         return -1;
+    }
 
     field = cJSON_GetObjectItem(json, "id");
-    if (!field || !cJSON_IsString(field)) {
+    if (!field) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing public key id.");
         PublicKey_Destroy(pk);
         return -1;
     }
 
-    if (parse_didurl(&pk->id, field->valuestring, did) < 0) {
+    if (!cJSON_IsString(field) || parse_didurl(&pk->id, field->valuestring, did) < 0) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid public key id.");
         PublicKey_Destroy(pk);
         return -1;
     }
@@ -249,7 +257,13 @@ static int Parser_PublicKey(DID *did, cJSON *json, PublicKey **publickey)
     strcpy(pk->type, ProofType);
 
     field = cJSON_GetObjectItem(json, "publicKeybase58");
-    if (!field || !cJSON_IsString(field)) {
+    if (!field) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing publicKey base58.");
+        PublicKey_Destroy(pk);
+        return -1;
+    }
+    if (!cJSON_IsString(field)) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid publicKey base58.");
         PublicKey_Destroy(pk);
         return -1;
     }
@@ -259,10 +273,12 @@ static int Parser_PublicKey(DID *did, cJSON *json, PublicKey **publickey)
 
     //'controller' may be default
     field = cJSON_GetObjectItem(json, "controller");
-    if (field && (!cJSON_IsString(field) ||
-            parse_did(&pk->controller, field->valuestring) < 0)) {
-        PublicKey_Destroy(pk);
-        return -1;
+    if (field) {
+        if (!cJSON_IsString(field) || parse_did(&pk->controller, field->valuestring) < 0) {
+            DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid publicKey controller.");
+            PublicKey_Destroy(pk);
+            return -1;
+        }
     }
 
     if (!field) { // the controller is self did.
@@ -275,7 +291,7 @@ static int Parser_PublicKey(DID *did, cJSON *json, PublicKey **publickey)
     return 0;
 }
 
-static int Parser_PublicKeys(DIDDocument *document, DID *did, cJSON *json)
+static int Parse_PublicKeys(DIDDocument *document, DID *did, cJSON *json)
 {
     int pk_size, i, size = 0;
 
@@ -284,13 +300,17 @@ static int Parser_PublicKeys(DIDDocument *document, DID *did, cJSON *json)
     assert(json);
 
     pk_size = cJSON_GetArraySize(json);
-    if (!pk_size)
+    if (!pk_size) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Public key array is empty.");
         return -1;
+    }
 
     //parse public key(required)
     PublicKey **pks = (PublicKey**)calloc(pk_size, sizeof(PublicKey*));
-    if (!pks)
+    if (!pks) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for public keys failed.");
         return -1;
+    }
 
     for (i = 0; i < pk_size; i++) {
         cJSON *pk_item, *id_field, *base_field;
@@ -306,13 +326,14 @@ static int Parser_PublicKeys(DIDDocument *document, DID *did, cJSON *json)
         if (!id_field || !base_field)              //(required and can't default)
             continue;
 
-        if (Parser_PublicKey(did, pk_item, &pk) == -1)
+        if (Parse_PublicKey(did, pk_item, &pk) == -1)
             continue;
 
         pks[size++] = pk;
     }
 
     if (!size) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "No invalid public key.");
         free(pks);
         return -1;
     }
@@ -324,17 +345,19 @@ static int Parser_PublicKeys(DIDDocument *document, DID *did, cJSON *json)
 }
 
 static
-int Parser_Auth_PublicKeys(DIDDocument *document, cJSON *json, KeyType type)
+int Parse_Auth_PublicKeys(DIDDocument *document, cJSON *json, KeyType type)
 {
-    int pk_size, i, j, size = 0, total_size = 0;
+    int pk_size, i, j, code, size = 0, total_size = 0;
     PublicKey *pk;
 
     assert(document);
     assert(json);
 
     pk_size = cJSON_GetArraySize(json);
-    if (!pk_size)
+    if (!pk_size) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Auth key array is empty.");
         return -1;
+    }
 
     for (i = 0; i < pk_size; i++) {
         DIDURL id;
@@ -347,18 +370,20 @@ int Parser_Auth_PublicKeys(DIDDocument *document, cJSON *json, KeyType type)
         id_field = cJSON_GetObjectItem(pk_item, "id");
         if (!id_field) {
             if (parse_didurl(&id, pk_item->valuestring, &document->did) < 0)
-                    continue;
+                continue;
 
             pk = DIDDocument_GetPublicKey(document, &id);
-            if (!pk)
+            if (!pk) {
+                DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Auth key is not in pulic keys.");
                 return -1;
+            }
 
             if (type == KeyType_Authentication)
                 pk->authenticationKey = true;
             if (type == KeyType_Authorization)
                 pk->authorizationKey = true;
         } else {
-            if (Parser_PublicKey(&(document->did), pk_item, &pk) == -1)
+            if (Parse_PublicKey(&(document->did), pk_item, &pk) < 0)
                 return -1;
 
             if (type == KeyType_Authentication)
@@ -366,7 +391,7 @@ int Parser_Auth_PublicKeys(DIDDocument *document, cJSON *json, KeyType type)
             if (type == KeyType_Authorization)
                 pk->authorizationKey = true;
 
-            if (add_to_publickeys(document, pk) == -1) {
+            if (add_to_publickeys(document, pk) < 0) {
                 free(pk);
                 return -1;
             }
@@ -376,22 +401,26 @@ int Parser_Auth_PublicKeys(DIDDocument *document, cJSON *json, KeyType type)
     return 0;
 }
 
-static int Parser_Services(DIDDocument *document, cJSON *json)
+static int Parse_Services(DIDDocument *document, cJSON *json)
 {
     size_t service_size;
     size_t autal_size = 0;
     size_t i;
 
-    if (!document || !json)
-        return -1;
+    assert(document);
+    assert(json);
 
     service_size = cJSON_GetArraySize(json);
-    if (!service_size)
+    if (!service_size) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Service array is empty.");
         return -1;
+    }
 
     Service **services = (Service**)calloc(service_size, sizeof(Service*));
-    if (!services)
+    if (!services) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for services failed.");
         return -1;
+    }
 
     for (i = 0; i < service_size; i++) {
         Service *service;
@@ -438,6 +467,7 @@ static int Parser_Services(DIDDocument *document, cJSON *json)
     }
 
     if (!autal_size) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "No invalid service.");
         free(services);
         return -1;
     }
@@ -448,7 +478,7 @@ static int Parser_Services(DIDDocument *document, cJSON *json)
     return 0;
 }
 
-static int Parser_Proof(DIDDocument *document, cJSON *json)
+static int Parse_Proof(DIDDocument *document, cJSON *json)
 {
     cJSON *item;
 
@@ -458,34 +488,56 @@ static int Parser_Proof(DIDDocument *document, cJSON *json)
     item = cJSON_GetObjectItem(json, "type");
     if (item) {
         if ((cJSON_IsString(item) && strlen(item->valuestring) + 1 > MAX_DOC_TYPE) ||
-                !cJSON_IsString(item))
+                !cJSON_IsString(item)) {
+            DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid proof type.");
             return -1;
-        else
-            strcpy(document->proof.type, item->valuestring);
+        }
+        strcpy(document->proof.type, item->valuestring);
     }
     else
         strcpy(document->proof.type, ProofType);
 
     item = cJSON_GetObjectItem(json, "created");
-    if (!item || !cJSON_IsString(item) ||
-            parse_time(&document->proof.created, item->valuestring) == -1)
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing create document time.");
         return -1;
+    }
+    if (!cJSON_IsString(item) ||
+            parse_time(&document->proof.created, item->valuestring) < 0) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid create document time.");
+        return -1;
+    }
 
     item = cJSON_GetObjectItem(json, "creator");
-    if (item && (!cJSON_IsString(item) ||
-            parse_didurl(&document->proof.creater, item->valuestring, &document->did) == -1))
-        return -1;
+    if (item) {
+        if (!cJSON_IsString(item) ||
+                parse_didurl(&document->proof.creater, item->valuestring, &document->did) == -1) {
+            DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid document creater.");
+            return -1;
+        }
+    }
 
     if (!item && !DIDURL_Copy(&document->proof.creater,
-            DIDDocument_GetDefaultPublicKey(document)))
-        return -1;
-
+            DIDDocument_GetDefaultPublicKey(document))) {
+        DIDError_Set(DIDERR_MALFORMED_DIDURL, "Set document creater failed.");
+        return -1;    
+    }
+        
     item = cJSON_GetObjectItem(json, "signatureValue");
-    if (!item || !cJSON_IsString(item) ||
-            (strlen(item->valuestring) + 1 > MAX_DOC_SIGN))
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing signature.");
         return -1;
-    strcpy(document->proof.signatureValue, item->valuestring);
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid signature.");
+        return -1;
+    }
+    if (strlen(item->valuestring) + 1 > MAX_DOC_SIGN) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Document signature is too long.");
+        return -1;
+    }
 
+    strcpy(document->proof.signatureValue, item->valuestring);
     return 0;
 }
 
@@ -514,10 +566,11 @@ static int remove_publickey(DIDDocument *document, DIDURL *keyid)
         return 0;
     }
 
+    DIDError_Set(DIDERR_NOT_EXISTS, "No this public key.");
     return -1;
 }
 
-static int Parser_Credentials_InDoc(DIDDocument *document, cJSON *json)
+static int Parse_Credentials_InDoc(DIDDocument *document, cJSON *json)
 {
     size_t size = 0;
 
@@ -525,14 +578,18 @@ static int Parser_Credentials_InDoc(DIDDocument *document, cJSON *json)
     assert(json);
 
     size = cJSON_GetArraySize(json);
-    if (size <= 0)
+    if (size <= 0) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Credential array is empty.");
         return -1;
+    }
 
     Credential **credentials = (Credential**)calloc(size, sizeof(Credential*));
-    if (!credentials)
+    if (!credentials) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for credentials failed.");
         return -1;
+    }
 
-    size = Parser_Credentials(DIDDocument_GetSubject(document), credentials, size, json);
+    size = Parse_Credentials(DIDDocument_GetSubject(document), credentials, size, json);
     if (size <= 0) {
         free(credentials);
         return -1;
@@ -546,16 +603,15 @@ static int Parser_Credentials_InDoc(DIDDocument *document, cJSON *json)
 
 DIDMeta *DIDDocument_GetMeta(DIDDocument *document)
 {
-    if (!document)
-        return NULL;
+    assert(document);
 
     return &document->meta;
 }
 
 int DIDDocument_SetStore(DIDDocument *document, DIDStore *store)
-{
-    if (!document || !store)
-        return -1;
+{ 
+    assert(document);
+    assert(store);
 
     document->meta.store = store;
     document->did.meta.store = store;
@@ -568,63 +624,118 @@ DIDDocument *DIDDocument_FromJson(const char *json)
     DIDDocument *doc;
     cJSON *root;
     cJSON *item;
+    int code;
 
-    if (!json)
+    if (!json) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     root = cJSON_Parse(json);
-    if (!root)
+    if (!root) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Deserialize document from json failed.");
         return NULL;
+    }
 
     doc = (DIDDocument*)calloc(1, sizeof(DIDDocument));
     if (!doc) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for document failed.");
         cJSON_Delete(root);
         return NULL;
     }
 
     item = cJSON_GetObjectItem(root, "id");
-    if (!item || !cJSON_IsString(item) ||
-        parse_did(&doc->did, item->valuestring) == -1)
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing document subject.");
         goto errorExit;
+    }
+    if (!cJSON_IsString(item) ||
+            parse_did(&doc->did, item->valuestring) == -1) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid document subject.");
+        goto errorExit;
+    }
 
     //parse publickey
     item = cJSON_GetObjectItem(root, "publicKey");
-    if (!item || !cJSON_IsArray(item) ||
-        Parser_PublicKeys(doc, &doc->did, item) == -1)
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing document id.");
+        goto errorExit;       
+    }
+    if (!cJSON_IsArray(item)) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid document id.");
+        goto errorExit;       
+    }
+    if (Parse_PublicKeys(doc, &doc->did, item) < 0)
         goto errorExit;
 
-    //parse authentication(optional)
+    //parse authentication
     item = cJSON_GetObjectItem(root, "authentication");
-    if (item && (!cJSON_IsArray(item) ||
-            Parser_Auth_PublicKeys(doc, item, KeyType_Authentication) == -1))
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing authentication key.");
+        goto errorExit;
+    }
+    if (!cJSON_IsArray(item)) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid authentication key.");
+        goto errorExit;
+    }
+    if (Parse_Auth_PublicKeys(doc, item, KeyType_Authentication) < 0)
         goto errorExit;
 
+    //parse authorization
     item = cJSON_GetObjectItem(root, "authorization");
-    if (item  && (!cJSON_IsArray(item) ||
-            Parser_Auth_PublicKeys(doc, item, KeyType_Authorization) == -1))
-        goto errorExit;
+    if (item) {
+        if (!cJSON_IsArray(item)) {
+            DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid authorization key.");
+            goto errorExit;
+        }
+        if (Parse_Auth_PublicKeys(doc, item, KeyType_Authorization) < 0)
+            goto errorExit;
+    }
 
     //parse expires
     item = cJSON_GetObjectItem(root, "expires");
-    if (!item || !cJSON_IsString(item) ||
-        parse_time(&doc->expires, item->valuestring) == -1)
-        goto errorExit;
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing expires time.");
+        goto errorExit;        
+    }
+    if (!cJSON_IsString(item) ||
+           parse_time(&doc->expires, item->valuestring) == -1) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid expires time.");
+        goto errorExit;        
+    }
 
-    //todo: parse credential
+    //parse credential
     item = cJSON_GetObjectItem(root, "verifiableCredential");
-    if (item && (!cJSON_IsArray(item) ||
-            Parser_Credentials_InDoc(doc, item) == -1))
-        goto errorExit;
+    if (item) {
+        if (!cJSON_IsArray(item)) {
+            DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid credentials.");
+            goto errorExit;
+        }
+        if (Parse_Credentials_InDoc(doc, item) < 0) 
+            goto errorExit;
+    }
 
     //parse services
     item = cJSON_GetObjectItem(root, "service");
-    if (item && (!cJSON_IsArray(item) ||
-            Parser_Services(doc, item) == -1))
-        goto errorExit;
+    if (item) {
+        if (!cJSON_IsArray(item)) {
+            DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid services.");
+            goto errorExit;
+        }
+        if (Parse_Services(doc, item) < 0)
+            goto errorExit;
+    }
 
     item = cJSON_GetObjectItem(root, "proof");
-    if (!item || !cJSON_IsObject(item) ||
-            Parser_Proof(doc, item) == -1)
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing document proof.");
+        goto errorExit;
+    }
+    if (!cJSON_IsObject(item)) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid document proof.");
+        goto errorExit;
+    }
+    if (Parse_Proof(doc, item) == -1)
         goto errorExit;
 
     cJSON_Delete(root);
@@ -692,14 +803,19 @@ static const char *diddocument_tojson_forsign(DIDDocument *document, bool compac
 {
     JsonGenerator g, *gen;
 
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     gen = JsonGenerator_Initialize(&g);
-    if (!gen)
+    if (!gen) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Json generator initialize failed.");
         return NULL;
+    }
 
     if (diddocument_tojson_internal(gen, document, compact, forsign) < 0) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize DID document to json failed.");
         JsonGenerator_Destroy(gen);
         return NULL;
     }
@@ -743,8 +859,12 @@ void DIDDocument_Destroy(DIDDocument *document)
 
 int DIDDocument_SetAlias(DIDDocument *document, const char *alias)
 {
-   if (!document)
+    int rc = 0;
+
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     if (DIDMeta_SetAlias(&document->meta, alias) == -1)
         return -1;
@@ -752,71 +872,87 @@ int DIDDocument_SetAlias(DIDDocument *document, const char *alias)
     DIDMeta_Copy(&document->did.meta, &document->meta);
 
     if (DIDMeta_AttachedStore(&document->meta))
-        didstore_storedidmeta(document->meta.store, &document->meta, &document->did);
+        rc = didstore_storedidmeta(document->meta.store, &document->meta, &document->did);
 
-    return 0;
+    return rc;
 }
 
 const char *DIDDocument_GetAlias(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return DIDMeta_GetAlias(&document->meta);
 }
 
 const char *DIDDocument_GetTxid(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return DIDMeta_GetTxid(&document->meta);
 }
 
 time_t DIDDocument_GetLastTransactionTimestamp(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return 0;
+    }
 
     return DIDMeta_GetTimestamp(&document->meta);
 }
 
 const char *DIDDocument_GetProofType(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return document->proof.type;
 }
 
 DIDURL *DIDDocument_GetProofCreater(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return &document->proof.creater;
 }
 
 time_t DIDDocument_GetProofCreatedTime(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return 0;
+    }
 
     return document->proof.created;
 }
 
 const char *DIDDocument_GetProofSignature(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return document->proof.signatureValue;
 }
 
 bool DIDDocument_IsDeactivated(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return true;
+    }
 
     return DIDMeta_GetDeactived(&document->meta);
 }
@@ -826,22 +962,28 @@ bool DIDDocument_IsGenuine(DIDDocument *document)
     const char *data;
     int rc;
 
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return false;
+    }
 
     if (!DIDURL_Equals(DIDDocument_GetDefaultPublicKey(document),
-            &document->proof.creater))
+            &document->proof.creater)) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Document creater is not match with default key.");
         return false;
+    }
 
-    if (strcmp(document->proof.type, ProofType))
+    if (strcmp(document->proof.type, ProofType)) {
+        DIDError_Set(DIDERR_UNKNOWN, "Unsupported public key type.");
         return false;
+    }
 
     data = diddocument_tojson_forsign(document, false, true);
     if (!data)
         return false;
 
     rc = DIDDocument_Verify(document, NULL, document->proof.signatureValue, 1,
-            (unsigned char*)data, strlen(data));
+            data, strlen(data));
     free((char*)data);
     return rc == 0 ? true : false;
 }
@@ -849,21 +991,41 @@ bool DIDDocument_IsGenuine(DIDDocument *document)
 bool DIDDocument_IsExpires(DIDDocument *document)
 {
     time_t curtime;
+    bool isExpires;
 
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return true;
+    }
 
     curtime = time(NULL);
-    return curtime > document->expires;
+    if (curtime > document->expires)
+        return true;
+
+    return false;
 }
 
 bool DIDDocument_IsValid(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return false;
+    }
+
+    if (DIDDocument_IsExpires(document)) {
+        DIDError_Set(DIDERR_EXPIRED, "Did document is expires.");
+        return false;
+    }
+
+    if (DIDDocument_IsDeactivated(document)) {
+        DIDError_Set(DIDERR_DID_DEACTIVATED, "Did is deactivated.");
+        return false;        
+    }
+
+    if (!DIDDocument_IsGenuine(document))
         return false;
 
-    return !DIDDocument_IsExpires(document) &&
-           !DIDDocument_IsDeactivated(document) && DIDDocument_IsGenuine(document);
+    return true;
 }
 
 static int publickeys_copy(DIDDocument *doc, PublicKey **pks, size_t size)
@@ -918,8 +1080,10 @@ static int credential_copy(Credential *cred1, Credential *cred2)
         return -1;
 
     cred1->type.types = (char**)calloc(cred2->type.size, sizeof(char*));
-    if (!cred1->type.types)
+    if (!cred1->type.types) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for type failed.");
         return -1;
+    }
 
     for (i = 0; i < cred2->type.size; i++)
         cred1->type.types[i] = strdup(cred2->type.types[i]);
@@ -1034,16 +1198,20 @@ DIDDocumentBuilder* DIDDocument_Edit(DIDDocument *document)
     DIDDocumentBuilder *builder;
 
     builder = (DIDDocumentBuilder*)calloc(1, sizeof(DIDDocumentBuilder));
-    if (!builder)
+    if (!builder) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for document builder failed.");
         return NULL;
+    }
 
     builder->document = (DIDDocument*)calloc(1, sizeof(DIDDocument));
     if (!builder->document) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for document failed.");
         free(builder);
         return NULL;
     }
 
     if (document && document_copy(builder->document, document) == -1) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Document copy failed.");
         DIDDocumentBuilder_Destroy(builder);
         return NULL;
     }
@@ -1073,13 +1241,17 @@ DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder, const char *st
     char signature[SIGNATURE_BYTES * 2 + 16];
     int rc;
 
-    if (!builder || !storepass || !*storepass)
+    if (!builder || !storepass || !*storepass) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     doc = builder->document;
     key = DIDDocument_GetDefaultPublicKey(doc);
-    if (!key)
+    if (!key) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "No default key.");
         return NULL;
+    }
 
     data = diddocument_tojson_forsign(doc, false, true);
     if (!data)
@@ -1111,8 +1283,10 @@ PublicKey *create_publickey(DIDURL *id, DID *controller, const char *publickey,
     assert(publickey);
 
     pk = (PublicKey*)calloc(1, sizeof(PublicKey));
-    if (!pk)
+    if (!pk) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for public key failed.");
         return NULL;
+    }
 
     DIDURL_Copy(&pk->id, id);
     DID_Copy(&pk->controller, controller);
@@ -1137,21 +1311,31 @@ int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *builder, DIDURL *keyid,
     size_t size;
     int i;
 
-    if (!builder || !builder->document || !keyid || !key || !*key ||
-        strlen(key) >= MAX_PUBLICKEY_BASE58)
+    if (!builder || !builder->document || !keyid || !key || !*key) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
-    //check base58 is valid and keyid is existed in pk array
-    if (base58_decode(binkey, key) != PUBLICKEY_BYTES)
+    if (strlen(key) >= MAX_PUBLICKEY_BASE58) {
+        DIDError_Set(DIDERR_INVALID_KEY, "public key is too long.");   
         return -1;
+    }
+    //check base58 is valid
+    if (base58_decode(binkey, key) != PUBLICKEY_BYTES) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Decode public key failed.");   
+        return -1;        
+    }
 
+    //check keyid is existed in pk array
     document = builder->document;
     size = DIDDocument_GetPublicKeyCount(document);
     for (i = 0; i < size; i++) {
         pk = document->publickeys.pks[i];
         if (DIDURL_Equals(&pk->id, keyid) ||
-            !strcmp(pk->publicKeyBase58, key))
+               !strcmp(pk->publicKeyBase58, key)) {
+            DIDError_Set(DIDERR_ALREADY_EXISTS, "Public key is already exist");  
             return -1;
+        }
     }
 
     if (!controller)
@@ -1175,21 +1359,27 @@ int DIDDocumentBuilder_RemovePublicKey(DIDDocumentBuilder *builder, DIDURL *keyi
     DIDURL *key;
     size_t size;
     size_t i;
+    int rc;
 
-    if (!builder || !builder->document || !keyid)
+    if (!builder || !builder->document || !keyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     document = builder->document;
     key = DIDDocument_GetDefaultPublicKey(document);
-    if (DIDURL_Equals(key, keyid))
+    if (DIDURL_Equals(key, keyid)) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Can't remove default key!!!!");
         return -1;
+    }
 
     if (!force && (DIDDocument_IsAuthenticationKey(document, keyid) ||
-                DIDDocument_IsAuthorizationKey(document, keyid)))
+            DIDDocument_IsAuthorizationKey(document, keyid))) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Can't remove authenticated or authoritied key!!!!");
         return -1;
+    }
 
     return remove_publickey(document, keyid);
-
 }
 
 //authentication keys are all did's own key.
@@ -1202,36 +1392,52 @@ int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *builder,
     uint8_t binkey[PUBLICKEY_BYTES];
     DID *controller;
 
-    if (!builder || !builder->document || !keyid)
+    if (!builder || !builder->document || !keyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
+    if (key && strlen (key) >= MAX_PUBLICKEY_BASE58) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Authentication key is too long.");
+        return -1;          
+    }
 
-    if (key && (strlen (key) >= MAX_PUBLICKEY_BASE58 ||
-            base58_decode(binkey, key) != PUBLICKEY_BYTES))
-        return -1;
+    if (key && base58_decode(binkey, key) != PUBLICKEY_BYTES) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Decode authentication key failed.");
+        return -1;       
+    }
 
     document = builder->document;
     //check new authentication key is exist in publickeys
     pk = DIDDocument_GetPublicKey(document, keyid);
     if (pk) {
-        if (key && strcmp(pk->publicKeyBase58, key))
+        if (key && strcmp(pk->publicKeyBase58, key)) {
+            DIDError_Set(DIDERR_ALREADY_EXISTS, "Public key is already exist.");
             return -1;
+        }
 
-        if (pk->authenticationKey || pk->authorizationKey)
+        if (pk->authenticationKey || pk->authorizationKey) {
+            DIDError_Set(DIDERR_ALREADY_EXISTS, "Public key is already authentication key or authorization key.");
             return -1;
+        }
 
         pk->authenticationKey = true;
         return 0;
     }
 
-    if (!key)
+    if (!key) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Missing authentication key argument.");
         return -1;
+    }
 
     controller = DIDDocument_GetSubject(document);
+    if (!controller)
+        return -1;
+
     pk = create_publickey(keyid, controller, key, KeyType_Authentication);
     if (!pk)
         return -1;
 
-    if (add_to_publickeys(document, pk) == -1) {
+    if (add_to_publickeys(document, pk) < 0) {
         PublicKey_Destroy(pk);
         return -1;
     }
@@ -1245,17 +1451,23 @@ int DIDDocumentBuilder_RemoveAuthenticationKey(DIDDocumentBuilder *builder, DIDU
     DIDURL *key;
     PublicKey *pk;
 
-    if (!builder || !builder->document || !keyid)
+    if (!builder || !builder->document || !keyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     document = builder->document;
     key = DIDDocument_GetDefaultPublicKey(document);
-    if (DIDURL_Equals(key, keyid))
+    if (DIDURL_Equals(key, keyid)) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Can't remove default key!!!!");
         return -1;
+    }
 
     pk = DIDDocument_GetPublicKey(document, keyid);
-    if (!pk)
+    if (!pk) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "No this authentication key.");
         return -1;
+    }
 
     pk->authenticationKey = false;
     return 0;
@@ -1265,8 +1477,10 @@ bool DIDDocument_IsAuthenticationKey(DIDDocument *document, DIDURL *keyid)
 {
     PublicKey *pk;
 
-    if (!document || !keyid)
+    if (!document || !keyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return false;
+    }
 
     pk = DIDDocument_GetPublicKey(document, keyid);
     if (!pk)
@@ -1279,8 +1493,10 @@ bool DIDDocument_IsAuthorizationKey(DIDDocument *document, DIDURL *keyid)
 {
     PublicKey *pk;
 
-    if (!document || !keyid)
+    if (!document || !keyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return false;
+    }
 
     pk = DIDDocument_GetPublicKey(document, keyid);
     if (!pk)
@@ -1297,32 +1513,47 @@ int DIDDocumentBuilder_AddAuthorizationKey(DIDDocumentBuilder *builder, DIDURL *
     PublicKey *pk = NULL;
     uint8_t binkey[PUBLICKEY_BYTES];
 
-    if (!builder || !builder->document || !keyid)
+    if (!builder || !builder->document || !keyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     document = builder->document;
-    if (controller && DID_Equals(controller, DIDDocument_GetSubject(document)))
+    if (controller && DID_Equals(controller, DIDDocument_GetSubject(document))) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Key cannot used for authorizating.");
         return -1;
+    }
 
-    if (key && base58_decode(binkey, key) != PUBLICKEY_BYTES)
+    if (key && base58_decode(binkey, key) != PUBLICKEY_BYTES) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Decode public key failed.");
         return -1;
+    }
 
     //check new authentication key is exist in publickeys
     pk = DIDDocument_GetPublicKey(document, keyid);
     if (pk) {
-        if ((key && strcmp(pk->publicKeyBase58, key)) ||
-                (controller &&!DID_Equals(controller, &pk->controller)))
+        if (key && strcmp(pk->publicKeyBase58, key)) {
+            DIDError_Set(DIDERR_ALREADY_EXISTS, "Public key is already exist.");
             return -1;
+        }
+        if (controller &&!DID_Equals(controller, &pk->controller)) {
+            DIDError_Set(DIDERR_UNSUPPOTED, "Public key cannot used for authorization.");
+            return -1;
+        }
 
-        if (pk->authenticationKey || pk->authorizationKey)
+        if (pk->authenticationKey || pk->authorizationKey) {
+            DIDError_Set(DIDERR_ALREADY_EXISTS, "Public key is already authentication key or authorization key.");
             return -1;
+        }
 
         pk->authorizationKey = true;
         return 0;
     }
 
-    if (!controller || !key)
+    if (!controller || !key) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Missing controller or public key argument.");
         return -1;
+    }
 
     pk = create_publickey(keyid, controller, key, KeyType_Authorization);
     if (!pk)
@@ -1343,8 +1574,10 @@ int DIDDocumentBuilder_AuthorizationDid(DIDDocumentBuilder *builder, DIDURL *key
     PublicKey *pk;
     int rc;
 
-    if (!builder || !builder->document || !keyid || !controller || !authorkeyid)
+    if (!builder || !builder->document || !keyid || !controller || !authorkeyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     doc = DID_Resolve(controller, false);
     if (!doc)
@@ -1368,13 +1601,17 @@ int DIDDocumentBuilder_RemoveAuthorizationKey(DIDDocumentBuilder *builder, DIDUR
     PublicKey *pk;
     DIDURL *key;
 
-    if (!builder || !builder->document || !keyid)
+    if (!builder || !builder->document || !keyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     document = builder->document;
     key = DIDDocument_GetDefaultPublicKey(document);
-    if (DIDURL_Equals(key, keyid))
+    if (DIDURL_Equals(key, keyid)) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Can't remove default key!!!!");
         return -1;
+    }
 
     pk = DIDDocument_GetPublicKey(document, keyid);
     if (!pk)
@@ -1397,8 +1634,10 @@ static int diddocument_addcredential(DIDDocument *document, Credential *credenti
         creds = (Credential**)realloc(document->credentials.credentials,
                        (document->credentials.size + 1) * sizeof(Credential*));
 
-    if (!creds)
+    if (!creds) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for credentials failed.");
         return -1;
+    }
 
     creds[document->credentials.size++] = credential;
     document->credentials.credentials = creds;
@@ -1413,23 +1652,31 @@ int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder, Credential *cr
     DIDURL *credid;
     ssize_t i;
 
-    if (!builder || !builder->document || !credential)
+    if (!builder || !builder->document || !credential) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     document = builder->document;
     credid = Credential_GetId(credential);
-    if (!DID_Equals(DIDDocument_GetSubject(document), DIDURL_GetDid(credid)))
+    if (!DID_Equals(DIDDocument_GetSubject(document), DIDURL_GetDid(credid))) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Credential not owned by self.");
         return -1;
+    }
 
     for (i = 0; i < document->credentials.size; i++) {
         temp_cred = document->credentials.credentials[i];
-        if (DIDURL_Equals(&temp_cred->id, &credential->id))
+        if (DIDURL_Equals(&temp_cred->id, &credential->id)) {
+            DIDError_Set(DIDERR_ALREADY_EXISTS, "Credential is already exist.");
             return -1;
+        }
     }
 
     cred = (Credential *)calloc(1, sizeof(Credential));
-    if (!cred)
+    if (!cred) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for credential failed.");
         return -1;
+    }
 
     if (credential_copy(cred, credential) == -1 ||
             diddocument_addcredential(document, cred) == -1) {
@@ -1451,12 +1698,16 @@ int DIDDocumentBuilder_AddSelfClaimedCredential(DIDDocumentBuilder *builder,
     int rc;
 
     if (!builder || !builder->document || !credid || !properties || propsize <= 0 ||
-            !storepass || !*storepass)
+            !storepass || !*storepass) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     document = builder->document;
-    if (!DID_Equals(&document->did, &credid->did))
+    if (!DID_Equals(&document->did, &credid->did)) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Credential is already exist.");
         return -1;
+    }
 
     issuer = Issuer_Create(&document->did, DIDDocument_GetDefaultPublicKey(document),
             document->meta.store);
@@ -1491,8 +1742,10 @@ int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder, DIDURL *cre
     size_t size;
     size_t i;
 
-    if (!builder || !builder->document || !credid)
+    if (!builder || !builder->document || !credid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     document = builder->document;
     size = DIDDocument_GetCredentialCount(document);
@@ -1513,6 +1766,7 @@ int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder, DIDURL *cre
         return 0;
     }
 
+    DIDError_Set(DIDERR_NOT_EXISTS, "No this credential in document.");
     return -1;
 }
 
@@ -1524,24 +1778,40 @@ int DIDDocumentBuilder_AddService(DIDDocumentBuilder *builder, DIDURL *serviceid
     Service *service = NULL;
     size_t i;
 
-    if (!builder || !builder->document || !serviceid || !type || !*type
-        || strlen(type) >= MAX_DOC_TYPE || !endpoint || !*endpoint ||
-        strlen(endpoint) >= MAX_ENDPOINT)
+    if (!builder || !builder->document || !serviceid || !type || !*type ||
+        !endpoint || !*endpoint) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
+
+    if (strlen(type) >= MAX_DOC_TYPE) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Type argument is too long.");
+        return -1;        
+    }
+    if (strlen(endpoint) >= MAX_ENDPOINT) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "End point argument is too long.");
+        return -1;        
+    }
 
     document = builder->document;
-    if (!DID_Equals(DIDDocument_GetSubject(document), DIDURL_GetDid(serviceid)))
+    if (!DID_Equals(DIDDocument_GetSubject(document), DIDURL_GetDid(serviceid))) {
+        DIDError_Set(DIDERR_UNSUPPOTED, "Service not owned by self.");
         return -1;
+    }
 
     for (i = 0; i < document->services.size; i++) {
         service = document->services.services[i];
-        if (DIDURL_Equals(&service->id, serviceid))
+        if (DIDURL_Equals(&service->id, serviceid)) {
+            DIDError_Set(DIDERR_ALREADY_EXISTS, "This service is already exist.");
             return -1;
+        }
     }
 
     service = (Service*)calloc(1, sizeof(Service));
-    if (!service)
+    if (!service) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for service failed.");
         return -1;
+    }
 
     DIDURL_Copy(&service->id, serviceid);
     strcpy(service->type, type);
@@ -1554,6 +1824,7 @@ int DIDDocumentBuilder_AddService(DIDDocumentBuilder *builder, DIDURL *serviceid
                             (document->services.size + 1) * sizeof(Service*));
 
     if (!services) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for services failed.");
         Service_Destroy(service);
         return -1;
     }
@@ -1571,8 +1842,10 @@ int DIDDocumentBuilder_RemoveService(DIDDocumentBuilder *builder, DIDURL *servic
     size_t size;
     size_t i;
 
-    if (!builder || !builder->document || !serviceid)
+    if (!builder || !builder->document || !serviceid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     document = builder->document;
     size = DIDDocument_GetServiceCount(document);
@@ -1593,6 +1866,7 @@ int DIDDocumentBuilder_RemoveService(DIDDocumentBuilder *builder, DIDURL *servic
         return 0;
     }
 
+    DIDError_Set(DIDERR_NOT_EXISTS, "This service is not exist.");
     return -1;
 }
 
@@ -1602,8 +1876,10 @@ int DIDDocumentBuilder_SetExpires(DIDDocumentBuilder *builder, time_t expires)
     struct tm *tm = NULL;
     DIDDocument *document;
 
-    if (!builder || expires < 0)
+    if (!builder || expires < 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     max_expires = time(NULL);
     tm = gmtime(&max_expires);
@@ -1611,8 +1887,10 @@ int DIDDocumentBuilder_SetExpires(DIDDocumentBuilder *builder, time_t expires)
     max_expires = mktime(tm);
 
     document = builder->document;
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid document builder.");
         return -1;
+    }
 
     if (expires == 0) {
         document->expires = max_expires;
@@ -1622,8 +1900,10 @@ int DIDDocumentBuilder_SetExpires(DIDDocumentBuilder *builder, time_t expires)
     tm = gmtime(&expires);
     expires = mktime(tm);
 
-    if (expires > max_expires)
+    if (expires > max_expires) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Expire time is too long, not longer than five years.");
         return -1;
+    }
 
     document->expires = expires;
     return 0;
@@ -1632,16 +1912,20 @@ int DIDDocumentBuilder_SetExpires(DIDDocumentBuilder *builder, time_t expires)
 //////////////////////////PublicKey//////////////////////////////////////////
 DID* DIDDocument_GetSubject(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return &document->did;
 }
 
 ssize_t DIDDocument_GetPublicKeyCount(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     return (ssize_t)document->publickeys.size;
 }
@@ -1652,12 +1936,21 @@ PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *keyid)
     size_t size;
     size_t i;
 
-    if (!document || !keyid || !*keyid->fragment || !*keyid->did.idstring)
+    if (!document || !keyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
+
+    if (!*keyid->fragment || !*keyid->did.idstring) {
+        DIDError_Set(DIDERR_MALFORMED_DIDURL, "Malformed key.");
+        return NULL;
+    }
 
     size = document->publickeys.size;
-    if (!size)
+    if (!size) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "No public key in document.");
         return NULL;
+    }
 
     for (i = 0; i < size; i++ ) {
         pk = document->publickeys.pks[i];
@@ -1665,6 +1958,7 @@ PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *keyid)
             return pk;
     }
 
+    DIDError_Set(DIDERR_NOT_EXISTS, "No this public key in document.");
     return NULL;
 }
 
@@ -1673,12 +1967,16 @@ ssize_t DIDDocument_GetPublicKeys(DIDDocument *document, PublicKey **pks,
 {
     size_t actual_size;
 
-    if (!document || !pks)
+    if (!document || !pks || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     actual_size = document->publickeys.size;
-    if (actual_size > size)
+    if (actual_size > size) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
         return -1;
+    }
 
     memcpy(pks, document->publickeys.pks, sizeof(PublicKey*) * actual_size);
     return (ssize_t)actual_size;
@@ -1691,8 +1989,20 @@ ssize_t DIDDocument_SelectPublicKeys(DIDDocument *document, const char *type,
     size_t total_size;
     size_t i;
 
-    if (!document || (!keyid && !type) || (keyid && !*keyid->fragment))
+    if (!document || !pks || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
+
+    if ((!keyid && !type)) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "No feature to select key.");
+        return -1;
+    }
+
+    if (keyid && !*keyid->fragment) {
+        DIDError_Set(DIDERR_MALFORMED_DIDURL, "Key id misses fragment.");
+        return -1;
+    }
 
     if (keyid && !*keyid->did.idstring)
         strcpy(keyid->did.idstring, document->did.idstring);
@@ -1706,8 +2016,10 @@ ssize_t DIDDocument_SelectPublicKeys(DIDDocument *document, const char *type,
         if (type && strcmp(type, pk->type))
             continue;
 
-        if (actual_size >= size)
+        if (actual_size >= size) {
+            DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
             return -1;
+        }
 
         pks[actual_size++] = pk;
     }
@@ -1722,8 +2034,10 @@ DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document)
     PublicKey *pk;
     size_t i;
 
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     for (i = 0; i < document->publickeys.size; i++) {
         pk = document->publickeys.pks[i];
@@ -1737,6 +2051,7 @@ DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document)
             return &pk->id;
     }
 
+    DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "No default public key.");
     return NULL;
 }
 
@@ -1745,8 +2060,10 @@ ssize_t DIDDocument_GetAuthenticationCount(DIDDocument *document)
 {
     size_t size = 0;
 
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     for (int i = 0; i < document->publickeys.size; i++) {
         if(document->publickeys.pks[i]->authenticationKey)
@@ -1761,14 +2078,17 @@ ssize_t DIDDocument_GetAuthenticationKeys(DIDDocument *document, PublicKey **pks
 {
     size_t actual_size = 0;
 
-    if (!document || !pks || size <= 0)
+    if (!document || !pks || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     for (int i = 0; i < document->publickeys.size; i++) {
         if(document->publickeys.pks[i]->authenticationKey){
-            if (actual_size >= size)
+            if (actual_size >= size) {
+                DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
                 return -1;
-
+            }
             pks[actual_size++] = document->publickeys.pks[i];
         }
     }
@@ -1780,12 +2100,24 @@ PublicKey *DIDDocument_GetAuthenticationKey(DIDDocument *document, DIDURL *keyid
 {
     PublicKey *pk;
 
-    if (!document || !keyid || !*keyid->fragment)
+    if (!document || !keyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
+
+    if (!*keyid->fragment) {
+        DIDError_Set(DIDERR_MALFORMED_DIDURL, "Key id misses fragment.");
+        return NULL;        
+    }
 
     pk = DIDDocument_GetPublicKey(document, keyid);
-    if (!pk || !pk->authenticationKey)
+    if (!pk) 
         return NULL;
+
+    if (!pk->authenticationKey) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "This is not authentication key.");
+        return NULL;
+    }
 
     return pk;
 }
@@ -1796,8 +2128,19 @@ ssize_t DIDDocument_SelectAuthenticationKeys(DIDDocument *document,
     size_t actual_size = 0;
     PublicKey *pk;
 
-    if (!document || (!keyid && !type) || (keyid && !*keyid->fragment))
+    if (!document || !pks || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
+    if (!keyid && !type) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "No feature to select key.");
+        return -1;        
+    }
+
+    if (keyid && !*keyid->fragment) {
+        DIDError_Set(DIDERR_MALFORMED_DIDURL, "Key id misses fragment.");
+        return -1;
+    }
 
     for (int i = 0; i < document->publickeys.size; i++) {
         pk = document->publickeys.pks[i];
@@ -1808,8 +2151,10 @@ ssize_t DIDDocument_SelectAuthenticationKeys(DIDDocument *document,
         if (type && strcmp(type, pk->type))
             continue;
 
-        if (actual_size >= size)
+        if (actual_size >= size) {
+            DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
             return -1;
+        }
 
         pks[actual_size++] = pk;
     }
@@ -1822,8 +2167,10 @@ ssize_t DIDDocument_GetAuthorizationCount(DIDDocument *document)
 {
     ssize_t size = 0;
 
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     for (int i = 0; i < document->publickeys.size; i++) {
         if(document->publickeys.pks[i]->authorizationKey)
@@ -1838,13 +2185,17 @@ ssize_t DIDDocument_GetAuthorizationKeys(DIDDocument *document, PublicKey **pks,
 {
     size_t actual_size = 0;
 
-    if (!document || !pks || size <= 0)
+    if (!document || !pks || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     for (int i = 0; i < document->publickeys.size; i++) {
         if(document->publickeys.pks[i]->authorizationKey){
-            if (actual_size >= size)
+            if (actual_size >= size) {
+                DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
                 return -1;
+            }
 
             pks[actual_size++] = document->publickeys.pks[i];
         }
@@ -1857,12 +2208,19 @@ PublicKey *DIDDocument_GetAuthorizationKey(DIDDocument *document, DIDURL *keyid)
 {
     PublicKey *pk;
 
-    if (!document || !keyid)
+    if (!document || !keyid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     pk = DIDDocument_GetPublicKey(document, keyid);
-    if (!pk || !pk->authorizationKey)
+    if (!pk)
         return NULL;
+
+    if (!pk->authorizationKey) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "This is not authorization key.");
+        return NULL;
+    }
 
     return pk;
 }
@@ -1873,8 +2231,19 @@ ssize_t DIDDocument_SelectAuthorizationKeys(DIDDocument *document,
     size_t actual_size = 0;
     PublicKey *pk;
 
-    if (!document || (!keyid && !type) || (keyid && !*keyid->fragment))
+    if (!document || !pks || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
+    if (!keyid && !type) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "No feature to select key.");
+        return -1;
+    }
+
+    if (keyid && !*keyid->fragment) {
+        DIDError_Set(DIDERR_MALFORMED_DIDURL, "Key id misses fragment.");
+        return -1;
+    }
 
     for (int i = 0; i < document->publickeys.size; i++) {
         pk = document->publickeys.pks[i];
@@ -1885,8 +2254,10 @@ ssize_t DIDDocument_SelectAuthorizationKeys(DIDDocument *document,
         if (type && strcmp(type, pk->type))
             continue;
 
-        if (actual_size >= size)
+        if (actual_size >= size) {
+            DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
             return -1;
+        }
 
         pks[actual_size++] = pk;
     }
@@ -1897,8 +2268,10 @@ ssize_t DIDDocument_SelectAuthorizationKeys(DIDDocument *document,
 //////////////////////////Credential///////////////////////////
 ssize_t DIDDocument_GetCredentialCount(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     return (ssize_t)document->credentials.size;
 }
@@ -1908,12 +2281,16 @@ ssize_t DIDDocument_GetCredentials(DIDDocument *document, Credential **creds,
 {
     size_t actual_size;
 
-    if (!document || !creds)
+    if (!document || !creds || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     actual_size = document->credentials.size;
-    if (actual_size > size)
+    if (actual_size > size) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
         return -1;
+    }
 
     memcpy(creds, document->credentials.credentials, sizeof(Credential*) * actual_size);
     return (ssize_t)actual_size;
@@ -1925,12 +2302,21 @@ Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *credid)
     size_t size;
     size_t i;
 
-    if (!document || !credid || !*credid->fragment)
+    if (!document || !credid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
+
+    if (!*credid->fragment) {
+        DIDError_Set(DIDERR_MALFORMED_DIDURL, "Invalid credential id.");
+        return NULL;
+    }
 
     size = document->credentials.size;
-    if (!size)
+    if (!size) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "No credential in document.");
         return NULL;
+    }
 
     for (i = 0; i < size; i++) {
         credential = document->credentials.credentials[i];
@@ -1938,6 +2324,7 @@ Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *credid)
             return credential;
     }
 
+    DIDError_Set(DIDERR_NOT_EXISTS, "No this credential.");
     return NULL;
 }
 
@@ -1949,12 +2336,25 @@ ssize_t DIDDocument_SelectCredentials(DIDDocument *document, const char *type,
     size_t i, j;
     bool flag;
 
-    if (!document || (!credid && !type) || (credid && !*credid->fragment))
+    if (!document || !creds || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
+    if (!credid && !type) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "No feature to select credential.");
+        return -1;
+    }
+
+    if (credid && !*credid->fragment) {
+        DIDError_Set(DIDERR_MALFORMED_DIDURL, "Credential id misses fragment.");
+        return -1;
+    }
 
     total_size = document->credentials.size;
-    if (!total_size)
+    if (!total_size) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "No credential in document.");
         return -1;
+    }
 
     if (credid && (!*credid->did.idstring))
         strcpy(credid->did.idstring, document->did.idstring);
@@ -1978,8 +2378,10 @@ ssize_t DIDDocument_SelectCredentials(DIDDocument *document, const char *type,
             flag = true;
         }
 
-        if (actual_size >= size)
+        if (actual_size >= size) {
+            DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
             return -1;
+        }
 
         if (flag)
             creds[actual_size++] = cred;
@@ -1991,8 +2393,10 @@ ssize_t DIDDocument_SelectCredentials(DIDDocument *document, const char *type,
 ////////////////////////////////service//////////////////////
 ssize_t DIDDocument_GetServiceCount(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     return (ssize_t)document->services.size;
 }
@@ -2002,12 +2406,16 @@ ssize_t DIDDocument_GetServices(DIDDocument *document, Service **services,
 {
     size_t actual_size;
 
-    if (!document || !services)
+    if (!document || !services || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     actual_size = document->services.size;
-    if (actual_size > size)
+    if (actual_size > size) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
         return -1;
+    }
 
     memcpy(services, document->services.services, sizeof(Service*) * actual_size);
     return (ssize_t)actual_size;
@@ -2019,12 +2427,21 @@ Service *DIDDocument_GetService(DIDDocument *document, DIDURL *serviceid)
     size_t size;
     size_t i;
 
-    if (!document || !serviceid || !*serviceid->fragment)
+    if (!document || !serviceid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
+
+    if (!*serviceid->fragment) {
+        DIDError_Set(DIDERR_MALFORMED_DIDURL, "Service id misses fragment.");
+        return NULL;
+    }
 
     size = document->services.size;
-    if (!size)
+    if (!size) {
+        DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "No service in document.");
         return NULL;
+    }
 
     for (i = 0; i < size; i++) {
         service = document->services.services[i];
@@ -2032,6 +2449,7 @@ Service *DIDDocument_GetService(DIDDocument *document, DIDURL *serviceid)
             return service;
     }
 
+    DIDError_Set(DIDERR_NOT_EXISTS, "This service is in document.");
     return NULL;
 }
 
@@ -2042,12 +2460,25 @@ ssize_t DIDDocument_SelectServices(DIDDocument *document,
     size_t total_size;
     size_t i;
 
-    if (!document || (!serviceid && !type) || (serviceid && !*serviceid->fragment))
+    if (!document || !services || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
+    if (!serviceid && !type) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "No feature to select service.");
+        return -1;
+    }
+
+    if (serviceid && !*serviceid->fragment) {
+        DIDError_Set(DIDERR_MALFORMED_DIDURL, "Service id misses fragment.");
+        return -1;
+    }
 
     total_size = document->services.size;
-    if (!total_size)
+    if (!total_size) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
         return -1;
+    }
 
     if (serviceid && !*serviceid->did.idstring)
         strcpy(serviceid->did.idstring, document->did.idstring);
@@ -2060,8 +2491,10 @@ ssize_t DIDDocument_SelectServices(DIDDocument *document,
         if (type && strcmp(type, service->type))
             continue;
 
-        if (actual_size >= size)
+        if (actual_size >= size) {
+            DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
             return -1;
+        }
 
         services[actual_size++] = service;
     }
@@ -2072,8 +2505,10 @@ ssize_t DIDDocument_SelectServices(DIDDocument *document,
 ///////////////////////////////expires////////////////////////
 time_t DIDDocument_GetExpires(DIDDocument *document)
 {
-    if (!document)
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return 0;
+    }
 
     return document->expires;
 }
@@ -2084,8 +2519,10 @@ int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass
     int rc;
     va_list inputs;
 
-    if (!document || !storepass || !*storepass || !sig || count <= 0)
+    if (!document || !storepass || !*storepass || !sig || count <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     if (!keyid)
         keyid = DIDDocument_GetDefaultPublicKey(document);
@@ -2106,93 +2543,117 @@ int DIDDocument_Verify(DIDDocument *document, DIDURL *keyid, char *sig,
     PublicKey *publickey;
     uint8_t binkey[PUBLICKEY_BYTES];
 
-    if (!document || !sig || count <= 0)
+    if (!document || !sig || count <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     if (!keyid)
         keyid = DIDDocument_GetDefaultPublicKey(document);
 
     publickey = DIDDocument_GetPublicKey(document, keyid);
-    if (!publickey)
+    if (!publickey) {
+        DIDError_Set(DIDERR_INVALID_KEY, "No this sign key.");
         return -1;
+    }
 
     base58_decode(binkey, PublicKey_GetPublicKeyBase58(publickey));
 
     va_start(inputs, count);
     rc = ecdsa_verify_base64v(sig, binkey, count, inputs);
     va_end(inputs);
+    if (rc == -1)
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Ecdsa verify failed.");
 
     return rc;
 }
 
 DIDURL *PublicKey_GetId(PublicKey *publickey)
 {
-    if (!publickey)
+    if (!publickey) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return &publickey->id;
 }
 
 DID *PublicKey_GetController(PublicKey *publickey)
 {
-    if (!publickey)
+    if (!publickey) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return &publickey->controller;
 }
 
 const char *PublicKey_GetPublicKeyBase58(PublicKey *publickey)
 {
-    if (!publickey)
+    if (!publickey) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return publickey->publicKeyBase58;
 }
 
 const char *PublicKey_GetType(PublicKey *publickey)
 {
-    if (!publickey)
+    if (!publickey) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return publickey->type;
 }
 
 bool PublicKey_IsAuthenticationKey(PublicKey *publickey)
 {
-    if (!publickey)
+    if (!publickey) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return false;
+    }
 
     return publickey->authenticationKey;
 }
 
 bool PublicKey_IsAuthorizationKey(PublicKey *publickey)
 {
-    if (!publickey)
+    if (!publickey) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return false;
+    }
 
     return publickey->authorizationKey;
 }
 
 DIDURL *Service_GetId(Service *service)
 {
-    if (!service)
+    if (!service) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return &service->id;
 }
 
 const char *Service_GetEndpoint(Service *service)
 {
-    if (!service)
+    if (!service) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return service->endpoint;
 }
 
 const char *Service_GetType(Service *service)
 {
-    if (!service)
+    if (!service) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return service->type;
 }

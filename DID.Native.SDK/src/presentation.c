@@ -27,6 +27,7 @@
 #include <cjson/cJSON.h>
 
 #include "ela_did.h"
+#include "diderror.h"
 #include "common.h"
 #include "crypto.h"
 #include "JsonGenerator.h"
@@ -85,7 +86,7 @@ static int presentation_tojson_internal(JsonGenerator *gen, Presentation *pre,
     return 0;
 }
 
-static int parser_credentials_inpre(DID *signer, Presentation *pre, cJSON *json)
+static int parse_credentials_inpre(DID *signer, Presentation *pre, cJSON *json)
 {
     size_t size = 0;
 
@@ -100,7 +101,7 @@ static int parser_credentials_inpre(DID *signer, Presentation *pre, cJSON *json)
     if (!credentials)
         return -1;
 
-    size = Parser_Credentials(signer, credentials, size, json);
+    size = Parse_Credentials(signer, credentials, size, json);
     if (size <= 0) {
         free(credentials);
         return -1;
@@ -124,41 +125,66 @@ static int parse_proof(DID *signer, Presentation *pre, cJSON *json)
     strcpy(pre->proof.type, ProofType);
 
     item = cJSON_GetObjectItem(json, "verificationMethod");
-    if (!item || !cJSON_IsString(item))
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing sign key for presentation.");
         return -1;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid sign key for presentation.");
+        return -1;
+    }
 
     keyid = DIDURL_FromString(cJSON_GetStringValue(item), signer);
-    if (!keyid)
+    if (!keyid) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid sign key for presentation.");
         return -1;
+    }
 
     if (!DIDURL_Copy(&pre->proof.verificationMethod, keyid) ||
             !DID_Copy(signer, &keyid->did)) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Copy signer failed.");
         DIDURL_Destroy(keyid);
         return -1;
     }
 
     DIDURL_Destroy(keyid);
     item = cJSON_GetObjectItem(json, "nonce");
-    if (!item || !cJSON_IsString(item))
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing nonce.");
         return -1;
-
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid nonce.");
+        return -1;
+    }
     strcpy(pre->proof.nonce, cJSON_GetStringValue(item));
 
     item = cJSON_GetObjectItem(json, "realm");
-    if (!item || !cJSON_IsString(item))
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing realm.");
         return -1;
-
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid realm.");
+        return -1;
+    }
     strcpy(pre->proof.realm, cJSON_GetStringValue(item));
 
     item = cJSON_GetObjectItem(json, "signature");
-    if (!item || !cJSON_IsString(item))
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing signature.");
         return -1;
-
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid signature.");
+        return -1;
+    }
     strcpy(pre->proof.signatureValue, cJSON_GetStringValue(item));
+    
     return 0;
 }
 
-static Presentation *Parser_Presentation(cJSON *json)
+static Presentation *parse_presentation(cJSON *json)
 {
     cJSON *item;
     DID subject;
@@ -166,17 +192,31 @@ static Presentation *Parser_Presentation(cJSON *json)
     assert(json);
 
     Presentation *pre = (Presentation*)calloc(1, sizeof(Presentation));
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for presentation failed.");
         return NULL;
+    }
 
     item = cJSON_GetObjectItem(json, "type");
-    if (!item || !cJSON_IsString(item) ||
-            strcmp(cJSON_GetStringValue(item), PresentationType)) {
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing type.");
+        Presentation_Destroy(pre);
+        return NULL;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid type.");
+        Presentation_Destroy(pre);
+        return NULL;
+    }
+
+    if (strcmp(cJSON_GetStringValue(item), PresentationType)) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Unknow presentation type.");
         Presentation_Destroy(pre);
         return NULL;
     }
 
     if (strlen(item->valuestring) + 1 > sizeof(pre->type)) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Presentation type is too long.");
         Presentation_Destroy(pre);
         return NULL;
     }
@@ -184,22 +224,46 @@ static Presentation *Parser_Presentation(cJSON *json)
     strcpy(pre->type, item->valuestring);
 
     item = cJSON_GetObjectItem(json, "created");
-    if (!item || !cJSON_IsString(item) ||
-            parse_time(&pre->created, cJSON_GetStringValue(item)) == -1) {
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing time created presentation.");
+        Presentation_Destroy(pre);
+        return NULL;
+    }
+    if (!cJSON_IsString(item) || parse_time(&pre->created, cJSON_GetStringValue(item)) == -1) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid time created presentation.");
         Presentation_Destroy(pre);
         return NULL;
     }
 
     item = cJSON_GetObjectItem(json, "proof");
-    if (!item || !cJSON_IsObject(item) ||
-            parse_proof(&subject, pre, item) == -1) {
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing presentation proof.");
+        Presentation_Destroy(pre);
+        return NULL;
+    }
+    if (!cJSON_IsObject(item)) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid presentation proof.");
+        Presentation_Destroy(pre);
+        return NULL;
+    }
+    if (parse_proof(&subject, pre, item) == -1) {
         Presentation_Destroy(pre);
         return NULL;
     }
 
     item = cJSON_GetObjectItem(json, "verifiableCredential");
-    if (!item || !cJSON_IsArray(item) ||
-            parser_credentials_inpre(&subject, pre, item) == -1) {
+    if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing Credentials.");
+        Presentation_Destroy(pre);
+        return NULL;
+    }
+    if (!cJSON_IsArray(item)) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid Credentials.");
+        Presentation_Destroy(pre);
+        return NULL;
+    }
+    if (parse_credentials_inpre(&subject, pre, item) == -1) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid credential error[%d]: %s", DIDERRCODE, DIDERRMSG);
         Presentation_Destroy(pre);
         return NULL;
     }
@@ -225,10 +289,13 @@ static const char* presentation_tojson_forsign(Presentation *pre, bool compact, 
         return NULL;
 
     gen = JsonGenerator_Initialize(&g);
-    if (!gen)
+    if (!gen) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Json generator initialize failed.");
         return NULL;
+    }
 
     if (presentation_tojson_internal(gen, pre, compact, forsign) < 0) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize presentation to json failed.");
         JsonGenerator_Destroy(gen);
         return NULL;
     }
@@ -249,37 +316,60 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
     int rc;
 
     if (!did || !store || !storepass || !*storepass || !nonce || !*nonce ||
-            !realm || !*realm || count <= 0)
+            !realm || !*realm || count <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     doc = DIDStore_LoadDID(store, did);
-    if (!doc)
+    if (!doc) {
+        DIDError_Set(DIDERR_DIDSTORE_ERROR, "Can not load DID.");
         return NULL;
+    }
 
     if (!signkey)
         signkey = DIDDocument_GetDefaultPublicKey(doc);
 
-    if (!DIDDocument_IsAuthenticationKey(doc, signkey))
+    if (!DIDDocument_IsAuthenticationKey(doc, signkey)) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Invalid authentication key.");
         goto errorExit;
+    }
+
+    if (!DIDStore_ContainsPrivateKey(store, did, signkey)) {
+        DIDError_Set(DIDERR_INVALID_KEY, "No private key.");
+        goto errorExit;
+    }
 
     pre = (Presentation*)calloc(1, sizeof(Presentation));
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for presentation failed.");
         goto errorExit;
+    }
 
     strcpy(pre->type, PresentationType);
     time(&pre->created);
 
     Credential **creds = (Credential**)calloc(count, sizeof(Credential*));
-    if (!creds)
+    if (!creds) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for credentials failed.");
         goto errorExit;
+    }
 
     va_start(list, count);
     for (int i = 0; i < count; i++) {
         cred = va_arg(list, Credential*);
-        if (Credential_Verify(cred) == -1 || Credential_IsExpired(cred)) {
+        if (Credential_Verify(cred) == -1) {
+            DIDError_Set(DIDERR_NOT_GENUINE, "Credential is invalid.");
             free(creds);
             va_end(list);
             goto errorExit;
+        }
+        
+        if (Credential_IsExpired(cred)) {
+            DIDError_Set(DIDERR_EXPIRED, "Credential is expired.");
+            free(creds);
+            va_end(list);
+            goto errorExit;           
         }
 
         add_credential(creds, i, cred);
@@ -339,25 +429,44 @@ int Presentation_Verify(Presentation *pre)
     size_t i;
     int rc;
 
-    if (!pre || pre->credentials.size <= 0)
+    if (!pre) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
+
+    if (pre->credentials.size <= 0) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Invalid presentation.");
+        return -1;
+    }
 
     signer = Presentation_GetSigner(pre);
-    if (!signer)
+    if (!signer) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "No signer.");
         return -1;
+    }
 
     for (i = 0; i < pre->credentials.size; i++) {
         Credential *cred = pre->credentials.credentials[i];
         DIDURL *credid = Credential_GetId(cred);
-        if (!DID_Equals(DIDURL_GetDid(credid), signer))
+        if (!DID_Equals(DIDURL_GetDid(credid), signer)) {
+            DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Credential is not owned by signer.");
             return -1;
-        if (Credential_Verify(cred) == -1 || Credential_IsExpired(cred))
+        }
+        if (Credential_Verify(cred) == -1) {
+            DIDError_Set(DIDERR_NOT_GENUINE, "Credential is not genuine.");
             return -1;
+        }
+        if (Credential_IsExpired(cred)) {
+            DIDError_Set(DIDERR_EXPIRED, "Credential is expired.");
+            return -1;
+        }
     }
 
     doc = DID_Resolve(signer, false);
-    if (!doc)
+    if (!doc) {
+        DIDError_Set(DIDERR_MALFORMED_DID, "Presentation signer is not a published did.");
         return -1;
+    }
 
     data = presentation_tojson_forsign(pre, false, true);
     if (!data) {
@@ -367,12 +476,12 @@ int Presentation_Verify(Presentation *pre)
 
     rc = DIDDocument_Verify(doc, &pre->proof.verificationMethod,
             pre->proof.signatureValue, 3, (unsigned char*)data, strlen(data),
-            (unsigned char*)pre->proof.realm, strlen(pre->proof.realm),
-            (unsigned char*)pre->proof.nonce, strlen(pre->proof.nonce));
+            pre->proof.realm, strlen(pre->proof.realm),
+            pre->proof.nonce, strlen(pre->proof.nonce));
 
     free((char*)data);
     DIDDocument_Destroy(doc);
-    return 0;
+    return rc;
 }
 
 const char* Presentation_ToJson(Presentation *pre, bool normalized)
@@ -386,14 +495,18 @@ Presentation *Presentation_FromJson(const char *json)
     Presentation *pre;
     int i;
 
-    if (!json)
+    if (!json) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     root = cJSON_Parse(json);
-    if (!root)
+    if (!root) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Deserialize presentation from json failed.");
         return NULL;
+    }
 
-    pre = Parser_Presentation(root);
+    pre = parse_presentation(root);
     if (!pre) {
         cJSON_Delete(root);
         return NULL;
@@ -407,18 +520,27 @@ DID *Presentation_GetSigner(Presentation *pre)
 {
     DIDURL *verificationMethod;
 
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     verificationMethod = Presentation_GetVerificationMethod(pre);
+    if (!verificationMethod) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "No signing key.");
+        return NULL;
+    }
+
     return DIDURL_GetDid(verificationMethod);
 
 }
 
 ssize_t Presentation_GetCredentialCount(Presentation *pre)
 {
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     return pre->credentials.size;
 }
@@ -427,12 +549,16 @@ ssize_t Presentation_GetCredentials(Presentation *pre, Credential **creds, size_
 {
     size_t actual_size;
 
-    if (!pre || !creds || size <= 0)
+    if (!pre || !creds || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
+    }
 
     actual_size = pre->credentials.size;
-    if (actual_size > size)
+    if (actual_size > size) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "The size of buffer is small.");
         return -1;
+    }
 
     memcpy(creds, pre->credentials.credentials, sizeof(Credential*) * actual_size);
     return (ssize_t)actual_size;
@@ -443,8 +569,14 @@ Credential *Presentation_GetCredential(Presentation *pre, DIDURL *credid)
     Credential *cred;
     int i;
 
-    if (!pre || !credid || pre->credentials.size <= 0)
+    if (!pre || !credid) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
+    if (pre->credentials.size <= 0) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "No credentials in presentation.");
+        return NULL;
+    }
 
     for (i = 0; i < pre->credentials.size; i++) {
         cred = pre->credentials.credentials[i];
@@ -457,40 +589,50 @@ Credential *Presentation_GetCredential(Presentation *pre, DIDURL *credid)
 
 const char *Presentation_GetType(Presentation *pre)
 {
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return pre->type;
 }
 
 time_t Presentation_GetCreatedTime(Presentation *pre)
 {
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return 0;
+    }
 
     return pre->created;
 }
 
 DIDURL *Presentation_GetVerificationMethod(Presentation *pre)
 {
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return &pre->proof.verificationMethod;
 }
 
 const char *Presentation_GetNonce(Presentation *pre)
 {
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return pre->proof.nonce;
 }
 
 const char *Presentation_GetRealm(Presentation *pre)
 {
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     return pre->proof.realm;
 }
@@ -501,35 +643,60 @@ bool Presentation_IsGenuine(Presentation *pre)
     DIDDocument *doc = NULL;
     int i, rc;
 
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return false;
+    }
 
-    if (strcmp(pre->type, PresentationType))
+    if (strcmp(pre->type, PresentationType)) {
+        DIDError_Set(DIDERR_UNKNOWN, "Unknow presentation type.");
         return false;
+    }
 
     signer = Presentation_GetSigner(pre);
-    if (!signer)
+    if (!signer) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "No signer for presentation.");
         return false;
+    }
 
     doc = DID_Resolve(signer, false);
-    if (!doc)
+    if (!doc) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Presentation signer is not a published did.");
         return false;
+    }
 
-    if (!DIDDocument_IsGenuine(doc))
+    if (!DIDDocument_IsGenuine(doc)) {
+        DIDError_Set(DIDERR_NOT_GENUINE, "Signer is not genuine.");
         goto errorExit;
+    }
 
-    if (!DIDDocument_IsAuthenticationKey(doc, &pre->proof.verificationMethod))
+    if (!DIDDocument_IsAuthenticationKey(doc, &pre->proof.verificationMethod)) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Invalid authentication key.");
         goto errorExit;
+    }
+
+    if (!pre->credentials.credentials) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing credentials.");
+        goto errorExit;
+    }
 
     for (i = 0; i < pre->credentials.size; i++) {
         Credential *cred = pre->credentials.credentials[i];
-        if (!cred || !Credential_IsGenuine(cred) ||
-                !DID_Equals(Credential_GetOwner(cred), Presentation_GetSigner(pre)))
+        if (!cred) {
+            DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing credential.");
             goto errorExit;
+        } 
+        if (!DID_Equals(Credential_GetOwner(cred), Presentation_GetSigner(pre))) {
+            DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Credential is not match with signer.");
+            goto errorExit;
+        }
+        if (!Credential_IsGenuine(cred)) {
+            DIDError_Set(DIDERR_NOT_GENUINE, "Credential is not genuine.");
+            goto errorExit;
+        }
     }
 
     rc = Presentation_Verify(pre);
-
     DIDDocument_Destroy(doc);
     return rc == 0;
 
@@ -544,31 +711,53 @@ bool Presentation_IsValid(Presentation *pre)
     DIDDocument *doc = NULL;
     int i, rc;
 
-    if (!pre)
+    if (!pre) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return false;
+    }
 
-    if (strcmp(pre->type, PresentationType))
+    if (strcmp(pre->type, PresentationType)) {
+        DIDError_Set(DIDERR_UNKNOWN, "Unknow presentation type.");
         return false;
+    }
 
     signer = Presentation_GetSigner(pre);
     if (!signer)
         return false;
 
     doc = DID_Resolve(signer, false);
-    if (!doc)
+    if (!doc) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "Presentation signer is not a published did.");
         return false;
+    }
 
     if (!DIDDocument_IsValid(doc))
         goto errorExit;
 
-    if (!DIDDocument_IsAuthenticationKey(doc, &pre->proof.verificationMethod))
+    if (!DIDDocument_IsAuthenticationKey(doc, &pre->proof.verificationMethod)) {
+        DIDError_Set(DIDERR_INVALID_KEY, "Invalid authentication key.");
         goto errorExit;
+    }
+
+    if (!pre->credentials.credentials) {
+        DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing credentials.");
+        goto errorExit;
+    }
 
     for (i = 0; i < pre->credentials.size; i++) {
         Credential *cred = pre->credentials.credentials[i];
-        if (!cred || !Credential_IsValid(cred) ||
-                !DID_Equals(Credential_GetOwner(cred), Presentation_GetSigner(pre)))
+        if (!cred) {
+            DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing credential.");
             goto errorExit;
+        } 
+        if (!DID_Equals(Credential_GetOwner(cred), Presentation_GetSigner(pre))) {
+            DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Credential is not match with signer.");
+            goto errorExit;
+        }
+        if (!Credential_IsGenuine(cred)) {
+            DIDError_Set(DIDERR_NOT_GENUINE, "Credential is not genuine.");
+            goto errorExit;
+        }
     }
 
     rc = Presentation_Verify(pre);

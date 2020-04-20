@@ -67,9 +67,9 @@ struct Credential {
 int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds, size_t size,
         DID *did, bool compact);
 
-Credential *Parser_Credential(cJSON *json, DID *did);
+Credential *Parse_Credential(cJSON *json, DID *did);
 
-ssize_t Parser_Credentials(DID *did, Credential **creds, size_t size, cJSON *json);
+ssize_t Parse_Credentials(DID *did, Credential **creds, size_t size, cJSON *json);
 
 CredentialMeta *Credential_GetMeta(Credential *credential);
 

@@ -30,6 +30,7 @@
 #include "credmeta.h"
 #include "JsonGenerator.h"
 #include "diddocument.h"
+#include "diderror.h"
 
 int CredentialMeta_Init(CredentialMeta *meta, const char *alias)
 {
@@ -52,14 +53,16 @@ const char *CredentialMeta_ToJson(CredentialMeta *meta)
 {
     JsonGenerator g, *gen;
 
-    if (!meta)
-        return NULL;
+    assert(meta);
 
     gen = JsonGenerator_Initialize(&g);
-    if (!gen)
+    if (!gen) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Json generator initialize failed.");
         return NULL;
+    }
 
     if (CredentialMeta_ToJson_Internal(gen, meta) == -1) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize credential meta to json failed.");
         JsonGenerator_Destroy(gen);
         return NULL;
     }
@@ -71,23 +74,27 @@ int CredentialMeta_FromJson(CredentialMeta *meta, const char *json)
 {
     cJSON *root, *item;
 
-    if (!meta || !json)
-        return -1;
+    assert(meta);
+    assert(json);
 
     memset(meta, 0, sizeof(CredentialMeta));
 
     root = cJSON_Parse(json);
-    if (!root)
+    if (!root) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Deserialize credential meta from json failed.");
         return -1;
+    }
 
     item = cJSON_GetObjectItem(root, "alias");
     if (!item) {
+        DIDError_Set(DIDERR_MALFORMED_META, "Invalid meta without alias field.");
         cJSON_Delete(root);
         return -1;
     }
 
     if (cJSON_IsString(item) &&
             CredentialMeta_SetAlias(meta, cJSON_GetStringValue(item)) == -1) {
+        DIDError_Set(DIDERR_MALFORMED_META, "Set alias failed.");
         cJSON_Delete(root);
         return -1;
     }
@@ -106,8 +113,12 @@ void CredentialMeta_Destroy(CredentialMeta *meta)
 
 int CredentialMeta_SetAlias(CredentialMeta *meta, const char *alias)
 {
-    if (!meta || (alias && strlen(alias) >= ELA_MAX_ALIAS_LEN))
+    assert(meta);
+
+    if (alias && strlen(alias) >= ELA_MAX_ALIAS_LEN) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Alias is too long.");
         return -1;
+    }
 
     if (alias)
         strcpy(meta->alias, alias);
@@ -119,16 +130,14 @@ int CredentialMeta_SetAlias(CredentialMeta *meta, const char *alias)
 
 const char *CredentialMeta_GetAlias(CredentialMeta *meta)
 {
-    if (!meta)
-        return NULL;
+    assert(meta);
 
     return meta->alias;
 }
 
 int CredentialMeta_Merge(CredentialMeta *meta, CredentialMeta *frommeta)
 {
-    if (!meta || !frommeta)
-        return -1;
+    assert(meta && frommeta);
 
     if (*frommeta->alias)
         strcpy(meta->alias, frommeta->alias);
@@ -138,8 +147,7 @@ int CredentialMeta_Merge(CredentialMeta *meta, CredentialMeta *frommeta)
 
 int CredentialMeta_Copy(CredentialMeta *meta, CredentialMeta *frommeta)
 {
-    if (!meta || !frommeta)
-        return -1;
+    assert(meta && frommeta);
 
     memcpy(meta, frommeta, sizeof(CredentialMeta));
     return 0;
@@ -147,8 +155,7 @@ int CredentialMeta_Copy(CredentialMeta *meta, CredentialMeta *frommeta)
 
 bool CredentialMeta_IsEmpty(CredentialMeta *meta)
 {
-    if (!meta)
-        return true;
+    assert(meta);
 
     if (*meta->alias)
         return false;
@@ -158,8 +165,8 @@ bool CredentialMeta_IsEmpty(CredentialMeta *meta)
 
 int CredentialMeta_SetStore(CredentialMeta *meta, DIDStore *store)
 {
-    if (!meta || !store)
-        return -1;
+    assert(meta);
+    assert(store);
 
     meta->store = store;
     return 0;
@@ -167,16 +174,14 @@ int CredentialMeta_SetStore(CredentialMeta *meta, DIDStore *store)
 
 DIDStore *CredentialMeta_GetStore(CredentialMeta *meta)
 {
-    if (!meta)
-        return NULL;
+    assert(meta);
 
     return meta->store;
 }
 
 bool CredentialMeta_AttachedStore(CredentialMeta *meta)
 {
-    if (!meta)
-        return false;
+    assert(meta);
 
     return meta->store != NULL;
 }

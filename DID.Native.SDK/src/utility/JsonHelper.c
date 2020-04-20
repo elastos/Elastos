@@ -26,6 +26,8 @@
 #include <assert.h>
 #include <cjson/cJSON.h>
 
+#include "ela_did.h"
+#include "diderror.h"
 #include "common.h"
 #include "JsonHelper.h"
 
@@ -62,8 +64,8 @@ int JsonHelper_ToJson(JsonGenerator *generator, cJSON *object, bool objectcontex
     size_t size;
     cJSON *item;
 
-    if (!generator || !object)
-        return -1;
+    assert(generator);
+    assert(object);
 
     if (cJSON_IsArray(object)) {
         CHECK(JsonGenerator_WriteStartArray(generator));
@@ -139,8 +141,7 @@ const char *JsonHelper_ToString(cJSON *object)
 {
     JsonGenerator g, *gen;
 
-    if (!object)
-        return NULL;
+    assert(object);
 
     gen = JsonGenerator_Initialize(&g);
     if (!gen)

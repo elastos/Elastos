@@ -304,6 +304,22 @@ static void test_encrypt_decrypt(void)
     CU_ASSERT_NSTRING_EQUAL(data, plain, strlen(plain));
 }
 
+static void test_base64_decode_forpayload(void)
+{
+    char *buffer;
+    ssize_t len;
+
+    char *payload = "eyJpZCI6ImRpZDplbGFzdG9zOmlqNUIyVE02NzVRazlSdVFVOXVHUnFNMTQ0SzRMUktNblIiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiIyN1JOMkNySlpxS21aMjFHMko1VWdNWG14aUVkbTFwYWVMZG5CU1BGd3hZR0MifV0sImF1dGhlbnRpY2F0aW9uIjpbIiNwcmltYXJ5Il0sInZlcmlmaWFibGVDcmVkZW50aWFsIjpbeyJpZCI6IiNuYW1lIiwidHlwZSI6WyJCYXNpY1Byb2ZpbGVDcmVkZW50aWFsIiwiU2VsZlByb2NsYWltZWRDcmVkZW50aWFsIl0sImlzc3VhbmNlRGF0ZSI6IjIwMjAtMDMtMDNUMTI6MjA6MDhaIiwiZXhwaXJhdGlvbkRhdGUiOiIyMDIwLTAzLTE4VDEyOjIwOjA4WiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOiLmiZjlsJTmlq_ms7AifSwicHJvb2YiOnsidmVyaWZpY2F0aW9uTWV0aG9kIjoiI3ByaW1hcnkiLCJzaWduYXR1cmUiOiJrSmVZVE5weEt4NjR5X3hYME5xdmFNVlF2TWxiY2xxTkJpYzJHUnYyMXo0dVZsMnRuNFVCZkNJbVR6ZHlGVUV3c3NEbkFCM21ub0xNYWhDckpWU19XdyJ9fV0sImV4cGlyZXMiOiIyMDI1LTAzLTAzVDEyOjIwOjA3WiIsInByb29mIjp7ImNyZWF0ZWQiOiIyMDIwLTAzLTAzVDEyOjIwOjI5WiIsInNpZ25hdHVyZVZhbHVlIjoiWExaTFU4bkRScFJyZkNSU3kwU3VfWWRSck9sR2VuRUhINFpXNi1VRmpLQjdGdmNwVFNublFlWlBhaHd1dHNWZTlKTkVlZGp1R0ptOWE3cG5ZRzJ5UGcifX0";
+    len = strlen(payload) + 1;
+
+    buffer = alloca(len);
+    CU_ASSERT_PTR_NOT_NULL(buffer);
+
+    len = base64_url_decode((uint8_t*)buffer, payload);
+    buffer[len] = 0;
+    CU_ASSERT_NOT_EQUAL(len, -1);
+}
+
 static int hdkey_base_test_suite_init(void)
 {
     return 0;
@@ -318,6 +334,7 @@ static CU_TestInfo cases[] = {
     {   "test_base64_compatible",           test_base64_compatible         },
     {   "test_encrypt_compatible",          test_encrypt_compatible        },
     {   "test_encrypt_decrypt",             test_encrypt_decrypt           },
+    {   "test_base64_decode_forpayload",    test_base64_decode_forpayload  },
     {   NULL,                               NULL                           }
 };
 

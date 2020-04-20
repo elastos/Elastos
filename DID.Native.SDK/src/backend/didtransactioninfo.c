@@ -22,8 +22,10 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "ela_did.h"
+#include "diderror.h"
 #include "common.h"
 #include "diddocument.h"
 #include "didtransactioninfo.h"
@@ -32,22 +34,43 @@ int DIDTransactionInfo_FromJson(DIDTransactionInfo *txinfo, cJSON *json)
 {
     cJSON *item, *field;
 
-    if (!txinfo || !json)
-        return -1;
+    assert(txinfo);
+    assert(json);
 
     item = cJSON_GetObjectItem(json, "txid");
-    if (!item || !cJSON_IsString(item) || strlen(item->valuestring) >= ELA_MAX_TXID_LEN)
+    if (!item) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing transaction id.");
         return -1;
+    }
+    if (!cJSON_IsString(item)) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid transaction id.");
+        return -1;
+    }
+    if (strlen(item->valuestring) >= ELA_MAX_TXID_LEN) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Transaction id is too long.");
+        return -1;        
+    }
     strcpy(txinfo->txid, item->valuestring);
 
     item = cJSON_GetObjectItem(json, "timestamp");
-    if (!item || !cJSON_IsString(item) ||
-            parse_time(&txinfo->timestamp, item->valuestring) == -1)
+    if (!item) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing time stamp.");
         return -1;
+    }
+    if (!cJSON_IsString(item) || parse_time(&txinfo->timestamp, item->valuestring) == -1) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid time stamp.");
+        return -1;
+    }
 
     item = cJSON_GetObjectItem(json, "operation");
-    if (!item || !cJSON_IsObject(item))
+    if (!item) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing ID operation.");
         return -1;
+    }
+    if (!cJSON_IsObject(item)) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid ID operation.");
+        return -1;
+    }
 
     txinfo->request.doc = DIDRequest_FromJson(&txinfo->request, item);
     if (!txinfo->request.doc)
@@ -69,8 +92,8 @@ int DIDTransactionInfo_ToJson_Internal(JsonGenerator *gen, DIDTransactionInfo *t
 {
     char _timestring[DOC_BUFFER_LEN];
 
-    if (!gen || !txinfo)
-        return -1;
+    assert(gen);
+    assert(txinfo);
 
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "txid", txinfo->txid));
@@ -86,14 +109,16 @@ const char *DIDTransactionInfo_ToJson(DIDTransactionInfo *txinfo)
 {
     JsonGenerator g, *gen;
 
-    if (!txinfo)
-        return NULL;
+    assert(txinfo);
 
     gen = JsonGenerator_Initialize(&g);
-    if (!gen)
+    if (!gen) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Json generator initialize failed.");
         return NULL;
+    }
 
     if (DIDTransactionInfo_ToJson_Internal(gen, txinfo) < 0) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Serialize ID transaction to json failed.");
         JsonGenerator_Destroy(gen);
         return NULL;
     }
@@ -103,24 +128,21 @@ const char *DIDTransactionInfo_ToJson(DIDTransactionInfo *txinfo)
 
 DIDRequest *DIDTransactionInfo_GetRequest(DIDTransactionInfo *txinfo)
 {
-    if (!txinfo)
-        return NULL;
+    assert(txinfo);
 
     return &txinfo->request;
 }
 
 const char *DIDTransactionInfo_GetTransactionId(DIDTransactionInfo *txinfo)
 {
-    if (!txinfo)
-        return NULL;
+    assert(txinfo);
 
     return txinfo->txid;
 }
 
 time_t DIDTransactionInfo_GetTimeStamp(DIDTransactionInfo *txinfo)
 {
-    if (!txinfo)
-        return 0;
+    assert(txinfo);
 
     return txinfo->timestamp;
 }

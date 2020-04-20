@@ -192,3 +192,11 @@ _Issuer_GetSigner
 _Issuer_GetSignKey
 _Issuer_Create
 _Issuer_Destroy
+
+# Log
+_DIDError_Clear
+_DIDError_Print
+_DIDError_GetCode
+_DIDError_GetMessage
+_DIDError_GetFile
+_DIDError_GetLine

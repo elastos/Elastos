@@ -20,34 +20,21 @@
  * SOFTWARE.
  */
 
-#ifndef __DIDBACKEND_H__
-#define __DIDBACKEND_H__
+#ifndef __DID_ERROR_H__
+#define __DID_ERROR_H__
 
-#include "ela_did.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct DIDBackend {
-    DIDAdapter *adapter;
-} DIDBackend;
+#define DIDError_Set(code, msg, ...)    DIDError_SetEx(__FILE__, __LINE__, (code), (msg), ##__VA_ARGS__)
 
-const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
-        DIDURL *signkey, const char *storepass);
-
-const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document,
-        DIDURL *signkey, const char *storepass);
-
-const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did,
-        DIDURL *signkey, const char *storepass);
-
-DIDDocument *DIDBackend_Resolve(DID *did, bool force);
-
-DIDDocument **DIDBackend_ResolveAll(DID *did);
+void DIDError_SetEx(const char *file, int line, int code, const char *msg, ...);
 
 #ifdef __cplusplus
-}
+} // extern "C"
 #endif
 
-#endif //__DIDBACKEND_H__
+#endif // __DID_ERROR_H__

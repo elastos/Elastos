@@ -23,8 +23,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <curl/curl.h>
+#include <assert.h>
 
 #include "ela_did.h"
+#include "diderror.h"
 #include "didresolver.h"
 
 #define DID_RESOLVE_REQUEST "{\"method\":\"resolvedid\",\"params\":{\"did\":\"%s\",\"all\":%s}}"
@@ -112,12 +114,16 @@ static const char *DefaultResolver_Resolve(DIDResolver *resolver, const char *di
     char buffer[256];
     const char *forAll;
 
-    if (!resolver || !*_resolver->url || !did)
+    if (!resolver || !*_resolver->url || !did) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     // TODO: max did length
-    if (strlen(did) > 64)
+    if (strlen(did) > 64) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments: too long did string.");
         return NULL;
+    }
 
     forAll = !all ? "false" : "true";
 
@@ -148,6 +154,7 @@ static const char *DefaultResolver_Resolve(DIDResolver *resolver, const char *di
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
     if (rc != CURLE_OK) {
+        DIDError_Set(DIDERR_RESOLVE_ERROR, "Resolve [%s] error, status: %d, message: %s", did, rc, curl_easy_strerror(rc));
         if (response.data)
             free(response.data);
 
@@ -161,12 +168,16 @@ static const char *DefaultResolver_Resolve(DIDResolver *resolver, const char *di
 DIDResolver *DefaultResolver_Create(const char *url)
 {
     CURLcode rc = curl_global_init(CURL_GLOBAL_ALL);
-    if (rc != CURLE_OK)
+    if (rc != CURLE_OK) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
+    }
 
     DefaultResolver *resolver = (DefaultResolver*)calloc(1, sizeof(DefaultResolver));
-    if (!resolver)
+    if (!resolver) {
+        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Malloc buffer for Default Resolver failed.");
         return NULL;
+    }
 
     memcpy((char*)resolver->url, url, strlen(url) + 1);
     resolver->base.resolve = DefaultResolver_Resolve;

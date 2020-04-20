@@ -294,7 +294,8 @@ static int issuer_issuevc_test_suite_init(void)
         return -1;
     }
 
-    issuer = Issuer_Create(issuerid, signkey, store);
+    //issuer = Issuer_Create(issuerid, signkey, store);
+    issuer = Issuer_Create(issuerid, NULL, store);
     if (!issuer) {
         TestData_Free();
         return -1;
