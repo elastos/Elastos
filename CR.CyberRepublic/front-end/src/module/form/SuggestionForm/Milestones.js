@@ -176,7 +176,7 @@ class Milestones extends Component {
                      content={this.renderSquare(item, index, true)}
                      trigger="click"
                      overlayStyle={{}}
-                     visible={this.getMilestoneTrigger(index).clickedSwitch}
+                     visible={this.getMilestoneTrigger(index) && this.getMilestoneTrigger(index).clickedSwitch}
                      onVisibleChange={isVisible => this.handleClickSwitchChange(index)
                      }
                    >
@@ -201,9 +201,9 @@ class Milestones extends Component {
                                    this.handleClickChange(index, false)
                                  }}
                          />
-)}
+                       )}
                        trigger="click"
-                       visible={this.getMilestoneTrigger(index).clicked}
+                       visible={this.getMilestoneTrigger(index) && this.getMilestoneTrigger(index).clicked}
                        onVisibleChange={isVisible => this.handleClickChange(index, isVisible)
                        }
                        placement="top"
@@ -224,7 +224,7 @@ class Milestones extends Component {
                        content={this.renderSquare(item, index, true)}
                        trigger="click"
                        overlayStyle={{}}
-                       visible={this.getMilestoneTrigger(index).clickedSwitch}
+                       visible={this.getMilestoneTrigger(index) && this.getMilestoneTrigger(index).clickedSwitch}
                        onVisibleChange={isVisible => this.handleClickSwitchChange(index)
                        }
                      >
@@ -252,7 +252,7 @@ class Milestones extends Component {
                     onSubmit={this.handleSubmit}
                           hidePopover={this.hideCreateForm}
                   />
-)}
+                )}
                 trigger="click"
                 placement="top"
                 visible={toggleCreateForm}

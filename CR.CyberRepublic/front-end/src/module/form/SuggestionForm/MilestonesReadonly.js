@@ -177,7 +177,7 @@ class Milestones extends Component {
                      content={this.renderSquare(item, index, true)}
                      trigger="click"
                      overlayStyle={{}}
-                     visible={this.getMilestoneTrigger(index).clickedSwitch}
+                     visible={this.getMilestoneTrigger(index) && this.getMilestoneTrigger(index).clickedSwitch}
                      onVisibleChange={isVisible => this.handleClickSwitchChange(index)
                      }
                    >
@@ -204,7 +204,7 @@ class Milestones extends Component {
                          />
                        )}
                        trigger="click"
-                       visible={this.getMilestoneTrigger(index).clicked}
+                       visible={this.getMilestoneTrigger(index) && this.getMilestoneTrigger(index).clicked}
                        onVisibleChange={isVisible => this.handleClickChange(index, isVisible)
                        }
                        placement="top"
@@ -225,7 +225,7 @@ class Milestones extends Component {
                        content={this.renderSquare(item, index, true)}
                        trigger="click"
                        overlayStyle={{}}
-                       visible={this.getMilestoneTrigger(index).clickedSwitch}
+                       visible={this.getMilestoneTrigger(index) && this.getMilestoneTrigger(index).clickedSwitch}
                        onVisibleChange={isVisible => this.handleClickSwitchChange(index)
                        }
                      >
