@@ -144,7 +144,7 @@ class Milestones extends Component {
         onClick={() => this.handleClickSwitchChange(index)}
         style={{ margin: '4px 0 16px 0' }}
       >
-        {this.getMilestoneTrigger(index).clickedSwitch
+        {this.getMilestoneTrigger(index) && this.getMilestoneTrigger(index).clickedSwitch
           ? I18N.get('suggestion.plan.hideDetail')
           : I18N.get('suggestion.plan.showDetail')}
       </Button>
@@ -202,7 +202,7 @@ class Milestones extends Component {
                                    this.handleClickChange(index, false)
                                  }}
                          />
-)}
+                       )}
                        trigger="click"
                        visible={this.getMilestoneTrigger(index).clicked}
                        onVisibleChange={isVisible => this.handleClickChange(index, isVisible)
@@ -253,7 +253,7 @@ class Milestones extends Component {
                     onSubmit={this.handleSubmit}
                           hidePopover={this.hideCreateForm}
                   />
-)}
+                )}
                 trigger="click"
                 placement="top"
                 visible={toggleCreateForm}
