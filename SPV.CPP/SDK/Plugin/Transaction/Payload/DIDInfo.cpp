@@ -250,13 +250,13 @@ namespace Elastos {
 			}
 		}
 
-		const std::map<std::string, std::string> &CredentialSubject::GetProperties() const {
+		const nlohmann::json &CredentialSubject::GetProperties() const {
 			return _properties;
 		}
 
-		const std::string &CredentialSubject::GetValue(const std::string &key) {
+		const nlohmann::json &CredentialSubject::GetValue(const std::string &key) const {
 			ErrorChecker::CheckParam(!HasProperties(key), Error::InvalidArgument, "invalid key");
-			return _properties[key];
+			return _properties.at(key);
 		}
 
 		bool CredentialSubject::HasProperties(const std::string &key) const {
@@ -270,21 +270,42 @@ namespace Elastos {
 		void CredentialSubject::ToOrderedJson(JsonGenerator *generator) const {
 			JsonGenerator_WriteStartObject(generator);
 
-			nlohmann::json jProperties = ToJson(0);
-			std::map<std::string, std::string> properties = jProperties;
-			properties.erase("id");
-
 			JsonGenerator_WriteStringField(generator, "id", _id.c_str());
 
-			for (std::map<std::string, std::string>::iterator it = properties.begin(); it != properties.end();  ++it) {
-				JsonGenerator_WriteStringField(generator, it->first.c_str(), it->second.c_str());
+			std::map<std::string, nlohmann::json> propertiesMap = _properties;
+			for (auto & m : propertiesMap) {
+				JsonGenerator_WriteFieldName(generator, m.first.c_str());
+				Properties2OrderedJson(generator, m.second);
 			}
 
 			JsonGenerator_WriteEndObject(generator);
 		}
 
+		void CredentialSubject::Properties2OrderedJson(JsonGenerator *generator, const nlohmann::json &properties) const {
+			if (properties.is_array()) {
+				JsonGenerator_WriteStartArray(generator);
+				for (auto & p : properties)
+					Properties2OrderedJson(generator, p);
+				JsonGenerator_WriteEndArray(generator);
+			} else if (properties.is_object()) {
+				std::map<std::string, nlohmann::json> propertiesMap = properties;
+				JsonGenerator_WriteStartObject(generator);
+				for (auto & m : propertiesMap) {
+					JsonGenerator_WriteFieldName(generator, m.first.c_str());
+					Properties2OrderedJson(generator, m.second);
+				}
+				JsonGenerator_WriteEndObject(generator);
+			} else if (properties.is_string()) {
+				JsonGenerator_WriteString(generator, properties.get<std::string>().c_str());
+			} else if (properties.is_null()) {
+				JsonGenerator_WriteString(generator, NULL);
+			} else {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "unsupport other josn value type: " + properties.dump());
+			}
+		}
+
 		nlohmann::json CredentialSubject::ToJson(uint8_t version) const {
-			nlohmann::json j(_properties);
+			nlohmann::json j = _properties;
 			j["id"] = _id;
 			return j;
 		}
@@ -295,11 +316,8 @@ namespace Elastos {
 				ErrorChecker::CheckParam(_id.find(PREFIX_DID) == std::string::npos, Error::InvalidArgument, "invalid id");
 			}
 
-			nlohmann::json jdata = j;
-			for (nlohmann::json::iterator it = jdata.begin(); it != jdata.end(); ++it) {
-				std::string key = it.key();
-				_properties[key] = it.value();
-			}
+			_properties = j;
+			_properties.erase("id");
 		}
 
 		ServiceEndpoint::ServiceEndpoint() : _id(""), _type(""), _serviceEndpoint("") {

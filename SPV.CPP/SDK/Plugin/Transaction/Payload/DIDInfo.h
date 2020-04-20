@@ -108,9 +108,9 @@
 
 			void AutoFill(const std::string &did);
 
-			const std::map<std::string, std::string> &GetProperties() const;
+			const nlohmann::json &GetProperties() const;
 
-			const std::string &GetValue(const std::string &key);
+			const nlohmann::json &GetValue(const std::string &key) const;
 
 			bool HasProperties(const std::string &key) const;
 
@@ -124,8 +124,11 @@
 			void ToOrderedJson(JsonGenerator *generator) const;
 
 		private:
+			void Properties2OrderedJson(JsonGenerator *generator, const nlohmann::json &properties) const;
+
+		private:
 			std::string _id;
-			std::map<std::string, std::string> _properties;
+			nlohmann::json _properties;
 
 		};
 
