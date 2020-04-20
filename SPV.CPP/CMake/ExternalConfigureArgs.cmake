@@ -9,7 +9,7 @@ if(${CMAKE_CROSSCOMPILING})
     if(ANDROID)
         # Cross compilation toolchains
         set(XDK_TOOLCHAIN "${CMAKE_BINARY_DIR}/.android_toolchain")
-        set(XDK_HOST ${CMAKE_ANDROID_ARCH_HEADER_TRIPLE})
+        set(XDK_HOST ${CMAKE_CXX_ANDROID_TOOLCHAIN_MACHINE})
         set(XDK_SYSROOT "${XDK_TOOLCHAIN}/sysroot")
         set(XDK_CC  "${XDK_TOOLCHAIN}/bin/clang")
         set(XDK_CXX "${XDK_TOOLCHAIN}/bin/clang++")
