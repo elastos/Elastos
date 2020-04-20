@@ -400,6 +400,13 @@ func (b *BlockChain) checkCRImpeachmentContent(content outputpayload.VoteContent
 		return errors.New("payload VoteProducerVersion not support vote CRCProposal")
 	}
 
+	crMembersMap := getCRMembersMap(b.crCommittee.GetImpeachableMembers())
+	for _, cv := range content.CandidateVotes {
+		if _, ok := crMembersMap[common.BytesToHexString(cv.Candidate)]; !ok {
+			return errors.New("candidate should be one of the CR members")
+		}
+	}
+
 	var totalVotes common.Fixed64
 	for _, cv := range content.CandidateVotes {
 		totalVotes += cv.Votes
@@ -441,14 +448,14 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32,
 		return errors.New("payload VoteProducerVersion not support vote CR")
 	}
 	for _, cv := range content.CandidateVotes {
-		did, err := common.Uint168FromBytes(cv.Candidate)
+		cid, err := common.Uint168FromBytes(cv.Candidate)
 		if err != nil {
 			return fmt.Errorf("invalid vote output payload " +
-				"Candidate can not change to proper did")
+				"Candidate can not change to proper cid")
 		}
-		if _, ok := crs[*did]; !ok {
+		if _, ok := crs[*cid]; !ok {
 			return fmt.Errorf("invalid vote output payload "+
-				"CR candidate: %s", did.String())
+				"CR candidate: %s", cid.String())
 		}
 	}
 	var totalVotes common.Fixed64
