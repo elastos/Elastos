@@ -147,7 +147,7 @@ module.exports = (props) => {
         <img src="artwork/sendicon.svg" className="send-icon" title="Refresh Blockchain Data"  onClick={(e) => App.refreshBlockchainData()}/>
         <p className="send-text">Send</p>
         <div className="fees-text">Fees (in Satoshis)</div>
-        <input type="text" size="14" id="feeAmount" placeholder="Fees" defaultValue={App.DEFAULT_FEE_SATS} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}></input>
+        <input type="text" size="14" id="feeAmount" placeholder="Fees" defaultValue={App.getFee()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}></input>
         <div className="estimate-new"onClick={(e) => showConfirmAndSeeFees()}>Estimated New Balance</div>
         <p className="fees-balance">Your balance will be deducted <span> {App.getSendAmount()} ELA</span>
           + <br /> <span>{App.getFeeAmountEla()}</span>

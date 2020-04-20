@@ -30,8 +30,6 @@ const MAX_POLL_DATA_TYPE_IX = 5;
 
 const PRIVATE_KEY_LENGTH = 64;
 
-const DEFAULT_FEE_SATS = '5000';
-
 const EXPLORER = 'https://blockchain.elastos.org';
 
 const RSS_FEED_URL = 'https://news.elastos.org/feed/';
@@ -125,6 +123,14 @@ let blockchainLastActionHeight = 0;
 let parsedRssFeedStatus = 'No Rss Feed Requested Yet';
 
 const parsedRssFeed = [];
+
+let feeStatus = 'No Fee Requested Yet';
+
+let fee = '';
+
+let feeAccountStatus = 'No Fee Account Requested Yet';
+
+let feeAccount = '';
 
 let bannerStatus = '';
 
@@ -300,6 +306,8 @@ const pollForData = () => {
         requestListOfProducers();
         requestListOfCandidateVotes();
         requestRssFeed();
+        requestFee();
+        requestFeeAccount();
         pollDataTypeIx++;
         setPollForAllInfoTimer();
         break;
@@ -494,9 +502,9 @@ const clearSendData = () => {
   // mainConsole.log('STARTED clearSendData');
   GuiUtils.setValue('sendAmount', '');
   GuiUtils.setValue('sendToAddress', '');
-  GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
+  GuiUtils.setValue('feeAmount', fee);
   sendAmount = '';
-  feeAmountSats = DEFAULT_FEE_SATS;
+  feeAmountSats = fee;
   feeAmountEla = '';
   sendToAddressStatuses.length = 0;
   sendToAddressLinks.length = 0;
@@ -542,7 +550,7 @@ const sendAmountToAddress = () => {
   let encodedTx;
 
   if (useLedgerFlag) {
-    const tx = TxFactory.createUnsignedSendToTx(unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats);
+    const tx = TxFactory.createUnsignedSendToTx(unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats, feeAccount);
     const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
     const sendAmountToAddressLedgerCallback = (message) => {
       if (LOG_LEDGER_POLLING) {
@@ -562,7 +570,7 @@ const sendAmountToAddress = () => {
   } else {
     const privateKeyElt = document.getElementById('privateKey');
     const privateKey = privateKeyElt.value;
-    const encodedTx = TxFactory.createSignedSendToTx(privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmountSats);
+    const encodedTx = TxFactory.createSignedSendToTx(privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmountSats, feeAccount);
 
     if (encodedTx == undefined) {
       return;
@@ -962,7 +970,7 @@ const clearGlobalData = () => {
   // mainConsole.log('STARTED clearGlobalData');
   GuiUtils.setValue('privateKey', '');
   GuiUtils.setValue('mnemonic', '');
-  GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
+  GuiUtils.setValue('feeAmount', fee);
   GuiUtils.setValue('nodeUrl', '');
 
   useLedgerFlag = false;
@@ -990,6 +998,11 @@ const clearGlobalData = () => {
 
   parsedRssFeed.length = 0;
   parsedRssFeedStatus = 'No Rss Feed Requested Yet';
+
+  feeStatus = 'No Fee Requested Yet';
+  fee = '';
+  feeAccountStatus = 'No Fee Account Requested Yet';
+  feeAccount = '';
 
   bannerStatus = '';
   bannerClass = '';
@@ -1154,6 +1167,48 @@ const getRssFeedReadyCallback = (response) => {
   renderApp();
 };
 
+const requestFee = async () => {
+  const feeUrl = `${getRestService()}/api/v1/fee`;
+  feeStatus = 'Fee Requested';
+  getJson(feeUrl, getFeeReadyCallback, getFeeErrorCallback);
+};
+
+const getFeeErrorCallback = (error) => {
+  mainConsole.log('getFeeErrorCallback ', error);
+  feeStatus = `Rss Feed Error ${error.message}`;
+  fee = '';
+  renderApp();
+};
+
+const getFeeReadyCallback = (response) => {
+  feeStatus = 'Fee Received';
+  fee = response.result.toString();
+  mainConsole.log('getFeeReadyCallback ', response, fee);
+  renderApp();
+};
+
+
+const requestFeeAccount = async () => {
+  const feeAccountUrl = `${getRestService()}/api/v1/node/reward/address`;
+  feeAccountStatus = 'Fee Account Requested';
+  mainConsole.log('requestFeeAccount ', feeAccountStatus);
+  getJson(feeAccountUrl, getFeeAccountReadyCallback, getFeeAccountErrorCallback);
+};
+
+const getFeeAccountErrorCallback = (error) => {
+  mainConsole.log('getFeeErrorCallback ', error);
+  feeAccountStatus = `Rss Account Feed Error ${error.message}`;
+  feeAccount = '';
+  renderApp();
+};
+
+const getFeeAccountReadyCallback = (response) => {
+  feeAccountStatus = 'Fee Account Received';
+  feeAccount = response.result;
+  mainConsole.log('getFeeAccountReadyCallback ', response, feeAccount);
+  renderApp();
+};
+
 const getParsedRssFeed = () => {
   return parsedRssFeed;
 };
@@ -1166,8 +1221,10 @@ const getBannerClass = () => {
   return bannerClass;
 };
 
+const getFee = () => {
+  return fee;
+}
 
-exports.DEFAULT_FEE_SATS = DEFAULT_FEE_SATS;
 exports.REST_SERVICES = REST_SERVICES;
 exports.init = init;
 exports.log = mainConsole.log;
@@ -1220,3 +1277,4 @@ exports.getAddressOrBlank = getAddressOrBlank;
 exports.getParsedRssFeed = getParsedRssFeed;
 exports.getBannerStatus = getBannerStatus;
 exports.getBannerClass = getBannerClass;
+exports.getFee = getFee;

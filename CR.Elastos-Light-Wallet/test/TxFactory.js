@@ -14,6 +14,7 @@ const publicKey = KeyTranscoder.getPublic(privateKey);
 const sendToAddress = AddressTranscoder.getAddressFromPublicKey(publicKey);
 const sendAmount = '1';
 const feeAmount = '500';
+const feeAccount = 'EQNJEA8XhraX8a6SBq98ENU5QSW6nvgSHJ';
 
 const unspentTransactionOutputs = txFactoryFixtures.unspentTransactionOutputs;
 
@@ -29,14 +30,14 @@ describe('tx-factory', function() {
   it('encoded signed tx matches expected', function() {
     const expectedTx = encodedSignedTx;
 
-    const actualTx = TxFactory.createSignedSendToTx(privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmount);
+    const actualTx = TxFactory.createSignedSendToTx(privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmount, feeAccount);
 
     expect(expectedTx).to.deep.equal(actualTx);
   });
   it('signed tx matches expected', function() {
     const expectedTx = TxTranscoder.decodeTx(Buffer.from(encodedSignedTx, 'hex'), true);
 
-    const actualTx = TxTranscoder.decodeTx(Buffer.from(TxFactory.createSignedSendToTx(privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmount), 'hex'), true);
+    const actualTx = TxTranscoder.decodeTx(Buffer.from(TxFactory.createSignedSendToTx(privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmount, feeAccount), 'hex'), true);
 
     expect(expectedTx).to.deep.equal(actualTx);
   });
