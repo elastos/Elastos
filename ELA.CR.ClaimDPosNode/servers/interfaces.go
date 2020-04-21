@@ -1807,6 +1807,8 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 		proposalMap = crCommittee.GetProposals(crstate.VoterCanceled)
 	case "aborted":
 		proposalMap = crCommittee.GetProposals(crstate.Aborted)
+	case "terminated":
+		proposalMap = crCommittee.GetProposals(crstate.Terminated)
 	default:
 		return ResponsePack(InvalidParams, "invalidate state")
 	}
