@@ -32,6 +32,8 @@ set(ENABLE_DOCS FALSE CACHE BOOL "Build APIs documentation")
 
 add_subdirectory(deps)
 add_subdirectory(hdkey)
+add_subdirectory(apps)
+
 if (ENABLE_SPVADAPTER)
     add_subdirectory(adapter)
 endif()
