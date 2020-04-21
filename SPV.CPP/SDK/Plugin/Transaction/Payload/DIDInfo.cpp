@@ -297,6 +297,12 @@ namespace Elastos {
 				JsonGenerator_WriteEndObject(generator);
 			} else if (properties.is_string()) {
 				JsonGenerator_WriteString(generator, properties.get<std::string>().c_str());
+			} else if (properties.is_boolean()) {
+				JsonGenerator_WriteBoolean(generator, properties.get<bool>());
+			} else if (properties.is_number_float()) {
+				JsonGenerator_WriteDouble(generator, properties.get<double>());
+			} else if (properties.is_number()) {
+				JsonGenerator_WriteNumber(generator, properties.get<int>());
 			} else if (properties.is_null()) {
 				JsonGenerator_WriteString(generator, NULL);
 			} else {
