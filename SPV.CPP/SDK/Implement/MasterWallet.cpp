@@ -500,10 +500,13 @@ namespace Elastos {
 			ArgInfo("{} {}", _id, GetFunName());
 			ArgInfo("addr: {}", address);
 
-			bool result = Address(address).Valid();
+			bool valid = Address(address).Valid();
+			if (!valid) {
+				valid = addressValidateString(address.c_str()) == ETHEREUM_BOOLEAN_TRUE;
+			}
 
-			ArgInfo("r => {}", result);
-			return result;
+			ArgInfo("r => {}", valid);
+			return valid;
 		}
 
 		std::vector<std::string> MasterWallet::GetSupportedChains() const {
