@@ -485,10 +485,10 @@
     <string name="plzselcetsex">Gender</string>
     <string name="plzselectbirthday">Enter Birth Date</string>
     <string name="plzinputheadurl">Upload the portrait url</string>
-    <string name="plzinputcode">Enter country code（e.g +86）</string>
+    <string name="plzinputcode">Enter country code</string>
     <string name="man">Male</string>
     <string name="woman">Female</string>
-    <string name="plzinputinti800">Enter your bios</string>
+    <string name="plzinputinti800">Please enter your profile</string>
     <string name="addpersonalintro">Add your bios</string>
     <string name="addsocialaccount">Add Social Media Account</string>
     <string name="plzinputpersonalurl">Enter your profile URL</string>

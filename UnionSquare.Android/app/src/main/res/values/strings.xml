@@ -490,7 +490,7 @@
     <string name="plzselcetsex">请选择性别</string>
     <string name="plzselectbirthday">请选择出生日期</string>
     <string name="plzinputheadurl">请输入头像url</string>
-    <string name="plzinputcode">请输入区号（如+86）</string>
+    <string name="plzinputcode">请输入区号</string>
     <string name="man">男</string>
     <string name="woman">女</string>
     <string name="plzinputinti800">请输入个人简介</string>

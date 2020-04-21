@@ -16,7 +16,14 @@
         android:layout_gravity="center"
         android:layout_marginTop="@dimen/px130"
         android:src="@mipmap/wallet_ela_logo" />
-
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="ELA Wallet"
+        android:textColor="#ffffffff"
+        android:textSize="20sp" />
 
     <com.allen.library.SuperButton
         android:id="@+id/sb_create_wallet"

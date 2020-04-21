@@ -137,8 +137,8 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
 
 
     private void initCache() {
-        if (new SPUtil(getContext()).getFristLogin()) {
-            new SPUtil(getContext()).setFristLogin();
+        if (new SPUtil(getContext()).isRefreshCache()) {
+            new SPUtil(getContext()).setRefreshCache();
             intAreaCache();
         }
 

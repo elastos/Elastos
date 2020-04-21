@@ -16,7 +16,7 @@
     <View
         android:id="@+id/view1"
         style="@style/line1"
-        android:layout_width="100dp"
+        android:layout_width="90dp"
         android:layout_alignParentBottom="true" />
 
     <EditText

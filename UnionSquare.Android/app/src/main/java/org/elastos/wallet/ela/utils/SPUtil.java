@@ -179,6 +179,16 @@ public class SPUtil {
         edit.remove("isfrist");
         edit.putBoolean("isfrist1", false);
         edit.commit();
+    }//是不是第一次登陆
+    public boolean isRefreshCache() {
+        return getSharedPreferences(detrust_fileName).getBoolean("refreshCache", true);
+    }
+
+    //设置不是第一次登陆
+    public void setRefreshCache() {
+        SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
+        edit.putBoolean("refreshCache", false);
+        edit.commit();
     }
 
     //是不是第一次登陆

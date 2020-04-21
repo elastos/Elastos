@@ -68,7 +68,7 @@ public class CreateWalletFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, getString(R.string.createsinglewallet));
+        setToobar(toolbar, toolbarTitle, getString(R.string.create_a_wallet));
         //开启自定义键盘
         // AppUtlis.securityKeyboard(ll_create_wallet);
     }
