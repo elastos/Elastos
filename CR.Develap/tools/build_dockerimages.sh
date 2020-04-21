@@ -104,7 +104,7 @@ fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.did" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
     build_binary_and_docker "v0.1.3" "github.com/elastos/Elastos.ELA.SideChain.ID" "sidechain.did" \
-        "cyberrepublic/elastos-sidechain-did-node" "yes" "v0.1.3"
+        "cyberrepublic/elastos-sidechain-did-node" "yes" "v0.1.4"
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.token" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
