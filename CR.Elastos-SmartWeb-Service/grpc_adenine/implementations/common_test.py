@@ -47,9 +47,9 @@ class CommonTest(unittest.TestCase):
         db_port = config('TEST_DB_PORT')
         database_uri = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
         db_engine = create_engine(database_uri)
-        session_maker = sessionmaker(bind=db_engine)
-        cls.session = session_maker()
-        cls.rate_limiter = RateLimiter(cls.session)
+        Session = sessionmaker(bind=db_engine)
+        cls.session = Session()
+        cls.rate_limiter = RateLimiter(Session())
 
     @classmethod
     def tearDownClass(cls):

@@ -8,6 +8,7 @@ from grpc_adenine.database import db_engine
 from grpc_adenine.database.user import Users
 from grpc_adenine.database.user_api_relation import UserApiRelations
 from grpc_adenine.stubs.python import common_pb2, common_pb2_grpc
+from requests import Session
 from sqlalchemy.orm import sessionmaker
 from grpc_adenine import settings
 from grpc_adenine.implementations.rate_limiter import RateLimiter
@@ -16,9 +17,9 @@ from grpc_adenine.implementations.rate_limiter import RateLimiter
 class Common(common_pb2_grpc.CommonServicer):
 
     def __init__(self, session=None, rate_limiter=None):
-        session_maker = sessionmaker(bind=db_engine)
-        self.session = session if session else session_maker()
-        self.rate_limiter = rate_limiter if rate_limiter else RateLimiter(self.session)
+        Session = sessionmaker(bind=db_engine)
+        self.session = session if session else Session()
+        self.rate_limiter = rate_limiter if rate_limiter else RateLimiter(Session())
 
     def GenerateAPIRequest(self, request, context):
         metadata = dict(context.invocation_metadata())
