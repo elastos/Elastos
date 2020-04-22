@@ -554,7 +554,12 @@ func (c *Committee) GetDepositAmountByID(
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
-	return c.state.getDepositAmountByID(id)
+	cid, exist := c.state.getExistCIDByID(id)
+	if !exist {
+		return 0, 0, errors.New("ID does not exist")
+	}
+	refundable := c.IsRefundable(*cid)
+	return c.state.getDepositAmountByCID(*cid, refundable)
 }
 
 func (c *Committee) GetAvailableDepositAmount(cid common.Uint168) common.Fixed64 {
