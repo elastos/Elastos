@@ -345,7 +345,9 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 	for _, program := range tx.Programs {
 		cid, _ := getCIDByCode(program.Code)
 		if candidate := s.getCandidate(*cid); candidate != nil {
-			returnCandidateAction(candidate, candidate.state)
+			if candidate.state == Canceled {
+				returnCandidateAction(candidate, candidate.state)
+			}
 		}
 		if candidates := s.getHistoryCandidate(*cid); len(candidates) != 0 {
 			for _, c := range candidates {
