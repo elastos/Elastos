@@ -35,7 +35,6 @@ namespace Elastos {
 
 		void SpvService::SyncStart() {
 			_peerManager->SetKeepAliveTimestamp(time(NULL));
-			_peerManager->ResetReconnectStep();
 			_peerManager->ConnectLaster(0);
 		}
 

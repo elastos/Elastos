@@ -157,7 +157,7 @@ namespace Elastos {
 #ifdef ARGUMENT_LOG_ENABLE
 #define __va_first(first, ...) first
 #define __va_rest(first, ...) __VA_ARGS__
-#define ArgInfo(...) SPVLOG_DEBUG(std::string("+++ ") + __va_first(__VA_ARGS__, NULL), __va_rest(__VA_ARGS__, NULL))
+#define ArgInfo(...) SPVLOG_INFO(std::string("+++ ") + __va_first(__VA_ARGS__, NULL), __va_rest(__VA_ARGS__, NULL))
 #else
 #define ArgInfo(...)
 #endif

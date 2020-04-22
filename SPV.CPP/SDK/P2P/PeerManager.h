@@ -118,8 +118,6 @@ namespace Elastos {
 
 			Peer::ConnectStatus GetConnectStatus() const;
 
-			void ResetReconnectStep();
-
 			bool SyncSucceeded() const;
 
 			void SetSyncSucceeded(bool succeeded);
@@ -179,6 +177,11 @@ namespace Elastos {
 			virtual bool OnNetworkIsReachable(const PeerPtr &peer);
 
 			virtual void OnThreadCleanup(const PeerPtr &peer);
+
+		private:
+			void RemovePeer(const PeerPtr &peer);
+
+			Peer::ConnectStatus GetConnectStatusInternal() const;
 
 		private:
 			void FireSyncStarted();
@@ -246,6 +249,8 @@ namespace Elastos {
 
 			size_t PeerListCount(const std::vector<TransactionPeerList> &list, const uint256 &txhash);
 
+			void UpdateAddressOnlyDone(const PeerPtr &peer, int success);
+
 			void LoadBloomFilterDone(const PeerPtr &peer, int success);
 
 			void UpdateFilterRerequestDone(const PeerPtr &peer, int success);
@@ -268,8 +273,9 @@ namespace Elastos {
 
 		private:
 			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount;
-			bool _syncSucceeded, _needGetAddr, _enableReconnect;
+			bool _syncSucceeded, _enableReconnect;
 
+			Peer::ConnectStatus _connectStatus;
 			std::vector<PeerInfo> _peers;
 			std::set<PeerInfo> _blackPeers;
 			PeerInfo _fixedPeer;
@@ -280,7 +286,6 @@ namespace Elastos {
 			mutable std::string _downloadPeerName;
 			time_t _keepAliveTimestamp, _earliestKeyTime;
 			uint32_t _reconnectSeconds, _syncStartHeight, _filterUpdateHeight, _estimatedHeight;
-			uint32_t _reconnectStep;
 			BloomFilterPtr _bloomFilter;
 			double _fpRate, _averageTxPerBlock;
 			BlockSet _blocks;
