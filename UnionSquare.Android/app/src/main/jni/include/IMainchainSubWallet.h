@@ -550,16 +550,7 @@ namespace Elastos {
 			 * Type can be value as below:
 			 * {
 			 *	 Normal: 0x0000
-			 *	 Elip: 0x0100
-			 *	 FlowElip: 0x0101
-			 *	 InfoElip: 0x0102
-			 *	 MainChainUpgradeCode: 0x0200
-			 *	 SideChainUpgradeCode: 0x0300
-			 *	 RegisterSideChain: 0x0301
-			 *	 SecretaryGeneral: 0x0400
-			 *	 ChangeOwner: 0x0401
-			 *	 CloseProposal: 0x0402
-			 *	 DappConsensus: 0x0500
+			 *	 ELIP: 0x0100
 			 * }
 			 *
 			 * Budget must contain the following:
@@ -589,12 +580,12 @@ namespace Elastos {
 			 *
 			 *    // signature of owner
 			 *    "Signature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76",
-			 *    "CRCommitteeDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY"
+			 *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY"
 			 * }
 			 *
 			 * @return Digest of payload.
 			 */
-			virtual std::string ProposalCRCommitteeDigest(const nlohmann::json &payload) const = 0;
+			virtual std::string ProposalCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
 
 			/**
 			 * Create proposal transaction.
@@ -612,8 +603,8 @@ namespace Elastos {
 			 *
 			 *    // signature of owner
 			 *    "Signature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76",
-			 *    "CRCommitteeDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-			 *    "CRCommitteeSignature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76"
+			 *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+			 *    "CRCouncilMemberSignature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76"
 			 * }
 			 *
 			 * @param memo Remarks string. Can be empty string.
@@ -632,9 +623,9 @@ namespace Elastos {
 			 * @param payload Payload proposal review.
 			 * {
 			 *   "ProposalHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
-			 *   "Opinion": 1,    // approve = 0, reject = 1, abstain = 2
+			 *   "VoteResult": 1,    // approve = 0, reject = 1, abstain = 2
 			 *   "OpinionHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
-			 *   "CRCommitteeDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+			 *   "DID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY", // did of CR council member's did
 			 * }
 			 *
 			 * @return Digest of payload.
@@ -647,10 +638,10 @@ namespace Elastos {
 			 * @param payload Signed payload.
  			 * {
 			 *   "ProposalHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
-			 *   "Opinion": 1,    // approve = 0, reject = 1, abstain = 2
+			 *   "VoteResult": 1,    // approve = 0, reject = 1, abstain = 2
 			 *   "OpinionHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
-			 *   "CRCommitteeDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-			 *   // signature of committee DID
+			 *   "DID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY", // did of CR council member's did
+			 *   // signature of CR council member
 			 *   "Signature": "ff0ff9f45478f8f9fcd50b15534c9a60810670c3fb400d831cd253370c42a0af79f7f4015ebfb4a3791f5e45aa1c952d40408239dead3d23a51314b339981b76"
 			 * }
 			 *
@@ -670,7 +661,7 @@ namespace Elastos {
 			 * @param payload Proposal tracking payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *   "DocumentHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -687,7 +678,7 @@ namespace Elastos {
 			 * @param payload Proposal tracking payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *   "DocumentHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -705,7 +696,7 @@ namespace Elastos {
 			 * @param payload Proposal tracking payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *   "DocumentHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -714,7 +705,7 @@ namespace Elastos {
 			 *   // If NewOwnerPubKey is empty, this must be empty.
 			 *   "NewOwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
 			 *   "Type": 0, // common = 0, progress = 1, rejected = 2, terminated = 3, changeOwner = 4, finalized = 5
-			 *   "SecretaryOpinionHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "SecretaryGeneralOpinionHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 * }
 			 *
 			 * @return Digest of payload
@@ -728,7 +719,7 @@ namespace Elastos {
 			 * @param payload Proposal tracking payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *   "DocumentHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *   "MessageHash": "0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
 			 *   "Stage": 0, // value can be [0, 128)
 			 *   "OwnerPublicKey": "02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
 			 *   // If this proposal tracking is not use for changing owner, will be empty. Otherwise not empty.
@@ -737,8 +728,8 @@ namespace Elastos {
 			 *   // If NewOwnerPubKey is empty, this must be empty.
 			 *   "NewOwnerSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
 			 *   "Type": 0, // common = 0, progress = 1, rejected = 2, terminated = 3, changeOwner = 4, finalized = 5
-			 *   "SecretaryOpinionHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
-			 *   "SecretarySignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
+			 *   "SecretaryGeneralOpinionHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "SecretaryGeneralSignature": "9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109"
 			 * }
 			 *
 			 * @param memo Remarks string. Can be empty string.
@@ -765,9 +756,20 @@ namespace Elastos {
 
 			/**
 			 * Create proposal withdraw transaction.
+			 * Note: This tx does not need to be signed.
 			 *
 			 * @param recipient Recipient of proposal.
 			 * @param amount Withdraw amount.
+			 * @param utxo UTXO json array of address CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b.
+			 * [{
+			 *   "Hash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "Index": 0,
+			 *   "Amount": "100000000",   // 1 ela = 100000000 sela
+			 * },{
+			 *   "Hash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "Index": 2,
+			 *   "Amount": "200000000",   // 2 ela = 200000000 sela
+			 * }]
 			 * @param payload Proposal payload.
 			 * {
 			 *   "ProposalHash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
@@ -781,6 +783,7 @@ namespace Elastos {
 			 */
 			 virtual nlohmann::json CreateProposalWithdrawTransaction(const std::string &recipient,
 																	  const std::string &amount,
+																	  const nlohmann::json &utxo,
 																	  const nlohmann::json &payload,
 																	  const std::string &memo = "") = 0;
 

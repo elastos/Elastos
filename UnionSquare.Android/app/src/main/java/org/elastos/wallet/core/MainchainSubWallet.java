@@ -104,8 +104,8 @@ public class MainchainSubWallet extends SubWallet {
         return ProposalOwnerDigest(mMainchainProxy, payload);
     }
 
-    public String ProposalCRCommitteeDigest(String payload) throws WalletException {
-        return ProposalCRCommitteeDigest(mMainchainProxy, payload);
+    public String ProposalCRCouncilMemberDigest(String payload) throws WalletException {
+        return ProposalCRCouncilMemberDigest(mMainchainProxy, payload);
     }
 
     public String CreateProposalTransaction(String payload, String memo) throws WalletException {
@@ -148,8 +148,8 @@ public class MainchainSubWallet extends SubWallet {
         return ProposalWithdrawDigest(mMainchainProxy, payload);
     }
 
-    public String CreateProposalWithdrawTransaction(String recipient, String amount, String payload, String memo) {
-        return CreateProposalWithdrawTransaction(mMainchainProxy, recipient, amount, payload, memo);
+    public String CreateProposalWithdrawTransaction(String recipient, String amount, String utxo, String payload, String memo) {
+        return CreateProposalWithdrawTransaction(mMainchainProxy, recipient, amount, utxo, payload, memo);
     }
 
     private native String CreateDepositTransaction(long proxy, String fromAddress, String sideChainID, String amount,
@@ -199,7 +199,7 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String ProposalOwnerDigest(long Proxy, String payload);
 
-    private native String ProposalCRCommitteeDigest(long Proxy, String payload);
+    private native String ProposalCRCouncilMemberDigest(long Proxy, String payload);
 
     private native String CreateProposalTransaction(long Proxy, String payload, String memo);
 
@@ -221,6 +221,6 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String ProposalWithdrawDigest(long Proxy, String payload);
 
-    private native String CreateProposalWithdrawTransaction(long Proxy, String recipient, String amount, String payload, String memo);
+    private native String CreateProposalWithdrawTransaction(long Proxy, String recipient, String amount, String utxo, String payload, String memo);
 
 }
