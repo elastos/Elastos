@@ -614,11 +614,11 @@ func (s *transactionSuite) TestCRCProposal_Deserialize() {
 
 func crpPayloadEqual(payload1 *payload.CRCProposal, payload2 *payload.CRCProposal) bool {
 	return payload1.ProposalType == payload2.ProposalType &&
-		bytes.Equal(payload1.SponsorPublicKey, payload2.SponsorPublicKey) &&
-		payload1.CRSponsorDID.IsEqual(payload2.CRSponsorDID) &&
+		bytes.Equal(payload1.OwnerPublicKey, payload2.OwnerPublicKey) &&
+		payload1.CRCouncilMemberDID.IsEqual(payload2.CRCouncilMemberDID) &&
 		payload1.DraftHash.IsEqual(payload2.DraftHash) &&
-		bytes.Equal(payload1.Sign, payload2.Sign) &&
-		bytes.Equal(payload1.CRSign, payload2.CRSign)
+		bytes.Equal(payload1.Signature, payload2.Signature) &&
+		bytes.Equal(payload1.CRCouncilMemberSignature, payload2.CRCouncilMemberSignature)
 }
 
 func budgetsEqual(budgets1 []common.Fixed64, budgets2 []common.Fixed64) bool {
@@ -651,7 +651,7 @@ func crcProposalReviewPayloadEqual(payload1 *payload.CRCProposalReview,
 		payload1.VoteResult != payload2.VoteResult ||
 		!payload1.OpinionHash.IsEqual(payload2.OpinionHash) ||
 		!payload1.DID.IsEqual(payload2.DID) ||
-		!bytes.Equal(payload1.Sign, payload2.Sign) {
+		!bytes.Equal(payload1.Signature, payload2.Signature) {
 		return false
 	}
 
@@ -664,7 +664,7 @@ func randomCRCProposalReviewPayload() *payload.CRCProposalReview {
 		VoteResult:   payload.VoteResult(rand.Int() % 3),
 		OpinionHash:  *randomUint256(),
 		DID:          *randomUint168(),
-		Sign:         randomBytes(65),
+		Signature:    randomBytes(65),
 	}
 }
 
@@ -686,14 +686,14 @@ func (s *transactionSuite) TestCRCProposalTracking_Deserialize() {
 func ctpPayloadEqual(payload1 *payload.CRCProposalTracking, payload2 *payload.CRCProposalTracking) bool {
 	return payload1.ProposalTrackingType == payload2.ProposalTrackingType &&
 		payload1.ProposalHash.IsEqual(payload2.ProposalHash) &&
-		payload1.DocumentHash.IsEqual(payload2.DocumentHash) &&
-		payload1.SecretaryOpinionHash.IsEqual(payload2.SecretaryOpinionHash) &&
+		payload1.MessageHash.IsEqual(payload2.MessageHash) &&
+		payload1.SecretaryGeneralOpinionHash.IsEqual(payload2.SecretaryGeneralOpinionHash) &&
 		payload1.Stage == payload2.Stage &&
-		bytes.Equal(payload1.LeaderPubKey, payload2.LeaderPubKey) &&
-		bytes.Equal(payload1.NewLeaderPubKey, payload2.NewLeaderPubKey) &&
-		bytes.Equal(payload1.LeaderSign, payload2.LeaderSign) &&
-		bytes.Equal(payload1.NewLeaderSign, payload2.NewLeaderSign) &&
-		bytes.Equal(payload1.SecretaryGeneralSign, payload2.SecretaryGeneralSign)
+		bytes.Equal(payload1.OwnerPublicKey, payload2.OwnerPublicKey) &&
+		bytes.Equal(payload1.NewOwnerPublicKey, payload2.NewOwnerPublicKey) &&
+		bytes.Equal(payload1.OwnerSignature, payload2.OwnerSignature) &&
+		bytes.Equal(payload1.NewOwnerSignature, payload2.NewOwnerSignature) &&
+		bytes.Equal(payload1.SecretaryGeneralSignature, payload2.SecretaryGeneralSignature)
 }
 
 func (s *transactionSuite) TestTransaction_SpecificSample() {
@@ -836,28 +836,28 @@ func randomUnregisterCRPayload() *payload.UnregisterCR {
 
 func randomCRCProposalPayload() *payload.CRCProposal {
 	return &payload.CRCProposal{
-		ProposalType:     payload.CRCProposalType(randomBytes(1)[0]),
-		SponsorPublicKey: randomBytes(33),
-		CRSponsorDID:     *randomUint168(),
-		DraftHash:        *randomUint256(),
-		Budgets:          randomBudgets(3),
-		Sign:             randomBytes(64),
-		CRSign:           randomBytes(64),
+		ProposalType:             payload.CRCProposalType(randomBytes(1)[0]),
+		OwnerPublicKey:           randomBytes(33),
+		CRCouncilMemberDID:       *randomUint168(),
+		DraftHash:                *randomUint256(),
+		Budgets:                  randomBudgets(3),
+		Signature:                randomBytes(64),
+		CRCouncilMemberSignature: randomBytes(64),
 	}
 }
 
 func randomCRCProposalTrackingPayload() *payload.CRCProposalTracking {
 	return &payload.CRCProposalTracking{
-		ProposalTrackingType: payload.CRCProposalTrackingType(rand.Uint32()),
-		ProposalHash:         *randomUint256(),
-		DocumentHash:         *randomUint256(),
-		Stage:                randomUint8(),
-		LeaderPubKey:         randomBytes(33),
-		NewLeaderPubKey:      randomBytes(35),
-		LeaderSign:           randomBytes(64),
-		NewLeaderSign:        randomBytes(64),
-		SecretaryGeneralSign: randomBytes(64),
-		SecretaryOpinionHash: *randomUint256(),
+		ProposalTrackingType:        payload.CRCProposalTrackingType(rand.Uint32()),
+		ProposalHash:                *randomUint256(),
+		MessageHash:                 *randomUint256(),
+		Stage:                       randomUint8(),
+		OwnerPublicKey:              randomBytes(33),
+		NewOwnerPublicKey:           randomBytes(35),
+		OwnerSignature:              randomBytes(64),
+		NewOwnerSignature:           randomBytes(64),
+		SecretaryGeneralSignature:   randomBytes(64),
+		SecretaryGeneralOpinionHash: *randomUint256(),
 	}
 }
 

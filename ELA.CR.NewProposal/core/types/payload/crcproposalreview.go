@@ -42,7 +42,7 @@ type CRCProposalReview struct {
 	VoteResult   VoteResult
 	OpinionHash  common.Uint256
 	DID          common.Uint168
-	Sign         []byte
+	Signature    []byte
 }
 
 func (a *CRCProposalReview) Data(version byte) []byte {
@@ -59,7 +59,7 @@ func (a *CRCProposalReview) Serialize(w io.Writer, version byte) error {
 		return err
 	}
 
-	err = common.WriteVarBytes(w, a.Sign)
+	err = common.WriteVarBytes(w, a.Signature)
 	if err != nil {
 		return errors.New("[CRCProposalReview], Signature serialize failed")
 	}
@@ -89,9 +89,9 @@ func (a *CRCProposalReview) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return err
 	}
-	a.Sign, err = common.ReadVarBytes(r, crypto.MaxSignatureScriptLength, "sign")
+	a.Signature, err = common.ReadVarBytes(r, crypto.MaxSignatureScriptLength, "sign")
 	if err != nil {
-		return errors.New("[CRCProposalReview], Sign deserialize failed")
+		return errors.New("[CRCProposalReview], Signature deserialize failed")
 	}
 
 	return nil

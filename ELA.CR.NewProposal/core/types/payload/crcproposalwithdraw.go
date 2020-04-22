@@ -17,14 +17,14 @@ import (
 const CRCProposalWithdrawVersion byte = 0x00
 
 type CRCProposalWithdraw struct {
-	// Hash of the proposal to withdrawal ela
+	// Hash of the proposal to withdrawal ela.
 	ProposalHash common.Uint256
 
-	// Public key of sponsor.
-	SponsorPublicKey []byte
+	// Public key of proposal owner.
+	OwnerPublicKey []byte
 
-	//signature
-	Sign []byte
+	// Signature of proposal owner.
+	Signature []byte
 }
 
 func (p *CRCProposalWithdraw) Data(version byte) []byte {
@@ -41,7 +41,7 @@ func (p *CRCProposalWithdraw) Serialize(w io.Writer, version byte) error {
 		return err
 	}
 
-	err = common.WriteVarBytes(w, p.Sign)
+	err = common.WriteVarBytes(w, p.Signature)
 	if err != nil {
 		return errors.New("[CRCProposalWithdraw], Signature serialize failed")
 	}
@@ -54,7 +54,7 @@ func (p *CRCProposalWithdraw) SerializeUnsigned(w io.Writer, version byte) error
 		return err
 	}
 
-	if err := common.WriteVarBytes(w, p.SponsorPublicKey); err != nil {
+	if err := common.WriteVarBytes(w, p.OwnerPublicKey); err != nil {
 		return err
 	}
 
@@ -66,9 +66,9 @@ func (p *CRCProposalWithdraw) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return err
 	}
-	p.Sign, err = common.ReadVarBytes(r, crypto.MaxSignatureScriptLength, "sign")
+	p.Signature, err = common.ReadVarBytes(r, crypto.MaxSignatureScriptLength, "sign")
 	if err != nil {
-		return errors.New("[CRCProposalWithdraw], Sign deserialize failed")
+		return errors.New("[CRCProposalWithdraw], Signature deserialize failed")
 	}
 
 	return nil
@@ -80,10 +80,10 @@ func (p *CRCProposalWithdraw) DeserializeUnsigned(r io.Reader,
 	if err = p.ProposalHash.Deserialize(r); err != nil {
 		return err
 	}
-	SponsorPublicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "sponsor")
+	ownerPublicKey, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "owner")
 	if err != nil {
 		return err
 	}
-	p.SponsorPublicKey = SponsorPublicKey
+	p.OwnerPublicKey = ownerPublicKey
 	return nil
 }

@@ -54,7 +54,7 @@ type Config struct {
 	// messages.
 	PingInterval time.Duration
 
-	// Sign will be invoked when creating a signature of the data content.
+	// Signature will be invoked when creating a signature of the data content.
 	Sign func(data []byte) (signature []byte)
 
 	// PingNonce will be invoked before send a ping message to the connect peer

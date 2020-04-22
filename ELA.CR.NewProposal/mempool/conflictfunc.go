@@ -34,7 +34,7 @@ func hashCRCProposalDID(tx *types.Transaction) (interface{}, error) {
 		return nil, fmt.Errorf(
 			"CRC proposal payload cast failed, tx:%s", tx.Hash())
 	}
-	return p.CRSponsorDID, nil
+	return p.CRCouncilMemberDID, nil
 }
 
 func hashCRCProposalWithdrawProposalHash(

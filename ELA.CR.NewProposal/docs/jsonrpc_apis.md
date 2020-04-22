@@ -1957,6 +1957,30 @@ Response:
 }
 ```
 
+### getsecretarygeneral
+
+get secretary general public key
+
+#### Example
+
+Request:
+```json
+{
+"method": "getsecretarygeneral"
+}
+```
+
+Response:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "secretarygeneral": "033279a88abf504192f36d0a8f06d66ab1fff80d2715cf3ecbd243b4db8ff2e77e"
+    }
+}
+```
 
 ### listcurrentcrs
 
@@ -2069,7 +2093,7 @@ Show current cr proposal base state information
 | registerheight     | uint32                | register height of proposal                        |
 | terminatedheight   | uint32                | terminated height of proposal                      |
 | trackingcounts     | uint32                | tracking counts of proposal                        |
-| proposalleader     | string                | leader of proposal                                 |
+| proposalowner      | string                | owner of proposal                                  |
 | Index              | uint64                | the index of the cr proposal                       |
 
 #### Example
@@ -2110,7 +2134,7 @@ Response:
                 "registerHeight": 1764,
                 "terminatedheight": 0,
                 "trackingcount": 0,
-                "proposalleader": "02de2bdd021fd17418d1696afb4709fb908401c81fa674f26e8ca0afa624a48727",
+                "proposalowner": "02de2bdd021fd17418d1696afb4709fb908401c81fa674f26e8ca0afa624a48727",
                 "index": 14
             }
         ],
@@ -2143,15 +2167,15 @@ Get one cr proposal detail state information by proposalhash or drafthash
 | VotersRejectAmount | common.Fixed64        | voters reject amount                               |
 | RegisterHeight     | uint32                | the proposal register height                       |
 | ProposalType       | CRCProposalType       | the type of cr proposal                            |
-| SponsorPublicKey   | string                | the public key of sponsor                          |
-| CRSponsorDID       | string                | the did of sponsor                                 |
+| OwnerPublicKey     | string                | the public key of proposal's owner                 |
+| CRCouncilMemberDID | string                | the did of CR Council Member                       |
 | DraftHash          | string                | the hash of draft proposal                         |
 | Budgets            | []common.Fixed64      | the budget of different stages                     |
 ProposalType value as follows:
 0x00:"Normal" Normal indicates the normal types of proposal.
 0x01:"Code" indicates the code upgrade types of proposals.
 0x02:"SideChain" indicates the side chain related types of proposals.
-0x03:"ChangeSponsor" indicates the change proposal sponsor types of proposals.
+0x03:"ChangeOwner" indicates the change proposal owner types of proposals.
 0x04:"CloseProposal" indicates the close proposal types of proposals.
 0x05:"SecretaryGeneral"indicates the vote secretary general types of proposals.
 
@@ -2176,17 +2200,29 @@ Response:
     "id": null,
     "jsonrpc": "2.0",
     "result": {
-        "RpcProposalState": {
+        "proposalstate": {
             "status": "Registered",
             "proposal": {
-                "ProposalType": 0,
-                "SponsorPublicKey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
-                "CRSponsorDID": "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf",
-                "DraftHash": "9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0",
-                "Budgets": [
-                    110000000,
-                    220000000,
-                    330000000
+                "proposaltype": 0,
+                "ownerpublickey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
+                "crcouncilmemberdid": "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf",
+                "drafthash": "9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0",
+                "budgets": [
+                     {
+                        "type": "Imprest",
+                        "stage": 0,
+                        "amount": "1.1"
+                     },
+                     {
+                        "type": "NormalPayment",
+                        "stage": 1,
+                        "amount": "2.2"
+                     },
+                     {
+                        "type": "FinalPayment",
+                        "stage": 2,
+                        "amount": "3.3"
+                     }
                 ]
             },
             "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
@@ -2194,7 +2230,7 @@ Response:
                 "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
             },
             "votersrejectamount": 0,
-            "RegisterHeight": 1277
+            "registerheight": 1277
         }
     }
 }
@@ -2219,58 +2255,70 @@ Response:
     "id": null,
     "jsonrpc": "2.0",
     "result": {
-        "RpcProposalState": {
+        "proposalstate": {
             "status": "Registered",
             "proposal": {
-                "ProposalType": 0,
-                "SponsorPublicKey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
-                "CRSponsorDID": "670f11c336563d31ed1cf81ac4a83f9df7306f9967",
-                "DraftHash": "9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0",
-                "Budgets": [
-                    110000000,
-                    220000000,
-                    330000000
-                ]
-            },
-            "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
-            "crvotes": {
-                "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
-            },
-            "votersrejectamount": 0,
-            "RegisterHeight": 1277,
-            "votestartheight": 0
-        }
-    }
-}
-```
-
-### createrawtransaction
-
-Create a transaction spending the given inputs and creating new outputs.
-Warning: you should calculate the change output and append it to transaction outputs, otherwise the change should
- be given to the miners.
-
-#### Parameter 
-
-| name     | type          | description                        |
-| -------- | ------------- | ---------------------------------- |
-| inputs   | array[string] | inputs json array of json objects  |
-| outputs  | array[string] | outputs json array of json objects |
-| locktime | interger      | the transaction lock time number   |
-
-#### Example
-
-Request:
-
-```
- {
-  "method": "createrawtransaction",
-  "params":{
-    "inputs":"[{\"txid\":\"a704c4c04c70043a2cce34fa95e20f3d33b0a3dc95dd948dee573673b701c7e7\",\"vout\":1}]",
-    "outputs": "[{\"address\":\"EKn3UGyEoycACJxKu7F8R5U1Pe6NUpni1H\",\"amount\":1},{\"address\":\"EUmvbPnoC59DJWnEx5VkcJNhK6GnjkoHao\",\"amount\":98.9}]",
-    "locktime": 0
-  }
-}
+                "proposaltype": 0,
+                "ownerpublickey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
+                "crcouncilmemberdid": "670f11c336563d31ed1cf81ac4a83f9df7306f9967",
+                "drafthash": "9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0",
+                "budgets": [
+                     {
+                        "type": "Imprest",
+                        "stage": 0,
+                        "amount": "1.1"
+                     },
+                     {
+                        "type": "NormalPayment",
+                        "stage": 1,
+                        "amount": "2.2"
+                     },
+                     {
+                        "type": "FinalPayment",
+                        "stage": 2,
+                        "amount": "3.3"
+                     }
+                 ]
+             },
+             "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
+             "crvotes": {
+                 "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
+             },
+             "votersrejectamount": 0,
+             "registerheight": 1277,
+             "votestartheight": 0
+         }
+     }
+ }
+ ```
+ 
+ ### createrawtransaction
+ 
+ Create a transaction spending the given inputs and creating new outputs.
+ Warning: you should calculate the change output and append it to transaction outputs, otherwise the change should
+  be given to the miners.
+ 
+ #### Parameter 
+ 
+ | name     | type          | description                        |
+ | -------- | ------------- | ---------------------------------- |
+ | inputs   | array[string] | inputs json array of json objects  |
+ | outputs  | array[string] | outputs json array of json objects |
+ | locktime | interger      | the transaction lock time number   |
+ 
+ #### Example
+ 
+ Request:
+ 
+ ```
+  {
+   "method": "createrawtransaction",
+   "params":{
+     "inputs":"[{\"txid\":\"a704c4c04c70043a2cce34fa95e20f3d33b0a3dc95dd948dee573673b701c7e7\",\"vout\":1}]",
+     "outputs": "[{\"address\":\"EKn3UGyEoycACJxKu7F8R5U1Pe6NUpni1H\",\"amount\":1},{\"address\":\"EUmvbPnoC59DJWnEx5VkcJNhK6GnjkoHao\",\"amount\":98.9}]",
+     "locktime": 0
+   }
+ }
 ```
 
 Response:
