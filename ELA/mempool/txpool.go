@@ -100,6 +100,19 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 	return nil
 }
 
+// GetUsedUTXO returns all used refer keys of inputs.
+func (mp *TxPool) GetUsedUTXOs() map[string]struct{} {
+	mp.RLock()
+	defer mp.RUnlock()
+	usedUTXOs := make(map[string]struct{})
+	for _, v := range mp.txnList {
+		for _, input := range v.Inputs {
+			usedUTXOs[input.ReferKey()] = struct{}{}
+		}
+	}
+	return usedUTXOs
+}
+
 // HaveTransaction returns if a transaction is in transaction pool by the given
 // transaction id. If no transaction match the transaction id, return false
 func (mp *TxPool) HaveTransaction(txId Uint256) bool {

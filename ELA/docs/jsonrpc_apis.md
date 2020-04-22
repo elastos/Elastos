@@ -1558,6 +1558,7 @@ if not set utxotype will use "mixed" as default value
 if set utxotype to "mixed" or not set will get all utxos ignore the type
 if set utxotype to "vote" will get vote utxos
 if set utxotype to "normal" will get normal utxos without vote
+if set utxotype to "unused" will get all utxos that are not in tx pool
 
 #### Example
 

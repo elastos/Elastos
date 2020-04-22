@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package server
 
@@ -901,27 +901,38 @@ out:
 		select {
 		// Deal with peer messages.
 		case p := <-s.peerQueue:
+			log.Info("### handlePeerMsg start")
 			s.handlePeerMsg(state, p)
+			log.Info("### handlePeerMsg end")
 
 			// Message to broadcast to all connected peers except those
 			// which are excluded by the message.
 		case bmsg := <-s.broadcast:
+			log.Info("### broadcast start")
 			s.handleBroadcastMsg(state, &bmsg)
+			log.Info("### broadcast end")
 
 		case qmsg := <-s.query:
+			log.Info("### query start")
 			s.handleQuery(state, qmsg)
+			log.Info("### query end")
 
 		case <-s.quit:
+			log.Info("### quit in peerHandler")
 			// Disconnect all peers on server shutdown.
 			state.forAllPeers(func(sp *serverPeer) {
 				sp.Disconnect()
 			})
+			log.Info("### quit in peerHandler done")
 			break out
 		}
 	}
 
+	log.Info("### connManager stop")
 	s.connManager.Stop()
+	log.Info("### addrManager stop")
 	s.addrManager.Stop()
+	log.Info("### manager stop finished")
 
 	// Drain channels before exiting so nothing is left waiting around
 	// to send.
@@ -936,6 +947,7 @@ cleanup:
 		}
 	}
 	s.wg.Done()
+	log.Info("### s.wg.Done in peerHandler")
 }
 
 // AddPeer adds a new peer that has already been connected to the server.
@@ -986,10 +998,12 @@ func (s *server) Start() {
 
 	// Start the peer handler which in turn starts the address and block
 	// managers.
+	log.Info("##### s.wg.Add before peerHandler")
 	s.wg.Add(1)
 	go s.peerHandler()
 
 	if s.nat != nil {
+		log.Info("##### s.wg.Add before upnpUpdateThread")
 		s.wg.Add(1)
 		go s.upnpUpdateThread()
 	}
@@ -1147,6 +1161,7 @@ out:
 	}
 
 	s.wg.Done()
+	log.Info("##### s.wg.Done in updateThread")
 }
 
 // Connect adds the provided address as a new outbound peer.  The permanent flag
