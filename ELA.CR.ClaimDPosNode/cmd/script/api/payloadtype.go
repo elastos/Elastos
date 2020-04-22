@@ -1009,12 +1009,12 @@ func newCRCProposal(L *lua.LState) int {
 		os.Exit(1)
 	}
 	crcProposal := &payload.CRCProposal{
-		ProposalType:     payload.CRCProposalType(proposalType),
-		SponsorPublicKey: publicKey,
-		DraftHash:        *draftHash,
-		Budgets:          budgets,
-		Recipient:        *recipient,
-		CRSponsorDID:     *getDID(ct.Code),
+		ProposalType:       payload.CRCProposalType(proposalType),
+		OwnerPublicKey:     publicKey,
+		DraftHash:          *draftHash,
+		Budgets:            budgets,
+		Recipient:          *recipient,
+		CRCouncilMemberDID: *getDID(ct.Code),
 	}
 
 	if needSign {
@@ -1042,12 +1042,12 @@ func newCRCProposal(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		crcProposal.Sign = sig
+		crcProposal.Signature = sig
 		if err = common.WriteVarBytes(signBuf, sig); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		if err = crcProposal.CRSponsorDID.Serialize(signBuf); err != nil {
+		if err = crcProposal.CRCouncilMemberDID.Serialize(signBuf); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -1057,7 +1057,7 @@ func newCRCProposal(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		crcProposal.CRSign = crSig
+		crcProposal.CRCouncilMemberSignature = crSig
 	}
 	ud := L.NewUserData()
 	ud.Value = crcProposal
@@ -1174,7 +1174,7 @@ func newCRCProposalReview(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		crcProposalReview.Sign = rpSig
+		crcProposalReview.Signature = rpSig
 	}
 
 	ud := L.NewUserData()
@@ -1235,34 +1235,34 @@ func newCRCProposalTracking(L *lua.LState) int {
 	sgPrivateKey, _ := common.HexStringToBytes(sgPrivateKeyStr)
 
 	cPayload := &payload.CRCProposalTracking{
-		ProposalTrackingType: payload.CRCProposalTrackingType(proposalTrackingType),
-		ProposalHash:         *proposalHash,
-		DocumentHash:         *documentHash,
-		SecretaryOpinionHash: *opinionHash,
-		Stage:                uint8(stage),
-		LeaderPubKey:         leaderPublicKey,
-		NewLeaderPubKey:      newLeaderPublicKey,
-		LeaderSign:           []byte{},
-		NewLeaderSign:        []byte{},
-		SecretaryGeneralSign: []byte{},
+		ProposalTrackingType:        payload.CRCProposalTrackingType(proposalTrackingType),
+		ProposalHash:                *proposalHash,
+		MessageHash:                 *documentHash,
+		SecretaryGeneralOpinionHash: *opinionHash,
+		Stage:                       uint8(stage),
+		OwnerPublicKey:              leaderPublicKey,
+		NewOwnerPublicKey:           newLeaderPublicKey,
+		OwnerSignature:              []byte{},
+		NewOwnerSignature:           []byte{},
+		SecretaryGeneralSignature:   []byte{},
 	}
 
 	signBuf := new(bytes.Buffer)
 	cPayload.SerializeUnsigned(signBuf, payload.CRCProposalTrackingVersion)
 	sig, _ := crypto.Sign(leaderPrivateKey, signBuf.Bytes())
-	cPayload.LeaderSign = sig
+	cPayload.OwnerSignature = sig
 
 	if len(newLeaderPublicKey) != 0 && len(newLeaderPrivateKey) != 0 {
 		common.WriteVarBytes(signBuf, sig)
 		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
-		cPayload.NewLeaderSign = crSig
+		cPayload.NewOwnerSignature = crSig
 		sig = crSig
 	}
 
 	common.WriteVarBytes(signBuf, sig)
-	cPayload.SecretaryOpinionHash.Serialize(signBuf)
+	cPayload.SecretaryGeneralOpinionHash.Serialize(signBuf)
 	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
-	cPayload.SecretaryGeneralSign = crSig
+	cPayload.SecretaryGeneralSignature = crSig
 
 	ud := L.NewUserData()
 	ud.Value = cPayload
@@ -1325,14 +1325,14 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 		os.Exit(1)
 	}
 	pubkey := getPublicKeyFromCode(acc.RedeemScript)
-	crcProposalWithdraw.SponsorPublicKey = pubkey
+	crcProposalWithdraw.OwnerPublicKey = pubkey
 	err = crcProposalWithdraw.SerializeUnsigned(rpSignBuf, payload.CRCProposalWithdrawVersion)
 	rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	crcProposalWithdraw.Sign = rpSig
+	crcProposalWithdraw.Signature = rpSig
 
 	ud := L.NewUserData()
 	ud.Value = crcProposalWithdraw

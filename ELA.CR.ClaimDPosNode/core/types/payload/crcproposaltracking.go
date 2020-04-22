@@ -31,9 +31,9 @@ const (
 	// CRC proposal has been terminated.
 	Terminated CRCProposalTrackingType = 0x03
 
-	// ProposalLeader indicates that the transaction is used to change the person in
+	// ChangeOwner indicates that the transaction is used to change the person in
 	// charge of the CRC proposal.
-	ProposalLeader CRCProposalTrackingType = 0x04
+	ChangeOwner CRCProposalTrackingType = 0x04
 
 	// Finalized for summary proposal execution, as well as the application of final payment
 	Finalized CRCProposalTrackingType = 0x05
@@ -51,8 +51,8 @@ func (pt CRCProposalTrackingType) Name() string {
 		return "Rejected"
 	case Terminated:
 		return "Terminated"
-	case ProposalLeader:
-		return "ProposalLeader"
+	case ChangeOwner:
+		return "ChangeOwner"
 	case Finalized:
 		return "Finalized"
 	default:
@@ -66,32 +66,32 @@ type CRCProposalTracking struct {
 	// The hash of current tracking proposal.
 	ProposalHash common.Uint256
 
-	// The hash of proposal tracking document.
-	DocumentHash common.Uint256
+	// The hash of proposal tracking message.
+	MessageHash common.Uint256
 
 	// The stage of proposal.
 	Stage uint8
 
-	// The leader public key.
-	LeaderPubKey []byte
+	// The proposal owner public key.
+	OwnerPublicKey []byte
 
-	// The new leader public key.
-	NewLeaderPubKey []byte
+	// The new proposal owner public key.
+	NewOwnerPublicKey []byte
 
-	// The signature of proposal leader.
-	LeaderSign []byte
+	// The signature of proposal owner.
+	OwnerSignature []byte
 
-	// The signature of new proposal leader.
-	NewLeaderSign []byte
+	// The signature of new proposal owner.
+	NewOwnerSignature []byte
 
 	// The type of current proposal tracking.
 	ProposalTrackingType CRCProposalTrackingType
 
-	// The hash of proposal tracking opinion.
-	SecretaryOpinionHash common.Uint256
+	// The hash of secretary general's opinion.
+	SecretaryGeneralOpinionHash common.Uint256
 
 	// The signature of secretary general.
-	SecretaryGeneralSign []byte
+	SecretaryGeneralSignature []byte
 }
 
 func (p *CRCProposalTracking) Data(version byte) []byte {
@@ -108,20 +108,20 @@ func (p *CRCProposalTracking) SerializeUnsigned(w io.Writer, version byte) error
 		return errors.New("failed to serialize ProposalHash")
 	}
 
-	if err := p.DocumentHash.Serialize(w); err != nil {
-		return errors.New("failed to serialize DocumentHash")
+	if err := p.MessageHash.Serialize(w); err != nil {
+		return errors.New("failed to serialize MessageHash")
 	}
 
 	if err := common.WriteUint8(w, p.Stage); err != nil {
 		return errors.New("failed to serialize Stage")
 	}
 
-	if err := common.WriteVarBytes(w, p.LeaderPubKey); err != nil {
-		return errors.New("failed to serialize LeaderPubKey")
+	if err := common.WriteVarBytes(w, p.OwnerPublicKey); err != nil {
+		return errors.New("failed to serialize OwnerPublicKey")
 	}
 
-	if err := common.WriteVarBytes(w, p.NewLeaderPubKey); err != nil {
-		return errors.New("failed to serialize NewLeaderPubKey")
+	if err := common.WriteVarBytes(w, p.NewOwnerPublicKey); err != nil {
+		return errors.New("failed to serialize NewOwnerPublicKey")
 	}
 
 	return nil
@@ -132,24 +132,24 @@ func (p *CRCProposalTracking) Serialize(w io.Writer, version byte) error {
 		return err
 	}
 
-	if err := common.WriteVarBytes(w, p.LeaderSign); err != nil {
-		return errors.New("failed to serialize LeaderSign")
+	if err := common.WriteVarBytes(w, p.OwnerSignature); err != nil {
+		return errors.New("failed to serialize OwnerSignature")
 	}
 
-	if err := common.WriteVarBytes(w, p.NewLeaderSign); err != nil {
-		return errors.New("failed to serialize NewLeaderSign")
+	if err := common.WriteVarBytes(w, p.NewOwnerSignature); err != nil {
+		return errors.New("failed to serialize NewOwnerSignature")
 	}
 
 	if _, err := w.Write([]byte{byte(p.ProposalTrackingType)}); err != nil {
 		return errors.New("failed to serialize ProposalTrackingType")
 	}
 
-	if err := p.SecretaryOpinionHash.Serialize(w); err != nil {
-		return errors.New("failed to serialize SecretaryOpinionHash")
+	if err := p.SecretaryGeneralOpinionHash.Serialize(w); err != nil {
+		return errors.New("failed to serialize SecretaryGeneralOpinionHash")
 	}
 
-	if err := common.WriteVarBytes(w, p.SecretaryGeneralSign); err != nil {
-		return errors.New("failed to serialize SecretaryGeneralSign")
+	if err := common.WriteVarBytes(w, p.SecretaryGeneralSignature); err != nil {
+		return errors.New("failed to serialize SecretaryGeneralSignature")
 	}
 
 	return nil
@@ -161,22 +161,22 @@ func (p *CRCProposalTracking) DeserializeUnSigned(r io.Reader, version byte) err
 		return errors.New("failed to deserialize ProposalHash")
 	}
 
-	if err = p.DocumentHash.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize DocumentHash")
+	if err = p.MessageHash.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize MessageHash")
 	}
 
 	if p.Stage, err = common.ReadUint8(r); err != nil {
 		return errors.New("failed to deserialize Stage")
 	}
 
-	if p.LeaderPubKey, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
-		"leader pubkey"); err != nil {
-		return errors.New("failed to deserialize LeaderPubKey")
+	if p.OwnerPublicKey, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
+		"owner pubkey"); err != nil {
+		return errors.New("failed to deserialize OwnerPublicKey")
 	}
 
-	if p.NewLeaderPubKey, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
-		"new leader pubkey"); err != nil {
-		return errors.New("failed to deserialize NewLeaderPubKey")
+	if p.NewOwnerPublicKey, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
+		"new owner pubkey"); err != nil {
+		return errors.New("failed to deserialize NewOwnerPublicKey")
 	}
 
 	return nil
@@ -187,19 +187,19 @@ func (p *CRCProposalTracking) Deserialize(r io.Reader, version byte) error {
 		return err
 	}
 
-	leaderSign, err := common.ReadVarBytes(r, crypto.SignatureLength,
-		"leader signature")
+	ownerSign, err := common.ReadVarBytes(r, crypto.SignatureLength,
+		"owner signature")
 	if err != nil {
-		return errors.New("failed to deserialize leaderSign")
+		return errors.New("failed to deserialize ownerSign")
 	}
-	p.LeaderSign = leaderSign
+	p.OwnerSignature = ownerSign
 
 	newLeaderSign, err := common.ReadVarBytes(r, crypto.SignatureLength,
-		"new leader signature")
+		"new owner signature")
 	if err != nil {
 		return errors.New("failed to deserialize newLeaderSign")
 	}
-	p.NewLeaderSign = newLeaderSign
+	p.NewOwnerSignature = newLeaderSign
 
 	pType, err := common.ReadBytes(r, 1)
 	if err != nil {
@@ -207,15 +207,15 @@ func (p *CRCProposalTracking) Deserialize(r io.Reader, version byte) error {
 	}
 	p.ProposalTrackingType = CRCProposalTrackingType(pType[0])
 
-	if err = p.SecretaryOpinionHash.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize SecretaryOpinionHash")
+	if err = p.SecretaryGeneralOpinionHash.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize SecretaryGeneralOpinionHash")
 	}
 
 	sgSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "secretary general signature")
 	if err != nil {
-		return errors.New("failed to deserialize SecretaryGeneralSign")
+		return errors.New("failed to deserialize SecretaryGeneralSignature")
 	}
-	p.SecretaryGeneralSign = sgSign
+	p.SecretaryGeneralSignature = sgSign
 
 	return nil
 }

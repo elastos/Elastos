@@ -35,8 +35,8 @@ const (
 
 	// SecretaryGeneral indicates the vote secretary general types of proposals.
 	SecretaryGeneral CRCProposalType = 0x0400
-	// ChangeSponsor indicates the change proposal sponsor types of proposals.
-	ChangeSponsor CRCProposalType = 0x0401
+	// ChangeProposalOwner indicates the change proposal owner types of proposals.
+	ChangeProposalOwner CRCProposalType = 0x0401
 	// CloseProposal indicates the close proposal types of proposals.
 	CloseProposal CRCProposalType = 0x0402
 
@@ -56,8 +56,8 @@ func (pt CRCProposalType) Name() string {
 	//	return "MainChainUpgradeCode"
 	//case SideChainUpgradeCode:
 	//	return "SideChainUpgradeCode"
-	//case ChangeSponsor:
-	//	return "ChangeSponsor"
+	//case ChangeProposalOwner:
+	//	return "ChangeProposalOwner"
 	//case CloseProposal:
 	//	return "CloseProposal"
 	//case SecretaryGeneral:
@@ -77,14 +77,14 @@ const (
 )
 
 const (
-	Imprest       BudgetType = 0x00
-	NormalPayment BudgetType = 0x01
-	FinalPayment  BudgetType = 0x02
+	Imprest       InstallmentType = 0x00
+	NormalPayment InstallmentType = 0x01
+	FinalPayment  InstallmentType = 0x02
 )
 
-type BudgetType byte
+type InstallmentType byte
 
-func (b BudgetType) Name() string {
+func (b InstallmentType) Name() string {
 	switch b {
 	case Imprest:
 		return "Imprest"
@@ -98,36 +98,40 @@ func (b BudgetType) Name() string {
 }
 
 type Budget struct {
-	Type   BudgetType
+	Type   InstallmentType
 	Stage  byte
 	Amount common.Fixed64
 }
 
 type CRCProposal struct {
-	// The type of current proposal.
+	// The type of current CR Council proposal.
 	ProposalType CRCProposalType
 
 	// Used to store category data
 	// with a length limit not exceeding 4096 characters
 	CategoryData string
 
-	// Public key of sponsor.
-	SponsorPublicKey []byte
+	// Public key of proposal owner.
+	OwnerPublicKey []byte
+
 	// The hash of draft proposal.
 	DraftHash common.Uint256
-	// The budget of different stages.
+
+	// The detailed budget and expenditure plan.
 	Budgets []Budget
-	// The address of budget.
+
+	// The specified ELA address where the funds are to be sent.
 	Recipient common.Uint168
 
-	// The signature of sponsor.
-	Sign []byte
+	// The signature of proposal's owner.
+	Signature []byte
 
-	// DID of CR sponsor.
-	CRSponsorDID common.Uint168
+	// DID of CR Council Member.
+	CRCouncilMemberDID common.Uint168
 
-	// The signature of CR sponsor, check data include signature of sponsor.
-	CRSign []byte
+	// The signature of CR Council Member, check data include signature of
+	// proposal owner.
+	CRCouncilMemberSignature []byte
 
 	hash *common.Uint256
 }
@@ -151,8 +155,8 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 		return errors.New("[CRCProposal], Category Data serialize failed")
 	}
 
-	if err := common.WriteVarBytes(w, p.SponsorPublicKey); err != nil {
-		return errors.New("failed to serialize SponsorPublicKey")
+	if err := common.WriteVarBytes(w, p.OwnerPublicKey); err != nil {
+		return errors.New("failed to serialize OwnerPublicKey")
 	}
 
 	if err := p.DraftHash.Serialize(w); err != nil {
@@ -191,15 +195,15 @@ func (p *CRCProposal) Serialize(w io.Writer, version byte) error {
 		return err
 	}
 
-	if err := common.WriteVarBytes(w, p.Sign); err != nil {
+	if err := common.WriteVarBytes(w, p.Signature); err != nil {
 		return err
 	}
 
-	if err := p.CRSponsorDID.Serialize(w); err != nil {
-		return errors.New("failed to serialize CRSponsorDID")
+	if err := p.CRCouncilMemberDID.Serialize(w); err != nil {
+		return errors.New("failed to serialize CRCouncilMemberDID")
 	}
 
-	return common.WriteVarBytes(w, p.CRSign)
+	return common.WriteVarBytes(w, p.CRCouncilMemberSignature)
 }
 
 func (b *Budget) Deserialize(r io.Reader) error {
@@ -224,9 +228,9 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 		return errors.New("[CRCProposal], Category data deserialize failed")
 	}
 
-	p.SponsorPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "sponsor")
+	p.OwnerPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "owner")
 	if err != nil {
-		return errors.New("failed to deserialize SponsorPublicKey")
+		return errors.New("failed to deserialize OwnerPublicKey")
 	}
 
 	if err = p.DraftHash.Deserialize(r); err != nil {
@@ -262,17 +266,17 @@ func (p *CRCProposal) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return err
 	}
-	p.Sign = sign
+	p.Signature = sign
 
-	if err := p.CRSponsorDID.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize CRSponsorDID")
+	if err := p.CRCouncilMemberDID.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize CRCouncilMemberDID")
 	}
 
 	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
 	if err != nil {
 		return err
 	}
-	p.CRSign = crSign
+	p.CRCouncilMemberSignature = crSign
 
 	return nil
 }

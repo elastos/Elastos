@@ -181,23 +181,23 @@ func getCRCProposalTx(elaAddress string, publicKeyStr, privateKeyStr,
 	txn.TxType = types.CRCProposal
 	txn.Version = types.TxVersion09
 	crcProposalPayload := &payload.CRCProposal{
-		ProposalType:     payload.Normal,
-		SponsorPublicKey: publicKey1,
-		CRSponsorDID:     *getDID(code2),
-		DraftHash:        common.Hash(draftData),
-		Budgets:          createBudgets(3),
-		Recipient:        *recipient,
+		ProposalType:       payload.Normal,
+		OwnerPublicKey:     publicKey1,
+		CRCouncilMemberDID: *getDID(code2),
+		DraftHash:          common.Hash(draftData),
+		Budgets:            createBudgets(3),
+		Recipient:          *recipient,
 	}
 
 	signBuf := new(bytes.Buffer)
 	crcProposalPayload.SerializeUnsigned(signBuf, payload.CRCProposalVersion)
 	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
-	crcProposalPayload.Sign = sig
+	crcProposalPayload.Signature = sig
 
 	common.WriteVarBytes(signBuf, sig)
-	crcProposalPayload.CRSponsorDID.Serialize(signBuf)
+	crcProposalPayload.CRCouncilMemberDID.Serialize(signBuf)
 	crSig, _ := crypto.Sign(privateKey2, signBuf.Bytes())
-	crcProposalPayload.CRSign = crSig
+	crcProposalPayload.CRCouncilMemberSignature = crSig
 
 	txn.Payload = crcProposalPayload
 	txn.Programs = []*program.Program{&program.Program{
@@ -224,7 +224,7 @@ func getCRCProposalReviewTx(proposalHash common.Uint256, vote payload.VoteResult
 	signBuf := new(bytes.Buffer)
 	crcProposalReviewPayload.SerializeUnsigned(signBuf, payload.CRCProposalReviewVersion)
 	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
-	crcProposalReviewPayload.Sign = sig
+	crcProposalReviewPayload.Signature = sig
 
 	txn.Payload = crcProposalReviewPayload
 	txn.Programs = []*program.Program{&program.Program{
@@ -255,30 +255,30 @@ func getCRCProposalTrackingTx(
 	txn.TxType = types.CRCProposalTracking
 	txn.Version = types.TxVersion09
 	cPayload := &payload.CRCProposalTracking{
-		ProposalTrackingType: trackingType,
-		ProposalHash:         proposalHash,
-		Stage:                stage,
-		DocumentHash:         common.Hash(documentData),
-		LeaderPubKey:         leaderPublicKey,
-		NewLeaderPubKey:      newLeaderPublicKey,
-		SecretaryOpinionHash: common.Hash(opinionHash),
+		ProposalTrackingType:        trackingType,
+		ProposalHash:                proposalHash,
+		Stage:                       stage,
+		MessageHash:                 common.Hash(documentData),
+		OwnerPublicKey:              leaderPublicKey,
+		NewOwnerPublicKey:           newLeaderPublicKey,
+		SecretaryGeneralOpinionHash: common.Hash(opinionHash),
 	}
 
 	signBuf := new(bytes.Buffer)
 	cPayload.SerializeUnsigned(signBuf, payload.CRCProposalTrackingVersion)
 	sig, _ := crypto.Sign(leaderPrivateKey, signBuf.Bytes())
-	cPayload.LeaderSign = sig
+	cPayload.OwnerSignature = sig
 
 	if newLeaderPublicKeyStr != "" && newLeaderPrivateKeyStr != "" {
 		common.WriteVarBytes(signBuf, sig)
 		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
-		cPayload.NewLeaderSign = crSig
+		cPayload.NewOwnerSignature = crSig
 		sig = crSig
 	}
 
 	common.WriteVarBytes(signBuf, sig)
 	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
-	cPayload.SecretaryGeneralSign = crSig
+	cPayload.SecretaryGeneralSignature = crSig
 
 	txn.Payload = cPayload
 	return txn
@@ -292,14 +292,14 @@ func getCRCProposalWithdrawTx(proposalHash common.Uint256,
 	sponsorPrivateKey, _ := common.HexStringToBytes(sponsorPrivateKeyStr)
 
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
-		ProposalHash:     proposalHash,
-		SponsorPublicKey: sponsorPublicKey,
+		ProposalHash:   proposalHash,
+		OwnerPublicKey: sponsorPublicKey,
 	}
 
 	signBuf := new(bytes.Buffer)
 	crcProposalWithdraw.SerializeUnsigned(signBuf, payload.CRCProposalWithdrawVersion)
 	signature, _ := crypto.Sign(sponsorPrivateKey, signBuf.Bytes())
-	crcProposalWithdraw.Sign = signature
+	crcProposalWithdraw.Signature = signature
 
 	return &types.Transaction{
 		Version:    types.TxVersion09,

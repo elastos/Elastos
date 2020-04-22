@@ -442,8 +442,8 @@ func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
 		return err2
 	}
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
-		ProposalHash:     *proposalHash,
-		SponsorPublicKey: SponsorPublicKey,
+		ProposalHash:   *proposalHash,
+		OwnerPublicKey: SponsorPublicKey,
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -452,7 +452,7 @@ func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	crcProposalWithdraw.Sign = signature
+	crcProposalWithdraw.Signature = signature
 
 	recipient := c.String("to")
 	outputs := make([]*OutputInfo, 0)

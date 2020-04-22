@@ -1752,7 +1752,7 @@ func (b *BlockChain) checkCRCProposalReviewTransaction(txn *Transaction,
 	if err != nil {
 		return err
 	}
-	return checkCRTransactionSignature(crcProposalReview.Sign, crMember.Info.Code,
+	return checkCRTransactionSignature(crcProposalReview.Signature, crMember.Info.Code,
 		signedBuf.Bytes())
 }
 
@@ -1786,8 +1786,8 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 		return errors.New("proposal status is not VoterAgreed , Finished, or Aborted")
 	}
 
-	if !bytes.Equal(proposalState.ProposalLeader, withdrawPayload.SponsorPublicKey) {
-		return errors.New("the SponsorPublicKey is not ProposalLeader of proposal")
+	if !bytes.Equal(proposalState.ProposalOwner, withdrawPayload.OwnerPublicKey) {
+		return errors.New("the OwnerPublicKey is not owner of proposal")
 	}
 	fee := b.getTransactionFee(txn, references)
 	if b.isSmallThanMinTransactionFee(fee) {
@@ -1807,8 +1807,8 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	if err != nil {
 		return err
 	}
-	code := getCode(withdrawPayload.SponsorPublicKey)
-	return checkCRTransactionSignature(withdrawPayload.Sign, code, signedBuf.Bytes())
+	code := getCode(withdrawPayload.OwnerPublicKey)
+	return checkCRTransactionSignature(withdrawPayload.Signature, code, signedBuf.Bytes())
 }
 
 func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
@@ -1841,8 +1841,8 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 		result = b.checkCRCProposalProgressTracking(cptPayload, proposalState)
 	case payload.Terminated:
 		result = b.checkCRCProposalTerminatedTracking(cptPayload, proposalState)
-	case payload.ProposalLeader:
-		result = b.checkCRCProposalLeaderTracking(cptPayload, proposalState)
+	case payload.ChangeOwner:
+		result = b.checkCRCProposalOwnerTracking(cptPayload, proposalState)
 	case payload.Finalized:
 		result = b.checkCRCProposalFinalizedTracking(cptPayload, proposalState)
 	default:
@@ -1959,7 +1959,7 @@ func (b *BlockChain) checkCRCProposalFinalizedTracking(
 	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
 }
 
-func (b *BlockChain) checkCRCProposalLeaderTracking(
+func (b *BlockChain) checkCRCProposalOwnerTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
 	if cptPayload.Stage != 0 {
@@ -1972,19 +1972,19 @@ func (b *BlockChain) checkCRCProposalLeaderTracking(
 
 func (b *BlockChain) checkCRCProposalTrackingSignature(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
-	// Check signature of proposal leader.
-	if !bytes.Equal(pState.ProposalLeader, cptPayload.LeaderPubKey) {
-		return errors.New("the LeaderPubKey is not leader of proposal")
+	// Check signature of proposal owner.
+	if !bytes.Equal(pState.ProposalOwner, cptPayload.OwnerPublicKey) {
+		return errors.New("the OwnerPublicKey is not owner of proposal")
 	}
 	signedBuf := new(bytes.Buffer)
-	if err := b.checkProposalLeaderSignature(cptPayload,
-		cptPayload.LeaderPubKey, signedBuf); err != nil {
+	if err := b.checkProposalOwnerSignature(cptPayload,
+		cptPayload.OwnerPublicKey, signedBuf); err != nil {
 		return err
 	}
 
-	// Check other new leader signature.
-	if err := b.checkProposalNewLeaderSignature(cptPayload,
-		cptPayload.NewLeaderPubKey, signedBuf); err != nil {
+	// Check other new owner signature.
+	if err := b.checkProposalNewOwnerSignature(cptPayload,
+		cptPayload.NewOwnerPublicKey, signedBuf); err != nil {
 		return err
 	}
 
@@ -1994,71 +1994,71 @@ func (b *BlockChain) checkCRCProposalTrackingSignature(
 
 func (b *BlockChain) normalCheckCRCProposalTrackingSignature(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
-	// Check new leader public key.
-	if len(cptPayload.NewLeaderPubKey) != 0 {
-		return errors.New("the NewLeaderPubKey need to be empty")
+	// Check new owner public key.
+	if len(cptPayload.NewOwnerPublicKey) != 0 {
+		return errors.New("the NewOwnerPublicKey need to be empty")
 	}
 
-	// Check signature of proposal leader.
-	if !bytes.Equal(pState.ProposalLeader, cptPayload.LeaderPubKey) {
-		return errors.New("the LeaderPubKey is not leader of proposal")
+	// Check signature of proposal owner.
+	if !bytes.Equal(pState.ProposalOwner, cptPayload.OwnerPublicKey) {
+		return errors.New("the OwnerPublicKey is not owner of proposal")
 	}
 	signedBuf := new(bytes.Buffer)
-	if err := b.checkProposalLeaderSignature(cptPayload,
-		cptPayload.LeaderPubKey, signedBuf); err != nil {
+	if err := b.checkProposalOwnerSignature(cptPayload,
+		cptPayload.OwnerPublicKey, signedBuf); err != nil {
 		return err
 	}
 
-	// Check new leader signature.
-	if len(cptPayload.NewLeaderSign) != 0 {
-		return errors.New("the NewLeaderSign need to be empty")
+	// Check new owner signature.
+	if len(cptPayload.NewOwnerSignature) != 0 {
+		return errors.New("the NewOwnerSignature need to be empty")
 	}
 
 	// Check secretary general signature。
 	return b.checkSecretaryGeneralSignature(cptPayload, pState, signedBuf)
 }
 
-func (b *BlockChain) checkProposalLeaderSignature(
+func (b *BlockChain) checkProposalOwnerSignature(
 	cptPayload *payload.CRCProposalTracking, pubKey []byte,
 	signedBuf *bytes.Buffer) error {
 	publicKey, err := crypto.DecodePoint(pubKey)
 	if err != nil {
-		return errors.New("invalid proposal leader")
+		return errors.New("invalid proposal owner")
 	}
 	lContract, err := contract.CreateStandardContract(publicKey)
 	if err != nil {
-		return errors.New("invalid proposal leader publicKey")
+		return errors.New("invalid proposal owner publicKey")
 	}
 	err = cptPayload.SerializeUnsigned(signedBuf,
 		payload.CRCProposalTrackingVersion)
 	if err != nil {
 		return err
 	}
-	if err := checkCRTransactionSignature(cptPayload.LeaderSign, lContract.Code,
+	if err := checkCRTransactionSignature(cptPayload.OwnerSignature, lContract.Code,
 		signedBuf.Bytes()); err != nil {
-		return errors.New("proposal leader signature check failed")
+		return errors.New("proposal owner signature check failed")
 	}
 
-	return common.WriteVarBytes(signedBuf, cptPayload.LeaderSign)
+	return common.WriteVarBytes(signedBuf, cptPayload.OwnerSignature)
 }
 
-func (b *BlockChain) checkProposalNewLeaderSignature(
+func (b *BlockChain) checkProposalNewOwnerSignature(
 	cptPayload *payload.CRCProposalTracking, pubKey []byte,
 	signedBuf *bytes.Buffer) error {
 	publicKey, err := crypto.DecodePoint(pubKey)
 	if err != nil {
-		return errors.New("invalid new proposal leader public key")
+		return errors.New("invalid new proposal owner public key")
 	}
 	lContract, err := contract.CreateStandardContract(publicKey)
 	if err != nil {
-		return errors.New("invalid new proposal leader publicKey")
+		return errors.New("invalid new proposal owner publicKey")
 	}
-	if err := checkCRTransactionSignature(cptPayload.NewLeaderSign, lContract.Code,
+	if err := checkCRTransactionSignature(cptPayload.NewOwnerSignature, lContract.Code,
 		signedBuf.Bytes()); err != nil {
-		return errors.New("new proposal leader signature check failed")
+		return errors.New("new proposal owner signature check failed")
 	}
 
-	return common.WriteVarBytes(signedBuf, cptPayload.NewLeaderSign)
+	return common.WriteVarBytes(signedBuf, cptPayload.NewOwnerSignature)
 }
 
 func (b *BlockChain) checkSecretaryGeneralSignature(
@@ -2077,10 +2077,10 @@ func (b *BlockChain) checkSecretaryGeneralSignature(
 	if err != nil {
 		return errors.New("invalid secretary general public key")
 	}
-	if err := cptPayload.SecretaryOpinionHash.Serialize(signedBuf); err != nil {
+	if err := cptPayload.SecretaryGeneralOpinionHash.Serialize(signedBuf); err != nil {
 		return errors.New("invalid secretary opinion hash")
 	}
-	if err = checkCRTransactionSignature(cptPayload.SecretaryGeneralSign,
+	if err = checkCRTransactionSignature(cptPayload.SecretaryGeneralSignature,
 		sgContract.Code, signedBuf.Bytes()); err != nil {
 		return errors.New("secretary general signature check failed")
 	}
@@ -2213,51 +2213,51 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	}
 
 	// The number of the proposals of the committee can not more than 128
-	if b.crCommittee.IsProposalFull(proposal.CRSponsorDID) {
+	if b.crCommittee.IsProposalFull(proposal.CRCouncilMemberDID) {
 		return errors.New("proposal is full")
 	}
 	// Check draft hash of proposal.
 	if b.crCommittee.ExistDraft(proposal.DraftHash) {
 		return errors.New("duplicated draft proposal hash")
 	}
-	// Check sponsor of proposal.
-	crMember := b.crCommittee.GetMember(proposal.CRSponsorDID)
+	// Check CR Council Member DID of proposal.
+	crMember := b.crCommittee.GetMember(proposal.CRCouncilMemberDID)
 	if crMember == nil {
-		return errors.New("CR sponsor should be one of the CR members")
+		return errors.New("CR Council Member should be one of the CR members")
 	}
 	if crMember.MemberState != crstate.MemberElected {
-		return errors.New("CR sponsor should be an elected CR members")
+		return errors.New("CR Council Member should be an elected CR members")
 	}
 
-	// Check signature of sponsor.
-	publicKey, err := crypto.DecodePoint(proposal.SponsorPublicKey)
+	// Check signature of owner.
+	publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
 	if err != nil {
-		return errors.New("invalid sponsor")
+		return errors.New("invalid owner")
 	}
 	contract, err := contract.CreateStandardContract(publicKey)
 	if err != nil {
-		return errors.New("invalid sponsor")
+		return errors.New("invalid owner")
 	}
 	signedBuf := new(bytes.Buffer)
 	err = proposal.SerializeUnsigned(signedBuf, payload.CRCProposalVersion)
 	if err != nil {
 		return err
 	}
-	if err := checkCRTransactionSignature(proposal.Sign, contract.Code,
+	if err := checkCRTransactionSignature(proposal.Signature, contract.Code,
 		signedBuf.Bytes()); err != nil {
-		return errors.New("sponsor signature check failed")
+		return errors.New("owner signature check failed")
 	}
 
-	// Check signature of CR sponsor.
-	if err = common.WriteVarBytes(signedBuf, proposal.Sign); err != nil {
-		return errors.New("invalid CR signature")
+	// Check signature of CR Council Member.
+	if err = common.WriteVarBytes(signedBuf, proposal.Signature); err != nil {
+		return errors.New("failed to write proposal owner signature")
 	}
-	if err = proposal.CRSponsorDID.Serialize(signedBuf); err != nil {
-		return errors.New("invalid DID of CR sponsor")
+	if err = proposal.CRCouncilMemberDID.Serialize(signedBuf); err != nil {
+		return errors.New("failed to write CR Council Member's DID")
 	}
-	if err = checkCRTransactionSignature(proposal.CRSign, crMember.Info.Code,
+	if err = checkCRTransactionSignature(proposal.CRCouncilMemberSignature, crMember.Info.Code,
 		signedBuf.Bytes()); err != nil {
-		return errors.New("CR sponsor signature check failed")
+		return errors.New("failed to check CR Council Member signature")
 	}
 
 	return nil
