@@ -2211,6 +2211,14 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if proposal.Recipient == emptyUint168 {
 		return errors.New("recipient is empty")
 	}
+	prefix := contract.GetPrefixType(proposal.Recipient)
+	if prefix != contract.PrefixStandard && prefix != contract.PrefixMultiSig {
+		return errors.New("invalid recipient prefix")
+	}
+	_, err := proposal.Recipient.ToAddress()
+	if err != nil {
+		return errors.New("invalid recipient")
+	}
 
 	// The number of the proposals of the committee can not more than 128
 	if b.crCommittee.IsProposalFull(proposal.CRCouncilMemberDID) {
