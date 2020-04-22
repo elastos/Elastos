@@ -940,12 +940,26 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 	utxoType := "mixed"
 	if t, ok := param.String("utxotype"); ok {
 		switch t {
-		case "mixed", "vote", "normal":
+		case "mixed", "vote", "normal", "unused":
 			utxoType = t
 		default:
 			return ResponsePack(InvalidParams, "invalid utxotype")
 		}
 	}
+
+	if utxoType == "unused" {
+		var unusedUTXOs []*UTXO
+		usedUTXOs := TxMemPool.GetUsedUTXOs()
+		for _, u := range utxos {
+			outPoint := OutPoint{TxID: u.TxID, Index: u.Index}
+			referKey := outPoint.ReferKey()
+			if _, ok := usedUTXOs[referKey]; !ok {
+				unusedUTXOs = append(unusedUTXOs, u)
+			}
+		}
+		utxos = unusedUTXOs
+	}
+
 	totalAmount := common.Fixed64(0)
 	for _, utxo := range utxos {
 		if totalAmount >= *amount {
