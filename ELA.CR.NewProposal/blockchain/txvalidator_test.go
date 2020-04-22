@@ -1640,13 +1640,15 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	txn.TxType = types.CRCProposal
 	txn.Version = types.TxVersion09
 
+	recipient := *randomUint168()
+	recipient[0] = uint8(contract.PrefixStandard)
 	crcProposalPayload := &payload.CRCProposal{
 		ProposalType:       payload.Normal,
 		OwnerPublicKey:     publicKey1,
 		CRCouncilMemberDID: *getDIDFromCode(code2),
 		DraftHash:          common.Hash(draftData),
 		Budgets:            createBudgets(3),
-		Recipient:          *randomUint168(),
+		Recipient:          recipient,
 	}
 
 	signBuf := new(bytes.Buffer)
