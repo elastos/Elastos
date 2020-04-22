@@ -75,16 +75,17 @@ export default class extends BaseService {
     })
   }
 
-  async register(username, password, profile) {
+  async register(username, password, did, email) {
     await api_request({
       path: '/api/user/register',
       method: 'post',
-      data: Object.assign(profile, {
+      data: {
         username,
         password,
-      }),
+        did,
+        email
+      },
     })
-
     return this.login(username, password)
   }
 

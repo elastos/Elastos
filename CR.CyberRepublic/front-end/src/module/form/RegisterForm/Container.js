@@ -21,10 +21,9 @@ export default createContainer(
     const userService = new UserService()
 
     return {
-      async register(username, password, profile) {
+      async register(username, password, did, email) {
         try {
-          const rs = await userService.register(username, password, profile)
-
+          const rs = await userService.register(username, password, did, email)
           if (rs) {
             const registerRedirect = sessionStorage.getItem('registerRedirect')
 
