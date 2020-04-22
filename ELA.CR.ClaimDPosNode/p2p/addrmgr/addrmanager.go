@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package addrmgr
 
@@ -605,6 +605,7 @@ func (a *AddrManager) Start() {
 
 // Stop gracefully shuts down the address manager by stopping the main handler.
 func (a *AddrManager) Stop() {
+	log.Info("### AddrManager stop start")
 	if atomic.AddInt32(&a.shutdown, 1) != 1 {
 		log.Warnf("Address manager is already in the process of " +
 			"shutting down")
@@ -614,6 +615,7 @@ func (a *AddrManager) Stop() {
 	log.Infof("Address manager shutting down")
 	close(a.quit)
 	a.wg.Wait()
+	log.Info("### AddrManager stop end")
 }
 
 // AddAddresses adds new addresses to the address manager.  It enforces a max
