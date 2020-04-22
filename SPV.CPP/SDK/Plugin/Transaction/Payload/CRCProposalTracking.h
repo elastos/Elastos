@@ -32,12 +32,12 @@ namespace Elastos {
 		class CRCProposalTracking : public IPayload {
 		public:
 			enum Type {
-				common = 0x00,
+				common = 0x0000,
 				progress = 0x01,
-				progressReject = 0x02,
+				rejected = 0x02,
 				terminated = 0x03,
-				proposalLeader = 0x04,
-				appropriation = 0x05,
+				changeOwner = 0x04,
+				finalized = 0x05,
 				unknowTrackingType
 			};
 
@@ -49,9 +49,9 @@ namespace Elastos {
 
 			const uint256 &GetProposalHash() const;
 
-			void SetDocumentHash(const uint256 &documentHash);
+			void SetMessageHash(const uint256 &messageHash);
 
-			const uint256 &GetDocumentHash() const;
+			const uint256 &GetMessageHash() const;
 
 			void SetStage(uint8_t stage);
 
@@ -77,13 +77,13 @@ namespace Elastos {
 
 			CRCProposalTracking::Type GetType() const;
 
-			void SetSecretaryOpinionHash(const uint256 &hash);
+			void SetSecretaryGeneralOpinionHash(const uint256 &hash);
 
-			const uint256 &GetSecretaryOpinionHash()  const;
+			const uint256 &GetSecretaryGeneralOpinionHash()  const;
 
-			void SetSecretarySignature(const bytes_t &signature);
+			void SetSecretaryGeneralSignature(const bytes_t &signature);
 
-			const bytes_t &GetSecretarySignature() const;
+			const bytes_t &GetSecretaryGeneralSignature() const;
 
 			const uint256 &DigestOwnerUnsigned(uint8_t version) const;
 
@@ -144,15 +144,15 @@ namespace Elastos {
 
 		private:
 			uint256 _proposalHash;
-			uint256 _documentHash;
+			uint256 _messageHash;
 			uint8_t _stage;
 			bytes_t _ownerPubKey;
 			bytes_t _newOwnerPubKey;
 			bytes_t _ownerSign;
 			bytes_t _newOwnerSign;
 			CRCProposalTracking::Type _type;
-			uint256 _secretaryOpinionHash;
-			bytes_t _secretarySignature;
+			uint256 _secretaryGeneralOpinionHash;
+			bytes_t _secretaryGeneralSignature;
 		};
 
 	}

@@ -40,8 +40,8 @@ namespace Elastos {
 #define JsonKeyBudgets "Budgets"
 #define JsonKeyRecipient "Recipient"
 #define JsonKeySignature "Signature"
-#define JsonKeyCRCommitteeDID "CRCommitteeDID"
-#define JsonKeyCRCommitteeSignature "CRCommitteeSignature"
+#define JsonKeyCRCouncilMemberDID "CRCouncilMemberDID"
+#define JsonKeyCRCouncilMemberSignature "CRCouncilMemberSignature"
 
 		Budget::Budget() {
 
@@ -157,12 +157,12 @@ namespace Elastos {
 			return _ownerPublicKey;
 		}
 
-		void CRCProposal::SetCRCommitteeDID(const Address &crSponsorDID) {
-			_crCommitteeDID = crSponsorDID;
+		void CRCProposal::SetCRCouncilMemberDID(const Address &crSponsorDID) {
+			_crCouncilMemberDID = crSponsorDID;
 		}
 
-		const Address &CRCProposal::GetCRCommitteeDID() const {
-			return _crCommitteeDID;
+		const Address &CRCProposal::GetCRCouncilMemberDID() const {
+			return _crCouncilMemberDID;
 		}
 
 		void CRCProposal::SetDraftHash(const uint256 &draftHash) {
@@ -197,12 +197,12 @@ namespace Elastos {
 			return _signature;
 		}
 
-		void CRCProposal::SetCRCommitteeSignature(const bytes_t &signature) {
-			_crCommitteeSignature = signature;
+		void CRCProposal::SetCRCouncilMemberSignature(const bytes_t &signature) {
+			_crCouncilMemberSignature = signature;
 		}
 
-		const bytes_t &CRCProposal::GetCRCommitteeSignature() const {
-			return _crCommitteeSignature;
+		const bytes_t &CRCProposal::GetCRCouncilMemberSignature() const {
+			return _crCouncilMemberSignature;
 		}
 
 		const uint256 &CRCProposal::DigestOwnerUnsigned(uint8_t version) const {
@@ -215,14 +215,14 @@ namespace Elastos {
 			return _digestOwnerUnsigned;
 		}
 
-		const uint256 &CRCProposal::DigestCRCommitteeUnsigned(uint8_t version) const {
-			if (_digestCRCommitteeUnsigned == 0) {
+		const uint256 &CRCProposal::DigestCRCouncilMemberUnsigned(uint8_t version) const {
+			if (_digestCRCouncilMemberUnsigned == 0) {
 				ByteStream stream;
-				SerializeCRCommitteeUnsigned(stream, version);
-				_digestCRCommitteeUnsigned = sha256(stream.GetBytes());
+				SerializeCRCouncilMemberUnsigned(stream, version);
+				_digestCRCouncilMemberUnsigned = sha256(stream.GetBytes());
 			}
 
-			return _digestCRCommitteeUnsigned;
+			return _digestCRCouncilMemberUnsigned;
 		}
 
 		size_t CRCProposal::EstimateSize(uint8_t version) const {
@@ -252,10 +252,10 @@ namespace Elastos {
 			size += stream.WriteVarUint(_signature.size());
 			size += _signature.size();
 
-			size += _crCommitteeDID.ProgramHash().size();
+			size += _crCouncilMemberDID.ProgramHash().size();
 
-			size += stream.WriteVarUint(_crCommitteeSignature.size());
-			size += _crCommitteeSignature.size();
+			size += stream.WriteVarUint(_crCouncilMemberSignature.size());
+			size += _crCouncilMemberSignature.size();
 
 			return size;
 		}
@@ -318,15 +318,15 @@ namespace Elastos {
 			return true;
 		}
 
-		void CRCProposal::SerializeCRCommitteeUnsigned(ByteStream &ostream, uint8_t version) const {
+		void CRCProposal::SerializeCRCouncilMemberUnsigned(ByteStream &ostream, uint8_t version) const {
 			SerializeOwnerUnsigned(ostream, version);
 
 			ostream.WriteVarBytes(_signature);
 
-			ostream.WriteBytes(_crCommitteeDID.ProgramHash());
+			ostream.WriteBytes(_crCouncilMemberDID.ProgramHash());
 		}
 
-		bool CRCProposal::DeserializeCRCommitteeUnsigned(const ByteStream &istream, uint8_t version) {
+		bool CRCProposal::DeserializeCRCouncilMemberUnsigned(const ByteStream &istream, uint8_t version) {
 			if (!DeserializeOwnerUnsigned(istream, version)) {
 				SPVLOG_ERROR("deserialize unsigned");
 				return false;
@@ -342,24 +342,24 @@ namespace Elastos {
 				SPVLOG_ERROR("deserialize sponsor did");
 				return false;
 			}
-			_crCommitteeDID = Address(programHash);
+			_crCouncilMemberDID = Address(programHash);
 
 			return true;
 		}
 
 		void CRCProposal::Serialize(ByteStream &ostream, uint8_t version) const {
-			SerializeCRCommitteeUnsigned(ostream, version);
+			SerializeCRCouncilMemberUnsigned(ostream, version);
 
-			ostream.WriteVarBytes(_crCommitteeSignature);
+			ostream.WriteVarBytes(_crCouncilMemberSignature);
 		}
 
 		bool CRCProposal::Deserialize(const ByteStream &istream, uint8_t version) {
-			if (!DeserializeCRCommitteeUnsigned(istream, version)) {
+			if (!DeserializeCRCouncilMemberUnsigned(istream, version)) {
 				SPVLOG_ERROR("CRCProposal deserialize crc unsigned");
 				return false;
 			}
 
-			if (!istream.ReadVarBytes(_crCommitteeSignature)) {
+			if (!istream.ReadVarBytes(_crCouncilMemberSignature)) {
 				SPVLOG_ERROR("CRCProposal deserialize crc signature");
 				return false;
 			}
@@ -387,28 +387,28 @@ namespace Elastos {
 			_recipient = Address(j[JsonKeyRecipient].get<std::string>());
 		}
 
-		nlohmann::json CRCProposal::ToJsonCRCommitteeUnsigned(uint8_t version) const {
+		nlohmann::json CRCProposal::ToJsonCRCouncilMemberUnsigned(uint8_t version) const {
 			nlohmann::json j = ToJsonOwnerUnsigned(version);
 			j[JsonKeySignature] = _signature.getHex();
-			j[JsonKeyCRCommitteeDID] = _crCommitteeDID.String();
+			j[JsonKeyCRCouncilMemberDID] = _crCouncilMemberDID.String();
 			return j;
 		}
 
-		void CRCProposal::FromJsonCRCommitteeUnsigned(const nlohmann::json &j, uint8_t version) {
+		void CRCProposal::FromJsonCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version) {
 			FromJsonOwnerUnsigned(j, version);
 			_signature.setHex(j[JsonKeySignature].get<std::string>());
-			_crCommitteeDID = Address(j[JsonKeyCRCommitteeDID].get<std::string>());
+			_crCouncilMemberDID = Address(j[JsonKeyCRCouncilMemberDID].get<std::string>());
 		}
 
 		nlohmann::json CRCProposal::ToJson(uint8_t version) const {
-			nlohmann::json j = ToJsonCRCommitteeUnsigned(version);
-			j[JsonKeyCRCommitteeSignature] = _crCommitteeSignature.getHex();
+			nlohmann::json j = ToJsonCRCouncilMemberUnsigned(version);
+			j[JsonKeyCRCouncilMemberSignature] = _crCouncilMemberSignature.getHex();
 			return j;
 		}
 
 		void CRCProposal::FromJson(const nlohmann::json &j, uint8_t version) {
-			FromJsonCRCommitteeUnsigned(j, version);
-			_crCommitteeSignature.setHex(j[JsonKeyCRCommitteeSignature].get<std::string>());
+			FromJsonCRCouncilMemberUnsigned(j, version);
+			_crCouncilMemberSignature.setHex(j[JsonKeyCRCouncilMemberSignature].get<std::string>());
 		}
 
 		bool CRCProposal::IsValidOwnerUnsigned(uint8_t version) const {
@@ -444,7 +444,7 @@ namespace Elastos {
 			return true;
 		}
 
-		bool CRCProposal::IsValidCRCommitteeUnsigned(uint8_t version) const {
+		bool CRCProposal::IsValidCRCouncilMemberUnsigned(uint8_t version) const {
 			if (!IsValidOwnerUnsigned(version))
 				return false;
 
@@ -458,7 +458,7 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!_crCommitteeDID.Valid()) {
+			if (!_crCouncilMemberDID.Valid()) {
 				SPVLOG_ERROR("invalid cr committee did");
 				return false;
 			}
@@ -467,10 +467,10 @@ namespace Elastos {
 		}
 
 		bool CRCProposal::IsValid(uint8_t version) const {
-			if (!IsValidCRCommitteeUnsigned(version))
+			if (!IsValidCRCouncilMemberUnsigned(version))
 				return false;
 
-			if (_crCommitteeSignature.empty()) {
+			if (_crCouncilMemberSignature.empty()) {
 				SPVLOG_ERROR("cr committee not signed");
 				return false;
 			}
@@ -487,8 +487,8 @@ namespace Elastos {
 			_recipient = payload._recipient;
 			_signature = payload._signature;
 
-			_crCommitteeDID = payload._crCommitteeDID;
-			_crCommitteeSignature = payload._crCommitteeSignature;
+			_crCouncilMemberDID = payload._crCouncilMemberDID;
+			_crCouncilMemberSignature = payload._crCouncilMemberSignature;
 			return *this;
 		}
 

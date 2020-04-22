@@ -1321,7 +1321,7 @@ static int proposal(int argc, char *argv[]) {
 		std::cin >> did;
 		payload["CRCommitteeDID"] = did;
 
-		digest = subWallet->ProposalCRCommitteeDigest(payload);
+		digest = subWallet->ProposalCRCouncilMemberDigest(payload);
 
 		std::cout << "Sign the digest by CR committee with did sdk" << std::endl;
 		std::cout << "Digest: " << digest << std::endl << "Press enter to continue..." << std::endl;

@@ -149,7 +149,7 @@ namespace Elastos {
 			//////////////////////////////////////////////////
 			std::string ProposalOwnerDigest(const nlohmann::json &payload) const override;
 
-			std::string ProposalCRCommitteeDigest(const nlohmann::json &payload) const override;
+			std::string ProposalCRCouncilMemberDigest(const nlohmann::json &payload) const override;
 
 			nlohmann::json CreateProposalTransaction(const nlohmann::json &payload,
 													 const std::string &memo) override;
@@ -181,6 +181,7 @@ namespace Elastos {
 
 			nlohmann::json CreateProposalWithdrawTransaction(const std::string &recipient,
 															 const std::string &amount,
+															 const nlohmann::json &utxo,
 															 const nlohmann::json &payload,
 															 const std::string &memo) override;
 

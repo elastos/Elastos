@@ -14,28 +14,28 @@ using namespace Elastos::ElaWallet;
 static void initCRCProposalTracking(CRCProposalTracking &tracking) {
 	CRCProposalTracking::Type type = CRCProposalTracking::Type(getRandUInt8() % 6);
 	tracking.SetProposalHash(getRanduint256());
-	tracking.SetDocumentHash(getRanduint256());
+	tracking.SetMessageHash(getRanduint256());
 	tracking.SetStage(getRandUInt8());
 	tracking.SetOwnerPubKey(getRandBytes(33));
 	tracking.SetNewOwnerPubKey(getRandBytes(33));
 	tracking.SetOwnerSign(getRandBytes(64));
 	tracking.SetNewOwnerSign(getRandBytes(64));
 	tracking.SetType(type);
-	tracking.SetSecretaryOpinionHash(getRanduint256());
-	tracking.SetSecretarySignature(getRandBytes(64));
+	tracking.SetSecretaryGeneralOpinionHash(getRanduint256());
+	tracking.SetSecretaryGeneralSignature(getRandBytes(64));
 }
 
 static void verifyProposalTracking(CRCProposalTracking &p1, CRCProposalTracking &p2) {
 	REQUIRE(p1.GetProposalHash() == p2.GetProposalHash());
-	REQUIRE(p1.GetDocumentHash() == p2.GetDocumentHash());
+	REQUIRE(p1.GetMessageHash() == p2.GetMessageHash());
 	REQUIRE(p1.GetStage() == p2.GetStage());
 	REQUIRE(p1.GetOwnerPubKey() == p2.GetOwnerPubKey());
 	REQUIRE(p1.GetNewOwnerPubKey() == p2.GetNewOwnerPubKey());
 	REQUIRE(p1.GetOwnerSign() == p2.GetOwnerSign());
 	REQUIRE(p1.GetNewOwnerSign() == p2.GetNewOwnerSign());
 	REQUIRE(p1.GetType() == p2.GetType());
-	REQUIRE(p1.GetSecretaryOpinionHash() == p2.GetSecretaryOpinionHash());
-	REQUIRE(p1.GetSecretarySignature() == p2.GetSecretarySignature());
+	REQUIRE(p1.GetSecretaryGeneralOpinionHash() == p2.GetSecretaryGeneralOpinionHash());
+	REQUIRE(p1.GetSecretaryGeneralSignature() == p2.GetSecretaryGeneralSignature());
 }
 
 TEST_CASE("CRCProposalTracking test", "[CRCProposalTracking]") {

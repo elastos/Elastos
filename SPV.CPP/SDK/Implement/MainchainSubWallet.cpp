@@ -1048,21 +1048,21 @@ namespace Elastos {
 			return digest;
 		}
 
-		std::string MainchainSubWallet::ProposalCRCommitteeDigest(const nlohmann::json &payload) const {
+		std::string MainchainSubWallet::ProposalCRCouncilMemberDigest(const nlohmann::json &payload) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("payload: {}", payload.dump());
 
 			CRCProposal proposal;
 			try {
-				proposal.FromJsonCRCommitteeUnsigned(payload, CRCProposalDefaultVersion);
+				proposal.FromJsonCRCouncilMemberUnsigned(payload, CRCProposalDefaultVersion);
 			} catch (const std::exception &e) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			ErrorChecker::CheckParam(!proposal.IsValidCRCommitteeUnsigned(CRCProposalDefaultVersion),
+			ErrorChecker::CheckParam(!proposal.IsValidCRCouncilMemberUnsigned(CRCProposalDefaultVersion),
 									 Error::InvalidArgument, "invalid payload");
 
-			std::string digest = proposal.DigestCRCommitteeUnsigned(CRCProposalDefaultVersion).GetHex();
+			std::string digest = proposal.DigestCRCouncilMemberUnsigned(CRCProposalDefaultVersion).GetHex();
 
 			ArgInfo("r => {}", digest);
 			return digest;
@@ -1384,6 +1384,7 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateProposalWithdrawTransaction(const std::string &recipient,
 																			 const std::string &amount,
+																			 const nlohmann::json &utxo,
 																			 const nlohmann::json &payload,
 																			 const std::string &memo) {
 			ErrorChecker::ThrowParamException(Error::InvalidArgument, "interface not ready");

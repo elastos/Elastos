@@ -31,11 +31,11 @@ namespace Elastos {
 #define CRCProposalReviewDefaultVersion 0
 		class CRCProposalReview : public IPayload {
 		public:
-			enum Opinion {
+			enum VoteResult {
 				approve = 0x00,
 				reject = 0x01,
 				abstain = 0x02,
-				unknownOpinion
+				unknownVoteResult
 			};
 
 			CRCProposalReview();
@@ -46,17 +46,17 @@ namespace Elastos {
 
 			const uint256 &GetProposalHash() const;
 
-			void SetOpinion(Opinion opinion);
+			void SetVoteResult(VoteResult voteResult);
 
-			Opinion GetOpinion() const;
+			VoteResult GetVoteResult() const;
 
 			void SetOpinionHash(const uint256 &hash);
 
 			const uint256 &GetOpinionHash() const;
 
-			void SetCRCommitteeDID(const Address &crDID);
+			void SetDID(const Address &DID);
 
-			const Address &GetCRCommitteeDID() const;
+			const Address &GetDID() const;
 
 			void SetSignature(const bytes_t &signature);
 
@@ -96,9 +96,9 @@ namespace Elastos {
 
 		private:
 			uint256 _proposalHash;
-			Opinion _opinion;
+			VoteResult _voteResult;
 			uint256 _opinionHash;
-			Address _crCommitteeDID;
+			Address _did;
 			bytes_t _signature;
 		};
 	}

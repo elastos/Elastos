@@ -14,17 +14,17 @@ using namespace Elastos::ElaWallet;
 static void initCRCProposalReview(CRCProposalReview &review) {
 	review.SetProposalHash(getRanduint256());
 	uint8_t result = getRandUInt8() % 3;
-	review.SetOpinion(CRCProposalReview::Opinion(result));
+	review.SetVoteResult(CRCProposalReview::VoteResult(result));
 	review.SetOpinionHash(getRanduint256());
-	review.SetCRCommitteeDID(Address("icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY"));
+	review.SetDID(Address("icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY"));
 	review.SetSignature(getRandBytes(90));
 }
 
 static void verifyProposalReview(CRCProposalReview &p1, CRCProposalReview &p2) {
 	REQUIRE(p2.GetProposalHash() == p1.GetProposalHash());
-	REQUIRE(p2.GetOpinion() == p1.GetOpinion());
+	REQUIRE(p2.GetVoteResult() == p1.GetVoteResult());
 	REQUIRE(p2.GetOpinionHash() == p1.GetOpinionHash());
-	REQUIRE(p2.GetCRCommitteeDID() == p1.GetCRCommitteeDID());
+	REQUIRE(p2.GetDID() == p1.GetDID());
 	REQUIRE(p2.GetSignature() == p1.GetSignature());
 }
 

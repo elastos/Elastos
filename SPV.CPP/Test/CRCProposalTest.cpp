@@ -32,8 +32,8 @@ static void initCRCProposal(CRCProposal &crcProposal) {
 
 	crcProposal.SetRecipient(Address("EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"));
 	crcProposal.SetSignature(getRandBytes(50));
-	crcProposal.SetCRCommitteeDID(Address("icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY"));
-	crcProposal.SetCRCommitteeSignature(getRandBytes(60));
+	crcProposal.SetCRCouncilMemberDID(Address("icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY"));
+	crcProposal.SetCRCouncilMemberSignature(getRandBytes(60));
 }
 
 static void verifyProposal(CRCProposal &p1, CRCProposal &p2) {
@@ -53,8 +53,8 @@ static void verifyProposal(CRCProposal &p1, CRCProposal &p2) {
 
 	REQUIRE(p1.GetRecipient() == p2.GetRecipient());
 	REQUIRE(p1.GetSignature() == p2.GetSignature());
-	REQUIRE(p1.GetCRCommitteeDID() == p2.GetCRCommitteeDID());
-	REQUIRE(p1.GetCRCommitteeSignature() == p2.GetCRCommitteeSignature());
+	REQUIRE(p1.GetCRCouncilMemberDID() == p2.GetCRCouncilMemberDID());
+	REQUIRE(p1.GetCRCouncilMemberSignature() == p2.GetCRCouncilMemberSignature());
 }
 
 TEST_CASE("CRCProposal test", "[CRCProposal]") {

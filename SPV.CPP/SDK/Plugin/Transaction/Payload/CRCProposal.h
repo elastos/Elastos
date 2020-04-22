@@ -72,15 +72,15 @@ namespace Elastos {
 			enum Type {
 				normal = 0x0000,
 				elip = 0x0100,
-				flowElip = 0x0101,
-				infoElip = 0x0102,
-				mainChainUpgradeCode = 0x0200,
-				sideChainUpgradeCode = 0x0300,
-				registerSideChain = 0x0301,
-				secretaryGeneral = 0x0400,
-				changeSponsor = 0x0401,
-				closeProposal = 0x0402,
-				dappConsensus = 0x0500,
+//				flowElip = 0x0101,
+//				infoElip = 0x0102,
+//				mainChainUpgradeCode = 0x0200,
+//				sideChainUpgradeCode = 0x0300,
+//				registerSideChain = 0x0301,
+//				secretaryGeneral = 0x0400,
+//				changeSponsor = 0x0401,
+//				closeProposal = 0x0402,
+//				dappConsensus = 0x0500,
 				maxType
 			};
 
@@ -100,9 +100,9 @@ namespace Elastos {
 
 			const bytes_t &GetOwnerPublicKey() const;
 
-			void SetCRCommitteeDID(const Address &crSponsorDID);
+			void SetCRCouncilMemberDID(const Address &crSponsorDID);
 
-			const Address &GetCRCommitteeDID() const;
+			const Address &GetCRCouncilMemberDID() const;
 
 			void SetDraftHash(const uint256 &draftHash);
 
@@ -120,13 +120,13 @@ namespace Elastos {
 
 			const bytes_t &GetSignature() const;
 
-			void SetCRCommitteeSignature(const bytes_t &signature);
+			void SetCRCouncilMemberSignature(const bytes_t &signature);
 
-			const bytes_t &GetCRCommitteeSignature() const;
+			const bytes_t &GetCRCouncilMemberSignature() const;
 
 			const uint256 &DigestOwnerUnsigned(uint8_t version) const;
 
-			const uint256 &DigestCRCommitteeUnsigned(uint8_t version) const;
+			const uint256 &DigestCRCouncilMemberUnsigned(uint8_t version) const;
 
 		public:
 			size_t EstimateSize(uint8_t version) const override;
@@ -135,9 +135,9 @@ namespace Elastos {
 
 			bool DeserializeOwnerUnsigned(const ByteStream &istream, uint8_t version);
 
-			void SerializeCRCommitteeUnsigned(ByteStream &ostream, uint8_t version) const;
+			void SerializeCRCouncilMemberUnsigned(ByteStream &ostream, uint8_t version) const;
 
-			bool DeserializeCRCommitteeUnsigned(const ByteStream &istream, uint8_t version);
+			bool DeserializeCRCouncilMemberUnsigned(const ByteStream &istream, uint8_t version);
 
 			void Serialize(ByteStream &ostream, uint8_t version) const override;
 
@@ -147,9 +147,9 @@ namespace Elastos {
 
 			void FromJsonOwnerUnsigned(const nlohmann::json &j, uint8_t version);
 
-			nlohmann::json ToJsonCRCommitteeUnsigned(uint8_t version) const;
+			nlohmann::json ToJsonCRCouncilMemberUnsigned(uint8_t version) const;
 
-			void FromJsonCRCommitteeUnsigned(const nlohmann::json &j, uint8_t version);
+			void FromJsonCRCouncilMemberUnsigned(const nlohmann::json &j, uint8_t version);
 
 			nlohmann::json ToJson(uint8_t version) const override;
 
@@ -157,7 +157,7 @@ namespace Elastos {
 
 			bool IsValidOwnerUnsigned(uint8_t version) const;
 
-			bool IsValidCRCommitteeUnsigned(uint8_t version) const;
+			bool IsValidCRCouncilMemberUnsigned(uint8_t version) const;
 
 			bool IsValid(uint8_t version) const override;
 
@@ -167,7 +167,7 @@ namespace Elastos {
 
 		private:
 			mutable uint256 _digestOwnerUnsigned;
-			mutable uint256 _digestCRCommitteeUnsigned;
+			mutable uint256 _digestCRCouncilMemberUnsigned;
 
 		private:
 			CRCProposal::Type _type;
@@ -178,9 +178,9 @@ namespace Elastos {
 			Address _recipient;
 			bytes_t _signature;
 
-			// cr sponsor
-			Address _crCommitteeDID;
-			bytes_t _crCommitteeSignature;
+			// cr council member did
+			Address _crCouncilMemberDID;
+			bytes_t _crCouncilMemberSignature;
 		};
 	}
 }

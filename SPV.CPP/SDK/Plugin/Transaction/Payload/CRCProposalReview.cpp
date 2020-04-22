@@ -27,9 +27,9 @@ namespace Elastos {
 	namespace ElaWallet {
 
 #define JsonKeyProposalHash "ProposalHash"
-#define JsonKeyOpinion "Opinion"
+#define JsonKeyVoteResult "VoteResult"
 #define JsonKeyOpinionHash "OpinionHash"
-#define JsonKeyCRCommitteeDID "CRCommitteeDID"
+#define JsonKeyDID "DID"
 #define JsonKeySignature "Signature"
 
 		CRCProposalReview::CRCProposalReview() {
@@ -48,12 +48,12 @@ namespace Elastos {
 			return _proposalHash;
 		}
 
-		void CRCProposalReview::SetOpinion(Opinion opinion) {
-			_opinion = opinion;
+		void CRCProposalReview::SetVoteResult(VoteResult voteResult) {
+			_voteResult = voteResult;
 		}
 
-		CRCProposalReview::Opinion CRCProposalReview::GetOpinion() const {
-			return _opinion;
+		CRCProposalReview::VoteResult CRCProposalReview::GetVoteResult() const {
+			return _voteResult;
 		}
 
 		void CRCProposalReview::SetOpinionHash(const uint256 &hash) {
@@ -64,12 +64,12 @@ namespace Elastos {
 			return _opinionHash;
 		}
 
-		void CRCProposalReview::SetCRCommitteeDID(const Address &crDID) {
-			_crCommitteeDID = crDID;
+		void CRCProposalReview::SetDID(const Address &DID) {
+			_did = DID;
 		}
 
-		const Address &CRCProposalReview::GetCRCommitteeDID() const {
-			return _crCommitteeDID;
+		const Address &CRCProposalReview::GetDID() const {
+			return _did;
 		}
 
 		void CRCProposalReview::SetSignature(const bytes_t &signature) {
@@ -96,7 +96,7 @@ namespace Elastos {
 			size += _proposalHash.size();
 			size += sizeof(uint8_t);
 			size += _opinionHash.size();
-			size += _crCommitteeDID.ProgramHash().size();
+			size += _did.ProgramHash().size();
 			size += stream.WriteVarUint(_signature.size());
 			size += _signature.size();
 
@@ -105,9 +105,9 @@ namespace Elastos {
 
 		void CRCProposalReview::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteBytes(_proposalHash);
-			ostream.WriteUint8(_opinion);
+			ostream.WriteUint8(_voteResult);
 			ostream.WriteBytes(_opinionHash);
-			ostream.WriteBytes(_crCommitteeDID.ProgramHash());
+			ostream.WriteBytes(_did.ProgramHash());
 		}
 
 		bool CRCProposalReview::DeserializeUnsigned(const ByteStream &istream, uint8_t version) {
@@ -121,7 +121,7 @@ namespace Elastos {
 				SPVLOG_ERROR("deserialize opinion");
 				return false;
 			}
-			_opinion = Opinion(opinion);
+			_voteResult = VoteResult(opinion);
 
 			if (!istream.ReadBytes(_opinionHash)) {
 				SPVLOG_ERROR("deesrialize opinion hash");
@@ -133,7 +133,7 @@ namespace Elastos {
 				SPVLOG_ERROR("deserialize did");
 				return false;
 			}
-			_crCommitteeDID = Address(programHash);
+			_did = Address(programHash);
 
 			return true;
 		}
@@ -160,17 +160,17 @@ namespace Elastos {
 		nlohmann::json CRCProposalReview::ToJsonUnsigned(uint8_t version) const {
 			nlohmann::json j;
 			j[JsonKeyProposalHash] = _proposalHash.GetHex();
-			j[JsonKeyOpinion] = _opinion;
+			j[JsonKeyVoteResult] = _voteResult;
 			j[JsonKeyOpinionHash] = _opinionHash.GetHex();
-			j[JsonKeyCRCommitteeDID] = _crCommitteeDID.String();
+			j[JsonKeyDID] = _did.String();
 			return j;
 		}
 
 		void CRCProposalReview::FromJsonUnsigned(const nlohmann::json &j, uint8_t version) {
 			_proposalHash.SetHex(j[JsonKeyProposalHash].get<std::string>());
-			_opinion = Opinion(j[JsonKeyOpinion].get<uint8_t>());
+			_voteResult = VoteResult(j[JsonKeyVoteResult].get<uint8_t>());
 			_opinionHash.SetHex(j[JsonKeyOpinionHash].get<std::string>());
-			_crCommitteeDID = Address(j[JsonKeyCRCommitteeDID].get<std::string>());
+			_did = Address(j[JsonKeyDID].get<std::string>());
 		}
 
 		nlohmann::json CRCProposalReview::ToJson(uint8_t version) const {
@@ -185,12 +185,12 @@ namespace Elastos {
 		}
 
 		bool CRCProposalReview::IsValidUnsigned(uint8_t version) const {
-			if (_opinion >= Opinion::unknownOpinion) {
-				SPVLOG_ERROR("invalid opinion: {}", _opinion);
+			if (_voteResult >= VoteResult::unknownVoteResult) {
+				SPVLOG_ERROR("invalid opinion: {}", _voteResult);
 				return false;
 			}
 
-			if (!_crCommitteeDID.Valid()) {
+			if (!_did.Valid()) {
 				SPVLOG_ERROR("invalid committee did");
 				return false;
 			}
@@ -222,9 +222,9 @@ namespace Elastos {
 
 		CRCProposalReview &CRCProposalReview::operator=(const CRCProposalReview &payload) {
 			_proposalHash = payload._proposalHash;
-			_opinion = payload._opinion;
+			_voteResult = payload._voteResult;
 			_opinionHash = payload._opinionHash;
-			_crCommitteeDID = payload._crCommitteeDID;
+			_did = payload._did;
 			_signature = payload._signature;
 			return *this;
 		}

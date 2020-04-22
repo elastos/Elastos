@@ -29,15 +29,15 @@ namespace Elastos {
 	namespace ElaWallet {
 
 #define JsonKeyProposalHash "ProposalHash"
-#define JsonKeyDocumentHash "DocumentHash"
+#define JsonKeyMessageHash "MessageHash"
 #define JsonKeyStage "Stage"
 #define JsonKeyOwnerPublicKey "OwnerPublicKey"
 #define JsonKeyNewOwnerPublicKey "NewOwnerPublicKey"
 #define JsonKeyOwnerSignature "OwnerSignature"
 #define JsonKeyNewOwnerSignature "NewOwnerSignature"
 #define JsonKeyType "Type"
-#define JsonKeySecretaryOpinionHash "SecretaryOpinionHash"
-#define JsonKeySecretarySignature "SecretarySignature"
+#define JsonKeySecretaryGeneralOpinionHash "SecretaryGeneralOpinionHash"
+#define JsonKeySecretaryGeneralSignature "SecretaryGeneralSignature"
 
 		CRCProposalTracking::CRCProposalTracking() {
 
@@ -55,12 +55,12 @@ namespace Elastos {
 			return _proposalHash;
 		}
 
-		void CRCProposalTracking::SetDocumentHash(const uint256 &documentHash) {
-			_documentHash = documentHash;
+		void CRCProposalTracking::SetMessageHash(const uint256 &messageHash) {
+			_messageHash = messageHash;
 		}
 
-		const uint256 &CRCProposalTracking::GetDocumentHash() const {
-			return _documentHash;
+		const uint256 &CRCProposalTracking::GetMessageHash() const {
+			return _messageHash;
 		}
 
 		void CRCProposalTracking::SetStage(uint8_t stage) {
@@ -111,20 +111,20 @@ namespace Elastos {
 			return _type;
 		}
 
-		void CRCProposalTracking::SetSecretaryOpinionHash(const uint256 &hash) {
-			_secretaryOpinionHash = hash;
+		void CRCProposalTracking::SetSecretaryGeneralOpinionHash(const uint256 &hash) {
+			_secretaryGeneralOpinionHash = hash;
 		}
 
-		const uint256 &CRCProposalTracking::GetSecretaryOpinionHash()  const {
-			return _secretaryOpinionHash;
+		const uint256 &CRCProposalTracking::GetSecretaryGeneralOpinionHash()  const {
+			return _secretaryGeneralOpinionHash;
 		}
 
-		void CRCProposalTracking::SetSecretarySignature(const bytes_t &signature) {
-			_secretarySignature = signature;
+		void CRCProposalTracking::SetSecretaryGeneralSignature(const bytes_t &signature) {
+			_secretaryGeneralSignature = signature;
 		}
 
-		const bytes_t &CRCProposalTracking::GetSecretarySignature() const {
-			return _secretarySignature;
+		const bytes_t &CRCProposalTracking::GetSecretaryGeneralSignature() const {
+			return _secretaryGeneralSignature;
 		}
 
 		const uint256 &CRCProposalTracking::DigestOwnerUnsigned(uint8_t version) const {
@@ -162,7 +162,7 @@ namespace Elastos {
 			size_t size = 0;
 
 			size += _proposalHash.size();
-			size += _documentHash.size();
+			size += _messageHash.size();
 
 			size += sizeof(uint8_t); // stage
 
@@ -180,17 +180,17 @@ namespace Elastos {
 
 			size += sizeof(uint8_t); // type
 
-			size += _secretaryOpinionHash.size();
+			size += _secretaryGeneralOpinionHash.size();
 
-			size += stream.WriteVarUint(_secretarySignature.size());
-			size += _secretarySignature.size();
+			size += stream.WriteVarUint(_secretaryGeneralSignature.size());
+			size += _secretaryGeneralSignature.size();
 
 			return size;
 		}
 
 		void CRCProposalTracking::SerializeOwnerUnsigned(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteBytes(_proposalHash);
-			ostream.WriteBytes(_documentHash);
+			ostream.WriteBytes(_messageHash);
 			ostream.WriteUint8(_stage);
 			ostream.WriteVarBytes(_ownerPubKey);
 			ostream.WriteVarBytes(_newOwnerPubKey);
@@ -202,7 +202,7 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!stream.ReadBytes(_documentHash)) {
+			if (!stream.ReadBytes(_messageHash)) {
 				SPVLOG_ERROR("deserialize document hash");
 				return false;
 			}
@@ -250,7 +250,7 @@ namespace Elastos {
 
 			stream.WriteUint8(_type);
 
-			stream.WriteBytes(_secretaryOpinionHash);
+			stream.WriteBytes(_secretaryGeneralOpinionHash);
 		}
 
 		bool CRCProposalTracking::DeserializeSecretaryUnsigned(const ByteStream &stream, uint8_t version) {
@@ -269,7 +269,7 @@ namespace Elastos {
 			}
 			_type = CRCProposalTracking::Type(type);
 
-			if (!stream.ReadBytes(_secretaryOpinionHash)) {
+			if (!stream.ReadBytes(_secretaryGeneralOpinionHash)) {
 				SPVLOG_ERROR("deserialize secretary opinion hash");
 				return false;
 			}
@@ -280,7 +280,7 @@ namespace Elastos {
 		void CRCProposalTracking::Serialize(ByteStream &stream, uint8_t version) const {
 			SerializeSecretaryUnsigned(stream, version);
 
-			stream.WriteVarBytes(_secretarySignature);
+			stream.WriteVarBytes(_secretaryGeneralSignature);
 		}
 
 		bool CRCProposalTracking::Deserialize(const ByteStream &istream, uint8_t version) {
@@ -289,7 +289,7 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!istream.ReadVarBytes(_secretarySignature)) {
+			if (!istream.ReadVarBytes(_secretaryGeneralSignature)) {
 				SPVLOG_ERROR("deserialize secretary signature");
 				return false;
 			}
@@ -300,7 +300,7 @@ namespace Elastos {
 		nlohmann::json CRCProposalTracking::ToJsonOwnerUnsigned(uint8_t version) const {
 			nlohmann::json j;
 			j[JsonKeyProposalHash] = _proposalHash.GetHex();
-			j[JsonKeyDocumentHash] = _documentHash.GetHex();
+			j[JsonKeyMessageHash] = _messageHash.GetHex();
 			j[JsonKeyStage] = _stage;
 			j[JsonKeyOwnerPublicKey] = _ownerPubKey.getHex();
 			j[JsonKeyNewOwnerPublicKey] = _newOwnerPubKey.getHex();
@@ -309,7 +309,7 @@ namespace Elastos {
 
 		void CRCProposalTracking::FromJsonOwnerUnsigned(const nlohmann::json &j, uint8_t version) {
 			_proposalHash.SetHex(j[JsonKeyProposalHash].get<std::string>());
-			_documentHash.SetHex(j[JsonKeyDocumentHash].get<std::string>());
+			_messageHash.SetHex(j[JsonKeyMessageHash].get<std::string>());
 			_stage = j[JsonKeyStage].get<uint8_t>();
 			_ownerPubKey.setHex(j[JsonKeyOwnerPublicKey].get<std::string>());
 			_newOwnerPubKey.setHex(j[JsonKeyNewOwnerPublicKey].get<std::string>());
@@ -330,7 +330,7 @@ namespace Elastos {
 			nlohmann::json j = ToJsonNewOwnerUnsigned(version);
 			j[JsonKeyNewOwnerSignature] = _newOwnerSign.getHex();
 			j[JsonKeyType] = _type;
-			j[JsonKeySecretaryOpinionHash] = _secretaryOpinionHash.GetHex();
+			j[JsonKeySecretaryGeneralOpinionHash] = _secretaryGeneralOpinionHash.GetHex();
 			return j;
 		}
 
@@ -338,20 +338,20 @@ namespace Elastos {
 			FromJsonNewOwnerUnsigned(j, version);
 			_newOwnerSign.setHex(j[JsonKeyNewOwnerSignature].get<std::string>());
 			_type = CRCProposalTracking::Type(j[JsonKeyType].get<uint8_t>());
-			_secretaryOpinionHash.SetHex(j[JsonKeySecretaryOpinionHash].get<std::string>());
+			_secretaryGeneralOpinionHash.SetHex(j[JsonKeySecretaryGeneralOpinionHash].get<std::string>());
 		}
 
 		nlohmann::json CRCProposalTracking::ToJson(uint8_t version) const {
 			nlohmann::json j = ToJsonSecretaryUnsigned(version);
 
-			j[JsonKeySecretarySignature] = _secretarySignature.getHex();
+			j[JsonKeySecretaryGeneralSignature] = _secretaryGeneralSignature.getHex();
 			return j;
 		}
 
 		void CRCProposalTracking::FromJson(const nlohmann::json &j, uint8_t version) {
 			FromJsonSecretaryUnsigned(j, version);
 
-			_secretarySignature.setHex(j[JsonKeySecretarySignature].get<std::string>());
+			_secretaryGeneralSignature.setHex(j[JsonKeySecretaryGeneralSignature].get<std::string>());
 		}
 
 		bool CRCProposalTracking::IsValidOwnerUnsigned(uint8_t version) const {
@@ -426,7 +426,7 @@ namespace Elastos {
 			if (!IsValidSecretaryUnsigned(version))
 				return false;
 
-			if (_secretarySignature.empty()) {
+			if (_secretaryGeneralSignature.empty()) {
 				SPVLOG_ERROR("secretary signature is empty");
 				return false;
 			}
@@ -446,15 +446,15 @@ namespace Elastos {
 
 		CRCProposalTracking &CRCProposalTracking::operator=(const CRCProposalTracking &payload) {
 			_proposalHash = payload._proposalHash;
-			_documentHash = payload._documentHash;
+			_messageHash = payload._messageHash;
 			_stage = payload._stage;
 			_ownerPubKey = payload._ownerPubKey;
 			_newOwnerPubKey = payload._newOwnerPubKey;
 			_ownerSign = payload._ownerSign;
 			_newOwnerSign = payload._newOwnerSign;
 			_type = payload._type;
-			_secretaryOpinionHash = payload._secretaryOpinionHash;
-			_secretarySignature = payload._secretarySignature;
+			_secretaryGeneralOpinionHash = payload._secretaryGeneralOpinionHash;
+			_secretaryGeneralSignature = payload._secretaryGeneralSignature;
 			return *this;
 		}
 
