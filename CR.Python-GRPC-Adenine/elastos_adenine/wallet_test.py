@@ -16,7 +16,7 @@ env_config = None
 def set_test_input(request):
 	global env_config
 	
-	DOTENV_FILE = '.test.env'
+	DOTENV_FILE = '.env.test'
 	env_config = Config(RepositoryEnv(DOTENV_FILE))
 	
 	test_input['host'] = env_config('GRPC_SERVER_HOST')
