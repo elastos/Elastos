@@ -54,7 +54,7 @@ const createUnsignedSendToTx = (unspentTransactionOutputs, sendToAddress, sendAm
   return createUnsignedSendToTxSats(unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats, feeAccount);
 };
 
-const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats, feeAccount) => {
+const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountStr, feeAccount) => {
   if (unspentTransactionOutputs == undefined) {
     throw new Error(`unspentTransactionOutputs is undefined`);
   }
@@ -67,8 +67,8 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
   if (publicKey == undefined) {
     throw new Error(`publicKey is undefined`);
   }
-  if (feeAmountSats == undefined) {
-    throw new Error(`feeAmount is undefined`);
+  if (feeAmountStr == undefined) {
+    throw new Error(`feeAmountStr is undefined`);
   }
   if (feeAccount == undefined) {
     throw new Error(`feeAccount is undefined`);
@@ -98,14 +98,15 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
   }
 
   /* eslint-disable */
-  const feeSats = BigNumber(feeAmountSats, 10);
+  const feeAmountSats = BigNumber(feeAmountStr, 10);
+  const feeSats = BigNumber(100, 10);
   /* eslint-enable */
 
   // console.log(`createUnsignedSendToTx.inputValueSats[${sendAmountSats}]`);
 
-  const sendAmountAndFeeSats = sendAmountSats.plus(feeSats);
+  const sendAmountAndFeeAmountSats = sendAmountSats.plus(feeAmountSats).plus(feeSats);
 
-  // console.log(`createUnsignedSendToTx.sendAmountAndFeeSats[${sendAmountAndFeeSats}]`);
+  // console.log(`createUnsignedSendToTx.sendAmountAndFeeAmountSats[${sendAmountAndFeeAmountSats}]`);
 
   /* eslint-disable */
   let inputValueSats = BigNumber(0, 10);
@@ -113,7 +114,7 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
   const usedUtxos = new Set();
 
   unspentTransactionOutputs.forEach((utxo) => {
-    if (inputValueSats.isLessThan(sendAmountAndFeeSats)) {
+    if (inputValueSats.isLessThan(sendAmountAndFeeAmountSats)) {
       if (utxo.valueSats.isGreaterThan(ZERO)) {
         const utxoInput = {};
         utxoInput.TxId = utxo.Txid.toUpperCase();
@@ -134,7 +135,7 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
 
   // console.log(`createUnsignedSendToTx.inputValueSats[${inputValueSats}]`);
 
-  const changeValueSats = inputValueSats.minus(sendAmountAndFeeSats);
+  const changeValueSats = inputValueSats.minus(sendAmountAndFeeAmountSats);
 
   // console.log(`createUnsignedSendToTx.changeValueSats[${changeValueSats}]`);
 

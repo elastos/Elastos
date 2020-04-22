@@ -584,9 +584,8 @@ const sendAmountToAddress = () => {
 
 // https://walletservice.readthedocs.io/en/latest/api_guide.html#post--api-1-sendRawTx
 const sendAmountToAddressCallback = (encodedTx) => {
-  const txUrl = `${getRestService()}/api/v1/sendRawTx`;
-
-  const jsonString = `{"data": "${encodedTx}"}`;
+  const txUrl = `${getRestService()}/api/v1/transaction`;
+  const jsonString = `{"method": "sendrawtransaction", "data": "${encodedTx}"}`;
 
   mainConsole.log('sendAmountToAddress.txUrl ' + txUrl);
   mainConsole.log('sendAmountToAddress.encodedTx ' + JSON.stringify(encodedTx));
