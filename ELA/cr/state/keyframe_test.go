@@ -375,10 +375,10 @@ func proposalKeyFrameEqual(first, second *ProposalKeyFrame) bool {
 
 		if !v.Proposal.DraftHash.IsEqual(proposalState.Proposal.DraftHash) ||
 			v.Proposal.ProposalType != proposalState.Proposal.ProposalType ||
-			!bytes.Equal(v.Proposal.CRSign, proposalState.Proposal.CRSign) ||
-			!bytes.Equal(v.Proposal.Sign, proposalState.Proposal.Sign) ||
-			!bytes.Equal(v.Proposal.SponsorPublicKey, proposalState.Proposal.SponsorPublicKey) ||
-			!v.Proposal.CRSponsorDID.IsEqual(proposalState.Proposal.CRSponsorDID) {
+			!bytes.Equal(v.Proposal.CRCouncilMemberSignature, proposalState.Proposal.CRCouncilMemberSignature) ||
+			!bytes.Equal(v.Proposal.Signature, proposalState.Proposal.Signature) ||
+			!bytes.Equal(v.Proposal.OwnerPublicKey, proposalState.Proposal.OwnerPublicKey) ||
+			!v.Proposal.CRCouncilMemberDID.IsEqual(proposalState.Proposal.CRCouncilMemberDID) {
 			return false
 		}
 
@@ -437,13 +437,13 @@ func randomProposalHashSet() ProposalHashSet {
 
 func randomCRCProposal() *payload.CRCProposal {
 	return &payload.CRCProposal{
-		ProposalType:     payload.CRCProposalType(rand.Int31n(6)),
-		SponsorPublicKey: randomBytes(33),
-		CRSponsorDID:     *randomUint168(),
-		DraftHash:        *randomUint256(),
-		Budgets:          createBudgets(5),
-		Sign:             randomBytes(64),
-		CRSign:           randomBytes(64),
+		ProposalType:             payload.CRCProposalType(rand.Int31n(6)),
+		OwnerPublicKey:           randomBytes(33),
+		CRCouncilMemberDID:       *randomUint168(),
+		DraftHash:                *randomUint256(),
+		Budgets:                  createBudgets(5),
+		Signature:                randomBytes(64),
+		CRCouncilMemberSignature: randomBytes(64),
 	}
 }
 

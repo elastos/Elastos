@@ -1519,7 +1519,7 @@ type RpcProposalBaseState struct {
 	RegisterHeight     uint32            `json:"registerHeight"`
 	TerminatedHeight   uint32            `json:"terminatedheight"`
 	TrackingCount      uint8             `json:"trackingcount"`
-	ProposalLeader     string            `json:"proposalleader"`
+	ProposalOwner      string            `json:"proposalowner"`
 	Index              uint64            `json:"index"`
 }
 
@@ -1529,12 +1529,12 @@ type RpcCRProposalBaseStateInfo struct {
 }
 
 type RpcCRCProposal struct {
-	ProposalType     string       `json:"proposaltype"`
-	SponsorPublicKey string       `json:"sponsorpublickey"`
-	CRSponsorDID     string       `json:"crsponsordid"`
-	DraftHash        string       `json:"drafthash"`
-	Recipient        string       `json:"recipient"`
-	Budgets          []BudgetInfo `json:"budgets"`
+	ProposalType       string       `json:"proposaltype"`
+	OwnerPublicKey     string       `json:"ownerpublickey"`
+	CRCouncilMemberDID string       `json:"crcouncilmemberdid"`
+	DraftHash          string       `json:"drafthash"`
+	Recipient          string       `json:"recipient"`
+	Budgets            []BudgetInfo `json:"budgets"`
 }
 
 type RpcProposalState struct {
@@ -1547,7 +1547,7 @@ type RpcProposalState struct {
 	RegisterHeight     uint32            `json:"registerheight"`
 	TerminatedHeight   uint32            `json:"terminatedheight"`
 	TrackingCount      uint8             `json:"trackingcount"`
-	ProposalLeader     string            `json:"proposalleader"`
+	ProposalOwner      string            `json:"proposalowner"`
 	AvailableAmount    string            `json:"availableamount"`
 }
 
@@ -1829,7 +1829,7 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 			RegisterHeight:     proposal.RegisterHeight,
 			TrackingCount:      proposal.TrackingCount,
 			TerminatedHeight:   proposal.TerminatedHeight,
-			ProposalLeader:     hex.EncodeToString(proposal.ProposalLeader),
+			ProposalOwner:      hex.EncodeToString(proposal.ProposalOwner),
 			Index:              index,
 		}
 		RpcProposalBaseStates = append(RpcProposalBaseStates, RpcProposalBaseState)
@@ -1899,11 +1899,11 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	var rpcProposal RpcCRCProposal
 	proposalHash := proposalState.Proposal.Hash()
 
-	did, _ := proposalState.Proposal.CRSponsorDID.ToAddress()
-	rpcProposal.CRSponsorDID = did
+	did, _ := proposalState.Proposal.CRCouncilMemberDID.ToAddress()
+	rpcProposal.CRCouncilMemberDID = did
 	rpcProposal.DraftHash = proposalState.Proposal.DraftHash.String()
 	rpcProposal.ProposalType = proposalState.Proposal.ProposalType.Name()
-	rpcProposal.SponsorPublicKey = common.BytesToHexString(proposalState.Proposal.SponsorPublicKey)
+	rpcProposal.OwnerPublicKey = common.BytesToHexString(proposalState.Proposal.OwnerPublicKey)
 	rpcProposal.Budgets = make([]BudgetInfo, 0)
 	for _, b := range proposalState.Proposal.Budgets {
 		rpcProposal.Budgets = append(rpcProposal.Budgets, BudgetInfo{
@@ -1932,7 +1932,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		RegisterHeight:     proposalState.RegisterHeight,
 		TrackingCount:      proposalState.TrackingCount,
 		TerminatedHeight:   proposalState.TerminatedHeight,
-		ProposalLeader:     hex.EncodeToString(proposalState.ProposalLeader),
+		ProposalOwner:      hex.EncodeToString(proposalState.ProposalOwner),
 		AvailableAmount:    crCommittee.AvailableWithdrawalAmount(proposalHash).String(),
 	}
 	result := &RpcCRProposalStateInfo{ProposalState: RpcProposalState}
@@ -2244,13 +2244,13 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj := new(CRCProposalInfo)
 		obj.ProposalType = object.ProposalType.Name()
 		obj.CategoryData = object.CategoryData
-		obj.SponsorPublicKey = common.BytesToHexString(object.SponsorPublicKey)
+		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.DraftHash = object.DraftHash.String()
 		obj.Budgets = budgets
 		obj.Recipient = object.Recipient.String()
-		obj.Sign = common.BytesToHexString(object.Sign)
-		obj.CRSponsorDID = object.CRSponsorDID.String()
-		obj.CRSign = common.BytesToHexString(object.CRSign)
+		obj.Signature = common.BytesToHexString(object.Signature)
+		obj.CRCouncilMemberDID = object.CRCouncilMemberDID.String()
+		obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
 		obj.Hash = object.Hash().String()
 		return obj
 	case *payload.CRCProposalReview:
@@ -2259,27 +2259,27 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.VoteResult = object.VoteResult.Name()
 		obj.OpinionHash = object.OpinionHash.String()
 		obj.DID = object.DID.String()
-		obj.Sign = common.BytesToHexString(object.Sign)
+		obj.Sign = common.BytesToHexString(object.Signature)
 		return obj
 	case *payload.CRCProposalTracking:
 		obj := new(CRCProposalTrackingInfo)
 		obj.ProposalTrackingType = object.ProposalTrackingType.Name()
 		obj.ProposalHash = object.ProposalHash.String()
-		obj.DocumentHash = object.DocumentHash.String()
+		obj.MessageHash = object.MessageHash.String()
 		obj.Stage = object.Stage
-		obj.LeaderPubKey = common.BytesToHexString(object.LeaderPubKey)
-		obj.NewLeaderPubKey = common.BytesToHexString(object.NewLeaderPubKey)
-		obj.LeaderSign = common.BytesToHexString(object.LeaderSign)
-		obj.NewLeaderPubKey = common.BytesToHexString(object.NewLeaderPubKey)
-		obj.SecretaryOpinionHash = object.SecretaryOpinionHash.String()
-		obj.SecretaryGeneralSign = common.BytesToHexString(object.SecretaryGeneralSign)
-		obj.NewLeaderSign = common.BytesToHexString(object.NewLeaderSign)
+		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+		obj.NewOwnerPublicKey = common.BytesToHexString(object.NewOwnerPublicKey)
+		obj.OwnerSignature = common.BytesToHexString(object.OwnerSignature)
+		obj.NewOwnerPublicKey = common.BytesToHexString(object.NewOwnerPublicKey)
+		obj.SecretaryGeneralOpinionHash = object.SecretaryGeneralOpinionHash.String()
+		obj.SecretaryGeneralSignature = common.BytesToHexString(object.SecretaryGeneralSignature)
+		obj.NewOwnerSignature = common.BytesToHexString(object.NewOwnerSignature)
 		return obj
 	case *payload.CRCProposalWithdraw:
 		obj := new(CRCProposalWithdrawInfo)
 		obj.ProposalHash = object.ProposalHash.String()
-		obj.SponsorPublicKey = common.BytesToHexString(object.SponsorPublicKey)
-		obj.Sign = common.BytesToHexString(object.Sign)
+		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
+		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	}
 	return nil

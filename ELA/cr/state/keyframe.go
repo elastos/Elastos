@@ -106,9 +106,9 @@ type ProposalState struct {
 	WithdrawableBudgets map[uint8]common.Fixed64 // proposalTracking
 	FinalPaymentStatus  bool
 
-	TrackingCount     uint8
-	TerminatedHeight  uint32
-	ProposalLeader    []byte
+	TrackingCount    uint8
+	TerminatedHeight uint32
+	ProposalOwner    []byte
 }
 
 type ProposalHashSet map[common.Uint256]struct{}
@@ -758,7 +758,7 @@ func (p *ProposalState) Serialize(w io.Writer) (err error) {
 	if err = common.WriteUint32(w, p.TerminatedHeight); err != nil {
 		return
 	}
-	if err := common.WriteVarBytes(w, p.ProposalLeader); err != nil {
+	if err := common.WriteVarBytes(w, p.ProposalOwner); err != nil {
 		return err
 	}
 
@@ -824,8 +824,8 @@ func (p *ProposalState) Deserialize(r io.Reader) (err error) {
 	if p.TerminatedHeight, err = common.ReadUint32(r); err != nil {
 		return
 	}
-	if p.ProposalLeader, err = common.ReadVarBytes(r, crypto.NegativeBigLength,
-		"proposal leader"); err != nil {
+	if p.ProposalOwner, err = common.ReadVarBytes(r, crypto.NegativeBigLength,
+		"proposal owner"); err != nil {
 		return err
 	}
 	return p.TxHash.Deserialize(r)

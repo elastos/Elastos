@@ -1641,23 +1641,23 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	txn.Version = types.TxVersion09
 
 	crcProposalPayload := &payload.CRCProposal{
-		ProposalType:     payload.Normal,
-		SponsorPublicKey: publicKey1,
-		CRSponsorDID:     *getDIDFromCode(code2),
-		DraftHash:        common.Hash(draftData),
-		Budgets:          createBudgets(3),
-		Recipient:        *randomUint168(),
+		ProposalType:       payload.Normal,
+		OwnerPublicKey:     publicKey1,
+		CRCouncilMemberDID: *getDIDFromCode(code2),
+		DraftHash:          common.Hash(draftData),
+		Budgets:            createBudgets(3),
+		Recipient:          *randomUint168(),
 	}
 
 	signBuf := new(bytes.Buffer)
 	crcProposalPayload.SerializeUnsigned(signBuf, payload.CRCProposalVersion)
 	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
-	crcProposalPayload.Sign = sig
+	crcProposalPayload.Signature = sig
 
 	common.WriteVarBytes(signBuf, sig)
-	crcProposalPayload.CRSponsorDID.Serialize(signBuf)
+	crcProposalPayload.CRCouncilMemberDID.Serialize(signBuf)
 	crSig, _ := crypto.Sign(privateKey2, signBuf.Bytes())
-	crcProposalPayload.CRSign = crSig
+	crcProposalPayload.CRCouncilMemberSignature = crSig
 
 	txn.Payload = crcProposalPayload
 	txn.Programs = []*program.Program{&program.Program{
@@ -1703,7 +1703,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
 
-	leaderPubKey, _ := common.HexStringToBytes(publicKeyStr1)
+	ownerPubKey, _ := common.HexStringToBytes(publicKeyStr1)
 
 	proposalHash := randomUint256()
 	recipient := randomUint168()
@@ -1720,15 +1720,15 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	s.Chain.crCommittee.GetProposalManager().Proposals[*proposalHash] =
 		&crstate.ProposalState{
 			Proposal: payload.CRCProposal{
-				ProposalType:     0,
-				SponsorPublicKey: leaderPubKey,
-				CRSponsorDID:     *randomUint168(),
-				DraftHash:        *randomUint256(),
-				Budgets:          createBudgets(3),
-				Recipient:        *recipient,
+				ProposalType:       0,
+				OwnerPublicKey:     ownerPubKey,
+				CRCouncilMemberDID: *randomUint168(),
+				DraftHash:          *randomUint256(),
+				Budgets:            createBudgets(3),
+				Recipient:          *recipient,
 			},
-			Status:         crstate.VoterAgreed,
-			ProposalLeader: leaderPubKey,
+			Status:        crstate.VoterAgreed,
+			ProposalOwner: ownerPubKey,
 		}
 
 	err := s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
@@ -1744,7 +1744,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "the NewLeaderPubKey need to be empty")
+	s.EqualError(err, "the NewOwnerPublicKey need to be empty")
 
 	// Check Progress tracking tx.
 	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 1,
@@ -1757,7 +1757,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "the NewLeaderPubKey need to be empty")
+	s.EqualError(err, "the NewOwnerPublicKey need to be empty")
 
 	// Check Terminated tracking tx.
 	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0,
@@ -1776,26 +1776,26 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "the NewLeaderPubKey need to be empty")
+	s.EqualError(err, "the NewOwnerPublicKey need to be empty")
 
-	// Check ProposalLeader tracking tx.
-	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0,
+	// Check ChangeOwner tracking tx.
+	txn = s.getCRCProposalTrackingTx(payload.ChangeOwner, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.NoError(err)
 
-	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 1,
+	txn = s.getCRCProposalTrackingTx(payload.ChangeOwner, *proposalHash, 1,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "stage should assignment zero value")
 
-	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0,
+	txn = s.getCRCProposalTrackingTx(payload.ChangeOwner, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, "", "",
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "invalid new proposal leader public key")
+	s.EqualError(err, "invalid new proposal owner public key")
 
 	// Check invalid proposal hash.
 	txn = s.getCRCProposalTrackingTx(payload.Common, *randomUint256(), 0,
@@ -1812,16 +1812,16 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	s.Chain.crCommittee.GetProposalManager().Proposals[*proposalHash] =
 		&crstate.ProposalState{
 			Proposal: payload.CRCProposal{
-				ProposalType:     0,
-				SponsorPublicKey: leaderPubKey,
-				CRSponsorDID:     *randomUint168(),
-				DraftHash:        *randomUint256(),
-				Budgets:          createBudgets(3),
-				Recipient:        *recipient,
+				ProposalType:       0,
+				OwnerPublicKey:     ownerPubKey,
+				CRCouncilMemberDID: *randomUint168(),
+				DraftHash:          *randomUint256(),
+				Budgets:            createBudgets(3),
+				Recipient:          *recipient,
 			},
 			TerminatedHeight: 100,
 			Status:           crstate.VoterCanceled,
-			ProposalLeader:   leaderPubKey,
+			ProposalOwner:    ownerPubKey,
 		}
 	s.Chain.crCommittee.GetProposalManager().Proposals[*proposalHash].TerminatedHeight = 100
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
@@ -1831,16 +1831,16 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	s.Chain.crCommittee.GetProposalManager().Proposals[*proposalHash] =
 		&crstate.ProposalState{
 			Proposal: payload.CRCProposal{
-				ProposalType:     0,
-				SponsorPublicKey: leaderPubKey,
-				CRSponsorDID:     *randomUint168(),
-				DraftHash:        *randomUint256(),
-				Budgets:          createBudgets(3),
-				Recipient:        *recipient,
+				ProposalType:       0,
+				OwnerPublicKey:     ownerPubKey,
+				CRCouncilMemberDID: *randomUint168(),
+				DraftHash:          *randomUint256(),
+				Budgets:            createBudgets(3),
+				Recipient:          *recipient,
 			},
-			TrackingCount:  128,
-			Status:         crstate.VoterAgreed,
-			ProposalLeader: leaderPubKey,
+			TrackingCount: 128,
+			Status:        crstate.VoterAgreed,
+			ProposalOwner: ownerPubKey,
 		}
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "reached max tracking count")
@@ -1850,12 +1850,12 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	trackingType payload.CRCProposalTrackingType,
 	proposalHash common.Uint256, stage uint8,
-	leaderPublicKeyStr, leaderPrivateKeyStr,
+	ownerPublicKeyStr, ownerPrivateKeyStr,
 	newLeaderPublicKeyStr, newLeaderPrivateKeyStr,
 	sgPublicKeyStr, sgPrivateKeyStr string) *types.Transaction {
 
-	leaderPublicKey, _ := common.HexStringToBytes(leaderPublicKeyStr)
-	leaderPrivateKey, _ := common.HexStringToBytes(leaderPrivateKeyStr)
+	ownerPublicKey, _ := common.HexStringToBytes(ownerPublicKeyStr)
+	ownerPrivateKey, _ := common.HexStringToBytes(ownerPrivateKeyStr)
 
 	newLeaderPublicKey, _ := common.HexStringToBytes(newLeaderPublicKeyStr)
 	newLeaderPrivateKey, _ := common.HexStringToBytes(newLeaderPrivateKeyStr)
@@ -1868,31 +1868,31 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	txn.TxType = types.CRCProposalTracking
 	txn.Version = types.TxVersion09
 	cPayload := &payload.CRCProposalTracking{
-		ProposalTrackingType: trackingType,
-		ProposalHash:         proposalHash,
-		Stage:                stage,
-		DocumentHash:         common.Hash(documentData),
-		LeaderPubKey:         leaderPublicKey,
-		NewLeaderPubKey:      newLeaderPublicKey,
-		SecretaryOpinionHash: common.Hash(opinionHash),
+		ProposalTrackingType:        trackingType,
+		ProposalHash:                proposalHash,
+		Stage:                       stage,
+		MessageHash:                 common.Hash(documentData),
+		OwnerPublicKey:              ownerPublicKey,
+		NewOwnerPublicKey:           newLeaderPublicKey,
+		SecretaryGeneralOpinionHash: common.Hash(opinionHash),
 	}
 
 	signBuf := new(bytes.Buffer)
 	cPayload.SerializeUnsigned(signBuf, payload.CRCProposalTrackingVersion)
-	sig, _ := crypto.Sign(leaderPrivateKey, signBuf.Bytes())
-	cPayload.LeaderSign = sig
+	sig, _ := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
+	cPayload.OwnerSignature = sig
 
 	if newLeaderPublicKeyStr != "" && newLeaderPrivateKeyStr != "" {
 		common.WriteVarBytes(signBuf, sig)
 		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
-		cPayload.NewLeaderSign = crSig
+		cPayload.NewOwnerSignature = crSig
 		sig = crSig
 	}
 
 	common.WriteVarBytes(signBuf, sig)
-	cPayload.SecretaryOpinionHash.Serialize(signBuf)
+	cPayload.SecretaryGeneralOpinionHash.Serialize(signBuf)
 	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
-	cPayload.SecretaryGeneralSign = crSig
+	cPayload.SecretaryGeneralSignature = crSig
 
 	txn.Payload = cPayload
 	return txn
@@ -2228,7 +2228,7 @@ func (s *txValidatorTestSuite) getCRCProposalReviewTx(crPublicKeyStr,
 	signBuf := new(bytes.Buffer)
 	crcProposalReviewPayload.SerializeUnsigned(signBuf, payload.CRCProposalReviewVersion)
 	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
-	crcProposalReviewPayload.Sign = sig
+	crcProposalReviewPayload.Signature = sig
 
 	txn.Payload = crcProposalReviewPayload
 	txn.Programs = []*program.Program{&program.Program{
@@ -2294,7 +2294,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 	delete(manager.Proposals, crcProposalReview.ProposalHash)
 	// invalid CR proposal reviewer signature
 	txn = s.getCRCProposalReviewTx(publicKeyStr1, privateKeyStr1)
-	txn.Payload.(*payload.CRCProposalReview).Sign = []byte{}
+	txn.Payload.(*payload.CRCProposalReview).Signature = []byte{}
 	crcProposalReview, _ = txn.Payload.(*payload.CRCProposalReview)
 	manager.Proposals[crcProposalReview.ProposalHash] = &crstate.ProposalState{
 		Status: crstate.Registered,
@@ -2316,14 +2316,14 @@ func (s *txValidatorTestSuite) getCRCProposalWithdrawTx(crPublicKeyStr,
 	txn.TxType = types.CRCProposalWithdraw
 	txn.Version = types.TxVersionDefault
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
-		ProposalHash:     *randomUint256(),
-		SponsorPublicKey: pkBytes,
+		ProposalHash:   *randomUint256(),
+		OwnerPublicKey: pkBytes,
 	}
 
 	signBuf := new(bytes.Buffer)
 	crcProposalWithdraw.SerializeUnsigned(signBuf, payload.CRCProposalReviewVersion)
 	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
-	crcProposalWithdraw.Sign = sig
+	crcProposalWithdraw.Signature = sig
 
 	txn.Inputs = []*types.Input{
 		{
@@ -2401,13 +2401,13 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	propState := &crstate.ProposalState{
 		Status: crstate.VoterAgreed,
 		Proposal: payload.CRCProposal{
-			SponsorPublicKey: pk1Bytes,
-			Recipient:        *Recipient,
-			Budgets:          createBudgets(3),
+			OwnerPublicKey: pk1Bytes,
+			Recipient:      *Recipient,
+			Budgets:        createBudgets(3),
 		},
 		FinalPaymentStatus:  false,
 		WithdrawableBudgets: map[uint8]common.Fixed64{0: 10 * 1e8},
-		ProposalLeader:      pk1Bytes,
+		ProposalOwner:       pk1Bytes,
 	}
 	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
 		ProposalHash] = propState
@@ -2468,9 +2468,9 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	pk2Bytes, _ := common.HexStringToBytes(publicKeyStr2)
 
-	propState.ProposalLeader = pk2Bytes
+	propState.ProposalOwner = pk2Bytes
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
-	s.EqualError(err, "the SponsorPublicKey is not ProposalLeader of proposal")
+	s.EqualError(err, "the OwnerPublicKey is not owner of proposal")
 
 	references[inputs[0]] = *outputs[1]
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
@@ -2504,7 +2504,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	// member status is not elected
 	member1.MemberState = crstate.MemberImpeached
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
-	s.EqualError(err, "CR sponsor should be an elected CR members")
+	s.EqualError(err, "CR Council Member should be an elected CR members")
 
 	// register cr proposal in voting period
 	member1.MemberState = crstate.MemberElected
@@ -2552,30 +2552,29 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0)
 
-	// CRSign is not signed by CR member
+	// CRCouncilMemberSignature is not signed by CR member
 	txn = s.getCRCProposalTx(publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2)
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
-	s.EqualError(err, "CR sponsor should be one of the CR members")
+	s.EqualError(err, "CR Council Member should be one of the CR members")
 
-	// invalid sponsor
+	// invalid owner
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
-	txn.Payload.(*payload.CRCProposal).SponsorPublicKey = []byte{}
+	txn.Payload.(*payload.CRCProposal).OwnerPublicKey = []byte{}
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
-	s.EqualError(err, "invalid sponsor")
+	s.EqualError(err, "invalid owner")
 
-	// invalid sponsor signature
+	// invalid owner signature
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-	txn.Payload.(*payload.CRCProposal).SponsorPublicKey = publicKey1
+	txn.Payload.(*payload.CRCProposal).OwnerPublicKey = publicKey1
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
-	s.EqualError(err, "sponsor signature check failed")
+	s.EqualError(err, "owner signature check failed")
 
-	// invalid CR sponsor signature
+	// invalid CR owner signature
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
-	txn.Payload.(*payload.CRCProposal).CRSign = []byte{}
+	txn.Payload.(*payload.CRCProposal).CRCouncilMemberSignature = []byte{}
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
-	s.EqualError(err, "CR sponsor signature check failed")
-
+	s.EqualError(err, "failed to check CR Council Member signature")
 	// proposals can not more than MaxCommitteeProposalCount
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	crcProposal, _ := txn.Payload.(*payload.CRCProposal)
@@ -2584,7 +2583,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 		proposalHashSet.Add(*randomUint256())
 	}
 	s.Chain.crCommittee.GetProposalManager().ProposalHashes[crcProposal.
-		CRSponsorDID] = proposalHashSet
+		CRCouncilMemberDID] = proposalHashSet
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "proposal is full")
 }

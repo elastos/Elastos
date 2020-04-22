@@ -325,7 +325,7 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 	height uint32, history *utils.History) {
 	proposal := tx.Payload.(*payload.CRCProposal)
 	//The number of the proposals of the committee can not more than 128
-	if p.isProposalFull(proposal.CRSponsorDID) {
+	if p.isProposalFull(proposal.CRCouncilMemberDID) {
 		return
 	}
 	proposalState := &ProposalState{
@@ -341,17 +341,17 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		FinalPaymentStatus:  false,
 		TrackingCount:       0,
 		TerminatedHeight:    0,
-		ProposalLeader:      proposal.SponsorPublicKey,
+		ProposalOwner:       proposal.OwnerPublicKey,
 	}
-	CRSponsorDID := proposal.CRSponsorDID
+	crCouncilMemberDID := proposal.CRCouncilMemberDID
 	hash := proposal.Hash()
 
 	history.Append(height, func() {
 		p.Proposals[proposal.Hash()] = proposalState
-		p.addProposal(CRSponsorDID, hash)
+		p.addProposal(crCouncilMemberDID, hash)
 	}, func() {
 		delete(p.Proposals, proposal.Hash())
-		p.delProposal(CRSponsorDID, hash)
+		p.delProposal(crCouncilMemberDID, hash)
 	})
 }
 
@@ -444,7 +444,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 	}
 
 	trackingType := proposalTracking.ProposalTrackingType
-	leader := proposalState.ProposalLeader
+	owner := proposalState.ProposalOwner
 	terminatedHeight := proposalState.TerminatedHeight
 	status := proposalState.Status
 
@@ -481,8 +481,8 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 				proposalState.FinalPaymentStatus = true
 			}
 		case payload.Rejected:
-		case payload.ProposalLeader:
-			proposalState.ProposalLeader = proposalTracking.NewLeaderPubKey
+		case payload.ChangeOwner:
+			proposalState.ProposalOwner = proposalTracking.NewOwnerPublicKey
 		case payload.Terminated:
 			proposalState.TerminatedHeight = height
 			proposalState.Status = Terminated
@@ -503,8 +503,8 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 			delete(proposalState.WithdrawableBudgets, proposalTracking.Stage)
 			proposalState.FinalPaymentStatus = false
 		case payload.Rejected:
-		case payload.ProposalLeader:
-			proposalState.ProposalLeader = leader
+		case payload.ChangeOwner:
+			proposalState.ProposalOwner = owner
 		case payload.Terminated:
 			proposalState.TerminatedHeight = terminatedHeight
 			proposalState.Status = status
