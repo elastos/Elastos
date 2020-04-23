@@ -51,6 +51,5 @@ set(CMAKE_ANDROID_NDK_TOOLCHAIN_VERSION clang)
 # Other options
 set(CMAKE_ANDROID_STL_TYPE c++_static)
 
-# Notice: cmake(<3.9.2) has isssue of cross-build for android target.
-# Details in: https://gitlab.kitware.com/cmake/cmake/merge_requests/1237
-cmake_minimum_required(VERSION 3.10)
+# Notice: cmake(<3.16.0) has isssue of cross-build for android target (NDK 21.0.6113669).
+cmake_minimum_required(VERSION 3.16.0)
