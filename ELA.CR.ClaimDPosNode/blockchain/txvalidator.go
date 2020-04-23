@@ -505,7 +505,7 @@ func getCRMembersMap(members []*crstate.CRMember) map[string]struct{} {
 
 func checkDestructionAddress(references map[*Input]Output) error {
 	for _, output := range references {
-		if output.ProgramHash == config.DestructionAddress {
+		if output.ProgramHash == config.DestroyELAAddress {
 			return errors.New("cannot use utxo from the destruction address")
 		}
 	}

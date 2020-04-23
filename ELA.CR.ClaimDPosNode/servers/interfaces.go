@@ -1922,10 +1922,12 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	rpcProposal.OwnerPublicKey = common.BytesToHexString(proposalState.Proposal.OwnerPublicKey)
 	rpcProposal.Budgets = make([]BudgetInfo, 0)
 	for _, b := range proposalState.Proposal.Budgets {
+		budgetStatus := proposalState.BudgetsStatus[b.Stage]
 		rpcProposal.Budgets = append(rpcProposal.Budgets, BudgetInfo{
 			Type:   b.Type.Name(),
 			Stage:  b.Stage,
 			Amount: b.Amount.String(),
+			Status: budgetStatus.Name(),
 		})
 	}
 
