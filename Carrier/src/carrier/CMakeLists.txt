@@ -65,6 +65,7 @@ set(SRC
     dht/dht.c
     elacp.c
     ela_carrier.c
+    extension.c
     ela_error.c
     dstore_wrapper.c)
 

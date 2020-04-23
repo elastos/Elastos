@@ -2021,6 +2021,11 @@ void handle_invite_request(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
                 if (ext && ext->friend_invite_cb)
                     ext->friend_invite_cb(w, friendid, ireq->bundle, (const void*)ireq->data,
                                           ireq->data_len, ext);
+            } else if (strcmp(name, carrier_extension_name) == 0) {
+                CarrierExtension *ext = (CarrierExtension *)w->carrier_extesion;
+                if (ext && ext->friend_invite_cb)
+                    ext->friend_invite_cb(w, friendid, ireq->bundle, (const void*)ireq->data,
+                                          ireq->data_len, ext);
             }
         } else {
             if (w->callbacks.friend_invite)
