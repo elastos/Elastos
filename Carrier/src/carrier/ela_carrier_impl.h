@@ -114,6 +114,7 @@ struct ElaCarrier {
     hashtable_t *friends;
 
     DStoreWrapper *dstorectx;
+    hashtable_t *big_message_pool;
 
     hashtable_t *tcallbacks;
     hashtable_t *thistory;

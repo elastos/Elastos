@@ -40,6 +40,7 @@ typedef struct ElaCP ElaCP;
 #define ELACP_TYPE_MESSAGE                    33
 #define ELACP_TYPE_INVITE_REQUEST             34
 #define ELACP_TYPE_INVITE_RESPONSE            35
+#define ELACP_TYPE_BIG_MESSAGE                36
 
 #define ELACP_TYPE_MAX                        95
 
@@ -81,6 +82,8 @@ const char *elacp_get_bundle(ElaCP *cp);
 
 const char *elacp_get_reason(ElaCP *cp);
 
+size_t elacp_get_total_size(ElaCP *cp);
+
 void elacp_set_name(ElaCP *cp, const char *name);
 
 void elacp_set_descr(ElaCP *cp, const char *descr);
@@ -104,6 +107,8 @@ void elacp_set_totalsz(ElaCP *cp, size_t totalsz);
 void elacp_set_status(ElaCP *cp, int status);
 
 void elacp_set_raw_data(ElaCP *cp, const void *data, size_t len);
+
+void elacp_set_total_size(ElaCP *cp, size_t len);
 
 void elacp_set_bundle(ElaCP *cp, const char *bundle);
 

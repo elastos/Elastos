@@ -217,11 +217,48 @@ static void test_send_message_to_self(void)
     CU_ASSERT_EQUAL_FATAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
+static void test_send_big_message_to_friend(void)
+{
+    CarrierContext *wctxt = test_context.carrier;
+    int rc;
+
+    test_context.context_reset(&test_context);
+
+    rc = add_friend_anyway(&test_context, robotid, robotaddr);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+    CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
+
+    static char out[(ELA_MAX_APP_MESSAGE_LEN << 1) + 1];
+    size_t outsz = sizeof(out) / sizeof(out[0]);
+    char outchar = 'l';
+    memset(out, outchar, outsz - 1);
+    out[outsz - 1] = '\0';
+
+    rc = ela_send_friend_message(wctxt->carrier, robotid, out, strlen(out), NULL);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+
+    char in[(ELA_MAX_APP_MESSAGE_LEN << 1) + 1];
+    size_t insz = sizeof(in) / sizeof(in[0]);
+    rc = read_ack("%2049s", in);
+    CU_ASSERT_EQUAL(rc, 1);
+    CU_ASSERT_TRUE(!memcmp(out, in, insz - 1));
+
+    rc = ela_send_friend_message(wctxt->carrier, robotid, out,
+                                 ELA_MAX_APP_MESSAGE_LEN - 1, NULL);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+
+    memset(in, 0, sizeof(in));
+    rc = read_ack("%1024s", in);
+    CU_ASSERT_EQUAL(rc, 1);
+    CU_ASSERT_TRUE(!memcmp(out, in, ELA_MAX_APP_MESSAGE_LEN - 1));
+}
+
 static CU_TestInfo cases[] = {
-    { "test_send_message_to_friend",   test_send_message_to_friend },
-    { "test_send_message_from_friend", test_send_message_from_friend },
-    { "test_send_message_to_stranger", test_send_message_to_stranger },
-    { "test_send_message_to_self",     test_send_message_to_self },
+    { "test_send_message_to_friend",     test_send_message_to_friend },
+    { "test_send_message_from_friend",   test_send_message_from_friend },
+    { "test_send_message_to_stranger",   test_send_message_to_stranger },
+    { "test_send_message_to_self",       test_send_message_to_self },
+    { "test_send_big_message_to_friend", test_send_big_message_to_friend },
     {NULL, NULL }
 };
 

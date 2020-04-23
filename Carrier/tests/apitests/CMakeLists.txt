@@ -49,6 +49,11 @@ if(HAVE_SIGACTION_H)
     add_definitions(-DHAVE_SIGACTION=1)
 endif()
 
+check_include_file(libgen.h HAVE_LIBGEN_H)
+if (HAVE_LIBGEN_H)
+    add_definitions(-DHAVE_LIBGEN_H=1)
+endif()
+
 aux_source_directory(api/carrier CARRIER_CASES)
 aux_source_directory(api/session SESSION_CASES)
 aux_source_directory(api/filetransfer FILETRANSFER_CASES)

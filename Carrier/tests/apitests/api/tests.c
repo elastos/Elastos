@@ -131,7 +131,7 @@ int read_ack(const char *format, ...)
 {
     int rc;
     char ch;
-    char ack_buffer[1024];
+    char ack_buffer[4096];
     char *ack_ptr = ack_buffer;
     va_list ap;
 
@@ -200,7 +200,7 @@ int test_main(int argc, char *argv[])
     srand((unsigned int)time(NULL));
 
     for (i = 0, suites_cnt = 0; suites[i].fileName; i++) {
-        if (global_config.exclude_offmsg 
+        if (global_config.exclude_offmsg
             && strcmp(suites[i].fileName, OFFLINE_MSG_TEST_FILE) == 0)
             continue;
 

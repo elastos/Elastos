@@ -129,6 +129,25 @@ static struct {
     struct timeval last_stamp;
 } session_ctx;
 
+static struct {
+    enum {
+        INITIATOR,
+        RESPONDER
+    } role;
+    enum {
+        IDLE,
+        PENDING,
+        ONGOING
+    } state;
+    char peer[ELA_MAX_ID_LEN + 1];
+    size_t totalsz;
+    size_t sent;
+    size_t rcvd;
+    struct timeval start;
+    struct timeval ul_end;
+    struct timeval dl_end;
+} bigmsg_benchmark;
+
 static void get_layout(int win, int *w, int *h, int *x, int *y)
 {
     if (win == OUTPUT_WIN) {
@@ -894,6 +913,221 @@ static void send_bulk_message(ElaCarrier *w, int argc, char *argv[])
     output("  totoal: %d\n", total_count);
     output(" success: %d\n", total_count - failed_count);
     output("  failed: %d\n", failed_count);
+}
+
+static void bigmsg_benchmark_initialize(ElaCarrier *w, int argc, char *argv[])
+{
+    size_t totalsz;
+    char ctlsig[256];
+    int rc;
+
+    if (argc != 3) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    if (!ela_id_is_valid(argv[1])) {
+        output("User ID is invalid.\n");
+        return;
+    }
+
+    totalsz = atoi(argv[2]);
+    if (totalsz <= 0 || totalsz > 10240) {
+        output("Count is invalid.\n");
+        return;
+    }
+
+    if (bigmsg_benchmark.state != IDLE) {
+        output("Invalid state.\n");
+        return;
+    }
+
+    memset(&bigmsg_benchmark, 0, sizeof(bigmsg_benchmark));
+    bigmsg_benchmark.role = INITIATOR;
+    bigmsg_benchmark.state = PENDING;
+    strcpy(bigmsg_benchmark.peer, argv[1]);
+    bigmsg_benchmark.totalsz = totalsz << 20;
+
+    rc = sprintf(ctlsig, "bigmsgbenchmark request %s", argv[2]);
+    rc = ela_send_friend_message(w, argv[1], ctlsig, rc, NULL);
+    if (rc < 0) {
+        output("Send bigmessage benchmark request error.\n");
+        bigmsg_benchmark.state = IDLE;
+    }
+
+    output("Bigmessage benchmark request sent.\n");
+}
+
+static void *bigmsg_benchmark_write_thread(void *arg)
+{
+    ElaCarrier *w = (ElaCarrier *)arg;
+    char *buf = calloc(1, ELA_MAX_APP_BIG_MESSAGE_LEN);
+
+    while (bigmsg_benchmark.state == ONGOING && bigmsg_benchmark.sent < bigmsg_benchmark.totalsz) {
+        size_t len = bigmsg_benchmark.totalsz - bigmsg_benchmark.sent;
+        int rc;
+
+        if (len > ELA_MAX_APP_BIG_MESSAGE_LEN)
+            len = ELA_MAX_APP_BIG_MESSAGE_LEN;
+
+        rc = ela_send_friend_message(w, bigmsg_benchmark.peer, buf, len, NULL);
+        if (rc < 0) {
+            usleep(100000);
+            continue;
+        }
+
+        bigmsg_benchmark.sent += len;
+    }
+
+    free(buf);
+    gettimeofday(&bigmsg_benchmark.ul_end, NULL);
+    return NULL;
+}
+
+static void calculate_data_rate(size_t datasz, const struct timeval *interval, char *result)
+{
+    double interval_sec;
+    double rate;
+
+    interval_sec = interval->tv_sec + interval->tv_usec * (10E-6);
+
+    rate = datasz / interval_sec;
+    if (((size_t)rate) >> 30)
+        sprintf(result, "%6.1lfGB/s", rate / (1U << 30));
+    else if (((size_t)rate) >> 20)
+        sprintf(result, "%6.1lfMB/s", rate / (1U << 20));
+    else if (((size_t)rate) >> 10)
+        sprintf(result, "%6.1lfKB/s", rate / (1U << 10));
+    else
+        sprintf(result, "%6.1lf B/s", rate);
+}
+
+static void calculate_progress(size_t cur, size_t total, char *result)
+{
+    sprintf(result, "%5.1lf%%", (double)cur / total * 100);
+}
+
+static void *monitor_bigmsg_benchmark_progress(void *arg)
+{
+    struct timeval update_rate = {
+        .tv_sec = 1,
+        .tv_usec = 0
+    };
+    struct timeval dl_time_elapsed;
+    struct timeval ul_time_elapsed;
+    char ul_rate[128];
+    char dl_rate[128];
+    char ul_progress[128];
+    char dl_progress[128];
+    size_t last_sent = 0;
+    size_t last_rcvd = 0;
+    size_t cur_sent;
+    size_t cur_rcvd;
+
+    output("Upload:    0.0B/s[  0.0%%], Download:    0.0B/s[  0.0%%]");
+
+    do {
+        sleep(1);
+
+        cur_sent = bigmsg_benchmark.sent;
+        cur_rcvd = bigmsg_benchmark.rcvd;
+        calculate_data_rate(cur_sent - last_sent, &update_rate, ul_rate);
+        calculate_data_rate(cur_rcvd - last_rcvd, &update_rate, dl_rate);
+        calculate_progress(cur_sent, bigmsg_benchmark.totalsz, ul_progress);
+        calculate_progress(cur_rcvd, bigmsg_benchmark.totalsz, dl_progress);
+
+        output("\rUpload: %s[%s], Download: %s[%s]", ul_rate, ul_progress, dl_rate, dl_progress);
+        last_sent = cur_sent;
+        last_rcvd = cur_rcvd;
+    } while (bigmsg_benchmark.state == ONGOING &&
+             (cur_sent != bigmsg_benchmark.totalsz ||
+              cur_rcvd != bigmsg_benchmark.totalsz));
+
+    if (bigmsg_benchmark.state != ONGOING) {
+        output("\nBigmessage benchmark aborted.\n");
+        return NULL;
+    }
+
+    timersub(&bigmsg_benchmark.ul_end, &bigmsg_benchmark.start, &ul_time_elapsed);
+    timersub(&bigmsg_benchmark.dl_end, &bigmsg_benchmark.start, &dl_time_elapsed);
+    calculate_data_rate(bigmsg_benchmark.totalsz, &ul_time_elapsed, ul_rate);
+    calculate_data_rate(bigmsg_benchmark.totalsz, &dl_time_elapsed, dl_rate);
+    output("\nBenchmark Summary:\n"
+           "  Total Transfer Size: %zuMb\n"
+           "  Average Upload Rate: %s\n"
+           "  Average Download Rate: %s\n",
+           bigmsg_benchmark.totalsz >> 20, ul_rate, dl_rate);
+    bigmsg_benchmark.state = IDLE;
+
+    return NULL;
+}
+
+static void bigmsg_benchmark_accept(ElaCarrier *w, int argc, char *argv[])
+{
+    const char *ctlsig = "bigmsgbenchmark accept";
+    pthread_attr_t attr;
+    pthread_t th;
+    int rc;
+
+    if (argc != 1) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    if (bigmsg_benchmark.state != PENDING || bigmsg_benchmark.role != RESPONDER) {
+        output("Invalid state.\n");
+        return;
+    }
+
+    rc = ela_send_friend_message(w, bigmsg_benchmark.peer, ctlsig, strlen(ctlsig), NULL);
+    if (rc < 0) {
+        output("Failed to send bigmsgbenchmark accept signal.\n");
+        return;
+    }
+
+    output("Send bigmsgbenchmark accept signal, start benchmark.\n");
+
+    bigmsg_benchmark.state = ONGOING;
+    gettimeofday(&bigmsg_benchmark.start, NULL);
+
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    pthread_create(&th, &attr, bigmsg_benchmark_write_thread, w);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    pthread_create(&th, &attr, monitor_bigmsg_benchmark_progress, NULL);
+    pthread_attr_destroy(&attr);
+}
+
+static int bigmsg_benchmark_send_reject(ElaCarrier *w, const char *to)
+{
+    const char *ctlsig = "bigmsgbenchmark reject";
+
+    return ela_send_friend_message(w, to, ctlsig, strlen(ctlsig), NULL);
+}
+
+static void bigmsg_benchmark_reject(ElaCarrier *w, int argc, char *argv[])
+{
+    int rc;
+
+    if (argc != 1) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    if (bigmsg_benchmark.state != PENDING || bigmsg_benchmark.role != RESPONDER) {
+        output("Invalid state.\n");
+        return;
+    }
+
+    rc = bigmsg_benchmark_send_reject(w, bigmsg_benchmark.peer);
+    if (rc < 0) {
+        output("Send bigmsgbenchmark reject error.\n");
+        return;
+    }
+
+    output("bigmessage benchmark is rejected.\n");
+
+    bigmsg_benchmark.state = IDLE;
 }
 
 static void invite_response_callback(ElaCarrier *w, const char *friendid,
@@ -1843,6 +2077,9 @@ struct command {
     { "label",      label_friend,           "label [User ID] [Name] - Add label to friend." },
     { "msg",        send_message,           "msg [User ID] [Message] - Send message to a friend." },
     { "bulkmsg",    send_bulk_message,      "bulkmsg [User ID] [Count] [Message] - Send numerous messages to a friend." },
+    { "bigmsgbenchmarkinit", bigmsg_benchmark_initialize, "bigmsgbenchmarkinit [User ID] [Count] - Initialize a big message benchmark to send [count]MB big message to a friend." },
+    { "bigmsgbenchmarkacpt", bigmsg_benchmark_accept, "bigmsgbenchmarkacpt - Accept a big message benchmark initialized by a friend." },
+    { "bigmsgbenchmarkrej",  bigmsg_benchmark_reject, "bigmsgbenchmarkrej - Reject a big message benchmark initialized by a friend." },
     { "invite",     invite,                 "invite [User ID] [Message] [Bundle] - Invite friend." },
     { "ireply",     reply_invite,           "ireply [User ID] confirm [Message] [Bundle] *OR* ireply [User ID] refuse [Reason] [Bundle] - Confirm or refuse invitation with a message or reason." },
 
@@ -2091,6 +2328,8 @@ static void friend_connection_callback(ElaCarrier *w, const char *friendid,
         break;
 
     case ElaConnectionStatus_Disconnected:
+        if (bigmsg_benchmark.state != IDLE && !strcmp(friendid, bigmsg_benchmark.peer))
+            bigmsg_benchmark.state = IDLE;
         output("Friend[%s] connection changed to be offline.\n", friendid);
         break;
 
@@ -2124,7 +2363,77 @@ static void friend_request_callback(ElaCarrier *w, const char *userid,
 static void message_callback(ElaCarrier *w, const char *from,
                              const void *msg, size_t len, bool is_offline, void *context)
 {
-    output("Message(%s) from friend[%s]: %.*s\n", is_offline ? "offline" : "online", from, (int)len, (const char *)msg);
+    char ctlsig_type[128];
+    size_t totalsz;
+    int rc;
+
+    rc = sscanf(msg, "bigmsgbenchmark %128s %zu", ctlsig_type, &totalsz);
+    if (rc < 1) {
+        if (bigmsg_benchmark.state != ONGOING || strcmp(from, bigmsg_benchmark.peer)) {
+            output("Message(%s) from friend[%s]: %.*s\n", is_offline ? "offline" : "online", from, (int)len, (const char *)msg);
+            return;
+        }
+
+        bigmsg_benchmark.rcvd += len;
+        if (bigmsg_benchmark.rcvd == bigmsg_benchmark.totalsz)
+            gettimeofday(&bigmsg_benchmark.dl_end, NULL);
+        return;
+    }
+
+    if (!strcmp(ctlsig_type, "request")) {
+        if (rc != 2) {
+            output("Invalid bigmsgbenchmark request signal: %s\n", msg);
+            return;
+        }
+
+        if (bigmsg_benchmark.state != IDLE) {
+            output("Received a bigmsgbenchmark request signal when we are busy, ignore\n");
+            bigmsg_benchmark_send_reject(w, from);
+            return;
+        }
+
+        memset(&bigmsg_benchmark, 0, sizeof(bigmsg_benchmark));
+        bigmsg_benchmark.role = RESPONDER;
+        bigmsg_benchmark.state = PENDING;
+        strcpy(bigmsg_benchmark.peer, from);
+        bigmsg_benchmark.totalsz = totalsz << 20;
+
+        output("Received a bigmsgbenchmark request from [%s], transfer size: %zuMb\n",
+                from, totalsz);
+        output("Input [bigmsgbenchmarkacpt] to accept, [bigmsgbenchmarkrej] to reject\n");
+    } else if (!strcmp(ctlsig_type, "accept")) {
+        pthread_attr_t attr;
+        pthread_t th;
+
+        if (bigmsg_benchmark.state != PENDING || bigmsg_benchmark.role != INITIATOR ||
+            strcmp(from, bigmsg_benchmark.peer)) {
+            output("Received a bigmsgbenchmark accept in wrong state, ignore\n");
+            return;
+        }
+
+        output("Bigmessage benchmark accepted by peer, start benchmark.\n");
+        bigmsg_benchmark.state = ONGOING;
+        gettimeofday(&bigmsg_benchmark.start, NULL);
+
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+        pthread_create(&th, &attr, bigmsg_benchmark_write_thread, w);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+        pthread_create(&th, &attr, monitor_bigmsg_benchmark_progress, NULL);
+        pthread_attr_destroy(&attr);
+    } else if (!strcmp(ctlsig_type, "reject")) {
+        if (bigmsg_benchmark.state != PENDING || bigmsg_benchmark.role != INITIATOR ||
+            strcmp(from, bigmsg_benchmark.peer)) {
+            output("Received a bigmsgbenchmark reject in wrong state, ignore\n");
+            return;
+        }
+
+        output("Bigmessage benchmark is rejected by peer\n");
+        bigmsg_benchmark.state = IDLE;
+    } else {
+        output("Received a invalid bigmsgbenchmark signal, ignore\n");
+        return;
+    }
 }
 
 static void invite_request_callback(ElaCarrier *w, const char *from, const char *bundle,

@@ -70,6 +70,12 @@ ELA_MAX_APP_MESSAGE_LEN
 .. doxygendefine:: ELA_MAX_APP_MESSAGE_LEN
    :project: CarrierAPI
 
+ELA_MAX_APP_BIG_MESSAGE_LEN
+###########################
+
+.. doxygendefine:: ELA_MAX_APP_BIG_MESSAGE_LEN
+   :project: CarrierAPI
+
 Data types
 ----------
 

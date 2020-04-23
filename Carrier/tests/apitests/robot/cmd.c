@@ -1795,7 +1795,7 @@ void do_cmd(TestContext *context, char *line)
 int write_ack(const char *what, ...)
 {
     va_list ap;
-    char ack[1024];
+    char ack[4096];
 
     assert(cmd_sock != INVALID_SOCKET);
     assert(what);
