@@ -114,13 +114,14 @@ struct ElaCarrier {
     hashtable_t *friends;
 
     DStoreWrapper *dstorectx;
-    hashtable_t *big_message_pool;
 
     hashtable_t *tcallbacks;
     hashtable_t *thistory;
 
     hashtable_t *tassembly_ireqs;
     hashtable_t *tassembly_irsps;
+
+    hashtable_t *bulkmsgs;
 
     pthread_t main_thread;
 

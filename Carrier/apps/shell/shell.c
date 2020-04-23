@@ -961,14 +961,14 @@ static void bigmsg_benchmark_initialize(ElaCarrier *w, int argc, char *argv[])
 static void *bigmsg_benchmark_write_thread(void *arg)
 {
     ElaCarrier *w = (ElaCarrier *)arg;
-    char *buf = calloc(1, ELA_MAX_APP_BIG_MESSAGE_LEN);
+    char *buf = calloc(1, ELA_MAX_APP_BULKMSG_LEN);
 
     while (bigmsg_benchmark.state == ONGOING && bigmsg_benchmark.sent < bigmsg_benchmark.totalsz) {
         size_t len = bigmsg_benchmark.totalsz - bigmsg_benchmark.sent;
         int rc;
 
-        if (len > ELA_MAX_APP_BIG_MESSAGE_LEN)
-            len = ELA_MAX_APP_BIG_MESSAGE_LEN;
+        if (len > ELA_MAX_APP_BULKMSG_LEN)
+            len = ELA_MAX_APP_BULKMSG_LEN;
 
         rc = ela_send_friend_message(w, bigmsg_benchmark.peer, buf, len, NULL);
         if (rc < 0) {

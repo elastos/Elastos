@@ -63,13 +63,6 @@ struct ElaCPFriendMsg {
     const uint8_t *msg;
 };
 
-struct ElaCPFriendBigMsg {
-    ElaCP headr;
-    size_t totalsz;
-    size_t len;
-    const uint8_t *data;
-};
-
 struct ElaCPInviteReq {
     ElaCP header;
     int64_t tid;
@@ -90,6 +83,14 @@ struct ElaCPInviteRsp {
     const uint8_t *data;
 };
 
+struct ElaCPBulkMsg {
+    ElaCP headr;
+    int64_t tid;
+    size_t totalsz;
+    size_t len;
+    const uint8_t *data;
+};
+
 #pragma pack(pop)
 
 #define pktinfo pkt.u.pkt_info
@@ -97,14 +98,14 @@ struct ElaCPInviteRsp {
 #define pktfmsg pkt.u.pkt_fmsg
 #define pktireq pkt.u.pkt_ireq
 #define pktirsp pkt.u.pkt_irsp
-#define pktfbigmsg pkt.u.pkt_fbigmsg
+#define pktbmsg pkt.u.pkt_bmsg
 
 #define tblinfo tbl.u.tbl_info
 #define tblfreq tbl.u.tbl_freq
 #define tblfmsg tbl.u.tbl_fmsg
 #define tblireq tbl.u.tbl_ireq
 #define tblirsp tbl.u.tbl_irsp
-#define tblfbigmsg tbl.u.tbl_fbigmsg
+#define tblbmsg tbl.u.tbl_bmsg
 
 struct elacp_packet_t {
     union {
@@ -114,7 +115,7 @@ struct elacp_packet_t {
         struct ElaCPFriendMsg *pkt_fmsg;
         struct ElaCPInviteReq *pkt_ireq;
         struct ElaCPInviteRsp *pkt_irsp;
-        struct ElaCPFriendBigMsg *pkt_fbigmsg;
+        struct ElaCPBulkMsg   *pkt_bmsg;
     } u;
 };
 
@@ -125,7 +126,7 @@ struct elacp_table_t {
         elacp_friendmsg_table_t tbl_fmsg;
         elacp_invitereq_table_t tbl_ireq;
         elacp_invitersp_table_t tbl_irsp;
-        elacp_friendbigmsg_table_t tbl_fbigmsg;
+        elacp_bulkmsg_table_t   tbl_bmsg;
     } u;
 };
 
@@ -150,8 +151,8 @@ ElaCP *elacp_create(uint8_t type, const char *ext_name)
     case ELACP_TYPE_INVITE_RESPONSE:
         len = sizeof(struct ElaCPInviteRsp);
         break;
-    case ELACP_TYPE_BIG_MESSAGE:
-        len = sizeof(struct ElaCPFriendBigMsg);
+    case ELACP_TYPE_BULKMSG:
+        len = sizeof(struct ElaCPBulkMsg);
         break;
     default:
         assert(0);
@@ -369,6 +370,9 @@ int64_t elacp_get_tid(ElaCP *cp)
     case ELACP_TYPE_INVITE_RESPONSE:
         tid = pktirsp->tid;
         break;
+    case ELACP_TYPE_BULKMSG:
+        tid = pktbmsg->tid;
+        break;
     default:
         assert(0);
         break;
@@ -391,6 +395,9 @@ size_t elacp_get_totalsz(ElaCP *cp)
         break;
     case ELACP_TYPE_INVITE_RESPONSE:
         totalsz = pktirsp->totalsz;
+        break;
+    case ELACP_TYPE_BULKMSG:
+        totalsz = pktbmsg->totalsz;
         break;
     default:
         assert(0);
@@ -438,8 +445,8 @@ const void *elacp_get_raw_data(ElaCP *cp)
     case ELACP_TYPE_INVITE_RESPONSE:
         data = pktirsp->data;
         break;
-    case ELACP_TYPE_BIG_MESSAGE:
-        data = pktfbigmsg->data;
+    case ELACP_TYPE_BULKMSG:
+        data = pktbmsg->data;
         break;
     default:
         assert(0);
@@ -467,8 +474,8 @@ size_t elacp_get_raw_data_length(ElaCP *cp)
     case ELACP_TYPE_INVITE_RESPONSE:
         len = pktirsp->len;
         break;
-    case ELACP_TYPE_BIG_MESSAGE:
-        len = pktfbigmsg->len;
+    case ELACP_TYPE_BULKMSG:
+        len = pktbmsg->len;
         break;
     default:
         assert(0);
@@ -476,26 +483,6 @@ size_t elacp_get_raw_data_length(ElaCP *cp)
     }
 
     return len;
-}
-
-size_t elacp_get_total_size(ElaCP *cp)
-{
-    struct elacp_packet_t pkt;
-    size_t totalsz;
-
-    assert(cp);
-    pkt.u.cp = cp;
-
-    switch(cp->type) {
-    case ELACP_TYPE_BIG_MESSAGE:
-        totalsz = pktfbigmsg->totalsz;
-        break;
-    default:
-        assert(0);
-        break;
-    }
-
-    return totalsz;
 }
 
 const char *elacp_get_bundle(ElaCP *cp)
@@ -713,6 +700,9 @@ void elacp_set_tid(ElaCP *cp, int64_t *tid)
     case ELACP_TYPE_INVITE_RESPONSE:
         pktirsp->tid = *tid;
         break;
+    case ELACP_TYPE_BULKMSG:
+        pktbmsg->tid = *tid;
+        break;
     default:
         assert(0);
         break;
@@ -733,6 +723,9 @@ void elacp_set_totalsz(ElaCP *cp, size_t totalsz)
         break;
     case ELACP_TYPE_INVITE_RESPONSE:
         pktirsp->totalsz = totalsz;
+        break;
+    case ELACP_TYPE_BULKMSG:
+        pktbmsg->totalsz = totalsz;
         break;
     default:
         assert(0);
@@ -780,9 +773,9 @@ void elacp_set_raw_data(ElaCP *cp, const void *data, size_t len)
         pktirsp->data = data;
         pktirsp->len = len;
         break;
-    case ELACP_TYPE_BIG_MESSAGE:
-        pktfbigmsg->data = data;
-        pktfbigmsg->len = len;
+    case ELACP_TYPE_BULKMSG:
+        pktbmsg->data = data;
+        pktbmsg->len = len;
         break;
     default:
         assert(0);
@@ -808,24 +801,6 @@ void elacp_set_bundle(ElaCP *cp, const char *bundle)
          assert(0);
          break;
      }
-}
-
-void elacp_set_total_size(ElaCP *cp, size_t totalsz)
-{
-    struct elacp_packet_t pkt;
-
-    assert(totalsz);
-
-    pkt.u.cp = cp;
-
-    switch(cp->type) {
-    case ELACP_TYPE_BIG_MESSAGE:
-        pktfbigmsg->totalsz = totalsz;
-        break;
-    default:
-        assert(0);
-        break;
-    }
 }
 
 void elacp_set_reason(ElaCP *cp, const char *reason)
@@ -908,19 +883,11 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *encoded_len)
         ref = elacp_friendmsg_end(&builder);
         break;
 
-    case ELACP_TYPE_BIG_MESSAGE:
-        elacp_friendbigmsg_start(&builder);
-        elacp_friendbigmsg_totalsz_add(&builder, pktfbigmsg->totalsz);
-        vec = flatbuffers_uint8_vec_create(&builder, pktfbigmsg->data, pktfbigmsg->len);
-        elacp_friendbigmsg_data_add(&builder, vec);
-        ref = elacp_friendbigmsg_end(&builder);
-        break;
-
     case ELACP_TYPE_INVITE_REQUEST:
         elacp_invitereq_start(&builder);
         if (cp->ext) {
             str = flatcc_builder_create_string_str(&builder, cp->ext);
-            elacp_friendmsg_ext_add(&builder, str);
+            elacp_invitereq_ext_add(&builder, str);
         }
         elacp_invitereq_tid_add(&builder, pktireq->tid);
         elacp_invitereq_totalsz_add(&builder, pktireq->totalsz);
@@ -937,7 +904,7 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *encoded_len)
         elacp_invitersp_start(&builder);
         if (cp->ext) {
             str = flatcc_builder_create_string_str(&builder, cp->ext);
-            elacp_friendmsg_ext_add(&builder, str);
+            elacp_invitersp_ext_add(&builder, str);
         }
         elacp_invitersp_tid_add(&builder, pktirsp->tid);
         elacp_invitersp_totalsz_add(&builder, pktirsp->totalsz);
@@ -954,6 +921,19 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *encoded_len)
             elacp_invitersp_data_add(&builder, vec);
         }
         ref = elacp_invitersp_end(&builder);
+        break;
+
+    case ELACP_TYPE_BULKMSG:
+        elacp_bulkmsg_start(&builder);
+        if (cp->ext) {
+            str = flatcc_builder_create_string_str(&builder, cp->ext);
+            elacp_bulkmsg_ext_add(&builder, str);
+        }
+        elacp_bulkmsg_tid_add(&builder, pktbmsg->tid);
+        elacp_bulkmsg_totalsz_add(&builder, pktbmsg->totalsz);
+        vec = flatbuffers_uint8_vec_create(&builder, pktbmsg->data, pktbmsg->len);
+        elacp_bulkmsg_data_add(&builder, vec);
+        ref = elacp_bulkmsg_end(&builder);
         break;
 
     default:
@@ -983,8 +963,8 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *encoded_len)
     case ELACP_TYPE_INVITE_RESPONSE:
         body = elacp_anybody_as_invitersp(ref);
         break;
-    case ELACP_TYPE_BIG_MESSAGE:
-        body = elacp_anybody_as_friendbigmsg(ref);
+    case ELACP_TYPE_BULKMSG:
+        body = elacp_anybody_as_bulkmsg(ref);
         break;
     default:
         assert(0);
@@ -1025,7 +1005,7 @@ ElaCP *elacp_decode(const uint8_t *data, size_t len)
     case ELACP_TYPE_MESSAGE:
     case ELACP_TYPE_INVITE_REQUEST:
     case ELACP_TYPE_INVITE_RESPONSE:
-    case ELACP_TYPE_BIG_MESSAGE:
+    case ELACP_TYPE_BULKMSG:
         break;
     default:
         //TODO: clean resource for 'packet'; (how ?)
@@ -1072,13 +1052,6 @@ ElaCP *elacp_decode(const uint8_t *data, size_t len)
             cp->ext = elacp_friendmsg_ext(tblfmsg);
         break;
 
-    case ELACP_TYPE_BIG_MESSAGE:
-        tblfbigmsg = elacp_packet_body(packet);
-        pktfbigmsg->data = vec = elacp_friendbigmsg_data(tblfbigmsg);
-        pktfbigmsg->len = flatbuffers_uint8_vec_len(vec);
-        pktfbigmsg->totalsz = elacp_friendbigmsg_totalsz(tblfbigmsg);
-        break;
-
     case ELACP_TYPE_INVITE_REQUEST:
         tblireq = elacp_packet_body(packet);
         pktireq->tid = elacp_invitereq_tid(tblireq);
@@ -1106,6 +1079,14 @@ ElaCP *elacp_decode(const uint8_t *data, size_t len)
         }
         if (elacp_invitersp_ext_is_present(tblirsp))
             cp->ext = elacp_invitersp_ext(tblirsp);
+        break;
+
+    case ELACP_TYPE_BULKMSG:
+        tblbmsg = elacp_packet_body(packet);
+        pktbmsg->tid = elacp_bulkmsg_tid(tblbmsg);
+        pktbmsg->data = vec = elacp_bulkmsg_data(tblbmsg);
+        pktbmsg->len = flatbuffers_uint8_vec_len(vec);
+        pktbmsg->totalsz = elacp_bulkmsg_totalsz(tblbmsg);
         break;
 
     default:

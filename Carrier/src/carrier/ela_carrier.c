@@ -72,8 +72,8 @@
 #include "elacp.h"
 #include "dht.h"
 #include "tassemblies.h"
+#include "bulkmsgs.h"
 #include "dstore_wrapper.h"
-#include "big_message.h"
 
 #define TURN_SERVER_PORT                ((uint16_t)3478)
 #define TURN_SERVER_USER_SUFFIX         "auth.tox"
@@ -1032,6 +1032,9 @@ static void ela_destroy(void *argv)
     if (w->tcallbacks)
         deref(w->tcallbacks);
 
+    if (w->bulkmsgs)
+        deref(w->bulkmsgs);
+
     if (w->thistory)
         deref(w->thistory);
 
@@ -1043,9 +1046,6 @@ static void ela_destroy(void *argv)
 
     if (w->dstorectx)
         deref(w->dstorectx);
-
-    if (w->big_message_pool)
-        deref(w->big_message_pool);
 
     pthread_mutex_destroy(&w->ext_mutex);
 
@@ -1307,8 +1307,8 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
-    w->big_message_pool = big_message_pool_create(8);
-    if (!w->big_message_pool) {
+    w->bulkmsgs = bulkmsgs_create(8);
+    if (!w->bulkmsgs) {
         free_persistence_data(&data);
         deref(w);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
@@ -1775,24 +1775,24 @@ static void do_transacted_callabcks_check(ElaCarrier *w)
     }
 }
 
-static void do_big_message_expire(hashtable_t *big_message_pool)
+static void do_bulkmsgs_expire(hashtable_t *bulkmsgs)
 {
     hashtable_iterator_t it;
     struct timeval now;
 
     gettimeofday(&now, NULL);
 
-    big_message_pool_iterate(big_message_pool, &it);
-    while (big_message_pool_iterator_has_next(&it)) {
-        BigMessage *item;
+    bulkmsgs_iterate(bulkmsgs, &it);
+    while (bulkmsgs_iterator_has_next(&it)) {
+        BulkMsg *item;
         int rc;
 
-        rc = big_message_pool_iterator_next(&it, &item);
+        rc = bulkmsgs_iterator_next(&it, &item);
         if (rc <= 0)
             break;
 
         if (timercmp(&now, &item->expire_time, >))
-            big_message_pool_iterator_remove(&it);
+            bulkmsgs_iterator_remove(&it);
 
         deref(item);
     }
@@ -1831,21 +1831,23 @@ void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 }
 
 static
-void handle_friend_big_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
+void handle_friend_bulkmsg(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 {
     FriendInfo *fi;
     char friendid[ELA_MAX_ID_LEN + 1];
     struct timeval now, expire_interval;
-    BigMessage *msg;
+    BulkMsg *msg;
     const char *name;
-    const void *seg;
-    size_t seg_len;
-    size_t msg_len;
+    const void *data;
+    int64_t tid;
+    size_t len;
+    size_t totalsz;
+    bool need_add = false;
 
     assert(w);
     assert(friend_number != UINT32_MAX);
     assert(cp);
-    assert(elacp_get_type(cp) == ELACP_TYPE_BIG_MESSAGE);
+    assert(elacp_get_type(cp) == ELACP_TYPE_BULKMSG);
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
@@ -1858,39 +1860,63 @@ void handle_friend_big_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     deref(fi);
 
     name = elacp_get_extension(cp);
-    seg  = elacp_get_raw_data(cp);
-    seg_len = elacp_get_raw_data_length(cp);
-    msg_len = elacp_get_total_size(cp);
+    data = elacp_get_raw_data(cp);
+    len  = elacp_get_raw_data_length(cp);
+    tid  = elacp_get_tid(cp);
+    totalsz = elacp_get_totalsz(cp);
 
-    msg = big_message_get(w->big_message_pool, friend_number);
+    msg = bulkmsgs_get(w->bulkmsgs, &tid);
     if (!msg) {
-        msg = big_message_create(friend_number, msg_len);
-        if (!msg)
+        if (!totalsz || totalsz > ELA_MAX_APP_BULKMSG_LEN) {
+            vlogW("Carrier: Received bulk message with invalid totalsz %z,"
+                  "dropped.", totalsz);
             return;
-        big_message_put(w->big_message_pool, msg);
+        }
+
+        msg = (BulkMsg *)rc_zalloc(sizeof(*msg) + totalsz, NULL);
+        if (!msg) {
+            vlogW("Carrier: Out of memory, bulk message dropped.");
+            return;
+        }
+
+        strcpy(msg->ext, name ? name : "");
+        strcpy(msg->friendid, friendid);
+        msg->tid = tid;
+        msg->data_len = totalsz;
+        msg->data_off = 0;
+        msg->data = (uint8_t*)(msg + 1);
+
+        gettimeofday(&now, NULL);
+        expire_interval.tv_sec = TASSEMBLY_TIMEOUT;
+        expire_interval.tv_usec = 0;
+        timeradd(&now, &expire_interval, &msg->expire_time);
+
+        need_add = true;  //Ready to put into bulkmsgs hashtable.
     }
 
-    if (msg->asm_len + seg_len > msg->total_len) {
-        deref(big_message_remove(w->big_message_pool, friend_number));
+    if ((name && strcmp(msg->ext, name)) ||
+        strcmp(msg->friendid, friendid) || !len || len > ELA_MAX_APP_MESSAGE_LEN ||
+        msg->data_off + len < len || msg->data_off + len > msg->data_len) {
+        vlogE("Carrier: Inavlid bulkmsg fragment (or HACKED), dropped.");
         deref(msg);
         return;
     }
 
-    gettimeofday(&now, NULL);
-    expire_interval.tv_sec = BIGMSG_TIMEOUT;
-    expire_interval.tv_usec = 0;
-    timeradd(&now, &expire_interval, &msg->expire_time);
+    memcpy(msg->data + msg->data_off, data, len);
+    msg->data_off += len;
 
-    memcpy(msg->buf + msg->asm_len, seg, seg_len);
-    msg->asm_len += seg_len;
-
-    if (msg->asm_len == msg->total_len) {
-        deref(big_message_remove(w->big_message_pool, friend_number));
+    if (msg->data_off == msg->data_len) {
         if (w->callbacks.friend_message && !name)
-            w->callbacks.friend_message(w, friendid, msg->buf, msg->total_len,
-                                        false, w->context);
+            w->callbacks.friend_message(w, friendid, msg->data, msg->data_len, false, w->context);
+
+        if (!need_add)
+            bulkmsgs_remove(w->bulkmsgs, &tid);
+        else
+            need_add = false;
     }
 
+    if (need_add)
+        bulkmsgs_put(w->bulkmsgs, msg);
     deref(msg);
 }
 
@@ -1933,7 +1959,7 @@ void handle_invite_request(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     tid  = elacp_get_tid(cp);
     totalsz = elacp_get_totalsz(cp);
 
-    ireq = tassemblies_get(w->tassembly_ireqs, tid);
+    ireq = tassemblies_get(w->tassembly_ireqs, &tid);
     if (!ireq) {
         struct timeval now, expire_interval;
 
@@ -2003,7 +2029,7 @@ void handle_invite_request(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
         }
 
         if (!need_add)
-            tassemblies_remove(w->tassembly_ireqs, tid);
+            tassemblies_remove(w->tassembly_ireqs, &tid);
         else
             need_add = false;
     }
@@ -2069,7 +2095,7 @@ void handle_invite_response(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
         data_len = elacp_get_raw_data_length(cp);
     }
 
-    irsp = tassemblies_get(w->tassembly_irsps, tid);
+    irsp = tassemblies_get(w->tassembly_irsps, &tid);
     if (!irsp) {
         struct timeval now, expire_interval;
 
@@ -2138,7 +2164,7 @@ void handle_invite_response(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
                       callback_ctxt);
 
         if (!need_add)
-            tassemblies_remove(w->tassembly_irsps, tid);
+            tassemblies_remove(w->tassembly_irsps, &tid);
         else
             need_add = false;
     }
@@ -2173,8 +2199,8 @@ void notify_friend_message_cb(uint32_t friend_number, const uint8_t *message,
     case ELACP_TYPE_INVITE_RESPONSE:
         handle_invite_response(w, friend_number, cp);
         break;
-    case ELACP_TYPE_BIG_MESSAGE:
-        handle_friend_big_message(w, friend_number, cp);
+    case ELACP_TYPE_BULKMSG:
+        handle_friend_bulkmsg(w, friend_number, cp);
         break;
     default:
         vlogE("Carrier: Unknown DHT message, dropped.");
@@ -2468,7 +2494,7 @@ int ela_run(ElaCarrier *w, int interval)
         do_tassemblies_expire(w->tassembly_ireqs);
         do_tassemblies_expire(w->tassembly_irsps);
         do_transacted_callabcks_check(w);
-        do_big_message_expire(w->big_message_pool);
+        do_bulkmsgs_expire(w->bulkmsgs);
 
         if (idle_interval > 0)
             notify_idle(w);
@@ -3059,10 +3085,11 @@ static void parse_address(const char *addr, char **uid, char **ext)
     }
 }
 
-static
-int send_normal_message(ElaCarrier *w, uint32_t friend_number, const char *user_id,
-                        const void *msg, size_t len, const char * ext_name,
-                        bool *is_offline)
+static int send_general_message(ElaCarrier *w, uint32_t friend_number,
+                                const char *userid,
+                                const void *msg, size_t len,
+                                const char *ext_name,
+                                bool *with_offline)
 {
     ElaCP *cp;
     uint8_t *data;
@@ -3084,99 +3111,120 @@ int send_normal_message(ElaCarrier *w, uint32_t friend_number, const char *user_
     rc = dht_friend_message(&w->dht, friend_number, data, data_len);
     if (!rc) {
         free(data);
-        if (is_offline)
-            *is_offline = false;
+
+        if (with_offline)
+            *with_offline = false;
 
         return 0;
     }
 
     if (w->dstorectx)
-        rc = dstore_enqueue_offmsg(w->dstorectx, user_id, data, data_len);
+        rc = dstore_enqueue_offmsg(w->dstorectx, userid, data, data_len);
 
     free(data);
 
     if (rc < 0)
         return rc;
 
-    if (is_offline)
-        *is_offline = true;
+    if (with_offline)
+        *with_offline = true;
 
     return 0;
 }
 
-static
-int send_big_message(ElaCarrier *w, uint32_t friend_number, const char *user_id,
-                     const void *msg, size_t len, const char * ext_name, bool *is_offline)
+static int64_t generate_tid(void)
 {
-    const char *pending = msg;
-    size_t nleft = len;
+    int64_t tid;
+
+    do {
+        tid = time(NULL);
+        tid += rand();
+    } while (tid == 0);
+
+    return tid;
+}
+
+static int send_bulk_message(ElaCarrier *w, uint32_t friend_number,
+                             const char *userid,
+                             const void *msg, size_t len,
+                             const char * ext_name,
+                             bool *with_offline)
+{
     ElaCP *cp;
+    int64_t tid;
     uint8_t *data;
     size_t data_len;
+    char *pos = (char *)msg;
+    size_t left = len;
+    int index = 0;
     int rc;
 
-    while (nleft) {
-        size_t seg_len = nleft < ELA_MAX_APP_MESSAGE_LEN ?
-                         nleft : ELA_MAX_APP_MESSAGE_LEN;
+    tid = generate_tid();
 
-        cp = elacp_create(ELACP_TYPE_BIG_MESSAGE, ext_name);
-        if (!cp) {
-            rc = ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
-            goto send_offline_msg;
-        }
+    do {
+        size_t send_len;
 
-        elacp_set_raw_data(cp, pending, seg_len);
-        elacp_set_total_size(cp, len);
+        cp = elacp_create(ELACP_TYPE_BULKMSG, ext_name);
+        if (!cp)
+            return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+
+        elacp_set_tid(cp, &tid);
+        ++index;
+
+        if (left < ELA_MAX_APP_MESSAGE_LEN)
+            send_len = left;
+        else
+            send_len = ELA_MAX_APP_MESSAGE_LEN;
+
+        elacp_set_totalsz(cp, (index == 1)? left : 0);
+        elacp_set_raw_data(cp, pos, send_len);
+
+        pos  += send_len;
+        left -= send_len;
 
         data = elacp_encode(cp, &data_len);
         elacp_free(cp);
 
-        if (!data) {
-            rc = ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
-            goto send_offline_msg;
-        }
+        if (!data)
+            return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
         rc = dht_friend_message(&w->dht, friend_number, data, data_len);
         free(data);
-        if (rc < 0) {
-            if (rc == ELA_DHT_ERROR(ELAERR_FRIEND_OFFLINE))
-                goto send_offline_msg;
-            return rc;
-        }
 
-        pending += seg_len;
-        nleft -= seg_len;
+        if (rc < 0)
+            break;
+
+    } while (left > 0);
+
+    if (rc >= 0) {
+        if (with_offline)
+            *with_offline = false;
+
+        return 0;
     }
 
-    if (is_offline)
-        *is_offline = false;
+    if (w->dstorectx) {
+        cp = elacp_create(ELACP_TYPE_MESSAGE, ext_name);
+        if (!cp)
+            return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
-    return 0;
+        elacp_set_raw_data(cp, msg, len);
 
-send_offline_msg:
-    if (!w->dstorectx)
-        return rc;
+        data = elacp_encode(cp, &data_len);
+        elacp_free(cp);
 
-    cp = elacp_create(ELACP_TYPE_MESSAGE, ext_name);
-    if (!cp)
-        return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+        if (!data)
+            return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
-    elacp_set_raw_data(cp, msg, len);
-
-    data = elacp_encode(cp, &data_len);
-    elacp_free(cp);
-
-    if (!data)
-        return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
-
-    rc = dstore_enqueue_offmsg(w->dstorectx, user_id, data, data_len);
-    free(data);
+        rc = dstore_enqueue_offmsg(w->dstorectx, userid, data, data_len);
+        free(data);
+    }
 
     if (rc < 0)
         return rc;
 
-    if (is_offline)
-        *is_offline = true;
+    if (with_offline)
+        *with_offline = true;
 
     return 0;
 }
@@ -3189,7 +3237,7 @@ int ela_send_friend_message(ElaCarrier *w, const char *to,
     uint32_t friend_number;
     int rc;
 
-    if (!w || !to || !msg || !len || len > ELA_MAX_APP_BIG_MESSAGE_LEN) {
+    if (!w || !to || !msg || !len || len > ELA_MAX_APP_BULKMSG_LEN) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -3233,9 +3281,10 @@ int ela_send_friend_message(ElaCarrier *w, const char *to,
 
     deref(fi);
 
-    rc = len <= ELA_MAX_APP_MESSAGE_LEN ?
-         send_normal_message(w, friend_number, to, msg, len, ext_name, is_offline) :
-         send_big_message(w, friend_number, to, msg, len, ext_name, is_offline);
+    if (len <= ELA_MAX_APP_MESSAGE_LEN)
+        rc = send_general_message(w, friend_number, to, msg, len, ext_name, is_offline);
+    else
+        rc = send_bulk_message(w, friend_number, to, msg, len, ext_name, is_offline);
 
     if (rc < 0) {
         ela_set_error(rc);
@@ -3243,18 +3292,6 @@ int ela_send_friend_message(ElaCarrier *w, const char *to,
     }
 
     return 0;
-}
-
-static int64_t generate_tid(void)
-{
-    int64_t tid;
-
-    do {
-        tid = time(NULL);
-        tid += rand();
-    } while (tid == 0);
-
-    return tid;
 }
 
 int ela_invite_friend(ElaCarrier *w, const char *to, const char *bundle,

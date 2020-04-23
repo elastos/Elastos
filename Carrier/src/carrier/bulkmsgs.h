@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Elastos Foundation
+ * Copyright (c) 2020 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,95 +20,109 @@
  * SOFTWARE.
  */
 
-#ifndef __TASSEMBLIES_H__
-#define __TASSEMBLIES_H__
+#ifndef __BULKMSGS_H__
+#define __BULKMSGS_H__
 
-#include <string.h>
+#include <time.h>
 #include <crystal.h>
 
-#include "ela_carrier_impl.h"
-
-typedef struct TransactedAssembly {
+typedef struct BulkMsg {
     char ext[ELA_MAX_EXTENSION_NAME_LEN + 1];
     char friendid[ELA_MAX_ID_LEN + 1];
     int64_t tid;
-    char *bundle;
-    char *reason;
     uint8_t *data;
     size_t  data_len;
     size_t  data_off;
     struct timeval expire_time;
     hash_entry_t he;
-} TransactedAssembly;
+} BulkMsg;
+
+#define BIGMSG_TIMEOUT               (60) //60s.
 
 static inline
-int tassemblies_key_compare(const void *key1, size_t len1,
-                            const void *key2, size_t len2)
+int bulkmsgs_key_compare(const void *key1, size_t len1,
+                         const void *key2, size_t len2)
 {
     return memcmp(key1, key2, sizeof(int64_t));
 }
 
 static inline
-hashtable_t *tassemblies_create(int capacity)
+hashtable_t *bulkmsgs_create(int capacity)
 {
-    return hashtable_create(capacity, 1, NULL, tassemblies_key_compare);
+    return hashtable_create(capacity, 1, NULL, bulkmsgs_key_compare);
 }
 
 static inline
-void tassemblies_put(hashtable_t *tassemblies, TransactedAssembly *item)
+BulkMsg *bulkmsgs_get(hashtable_t *msgs, int64_t *tid)
 {
-    item->he.data = item;
-    item->he.key = &item->tid;
-    item->he.keylen = sizeof(item->tid);
+    assert(msgs);
+    assert(tid);
 
-    hashtable_put(tassemblies, &item->he);
+    return (BulkMsg *)hashtable_get(msgs, tid, sizeof(int64_t));
 }
 
 static inline
-TransactedAssembly *tassemblies_get(hashtable_t *tassemblies, int64_t *tid)
+int bulkmsgs_exist(hashtable_t *msgs, int64_t *tid)
 {
-    return (TransactedAssembly *)hashtable_get(tassemblies, tid, sizeof(int64_t));
+    assert(msgs);
+    assert(tid);
+
+    return hashtable_exist(msgs, tid, sizeof(int64_t));
 }
 
 static inline
-void tassemblies_remove(hashtable_t *tassemblies, int64_t *tid)
+void bulkmsgs_put(hashtable_t *msgs, BulkMsg *msg)
 {
-    deref(hashtable_remove(tassemblies, tid, sizeof(int64_t)));
+    assert(msgs);
+    assert(msg);
+
+    msg->he.data = msg;
+    msg->he.key = &msg->tid;
+    msg->he.keylen = sizeof(msg->tid);
+
+    hashtable_put(msgs, &msg->he);
 }
 
 static inline
-void tassemblies_clear(hashtable_t *tassemblies)
+BulkMsg *bulkmsgs_remove(hashtable_t *msgs, int64_t *tid)
 {
-    hashtable_clear(tassemblies);
+    assert(msgs);
+    assert(tid);
+
+    return (BulkMsg *)hashtable_remove(msgs, tid, sizeof(int64_t));
 }
 
 static inline
-hashtable_iterator_t *tassemblies_iterate(hashtable_t *tassemblies,
-                                          hashtable_iterator_t *iterator)
+hashtable_iterator_t *bulkmsgs_iterate(hashtable_t *msgs,
+                                       hashtable_iterator_t *iterator)
 {
-    assert(tassemblies && iterator);
-    return hashtable_iterate(tassemblies, iterator);
+    assert(msgs);
+    assert(iterator);
+
+    return hashtable_iterate(msgs, iterator);
 }
 
 static inline
-int tassemblies_iterator_next(hashtable_iterator_t *iterator, TransactedAssembly **item)
+int bulkmsgs_iterator_next(hashtable_iterator_t *iterator, BulkMsg **item)
 {
-    assert(iterator && item);
+    assert(item);
+    assert(iterator);
+
     return hashtable_iterator_next(iterator, NULL, NULL, (void **)item);
 }
 
 static inline
-int tassemblies_iterator_has_next(hashtable_iterator_t *iterator)
+int bulkmsgs_iterator_has_next(hashtable_iterator_t *iterator)
 {
     assert(iterator);
     return hashtable_iterator_has_next(iterator);
 }
 
 static inline
-int tassemblies_iterator_remove(hashtable_iterator_t *iterator)
+int bulkmsgs_iterator_remove(hashtable_iterator_t *iterator)
 {
     assert(iterator);
     return hashtable_iterator_remove(iterator);
 }
 
-#endif /* __TASSEMBLIES_H__ */
+#endif // __BULKMSGS_H__

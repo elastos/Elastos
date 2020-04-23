@@ -125,9 +125,9 @@ extern "C" {
 
 /**
  * \~English
- * Carrier App big message max length.
+ * Carrier App max bulk message length.
  */
-#define ELA_MAX_APP_BIG_MESSAGE_LEN     (5 * 1024 * 1024)
+#define ELA_MAX_APP_BULKMSG_LEN        (5 * 1024 * 1024)
 
 /**
  * \~English
@@ -1321,7 +1321,7 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  * \~English
  * Send a message to a friend.
  *
- * The message length may not exceed ELA_MAX_APP_BIG_MESSAGE_LEN. Larger messages
+ * The message length may not exceed ELA_MAX_BULK_MESSAGE_LEN. Larger messages
  * must be split by application and sent as separate fragments. Other carrier
  * nodes can reassemble the fragments.
  *
