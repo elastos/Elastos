@@ -2162,16 +2162,16 @@ Get one cr proposal detail state information by proposalhash or drafthash
 | name               | type                  | description                                        |
 | ------------------ | --------------------- | -------------------------------------------------- |
 | Status             | string                | the proposal status                                |
-| Proposal           | RpcCRCProposal        | the cr proposal                                    |
+| Proposal           | CRCProposal           | the cr proposal                                    |
 | TxHash             | string                | hash of the transacion which cr proposal located in|
 | CRVotes            | map[string]VoteResult | per cr VoteResult                                  |
-| VotersRejectAmount | common.Fixed64        | voters reject amount                               |
+| VotersRejectAmount | string                | voters reject amount                               |
 | RegisterHeight     | uint32                | the proposal register height                       |
 | ProposalType       | CRCProposalType       | the type of cr proposal                            |
 | OwnerPublicKey     | string                | the public key of proposal's owner                 |
 | CRCouncilMemberDID | string                | the did of CR Council Member                       |
 | DraftHash          | string                | the hash of draft proposal                         |
-| Budgets            | []common.Fixed64      | the budget of different stages                     |
+| Budgets            | []Budget              | the budget of different stages                     |
 ProposalType value as follows:
 0x00:"Normal" Normal indicates the normal types of proposal.
 0x01:"Code" indicates the code upgrade types of proposals.
@@ -2212,17 +2212,20 @@ Response:
                      {
                         "type": "Imprest",
                         "stage": 0,
-                        "amount": "1.1"
+                        "amount": "1.1",
+                        "status": "Withdrawable"
                      },
                      {
                         "type": "NormalPayment",
                         "stage": 1,
-                        "amount": "2.2"
+                        "amount": "2.2",
+                        "status": "Unfinished"
                      },
                      {
                         "type": "FinalPayment",
                         "stage": 2,
-                        "amount": "3.3"
+                        "amount": "3.3",
+                        "status": "Unfinished"
                      }
                 ]
             },
@@ -2267,18 +2270,21 @@ Response:
                      {
                         "type": "Imprest",
                         "stage": 0,
-                        "amount": "1.1"
+                        "amount": "1.1",
+                        "status": "Withdrawable"
                      },
                      {
                         "type": "NormalPayment",
                         "stage": 1,
-                        "amount": "2.2"
+                        "amount": "2.2",
+                        "status": "Unfinished"
                      },
                      {
                         "type": "FinalPayment",
                         "stage": 2,
-                        "amount": "3.3"
-                     }
+                        "amount": "3.3",
+                         "status": "Unfinished"
+                    }
                  ]
              },
              "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
