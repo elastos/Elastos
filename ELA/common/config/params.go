@@ -93,7 +93,7 @@ var (
 	}
 
 	// "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
-	destroyELAAddress = common.Uint168{
+	DestroyELAAddress = common.Uint168{
 		0x21, 0x20, 0xfe, 0xe5, 0xd7, 0xeb, 0x3e,
 		0x5c, 0x7d, 0x31, 0x97, 0xfe, 0xcf, 0x6c,
 		0x0d, 0xe3, 0x0f, 0x88, 0x9a, 0xce, 0xf7,
@@ -104,14 +104,6 @@ var (
 
 	// ELAPrecision represents the precision of ELA coin.
 	ELAPrecision = byte(0x08)
-
-	// DestructionAddress indicates the "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
-	// destruction address.
-	DestructionAddress = common.Uint168{
-		0x21, 0x20, 0xfe, 0xe5, 0xd7, 0xeb, 0x3e,
-		0x5c, 0x7d, 0x31, 0x97, 0xfe, 0xcf, 0x6c,
-		0x0d, 0xe3, 0x0f, 0x88, 0x9a, 0xce, 0xf7,
-	}
 
 	// CRCAssetsAddress indicates the "CRASSETSXXXXXXXXXXXXXXXXXXXX2qDX5J"
 	// CRC assets address.
@@ -147,7 +139,7 @@ var DefaultParams = Params{
 	CRCAddress:          mainNetCRCAddress,
 	CRCFoundation:       CRCAssetsAddress,
 	CRCCommitteeAddress: CRCExpensesAddress,
-	DestroyELAAddress:   destroyELAAddress,
+	DestroyELAAddress:   DestroyELAAddress,
 	GenesisBlock:        GenesisBlock(&mainNetFoundation),
 
 	DPoSMagic:       2019000,
@@ -240,7 +232,7 @@ func (p *Params) TestNet() *Params {
 	copy.CRCAddress = testNetCRCAddress
 	copy.CRCFoundation = CRCAssetsAddress
 	copy.CRCCommitteeAddress = CRCExpensesAddress
-	copy.DestroyELAAddress = destroyELAAddress
+	copy.DestroyELAAddress = DestroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019100
 	copy.DPoSDefaultPort = 21339
@@ -302,7 +294,7 @@ func (p *Params) RegNet() *Params {
 	copy.CRCAddress = testNetCRCAddress
 	copy.CRCFoundation = CRCAssetsAddress
 	copy.CRCCommitteeAddress = CRCExpensesAddress
-	copy.DestroyELAAddress = destroyELAAddress
+	copy.DestroyELAAddress = DestroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019200
 	copy.DPoSDefaultPort = 22339

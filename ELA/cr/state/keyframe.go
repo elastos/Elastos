@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -19,9 +19,6 @@ import (
 type MemberState byte
 
 const (
-	// Pending indicates the producer is just registered and didn't get 6
-	// confirmations yet.
-
 	// MemberElected indicates the CR member is Elected.
 	MemberElected MemberState = iota
 
@@ -42,6 +39,46 @@ func (s *MemberState) String() string {
 		return "Returned"
 	}
 
+	return "Unknown"
+}
+
+type BudgetStatus uint8
+
+const (
+	// Unfinished indicates the proposal owner haven't started or uploaded the
+	// status of the budget to CR Council.
+	Unfinished BudgetStatus = iota
+
+	// Withdrawable indicates the proposal owner have finished the milestone,
+	// but haven't get the payment.
+	Withdrawable
+
+	// Withdrawn indicates the proposal owner have finished the milestone and
+	// got the payment.
+	Withdrawn
+
+	// Rejected indicates the proposal owner have uploaded the status to CR
+	// Council but the secretary-general rejected my request.
+	Rejected
+
+	// Closed indicates the proposal has been terminated and the milestone will
+	// not be finished forever.
+	Closed
+)
+
+func (s *BudgetStatus) Name() string {
+	switch *s {
+	case Unfinished:
+		return "Unfinished"
+	case Withdrawable:
+		return "Withdrawable"
+	case Withdrawn:
+		return "Withdrawn"
+	case Rejected:
+		return "Rejected"
+	case Closed:
+		return "Closed"
+	}
 	return "Unknown"
 }
 
@@ -104,6 +141,7 @@ type ProposalState struct {
 
 	WithdrawnBudgets    map[uint8]common.Fixed64 // proposalWithdraw
 	WithdrawableBudgets map[uint8]common.Fixed64 // proposalTracking
+	BudgetsStatus       map[uint8]BudgetStatus
 	FinalPaymentStatus  bool
 
 	TrackingCount    uint8
@@ -749,6 +787,9 @@ func (p *ProposalState) Serialize(w io.Writer) (err error) {
 	if err = p.serializeBudgets(p.WithdrawableBudgets, w); err != nil {
 		return
 	}
+	if err = p.serializeBudgetsStatus(p.BudgetsStatus, w); err != nil {
+		return
+	}
 	if err := common.WriteElement(w, p.FinalPaymentStatus); err != nil {
 		return err
 	}
@@ -815,6 +856,9 @@ func (p *ProposalState) Deserialize(r io.Reader) (err error) {
 	if p.WithdrawableBudgets, err = p.deserializeBudgets(r); err != nil {
 		return
 	}
+	if p.BudgetsStatus, err = p.deserializeBudgetsStatus(r); err != nil {
+		return
+	}
 	if err = common.ReadElement(r, &p.FinalPaymentStatus); err != nil {
 		return err
 	}
@@ -847,6 +891,19 @@ func (p *ProposalState) serializeBudgets(withdrawableBudgets map[uint8]common.Fi
 	return
 }
 
+func (p *ProposalState) serializeBudgetsStatus(budgetsStatus map[uint8]BudgetStatus,
+	w io.Writer) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(budgetsStatus))); err != nil {
+		return
+	}
+	for k, v := range budgetsStatus {
+		if err = common.WriteElements(w, k, uint8(v)); err != nil {
+			return
+		}
+	}
+	return
+}
+
 func (p *ProposalState) deserializeBudgets(r io.Reader) (
 	withdrawableBudgets map[uint8]common.Fixed64, err error) {
 	var count uint64
@@ -864,6 +921,24 @@ func (p *ProposalState) deserializeBudgets(r io.Reader) (
 			return
 		}
 		withdrawableBudgets[stage] = amount
+	}
+	return
+}
+
+func (p *ProposalState) deserializeBudgetsStatus(r io.Reader) (
+	budgetsStatus map[uint8]BudgetStatus, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	budgetsStatus = make(map[uint8]BudgetStatus)
+	for i := uint64(0); i < count; i++ {
+		var stage uint8
+		var status uint8
+		if err = common.ReadElements(r, &stage, &status); err != nil {
+			return
+		}
+		budgetsStatus[stage] = BudgetStatus(status)
 	}
 	return
 }

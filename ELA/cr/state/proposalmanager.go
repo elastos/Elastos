@@ -191,74 +191,98 @@ func (p *ProposalManager) updateProposals(height uint32,
 }
 
 // abortProposal will transfer the status to aborted.
-func (p *ProposalManager) abortProposal(proposal *ProposalState,
+func (p *ProposalManager) abortProposal(proposalState *ProposalState,
 	height uint32) {
-	oriStatus := proposal.Status
+	oriStatus := proposalState.Status
+	oriBudgetsStatus := make(map[uint8]BudgetStatus)
+	for k, v := range proposalState.BudgetsStatus {
+		oriBudgetsStatus[k] = v
+	}
 	p.history.Append(height, func() {
-		proposal.Status = Aborted
+		proposalState.Status = Aborted
+		for k, _ := range proposalState.BudgetsStatus {
+			proposalState.BudgetsStatus[k] = Closed
+		}
 	}, func() {
-		proposal.Status = oriStatus
+		proposalState.Status = oriStatus
+		proposalState.BudgetsStatus = oriBudgetsStatus
 	})
 }
 
 // transferRegisteredState will transfer the Registered state by CR agreement
 // count.
-func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
+func (p *ProposalManager) transferRegisteredState(proposalState *ProposalState,
 	height uint32) (status ProposalStatus) {
 	agreedCount := uint32(0)
-	for _, v := range proposal.CRVotes {
+	for _, v := range proposalState.CRVotes {
 		if v == payload.Approve {
 			agreedCount++
 		}
 	}
 
-	oriVoteStartHeight := proposal.VoteStartHeight
+	oriVoteStartHeight := proposalState.VoteStartHeight
 	if agreedCount >= p.params.CRAgreementCount {
 		status = CRAgreed
 		p.history.Append(height, func() {
-			proposal.Status = CRAgreed
-			proposal.VoteStartHeight = height
+			proposalState.Status = CRAgreed
+			proposalState.VoteStartHeight = height
 		}, func() {
-			proposal.Status = Registered
-			proposal.VoteStartHeight = oriVoteStartHeight
+			proposalState.Status = Registered
+			proposalState.VoteStartHeight = oriVoteStartHeight
 		})
 	} else {
 		status = CRCanceled
+		oriBudgetsStatus := make(map[uint8]BudgetStatus)
+		for k, v := range proposalState.BudgetsStatus {
+			oriBudgetsStatus[k] = v
+		}
 		p.history.Append(height, func() {
-			proposal.Status = CRCanceled
+			proposalState.Status = CRCanceled
+			for k, _ := range proposalState.BudgetsStatus {
+				proposalState.BudgetsStatus[k] = Closed
+			}
 		}, func() {
-			proposal.Status = Registered
+			proposalState.Status = Registered
+			proposalState.BudgetsStatus = oriBudgetsStatus
 		})
 	}
 	return
 }
 
 // transferCRAgreedState will transfer CRAgreed state by votes' reject amount.
-func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
+func (p *ProposalManager) transferCRAgreedState(proposalState *ProposalState,
 	height uint32, circulation common.Fixed64) (status ProposalStatus) {
-	if proposal.VotersRejectAmount >= common.Fixed64(float64(circulation)*
+	if proposalState.VotersRejectAmount >= common.Fixed64(float64(circulation)*
 		p.params.VoterRejectPercentage/100.0) {
 		status = VoterCanceled
+		oriBudgetsStatus := make(map[uint8]BudgetStatus)
+		for k, v := range proposalState.BudgetsStatus {
+			oriBudgetsStatus[k] = v
+		}
 		p.history.Append(height, func() {
-			proposal.Status = VoterCanceled
+			proposalState.Status = VoterCanceled
+			for k, _ := range proposalState.BudgetsStatus {
+				proposalState.BudgetsStatus[k] = Closed
+			}
 		}, func() {
-			proposal.Status = CRAgreed
+			proposalState.Status = CRAgreed
+			proposalState.BudgetsStatus = oriBudgetsStatus
 		})
 	} else {
 		status = VoterAgreed
 		p.history.Append(height, func() {
-			proposal.Status = VoterAgreed
-			for _, b := range proposal.Proposal.Budgets {
+			proposalState.Status = VoterAgreed
+			for _, b := range proposalState.Proposal.Budgets {
 				if b.Type == payload.Imprest {
-					proposal.WithdrawableBudgets[b.Stage] = b.Amount
+					proposalState.WithdrawableBudgets[b.Stage] = b.Amount
 					break
 				}
 			}
 		}, func() {
-			proposal.Status = CRAgreed
-			for _, b := range proposal.Proposal.Budgets {
+			proposalState.Status = CRAgreed
+			for _, b := range proposalState.Proposal.Budgets {
 				if b.Type == payload.Imprest {
-					delete(proposal.WithdrawableBudgets, b.Stage)
+					delete(proposalState.WithdrawableBudgets, b.Stage)
 					break
 				}
 			}
@@ -328,6 +352,14 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 	if p.isProposalFull(proposal.CRCouncilMemberDID) {
 		return
 	}
+	budgetsStatus := make(map[uint8]BudgetStatus)
+	for _, budget := range proposal.Budgets {
+		if budget.Type == payload.Imprest {
+			budgetsStatus[budget.Stage] = Withdrawable
+			continue
+		}
+		budgetsStatus[budget.Stage] = Unfinished
+	}
 	proposalState := &ProposalState{
 		Status:              Registered,
 		Proposal:            *proposal,
@@ -338,6 +370,7 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		VoteStartHeight:     0,
 		WithdrawnBudgets:    make(map[uint8]common.Fixed64),
 		WithdrawableBudgets: make(map[uint8]common.Fixed64),
+		BudgetsStatus:       budgetsStatus,
 		FinalPaymentStatus:  false,
 		TrackingCount:       0,
 		TerminatedHeight:    0,
@@ -424,14 +457,25 @@ func (p *ProposalManager) proposalWithdraw(tx *types.Transaction,
 			withdrawingBudgets[i] = a
 		}
 	}
+	oriBudgetsStatus := make(map[uint8]BudgetStatus)
+	for k, v := range proposalState.BudgetsStatus {
+		oriBudgetsStatus[k] = v
+	}
 	history.Append(height, func() {
 		for k, v := range withdrawingBudgets {
 			proposalState.WithdrawnBudgets[k] = v
+		}
+		for k, v := range proposalState.BudgetsStatus {
+			if v == Withdrawable {
+				proposalState.BudgetsStatus[k] = Withdrawn
+
+			}
 		}
 	}, func() {
 		for k, _ := range withdrawingBudgets {
 			delete(proposalState.WithdrawnBudgets, k)
 		}
+		proposalState.BudgetsStatus = oriBudgetsStatus
 	})
 }
 
@@ -447,6 +491,10 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 	owner := proposalState.ProposalOwner
 	terminatedHeight := proposalState.TerminatedHeight
 	status := proposalState.Status
+	oriBudgetsStatus := make(map[uint8]BudgetStatus)
+	for k, v := range proposalState.BudgetsStatus {
+		oriBudgetsStatus[k] = v
+	}
 
 	if trackingType == payload.Terminated {
 		for _, budget := range proposalState.Proposal.Budgets {
@@ -471,6 +519,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 		switch trackingType {
 		case payload.Common:
 		case payload.Progress:
+			proposalState.BudgetsStatus[proposalTracking.Stage] = Withdrawable
 			for _, budget := range proposalState.Proposal.Budgets {
 				if budget.Stage == proposalTracking.Stage {
 					proposalState.WithdrawableBudgets[proposalTracking.Stage] = budget.Amount
@@ -481,17 +530,29 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 				proposalState.FinalPaymentStatus = true
 			}
 		case payload.Rejected:
+			proposalState.BudgetsStatus[proposalTracking.Stage] = Rejected
 		case payload.ChangeOwner:
 			proposalState.ProposalOwner = proposalTracking.NewOwnerPublicKey
 		case payload.Terminated:
 			proposalState.TerminatedHeight = height
 			proposalState.Status = Terminated
+			for k, v := range proposalState.BudgetsStatus {
+				if v == Unfinished || v == Rejected {
+					proposalState.BudgetsStatus[k] = Closed
+				}
+			}
 		case payload.Finalized:
 			proposalState.Status = Finished
 			for _, budget := range proposalState.Proposal.Budgets {
 				if budget.Type == payload.FinalPayment {
 					proposalState.WithdrawableBudgets[budget.Stage] = budget.Amount
 					break
+				}
+			}
+			proposalState.BudgetsStatus[proposalTracking.Stage] = Withdrawable
+			for k, v := range proposalState.BudgetsStatus {
+				if v == Unfinished || v == Rejected {
+					proposalState.BudgetsStatus[k] = Closed
 				}
 			}
 		}
@@ -501,14 +562,18 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 		case payload.Common:
 		case payload.Progress:
 			delete(proposalState.WithdrawableBudgets, proposalTracking.Stage)
+			proposalState.BudgetsStatus = oriBudgetsStatus
 			proposalState.FinalPaymentStatus = false
 		case payload.Rejected:
+			proposalState.BudgetsStatus = oriBudgetsStatus
 		case payload.ChangeOwner:
 			proposalState.ProposalOwner = owner
 		case payload.Terminated:
+			proposalState.BudgetsStatus = oriBudgetsStatus
 			proposalState.TerminatedHeight = terminatedHeight
 			proposalState.Status = status
 		case payload.Finalized:
+			proposalState.BudgetsStatus = oriBudgetsStatus
 			proposalState.Status = status
 			for _, budget := range proposalState.Proposal.Budgets {
 				if budget.Type == payload.FinalPayment {

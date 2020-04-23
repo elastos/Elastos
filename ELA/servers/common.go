@@ -232,6 +232,7 @@ type BudgetInfo struct {
 	Type   string `json:"type"`
 	Stage  uint8  `json:"stage"`
 	Amount string `json:"amount"`
+	Status string `json:"status"`
 }
 type CRCProposalInfo struct {
 	ProposalType             string       `json:"proposaltype"`

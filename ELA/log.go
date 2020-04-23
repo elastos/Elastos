@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package main
 
@@ -178,13 +178,13 @@ func setupLog(c *cli.Context, s *settings.Settings) {
 		s.Config().MaxPerLogSize, s.Config().MaxLogsSize)
 	pgBar = newProgress(logger.Writer())
 
-	admrlog := wrap(logger, elalog.LevelOff)
+	admrlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
 	cmgrlog := wrap(logger, elalog.LevelOff)
 	synclog := wrap(logger, elalog.Level(s.Params().PrintLevel))
 	peerlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
 	routlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
 	elanlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
-	statlog := wrap(logger,elalog.Level(s.Params().PrintLevel))
+	statlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
 	crstatlog := wrap(logger, elalog.Level(s.Params().PrintLevel))
 
 	addrmgr.UseLogger(admrlog)
