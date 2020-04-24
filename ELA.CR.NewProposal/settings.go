@@ -665,6 +665,12 @@ func newSettings() *settings {
 		ConfigPath:   "CRConfiguration.VotingPeriod",
 		ParamName:    "CRVotingPeriod"})
 
+	result.Add(&settingItem{
+		Flag:         cmdcom.RegisterCRByDIDHeightFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.RegisterCRByDIDHeight",
+		ParamName:    "RegisterCRByDIDHeight"})
+
 	return result
 }
 

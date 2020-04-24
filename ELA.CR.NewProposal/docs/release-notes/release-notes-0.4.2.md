@@ -1,8 +1,8 @@
-Elastos.ELA version 0.4.1 is now available from:
+Elastos.ELA version 0.4.2 is now available from:
 
-  <https://download.elastos.org/elastos-ela/elastos-ela-v0.4.1/>
+  <https://download.elastos.org/elastos-ela/elastos-ela-v0.4.2/>
 
-This is a new minor version release, fix some nodes out of sync. 
+This is a new minor version release, support registering CR by CID and DID. 
 
 Please report bugs using the issue tracker at GitHub:
 
@@ -11,8 +11,8 @@ Please report bugs using the issue tracker at GitHub:
 How to Upgrade
 ==============
 
-If you are running version release_v0.4.0 and before, you should shut it down and wait until
-it has completely closed, then just copy over `ela` (on Linux).
+If you are running version release_v0.4.1 and before, you should shut it down and wait until
+ it has completely closed, then just copy over `ela` (on Linux).
 
 However, as usual, config, keystore and chaindata files are compatible.
 
@@ -32,13 +32,12 @@ distribution provides binaries for the x86_64 platform.
 Notable changes
 ===============
 
-Solved the problem that some nodes are not synchronized.
+Support registering CR by CID and DID.
 
-0.4.1 change log
+0.4.2 change log
 =================
 
 Detailed release notes follow
 
-- #1353 `4ea94e5` display height when querying CR candidate information
-- #1347 `1592d35` display as address when acquiring output payload information of CR
-- #1344 `0616e5d` fixed block synchronization sometimes got stuck error
+- #1393 modify RegisterCRByDIDHeight of mainNet
+- #1381 modify to support registering CR by CID and DID

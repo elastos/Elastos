@@ -25,7 +25,7 @@ func TestUnregisterCR_Deserialize(t *testing.T) {
 }
 
 func unregisterCRPayloadEqual(payload1 *UnregisterCR, payload2 *UnregisterCR) bool {
-	if !payload1.DID.IsEqual(payload2.DID) ||
+	if !payload1.CID.IsEqual(payload2.CID) ||
 		!bytes.Equal(payload1.Signature, payload2.Signature) {
 		return false
 	}
@@ -35,7 +35,7 @@ func unregisterCRPayloadEqual(payload1 *UnregisterCR, payload2 *UnregisterCR) bo
 
 func randomUnregisterCRPayload() *UnregisterCR {
 	return &UnregisterCR{
-		DID:       *randomUint168(),
+		CID:       *randomUint168(),
 		Signature: randomBytes(65),
 	}
 }
