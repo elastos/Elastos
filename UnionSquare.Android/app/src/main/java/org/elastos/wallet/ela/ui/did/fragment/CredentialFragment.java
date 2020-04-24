@@ -79,7 +79,7 @@ public class CredentialFragment extends BaseFragment {
         } else {
             tvPersonlinfoNo.setVisibility(View.GONE);
             tvPersonlinfoTime.setVisibility(View.VISIBLE);
-            tvPersonlinfoTime.setText(getString(R.string.keeptime) + DateUtil.timeNYR(credentialSubjectBean.getEditTime(), getContext(), true));
+            tvPersonlinfoTime.setText(getString(R.string.keeptime) + DateUtil.time(credentialSubjectBean.getEditTime(), getContext()));
 
         }
     }
