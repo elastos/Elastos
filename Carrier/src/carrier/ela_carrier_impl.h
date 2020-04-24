@@ -146,4 +146,7 @@ typedef int (*strerror_t)(int errnum, char *, size_t);
 CARRIER_API
 int ela_register_strerror(int facility, strerror_t strerr);
 
+CARRIER_API
+int ela_leave_all_groups(ElaCarrier *w);
+
 #endif /* __ELA_CARRIER_IMPL_H__ */

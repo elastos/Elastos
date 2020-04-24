@@ -46,6 +46,8 @@ static CarrierContextExtra extra = {
     .group_total = 32
 };
 
+extern int ela_leave_all_groups(ElaCarrier *);
+
 static void ready_cb(ElaCarrier *w, void *context)
 {
     cond_signal(((CarrierContext *)context)->ready_cond);
@@ -115,6 +117,9 @@ static void test_group_get_groups(void)
     char groupid[ELA_MAX_ID_LEN + 1] = {0};
     int rc;
     int i;
+
+    rc = ela_leave_all_groups(wctx->carrier);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     for (i = 0; i < extra->group_total; i++) {
         extra->groupids[i] = NULL;

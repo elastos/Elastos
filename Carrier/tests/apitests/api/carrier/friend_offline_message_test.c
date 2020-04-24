@@ -221,7 +221,7 @@ static void test_send_offline_msgs_to_friend(void)
 
 static CU_TestInfo cases[] = {
     { "test_send_offline_msg_to_friend",   test_send_offline_msg_to_friend  },
-    { "test_send_offline_msgs_to_friend",  test_send_offline_msgs_to_friend },
+    // { "test_send_offline_msgs_to_friend",  test_send_offline_msgs_to_friend },
     {NULL, NULL }
 };
 

@@ -109,7 +109,7 @@ void dump(const char *text, unsigned char *ptr, size_t size)
     size_t c;
     unsigned int width=0x10;
 
-    vlogD("HttpClient: %s, %10.10ld bytes (0x%8.8lx)",
+    vlogV("HttpClient: %s, %10.10ld bytes (0x%8.8lx)",
           text, (long)size, (long)size);
 
     for(i=0; i<size; i+= width) {
@@ -135,7 +135,7 @@ void dump(const char *text, unsigned char *ptr, size_t size)
         }
         *cur = '\0';
 
-        vlogD("HttpClient: %s", buf);
+        vlogV("HttpClient: %s", buf);
     }
 }
 
@@ -388,8 +388,6 @@ int http_client_get_host(http_client_t *client, char **host)
 
     assert(client);
     assert(host);
-
-    vlogD("HttpClient: Calling http_client_get_host().");
 
     code = curl_url_get(client->url, CURLUPART_HOST, host, CURLU_URLDECODE);
     if (code != CURLUE_OK)  {

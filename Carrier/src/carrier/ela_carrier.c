@@ -3955,3 +3955,26 @@ int ela_get_groups(ElaCarrier *w, ElaIterateGroupCallback *callback,
     return 0;
 }
 
+int ela_leave_all_groups(ElaCarrier *w)
+{
+    uint32_t group_count;
+    uint32_t *group_number_list;
+    uint32_t i;
+
+    if (!w) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    group_count = dht_get_group_count(&w->dht);
+    if (!group_count)
+        return 0;
+
+    group_number_list = (uint32_t *)alloca(sizeof(uint32_t) * group_count);
+    dht_get_group_list(&w->dht, group_number_list);
+
+    for (i = 0; i < group_count; i++)
+        dht_group_leave(&w->dht, group_number_list[i]);
+
+    return 0;
+}
