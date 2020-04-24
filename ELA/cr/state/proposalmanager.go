@@ -346,7 +346,7 @@ func (p *ProposalManager) delProposal(did common.Uint168,
 
 // registerProposal will register proposal state in proposal manager
 func (p *ProposalManager) registerProposal(tx *types.Transaction,
-	height uint32, history *utils.History) {
+	height uint32, currentsSession uint64, history *utils.History) {
 	proposal := tx.Payload.(*payload.CRCProposal)
 	//The number of the proposals of the committee can not more than 128
 	if p.isProposalFull(proposal.CRCouncilMemberDID) {
@@ -382,9 +382,20 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 	history.Append(height, func() {
 		p.Proposals[proposal.Hash()] = proposalState
 		p.addProposal(crCouncilMemberDID, hash)
+		if _, ok := p.ProposalSession[currentsSession]; !ok {
+			p.ProposalSession[currentsSession] = make([]common.Uint256, 0)
+		}
+		p.ProposalSession[currentsSession] =
+			append(p.ProposalSession[currentsSession], proposal.Hash())
 	}, func() {
 		delete(p.Proposals, proposal.Hash())
 		p.delProposal(crCouncilMemberDID, hash)
+		if len(p.ProposalSession[currentsSession]) == 1 {
+			delete(p.ProposalSession, currentsSession)
+		} else {
+			count := len(p.ProposalSession[currentsSession])
+			p.ProposalSession[currentsSession] = p.ProposalSession[currentsSession][:count-1]
+		}
 	})
 }
 

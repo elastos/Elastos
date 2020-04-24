@@ -821,15 +821,16 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 
 	// Calculate penalty by vote proposal count.
 	var voteCount int
-	for _, v := range c.manager.Proposals {
-		for did, _ := range v.CRVotes {
+	for _, v := range c.manager.ProposalSession[c.state.CurrentSession] {
+		proposal := c.manager.Proposals[v]
+		for did, _ := range proposal.CRVotes {
 			if member.Info.DID.IsEqual(did) {
 				voteCount++
 				break
 			}
 		}
 	}
-	proposalsCount := len(c.manager.Proposals)
+	proposalsCount := len(c.manager.ProposalSession[c.state.CurrentSession])
 	voteRate := float64(1.0)
 	if proposalsCount != 0 {
 		voteRate = float64(voteCount) / float64(proposalsCount)
@@ -843,6 +844,9 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 	log.Infof("height %d member %s impeached, not election and not vote proposal"+
 		" penalty: %s, old penalty: %s, final penalty: %s",
 		height, member.Info.NickName, currentPenalty, penalty, finalPenalty)
+	log.Info("electionRate:", electionRate, "voteRate:", voteRate,
+		"electionCount:", electionCount, "dutyPeriod:", c.params.CRDutyPeriod,
+		"voteCount:", voteCount, "proposalsCount:", proposalsCount)
 
 	return finalPenalty
 }
