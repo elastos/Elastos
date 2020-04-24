@@ -29,7 +29,6 @@ import com.blankj.utilcode.util.NetworkUtils;
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
-import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.io.File;
@@ -71,7 +70,7 @@ public class RetrofitManager {
 
     public static synchronized ApiServer getApiService(Context context) {
         if (MyApplication.currentWalletNet == WalletNet.MAINNET
-                ||MyApplication.currentWalletNet == WalletNet.ALPHAMAINNET) {
+                || MyApplication.currentWalletNet == WalletNet.ALPHAMAINNET) {
             String address = new SPUtil(context).getDefaultServer(MyApplication.serverList.iterator().next());
             if (!address.equals(MyApplication.REQUEST_BASE_URL)) {
                 //主网高可用导致差异 强制刷新apiService1
@@ -137,8 +136,8 @@ public class RetrofitManager {
         }
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         if (MyApplication.currentWalletNet != WalletNet.MAINNET
-                &&MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET
-                &&MyApplication.currentWalletNet != WalletNet.REGTESTNET) {
+                && MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET
+                && MyApplication.currentWalletNet != WalletNet.REGTESTNET) {
             try {
                 OkhttpManager.getInstance().setTrustrCertificates(context.getAssets().open("server.cer"));
             } catch (IOException e) {
@@ -227,7 +226,7 @@ public class RetrofitManager {
 
     public static ApiServer specialCreate() {
         Retrofit retrofit;
-        Retrofit.Builder build = new Retrofit.Builder().baseUrl(Constant.SERVERLIST_BASE)
+        Retrofit.Builder build = new Retrofit.Builder().baseUrl(WalletNet.SERVERLIST_BASE)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
         HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());

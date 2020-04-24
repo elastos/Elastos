@@ -36,10 +36,11 @@ public class WalletNet {
     public static final int PRVNET = 3;
 
     //中心化服务器地址
+    public static final String SERVERLIST_BASE = "http://118.89.217.101:5739/";//负载均衡服务器地址
     public static final String MAINURL = "https://unionsquare01.elastos.com.cn";//mainnet高可用
     public static final String MAINURL1 = "https://unionsquare.elastos.org";//mainnet高可用1
-    public static final String TESTURL = "https://52.81.8.194:442";
-    public static final String REGTESTURL = "http://54.223.244.60";
+    public static final String TESTURL = "https://123.207.167.100:442";
+    public static final String REGTESTURL = "http://118.89.242.158";
     public static final String PRVURL = "http://node.longrunweather.com:18080";
 
     //did resolve网址

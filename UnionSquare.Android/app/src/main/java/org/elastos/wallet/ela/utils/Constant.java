@@ -50,7 +50,7 @@ public class Constant {
     public static final int CREATEMUL = 0x2;//打开创建多签钱包页面 已经打开了的情况直接填入
     public static final int SIGN = 0x3;//打开签名页面
     public static final int TRANSFER = 0x4;//打开转账页面
-    public static final String SERVERLIST_BASE = "http://54.223.158.189:5739/";
+
 
 
     public static final String EDITCREDENTIAL = "editPersonalinfo";//保留凭证  新增或编辑did  从凭证信息进入三部分凭证
