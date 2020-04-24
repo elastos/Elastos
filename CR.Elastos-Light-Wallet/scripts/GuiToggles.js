@@ -34,6 +34,8 @@ const hideEverything = () => {
   hide('qrcode');
   hide('homeBanner');
   hide('votingBanner');
+  hide('generateMnemonic');
+  hide('generatePrivateKey');
 };
 
 const showLanding = () => {
@@ -99,6 +101,20 @@ const hideBanner = (name) => {
   hide(name+'Banner');
 };
 
+const showGenerateNewPrivateKey = () => {
+  hideEverything();
+  app.clearGlobalData();
+  app.generatePrivateKeyHex();
+  show('generatePrivateKey');
+}
+
+const showGenerateNewMnemonic = () => {
+  hideEverything();
+  app.clearGlobalData();
+  app.generateMnemonic();
+  show('generateMnemonic');
+}
+
 exports.init = init;
 exports.showLanding = showLanding;
 exports.showLoginMnemonic = showLoginMnemonic;
@@ -110,3 +126,5 @@ exports.showVoting = showVoting;
 exports.showQRCode = showQRCode;
 exports.showBanner = showBanner;
 exports.hideBanner = hideBanner;
+exports.showGenerateNewPrivateKey = showGenerateNewPrivateKey;
+exports.showGenerateNewMnemonic = showGenerateNewMnemonic;

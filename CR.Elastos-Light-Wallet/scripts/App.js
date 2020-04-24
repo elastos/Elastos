@@ -689,31 +689,33 @@ const requestListOfCandidateVotesErrorCallback = (response) => {
 const requestListOfCandidateVotesReadyCallback = (response) => {
   candidateVoteListStatus = 'Candidate Votes Received';
 
-  // mainConsole.log('STARTED Candidate Votes Callback', response);
+  mainConsole.log('STARTED Candidate Votes Callback', response);
   parsedCandidateVoteList = {};
   parsedCandidateVoteList.candidateVotes = [];
   if (response.status !== 200) {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
   } else {
-    response.result.forEach((candidateVote) => {
-      // mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
-      const header = candidateVote.Vote_Header;
-      if (header.Is_valid === 'YES') {
-        const body = candidateVote.Vote_Body;
-        body.forEach((candidateVoteElt) => {
-          const parsedCandidateVote = {};
-          if (candidateVoteElt.Active == 1) {
-            parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
-            parsedCandidateVote.nickname = candidateVoteElt.Nickname;
-            parsedCandidateVote.state = candidateVoteElt.State;
-            parsedCandidateVote.votes = candidateVoteElt.Votes;
-            parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
-            // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
-            parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
-          }
-        });
-      }
-    });
+    if(response.result) {
+      response.result.forEach((candidateVote) => {
+        // mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
+        const header = candidateVote.Vote_Header;
+        if (header.Is_valid === 'YES') {
+          const body = candidateVote.Vote_Body;
+          body.forEach((candidateVoteElt) => {
+            const parsedCandidateVote = {};
+            if (candidateVoteElt.Active == 1) {
+              parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
+              parsedCandidateVote.nickname = candidateVoteElt.Nickname;
+              parsedCandidateVote.state = candidateVoteElt.State;
+              parsedCandidateVote.votes = candidateVoteElt.Votes;
+              parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
+              // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
+              parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
+            }
+          });
+        }
+      });
+    }
     // mainConsole.log('INTERIM Candidate Votes Callback', response.result);
   }
   // mainConsole.log('SUCCESS Candidate Votes Callback');
@@ -956,12 +958,12 @@ const setBlockchainLastActionHeight = () => {
 };
 
 const copyMnemonicToClipboard = () => {
-  clipboard.writeText(generatedMnemonic);
+  appClipboard.writeText(generatedMnemonic);
   alert(`copied to clipboard:\n${generatedMnemonic}`);
 };
 
-const copyToPrivateKeyClipboard = () => {
-  clipboard.writeText(generatedPrivateKeyHex);
+const copyPrivateKeyToClipboard = () => {
+  appClipboard.writeText(generatedPrivateKeyHex);
   alert(`copied to clipboard:\n${generatedPrivateKeyHex}`);
 };
 
@@ -1222,7 +1224,31 @@ const getBannerClass = () => {
 
 const getFee = () => {
   return fee;
-}
+};
+
+const generatePrivateKeyHex = () => {
+  generatedPrivateKeyHex = crypto.randomBytes(32).toString('hex');
+};
+
+const getGeneratedPrivateKeyHex = () => {
+  return generatedPrivateKeyHex;
+};
+
+const generateMnemonic = () => {
+  generatedMnemonic = bip39.entropyToMnemonic(crypto.randomBytes(32).toString('hex'));
+};
+
+const getGeneratedMnemonic = () => {
+  return generatedMnemonic;
+};
+
+exports.generateMnemonic = generateMnemonic;
+exports.getGeneratedMnemonic = getGeneratedMnemonic;
+exports.copyMnemonicToClipboard = copyMnemonicToClipboard;
+
+exports.generatePrivateKeyHex = generatePrivateKeyHex;
+exports.getGeneratedPrivateKeyHex = getGeneratedPrivateKeyHex;
+exports.copyPrivateKeyToClipboard = copyPrivateKeyToClipboard;
 
 exports.REST_SERVICES = REST_SERVICES;
 exports.init = init;
