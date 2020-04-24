@@ -1782,8 +1782,10 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	}
 	if proposalState.Status != crstate.VoterAgreed &&
 		proposalState.Status != crstate.Finished &&
-		proposalState.Status != crstate.Aborted {
-		return errors.New("proposal status is not VoterAgreed , Finished, or Aborted")
+		proposalState.Status != crstate.Aborted &&
+		proposalState.Status != crstate.Terminated {
+		return errors.New("proposal status is not VoterAgreed , " +
+			"Finished, Aborted or Terminated")
 	}
 
 	if !bytes.Equal(proposalState.ProposalOwner, withdrawPayload.OwnerPublicKey) {
