@@ -51,7 +51,7 @@ func (c *Committee) processTransaction(tx *types.Transaction, height uint32) {
 		c.state.processDeposit(tx, height)
 
 	case types.CRCProposal:
-		c.manager.registerProposal(tx, height, c.state.history)
+		c.manager.registerProposal(tx, height, c.state.CurrentSession, c.state.history)
 
 	case types.CRCProposalReview:
 		c.manager.proposalReview(tx, height, c.state.history)

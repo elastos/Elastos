@@ -201,7 +201,8 @@ type ProposalsMap map[common.Uint256]*ProposalState
 type ProposalKeyFrame struct {
 	Proposals ProposalsMap
 	//key is did value is proposalhash set
-	ProposalHashes map[common.Uint168]ProposalHashSet
+	ProposalHashes  map[common.Uint168]ProposalHashSet
+	ProposalSession map[uint64][]common.Uint256
 }
 
 func NewProposalMap() ProposalsMap {
@@ -960,6 +961,9 @@ func (p *ProposalKeyFrame) Serialize(w io.Writer) (err error) {
 	if err = p.serializeProposalHashsMap(p.ProposalHashes, w); err != nil {
 		return
 	}
+	if err = p.serializeProposalSessionMap(p.ProposalSession, w); err != nil {
+		return
+	}
 	return
 }
 
@@ -985,34 +989,24 @@ func (p *ProposalKeyFrame) serializeProposalHashsMap(proposalHashMap map[common.
 	return
 }
 
-func (p *ProposalKeyFrame) deserializeProposalHashsMap(r io.Reader) (
-	proposalHashMap map[common.Uint168]ProposalHashSet, err error) {
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
+func (p *ProposalKeyFrame) serializeProposalSessionMap(
+	proposalSessionMap map[uint64][]common.Uint256, w io.Writer) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(proposalSessionMap))); err != nil {
 		return
 	}
-	proposalHashMap = make(map[common.Uint168]ProposalHashSet)
-	for i := uint64(0); i < count; i++ {
-
-		var did common.Uint168
-		if did.Deserialize(r); err != nil {
+	for k, v := range proposalSessionMap {
+		if err = common.WriteUint64(w, k); err != nil {
 			return
 		}
-		var lenProposalHashSet uint64
-		proposalHashSet := NewProposalHashSet()
-
-		if lenProposalHashSet, err = common.ReadVarUint(r, 0); err != nil {
-			return
+		if err := common.WriteVarUint(w,
+			uint64(len(v))); err != nil {
+			return err
 		}
-		for i := uint64(0); i < lenProposalHashSet; i++ {
-			hash := &common.Uint256{}
-			if err = hash.Deserialize(r); err != nil {
-				return
+		for _, proposalHash := range v {
+			if err := proposalHash.Serialize(w); err != nil {
+				return err
 			}
-			proposalHashSet.Add(*hash)
 		}
-
-		proposalHashMap[did] = proposalHashSet
 	}
 	return
 }
@@ -1039,6 +1033,72 @@ func (p *ProposalKeyFrame) Deserialize(r io.Reader) (err error) {
 	if p.ProposalHashes, err = p.deserializeProposalHashsMap(r); err != nil {
 		return
 	}
+	if p.ProposalSession, err = p.deserializeProposalSessionMap(r); err != nil {
+		return
+	}
+	return
+}
+
+func (p *ProposalKeyFrame) deserializeProposalHashsMap(r io.Reader) (
+	proposalHashMap map[common.Uint168]ProposalHashSet, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	proposalHashMap = make(map[common.Uint168]ProposalHashSet)
+	for i := uint64(0); i < count; i++ {
+
+		var did common.Uint168
+		if err = did.Deserialize(r); err != nil {
+			return
+		}
+		var lenProposalHashSet uint64
+		proposalHashSet := NewProposalHashSet()
+
+		if lenProposalHashSet, err = common.ReadVarUint(r, 0); err != nil {
+			return
+		}
+		for i := uint64(0); i < lenProposalHashSet; i++ {
+			hash := &common.Uint256{}
+			if err = hash.Deserialize(r); err != nil {
+				return
+			}
+			proposalHashSet.Add(*hash)
+		}
+
+		proposalHashMap[did] = proposalHashSet
+	}
+	return
+}
+
+func (p *ProposalKeyFrame) deserializeProposalSessionMap(r io.Reader) (
+	proposalSessionMap map[uint64][]common.Uint256, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	proposalSessionMap = make(map[uint64][]common.Uint256)
+	for i := uint64(0); i < count; i++ {
+		var session uint64
+		if session, err = common.ReadUint64(r); err != nil {
+			return
+		}
+
+		var lenHashes uint64
+		if lenHashes, err = common.ReadVarUint(r, 0); err != nil {
+			return
+		}
+		hashes := make([]common.Uint256, 0, lenHashes)
+		for i := uint64(0); i < lenHashes; i++ {
+			hash := &common.Uint256{}
+			if err = hash.Deserialize(r); err != nil {
+				return
+			}
+			hashes = append(hashes, *hash)
+		}
+
+		proposalSessionMap[session] = hashes
+	}
 	return
 }
 
@@ -1054,8 +1114,9 @@ func (p *ProposalKeyFrame) Snapshot() *ProposalKeyFrame {
 
 func NewProposalKeyFrame() *ProposalKeyFrame {
 	return &ProposalKeyFrame{
-		Proposals:      make(map[common.Uint256]*ProposalState),
-		ProposalHashes: make(map[common.Uint168]ProposalHashSet),
+		Proposals:       make(map[common.Uint256]*ProposalState),
+		ProposalHashes:  make(map[common.Uint168]ProposalHashSet),
+		ProposalSession: make(map[uint64][]common.Uint256),
 	}
 }
 
