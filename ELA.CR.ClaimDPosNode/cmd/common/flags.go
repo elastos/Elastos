@@ -273,6 +273,10 @@ var (
 		Usage: "defines the duration of voting period which measured by " +
 			"block height",
 	}
+	RegisterCRByDIDHeightFlag = cli.StringFlag{
+		Name:  "RegisterCRByDIDHeight",
+		Usage: "defines the height to support register CR by CID",
+	}
 )
 
 // MoveRPCFlags finds the rpc argument and moves it to the front
