@@ -961,17 +961,11 @@ func (s *server) Start() {
 // Stop gracefully shuts down the server by stopping and disconnecting all
 // peers and the main listener.
 func (s *server) Stop() error {
-	log.Info("##### server stop start")
-	log.Info("##### server routes stop start")
 	s.routes.Stop()
-	log.Info("##### server routes stop end")
-	log.Info("##### server routes IServer start")
 	err := s.IServer.Stop()
-	log.Info("##### server routes IServer end")
 
 	// Signal the remaining goroutines to quit.
 	close(s.quit)
-	log.Info("##### server stop end")
 	return err
 }
 

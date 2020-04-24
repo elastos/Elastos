@@ -64,13 +64,11 @@ func (a *Arbitrator) recover() {
 }
 
 func (a *Arbitrator) Stop() error {
-	log.Info("#### arbitrator stop start")
 	a.enableViewLoop = false
 
 	if err := a.network.Stop(); err != nil {
 		return err
 	}
-	log.Info("#### arbitrator stop end")
 
 	return nil
 }
