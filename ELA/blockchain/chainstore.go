@@ -58,15 +58,11 @@ func (c *ChainStore) CloseLeveldb() {
 }
 
 func (c *ChainStore) Close() {
-	log.Info("### chainStore close start")
 	c.persistMutex.Lock()
 	defer c.persistMutex.Unlock()
-	log.Info("### chainStore close fflDB close start")
 	if err := c.fflDB.Close(); err != nil {
 		log.Error("fflDB close failed:", err)
 	}
-	log.Info("### chainStore close fflDB close end")
-	log.Info("### chainStore close end")
 }
 
 func (c *ChainStore) IsTxHashDuplicate(txID Uint256) bool {
