@@ -17,7 +17,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -123,14 +122,6 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 	return nil
 }
 
-func getDIDByCode(code []byte) (*Uint168, error) {
-	ct1, error := contract.CreateCRDIDContractByCode(code)
-	if error != nil {
-		return nil, error
-	}
-	return ct1.ToProgramHash(), error
-}
-
 func checkDuplicateTx(block *Block) error {
 	existingSideTxs := make(map[Uint256]struct{})
 	existingProducer := make(map[string]struct{})
@@ -205,10 +196,10 @@ func checkDuplicateTx(block *Block) error {
 			}
 
 			// Check for duplicate CR in a block
-			if _, exists := existingCR[crPayload.DID]; exists {
+			if _, exists := existingCR[crPayload.CID]; exists {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
 			}
-			existingCR[crPayload.DID] = struct{}{}
+			existingCR[crPayload.CID] = struct{}{}
 		case UpdateCR:
 			crPayload, ok := txn.Payload.(*payload.CRInfo)
 			if !ok {
@@ -216,20 +207,20 @@ func checkDuplicateTx(block *Block) error {
 			}
 
 			// Check for duplicate  CR in a block
-			if _, exists := existingCR[crPayload.DID]; exists {
+			if _, exists := existingCR[crPayload.CID]; exists {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
 			}
-			existingCR[crPayload.DID] = struct{}{}
+			existingCR[crPayload.CID] = struct{}{}
 		case UnregisterCR:
 			unregisterCR, ok := txn.Payload.(*payload.UnregisterCR)
 			if !ok {
 				return errors.New("[PowCheckBlockSanity] invalid unregister CR payload")
 			}
 			// Check for duplicate  CR in a block
-			if _, exists := existingCR[unregisterCR.DID]; exists {
+			if _, exists := existingCR[unregisterCR.CID]; exists {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
 			}
-			existingCR[unregisterCR.DID] = struct{}{}
+			existingCR[unregisterCR.CID] = struct{}{}
 		}
 	}
 	return nil

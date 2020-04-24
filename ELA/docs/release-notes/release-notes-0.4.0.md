@@ -11,7 +11,7 @@ Please report bugs using the issue tracker at GitHub:
 How to Upgrade
 ==============
 
-If you are running version relese_v0.3.9 and before, you should shut it down and wait until
+If you are running version release_v0.3.9 and before, you should shut it down and wait until
  it has completely closed, then just copy over `ela` (on Linux).
 
 However, as usual, config, keystore and chaindata files are compatible.

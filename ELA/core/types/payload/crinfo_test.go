@@ -30,7 +30,7 @@ func TestCRInfo_Deserialize(t *testing.T) {
 
 func payloadEqual(crPayload1 *CRInfo, crPayload2 *CRInfo) bool {
 	if !bytes.Equal(crPayload1.Code, crPayload2.Code) ||
-		!crPayload1.DID.IsEqual(crPayload2.DID) ||
+		!crPayload1.CID.IsEqual(crPayload2.CID) ||
 		crPayload1.NickName != crPayload2.NickName ||
 		crPayload1.Url != crPayload2.Url ||
 		crPayload1.Location != crPayload2.Location ||
@@ -44,7 +44,7 @@ func payloadEqual(crPayload1 *CRInfo, crPayload2 *CRInfo) bool {
 func randomCRInfoPayload() *CRInfo {
 	return &CRInfo{
 		Code:      randomBytes(34),
-		DID:       *randomUint168(),
+		CID:       *randomUint168(),
 		NickName:  randomString(),
 		Url:       randomString(),
 		Location:  rand2.Uint64(),

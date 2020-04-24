@@ -55,7 +55,7 @@ func TestStateKeyFrame_Snapshot(t *testing.T) {
 
 func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 	if len(first.Nicknames) != len(second.Nicknames) ||
-		len(first.CodeDIDMap) != len(second.CodeDIDMap) ||
+		len(first.CodeCIDMap) != len(second.CodeCIDMap) ||
 		len(first.Votes) != len(second.Votes) {
 		return false
 	}
@@ -66,8 +66,8 @@ func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 		}
 	}
 
-	for k, v := range first.CodeDIDMap {
-		v2, ok := second.CodeDIDMap[k]
+	for k, v := range first.CodeCIDMap {
+		v2, ok := second.CodeCIDMap[k]
 		if !ok {
 			return false
 		}
@@ -160,19 +160,19 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 		candidate := randomCandidate()
 		nickname := candidate.Info().NickName
 		code := candidate.Info().Code
-		did := candidate.Info().DID
-		frame.CodeDIDMap[common.BytesToHexString(code)] = did
-		frame.PendingCandidates[did] = candidate
+		cid := candidate.Info().CID
+		frame.CodeCIDMap[common.BytesToHexString(code)] = cid
+		frame.PendingCandidates[cid] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 	}
 	if hasPending {
 		for i := 0; i < size; i++ {
 			candidate := randomCandidate()
 			code := candidate.info.Code
-			did := candidate.info.DID
+			cid := candidate.info.CID
 			nickname := candidate.info.NickName
-			frame.CodeDIDMap[common.BytesToHexString(code)] = did
-			frame.ActivityCandidates[did] = candidate
+			frame.CodeCIDMap[common.BytesToHexString(code)] = cid
+			frame.ActivityCandidates[cid] = candidate
 			frame.Nicknames[nickname] = struct{}{}
 		}
 	}
@@ -180,7 +180,7 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 
 		candidate := randomCandidate()
 
-		did := candidate.info.DID
+		cid := candidate.info.CID
 		nickname := candidate.info.NickName
 		code := candidate.info.Code
 		if i%2 == 0 {
@@ -188,8 +188,8 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 		} else {
 			candidate.state = Returned
 		}
-		frame.CodeDIDMap[common.BytesToHexString(code)] = did
-		frame.CanceledCandidates[did] = candidate
+		frame.CodeCIDMap[common.BytesToHexString(code)] = cid
+		frame.CanceledCandidates[cid] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 	}
 	for i := 0; i < size; i++ {
