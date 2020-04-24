@@ -2,7 +2,7 @@ Elastos.ELA version 0.3.7 is now available from:
 
   <https://download.elastos.org/elastos-ela/elastos-ela-v0.3.7/>
 
-This is a new minor version release, fix transaction count check error when sync block, fix rollback failed error, compatible with relese_v0.3.6 version.
+This is a new minor version release, fix transaction count check error when sync block, fix rollback failed error, compatible with release_v0.3.6 version.
 
 Please report bugs using the issue tracker at GitHub:
 
@@ -11,7 +11,7 @@ Please report bugs using the issue tracker at GitHub:
 How to Upgrade
 ==============
 
-If you are running version relese_v0.3.5 and before, you should shut it down and wait until
+If you are running version release_v0.3.5 and before, you should shut it down and wait until
  it has completely closed, then just copy over `ela` (on Linux).
 
 However, as usual, config, keystore and chaindata files are compatible.

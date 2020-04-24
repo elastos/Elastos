@@ -17,7 +17,7 @@ import (
 const UnregisterCRVersion byte = 0x00
 
 type UnregisterCR struct {
-	DID       common.Uint168
+	CID       common.Uint168
 	Signature []byte
 }
 
@@ -44,8 +44,8 @@ func (a *UnregisterCR) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *UnregisterCR) SerializeUnsigned(w io.Writer, version byte) error {
-	if err := a.DID.Serialize(w); err != nil {
-		return errors.New("[UnregisterCR], DID serialize failed")
+	if err := a.CID.Serialize(w); err != nil {
+		return errors.New("[UnregisterCR], CID serialize failed")
 	}
 	return nil
 }
@@ -64,8 +64,8 @@ func (a *UnregisterCR) Deserialize(r io.Reader, version byte) error {
 }
 
 func (a *UnregisterCR) DeserializeUnsigned(r io.Reader, version byte) error {
-	if err := a.DID.Deserialize(r); err != nil {
-		return errors.New("[UnregisterCR], DID deserialize failed")
+	if err := a.CID.Deserialize(r); err != nil {
+		return errors.New("[UnregisterCR], CID deserialize failed")
 	}
 	return nil
 }
