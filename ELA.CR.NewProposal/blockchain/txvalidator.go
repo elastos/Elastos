@@ -316,7 +316,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			candidates = []*crstate.Candidate{}
 		}
 		err := b.checkVoteOutputs(blockHeight, txn.Outputs, references,
-			getProducerPublicKeysMap(producers), getCRDIDsMap(candidates))
+			getProducerPublicKeysMap(producers), getCRCIDsMap(candidates))
 		if err != nil {
 			log.Warn("[CheckVoteOutputs]", err)
 			return elaerr.Simple(elaerr.ErrTxInvalidOutput, err)
@@ -334,10 +334,10 @@ func getProducerPublicKeysMap(producers []*state.Producer) map[string]struct{} {
 	return pds
 }
 
-func getCRDIDsMap(crs []*crstate.Candidate) map[common.Uint168]struct{} {
+func getCRCIDsMap(crs []*crstate.Candidate) map[common.Uint168]struct{} {
 	codes := make(map[common.Uint168]struct{})
 	for _, c := range crs {
-		codes[c.Info().DID] = struct{}{}
+		codes[c.Info().CID] = struct{}{}
 	}
 	return codes
 }
