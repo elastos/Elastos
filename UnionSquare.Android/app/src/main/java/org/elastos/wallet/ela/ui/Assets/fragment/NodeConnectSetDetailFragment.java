@@ -77,6 +77,7 @@ public class NodeConnectSetDetailFragment extends BaseFragment implements Commmo
 
     @Override
     protected void initView(View view) {
+        tvTitle.setText(subWallet.getChainId()+""+getString(R.string.nodeconnectsetting));
         if (subWallet.getFiled1().equals("Connected") && !TextUtils.isEmpty(subWallet.getDownloadPeer())) {
             putData(subWallet);
 

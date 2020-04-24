@@ -80,8 +80,21 @@ public class MyWallet {
     private int errCodeSubWalletInstance = 10010;
     private int errCodeImportReadonlyWallet = 10011;
 
+    private volatile static MyWallet instance = null;
 
-    public MyWallet() {
+    public static MyWallet getInstance() {
+        if (instance == null) {
+            synchronized (MyWallet.class) {
+                if (instance == null) {
+                    instance = new MyWallet();
+                }
+            }
+
+        }
+        return instance;
+    }
+
+    private MyWallet() {
 
         mRootPath = MyApplication.getAppContext().getFilesDir().getParent();
         String net = "MainNet";

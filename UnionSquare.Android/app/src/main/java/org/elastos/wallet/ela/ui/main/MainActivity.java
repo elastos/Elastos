@@ -226,7 +226,7 @@ public class MainActivity extends BaseActivity implements MainViewData, NewBaseV
         }
     }
 
-    @Override
+    /*@Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         if (getMyWallet() != null) {
             getWallet().onDestroy();
@@ -234,7 +234,7 @@ public class MainActivity extends BaseActivity implements MainViewData, NewBaseV
             MyApplication.setMyWallet(null);
         }
         super.onRestoreInstanceState(savedInstanceState);
-    }
+    }*/
 
     @Override
     public void onGetMyWallet(MyWallet myWallet) {

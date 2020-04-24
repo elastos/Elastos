@@ -181,7 +181,7 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
     public synchronized MyWallet getWallet() {
 
         if (MyApplication.getMyWallet() == null) {
-            MyApplication.setMyWallet(new MyWallet());
+            MyApplication.setMyWallet(MyWallet.getInstance());
         }
         return MyApplication.getMyWallet();
     }

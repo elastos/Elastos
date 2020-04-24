@@ -315,9 +315,8 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
         List<TransferRecordDetailEntity.TransactionsBean.OutputPayloadBean> outputPayloadBeans = transactionsBean.getOutputPayload();
         if (outputPayloadBeans != null && outputPayloadBeans.size() > 0) {
             //特殊类型 投票交易
-            llTicketnum.setVisibility(View.VISIBLE);
-            // tvTicketnum.setText(NumberiUtil.maxNumberFormat((outputPayloadBeans.get(0).getAmount() / MyWallet.RATE) + "", 12));
-            tvTicketnum.setText(NumberiUtil.maxNumberFormat(Arith.div(outputPayloadBeans.get(0).getAmount() + "", MyWallet.RATE_S), 12));
+            // llTicketnum.setVisibility(View.VISIBLE);
+            //  tvTicketnum.setText(NumberiUtil.maxNumberFormat(Arith.div(outputPayloadBeans.get(0).getAmount() + "", MyWallet.RATE_S), 12));
             transferType = getContext().getResources().getIdentifier("transfertype" + 1001, "string",
                     getContext().getPackageName());
         }
