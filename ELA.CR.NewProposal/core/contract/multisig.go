@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -15,6 +15,14 @@ import (
 )
 
 func CreateMultiSigRedeemScript(m int, pubkeys []*crypto.PublicKey) ([]byte, error) {
+	if len(pubkeys) == 0 {
+		return nil, errors.New("public keys is nil")
+	}
+	for _, pk := range pubkeys {
+		if nil == pk {
+			return nil, errors.New("public keys has nil public key")
+		}
+	}
 	if !(m >= 1 && m <= len(pubkeys) && len(pubkeys) <= 24) {
 		return nil, nil //TODO: add panic
 	}

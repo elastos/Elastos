@@ -16,22 +16,18 @@ This project is the source code that can build a full node of ELA blockchain(mai
     - [Table of Contents](#table-of-contents)
 - [Pre-requisites on Mac](#pre-requisites-on-mac)
     - [1. Check OS version](#1-check-os-version)
-    - [2. Install Go distribution 1.9](#2-install-go-distribution-19)
-    - [3. Install Glide](#3-install-glide)
+    - [2. Install Go distribution 1.13](#2-install-go-distribution-113)
+    - [3. Check Go version](#3-check-go-version)
 - [Pre-requisites on Ubuntu](#pre-requisites-on-ubuntu)
-    - [1. Check OS version](#1-check-os-version-1)
+    - [1. Check Ubuntu version](#1-check-ubuntu-version)
     - [2. Install git](#2-install-git)
-    - [3. Install Go distribution 1.9](#3-install-go-distribution-19)
-    - [4. Install Glide](#4-install-glide)
+    - [3. Install Go distribution 1.13](#3-install-go-distribution-113)
 - [Configure the node](#configure-the-node)
 - [Build the node](#build-the-node)
-    - [1. Setup basic workspace](#1-setup-basic-workspace)
-    - [2. Set correct environment variables](#2-set-correct-environment-variables)
-    - [3. Check Go version and glide version](#3-check-go-version-and-glide-version)
-    - [4. Clone source code to $GOPATH/src/github/elastos folder](#4-clone-source-code-to-gopathsrcgithubelastos-folder)
-    - [5. Install dependencies using Glide](#5-install-dependencies-using-glide)
-    - [6. Make](#6-make)
-    - [7. Run the node on Mac](#7-run-the-node-on-mac)
+    - [1. Check Go version](#1-check-go-version)
+    - [2. Clone source code](#2-clone-source-code)
+    - [3. Make](#3-make)
+    - [4. Run the node on Ubuntu and Mac](#4-run-the-node-on-ubuntu-and-mac)
 - [Build and Run using docker](#build-and-run-using-docker)
     - [1. Build the docker node](#1-build-the-docker-node)
     - [2. Run the node in the docker container](#2-run-the-node-in-the-docker-container)
@@ -54,27 +50,27 @@ $ uname -srm
 Darwin 16.7.0 x86_64
 ```
 
-#### 2. Install Go distribution 1.9
+#### 2. Install Go distribution 1.13
 
-Use Homebrew to install Golang 1.9.
+Use Homebrew to install Golang 1.13.
 
 ```shell
-$ brew install go@1.9
+$ brew install go@1.13
+$ go version
+
 ```
 
-> If you install older version, such as v1.8, you may get missing math/bits package error when build.
-
-#### 3. Install Glide
-
-Glide is a package manager for Golang. We use Glide to install dependent packages.
+#### 3. Check Go version
+Check the golang version. Make sure they are the following version number or above.
 
 ```shell
-$ brew install --ignore-dependencies glide
+$ go version
+go version go1.13 darwin/amd64
 ```
 
 ## Pre-requisites on Ubuntu
 
-#### 1. Check OS version
+#### 1. Check Ubuntu version
 
 Make sure your ubuntu version is 16.04+
 
@@ -89,24 +85,16 @@ Ubuntu 16.04.3 LTS \n \l
 $ sudo apt-get install -y git
 ```
 
-#### 3. Install Go distribution 1.9
+#### 3. Install Go distribution 1.13
 
 ```shell
-$ sudo apt-get install -y software-properties-common
-$ sudo add-apt-repository -y ppa:gophers/archive
-$ sudo apt update
-$ sudo apt-get install -y golang-1.9-go
-```
-
-> If you install older version, such as v1.8, you may get missing math/bits package error when build.
-
-#### 4. Install Glide
-
-Glide is a package manager for Golang. We use Glide to install dependent packages.
-
-```shell
-$ cd ~/dev
-$ curl https://glide.sh/get | sh
+$ curl -O https://storage.googleapis.com/golang/go1.13.5.linux-amd64.tar.gz
+$ tar -xvf go1.13.5.linux-amd64.tar.gz
+$ sudo chown -R root:root ./go
+$ sudo mv go /usr/local
+$ export GOPATH=$HOME/go
+$ export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
+$ source ~/.profile
 ```
 
 ## Configure the node
@@ -129,64 +117,36 @@ Make sure to modify the parameters to what your own specification.
 
 ## Build the node
 
-#### 1. Setup basic workspace
-In this instruction we use ~/dev/src/github.com/elastos as our working directory. If you clone the source code to a different directory, please make sure you change other environment variables accordingly (not recommended). 
+#### 1. Check Go version
 
-```shell
-$ mkdir -p ~/dev/bin
-$ mkdir -p ~/dev/src/github.com/elastos/
-```
-
-#### 2. Set correct environment variables
-
-```shell
-export GOROOT=/usr/local/opt/go@1.9/libexec
-export GOPATH=$HOME/dev
-export GOBIN=$GOPATH/bin
-export PATH=$GOROOT/bin:$PATH
-export PATH=$GOBIN:$PATH
-```
-
-#### 3. Check Go version and glide version
-
-Check the golang and glider version. Make sure they are the following version number or above.
+Check the golang version. Make sure they are the following version number or above.
 
 ```shell
 $ go version
-go version go1.9.2 darwin/amd64
-
-$ glide --version
-glide version 0.13.1
+go version go1.13.5 linux/amd64
 ```
 
 If you cannot see the version number, there must be something wrong when install.
 
-#### 4. Clone source code to $GOPATH/src/github/elastos folder
-Make sure you are in the folder of $GOPATH/src/github.com/elastos
+#### 2. Clone source code
+Make sure you are in the folder
 ```shell
 $ git clone https://github.com/elastos/Elastos.ELA.git
 ```
 
-If clone works successfully, you should see folder structure like $GOPATH/src/github.com/elastos/Elastos.ELA/Makefile
+If clone works successfully, you should see folder structure like Elastos.ELA/Makefile
 
-#### 5. Install dependencies using Glide
-
-```shell
-$ cd $GOPATH/src/github.com/elastos/Elastos.ELA
-$ glide update && glide install
-``` 
-
-#### 6. Make
+#### 3. Make
 
 Build the node.
 ```shell
-$ cd $GOPATH/src/github.com/elastos/Elastos.ELA
+$ cd Elastos.ELA
 $ make
 ```
 
 If you did not see any error message, congratulations, you have made the ELA full node.
 
-#### 7. Run the node on Mac
+#### 4. Run the node on Ubuntu and Mac
 
 Run the node.
 ```shell

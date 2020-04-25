@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package state
 
@@ -245,15 +245,12 @@ type State struct {
 	getArbiters              func() [][]byte
 	getProducerDepositAmount func(programHash common.Uint168) (
 		common.Fixed64, error)
+	getTxReference func(tx *types.Transaction) (
+		map[*types.Input]types.Output, error)
 	chainParams *config.Params
 
 	mtx     sync.RWMutex
 	history *utils.History
-
-	votesCacheKeys map[uint32][]string
-	votesCache     map[string]*types.Output
-
-	cursor int
 }
 
 // getProducerKey returns the producer's owner public key string, whether the
@@ -464,6 +461,7 @@ func (s *State) GetIllegalProducers() []*Producer {
 	return producers
 }
 
+// GetIllegalProducers returns all inactive producers.
 func (s *State) GetInactiveProducers() []*Producer {
 	s.mtx.RLock()
 	producers := make([]*Producer, 0, len(s.InactiveProducers))
@@ -551,9 +549,14 @@ func (s *State) IsAbleToRecoverFromUnderstaffedState() bool {
 }
 
 // LeaveEmergency will reset EmergencyInactiveArbiters variable
-func (s *State) LeaveEmergency() {
+func (s *State) LeaveEmergency(history *utils.History, height uint32) {
 	s.mtx.Lock()
-	s.EmergencyInactiveArbiters = map[string]struct{}{}
+	oriArbiters := s.EmergencyInactiveArbiters
+	history.Append(height, func() {
+		s.EmergencyInactiveArbiters = map[string]struct{}{}
+	}, func() {
+		s.EmergencyInactiveArbiters = oriArbiters
+	})
 	s.mtx.Unlock()
 }
 
@@ -650,10 +653,6 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 		if ok {
 			return true
 		}
-		_, ok = s.votesCache[input.ReferKey()]
-		if ok {
-			return true
-		}
 	}
 
 	return false
@@ -688,18 +687,6 @@ func (s *State) ProcessVoteStatisticsBlock(block *types.Block) {
 // packed into a block.  Then loop through the transactions to update producers
 // state and votes according to transactions content.
 func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
-
-	// Remove cached votes
-	if len(s.votesCacheKeys) >= CacheVotesSize {
-		for k, v := range s.votesCacheKeys {
-			if k <= height-CacheVotesSize {
-				for _, referKey := range v {
-					delete(s.votesCache, referKey)
-				}
-				delete(s.votesCacheKeys, k)
-			}
-		}
-	}
 
 	for _, tx := range txs {
 		s.processTransaction(tx, height)
@@ -752,7 +739,6 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 				activateProducerFromPending(key, producer)
 			}
 		}
-
 	}
 	if len(s.InactiveProducers) > 0 {
 		for key, producer := range s.InactiveProducers {
@@ -827,11 +813,12 @@ func (s *State) registerProducer(tx *types.Transaction, height uint32) {
 		OwnerPublicKey)
 
 	amount := common.Fixed64(0)
+	depositOutputs := make(map[string]common.Fixed64)
 	for i, output := range tx.Outputs {
 		if output.ProgramHash.IsEqual(*programHash) {
 			amount += output.Value
 			op := types.NewOutPoint(tx.Hash(), uint16(i))
-			s.DepositOutputs[op.ReferKey()] = output
+			depositOutputs[op.ReferKey()] = output.Value
 		}
 	}
 
@@ -852,11 +839,17 @@ func (s *State) registerProducer(tx *types.Transaction, height uint32) {
 		s.NodeOwnerKeys[nodeKey] = ownerKey
 		s.PendingProducers[ownerKey] = &producer
 		s.ProducerDepositMap[*programHash] = struct{}{}
+		for k, v := range depositOutputs {
+			s.DepositOutputs[k] = v
+		}
 	}, func() {
 		delete(s.Nicknames, nickname)
 		delete(s.NodeOwnerKeys, nodeKey)
 		delete(s.PendingProducers, ownerKey)
 		delete(s.ProducerDepositMap, *programHash)
+		for k := range depositOutputs {
+			delete(s.DepositOutputs, k)
+		}
 	})
 }
 
@@ -928,7 +921,11 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 			p, _ := output.Payload.(*outputpayload.VoteOutput)
 			if p.Version == outputpayload.VoteProducerVersion {
 				op := types.NewOutPoint(tx.Hash(), uint16(i))
-				s.Votes[op.ReferKey()] = output
+				s.history.Append(height, func() {
+					s.Votes[op.ReferKey()] = struct{}{}
+				}, func() {
+					delete(s.Votes, op.ReferKey())
+				})
 				s.processVoteOutput(output, height)
 			} else {
 				var exist bool
@@ -940,7 +937,11 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 				}
 				if exist {
 					op := types.NewOutPoint(tx.Hash(), uint16(i))
-					s.Votes[op.ReferKey()] = output
+					s.history.Append(height, func() {
+						s.Votes[op.ReferKey()] = struct{}{}
+					}, func() {
+						delete(s.Votes, op.ReferKey())
+					})
 					s.processVoteOutput(output, height)
 				}
 			}
@@ -990,7 +991,7 @@ func (s *State) processDeposit(tx *types.Transaction, height uint32) {
 			contract.PrefixDeposit {
 			if s.addProducerAssert(output, height) {
 				op := types.NewOutPoint(tx.Hash(), uint16(i))
-				s.DepositOutputs[op.ReferKey()] = output
+				s.DepositOutputs[op.ReferKey()] = output.Value
 			}
 		}
 	}
@@ -1043,25 +1044,28 @@ func (s *State) addProducerAssert(output *types.Output, height uint32) bool {
 
 // processCancelVotes takes a transaction output with vote payload.
 func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
+	var exist bool
 	for _, input := range tx.Inputs {
 		referKey := input.ReferKey()
-		output, ok := s.Votes[referKey]
-		if ok {
-			if output == nil {
-				output, ok = s.votesCache[referKey]
-				if !ok {
-					log.Errorf("invalid votes output")
-					return
-				}
-			}
-			s.processVoteCancel(output, height)
-			if _, exist := s.votesCacheKeys[height]; !exist {
-				s.votesCacheKeys[height] = make([]string, 0)
-			}
-			s.votesCacheKeys[height] = append(s.votesCacheKeys[height], referKey)
-			s.votesCache[referKey] = output
+		if _, ok := s.Votes[referKey]; ok {
+			exist = true
+		}
+	}
+	if !exist {
+		return
+	}
 
-			s.Votes[referKey] = nil
+	references, err := s.getTxReference(tx)
+	if err != nil {
+		log.Errorf("get tx reference failed, tx hash:%s", tx.Hash())
+		return
+	}
+	for _, input := range tx.Inputs {
+		referKey := input.ReferKey()
+		_, ok := s.Votes[referKey]
+		if ok {
+			out := references[input]
+			s.processVoteCancel(&out, height)
 		}
 	}
 }
@@ -1147,7 +1151,7 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 	var inputValue common.Fixed64
 	for _, input := range tx.Inputs {
-		inputValue += s.DepositOutputs[input.ReferKey()].Value
+		inputValue += s.DepositOutputs[input.ReferKey()]
 	}
 
 	returnAction := func(producer *Producer) {
@@ -1181,14 +1185,14 @@ func (s *State) updateVersion(tx *types.Transaction, height uint32) {
 		return
 	}
 
-	start := p.StartHeight
-	end := p.EndHeight
+	oriVersionStartHeight := s.VersionStartHeight
+	oriVersionEndHeight := s.VersionEndHeight
 	s.history.Append(height, func() {
-		s.VersionStartHeight = start
-		s.VersionEndHeight = end
+		s.VersionStartHeight = p.StartHeight
+		s.VersionEndHeight = p.EndHeight
 	}, func() {
-		s.VersionStartHeight = 0
-		s.VersionEndHeight = 0
+		s.VersionStartHeight = oriVersionStartHeight
+		s.VersionEndHeight = oriVersionEndHeight
 	})
 }
 
@@ -1479,15 +1483,12 @@ func (s *State) GetHistory(height uint32) (*StateKeyFrame, error) {
 
 // NewState returns a new State instance.
 func NewState(chainParams *config.Params, getArbiters func() [][]byte,
-	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
-		error)) *State {
+	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error)) *State {
 	return &State{
 		chainParams:              chainParams,
 		getArbiters:              getArbiters,
 		getProducerDepositAmount: getProducerDepositAmount,
 		history:                  utils.NewHistory(maxHistoryCapacity),
 		StateKeyFrame:            NewStateKeyFrame(),
-		votesCacheKeys:           make(map[uint32][]string),
-		votesCache:               make(map[string]*types.Output),
 	}
 }

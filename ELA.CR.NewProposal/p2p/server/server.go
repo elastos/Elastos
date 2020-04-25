@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package server
 
@@ -18,6 +18,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA/p2p/connmgr"
@@ -183,14 +184,19 @@ func (sp *serverPeer) pushAddrMsg(addresses []*p2p.NetAddress) {
 
 // AssociateConnection associates the given conn to the peer.   Calling this
 // function when the peer is already connected will have no effect.
-func (sp *serverPeer) AssociateConnection(conn net.Conn) {
+func (sp *serverPeer) AssociateConnection(conn net.Conn) bool {
 	// Notify the new peer before starting the protocol negotiate, so the upper
 	// layer can receive version message and deal with it.
+	isSuceess := false
 	if sp.server.cfg.OnNewPeer != nil {
-		sp.server.cfg.OnNewPeer(sp)
+		isSuceess = sp.server.cfg.OnNewPeer(sp)
 	}
-
-	sp.Peer.AssociateConnection(conn)
+	if isSuceess {
+		sp.Peer.AssociateConnection(conn)
+	} else {
+		conn.Close()
+	}
+	return isSuceess
 }
 
 // OnVersion is invoked when a peer receives a version message and is
@@ -275,12 +281,12 @@ func (sp *serverPeer) OnAddr(_ *peer.Peer, msg *msg.Addr) {
 		return
 	}
 
-	for _, na := range msg.AddrList {
-		// Don't add more address if we're disconnecting.
-		if !sp.Connected() {
-			return
-		}
+	// Don't add more address if we're disconnecting.
+	if !sp.Connected() {
+		return
+	}
 
+	for _, na := range msg.AddrList {
 		// Set the timestamp to 5 days ago if it's more than 24 hours
 		// in the future so this address is one of the first to be
 		// removed when space is needed.
@@ -357,6 +363,47 @@ func (sp *serverPeer) AddBanScore(persistent, transient uint32, reason string) {
 // interface implementation.
 func (sp *serverPeer) BanScore() uint32 {
 	return sp.banScore.Int()
+}
+
+// checkAddr check and remove invalid address in address manager.
+func (s *server) checkAddr(addr string) error {
+	makeEmptyMessage := func(cmd string) (p2p.Message, error) {
+		var message p2p.Message
+		switch cmd {
+		case p2p.CmdVersion:
+			message = &msg.Version{}
+
+		default:
+			return nil, errors.New("invalid message")
+		}
+		return message, nil
+	}
+
+	conn, err := net.DialTimeout("tcp", addr, time.Second)
+	if err != nil {
+		return err
+	}
+	versionMsg := msg.NewVersion(s.cfg.ProtocolVersion, s.cfg.DefaultPort,
+		s.cfg.Services, uint64(rand.Int63()), s.cfg.BestHeight(), s.cfg.DisableRelayTx)
+
+	err = p2p.WriteMessage(
+		conn, s.cfg.MagicNumber, versionMsg, time.Second*2,
+		func(m p2p.Message) (*types.DposBlock, bool) {
+			return nil, false
+		})
+	if err != nil {
+		return err
+	}
+	remoteMsg, err := p2p.ReadMessage(
+		conn, s.cfg.MagicNumber, time.Second*2, makeEmptyMessage)
+	if err != nil {
+		return err
+	}
+	_, ok := remoteMsg.(*msg.Version)
+	if !ok {
+		return errors.New("invalid message")
+	}
+	return nil
 }
 
 // handlePeerMsg deals with adding/removing and ban peer message.
@@ -777,8 +824,11 @@ func (s *server) inboundPeerConnected(conn net.Conn) {
 	sp := newServerPeer(s, false)
 	sp.isWhitelisted = s.cfg.inWhitelist(conn.RemoteAddr())
 	sp.Peer = peer.NewInboundPeer(newPeerConfig(sp))
-	sp.AssociateConnection(conn)
-	go s.peerDoneHandler(sp)
+	sp.Peer.SetNA(conn.RemoteAddr())
+	sp.Peer.SetAddr(conn.RemoteAddr().String())
+	if sp.AssociateConnection(conn) {
+		go s.peerDoneHandler(sp)
+	}
 }
 
 // outboundPeerConnected is invoked by the connection manager when a new
@@ -958,6 +1008,7 @@ func (s *server) Stop() error {
 
 	// Signal the remaining goroutines to quit.
 	close(s.quit)
+	s.WaitForShutdown()
 	return nil
 }
 
@@ -1250,6 +1301,7 @@ func newServer(origCfg *Config) (*server, error) {
 		quit:        make(chan struct{}),
 		nat:         nat,
 	}
+	s.addrManager.SetCheckAddr(s.checkAddr)
 
 	// Create the DNS seeds provider.
 	seeds := newSeed(&cfg, amgr, s.OutboundGroupCount)

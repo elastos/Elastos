@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -138,6 +138,7 @@ func TestManager_SaveAndRestore(t *testing.T) {
 
 	manager := NewManager(&Config{
 		EnableHistory: false,
+		NeedSave:      true,
 	})
 	manager.Register(pt)
 
@@ -215,6 +216,7 @@ func TestManager_GetCheckpoint_EnableHistory(t *testing.T) {
 	manager := NewManager(&Config{
 		EnableHistory:      true,
 		HistoryStartHeight: currentHeight,
+		NeedSave:           true,
 	})
 	manager.Register(pt)
 

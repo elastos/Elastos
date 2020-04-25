@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package state
 
@@ -34,8 +34,6 @@ func candidateEqual(first *Candidate, second *Candidate) bool {
 		first.state == second.state && first.votes == second.votes &&
 		first.registerHeight == second.registerHeight &&
 		first.cancelHeight == second.cancelHeight &&
-		first.depositAmount == second.depositAmount &&
-		first.penalty == second.penalty &&
 		first.depositHash.IsEqual(second.depositHash)
 }
 
@@ -55,6 +53,7 @@ func randomCRInfo() *payload.CRInfo {
 	return &payload.CRInfo{
 		Code:     code,
 		CID:      *getCID(code),
+		DID:      *getDID(code),
 		NickName: randomString(),
 		Url:      randomString(),
 		Location: rand2.Uint64(),
@@ -68,7 +67,6 @@ func randomCandidate() *Candidate {
 		votes:          common.Fixed64(rand2.Int63()),
 		registerHeight: rand2.Uint32(),
 		cancelHeight:   rand2.Uint32(),
-		depositAmount:  common.Fixed64(rand2.Int63()),
 		depositHash:    *randomUint168(),
 	}
 }

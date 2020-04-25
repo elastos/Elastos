@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -15,6 +15,9 @@ import (
 )
 
 func CreateDepositContractByPubKey(pubkey *crypto.PublicKey) (*Contract, error) {
+	if nil == pubkey {
+		return nil, errors.New("public key is nil")
+	}
 	temp, err := pubkey.EncodePoint(true)
 	if err != nil {
 		return nil, errors.New("[Contract],CreateDepositContractByPubKey failed.")

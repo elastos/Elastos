@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -167,7 +167,7 @@ func (s *SidechainIllegalData) Hash() common.Uint256 {
 	if s.hash == nil {
 		buf := new(bytes.Buffer)
 		s.SerializeUnsigned(buf, SidechainIllegalDataVersion)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		s.hash = &hash
 	}
 	return *s.hash
