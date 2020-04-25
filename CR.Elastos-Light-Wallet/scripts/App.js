@@ -30,8 +30,6 @@ const MAX_POLL_DATA_TYPE_IX = 5;
 
 const PRIVATE_KEY_LENGTH = 64;
 
-const DEFAULT_FEE_SATS = '5000';
-
 const EXPLORER = 'https://blockchain.elastos.org';
 
 const RSS_FEED_URL = 'https://news.elastos.org/feed/';
@@ -125,6 +123,14 @@ let blockchainLastActionHeight = 0;
 let parsedRssFeedStatus = 'No Rss Feed Requested Yet';
 
 const parsedRssFeed = [];
+
+let feeStatus = 'No Fee Requested Yet';
+
+let fee = '';
+
+let feeAccountStatus = 'No Fee Account Requested Yet';
+
+let feeAccount = '';
 
 let bannerStatus = '';
 
@@ -300,6 +306,8 @@ const pollForData = () => {
         requestListOfProducers();
         requestListOfCandidateVotes();
         requestRssFeed();
+        requestFee();
+        requestFeeAccount();
         pollDataTypeIx++;
         setPollForAllInfoTimer();
         break;
@@ -494,9 +502,9 @@ const clearSendData = () => {
   // mainConsole.log('STARTED clearSendData');
   GuiUtils.setValue('sendAmount', '');
   GuiUtils.setValue('sendToAddress', '');
-  GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
+  GuiUtils.setValue('feeAmount', fee);
   sendAmount = '';
-  feeAmountSats = DEFAULT_FEE_SATS;
+  feeAmountSats = fee;
   feeAmountEla = '';
   sendToAddressStatuses.length = 0;
   sendToAddressLinks.length = 0;
@@ -542,7 +550,7 @@ const sendAmountToAddress = () => {
   let encodedTx;
 
   if (useLedgerFlag) {
-    const tx = TxFactory.createUnsignedSendToTx(unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats);
+    const tx = TxFactory.createUnsignedSendToTx(unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats, feeAccount);
     const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
     const sendAmountToAddressLedgerCallback = (message) => {
       if (LOG_LEDGER_POLLING) {
@@ -562,7 +570,7 @@ const sendAmountToAddress = () => {
   } else {
     const privateKeyElt = document.getElementById('privateKey');
     const privateKey = privateKeyElt.value;
-    const encodedTx = TxFactory.createSignedSendToTx(privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmountSats);
+    const encodedTx = TxFactory.createSignedSendToTx(privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmountSats, feeAccount);
 
     if (encodedTx == undefined) {
       return;
@@ -576,9 +584,8 @@ const sendAmountToAddress = () => {
 
 // https://walletservice.readthedocs.io/en/latest/api_guide.html#post--api-1-sendRawTx
 const sendAmountToAddressCallback = (encodedTx) => {
-  const txUrl = `${getRestService()}/api/v1/sendRawTx`;
-
-  const jsonString = `{"data": "${encodedTx}"}`;
+  const txUrl = `${getRestService()}/api/v1/transaction`;
+  const jsonString = `{"method": "sendrawtransaction", "data": "${encodedTx}"}`;
 
   mainConsole.log('sendAmountToAddress.txUrl ' + txUrl);
   mainConsole.log('sendAmountToAddress.encodedTx ' + JSON.stringify(encodedTx));
@@ -682,31 +689,33 @@ const requestListOfCandidateVotesErrorCallback = (response) => {
 const requestListOfCandidateVotesReadyCallback = (response) => {
   candidateVoteListStatus = 'Candidate Votes Received';
 
-  // mainConsole.log('STARTED Candidate Votes Callback', response);
+  mainConsole.log('STARTED Candidate Votes Callback', response);
   parsedCandidateVoteList = {};
   parsedCandidateVoteList.candidateVotes = [];
   if (response.status !== 200) {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
   } else {
-    response.result.forEach((candidateVote) => {
-      // mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
-      const header = candidateVote.Vote_Header;
-      if (header.Is_valid === 'YES') {
-        const body = candidateVote.Vote_Body;
-        body.forEach((candidateVoteElt) => {
-          const parsedCandidateVote = {};
-          if (candidateVoteElt.Active == 1) {
-            parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
-            parsedCandidateVote.nickname = candidateVoteElt.Nickname;
-            parsedCandidateVote.state = candidateVoteElt.State;
-            parsedCandidateVote.votes = candidateVoteElt.Votes;
-            parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
-            // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
-            parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
-          }
-        });
-      }
-    });
+    if(response.result) {
+      response.result.forEach((candidateVote) => {
+        // mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
+        const header = candidateVote.Vote_Header;
+        if (header.Is_valid === 'YES') {
+          const body = candidateVote.Vote_Body;
+          body.forEach((candidateVoteElt) => {
+            const parsedCandidateVote = {};
+            if (candidateVoteElt.Active == 1) {
+              parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
+              parsedCandidateVote.nickname = candidateVoteElt.Nickname;
+              parsedCandidateVote.state = candidateVoteElt.State;
+              parsedCandidateVote.votes = candidateVoteElt.Votes;
+              parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
+              // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
+              parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
+            }
+          });
+        }
+      });
+    }
     // mainConsole.log('INTERIM Candidate Votes Callback', response.result);
   }
   // mainConsole.log('SUCCESS Candidate Votes Callback');
@@ -949,12 +958,12 @@ const setBlockchainLastActionHeight = () => {
 };
 
 const copyMnemonicToClipboard = () => {
-  clipboard.writeText(generatedMnemonic);
+  appClipboard.writeText(generatedMnemonic);
   alert(`copied to clipboard:\n${generatedMnemonic}`);
 };
 
-const copyToPrivateKeyClipboard = () => {
-  clipboard.writeText(generatedPrivateKeyHex);
+const copyPrivateKeyToClipboard = () => {
+  appClipboard.writeText(generatedPrivateKeyHex);
   alert(`copied to clipboard:\n${generatedPrivateKeyHex}`);
 };
 
@@ -962,7 +971,7 @@ const clearGlobalData = () => {
   // mainConsole.log('STARTED clearGlobalData');
   GuiUtils.setValue('privateKey', '');
   GuiUtils.setValue('mnemonic', '');
-  GuiUtils.setValue('feeAmount', DEFAULT_FEE_SATS);
+  GuiUtils.setValue('feeAmount', fee);
   GuiUtils.setValue('nodeUrl', '');
 
   useLedgerFlag = false;
@@ -990,6 +999,11 @@ const clearGlobalData = () => {
 
   parsedRssFeed.length = 0;
   parsedRssFeedStatus = 'No Rss Feed Requested Yet';
+
+  feeStatus = 'No Fee Requested Yet';
+  fee = '';
+  feeAccountStatus = 'No Fee Account Requested Yet';
+  feeAccount = '';
 
   bannerStatus = '';
   bannerClass = '';
@@ -1154,6 +1168,48 @@ const getRssFeedReadyCallback = (response) => {
   renderApp();
 };
 
+const requestFee = async () => {
+  const feeUrl = `${getRestService()}/api/v1/fee`;
+  feeStatus = 'Fee Requested';
+  getJson(feeUrl, getFeeReadyCallback, getFeeErrorCallback);
+};
+
+const getFeeErrorCallback = (error) => {
+  mainConsole.log('getFeeErrorCallback ', error);
+  feeStatus = `Rss Feed Error ${error.message}`;
+  fee = '';
+  renderApp();
+};
+
+const getFeeReadyCallback = (response) => {
+  feeStatus = 'Fee Received';
+  fee = response.result.toString();
+  mainConsole.log('getFeeReadyCallback ', response, fee);
+  renderApp();
+};
+
+
+const requestFeeAccount = async () => {
+  const feeAccountUrl = `${getRestService()}/api/v1/node/reward/address`;
+  feeAccountStatus = 'Fee Account Requested';
+  mainConsole.log('requestFeeAccount ', feeAccountStatus);
+  getJson(feeAccountUrl, getFeeAccountReadyCallback, getFeeAccountErrorCallback);
+};
+
+const getFeeAccountErrorCallback = (error) => {
+  mainConsole.log('getFeeErrorCallback ', error);
+  feeAccountStatus = `Rss Account Feed Error ${error.message}`;
+  feeAccount = '';
+  renderApp();
+};
+
+const getFeeAccountReadyCallback = (response) => {
+  feeAccountStatus = 'Fee Account Received';
+  feeAccount = response.result;
+  mainConsole.log('getFeeAccountReadyCallback ', response, feeAccount);
+  renderApp();
+};
+
 const getParsedRssFeed = () => {
   return parsedRssFeed;
 };
@@ -1166,8 +1222,34 @@ const getBannerClass = () => {
   return bannerClass;
 };
 
+const getFee = () => {
+  return fee;
+};
 
-exports.DEFAULT_FEE_SATS = DEFAULT_FEE_SATS;
+const generatePrivateKeyHex = () => {
+  generatedPrivateKeyHex = crypto.randomBytes(32).toString('hex');
+};
+
+const getGeneratedPrivateKeyHex = () => {
+  return generatedPrivateKeyHex;
+};
+
+const generateMnemonic = () => {
+  generatedMnemonic = bip39.entropyToMnemonic(crypto.randomBytes(32).toString('hex'));
+};
+
+const getGeneratedMnemonic = () => {
+  return generatedMnemonic;
+};
+
+exports.generateMnemonic = generateMnemonic;
+exports.getGeneratedMnemonic = getGeneratedMnemonic;
+exports.copyMnemonicToClipboard = copyMnemonicToClipboard;
+
+exports.generatePrivateKeyHex = generatePrivateKeyHex;
+exports.getGeneratedPrivateKeyHex = getGeneratedPrivateKeyHex;
+exports.copyPrivateKeyToClipboard = copyPrivateKeyToClipboard;
+
 exports.REST_SERVICES = REST_SERVICES;
 exports.init = init;
 exports.log = mainConsole.log;
@@ -1220,3 +1302,4 @@ exports.getAddressOrBlank = getAddressOrBlank;
 exports.getParsedRssFeed = getParsedRssFeed;
 exports.getBannerStatus = getBannerStatus;
 exports.getBannerClass = getBannerClass;
+exports.getFee = getFee;

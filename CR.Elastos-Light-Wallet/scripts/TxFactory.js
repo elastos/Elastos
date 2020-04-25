@@ -11,7 +11,7 @@ const BigNumber = require('bignumber.js');
 const ZERO = BigNumber(0, 10);
 /* eslint-enable */
 
-const createSignedSendToTx = (privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmountSats) => {
+const createSignedSendToTx = (privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmountSats, feeAccount) => {
   if (Number.isNaN(sendAmount)) {
     throw new Error(`sendAmount ${sendAmount} is not a number`);
   }
@@ -19,7 +19,7 @@ const createSignedSendToTx = (privateKey, unspentTransactionOutputs, sendToAddre
     throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
   }
   const publicKey = KeyTranscoder.getPublic(privateKey);
-  const tx = createUnsignedSendToTx(unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats);
+  const tx = createUnsignedSendToTx(unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats, feeAccount);
   const signature = TxSigner.getSignature(tx, privateKey);
   const encodedSignedTx = TxSigner.addSignatureToTx(tx, publicKey, signature);
 
@@ -29,7 +29,7 @@ const createSignedSendToTx = (privateKey, unspentTransactionOutputs, sendToAddre
   return encodedSignedTx;
 };
 
-const createUnsignedSendToTx = (unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats) => {
+const createUnsignedSendToTx = (unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats, feeAccount) => {
   if (unspentTransactionOutputs == undefined) {
     throw new Error(`unspentTransactionOutputs is undefined`);
   }
@@ -45,13 +45,34 @@ const createUnsignedSendToTx = (unspentTransactionOutputs, sendToAddress, sendAm
   if (feeAmountSats == undefined) {
     throw new Error(`feeAmount is undefined`);
   }
+  if (feeAccount == undefined) {
+    throw new Error(`feeAccount is undefined`);
+  }
   /* eslint-disable */
   const sendAmountSats = BigNumber(sendAmount, 10).times(Asset.satoshis);
   /* eslint-enable */
-  return createUnsignedSendToTxSats(unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats);
+  return createUnsignedSendToTxSats(unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats, feeAccount);
 };
 
-const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats) => {
+const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountStr, feeAccount) => {
+  if (unspentTransactionOutputs == undefined) {
+    throw new Error(`unspentTransactionOutputs is undefined`);
+  }
+  if (sendToAddress == undefined) {
+    throw new Error(`sendToAddress is undefined`);
+  }
+  if (sendAmountSats == undefined) {
+    throw new Error(`sendAmount is undefined`);
+  }
+  if (publicKey == undefined) {
+    throw new Error(`publicKey is undefined`);
+  }
+  if (feeAmountStr == undefined) {
+    throw new Error(`feeAmountStr is undefined`);
+  }
+  if (feeAccount == undefined) {
+    throw new Error(`feeAccount is undefined`);
+  }
   // console.log('createUnsignedSendToTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
   // console.log('createUnsignedSendToTx.sendToAddress ' + JSON.stringify(sendToAddress));
   // console.log('createUnsignedSendToTx.sendAmount ' + JSON.stringify(sendAmount));
@@ -77,14 +98,15 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
   }
 
   /* eslint-disable */
-  const feeSats = BigNumber(feeAmountSats, 10);
+  const feeAmountSats = BigNumber(feeAmountStr, 10);
+  const feeSats = BigNumber(100, 10);
   /* eslint-enable */
 
   // console.log(`createUnsignedSendToTx.inputValueSats[${sendAmountSats}]`);
 
-  const sendAmountAndFeeSats = sendAmountSats.plus(feeSats);
+  const sendAmountAndFeeAmountSats = sendAmountSats.plus(feeAmountSats).plus(feeSats);
 
-  // console.log(`createUnsignedSendToTx.sendAmountAndFeeSats[${sendAmountAndFeeSats}]`);
+  // console.log(`createUnsignedSendToTx.sendAmountAndFeeAmountSats[${sendAmountAndFeeAmountSats}]`);
 
   /* eslint-disable */
   let inputValueSats = BigNumber(0, 10);
@@ -92,7 +114,7 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
   const usedUtxos = new Set();
 
   unspentTransactionOutputs.forEach((utxo) => {
-    if (inputValueSats.isLessThan(sendAmountAndFeeSats)) {
+    if (inputValueSats.isLessThan(sendAmountAndFeeAmountSats)) {
       if (utxo.valueSats.isGreaterThan(ZERO)) {
         const utxoInput = {};
         utxoInput.TxId = utxo.Txid.toUpperCase();
@@ -113,7 +135,7 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
 
   // console.log(`createUnsignedSendToTx.inputValueSats[${inputValueSats}]`);
 
-  const changeValueSats = inputValueSats.minus(sendAmountAndFeeSats);
+  const changeValueSats = inputValueSats.minus(sendAmountAndFeeAmountSats);
 
   // console.log(`createUnsignedSendToTx.changeValueSats[${changeValueSats}]`);
 
@@ -128,13 +150,22 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
     sendOutput.OutputLock = 0;
     sendOutput.Address = sendToAddress;
     tx.Outputs.push(sendOutput);
-  } {
+  }
+  {
     const changeOutput = {};
     changeOutput.AssetID = Asset.elaAssetId;
     changeOutput.Value = changeValueSats.toString(10);
     changeOutput.OutputLock = 0;
     changeOutput.Address = address;
     tx.Outputs.push(changeOutput);
+  }
+  {
+    const feeOutput = {};
+    feeOutput.AssetID = Asset.elaAssetId;
+    feeOutput.Value = feeAmountSats.toString(10);
+    feeOutput.OutputLock = 0;
+    feeOutput.Address = feeAccount;
+    tx.Outputs.push(feeOutput);
   }
 
   if (changeValueSats.isLessThan(ZERO)) {

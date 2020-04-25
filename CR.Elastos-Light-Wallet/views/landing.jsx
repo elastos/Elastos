@@ -71,10 +71,10 @@ module.exports = (props) => {
         </tr>
           <tr>
             <td className="bordered w250px h20px ta_center va_top">
-              <span className="bordered bgcolor_black_hover"  onClick={(e) => GuiToggles.showLoginMnemonic()}>Login Mnemonic</span>
+              <span className="bordered bgcolor_black_hover"  onClick={(e) => GuiToggles.showLoginPrivateKey()}>Login Private Key</span>
             </td>
             <td className="bordered w250px h20px ta_center va_top">
-              <span className="bordered bgcolor_black_hover"  onClick={(e) => GuiToggles.showLoginPrivateKey()}>Login Private Key</span>
+              <span className="bordered bgcolor_black_hover"  onClick={(e) => GuiToggles.showLoginMnemonic()}>Login Mnemonic</span>
             </td>
             <td className="bordered w250px h20px ta_right va_top">
               <UseLedgerButton App={App} GuiToggles={GuiToggles} />
