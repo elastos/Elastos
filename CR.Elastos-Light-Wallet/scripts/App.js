@@ -467,9 +467,9 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
   mainConsole.log('sendAmountToAddressReadyCallback ' + JSON.stringify(transactionJson));
   if (transactionJson.status == 400) {
     sendToAddressStatuses.length = 0;
-    const message = `Transaction Failure. status:${transactionJson.status} result:${transactionJson.result}`;
+    const message = `Transaction Error.  Status:${transactionJson.status}  Result:${transactionJson.result}`;
     bannerStatus = message;
-    bannerClass = 'bg_red color_white';
+    bannerClass = 'bg_red color_white banner-look';
     sendToAddressStatuses.push(message);
   } else {
     sendToAddressStatuses.length = 0;
@@ -479,7 +479,7 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     elt.txHash = transactionJson.result;
     sendToAddressStatuses.length = 0;
     const message ='Transaction Successful.';
-    bannerClass = 'bg_green color_white';
+    bannerClass = 'bg_green color_white banner-look';
     sendToAddressStatuses.push(message);
     bannerStatus = message;
     sendToAddressLinks.push(elt);
