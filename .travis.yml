@@ -126,11 +126,11 @@ script:
       cmake -DANDROID_ABI=$ANDROID_ABI -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=../../cmake/AndroidToolchain.cmake ../.. ;
     fi
   - make && make install && make dist && cd dist
-  - if [[ "$RUN_TEST" != "" ]]; then
-      cd bin && export LD_LIBRARY_PATH=../lib;
-      ./elatests --robot -c ../etc/carrier/tests.conf &
-      ./elatests --cases -c ../etc/carrier/tests.conf -r 5 -o;
-    fi
+  #- if [[ "$RUN_TEST" != "" ]]; then
+  #    cd bin && export LD_LIBRARY_PATH=../lib;
+  #    ./elatests --robot -c ../etc/carrier/tests.conf &
+  #    ./elatests --cases -c ../etc/carrier/tests.conf -r 5 -o;
+  #  fi
 
 after_success:
   - if [[ "$TRAVIS_TAG" != "" ]]; then

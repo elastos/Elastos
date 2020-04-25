@@ -21,9 +21,9 @@ jobs:
             cd build && mkdir ${BUILD_ENV} && cd ${BUILD_ENV}
             cmake -DCMAKE_INSTALL_PREFIX=dist ../..
             make && sudo make install
-            cd dist/bin && export LD_LIBRARY_PATH=../lib
-            ./elatests --robot -c ../etc/carrier/tests.conf &
-            ./elatests --cases -c ../etc/carrier/tests.conf -r 5 -o
+            # cd dist/bin && export LD_LIBRARY_PATH=../lib
+            #./elatests --robot -c ../etc/carrier/tests.conf &
+            # ./elatests --cases -c ../etc/carrier/tests.conf -r 5 -o
       - run:
           name: Failed
           command: |
