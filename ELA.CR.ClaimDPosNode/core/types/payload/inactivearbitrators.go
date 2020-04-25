@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -107,7 +107,7 @@ func (i *InactiveArbitrators) Hash() common.Uint256 {
 	if i.hash == nil {
 		buf := new(bytes.Buffer)
 		i.SerializeUnsigned(buf, InactiveArbitratorsVersion)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		i.hash = &hash
 	}
 	return *i.hash

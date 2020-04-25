@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -7,6 +7,8 @@ package mempool
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -64,12 +66,12 @@ func (bm *BlockPool) getConfirmSigners(confirm *payload.Confirm) ([][]byte, erro
 func (bm *BlockPool) CheckConfirmedBlockOnFork(height uint32, block *types.Block) error {
 	// main version >= H2
 	if height >= bm.chainParams.PublicDPOSHeight {
-		hash, err := bm.Store.GetBlockHash(block.Height)
-		if err != nil {
-			return err
+		blockNode := bm.Chain.GetBlockNode(block.Height)
+		if blockNode == nil {
+			return errors.New(fmt.Sprintf("no block at height %d exists", height))
 		}
 
-		anotherBlock, err := bm.Store.GetBlock(hash)
+		anotherBlock, err := bm.Store.GetFFLDB().GetBlock(*blockNode.Hash)
 		if err != nil {
 			return err
 		}
@@ -88,11 +90,8 @@ func (bm *BlockPool) CheckConfirmedBlockOnFork(height uint32, block *types.Block
 			return err
 		}
 
-		anotherConfirm, err := bm.Store.GetConfirm(block.Hash())
-		if err != nil {
-			return err
-		}
-		compareEvidence, compareOffset, err := bm.generateBlockEvidence(anotherBlock, anotherConfirm)
+		compareEvidence, compareOffset, err := bm.generateBlockEvidence(
+			anotherBlock.Block, anotherBlock.Confirm)
 		if err != nil {
 			return err
 		}

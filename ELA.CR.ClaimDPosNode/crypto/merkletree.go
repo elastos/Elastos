@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -97,5 +97,5 @@ func ComputeParent(left common.Uint256, right common.Uint256) common.Uint256 {
 	var sha [64]byte
 	copy(sha[:32], left[:])
 	copy(sha[32:], right[:])
-	return common.Uint256(common.Sha256D(sha[:]))
+	return common.Hash(sha[:])
 }

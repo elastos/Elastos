@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -12,6 +12,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
+	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
@@ -170,8 +171,8 @@ func (p *Peer) PushGetBlocksMsg(locator []*common.Uint256, stopHash *common.Uint
 	p.prevGetBlocksMtx.Unlock()
 
 	if isDuplicate {
-		log.Debugf("Filtering duplicate [getblocks] with begin "+
-			"hash %v, stop hash %v", beginHash, stopHash)
+		//log.Debugf("Filtering duplicate [getblocks] with begin "+
+		//	"hash %v, stop hash %v", beginHash, stopHash)
 		return nil
 	}
 
@@ -194,8 +195,9 @@ func (p *Peer) PushGetBlocksMsg(locator []*common.Uint256, stopHash *common.Uint
 // function to block until the reject message has actually been sent.
 //
 // This function is safe for concurrent access.
-func (p *Peer) PushRejectMsg(command string, code msg.RejectCode, reason string, hash *common.Uint256, wait bool) {
-	msg := msg.NewReject(command, code, reason)
+func (p *Peer) PushRejectMsg(command string, err errors.ELAError,
+	hash *common.Uint256, wait bool) {
+	msg := msg.NewReject(command, err)
 	if command == p2p.CmdTx || command == p2p.CmdBlock {
 		if hash == nil {
 			log.Warnf("Sending a reject message for command "+

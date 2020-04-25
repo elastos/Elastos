@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
@@ -17,6 +18,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/elanet/peer"
+	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -35,6 +37,10 @@ const (
 	// maxRequestedTxns is the maximum number of requested transactions
 	// hashes to store in memory.
 	maxRequestedTxns = msg.MaxInvPerMsg
+
+	// syncTimeout is the maximum allowable interval when the sync peer does not
+	// receive the block.
+	syncTimeout = time.Minute * 10
 )
 
 // zeroHash is the zero value hash (all zeros).  It is defined as a convenience.
@@ -127,6 +133,7 @@ type SyncManager struct {
 	requestedBlocks          map[common.Uint256]struct{}
 	requestedConfirmedBlocks map[common.Uint256]struct{}
 	syncPeer                 *peer.Peer
+	syncStartTime            time.Time
 	syncHeight               uint32
 	peerStates               map[*peer.Peer]*peerSyncState
 }
@@ -189,6 +196,7 @@ func (sm *SyncManager) startSync() {
 
 		sm.syncPeer = bestPeer
 		sm.syncHeight = bestPeer.Height()
+		sm.syncStartTime = time.Now()
 		bestPeer.PushGetBlocksMsg(locator, &zeroHash)
 	} else {
 		log.Warnf("No sync peer candidates available")
@@ -320,8 +328,7 @@ func (sm *SyncManager) handleTxMsg(tmsg *txMsg) {
 
 		// Convert the error into an appropriate reject message and
 		// send it.
-		code, reason := mempool.ErrToRejectErr(err)
-		peer.PushRejectMsg(p2p.CmdTx, code, reason, &txHash, false)
+		peer.PushRejectMsg(p2p.CmdTx, err, &txHash, false)
 		return
 	}
 
@@ -406,12 +413,16 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		bmsg.block.Block.Height)
 	_, isOrphan, err := sm.blockMemPool.AddDposBlock(bmsg.block)
 	if err != nil {
-		reason := fmt.Sprintf("Rejected block %v from %s: %v", blockHash,
-			peer, err)
-		log.Info(reason)
+		log.Warn("add block error:", err)
+		elaErr := errors.SimpleWithMessage(errors.ErrP2pReject, err,
+			fmt.Sprintf("Rejected block %v from %s", blockHash, peer))
 
-		peer.PushRejectMsg(p2p.CmdBlock, msg.RejectInvalid, reason, &blockHash, false)
+		peer.PushRejectMsg(p2p.CmdBlock, elaErr, &blockHash, false)
 		return
+	}
+
+	if peer == sm.syncPeer {
+		sm.syncStartTime = time.Now()
 	}
 
 	if sm.syncPeer != nil && sm.chain.BestChain.Height >= sm.syncHeight {
@@ -429,6 +440,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 			if sm.syncPeer == nil {
 				sm.syncPeer = peer
 				sm.syncHeight = bmsg.block.Block.Height
+				sm.syncStartTime = time.Now()
 			}
 			if sm.syncPeer == peer {
 				peer.PushGetBlocksMsg(locator, orphanRoot)
@@ -458,6 +470,10 @@ func (sm *SyncManager) haveInventory(invVect *msg.InvVect) (bool, error) {
 	case msg.InvTypeConfirmedBlock:
 		// Ask blockMemPool and chain if the block with confirm is
 		// known to it in (blockMemPool, main chain)
+		if !sm.chain.BlockExists(&invVect.Hash) {
+			return false, nil
+		}
+
 		block, _ := sm.chain.GetDposBlockByHash(invVect.Hash)
 		if block != nil && block.HaveConfirm {
 			return true, nil
@@ -491,6 +507,13 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 	// Attempt to find the final block in the inventory list.  There may
 	// not be one.
 	invVects := imsg.inv.InvList
+
+	if sm.syncPeer != nil && time.Now().After(sm.syncStartTime.Add(syncTimeout)) {
+		log.Warnf("sync peer %s has not received block for more than %d "+
+			"seconds, -- disconnecting", sm.syncPeer, syncTimeout)
+		sm.syncPeer.Disconnect()
+		sm.syncPeer = nil
+	}
 
 	// Ignore invs from peers that aren't the sync if we are not current.
 	// Helps prevent fetching a mass of orphans.
@@ -564,6 +587,7 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 				if sm.syncPeer == nil {
 					sm.syncPeer = peer
 					sm.syncHeight = sm.chain.GetOrphan(&iv.Hash).Block.Height
+					sm.syncStartTime = time.Now()
 				}
 				if sm.syncPeer == peer {
 					peer.PushGetBlocksMsg(locator, orphanRoot)

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -21,7 +21,7 @@ func (msg *SidechainIllegalData) CMD() string {
 }
 
 func (msg *SidechainIllegalData) MaxLength() uint32 {
-	return pact.MaxBlockSize
+	return pact.MaxBlockContextSize
 }
 
 func (msg *SidechainIllegalData) Serialize(w io.Writer) error {

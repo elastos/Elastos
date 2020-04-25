@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package checkpoint
 
@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/utils"
 )
@@ -108,6 +109,10 @@ type Config struct {
 
 	// DataPath defines root directory path of all checkpoint related files.
 	DataPath string
+
+	// NeedSave indicate whether or not manager should save checkpoints when
+	//	reached a save point.
+	NeedSave bool
 }
 
 // Manager holds checkpoints save automatically.
@@ -137,7 +142,7 @@ func (m *Manager) OnRollbackTo(height uint32) error {
 	sortedPoints := m.getOrderedCheckpoints()
 	for _, v := range sortedPoints {
 		if err := v.OnRollbackTo(height); err != nil {
-			return err
+			log.Debug("manager rollback failed,", err)
 		}
 	}
 	return nil
@@ -198,6 +203,10 @@ func (m *Manager) Restore() (err error) {
 
 	sortedPoints := m.getOrderedCheckpoints()
 	for _, v := range sortedPoints {
+		// fixme: Skip 'dpos' and 'cr' checkpoint temporary
+		if v.Key() == "dpos" || v.Key() == "cr" {
+			continue
+		}
 		if err = m.loadDefaultCheckpoint(v); err != nil {
 			return
 		}
@@ -246,6 +255,11 @@ func (m *Manager) SetDataPath(path string) {
 	m.cfg.DataPath = path
 }
 
+// RegisterNeedSave register the need save function.
+func (m *Manager) SetNeedSave(needSave bool) {
+	m.cfg.NeedSave = needSave
+}
+
 func (m *Manager) getOrderedCheckpoints() []ICheckPoint {
 	sortedPoints := make([]ICheckPoint, 0, len(m.checkpoints))
 	for _, v := range m.checkpoints {
@@ -259,6 +273,7 @@ func (m *Manager) getOrderedCheckpoints() []ICheckPoint {
 
 func (m *Manager) onBlockSaved(block *types.DposBlock,
 	filter func(point ICheckPoint) bool, async bool) {
+
 	sortedPoints := m.getOrderedCheckpoints()
 	for _, v := range sortedPoints {
 		if filter != nil && !filter(v) {
@@ -269,6 +284,10 @@ func (m *Manager) onBlockSaved(block *types.DposBlock,
 			continue
 		}
 		v.OnBlockSaved(block)
+
+		if !m.cfg.NeedSave {
+			continue
+		}
 
 		originalHeight := v.GetHeight()
 		if originalHeight > 0 &&

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -22,7 +22,7 @@ import (
 	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/utils/http"
 
-	"github.com/yuin/gopher-lua"
+	lua "github.com/yuin/gopher-lua"
 )
 
 const luaTransactionTypeName = "transaction"
@@ -87,6 +87,14 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.CRInfo)
 	case *payload.UnregisterCR:
 		pload, _ = ud.Value.(*payload.UnregisterCR)
+	case *payload.CRCProposal:
+		pload, _ = ud.Value.(*payload.CRCProposal)
+	case *payload.CRCProposalReview:
+		pload, _ = ud.Value.(*payload.CRCProposalReview)
+	case *payload.CRCProposalTracking:
+		pload, _ = ud.Value.(*payload.CRCProposalTracking)
+	case *payload.CRCProposalWithdraw:
+		pload, _ = ud.Value.(*payload.CRCProposalWithdraw)
 	default:
 		fmt.Println("error: undefined payload type")
 		os.Exit(1)
@@ -300,7 +308,6 @@ func appendEnough(L *lua.LState) int {
 	txn := checkTransaction(L, 1)
 	from := L.ToString(2)
 	totalAmount := L.ToInt64(3)
-
 	result, err := cmdcom.RPCCall("listunspent", http.Params{
 		"addresses": []string{from},
 	})

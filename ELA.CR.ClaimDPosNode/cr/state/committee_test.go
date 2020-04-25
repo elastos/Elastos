@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package state
 
@@ -22,13 +22,13 @@ func TestNewCRCommittee(t *testing.T) {
 
 	assert.Equal(t, uint32(0), committee.LastCommitteeHeight)
 	assert.Equal(t, 0, len(committee.GetMembersCodes()))
-	assert.Equal(t, 0, len(committee.GetMembersCIDs()))
+	assert.Equal(t, 0, len(committee.GetMembersDIDs()))
 }
 
 func TestCommittee_ProcessBlock(t *testing.T) {
 	committee := NewCommittee(&config.DefaultParams)
-	round1, expectCandidates1 := generateCandidateSuite()
-	round2, expectCandidates2 := generateCandidateSuite()
+	round1, expectCandidates1, votes1 := generateCandidateSuite()
+	round2, expectCandidates2, votes2 := generateCandidateSuite()
 	committee.state.StateKeyFrame = *round1
 
 	// < CRCommitteeStartHeight
@@ -38,7 +38,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	assert.Equal(t, 0, len(committee.GetMembersCodes()))
-	assert.Equal(t, 0, len(committee.GetMembersCIDs()))
+	assert.Equal(t, 0, len(committee.GetMembersDIDs()))
 
 	// CRCommitteeStartHeight
 	committee.ProcessBlock(&types.Block{
@@ -47,7 +47,9 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	codes1 := committee.GetMembersCodes()
-	did1 := committee.GetMembersCIDs()
+	sortCodeList(codes1, votes1)
+	did1 := committee.GetMembersDIDs()
+	sortDIDList(did1, votes1)
 
 	for i := 0; i < len(expectCandidates1); i++ {
 		if i > 0 {
@@ -55,10 +57,13 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 				expectCandidates1[i-1].votes > expectCandidates1[i].votes)
 		}
 		assert.True(t, existCode(expectCandidates1[i].info.Code, codes1))
-		assert.True(t, existCID(expectCandidates1[i].info.CID, did1))
+		assert.True(t, existID(expectCandidates1[i].info.DID, did1))
 	}
 
 	// > CRCommitteeStartHeight && < CRCommitteeStartHeight + CRDutyPeriod
+	for k, v := range round1.depositInfo {
+		round2.depositInfo[k] = v
+	}
 	committee.state.StateKeyFrame = *round2
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -67,13 +72,17 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	codes2 := committee.GetMembersCodes()
-	did2 := committee.GetMembersCIDs()
+	sortCodeList(codes2, votes1)
+	did2 := committee.GetMembersDIDs()
+	sortDIDList(did2, votes1)
 	for i := 0; i < len(expectCandidates1); i++ {
 		assert.True(t, existCode(expectCandidates1[i].info.Code, codes2))
-		assert.True(t, existCID(expectCandidates1[i].info.CID, did2))
+		assert.True(t, existID(expectCandidates1[i].info.DID, did2))
 	}
 
 	// CRCommitteeStartHeight + CRDutyPeriod
+	committee.LastVotingStartHeight = config.DefaultParams.CRCommitteeStartHeight +
+		config.DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: config.DefaultParams.CRCommitteeStartHeight +
@@ -81,15 +90,31 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	codes2 = committee.GetMembersCodes()
-	did2 = committee.GetMembersCIDs()
+	sortCodeList(codes2, votes2)
+	did2 = committee.GetMembersDIDs()
+	sortDIDList(did2, votes2)
 	for i := 0; i < len(expectCandidates2); i++ {
 		if i > 0 {
 			assert.True(t,
 				expectCandidates2[i-1].votes > expectCandidates2[i].votes)
 		}
 		assert.True(t, bytes.Equal(expectCandidates2[i].info.Code, codes2[i]))
-		assert.True(t, expectCandidates2[i].info.CID.IsEqual(did2[i]))
+		assert.True(t, expectCandidates2[i].info.DID.IsEqual(did2[i]))
 	}
+}
+
+func sortCodeList(codes [][]byte, votes map[common.Uint168]common.Fixed64) {
+	sort.Slice(codes, func(i, j int) bool {
+		firstDID, _ := getDIDByCode(codes[i])
+		secondDID, _ := getDIDByCode(codes[j])
+		return votes[*firstDID] > votes[*secondDID]
+	})
+}
+
+func sortDIDList(cid []common.Uint168, votes map[common.Uint168]common.Fixed64) {
+	sort.Slice(cid, func(i, j int) bool {
+		return votes[cid[i]] > votes[cid[j]]
+	})
 }
 
 func TestCommittee_IsInVotingPeriod(t *testing.T) {
@@ -125,6 +150,7 @@ func TestCommittee_IsInVotingPeriod(t *testing.T) {
 	committee.LastCommitteeHeight = config.DefaultParams.CRCommitteeStartHeight
 
 	// < CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod
+	committee.InElectionPeriod = true
 	assert.False(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight+
 			config.DefaultParams.CRDutyPeriod-config.DefaultParams.
@@ -179,6 +205,7 @@ func TestCommittee_IsInVotingPeriod(t *testing.T) {
 
 func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 	committee := NewCommittee(&config.DefaultParams)
+	committee.RegisterFuncitons(&CommitteeFuncsConfig{})
 
 	code := randomBytes(34)
 	nickname := randomString()
@@ -195,9 +222,9 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 			generateRegisterCR(code, cid, nickname),
 		},
 	}, nil)
-	candidate := committee.GetState().GetCandidate(code)
+	candidate := committee.GetCandidate(cid)
 	assert.Equal(t, Pending, candidate.state)
-	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname))
+	assert.True(t, committee.ExistCandidateByNickname(nickname))
 	height++
 
 	// update candidate
@@ -210,7 +237,7 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 			generateUpdateCR(code, cid, nickname2),
 		},
 	}, nil)
-	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname2))
+	assert.True(t, committee.ExistCandidateByNickname(nickname2))
 	height++
 
 	// change state of candidate from pending to active
@@ -233,7 +260,7 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 	assert.NoError(t, committee.RollbackTo(
 		config.DefaultParams.CRCommitteeStartHeight-
 			config.DefaultParams.CRVotingPeriod))
-	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname))
+	assert.True(t, committee.ExistCandidateByNickname(nickname))
 }
 
 func TestCommittee_RollbackTo_SameCommittee_BeforeVoting(t *testing.T) {
@@ -242,6 +269,7 @@ func TestCommittee_RollbackTo_SameCommittee_BeforeVoting(t *testing.T) {
 		config.DefaultParams.CRCommitteeStartHeight)
 	committee := NewCommittee(&config.DefaultParams)
 	committee.KeyFrame = *keyframe
+	committee.RegisterFuncitons(&CommitteeFuncsConfig{})
 
 	// let processing height be 6 blocks before the second voting
 	height := config.DefaultParams.CRCommitteeStartHeight + config.
@@ -263,45 +291,47 @@ func TestCommittee_RollbackTo_SameCommittee_BeforeVoting(t *testing.T) {
 		}, nil)
 		height++
 	}
-	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 4, len(committee.GetState().GetAllCandidates()))
+	assert.False(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 5, len(committee.GetCandidates(Active)))
 
 	// rollback within voting period, candidates' state changes but committee
 	// state stay the same
 	height -= 2
 	assert.NoError(t, committee.RollbackTo(height))
-	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 3, len(committee.GetState().GetAllCandidates()))
+	assert.False(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 4, len(committee.GetCandidates(Active)))
 
 	// rollback to the voting height
 	height = config.DefaultParams.CRCommitteeStartHeight + config.
 		DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
 	assert.NoError(t, committee.RollbackTo(height))
-	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 1, len(committee.GetState().GetAllCandidates()))
+	assert.False(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 2, len(committee.GetCandidates(Active)))
 
 	// rollback to the height before voting
 	height--
 	assert.NoError(t, committee.RollbackTo(height))
-	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 0, len(committee.GetState().GetAllCandidates()))
+	assert.False(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 1, len(committee.GetCandidates(Active)))
 
 	// rollback to the height having no history
 	height--
 	assert.NoError(t, committee.RollbackTo(height))
-	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 0, len(committee.GetState().GetAllCandidates()))
+	assert.False(t, keyframeEqual(keyframe, &committee.KeyFrame))
+	assert.Equal(t, 0, len(committee.GetCandidates(Active)))
 }
 
 func TestCommittee_RollbackTo_DifferenceCommittee(t *testing.T) {
 	//todo complete me when check point is done
 }
 
-func generateCandidateSuite() (*StateKeyFrame, []*Candidate) {
+func generateCandidateSuite() (*StateKeyFrame, []*Candidate, map[common.Uint168]common.Fixed64) {
 	keyFrame := randomStateKeyFrame(24, false)
 	candidates := make([]*Candidate, 0, 24)
-	for _, v := range keyFrame.ActivityCandidates {
-		candidates = append(candidates, v)
+	for _, v := range keyFrame.Candidates {
+		if v.state == Active {
+			candidates = append(candidates, v)
+		}
 	}
 	sort.Slice(candidates, func(i, j int) bool {
 		return candidates[i].votes > candidates[j].votes
@@ -314,7 +344,13 @@ func generateCandidateSuite() (*StateKeyFrame, []*Candidate) {
 		}
 		topCandidates = append(topCandidates, v)
 	}
-	return keyFrame, topCandidates
+
+	votes := make(map[common.Uint168]common.Fixed64)
+	for _, c := range candidates {
+		votes[c.info.DID] = c.votes
+	}
+
+	return keyFrame, topCandidates, votes
 }
 
 func existCode(code []byte, codeArray [][]byte) bool {
@@ -326,9 +362,9 @@ func existCode(code []byte, codeArray [][]byte) bool {
 	return false
 }
 
-func existCID(cid common.Uint168, cidArray []common.Uint168) bool {
-	for _, v := range cidArray {
-		if v.IsEqual(cid) {
+func existID(id common.Uint168, idArray []common.Uint168) bool {
+	for _, v := range idArray {
+		if v.IsEqual(id) {
 			return true
 		}
 	}

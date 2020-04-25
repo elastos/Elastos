@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -170,34 +170,36 @@ func initLedger(L *lua.LState) int {
 	logLevel := uint8(L.ToInt(1))
 
 	log.NewDefault(test.NodeLogPath, logLevel, 0, 0)
-	dlog.Init(logLevel, 0, 0)
+	dlog.Init("elastos", logLevel, 0, 0)
 
 	ledger := blockchain.Ledger{}
-	chainStore, err := blockchain.NewChainStore(test.DataPath, chainParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(test.DataPath, chainParams)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
-	arbiters, err := state.NewArbitrators(chainParams, nil)
+	arbiters, err := state.NewArbitrators(chainParams,
+		nil, nil)
 	if err != nil {
 		fmt.Printf("New arbitrators error: %s \n", err.Error())
 	}
 	arbiters.RegisterFunction(chainStore.GetHeight,
 		func(height uint32) (*types.Block, error) {
-			hash, err := ledger.Blockchain.GetBlockHash(height)
-			if err != nil {
-				return nil, err
-			}
-			return chainStore.GetBlock(hash)
-		})
+			return nil, nil
+		}, nil)
 
 	var interrupt = signal.NewInterrupt()
 	chain, err := blockchain.New(chainStore, chainParams,
-		state.NewState(chainParams, arbiters.GetArbitrators, nil), nil)
+		state.NewState(chainParams, arbiters.GetArbitrators,
+			nil), nil)
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
-	err = chain.InitFFLDBFromChainStore(interrupt.C, nil, nil, false)
+	err = chain.Init(nil)
+	if err != nil {
+		fmt.Printf("Init index manager error: %s \n", err.Error())
+	}
+	err = chain.MigrateOldDB(interrupt.C, nil, nil, test.DataPath, chainParams)
 	if err != nil {
 		fmt.Printf("Init fflDB error: %s \n", err.Error())
 	}
@@ -276,5 +278,10 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterRegisterCRType(L)
 	RegisterUpdateCRType(L)
 	RegisterUnregisterCRType(L)
+	RegisterCRCProposalType(L)
+	RegisterCRCProposalReviewType(L)
+	RegisterCRCProposalWithdrawType(L)
+
+	RegisterCRCProposalTrackingType(L)
 	return 0
 }

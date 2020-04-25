@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -70,17 +70,6 @@ func checkPointsEqual(first *CheckPoint, second *CheckPoint) bool {
 		return false
 	}
 
-	if !hashesEqual(first.CurrentReward.OwnerProgramHashes,
-		second.CurrentReward.OwnerProgramHashes) ||
-		!hashesEqual(first.CurrentReward.CandidateOwnerProgramHashes,
-			second.CurrentReward.CandidateOwnerProgramHashes) ||
-		!hashesEqual(first.NextReward.OwnerProgramHashes,
-			second.NextReward.OwnerProgramHashes) ||
-		!hashesEqual(first.NextReward.CandidateOwnerProgramHashes,
-			second.NextReward.CandidateOwnerProgramHashes) {
-		return false
-	}
-
 	if !stateKeyFrameEqual(&first.StateKeyFrame, &second.StateKeyFrame) {
 		return false
 	}
@@ -93,47 +82,56 @@ func checkPointsEqual(first *CheckPoint, second *CheckPoint) bool {
 
 func generateCheckPoint(height uint32) *CheckPoint {
 	result := &CheckPoint{
-		Height:            height,
-		DutyIndex:         int(rand.Uint32()),
-		NextArbitrators:   [][]byte{},
-		NextCandidates:    [][]byte{},
-		CurrentCandidates: [][]byte{},
-		KeyFrame: KeyFrame{
-			CurrentArbitrators: [][]byte{},
-		},
-		CurrentReward: *NewRewardData(),
-		NextReward:    *NewRewardData(),
-		StateKeyFrame: *randomStateKeyFrame(),
+		Height:             height,
+		DutyIndex:          int(rand.Uint32()),
+		NextArbitrators:    []ArbiterMember{},
+		NextCandidates:     []ArbiterMember{},
+		CurrentCandidates:  []ArbiterMember{},
+		CurrentArbitrators: []ArbiterMember{},
+		CurrentReward:      *NewRewardData(),
+		NextReward:         *NewRewardData(),
+		StateKeyFrame:      *randomStateKeyFrame(),
 	}
 	result.CurrentReward.TotalVotesInRound = common.Fixed64(rand.Uint64())
 	result.NextReward.TotalVotesInRound = common.Fixed64(rand.Uint64())
 
 	for i := 0; i < 5; i++ {
-		result.CurrentArbitrators = append(result.CurrentArbitrators,
-			randomFakePK())
-		result.CurrentCandidates = append(result.CurrentCandidates, randomFakePK())
-		result.NextArbitrators = append(result.NextArbitrators, randomFakePK())
-		result.NextCandidates = append(result.NextCandidates, randomFakePK())
+		ar, _ := NewOriginArbiter(Origin, randomFakePK())
+		result.CurrentArbitrators = append(result.CurrentArbitrators, ar)
+		ar, _ = NewOriginArbiter(Origin, randomFakePK())
+		result.CurrentCandidates = append(result.CurrentCandidates, ar)
+		ar, _ = NewOriginArbiter(Origin, randomFakePK())
+		result.NextArbitrators = append(result.NextArbitrators, ar)
+		ar, _ = NewOriginArbiter(Origin, randomFakePK())
+		result.NextCandidates = append(result.NextCandidates, ar)
 
 		result.CurrentReward.OwnerVotesInRound[*randomProgramHash()] =
 			common.Fixed64(rand.Uint64())
-		result.CurrentReward.OwnerProgramHashes = append(
-			result.CurrentReward.OwnerProgramHashes, randomProgramHash())
-		result.CurrentReward.CandidateOwnerProgramHashes = append(
-			result.CurrentReward.CandidateOwnerProgramHashes, randomProgramHash())
 
 		result.NextReward.OwnerVotesInRound[*randomProgramHash()] =
 			common.Fixed64(rand.Uint64())
-		result.NextReward.OwnerProgramHashes = append(
-			result.NextReward.OwnerProgramHashes, randomProgramHash())
-		result.NextReward.CandidateOwnerProgramHashes = append(
-			result.NextReward.CandidateOwnerProgramHashes, randomProgramHash())
 	}
 
 	return result
 }
 
 func stateKeyFrameEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
+	if len(first.NodeOwnerKeys) != len(second.NodeOwnerKeys) ||
+		len(first.PendingProducers) != len(second.PendingProducers) ||
+		len(first.ActivityProducers) != len(second.ActivityProducers) ||
+		len(first.InactiveProducers) != len(second.InactiveProducers) ||
+		len(first.CanceledProducers) != len(second.CanceledProducers) ||
+		len(first.IllegalProducers) != len(second.IllegalProducers) ||
+		len(first.PendingCanceledProducers) != len(second.PendingCanceledProducers) ||
+		len(first.Votes) != len(second.Votes) ||
+		len(first.DepositOutputs) != len(second.DepositOutputs) ||
+		len(first.Nicknames) != len(second.Nicknames) ||
+		len(first.SpecialTxHashes) != len(second.SpecialTxHashes) ||
+		len(first.PreBlockArbiters) != len(second.PreBlockArbiters) ||
+		len(first.ProducerDepositMap) != len(second.ProducerDepositMap) ||
+		len(first.EmergencyInactiveArbiters) != len(second.EmergencyInactiveArbiters) {
+		return false
+	}
 
 	for k, vf := range first.NodeOwnerKeys {
 		vs, ok := second.NodeOwnerKeys[k]
@@ -240,6 +238,13 @@ func stateKeyFrameEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 		}
 	}
 
+	for k := range first.ProducerDepositMap {
+		_, ok := second.ProducerDepositMap[k]
+		if !ok {
+			return false
+		}
+	}
+
 	for k := range first.EmergencyInactiveArbiters {
 		_, ok := second.EmergencyInactiveArbiters[k]
 		if !ok {
@@ -260,11 +265,12 @@ func randomStateKeyFrame() *StateKeyFrame {
 		CanceledProducers:         make(map[string]*Producer),
 		IllegalProducers:          make(map[string]*Producer),
 		PendingCanceledProducers:  make(map[string]*Producer),
-		Votes:                     make(map[string]*types.Output),
-		DepositOutputs:            make(map[string]*types.Output),
+		Votes:                     make(map[string]struct{}),
+		DepositOutputs:            make(map[string]common.Fixed64),
 		Nicknames:                 make(map[string]struct{}),
 		SpecialTxHashes:           make(map[common.Uint256]struct{}),
 		PreBlockArbiters:          make(map[string]struct{}),
+		ProducerDepositMap:        make(map[common.Uint168]struct{}),
 		EmergencyInactiveArbiters: make(map[string]struct{}),
 		VersionStartHeight:        rand.Uint32(),
 		VersionEndHeight:          rand.Uint32(),
@@ -278,11 +284,12 @@ func randomStateKeyFrame() *StateKeyFrame {
 		result.CanceledProducers[randomString()] = randomProducer()
 		result.IllegalProducers[randomString()] = randomProducer()
 		result.PendingCanceledProducers[randomString()] = randomProducer()
-		result.Votes[randomString()] = randomVotes()
-		result.DepositOutputs[randomString()] = randomVotes()
+		result.Votes[randomString()] = struct{}{}
+		result.DepositOutputs[randomString()] = common.Fixed64(rand.Uint64())
 		result.Nicknames[randomString()] = struct{}{}
 		result.SpecialTxHashes[*randomHash()] = struct{}{}
 		result.PreBlockArbiters[randomString()] = struct{}{}
+		result.ProducerDepositMap[*randomProgramHash()] = struct{}{}
 		result.EmergencyInactiveArbiters[randomString()] = struct{}{}
 	}
 	return result
@@ -323,12 +330,6 @@ func rewardEqual(first *RewardData, second *RewardData) bool {
 		return false
 	}
 
-	if !hashesEqual(first.OwnerProgramHashes, second.OwnerProgramHashes) ||
-		!hashesEqual(first.CandidateOwnerProgramHashes,
-			second.CandidateOwnerProgramHashes) {
-		return false
-	}
-
 	return votesMapEqual(first.OwnerVotesInRound, second.OwnerVotesInRound)
 }
 
@@ -336,11 +337,8 @@ func randomRewardData() *RewardData {
 	result := NewRewardData()
 
 	for i := 0; i < 5; i++ {
-		result.OwnerProgramHashes = append(result.OwnerProgramHashes,
-			randomProgramHash())
-		result.CandidateOwnerProgramHashes = append(
-			result.CandidateOwnerProgramHashes, randomProgramHash())
-		result.OwnerVotesInRound[*randomProgramHash()] = common.Fixed64(rand.Uint64())
+		result.OwnerVotesInRound[*randomProgramHash()] =
+			common.Fixed64(rand.Uint64())
 	}
 
 	return result
@@ -450,7 +448,7 @@ func votesMapEqual(first map[common.Uint168]common.Fixed64,
 	return true
 }
 
-func arrayEqual(first [][]byte, second [][]byte) bool {
+func arrayEqual(first []ArbiterMember, second []ArbiterMember) bool {
 	if len(first) != len(second) {
 		return false
 	}
@@ -458,7 +456,7 @@ func arrayEqual(first [][]byte, second [][]byte) bool {
 	for _, vf := range first {
 		found := false
 		for _, vs := range second {
-			if bytes.Equal(vf, vs) {
+			if arbiterMemberEqual(vf, vs) {
 				found = true
 				break
 			}
@@ -468,4 +466,15 @@ func arrayEqual(first [][]byte, second [][]byte) bool {
 		}
 	}
 	return true
+}
+
+func arbiterMemberEqual(first ArbiterMember, second ArbiterMember) bool {
+	if bytes.Equal(first.GetNodePublicKey(), second.GetNodePublicKey()) &&
+		bytes.Equal(first.GetOwnerPublicKey(), second.GetOwnerPublicKey()) &&
+		first.GetType() == second.GetType() &&
+		first.GetOwnerProgramHash().IsEqual(second.GetOwnerProgramHash()) {
+		return true
+	}
+
+	return false
 }

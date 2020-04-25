@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package types
 
@@ -53,6 +53,12 @@ const (
 	UnregisterCR        TxType = 0x22
 	UpdateCR            TxType = 0x23
 	ReturnCRDepositCoin TxType = 0x24
+
+	CRCProposal         TxType = 0x25
+	CRCProposalReview   TxType = 0x26
+	CRCProposalTracking TxType = 0x27
+	CRCAppropriation    TxType = 0x28
+	CRCProposalWithdraw TxType = 0x29
 )
 
 func (self TxType) Name() string {
@@ -105,6 +111,16 @@ func (self TxType) Name() string {
 		return "UpdateCR"
 	case ReturnCRDepositCoin:
 		return "ReturnCRDepositCoin"
+	case CRCProposal:
+		return "CRCProposal"
+	case CRCProposalReview:
+		return "CRCProposalReview"
+	case CRCProposalWithdraw:
+		return "CRCProposalWithdraw"
+	case CRCProposalTracking:
+		return "CRCProposalTracking"
+	case CRCAppropriation:
+		return "CRCAppropriation"
 	default:
 		return "Unknown"
 	}
@@ -333,7 +349,7 @@ func (tx *Transaction) GetSize() int {
 func (tx *Transaction) hash() common.Uint256 {
 	buf := new(bytes.Buffer)
 	tx.SerializeUnsigned(buf)
-	return common.Uint256(common.Sha256D(buf.Bytes()))
+	return common.Hash(buf.Bytes())
 }
 
 func (tx *Transaction) Hash() common.Uint256 {
@@ -344,8 +360,20 @@ func (tx *Transaction) Hash() common.Uint256 {
 	return *tx.txHash
 }
 
+func (tx *Transaction) IsCRCAppropriationTx() bool {
+	return tx.TxType == CRCAppropriation
+}
+
 func (tx *Transaction) IsUpdateCRTx() bool {
 	return tx.TxType == UpdateCR
+}
+
+func (tx *Transaction) IsCRCProposalWithdrawTx() bool {
+	return tx.TxType == CRCProposalWithdraw
+}
+
+func (tx *Transaction) IsCRCProposalTx() bool {
+	return tx.TxType == CRCProposal
 }
 
 func (tx *Transaction) IsReturnCRDepositCoinTx() bool {
@@ -506,6 +534,16 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.UnregisterCR)
 	case ReturnCRDepositCoin:
 		p = new(payload.ReturnDepositCoin)
+	case CRCProposal:
+		p = new(payload.CRCProposal)
+	case CRCProposalReview:
+		p = new(payload.CRCProposalReview)
+	case CRCProposalWithdraw:
+		p = new(payload.CRCProposalWithdraw)
+	case CRCProposalTracking:
+		p = new(payload.CRCProposalTracking)
+	case CRCAppropriation:
+		p = new(payload.CRCAppropriation)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}
