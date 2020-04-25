@@ -38,7 +38,6 @@
 #include <Plugin/Transaction/Payload/CRCProposalReview.h>
 #include <Plugin/Transaction/Payload/CRCProposalTracking.h>
 #include <Plugin/Transaction/Payload/CRCProposalWithdraw.h>
-#include <Plugin/Transaction/TransactionInput.h>
 #include <Plugin/Transaction/TransactionOutput.h>
 #include <SpvService/Config.h>
 #include <Plugin/Transaction/Payload/ReturnDepositCoin.h>
@@ -46,7 +45,6 @@
 
 #include <vector>
 #include <map>
-#include <boost/scoped_ptr.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

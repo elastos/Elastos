@@ -38,6 +38,10 @@ namespace Elastos {
 			close();
 		}
 
+		int Sqlite::ExtendedEerrCode() const {
+			return sqlite3_extended_errcode(_dataBasePtr);
+		}
+
 		bool Sqlite::IsValid() {
 			return _dataBasePtr != NULL;
 		}

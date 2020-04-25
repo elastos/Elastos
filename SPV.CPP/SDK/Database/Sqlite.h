@@ -47,6 +47,8 @@ namespace Elastos {
 			~Sqlite();
 
 			bool IsValid();
+
+			int ExtendedEerrCode() const;
 			/*
 			 * The sqlite3_exec() interface is a convenience wrapper around sqlite3_prepare_v2(),
 			 * sqlite3_step(), and sqlite3_finalize(), that allows an application to run multiple

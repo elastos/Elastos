@@ -333,8 +333,9 @@ namespace Elastos {
 
 			GetSelectedTxns(txns, chainID, stmt);
 
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("Tx get utxo txn finalize");
+			int r = sqlite3_finalize(stmt);
+			if (SQLITE_OK != r) {
+				Log::error("Tx get utxo txn({}) finalize: r = {}, extend code: {}", txns.size(), r, _sqlite->ExtendedEerrCode());
 				return {};
 			}
 

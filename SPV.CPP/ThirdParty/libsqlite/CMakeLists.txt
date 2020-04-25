@@ -1,5 +1,7 @@
 project(libsqlite)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSQLITE_TEMP_STORE=3")
+
 include(ProjectDefaults)
 include(ExternalProject)
 include(ExternalConfigureArgs)
@@ -7,6 +9,7 @@ include(ExternalConfigureArgs)
 set(CONFIGURE_CMD
 	./configure
 	--disable-shared
+	--enable-tempstore=always
 	--prefix=${PROJECT_INT_DIST_DIR}
 	${CONFIGURE_ARGS_INIT})
 
