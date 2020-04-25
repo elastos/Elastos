@@ -29,6 +29,7 @@
 #include <Plugin/Registry.h>
 #include <Plugin/ELAPlugin.h>
 #include <Plugin/IDPlugin.h>
+#include <Plugin/TokenPlugin.h>
 #include <MasterWalletManager.h>
 #include <CMakeConfig.h>
 #include <Common/Lockable.h>
@@ -65,6 +66,7 @@ namespace Elastos {
 			Log::info("Registering plugin ...");
 			REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
 			REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
+			REGISTER_MERKLEBLOCKPLUGIN(TokenChain, getTokenPluginComponent);
 #endif
 			if (netType != CONFIG_MAINNET && netType != CONFIG_TESTNET &&
 				netType != CONFIG_REGTEST && netType != CONFIG_PRVNET) {
@@ -104,6 +106,7 @@ namespace Elastos {
 			Log::info("Registering plugin ...");
 			REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
 			REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
+			REGISTER_MERKLEBLOCKPLUGIN(TokenChain, getTokenPluginComponent);
 #endif
 
 			_config = new Config(_dataPath, CONFIG_MAINNET);
