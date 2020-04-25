@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/utils/elalog"
 )
 
 var (
@@ -48,7 +47,7 @@ type Configuration struct {
 	HttpJsonPort                int               `json:"HttpJsonPort"`
 	EnableRPC                   bool              `json:"EnableRPC"`
 	NodePort                    uint16            `json:"NodePort"`
-	PrintLevel                  elalog.Level      `json:"PrintLevel"`
+	PrintLevel                  uint32            `json:"PrintLevel"`
 	MaxLogsSize                 int64             `json:"MaxLogsSize"`
 	MaxPerLogSize               int64             `json:"MaxPerLogSize"`
 	RestCertPath                string            `json:"RestCertPath"`
@@ -56,6 +55,8 @@ type Configuration struct {
 	MinCrossChainTxFee          common.Fixed64    `json:"MinCrossChainTxFee"`
 	FoundationAddress           string            `json:"FoundationAddress"`
 	CRCAddress                  string            `json:"CRCAddress"`
+	CRCFoundation               string            `json:"CRCFoundation"`
+	CRCCommitteeAddress         string            `json:"CRCCommitteeAddress"`
 	PowConfiguration            PowConfiguration  `json:"PowConfiguration"`
 	RpcConfiguration            RpcConfiguration  `json:"RpcConfiguration"`
 	DPoSConfiguration           DPoSConfiguration `json:"DPoSConfiguration"`
@@ -71,9 +72,16 @@ type Configuration struct {
 	VoteStatisticsHeight        uint32            `json:"VoteStatisticsHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
 	MaxBlockSize                uint32            `json:"MaxBlockSize"`
+	MaxBlockHeaderSize          uint32            `json:"MaxBlockHeaderSize"`
+	MaxTxPerBlock               uint32            `json:"MaxTxPerBlock"`
 	EnableHistory               bool              `json:"EnableHistory"`
 	HistoryStartHeight          uint32            `json:"HistoryStartHeight"`
 	EnableUtxoDB                bool              `json:"EnableUtxoDB"`
+	WalletPath                  string            `json:"WalletPath"`
+	RPCServiceLevel             string            `json:"RPCServiceLevel"`
+	NodeProfileStrategy         string            `json:"NodeProfileStrategy"`
+	TxCacheVolume               uint32            `json:"TxCacheVolume"`
+	MaxNodePerHost              uint32            `json:"MaxNodePerHost"`
 }
 
 // DPoSConfiguration defines the DPoS consensus parameters.
@@ -94,8 +102,100 @@ type DPoSConfiguration struct {
 }
 
 type CRConfiguration struct {
-	MemberCount           uint32 `json:"MemberCount"`
-	VotingPeriod          uint32 `json:"VotingPeriod"`
-	DutyPeriod            uint32 `json:"DutyPeriod"`
-	RegisterCRByDIDHeight uint32 `json:"RegisterCRByDIDHeight"`
+	MemberCount                uint32  `json:"MemberCount"`
+	VotingPeriod               uint32  `json:"VotingPeriod"`
+	DutyPeriod                 uint32  `json:"DutyPeriod"`
+	DepositLockupBlocks        uint32  `json:"DepositLockupBlocks"`
+	ProposalCRVotingPeriod     uint32  `json:"ProposalCRVotingPeriod"`
+	ProposalPublicVotingPeriod uint32  `json:"ProposalPublicVotingPeriod"`
+	CRAgreementCount           uint32  `json:"CRAgreementCount"`
+	VoterRejectPercentage      float64 `json:"VoterRejectPercentage"`
+	CRCAppropriatePercentage   float64 `json:"CRCAppropriatePercentage"`
+	MaxCommitteeProposalCount  uint32  `json:"MaxCommitteeProposalCount"`
+	SecretaryGeneral           string  `json:"SecretaryGeneral"`
+	MaxProposalTrackingCount   uint8   `json:"MaxProposalTrackingCount"`
+	RegisterCRByDIDHeight      uint32  `json:"RegisterCRByDIDHeight"`
+}
+
+type RPCServiceLevel byte
+
+const (
+	// Allowed  query transaction, and configuration related options.
+	ConfigurationPermitted RPCServiceLevel = iota
+
+	// Allowed mining from RPC.
+	MiningPermitted
+
+	// Allowed query and transaction (
+	//	such as sendrawtransaction) related options.
+	TransactionPermitted
+
+	// Allowed using wallet related function.
+	WalletPermitted
+
+	// Allowed only query related options.
+	QueryOnly
+)
+
+func (l RPCServiceLevel) String() string {
+	switch l {
+	case ConfigurationPermitted:
+		return "ConfigurationPermitted"
+	case MiningPermitted:
+		return "MiningPermitted"
+	case TransactionPermitted:
+		return "TransactionPermitted"
+	case WalletPermitted:
+		return "WalletPermitted"
+	case QueryOnly:
+		return "QueryOnly"
+	default:
+		return "Unknown"
+	}
+}
+
+func RPCServiceLevelFromString(str string) RPCServiceLevel {
+	switch str {
+	case "ConfigurationPermitted":
+		return ConfigurationPermitted
+	case "MiningPermitted":
+		return MiningPermitted
+	case "TransactionPermitted":
+		return TransactionPermitted
+	case "WalletPermitted":
+		return WalletPermitted
+	case "QueryOnly":
+		return QueryOnly
+	default:
+		return ConfigurationPermitted
+	}
+}
+
+type NodeProfileStrategy byte
+
+const (
+	// Node will balance usage of CPU and memory.
+	Balanced NodeProfileStrategy = iota
+
+	// Node will optimise the block processing procedure, super node strongly
+	//	recommended.
+	SpeedFirst
+
+	// Node will optimise the usage of memory usage, note this may slow down
+	//	block processing, do no use this if your memory is extremely low (
+	//	specifically small than 2G bytes).
+	MemoryFirst
+)
+
+func (s NodeProfileStrategy) String() string {
+	switch s {
+	case Balanced:
+		return "Balanced"
+	case SpeedFirst:
+		return "SpeedFirst"
+	case MemoryFirst:
+		return "MemoryFirst"
+	default:
+		return "Unknown"
+	}
 }

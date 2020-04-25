@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -62,7 +62,7 @@ func (a *CRInfo) SerializeUnsigned(w io.Writer, version byte) error {
 
 	if version > CRInfoVersion {
 		if err = a.DID.Serialize(w); err != nil {
-			return errors.New("[CRInfo], CID serialize failed")
+			return errors.New("[CRInfo], DID serialize failed")
 		}
 	}
 
@@ -110,7 +110,7 @@ func (a *CRInfo) DeserializeUnsigned(r io.Reader, version byte) error {
 
 	if version > CRInfoVersion {
 		if err = a.DID.Deserialize(r); err != nil {
-			return errors.New("[CRInfo], CID deserialize failed")
+			return errors.New("[CRInfo], DID deserialize failed")
 		}
 	}
 

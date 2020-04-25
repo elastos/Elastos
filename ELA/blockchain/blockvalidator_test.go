@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package blockchain
 
@@ -46,12 +46,15 @@ const (
 		"bef97806557bdb4faec8c83a8fc557c1afb287b07bd923c589ac"
 )
 
+func init() {
+	testing.Init()
+}
+
 func TestCheckBlockSanity(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 	params := &config.DefaultParams
 	FoundationAddress = params.Foundation
-	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "sanity"),
-		params.GenesisBlock)
+	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "sanity"), params)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -59,6 +62,7 @@ func TestCheckBlockSanity(t *testing.T) {
 
 	chain, _ := New(chainStore, params, state.NewState(params,
 		nil, nil), nil)
+	//chain.Init(nil)
 	if DefaultLedger == nil {
 		DefaultLedger = &Ledger{
 			Blockchain: chain,
@@ -107,8 +111,8 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
 	}
 
-	arbitrators := make([][]byte, 0)
-	candidates := make([][]byte, 0)
+	arbitrators := make([]state.ArbiterMember, 0)
+	candidates := make([]state.ArbiterMember, 0)
 	arbitratorHashes := make([]*common.Uint168, 0)
 	candidateHashes := make([]*common.Uint168, 0)
 	ownerVotes := make(map[common.Uint168]common.Fixed64)
@@ -117,7 +121,8 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 	for i, v := range arbitratorsStr {
 		vote := i + 10
 		a, _ := common.HexStringToBytes(v)
-		arbitrators = append(arbitrators, a)
+		ar, _ := state.NewOriginArbiter(state.Origin, a)
+		arbitrators = append(arbitrators, ar)
 		hash, _ := contract.PublicKeyToStandardProgramHash(a)
 		arbitratorHashes = append(arbitratorHashes, hash)
 		ownerVotes[*hash] = common.Fixed64(vote)
@@ -127,7 +132,8 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 	for i, v := range candidatesStr {
 		vote := i + 1
 		a, _ := common.HexStringToBytes(v)
-		candidates = append(candidates, a)
+		ar, _ := state.NewOriginArbiter(state.Origin, a)
+		arbitrators = append(arbitrators, ar)
 		hash, _ := contract.PublicKeyToStandardProgramHash(a)
 		candidateHashes = append(candidateHashes, hash)
 		ownerVotes[*hash] = common.Fixed64(vote)
@@ -447,25 +453,25 @@ func generateCancelProducer() *types.Transaction {
 	}
 }
 
-func generateRegisterCR(code []byte, did common.Uint168,
+func generateRegisterCR(code []byte, cid common.Uint168,
 	nickname string) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.RegisterCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			CID:      did,
+			CID:      cid,
 			NickName: nickname,
 		},
 	}
 }
 
-func generateUpdateCR(code []byte, did common.Uint168,
+func generateUpdateCR(code []byte, cid common.Uint168,
 	nickname string) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.UpdateCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			CID:      did,
+			CID:      cid,
 			NickName: nickname,
 		},
 	}

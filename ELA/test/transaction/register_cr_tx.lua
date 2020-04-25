@@ -1,12 +1,21 @@
--- Copyright (c) 2017-2019 The Elastos Foundation
+-- Copyright (c) 2017-2020 The Elastos Foundation
 -- Use of this source code is governed by an MIT
 -- license that can be found in the LICENSE file.
 -- 
 
 local m = require("api")
 
--- client: path, password, if create
-local wallet = client.new("keystore.dat", "123", false)
+local keystore = getWallet()
+local password = getPassword()
+
+if keystore == "" then
+    keystore = "keystore.dat"
+end
+if password == "" then
+    password = "123"
+end
+
+local wallet = client.new(keystore, password, false)
 
 -- account
 local addr = wallet:get_address()

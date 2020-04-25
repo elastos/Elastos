@@ -1,13 +1,9 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
 
 // Copyright (c) 2013-2016 The btcsuite developers
-// Copyright (c) 2017-2019 Elastos Foundation
-// Use of this source code is governed by an MIT
-// license that can be found in the LICENSE file.
-//
 
 // Parts of this interface were inspired heavily by the excellent boltdb project
 // at https://github.com/boltdb/bolt by Ben B. Johnson.
@@ -234,7 +230,7 @@ type Tx interface {
 	//   - ErrTxClosed if the transaction has already been closed
 	//
 	// Other errors are possible depending on the implementation.
-	StoreBlock(block *types.Block) error
+	StoreBlock(block *types.DposBlock) error
 
 	// HasBlock returns whether or not a block with the given hash exists
 	// in the database.

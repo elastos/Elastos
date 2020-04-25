@@ -1,13 +1,9 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
 
 // Copyright (c) 2013-2016 The btcsuite developers
-// Copyright (c) 2017-2019 Elastos Foundation
-// Use of this source code is governed by an MIT
-// license that can be found in the LICENSE file.
-//
 
 package ffldb
 
@@ -1152,7 +1148,7 @@ func (tx *transaction) hasBlock(hash common.Uint256) bool {
 //   - ErrTxClosed if the transaction has already been closed
 //
 // This function is part of the database.Tx interface implementation.
-func (tx *transaction) StoreBlock(block *types.Block) error {
+func (tx *transaction) StoreBlock(block *types.DposBlock) error {
 	// Ensure transaction state is valid.
 	if err := tx.checkClosed(); err != nil {
 		return err

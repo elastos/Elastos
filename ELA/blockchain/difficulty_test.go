@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -19,6 +19,10 @@ const (
 	blockCount       = 120
 	timespanPerBlock = 120 // second
 )
+
+func init() {
+	testing.Init()
+}
 
 func TestBlockChain_GetNetworkHashPS(t *testing.T) {
 	firstHeader := &types.Header{

@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package pow
 
@@ -26,7 +26,6 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
-	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
 )
 
@@ -110,15 +109,19 @@ func (pow *Service) GetDefaultTxVersion(height uint32) types.TransactionVersion 
 	return v
 }
 
-func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, error) {
+func (pow *Service) CreateCoinbaseTx(minerAddr string, height uint32) (*types.Transaction, error) {
+	crRewardAddr := pow.chainParams.Foundation
+	if height >= pow.chainParams.CRCommitteeStartHeight {
+		crRewardAddr = pow.chainParams.CRCFoundation
+	}
+
 	minerProgramHash, err := common.Uint168FromAddress(minerAddr)
 	if err != nil {
 		return nil, err
 	}
 
-	currentHeight := pow.chain.GetHeight() + 1
 	tx := &types.Transaction{
-		Version:        pow.GetDefaultTxVersion(currentHeight),
+		Version:        pow.GetDefaultTxVersion(height),
 		TxType:         types.CoinBase,
 		PayloadVersion: payload.CoinBaseVersion,
 		Payload: &payload.CoinBase{
@@ -137,7 +140,7 @@ func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, erro
 			{
 				AssetID:     config.ELAAssetID,
 				Value:       0,
-				ProgramHash: pow.chainParams.Foundation,
+				ProgramHash: crRewardAddr,
 				Type:        types.OTNone,
 				Payload:     &outputpayload.DefaultOutput{},
 			},
@@ -150,7 +153,7 @@ func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, erro
 			},
 		},
 		Attributes: []*types.Attribute{},
-		LockTime:   currentHeight,
+		LockTime:   height,
 	}
 
 	nonce := make([]byte, 8)
@@ -214,10 +217,11 @@ func (pow *Service) distributeDPOSReward(coinBaseTx *types.Transaction,
 	return pow.arbiters.GetFinalRoundChange(), nil
 }
 
-func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
+func (pow *Service) GenerateBlock(minerAddr string,
+	txPerBlock int) (*types.Block, error) {
 	bestChain := pow.chain.BestChain
 	nextBlockHeight := bestChain.Height + 1
-	coinBaseTx, err := pow.CreateCoinbaseTx(minerAddr)
+	coinBaseTx, err := pow.CreateCoinbaseTx(minerAddr, nextBlockHeight)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +249,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 	isHighPriority := func(tx *types.Transaction) bool {
 		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() ||
 			tx.IsSideChainPowTx() || tx.IsUpdateVersion() ||
-			tx.IsActivateProducerTx() {
+			tx.IsActivateProducerTx() || tx.IsCRCAppropriationTx() {
 			return true
 		}
 		return false
@@ -263,11 +267,11 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 
 	for _, tx := range txs {
 		size := totalTxsSize + tx.GetSize()
-		if size > int(pact.MaxBlockSize) {
+		if size > int(pact.MaxBlockContextSize) {
 			continue
 		}
 		totalTxsSize = size
-		if txCount >= maxTxPerBlock {
+		if txCount >= txPerBlock {
 			log.Warn("txCount reached max MaxTxPerBlock")
 			break
 		}
@@ -281,7 +285,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 			break
 		}
 		errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx, references)
-		if errCode != elaerr.Success {
+		if errCode != nil {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}
@@ -301,7 +305,8 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 	msgBlock.Header.MerkleRoot = txRoot
 
 	msgBlock.Header.Bits, err = pow.chain.CalcNextRequiredDifficulty(bestChain, time.Now())
-	log.Info("difficulty: ", msgBlock.Header.Bits)
+	log.Infof("block height %d with difficulty: %d",
+		msgBlock.Height, msgBlock.Header.Bits)
 
 	return msgBlock, err
 }
@@ -320,7 +325,7 @@ func (pow *Service) CreateAuxBlock(payToAddr string) (*types.Block, error) {
 		}
 
 		// Create new block with nonce = 0
-		auxBlock, err := pow.GenerateBlock(payToAddr)
+		auxBlock, err := pow.GenerateBlock(payToAddr, maxTxPerBlock)
 		if err != nil {
 			return nil, err
 		}
@@ -380,7 +385,7 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 
 	log.Info("<================Discrete Mining==============>\n")
 	for {
-		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
+		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, maxTxPerBlock)
 		if err != nil {
 			log.Warn("Generate block failed, ", err.Error())
 			continue
@@ -479,7 +484,7 @@ out:
 		log.Debug("<================Packing Block==============>")
 		//time.Sleep(15 * time.Second)
 
-		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
+		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, maxTxPerBlock)
 		if err != nil {
 			log.Debug("generage block err", err)
 			continue

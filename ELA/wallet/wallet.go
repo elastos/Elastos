@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 
 	"github.com/elastos/Elastos.ELA/account"
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/checkpoint"
@@ -118,52 +117,24 @@ func (w *Wallet) ImportAddress(address string, enableUtxoDB bool) error {
 	return w.RescanWallet()
 }
 
-func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint256][]*blockchain.UTXO,
+func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint256][]*types.UTXO,
 	error) {
-	if enableUtxoDB {
-		programHash, err := common.Uint168FromAddress(address)
-		if err != nil {
-			return nil, err
-		}
-		unspent, err := Store.GetUnspentsFromProgramHash(*programHash)
-		if err != nil {
-			return nil, err
-		}
-
-		return unspent, nil
-	}
-
 	coins := w.ListCoins(address)
-	utxos := make([]*blockchain.UTXO, 0)
+	utxos := make([]*types.UTXO, 0)
 	for op, coin := range coins {
-		utxos = append(utxos, &blockchain.UTXO{
+		utxos = append(utxos, &types.UTXO{
 			TxID:  op.TxID,
-			Index: uint32(op.Index),
+			Index: op.Index,
 			Value: coin.Output.Value,
 		})
 	}
-	unspent := make(map[common.Uint256][]*blockchain.UTXO, 0)
+	unspent := make(map[common.Uint256][]*types.UTXO, 0)
 	unspent[*account.SystemAssetID] = utxos
 
 	return unspent, nil
 }
 
 func (w *Wallet) RescanWallet() error {
-	bestHeight := Chain.GetHeight()
-	for i := uint32(0); i <= bestHeight; i++ {
-		hash, err := Chain.GetBlockHash(i)
-		if err != nil {
-			return err
-		}
-		block, err := Store.GetBlock(hash)
-		if err != nil {
-			return err
-		}
-		w.OnBlockSaved(&types.DposBlock{
-			Block: block,
-		})
-	}
-
 	return nil
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
+// Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -21,7 +21,6 @@ import (
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	dpeer "github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -36,7 +35,6 @@ const (
 
 type DPOSNetworkConfig struct {
 	ProposalDispatcher *ProposalDispatcher
-	Store              store.IDposStore
 	PublicKey          []byte
 	AnnounceAddr       func()
 }
@@ -206,6 +204,7 @@ func (d *DPOSManager) ProcessHigherBlock(b *types.Block) {
 
 	if !d.consensus.IsOnDuty() {
 		log.Info("[ProcessHigherBlock] broadcast inv and try start new consensus")
+		d.network.BroadcastMessage(dmsg.NewInventory(b.Header.Previous))
 		d.network.BroadcastMessage(dmsg.NewInventory(b.Hash()))
 	}
 
