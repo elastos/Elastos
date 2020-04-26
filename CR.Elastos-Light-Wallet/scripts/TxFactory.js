@@ -5,10 +5,14 @@ const TxSigner = require('./TxSigner.js');
 const AddressTranscoder = require('./AddressTranscoder.js');
 const Asset = require('./Asset.js');
 const BigNumber = require('bignumber.js');
+const mainConsoleLib = require('console');
 
+const mainConsole = new mainConsoleLib.Console(process.stdout, process.stderr);
 
 /* eslint-disable */
 const ZERO = BigNumber(0, 10);
+
+const FEE_SATS = BigNumber(100, 10);
 /* eslint-enable */
 
 const createSignedSendToTx = (privateKey, unspentTransactionOutputs, sendToAddress, sendAmount, feeAmountSats, feeAccount) => {
@@ -55,6 +59,7 @@ const createUnsignedSendToTx = (unspentTransactionOutputs, sendToAddress, sendAm
 };
 
 const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountStr, feeAccount) => {
+  mainConsole.log('STARTED createUnsignedSendToTxSats');
   if (unspentTransactionOutputs == undefined) {
     throw new Error(`unspentTransactionOutputs is undefined`);
   }
@@ -73,7 +78,7 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
   if (feeAccount == undefined) {
     throw new Error(`feeAccount is undefined`);
   }
-  // console.log('createUnsignedSendToTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
+  mainConsole.log('createUnsignedSendToTxSats.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
   // console.log('createUnsignedSendToTx.sendToAddress ' + JSON.stringify(sendToAddress));
   // console.log('createUnsignedSendToTx.sendAmount ' + JSON.stringify(sendAmount));
 
@@ -99,12 +104,16 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
 
   /* eslint-disable */
   const feeAmountSats = BigNumber(feeAmountStr, 10);
-  const feeSats = BigNumber(100, 10);
+
   /* eslint-enable */
 
-  // console.log(`createUnsignedSendToTx.inputValueSats[${sendAmountSats}]`);
+  mainConsole.log(`createUnsignedSendToTx.inputValueSats[${sendAmountSats}]`);
 
-  const sendAmountAndFeeAmountSats = sendAmountSats.plus(feeAmountSats).plus(feeSats);
+  const sendAmountAndFeeAmountSats = sendAmountSats.plus(feeAmountSats).plus(FEE_SATS);
+
+  mainConsole.log(`createUnsignedSendToTx.FEE_SATS[${FEE_SATS}]`);
+
+  mainConsole.log(`createUnsignedSendToTx.feeAmountSats[${feeAmountSats}]`);
 
   // console.log(`createUnsignedSendToTx.sendAmountAndFeeAmountSats[${sendAmountAndFeeAmountSats}]`);
 
@@ -133,15 +142,15 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
     }
   });
 
-  // console.log(`createUnsignedSendToTx.inputValueSats[${inputValueSats}]`);
+  mainConsole.log(`createUnsignedSendToTx.sendAmountAndFeeAmountSats[${sendAmountAndFeeAmountSats}]`);
+
+  mainConsole.log(`createUnsignedSendToTx.inputValueSats[${inputValueSats}]`);
 
   const changeValueSats = inputValueSats.minus(sendAmountAndFeeAmountSats);
 
-  // console.log(`createUnsignedSendToTx.changeValueSats[${changeValueSats}]`);
+  mainConsole.log(`createUnsignedSendToTx.changeValueSats[${changeValueSats}]`);
 
-  const computedFeeSats = inputValueSats.minus(changeValueSats);
-
-  // console.log(`createUnsignedSendToTx.computedFeeSats[${computedFeeSats}]`);
+  mainConsole.log(`createUnsignedSendToTx.feeAmountSats[${feeAmountSats}]`);
 
   {
     const sendOutput = {};
@@ -169,12 +178,13 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
   }
 
   if (changeValueSats.isLessThan(ZERO)) {
+    mainConsole.log('FAILURE createUnsignedSendToTxSats', changeValueSats, tx);
     return undefined;
   }
 
   tx.Programs = [];
 
-  // console.log('createUnsignedSendToTx.unsignedTx ' + JSON.stringify(tx));
+  mainConsole.log('SUCCESS createUnsignedSendToTxSats', tx);
 
   return tx;
 };
@@ -187,7 +197,22 @@ const updateValueSats = (utxo, utxoIx) => {
   utxo.valueSats = valueBigNumber.times(Asset.satoshis);
 };
 
-const createUnsignedVoteTx = (unspentTransactionOutputs, publicKey, feeAmountSats, candidates) => {
+const createUnsignedVoteTx = (unspentTransactionOutputs, publicKey, feeAmountSats, candidates, feeAccount) => {
+  if (unspentTransactionOutputs == undefined) {
+    throw new Error(`unspentTransactionOutputs is undefined`);
+  }
+  if (publicKey == undefined) {
+    throw new Error(`publicKey is undefined`);
+  }
+  if (feeAmountSats == undefined) {
+    throw new Error(`feeAmountSats is undefined`);
+  }
+  if (candidates == undefined) {
+    throw new Error(`candidates is undefined`);
+  }
+  if (feeAccount == undefined) {
+    throw new Error(`feeAccount is undefined`);
+  }
   const sendToAddress = AddressTranscoder.getAddressFromPublicKey(publicKey);
   /* eslint-disable */
   let sendAmountSats = BigNumber(0, 10);
@@ -206,11 +231,11 @@ const createUnsignedVoteTx = (unspentTransactionOutputs, publicKey, feeAmountSat
       }
     }
   });
-  sendAmountSats = sendAmountSats.minus(feeAmountSats);
+  sendAmountSats = sendAmountSats.minus(feeAmountSats).minus(FEE_SATS);
 
-  console.log('createUnsignedSendToTxSats', unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats);
+  mainConsole.log('createUnsignedSendToTxSats', unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats, feeAccount);
 
-  const tx = createUnsignedSendToTxSats(unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats);
+  const tx = createUnsignedSendToTxSats(unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats, feeAccount);
   tx.Version = 9;
   const voteOutput = tx.Outputs[0];
   voteOutput.Type = 1;
@@ -229,9 +254,9 @@ const createUnsignedVoteTx = (unspentTransactionOutputs, publicKey, feeAmountSat
   return tx;
 };
 
-const createSignedVoteTx = (privateKey, unspentTransactionOutputs, feeAmountSats, candidates) => {
+const createSignedVoteTx = (privateKey, unspentTransactionOutputs, feeAmountSats, candidates, feeAccount) => {
   const publicKey = KeyTranscoder.getPublic(privateKey);
-  const tx = createUnsignedVoteTx(unspentTransactionOutputs, publicKey, feeAmountSats, candidates);
+  const tx = createUnsignedVoteTx(unspentTransactionOutputs, publicKey, feeAmountSats, candidates, feeAccount);
   const signature = TxSigner.getSignature(tx, privateKey);
   const encodedSignedTx = TxSigner.addSignatureToTx(tx, publicKey, signature);
 
