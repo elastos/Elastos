@@ -8,8 +8,8 @@ cd ..
 # Run pytest
 source venv/bin/activate
 pip install -q -r requirements.txt
-#py.test --disable-pytest-warnings -v -xs grpc_adenine/implementations/common_test.py
-py.test --disable-pytest-warnings -v -xs grpc_adenine/implementations/hive_test.py
+SHARED_SECRET_ADENINE=7XDnFBdHafpPyIC4nrtuJ5EUYVqdEKjW DB_NAME=smartweb_test DB_PORT=5436 py.test --disable-pytest-warnings -v -xs grpc_adenine/implementations/common_test.py
+DB_NAME=smartweb_test DB_PORT=5436 py.test --disable-pytest-warnings -v -xs grpc_adenine/implementations/hive_test.py
 
 # Cleanup
 docker container rm -f smartweb-postgres-test

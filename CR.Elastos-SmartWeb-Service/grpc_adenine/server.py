@@ -39,17 +39,18 @@ def serve():
     health_check_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
     logging.debug("Added Health Check Service to server")
 
+    secret_key = config('SHARED_SECRET_ADENINE')
+    common_pb2_grpc.add_CommonServicer_to_server(Common(secret_key), server)
+    logging.debug("Added Common Service to server")
+
     node_rpc_pb2_grpc.add_NodeRpcServicer_to_server(NodeRpc(), server)
     logging.debug("Added Node Rpc Service to server")
 
-    common_pb2_grpc.add_CommonServicer_to_server(Common(), server)
-    logging.debug("Added Common Service to server")
+    hive_pb2_grpc.add_HiveServicer_to_server(Hive(), server)
+    logging.debug("Added Hive Service to server")
 
     wallet_pb2_grpc.add_WalletServicer_to_server(Wallet(), server)
     logging.debug("Added Wallet Service to server")
-
-    hive_pb2_grpc.add_HiveServicer_to_server(Hive(), server)
-    logging.debug("Added Hive Service to server")
 
     sidechain_eth_pb2_grpc.add_SidechainEthServicer_to_server(SidechainEth(), server)
     logging.debug("Added Eth Sidechain Service to server")
