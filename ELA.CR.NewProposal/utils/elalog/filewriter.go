@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package elalog
 
@@ -92,15 +92,22 @@ func (w *fileWriter) writeHandler() {
 		// reach max size, remove oldest log file.
 		if atomic.AddInt64(&folderSize, bufLen) >= w.maxFolderSize {
 			var total int64
-			files, _ := ioutil.ReadDir(w.path)
+			files, err := ioutil.ReadDir(w.path)
+			if err != nil {
+				panic("Failed to read files from the folder, err:" + err.Error())
+			}
 			for _, f := range files {
 				total += f.Size()
+			}
+
+			if len(files) == 0 {
+				panic("No files in the folder")
 			}
 
 			// Get the oldest log file
 			file := files[0]
 			// Remove it
-			err := os.Remove(filepath.Join(w.path, file.Name()))
+			err = os.Remove(filepath.Join(w.path, file.Name()))
 			if err != nil {
 				atomic.StoreInt64(&folderSize, total)
 				fmt.Fprintf(os.Stderr, "Remove log file %s, err %v\n",
