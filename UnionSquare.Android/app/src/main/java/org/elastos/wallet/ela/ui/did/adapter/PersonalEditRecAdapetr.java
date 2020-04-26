@@ -106,7 +106,6 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
         } else {
 
             ((ViewHolder0) holder).tv1.setHint(personalInfoItemEntity.getHintShow1());
-            ((ViewHolder0) holder).et1.setText(personalInfoItemEntity.getText1());
             if (index == 0) {
                 ((ViewHolder0) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(16)});
             } else if (index < 9) {
@@ -114,6 +113,7 @@ public class PersonalEditRecAdapetr extends RecyclerView.Adapter<PersonalEditRec
             } else {
                 ((ViewHolder0) holder).et1.setFilters(new InputFilter[]{new InputFilter.LengthFilter(50)});
             }
+            ((ViewHolder0) holder).et1.setText(personalInfoItemEntity.getText1());
         }
         if (commonRvListener != null) {
             holder.iv.setOnClickListener(new View.OnClickListener() {

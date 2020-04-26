@@ -79,7 +79,7 @@ public class PersonalShowRecAdapetr extends RecyclerView.Adapter<RecyclerView.Vi
         PersonalInfoItemEntity personalInfoItemEntity = list.get(position);
         int index = personalInfoItemEntity.getIndex();
         if (holder instanceof ViewHolder1) {
-            //手机号
+            //头像
             ((ViewHolder1) holder).tv1.setText(personalInfoItemEntity.getHintShow1());
             String logo = personalInfoItemEntity.getText1();
             GlideApp.with(context).load(logo).error(R.mipmap.mine_did_default_avator)

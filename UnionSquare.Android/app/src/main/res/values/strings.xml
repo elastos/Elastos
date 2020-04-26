@@ -25,7 +25,7 @@
     <string name="the_declaration_of_the_node">节点宣言</string>
     <string name="node_information">节点信息</string>
     <string name="mmediately_to_vote">立即投票</string>
-    <string name="create_a_wallet">确认创建</string>
+    <string name="create_a_wallet">创建钱包</string>
     <string name="create_a_wallet_title">创建钱包（推荐）</string>
     <string name="import_the_wallet">导入钱包</string>
     <string name="please_enter_the_name_your_wallet">请输入钱包名称</string>

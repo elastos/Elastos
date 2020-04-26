@@ -193,7 +193,7 @@
         android:id="@+id/sb_create_wallet"
         style="@style/PublicButton"
         android:layout_marginTop="@dimen/px180"
-        android:text="@string/create_a_wallet" />
+        android:text="@string/surecreate" />
 
     <com.allen.library.SuperButton
         android:id="@+id/sb_import_wallet"

@@ -168,9 +168,13 @@ public class MainActivity extends BaseActivity implements MainViewData, NewBaseV
         String action = mIntent.getAction();
         if (TextUtils.equals(action, Intent.ACTION_VIEW)) {
             Uri uri = mIntent.getData();
-            if (uri == null || !uri.toString().endsWith(".jwt")) {
-                showToastMessage(getString(R.string.savesucess));
+            if (uri == null) {
+                return;
+            }
+            if (!uri.toString().endsWith(".jwt")) {
+                showToastMessage(getString(R.string.keepfaile));
             } else {
+                mIntent.setData(null);
                 new MainPresenter().readUri(uri, this);
             }
 
@@ -318,6 +322,9 @@ public class MainActivity extends BaseActivity implements MainViewData, NewBaseV
                 CredentialSubjectBean credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
                 if (credentialSubjectBean != null) {
                     String didName = credentialSubjectBean.getDidName();
+                    if (TextUtils.isEmpty(didName)) {
+                        didName = "unknown";
+                    }
                     String did = credentialSubjectBean.getDid().replace("did:elastos:", "");
                     new CredencialPresenter().keepFile(getCurrentCredentialFile(did, didName), credentialJson, this);
                 }
