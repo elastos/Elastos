@@ -146,8 +146,8 @@ func (s *State) ExistCandidateByCID(cid common.Uint168) (ok bool) {
 }
 
 // existCandidateByDepositHash judges if there is a candidate with deposit hash.
-func (s *State) existCandidateByDepositHash(cid common.Uint168) bool {
-	_, ok := s.DepositHashCIDMap[cid]
+func (s *State) existCandidateByDepositHash(hash common.Uint168) bool {
+	_, ok := s.DepositHashCIDMap[hash]
 	return ok
 }
 

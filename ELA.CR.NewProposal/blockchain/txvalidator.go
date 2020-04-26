@@ -498,7 +498,7 @@ func (b *BlockChain) checkVoteCRCProposalContent(
 func getCRMembersMap(members []*crstate.CRMember) map[string]struct{} {
 	crMaps := make(map[string]struct{})
 	for _, c := range members {
-		crMaps[c.Info.DID.String()] = struct{}{}
+		crMaps[c.Info.CID.String()] = struct{}{}
 	}
 	return crMaps
 }
