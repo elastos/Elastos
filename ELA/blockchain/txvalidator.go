@@ -447,6 +447,11 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32,
 	if payloadVersion < outputpayload.VoteProducerAndCRVersion {
 		return errors.New("payload VoteProducerVersion not support vote CR")
 	}
+	if blockHeight >= b.chainParams.CheckVoteCRCountHeight {
+		if len(content.CandidateVotes) > outputpayload.MaxVoteProducersPerTransaction {
+			return errors.New("invalid count of CR candidates ")
+		}
+	}
 	for _, cv := range content.CandidateVotes {
 		cid, err := common.Uint168FromBytes(cv.Candidate)
 		if err != nil {
