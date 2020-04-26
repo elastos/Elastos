@@ -319,6 +319,7 @@ public final class DIDStore {
 						log.debug("{} is {}, skip.", did.toString(),
 								e instanceof DIDExpiredException ?
 								"expired" : "deactivated");
+						blanks = 0;
 						continue;
 					}
 
@@ -1501,9 +1502,9 @@ public final class DIDStore {
 		return deletePrivateKey(_did, _id);
 	}
 
-	public String sign(DID did, DIDURL id, String storepass, byte[] ... data)
+	public String sign(DID did, DIDURL id, String storepass, byte[] digest)
 			throws DIDStoreException {
-		if (did == null || storepass == null || storepass.isEmpty() || data == null)
+		if (did == null || storepass == null || storepass.isEmpty() || digest == null)
 			throw new IllegalArgumentException();
 
 		if (id == null) {
@@ -1517,7 +1518,7 @@ public final class DIDStore {
 		byte[] binKey = loadPrivateKey(did, id, storepass);
 		HDKey.DerivedKey key = HDKey.DerivedKey.deserialize(binKey);
 
-		byte[] sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), data);
+		byte[] sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), digest);
 
 		key.wipe();
 		Arrays.fill(binKey, (byte)0);
@@ -1526,9 +1527,9 @@ public final class DIDStore {
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 	}
 
-	public String sign(DID did, String storepass, byte[] ... data)
+	public String sign(DID did, String storepass, byte[] digest)
 			throws DIDStoreException {
-		return sign(did, null, storepass, data);
+		return sign(did, null, storepass, digest);
 	}
 
 	public void changePassword(String oldPassword, String newPassword)

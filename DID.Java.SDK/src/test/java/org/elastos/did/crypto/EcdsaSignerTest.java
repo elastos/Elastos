@@ -47,21 +47,21 @@ public class EcdsaSignerTest {
 		HDKey root = HDKey.fromMnemonic(mnemonic, "");
 		key = root.derive(0);
 
-		sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), plain.getBytes(), nonce.getBytes());
+		sig = EcdsaSigner.signData(key.getPrivateKeyBytes(), plain.getBytes(), nonce.getBytes());
 
 		assertEquals(64, sig.length);
 	}
 
 	@Test
 	public void testVerify() {
-		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), sig, plain.getBytes(), nonce.getBytes());
+		boolean result = EcdsaSigner.verifyData(key.getPublicKeyBytes(), sig, plain.getBytes(), nonce.getBytes());
 
 		assertTrue(result);
 	}
 
 	@Test
 	public void testVerify1() {
-		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), sig, (plain + ".").getBytes(), nonce.getBytes());
+		boolean result = EcdsaSigner.verifyData(key.getPublicKeyBytes(), sig, (plain + ".").getBytes(), nonce.getBytes());
 
 		assertFalse(result);
 	}
@@ -71,7 +71,7 @@ public class EcdsaSignerTest {
 		byte[] modSig = Arrays.copyOf(sig, sig.length);
 		modSig[8] +=1;
 
-		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), modSig, plain.getBytes(), nonce.getBytes());
+		boolean result = EcdsaSigner.verifyData(key.getPublicKeyBytes(), modSig, plain.getBytes(), nonce.getBytes());
 
 		assertFalse(result);
 	}
@@ -81,7 +81,7 @@ public class EcdsaSignerTest {
 		byte[] modSig = Arrays.copyOf(sig, sig.length);
 		modSig[8] +=1;
 
-		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), modSig, plain.getBytes(), "testcase0".getBytes());
+		boolean result = EcdsaSigner.verifyData(key.getPublicKeyBytes(), modSig, plain.getBytes(), "testcase0".getBytes());
 
 		assertFalse(result);
 	}
@@ -91,7 +91,7 @@ public class EcdsaSignerTest {
 		byte[] modSig = Arrays.copyOf(sig, sig.length);
 		modSig[8] +=1;
 
-		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), modSig, plain.getBytes());
+		boolean result = EcdsaSigner.verifyData(key.getPublicKeyBytes(), modSig, plain.getBytes());
 
 		assertFalse(result);
 	}
@@ -107,12 +107,12 @@ public class EcdsaSignerTest {
 
 		byte[] sig = Base64.decode(expectedSig1,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
-		boolean result = EcdsaSigner.verify(pk, sig, input.getBytes());
+		boolean result = EcdsaSigner.verifyData(pk, sig, input.getBytes());
 		assertTrue(result);
 
 		sig = Base64.decode(expectedSig2,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
-		result = EcdsaSigner.verify(pk, sig, input.getBytes());
+		result = EcdsaSigner.verifyData(pk, sig, input.getBytes());
 		assertTrue(result);
 	}
 }

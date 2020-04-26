@@ -34,7 +34,7 @@ import org.spongycastle.crypto.signers.ECDSASigner;
 import org.spongycastle.crypto.signers.RandomDSAKCalculator;
 
 public class EcdsaSigner {
-	public static byte[] sign(byte[] privateKey, byte[] ... inputs) {
+	public static byte[] sign(byte[] privateKey, byte[] digest) {
 		BigInteger keyInt = new BigInteger(1, privateKey);
 
 		ECPrivateKeyParameters keyParams = new ECPrivateKeyParameters(
@@ -44,7 +44,7 @@ public class EcdsaSigner {
 				new RandomDSAKCalculator());
 		signer.init(true, keyParams);
 
-		BigInteger[] rs = signer.generateSignature(sha256Digest(inputs));
+		BigInteger[] rs = signer.generateSignature(digest);
 
 		byte[] r = bigIntegerToBytes(rs[0], 32);
 		byte[] s = bigIntegerToBytes(rs[1], 32);
@@ -56,7 +56,11 @@ public class EcdsaSigner {
 		return sig;
 	}
 
-	public static boolean verify(byte[] publicKey, byte[] sig, byte[] ... inputs) {
+	public static byte[] signData(byte[] privateKey, byte[] ...data) {
+		return sign(privateKey, sha256Digest(data));
+	}
+
+	public static boolean verify(byte[] publicKey, byte[] sig, byte[] digest) {
 		if (sig.length != 64) {
 			return false;
 		}
@@ -75,10 +79,14 @@ public class EcdsaSigner {
 		BigInteger r = parseBigIntegerPositive(new BigInteger(rb), rb.length * 8);
 		BigInteger s = parseBigIntegerPositive(new BigInteger(sb), rb.length * 8);
 
-		return signer.verifySignature(sha256Digest(inputs), r, s);
+		return signer.verifySignature(digest, r, s);
 	}
 
-	private static byte[] sha256Digest(byte[] ... inputs) {
+	public static boolean verifyData(byte[] publicKey, byte[] sig, byte[] ...data) {
+		return verify(publicKey, sig, sha256Digest(data));
+	}
+
+	public static byte[] sha256Digest(byte[] ... inputs) {
 		byte digest[] = new byte[32];
 
 		SHA256Digest sha256 = new SHA256Digest();

@@ -995,22 +995,14 @@ public class DIDDocument {
 		return new Builder(this);
 	}
 
-	public String sign(String storepass, byte[] ... data)
-			throws DIDStoreException {
-		DIDURL key = getDefaultPublicKey();
-		return sign(key, storepass, data);
-	}
-
 	public String sign(DIDURL id, String storepass, byte[] ... data)
 			throws DIDStoreException {
-		if (id == null || data == null ||
+		if (id == null || data == null || data.length == 0 ||
 				storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
-		if (!getMeta().attachedStore())
-			throw new DIDStoreException("Not attached with DID store.");
-
-		return getMeta().getStore().sign(getSubject(), id, storepass, data);
+		byte[] digest = EcdsaSigner.sha256Digest(data);
+		return signDigest(id, storepass, digest);
 	}
 
 	public String sign(String id, String storepass, byte[] ... data)
@@ -1019,9 +1011,42 @@ public class DIDDocument {
 		return sign(_id, storepass, data);
 	}
 
-	public boolean verify(String signature, byte[] ... data) {
+	public String sign(String storepass, byte[] ... data)
+			throws DIDStoreException {
 		DIDURL key = getDefaultPublicKey();
-		return verify(key, signature, data);
+		return sign(key, storepass, data);
+	}
+
+	public String signDigest(DIDURL id, String storepass, byte[] digest)
+			throws DIDStoreException {
+		if (id == null || digest == null || storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException();
+
+		if (!getMeta().attachedStore())
+			throw new DIDStoreException("Not attached with DID store.");
+
+		return getMeta().getStore().sign(getSubject(), id, storepass, digest);
+	}
+
+	public String signDigest(String id, String storepass, byte[] digest)
+			throws DIDStoreException {
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return signDigest(_id, storepass, digest);
+	}
+
+	public String signDigest(String storepass, byte[] digest)
+			throws DIDStoreException {
+		DIDURL key = getDefaultPublicKey();
+		return signDigest(key, storepass, digest);
+	}
+
+	public boolean verify(DIDURL id, String signature, byte[] ... data) {
+		if (id == null || signature == null || signature.isEmpty() ||
+				data == null || data.length == 0)
+			throw new IllegalArgumentException();
+
+		byte[] digest = EcdsaSigner.sha256Digest(data);
+		return verifyDigest(id, signature, digest);
 	}
 
 	public boolean verify(String id, String signature, byte[] ... data) {
@@ -1029,8 +1054,13 @@ public class DIDDocument {
 		return verify(_id, signature, data);
 	}
 
-	public boolean verify(DIDURL id, String signature, byte[] ... data) {
-		if (id == null || signature == null || signature.isEmpty() || data == null)
+	public boolean verify(String signature, byte[] ... data) {
+		DIDURL key = getDefaultPublicKey();
+		return verify(key, signature, data);
+	}
+
+	public boolean verifyDigest(DIDURL id, String signature, byte[] digest) {
+		if (id == null || signature == null || signature.isEmpty() || digest == null)
 			throw new IllegalArgumentException();
 
 		PublicKey pk = getPublicKey(id);
@@ -1038,7 +1068,17 @@ public class DIDDocument {
 		byte[] sig = Base64.decode(signature,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 
-		return EcdsaSigner.verify(binkey, sig, data);
+		return EcdsaSigner.verify(binkey, sig, digest);
+	}
+
+	public boolean verifyDigest(String id, String signature, byte[] digest) {
+		DIDURL _id = id == null ? null : new DIDURL(getSubject(), id);
+		return verifyDigest(_id, signature, digest);
+	}
+
+	public boolean verifyDigest(String signature, byte[] digest) {
+		DIDURL key = getDefaultPublicKey();
+		return verifyDigest(key, signature, digest);
 	}
 
 	private void parse(JsonNode doc) throws MalformedDocumentException {
