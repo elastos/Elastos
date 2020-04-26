@@ -319,14 +319,14 @@ func (p *Params) RegNet() *Params {
 		"03c559769d5f7bb64c28f11760cb36a2933596ca8a966bc36a09d50c24c48cc3e8",
 		"03b5d90257ad24caf22fa8a11ce270ea57f3c2597e52322b453d4919ebec4e6300",
 	}
-	copy.SecretaryGeneral = "" // todo correct me later
+	copy.SecretaryGeneral = "039565b59479ad39e520a5ec9f112af446c1603d7cde0446e607ec43bc480ba125"
 	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 170000
 	copy.CRCOnlyDPOSHeight = 211000
 	copy.PublicDPOSHeight = 234000
 	copy.CRVotingStartHeight = 292000
-	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
+	copy.CRCommitteeStartHeight = 436000
 	copy.EnableActivateIllegalHeight = 256000
 	copy.CheckRewardHeight = 280000
 	copy.VoteStatisticsHeight = 0
@@ -540,7 +540,7 @@ type Params struct {
 	//MaxCommitteeProposalCount defines per committee max proposal count
 	MaxCommitteeProposalCount uint32
 
-	// SecretaryGeneral defines the secretary general of CR.
+	// SecretaryGeneral defines the secretary general of CR by public key.
 	SecretaryGeneral string
 
 	// MaxProposalTrackingCount defines the max count of CRC proposal tracking
