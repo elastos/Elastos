@@ -136,8 +136,7 @@ public class FiletransferNewTest {
             assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
             assertTrue((carrier.isFriend(robot.getNodeid())));
 
-            Manager.initializeInstance(carrier);
-            mgr = Manager.getInstance();
+            mgr = Manager.createInstance(carrier);
             assertTrue(mgr != null);
 
             assertTrue(robot.writeCmd("ft_init"));
@@ -183,8 +182,7 @@ public class FiletransferNewTest {
             assertTrue(TestHelper.removeFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
             assertFalse((carrier.isFriend(robot.getNodeid())));
 
-            Manager.initializeInstance(carrier);
-            mgr = Manager.getInstance();
+            mgr = Manager.createInstance(carrier);
             assertTrue(mgr != null);
 
             filetransferHandler = new TestFiletransferHandler(context);
@@ -211,8 +209,7 @@ public class FiletransferNewTest {
 
         TestOptions options = new TestOptions(context.getAppPath());
         try {
-            Carrier.initializeInstance(options, handler);
-            carrier = Carrier.getInstance();
+            carrier = Carrier.createInstance(options, handler);
             carrier.start(0);
             synchronized (carrier) {
                 carrier.wait();

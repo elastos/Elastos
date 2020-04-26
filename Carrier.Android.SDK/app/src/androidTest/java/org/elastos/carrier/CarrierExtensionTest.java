@@ -264,8 +264,7 @@ public class CarrierExtensionTest {
 
         TestOptions options = new TestOptions(context.getAppPath());
         try {
-            Carrier.initializeInstance(options, handler);
-            carrier = Carrier.getInstance();
+            carrier = Carrier.createInstance(options, handler);
             extension = new CarrierExtension(carrier) {
                 protected void onFriendInvite(Carrier carrier, String from, String data) {
                     TestContext.Bundle bundle = context.getExtra();
