@@ -899,10 +899,10 @@ func (c *Committee) ExistCandidateByNickname(nickname string) bool {
 	return c.state.existCandidateByNickname(nickname)
 }
 
-func (c *Committee) ExistCandidateByDepositHash(cid common.Uint168) bool {
+func (c *Committee) ExistCandidateByDepositHash(hash common.Uint168) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
-	return c.state.existCandidateByDepositHash(cid)
+	return c.state.existCandidateByDepositHash(hash)
 }
 
 func (c *Committee) GetPenalty(cid common.Uint168) common.Fixed64 {
