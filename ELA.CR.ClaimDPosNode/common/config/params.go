@@ -213,7 +213,8 @@ var DefaultParams = Params{
 		HistoryStartHeight: uint32(0),
 		NeedSave:           false,
 	}),
-	TxCacheVolume: 100000,
+	TxCacheVolume:          100000,
+	CheckVoteCRCountHeight: 0, // todo correct me later
 }
 
 // TestNet returns the network parameters for the test network.
@@ -274,6 +275,7 @@ func (p *Params) TestNet() *Params {
 	copy.CRCAppropriatePercentage = 10
 	copy.MaxCommitteeProposalCount = 128
 	copy.MaxNodePerHost = 10
+	copy.CheckVoteCRCountHeight = 0 // todo correct me later
 
 	return &copy
 }
@@ -336,6 +338,7 @@ func (p *Params) RegNet() *Params {
 	copy.CRCAppropriatePercentage = 10
 	copy.MaxCommitteeProposalCount = 128
 	copy.MaxNodePerHost = 10
+	copy.CheckVoteCRCountHeight = 435000
 
 	return &copy
 }
@@ -566,6 +569,9 @@ type Params struct {
 	TxCacheVolume uint32
 	//MaxNodePerHost defines max nodes that one host can establish
 	MaxNodePerHost uint32
+
+	// CheckVoteCRCountHeight defines the height to check count of vote CR
+	CheckVoteCRCountHeight uint32
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time
