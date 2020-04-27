@@ -10,7 +10,3 @@ wget -q -O - https://raw.githubusercontent.com/LedgerHQ/udev-rules/master/add_ud
 ```
 
 todo:
-1. get fee from
-  https://node1.elaphant.app/api/v1/fee
-2. get fee account from
-  https://node1.elaphant.app/api/v1/node/reward/address

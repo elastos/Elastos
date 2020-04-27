@@ -534,6 +534,19 @@ const updateAmountAndFees = () => {
   // mainConsole.log('SUCCESS updateAmountAndFees');
 };
 
+const showLedgerConfirmBanner = () => {
+  bannerStatus = 'Confirm Amount On Ledger';
+  bannerClass = 'bg_green color_white banner-look';
+  GuiUtils.show('homeBanner');
+  GuiUtils.show('votingBanner');
+  renderApp();
+}
+
+const hideLedgerConfirmBanner = () => {
+  GuiUtils.hide('homeBanner');
+  GuiUtils.hide('votingBanner');
+}
+
 const sendAmountToAddress = () => {
   updateAmountAndFees();
 
@@ -550,12 +563,15 @@ const sendAmountToAddress = () => {
   let encodedTx;
 
   if (useLedgerFlag) {
+    showLedgerConfirmBanner();
     const tx = TxFactory.createUnsignedSendToTx(unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats, feeAccount);
     const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
     const sendAmountToAddressLedgerCallback = (message) => {
       if (LOG_LEDGER_POLLING) {
         mainConsole.log(`sendAmountToAddressLedgerCallback ${JSON.stringify(message)}`);
       }
+
+      hideLedgerConfirmBanner();
       if (!message.success) {
         sendToAddressStatuses.length = 0;
         sendToAddressLinks.length = 0;
@@ -760,6 +776,7 @@ const sendVoteTx = () => {
     // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
     candidateVoteListStatus = `Voting for ${parsedProducerList.producersCandidateCount} candidates.`;
     if (useLedgerFlag) {
+      showLedgerConfirmBanner();
       if (unspentTransactionOutputs) {
         const tx = TxFactory.createUnsignedVoteTx(unspentTransactionOutputs, publicKey, feeAmountSats, candidates, feeAccount);
         const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
@@ -767,6 +784,7 @@ const sendVoteTx = () => {
           if (LOG_LEDGER_POLLING) {
             mainConsole.log(`sendVoteLedgerCallback ${JSON.stringify(message)}`);
           }
+          hideLedgerConfirmBanner();
           if (!message.success) {
             // sendToAddressStatuses.length = 0;
             // sendToAddressLinks.length = 0;
@@ -865,9 +883,10 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
         const elaDisplay = Number(elaFloat.toFixed(8));
         const parsedTransaction = {};
         parsedTransaction.sortTime = tx.CreateTime;
-        if (tx.CreateTime == 0) {
-          parsedTransaction.sortTime = new Date();
+        if (tx.Status == 'pending' && tx.CreateTime == 0) {
+          parsedTransaction.sortTime = Math.floor(new Date() / 1000);
         }
+        // mainConsole.log('parsedTransaction.sortTime', tx.Status, parsedTransaction.sortTime);
         parsedTransaction.n = txIx;
         parsedTransaction.type = tx.Type;
         if (tx.Type == 'income') {
