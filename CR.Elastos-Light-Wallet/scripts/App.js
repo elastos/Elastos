@@ -833,9 +833,15 @@ const sendVoteReadyCallback = (transactionJson) => {
   mainConsole.log('sendVoteReadyCallback ' + JSON.stringify(transactionJson));
   if (transactionJson.Error) {
     candidateVoteListStatus = `Vote Error: ${transactionJson.Error} ${transactionJson.Result}`;
+    bannerStatus = candidateVoteListStatus;
+    bannerClass = 'bg_red color_white banner-look';
   } else {
     candidateVoteListStatus = `Vote Success TX: ${transactionJson.Result}`;
+    bannerStatus = candidateVoteListStatus;
+    bannerClass = 'bg_green color_white banner-look';
   }
+  GuiUtils.show('homeBanner');
+  GuiUtils.show('votingBanner');
   renderApp();
 };
 
