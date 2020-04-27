@@ -48,6 +48,7 @@ html {
   justify-content: space-evenly;
   z-index: 1;
   width: 650px;
+  color: white;
 }
 
 .display_inline_block {
@@ -113,10 +114,11 @@ html {
 }
 
 .nav-icon {
-  top: 13px;
-  left: 734px;
+  top: 18px;
+  left: 729px;
   position: absolute;
-  padding: 20px 0px;
+  padding: 15px 5px;
+  border-radius: 10px;
 }
 
 #homeMenuOpen {
@@ -125,9 +127,11 @@ html {
 }
 
 .refresh-icon {
-  top: 28px;
-  left: 695px;
+  top: 23px;
+  left: 690px;
   position: absolute;
+  padding: 5px;
+  border-radius: 5px;
 }
 
 .refresh-icon:hover,
@@ -223,7 +227,7 @@ html {
 }
 
 .candidate-total {
-  font-size: 7.8px;
+  font-size: 10px;
   color: #B2B4C3;
   letter-spacing: 0;
   left: 57px;
@@ -232,11 +236,11 @@ html {
 }
 
 .candidate-voted {
-  font-size: 7.8px;
+  font-size: 10px;
   color: #B2B4C3;
   letter-spacing: 0;
   left: 57px;
-  top: 301.13px;
+  top: 302px;
   white-space: nowrap;
 }
 
@@ -249,15 +253,6 @@ html {
   white-space: nowrap;
 }
 
-.arrow-right {}
-
-#scroll-radio {
-  left: 57px;
-  top: 390.56px;
-  position: absolute;
-}
-
-#scroll-radio input[type="radio"] {}
 
 #news {
   width: 160px;
@@ -352,17 +347,17 @@ html {
 }
 
 .ela-address__input {
-  opacity: 0.3;
+  opacity: 0.7;
   background: rgba(168, 170, 174, 0.22);
   border-radius: 6.69px;
   position: absolute;
-  font-size: 8.91px;
+  font-size: 10px;
   color: #FFFFFF;
   letter-spacing: 0;
   height: 46.8px;
-  width: 194.44px;
+  width: 225px;
   top: 95.27px;
-  left: 293.06px;
+  left: 278px;
   text-align: center;
   border: none;
   text-align: left;
@@ -371,7 +366,7 @@ html {
 
 .ela-address__input::placeholder {
   opacity: 1;
-  font-size: 8.91px;
+  font-size: q0px;
   color: #FFFFFF;
   letter-spacing: 0;
 }
@@ -425,11 +420,11 @@ html {
 }
 
 #feeAmount {
-  opacity: 0.3;
+  opacity: 0.7;
   background: rgba(168, 170, 174, 0.22);
   border-radius: 6.69px;
   position: absolute;
-  font-size: 8.91px;
+  font-size: 10px;
   color: #FFFFFF;
   letter-spacing: 0;
   height: 46.8px;
@@ -443,30 +438,31 @@ html {
 }
 
 .fees-text {
-  font-size: 7.8px;
+  font-size: 10px;
   color: #FFFFFF;
   letter-spacing: 0;
   line-height: 11.14px;
-  font-weight: 400;
+  font-weight: 600;
   left: 308.66px;
   top: 96.39;
   position: absolute;
 }
 
 .estimate-new {
-  left: 308.66px;
-  top: 170;
-  font-size: 7.8px;
+  left: 303.66px;
+  top: 168;
+  font-size: 10px;
   color: #C0C2CA;
   letter-spacing: 0;
   line-height: 13.37px;
   position: absolute;
+  padding: 5px;
 }
 
 .fees-balance {
   left: 308.66px;
   top: 185;
-  font-size: 7.8px;
+  font-size: 10px;
   color: #C0C2CA;
   letter-spacing: 0;
   line-height: 13.37px;
@@ -474,7 +470,7 @@ html {
 }
 
 .fees-balance span {
-  font-weight: 400;
+  font-weight: 600;
   color: #E5A776;
 }
 
@@ -492,14 +488,14 @@ html {
   align-items: center;
   border: none;
   margin: 0;
-  font-weight: 400;
+  font-weight: 600;
   font-size: 10.03px;
   color: #FFFFFF;
   letter-spacing: 0;
 }
 
 .sendela-button:active,
-.sendela-button:hover {
+.sendela-button:hover{
   background: rgba(151, 153, 166, 0.16);
 }
 
@@ -507,9 +503,11 @@ html {
   font-size: 10.03px;
   color: #B2B4C3;
   letter-spacing: 0;
-  top: 259.6;
-  left: 293.6;
+  top: 251.6;
+  left: 277.6;
   position: absolute;
+  padding: 8px 16px;
+  border-radius: 10px;
 }
 
 .receive-area {
@@ -578,7 +576,7 @@ html {
 
 .scanqr-text {
   opacity: 0.7;
-  font-size: 7.8px;
+  font-size: 10px;
   color: #9799A6;
   letter-spacing: 0;
   line-height: 11.14px;
@@ -587,12 +585,11 @@ html {
 }
 
 .howqr-text {
-  font-family: BioSans-Regular;
-  font-size: 8.91px;
+  font-size: 10px;
   letter-spacing: 0;
   line-height: 11.14px;
-  left: 628px;
-  top: 184px;
+  left: 636px;
+  top: 190px;
 }
 
 .rec-separator {
@@ -614,7 +611,7 @@ html {
 }
 
 .verifyledger-text {
-  font-size: 7.8px;
+  font-size: 10px;
   color: #C0C2CA;
   letter-spacing: 0;
   line-height: 11.14px;
@@ -644,11 +641,11 @@ html {
 
 .blockcount {
   opacity: 0.7;
-  font-size: 7.8px;
+  font-size: 10px;
   color: #9799A6;
   letter-spacing: 0;
   line-height: 11.14px;
-  top: 334.84px;
+  top: 330.84px;
   left: 660.21px;
   text-align: right;
   position: absolute;
@@ -738,6 +735,7 @@ footer div {
 }
 
 #logout-text {
+  padding: 8px;
   opacity: 0.9;
   font-size: 8.91px;
   color: #9799A6;
@@ -745,15 +743,20 @@ footer div {
   text-align: center;
   vertical-align: center;
   position: relative;
+  border-radius: 5px;
+  margin: 0;
   padding-right: 10px;
   align-self: flex-end;
   display: inline-block;
+
 }
 
 .logout-image {
   vertical-align: middle;
   align-self: flex-end;
   display: inline-block;
+  padding: 8px;
+  border-radius: 5px;
 }
 
 select, input {
@@ -840,6 +843,11 @@ select, input {
   border: solid;
   border-width: 1px;
   border-color: gray;
+}
+
+.bottom-border {
+  border: none;
+  border-bottom: black 2px solid;
 }
 
 .w750h520px {
@@ -976,6 +984,10 @@ select, input {
   color: white;
 }
 
+.color_red {
+  color: red;
+}
+
 .bgcolor_red {
   background-color: red;
 }
@@ -1049,6 +1061,10 @@ select, input {
   white-space: nowrap;
 }
 
+.padding_0 {
+  padding: 0
+}
+
 .padding_5px {
   padding: 5px;
 }
@@ -1098,7 +1114,7 @@ select, input {
   font-size: 17.83px;
   color: #FFFFFF;
   letter-spacing: 0;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .candidate-status {
@@ -1157,7 +1173,7 @@ select, input {
   font-size: 13.37px;
   color: #FFFFFF;
   letter-spacing: 0;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .voting-row5 {
@@ -1209,7 +1225,7 @@ select, input {
   background: rgba(168, 170, 174, 0.22);
   border-radius: 10px;
   width: 333px;
-  height: 61px;
+  height: 65px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1219,9 +1235,16 @@ select, input {
 .br30 {
   border-radius: 30px;
 }
+.br10 {
+  border-radius: 10px;
+}
 
 .br5 {
   border-radius: 5px;
+}
+
+.cursor_def {
+  cursor: default;
 }
 
 .bg_green {
@@ -1259,5 +1282,79 @@ select, input {
   letter-spacing: 0;
   width: 57px;
   height: 57px;
-  font-weight: 400;
+  font-weight: 600;
+}
+
+.login-div {
+  margin: auto;
+  display: flex;
+  flex-flow: column;
+  width: 420px;
+  height: 100%;
+  border-radius: 38px;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.proceed-btn {
+  background-image: linear-gradient(-214deg, #F4D2AE 0%, #E5A776 100%);
+  box-shadow: 0 2px 4px -1px rgba(25, 23, 41, 0.66);
+  border-radius: 5.57px;
+  width: 112px;
+  height: 34.54px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  margin: 0;
+  font-weight: 600;
+  font-size: 10.03px;
+  color: #FFFFFF;
+  letter-spacing: 0;
+}
+
+.list-none {
+  list-style: none
+}
+
+.textarea-placeholder::placeholder {
+  text-align: center;
+}
+
+.home-btn {
+  background-image: linear-gradient(-214deg, #F4D2AE 0%, #E5A776 100%);
+  box-shadow: 0 2px 4px -1px rgba(25, 23, 41, 0.66);
+  border-radius: 5.57px;
+  width: 357px;
+  height: 47px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: #FFFFFF;
+  letter-spacing: 0;
+
+}
+
+.ledgercon {
+  border-radius: 10px;
+  position: fixed;
+  top: 370px;
+  left: 582px;
+  padding: 10px;
+}
+
+.ledgernotcon {
+  border-radius: 10px;
+  position: fixed;
+  top: 473px;
+  left: 651px;
+  padding: 10px;
+}
+
+.flexgrow_pt35 {
+  flex-grow: 0.35
 }

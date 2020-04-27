@@ -115,7 +115,7 @@ app.on( 'ready', () => {
         frame: false,
         titleBarStyle: 'hidden',
         transparent: true,
-        trafficLightPosition: {x: 12, y: 42},
+        trafficLightPosition: {x: 15, y: 15},
         icon: path.join( __dirname, 'assets/icons/png/64x64.png' ),
         webPreferences: {
             nodeIntegration: true
