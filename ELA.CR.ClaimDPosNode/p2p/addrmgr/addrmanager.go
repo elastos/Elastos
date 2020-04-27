@@ -380,10 +380,19 @@ func (a *AddrManager) expirePeers() {
 
 	a.mtx.Lock()
 	for k, _ := range removeList {
+		var existInAddrNew bool
 		for i := 0; i < newBucketCount; i++ {
-			delete(a.addrNew[i], k)
+			if _, ok := a.addrNew[i][k]; ok {
+				a.addrNew[i][k].refs--
+				delete(a.addrNew[i], k)
+				existInAddrNew = true
+			}
 		}
-		delete(a.addrIndex, k)
+
+		if existInAddrNew && a.addrIndex[k].refs == 0 {
+			a.nNew--
+			delete(a.addrIndex, k)
+		}
 	}
 	a.mtx.Unlock()
 }
