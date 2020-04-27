@@ -78,7 +78,7 @@ class AppView extends React.Component {
       <LoginPrivateKey App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <GeneratePrivateKey App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
       <GenerateMnemonic App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
-      <Voting App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
+      <Voting App={App} openDevTools={openDevTools} onLinkClick={onLinkClick} GuiToggles={GuiToggles} Version={Version}/>
       <QRCode App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} Version={Version}/>
     </div>)
   }

@@ -46,7 +46,6 @@ module.exports = (props) => {
       <div className="logo-info">
       <Branding onClick={(e) => GuiToggles.showHome()}/>
       <header>
-        <img src="artwork/system.svg" className="system-icon" />
         <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()} />
         {/* Change to menu below */}
         <nav id="votingMenuOpen" title="menu" onClick={(e) => showMenu()}>
@@ -97,7 +96,10 @@ module.exports = (props) => {
                       return (<tr className="txtable-row" key={index}>
                         <td className="no_border no_padding">{item.n}</td>
                         <td className="no_border no_padding">{item.nickname}</td>
-                        <td className="no_border no_padding">{item.active}</td>
+                        {/* <td className="no_border no_padding">{item.active}</td> */}
+                        <td className="no_border no_padding">
+                        {Number(item.active) ? (<img src="artwork/greenstatus.svg" />) : (<img src="artwork/redstatus.svg" />)
+                        } </td>
                         <td className="no_border no_padding">{item.votes}</td>
                         <td className="white_on_purple_with_hover h20px fake_button" onClick={(e) => App.toggleProducerSelection({index})}>
                           <ProducerSelectionButtonText item={item}/>
@@ -145,7 +147,7 @@ module.exports = (props) => {
 
       <div>
 
-         <SocialMedia GuiToggles={GuiToggles}/>
+      <SocialMedia GuiToggles={GuiToggles}  onLinkClick={onLinkClick}/>
 
       </div>
       </div>

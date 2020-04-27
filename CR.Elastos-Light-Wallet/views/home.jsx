@@ -90,18 +90,18 @@ module.exports = (props) => {
         <p className="send-text">Send</p>
         <input type="text" size="34" id="sendToAddress" className="ela-address__input" placeholder="Enter ELA Address" defaultValue={App.getSendToAddress()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}/>
         <input type="text" size="14" id="sendAmount" className="ela-send__amount" placeholder="Amount" defaultValue={App.getSendAmount()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}/>
-        <div className="quick-elaselector">
+        {/* <div className="quick-elaselector">
           <button className="quick-elaselector__icon quarter">1/4</button>
           <button className="quick-elaselector__icon half">Half</button>
           <button className="quick-elaselector__icon all">All</button>
-        </div>
+        </div> */}
         <p className="elatext-send">ELA</p>
         <button className="next-button" onClick={(e) => showConfirmAndSeeFees()}>
         <p>Next</p>
         </button>
 
-        <div className="h100px w100pct overflow_auto">
-      {/* <div id="sendOne" className={`bordered w250px h200px bgcolor_black_hover ${visibility}`}>
+        {/* <div className="h100px w100pct overflow_auto">
+      <div id="sendOne" className={`bordered w250px h200px bgcolor_black_hover ${visibility}`}>
         Send
         <div>Send Amount</div>
         <br/>
@@ -112,7 +112,7 @@ module.exports = (props) => {
         <br/>
         <div>Send Status</div>
         <br/>
-        <div className="h90px w100pct overflow_auto"> */}
+        <div className="h90px w100pct overflow_auto">
         <table>
           <tbody>
             {
@@ -133,7 +133,7 @@ module.exports = (props) => {
             }
           </tbody>
         </table>
-        </div>
+        </div> */}
 
       </div>
         );
@@ -148,11 +148,11 @@ module.exports = (props) => {
         <p className="send-text">Send</p>
         <div className="fees-text">Fees (in Satoshis)</div>
         <input type="text" size="14" id="feeAmount" placeholder="Fees" defaultValue={App.getFee()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}></input>
-        <div className="estimate-new"onClick={(e) => showConfirmAndSeeFees()}>Estimated New Balance</div>
+        <div className="estimate-new dark-hover cursor_def br5"onClick={(e) => showConfirmAndSeeFees()}>Estimate New Balance</div>
         <p className="fees-balance">Your balance will be deducted <span> {App.getSendAmount()} ELA</span>
           + <br /> <span>{App.getFeeAmountEla()}</span>
            ELA in fees.</p>
-          <span className="send-back" onClick={(e) => cancelSend()}> Back </span>
+          <span className="send-back dark-hover cursor_def" onClick={(e) => cancelSend()}> Back </span>
           <button className="sendela-button" onClick={(e) => sendAmountToAddress()}>
           <p>Send ELA</p>
           </button>
@@ -173,7 +173,6 @@ module.exports = (props) => {
     <div className="logo-info">
       <Branding/>
       <header>
-        <img src="artwork/system.svg" className="system-icon" />
         <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()} />
         <nav id="homeMenuOpen" title="Menu" onClick={(e) => showMenu()}>
           <img src="artwork/nav.svg" className="nav-icon dark-hover" onClick={(e) => showMenu()}/>
@@ -218,7 +217,7 @@ module.exports = (props) => {
           <QRCode value={App.getAddressOrBlank()} size={54} includeMargin={true} className="br5"/>
         </button>
         <p className="scanqr-text">Scan <strong>QR code</strong> to get <br />ELA Address</p>
-        <p className="howqr-text gradient-font">How QR works?</p>
+        <p className="howqr-text gradient-font">Click to Enlarge</p>
         <img src="artwork/separator.svg" className="rec-separator" />
         <p className="ledger-heading">Ledger</p>
         <img src="artwork/ledgericon.svg" alt="" className="ledger-icon" height="24px" width="38px" />
@@ -228,6 +227,7 @@ module.exports = (props) => {
 
 <div className="transaction-area">
   <p className="transactions-heading">Transactions</p>
+  <p className="blockcount transactionstatus"><span>Status:</span><span>{App.getTransactionHistoryStatus()}</span> </p>
   <p className="blockcount"><span>Blocks:</span><span>{App.getBlockchainState().height}</span> </p>
 
     <div className="txtablediv scrollbar">
@@ -281,7 +281,7 @@ module.exports = (props) => {
 
   <div>
 
-  <SocialMedia GuiToggles={GuiToggles}/>
+  <SocialMedia GuiToggles={GuiToggles}  onLinkClick={onLinkClick}/>
 
   </div>
 

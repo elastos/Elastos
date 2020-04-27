@@ -475,9 +475,9 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
   mainConsole.log('sendAmountToAddressReadyCallback ' + JSON.stringify(transactionJson));
   if (transactionJson.status == 400) {
     sendToAddressStatuses.length = 0;
-    const message = `Transaction Failure. status:${transactionJson.status} result:${transactionJson.result}`;
+    const message = `Transaction Error.  Status:${transactionJson.status}  Result:${transactionJson.result}`;
     bannerStatus = message;
-    bannerClass = 'bg_red color_white';
+    bannerClass = 'bg_red color_white banner-look';
     sendToAddressStatuses.push(message);
   } else {
     sendToAddressStatuses.length = 0;
@@ -487,7 +487,7 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     elt.txHash = transactionJson.result;
     sendToAddressStatuses.length = 0;
     const message ='Transaction Successful.';
-    bannerClass = 'bg_green color_white';
+    bannerClass = 'bg_green color_white banner-look';
     sendToAddressStatuses.push(message);
     bannerStatus = message;
     sendToAddressLinks.push(elt);
@@ -649,7 +649,7 @@ const requestListOfProducersReadyCallback = (response) => {
 };
 
 const requestListOfProducers = () => {
-  producerListStatus = 'Producers Requested';
+  producerListStatus = 'Loading Nodes, Please Wait';
   const txUrl = `${getRestService()}/api/v1/dpos/rank/height/0?state=active`;
 
   renderApp();
@@ -725,7 +725,7 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
 
 const requestListOfCandidateVotes = () => {
   if (address !== undefined) {
-    candidateVoteListStatus = 'Candidate Votes Requested';
+    candidateVoteListStatus = 'Loading Votes, Please Wait';
 
     const txUrl = `${getRestService()}/api/v1/dpos/address/${address}?pageSize=5000&pageNum=1`;
     // mainConsole.log('requestListOfCandidateVotes', txUrl);
@@ -851,21 +851,33 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
   if (transactionHistory.result !== undefined) {
     if (transactionHistory.result.History !== undefined) {
       transactionHistory.result.History.forEach((tx, txIx) => {
-        const time = formatDate(new Date(tx.CreateTime * 1000));
+        let time = formatDate(new Date(tx.CreateTime * 1000));
+        if (tx.CreateTime == 0) {
+          time = formatDate(new Date());
+        }
         const elaFloat = parseInt(tx.Value)/100000000;
-        const elaDisplay = elaFloat.toFixed(8);
+        const elaDisplay = Number(elaFloat.toFixed(8));
         const parsedTransaction = {};
         parsedTransaction.sortTime = tx.CreateTime;
+        if (tx.CreateTime == 0) {
+          parsedTransaction.sortTime = new Date();
+        }
         parsedTransaction.n = txIx;
         parsedTransaction.type = tx.Type;
         if (tx.Type == 'income') {
-          parsedTransaction.type = 'Receiving';
+          parsedTransaction.type = 'Received';
         }
         if (tx.Type == 'spend') {
-          parsedTransaction.type = 'Was sent';
+          parsedTransaction.type = 'Sent';
+        }
+        if (tx.Type == 'spend' && tx.Status == 'pending') {
+          parsedTransaction.type = '*Sending';
+        }
+        if (tx.Type == 'income' && tx.Status == 'pending') {
+          parsedTransaction.type = '*Receiving';
         }
         parsedTransaction.valueSat = tx.Value;
-        parsedTransaction.value = elaDisplay + '('+tx.Value+')';
+        parsedTransaction.value = elaDisplay;
         parsedTransaction.address = tx.Address;
         parsedTransaction.txHash = tx.Txid;
         parsedTransaction.txHashWithEllipsis = tx.Txid;
@@ -1238,7 +1250,7 @@ const getGeneratedPrivateKeyHex = () => {
 };
 
 const generateMnemonic = () => {
-  generatedMnemonic = bip39.entropyToMnemonic(crypto.randomBytes(32).toString('hex'));
+  generatedMnemonic = bip39.entropyToMnemonic(crypto.randomBytes(16).toString('hex'));
 };
 
 const getGeneratedMnemonic = () => {
