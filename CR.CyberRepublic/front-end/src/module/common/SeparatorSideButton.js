@@ -1,5 +1,6 @@
 import React from 'react'
 import { AtomicBlockUtils, Entity } from 'draft-js'
+import { Icon } from 'antd'
 
 class SeparatorSideButton extends React.Component {
   constructor(props) {
@@ -25,7 +26,7 @@ class SeparatorSideButton extends React.Component {
         title="Add a separator"
         onClick={this.onClick}
       >
-        <i className="fa fa-minus" />
+        <Icon type="minus" />
       </button>
     )
   }

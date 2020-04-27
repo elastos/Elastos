@@ -9,7 +9,8 @@ import {
   Select,
   Input,
   DatePicker,
-  Checkbox
+  Checkbox,
+  Icon
 } from 'antd'
 import rangePickerLocale from 'antd/es/date-picker/locale/zh_CN'
 import { CSVLink } from 'react-csv'
@@ -245,9 +246,9 @@ export default class extends BaseComponent {
       columns.splice(1, 0, {
         dataIndex: 'published',
         render: (published, item, index) => (published ? (
-          <i className="fas fa-eye" />
+          <Icon type="eye" />
         ) : (
-          <i className="far fa-eye-slash" />
+          <Icon type="eye-invisible" />
         ))
       })
     }
