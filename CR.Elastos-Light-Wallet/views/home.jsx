@@ -100,8 +100,8 @@ module.exports = (props) => {
         <p>Next</p>
         </button>
 
-        <div className="h100px w100pct overflow_auto">
-      {/* <div id="sendOne" className={`bordered w250px h200px bgcolor_black_hover ${visibility}`}>
+        {/* <div className="h100px w100pct overflow_auto">
+      <div id="sendOne" className={`bordered w250px h200px bgcolor_black_hover ${visibility}`}>
         Send
         <div>Send Amount</div>
         <br/>
@@ -112,7 +112,7 @@ module.exports = (props) => {
         <br/>
         <div>Send Status</div>
         <br/>
-        <div className="h90px w100pct overflow_auto"> */}
+        <div className="h90px w100pct overflow_auto">
         <table>
           <tbody>
             {
@@ -133,7 +133,7 @@ module.exports = (props) => {
             }
           </tbody>
         </table>
-        </div>
+        </div> */}
 
       </div>
         );
@@ -227,6 +227,7 @@ module.exports = (props) => {
 
 <div className="transaction-area">
   <p className="transactions-heading">Transactions</p>
+  <p className="blockcount transactionstatus"><span>Status:</span><span>{App.getTransactionHistoryStatus()}</span> </p>
   <p className="blockcount"><span>Blocks:</span><span>{App.getBlockchainState().height}</span> </p>
 
     <div className="txtablediv scrollbar">

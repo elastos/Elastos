@@ -51,18 +51,18 @@ module.exports = (props) => {
 
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Create New Wallet</p>
       <div className="flex_center">
-      <button className="home-btn dark-hover" onClick={(e) => GuiToggles.showGenerateNewMnemonic()}>
+      <button className="home-btn dark-hover landing-btnbg" onClick={(e) => GuiToggles.showGenerateNewMnemonic()}>
             <p>Create</p>
             </button>
       </div>
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Import Wallet</p>
       <div className="flex_center">
-      <button className="home-btn dark-hover" onClick={(e) => GuiToggles.showLoginMnemonic()}>
+      <button className="home-btn dark-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginMnemonic()}>
             <p>Login with Mnemonics</p>
             </button>
       </div>
       <div className="flex_center">
-      <button className="home-btn dark-hover" onClick={(e) => GuiToggles.showLoginPrivateKey()}>
+      <button className="home-btn dark-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginPrivateKey()}>
             <p>Login with Private Key</p>
             </button>
       </div>

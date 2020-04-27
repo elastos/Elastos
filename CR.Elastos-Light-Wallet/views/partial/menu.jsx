@@ -29,7 +29,7 @@ module.exports = (props) => {
       </select>
       <div className="display_inline_block">Change Node</div>
       <div className="display_inline_block">
-        <input className="display_inline" type="text" size="32" id="nodeUrl" style={{background: "inherit"}} placeholder={App.getRestService()}></input>
+        <input className="display_inline bottom-border" type="text" size="32" id="nodeUrl" style={{background: "inherit"}} placeholder={App.getRestService()}></input>
         <div className=" padding_5px display_inline dark-hover cursor_def" onClick={(e) => changeNodeUrl()}>Change</div>
       </div>
       <div className="padding_5px display_inline dark-hover br10 cursor_def" onClick={(e) => App.resetNodeUrl()}>Reset</div>

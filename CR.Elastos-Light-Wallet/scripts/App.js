@@ -871,10 +871,10 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
           parsedTransaction.type = 'Sent';
         }
         if (tx.Type == 'spend' && tx.Status == 'pending') {
-          parsedTransaction.type = '*Sending*';
+          parsedTransaction.type = '*Sending';
         }
         if (tx.Type == 'income' && tx.Status == 'pending') {
-          parsedTransaction.type = '*Receiving*';
+          parsedTransaction.type = '*Receiving';
         }
         parsedTransaction.valueSat = tx.Value;
         parsedTransaction.value = elaDisplay;

@@ -645,11 +645,15 @@ html {
   color: #9799A6;
   letter-spacing: 0;
   line-height: 11.14px;
-  top: 330.84px;
+  top: 325.84px;
   left: 660.21px;
   text-align: right;
   position: absolute;
   vertical-align: center;
+}
+
+.transactionstatus {
+  left: 480px;
 }
 
 .txtablediv {
@@ -1073,6 +1077,10 @@ select, input {
   padding-left: 10px;
 }
 
+.paddingright_5px {
+  padding-right: 5px;
+}
+
 .paddingbottom_20px {
   padding-bottom: 20px;
 }
@@ -1357,4 +1365,8 @@ select, input {
 
 .flexgrow_pt35 {
   flex-grow: 0.35
+}
+
+.landing-btnbg {
+  background: #E5A776;
 }
