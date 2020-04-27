@@ -50,23 +50,17 @@ ssize_t base58_encode(char *base58, uint8_t *input, size_t len);
 
 ssize_t base58_decode(uint8_t *data, const char *base58);
 
-ssize_t sha256(uint8_t *digest, int count, ...);
+ssize_t sha256_digest(uint8_t *digest, int count, ...);
 
-ssize_t ecdsa_sign(uint8_t *sig, uint8_t *privatekey, int count, ...);
+ssize_t sha256v_digest(uint8_t *digest, int count, va_list inputs);
 
-ssize_t ecdsa_signv(uint8_t *sig, uint8_t *privatekey, int count, va_list inputs);
+ssize_t ecdsa_sign(uint8_t *sig, uint8_t *privatekey, uint8_t *digest, size_t size);
 
-ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...);
+ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, uint8_t *digest, size_t size);
 
-ssize_t ecdsa_sign_base64v(char *sig, uint8_t *privatekey, int count, va_list inputs);
+int ecdsa_verify(uint8_t *sig, uint8_t *publickey, uint8_t *digest, size_t size);
 
-int ecdsa_verifyv(uint8_t *sig, uint8_t *publickey, int count, va_list inputs);
-
-int ecdsa_verify(uint8_t *sig, uint8_t *publickey, int count, ...);
-
-int ecdsa_verify_base64v(char *sig, uint8_t *publickey, int count, va_list inputs);
-
-int ecdsa_verify_base64(char *sig, uint8_t *publickey, int count, ...);
+int ecdsa_verify_base64(char *sig, uint8_t *publickey, uint8_t *digest, size_t size);
 
 #ifdef __cplusplus
 }

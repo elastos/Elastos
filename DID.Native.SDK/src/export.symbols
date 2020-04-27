@@ -76,7 +76,9 @@ _DIDDocument_GetCredential
 _DIDDocument_SelectCredentials
 _DIDDocument_GetExpires
 _DIDDocument_Sign
+_DIDDocument_SignDigest
 _DIDDocument_Verify
+_DIDDocument_VerifyDigest
 _DIDDocument_GetService
 _DIDDocument_GetServices
 _DIDDocument_SelectServices
@@ -134,8 +136,6 @@ _DIDStore_InitPrivateIdentity
 _DIDStore_NewDID
 _DIDStore_NewDIDByIndex
 _DIDStore_GetDIDByIndex
-_DIDStore_Sign
-_DIDStore_Signv
 _DIDStore_StoreDID
 _DIDStore_LoadDID
 _DIDStore_ContainsDID

@@ -31,6 +31,7 @@
 #include "credential.h"
 #include "crypto.h"
 #include "issuer.h"
+#include "didstore.h"
 
 extern const char *ProofType;
 
@@ -116,6 +117,7 @@ static Credential *issuer_generate_credential(Issuer *issuer, DID *owner,
     const char *data;
     char signature[SIGNATURE_BYTES * 2];
     int i, rc;
+    DIDDocument *doc = NULL;
 
     assert(issuer && owner && credid);
     assert(types && typesize > 0);
@@ -140,7 +142,7 @@ static Credential *issuer_generate_credential(Issuer *issuer, DID *owner,
     //subject
     strcpy(cred->subject.id.idstring, owner->idstring);
     cred->subject.properties = json;
-    
+
     //set type
     cred->type.size = typesize;
     cred->type.types = (char**)calloc(typesize, sizeof(char*));
@@ -162,9 +164,13 @@ static Credential *issuer_generate_credential(Issuer *issuer, DID *owner,
     data = Credential_ToJson_ForSign(cred, false, true);
     if (!data)
         goto errorExit;
-    
-    rc = DIDStore_Sign(issuer->signer.meta.store, storepass, &issuer->signer,
-            &issuer->signkey, signature, 1, (unsigned char*)data, strlen(data));
+
+    doc = DIDStore_LoadDID(issuer->signer.meta.store, &issuer->signer);
+    if (!doc)
+        goto errorExit;
+
+    rc = DIDDocument_Sign(doc, &issuer->signkey, storepass, signature,
+            1, (unsigned char*)data, strlen(data));
     free((char*)data);
     if (rc)
         goto errorExit;
@@ -179,6 +185,9 @@ errorExit:
         Credential_Destroy(cred);
     else
         cJSON_Delete(json);
+
+    if (doc)
+        DIDDocument_Destroy(doc);
 
     return NULL;
 }
@@ -207,7 +216,7 @@ Credential *Issuer_CreateCredential(Issuer *issuer, DID *owner, DIDURL *credid,
         if (!item) {
            DIDError_Set(DIDERR_OUT_OF_MEMORY, "Add property failed.");
            cJSON_Delete(root);
-           return NULL;        
+           return NULL;
         }
     }
 
@@ -226,7 +235,7 @@ Credential *Issuer_CreateCredentialByString(Issuer *issuer, DID *owner,
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
-        
+
     root = cJSON_Parse(subject);
     if (!root) {
         DIDError_Set(DIDERR_OUT_OF_MEMORY, "Deserialize property from json failed.");

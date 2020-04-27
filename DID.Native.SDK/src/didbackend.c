@@ -58,10 +58,10 @@ int DIDBackend_InitializeDefault(const char *url, const char *cachedir)
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
     }
-    
+
     if (strlen(url) >= URL_LEN) {
         DIDError_Set(DIDERR_INVALID_ARGS, "URL is too long.");
-        return -1;        
+        return -1;
     }
 
     DIDBackend_Deinitialize();
@@ -92,7 +92,7 @@ int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir)
     resolverInstance = resolver;
     if (ResolverCache_SetCacheDir(cachedir) < 0) {
         DIDError_Set(DIDERR_INVALID_BACKEND, "Set resolve cache failed.");
-        return -1;       
+        return -1;
     }
 
     defaultInstance = false;
@@ -102,42 +102,34 @@ int DIDBackend_Initialize(DIDResolver *resolver, const char *cachedir)
 const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
         DIDURL *signkey, const char *storepass)
 {
-    const char *ret;
-    const char *docstring, *reqstring;
+    const char *txid, *reqstring;
 
     assert(backend && backend->adapter);
     assert(document);
     assert(signkey);
     assert(storepass && *storepass);
-        
+
     if (!DIDMeta_AttachedStore(&document->meta)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Not attached with DID store.");
         return NULL;
     }
 
-    docstring = DIDDocument_ToJson(document, false);
-    if (!docstring)
-        return NULL;
-
-    reqstring = DIDRequest_Sign(RequestType_Create, DIDDocument_GetSubject(document),
-            signkey, docstring, document->meta.store, storepass);
-    free((char*)docstring);
+    reqstring = DIDRequest_Sign(RequestType_Create, document, signkey, storepass);
     if (!reqstring)
         return NULL;
 
-    ret = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
+    txid = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
-    if (!ret)
+    if (!txid)
         DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(create) failed.");
 
-    return ret;
+    return txid;
 }
 
 const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signkey,
         const char *storepass)
 {
-    const char *ret;
-    const char *docstring, *reqstring;
+    const char *txid, *reqstring;
 
     assert(backend && backend->adapter);
     assert(document);
@@ -149,30 +141,23 @@ const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL
         return NULL;
     }
 
-    docstring = DIDDocument_ToJson(document, false);
-    if (!docstring)
-        return NULL;
-
-    reqstring = DIDRequest_Sign(RequestType_Update, DIDDocument_GetSubject(document),
-            signkey, docstring, document->meta.store, storepass);
-    free((char*)docstring);
+    reqstring = DIDRequest_Sign(RequestType_Update, document, signkey, storepass);
     if (!reqstring)
         return NULL;
 
-    ret = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
+    txid = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
-    if (!ret)
+    if (!txid)
         DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(update) failed.");
 
-    return ret;
+    return txid;
 }
 
 const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signkey,
         const char *storepass)
 {
-    const char *ret;
-    char data[ELA_MAX_DID_LEN], *datastring;
-    const char *reqstring;
+    const char *txid, *reqstring;
+    DIDDocument *document;
 
     assert(backend && backend->adapter);
     assert(did);
@@ -184,22 +169,21 @@ const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signkey
         return NULL;
     }
 
-    datastring = DID_ToString(did, data, ELA_MAX_DID_LEN);
-    if (!datastring)
+    document = DIDStore_LoadDID(did->meta.store, did);
+    if (!document)
         return NULL;
 
-    reqstring = DIDRequest_Sign(RequestType_Deactivate, did, signkey, datastring,
-            did->meta.store, storepass);
-    free((char*)datastring);
+    reqstring = DIDRequest_Sign(RequestType_Deactivate, document, signkey, storepass);
+    DIDDocument_Destroy(document);
     if (!reqstring)
         return NULL;
 
-    ret = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
+    txid = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
-    if (!ret)
+    if (!txid)
         DIDError_Set(DIDERR_INVALID_BACKEND, "create Id transaction(deactivated) failed.");
 
-    return ret;
+    return txid;
 }
 
 static int resolve_from_backend(ResolveResult *result, DID *did, bool all)

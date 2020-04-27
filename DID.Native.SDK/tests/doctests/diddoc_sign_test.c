@@ -41,6 +41,27 @@ static void test_diddoc_sign_verify(void)
     }
 }
 
+static void test_diddoc_digest_sign_verify(void)
+{
+    uint8_t digest[32];
+    char signature[SIGNATURE_BYTES * 2 + 16];
+    int rc;
+
+    for (int i = 0; i < 10; i++) {
+        memset(digest, i, sizeof(digest));
+
+        rc = DIDDocument_SignDigest(document, keyid, storepass, signature, digest, sizeof(digest));
+        CU_ASSERT_NOT_EQUAL(rc, -1);
+
+        rc = DIDDocument_VerifyDigest(document, keyid, signature, digest, sizeof(digest));
+        CU_ASSERT_NOT_EQUAL(rc, -1);
+
+        digest[0] = 0xFF;
+        rc = DIDDocument_VerifyDigest(document, keyid, signature, digest, sizeof(digest));
+        CU_ASSERT_EQUAL(rc, -1);
+    }
+}
+
 static int diddoc_sign_test_suite_init(void)
 {
     int rc;
@@ -74,8 +95,9 @@ static int diddoc_sign_test_suite_cleanup(void)
 }
 
 static CU_TestInfo cases[] = {
-    {   "test_diddoc_sign_verify",    test_diddoc_sign_verify        },
-    {   NULL,                         NULL                           }
+    {   "test_diddoc_sign_verify",           test_diddoc_sign_verify           },
+    {   "test_diddoc_digest_sign_verify",    test_diddoc_digest_sign_verify    },
+    {   NULL,                                NULL                              }
 };
 
 static CU_SuiteInfo suite[] = {

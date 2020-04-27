@@ -299,7 +299,7 @@ ssize_t base58_decode(uint8_t *data, const char *base58)
     return BRBase58Decode(data, size, base58);
 }
 
-static ssize_t sha256v(uint8_t *digest, int count, va_list inputs)
+ssize_t sha256v_digest(uint8_t *digest, int count, va_list inputs)
 {
     EVP_MD_CTX ctx;
     unsigned int digest_size;
@@ -341,7 +341,7 @@ static ssize_t sha256v(uint8_t *digest, int count, va_list inputs)
  * uint8_t digest[SHA256_BYTES];
  * sha256(digest, 2, input1, len1, input2, len2);
  */
-ssize_t sha256(uint8_t *digest, int count, ...)
+ssize_t sha256_digest(uint8_t *digest, int count, ...)
 {
     va_list inputs;
     ssize_t len;
@@ -350,129 +350,63 @@ ssize_t sha256(uint8_t *digest, int count, ...)
         return -1;
 
     va_start(inputs, count);
-    len = sha256v(digest, count, inputs);
+    len = sha256v_digest(digest, count, inputs);
     va_end(inputs);
 
     return len;
 }
 
-ssize_t ecdsa_signv(uint8_t *sig, uint8_t *privatekey, int count, va_list inputs)
+ssize_t ecdsa_sign(uint8_t *sig, uint8_t *privatekey, uint8_t *digest, size_t size)
 {
-    uint8_t digest[SHA256_BYTES];
-
-    if (!sig || !privatekey || count <= 0)
+    if (!sig || !privatekey || !digest || size != SHA256_BYTES)
         return -1;
-
-    sha256v(digest, count, inputs);
 
     return ECDSA65Sign_sha256(privatekey, PRIVATEKEY_BYTES,
             (const UInt256 *)digest, sig, SIGNATURE_BYTES);
 }
 
-ssize_t ecdsa_sign(uint8_t *sig, uint8_t *privatekey, int count, ...)
+ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, uint8_t *digest, size_t size)
 {
-    va_list inputs;
-    ssize_t len;
-
-    if (!sig || !privatekey || count <= 0)
-        return -1;
-
-    va_start(inputs, count);
-    len = ecdsa_signv(sig, privatekey, count, inputs);
-    va_end(inputs);
-
-    return len;
-}
-
-ssize_t ecdsa_sign_base64v(char *sig, uint8_t *privatekey, int count, va_list inputs)
-{
+    size_t len;
     uint8_t binsig[SIGNATURE_BYTES];
-    ssize_t len;
 
-    if (!sig || !privatekey || count <= 0)
+    if (!sig || !privatekey || !digest || size != SHA256_BYTES)
         return -1;
 
-    len = ecdsa_signv(binsig, privatekey, count, inputs);
+    len = ecdsa_sign(binsig, privatekey, digest, size);
     if (len < 0)
         return len;
 
     return base64_url_encode(sig, binsig, len);
 }
 
-ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...)
+int ecdsa_verify(uint8_t *sig, uint8_t *publickey, uint8_t *digest, size_t size)
 {
-    va_list inputs;
-    size_t len;
-
-    if (!sig || !privatekey || count <= 0)
-        return -1;
-
-    va_start(inputs, count);
-    len = ecdsa_sign_base64v(sig, privatekey, count, inputs);
-    va_end(inputs);
-
-    return len;
-}
-
-int ecdsa_verifyv(uint8_t *sig, uint8_t *publickey, int count, va_list inputs)
-{
-    uint8_t digest[SHA256_BYTES];
     int rc;
 
-    if (!sig || !publickey || count <= 0)
+    if (!sig || !publickey || !digest || size != SHA256_BYTES)
         return -1;
-
-    sha256v(digest, count, inputs);
 
     rc = ECDSA65Verify_sha256(publickey, PUBLICKEY_BYTES,
             (const UInt256 *)digest, sig, SIGNATURE_BYTES);
     return rc == 0 ? -1 : 0;
 }
 
-int ecdsa_verify(uint8_t *sig, uint8_t *publickey, int count, ...)
-{
-    va_list inputs;
-    int rc;
-
-    if (!sig || !publickey || count <= 0)
-        return -1;
-
-    va_start(inputs, count);
-    rc = ecdsa_verifyv(sig, publickey, count, inputs);
-    va_end(inputs);
-
-    return rc;
-}
-
-int ecdsa_verify_base64v(char *sig, uint8_t *publickey, int count, va_list inputs)
+int ecdsa_verify_base64(char *sig, uint8_t *publickey, uint8_t *digest, size_t size)
 {
     uint8_t binsig[SIGNATURE_BYTES];
     ssize_t len;
 
-    if (!sig || !publickey || count <= 0)
+    if (!sig || !publickey || !digest || size != SHA256_BYTES)
         return -1;
 
     len = base64_url_decode(binsig, sig);
     if (len < 0 )
         return -1;
 
-    return ecdsa_verifyv(binsig, publickey, count, inputs);
+    return ecdsa_verify(binsig, publickey, digest, size);
 }
 
-int ecdsa_verify_base64(char *sig, uint8_t *publickey, int count, ...)
-{
-    va_list inputs;
-    int rc;
-
-    if (!sig || !publickey || count <= 0)
-        return -1;
-
-    va_start(inputs, count);
-    rc = ecdsa_verify_base64v(sig, publickey, count, inputs);
-    va_end(inputs);
-
-    return rc;
-}
 
 
 

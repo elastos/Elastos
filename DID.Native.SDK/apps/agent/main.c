@@ -190,7 +190,7 @@ static void sign(int argc, char *argv[])
     did = DIDDocument_GetSubject(doc);
     didurl = DIDDocument_GetDefaultPublicKey(doc);
 
-    rc = DIDStore_Sign(ctx.store, ctx.storepass, did, didurl, signature, 1, argv[2], strlen(argv[2]));
+    rc = DIDDocument_Sign(doc, didurl, ctx.storepass, signature, 1, argv[2], strlen(argv[2]));
     DIDDocument_Destroy(doc);
 
     if (rc < 0) {

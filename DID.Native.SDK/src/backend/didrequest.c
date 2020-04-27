@@ -110,28 +110,26 @@ static const char *DIDRequest_ToJson(DIDRequest *req)
     return JsonGenerator_Finish(gen);
 }
 
-const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signkey,
-        const char* data, DIDStore *store, const char *storepass)
+const char *DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document, DIDURL *signkey,
+        const char *storepass)
 {
     DIDRequest req;
-    const char *payload, *op, *requestJson, *prevtxid;
+    const char *payload, *op, *prevtxid, *data;
     size_t len;
     int rc;
-    char signature[SIGNATURE_BYTES * 2 + 16];
+    char signature[SIGNATURE_BYTES * 2 + 16], idstring[ELA_MAX_DID_LEN];
 
     assert(type >= RequestType_Create && type <= RequestType_Deactivate);
-    assert(did);
+    assert(document);
     assert(signkey);
-    assert(data);
-    assert(store);
     assert(storepass && *storepass);
 
-    if (!DIDMeta_AttachedStore(&did->meta)) {
+    if (!DIDMeta_AttachedStore(&document->meta)) {
         DIDError_Set(DIDERR_MALFORMED_DID, "Not attached with DID store.");
         return NULL;
     }
 
-    prevtxid = DID_GetTxid(did);
+    prevtxid = DIDDocument_GetTxid(document);
     if (!prevtxid) {
         DIDError_Set(DIDERR_TRANSACTION_ERROR, "Can not determine the previous transaction ID.");
         return NULL;
@@ -140,23 +138,29 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signkey,
     if (type == RequestType_Create)
         prevtxid = "";
 
-    if (type == RequestType_Deactivate)
-        payload = strdup(data);
+    if (type == RequestType_Deactivate) {
+        payload = DID_ToString(DIDDocument_GetSubject(document), idstring, sizeof(idstring));
+        if (!data)
+            return NULL;
+    }
     else {
+        data = DIDDocument_ToJson(document, false);
+        if (!data)
+            return NULL;
+
         len = strlen(data);
-        payload = (char *)malloc(len * 4 / 3 + 16);
+        payload = alloca(len * 4 / 3 + 16);
         base64_url_encode((char*)payload, (const uint8_t *)data, len);
+        free((char*)data);
     }
 
     op = operation[type];
-    rc = DIDStore_Sign(store, storepass, did, signkey, signature, 4,
+    rc = DIDDocument_Sign(document, signkey, storepass, signature, 4,
             (unsigned char*)spec, strlen(spec), (unsigned char*)op, strlen(op),
             (unsigned char *)prevtxid, strlen(prevtxid),
             (unsigned char*)payload, strlen(payload));
-    if (rc < 0) {
-        free((char*)payload);
+    if (rc < 0)
         return NULL;
-    }
 
     req.header.spec = (char*)spec;
     req.header.op = (char*)op;
@@ -165,9 +169,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signkey,
     req.proof.signature = signature;
     DIDURL_Copy(&req.proof.verificationMethod, signkey);
 
-    requestJson = DIDRequest_ToJson(&req);
-    free((char*)payload);
-    return requestJson;
+    return DIDRequest_ToJson(&req);
 }
 
 int DIDRequest_Verify(DIDRequest *request)

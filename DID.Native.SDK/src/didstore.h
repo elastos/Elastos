@@ -51,6 +51,9 @@ int didstore_storecredmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
 
 int didstore_loadcredmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
 
+int didstore_sign(DIDStore *store, const char *storepass, DID *did,
+        DIDURL *key, char *sig, uint8_t *digest, size_t size);
+
 #ifdef __cplusplus
 }
 #endif

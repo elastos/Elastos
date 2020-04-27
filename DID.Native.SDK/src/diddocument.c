@@ -520,9 +520,9 @@ static int Parse_Proof(DIDDocument *document, cJSON *json)
     if (!item && !DIDURL_Copy(&document->proof.creater,
             DIDDocument_GetDefaultPublicKey(document))) {
         DIDError_Set(DIDERR_MALFORMED_DIDURL, "Set document creater failed.");
-        return -1;    
+        return -1;
     }
-        
+
     item = cJSON_GetObjectItem(json, "signatureValue");
     if (!item) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing signature.");
@@ -609,7 +609,7 @@ DIDMeta *DIDDocument_GetMeta(DIDDocument *document)
 }
 
 int DIDDocument_SetStore(DIDDocument *document, DIDStore *store)
-{ 
+{
     assert(document);
     assert(store);
 
@@ -659,11 +659,11 @@ DIDDocument *DIDDocument_FromJson(const char *json)
     item = cJSON_GetObjectItem(root, "publicKey");
     if (!item) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing document id.");
-        goto errorExit;       
+        goto errorExit;
     }
     if (!cJSON_IsArray(item)) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid document id.");
-        goto errorExit;       
+        goto errorExit;
     }
     if (Parse_PublicKeys(doc, &doc->did, item) < 0)
         goto errorExit;
@@ -696,12 +696,12 @@ DIDDocument *DIDDocument_FromJson(const char *json)
     item = cJSON_GetObjectItem(root, "expires");
     if (!item) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Missing expires time.");
-        goto errorExit;        
+        goto errorExit;
     }
     if (!cJSON_IsString(item) ||
            parse_time(&doc->expires, item->valuestring) == -1) {
         DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid expires time.");
-        goto errorExit;        
+        goto errorExit;
     }
 
     //parse credential
@@ -711,7 +711,7 @@ DIDDocument *DIDDocument_FromJson(const char *json)
             DIDError_Set(DIDERR_MALFORMED_DOCUMENT, "Invalid credentials.");
             goto errorExit;
         }
-        if (Parse_Credentials_InDoc(doc, item) < 0) 
+        if (Parse_Credentials_InDoc(doc, item) < 0)
             goto errorExit;
     }
 
@@ -1019,7 +1019,7 @@ bool DIDDocument_IsValid(DIDDocument *document)
 
     if (DIDDocument_IsDeactivated(document)) {
         DIDError_Set(DIDERR_DID_DEACTIVATED, "Did is deactivated.");
-        return false;        
+        return false;
     }
 
     if (!DIDDocument_IsGenuine(document))
@@ -1317,13 +1317,13 @@ int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *builder, DIDURL *keyid,
     }
 
     if (strlen(key) >= MAX_PUBLICKEY_BASE58) {
-        DIDError_Set(DIDERR_INVALID_KEY, "public key is too long.");   
+        DIDError_Set(DIDERR_INVALID_KEY, "public key is too long.");
         return -1;
     }
     //check base58 is valid
     if (base58_decode(binkey, key) != PUBLICKEY_BYTES) {
-        DIDError_Set(DIDERR_INVALID_KEY, "Decode public key failed.");   
-        return -1;        
+        DIDError_Set(DIDERR_INVALID_KEY, "Decode public key failed.");
+        return -1;
     }
 
     //check keyid is existed in pk array
@@ -1333,7 +1333,7 @@ int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *builder, DIDURL *keyid,
         pk = document->publickeys.pks[i];
         if (DIDURL_Equals(&pk->id, keyid) ||
                !strcmp(pk->publicKeyBase58, key)) {
-            DIDError_Set(DIDERR_ALREADY_EXISTS, "Public key is already exist");  
+            DIDError_Set(DIDERR_ALREADY_EXISTS, "Public key is already exist");
             return -1;
         }
     }
@@ -1398,12 +1398,12 @@ int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *builder,
     }
     if (key && strlen (key) >= MAX_PUBLICKEY_BASE58) {
         DIDError_Set(DIDERR_INVALID_KEY, "Authentication key is too long.");
-        return -1;          
+        return -1;
     }
 
     if (key && base58_decode(binkey, key) != PUBLICKEY_BYTES) {
         DIDError_Set(DIDERR_INVALID_KEY, "Decode authentication key failed.");
-        return -1;       
+        return -1;
     }
 
     document = builder->document;
@@ -1786,11 +1786,11 @@ int DIDDocumentBuilder_AddService(DIDDocumentBuilder *builder, DIDURL *serviceid
 
     if (strlen(type) >= MAX_DOC_TYPE) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Type argument is too long.");
-        return -1;        
+        return -1;
     }
     if (strlen(endpoint) >= MAX_ENDPOINT) {
         DIDError_Set(DIDERR_INVALID_ARGS, "End point argument is too long.");
-        return -1;        
+        return -1;
     }
 
     document = builder->document;
@@ -2107,11 +2107,11 @@ PublicKey *DIDDocument_GetAuthenticationKey(DIDDocument *document, DIDURL *keyid
 
     if (!*keyid->fragment) {
         DIDError_Set(DIDERR_MALFORMED_DIDURL, "Key id misses fragment.");
-        return NULL;        
+        return NULL;
     }
 
     pk = DIDDocument_GetPublicKey(document, keyid);
-    if (!pk) 
+    if (!pk)
         return NULL;
 
     if (!pk->authenticationKey) {
@@ -2134,7 +2134,7 @@ ssize_t DIDDocument_SelectAuthenticationKeys(DIDDocument *document,
     }
     if (!keyid && !type) {
         DIDError_Set(DIDERR_INVALID_ARGS, "No feature to select key.");
-        return -1;        
+        return -1;
     }
 
     if (keyid && !*keyid->fragment) {
@@ -2516,8 +2516,9 @@ time_t DIDDocument_GetExpires(DIDDocument *document)
 int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass,
         char *sig, int count, ...)
 {
-    int rc;
+    uint8_t digest[SHA256_BYTES];
     va_list inputs;
+    ssize_t size;
 
     if (!document || !storepass || !*storepass || !sig || count <= 0) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
@@ -2528,22 +2529,62 @@ int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass
         keyid = DIDDocument_GetDefaultPublicKey(document);
 
     va_start(inputs, count);
-    rc = DIDStore_Signv(document->meta.store, storepass, DIDDocument_GetSubject(document),
-            keyid, sig, count, inputs);
+    size = sha256v_digest(digest, count, inputs);
     va_end(inputs);
+    if (size == -1) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Get digest failed.");
+        return -1;
+    }
 
-    return rc;
+    return DIDDocument_SignDigest(document, keyid, storepass, sig, digest, sizeof(digest));
+}
+
+int DIDDocument_SignDigest(DIDDocument *document, DIDURL *keyid,
+        const char *storepass, char *sig, uint8_t *digest, size_t size)
+{
+    if (!document || !storepass || !*storepass || !sig || !digest || size <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    if (!keyid)
+        keyid = DIDDocument_GetDefaultPublicKey(document);
+
+    return didstore_sign(document->meta.store, storepass,
+        DIDDocument_GetSubject(document), keyid, sig, digest, size);
 }
 
 int DIDDocument_Verify(DIDDocument *document, DIDURL *keyid, char *sig,
         int count, ...)
 {
-    int rc;
     va_list inputs;
+    uint8_t binkey[PUBLICKEY_BYTES], digest[SHA256_BYTES];
+    ssize_t size;
+
+    if (!document || !sig || count <= 0) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    va_start(inputs, count);
+    size = sha256v_digest(digest, count, inputs);
+    va_end(inputs);
+    if (size == -1) {
+        DIDError_Set(DIDERR_CRYPTO_ERROR, "Get digest failed.");
+        return -1;
+    }
+
+    return DIDDocument_VerifyDigest(document, keyid, sig, digest, sizeof(digest));
+}
+
+int DIDDocument_VerifyDigest(DIDDocument *document, DIDURL *keyid,
+        char *sig, uint8_t *digest, size_t size)
+{
+    int rc;
     PublicKey *publickey;
     uint8_t binkey[PUBLICKEY_BYTES];
 
-    if (!document || !sig || count <= 0) {
+    if (!document || !sig || !digest || size <= 0) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
     }
@@ -2559,13 +2600,12 @@ int DIDDocument_Verify(DIDDocument *document, DIDURL *keyid, char *sig,
 
     base58_decode(binkey, PublicKey_GetPublicKeyBase58(publickey));
 
-    va_start(inputs, count);
-    rc = ecdsa_verify_base64v(sig, binkey, count, inputs);
-    va_end(inputs);
-    if (rc == -1)
+    if (ecdsa_verify_base64(sig, binkey, digest, size) == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Ecdsa verify failed.");
+        return -1;
+    }
 
-    return rc;
+    return 0;
 }
 
 DIDURL *PublicKey_GetId(PublicKey *publickey)

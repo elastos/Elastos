@@ -1286,7 +1286,7 @@ bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *id)
     if (get_dir(path, 0, 5, store->root, DID_DIR, did->idstring,
             CREDENTIALS_DIR, id->fragment) == -1) {
         DIDError_Set(DIDERR_NOT_EXISTS, "Credential[%s] is not existed in did store.", id->fragment);
-        return false;        
+        return false;
     }
 
     rc = test_path(path);
@@ -1525,7 +1525,7 @@ int DIDStore_StorePrivateKey(DIDStore *store, const char *storepass, DID *did,
             PRIVATEKEYS_DIR, id->fragment) == -1) {
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Create private key file failed.");
         return -1;
-    }  
+    }
 
     if (!store_file(path, base64))
         return 0;
@@ -1958,62 +1958,61 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
     return document;
 }
 
-int DIDStore_Signv(DIDStore *store, const char *storepass, DID *did, DIDURL *key,
-        char *sig, int count, va_list inputs)
+static int load_privatekey(DIDStore *store, const char *storepass, DID *did,
+        DIDURL *key, uint8_t *privatekey)
 {
-    const char *privatekey;
-    unsigned char binkey[PRIVATEKEY_BYTES];
+    const char *privatekey_str;
     char path[PATH_MAX];
     int rc;
 
-    if (!store || !storepass || !*storepass || !did || !key || !sig || count <= 0) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return -1;
-    }
+    assert(store);
+    assert(storepass && *storepass);
+    assert(did);
+    assert(key);
+    assert(privatekey);
 
     if (get_file(path, 0, 5, store->root, DID_DIR, did->idstring, PRIVATEKEYS_DIR, key->fragment) == -1) {
         DIDError_Set(DIDERR_NOT_EXISTS, "No private key file.");
         return -1;
     }
 
-    privatekey = load_file(path);
-    if (!privatekey) {
+    privatekey_str = load_file(path);
+    if (!privatekey_str) {
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "No valid private key.");
         return -1;
     }
 
-    rc = decrypt_from_base64(binkey, storepass, privatekey);
-    free((char*)privatekey);
+    rc = decrypt_from_base64(privatekey, storepass, privatekey_str);
+    free((char*)privatekey_str);
     if (rc == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decrypt private key failed.");
         return -1;
     }
 
-    if (ecdsa_sign_base64v(sig, binkey, count, inputs) <= 0) {
+    return 0;
+}
+
+int didstore_sign(DIDStore *store, const char *storepass, DID *did,
+        DIDURL *key, char *sig, uint8_t *digest, size_t size)
+{
+    unsigned char binkey[PRIVATEKEY_BYTES];
+
+    if (!store || !storepass || !*storepass || !did || !key
+            || !sig || !digest || size != SHA256_BYTES) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return -1;
+    }
+
+    if (load_privatekey(store, storepass, did, key, binkey) == -1)
+        return -1;
+
+    if (ecdsa_sign_base64(sig, binkey, digest, size) == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "ECDSA sign failed.");
         return -1;
     }
 
     memset(binkey, 0, sizeof(binkey));
     return 0;
-}
-
-int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did, DIDURL *key,
-        char *sig, int count, ...)
-{
-    int rc;
-    va_list inputs;
-
-    if (!store || !storepass || !*storepass || !did || !key || !sig || count <= 0) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
-        return -1;
-    }
-
-    va_start(inputs, count);
-    rc = DIDStore_Signv(store, storepass, did, key, sig, count, inputs);
-    va_end(inputs);
-
-    return rc;
 }
 
 const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
@@ -2041,7 +2040,7 @@ const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did
     if (!force && DIDDocument_IsExpires(doc)) {
         DIDError_Set(DIDERR_EXPIRED, "Did already expired, use force mode to publish anyway.");
         DIDDocument_Destroy(doc);
-        return NULL;        
+        return NULL;
     }
 
     if (!signkey)
@@ -2060,7 +2059,7 @@ const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did
         if (force) {
             DIDMeta_SetTxid(&doc->did.meta, resolvetxid);
             DIDMeta_SetTxid(&doc->meta, resolvetxid);
-        } else {            
+        } else {
             if (DIDDocument_IsDeactivated(resolvedoc)) {
                 DIDError_Set(DIDERR_DID_DEACTIVATED, "Did is already deactivated.");
                 goto errorExit;
