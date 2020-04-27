@@ -695,7 +695,7 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
   if (response.status !== 200) {
     candidateVoteListStatus = `Candidate Votes Error: ${JSON.stringify(response)}`;
   } else {
-    if(response.result) {
+    if (response.result) {
       response.result.forEach((candidateVote) => {
         // mainConsole.log('INTERIM Candidate Votes Callback', candidateVote);
         const header = candidateVote.Vote_Header;
@@ -736,63 +736,67 @@ const requestListOfCandidateVotes = () => {
 };
 
 const sendVoteTx = () => {
-  updateAmountAndFees();
-  const unspentTransactionOutputs = parsedUnspentTransactionOutputs;
-  // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
+  try {
+    updateAmountAndFees();
+    const unspentTransactionOutputs = parsedUnspentTransactionOutputs;
+    // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
 
-  if (Number.isNaN(feeAmountSats)) {
-    throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
-  }
-
-  const candidates = [];
-  parsedProducerList.producers.forEach((parsedProducer) => {
-    if (parsedProducer.isCandidate) {
-      candidates.push(parsedProducer.ownerpublickey);
+    if (Number.isNaN(feeAmountSats)) {
+      throw new Error(`feeAmountSats ${feeAmountSats} is not a number`);
     }
-  });
 
-  // mainConsole.log('sendVoteTx.candidates ' + JSON.stringify(candidates));
+    const candidates = [];
+    parsedProducerList.producers.forEach((parsedProducer) => {
+      if (parsedProducer.isCandidate) {
+        candidates.push(parsedProducer.ownerpublickey);
+      }
+    });
 
-  let encodedTx;
+    // mainConsole.log('sendVoteTx.candidates ' + JSON.stringify(candidates));
 
-  // mainConsole.log('sendVoteTx.useLedgerFlag ' + JSON.stringify(useLedgerFlag));
-  // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
-  candidateVoteListStatus = `Voting for ${parsedProducerList.producersCandidateCount} candidates.`;
-  if (useLedgerFlag) {
-    if (unspentTransactionOutputs) {
-      const tx = TxFactory.createUnsignedVoteTx(unspentTransactionOutputs, publicKey, feeAmountSats, candidates);
-      const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
-      const sendVoteLedgerCallback = (message) => {
-        if (LOG_LEDGER_POLLING) {
-          mainConsole.log(`sendVoteLedgerCallback ${JSON.stringify(message)}`);
-        }
-        if (!message.success) {
-          // sendToAddressStatuses.length = 0;
-          // sendToAddressLinks.length = 0;
-          // sendToAddressStatuses.push(JSON.stringify(message));
-          renderApp();
-          return;
-        }
-        const signature = Buffer.from(message.signature, 'hex');
-        const encodedTx = TxSigner.addSignatureToTx(tx, publicKey, signature);
-        sendVoteCallback(encodedTx);
-      };
-      candidateVoteListStatus += ' please confirm tx on ledger.';
-      LedgerComm.sign(encodedUnsignedTx, sendVoteLedgerCallback);
+    let encodedTx;
+
+    // mainConsole.log('sendVoteTx.useLedgerFlag ' + JSON.stringify(useLedgerFlag));
+    // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
+    candidateVoteListStatus = `Voting for ${parsedProducerList.producersCandidateCount} candidates.`;
+    if (useLedgerFlag) {
+      if (unspentTransactionOutputs) {
+        const tx = TxFactory.createUnsignedVoteTx(unspentTransactionOutputs, publicKey, feeAmountSats, candidates, feeAccount);
+        const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
+        const sendVoteLedgerCallback = (message) => {
+          if (LOG_LEDGER_POLLING) {
+            mainConsole.log(`sendVoteLedgerCallback ${JSON.stringify(message)}`);
+          }
+          if (!message.success) {
+            // sendToAddressStatuses.length = 0;
+            // sendToAddressLinks.length = 0;
+            // sendToAddressStatuses.push(JSON.stringify(message));
+            renderApp();
+            return;
+          }
+          const signature = Buffer.from(message.signature, 'hex');
+          const encodedTx = TxSigner.addSignatureToTx(tx, publicKey, signature);
+          sendVoteCallback(encodedTx);
+        };
+        candidateVoteListStatus += ' please confirm tx on ledger.';
+        LedgerComm.sign(encodedUnsignedTx, sendVoteLedgerCallback);
+      } else {
+        alert('please wait, UTXOs have not been retrieved yet.');
+      }
     } else {
-      alert('please wait, UTXOs have not been retrieved yet.');
-    }
-  } else {
-    const privateKeyElt = document.getElementById('privateKey');
-    const privateKey = privateKeyElt.value;
-    const encodedTx = TxFactory.createSignedVoteTx(privateKey, unspentTransactionOutputs, feeAmountSats, candidates);
+      const privateKeyElt = document.getElementById('privateKey');
+      const privateKey = privateKeyElt.value;
+      const encodedTx = TxFactory.createSignedVoteTx(privateKey, unspentTransactionOutputs, feeAmountSats, candidates, feeAccount);
 
-    // mainConsole.log('sendVoteTx.encodedTx ' + JSON.stringify(encodedTx));
+      // mainConsole.log('sendVoteTx.encodedTx ' + JSON.stringify(encodedTx));
 
-    if (encodedTx == undefined) {
-      return;
+      if (encodedTx == undefined) {
+        return;
+      }
+      sendVoteCallback(encodedTx);
     }
-    sendVoteCallback(encodedTx);
+  } catch (error) {
+    mainConsole.trace(error);
   }
   renderApp();
 };
@@ -801,9 +805,8 @@ const sendVoteTx = () => {
 // signature: signature
 
 const sendVoteCallback = (encodedTx) => {
-  const txUrl = `${getRestService()}/api/v1/sendRawTx`;
-
-  const jsonString = `{"data": "${encodedTx}"}`;
+  const txUrl = `${getRestService()}/api/v1/transaction`;
+  const jsonString = `{"method": "sendrawtransaction", "data": "${encodedTx}"}`;
 
   mainConsole.log('sendVoteCallback.encodedTx ' + JSON.stringify(encodedTx));
 
@@ -829,9 +832,9 @@ const senVoteErrorCallback = (error) => {
 const sendVoteReadyCallback = (transactionJson) => {
   mainConsole.log('sendVoteReadyCallback ' + JSON.stringify(transactionJson));
   if (transactionJson.Error) {
-    candidateVoteListStatus(`Vote Error: ${transactionJson.Error} ${transactionJson.Result}`);
+    candidateVoteListStatus = `Vote Error: ${transactionJson.Error} ${transactionJson.Result}`;
   } else {
-    candidateVoteListStatus = `Vote Success TX: ${transactionJson.result}`;
+    candidateVoteListStatus = `Vote Success TX: ${transactionJson.Result}`;
   }
   renderApp();
 };
