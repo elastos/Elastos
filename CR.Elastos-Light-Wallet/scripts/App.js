@@ -978,6 +978,11 @@ const setBlockchainLastActionHeight = () => {
   }
 };
 
+const copyAddressToClipboard = () => {
+  appClipboard.writeText(address);
+  alert(`copied to clipboard:\n${address}`);
+};
+
 const copyMnemonicToClipboard = () => {
   appClipboard.writeText(generatedMnemonic);
   alert(`copied to clipboard:\n${generatedMnemonic}`);
@@ -1263,14 +1268,6 @@ const getGeneratedMnemonic = () => {
   return generatedMnemonic;
 };
 
-exports.generateMnemonic = generateMnemonic;
-exports.getGeneratedMnemonic = getGeneratedMnemonic;
-exports.copyMnemonicToClipboard = copyMnemonicToClipboard;
-
-exports.generatePrivateKeyHex = generatePrivateKeyHex;
-exports.getGeneratedPrivateKeyHex = getGeneratedPrivateKeyHex;
-exports.copyPrivateKeyToClipboard = copyPrivateKeyToClipboard;
-
 exports.REST_SERVICES = REST_SERVICES;
 exports.init = init;
 exports.log = mainConsole.log;
@@ -1324,3 +1321,10 @@ exports.getParsedRssFeed = getParsedRssFeed;
 exports.getBannerStatus = getBannerStatus;
 exports.getBannerClass = getBannerClass;
 exports.getFee = getFee;
+exports.generateMnemonic = generateMnemonic;
+exports.getGeneratedMnemonic = getGeneratedMnemonic;
+exports.copyMnemonicToClipboard = copyMnemonicToClipboard;
+exports.generatePrivateKeyHex = generatePrivateKeyHex;
+exports.getGeneratedPrivateKeyHex = getGeneratedPrivateKeyHex;
+exports.copyPrivateKeyToClipboard = copyPrivateKeyToClipboard;
+exports.copyAddressToClipboard = copyAddressToClipboard;

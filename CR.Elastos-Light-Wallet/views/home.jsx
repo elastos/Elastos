@@ -208,7 +208,7 @@ module.exports = (props) => {
         <img src="artwork/sendicon.svg" className="rec-icon" />
         <p className="rec-text">Receive</p>
         <p className="address-text">Address</p>
-        <button className="copy-button">
+        <button className="copy-button" onClick={(e) => App.copyAddressToClipboard()}>
           <img src="artwork/copyicon.svg" className="copy-icon" height="26px" width="26px" />
         </button>
         <p className="address-ex">{App.getAddress()}</p>
