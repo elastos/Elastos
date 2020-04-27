@@ -2,7 +2,7 @@ Elastos ELA
 ===========
 |Actions CI|Go Report Card|
 |:-:|:-:|
-|[![Build Status()](https://github.com/elastos/Elastos.ELA/workflows/Go/badge.svg)](https://github.com/elastos/Elastos.ELA/actions?query=workflow%3ABuild+branch%3Amaster) |[![Code Report()](https://goreportcard.com/badge/github.com/elastos/Elastos.ELA)](https://goreportcard.com/report/github.com/elastos/Elastos.ELA)|
+|[![Build Status()](https://github.com/elastos/Elastos.ELA/workflows/Go/badge.svg?branch=release_v0.4.3)](https://github.com/elastos/Elastos.ELA/actions?query=branch:release_v0.4.3) |[![Code Report()](https://goreportcard.com/badge/github.com/elastos/Elastos.ELA)](https://goreportcard.com/report/github.com/elastos/Elastos.ELA)|
 
 ## Introduction
 
