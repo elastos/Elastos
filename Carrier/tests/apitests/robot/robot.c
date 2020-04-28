@@ -256,7 +256,7 @@ static void friend_message_cb(ElaCarrier *w, const char *from,
     CarrierContextExtra *extra = ((TestContext*)context)->carrier->extra;
 
     vlogD("Received %s message from %s", is_offline ? "offline" : "online", from);
-    vlogD(" msg: %.*s", len, (const char *)msg);
+    vlogD(" msg: (%d) %.*s", len, len, (const char *)msg);
 
     pthread_mutex_lock(&extra->mutex);
     if (is_offline && extra->test_offmsg == OffMsgCase_Single) {

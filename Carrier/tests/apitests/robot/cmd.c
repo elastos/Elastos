@@ -1744,7 +1744,7 @@ void stop_cmd_listener(void)
     }
 }
 
-static char cmd_buffer[2048];
+static char cmd_buffer[ELA_MAX_APP_BULKMSG_LEN + 1024];
 static char *cmd_ptr = cmd_buffer;
 static int cmd_len = 0;
 
@@ -1867,7 +1867,8 @@ void do_cmd(TestContext *context, char *line)
 int write_ack(const char *what, ...)
 {
     va_list ap;
-    char ack[4096];
+    char *ack = malloc(ELA_MAX_APP_BULKMSG_LEN);
+    assert(ack != NULL);
 
     assert(cmd_sock != INVALID_SOCKET);
     assert(what);
@@ -1879,5 +1880,8 @@ int write_ack(const char *what, ...)
     assert(ack[strlen(ack) - 1] == '\n');
     vlogD("@@@@@@@@ Acknowledge: %.*s", (int)(strlen(ack)-1), ack);
 
-    return send(cmd_sock, ack, (int)strlen(ack), 0);
+    int rc = send(cmd_sock, ack, (int)strlen(ack), 0);
+    free(ack);
+
+    return rc;
 }
