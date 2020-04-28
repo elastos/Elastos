@@ -205,7 +205,12 @@ module.exports = merge(common, {
           {
             test: /\.(eot|ttf|woff|woff2)$/,
             exclude: /node_modules/,
-            use: 'url-loader',
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              publicPath: '/static/css/fonts',
+              outputPath: 'static/css/fonts',
+            },
           },
           {
             loader: require.resolve('file-loader'),
