@@ -114,7 +114,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document, DIDURL 
         const char *storepass)
 {
     DIDRequest req;
-    const char *payload, *op, *prevtxid, *data;
+    const char *payload, *op, *requestJson, *prevtxid, *data;
     size_t len;
     int rc;
     char signature[SIGNATURE_BYTES * 2 + 16], idstring[ELA_MAX_DID_LEN];
@@ -139,9 +139,10 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document, DIDURL 
         prevtxid = "";
 
     if (type == RequestType_Deactivate) {
-        payload = DID_ToString(DIDDocument_GetSubject(document), idstring, sizeof(idstring));
+        data = DID_ToString(DIDDocument_GetSubject(document), idstring, sizeof(idstring));
         if (!data)
             return NULL;
+        payload = strdup(data);
     }
     else {
         data = DIDDocument_ToJson(document, false);
@@ -149,7 +150,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document, DIDURL 
             return NULL;
 
         len = strlen(data);
-        payload = alloca(len * 4 / 3 + 16);
+        payload = (char*)malloc(len * 4 / 3 + 16);
         base64_url_encode((char*)payload, (const uint8_t *)data, len);
         free((char*)data);
     }
@@ -159,8 +160,10 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document, DIDURL 
             (unsigned char*)spec, strlen(spec), (unsigned char*)op, strlen(op),
             (unsigned char *)prevtxid, strlen(prevtxid),
             (unsigned char*)payload, strlen(payload));
-    if (rc < 0)
+    if (rc < 0) {
+        free((char*)payload);
         return NULL;
+    }
 
     req.header.spec = (char*)spec;
     req.header.op = (char*)op;
@@ -169,7 +172,9 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document, DIDURL 
     req.proof.signature = signature;
     DIDURL_Copy(&req.proof.verificationMethod, signkey);
 
-    return DIDRequest_ToJson(&req);
+    requestJson = DIDRequest_ToJson(&req);
+    free((char*)payload);
+    return requestJson;
 }
 
 int DIDRequest_Verify(DIDRequest *request)

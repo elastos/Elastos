@@ -30,7 +30,7 @@ extern "C" {
 #endif
 
 struct Issuer {
-    DID signer;
+    DIDDocument *signer;
     DIDURL signkey;
 };
 

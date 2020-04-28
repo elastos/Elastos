@@ -32,6 +32,7 @@
 #include "crypto.h"
 #include "issuer.h"
 #include "didstore.h"
+#include "diddocument.h"
 
 extern const char *ProofType;
 
@@ -75,9 +76,8 @@ Issuer *Issuer_Create(DID *did, DIDURL *signkey, DIDStore *store)
         return NULL;
     }
 
-    DID_Copy(&issuer->signer, DIDDocument_GetSubject(doc));
+    issuer->signer = doc;
     DIDURL_Copy(&issuer->signkey, signkey);
-    DIDDocument_Destroy(doc);
     return issuer;
 }
 
@@ -85,6 +85,9 @@ void Issuer_Destroy(Issuer *issuer)
 {
     if (!issuer)
         return;
+
+    if (issuer->signer)
+        DIDDocument_Destroy(issuer->signer);
 
     free(issuer);
 }
@@ -96,7 +99,7 @@ DID *Issuer_GetSigner(Issuer *issuer)
         return NULL;
     }
 
-    return &issuer->signer;
+    return &issuer->signer->did;
 }
 
 DIDURL *Issuer_GetSignKey(Issuer *issuer)
@@ -154,7 +157,7 @@ static Credential *issuer_generate_credential(Issuer *issuer, DID *owner,
         cred->type.types[i] = strdup(types[i]);
 
     //set issuer
-    DID_Copy(&cred->issuer, &issuer->signer);
+    DID_Copy(&cred->issuer, &issuer->signer->did);
 
     //expire and issue date
     cred->expirationDate = expires;
@@ -165,11 +168,7 @@ static Credential *issuer_generate_credential(Issuer *issuer, DID *owner,
     if (!data)
         goto errorExit;
 
-    doc = DIDStore_LoadDID(issuer->signer.meta.store, &issuer->signer);
-    if (!doc)
-        goto errorExit;
-
-    rc = DIDDocument_Sign(doc, &issuer->signkey, storepass, signature,
+    rc = DIDDocument_Sign(issuer->signer, &issuer->signkey, storepass, signature,
             1, (unsigned char*)data, strlen(data));
     free((char*)data);
     if (rc)
