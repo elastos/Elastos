@@ -5,6 +5,8 @@ module.exports = (props) => {
   const onLinkClick = props.onLinkClick;
   return (
   <div id="news" className="overflow_auto scrollbar">
+    <p className="newstitle">news</p>
+
     <table>
       <tbody>
       {

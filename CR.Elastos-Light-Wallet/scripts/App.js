@@ -535,8 +535,8 @@ const updateAmountAndFees = () => {
 };
 
 const showLedgerConfirmBanner = () => {
-  bannerStatus = 'Confirm Amount On Ledger';
-  bannerClass = 'bg_green color_white banner-look';
+  bannerStatus = 'Please review and sign transaction on Ledger';
+  bannerClass = 'landing-btnbg color_white banner-look';
   GuiUtils.show('homeBanner');
   GuiUtils.show('votingBanner');
   renderApp();
@@ -723,7 +723,8 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
               parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
               parsedCandidateVote.nickname = candidateVoteElt.Nickname;
               parsedCandidateVote.state = candidateVoteElt.State;
-              parsedCandidateVote.votes = candidateVoteElt.Votes;
+              // parsedCandidateVote.votes = candidateVoteElt.Votes;
+              parsedCandidateVote.votes = header.Value;
               parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
               // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
               parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);

@@ -263,6 +263,20 @@ html {
   padding-left: 57px;
 }
 
+.newstitle {
+  opacity: 0.8;
+  transform: rotate(-90deg);
+  font-size: 10.03px;
+  color: #B2B4C3;
+  letter-spacing: 0;
+  text-align: center;
+  top: 395.13px;
+  position: fixed;
+  margin: 0;
+  left: 0;
+  padding-left: 10px;
+}
+
 .article-days {
   font-size: 7.8px;
   color: #9799A6;
@@ -355,9 +369,9 @@ html {
   color: #FFFFFF;
   letter-spacing: 0;
   height: 46.8px;
-  width: 225px;
+  width: 240px;
   top: 95.27px;
-  left: 278px;
+  left: 270px;
   text-align: center;
   border: none;
   text-align: left;
@@ -550,11 +564,11 @@ html {
   color: #FFFFFF;
   letter-spacing: 0;
   top: 115.5px;
-  left: 591.13px;
+  left: 581.13px;
 }
 
 .copy-button {
-  left: 560.49px;
+  left: 550.49px;
   top: 110px;
   background: none;
   margin: 0;
