@@ -1906,8 +1906,8 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	s.Chain.chainParams.CRCCommitteeAddress = *randomUint168()
 
 	// Set CRC foundation and CRC committee amount.
-	s.Chain.crCommittee.CRCFoundationBalance = common.Fixed64(990 * 1e8)
-	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(10 * 1e8)
+	s.Chain.crCommittee.CRCFoundationBalance = common.Fixed64(900 * 1e8)
+	s.Chain.crCommittee.AppropriationAmount = common.Fixed64(90 * 1e8)
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0 * 1e8)
 
 	// Create reference.
@@ -1919,11 +1919,11 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 		},
 	}
 	refOutput := types.Output{
-		Value:       990 * 1e8,
+		Value:       900 * 1e8,
 		ProgramHash: s.Chain.chainParams.CRCFoundation,
 	}
 	refOutputErr := types.Output{
-		Value:       990 * 1e8,
+		Value:       900 * 1e8,
 		ProgramHash: *randomUint168(),
 	}
 	reference[input] = refOutput
@@ -1934,7 +1934,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
 	}
 	output2 := &types.Output{
-		Value:       900 * 1e8,
+		Value:       810 * 1e8,
 		ProgramHash: s.Chain.chainParams.CRCFoundation,
 	}
 	output1Err := &types.Output{
@@ -1942,7 +1942,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
 	}
 	output2Err := &types.Output{
-		Value:       899 * 1e8,
+		Value:       809 * 1e8,
 		ProgramHash: s.Chain.chainParams.CRCFoundation,
 	}
 
@@ -1969,7 +1969,7 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	txn = s.getCRCAppropriationTx(input, output1, output2Err)
 	err = s.Chain.checkCRCAppropriationTransaction(txn, reference)
 	s.EqualError(err, "inputs does not equal to outputs "+
-		"amount, inputs:990 outputs:989")
+		"amount, inputs:900 outputs:899")
 
 	// Invalid CRC appropriation amount.
 	txn = s.getCRCAppropriationTx(input, output1Err, output2Err)
@@ -3524,7 +3524,7 @@ func (s *txValidatorTestSuite) TestCreateCRCAppropriationTransaction() {
 	hash := block.Hash()
 	node, _ := s.Chain.LoadBlockNode(&block.Header, &hash)
 	s.Chain.db.SaveBlock(block, node, nil, CalcPastMedianTime(node))
-	txCrcAppropriation, _ := s.Chain.CreateCRCAppropriationTransaction()
+	txCrcAppropriation, _, _ := s.Chain.CreateCRCAppropriationTransaction()
 	s.NotNil(txCrcAppropriation)
 }
 
