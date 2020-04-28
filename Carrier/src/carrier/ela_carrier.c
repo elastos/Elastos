@@ -3094,6 +3094,7 @@ static int send_general_message(ElaCarrier *w, uint32_t friend_number,
                                 const char *userid,
                                 const void *msg, size_t len,
                                 const char *ext_name,
+                                bool friend_online,
                                 bool *with_offline)
 {
     ElaCP *cp;
@@ -3113,14 +3114,18 @@ static int send_general_message(ElaCarrier *w, uint32_t friend_number,
     if (!data)
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
-    rc = dht_friend_message(&w->dht, friend_number, data, data_len);
-    if (!rc) {
-        free(data);
+    if (friend_online) {
+        rc = dht_friend_message(&w->dht, friend_number, data, data_len);
+        if (!rc) {
+            free(data);
 
-        if (with_offline)
-            *with_offline = false;
+            if (with_offline)
+                *with_offline = false;
 
-        return 0;
+            return 0;
+        }
+    } else {
+        rc = ELA_DHT_ERROR(ELAERR_FRIEND_OFFLINE);
     }
 
     if (w->dstorectx)
@@ -3152,7 +3157,8 @@ static int64_t generate_tid(void)
 static int send_bulk_message(ElaCarrier *w, uint32_t friend_number,
                              const char *userid,
                              const void *msg, size_t len,
-                             const char * ext_name,
+                             const char *ext_name,
+                             bool friend_online,
                              bool *with_offline)
 {
     ElaCP *cp;
@@ -3164,48 +3170,52 @@ static int send_bulk_message(ElaCarrier *w, uint32_t friend_number,
     int index = 0;
     int rc;
 
-    tid = generate_tid();
+    if (friend_online) {
+        tid = generate_tid();
 
-    do {
-        size_t send_len;
+        do {
+            size_t send_len;
 
-        cp = elacp_create(ELACP_TYPE_BULKMSG, ext_name);
-        if (!cp)
-            return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+            cp = elacp_create(ELACP_TYPE_BULKMSG, ext_name);
+            if (!cp)
+                return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
-        elacp_set_tid(cp, &tid);
-        ++index;
+            elacp_set_tid(cp, &tid);
+            ++index;
 
-        if (left < ELA_MAX_APP_MESSAGE_LEN)
-            send_len = left;
-        else
-            send_len = ELA_MAX_APP_MESSAGE_LEN;
+            if (left < ELA_MAX_APP_MESSAGE_LEN)
+                send_len = left;
+            else
+                send_len = ELA_MAX_APP_MESSAGE_LEN;
 
-        elacp_set_totalsz(cp, (index == 1)? left : 0);
-        elacp_set_raw_data(cp, pos, send_len);
+            elacp_set_totalsz(cp, (index == 1)? left : 0);
+            elacp_set_raw_data(cp, pos, send_len);
 
-        pos  += send_len;
-        left -= send_len;
+            pos  += send_len;
+            left -= send_len;
 
-        data = elacp_encode(cp, &data_len);
-        elacp_free(cp);
+            data = elacp_encode(cp, &data_len);
+            elacp_free(cp);
 
-        if (!data)
-            return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+            if (!data)
+                return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
-        rc = dht_friend_message(&w->dht, friend_number, data, data_len);
-        free(data);
+            rc = dht_friend_message(&w->dht, friend_number, data, data_len);
+            free(data);
 
-        if (rc < 0)
-            break;
+            if (rc < 0)
+                break;
 
-    } while (left > 0);
+        } while (left > 0);
 
-    if (rc >= 0) {
-        if (with_offline)
-            *with_offline = false;
+        if (rc >= 0) {
+            if (with_offline)
+                *with_offline = false;
 
-        return 0;
+            return 0;
+        }
+    } else {
+        rc = ELA_DHT_ERROR(ELAERR_FRIEND_OFFLINE);
     }
 
     if (w->dstorectx) {
@@ -3240,6 +3250,7 @@ int ela_send_friend_message(ElaCarrier *w, const char *to,
     char *addr, *userid, *ext_name;
     FriendInfo *fi;
     uint32_t friend_number;
+    bool friend_online;
     int rc;
 
     if (!w || !to || !msg || !len || len > ELA_MAX_APP_BULKMSG_LEN) {
@@ -3284,12 +3295,13 @@ int ela_send_friend_message(ElaCarrier *w, const char *to,
         return -1;
     }
 
+    friend_online = (fi->info.status == ElaConnectionStatus_Connected);
     deref(fi);
 
     if (len <= ELA_MAX_APP_MESSAGE_LEN)
-        rc = send_general_message(w, friend_number, to, msg, len, ext_name, is_offline);
+        rc = send_general_message(w, friend_number, to, msg, len, ext_name, friend_online, is_offline);
     else
-        rc = send_bulk_message(w, friend_number, to, msg, len, ext_name, is_offline);
+        rc = send_bulk_message(w, friend_number, to, msg, len, ext_name, friend_online, is_offline);
 
     if (rc < 0) {
         ela_set_error(rc);
