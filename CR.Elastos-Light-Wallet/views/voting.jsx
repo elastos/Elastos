@@ -136,7 +136,7 @@ module.exports = (props) => {
                       return (<tr className="txtable-row" key={index}>
                         <td className="no_border no_padding">{item.n}</td>
                         <td className="no_border no_padding">{item.nickname}</td>
-                        <td className="no_border no_padding">{item.votes}</td>
+                        <td className="no_border no_padding">{item.votes} ELA</td>
                         <td className="no_border no_padding">{item.state}</td>
                       </tr>)
                     })

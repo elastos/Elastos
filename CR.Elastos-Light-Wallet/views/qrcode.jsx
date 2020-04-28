@@ -18,7 +18,7 @@ module.exports = (props) => {
         <p className="address-ex display_inline_block font_size14">{App.getAddress()}</p>
       </div>
       <div className="flex_center">
-        <button className="btn_none">
+        <button className="btn_none" onClick={(e) => App.copyAddressToClipboard()}>
           <img src="artwork/copy36.svg" height="36px" width="36px" />
         </button>
         <p className="display_inline_block color_white font_size14 paddingleft_10px">Copy</p>
