@@ -1,7 +1,7 @@
-const path = require('path');
+const path = require('path')
 
 module.exports = {
-	resolve : function(relativePath){
-		return path.resolve(__dirname, '..', relativePath);
-	}
-};
+  resolve: function(relativePath) {
+    return path.resolve(__dirname, '..', relativePath)
+  },
+}
