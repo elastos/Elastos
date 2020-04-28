@@ -13,7 +13,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: prerequisites
+      run: |
+        sudo apt update
+        sudo apt install autopoint
+        sudo apt install flex 
+        sudo apt install bison 
+        sudo apt install libncurses5-dev
     - name: cmake
-      run: cd build && mkdir linux && cd linux && cmake ../..
+      run: |
+        cd build
+        mkdir linux
+        cd linux
+        cmake ../..
     - name: make
-      run: cd build/linux && make
+      run: |
+        cd build/linux
+        make
