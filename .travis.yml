@@ -78,31 +78,31 @@ script:
     done
   - adb shell logcat -c
   - adb shell logcat -v time | grep -E "Test|Debug|RobotConnector|Carrier" &
-  - /tmp/carrier/bin/elatests --robot -c /tmp/carrier/etc/carrier/tests.conf &
-  - adb shell am instrument -w -r -e debug false -e class 'org.elastos.carrier.RootTestsuite' org.elastos.carrier.test/android.support.test.runner.AndroidJUnitRunner | tee test.log
-  - tail -10 test.log
-  - export RUN_OK=`tail -10 test.log | grep 'OK ('`
-  - if [[ "$RUN_OK" == "" ]]; then
-      eval $(tail -10 test.log | grep "Failures" | awk -F "[,:]" '{gsub(/ /,"",$2);gsub(/[ \t\r\n]/,"",$4);print "TotalCase="$2;print "Failures="$4}');
-      echo "AllCase="${TotalCase}"++-------++";
-      echo "Fail="${Failures}"++--------++";
-      if [[ "${Failures}" == "" ]]; then
-        echo "test interrupted";
-        export TEST_INTERRUPT=TRUE;
-        return -1;
-      fi;
-      echo "--"${Failures}"--";
-      if [[ "${Failures}" -gt 5 ]]; then
-        echo "too much Failures";
-        return $Failures;
-      else
-        if [[ "$TotalCase" -le 3 ]]; then
-          echo "TestCase do not run, pls check it!";
-          return -1;
-        fi;
-        echo "warning! pls check the failed case!";
-      fi
-    fi
+  #- /tmp/carrier/bin/elatests --robot -c /tmp/carrier/etc/carrier/tests.conf &
+  #- adb shell am instrument -w -r -e debug false -e class 'org.elastos.carrier.RootTestsuite' org.elastos.carrier.test/android.support.test.runner.AndroidJUnitRunner | tee test.log
+  #- tail -10 test.log
+  #- export RUN_OK=`tail -10 test.log | grep 'OK ('`
+  #- if [[ "$RUN_OK" == "" ]]; then
+  #    eval $(tail -10 test.log | grep "Failures" | awk -F "[,:]" '{gsub(/ /,"",$2);gsub(/[ \t\r\n]/,"",$4);print "TotalCase="$2;print "Failures="$4}');
+  #    echo "AllCase="${TotalCase}"++-------++";
+  #    echo "Fail="${Failures}"++--------++";
+  #    if [[ "${Failures}" == "" ]]; then
+  #      echo "test interrupted";
+  #      export TEST_INTERRUPT=TRUE;
+  #      return -1;
+  #    fi;
+  #    echo "--"${Failures}"--";
+  #    if [[ "${Failures}" -gt 5 ]]; then
+  #      echo "too much Failures";
+  #      return $Failures;
+  #    else
+  #      if [[ "$TotalCase" -le 3 ]]; then
+  #        echo "TestCase do not run, pls check it!";
+  #        return -1;
+  #      fi;
+  #      echo "warning! pls check the failed case!";
+  #    fi
+  #  fi
 
 after_failure:
   - if [[ "$TEST_INTERRUPT" != "" ]]; then
