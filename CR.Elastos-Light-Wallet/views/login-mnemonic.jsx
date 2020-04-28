@@ -4,11 +4,13 @@ module.exports = (props) => {
   const App = props.App;
   const GuiToggles = props.GuiToggles;
   const useMnemonic = () => {
-    App.getPublicKeyFromMnemonic();
-    GuiToggles.showHome();
+    const success = App.getPublicKeyFromMnemonic();
+    if(success) {
+      GuiToggles.showHome();
+    }
   }
   return (
-  
+
   <div id="loginMnemonic">
   <div className="login-div ">
     <div className="flex_center w100pct">
@@ -17,7 +19,7 @@ module.exports = (props) => {
     <div className="flex1"></div>
     </div>
     <p className="address-text font_size24 margin_none display_inline_block gradient-font">Enter Mnemonics</p>
-    <textarea className="qraddress-div color_white textarea-placeholder padding_5px" type="text" rows="4" cols="50" id="mnemonic" placeholder="Enter 12 word mnemonic/seed phrase"></textarea>    
+    <textarea className="qraddress-div color_white textarea-placeholder padding_5px" type="text" rows="4" cols="50" id="mnemonic" placeholder="Enter 12 word mnemonic/seed phrase"></textarea>
     <div className="flex_center">
     <button className="proceed-btn dark-hover" onClick={(e)=> useMnemonic()}>
           <p>Proceed</p>
@@ -35,18 +37,18 @@ module.exports = (props) => {
   </div>
 </div>);
 }
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
 //   (
 //   <table id="loginMnemonic" className="bordered w750h520px">
 //     <tbody>

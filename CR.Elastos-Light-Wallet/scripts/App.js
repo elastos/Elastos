@@ -442,15 +442,16 @@ const getPublicKeyFromMnemonic = () => {
   const mnemonic = mnemonicElt.value;
   if (!bip39.validateMnemonic(mnemonic)) {
     alert(`mnemonic is not valid.`);
-    return;
+    return false;
   }
   const privateKey = Mnemonic.getPrivateKeyFromMnemonic(mnemonic);
   if (privateKey.length != PRIVATE_KEY_LENGTH) {
     alert(`mnemonic must create a of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`);
-    return;
+    return false;
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
   requestBlockchainData();
+  return true;
 };
 
 const getPublicKeyFromPrivateKey = () => {
@@ -460,10 +461,11 @@ const getPublicKeyFromPrivateKey = () => {
   const privateKey = privateKeyElt.value;
   if (privateKey.length != PRIVATE_KEY_LENGTH) {
     alert(`private key must be a hex encoded string of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`);
-    return;
+    return false;
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
   requestBlockchainData();
+  return true;
 };
 
 const sendAmountToAddressErrorCallback = (error) => {

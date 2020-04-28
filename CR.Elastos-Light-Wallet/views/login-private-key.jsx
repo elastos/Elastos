@@ -4,8 +4,10 @@ module.exports = (props) => {
   const App = props.App;
   const GuiToggles = props.GuiToggles;
   const usePrivateKey = () => {
-    App.getPublicKeyFromPrivateKey();
-    GuiToggles.showHome();
+    const success = App.getPublicKeyFromPrivateKey();
+    if(success) {
+      GuiToggles.showHome();
+    }
   }
   return (
   <div id="loginPrivateKey">
@@ -16,7 +18,7 @@ module.exports = (props) => {
     <div className="flex1"></div>
     </div>
     <p className="address-text font_size24 margin_none display_inline_block gradient-font">Enter Private Key</p>
-    <textarea className="qraddress-div color_white textarea-placeholder padding_5px" type="text" rows="4" cols="50" id="privateKey" placeholder="Enter Private Key"></textarea>    
+    <textarea className="qraddress-div color_white textarea-placeholder padding_5px" type="text" rows="4" cols="50" id="privateKey" placeholder="Enter Private Key"></textarea>
     <div className="flex_center">
     <button className="proceed-btn dark-hover" onClick={(e)=> usePrivateKey()}>
           <p>Proceed</p>
@@ -33,20 +35,20 @@ module.exports = (props) => {
   </div>
 </div>);
 }
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //   (
 //   <table id="loginPrivateKey" className="bordered w750h520px">
 //     <tbody>
