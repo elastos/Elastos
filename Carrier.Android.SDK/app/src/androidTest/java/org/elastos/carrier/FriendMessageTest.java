@@ -17,6 +17,8 @@ import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.nio.ByteBuffer;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -130,6 +132,69 @@ public class FriendMessageTest {
 			fail();
 		}
 	}
+
+	@Test
+	public void testSendBulkMsgToFriend() {
+		friendConnSyncher.reset();
+		commonSyncher.reset();
+
+		try {
+			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
+			assertTrue(carrier.isFriend(robot.getNodeid()));
+			String fillData = "01234567";
+			int bufferPkgCnt = Carrier.ELA_MAX_APP_BULKMSG_LEN / fillData.length();
+			StringBuffer sb = new StringBuffer();
+			for(int idx = 0; idx < bufferPkgCnt; idx++) {
+				sb.append(fillData);
+			}
+			sb.deleteCharAt(0);
+			String out = sb.toString();
+
+			boolean isOnline = carrier.sendFriendMessage(robot.getNodeid(), out);
+			assertTrue(isOnline);
+
+			String[] args = robot.readAck();
+			assertTrue(args != null && args.length == 1);
+			assertEquals(out, args[0]);
+		}
+		catch (CarrierException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
+	public void testReceiveBulkMsgFromFriend() {
+		try {
+			friendConnSyncher.reset();
+			commonSyncher.reset();
+
+			assertTrue(TestHelper.addFriendAnyway(carrier, robot, commonSyncher, friendConnSyncher, context));
+			assertTrue(carrier.isFriend(robot.getNodeid()));
+
+			String fillData = "01234567";
+			int bufferPkgCnt = Carrier.ELA_MAX_APP_BULKMSG_LEN / fillData.length();
+			StringBuffer sb = new StringBuffer();
+			for(int idx = 0; idx < bufferPkgCnt; idx++) {
+				sb.append(fillData);
+			}
+			sb.deleteCharAt(0);
+			String msg = sb.toString();
+			assertTrue(robot.writeCmd(String.format("fmsg %s %s", carrier.getUserId(), msg)));
+
+			// wait for message from robot.
+			commonSyncher.await();
+
+			TestContext.Bundle bundle = context.getExtra();
+			assertEquals(robot.getNodeid(), bundle.getFrom());
+			assertEquals(msg, bundle.getExtraData().toString());
+		}
+		catch (CarrierException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
 
 	@Test
 	public void testSendMessageToStranger() {

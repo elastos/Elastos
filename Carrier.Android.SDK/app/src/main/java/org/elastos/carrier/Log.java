@@ -35,6 +35,11 @@ public class Log {
 			android.util.Log.e(tag, msg);
 	}
 
+	public static void e(String tag, String msg, Exception e) {
+		if (DEBUG)
+			android.util.Log.e(tag, msg, e);
+	}
+
 	public static void d(String tag, String msg) {
 		if (DEBUG)
 			android.util.Log.d(tag, msg);

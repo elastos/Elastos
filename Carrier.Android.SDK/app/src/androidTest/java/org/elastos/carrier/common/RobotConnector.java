@@ -123,7 +123,9 @@ public class RobotConnector extends Socket {
 		Log.d(TAG, "writeCmd :" + command);
 
 		try {
-			getOutputStream().write((command + "\n").getBytes("utf-8"));
+			byte[] data = (command + "\n").getBytes("utf-8");
+			setSendBufferSize(data.length);
+			getOutputStream().write(data);
 			getOutputStream().flush();
 		}
 		catch (IOException e) {
