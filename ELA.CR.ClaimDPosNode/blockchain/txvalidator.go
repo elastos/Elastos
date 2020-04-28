@@ -1890,11 +1890,7 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 	//
 	// Outputs has check in CheckTransactionOutput function:
 	// first one to CRCommitteeAddress, second one to CRCFoundation
-	fAmount := b.crCommittee.CRCFoundationBalance
-	cAmount := b.crCommittee.CRCCommitteeBalance
-	uAmount := b.crCommittee.CRCCommitteeUsedAmount
-	appropriationAmount := common.Fixed64(float64(fAmount+cAmount)*
-		b.chainParams.CRCAppropriatePercentage/100.0) - cAmount + uAmount
+	appropriationAmount := b.crCommittee.AppropriationAmount
 	if appropriationAmount != txn.Outputs[0].Value {
 		return fmt.Errorf("invalid appropriation amount %s, need to be %s",
 			txn.Outputs[0].Value, appropriationAmount)
