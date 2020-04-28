@@ -24,20 +24,20 @@ import (
 
 type Committee struct {
 	KeyFrame
-	mtx                      sync.RWMutex
-	state                    *State
-	params                   *config.Params
-	manager                  *ProposalManager
-	firstHistory             *utils.History
-	lastHistory              *utils.History
-	needAppropriationHistory *utils.History
+	mtx                  sync.RWMutex
+	state                *State
+	params               *config.Params
+	manager              *ProposalManager
+	firstHistory         *utils.History
+	lastHistory          *utils.History
+	appropriationHistory *utils.History
 
 	getCheckpoint            func(height uint32) *Checkpoint
 	getHeight                func() uint32
 	isCurrent                func() bool
 	broadcast                func(msg p2p.Message)
 	appendToTxpool           func(transaction *types.Transaction) elaerr.ELAError
-	createCRCAppropriationTx func() (*types.Transaction, error)
+	createCRCAppropriationTx func() (*types.Transaction, common.Fixed64, error)
 	getUTXO                  func(programHash *common.Uint168) ([]*types.UTXO, error)
 }
 
@@ -273,14 +273,12 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	if c.shouldChange(block.Height) && c.changeCommittee(block.Height) {
 		needChg = true
 	}
-	if c.hasAppropriationTx(block) {
-		c.recordCurrentStageAmount(block.Height)
-	}
 	c.lastHistory.Commit(block.Height)
 
 	if needChg {
-		c.createAppropriationTransaction(block.Height)
-		c.needAppropriationHistory.Commit(block.Height)
+		appropriationAmount := c.createAppropriationTransaction(block.Height)
+		c.recordCurrentStageAmount(block.Height, appropriationAmount)
+		c.appropriationHistory.Commit(block.Height)
 	}
 }
 
@@ -317,23 +315,28 @@ func (c *Committee) changeCommittee(height uint32) bool {
 	return true
 }
 
-func (c *Committee) createAppropriationTransaction(height uint32) {
+func (c *Committee) createAppropriationTransaction(height uint32) common.Fixed64 {
+	var finalAppropriationAmount common.Fixed64
 	if c.createCRCAppropriationTx != nil && height == c.getHeight() {
-		tx, err := c.createCRCAppropriationTx()
+		tx, appropriationAmount, err := c.createCRCAppropriationTx()
 		if err != nil {
 			log.Error("create appropriation tx failed:", err.Error())
-			return
+			return 0
 		} else if tx == nil {
 			log.Info("no need to create appropriation")
 			oriNeedAppropriation := c.NeedAppropriation
-			c.needAppropriationHistory.Append(height, func() {
+			oriAppropriationAmount := c.AppropriationAmount
+			c.appropriationHistory.Append(height, func() {
 				c.NeedAppropriation = false
+				c.AppropriationAmount = 0
 			}, func() {
 				c.NeedAppropriation = oriNeedAppropriation
+				c.AppropriationAmount = oriAppropriationAmount
 			})
-			return
+			return 0
 		}
 		log.Info("create CRCAppropriation transaction:", tx.Hash())
+		finalAppropriationAmount = appropriationAmount
 		if c.isCurrent != nil && c.broadcast != nil && c.
 			appendToTxpool != nil {
 			go func() {
@@ -347,6 +350,7 @@ func (c *Committee) createAppropriationTransaction(height uint32) {
 			}()
 		}
 	}
+	return finalAppropriationAmount
 }
 
 func (c *Committee) resetCRCCommitteeUsedAmount(height uint32) {
@@ -397,10 +401,12 @@ func (c *Committee) resetProposalHashesSet(height uint32) {
 	})
 }
 
-func (c *Committee) recordCurrentStageAmount(height uint32) {
+func (c *Committee) recordCurrentStageAmount(height uint32,
+	appropriationAmount common.Fixed64) {
 	oriCurrentStageAmount := c.CRCCurrentStageAmount
-	c.lastHistory.Append(height, func() {
-		c.CRCCurrentStageAmount = c.CRCCommitteeBalance - c.CRCCommitteeUsedAmount
+	c.appropriationHistory.Append(height, func() {
+		c.CRCCurrentStageAmount = c.CRCCommitteeBalance +
+			appropriationAmount - c.CRCCommitteeUsedAmount
 	}, func() {
 		c.CRCCurrentStageAmount = oriCurrentStageAmount
 	})
@@ -586,8 +592,8 @@ func (c *Committee) RollbackTo(height uint32) error {
 	defer c.mtx.Unlock()
 	currentHeight := c.lastHistory.Height()
 	for i := currentHeight - 1; i >= height; i-- {
-		if err := c.needAppropriationHistory.RollbackTo(i); err != nil {
-			log.Debug("committee needAppropriationHistory rollback err:", err)
+		if err := c.appropriationHistory.RollbackTo(i); err != nil {
+			log.Debug("committee appropriationHistory rollback err:", err)
 		}
 		if err := c.lastHistory.RollbackTo(i); err != nil {
 			log.Debug("committee last history rollback err:", err)
@@ -623,15 +629,6 @@ func (c *Committee) shouldChange(height uint32) bool {
 	}
 
 	return height == c.LastVotingStartHeight+c.params.CRVotingPeriod
-}
-
-func (c *Committee) hasAppropriationTx(block *types.Block) bool {
-	for _, tx := range block.Transactions {
-		if tx.TxType == types.CRCAppropriation {
-			return true
-		}
-	}
-	return false
 }
 
 func (c *Committee) shouldCleanHistory() bool {
@@ -1010,7 +1007,7 @@ type CommitteeFuncsConfig struct {
 	GetTxReference func(tx *types.Transaction) (
 		map[*types.Input]types.Output, error)
 	GetHeight                        func() uint32
-	CreateCRAppropriationTransaction func() (*types.Transaction, error)
+	CreateCRAppropriationTransaction func() (*types.Transaction, common.Fixed64, error)
 	IsCurrent                        func() bool
 	Broadcast                        func(msg p2p.Message)
 	AppendToTxpool                   func(transaction *types.Transaction) elaerr.ELAError
@@ -1042,13 +1039,13 @@ func (c *Committee) Snapshot() *CommitteeKeyFrame {
 
 func NewCommittee(params *config.Params) *Committee {
 	committee := &Committee{
-		state:                    NewState(params),
-		params:                   params,
-		KeyFrame:                 *NewKeyFrame(),
-		manager:                  NewProposalManager(params),
-		firstHistory:             utils.NewHistory(maxHistoryCapacity),
-		lastHistory:              utils.NewHistory(maxHistoryCapacity),
-		needAppropriationHistory: utils.NewHistory(maxHistoryCapacity),
+		state:                NewState(params),
+		params:               params,
+		KeyFrame:             *NewKeyFrame(),
+		manager:              NewProposalManager(params),
+		firstHistory:         utils.NewHistory(maxHistoryCapacity),
+		lastHistory:          utils.NewHistory(maxHistoryCapacity),
+		appropriationHistory: utils.NewHistory(maxHistoryCapacity),
 	}
 	committee.state.SetManager(committee.manager)
 	params.CkpManager.Register(NewCheckpoint(committee))

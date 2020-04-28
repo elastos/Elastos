@@ -104,6 +104,7 @@ type KeyFrame struct {
 	CRCCurrentStageAmount  common.Fixed64
 	DestroyedAmount        common.Fixed64
 	CirculationAmount      common.Fixed64
+	AppropriationAmount    common.Fixed64
 }
 
 type DepositInfo struct {
@@ -245,7 +246,7 @@ func (kf *KeyFrame) Serialize(w io.Writer) (err error) {
 	return common.WriteElements(w, kf.LastCommitteeHeight,
 		kf.LastVotingStartHeight, kf.InElectionPeriod, kf.NeedAppropriation,
 		kf.CRCFoundationBalance, kf.CRCCommitteeBalance, kf.CRCCommitteeUsedAmount,
-		kf.DestroyedAmount, kf.CirculationAmount)
+		kf.DestroyedAmount, kf.CirculationAmount, kf.AppropriationAmount)
 }
 
 func (kf *KeyFrame) Deserialize(r io.Reader) (err error) {
@@ -260,7 +261,8 @@ func (kf *KeyFrame) Deserialize(r io.Reader) (err error) {
 	err = common.ReadElements(r, &kf.LastCommitteeHeight,
 		&kf.LastVotingStartHeight, &kf.InElectionPeriod, &kf.NeedAppropriation,
 		&kf.CRCFoundationBalance, &kf.CRCCommitteeBalance,
-		&kf.CRCCommitteeUsedAmount, &kf.DestroyedAmount, &kf.CirculationAmount)
+		&kf.CRCCommitteeUsedAmount, &kf.DestroyedAmount, &kf.CirculationAmount,
+		&kf.AppropriationAmount)
 	return
 }
 
@@ -354,6 +356,7 @@ func (kf *KeyFrame) Snapshot() *KeyFrame {
 	frame.CRCCommitteeUsedAmount = kf.CRCCommitteeUsedAmount
 	frame.DestroyedAmount = kf.DestroyedAmount
 	frame.CirculationAmount = kf.CirculationAmount
+	frame.AppropriationAmount = kf.AppropriationAmount
 	frame.Members = copyMembersMap(kf.Members)
 	frame.HistoryMembers = copyHistoryMembersMap(kf.HistoryMembers)
 	return frame
