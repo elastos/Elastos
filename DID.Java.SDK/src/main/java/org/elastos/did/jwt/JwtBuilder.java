@@ -29,15 +29,19 @@ import java.util.Map;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.InvalidKeyException;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import io.jsonwebtoken.CompressionCodec;
 import io.jsonwebtoken.CompressionCodecs;
 import io.jsonwebtoken.Jwts;
 
 public class JwtBuilder {
+	private String issuer;
 	private KeyProvider keyProvider;
 	private io.jsonwebtoken.JwtBuilder impl;
 
-	public JwtBuilder(KeyProvider keyProvider) {
+	public JwtBuilder(String issuer, KeyProvider keyProvider) {
+		this.issuer = issuer;
 		this.keyProvider = keyProvider;
 		this.impl = Jwts.builder();
 	}
@@ -200,6 +204,9 @@ public class JwtBuilder {
 	 */
 	public JwtBuilder setClaims(Claims claims) {
 		impl.setClaims(claims.getImpl());
+		if (!claims.containsKey(Claims.ISSUER))
+			impl.setIssuer(issuer);
+
 		return this;
 	}
 
@@ -219,7 +226,18 @@ public class JwtBuilder {
 	 */
 	public JwtBuilder setClaims(Map<String, ?> claims) {
 		impl.setClaims(claims);
+		if (!claims.containsKey(Claims.ISSUER))
+			impl.setIssuer(issuer);
+
 		return this;
+	}
+
+	JwtBuilder setClaims(JsonNode claims) {
+		return setClaims(Claims.jsonNode2Map(claims));
+	}
+
+	JwtBuilder setClaimsWithJson(String jsonClaims) {
+		return setClaims(Claims.json2Map(jsonClaims));
 	}
 
 	/**
@@ -238,6 +256,14 @@ public class JwtBuilder {
 	public JwtBuilder addClaims(Map<String, Object> claims) {
 		impl.addClaims(claims);
 		return this;
+	}
+
+	JwtBuilder addClaims(JsonNode claims) {
+		return addClaims(Claims.jsonNode2Map(claims));
+	}
+
+	JwtBuilder addClaimsWithJson(String jsonClaims) {
+		return addClaims(Claims.json2Map(jsonClaims));
 	}
 
 	/**
@@ -556,6 +582,14 @@ public class JwtBuilder {
 	public JwtBuilder claim(String name, Object value) {
 		impl.claim(name, value);
 		return this;
+	}
+
+	JwtBuilder claim(String name, JsonNode value) {
+		return claim(name, Claims.jsonNode2Map(value));
+	}
+
+	JwtBuilder claimWithJson(String name, String jsonValue) {
+		return claim(name, Claims.json2Map(jsonValue));
 	}
 
 	/**

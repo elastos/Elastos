@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 import org.elastos.did.DIDDocument;
 import org.elastos.did.TestConfig;
@@ -36,6 +37,9 @@ import org.elastos.did.TestData;
 import org.elastos.did.crypto.Base64;
 import org.elastos.did.exception.DIDException;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JwtTest {
 	private static final int OPT = Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP;
@@ -85,7 +89,6 @@ public class JwtTest {
 		Claims b = JwtBuilder.createClaims();
 		b.setSubject("JwtTest")
 			.setId("0")
-			.setIssuer(doc.getSubject().toString())
 			.setAudience("Test cases")
 			.setIssuedAt(iat)
 			.setExpiration(exp)
@@ -151,7 +154,6 @@ public class JwtTest {
 		Claims b = JwtBuilder.createClaims();
 		b.setSubject("JwtTest")
 			.setId("0")
-			.setIssuer(doc.getSubject().toString())
 			.setAudience("Test cases")
 			.setIssuedAt(iat)
 			.setExpiration(exp)
@@ -219,7 +221,6 @@ public class JwtTest {
 				.addHeader("version", "1.0")
 				.setSubject("JwtTest")
 				.setId("0")
-				.setIssuer(doc.getSubject().toString())
 				.setAudience("Test cases")
 				.setIssuedAt(iat)
 				.setExpiration(exp)
@@ -283,7 +284,6 @@ public class JwtTest {
 				.addHeader("version", "1.0")
 				.setSubject("JwtTest")
 				.setId("0")
-				.setIssuer(doc.getSubject().toString())
 				.setAudience("Test cases")
 				.setIssuedAt(iat)
 				.setExpiration(exp)
@@ -320,5 +320,546 @@ public class JwtTest {
 
 		String s = jwt.getSignature();
 		assertNotNull(s);
+	}
+
+	@Test
+	public void jwsTestClaimJsonNode()
+			throws DIDException, IOException, JwtException {
+		TestData testData = new TestData();
+		testData.setup(true);
+		testData.initIdentity();
+
+		DIDDocument doc = testData.loadTestDocument();
+		assertNotNull(doc);
+		assertTrue(doc.isValid());
+
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		Date iat = cal.getTime();
+		cal.add(Calendar.MONTH, -1);
+		Date nbf = cal.getTime();
+		cal.add(Calendar.MONTH, 4);
+		Date exp = cal.getTime();
+
+		JsonNode node = loadJson(testData.loadEmailVcNormalizedJson());
+
+		String token = doc.jwtBuilder()
+				.addHeader(Header.TYPE, Header.JWT_TYPE)
+				.addHeader(Header.CONTENT_TYPE, "json")
+				.addHeader("library", "Elastos DID")
+				.addHeader("version", "1.0")
+				.setSubject("JwtTest")
+				.setId("0")
+				.setAudience("Test cases")
+				.setIssuedAt(iat)
+				.setExpiration(exp)
+				.setNotBefore(nbf)
+				.claim("foo", "bar")
+				.claim("vc", node)
+				.signWith("#key2", TestConfig.storePass)
+				.compact();
+
+		assertNotNull(token);
+		printJwt(token);
+
+		// The JWT parser not related with a DID document
+		JwtParser jp = new JwtParserBuilder().build();
+		Jws<Claims> jwt = jp.parseClaimsJws(token);
+		assertNotNull(jwt);
+
+		JwsHeader h = jwt.getHeader();
+		assertNotNull(h);
+		assertEquals("json", h.getContentType());
+		assertEquals(Header.JWT_TYPE, h.getType());
+		assertEquals("Elastos DID", h.get("library"));
+		assertEquals("1.0", h.get("version"));
+
+		Claims c = jwt.getBody();
+		assertNotNull(c);
+		assertEquals("JwtTest", c.getSubject());
+		assertEquals("0", c.getId());
+		assertEquals(doc.getSubject().toString(), c.getIssuer());
+		assertEquals("Test cases", c.getAudience());
+		assertEquals(iat, c.getIssuedAt());
+		assertEquals(exp, c.getExpiration());
+		assertEquals(nbf, c.getNotBefore());
+		assertEquals("bar", c.get("foo", String.class));
+
+		// get as map
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		Class<Map<String, Object>> clazz = (Class)Map.class;
+		Map<String, Object> map = c.get("vc", clazz);
+		assertNotNull(map);
+		assertEquals(testData.loadEmailCredential().getId().toString(), map.get("id"));
+		assertEquals(node, map2JsonNode(map));
+
+		// get as JsonNode
+		JsonNode n = c.get("vc", JsonNode.class);
+		assertNotNull(n);
+		assertEquals(testData.loadEmailCredential().getId().toString(), n.get("id").asText());
+		assertEquals(node, n);
+
+		// get as json text
+		String json = c.getAsJson("vc");
+		assertNotNull(json);
+		assertEquals(node, loadJson(json));
+
+		String s = jwt.getSignature();
+		assertNotNull(s);
+	}
+
+	@Test
+	public void jwsTestClaimJsonText()
+			throws DIDException, IOException, JwtException {
+		TestData testData = new TestData();
+		testData.setup(true);
+		testData.initIdentity();
+
+		DIDDocument doc = testData.loadTestDocument();
+		assertNotNull(doc);
+		assertTrue(doc.isValid());
+
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		Date iat = cal.getTime();
+		cal.add(Calendar.MONTH, -1);
+		Date nbf = cal.getTime();
+		cal.add(Calendar.MONTH, 4);
+		Date exp = cal.getTime();
+
+		String jsonValue = testData.loadEmailVcNormalizedJson();
+
+		String token = doc.jwtBuilder()
+				.addHeader(Header.TYPE, Header.JWT_TYPE)
+				.addHeader(Header.CONTENT_TYPE, "json")
+				.addHeader("library", "Elastos DID")
+				.addHeader("version", "1.0")
+				.setSubject("JwtTest")
+				.setId("0")
+				.setAudience("Test cases")
+				.setIssuedAt(iat)
+				.setExpiration(exp)
+				.setNotBefore(nbf)
+				.claim("foo", "bar")
+				.claimWithJson("vc", jsonValue)
+				.signWith("#key2", TestConfig.storePass)
+				.compact();
+
+		assertNotNull(token);
+		printJwt(token);
+
+		// The JWT parser not related with a DID document
+		JwtParser jp = new JwtParserBuilder().build();
+		Jws<Claims> jwt = jp.parseClaimsJws(token);
+		assertNotNull(jwt);
+
+		JwsHeader h = jwt.getHeader();
+		assertNotNull(h);
+		assertEquals("json", h.getContentType());
+		assertEquals(Header.JWT_TYPE, h.getType());
+		assertEquals("Elastos DID", h.get("library"));
+		assertEquals("1.0", h.get("version"));
+
+		Claims c = jwt.getBody();
+		assertNotNull(c);
+		assertEquals("JwtTest", c.getSubject());
+		assertEquals("0", c.getId());
+		assertEquals(doc.getSubject().toString(), c.getIssuer());
+		assertEquals("Test cases", c.getAudience());
+		assertEquals(iat, c.getIssuedAt());
+		assertEquals(exp, c.getExpiration());
+		assertEquals(nbf, c.getNotBefore());
+		assertEquals("bar", c.get("foo", String.class));
+
+		JsonNode node = loadJson(jsonValue);
+
+		// get as map
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		Class<Map<String, Object>> clazz = (Class)Map.class;
+		Map<String, Object> map = c.get("vc", clazz);
+		assertNotNull(map);
+		assertEquals(testData.loadEmailCredential().getId().toString(), map.get("id"));
+		assertEquals(node, map2JsonNode(map));
+
+		// get as JsonNode
+		JsonNode n = c.get("vc", JsonNode.class);
+		assertNotNull(n);
+		assertEquals(testData.loadEmailCredential().getId().toString(), n.get("id").asText());
+		assertEquals(node, n);
+
+		// get as json text
+		String json = c.getAsJson("vc");
+		assertNotNull(json);
+		assertEquals(node, loadJson(json));
+
+		String s = jwt.getSignature();
+		assertNotNull(s);
+	}
+
+	@Test
+	public void jwsTestSetClaimWithJsonNode()
+			throws DIDException, IOException, JwtException {
+		TestData testData = new TestData();
+		testData.setup(true);
+		testData.initIdentity();
+
+		DIDDocument doc = testData.loadTestDocument();
+		assertNotNull(doc);
+		assertTrue(doc.isValid());
+
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		Date iat = cal.getTime();
+		cal.add(Calendar.MONTH, -1);
+		Date nbf = cal.getTime();
+		cal.add(Calendar.MONTH, 4);
+		Date exp = cal.getTime();
+
+		String json = "{\n" +
+				"  \"sub\":\"JwtTest\",\n" +
+				"  \"jti\":\"0\",\n" +
+				"  \"aud\":\"Test cases\",\n" +
+				"  \"foo\":\"bar\",\n" +
+				"  \"object\":{\n" +
+				"    \"hello\":\"world\",\n" +
+				"    \"test\":true\n" +
+				"  }\n" +
+				"}";
+
+		JsonNode node = loadJson(json);
+
+		String token = doc.jwtBuilder()
+				.addHeader(Header.TYPE, Header.JWT_TYPE)
+				.addHeader(Header.CONTENT_TYPE, "json")
+				.addHeader("library", "Elastos DID")
+				.addHeader("version", "1.0")
+				.setClaims(node)
+				.setIssuedAt(iat)
+				.setExpiration(exp)
+				.setNotBefore(nbf)
+				.signWith("#key2", TestConfig.storePass)
+				.compact();
+
+		assertNotNull(token);
+		printJwt(token);
+
+		// The JWT parser not related with a DID document
+		JwtParser jp = new JwtParserBuilder().build();
+		Jws<Claims> jwt = jp.parseClaimsJws(token);
+		assertNotNull(jwt);
+
+		JwsHeader h = jwt.getHeader();
+		assertNotNull(h);
+		assertEquals("json", h.getContentType());
+		assertEquals(Header.JWT_TYPE, h.getType());
+		assertEquals("Elastos DID", h.get("library"));
+		assertEquals("1.0", h.get("version"));
+
+		Claims c = jwt.getBody();
+		assertNotNull(c);
+		assertEquals("JwtTest", c.getSubject());
+		assertEquals("0", c.getId());
+		assertEquals(doc.getSubject().toString(), c.getIssuer());
+		assertEquals("Test cases", c.getAudience());
+		assertEquals(iat, c.getIssuedAt());
+		assertEquals(exp, c.getExpiration());
+		assertEquals(nbf, c.getNotBefore());
+		assertEquals("bar", c.get("foo", String.class));
+
+		// get as map
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		Class<Map<String, Object>> clazz = (Class)Map.class;
+		Map<String, Object> map = c.get("object", clazz);
+		assertNotNull(map);
+
+		// get as JsonNode
+		JsonNode n = c.get("object", JsonNode.class);
+		assertNotNull(n);
+
+		// get as json text
+		String v = c.getAsJson("object");
+		assertNotNull(v);
+		System.out.println(v);
+
+		String s = jwt.getSignature();
+		assertNotNull(s);
+	}
+
+	@Test
+	public void jwsTestSetClaimWithJsonText()
+			throws DIDException, IOException, JwtException {
+		TestData testData = new TestData();
+		testData.setup(true);
+		testData.initIdentity();
+
+		DIDDocument doc = testData.loadTestDocument();
+		assertNotNull(doc);
+		assertTrue(doc.isValid());
+
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		Date iat = cal.getTime();
+		cal.add(Calendar.MONTH, -1);
+		Date nbf = cal.getTime();
+		cal.add(Calendar.MONTH, 4);
+		Date exp = cal.getTime();
+
+		String json = "{\n" +
+				"  \"sub\":\"JwtTest\",\n" +
+				"  \"jti\":\"0\",\n" +
+				"  \"aud\":\"Test cases\",\n" +
+				"  \"foo\":\"bar\",\n" +
+				"  \"object\":{\n" +
+				"    \"hello\":\"world\",\n" +
+				"    \"test\":true\n" +
+				"  }\n" +
+				"}";
+
+		String token = doc.jwtBuilder()
+				.addHeader(Header.TYPE, Header.JWT_TYPE)
+				.addHeader(Header.CONTENT_TYPE, "json")
+				.addHeader("library", "Elastos DID")
+				.addHeader("version", "1.0")
+				.setClaimsWithJson(json)
+				.setIssuedAt(iat)
+				.setExpiration(exp)
+				.setNotBefore(nbf)
+				.signWith("#key2", TestConfig.storePass)
+				.compact();
+
+		assertNotNull(token);
+		printJwt(token);
+
+		// The JWT parser not related with a DID document
+		JwtParser jp = new JwtParserBuilder().build();
+		Jws<Claims> jwt = jp.parseClaimsJws(token);
+		assertNotNull(jwt);
+
+		JwsHeader h = jwt.getHeader();
+		assertNotNull(h);
+		assertEquals("json", h.getContentType());
+		assertEquals(Header.JWT_TYPE, h.getType());
+		assertEquals("Elastos DID", h.get("library"));
+		assertEquals("1.0", h.get("version"));
+
+		Claims c = jwt.getBody();
+		assertNotNull(c);
+		assertEquals("JwtTest", c.getSubject());
+		assertEquals("0", c.getId());
+		assertEquals(doc.getSubject().toString(), c.getIssuer());
+		assertEquals("Test cases", c.getAudience());
+		assertEquals(iat, c.getIssuedAt());
+		assertEquals(exp, c.getExpiration());
+		assertEquals(nbf, c.getNotBefore());
+		assertEquals("bar", c.get("foo", String.class));
+
+		// get as map
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		Class<Map<String, Object>> clazz = (Class)Map.class;
+		Map<String, Object> map = c.get("object", clazz);
+		assertNotNull(map);
+
+		// get as JsonNode
+		JsonNode n = c.get("object", JsonNode.class);
+		assertNotNull(n);
+
+		// get as json text
+		String v = c.getAsJson("object");
+		assertNotNull(v);
+		System.out.println(v);
+
+		String s = jwt.getSignature();
+		assertNotNull(s);
+	}
+
+	@Test
+	public void jwsTestAddClaimWithJsonNode()
+			throws DIDException, IOException, JwtException {
+		TestData testData = new TestData();
+		testData.setup(true);
+		testData.initIdentity();
+
+		DIDDocument doc = testData.loadTestDocument();
+		assertNotNull(doc);
+		assertTrue(doc.isValid());
+
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		Date iat = cal.getTime();
+		cal.add(Calendar.MONTH, -1);
+		Date nbf = cal.getTime();
+		cal.add(Calendar.MONTH, 4);
+		Date exp = cal.getTime();
+
+		String json = "{\n" +
+				"  \"sub\":\"JwtTest\",\n" +
+				"  \"jti\":\"0\",\n" +
+				"  \"aud\":\"Test cases\",\n" +
+				"  \"foo\":\"bar\",\n" +
+				"  \"object\":{\n" +
+				"    \"hello\":\"world\",\n" +
+				"    \"test\":true\n" +
+				"  }\n" +
+				"}";
+
+		JsonNode node = loadJson(json);
+
+		String token = doc.jwtBuilder()
+				.addHeader(Header.TYPE, Header.JWT_TYPE)
+				.addHeader(Header.CONTENT_TYPE, "json")
+				.addHeader("library", "Elastos DID")
+				.addHeader("version", "1.0")
+				.setIssuedAt(iat)
+				.setExpiration(exp)
+				.setNotBefore(nbf)
+				.addClaims(node)
+				.signWith("#key2", TestConfig.storePass)
+				.compact();
+
+		assertNotNull(token);
+		printJwt(token);
+
+		// The JWT parser not related with a DID document
+		JwtParser jp = new JwtParserBuilder().build();
+		Jws<Claims> jwt = jp.parseClaimsJws(token);
+		assertNotNull(jwt);
+
+		JwsHeader h = jwt.getHeader();
+		assertNotNull(h);
+		assertEquals("json", h.getContentType());
+		assertEquals(Header.JWT_TYPE, h.getType());
+		assertEquals("Elastos DID", h.get("library"));
+		assertEquals("1.0", h.get("version"));
+
+		Claims c = jwt.getBody();
+		assertNotNull(c);
+		assertEquals("JwtTest", c.getSubject());
+		assertEquals("0", c.getId());
+		assertEquals(doc.getSubject().toString(), c.getIssuer());
+		assertEquals("Test cases", c.getAudience());
+		assertEquals(iat, c.getIssuedAt());
+		assertEquals(exp, c.getExpiration());
+		assertEquals(nbf, c.getNotBefore());
+		assertEquals("bar", c.get("foo", String.class));
+
+		// get as map
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		Class<Map<String, Object>> clazz = (Class)Map.class;
+		Map<String, Object> map = c.get("object", clazz);
+		assertNotNull(map);
+
+		// get as JsonNode
+		JsonNode n = c.get("object", JsonNode.class);
+		assertNotNull(n);
+
+		// get as json text
+		String v = c.getAsJson("object");
+		assertNotNull(v);
+		System.out.println(v);
+
+		String s = jwt.getSignature();
+		assertNotNull(s);
+	}
+
+	@Test
+	public void jwsTestAddClaimWithJsonText()
+			throws DIDException, IOException, JwtException {
+		TestData testData = new TestData();
+		testData.setup(true);
+		testData.initIdentity();
+
+		DIDDocument doc = testData.loadTestDocument();
+		assertNotNull(doc);
+		assertTrue(doc.isValid());
+
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		Date iat = cal.getTime();
+		cal.add(Calendar.MONTH, -1);
+		Date nbf = cal.getTime();
+		cal.add(Calendar.MONTH, 4);
+		Date exp = cal.getTime();
+
+		String json = "{\n" +
+				"  \"sub\":\"JwtTest\",\n" +
+				"  \"jti\":\"0\",\n" +
+				"  \"aud\":\"Test cases\",\n" +
+				"  \"foo\":\"bar\",\n" +
+				"  \"object\":{\n" +
+				"    \"hello\":\"world\",\n" +
+				"    \"test\":true\n" +
+				"  }\n" +
+				"}";
+
+		String token = doc.jwtBuilder()
+				.addHeader(Header.TYPE, Header.JWT_TYPE)
+				.addHeader(Header.CONTENT_TYPE, "json")
+				.addHeader("library", "Elastos DID")
+				.addHeader("version", "1.0")
+				.setIssuedAt(iat)
+				.setExpiration(exp)
+				.setNotBefore(nbf)
+				.addClaimsWithJson(json)
+				.signWith("#key2", TestConfig.storePass)
+				.compact();
+
+		assertNotNull(token);
+		printJwt(token);
+
+		// The JWT parser not related with a DID document
+		JwtParser jp = new JwtParserBuilder().build();
+		Jws<Claims> jwt = jp.parseClaimsJws(token);
+		assertNotNull(jwt);
+
+		JwsHeader h = jwt.getHeader();
+		assertNotNull(h);
+		assertEquals("json", h.getContentType());
+		assertEquals(Header.JWT_TYPE, h.getType());
+		assertEquals("Elastos DID", h.get("library"));
+		assertEquals("1.0", h.get("version"));
+
+		Claims c = jwt.getBody();
+		assertNotNull(c);
+		assertEquals("JwtTest", c.getSubject());
+		assertEquals("0", c.getId());
+		assertEquals(doc.getSubject().toString(), c.getIssuer());
+		assertEquals("Test cases", c.getAudience());
+		assertEquals(iat, c.getIssuedAt());
+		assertEquals(exp, c.getExpiration());
+		assertEquals(nbf, c.getNotBefore());
+		assertEquals("bar", c.get("foo", String.class));
+
+		// get as map
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		Class<Map<String, Object>> clazz = (Class)Map.class;
+		Map<String, Object> map = c.get("object", clazz);
+		assertNotNull(map);
+
+		// get as JsonNode
+		JsonNode n = c.get("object", JsonNode.class);
+		assertNotNull(n);
+
+		// get as json text
+		String v = c.getAsJson("object");
+		assertNotNull(v);
+		System.out.println(v);
+
+		String s = jwt.getSignature();
+		assertNotNull(s);
+	}
+
+	private JsonNode loadJson(String json) {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JsonNode node = mapper.readTree(json);
+			return node;
+		} catch (IOException e) {
+			throw new IllegalArgumentException(e);
+		}
+	}
+
+	protected JsonNode map2JsonNode(Map<String, Object> map) {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.convertValue(map, JsonNode.class);
 	}
 }

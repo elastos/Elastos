@@ -22,10 +22,15 @@
 
 package org.elastos.did.jwt;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Claims implements Map<String, Object> {
 	/** JWT {@code Issuer} claims parameter name: <code>"iss"</code> */
@@ -294,6 +299,13 @@ public class Claims implements Map<String, Object> {
 	 * @return the JWT {@code claimName} value or {@code null} if not present.
 	 */
 	public <T> T get(String claimName, Class<T> requiredType) {
+		if (JsonNode.class.equals(requiredType)) {
+			@SuppressWarnings({ "unchecked", "rawtypes" })
+			Class<Map<String, Object>> clazz = (Class)Map.class;
+			Map<String, Object> map = impl.get(claimName, clazz);
+			return requiredType.cast(map2JsonNode(map));
+		}
+
 		return impl.get(claimName, requiredType);
 	}
 
@@ -322,9 +334,28 @@ public class Claims implements Map<String, Object> {
 		return impl.get(key);
 	}
 
+	public String getAsJson(Object key) {
+		Object v = impl.get(key);
+
+		if (v instanceof Map) {
+			@SuppressWarnings("unchecked")
+			JsonNode n = map2JsonNode((Map<String, Object>)v);
+			return n.toString();
+		} else {
+			throw new UnsupportedOperationException();
+		}
+	}
+
 	@Override
 	public Object put(String key, Object value) {
+		if (value instanceof JsonNode)
+			return impl.put(key, jsonNode2Map((JsonNode)value));
+
 		return impl.put(key, value);
+	}
+
+	public Object putWithJson(String key, String json) {
+		return impl.put(key, json2Map(json));
 	}
 
 	@Override
@@ -337,10 +368,17 @@ public class Claims implements Map<String, Object> {
 		impl.putAll(m);
 	}
 
+	public void putAll(JsonNode node) {
+		impl.putAll(jsonNode2Map(node));
+	}
+
+	public void putAllWithJson(String json) {
+		impl.putAll(json2Map(json));
+	}
+
 	@Override
 	public void clear() {
 		impl.clear();
-		;
 	}
 
 	@Override
@@ -356,5 +394,31 @@ public class Claims implements Map<String, Object> {
 	@Override
 	public Set<Entry<String, Object>> entrySet() {
 		return impl.entrySet();
+	}
+
+	protected static Map<String, Object> jsonNode2Map(JsonNode node) {
+		ObjectMapper mapper = new ObjectMapper();
+		Map<String, Object> map = mapper.convertValue(node,
+				new TypeReference<Map<String, Object>>(){});
+
+		return map;
+	}
+
+	protected static Map<String, Object> json2Map(String json) {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JsonNode node = mapper.readTree(json);
+			Map<String, Object> map = mapper.convertValue(node,
+					new TypeReference<Map<String, Object>>(){});
+
+			return map;
+		} catch (IOException e) {
+			throw new IllegalArgumentException(e);
+		}
+	}
+
+	protected static JsonNode map2JsonNode(Map<String, Object> map) {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.convertValue(map, JsonNode.class);
 	}
 }

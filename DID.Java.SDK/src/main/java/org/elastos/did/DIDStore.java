@@ -1502,7 +1502,7 @@ public final class DIDStore {
 		return deletePrivateKey(_did, _id);
 	}
 
-	public String sign(DID did, DIDURL id, String storepass, byte[] digest)
+	protected String sign(DID did, DIDURL id, String storepass, byte[] digest)
 			throws DIDStoreException {
 		if (did == null || storepass == null || storepass.isEmpty() || digest == null)
 			throw new IllegalArgumentException();
@@ -1527,7 +1527,7 @@ public final class DIDStore {
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 	}
 
-	public String sign(DID did, String storepass, byte[] digest)
+	protected String sign(DID did, String storepass, byte[] digest)
 			throws DIDStoreException {
 		return sign(did, null, storepass, digest);
 	}
