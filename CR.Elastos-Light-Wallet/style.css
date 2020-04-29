@@ -3,15 +3,8 @@ body {
   margin: 0;
   height: 520;
   width: 780;
-  -webkit-app-region: drag;
   background-color: rgba (0, 0, 0);
   background-image: url(artwork/BG7.svg);
-}
-
-button,
-a,
-img {
-  -webkit-app-region: drag;
 }
 
 @font-face {
