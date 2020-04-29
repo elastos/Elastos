@@ -11,7 +11,7 @@ import PageLoading from '@/module/common/PageLoading'
 import { api_request, permissions } from './util'
 
 import './boot'
-import './style/index.less'
+import './style/antd/index.less'
 import './style/index.scss'
 import './style/mobile.scss'
 
