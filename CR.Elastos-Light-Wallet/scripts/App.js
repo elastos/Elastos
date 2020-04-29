@@ -303,8 +303,10 @@ const pollForData = () => {
         setPollForAllInfoTimer();
         break;
       case 4:
-        requestListOfProducers();
-        requestListOfCandidateVotes();
+        if (refreshCandiatesFlag) {
+          requestListOfProducers();
+          requestListOfCandidateVotes();
+        }
         requestRssFeed();
         requestFee();
         requestFeeAccount();
@@ -427,6 +429,7 @@ const requestBlockchainData = () => {
     return;
   }
   address = AddressTranscoder.getAddressFromPublicKey(publicKey);
+
   requestTransactionHistory();
   requestBalance();
   requestUnspentTransactionOutputs();
@@ -542,12 +545,12 @@ const showLedgerConfirmBanner = () => {
   GuiUtils.show('homeBanner');
   GuiUtils.show('votingBanner');
   renderApp();
-}
+};
 
 const hideLedgerConfirmBanner = () => {
   GuiUtils.hide('homeBanner');
   GuiUtils.hide('votingBanner');
-}
+};
 
 const sendAmountToAddress = () => {
   updateAmountAndFees();
@@ -1156,6 +1159,11 @@ const setSendHasFocus = (_sendHasFocus) => {
   // mainConsole.log('setSendHasFocus', sendHasFocus);
 };
 
+const setRefreshCandiatesFlag = (_refreshCandiatesFlag) => {
+  refreshCandiatesFlag = _refreshCandiatesFlag;
+  // mainConsole.log('refreshCandiatesFlag', refreshCandiatesFlag);
+};
+
 const getSendStep = () => {
   return sendStep;
 };
@@ -1350,3 +1358,6 @@ exports.generatePrivateKeyHex = generatePrivateKeyHex;
 exports.getGeneratedPrivateKeyHex = getGeneratedPrivateKeyHex;
 exports.copyPrivateKeyToClipboard = copyPrivateKeyToClipboard;
 exports.copyAddressToClipboard = copyAddressToClipboard;
+exports.setRefreshCandiatesFlag = setRefreshCandiatesFlag;
+exports.requestListOfProducers = requestListOfProducers;
+exports.requestListOfCandidateVotes = requestListOfCandidateVotes;
