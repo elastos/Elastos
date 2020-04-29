@@ -19,7 +19,9 @@ const requestPriceData = async () => {
       } else {
         priceData = {'status': this.status, 'statusText': this.statusText, 'response': this.response};
       }
-      setImmediate(() => { App.renderApp });
+      setImmediate(() => {
+        App.renderApp;
+      });
     }
   };
   xhttp.responseType = 'text';

@@ -59,6 +59,7 @@ const showLoginPrivateKey = () => {
 };
 
 const showHome = () => {
+  app.setRefreshCandiatesFlag(true);
   hideEverything();
   app.clearSendData();
   show('home');
@@ -81,6 +82,7 @@ const hideMenu = (name) => {
 };
 
 const showVoting = () => {
+  app.setRefreshCandiatesFlag(false);
   hideEverything();
   app.clearSendData();
   show('voting');
@@ -106,14 +108,14 @@ const showGenerateNewPrivateKey = () => {
   app.clearGlobalData();
   app.generatePrivateKeyHex();
   show('generatePrivateKey');
-}
+};
 
 const showGenerateNewMnemonic = () => {
   hideEverything();
   app.clearGlobalData();
   app.generateMnemonic();
   show('generateMnemonic');
-}
+};
 
 exports.init = init;
 exports.showLanding = showLanding;
