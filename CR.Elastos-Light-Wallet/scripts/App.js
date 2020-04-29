@@ -76,6 +76,8 @@ let isLoggedIn = false;
 
 let useLedgerFlag = false;
 
+let refreshCandiatesFlag = true;
+
 let generatedPrivateKeyHex = undefined;
 
 let generatedMnemonic = undefined;
