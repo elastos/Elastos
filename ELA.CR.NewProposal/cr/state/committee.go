@@ -334,7 +334,15 @@ func (c *Committee) createAppropriationTransaction(height uint32) common.Fixed64
 				c.AppropriationAmount = oriAppropriationAmount
 			})
 			return 0
+		} else {
+			oriAppropriationAmount := c.AppropriationAmount
+			c.appropriationHistory.Append(height, func() {
+				c.AppropriationAmount = appropriationAmount
+			}, func() {
+				c.AppropriationAmount = oriAppropriationAmount
+			})
 		}
+
 		log.Info("create CRCAppropriation transaction:", tx.Hash())
 		finalAppropriationAmount = appropriationAmount
 		if c.isCurrent != nil && c.broadcast != nil && c.
