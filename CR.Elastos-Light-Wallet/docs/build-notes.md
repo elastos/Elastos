@@ -34,55 +34,35 @@ sudo port install gettext;
 ln -s /opt/local/lib/libintl.8.dylib /usr/local/opt/gettext/lib/libintl.8.dylib;
 ```
 
-macOS:
-openssl dgst -sha256 <App.dmg>
-
-Windows:
-certUtil -hashfile "<App.exe>" SHA256
-
-Linux AppImage:
-sha256sum <App.AppImage>
-
-
-```
-Accessories
-
-* npm plus (It is installed inside atom in the packages section)
-* python
-* microsoft visual studio 2005
-
-To install python it is necessary to run windows CMD as administrator and execute the command [npm install --global --production windows-build-tools]
-
-And run there [npm install node-gyp] to verify if you have installed C ++ if not installed
-
-If you have a problem with visual C ++ you can use this command in the same Windows CMD [npm install mongoose --msvs_version = 2012]
-```
-
-To use:
-```
-Node.js v8.x:
-# Using Ubuntu
-sudo update-alternatives --remove-all nodejs;
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -;
-sudo apt-get install -y nodejs;
-
-npm install;
-npm rebuild usb --update-binary;
-npm rebuild node-hid --update-binary;
-npm start;
-```
-
-To test:
-```
-npm test;
-```
-
 To build a release:
 ```
 npm run dist-mac;
 npm run dist-win;
 npm run dist-linux;
 ```
+
+
+## new release template:
+  1.0.0-RC00
+
+  windows:
+
+  certUtil -hashfile dist/elastos-light-wallet\ Setup\ 1.0.0-RC.exe sha256
+
+  xxxx
+
+  Ubuntu 18:
+
+  openssl sha -sha256 dist/elastos-light-wallet-1.0.0-RC.AppImage
+
+  xxxx
+
+  Mac:
+
+  openssl dgst -sha256 dist/elastos-light-wallet-1.0.0-RC.dmg
+
+  xxxx
+
 
 ### helpful hash tools:
 Hash of a hex message:
