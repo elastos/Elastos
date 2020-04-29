@@ -2134,12 +2134,9 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		return errors.New("type of proposal should be known")
 	}
 
-	if len(proposal.CategoryData) != 0 {
-		return errors.New("the proposal category data should be empty now")
+	if len(proposal.CategoryData) > MaxCategoryDataStringLength {
+		return errors.New("the Proposal category data cannot be more than 4096 characters")
 	}
-	//if len(proposal.CategoryData) > MaxCategoryDataStringLength {
-	//	return errors.New("the Proposal category data cannot be more than 4096 characters")
-	//}
 
 	if len(proposal.Budgets) > MaxBudgetsCount {
 		return errors.New("budgets exceeded the maximum limit")
