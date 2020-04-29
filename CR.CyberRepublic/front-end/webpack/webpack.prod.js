@@ -1,15 +1,15 @@
 const webpack = require('webpack')
 const MomentTimezoneDataPlugin = require('moment-timezone-data-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 const merge = require('webpack-merge')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 // const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const autoprefixer = require('autoprefixer')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const eslintFormatter = require('react-dev-utils/eslintFormatter')
 const common = require('./common.js')
 const util = require('./util')
+
 const resolve = util.resolve
 
 const prodEnv = {
@@ -41,12 +41,6 @@ const devEnv = {
   CR_VERSION: JSON.stringify(process.env.CR_VERSION),
 }
 
-const cssFilename_lib = 'static/css/lib.css?[hash:8]'
-const cssFilename_app = 'static/css/app.css?[hash:8]'
-const cssFilename_mobile = 'static/css/mobile.css?[hash:8]'
-const extractCSS_LIB = new ExtractTextPlugin(cssFilename_lib)
-const extractCSS_APP = new ExtractTextPlugin(cssFilename_app)
-const extractCSS_MOBILE = new ExtractTextPlugin(cssFilename_mobile)
 
 module.exports = merge(common, {
   cache: false,
@@ -126,81 +120,68 @@ module.exports = merge(common, {
           },
           {
             test: /\.css$/,
-            use: extractCSS_LIB.extract({
-              fallback: 'style-loader',
-              use: [{ loader: 'css-loader' }, { loader: 'postcss-loader' }],
-            }),
+            use: [MiniCssExtractPlugin.loader, { loader: 'css-loader' }, { loader: 'postcss-loader' }],
           },
           {
             test: /\.scss$/,
             include: resolve('src'),
             exclude: [/jest/, /node_modules/, /mobile\.scss$/],
-            loader: extractCSS_APP.extract(
-              Object.assign({
-                fallback: require.resolve('style-loader'),
-                use: [
-                  {
-                    loader: require.resolve('css-loader'),
-                    options: {
-                      importLoaders: 1,
-                      minimize: true,
-                      sourceMap: true,
-                      publicPath: resolve('dist'),
-                    },
-                  },
-                  {
-                    loader: require.resolve('postcss-loader'),
-                    // options: {
-                    //     ident: 'postcss',
-                    //     plugins: () => [
-                    //         require('postcss-flexbugs-fixes'),
-                    //         autoprefixer({
-                    //             browsers: [
-                    //                 '>1%',
-                    //                 'last 4 versions',
-                    //                 'Firefox ESR',
-                    //                 'not ie < 9', // React doesn't support IE8 anyway
-                    //             ],
-                    //             flexbox: 'no-2009',
-                    //         }),
-                    //     ],
-                    // },
-                  },
-                  {
-                    loader: require.resolve('sass-loader'),
-                  },
-                ],
-                publicPath: resolve('dist'),
-              })
-            ),
+            use: [
+              MiniCssExtractPlugin.loader,
+              {
+                loader: require.resolve('css-loader'),
+                options: {
+                  importLoaders: 1,
+                  minimize: true,
+                  sourceMap: true,
+                  publicPath: resolve('dist'),
+                },
+              },
+              {
+                loader: require.resolve('postcss-loader'),
+                // options: {
+                //     ident: 'postcss',
+                //     plugins: () => [
+                //         require('postcss-flexbugs-fixes'),
+                //         autoprefixer({
+                //             browsers: [
+                //                 '>1%',
+                //                 'last 4 versions',
+                //                 'Firefox ESR',
+                //                 'not ie < 9', // React doesn't support IE8 anyway
+                //             ],
+                //             flexbox: 'no-2009',
+                //         }),
+                //     ],
+                // },
+              },
+              {
+                loader: require.resolve('sass-loader'),
+              },
+            ]
           },
           {
             test: /mobile\.scss$/,
             include: resolve('src'),
             exclude: [/jest/, /node_modules/],
-            loader: extractCSS_MOBILE.extract(
-              Object.assign({
-                fallback: require.resolve('style-loader'),
-                use: [
-                  {
-                    loader: require.resolve('css-loader'),
-                    options: {
-                      importLoaders: 1,
-                      minimize: true,
-                      sourceMap: true,
-                      publicPath: resolve('dist'),
-                    },
-                  },
-                  {
-                    loader: require.resolve('postcss-loader'),
-                  },
-                  {
-                    loader: require.resolve('sass-loader'),
-                  },
-                ],
-                publicPath: resolve('dist'),
-              })
-            ),
+            use: [
+              MiniCssExtractPlugin.loader,
+              {
+                loader: require.resolve('css-loader'),
+                options: {
+                  importLoaders: 1,
+                  minimize: true,
+                  sourceMap: true,
+                  publicPath: resolve('dist'),
+                },
+              },
+              {
+                loader: require.resolve('postcss-loader'),
+              },
+              {
+                loader: require.resolve('sass-loader'),
+              },
+            ]
           },
           {
             test: /\.(eot|ttf|woff|woff2)$/,
@@ -243,13 +224,14 @@ module.exports = merge(common, {
         keepClosingSlash: true,
         minifyJS: true,
         minifyCSS: true,
-        minifySCSS: true,
         minifyURLs: true,
       },
+      chunksSortMode: 'none'
     }),
-    extractCSS_LIB,
-    extractCSS_APP,
-    extractCSS_MOBILE,
+    new MiniCssExtractPlugin({
+      filename: 'static/css/[name].[contenthash:8].css',
+      chunkFilename: 'static/css/[name].[contenthash:8].chunk.css'
+    }),
     new webpack.DefinePlugin({
       'process.env':
         process.env.NODE_ENV === 'production'
