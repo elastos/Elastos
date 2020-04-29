@@ -24,7 +24,6 @@ module.exports = (props) => {
     <button className="proceed-btn dark-hover" onClick={(e)=> useMnemonic()}>
           <p>Proceed</p>
           </button>
-      {/* <p className="display_inline_block color_white font_size14 paddingleft_10px">Copy</p> */}
   </div>
 
   <ul className="color_white list-none padding_0">
