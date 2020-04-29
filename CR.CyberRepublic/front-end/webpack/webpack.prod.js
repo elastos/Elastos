@@ -24,7 +24,7 @@ const prodEnv = {
 }
 
 const stagingEnv = {
-  NODE_ENV: JSON.stringify('staging'),
+  NODE_ENV: JSON.stringify('production'),
   PLATFORM_ENV: JSON.stringify('web'),
   SERVER_URL: JSON.stringify('https://staging-api.cyberrepublic.org'),
   FORUM_URL: JSON.stringify('http://18.136.60.61:3100'),
@@ -33,7 +33,7 @@ const stagingEnv = {
 }
 
 const devEnv = {
-  NODE_ENV: JSON.stringify('dev'),
+  NODE_ENV: JSON.stringify('development'),
   PLATFORM_ENV: JSON.stringify('web'),
   SERVER_URL: JSON.stringify('http://local.ebp.com:3000'),
   FORUM_URL: JSON.stringify('http://local.ebp.com:3100'),
