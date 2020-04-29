@@ -7,6 +7,7 @@ import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'react-router-redux'
 import store from '@/store'
 import config from '@/config'
+import PageLoading from '@/module/common/PageLoading'
 import { api_request, permissions } from './util'
 
 import './boot'
@@ -63,7 +64,7 @@ const App = (props) => (
 
       </div>
     ) : (
-      <Suspense fallback={<div></div>}>
+      <Suspense fallback={<PageLoading />}>
         <Switch id="ebp-main">
           {_.map(config.router, (item, i) => {
             const props = _.omit(item, ['page', 'path', 'type'])
