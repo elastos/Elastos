@@ -184,6 +184,15 @@ module.exports = merge(common, {
             ]
           },
           {
+            test: /\.less$/,
+            use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', {
+              loader: 'less-loader',
+              options: {
+                javascriptEnabled: true
+              }
+            }],
+          },
+          {
             test: /\.(eot|ttf|woff|woff2)$/,
             exclude: /node_modules/,
             loader: 'file-loader',
