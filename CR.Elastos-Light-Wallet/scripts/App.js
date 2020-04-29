@@ -244,6 +244,8 @@ const refreshBlockchainData = () => {
   requestUnspentTransactionOutputs();
   requestBlockchainState();
   CoinGecko.requestPriceData();
+  requestListOfProducers();
+  requestListOfCandidateVotes();
   renderApp();
 };
 
