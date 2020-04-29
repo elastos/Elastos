@@ -37,7 +37,7 @@ type Committee struct {
 	isCurrent                func() bool
 	broadcast                func(msg p2p.Message)
 	appendToTxpool           func(transaction *types.Transaction) elaerr.ELAError
-	createCRCAppropriationTx func() (*types.Transaction, common.Fixed64, error)
+	createCRCAppropriationTx func() (*types.Transaction, error)
 	getUTXO                  func(programHash *common.Uint168) ([]*types.UTXO, error)
 }
 
@@ -276,8 +276,8 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.lastHistory.Commit(block.Height)
 
 	if needChg {
-		appropriationAmount := c.createAppropriationTransaction(block.Height)
-		c.recordCurrentStageAmount(block.Height, appropriationAmount)
+		c.createAppropriationTransaction(block.Height)
+		c.recordCurrentStageAmount(block.Height)
 		c.appropriationHistory.Commit(block.Height)
 	}
 }
@@ -315,36 +315,24 @@ func (c *Committee) changeCommittee(height uint32) bool {
 	return true
 }
 
-func (c *Committee) createAppropriationTransaction(height uint32) common.Fixed64 {
-	var finalAppropriationAmount common.Fixed64
+func (c *Committee) createAppropriationTransaction(height uint32) {
 	if c.createCRCAppropriationTx != nil && height == c.getHeight() {
-		tx, appropriationAmount, err := c.createCRCAppropriationTx()
+		tx, err := c.createCRCAppropriationTx()
 		if err != nil {
 			log.Error("create appropriation tx failed:", err.Error())
-			return 0
+			return
 		} else if tx == nil {
 			log.Info("no need to create appropriation")
 			oriNeedAppropriation := c.NeedAppropriation
-			oriAppropriationAmount := c.AppropriationAmount
 			c.appropriationHistory.Append(height, func() {
 				c.NeedAppropriation = false
-				c.AppropriationAmount = 0
 			}, func() {
 				c.NeedAppropriation = oriNeedAppropriation
-				c.AppropriationAmount = oriAppropriationAmount
 			})
-			return 0
-		} else {
-			oriAppropriationAmount := c.AppropriationAmount
-			c.appropriationHistory.Append(height, func() {
-				c.AppropriationAmount = appropriationAmount
-			}, func() {
-				c.AppropriationAmount = oriAppropriationAmount
-			})
+			return
 		}
 
 		log.Info("create CRCAppropriation transaction:", tx.Hash())
-		finalAppropriationAmount = appropriationAmount
 		if c.isCurrent != nil && c.broadcast != nil && c.
 			appendToTxpool != nil {
 			go func() {
@@ -358,7 +346,7 @@ func (c *Committee) createAppropriationTransaction(height uint32) common.Fixed64
 			}()
 		}
 	}
-	return finalAppropriationAmount
+	return
 }
 
 func (c *Committee) resetCRCCommitteeUsedAmount(height uint32) {
@@ -409,14 +397,27 @@ func (c *Committee) resetProposalHashesSet(height uint32) {
 	})
 }
 
-func (c *Committee) recordCurrentStageAmount(height uint32,
-	appropriationAmount common.Fixed64) {
+func (c *Committee) recordCurrentStageAmount(height uint32) {
+	var lockedAmount common.Fixed64
+	for _, v := range c.CRCFoundationLockedAmounts {
+		lockedAmount += v
+	}
 	oriCurrentStageAmount := c.CRCCurrentStageAmount
+	oriAppropriationAmount := c.AppropriationAmount
 	c.appropriationHistory.Append(height, func() {
+		c.AppropriationAmount = common.Fixed64(float64(c.CRCFoundationBalance-
+			lockedAmount) * c.params.CRCAppropriatePercentage / 100.0)
 		c.CRCCurrentStageAmount = c.CRCCommitteeBalance +
-			appropriationAmount - c.CRCCommitteeUsedAmount
+			c.AppropriationAmount - c.CRCCommitteeUsedAmount
+		log.Infof("current stage amount:%s,appropriation amount:%s",
+			c.CRCCurrentStageAmount, c.AppropriationAmount)
+		log.Infof("CR expenses address balance: %s,CR assets address "+
+			"balance:%s, locked amount: %s,CR expenses address used amount: %s",
+			c.CRCCommitteeBalance, c.CRCFoundationBalance,
+			lockedAmount, c.CRCCommitteeUsedAmount)
 	}, func() {
 		c.CRCCurrentStageAmount = oriCurrentStageAmount
+		c.AppropriationAmount = oriAppropriationAmount
 	})
 }
 
@@ -1015,7 +1016,7 @@ type CommitteeFuncsConfig struct {
 	GetTxReference func(tx *types.Transaction) (
 		map[*types.Input]types.Output, error)
 	GetHeight                        func() uint32
-	CreateCRAppropriationTransaction func() (*types.Transaction, common.Fixed64, error)
+	CreateCRAppropriationTransaction func() (*types.Transaction, error)
 	IsCurrent                        func() bool
 	Broadcast                        func(msg p2p.Message)
 	AppendToTxpool                   func(transaction *types.Transaction) elaerr.ELAError

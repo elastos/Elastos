@@ -452,10 +452,10 @@ func (b *BlockChain) createInputs(fromAddress Uint168,
 	return txInputs, changeOutputs, nil
 }
 
-func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, Fixed64, error) {
+func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
 	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRCFoundation)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	var crcFoundationBalance Fixed64
 	for _, u := range utxos {
@@ -464,8 +464,9 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, Fixed64,
 	p := b.chainParams.CRCAppropriatePercentage
 	appropriationAmount := Fixed64(float64(crcFoundationBalance) * p / 100.0)
 
+	log.Info("create appropriation transaction amount:", appropriationAmount)
 	if appropriationAmount <= 0 {
-		return nil, 0, nil
+		return nil, nil
 	}
 	outputs := []*OutputInfo{{b.chainParams.CRCCommitteeAddress,
 		&appropriationAmount}}
@@ -474,9 +475,9 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, Fixed64,
 	tx, err = b.createTransaction(b.chainParams.CRCFoundation, Fixed64(0),
 		uint32(0), utxos, outputs...)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return tx,appropriationAmount, nil
+	return tx, nil
 }
 
 func CalculateTxsFee(block *Block) {
