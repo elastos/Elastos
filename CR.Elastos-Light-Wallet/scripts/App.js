@@ -442,15 +442,16 @@ const getPublicKeyFromMnemonic = () => {
   const mnemonic = mnemonicElt.value;
   if (!bip39.validateMnemonic(mnemonic)) {
     alert(`mnemonic is not valid.`);
-    return;
+    return false;
   }
   const privateKey = Mnemonic.getPrivateKeyFromMnemonic(mnemonic);
   if (privateKey.length != PRIVATE_KEY_LENGTH) {
     alert(`mnemonic must create a of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`);
-    return;
+    return false;
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
   requestBlockchainData();
+  return true;
 };
 
 const getPublicKeyFromPrivateKey = () => {
@@ -460,10 +461,11 @@ const getPublicKeyFromPrivateKey = () => {
   const privateKey = privateKeyElt.value;
   if (privateKey.length != PRIVATE_KEY_LENGTH) {
     alert(`private key must be a hex encoded string of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`);
-    return;
+    return false;
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
   requestBlockchainData();
+  return true;
 };
 
 const sendAmountToAddressErrorCallback = (error) => {
@@ -475,9 +477,9 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
   mainConsole.log('sendAmountToAddressReadyCallback ' + JSON.stringify(transactionJson));
   if (transactionJson.status == 400) {
     sendToAddressStatuses.length = 0;
-    const message = `Transaction Failure. status:${transactionJson.status} result:${transactionJson.result}`;
+    const message = `Transaction Error.  Status:${transactionJson.status}  Result:${transactionJson.result}`;
     bannerStatus = message;
-    bannerClass = 'bg_red color_white';
+    bannerClass = 'bg_red color_white banner-look';
     sendToAddressStatuses.push(message);
   } else {
     sendToAddressStatuses.length = 0;
@@ -487,7 +489,7 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     elt.txHash = transactionJson.result;
     sendToAddressStatuses.length = 0;
     const message ='Transaction Successful.';
-    bannerClass = 'bg_green color_white';
+    bannerClass = 'bg_green color_white banner-look';
     sendToAddressStatuses.push(message);
     bannerStatus = message;
     sendToAddressLinks.push(elt);
@@ -534,6 +536,19 @@ const updateAmountAndFees = () => {
   // mainConsole.log('SUCCESS updateAmountAndFees');
 };
 
+const showLedgerConfirmBanner = () => {
+  bannerStatus = 'Please review and sign transaction on Ledger';
+  bannerClass = 'landing-btnbg color_white banner-look';
+  GuiUtils.show('homeBanner');
+  GuiUtils.show('votingBanner');
+  renderApp();
+}
+
+const hideLedgerConfirmBanner = () => {
+  GuiUtils.hide('homeBanner');
+  GuiUtils.hide('votingBanner');
+}
+
 const sendAmountToAddress = () => {
   updateAmountAndFees();
 
@@ -550,12 +565,15 @@ const sendAmountToAddress = () => {
   let encodedTx;
 
   if (useLedgerFlag) {
+    showLedgerConfirmBanner();
     const tx = TxFactory.createUnsignedSendToTx(unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats, feeAccount);
     const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
     const sendAmountToAddressLedgerCallback = (message) => {
       if (LOG_LEDGER_POLLING) {
         mainConsole.log(`sendAmountToAddressLedgerCallback ${JSON.stringify(message)}`);
       }
+
+      hideLedgerConfirmBanner();
       if (!message.success) {
         sendToAddressStatuses.length = 0;
         sendToAddressLinks.length = 0;
@@ -649,7 +667,7 @@ const requestListOfProducersReadyCallback = (response) => {
 };
 
 const requestListOfProducers = () => {
-  producerListStatus = 'Producers Requested';
+  producerListStatus = 'Loading Nodes, Please Wait';
   const txUrl = `${getRestService()}/api/v1/dpos/rank/height/0?state=active`;
 
   renderApp();
@@ -707,7 +725,8 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
               parsedCandidateVote.n = parsedCandidateVoteList.candidateVotes.length + 1;
               parsedCandidateVote.nickname = candidateVoteElt.Nickname;
               parsedCandidateVote.state = candidateVoteElt.State;
-              parsedCandidateVote.votes = candidateVoteElt.Votes;
+              // parsedCandidateVote.votes = candidateVoteElt.Votes;
+              parsedCandidateVote.votes = header.Value;
               parsedCandidateVote.ownerpublickey = candidateVoteElt.Ownerpublickey;
               // mainConsole.log('INTERIM Candidate Votes Callback', parsedCandidateVote);
               parsedCandidateVoteList.candidateVotes.push(parsedCandidateVote);
@@ -725,7 +744,7 @@ const requestListOfCandidateVotesReadyCallback = (response) => {
 
 const requestListOfCandidateVotes = () => {
   if (address !== undefined) {
-    candidateVoteListStatus = 'Candidate Votes Requested';
+    candidateVoteListStatus = 'Loading Votes, Please Wait';
 
     const txUrl = `${getRestService()}/api/v1/dpos/address/${address}?pageSize=5000&pageNum=1`;
     // mainConsole.log('requestListOfCandidateVotes', txUrl);
@@ -760,6 +779,7 @@ const sendVoteTx = () => {
     // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
     candidateVoteListStatus = `Voting for ${parsedProducerList.producersCandidateCount} candidates.`;
     if (useLedgerFlag) {
+      showLedgerConfirmBanner();
       if (unspentTransactionOutputs) {
         const tx = TxFactory.createUnsignedVoteTx(unspentTransactionOutputs, publicKey, feeAmountSats, candidates, feeAccount);
         const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
@@ -767,6 +787,7 @@ const sendVoteTx = () => {
           if (LOG_LEDGER_POLLING) {
             mainConsole.log(`sendVoteLedgerCallback ${JSON.stringify(message)}`);
           }
+          hideLedgerConfirmBanner();
           if (!message.success) {
             // sendToAddressStatuses.length = 0;
             // sendToAddressLinks.length = 0;
@@ -833,9 +854,15 @@ const sendVoteReadyCallback = (transactionJson) => {
   mainConsole.log('sendVoteReadyCallback ' + JSON.stringify(transactionJson));
   if (transactionJson.Error) {
     candidateVoteListStatus = `Vote Error: ${transactionJson.Error} ${transactionJson.Result}`;
+    bannerStatus = candidateVoteListStatus;
+    bannerClass = 'bg_red color_white banner-look';
   } else {
     candidateVoteListStatus = `Vote Success TX: ${transactionJson.Result}`;
+    bannerStatus = candidateVoteListStatus;
+    bannerClass = 'bg_green color_white banner-look';
   }
+  GuiUtils.show('homeBanner');
+  GuiUtils.show('votingBanner');
   renderApp();
 };
 
@@ -851,21 +878,34 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
   if (transactionHistory.result !== undefined) {
     if (transactionHistory.result.History !== undefined) {
       transactionHistory.result.History.forEach((tx, txIx) => {
-        const time = formatDate(new Date(tx.CreateTime * 1000));
+        let time = formatDate(new Date(tx.CreateTime * 1000));
+        if (tx.CreateTime == 0) {
+          time = formatDate(new Date());
+        }
         const elaFloat = parseInt(tx.Value)/100000000;
-        const elaDisplay = elaFloat.toFixed(8);
+        const elaDisplay = Number(elaFloat.toFixed(8));
         const parsedTransaction = {};
         parsedTransaction.sortTime = tx.CreateTime;
+        if (tx.Status == 'pending' && tx.CreateTime == 0) {
+          parsedTransaction.sortTime = Math.floor(new Date() / 1000);
+        }
+        // mainConsole.log('parsedTransaction.sortTime', tx.Status, parsedTransaction.sortTime);
         parsedTransaction.n = txIx;
         parsedTransaction.type = tx.Type;
         if (tx.Type == 'income') {
-          parsedTransaction.type = 'Receiving';
+          parsedTransaction.type = 'Received';
         }
         if (tx.Type == 'spend') {
-          parsedTransaction.type = 'Was sent';
+          parsedTransaction.type = 'Sent';
+        }
+        if (tx.Type == 'spend' && tx.Status == 'pending') {
+          parsedTransaction.type = '*Sending';
+        }
+        if (tx.Type == 'income' && tx.Status == 'pending') {
+          parsedTransaction.type = '*Receiving';
         }
         parsedTransaction.valueSat = tx.Value;
-        parsedTransaction.value = elaDisplay + '('+tx.Value+')';
+        parsedTransaction.value = elaDisplay;
         parsedTransaction.address = tx.Address;
         parsedTransaction.txHash = tx.Txid;
         parsedTransaction.txHashWithEllipsis = tx.Txid;
@@ -958,6 +998,11 @@ const setBlockchainLastActionHeight = () => {
   if (blockchainState.height) {
     blockchainLastActionHeight = blockchainState.height;
   }
+};
+
+const copyAddressToClipboard = () => {
+  appClipboard.writeText(address);
+  alert(`copied to clipboard:\n${address}`);
 };
 
 const copyMnemonicToClipboard = () => {
@@ -1238,20 +1283,12 @@ const getGeneratedPrivateKeyHex = () => {
 };
 
 const generateMnemonic = () => {
-  generatedMnemonic = bip39.entropyToMnemonic(crypto.randomBytes(32).toString('hex'));
+  generatedMnemonic = bip39.entropyToMnemonic(crypto.randomBytes(16).toString('hex'));
 };
 
 const getGeneratedMnemonic = () => {
   return generatedMnemonic;
 };
-
-exports.generateMnemonic = generateMnemonic;
-exports.getGeneratedMnemonic = getGeneratedMnemonic;
-exports.copyMnemonicToClipboard = copyMnemonicToClipboard;
-
-exports.generatePrivateKeyHex = generatePrivateKeyHex;
-exports.getGeneratedPrivateKeyHex = getGeneratedPrivateKeyHex;
-exports.copyPrivateKeyToClipboard = copyPrivateKeyToClipboard;
 
 exports.REST_SERVICES = REST_SERVICES;
 exports.init = init;
@@ -1306,3 +1343,10 @@ exports.getParsedRssFeed = getParsedRssFeed;
 exports.getBannerStatus = getBannerStatus;
 exports.getBannerClass = getBannerClass;
 exports.getFee = getFee;
+exports.generateMnemonic = generateMnemonic;
+exports.getGeneratedMnemonic = getGeneratedMnemonic;
+exports.copyMnemonicToClipboard = copyMnemonicToClipboard;
+exports.generatePrivateKeyHex = generatePrivateKeyHex;
+exports.getGeneratedPrivateKeyHex = getGeneratedPrivateKeyHex;
+exports.copyPrivateKeyToClipboard = copyPrivateKeyToClipboard;
+exports.copyAddressToClipboard = copyAddressToClipboard;

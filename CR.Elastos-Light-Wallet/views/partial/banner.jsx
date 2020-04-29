@@ -10,8 +10,9 @@ module.exports = (props) => {
 
   return (
     <div id={page+'Banner'} className = {App.getBannerClass()}>
-      {App.getBannerStatus()}
-      <div className="bordered padding_5px display_inline bgcolor_gray_hover" onClick={(e) => hideBanner()}>Hide</div>
+      <div></div>
+      <div className="w50pct">{App.getBannerStatus()}</div>
+      <div className="banner-button dark-hover flex_center" onClick={(e) => hideBanner()}>Ok</div>
     </div>
   );
 }
