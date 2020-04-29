@@ -5,8 +5,15 @@ body {
   width: 780;
   background-color: rgba (0, 0, 0);
   background-image: url(artwork/BG7.svg);
+  -webkit-app-region: drag;	
 }
 
+button,	
+a,
+p,	
+img {	
+  -webkit-app-region: no-drag;	
+}
 @font-face {
   font-family: "BioSans-Regular";
   src: url("artwork/biosans-regular.otf");
