@@ -1,14 +1,16 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const webpack = require('webpack')
 const webpackNotifier = require('webpack-notifier')
 const merge = require('webpack-merge')
 const common = require('./common.js')
 const util = require('./util')
+
 const resolve = util.resolve
 
 module.exports = merge(common, {
-  cache: true, //for rebuilding faster
+  cache: true, // for rebuilding faster
   output: {
     path: resolve('dev_dist'),
     filename: 'static/js/bundle.js',
@@ -27,6 +29,15 @@ module.exports = merge(common, {
         use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader'],
       },
       {
+        test: /\.less$/,
+        use: ['style-loader', 'css-loader', 'postcss-loader', {
+          loader: 'less-loader',
+          options: {
+            javascriptEnabled: true
+          }
+        }],
+      },
+      {
         test: /\.svg$/,
         exclude: /node_modules/,
         use: ['@svgr/webpack', 'url-loader'],
@@ -34,7 +45,7 @@ module.exports = merge(common, {
       {
         test: /\.(eot|ttf|woff|woff2)$/,
         exclude: /node_modules/,
-        use: 'url-loader',
+        loader: 'file-loader',
       },
       {
         test: /\.js$/,
@@ -75,7 +86,7 @@ module.exports = merge(common, {
     /*
         headers: {
             'X-Frame-Options': 'allow-from https://www.facebook.com/'
-        },*/
+        }, */
     watchOptions: {
       ignored: /node_modules/,
       aggregateTimeout: 2000,
@@ -96,6 +107,7 @@ module.exports = merge(common, {
         minifyJS: false,
         minifyCSS: false,
       },
+      chunksSortMode: 'none'
     }),
     new webpack.DefinePlugin({
       'process.env': {
