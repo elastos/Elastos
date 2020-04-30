@@ -1,8 +1,8 @@
 /*****************/
 body {
   margin: 0;
-  height: 520;
-  width: 780;
+  height: 100%;
+  width: 100%;
   background-color: rgba (0, 0, 0);
   background-image: url(artwork/BG7.svg);
   -webkit-app-region: drag;	
