@@ -14,7 +14,7 @@ from grpc_adenine import settings
 from grpc_adenine.database import db_engine
 from grpc_adenine.implementations import WalletAddresses, WalletAddressesETH
 from grpc_adenine.implementations.rate_limiter import RateLimiter
-from grpc_adenine.implementations.utils import validate_api_key, get_api_from_did
+from grpc_adenine.implementations.utils import get_api_from_did
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs.python import wallet_pb2, wallet_pb2_grpc
 
@@ -48,14 +48,6 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
             jwt_info = json.loads(jwt_info)
 
         network = jwt_info['network']
-
-        # Validate the API Key
-        api_status = validate_api_key(api_key)
-        if not api_status:
-            status_message = 'API Key could not be verified'
-            logging.debug(f"{did} : {api_key} : {status_message}")
-            return wallet_pb2.Response(output='', status_message=status_message,
-                                       status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = self.rate_limiter.check_rate_limit(settings.CREATE_WALLET_LIMIT, api_key,
@@ -138,14 +130,6 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
             status_message = 'Authentication Error'
             logging.debug(f"RequestELA : {did} : {api_key} : {status_message} : {e}")
             return wallet_pb2.Response(output='', status_message=status_message, status=False)
-
-        # Validate the API Key
-        api_status = validate_api_key(api_key)
-        if not api_status:
-            status_message = 'API Key could not be verified'
-            logging.debug(f"{did} : {api_key} : {status_message}")
-            return wallet_pb2.Response(output='', status_message=status_message,
-                                       status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = self.rate_limiter.check_rate_limit(settings.REQUEST_ELA_LIMIT, api_key, self.RequestELA.__name__)

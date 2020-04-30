@@ -11,3 +11,4 @@ cryptography==2.8
 pg8000==1.13.2
 pytest==5.3.5
 PyJWT==1.7.1
+solidity-parser==0.0.7
