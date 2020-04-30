@@ -753,7 +753,7 @@ const requestListOfCandidateVotes = () => {
   if (address !== undefined) {
     candidateVoteListStatus = 'Loading Votes, Please Wait';
 
-    const txUrl = `${getRestService()}/api/v1/dpos/address/${address}?pageSize=5000&pageNum=1`;
+    const txUrl = `${getRestService()}/api/v1/dpos/address/${address}?pageSize=1&pageNum=1`;
     // mainConsole.log('requestListOfCandidateVotes', txUrl);
 
     renderApp();

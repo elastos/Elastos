@@ -5,8 +5,18 @@ body {
   width: 780;
   background-color: rgba (0, 0, 0);
   background-image: url(artwork/BG7.svg);
+  -webkit-app-region: drag;	
 }
 
+button,	
+a,
+p,	
+img,
+textarea,
+input,
+select {	
+  -webkit-app-region: no-drag;	
+}
 @font-face {
   font-family: "BioSans-Regular";
   src: url("artwork/biosans-regular.otf");
@@ -130,6 +140,10 @@ html {
 .refresh-icon:hover,
 .refresh-icon:active {
   background-image: linear-gradient(-180deg, #33373D 0%, rgba(51, 55, 61, 0.00) 130%);
+}
+
+.dark-hover {
+  -webkit-app-region: no-drag;	
 }
 
 .dark-hover:hover {
@@ -293,6 +307,7 @@ html {
   background-image: linear-gradient(-180deg, #33373D 0%, rgba(51, 55, 61, 0.00) 130%);
   border-radius: 0 0 16.71px 16.71px;
   grid-area: top-center;
+  -webkit-app-region: no-drag;	
 }
 
 .send-bg {

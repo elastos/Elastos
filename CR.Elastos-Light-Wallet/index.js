@@ -113,14 +113,19 @@ app.on( 'ready', () => {
         width: 780,
         height: 520,
         frame: false,
-        titleBarStyle: 'hidden',
+        // titleBarStyle: 'hidden',
         transparent: true,
-        trafficLightPosition: {x: 15, y: 15},
+        // trafficLightPosition: {x: 15, y: 15},
+        maximizable: false,
+        maxHeight: 520,
+        // resizable: false,
         icon: path.join( __dirname, 'assets/icons/png/64x64.png' ),
         webPreferences: {
             nodeIntegration: true
         }
     } );
+
+    require('./libraries/electron-traffic-light.js')(mainWindow);
     
     // disable navigation window.
     mainWindow.setMenu( null );
