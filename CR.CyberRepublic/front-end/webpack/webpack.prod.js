@@ -49,8 +49,8 @@ module.exports = merge(common, {
   },
   output: {
     path: resolve('dist'),
-    chunkFilename: 'static/js/[name].bundle.js?[hash:8]',
-    filename: 'static/js/[name].js?[hash:8]',
+    chunkFilename: 'static/js/[name].[hash:8].bundle.js',
+    filename: 'static/js/[name].[hash:8].js',
     publicPath: '/',
   },
   devtool: 'hidden-source-map',
