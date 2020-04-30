@@ -344,7 +344,7 @@ func (a *AddrManager) addressHandler() {
 	defer dumpAddressTicker.Stop()
 
 	expireAddressTicker := time.NewTicker(expireAddressInterval)
-	defer dumpAddressTicker.Stop()
+	defer expireAddressTicker.Stop()
 out:
 	for {
 		select {
