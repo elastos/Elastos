@@ -32,7 +32,7 @@ class LoginWithDid extends Component {
         clearInterval(this.timerDid)
         this.timerDid = null
         if (rs.did) {
-          this.props.changeTab('register')
+          this.props.changeTab('register', rs.did)
           this.setState({ visible: false })
         }
       }

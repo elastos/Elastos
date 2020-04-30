@@ -12,20 +12,21 @@ import {
   USER_ROLE,
   USER_AVATAR_DEFAULT,
   LINKIFY_OPTION,
-  USER_ROLE_TO_TEXT
+  USER_ROLE_TO_TEXT,
 } from '@/constant'
 import config from '@/config'
 import MediaQuery from 'react-responsive'
 import _ from 'lodash'
 import linkifyStr from 'linkifyjs/string'
 import GenderSvg from '../GenderSvg'
+import TelegramIcon from '@/module/common/TelegramIcon'
 
 import './style.scss'
 
 export default class extends BaseComponent {
   ord_states() {
     return {
-      showUserInfo: null
+      showUserInfo: null,
     }
   }
 
@@ -125,7 +126,7 @@ export default class extends BaseComponent {
           isMobile ? 'profile-skillset-info-mobile' : ''
         }`}
       >
-        {_.map(this.props.member.profile.skillset || [], skillset => (
+        {_.map(this.props.member.profile.skillset || [], (skillset) => (
           <Tag color="blue" key={skillset}>
             {I18N.get(`user.skillset.${skillset}`)}
           </Tag>
@@ -212,7 +213,7 @@ export default class extends BaseComponent {
           style={{
             backgroundImage: this.getBannerWithFallback(
               this.props.member.profile.banner
-            )
+            ),
           }}
         />
       </div>
@@ -397,32 +398,32 @@ export default class extends BaseComponent {
       >
         {profile.telegram && (
           <a href={getSafeUrl(profile.telegram)} target="_blank">
-            <i className="fab fa-telegram fa-2x" />
+            <TelegramIcon style={{ fill: '#333333' }} />
           </a>
         )}
         {profile.twitter && (
           <a href={getSafeUrl(profile.twitter)} target="_blank">
-            <i className="fab fa-twitter fa-2x" />
+            <Icon type="twitter" style={{ fontSize: 32 }} />
           </a>
         )}
         {profile.facebook && (
           <a href={getSafeUrl(profile.facebook)} target="_blank">
-            <i className="fab fa-facebook-square fa-2x" />
+            <Icon type="facebook" style={{ fontSize: 32 }} />
           </a>
         )}
         {profile.reddit && (
           <a href={getSafeUrl(profile.reddit)} target="_blank">
-            <i className="fab fa-reddit fa-2x" />
+            <Icon type="reddit" style={{ fontSize: 32 }} />
           </a>
         )}
         {profile.linkedin && (
           <a href={getSafeUrl(profile.linkedin)} target="_blank">
-            <i className="fab fa-linkedin fa-2x" />
+            <Icon type="linkedin" style={{ fontSize: 32 }} />
           </a>
         )}
         {profile.github && (
           <a href={getSafeUrl(profile.github)} target="_blank">
-            <i className="fab fa-github fa-2x" />
+            <Icon type="github" style={{ fontSize: 32 }} />
           </a>
         )}
       </div>
@@ -461,23 +462,23 @@ export default class extends BaseComponent {
   }
 
   renderProjectsTasks() {
-    const teams = _.map(this.props.teams, team => ({
+    const teams = _.map(this.props.teams, (team) => ({
       _id: team._id,
       type: 'Team',
       name: team.name,
-      date: team.updatedAt
+      date: team.updatedAt,
     }))
-    const circles = _.map(this.props.member.circles, circle => ({
+    const circles = _.map(this.props.member.circles, (circle) => ({
       _id: circle._id,
       type: 'Circle',
       name: circle.name,
-      date: circle.updatedAt
+      date: circle.updatedAt,
     }))
-    const projects = _.map(this.props.tasks, task => ({
+    const projects = _.map(this.props.tasks, (task) => ({
       _id: task._id,
       type: _.capitalize(task.type),
       name: task.name,
-      date: task.updatedAt
+      date: task.updatedAt,
     }))
     const data = _.concat(teams, circles, projects)
     const columns = [
@@ -485,27 +486,27 @@ export default class extends BaseComponent {
         title: I18N.get('profile.detail.columns.type'),
         key: 'type',
         width: 150,
-        render: entry => <div key={entry._id}>{entry.type}</div>
+        render: (entry) => <div key={entry._id}>{entry.type}</div>,
       },
       {
         title: I18N.get('profile.detail.columns.name'),
         key: 'name',
         width: 350,
-        render: entry => <div key={entry._id}>{entry.name}</div>
+        render: (entry) => <div key={entry._id}>{entry.name}</div>,
       },
       {
         title: I18N.get('profile.detail.columns.date'),
         key: 'date',
         width: 200,
-        render: entry => (
+        render: (entry) => (
           <div key={entry._id}>{moment(entry.date).format('MM/DD/YYYY')}</div>
-        )
+        ),
       },
       {
         title: '',
         key: 'view',
         width: 100,
-        render: entry => (
+        render: (entry) => (
           <Button
             key={entry._id}
             className="cr-btn"
@@ -523,8 +524,8 @@ export default class extends BaseComponent {
           >
             {I18N.get('profile.view')}
           </Button>
-        )
-      }
+        ),
+      },
     ]
     return (
       <div className="projects-tasks">
@@ -553,7 +554,7 @@ export default class extends BaseComponent {
     const subscribers = curDetail.subscribers || []
     return !!_.find(
       subscribers,
-      subscriber =>
+      (subscriber) =>
         subscriber.user && subscriber.user._id === this.props.currentUserId
     )
   }
@@ -584,13 +585,13 @@ export default class extends BaseComponent {
 
   linkProfilePopup() {
     this.setState({
-      showUserInfo: this.props.member
+      showUserInfo: this.props.member,
     })
   }
 
   handleCancelProfilePopup() {
     this.setState({
-      showUserInfo: null
+      showUserInfo: null,
     })
   }
 }

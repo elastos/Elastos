@@ -31,7 +31,6 @@ export default class extends Base {
      * @returns {Promise<"mongoose".Document>}
      */
     public async registerNewUser(param): Promise<Document>{
-
         const db_user = this.getDBModel('User')
 
         const username = param.username.toLowerCase()
@@ -69,6 +68,14 @@ export default class extends Base {
             },
             role : constant.USER_ROLE.MEMBER,
             active: true
+        }
+
+        // simply validate did format
+        if (param.did && _.isString(param.did) && param.did.length === 46) {
+            const rs = param.did.split(':')
+            if (rs.length === 3 && rs[0] === 'did' && rs[1] === 'elastos') {
+                doc.dids = [{ id: param.did, active: true }]
+            }
         }
 
         if (process.env.NODE_ENV === 'test') {
@@ -852,8 +859,7 @@ export default class extends Base {
                     domain: process.env.SERVER_URL,
                     logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
                 }
-            }
-            
+            } 
             const jwtToken = jwt.sign(
                 jwtClaims,
                 process.env.APP_PRIVATE_KEY,
@@ -956,7 +962,6 @@ export default class extends Base {
             }
             return jwt.verify(jwtToken, process.env.APP_PUBLIC_KEY, async (err: any, decoded: any) => {
                 if(err) {
-                    console.log('err...', err)
                     return { success: false }
                 }
                 try {

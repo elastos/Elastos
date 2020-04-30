@@ -10,16 +10,16 @@ import { getSafeUrl } from '@/util/url'
 import {
   USER_AVATAR_DEFAULT,
   LINKIFY_OPTION,
-  USER_ROLE_TO_TEXT
+  USER_ROLE_TO_TEXT,
 } from '@/constant'
 import config from '@/config'
 import MediaQuery from 'react-responsive'
 import linkifyStr from 'linkifyjs/string'
 import sanitizeHtml from '@/util/html'
 import GenderSvg from './GenderSvg'
-
-import './style.scss'
 import ProfileDid from './ProfileDid'
+import TelegramIcon from '@/module/common/TelegramIcon'
+import './style.scss'
 
 /**
  * This has 3 views
@@ -34,7 +34,7 @@ export default class extends BaseComponent {
     super(props)
 
     this.state = {
-      editing: false
+      editing: false,
     }
   }
 
@@ -216,7 +216,7 @@ export default class extends BaseComponent {
           style={{
             backgroundImage: this.getBannerWithFallback(
               url || this.props.user.profile.banner
-            )
+            ),
           }}
         />
         <Icon
@@ -231,19 +231,19 @@ export default class extends BaseComponent {
   renderAvatar(isMobile) {
     const p_avatar = {
       showUploadList: false,
-      customRequest: info => {
-        upload_file(info.file).then(async d => {
+      customRequest: (info) => {
+        upload_file(info.file).then(async (d) => {
           await this.props.updateUser(this.props.currentUserId, {
             profile: {
               avatar: d.url,
               avatarFilename: d.filename,
-              avatarFileType: d.type
-            }
+              avatarFileType: d.type,
+            },
           })
 
           await this.props.getCurrentUser()
         })
-      }
+      },
     }
 
     return (
@@ -342,7 +342,7 @@ export default class extends BaseComponent {
   renderSkillsets(isMobile) {
     return (
       <div className="skillset-container">
-        {_.map(this.props.user.profile.skillset || [], skillset => (
+        {_.map(this.props.user.profile.skillset || [], (skillset) => (
           <div key={skillset}>+ {I18N.get(`user.skillset.${skillset}`)}</div>
         ))}
       </div>
@@ -415,32 +415,32 @@ export default class extends BaseComponent {
       >
         {profile.telegram && (
           <a href={getSafeUrl(profile.telegram)} target="_blank">
-            <i className="fab fa-telegram fa-2x" />
+            <TelegramIcon style={{ fill: '#333333' }} />
           </a>
         )}
         {profile.twitter && (
           <a href={getSafeUrl(profile.twitter)} target="_blank">
-            <i className="fab fa-twitter fa-2x" />
+            <Icon type="twitter" style={{ fontSize: 32 }} />
           </a>
         )}
         {profile.facebook && (
           <a href={getSafeUrl(profile.facebook)} target="_blank">
-            <i className="fab fa-facebook-square fa-2x" />
+            <Icon type="facebook" style={{ fontSize: 32 }} />
           </a>
         )}
         {profile.reddit && (
           <a href={getSafeUrl(profile.reddit)} target="_blank">
-            <i className="fab fa-reddit fa-2x" />
+            <Icon type="reddit" style={{ fontSize: 32 }} />
           </a>
         )}
         {profile.linkedin && (
           <a href={getSafeUrl(profile.linkedin)} target="_blank">
-            <i className="fab fa-linkedin fa-2x" />
+            <Icon type="linkedin" style={{ fontSize: 32 }} />
           </a>
         )}
         {profile.github && (
           <a href={getSafeUrl(profile.github)} target="_blank">
-            <i className="fab fa-github fa-2x" />
+            <Icon type="github" style={{ fontSize: 32 }} />
           </a>
         )}
       </div>
@@ -470,7 +470,7 @@ export default class extends BaseComponent {
 
   switchEditMode() {
     this.setState({
-      editing: !this.state.editing
+      editing: !this.state.editing,
     })
   }
 }

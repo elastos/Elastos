@@ -185,8 +185,41 @@ export default class extends BaseService {
       path,
       method: 'get',
     })
-    this.dispatch(this.selfRedux.actions.loading_update(false))
+    const dpath = `${this.prefixPath}/${id}/show`
+    const result = await api_request({
+      path: dpath,
+      method: 'get',
+    })
+
+    this.dispatch(this.selfRedux.actions.detail_update(result))
     this.dispatch(this.selfRedux.actions.edit_history_update(res))
+
+    this.dispatch(this.selfRedux.actions.loading_update(false))
+  }
+
+  async revertVersion(id, version) {
+    this.dispatch(this.selfRedux.actions.loading_update(true))
+
+    const path = `${this.prefixPath}/${id}/revertVersion`
+    let res
+    try {
+
+      res = await api_request({
+        path,
+        method: 'post',
+        data: {version},
+      })
+
+      if (res.version) {
+        this.editHistories({id})
+        message.info(I18N.get('suggestion.msg.revertVersion'))
+      }
+
+    } catch (error) {
+      this.dispatch(this.selfRedux.actions.loading_update(false))
+      message.error('Error happened, please try again later or contact admin.')
+      logger.error(error)
+    }
   }
 
   resetEditHistory() {
@@ -246,7 +279,7 @@ export default class extends BaseService {
       data,
       method: 'post',
     })
-    if(res.success && !data.isArchived) {
+    if (res.success && !data.isArchived) {
       message.info(I18N.get('suggestion.msg.archived'))
     }
     if (res.success && data.isArchived === true) {

@@ -161,7 +161,8 @@ class Milestones extends Component {
   }
 
   render() {
-    const { milestones, toggleCreateForm } = this.state
+    const { /* milestones, */ toggleCreateForm } = this.state
+    const { initialValue: milestones } = this.props
     const { editable } = this.props
     const visible = editable === false ? editable : true
     return (

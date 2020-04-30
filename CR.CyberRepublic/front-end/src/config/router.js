@@ -1,108 +1,108 @@
-// import LandingPage from '@/module/page/landing/Container'
-import HomePage from '@/module/page/home/Container'
-import SSOPage from '@/module/page/sso/Container'
-import DeveloperPage from '@/module/page/developer/Container'
-import DeveloperLearnPage from '@/module/page/developer/learn/Container'
-import DeveloperSearchPage from '@/module/page/developer/search/Container'
-import LeaderPage from '@/module/page/leader/Container'
-import Cr100Page from '@/module/page/cr_100/Container'
-import Emp35Page from '@/module/page/empower_35/Container'
-import Ambassadors from '@/module/page/ambassadors/Container'
-import CrVideo from '@/module/page/static/cr-video/Container'
+import React from 'react'
 
-import PrivacyPage from '@/module/page/static/privacy/Container'
-import TermsPage from '@/module/page/static/terms/Container'
+const HomePage = React.lazy(() => import('@/module/page/home/Container'))
+const SSOPage = React.lazy(() => import('@/module/page/sso/Container'))
+const DeveloperPage = React.lazy(() => import('@/module/page/developer/Container'))
+const DeveloperLearnPage = React.lazy(() => import('@/module/page/developer/learn/Container'))
+const DeveloperSearchPage = React.lazy(() => import('@/module/page/developer/search/Container'))
+const LeaderPage = React.lazy(() => import('@/module/page/leader/Container'))
+const Cr100Page = React.lazy(() => import('@/module/page/cr_100/Container'))
+const Ambassadors = React.lazy(() => import('@/module/page/ambassadors/Container'))
+const CrVideo = React.lazy(() => import('@/module/page/static/cr-video/Container'))
+
+const PrivacyPage = React.lazy(() => import('@/module/page/static/privacy/Container'))
+const TermsPage = React.lazy(() => import('@/module/page/static/terms/Container'))
 
 // this is the leaders link in the header
-import DirectoryPage from '@/module/page/directory/Container'
+const DirectoryPage = React.lazy(() => import('@/module/page/directory/Container'))
 
-import TeamsPage from '@/module/page/teams/Container'
-import TasksPage from '@/module/page/tasks/Container'
-import TaskDetailPage from '@/module/page/task_detail/Container'
-import TaskApplicationPage from '@/module/page/task_application/Container'
-import ProjectDetailPage from '@/module/page/project_detail/Container'
-import TeamDetailPage from '@/module/page/team_detail/Container'
-import CircleDetailPage from '@/module/page/circle_detail/Container'
+const TeamsPage = React.lazy(() => import('@/module/page/teams/Container'))
+const TasksPage = React.lazy(() => import('@/module/page/tasks/Container'))
+const TaskDetailPage = React.lazy(() => import('@/module/page/task_detail/Container'))
+const TaskApplicationPage = React.lazy(() => import('@/module/page/task_application/Container'))
+const ProjectDetailPage = React.lazy(() => import('@/module/page/project_detail/Container'))
+const TeamDetailPage = React.lazy(() => import('@/module/page/team_detail/Container'))
+const CircleDetailPage = React.lazy(() => import('@/module/page/circle_detail/Container'))
 
-import LoginPage from '@/module/page/login/Container'
-import RegisterPage from '@/module/page/register/Container'
-import ForgotPasswordPage from '@/module/page/forgot_password/Container'
-import ResetPasswordPage from '@/module/page/reset_password/Container'
+const LoginPage = React.lazy(() => import('@/module/page/login/Container'))
+const RegisterPage = React.lazy(() => import('@/module/page/register/Container'))
+const ForgotPasswordPage = React.lazy(() => import('@/module/page/forgot_password/Container'))
+const ResetPasswordPage = React.lazy(() => import('@/module/page/reset_password/Container'))
 
-import HelpPage from '@/module/page/static/help/Container'
-import FAQPage from '@/module/page/static/faq/Container'
-import AboutPage from '@/module/page/static/about/Container'
-import SlackPage from '@/module/page/static/slack/Container'
-import EventsPage from '@/module/page/static/events/Container'
-import EventPage from '@/module/page/static/details/Container'
-import VisionPage from '@/module/page/vision/Container'
+const HelpPage = React.lazy(() => import('@/module/page/static/help/Container'))
+const FAQPage = React.lazy(() => import('@/module/page/static/faq/Container'))
+const AboutPage = React.lazy(() => import('@/module/page/static/about/Container'))
+const SlackPage = React.lazy(() => import('@/module/page/static/slack/Container'))
+const EventsPage = React.lazy(() => import('@/module/page/static/events/Container'))
+const EventPage = React.lazy(() => import('@/module/page/static/details/Container'))
+const VisionPage = React.lazy(() => import('@/module/page/vision/Container'))
 
-import ProfileInfoPage from '@/module/page/profile/info/Container'
-import ProfileTasksPage from '@/module/page/profile/tasks/Container'
-import ProfileTaskApplicationDetailPage from '@/module/page/profile/task_candidate_detail/Container'
-import ProfileTeamsPage from '@/module/page/profile/teams/Container'
-// import ProfileTeamCreatePage from '@/module/page/profile/team_create/Container'
-import ProfileProjectsPage from '@/module/page/profile/projects/Container'
-import ProfileSubmissionsPage from '@/module/page/profile/submissions/Container'
-// import ProfileSubmissionCreatePage from '@/module/page/profile/submission_create/Container'
-import ProfileCommunitiesPage from '@/module/page/profile/communities/Container'
-import ProfileSubmissionDetailPage from '@/module/page/profile/submission_detail/Container'
-import ProfileSuggestionListPage from '@/module/page/profile/suggestion/list/Container'
+const ProfileInfoPage = React.lazy(() => import('@/module/page/profile/info/Container'))
+const ProfileTasksPage = React.lazy(() => import('@/module/page/profile/tasks/Container'))
+const ProfileTaskApplicationDetailPage = React.lazy(() => import('@/module/page/profile/task_candidate_detail/Container'))
+const ProfileTeamsPage = React.lazy(() => import('@/module/page/profile/teams/Container'))
+// const ProfileTeamCreatePage = React.lazy(() => import('@/module/page/profile/team_create/Container'))
+const ProfileProjectsPage = React.lazy(() => import('@/module/page/profile/projects/Container'))
+const ProfileSubmissionsPage = React.lazy(() => import('@/module/page/profile/submissions/Container'))
+// const ProfileSubmissionCreatePage = React.lazy(() => import('@/module/page/profile/submission_create/Container'))
+const ProfileCommunitiesPage = React.lazy(() => import('@/module/page/profile/communities/Container'))
+const ProfileSubmissionDetailPage = React.lazy(() => import('@/module/page/profile/submission_detail/Container'))
+const ProfileSuggestionListPage = React.lazy(() => import('@/module/page/profile/suggestion/list/Container'))
 
-import MemberPage from '@/module/page/member/Container'
+const MemberPage = React.lazy(() => import('@/module/page/member/Container'))
 
 // admin pages
-import TeamListPage from '@/module/page/admin/teams/TeamListPage'
-import AdminSuggestionPage from '@/module/page/admin/suggestion/list/Container'
-import AdminPermissionPage from '@/module/page/admin/permission/main/Container'
-import AdminUsersPage from '@/module/page/admin/users/Container'
-import AdminProfileDetailPage from '@/module/page/admin/profile_detail/Container'
-import AdminFormsPage from '@/module/page/admin/forms/Container'
+const TeamListPage = React.lazy(() => import('@/module/page/admin/teams/TeamListPage'))
+const AdminSuggestionPage = React.lazy(() => import('@/module/page/admin/suggestion/list/Container'))
+const AdminPermissionPage = React.lazy(() => import('@/module/page/admin/permission/main/Container'))
+const AdminUsersPage = React.lazy(() => import('@/module/page/admin/users/Container'))
+const AdminProfileDetailPage = React.lazy(() => import('@/module/page/admin/profile_detail/Container'))
+const AdminFormsPage = React.lazy(() => import('@/module/page/admin/forms/Container'))
 
-import CountryCommunitiesPage from '@/module/page/admin/community/CountryCommunities/Container'
-import CommunityDetailPage from '@/module/page/admin/community/CommunityDetail/Container'
+const CountryCommunitiesPage = React.lazy(() => import('@/module/page/admin/community/CountryCommunities/Container'))
+const CommunityDetailPage = React.lazy(() => import('@/module/page/admin/community/CommunityDetail/Container'))
 
-import PublicCountryCommunitiesPage from '@/module/page/community/PublicCountryCommunities/Container'
-import PublicCommunityDetailPage from '@/module/page/community/PublicCommunityDetail/Container'
+const PublicCountryCommunitiesPage = React.lazy(() => import('@/module/page/community/PublicCountryCommunities/Container'))
+const PublicCommunityDetailPage = React.lazy(() => import('@/module/page/community/PublicCommunityDetail/Container'))
 
-import TaskCreatePage from '@/module/page/task_create/Container'
+const TaskCreatePage = React.lazy(() => import('@/module/page/task_create/Container'))
 
 // external forms
-import FormTraining1Page from '@/module/page/form_ext/training_1/Container'
+const FormTraining1Page = React.lazy(() => import('@/module/page/form_ext/training_1/Container'))
 
 // council
-import CouncilSecretariatPage from '../module/page/council_secretariat/Container'
-import SecretariatPositionPage from '../module/page/council_secretariat/SecretariatPosition/Container'
-import CouncilPage from '../module/page/council/Container'
-import CouncilListPage from '../module/page/council/list/Container'
-import CouncilDetailPage from '../module/page/council/detail/Container'
+const CouncilSecretariatPage = React.lazy(() => import('../module/page/council_secretariat/Container'))
+const SecretariatPositionPage = React.lazy(() => import('../module/page/council_secretariat/SecretariatPosition/Container'))
+const CouncilPage = React.lazy(() => import('../module/page/council/Container'))
+const CouncilListPage = React.lazy(() => import('../module/page/council/list/Container'))
+const CouncilDetailPage = React.lazy(() => import('../module/page/council/detail/Container'))
 
 // candidates
-import CandidatesPage from '../module/page/candidates/Container'
+const CandidatesPage = React.lazy(() => import('../module/page/candidates/Container'))
 
-// import CVoteCreatePage from '@/module/page/CVote/create/Container'
-import CVoteDetailPage from '@/module/page/CVote/detail/Container'
-import CVoteEditPage from '@/module/page/CVote/edit/Container'
+// const CVoteCreatePage = React.lazy(() => import('@/module/page/CVote/create/Container'))
+const CVoteDetailPage = React.lazy(() => import('@/module/page/CVote/detail/Container'))
+const CVoteEditPage = React.lazy(() => import('@/module/page/CVote/edit/Container'))
 
 // what's new
-import ReleaseList from '@/module/page/release/list/Container'
+const ReleaseList = React.lazy(() => import('@/module/page/release/list/Container'))
 
 // suggestion
-import SuggestionListPage from '@/module/page/suggestion/list/Container'
-import SuggestionCreatePage from '@/module/page/suggestion/create/Container'
-import SuggestionEditPage from '@/module/page/suggestion/edit/Container'
-import SuggestionDetailPage from '@/module/page/suggestion/detail/Container'
-import SuggestionEditHistoryPage from '@/module/page/suggestion/edit_history/Container'
+const SuggestionListPage = React.lazy(() => import('@/module/page/suggestion/list/Container'))
+const SuggestionCreatePage = React.lazy(() => import('@/module/page/suggestion/create/Container'))
+const SuggestionEditPage = React.lazy(() => import('@/module/page/suggestion/edit/Container'))
+const SuggestionDetailPage = React.lazy(() => import('@/module/page/suggestion/detail/Container'))
+const SuggestionEditHistoryPage = React.lazy(() => import('@/module/page/suggestion/edit_history/Container'))
 
 // elips
-import ElipListPage from '@/module/page/elip/Container'
-import ElipNewPage from '@/module/page/elip/new/Container'
-import ElipDetailPage from '@/module/page/elip/detail/Container'
-import ElipEditPage from '@/module/page/elip/edit/Container'
+const ElipListPage = React.lazy(() => import('@/module/page/elip/Container'))
+const ElipNewPage = React.lazy(() => import('@/module/page/elip/new/Container'))
+const ElipDetailPage = React.lazy(() => import('@/module/page/elip/detail/Container'))
+const ElipEditPage = React.lazy(() => import('@/module/page/elip/edit/Container'))
 
-import WhitepaperPage from '@/module/page/whitepaper/Container'
+const WhitepaperPage = React.lazy(() => import('@/module/page/whitepaper/Container'))
 
-import NotFound from '@/module/page/error/NotFound'
+const NotFound = React.lazy(() => import('@/module/page/error/NotFound'))
 
 export default [
   {
@@ -124,10 +124,6 @@ export default [
   {
     path: '/cr100',
     page: Cr100Page,
-  },
-  {
-    path: '/crcles',
-    page: Emp35Page,
   },
   {
     path: '/ambassadors',

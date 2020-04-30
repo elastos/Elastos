@@ -1,5 +1,5 @@
 import _ from 'lodash'
-
+import { fetch } from 'whatwg-fetch'
 /*
 * request api method
 *

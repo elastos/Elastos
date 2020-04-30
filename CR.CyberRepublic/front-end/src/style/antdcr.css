@@ -3174,7 +3174,7 @@ a.ant-btn-sm {
 }
 .ant-calendar-picker-clear {
   opacity: 0;
-  z-index: 1;
+  z-index: 2;
   color: rgba(0, 0, 0, 0.25);
   background: #fff;
   pointer-events: none;

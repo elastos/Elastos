@@ -161,7 +161,7 @@ const en = {
   'login.reset': 'Reset password',
   'login.title': 'Login to Cyber Republic',
   'login.description_1': 'Input your credentials below.',
-  'login.withDid': 'Log in with Elastos DID', 
+  'login.withDid': 'Log in with Elastos DID',
   'login.qrcodeTip': 'Open ELA wallet app and scan to log in.',
 
   // Logout
@@ -281,7 +281,7 @@ const en = {
   'suggestion.cancel': 'Cancel',
   'suggestion.submit': 'Submit',
   'suggestion.header.edit': 'Edit Suggestion',
-  'suggestion.editHistory': 'Edit History',
+  'suggestion.editHistory': 'Version History',
   'suggestion.showEditHistory': 'Show Edit History',
   'suggestion.edited': 'Edited',
   'suggestion.form.mention.allCouncil': 'All Council Members',
@@ -806,158 +806,7 @@ const en = {
   'council.voting.voteResult.unvoted': 'Unvoted by me',
 
   // Landing
-  'landing.elastos': 'Elastos',
-  'landing.alpha': 'ALPHA',
-  'landing.header': 'Powering Cyber Republic.',
-  'landing.playVideo': 'Play Video',
-  'landing.action.enter': 'Enter',
-  'landing.action.here': 'Here',
-  'landing.stayUpdate': 'Stay up to date with Cyber Republic',
-  'landing.whatIs': 'What is Elastos?',
-
-  'landing.whatIs.content.1':
-    'Elastos is the first completely safe and decentralized environment on the internet. Built with blockchain, it provides a virtual ecosystem where decentralized applications are protected from direct access with the internet while allowing near infinite scalability to billions of users.',
-  'landing.whatIs.content.2':
-    'Elastos is a “Cyber Republic” that enables wealth generation through the ownership and exchange of data and digital assets.',
-
-  'landing.cr100.content.1': 'Welcome to the Internet of',
-  'landing.cr100.content.2': 'Everything, where security',
-  'landing.cr100.content.3': ' & freedom are by design',
-  'landing.cr100.content.4': 'Join Us in Building the First 100 Projects',
-
-  'landing.solution.explained.1':
-    'The main chain handles basic payments and hash storage. Everything else, including smart contracts, run on sidechains where applications have the ability to create additional sidechains.',
-  'landing.solution.explained.2':
-    'Elastos is merge mined with Bitcoin to reduce energy consumption and provide the Bitcoin network security to all applications. Sidechains are included thereby utilizing Bitcoin hashpower in multiple chains at once.',
-  'landing.solution.explained.3':
-    'Employing PoW+DPoS as a consensus model for the Elastos Blockchain, sidechains may choose POW merge mining with ELA or between consensus models such as PoS, DPoS, DBFT, and others.',
-
-  'landing.elaSol': 'The Elastos Solution',
-  'landing.scalability': 'Scalability',
-  'landing.mainSideChain': 'Main Chain + Sidechain Structure',
-  'landing.security': 'Security',
-  'landing.mergeMining': 'Merge Mining',
-  'landing.consensus': 'Consensus',
-  'landing.consensusMulti': 'Multiple Consensus Methods',
-
-  'landing.fourPillars': 'The Four Pillars',
-  'landing.ofSmartWeb': 'of The Elastos Smart Web',
-  'landing.blockchain': 'Elastos Blockchain',
-  'landing.blockchain.content.1': 'Establishing trust on the Internet by',
-  'landing.blockchain.content.2': 'building a decentralized Smart Web',
-  'landing.blockchain.content.3': 'where devices, individuals, websites',
-  'landing.blockchain.content.4': 'and digital assets have trustworthy IDs.',
-  'landing.runtime': 'Elastos Runtime',
-  'landing.runtime.content.1': 'A lightweight operating system that',
-  'landing.runtime.content.2': 'can run on mobile devices or PCs',
-  'landing.runtime.content.3': 'that prevents applications from',
-  'landing.runtime.content.4': 'directly accessing the internet.',
-  'landing.software': 'Elastos Software',
-  'landing.software.devkit': 'Development Kit',
-  'landing.software.content.1': 'Used to access IDs and Elastos',
-  'landing.software.content.2': 'Carrier service on the Smart Web.',
-  'landing.carrier': 'Elastos Carrier',
-  'landing.carrier.content.1': 'Completely decentralized peer-to-peer',
-  'landing.carrier.content.2': 'platform that conveys information for',
-  'landing.carrier.content.3': 'applications by taking over all network',
-  'landing.carrier.content.4': 'traffic between virtual machines.',
-
-  'landing.businessModel.the': 'The',
-  'landing.businessModel': 'Elastos Business Model',
-  'landing.businessModel.content.1': 'Fulfill the essential missing link for',
-  'landing.businessModel.content.2': 'peer-to-peer communication between',
-  'landing.businessModel.content.3': 'ALL smart devices including IoT',
-  'landing.businessModel.content.4': 'and autonomous vehicles.',
-  'landing.businessModel.content.5': 'Provide large blockchain',
-  'landing.businessModel.content.6': 'applications with a secure',
-  'landing.businessModel.content.7': 'running environment.',
-  'landing.businessModel.content.8': 'Big data and digital content',
-  'landing.businessModel.content.9': 'will be able to identify',
-  'landing.businessModel.content.10': 'ownership on the blockchain.',
-  'landing.businessModel.content.11': 'Wealth generation through the',
-  'landing.businessModel.content.12': 'exchange of tokens traded',
-  'landing.businessModel.content.13': 'legally on the blockchain.',
-  'landing.businessModel.content.14': 'Usage of ELA tokens to register',
-  'landing.businessModel.content.15': 'IDs for purchase of items such',
-  'landing.businessModel.content.16': 'as DApps, digital products, and',
-  'landing.businessModel.content.17': 'cloud storage.',
-  'landing.businessModel.content.18': 'Scarcity creation through',
-  'landing.businessModel.content.19': 'limiting the fixed amount of',
-  'landing.businessModel.content.20': 'digital assets.',
-  'landing.businessModel.content.21': 'Provide large blockchain applications',
-  'landing.businessModel.content.22': 'the ability to run on a device rather',
-  'landing.businessModel.content.23': 'than blockchain nodes.',
-  'landing.businessModel.content.24': 'Offer a secure runtime environment',
-  'landing.businessModel.content.25': 'free of man-in-the-middle, distributed',
-  'landing.businessModel.content.26': 'denial-of-service, and additional',
-  'landing.businessModel.content.27': 'cyber-attacks.',
-  'landing.businessModel.content.28': 'Easily port existing mobile',
-  'landing.businessModel.content.29': 'applications to the Elastos platform',
-  'landing.businessModel.content.30': 'by means of an SDK integration.',
-  'landing.businessModel.content.31': 'Longevity of digital content',
-  'landing.businessModel.content.32': 'through numerous uses.',
-
-  'landing.vision.header': 'Our Vision Is',
-  'landing.vision.content.1': 'to provide',
-  'landing.vision.content.2': 'users with a trustful',
-  'landing.vision.content.3': 'runtime environment',
-
-  'landing.application.header': 'Applications',
-  'landing.application.content.1':
-    'Applications on Elastos will run in a trustful runtime environment that utilizes blockchain technology. This creates real security by providing a “sandboxed” environment that will need verification from the blockchain before allowing access to the internet. This enables massive potential for the construction of any type of application with any use case or scenario.',
-  'landing.application.content.2': 'The following are examples of use cases',
-  'landing.application.content.3':
-    'for applications that could be built on Elastos:',
-
-  'landing.usecase.content.1': 'Support point-to-point conversation,',
-  'landing.usecase.content.2': 'point-to-point document transfer through',
-  'landing.usecase.content.3': 'decentralized P2P communication.',
-  'landing.usecase.content.4': 'Support point-to-point business',
-  'landing.usecase.content.5': 'through decentralized payment.',
-  'landing.usecase.content.6': 'Support applications about evidence,',
-  'landing.usecase.content.7': 'traceability to source, ID verification,',
-  'landing.usecase.content.8': 'etc. through trustful storage.',
-  'landing.usecase.content.9':
-    'Support digital content APPs, such as: electronic',
-  'landing.usecase.content.10':
-    'books, games and video players. All digital assets',
-  'landing.usecase.content.11': 'can be protected in a trustful environment.',
-
-  'landing.elaToken': 'Elastos Token (ELA)',
-  'landing.elaToken.content.1':
-    'ELA tokens will be used to register IDs on the blockchain, opening the door to the Elastos ecosystem. Once inside, countless exchange opportunities will be available.',
-  'landing.elaToken.content.2':
-    'You can purchase Decentralized Applications, acquire Cloud storage, buy and sell digital products and assets like songs, movies, books, and videos, and limitless other resources.',
-  'landing.elaToken.content.3':
-    'In addition, holders of ELA tokens will be provided the opportunity to invest in numerous projects. For every DApp operating on Elastos, it will be essential to have ELA for registering digital assets thus creating a continuous necessity for the token.',
-
   'landing.cr': 'Cyber Republic',
-  'landing.contribute.1':
-    'We are a diverse democratic group of leaders, developers, organizers and designers',
-  'landing.contribute.2':
-    'formed to promote Elastos in our communities. Membership is open to everyone.',
-  'landing.contribute.mob.1': 'We are a diverse democratic group of',
-  'landing.contribute.mob.2': 'leaders, developers, organizers and',
-  'landing.contribute.mob.3': 'designers formed to promote Elastos',
-  'landing.contribute.mob.4': 'in our communities. Membership is',
-  'landing.contribute.mob.5': 'open to everyone.',
-  'landing.contribute.action.1': 'Become',
-  'landing.contribute.action.2': ' a Contributor',
-
-  'landing.empower35.header': 'Empower35',
-  'landing.empower35.partnership': 'Partnership Lead',
-  'landing.empower35.marketer': 'Marketer',
-  'landing.empower35.legal': 'Legal Council',
-  'landing.empower35.video': 'Videographer',
-  'landing.empower35.designer': 'Designer',
-  'landing.empower35.writer': 'Writer',
-  'landing.empower35.dapp': 'DApp Analyst',
-  'landing.empower35.evangelist': 'Evangelist',
-  'landing.empower35.action.1': 'View All',
-  'landing.empower35.action.2': 'Positions',
-
-  'landing.footer.header.1': 'Become a part of the',
-  'landing.footer.header.2': 'Cyber Republic',
   'landing.footer.note': 'Stay up to date with Cyber Republic',
   'landing.footer.email': 'Enter Email',
   'landing.footer.resources': 'Resources',
@@ -971,21 +820,8 @@ const en = {
   'landing.footer.support': 'Support',
   'landing.footer.contacts': 'Other',
   'landing.footer.join': 'Join Us On',
-
-  'landing.footer.legal': 'Legal',
   'landing.footer.privacyPolicy': 'Privacy Policy',
   'landing.footer.termsAndConditions': 'Terms & Conditions',
-
-  'landing.0220':
-    'ELA tokens will be used to register IDs on the blockchain, opening the door to the Elastos ecosystem. Once inside, countless exchange opportunities will be available.',
-  'landing.0221':
-    'You can purchase Decentralized Applications, acquire Cloud storage, buy and sell digital products and assets like songs, movies, books, and videos, and limitless other resources.',
-  'landing.0222':
-    'In addition, holders of ELA tokens will be provided the opportunity to invest in numerous projects. For every DApp operating on Elastos, it will be essential to have ELA for registering digital assets thus creating a continuous necessity for the token.',
-
-  'landing.0230':
-    'Applications on Elastos will run in a trustful runtime environment that utilizes blockchain technology. This creates real security by providing a “sandboxed” environment that will need verification from the blockchain before allowing access to the internet. This enables massive potential for the construction of any type of application with any use case or scenario.',
-  'landing.0231': '',
 
   // Project Detail
   'pdetail.like': 'Like',

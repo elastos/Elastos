@@ -19,6 +19,7 @@ import abuse from './abuse'
 import archive from './archive'
 import del from './delete'
 import editHistories from './editHistories'
+import revertVersion from './revertVersion'
 import investigation from './investigation'
 import advisory from './advisory'
 
@@ -122,6 +123,11 @@ export default Base.setRouter([
     path: '/:id/editHistories',
     router: editHistories,
     method: 'get',
+  },
+  {
+    path: '/:id/revertVersion',
+    router: revertVersion,
+    method: 'post',
   },
   {
     path: '/:id/investigation',

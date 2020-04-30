@@ -35,6 +35,7 @@ export default class extends Base {
   public async create(param: any): Promise<Document> {
     const doc = {
       ...param,
+      version: 10,
       createdBy: _.get(this.currentUser, '_id'),
       contentType: constant.CONTENT_TYPE.MARKDOWN,
       // this is a hack for now, we should really be using aggregate pipeline + projection
@@ -45,6 +46,7 @@ export default class extends Base {
     const result = await this.model.save(doc)
     await this.getDBModel('Suggestion_Edit_History').save({
       ...param,
+      version: 10,
       suggestion: result._id
     })
 
@@ -107,6 +109,42 @@ export default class extends Base {
     }
   }
 
+  public async fixHistoryVersion(id: any) {
+    const model = this.getDBModel('Suggestion_Edit_History')
+    const list = await model.getDBInstance()
+                            .find({ suggestion: id })
+                            .sort({ createdAt: 1 })
+    for(let i=0,ver=10;i<list.length;i++,ver+=1) {
+      const _id = list[i]._id
+      await model.getDBInstance()
+                         .update({ _id },
+                                 { "$set": { "version": ver }})
+    }
+    const detail = await this.model
+                       .getDBInstance()
+                       .findOne({_id: id})
+    if(detail) {
+      if(!detail.version || detail.version < 10) {
+        await this.model.update({ _id: id }, { $set: {version: 10}})
+      }
+    }
+  }
+
+  public async saveHistoryGetCurrentVersion(id: any, doc: any) {
+    const hisdoc = {
+      ...doc,
+      _id: undefined,
+      createdAt: undefined,
+      updatedAt: undefined,
+      suggestion: id
+    }
+    const hismodel = this.getDBModel('Suggestion_Edit_History')
+    const hisres = await hismodel.save(hisdoc)
+    await this.fixHistoryVersion(id)
+    const curhis = await hismodel.getDBInstance().findOne({_id: hisres._id})
+    return curhis.version
+  }
+
   public async saveDraft(param: any): Promise<Document> {
     const { id, update } = param
     const userId = _.get(this.currentUser, '_id')
@@ -133,13 +171,11 @@ export default class extends Base {
     }
 
     doc.descUpdatedAt = new Date()
+    
     let result = null
     if (update) {
+      doc.version = await this.saveHistoryGetCurrentVersion(id, currDoc._doc)
       result = await this.draftModel.save(doc)
-      await this.getDBModel('Suggestion_Edit_History').save({
-        ...currDoc,
-        suggestion: id
-      })
     } else {
       result = await this.draftModel.save(doc)
     }
@@ -172,13 +208,8 @@ export default class extends Base {
     doc.descUpdatedAt = new Date()
     
     if (update) {
-      await Promise.all([
-        this.model.update({ _id: id }, { $set: doc }),
-        this.getDBModel('Suggestion_Edit_History').save({
-          ...doc,
-          suggestion: id
-        })
-      ])
+      doc.version = await this.saveHistoryGetCurrentVersion(id, doc)
+      await this.model.update({ _id: id }, { $set: doc })
     } else {
       await this.model.update({ _id: id }, { $set: doc })
     }
@@ -381,19 +412,19 @@ export default class extends Base {
       ]
 
       cursor = this.model
-        .getDBInstance()
-        .find(query, excludedFields.join(' '))
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-        .sort(sortObject)
+                   .getDBInstance()
+                   .find(query, excludedFields.join(' '))
+                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+                   .sort(sortObject)
     } else {
       // my suggestions on profile page
       cursor = this.model
-        .getDBInstance()
-        .find(
-          query,
-          'title activeness commentsNum createdAt dislikesNum displayId likesNum'
-        )
+                   .getDBInstance()
+                   .find(
+                     query,
+                     'title activeness commentsNum createdAt dislikesNum displayId likesNum'
+                   )
     }
 
     if (param.results) {
@@ -405,9 +436,9 @@ export default class extends Base {
     const rs = await Promise.all([
       cursor,
       this.model
-        .getDBInstance()
-        .find(query)
-        .count()
+          .getDBInstance()
+          .find(query)
+          .count()
     ])
 
     return {
@@ -537,20 +568,20 @@ export default class extends Base {
       ]
 
       cursor = this.model
-        .getDBInstance()
-        .find(query /*, excludedFields.join(' ')*/)
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-        .sort(sortObject)
+                   .getDBInstance()
+                   .find(query /*, excludedFields.join(' ')*/)
+                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+                   .sort(sortObject)
     } else {
       // my suggestions on profile page
       cursor = this.model
-        .getDBInstance()
-        .find(
-          query /*, 'title activeness commentsNum createdAt dislikesNum displayId likesNum'*/
-        )
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+                   .getDBInstance()
+                   .find(
+                     query /*, 'title activeness commentsNum createdAt dislikesNum displayId likesNum'*/
+                   )
+                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     }
 
     /*if (param.results) {
@@ -623,9 +654,9 @@ export default class extends Base {
     const rs = await Promise.all([
       cursor,
       this.model
-        .getDBInstance()
-        .find(query)
-        .count()
+          .getDBInstance()
+          .find(query)
+          .count()
     ])
 
     return {
@@ -687,6 +718,7 @@ export default class extends Base {
       }
     }
 
+    if(!doc.version || doc.version < 10) doc.version = 10
     return doc
   }
   public async show(param: any): Promise<any> {
@@ -697,9 +729,45 @@ export default class extends Base {
   }
 
   public async editHistories(param: any): Promise<Document[]> {
-    return await this.getDBModel('Suggestion_Edit_History').find({
-      suggestion: param.id
-    })
+    await this.fixHistoryVersion(param.id)
+    return await this.getDBModel('Suggestion_Edit_History')
+                     .getDBInstance()
+                     .find({ suggestion: param.id })
+                     .sort({ version: -1 })
+  }
+
+  public async revertVersion(param: any): Promise<any> {
+    const { id, version } = param
+    const userId = _.get(this.currentUser, '_id')
+    const currDoc = await this.model.getDBInstance().findById(id)
+
+    if (!currDoc) {
+      throw 'Current document does not exist'
+    }
+
+    if (
+      !userId.equals(_.get(currDoc, 'createdBy')) &&
+      !permissions.isAdmin(_.get(this.currentUser, 'role'))
+    ) {
+      throw 'Only owner can edit suggestion'
+    }
+
+    const currVer = await this.model
+                              .getDBInstance()
+                              .findOne({_id: id})
+    const rVer = await this.getDBModel('Suggestion_Edit_History')
+                           .getDBInstance()
+                           .findOne({ suggestion: id, version })
+    if(!currVer || !rVer) {
+      throw 'Current document does not exist'
+    }
+
+    Object.assign(currVer, _.pick(rVer, BASE_FIELDS))
+    currVer.version = rVer.version
+    
+    await this.model.update({ _id: id }, { $set: currVer })
+    
+    return {id, version}
   }
 
   // like or unlike
@@ -786,13 +854,13 @@ export default class extends Base {
       const currentUserId = _.get(this.currentUser, '_id')
       const councilMember = await db_user.findById(currentUserId)
       const suggestion = await this.model
-        .getDBInstance()
-        .findById(suggestionId)
-        .populate(
-          'subscribers.user',
-          constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
-        )
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+                                   .getDBInstance()
+                                   .findById(suggestionId)
+                                   .populate(
+                                     'subscribers.user',
+                                     constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
+                                   )
+                                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
       // get users: creator and subscribers
       const toUsers = _.map(suggestion.subscribers, 'user') || []
@@ -815,7 +883,7 @@ export default class extends Base {
       <br /> <br />
       <p>Thanks</p>
       <p>Cyber Republic</p>
-    `
+      `
 
       const recVariables = _.zipObject(
         toMails,
@@ -847,9 +915,9 @@ export default class extends Base {
       const currentUserId = _.get(this.currentUser, '_id')
       const councilMember = await db_user.findById(currentUserId)
       const suggestion = await this.model
-        .getDBInstance()
-        .findById(suggestionId)
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+                                   .getDBInstance()
+                                   .findById(suggestionId)
+                                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
       // get users: creator and subscribers
       const toUsers = [suggestion.createdBy]
@@ -1022,9 +1090,9 @@ export default class extends Base {
   public async archive(param: any): Promise<object> {
     const { id: _id, isArchived } = param
     const suggestion = await this.model
-      .getDBInstance()
-      .findById(_id)
-      .populate('createdBy')
+                                 .getDBInstance()
+                                 .findById(_id)
+                                 .populate('createdBy')
     if (!suggestion) {
       return
     }

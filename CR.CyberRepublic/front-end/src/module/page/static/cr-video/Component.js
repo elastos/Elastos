@@ -4,9 +4,10 @@ import {Helmet} from 'react-helmet'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
 import './style.scss'
-import { Button, Spin } from 'antd'
+import { Button, Spin, Icon } from 'antd'
 import _ from 'lodash'
 import StandardPage from '../../StandardPage'
+import TelegramIcon from '@/module/common/TelegramIcon'
 
 export default class extends StandardPage {
   componentDidMount() {
@@ -140,7 +141,7 @@ export default class extends StandardPage {
                     const win = window.open('https://twitter.com/share?ref_src=twsrc%5Etfw', 'ShareOnWitter', this.getWindowOptions())
                     win.opener = null
                   }}>
-                    <i className="fab fa-twitter fa-2x" />
+                    <Icon type="twitter" style={{ fontSize: 32}} />
                   </a>
                 </div>
                 <div id="facebook_share" className="share-container" onClick={() => analytics.track('SOCIAL_SHARE_CLICKED', {
@@ -154,7 +155,7 @@ export default class extends StandardPage {
                       href: 'https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2FElastosCyberRepublic%2F&amp;src=sdkpreparse'
                     }, (response) => { })
                   }}>
-                    <i className="fab fa-facebook fa-2x" />
+                    <Icon type="facebook" style={{ fontSize: 32}} />
                   </a>
                 </div>
                 <div className="share-container" onClick={() => analytics.track('SOCIAL_SHARE_CLICKED', {
@@ -162,7 +163,7 @@ export default class extends StandardPage {
                   url: location.href
                 })}>
                   <a href="https://t.me/elastosgroup" target="_blank">
-                    <i className="fab fa-telegram fa-2x" />
+                    <TelegramIcon style={{ fill: '#333333' }} />
                   </a>
                 </div>
               </div>

@@ -40,7 +40,8 @@ class C extends BaseComponent {
             .register(
               this.state.savedValues.username,
               this.state.savedValues.password,
-              _.omit(this.state.savedValues, ['username', 'password'])
+              this.props.did,
+              this.state.savedValues.email
             )
             .then(shouldShowWelcome => {
               if (_.isFunction(this.props.onChangeActiveKey)) {

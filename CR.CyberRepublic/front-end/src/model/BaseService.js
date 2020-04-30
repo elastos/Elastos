@@ -1,5 +1,6 @@
 /* global AbortController */
 import store from '@/store'
+import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 
 export default class {
   constructor() {

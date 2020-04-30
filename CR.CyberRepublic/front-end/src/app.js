@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom'
 import { Helmet } from 'react-helmet'
 import _ from 'lodash'
@@ -7,9 +7,11 @@ import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'react-router-redux'
 import store from '@/store'
 import config from '@/config'
+import PageLoading from '@/module/common/PageLoading'
 import { api_request, permissions } from './util'
 
 import './boot'
+import './style/antd/index.less'
 import './style/index.scss'
 import './style/mobile.scss'
 
@@ -52,32 +54,35 @@ const App = (props) => (
       <script defer={true} src="/assets/js/elastos.js"/>
       )}
     </Helmet>
-    {props.maintenanceMode ?
-    <div className="maintenance-mode">
+    {props.maintenanceMode ? (
+      <div className="maintenance-mode">
 
-      <img src="/assets/images/logo.svg" alt="Cyber Republic" width="20%"/>
+        <img src="/assets/images/logo.svg" alt="Cyber Republic" width="20%"/>
 
-      <h3>Maintenance Mode</h3>
+        <h3>Maintenance Mode</h3>
 
       Sorry our website is currently down due to maintenance.
 
-    </div> :
-    <Switch id="ebp-main">
-      {_.map(config.router, (item, i) => {
-        const props = _.omit(item, ['page', 'path', 'type'])
-        const R = item.type || Route
-        return (
-        <R
-        path={item.path}
-        key={i}
-        exact={true}
-        component={item.page}
-        {...props}
-        />
-        )
-      })}
-    </Switch>
-    }
+      </div>
+    ) : (
+      <Suspense fallback={<PageLoading />}>
+        <Switch id="ebp-main">
+          {_.map(config.router, (item, i) => {
+            const props = _.omit(item, ['page', 'path', 'type'])
+            const R = item.type || Route
+            return (
+              <R
+                path={item.path}
+                key={i}
+                exact={true}
+                component={item.page}
+                {...props}
+                />
+            )
+          })}
+        </Switch>
+      </Suspense>
+    )}
   </div>
 )
 
@@ -125,7 +130,7 @@ if (sessionStorage.getItem('api-token')) {
         store.dispatch(userRedux.actions.current_user_id_update(data._id))
         store.dispatch(userRedux.actions.circles_update(_.values(data.circles)))
         store.dispatch(
-        userRedux.actions.subscribers_update(_.values(data.subscribers))
+          userRedux.actions.subscribers_update(_.values(data.subscribers))
         )
         store.dispatch(userRedux.actions.loading_update(false))
 
