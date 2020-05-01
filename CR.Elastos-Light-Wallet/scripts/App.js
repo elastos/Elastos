@@ -438,8 +438,10 @@ const requestBlockchainData = () => {
   requestBalance();
   requestUnspentTransactionOutputs();
   requestBlockchainState();
-  requestListOfProducers();
-  requestListOfCandidateVotes();
+  if (refreshCandiatesFlag) {
+    requestListOfProducers();
+    requestListOfCandidateVotes();
+  }
 };
 
 const getPublicKeyFromMnemonic = () => {
