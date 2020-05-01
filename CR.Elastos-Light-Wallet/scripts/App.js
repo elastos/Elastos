@@ -244,7 +244,7 @@ const refreshBlockchainData = () => {
   requestUnspentTransactionOutputs();
   requestBlockchainState();
   CoinGecko.requestPriceData();
-  requestListOfProducers();
+  requestListOfProducers(true);
   requestListOfCandidateVotes();
   renderApp();
 };
@@ -308,7 +308,7 @@ const pollForData = () => {
         break;
       case 4:
         if (refreshCandiatesFlag) {
-          requestListOfProducers();
+          requestListOfProducers(false);
           requestListOfCandidateVotes();
         }
         requestRssFeed();
@@ -439,7 +439,7 @@ const requestBlockchainData = () => {
   requestUnspentTransactionOutputs();
   requestBlockchainState();
   if (refreshCandiatesFlag) {
-    requestListOfProducers();
+    requestListOfProducers(false);
     requestListOfCandidateVotes();
   }
 };
@@ -641,8 +641,19 @@ const requestListOfProducersErrorCallback = (response) => {
   renderApp();
 };
 
-const requestListOfProducersReadyCallback = (response) => {
-  producerListStatus = 'Producers Received';
+const requestListOfProducersReadyCallback = (response, force) => {
+  if (refreshCandiatesFlag) {
+    producerListStatus = 'Producers Received';
+  } else {
+    if (force) {
+      producerListStatus = 'Producers Refreshed';
+    } else {
+      if (parsedProducerList.producers.length > 0) {
+        producerListStatus = 'Producers Refresh Paused';
+        return;
+      }
+    }
+  }
 
   // mainConsole.log('STARTED Producers Callback', response);
   parsedProducerList = {
@@ -681,12 +692,20 @@ const requestListOfProducersReadyCallback = (response) => {
   renderApp();
 };
 
-const requestListOfProducers = () => {
-  producerListStatus = 'Loading Nodes, Please Wait';
+const requestListOfProducers = (force) => {
+  if (force) {
+    producerListStatus = 'Refreshing Candidates, Please Wait';
+  } else {
+    producerListStatus = 'Loading Candidates, Please Wait';
+  }
   const txUrl = `${getRestService()}/api/v1/dpos/rank/height/0?state=active`;
 
+  const requestListOfProducersReadyCallbackWrap = (response) => {
+    requestListOfProducersReadyCallback(response, force);
+  };
+
   renderApp();
-  getJson(txUrl, requestListOfProducersReadyCallback, requestListOfProducersErrorCallback);
+  getJson(txUrl, requestListOfProducersReadyCallbackWrap, requestListOfProducersErrorCallback);
 };
 
 const toggleProducerSelection = (item) => {
@@ -722,7 +741,7 @@ const requestListOfCandidateVotesErrorCallback = (response) => {
 const requestListOfCandidateVotesReadyCallback = (response) => {
   candidateVoteListStatus = 'Candidate Votes Received';
 
-  mainConsole.log('STARTED Candidate Votes Callback', response);
+  // mainConsole.log('STARTED Candidate Votes Callback', response);
   parsedCandidateVoteList = {};
   parsedCandidateVoteList.candidateVotes = [];
   if (response.status !== 200) {
@@ -1243,7 +1262,7 @@ const requestFee = async () => {
 };
 
 const getFeeErrorCallback = (error) => {
-  mainConsole.log('getFeeErrorCallback ', error);
+  // mainConsole.log('getFeeErrorCallback ', error);
   feeStatus = `Rss Feed Error ${error.message}`;
   fee = '';
   renderApp();
@@ -1252,7 +1271,7 @@ const getFeeErrorCallback = (error) => {
 const getFeeReadyCallback = (response) => {
   feeStatus = 'Fee Received';
   fee = response.result.toString();
-  mainConsole.log('getFeeReadyCallback ', response, fee);
+  // mainConsole.log('getFeeReadyCallback ', response, fee);
   renderApp();
 };
 
@@ -1260,12 +1279,12 @@ const getFeeReadyCallback = (response) => {
 const requestFeeAccount = async () => {
   const feeAccountUrl = `${getRestService()}/api/v1/node/reward/address`;
   feeAccountStatus = 'Fee Account Requested';
-  mainConsole.log('requestFeeAccount ', feeAccountStatus);
+  // mainConsole.log('requestFeeAccount ', feeAccountStatus);
   getJson(feeAccountUrl, getFeeAccountReadyCallback, getFeeAccountErrorCallback);
 };
 
 const getFeeAccountErrorCallback = (error) => {
-  mainConsole.log('getFeeErrorCallback ', error);
+  // mainConsole.log('getFeeErrorCallback ', error);
   feeAccountStatus = `Rss Account Feed Error ${error.message}`;
   feeAccount = '';
   renderApp();
@@ -1274,7 +1293,7 @@ const getFeeAccountErrorCallback = (error) => {
 const getFeeAccountReadyCallback = (response) => {
   feeAccountStatus = 'Fee Account Received';
   feeAccount = response.result;
-  mainConsole.log('getFeeAccountReadyCallback ', response, feeAccount);
+  // mainConsole.log('getFeeAccountReadyCallback ', response, feeAccount);
   renderApp();
 };
 

@@ -28,18 +28,18 @@ if (LOG_LEDGER_MESSAGE) {
 const getPublicKey = (callback) => {
   const deviceThenCallback = (device) => {
     try {
-      mainConsole.log('sending message ');
+      // mainConsole.log('sending message ');
       const message = Buffer.from('8004000000' + bip44Path, 'hex');
-      mainConsole.log(`STARTED sending message ${message.toString('hex').toUpperCase()}`);
-      mainConsole.log(`STARTED sending device ${JSON.stringify(device)}`);
+      // mainConsole.log(`STARTED sending message ${message.toString('hex').toUpperCase()}`);
+      // mainConsole.log(`STARTED sending device ${JSON.stringify(device)}`);
       device.exchange(message).then((response) => {
-        mainConsole.log('SUCCESS sending message');
+        // mainConsole.log('SUCCESS sending message');
         device.close();
         const responseStr = response.toString('hex').toUpperCase();
         let success = false;
         let message = '';
         let publicKey = '';
-        mainConsole.log(`INTERIM sending message: responseStr:${responseStr}`);
+        // mainConsole.log(`INTERIM sending message: responseStr:${responseStr}`);
         if (responseStr.endsWith('9000')) {
           success = true;
           message = responseStr;
@@ -57,15 +57,15 @@ const getPublicKey = (callback) => {
           publicKey: publicKey,
         });
       }).catch((error) => {
-        mainConsole.trace(error);
-        mainConsole.log(`FAILURE sending message. error:${error}`);
+        // mainConsole.trace(error);
+        // mainConsole.log(`FAILURE sending message. error:${error}`);
         callback({
           success: false,
           message: 'Error ' + JSON.stringify(error),
         });
       });
     } catch (error) {
-      mainConsole.log(`FAILURE creating and sending message. error:${error}`);
+      // mainConsole.log(`FAILURE creating and sending message. error:${error}`);
       callback({
         success: false,
         message: 'Error ' + JSON.stringify(error),
