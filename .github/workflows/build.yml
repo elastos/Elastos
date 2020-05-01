@@ -28,6 +28,7 @@ jobs:
         run:            |
           sudo apt-get -y update
           sudo apt-get -y install libusb-1.0-0-dev libudev-dev
+        if:             startsWith(matrix.os, 'ubuntu')
 
       - name:           Install Snapcraft
         uses:           samuelmeuli/action-snapcraft@v1
