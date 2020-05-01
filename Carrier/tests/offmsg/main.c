@@ -227,7 +227,8 @@ static void friend_connection_callback(ElaCarrier *w, const char *friendid,
 
 static void message_callback(ElaCarrier *w, const char *from,
                              const void *msg, size_t len,
-                             bool is_offline, void *context)
+                             int64_t timestamp, bool is_offline,
+                             void *context)
 {
     TestCtx *ctx = (TestCtx *)context;
 

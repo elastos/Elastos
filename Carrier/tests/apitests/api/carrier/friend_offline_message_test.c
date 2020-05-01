@@ -79,7 +79,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from, const void *msg, size_t len,
-                              bool is_offline, void *context)
+                              int64_t timestamp, bool is_offline, void *context)
 {
     CarrierContextExtra *extra = ((CarrierContext *)context)->extra;
 

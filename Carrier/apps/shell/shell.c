@@ -915,6 +915,73 @@ static void send_bulk_message(ElaCarrier *w, int argc, char *argv[])
     output("  failed: %d\n", failed_count);
 }
 
+static void receipt_message_callback(int64_t msgid,  ElaMessageState state, void *context)
+{
+    const char* state_str;
+    int errcode = 0;
+
+    switch (state) {
+        case ElaMessage_Receipted:
+            state_str = "Receipted";
+            break;
+        case ElaMessage_OfflineSent:
+            state_str = "OfflineSent";
+            break;
+        case ElaMessage_Error:
+            state_str = "Error";
+            errcode = ela_get_error();
+            break;
+        default:
+            state_str = "Unknown";
+            break;
+    }
+    output("Messages receipted. msgid:0x%llx, state:%s, ecode:%x\n",
+           msgid, state_str, errcode);
+}
+
+static void send_receipt_message(ElaCarrier *w, int argc, char *argv[])
+{
+    int rc;
+
+    if (argc != 3) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    int64_t msgid;
+    rc = ela_send_message_with_receipt(w, argv[1], argv[2], strlen(argv[2]) + 1,
+                                       receipt_message_callback, NULL, &msgid);
+    if (rc == 0)
+        output("Sending receipt message. msgid:0x%llx\n", msgid);
+    else
+        output("Send message failed(0x%x).\n", ela_get_error());
+}
+
+static void send_receipt_bulkmessage(ElaCarrier *w, int argc, char *argv[])
+{
+    int rc;
+    int datalen = 2048;
+    char data[datalen];
+
+    if (argc != 2) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    for(int idx = 0; idx < datalen; idx++) {
+        data[idx] = '0' + (idx % 8);
+    }
+    memcpy(data + datalen - 5, "end", 4);
+
+    int64_t msgid;
+    rc = ela_send_message_with_receipt(w, argv[1], data, strlen(data) + 1,
+                                       receipt_message_callback, NULL, &msgid);
+    if (rc == 0)
+        output("Sending receipt message. msgid:0x%llx\n", msgid);
+    else
+        output("Send message failed(0x%x).\n", ela_get_error());
+}
+
 static void bigmsg_benchmark_initialize(ElaCarrier *w, int argc, char *argv[])
 {
     size_t totalsz;
@@ -2077,6 +2144,8 @@ struct command {
     { "label",      label_friend,           "label [User ID] [Name] - Add label to friend." },
     { "msg",        send_message,           "msg [User ID] [Message] - Send message to a friend." },
     { "bulkmsg",    send_bulk_message,      "bulkmsg [User ID] [Count] [Message] - Send numerous messages to a friend." },
+    { "ackmsg",     send_receipt_message,   "ackmsg [User ID] [Count] [Message] - Send messages with receipt to a friend." },
+    { "ackbmsg",    send_receipt_bulkmessage,   "ackbmsg [User ID] [Count] [Message] - Send messages with receipt to a friend." },
     { "bigmsgbenchmarkinit", bigmsg_benchmark_initialize, "bigmsgbenchmarkinit [User ID] [Count] - Initialize a big message benchmark to send [count]MB big message to a friend." },
     { "bigmsgbenchmarkacpt", bigmsg_benchmark_accept, "bigmsgbenchmarkacpt - Accept a big message benchmark initialized by a friend." },
     { "bigmsgbenchmarkrej",  bigmsg_benchmark_reject, "bigmsgbenchmarkrej - Reject a big message benchmark initialized by a friend." },
@@ -2361,7 +2430,9 @@ static void friend_request_callback(ElaCarrier *w, const char *userid,
 }
 
 static void message_callback(ElaCarrier *w, const char *from,
-                             const void *msg, size_t len, bool is_offline, void *context)
+                             const void *msg, size_t len,
+                             int64_t timestamp, bool is_offline,
+                             void *context)
 {
     char ctlsig_type[128];
     size_t totalsz;
@@ -2370,7 +2441,7 @@ static void message_callback(ElaCarrier *w, const char *from,
     rc = sscanf(msg, "bigmsgbenchmark %128s %zu", ctlsig_type, &totalsz);
     if (rc < 1) {
         if (bigmsg_benchmark.state != ONGOING || strcmp(from, bigmsg_benchmark.peer)) {
-            output("Message(%s) from friend[%s]: %.*s\n", is_offline ? "offline" : "online", from, (int)len, (const char *)msg);
+            output("Message(%s) from friend[%s] at %lld: (%d)%.*s\n", is_offline ? "offline" : "online", from, timestamp, (int)len, (int)len, (const char *)msg);
             return;
         }
 

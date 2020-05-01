@@ -49,8 +49,11 @@ struct DHTCallbacks {
     void (*notify_friend_message)(uint32_t friend_number, const uint8_t *message,
                                   size_t length, void *context);
 
+    void (*notify_friend_read_receipt)(uint32_t friend_number,
+                                       uint32_t message_id, void *context);
+
     void (*notify_group_invite)(uint32_t fnum, const uint8_t *cookie,
-                                size_t len, void *context);
+                                    size_t len, void *context);
 
     void (*notify_group_connected)(uint32_t gnum, void *context);
 

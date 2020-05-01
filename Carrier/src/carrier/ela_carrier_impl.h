@@ -32,7 +32,7 @@
 #include "dht_callbacks.h"
 #include "dht.h"
 
-#include "dstore_wrapper.h"
+#include "express.h"
 
 #define DHT_BOOTSTRAP_DEFAULT_PORT 33445
 #define HIVE_BOOTSTRAP_DEFAULT_PORT 9095
@@ -66,6 +66,8 @@ typedef struct Preferences {
     DhtBootstrapNodeBuf *dht_bootstraps;
     int hive_bootstraps_size;
     HiveBootstrapNodeBuf *hive_bootstraps;
+    int express_bootstraps_size;
+    DhtBootstrapNodeBuf *express_bootstraps;
 } Preferences;
 
 typedef struct EventBase EventBase;
@@ -79,11 +81,43 @@ typedef struct FriendEvent {
     ElaFriendInfo fi;
 } FriendEvent;
 
+typedef enum MsgCh {
+    MSGCH_DHT = 0,
+    MSGCH_EXPRESS = 1,
+} MsgCh;
+
+typedef struct MsgReceiptEvent {
+    EventBase base;
+    char to[ELA_MAX_ID_LEN + 1];
+    MsgCh msgch;
+    int64_t msgid;
+
+    ElaFriendMessageReceiptCallback *callback;
+    void *context;
+
+    size_t size;
+    uint8_t data[0];
+} MsgReceiptEvent;
+
 typedef struct OfflineMsgEvent {
     EventBase base;
-    char from[ELA_MAX_ID_LEN + 1];
-    size_t len;
-    uint8_t content[0];
+    char friendid[ELA_MAX_ID_LEN + 1];
+    union {
+        struct {
+            int64_t timestamp;
+            size_t len;
+            uint8_t content[0];
+        } msg;
+        struct {
+            int64_t timestamp;
+            size_t len;
+            uint8_t gretting[0];
+        } req;
+        struct {
+            int64_t msgid;
+            int errcode;
+        } stat;
+    };
 } OfflineMsgEvent;
 
 struct ElaCarrier {
@@ -112,9 +146,12 @@ struct ElaCarrier {
     DHTCallbacks dht_callbacks;
 
     list_t *friend_events; // for friend_added/removed.
+    list_t *friend_msgs;
     hashtable_t *friends;
 
-    DStoreWrapper *dstorectx;
+    ExpressConnector *connector;
+    uint32_t msgid_counter;
+    struct timeval express_expiretime;
 
     hashtable_t *tcallbacks;
     hashtable_t *thistory;

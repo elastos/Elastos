@@ -152,7 +152,7 @@ int trace_func(CURL *handle, curl_infotype type, char *data, size_t size,
 
     switch (type) {
     case CURLINFO_TEXT:
-        vlogD("== Info: %s", data);
+        vlogV("== Info: %s", data);
     default: /* in case a new one is introduced to shock us */
         return 0;
 
@@ -297,7 +297,7 @@ int http_client_set_method(http_client_t *client, http_method_t method)
         code = curl_easy_setopt(client->curl, CURLOPT_HTTPGET, 1L);
         break;
     case HTTP_METHOD_POST:
-        code = curl_easy_setopt(client->curl, CURLOPT_POST, 1L);
+        code = curl_easy_setopt(client->curl, CURLOPT_HTTPPOST, 1L);
         break;
     case HTTP_METHOD_PUT:
         code = curl_easy_setopt(client->curl, CURLOPT_CUSTOMREQUEST, "PUT");
@@ -503,9 +503,15 @@ int http_client_set_timeout(http_client_t *client, int timeout)
     assert(client);
     assert(timeout > 0);
 
-    code = curl_easy_setopt(client->curl, CURLOPT_TIMEOUT, timeout);
+    code = curl_easy_setopt(client->curl, CURLOPT_TIMEOUT_MS, timeout);
+    if (code != CURLE_OK)
+        return code;
 
-    return code;
+    code = curl_easy_setopt(client->curl, CURLOPT_CONNECTTIMEOUT_MS, timeout);
+    if (code != CURLE_OK)
+        return code;
+
+    return 0;
 }
 
 int http_client_set_version(http_client_t *client, http_version_t version)

@@ -926,7 +926,8 @@ static void friend_request_callback(ElaCarrier *w, const char *userid,
 }
 
 static void message_callback(ElaCarrier *w, const char *from,
-                             const void *msg, size_t len, bool is_offline, void *context)
+                             const void *msg, size_t len,
+                             int64_t timestamp, bool is_offline, void *context)
 {
     output("Message(%s) from friend[%s]: %.*s\n", is_offline ? "offline" : "online", from, (int)len, msg);
 

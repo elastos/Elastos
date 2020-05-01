@@ -1096,3 +1096,26 @@ ElaCP *elacp_decode(const uint8_t *data, size_t len)
 
     return cp;
 }
+
+int elacp_decode_pullmsg(const uint8_t *data, ElaCPPullMsg *pullmsg)
+{
+    elacp_pullmsg_table_t pmsg_tbl;
+    flatbuffers_uint8_vec_t vec;
+
+    assert(data && pullmsg);
+    memset(pullmsg, 0, sizeof(*pullmsg));
+
+    pmsg_tbl = elacp_pullmsg_as_root(data);
+    if (!pmsg_tbl)
+        return -1;
+
+    pullmsg->id = elacp_pullmsg_id(pmsg_tbl);
+    pullmsg->from = elacp_pullmsg_from(pmsg_tbl);
+    pullmsg->type = elacp_pullmsg_type(pmsg_tbl);
+    pullmsg->timestamp = elacp_pullmsg_timestamp(pmsg_tbl);
+    pullmsg->address = elacp_pullmsg_address(pmsg_tbl);
+    pullmsg->payload = vec = elacp_pullmsg_payload(pmsg_tbl);
+    pullmsg->payload_sz = flatbuffers_uint8_vec_len(vec);
+
+    return 0;
+}

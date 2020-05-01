@@ -85,3 +85,11 @@ table packet
 
 root_type packet;
 
+table pullmsg {
+    id        : ulong;
+    from      : string;
+    type      : ubyte;
+    timestamp : ulong;
+    address   : string;
+    payload   :[ubyte];
+}

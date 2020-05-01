@@ -93,6 +93,9 @@ int dht_friend_add_norequest(DHT *dht, const uint8_t *public_key,
 int dht_friend_message(DHT *dht, uint32_t friend_number,
                        const uint8_t *data, size_t length);
 
+int dht_friend_message_with_msgid(DHT *dht, uint32_t friend_number,
+                                  const uint8_t *data, size_t length, uint32_t *msgid);
+
 int dht_friend_delete(DHT *dht, uint32_t friend_number);
 
 int dht_get_random_tcp_relay(DHT *dht, char *tcp_relay, size_t buflen,

@@ -118,6 +118,75 @@ static void qualified_path(const char *path, const char *ref, char *qualified)
     }
 }
 
+int load_express_config(config_t *cfg, ElaOptions *options)
+{
+    int express_bootstraps_size;
+    config_setting_t *bootstraps_setting;
+    config_setting_t *bootstrap_setting;
+    int entries;
+    size_t *mem;
+
+    const char *stropt;
+    char number[64];
+    int intopt;
+
+    bootstraps_setting = config_lookup(cfg, "express_bootstraps");
+    if (!bootstraps_setting) {
+        fprintf(stderr, "Missing express bootstraps section.\n");
+        return -1;
+    }
+
+    entries = config_setting_length(bootstraps_setting);
+    if (entries <= 0) {
+        fprintf(stderr, "Empty express bootstraps option.\n");
+        return -1;
+    }
+
+    mem = (size_t *)rc_zalloc(sizeof(size_t) +
+            sizeof(BootstrapNode) * entries, bootstraps_destructor);
+    if (!mem) {
+        fprintf(stderr, "Load configuration failed, out of memory.\n");
+        return -1;
+    }
+
+    *mem = entries;
+    options->express_bootstraps_size = entries;
+    options->express_bootstraps = (BootstrapNode *)(++mem);
+
+    for (int i = 0; i < entries; i++) {
+        BootstrapNode *node = options->express_bootstraps + i;
+
+        bootstrap_setting = config_setting_get_elem(bootstraps_setting, i);
+
+        int rc = config_setting_lookup_string(bootstrap_setting, "ipv4", &stropt);
+        if (rc && *stropt)
+            node->ipv4 = (const char *)strdup(stropt);
+        else
+            node->ipv4 = NULL;
+
+        rc = config_setting_lookup_string(bootstrap_setting, "ipv6", &stropt);
+        if (rc && *stropt)
+            node->ipv6 = (const char *)strdup(stropt);
+        else
+            node->ipv6 = NULL;
+
+        rc = config_setting_lookup_int(bootstrap_setting, "port", &intopt);
+        if (rc && intopt) {
+            sprintf(number, "%d", intopt);
+            node->port = (const char *)strdup(number);
+        } else
+            node->port = NULL;
+
+        rc = config_setting_lookup_string(bootstrap_setting, "public-key", &stropt);
+        if (rc && *stropt)
+            node->public_key = (const char *)strdup(stropt);
+        else
+            node->public_key = NULL;
+    }
+
+    return options->express_bootstraps_size;
+}
+
 ElaOptions *carrier_config_load(const char *config_file,
         int (*extra_config_handle)(void *cfg, ElaOptions *options),
         ElaOptions *options)
@@ -283,6 +352,14 @@ ElaOptions *carrier_config_load(const char *config_file,
             node->port = (const char *)strdup(number);
         } else
             node->port = NULL;
+    }
+
+    rc = load_express_config(&cfg, options);
+    if (rc < 0) { // TODO: does empty express is allowed?
+        fprintf(stderr, "Empty express bootstraps option.\n");
+        carrier_config_free(options);
+        config_destroy(&cfg);
+        return NULL;
     }
 
     options->udp_enabled = true;

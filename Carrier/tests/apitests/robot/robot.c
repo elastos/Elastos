@@ -250,7 +250,8 @@ static void friend_removed_cb(ElaCarrier* w, const char* friendid, void *context
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from,
-                              const void *msg, size_t len, bool is_offline,
+                              const void *msg, size_t len,
+                              int64_t timestamp, bool is_offline,
                               void *context)
 {
     CarrierContextExtra *extra = ((TestContext*)context)->carrier->extra;

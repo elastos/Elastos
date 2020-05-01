@@ -114,4 +114,16 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *len);
 
 ElaCP *elacp_decode(const uint8_t *buf, size_t len);
 
+
+typedef struct ElaCPPullMsg {
+  uint64_t id;
+  const char *from;
+  uint8_t type;
+  uint64_t timestamp;
+  const char *address;
+  const uint8_t *payload;
+  size_t payload_sz;
+} ElaCPPullMsg;
+int elacp_decode_pullmsg(const uint8_t *buf, ElaCPPullMsg *pullmsg);
+
 #endif /* __ELACP_H__ */

@@ -177,6 +177,23 @@ static int dht_error(int errcode, char *buf, size_t len)
     return 0;
 }
 
+static int express_error(int errcode, char *buf, size_t len)
+{
+    int size = sizeof(error_codes)/sizeof(ErrorDesc);
+    int i;
+
+    for (i = 0; i < size; i++) {
+        if (errcode == error_codes[i].errcode)
+            break;
+    }
+
+    if (i >= size || len <= strlen(error_codes[i].errdesc))
+        return ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS);
+
+    strcpy(buf, error_codes[i].errdesc);
+    return 0;
+}
+
 typedef struct FacilityDesc {
     const char *desc;
     strerror_t errstring;
@@ -188,7 +205,8 @@ static FacilityDesc facility_codes[] = {
     { "Reserved facility",  NULL },             //ELAF_RESERVED1
     { "Reserved facility",  NULL },             //ELAF_RESERVED2
     { "[ICE] ",             NULL },             //ELAF_ICE
-    { "[DHT] ",             dht_error }         //ELAF_DHT
+    { "[DHT] ",             dht_error },        //ELAF_DHT
+    { "[Express] ",         express_error },    //ELAF_EXPRESS
 };
 
 char *ela_get_strerror(int error, char *buf, size_t len)

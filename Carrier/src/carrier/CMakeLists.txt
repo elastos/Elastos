@@ -60,14 +60,13 @@ configure_file(
     "@ONLY")
 
 set(SRC
-    dstore/dstore.c
-    dstore/http_client.c
+    http_client.c
     dht/dht.c
     elacp.c
     ela_carrier.c
-    extension.c
     ela_error.c
-    dstore_wrapper.c)
+    extension.c
+    express.c)
 
 set(HEADERS
     ela_carrier.h)
@@ -91,7 +90,6 @@ endif()
 include_directories(
     .
     dht
-    dstore
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CARRIER_INT_DIST_DIR}/include)
 
