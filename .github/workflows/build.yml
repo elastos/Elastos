@@ -27,7 +27,11 @@ jobs:
         uses: samuelmeuli/action-snapcraft@v1
         # Only install Snapcraft on Ubuntu
         if: startsWith(matrix.os, 'ubuntu')
-  
+
+      - name: Install libusb
+        run: sudo apt-get -y update
+        run: sudo apt-get -y install libusb-1.0-0-dev libudev-dev
+      
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@master
         with:
