@@ -296,6 +296,8 @@ export default class extends Base {
       .populate('subscribers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
+    const councilMember = await this.getDBModel('User').findById(cvote.createdBy)
+
     // get users: creator and subscribers
     const toUsers = _.map(suggestion.subscribers, 'user') || []
     toUsers.push(suggestion.createdBy)
@@ -304,7 +306,9 @@ export default class extends Base {
     // compose email object
     const subject = `The suggestion is referred in Proposal #${cvote.vid}`
     const body = `
-      <p>Council member ${cvote.proposedBy} has refer to your suggestion ${suggestion.title} in a proposal #${cvote.vid}.</p>
+      <p>Council member ${userUtil.formatUsername(
+        councilMember
+      )} has refer to your suggestion ${suggestion.title} in a proposal #${cvote.vid}.</p>
       <br />
       <p>Click this link to view more details:</p>
       <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
