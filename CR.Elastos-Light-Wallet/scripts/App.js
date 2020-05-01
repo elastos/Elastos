@@ -490,6 +490,12 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     bannerStatus = message;
     bannerClass = 'bg_red color_white banner-look';
     sendToAddressStatuses.push(message);
+  } else if (transactionJson.Error != 0) {
+    sendToAddressStatuses.length = 0;
+    const message = `Transaction Error.  Error:${transactionJson.Error}  Result:${transactionJson.Result}`;
+    bannerStatus = message;
+    bannerClass = 'bg_red color_white banner-look';
+    sendToAddressStatuses.push(message);
   } else {
     sendToAddressStatuses.length = 0;
     const link = getTransactionHistoryLink(transactionJson.result);
