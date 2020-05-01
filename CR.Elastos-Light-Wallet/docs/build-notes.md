@@ -83,7 +83,7 @@ npm ls node-gyp
   git push;
   git push --tags;
 ## to delete release tags
-  git push --delete origin v1.0.0;
-  git tag -d v1.0.0;
+  git push --delete origin v1.0.0-RC23;
+  git tag -d v1.0.0-RC23;
   git pull;
   git push;
