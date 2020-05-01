@@ -110,14 +110,14 @@ const createMenu = () => {
 app.on( 'ready', () => {
     // Create the browser window.
     mainWindow = new BrowserWindow( {
-        width: 780,
-        height: 520,
+        width: 1125,
+        height: 750,
         frame: false,
         // titleBarStyle: 'hidden',
         transparent: true,
         // trafficLightPosition: {x: 15, y: 15},
         maximizable: false,
-        maxHeight: 520,
+        maxHeight: 750,
         // resizable: false,
         icon: path.join( __dirname, 'assets/icons/png/64x64.png' ),
         webPreferences: {

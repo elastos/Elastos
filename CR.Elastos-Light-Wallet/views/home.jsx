@@ -209,18 +209,18 @@ module.exports = (props) => {
         <p className="rec-text">Receive</p>
         <p className="address-text">Address</p>
         <button className="copy-button" onClick={(e) => App.copyAddressToClipboard()}>
-          <img src="artwork/copyicon.svg" className="copy-icon" height="26px" width="26px" />
+          <img src="artwork/copyicon.svg" className="copy-icon" height="38px" width="38px" />
         </button>
         <p className="address-ex">{App.getAddress()}</p>
         {/*<img id="qricon" src="artwork/qricon.svg" className="qr-icon" height="54px" width="54px" />*/}
         <button className="qr-icon btn_none" title="Click to enlarge" onClick={(e) => GuiToggles.showQRCode()}>
-          <QRCode value={App.getAddressOrBlank()} size={54} includeMargin={true} className="br5"/>
+          <QRCode value={App.getAddressOrBlank()} size={78} includeMargin={true} className="br5"/>
         </button>
         <p className="scanqr-text">Scan <strong>QR code</strong> to get <br />ELA Address</p>
         <p className="howqr-text gradient-font">Click to Enlarge</p>
         <img src="artwork/separator.svg" className="rec-separator" />
         <p className="ledger-heading">Ledger</p>
-        <img src="artwork/ledgericon.svg" alt="" className="ledger-icon" height="24px" width="38px" title="Please verify above address on Ledger"/>
+        <img src="artwork/ledgericon.svg" alt="" className="ledger-icon" height="36px" width="57px" title="Please verify above address on Ledger"/>
         <p className="verifyledger-text">Please verify above address<br /><strong>on Ledger Device</strong></p>
 
 </div>

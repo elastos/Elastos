@@ -14,8 +14,8 @@ module.exports = (props) => {
   <div id="loginMnemonic">
   <div className="login-div ">
     <div className="flex_center w100pct">
-    <img className="flex1" src="artwork/voting-back.svg" height="26px" width="26px" onClick={(e)=> GuiToggles.showLanding()}/>
-    <img src="artwork/logonew.svg" height="41px" width="123px" />
+    <img className="flex1" src="artwork/voting-back.svg" height="38px" width="38px" onClick={(e)=> GuiToggles.showLanding()}/>
+    <img src="artwork/logonew.svg" height="60px" width="180px" />
     <div className="flex1"></div>
     </div>
     <p className="address-text font_size24 margin_none display_inline_block gradient-font">Enter Mnemonics</p>
