@@ -36,7 +36,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/coranos/elastos-light-wallet.git"
+    "url": "git+https://github.com/cyber-republic/elastos-light-wallet.git"
   },
   "keywords": [
     "elastos"
@@ -44,9 +44,9 @@
   "author": "coranos",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/coranos/elastos-light-wallet/issues"
+    "url": "https://github.com/cyber-republic/elastos-light-wallet/issues"
   },
-  "homepage": "https://github.com/coranos/elastos-light-wallet#readme",
+  "homepage": "https://github.com/cyber-republic/elastos-light-wallet#readme",
   "dependencies": {
     "@ledgerhq/hw-transport-node-hid": "^5.13.1",
     "babel-polyfill": "^6.26.0",
@@ -57,7 +57,6 @@
     "elliptic": "^6.5.2",
     "node": "^14.0.0",
     "node-jsx": "^0.13.3",
-    "prebuild-install": "^5.3.3",
     "qrcode.react": "^1.0.0",
     "react": "^16.13.1",
     "react-bootstrap": "^1.0.1",
