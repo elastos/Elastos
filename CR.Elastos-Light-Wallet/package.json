@@ -4,6 +4,20 @@
   "description": "elastos light wallet",
   "productName": "elastos-light-wallet",
   "main": "index.js",
+  "build": {
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "hardenedRuntime": true
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    }
+  },
   "scripts": {
     "eslint": "eslint --fix 'scripts/**/*.js'",
     "eslint-lib": "eslint --fix 'libraries/**/*.js'",
