@@ -30,9 +30,9 @@ const UseLedgerButton = (props) => {
     App.getLedgerDeviceInfo()
     ? App.getLedgerDeviceInfo().enabled
     : false) {
-    return (<img src="artwork/ledgerconnected.svg" className="ledgercon dark-hover" onClick={(e) => useLedger()}></img>);
+    return (<img src="artwork/ledgerconnected.svg" width="235px" height="198px" className="ledgercon dark-hover" onClick={(e) => useLedger()}></img>);
   } else {
-    return (<img src="artwork/ledgernotconnected.svg" title="Not Connected" className="ledgernotcon dark-hover"></img>);
+    return (<img src="artwork/ledgernotconnected.svg" width="140px" height="36px" title="Not Connected" className="ledgernotcon dark-hover"></img>);
   }
 }
 
@@ -47,27 +47,27 @@ module.exports = (props) => {
     <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()}/>
 
     <div className="login-div ">
-      <img src="artwork/logonew.svg" height="41px" width="123px" className="flexgrow_pt35"/>
+      <img src="artwork/logonew.svg" height="60px" width="180px" className="flexgrow_pt35"/>
 
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Create New Wallet</p>
       <div className="flex_center">
       <button className="home-btn dark-hover landing-btnbg" onClick={(e) => GuiToggles.showGenerateNewMnemonic()}>
-            <p>Create</p>
+            Create
             </button>
       </div>
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Import Wallet</p>
       <div className="flex_center">
       <button className="home-btn dark-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginMnemonic()}>
-            <p>Login with Mnemonics</p>
+            Login with Mnemonics
             </button>
       </div>
       <div className="flex_center">
       <button className="home-btn dark-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginPrivateKey()}>
-            <p>Login with Private Key</p>
+            Login with Private Key
             </button>
       </div>
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Ledger</p>
-      <p className="color_white font_size12">Ledger Status: <LedgerMessage App={App}/></p>
+      <p className="color_white font_size16 w80pct">Ledger Status: <LedgerMessage App={App}/></p>
     </div>
       <div>
       <UseLedgerButton App={App} GuiToggles={GuiToggles} />
