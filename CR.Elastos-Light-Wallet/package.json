@@ -55,7 +55,7 @@
     "bs58": "^4.0.1",
     "check-node-version": "^4.0.3",
     "elliptic": "^6.5.2",
-    "node": "^14.0.0",
+    "node": "v12.16.1",
     "node-jsx": "^0.13.3",
     "qrcode.react": "^1.0.0",
     "react": "^16.13.1",
