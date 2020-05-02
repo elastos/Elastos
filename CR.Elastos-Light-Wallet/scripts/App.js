@@ -1047,17 +1047,29 @@ const setBlockchainLastActionHeight = () => {
 
 const copyAddressToClipboard = () => {
   appClipboard.writeText(address);
-  alert(`copied to clipboard:\n${address}`);
+  bannerStatus = `copied to clipboard:\n${address}`;
+  bannerClass = 'bg_green color_white banner-look';
+  GuiUtils.show('homeBanner');
+  GuiUtils.show('votingBanner');
+  renderApp();
 };
 
 const copyMnemonicToClipboard = () => {
   appClipboard.writeText(generatedMnemonic);
-  alert(`copied to clipboard:\n${generatedMnemonic}`);
+  bannerStatus = `copied to clipboard:\n${generatedMnemonic}`;
+  bannerClass = 'bg_green color_white banner-look';
+  GuiUtils.show('homeBanner');
+  GuiUtils.show('votingBanner');
+  renderApp();
 };
 
 const copyPrivateKeyToClipboard = () => {
   appClipboard.writeText(generatedPrivateKeyHex);
-  alert(`copied to clipboard:\n${generatedPrivateKeyHex}`);
+  bannerStatus = `copied to clipboard:\n${generatedPrivateKeyHex}`;
+  bannerClass = 'bg_green color_white banner-look';
+  GuiUtils.show('homeBanner');
+  GuiUtils.show('votingBanner');
+  renderApp();
 };
 
 const clearGlobalData = () => {
