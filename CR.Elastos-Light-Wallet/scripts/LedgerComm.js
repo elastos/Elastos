@@ -11,6 +11,9 @@ const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid');
 const mainConsoleUtil = require('console');
 const mainConsole = new mainConsoleUtil.Console(process.stdout, process.stderr);
 
+// max length in bytes.
+const MAX_SIGNED_TX_LEN = 1024;
+
 const bip44Path =
   '8000002C' +
   '80000901' +
@@ -165,14 +168,14 @@ const splitMessageIntoChunks = (ledgerMessage) => {
 
     const chunkLength = chunk.length / 2;
 
-    mainConsole.log(`Ledger Signature chunkLength ${chunkLength}`);
+    // mainConsole.log(`Ledger Signature chunkLength ${chunkLength}`);
 
     let chunkLengthHex = chunkLength.toString(16);
     while (chunkLengthHex.length < 2) {
       chunkLengthHex = '0' + chunkLengthHex;
     }
 
-    mainConsole.log(`Ledger Signature chunkLength hex ${chunkLengthHex}`);
+    // mainConsole.log(`Ledger Signature chunkLength hex ${chunkLengthHex}`);
 
     messages.push('8002' + p1 + '00' + chunkLengthHex + chunk);
     offset += chunk.length;
@@ -200,40 +203,40 @@ const decodeSignature = (response) => {
    */
 
   const rLenHex = response.substring(6, 8);
-  mainConsole.log(`Ledger Signature rLenHex ${rLenHex}`);
+  // mainConsole.log(`Ledger Signature rLenHex ${rLenHex}`);
   const rLen = parseInt(rLenHex, 16) * 2;
-  mainConsole.log(`Ledger Signature rLen ${rLen}`);
+  // mainConsole.log(`Ledger Signature rLen ${rLen}`);
   let rStart = 8;
-  mainConsole.log(`Ledger Signature rStart ${rStart}`);
+  // mainConsole.log(`Ledger Signature rStart ${rStart}`);
   const rEnd = rStart + rLen;
-  mainConsole.log(`Ledger Signature rEnd ${rEnd}`);
+  // mainConsole.log(`Ledger Signature rEnd ${rEnd}`);
 
   while ((response.substring(rStart, rStart + 2) == '00') && ((rEnd - rStart) > 64)) {
     rStart += 2;
   }
 
   const r = response.substring(rStart, rEnd);
-  mainConsole.log(`Ledger Signature R [${rStart},${rEnd}:${(rEnd - rStart)} ${r}`);
+  // mainConsole.log(`Ledger Signature R [${rStart},${rEnd}:${(rEnd - rStart)} ${r}`);
   const sLenHex = response.substring(rEnd + 2, rEnd + 4);
-  mainConsole.log(`Ledger Signature sLenHex ${sLenHex}`);
+  // mainConsole.log(`Ledger Signature sLenHex ${sLenHex}`);
   const sLen = parseInt(sLenHex, 16) * 2;
-  mainConsole.log(`Ledger Signature sLen ${sLen}`);
+  // mainConsole.log(`Ledger Signature sLen ${sLen}`);
   let sStart = rEnd + 4;
-  mainConsole.log(`Ledger Signature sStart ${sStart}`);
+  // mainConsole.log(`Ledger Signature sStart ${sStart}`);
   const sEnd = sStart + sLen;
-  mainConsole.log(`Ledger Signature sEnd ${sEnd}`);
+  // mainConsole.log(`Ledger Signature sEnd ${sEnd}`);
 
   while ((response.substring(sStart, sStart + 2) == '00') && ((sEnd - sStart) > 64)) {
     sStart += 2;
   }
 
   const s = response.substring(sStart, sEnd);
-  mainConsole.log(`Ledger Signature S [${sStart},${sEnd}:${(sEnd - sStart)} ${s}`);
+  // mainConsole.log(`Ledger Signature S [${sStart},${sEnd}:${(sEnd - sStart)} ${s}`);
 
   const msgHashStart = sEnd + 4;
   const msgHashEnd = msgHashStart + 64;
   const msgHash = response.substring(msgHashStart, msgHashEnd);
-  mainConsole.log(`Ledger Signature msgHash [${msgHashStart},${msgHashEnd}:${msgHash}`);
+  // mainConsole.log(`Ledger Signature msgHash [${msgHashStart},${msgHashEnd}:${msgHash}`);
 
   const SignerLength = 32;
   const SignatureLength = 64;
@@ -253,9 +256,20 @@ const decodeSignature = (response) => {
 };
 
 const sign = (transactionHex, callback) => {
+  const transactionByteLength = Math.ceil(transactionHex.length/2);
+  if (transactionByteLength > MAX_SIGNED_TX_LEN) {
+    callback({
+      success: false,
+      message: 'Error ' + `transaction length of ${transactionByteLength} bytes exceeds max length of ${MAX_SIGNED_TX_LEN} bytes. Send less candidates and consolidate utxos.`,
+    });
+    return;
+  } else {
+    mainConsole.log(`transaction length of ${transactionByteLength} bytes is under ${MAX_SIGNED_TX_LEN} bytes. Sending.`);
+  }
+
   const ledgerMessage = transactionHex + bip44Path;
 
-  mainConsole.log(`sign ${ledgerMessage}`);
+  // mainConsole.log(`sign ${ledgerMessage}`);
 
   const messages = splitMessageIntoChunks(ledgerMessage);
 
@@ -264,10 +278,10 @@ const sign = (transactionHex, callback) => {
       let lastResponse = undefined;
       for (let ix = 0; ix < messages.length; ix++) {
         const message = Buffer.from(messages[ix], 'hex');
-        mainConsole.log(`STARTED sending message ${ix+1} of ${messages.length}: ${message.toString('hex').toUpperCase()}`);
+        // mainConsole.log(`STARTED sending message ${ix+1} of ${messages.length}: ${message.toString('hex').toUpperCase()}`);
         const response = await device.exchange(message);
         const responseStr = response.toString('hex').toUpperCase();
-        mainConsole.log(`SUCCESS sending message ${ix+1} of ${messages.length}: ${responseStr.toString('hex').toUpperCase()}`);
+        // mainConsole.log(`SUCCESS sending message ${ix+1} of ${messages.length}: ${responseStr.toString('hex').toUpperCase()}`);
 
         lastResponse = responseStr;
       }
@@ -275,21 +289,30 @@ const sign = (transactionHex, callback) => {
 
       let signature = undefined;
       let success = false;
+      let message = lastResponse;
+      mainConsole.log(`sign lastResponse`, lastResponse);
       if (lastResponse !== undefined) {
-        if (lastResponse != '9000') {
+        if (lastResponse.endsWith('9000')) {
           signature = decodeSignature(lastResponse);
           success = true;
+        } else {
+          if (lastResponse == '6985') {
+            message += ' Tx Denied on Ledger';
+          }
+          if (lastResponse == '6D08') {
+            message += ' Tx Length Exceeded on Ledger';
+          }
         }
       }
 
       callback({
         success: success,
-        message: lastResponse,
+        message: message,
         signature: signature,
       });
     } catch (error) {
-      mainConsole.log(`FAILURE creating and sending message. error:${error}`);
-      mainConsole.log(error.stack);
+      // mainConsole.log(`FAILURE creating and sending message. error:${error}`);
+      // mainConsole.log(error.stack);
       callback({
         success: false,
         message: 'Error ' + JSON.stringify(error),

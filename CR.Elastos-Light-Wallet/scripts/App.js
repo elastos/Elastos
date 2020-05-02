@@ -551,8 +551,9 @@ const updateAmountAndFees = () => {
   // mainConsole.log('SUCCESS updateAmountAndFees');
 };
 
-const showLedgerConfirmBanner = () => {
-  bannerStatus = 'Please review and sign transaction on Ledger';
+const showLedgerConfirmBanner = (size) => {
+  bannerStatus = `Please review and sign transaction of size ${size} on Ledger`;
+  mainConsole.log('STARTED showLedgerConfirmBanner', bannerStatus);
   bannerClass = 'landing-btnbg color_white banner-look';
   GuiUtils.show('homeBanner');
   GuiUtils.show('votingBanner');
@@ -562,6 +563,11 @@ const showLedgerConfirmBanner = () => {
 const hideLedgerConfirmBanner = () => {
   GuiUtils.hide('homeBanner');
   GuiUtils.hide('votingBanner');
+};
+
+const getTxByteLength = (transactionHex) => {
+  const transactionByteLength = Math.ceil(transactionHex.length/2);
+  return transactionByteLength;
 };
 
 const sendAmountToAddress = () => {
@@ -580,9 +586,9 @@ const sendAmountToAddress = () => {
   let encodedTx;
 
   if (useLedgerFlag) {
-    showLedgerConfirmBanner();
     const tx = TxFactory.createUnsignedSendToTx(unspentTransactionOutputs, sendToAddress, sendAmount, publicKey, feeAmountSats, feeAccount);
     const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
+    showLedgerConfirmBanner(getTxByteLength(encodedUnsignedTx));
     const sendAmountToAddressLedgerCallback = (message) => {
       if (LOG_LEDGER_POLLING) {
         mainConsole.log(`sendAmountToAddressLedgerCallback ${JSON.stringify(message)}`);
@@ -811,21 +817,24 @@ const sendVoteTx = () => {
 
     // mainConsole.log('sendVoteTx.useLedgerFlag ' + JSON.stringify(useLedgerFlag));
     // mainConsole.log('sendVoteTx.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
-    candidateVoteListStatus = `Voting for ${parsedProducerList.producersCandidateCount} candidates.`;
     if (useLedgerFlag) {
-      showLedgerConfirmBanner();
       if (unspentTransactionOutputs) {
         const tx = TxFactory.createUnsignedVoteTx(unspentTransactionOutputs, publicKey, feeAmountSats, candidates, feeAccount);
         const encodedUnsignedTx = TxTranscoder.encodeTx(tx, false);
+        candidateVoteListStatus = `Voting for ${parsedProducerList.producersCandidateCount} candidates.`;
+        showLedgerConfirmBanner(getTxByteLength(encodedUnsignedTx));
         const sendVoteLedgerCallback = (message) => {
           if (LOG_LEDGER_POLLING) {
             mainConsole.log(`sendVoteLedgerCallback ${JSON.stringify(message)}`);
           }
+          mainConsole.log(`sendVoteLedgerCallback ${JSON.stringify(message)}`);
           hideLedgerConfirmBanner();
           if (!message.success) {
-            // sendToAddressStatuses.length = 0;
-            // sendToAddressLinks.length = 0;
-            // sendToAddressStatuses.push(JSON.stringify(message));
+            candidateVoteListStatus = `Vote Error: ${message.message}`;
+            bannerStatus = candidateVoteListStatus;
+            bannerClass = 'bg_red color_white banner-look';
+            GuiUtils.show('homeBanner');
+            GuiUtils.show('votingBanner');
             renderApp();
             return;
           }
@@ -863,11 +872,11 @@ const sendVoteCallback = (encodedTx) => {
   const txUrl = `${getRestService()}/api/v1/transaction`;
   const jsonString = `{"method": "sendrawtransaction", "data": "${encodedTx}"}`;
 
-  mainConsole.log('sendVoteCallback.encodedTx ' + JSON.stringify(encodedTx));
+  // mainConsole.log('sendVoteCallback.encodedTx ' + JSON.stringify(encodedTx));
 
   const decodedTx = TxTranscoder.decodeTx(Buffer.from(encodedTx, 'hex'), true);
 
-  mainConsole.log('sendVoteCallback.decodedTx ' + JSON.stringify(decodedTx));
+  // mainConsole.log('sendVoteCallback.decodedTx ' + JSON.stringify(decodedTx));
 
   // sendToAddressStatuses.length = 0;
   // sendToAddressLinks.length = 0;

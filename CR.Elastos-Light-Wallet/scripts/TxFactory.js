@@ -59,7 +59,7 @@ const createUnsignedSendToTx = (unspentTransactionOutputs, sendToAddress, sendAm
 };
 
 const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountStr, feeAccount) => {
-  mainConsole.log('STARTED createUnsignedSendToTxSats');
+  // mainConsole.log('STARTED createUnsignedSendToTxSats');
   if (unspentTransactionOutputs == undefined) {
     throw new Error(`unspentTransactionOutputs is undefined`);
   }
@@ -78,7 +78,7 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
   if (feeAccount == undefined) {
     throw new Error(`feeAccount is undefined`);
   }
-  mainConsole.log('createUnsignedSendToTxSats.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
+  // mainConsole.log('createUnsignedSendToTxSats.unspentTransactionOutputs ' + JSON.stringify(unspentTransactionOutputs));
   // console.log('createUnsignedSendToTx.sendToAddress ' + JSON.stringify(sendToAddress));
   // console.log('createUnsignedSendToTx.sendAmount ' + JSON.stringify(sendAmount));
 
@@ -184,7 +184,7 @@ const createUnsignedSendToTxSats = (unspentTransactionOutputs, sendToAddress, se
 
   tx.Programs = [];
 
-  mainConsole.log('SUCCESS createUnsignedSendToTxSats', tx);
+  // mainConsole.log('SUCCESS createUnsignedSendToTxSats', tx);
 
   return tx;
 };
