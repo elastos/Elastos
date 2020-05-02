@@ -27,7 +27,7 @@ module.exports = (props) => {
   </div>
 
   <ul className="color_white list-none padding_0">
-    <li className="gradient-font font_size14" >Tips</li>
+    <li className="gradient-font font_size20" >Tips</li>
     <li>Enter your 12 word mnemonic phrase above.</li>
     <li>Use a single space between each word, with no space before the first and last word.</li>
     <li>All words should be in lowercase.</li>

@@ -26,7 +26,7 @@ module.exports = (props) => {
   </div>
 
   <ul className="color_white list-none padding_0">
-    <li className="gradient-font font_size14" >Tips</li>
+    <li className="gradient-font font_size20" >Tips</li>
     <li>Enter your Private Key above.</li>
     <li>Your Private Key is a string of numbers and letters.</li>
     <li>Please use the Mnemonic login if you have your 12 seed words.</li>
