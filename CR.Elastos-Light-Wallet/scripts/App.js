@@ -552,7 +552,7 @@ const updateAmountAndFees = () => {
 };
 
 const showLedgerConfirmBanner = (size) => {
-  bannerStatus = `Please review and sign transaction of size ${size} on Ledger`;
+  bannerStatus = `Please review and sign transaction on Ledger (Tx size = ${size} bytes)`;
   mainConsole.log('STARTED showLedgerConfirmBanner', bannerStatus);
   bannerClass = 'landing-btnbg color_white banner-look';
   GuiUtils.show('homeBanner');
