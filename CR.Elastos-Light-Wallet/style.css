@@ -400,10 +400,9 @@ html {
   border: none;
   border-bottom: 1px solid #E5A776;
   border-radius: 0.4px;
-  ;
   background: none;
   position: absolute;
-  font-family: BioSans-Bold;
+  font-weight: 600;
   font-size: 20px;
   color: #FFFFFF;
 }
