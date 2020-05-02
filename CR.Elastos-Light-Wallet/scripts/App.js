@@ -596,9 +596,11 @@ const sendAmountToAddress = () => {
 
       hideLedgerConfirmBanner();
       if (!message.success) {
-        sendToAddressStatuses.length = 0;
-        sendToAddressLinks.length = 0;
-        sendToAddressStatuses.push(JSON.stringify(message));
+        bannerStatus = `Send Error: ${message.message}`;
+        bannerClass = 'bg_red color_white banner-look';
+        GuiUtils.show('homeBanner');
+        GuiUtils.show('votingBanner');
+        renderApp();
         return;
       }
       const signature = Buffer.from(message.signature, 'hex');
