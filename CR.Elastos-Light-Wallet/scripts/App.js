@@ -450,12 +450,18 @@ const getPublicKeyFromMnemonic = () => {
   const mnemonicElt = document.getElementById('mnemonic');
   const mnemonic = mnemonicElt.value;
   if (!bip39.validateMnemonic(mnemonic)) {
-    alert(`mnemonic is not valid.`);
+    bannerStatus = `mnemonic is not valid.`;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
   const privateKey = Mnemonic.getPrivateKeyFromMnemonic(mnemonic);
   if (privateKey.length != PRIVATE_KEY_LENGTH) {
-    alert(`mnemonic must create a of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`);
+    bannerStatus = `mnemonic must create a of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
@@ -469,7 +475,10 @@ const getPublicKeyFromPrivateKey = () => {
   const privateKeyElt = document.getElementById('privateKey');
   const privateKey = privateKeyElt.value;
   if (privateKey.length != PRIVATE_KEY_LENGTH) {
-    alert(`private key must be a hex encoded string of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`);
+    bannerStatus = `private key must be a hex encoded string of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`;
+    bannerClass = 'bg_red color_white banner-look';
+    GuiToggles.showAllBanners();
+    renderApp();
     return false;
   }
   publicKey = KeyTranscoder.getPublic(privateKey);
@@ -483,7 +492,7 @@ const sendAmountToAddressErrorCallback = (error) => {
 };
 
 const sendAmountToAddressReadyCallback = (transactionJson) => {
-  mainConsole.log('sendAmountToAddressReadyCallback ' + JSON.stringify(transactionJson));
+  // mainConsole.log('sendAmountToAddressReadyCallback ' + JSON.stringify(transactionJson));
   if (transactionJson.status == 400) {
     sendToAddressStatuses.length = 0;
     const message = `Transaction Error.  Status:${transactionJson.status}  Result:${transactionJson.result}`;
@@ -509,8 +518,7 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     bannerStatus = message;
     sendToAddressLinks.push(elt);
   }
-  GuiUtils.show('homeBanner');
-  GuiUtils.show('votingBanner');
+  GuiToggles.showAllBanners();
   setBlockchainLastActionHeight();
   renderApp();
 };
@@ -555,14 +563,12 @@ const showLedgerConfirmBanner = (size) => {
   bannerStatus = `Please review and sign transaction on Ledger (Tx size = ${size} bytes)`;
   mainConsole.log('STARTED showLedgerConfirmBanner', bannerStatus);
   bannerClass = 'landing-btnbg color_white banner-look';
-  GuiUtils.show('homeBanner');
-  GuiUtils.show('votingBanner');
+  GuiToggles.showAllBanners();
   renderApp();
 };
 
 const hideLedgerConfirmBanner = () => {
-  GuiUtils.hide('homeBanner');
-  GuiUtils.hide('votingBanner');
+  GuiToggles.hideAllBanners();
 };
 
 const getTxByteLength = (transactionHex) => {
@@ -596,9 +602,10 @@ const sendAmountToAddress = () => {
 
       hideLedgerConfirmBanner();
       if (!message.success) {
-        sendToAddressStatuses.length = 0;
-        sendToAddressLinks.length = 0;
-        sendToAddressStatuses.push(JSON.stringify(message));
+        bannerStatus = `Send Error: ${message.message}`;
+        bannerClass = 'bg_red color_white banner-look';
+        GuiToggles.showAllBanners();
+        renderApp();
         return;
       }
       const signature = Buffer.from(message.signature, 'hex');
@@ -626,12 +633,12 @@ const sendAmountToAddressCallback = (encodedTx) => {
   const txUrl = `${getRestService()}/api/v1/transaction`;
   const jsonString = `{"method": "sendrawtransaction", "data": "${encodedTx}"}`;
 
-  mainConsole.log('sendAmountToAddress.txUrl ' + txUrl);
-  mainConsole.log('sendAmountToAddress.encodedTx ' + JSON.stringify(encodedTx));
+  // mainConsole.log('sendAmountToAddress.txUrl ' + txUrl);
+  // mainConsole.log('sendAmountToAddress.encodedTx ' + JSON.stringify(encodedTx));
 
   const decodedTx = TxTranscoder.decodeTx(Buffer.from(encodedTx, 'hex'), true);
 
-  mainConsole.log('sendAmountToAddress.decodedTx ' + JSON.stringify(decodedTx));
+  // mainConsole.log('sendAmountToAddress.decodedTx ' + JSON.stringify(decodedTx));
 
   sendToAddressStatuses.length = 0;
   sendToAddressLinks.length = 0;
@@ -833,8 +840,7 @@ const sendVoteTx = () => {
             candidateVoteListStatus = `Vote Error: ${message.message}`;
             bannerStatus = candidateVoteListStatus;
             bannerClass = 'bg_red color_white banner-look';
-            GuiUtils.show('homeBanner');
-            GuiUtils.show('votingBanner');
+            GuiToggles.showAllBanners();
             renderApp();
             return;
           }
@@ -904,8 +910,7 @@ const sendVoteReadyCallback = (transactionJson) => {
     bannerStatus = candidateVoteListStatus;
     bannerClass = 'bg_green color_white banner-look';
   }
-  GuiUtils.show('homeBanner');
-  GuiUtils.show('votingBanner');
+  GuiToggles.showAllBanners();
   renderApp();
 };
 
@@ -1045,17 +1050,26 @@ const setBlockchainLastActionHeight = () => {
 
 const copyAddressToClipboard = () => {
   appClipboard.writeText(address);
-  alert(`copied to clipboard:\n${address}`);
+  bannerStatus = `copied to clipboard:\n${address}`;
+  bannerClass = 'bg_green color_white banner-look';
+  GuiToggles.showAllBanners();
+  renderApp();
 };
 
 const copyMnemonicToClipboard = () => {
   appClipboard.writeText(generatedMnemonic);
-  alert(`copied to clipboard:\n${generatedMnemonic}`);
+  bannerStatus = `copied to clipboard:\n${generatedMnemonic}`;
+  bannerClass = 'bg_green color_white banner-look';
+  GuiToggles.showAllBanners();
+  renderApp();
 };
 
 const copyPrivateKeyToClipboard = () => {
   appClipboard.writeText(generatedPrivateKeyHex);
-  alert(`copied to clipboard:\n${generatedPrivateKeyHex}`);
+  bannerStatus = `copied to clipboard:\n${generatedPrivateKeyHex}`;
+  bannerClass = 'bg_green color_white banner-look';
+  GuiToggles.showAllBanners();
+  renderApp();
 };
 
 const clearGlobalData = () => {

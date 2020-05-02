@@ -233,7 +233,7 @@ const createUnsignedVoteTx = (unspentTransactionOutputs, publicKey, feeAmountSat
   });
   sendAmountSats = sendAmountSats.minus(feeAmountSats).minus(FEE_SATS);
 
-  mainConsole.log('createUnsignedSendToTxSats', unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats, feeAccount);
+  // mainConsole.log('createUnsignedSendToTxSats', unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats, feeAccount);
 
   const tx = createUnsignedSendToTxSats(unspentTransactionOutputs, sendToAddress, sendAmountSats, publicKey, feeAmountSats, feeAccount);
   tx.Version = 9;

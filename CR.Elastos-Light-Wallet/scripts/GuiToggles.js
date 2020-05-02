@@ -32,10 +32,9 @@ const hideEverything = () => {
   hide('version');
   hide('voting');
   hide('qrcode');
-  hide('homeBanner');
-  hide('votingBanner');
   hide('generateMnemonic');
   hide('generatePrivateKey');
+  hideAllBanners();
 };
 
 const showLanding = () => {
@@ -117,6 +116,20 @@ const showGenerateNewMnemonic = () => {
   show('generateMnemonic');
 };
 
+const showAllBanners = () => {
+  GuiUtils.show('homeBanner');
+  GuiUtils.show('votingBanner');
+  GuiUtils.show('loginPrivateKeyBanner');
+  GuiUtils.show('loginMnemonicBanner');
+};
+
+const hideAllBanners = () => {
+  GuiUtils.hide('homeBanner');
+  GuiUtils.hide('votingBanner');
+  GuiUtils.hide('loginPrivateKeyBanner');
+  GuiUtils.hide('loginMnemonicBanner');
+};
+
 exports.init = init;
 exports.showLanding = showLanding;
 exports.showLoginMnemonic = showLoginMnemonic;
@@ -130,3 +143,5 @@ exports.showBanner = showBanner;
 exports.hideBanner = hideBanner;
 exports.showGenerateNewPrivateKey = showGenerateNewPrivateKey;
 exports.showGenerateNewMnemonic = showGenerateNewMnemonic;
+exports.showAllBanners = showAllBanners;
+exports.hideAllBanners = hideAllBanners;

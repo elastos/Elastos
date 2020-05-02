@@ -1,7 +1,12 @@
 const React = require('react');
 
+const Menu = require('./partial/menu.jsx');
+
+const Banner = require('./partial/banner.jsx');
+
 module.exports = (props) => {
   const App = props.App;
+  const openDevTools = props.openDevTools;
   const GuiToggles = props.GuiToggles;
   const useMnemonic = () => {
     const success = App.getPublicKeyFromMnemonic();
@@ -13,6 +18,7 @@ module.exports = (props) => {
 
   <div id="loginMnemonic">
   <div className="login-div ">
+   <Banner App={App} GuiToggles={GuiToggles} page="loginMnemonic"/>
     <div className="flex_center w100pct">
     <img className="flex1" src="artwork/voting-back.svg" height="38px" width="38px" onClick={(e)=> GuiToggles.showLanding()}/>
     <img src="artwork/logonew.svg" height="60px" width="180px" />
