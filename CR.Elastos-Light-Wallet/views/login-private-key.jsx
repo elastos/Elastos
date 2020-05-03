@@ -14,10 +14,19 @@ module.exports = (props) => {
       GuiToggles.showHome();
     }
   }
+  const showMenu = () => {
+    GuiToggles.showMenu('loginMnemonic');
+  }
   return (
   <div id="loginPrivateKey">
   <div className="login-div ">
    <Banner App={App} GuiToggles={GuiToggles} page="loginPrivateKey"/>
+   <Menu App={App} openDevTools={openDevTools} GuiToggles={GuiToggles} page="loginPrivateKey"/>
+   <header>
+     <nav id="loginPrivateKeyMenuOpen" title="menu" onClick={(e) => showMenu()}>
+       <img src="artwork/nav.svg" className="nav-icon dark-hover" onClick={(e) => showMenu()}/>
+     </nav>
+   </header>
     <div className="flex_center w100pct">
     <img className="flex1" src="artwork/voting-back.svg" height="38px" width="38px" onClick={(e)=> GuiToggles.showLanding()}/>
     <img src="artwork/logonew.svg" height="60px" width="180px" />
