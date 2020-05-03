@@ -450,7 +450,7 @@ const getPublicKeyFromMnemonic = () => {
   const mnemonicElt = document.getElementById('mnemonic');
   const mnemonic = mnemonicElt.value;
   if (!bip39.validateMnemonic(mnemonic)) {
-    bannerStatus = `mnemonic is not valid.`;
+    bannerStatus = `Mnemonic is not valid.`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     renderApp();
@@ -458,7 +458,7 @@ const getPublicKeyFromMnemonic = () => {
   }
   const privateKey = Mnemonic.getPrivateKeyFromMnemonic(mnemonic);
   if (privateKey.length != PRIVATE_KEY_LENGTH) {
-    bannerStatus = `mnemonic must create a of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`;
+    bannerStatus = `Mnemonic must create a of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     renderApp();
@@ -475,7 +475,7 @@ const getPublicKeyFromPrivateKey = () => {
   const privateKeyElt = document.getElementById('privateKey');
   const privateKey = privateKeyElt.value;
   if (privateKey.length != PRIVATE_KEY_LENGTH) {
-    bannerStatus = `private key must be a hex encoded string of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`;
+    bannerStatus = `Private key must be a hex encoded string of length ${PRIVATE_KEY_LENGTH}, not ${privateKey.length}`;
     bannerClass = 'bg_red color_white banner-look';
     GuiToggles.showAllBanners();
     renderApp();
