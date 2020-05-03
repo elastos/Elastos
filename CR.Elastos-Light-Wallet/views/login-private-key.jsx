@@ -15,7 +15,7 @@ module.exports = (props) => {
     }
   }
   const showMenu = () => {
-    GuiToggles.showMenu('loginMnemonic');
+    GuiToggles.showMenu('loginPrivateKey');
   }
   return (
   <div id="loginPrivateKey">

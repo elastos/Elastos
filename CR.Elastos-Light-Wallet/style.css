@@ -39,7 +39,9 @@ html {
 }
 
 #votingMenu,
-#homeMenu {
+#homeMenu,
+#loginPrivateKeyMenu,
+#loginMnemonicMenu {
   position: absolute;
   top: 0;
   right: 0;
