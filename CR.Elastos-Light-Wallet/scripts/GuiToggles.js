@@ -23,18 +23,24 @@ const hideEverything = () => {
   hide('landing');
   hide('loginMnemonic');
   hide('loginPrivateKey');
-  hide('homeMenu');
-  hide('homeMenuOpen');
-  hide('homeMenuClose');
-  hide('votingMenu');
-  hide('votingMenuOpen');
-  hide('votingMenuClose');
   hide('version');
   hide('voting');
   hide('qrcode');
   hide('generateMnemonic');
   hide('generatePrivateKey');
   hideAllBanners();
+  hideAllMenus();
+};
+
+const hideAllMenus = () => {
+  GuiUtils.hide('loginPrivateKeyBanner');
+  GuiUtils.hide('loginMnemonicBanner');
+  const menus = ['home', 'voting', 'loginPrivateKey', 'loginMnemonic'];
+  menus.forEach((menu) => {
+    hide(menu+'Menu');
+    // hide(menu+'MenuOpen');
+    hide(menu+'MenuClose');
+  });
 };
 
 const showLanding = () => {
