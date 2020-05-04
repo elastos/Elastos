@@ -217,3 +217,26 @@
   letter-spacing: normal;
   color: #ffffff;
 }
+
+.wrapper {
+  width: 100% !important;
+}
+
+span button.btn.collapsed:before
+{
+    content:'+' ;
+    display:block;
+    font-size: 3vw;
+    font-weight: bold;
+    width:20px;
+    height:100%;
+}
+span button.btn:before
+{
+    content:'-' ;
+    display:block;
+    font-size: 3vw;
+    font-weight: bold;
+    width:20px;
+    height:100%;
+}

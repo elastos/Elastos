@@ -1,8 +1,11 @@
 import gc
 import logging
 
+import json
 import csv
+import math
 
+from django.utils import timezone
 from django.apps import apps
 from django.conf import settings
 
@@ -44,7 +47,8 @@ def register(request):
             send_email(request, to_email, user)
             request.session['name'] = user.name
             request.session['email'] = user.email
-            messages.success(request, "Please check your email to complete your registration")
+            messages.success(
+                request, "Please check your email to complete your registration")
             return redirect(reverse('landing'))
     else:
         form = DIDUserCreationForm(initial={'name': request.session['name'], 'email': request.session['email'],
@@ -69,7 +73,8 @@ def edit_profile(request):
                 user.save()
                 to_email = form.cleaned_data.get('email')
                 send_email(request, to_email, user)
-                messages.success(request, "Please check your email to finish modifying your profile info")
+                messages.success(
+                    request, "Please check your email to finish modifying your profile info")
             else:
                 user.save()
             return redirect(reverse('login:feed'))
@@ -116,11 +121,11 @@ def feed(request):
         your_activity_model = get_activity_model(view_name)
         if your_activity_model is None:
             your_activity_list.append({
-                'display_string': 'You just visited "{0}" page'.format(items.name),
-                'time': items.last_visited
+                'display_string': 'You just visited "{0}" page'.format(items.name), 'last_visited': "{} mins ago".format(math.floor(((timezone.now() - items.last_visited).seconds) / 60))
             })
         else:
             for app in all_apps:
+
                 app_models = apps.get_app_config(app).get_models()
                 for model in app_models:
                     try:
@@ -129,27 +134,25 @@ def feed(request):
                             if items.additional_field != '':
                                 try:
                                     obj_dict = obj_model.your_activity()[view_name][items.additional_field]
-                                    obj_dict['time'] = items.last_visited
+                                    obj_dict['last_visited'] = "{} mins ago".format(math.floor(((timezone.now() - items.last_visited).seconds) / 60))
                                     your_activity_list.append(obj_dict)
                                     model_found = True
                                     break
                                 except KeyError as e:
                                     your_activity_list.append({
-                                        'display_string': 'You just visited "{0}" page'.format(items.name),
-                                        'time':items.last_visited
+                                        'display_string': 'You just visited "{0}" page'.format(items.name), 'last_visited': "{} mins ago".format(math.floor(((timezone.now() - items.last_visited).seconds) / 60))
                                     })
                                     logging.debug(e)
                                     break
                             else:
                                 obj_dict = obj_model.your_activity()[view_name]
-                                obj_dict['time'] = items.last_visited
+                                obj_dict['last_visited'] = "{} mins ago".format(math.floor(((timezone.now() - items.last_visited).seconds) / 60))
                                 your_activity_list.append(obj_dict)
                                 model_found = True
                                 break
                     except Exception as e:
                         your_activity_list.append({
-                            'display_string': 'You just visited "{0}" page'.format(items.name),
-                            'time': items.last_visited
+                            'display_string': 'You just visited "{0}" page'.format(items.name), 'last_visited': "{} mins ago".format(math.floor(((timezone.now() - items.last_visited).seconds) / 60))
                         })
                 if model_found:
                     break
@@ -195,7 +198,8 @@ def suggest_service(request):
             messages.success(request, "Service suggestion was submitted")
         except Exception as e:
             logging.debug(f"did={did} Method: suggest_service Error: {e}")
-            messages.success(request, "Service suggestion could not be submitted at this time. Please try again")
+            messages.success(
+                request, "Service suggestion could not be submitted at this time. Please try again")
         finally:
             return redirect(reverse('login:feed'))
 
@@ -211,7 +215,8 @@ def get_user_data(request):
         app_models = apps.get_app_config(items).get_models()
         for model in app_models:
             try:
-                model.objects.filter(did=request.session['did'])  # ahead to check if there's any entry with
+                # ahead to check if there's any entry with
+                model.objects.filter(did=request.session['did'])
                 # the given did
                 writer.writerow([model.user_name()])
                 fields = [f.name for f in model._meta.get_fields()]

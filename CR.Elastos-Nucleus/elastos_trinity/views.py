@@ -54,7 +54,8 @@ def dapp_templates(request):
             if int(angular_request.status_code) == 200:
                 is_angular = True
         except Exception as e:
-            logging.debug(f"Method: dapp_templates Type: angular_check Error: {e}")
+            logging.debug(
+                f"Method: dapp_templates Type: angular_check Error: {e}")
 
         if is_angular:
             request_string = dapp_url + "src/assets/manifest.json"
@@ -65,7 +66,8 @@ def dapp_templates(request):
             manifest = requests.get(request_string)
             json_dict = manifest.json()
         except Exception as e:
-            logging.debug(f"Method: dapp_templates Type: manifest_check Error: {e}")
+            logging.debug(
+                f"Method: dapp_templates Type: manifest_check Error: {e}")
 
         logo_location = json_dict['icons'][1].get('src')
         if is_angular:
@@ -81,10 +83,12 @@ def dapp_templates(request):
             headers = {
                 "Content-Type": "text/plain"
             }
-            readme_html = requests.post('https://api.github.com/markdown/raw', headers=headers, data=readme)
+            readme_html = requests.post(
+                'https://api.github.com/markdown/raw', headers=headers, data=readme)
             readme_html = readme_html.text
         except Exception as e:
-            logging.debug(f"Method: dapp_templates Type: readme_check Error: {e}")
+            logging.debug(
+                f"Method: dapp_templates Type: readme_check Error: {e}")
 
         github_data = get_github_api_link(dapp_id)
         try:
@@ -93,7 +97,8 @@ def dapp_templates(request):
             created_at = get_date(github_dict['created_at'])
             updated_at = get_date(github_dict['updated_at'])
         except Exception as e:
-            logging.debug(f"Method: dapp_templates Type: repo_data_check Error: {e}")
+            logging.debug(
+                f"Method: dapp_templates Type: repo_data_check Error: {e}")
 
         context['template'] = json_dict
         context['logo_url'] = logo_string
@@ -118,7 +123,8 @@ def dapp_templates(request):
                 if int(angular_request.status_code) == 200:
                     is_angular = True
             except Exception as e:
-                logging.debug(f"Method: dapp_templates Type: angular_check Error: {e}")
+                logging.debug(
+                    f"Method: dapp_templates Type: angular_check Error: {e}")
                 continue
             if is_angular:
                 request_string = items + "src/assets/manifest.json"
@@ -139,7 +145,8 @@ def dapp_templates(request):
                 else:
                     json_files["react"].append(json_dict)
             except Exception as e:
-                logging.debug(f"Method: dapp_templates Type: manifest_check Error: {e}")
+                logging.debug(
+                    f"Method: dapp_templates Type: manifest_check Error: {e}")
                 continue
 
         context['templates'] = json_files
