@@ -690,7 +690,7 @@ export default class extends Base {
                 claims: {},
                 website: {
                     domain: process.env.SERVER_URL,
-                    logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+                    logo: `${process.env.SERVER_URL}/assets/images/cr_ela_wallet.svg`
                 }
             }
             const jwtToken = jwt.sign(
@@ -857,7 +857,7 @@ export default class extends Base {
                 claims: {},
                 website: {
                     domain: process.env.SERVER_URL,
-                    logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+                    logo: `${process.env.SERVER_URL}/assets/images/cr_ela_wallet.svg`
                 }
             } 
             const jwtToken = jwt.sign(
