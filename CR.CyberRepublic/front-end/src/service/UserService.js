@@ -323,12 +323,11 @@ export default class extends BaseService {
       method: 'post',
       data: { req: qrcodeStr }
     })
-    if (res && res.success === false) {
+
+    if (res && !res.user) {
       return res
     }
-    if (res && res.success && res.did) {
-      return res
-    }
+
     const userRedux = this.store.getRedux('user')
 
     const is_admin = permissions.isAdmin(res.user.role)

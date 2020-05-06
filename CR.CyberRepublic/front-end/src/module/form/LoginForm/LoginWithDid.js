@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover, Spin, Divider } from 'antd'
+import { Popover, Spin, Divider, message } from 'antd'
 import I18N from '@/I18N'
 import QRCode from 'qrcode.react'
 
@@ -28,13 +28,23 @@ class LoginWithDid extends Component {
     const { url } = this.state
     this.timerDid = setInterval(async () => {
       const rs = await this.props.checkElaAuth(url)
-      if (rs && rs.success) {
+      if (rs && rs.success === true) {
         clearInterval(this.timerDid)
         this.timerDid = null
         if (rs.did) {
           this.props.changeTab('register', rs.did)
           this.setState({ visible: false })
         }
+      }
+      if (rs && rs.success === false) {
+        clearInterval(this.timerDid)
+        this.timerDid = null
+        if (rs.message) {
+          message.error(rs.message)
+        } else {
+          message.error('Something went wrong')
+        }
+        this.setState({ visible: false })
       }
     }, 3000)
   }

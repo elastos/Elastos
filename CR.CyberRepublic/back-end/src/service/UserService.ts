@@ -994,7 +994,11 @@ export default class extends Base {
                     const db_did = this.getDBModel('Did')
                     const doc = await db_did.findOne({ number: decoded.nonce })
                     if (doc) {
-                        return { success: true, did: doc.did }
+                        return {
+                            success: doc.success,
+                            did: doc.did,
+                            message: doc.message
+                        }
                     } else {
                         return { success: false }
                     }
