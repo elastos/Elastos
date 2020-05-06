@@ -6,6 +6,7 @@
 {% endblock title %} 
 
 {% block scripts_services %}
+    <script src="{% static '/javascript/watchETHContract.js' %}"></script>
 {% endblock scripts_services %}
 
 {% block related_services %}
@@ -121,6 +122,7 @@
 {% endblock grpc_client_url_elastOS %}
 
 {% block service %}
+
     {% if output %}
         <h5 class="card-title">Response:</h5>
         <p class="card-text">Smart Contract Address :  {{ contract_address }}</p>

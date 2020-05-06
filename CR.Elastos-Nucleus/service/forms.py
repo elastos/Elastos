@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import HiddenInput
 
-from .models import UploadFile, SavedFileInformation
+from .models import UploadFile, SavedFileInformation , SavedETHContractInformation
 from .choices import *
 
 
@@ -161,6 +161,7 @@ class RequestELAForm(forms.Form):
 class DeployETHContractForm(forms.ModelForm):
     network = forms.ChoiceField(
         choices=NETWORK, label="", initial='', widget=forms.Select(), required=True)
+    file_name = forms.CharField(required=True, widget=forms.Textarea)
     eth_account_address = forms.CharField(
         max_length=300, widget=forms.Textarea)
     eth_private_key = forms.CharField(max_length=300, widget=forms.Textarea)
@@ -171,6 +172,10 @@ class DeployETHContractForm(forms.ModelForm):
         super(DeployETHContractForm, self).__init__(*args, **kwargs)
         self.label_suffix = ""
         self.fields['did'].required = False
+        self.fields['did'].widget = HiddenInput()
+
+        self.fields['file_name'].widget.attrs['rows'] = 1
+        self.fields['file_name'].widget.attrs['cols'] = 55
 
         self.fields['api_key'].widget.attrs['rows'] = 1
         self.fields['api_key'].widget.attrs['cols'] = 80
@@ -184,7 +189,6 @@ class DeployETHContractForm(forms.ModelForm):
         self.fields['eth_gas'].widget.attrs['rows'] = 1
         self.fields['eth_gas'].widget.attrs['cols'] = 16
 
-        self.fields['did'].widget = HiddenInput()
 
         self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
         self.fields['uploaded_file'].label = ""
@@ -197,12 +201,14 @@ class DeployETHContractForm(forms.ModelForm):
 class WatchETHContractForm(forms.Form):
     network = forms.ChoiceField(
         choices=NETWORK, label="", initial='', widget=forms.Select(), required=True)
+    select_file = forms.ModelChoiceField(queryset=None)
     contract_address = forms.CharField(max_length=300, widget=forms.Textarea)
     contract_name = forms.CharField(max_length=300, widget=forms.Textarea)
     contract_code_hash = forms.CharField(max_length=300, widget=forms.Textarea)
     api_key = forms.CharField(max_length=64, widget=forms.Textarea)
 
     def __init__(self, *args, **kwargs):
+        did = kwargs.pop('did' , None)
         super(WatchETHContractForm, self).__init__(*args, **kwargs)
         self.label_suffix = ""
 
@@ -219,6 +225,9 @@ class WatchETHContractForm(forms.Form):
         self.fields['contract_code_hash'].widget.attrs['cols'] = 55
 
         self.fields['network'].widget.attrs['style'] = GMUNET_BUTTON
+
+        self.fields['select_file'].label = "Select a previously uploaded contract"
+        self.fields['select_file'] = forms.ModelChoiceField(queryset=SavedETHContractInformation.objects.filter(did=did) ,required=False)
 
 
 class SuggestServiceForm(forms.Form):

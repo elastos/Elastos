@@ -6,6 +6,10 @@
 {% endblock title %}
 
 {% block scripts_services %}
+    <script>
+        var total_reached = "{{ total_reached }}"
+    </script>
+    <script src = {% static 'javascript/uploadFile.js' %}></script>
 {% endblock scripts_services %}
 
 {% block related_services %}
@@ -121,6 +125,33 @@
 {% endblock grpc_client_url_elastOS %}
 
 {% block service %}
+    {% if total_reached %}
+        <div class="modal fade" id="total_files_modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <p class="modal-title">Limit Reached</p>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group-sm">
+                            <p>
+                                You have reached the limit on the number of contract information that can be saved to Nucleus Console.
+                                If you want to continue uploading content please select the option below to remove your previous files.
+                                Your files will still be present in ETH SideChain and can be retrieved.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal" onclick={deletefiles('deploy_eth_contract')}>Remove</button>
+                        <button class="btn btn-secondary" type="button"  data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+
     {% if output %}
         <h5 class="card-title">Response:</h5>
         <p class="card-text">Smart Contract Address :  {{ contract_address }}</p>
