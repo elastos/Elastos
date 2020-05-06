@@ -5,5 +5,7 @@ export const Did = {
     type: String, // uuid string
     required: true,
     unique: true
-  }
+  },
+  message: String,
+  success: Boolean
 }

@@ -850,10 +850,11 @@ export default class extends Base {
 
     public async loginElaUrl() {
         try {
+            const nonce = uuid.v4()
             const jwtClaims = {
                 iss: process.env.APP_DID,
                 callbackurl: `${process.env.API_URL}/api/user/login-callback-ela`,
-                nonce: uuid.v4(),
+                nonce,
                 claims: {},
                 website: {
                     domain: process.env.SERVER_URL,
@@ -866,6 +867,13 @@ export default class extends Base {
                 { expiresIn: '7d', algorithm: 'ES256' }
             )
             const url = `elastos://credaccess/${jwtToken}`
+
+            const db_did = this.getDBModel('Did')
+            const doc = {
+                number: nonce
+            }
+            await db_did.save(doc)
+
             return { success: true, url }
         } catch(err) {
             logger.error(err)
@@ -877,25 +885,50 @@ export default class extends Base {
         try {
             const jwtToken = param.jwt
             const claims: any = jwt.decode(jwtToken)
-            if (!claims) {
+            if (!claims || !claims.req) {
                 return {
                     code: 400,
                     success: false,
                     message: 'Problems parsing jwt token.'
                 }
             }
-            const rs: any = await getDidPublicKey(claims.iss)
-            if (!rs) {
+
+            const payload: any = jwt.decode(claims.req.slice('elastos://credaccess/'.length))
+            if (!payload || (payload && !payload.nonce)) {
                 return {
                     code: 400,
                     success: false,
-                    message: 'Can not get public key.'
+                    message: 'Problems parsing jwt token of CR website.'
+                }
+            }
+
+            const db_did = this.getDBModel('Did')
+            const rs: any = await getDidPublicKey(claims.iss)
+            if (!rs) {
+                await db_did.update(
+                    { nonce: payload.nonce }, 
+                    { $set: {
+                        message: `Can not get your did's public key.`,
+                        success: false
+                    }}
+                )
+                return {
+                    code: 400,
+                    success: false,
+                    message: `Can not get your did's public key.`
                 }
             }
     
             // verify response data from ela wallet
             return jwt.verify(jwtToken, rs.publicKey, async (err: any, decoded: any) => {
                 if (err) {
+                    await db_did.update(
+                        { nonce: payload.nonce }, 
+                        { $set: {
+                            message: `Verify signatrue failed.`,
+                            success: false
+                        }}
+                    )
                     return {
                         code: 401,
                         success: false,
@@ -903,17 +936,7 @@ export default class extends Base {
                     }
                   } else {
                     try {
-                        const payload: any = jwt.decode(decoded.req.slice('elastos://credaccess/'.length))
-                        if (!payload || (payload && !payload.nonce)) {
-                            return {
-                                code: 400,
-                                success: false,
-                                message: 'Problems parsing jwt token of CR website.'
-                            }
-                        }
-
-                        const db_did = this.getDBModel('Did')
-                        const didDoc = await db_did.findOne({ nonce: payload.nonce })
+                        const didDoc = await db_did.findOne({ did: decoded.iss })
                         if (!_.isEmpty(didDoc)) {
                             return {
                                 code: 200,
@@ -921,12 +944,15 @@ export default class extends Base {
                             }
                         }
 
-                        const doc = {
-                            did: decoded.iss,
-                            expirationDate: rs.expirationDate,
-                            number: payload.nonce
-                        }
-                        await db_did.save(doc)
+                        await db_did.update(
+                            {number: payload.nonce},
+                            {$set: {
+                                did: decoded.iss,
+                                expirationDate: rs.expirationDate,
+                                success: true,
+                                message: 'Ok'
+                            }}
+                        )
                         return {
                             code: 200,
                             success: true, message: 'Ok'
