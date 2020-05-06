@@ -36,24 +36,6 @@ class ProfileDid extends Component {
     }, 3000)
   }
 
-  handleReassociate = async () => {
-    const { url } = this.state
-    if (url) {
-      if (this.timerDid) {
-        return
-      } else {
-        this.pollingDid()
-      }
-    } else {
-      const rs = await this.props.getElaUrl()
-      if (rs && rs.success) {
-        this.setState({ url: rs.url }, () => {
-          this.pollingDid()
-        })
-      }
-    }
-  }
-
   handleAssociate = async () => {
     if (this.timerDid) {
       return
@@ -72,10 +54,6 @@ class ProfileDid extends Component {
     clearInterval(this.timerDid)
   }
 
-  handleVisibleChange = visible => {
-    this.setState({ visible })
-  }
-
   render() {
     const { did } = this.props
     let domain
@@ -87,17 +65,6 @@ class ProfileDid extends Component {
     if (did && did.id) {
       return (
         <Did>
-          <Popover
-            content={this.elaQrCode()}
-            trigger="click"
-            placement="top"
-            visible={this.state.visible}
-            onVisibleChange={this.handleVisibleChange}
-          >
-            <Reassociate onClick={this.handleReassociate}>
-              {I18N.get('profile.reassociateDid')}
-            </Reassociate>
-          </Popover>
           <span>DID:</span>
           <a
             href={`https://${domain}.elastos.org/address/${did.id.slice(

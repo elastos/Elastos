@@ -667,22 +667,6 @@ export default class extends Base {
             if (_.isEmpty(user)) {
                 return { success: false }
             }
-            // for reassociating DID
-            if (user && !_.isEmpty(user.dids)) {
-                const dids = user.dids.map(el => {
-                    // the mark field will be removed after reassociated DID 
-                    if (el.active === true) {
-                        return {
-                            id: el.id,
-                            expirationDate: el.expirationDate,
-                            active: true,
-                            mark: true
-                        }
-                    }
-                    return el
-                })
-                await db_user.update({ _id: userId }, { $set: { dids } })
-            }
             const jwtClaims = {
                 iss: process.env.APP_DID,
                 userId: this.currentUser._id,
@@ -764,39 +748,12 @@ export default class extends Base {
                         }
 
                         const user = await db_user.findById({ _id: result.userId })
-                        if (user) { 
-                            let dids: object[]
-                            const matched = user.dids.find(el => el.id === decoded.iss)
-                            // associate the same DID
-                            if (matched) {
-                                dids = user.dids.map(el => {
-                                    if (el.id === decoded.iss) {
-                                        return {
-                                            id: el.id,
-                                            active: true,
-                                            expirationDate: rs.expirationDate
-                                        }
-                                    }
-                                    return {
-                                        id: el.id,
-                                        expirationDate: el.expirationDate,
-                                        active: false
-                                    }
-                                })
-                            } else {
-                                // associate different DID
-                                const inactiveDids = user.dids.map(el => {
-                                    if (el.active === true) {
-                                        return {
-                                            id: el.id,
-                                            expirationDate: el.expirationDate,
-                                            active: false
-                                        }
-                                    }
-                                    return el
-                                })
-                                dids = [ ...inactiveDids, { id: decoded.iss, active: true, expirationDate: rs.expirationDate } ]
-                            }
+                        if (user) {
+                            const dids = [{
+                                id: decoded.iss,
+                                active: true,
+                                expirationDate: rs.expirationDate
+                            }]
                             await db_user.update(
                                 { _id: result.userId }, 
                                 { $set: { dids } }
