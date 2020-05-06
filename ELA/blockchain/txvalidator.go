@@ -2125,7 +2125,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		return errors.New("invalid payload")
 	}
 
-	if !b.crCommittee.IsProposalAllowed(blockHeight) {
+	if !b.crCommittee.IsProposalAllowed(blockHeight - 1) {
 		return errors.New("cr proposal tx must not during voting period")
 	}
 
