@@ -637,6 +637,10 @@ func (c *Committee) shouldChange(height uint32) bool {
 		}
 	}
 
+	if c.LastVotingStartHeight == 0 {
+		return height == c.LastCommitteeHeight+c.params.CRDutyPeriod
+	}
+
 	return height == c.LastVotingStartHeight+c.params.CRVotingPeriod
 }
 
