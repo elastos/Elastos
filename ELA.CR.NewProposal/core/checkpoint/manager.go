@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package checkpoint
 
@@ -302,6 +302,10 @@ func (m *Manager) onBlockSaved(block *types.DposBlock,
 		if block.Height >= originalHeight+v.SavePeriod() {
 			v.SetHeight(block.Height)
 			snapshot := v.Snapshot()
+			if snapshot == nil {
+				log.Error("snapshot is nil, key:", v.Key())
+				continue
+			}
 			reply := make(chan bool, 1)
 			m.channels[v.Key()].Save(snapshot, reply)
 			if !async {
