@@ -117,6 +117,7 @@ include_directories(
     .
     ../src
     ../src/utility
+    ../src/adapter
     ../hdkey
     ../adapter/spvadapter
     ${PROJECT_INT_DIST_DIR}/include)
@@ -125,6 +126,7 @@ link_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/../src
     ${CMAKE_CURRENT_BINARY_DIR}/../hdkey
     ${CMAKE_CURRENT_BINARY_DIR}/../adapter/spvadapter
+    ${CMAKE_CURRENT_BINARY_DIR}/../src/adapter
     ${PROJECT_INT_DIST_DIR}/lib)
 
 add_executable(didtest

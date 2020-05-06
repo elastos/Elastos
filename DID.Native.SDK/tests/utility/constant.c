@@ -15,7 +15,7 @@
 
 #include "constant.h"
 
-const char *walletdir = "/.elawallet";
+const char *walletdir = ".elawallet";
 const char *walletId = "cywallet";
 //const char *network = "../../../../adapter/wallet/privnet.json";
 const char *network = "TestNet";

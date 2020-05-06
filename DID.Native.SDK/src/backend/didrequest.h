@@ -33,11 +33,15 @@
 extern "C" {
 #endif
 
+#define  MAX_SPEC_LEN             32
+#define  MAX_OP_LEN               32
+#define  MAX_REQ_SIG_LEN          128
+
 typedef struct DIDRequest {
     struct {
-        char *spec;
-        char *op;
-        char *prevtxid;
+        char spec[MAX_SPEC_LEN];
+        char op[MAX_OP_LEN];
+        char prevtxid[ELA_MAX_TXID_LEN];
     } header;
 
     const char *payload;
@@ -45,7 +49,7 @@ typedef struct DIDRequest {
 
     struct {
         DIDURL verificationMethod;
-        const char *signature;
+        char signature[MAX_REQ_SIG_LEN];
     } proof;
 } DIDRequest;
 

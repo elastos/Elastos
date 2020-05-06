@@ -57,6 +57,26 @@ set(SRC
 set(HEADERS
     ela_did.h)
 
+if(ENABLE_TESTS)
+    set(HEADERS
+        ${HEADERS}
+        adapter/dummyadapter.h)
+
+    set(SRC
+        ${SRC}
+        adapter/dummyadapter.c)
+
+    set(DUMMYADAPTER_CREATE
+        "_DummyAdapter_Create")
+    set(DUMMYADAPTER_DESTROY
+        "_DummyAdapter_Destroy")
+endif()
+
+configure_file(
+    export.symbols.in
+    export.symbols
+    "@ONLY")
+
 if(WIN32)
     set(SYSTEM_LIBS Ws2_32 Iphlpapi)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -67,6 +87,7 @@ include_directories(
     BEFORE
     utility
     backend
+    adapter
     .
     ../hdkey
     ${PROJECT_INT_DIST_DIR}/include)
@@ -96,7 +117,6 @@ endif()
 set(LIBS
     cjson
     curl
-    #crystal
     ssl
     crypto
     z)
@@ -104,7 +124,6 @@ set(LIBS
 if(WIN32)
     set(LIBS
         ${LIBS}
-        #crystal
         pthread)
 endif()
 
@@ -154,9 +173,9 @@ if(ENABLE_SHARED)
     endif()
     if(DARWIN OR IOS)
         set_property(SOURCE ${SRC} APPEND PROPERTY
-            OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/export.symbols")
+            OBJECT_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/export.symbols")
         set_property(TARGET eladid-shared APPEND_STRING PROPERTY
-            LINK_FLAGS " -Wl,-exported_symbols_list,\"${CMAKE_CURRENT_SOURCE_DIR}/export.symbols\"")
+            LINK_FLAGS " -Wl,-exported_symbols_list,\"${CMAKE_CURRENT_BINARY_DIR}/export.symbols\"")
     endif()
     target_include_directories(eladid-shared
         PUBLIC

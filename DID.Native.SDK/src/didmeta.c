@@ -34,12 +34,13 @@
 #include "diderror.h"
 
 int DIDMeta_Init(DIDMeta *meta, const char *alias, char *txid,
-        bool deactived, time_t timestamp)
+        const char *signature, bool deactived, time_t timestamp)
 {
     assert(meta);
 
     DIDMeta_SetAlias(meta, alias);
     DIDMeta_SetTxid(meta, txid);
+    DIDMeta_SetSignature(meta, signature);
     DIDMeta_SetDeactived(meta, deactived);
     DIDMeta_SetTimestamp(meta, timestamp);
     return 0;
@@ -60,6 +61,8 @@ static int DIDMeta_ToJson_Internal(JsonGenerator *gen, DIDMeta *meta)
         CHECK(JsonGenerator_WriteStringField(gen, "deactived", "true"));
     if (*meta->txid)
         CHECK(JsonGenerator_WriteStringField(gen, "txid", meta->txid));
+    if (*meta->signatureValue)
+        CHECK(JsonGenerator_WriteStringField(gen, "signature", meta->signatureValue));
     if (meta->timestamp > 0)
         CHECK(JsonGenerator_WriteStringField(gen, "timestamp",
                 get_time_string(_timestring, sizeof(_timestring), &meta->timestamp)));
@@ -123,11 +126,16 @@ int DIDMeta_FromJson(DIDMeta *meta, const char *json)
             DIDMeta_SetTxid(meta, cJSON_GetStringValue(item)) == -1)
         goto errorExit;
 
+    item = cJSON_GetObjectItem(root, "signature");
+    if (item && cJSON_IsString(item) &&
+            DIDMeta_SetSignature(meta, cJSON_GetStringValue(item)) == -1)
+        goto errorExit;
+
     item = cJSON_GetObjectItem(root, "timestamp");
     if (item && cJSON_IsString(item) && (parse_time(&timestamp, item->valuestring) == -1 ||
             DIDMeta_SetTimestamp(meta, timestamp) == -1))
         goto errorExit;
-       
+
     cJSON_Delete(root);
     return 0;
 
@@ -193,6 +201,23 @@ int DIDMeta_SetTxid(DIDMeta *meta, const char *txid)
     return 0;
 }
 
+int DIDMeta_SetSignature(DIDMeta *meta, const char *signature)
+{
+    assert(meta);
+
+    if (signature && strlen(signature) >= sizeof(meta->signatureValue)) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Signature value is too long.");
+        return -1;
+    }
+
+    if (signature)
+        strcpy(meta->signatureValue, signature);
+    else
+        *meta->signatureValue = 0;
+
+    return 0;
+}
+
 const char *DIDMeta_GetAlias(DIDMeta *meta)
 {
     assert(meta);
@@ -205,6 +230,13 @@ const char *DIDMeta_GetTxid(DIDMeta *meta)
     assert(meta);
 
     return meta->txid;
+}
+
+const char *DIDMeta_GetSignature(DIDMeta *meta)
+{
+    assert(meta);
+
+    return meta->signatureValue;
 }
 
 bool DIDMeta_GetDeactived(DIDMeta *meta)
@@ -228,6 +260,8 @@ int DIDMeta_Merge(DIDMeta *meta, DIDMeta *frommeta)
     strcpy(meta->alias, frommeta->alias);
     if (*frommeta->txid)
         strcpy(meta->txid, frommeta->txid);
+    if (*frommeta->signatureValue)
+        strcpy(meta->signatureValue, frommeta->signatureValue);
     if (!meta->deactived)
         meta->deactived = frommeta->deactived;
     if (!frommeta->timestamp)
@@ -247,7 +281,8 @@ bool DIDMeta_IsEmpty(DIDMeta *meta)
 {
     assert(meta);
 
-    if (!*meta->alias && !*meta->txid && !meta->deactived && !meta->timestamp) {
+    if (!*meta->alias && !*meta->txid && !meta->deactived && !meta->timestamp
+            && !*meta->signatureValue) {
         return true;
     }
 

@@ -182,7 +182,7 @@ static int vp_test_suite_init(void)
     int rc;
 
     storePath = get_store_path(_path, "/idchain");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     if (!store)
         return -1;
 

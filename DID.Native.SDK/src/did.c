@@ -177,7 +177,7 @@ DID *DID_New(const char *method_specific_string)
 
     if (strlen(method_specific_string) >= MAX_ID_SPECIFIC_STRING) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Method specific string is too long.");
-        return NULL;        
+        return NULL;
     }
 
     did = (DID *)calloc(1, sizeof(DID));
@@ -310,7 +310,7 @@ DIDURL *DIDURL_New(const char *method_specific_string, const char *fragment)
 
     if (strlen(fragment) >= MAX_FRAGMENT) {
         DIDError_Set(DIDERR_INVALID_ARGS, "The fragment is too long.");
-        return NULL;       
+        return NULL;
     }
 
     id = (DIDURL *)calloc(1, sizeof(DIDURL));
@@ -395,14 +395,14 @@ char *DIDURL_ToString(DIDURL *id, char *idstring, size_t len, bool compact)
     if (compact) {
         size = snprintf(idstring, len, "#%s", id->fragment);
         if (size < 0 || size > len) {
-            DIDError_Set(DIDERR_OUT_OF_MEMORY, "Buffer gived is too small.");     
+            DIDError_Set(DIDERR_OUT_OF_MEMORY, "Buffer gived is too small.");
             return NULL;
         }
     } else {
         size = snprintf(idstring, len, "%s%s#%s", elastos_did_prefix,
             id->did.idstring, id->fragment);
         if (size < 0 || size > len) {
-            DIDError_Set(DIDERR_OUT_OF_MEMORY, "Buffer gived is too small.");   
+            DIDError_Set(DIDERR_OUT_OF_MEMORY, "Buffer gived is too small.");
             return NULL;
         }
     }

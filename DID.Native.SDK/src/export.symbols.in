@@ -200,3 +200,8 @@ _DIDError_GetCode
 _DIDError_GetMessage
 _DIDError_GetFile
 _DIDError_GetLine
+
+# DummyAdapter
+@DUMMYADAPTER_CREATE@
+@DUMMYADAPTER_DESTROY@
+

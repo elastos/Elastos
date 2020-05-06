@@ -62,7 +62,7 @@ static void test_didstore_load_vcs(void)
     bool isEquals;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = TestData_InitIdentity(store);
@@ -143,7 +143,7 @@ static void test_didstore_list_vcs(void)
     DIDURL vcs[4];
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = TestData_InitIdentity(store);
@@ -188,7 +188,7 @@ static void test_didstore_delete_vc(void)
     bool isDeleted;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = TestData_InitIdentity(store);

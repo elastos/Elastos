@@ -69,7 +69,7 @@ static int diddoc_sign_test_suite_init(void)
     const char *storePath, *mnemonic;
 
     storePath = get_store_path(_path, "/idchain");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     if (!store)
         return -1;
 

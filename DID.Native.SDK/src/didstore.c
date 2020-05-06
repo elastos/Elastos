@@ -448,7 +448,6 @@ static ssize_t load_extendedprvkey(DIDStore *store, uint8_t *extendedkey, size_t
         const char *storepass)
 {
     const char *string;
-    uint8_t *key;
     char path[PATH_MAX];
     ssize_t len;
 
@@ -465,12 +464,6 @@ static ssize_t load_extendedprvkey(DIDStore *store, uint8_t *extendedkey, size_t
     string = load_file(path);
     if (!string) {
         DIDError_Set(DIDERR_DIDSTORE_ERROR, "Load extended private key failed.");
-        return -1;
-    }
-
-    key = (uint8_t*)alloca(size * 2);
-    if (!key) {
-        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Alloca stack for size failed.");
         return -1;
     }
 
@@ -848,7 +841,8 @@ static DIDDocument *create_document(DIDStore *store, DID *did, const char *key,
         return NULL;
     }
 
-    if (DIDMeta_Init(&document->meta, alias, NULL, false, 0) == -1) {
+    if (DIDMeta_Init(&document->meta, alias, NULL,
+            document->proof.signatureValue, false, 0) == -1) {
         DIDDocument_Destroy(document);
         return NULL;
     }
@@ -969,12 +963,16 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *alias)
         return -1;
     }
 
-    if (load_didmeta(store, &meta, document->did.idstring) == -1 ||
-            DIDMeta_SetAlias(&document->meta, alias) == -1 ||
-            DIDMeta_Merge(&meta, &document->meta) == -1)
+    if (load_didmeta(store, &meta, document->did.idstring) == -1)
         return -1;
 
-    memcpy(&document->meta, &meta, sizeof(DIDMeta));
+    if (alias && (DIDMeta_SetAlias(&document->meta, alias) == -1 ||
+            DIDMeta_Merge(&meta, &document->meta) == -1))
+        return -1;
+
+    if (!DIDMeta_IsEmpty(&meta))
+        memcpy(&document->meta, &meta, sizeof(DIDMeta));
+
     DIDDocument_SetStore(document, store);
 
 	data = DIDDocument_ToJson(document, true);
@@ -1627,15 +1625,15 @@ static int store_default_privatekey(DIDStore *store, const char *storepass,
     return 0;
 }
 
-int DIDStore_Synchronize(DIDStore *store, const char *storepass)
+int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeCallback *callback)
 {
     int rc, nextindex, i = 0, blanks = 0;
-    DIDDocument *document;
+    DIDDocument *chainCopy, *localCopy, *finalCopy;
     HDKey _identity, *privateIdentity;
     DerivedKey _derivedkey, *derivedkey;
     DID did;
 
-    if (!store || !storepass || !*storepass)
+     if (!store || !storepass || !*storepass || !callback)
         return -1;
 
     privateIdentity = load_privateIdentity(store, storepass, &_identity);
@@ -1654,9 +1652,42 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass)
             continue;
 
         if (init_did(&did, DerivedKey_GetAddress(derivedkey)) == 0) {
-            document = DID_Resolve(&did, true);
-            if (document) {
-                if (DIDStore_StoreDID(store, document, "") == 0) {
+            chainCopy = DID_Resolve(&did, true);
+            if (chainCopy) {
+                if (DIDDocument_IsDeactivated(chainCopy)) {
+                    DIDError_Set(DIDERR_DID_DEACTIVATED, "Did is deactivated.");
+                    DIDDocument_Destroy(chainCopy);
+                    blanks = 0;
+                    continue;
+                }
+
+                if (DIDDocument_IsExpires(chainCopy)) {
+                    DIDError_Set(DIDERR_EXPIRED, "Did is expired.");
+                    DIDDocument_Destroy(chainCopy);
+                    blanks = 0;
+                    continue;
+                }
+
+                finalCopy = chainCopy;
+                localCopy = DIDStore_LoadDID(store, &did);
+                if (localCopy) {
+                    const char *local_signature = DIDMeta_GetSignature(&localCopy->meta);
+                    assert(local_signature);
+                    if (!*local_signature ||
+                            strcmp(DIDDocument_GetProofSignature(localCopy), local_signature)) {
+                        finalCopy = callback(chainCopy, localCopy);
+                        if (!finalCopy || !DID_Equals(DIDDocument_GetSubject(finalCopy), &did)) {
+                            DIDError_Set(DIDERR_DIDSTORE_ERROR, "Conflict handle merge the DIDDocument error.");
+                            if (finalCopy != chainCopy && finalCopy != localCopy)
+                                DIDDocument_Destroy(finalCopy);
+                            DIDDocument_Destroy(chainCopy);
+                            DIDDocument_Destroy(localCopy);
+                            return -1;
+                        }
+                    }
+                }
+
+                if (DIDStore_StoreDID(store, finalCopy, NULL) == 0) {
                     if (store_default_privatekey(store, storepass,
                             DerivedKey_GetAddress(derivedkey),
                             DerivedKey_GetPrivateKey(derivedkey)) == 0) {
@@ -1666,11 +1697,14 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass)
                     } else {
                         DIDStore_DeleteDID(store, &did);
                     }
-
-                } else {
-                    blanks = 0;
                 }
-                DIDDocument_Destroy(document);
+
+                DIDDocument_Destroy(chainCopy);
+                DIDDocument_Destroy(localCopy);
+                if (finalCopy != chainCopy && finalCopy != localCopy)
+                    DIDDocument_Destroy(finalCopy);
+
+                blanks = 0;
             } else {
                 if (i >= nextindex)
                     blanks++;
@@ -1995,7 +2029,7 @@ static int load_privatekey(DIDStore *store, const char *storepass, DID *did,
 int didstore_sign(DIDStore *store, const char *storepass, DID *did,
         DIDURL *key, char *sig, uint8_t *digest, size_t size)
 {
-    unsigned char binkey[PRIVATEKEY_BYTES];
+    uint8_t binkey[PRIVATEKEY_BYTES];
 
     if (!store || !storepass || !*storepass || !did || !key
             || !sig || !digest || size != SHA256_BYTES) {
@@ -2018,8 +2052,9 @@ int didstore_sign(DIDStore *store, const char *storepass, DID *did,
 const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did,
         DIDURL *signkey, bool force)
 {
-    const char *txid, *resolvetxid;
-    DIDDocument *doc, *resolvedoc;
+    const char *local_txid, *last_txid;
+    const char *local_signature, *resolve_signature;
+    DIDDocument *doc = NULL, *resolve_doc = NULL;
     int rc = -1;
 
     if (!store || !storepass || !*storepass || !did) {
@@ -2033,59 +2068,74 @@ const char *DIDStore_PublishDID(DIDStore *store, const char *storepass, DID *did
 
     if (DIDDocument_IsDeactivated(doc)) {
         DIDError_Set(DIDERR_DID_DEACTIVATED, "Did is already deactivated.");
-        DIDDocument_Destroy(doc);
-        return NULL;
+        goto errorExit;
     }
 
     if (!force && DIDDocument_IsExpires(doc)) {
         DIDError_Set(DIDERR_EXPIRED, "Did already expired, use force mode to publish anyway.");
-        DIDDocument_Destroy(doc);
-        return NULL;
+        goto errorExit;
     }
 
     if (!signkey)
         signkey = DIDDocument_GetDefaultPublicKey(doc);
 
-    resolvedoc = DID_Resolve(did, true);
-    if (!resolvedoc) {
-        txid = DIDBackend_Create(&store->backend, doc, signkey, storepass);
+    resolve_doc = DID_Resolve(did, true);
+    if (!resolve_doc) {
+        last_txid = DIDBackend_Create(&store->backend, doc, signkey, storepass);
     } else {
-        resolvetxid = DIDDocument_GetTxid(resolvedoc);
-        if (!*resolvetxid) {
-            DIDError_Set(DIDERR_RESOLVE_ERROR, "No resolved transaction id.");
+        if (DIDDocument_IsDeactivated(resolve_doc)) {
+            DIDError_Set(DIDERR_EXPIRED, "Did already deactivated.");
             goto errorExit;
         }
 
-        if (force) {
-            DIDMeta_SetTxid(&doc->did.meta, resolvetxid);
-            DIDMeta_SetTxid(&doc->meta, resolvetxid);
-        } else {
-            if (DIDDocument_IsDeactivated(resolvedoc)) {
-                DIDError_Set(DIDERR_DID_DEACTIVATED, "Did is already deactivated.");
+        last_txid = DIDDocument_GetTxid(resolve_doc);
+        if (!last_txid || !*last_txid) {
+            DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing last transaction id.");
+            goto errorExit;
+        }
+
+        if (!force) {
+            local_txid = DIDMeta_GetTxid(&doc->meta);
+            local_signature = DIDMeta_GetSignature(&doc->meta);
+            if ((!local_txid || !*local_txid) && (!local_signature || !*local_signature)) {
+                DIDError_Set(DIDERR_DIDSTORE_ERROR,
+                        "Missing last transaction id and signature, use force mode to ignore checks.");
                 goto errorExit;
             }
 
-            txid = DIDDocument_GetTxid(doc);
-            if (!txid || strcmp(txid, resolvetxid)) {
-                DIDError_Set(DIDERR_TRANSACTION_ERROR, "Current copy not based on the lastest on-chain copy, txid mismatch.");
+            resolve_signature = DIDDocument_GetProofSignature(resolve_doc);
+            if (!resolve_signature || !*resolve_signature) {
+                DIDError_Set(DIDERR_DIDSTORE_ERROR, "Missing transaction id and signature on chain.");
+                goto errorExit;
+            }
+
+            if ((*local_txid && strcmp(local_txid, last_txid)) ||
+                    (*local_signature && strcmp(local_signature, resolve_signature))) {
+                DIDError_Set(DIDERR_DIDSTORE_ERROR,
+                        "Current copy not based on the lastest on-chain copy, txid mismatch.");
                 goto errorExit;
             }
         }
-        txid = DIDBackend_Update(&store->backend, doc, signkey, storepass);
+
+        DIDMeta_SetTxid(&doc->did.meta, last_txid);
+        DIDMeta_SetTxid(&doc->meta, last_txid);
+
+        last_txid = DIDBackend_Update(&store->backend, doc, signkey, storepass);
     }
 
-    if (!txid || !*txid)
+    if (!last_txid || !*last_txid)
         goto errorExit;
 
-    DIDMeta_SetTxid(&doc->meta, txid);
+    DIDMeta_SetTxid(&doc->meta, last_txid);
+    DIDMeta_SetSignature(&doc->meta, DIDDocument_GetProofSignature(doc));
     rc = store_didmeta(store, &doc->meta, &doc->did);
 
 errorExit:
-    if (resolvedoc)
-        DIDDocument_Destroy(resolvedoc);
+    if (resolve_doc)
+        DIDDocument_Destroy(resolve_doc);
     if (doc)
         DIDDocument_Destroy(doc);
-    return rc == -1 ? NULL : txid;
+    return rc == -1 ? NULL : last_txid;
 }
 
 const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
@@ -2093,27 +2143,47 @@ const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
 {
     const char *txid;
     DIDDocument *doc;
+    bool localcopy = false;
+    int rc = 0;
 
     if (!store || !storepass || !*storepass || !did || !signkey) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
 
-    if (!signkey) {
-        doc = DID_Resolve(did, false);
+    doc = DID_Resolve(did, true);
+    if (!doc) {
+        doc = DIDStore_LoadDID(store, did);
         if (!doc) {
-            DIDError_Set(DIDERR_RESOLVE_ERROR, "Did is not a published did.");
+            DIDError_Set(DIDERR_NOT_EXISTS, "No this did.");
             return NULL;
+        } else {
+            localcopy = true;
         }
+    }
 
+    if (!signkey) {
         signkey = DIDDocument_GetDefaultPublicKey(doc);
         if (!signkey) {
+            DIDDocument_Destroy(doc);
             DIDError_Set(DIDERR_INVALID_KEY, "Not default key.");
+            return NULL;
+        }
+    } else {
+        if (!DIDDocument_IsAuthenticationKey(doc, signkey)) {
+            DIDDocument_Destroy(doc);
+            DIDError_Set(DIDERR_INVALID_KEY, "Invalid authentication key.");
             return NULL;
         }
     }
 
     txid = DIDBackend_Deactivate(&store->backend, did, signkey, storepass);
+
+    if (localcopy) {
+        DIDMeta_SetDeactived(&doc->meta, true);
+        rc = store_didmeta(store, &doc->meta, &doc->did);
+    }
+
     DIDDocument_Destroy(doc);
-    return txid;
+    return rc == 0 ? txid : NULL;
 }

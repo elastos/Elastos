@@ -165,11 +165,11 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document, DIDURL 
         return NULL;
     }
 
-    req.header.spec = (char*)spec;
-    req.header.op = (char*)op;
-    req.header.prevtxid = (char*)prevtxid;
+    strcpy(req.header.spec, (char*)spec);
+    strcpy(req.header.op, (char*)op);
+    strcpy(req.header.prevtxid, (char*)prevtxid);
     req.payload = payload;
-    req.proof.signature = signature;
+    strcpy(req.proof.signature, signature);
     DIDURL_Copy(&req.proof.verificationMethod, signkey);
 
     requestJson = DIDRequest_ToJson(&req);
@@ -221,7 +221,7 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
                 excepted: %s, actual: %s", spec, field->valuestring);
         return NULL;
     }
-    request->header.spec = (char *)spec;
+    strcpy(request->header.spec, (char *)spec);
 
     field = cJSON_GetObjectItem(item, "operation");
     if (!field) {
@@ -235,7 +235,7 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
     op = cJSON_GetStringValue(field);
     if (!strcmp(op, "create") || !strcmp(op, "update") ||
             !strcmp(op, "deactivate")) {
-        request->header.op = op;
+        strcpy(request->header.op, op);
     } else {
         DIDError_Set(DIDERR_UNKNOWN, "Unknown DID operaton.");
         return NULL;
@@ -243,9 +243,9 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
 
     field = cJSON_GetObjectItem(item, "previousTxid");
     if (!strcmp(op, "create") && !field)
-        request->header.prevtxid = "";
+        strcpy(request->header.prevtxid, "");
     else
-        request->header.prevtxid = cJSON_GetStringValue(field);
+        strcpy(request->header.prevtxid, cJSON_GetStringValue(field));
 
     item = cJSON_GetObjectItem(json, "payload");
     if (!item) {
@@ -256,7 +256,7 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid payload.");
         return NULL;
     }
-    request->payload = cJSON_GetStringValue(item);
+    request->payload = strdup(cJSON_GetStringValue(item));
 
     len = strlen(request->payload) + 1;
     docJson = (char*)malloc(len);
@@ -313,12 +313,12 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
         DIDDocument_Destroy(request->doc);
         return NULL;
     }
-    if (!cJSON_IsString(field)) {
+    if (!cJSON_IsString(field) || strlen(cJSON_GetStringValue(field)) >= MAX_REQ_SIG_LEN) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid signature.");
         DIDDocument_Destroy(request->doc);
         return NULL;
     }
-    request->proof.signature = cJSON_GetStringValue(field);
+    strcpy(request->proof.signature, cJSON_GetStringValue(field));
 
     if (DIDRequest_Verify(request) < 0) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Verify payload failed.");
@@ -333,6 +333,9 @@ void DIDRequest_Destroy(DIDRequest *request)
 {
     if (!request)
        return;
+
+    if (request->payload)
+        free((char*)request->payload);
 
     if (request->doc)
         DIDDocument_Destroy(request->doc);

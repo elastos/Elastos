@@ -33,7 +33,7 @@ static void test_didstore_newdid(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     path = get_file_path(_path, PATH_MAX, 3, store->root, PATH_STEP, META_FILE);
@@ -109,7 +109,7 @@ static void test_didstore_newdid_byindex(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     path = get_file_path(_path, PATH_MAX, 3, store->root, PATH_STEP, META_FILE);
@@ -162,7 +162,7 @@ static void test_didstore_newdid_withouAlias(void)
     int rc;
 
     storePath = get_store_path(_storepath, "/servet");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     path = get_file_path(_path, PATH_MAX, 3, storePath, PATH_STEP, META_FILE);
@@ -198,10 +198,6 @@ static void test_didstore_newdid_withouAlias(void)
             PATH_STEP, (char*)idstring, PATH_STEP, DOCUMENT_FILE);
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    path = get_file_path(_path, PATH_MAX, 7, storePath, PATH_STEP, DID_DIR,
-            PATH_STEP, (char*)idstring, PATH_STEP, META_FILE);
-    CU_ASSERT_FALSE(file_exist(path));
-
     newalias = DIDDocument_GetAlias(doc);
     CU_ASSERT_PTR_NOT_NULL(newalias);
     CU_ASSERT_STRING_EQUAL(newalias, "");
@@ -210,7 +206,7 @@ static void test_didstore_newdid_withouAlias(void)
 static void test_didstore_initial_error(void)
 {
     char _path[PATH_MAX];
-    const char *storePath, *walletDir;
+    const char *storePath;
     DIDStore *store;
     DIDAdapter *adapter;
 
@@ -218,14 +214,12 @@ static void test_didstore_initial_error(void)
     store = DIDStore_Open(storePath, NULL);
     CU_ASSERT_PTR_NULL(store);
 
-    walletDir = get_wallet_path(_path, walletdir);
-    adapter = TestDIDAdapter_Create(walletDir, walletId, network, getpassword);
+    adapter = TestData_GetAdapter(false);
     CU_ASSERT_PTR_NOT_NULL_FATAL(adapter);
 
     store = DIDStore_Open("", adapter);
     CU_ASSERT_PTR_NULL(store);
 
-    TestDIDAdapter_Destroy(adapter);
     DIDStore_Close(store);
 }
 
@@ -240,7 +234,7 @@ static void test_didstore_privateIdentity_error(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
@@ -276,7 +270,7 @@ static void test_didstore_newdid_emptystore(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     hasidentity = DIDStore_ContainsPrivateIdentity(store);
@@ -306,7 +300,7 @@ static void test_didstore_privateidentity_compatibility(void)
     const char *passphrase = "helloworld";
 
     storePath = get_store_path(_path, "/servet");
-    store = TestData_SetupStore(storePath);
+    store = TestData_SetupStore(false, storePath);
     CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     rc = DIDStore_InitPrivateIdentity(store, storepass, mnemonic, passphrase,

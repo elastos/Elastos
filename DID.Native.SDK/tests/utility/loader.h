@@ -46,12 +46,20 @@ const char *Generater_Publickey(char *publickeybase58, size_t size);
 
 DerivedKey *Generater_KeyPair(DerivedKey *dkey);
 
+int Set_Doc_Txid(DIDDocument *doc, const char *txid);
+
+int Set_Doc_Signature(DIDDocument *doc, const char *signature);
+
+void delete_file(const char *path);
+
 ////////////////////////////////////////
 void TestData_Init(void);
 
 void TestData_Deinit(void);
 
-DIDStore *TestData_SetupStore(const char *root);
+DIDAdapter *TestData_GetAdapter(bool dummybackend);
+
+DIDStore *TestData_SetupStore(bool dummybackend, const char *root);
 
 void TestData_Free(void);
 

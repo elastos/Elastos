@@ -115,6 +115,7 @@ int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all)
         DIDDocument *doc = txinfo->request.doc;
         DIDMeta_SetTimestamp(&doc->meta, txinfo->timestamp);
         DIDMeta_SetTxid(&doc->meta, txinfo->txid);
+        DIDMeta_SetSignature(&doc->meta, doc->proof.signatureValue);
         DIDMeta_SetAlias(&doc->meta, "");
         DIDMeta_SetDeactived(&doc->meta, result->status);
         DIDMeta_Copy(&doc->did.meta, &doc->meta);

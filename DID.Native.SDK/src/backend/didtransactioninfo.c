@@ -48,7 +48,7 @@ int DIDTransactionInfo_FromJson(DIDTransactionInfo *txinfo, cJSON *json)
     }
     if (strlen(item->valuestring) >= ELA_MAX_TXID_LEN) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Transaction id is too long.");
-        return -1;        
+        return -1;
     }
     strcpy(txinfo->txid, item->valuestring);
 
@@ -85,6 +85,7 @@ void DIDTransactionInfo_Destroy(DIDTransactionInfo *txinfo)
         return;
 
     //no need to free txinfo, because txinfo is not malloced.
+    free((char*)txinfo->request.payload);
     DIDDocument_Destroy(txinfo->request.doc);
 }
 
@@ -145,5 +146,13 @@ time_t DIDTransactionInfo_GetTimeStamp(DIDTransactionInfo *txinfo)
     assert(txinfo);
 
     return txinfo->timestamp;
+}
+
+DID *DIDTransactionInfo_GetOwner(DIDTransactionInfo *txinfo)
+{
+    if (!txinfo)
+        return NULL;
+
+    return &txinfo->request.proof.verificationMethod.did;
 }
 

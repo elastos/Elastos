@@ -21,6 +21,7 @@
 #include <pwd.h>
 
 #include "ela_did.h"
+#include "dummyadapter.h"
 #include "constant.h"
 #include "loader.h"
 #include "didtest_adapter.h"
@@ -74,14 +75,14 @@ typedef struct TestData {
 TestData testdata;
 
 static DIDAdapter *adapter;
+static DummyAdapter *dummyadapter;
 
 char *get_wallet_path(char* path, const char* dir)
 {
     if (!path || !dir)
         return NULL;
 
-    strcpy(path, getenv("HOME"));
-    strcat(path, dir);
+    sprintf(path, "%s/%s", getenv("HOME"), dir);
     return path;
 }
 
@@ -243,7 +244,7 @@ static int test_path(const char *path)
         return -1;
 }
 
-static void delete_file(const char *path);
+void delete_file(const char *path);
 
 static int delete_file_helper(const char *path, void *context)
 {
@@ -264,7 +265,7 @@ static int delete_file_helper(const char *path, void *context)
     return 0;
 }
 
-static void delete_file(const char *path)
+void delete_file(const char *path)
 {
     int rc;
 
@@ -372,14 +373,24 @@ void TestData_Init(void)
 
     walletDir = get_wallet_path(_dir, walletdir);
     adapter = TestDIDAdapter_Create(walletDir, walletId, network, getpassword);
+    dummyadapter = DummyAdapter_Create();
 }
 
 void TestData_Deinit(void)
 {
-     TestDIDAdapter_Destroy(adapter);
+    TestDIDAdapter_Destroy(adapter);
+    DummyAdapter_Destroy();
 }
 
-DIDStore *TestData_SetupStore(const char *root)
+DIDAdapter *TestData_GetAdapter(bool dummybackend)
+{
+    if (dummybackend)
+        return &dummyadapter->adapter;
+
+    return adapter;
+}
+
+DIDStore *TestData_SetupStore(bool dummybackend, const char *root)
 {
     char cachedir[PATH_MAX];
 
@@ -389,8 +400,14 @@ DIDStore *TestData_SetupStore(const char *root)
     sprintf(cachedir, "%s%s", getenv("HOME"), "/.cache.did.elastos");
 
     delete_file(root);
-    testdata.store = DIDStore_Open(root, adapter);
-    DIDBackend_InitializeDefault(resolver, cachedir);
+    if (dummybackend) {
+        dummyadapter->reset(dummyadapter);
+        testdata.store = DIDStore_Open(root, &dummyadapter->adapter);
+        DIDBackend_Initialize(&dummyadapter->resolver, cachedir);
+    } else {
+        testdata.store = DIDStore_Open(root, adapter);
+        DIDBackend_InitializeDefault(resolver, cachedir);
+    }
     return testdata.store;
 }
 
@@ -774,3 +791,38 @@ DerivedKey *Generater_KeyPair(DerivedKey *dkey)
 
     return HDKey_GetDerivedKey(privateIdentity, 0, dkey);
 }
+
+int Set_Doc_Txid(DIDDocument *doc, const char *txid)
+{
+    if (!doc)
+        return -1;
+
+    if (txid) {
+        if (strlen(txid) >= sizeof(doc->meta.txid))
+            return -1;
+        strcpy(doc->meta.txid, txid);
+    } else {
+        *doc->meta.txid = 0;
+    }
+
+    memcpy(&doc->did.meta, &doc->meta, sizeof(doc->meta));
+    return 0;
+}
+
+int Set_Doc_Signature(DIDDocument *doc, const char *signature)
+{
+    if (!doc)
+        return -1;
+
+    if (signature) {
+        if (strlen(signature) >= sizeof(doc->meta.signatureValue))
+            return -1;
+        strcpy(doc->meta.signatureValue, signature);
+    } else {
+        *doc->meta.signatureValue = 0;
+    }
+
+    memcpy(&doc->did.meta, &doc->meta, sizeof(doc->meta));
+    return 0;
+}
+

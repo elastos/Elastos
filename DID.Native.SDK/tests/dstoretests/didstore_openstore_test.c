@@ -180,7 +180,7 @@ static int didstore_openstore_test_suite_init(void)
     const char *walletDir, *path;
 
     walletDir = get_wallet_path(_path, walletdir);
-    adapter = TestDIDAdapter_Create(walletDir, walletId, network, getpassword);
+    adapter = TestData_GetAdapter(false);
     if (!adapter)
         return -1;
 
@@ -195,7 +195,6 @@ static int didstore_openstore_test_suite_init(void)
 
 static int didstore_openstore_test_suite_cleanup(void)
 {
-    TestDIDAdapter_Destroy(adapter);
     DIDStore_Close(store);
     return 0;
 }

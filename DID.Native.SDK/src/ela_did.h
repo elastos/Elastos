@@ -196,6 +196,8 @@ typedef int DIDStore_DIDsCallback(DID *did, void *context);
  */
 typedef int DIDStore_CredentialsCallback(DIDURL *id, void *context);
 
+typedef DIDDocument* DIDStore_MergeCallback(DIDDocument *chaincopy, DIDDocument *localcopy);
+
 struct DIDAdapter {
     const char* (*createIdTransaction) (DIDAdapter *adapter,
             const char *payload, const char *memo);
@@ -2122,10 +2124,13 @@ DID_API int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store,
  *      store                  [in] THe handle to DIDStore.
  * @param
  *      storepass              [in] The pass word of DID holder.
+ * @param
+ *      callback               [in] The method to merge document.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_Synchronize(DIDStore *store, const char *storepass);
+DID_API int DIDStore_Synchronize(DIDStore *store, const char *storepass,
+        DIDStore_MergeCallback *callback);
 
 /**
  * \~English
@@ -2191,6 +2196,7 @@ DID_API int DIDStore_ExportMnemonic(DIDStore *store, const char *storepass,
  *      document                  [in] The handle to DID Document.
  * @param
  *      alias                     [in] The nickname of DID.
+ *                                 If alias == NULL, use the old alias in store.
  * @return
  *      0 on success, -1 if an error occurred.
  */

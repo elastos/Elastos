@@ -53,6 +53,8 @@ const char *DIDTransactionInfo_GetTransactionId(DIDTransactionInfo *txinfo);
 
 time_t DIDTransactionInfo_GetTimeStamp(DIDTransactionInfo *txinfo);
 
+DID *DIDTransactionInfo_GetOwner(DIDTransactionInfo *txinfo);
+
 #ifdef __cplusplus
 }
 #endif

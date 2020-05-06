@@ -1013,7 +1013,7 @@ bool DIDDocument_IsValid(DIDDocument *document)
     }
 
     if (DIDDocument_IsExpires(document)) {
-        DIDError_Set(DIDERR_EXPIRED, "Did document is expires.");
+        DIDError_Set(DIDERR_EXPIRED, "Did is expires.");
         return false;
     }
 
