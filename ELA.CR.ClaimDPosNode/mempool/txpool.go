@@ -454,13 +454,13 @@ func NewTxPool(params *config.Params) *TxPool {
 		chainParams:     params,
 	}
 	rtn.txPoolCheckpoint = newTxPoolCheckpoint(
-		rtn.onPopBack, func(m map[Uint256]*Transaction) {
+		rtn, func(m map[Uint256]*Transaction) {
 			for _, v := range m {
 				if err := rtn.conflictManager.AppendTx(v); err != nil {
 					return
 				}
 			}
-		}, rtn.appendToTxPool)
+		})
 	params.CkpManager.Register(rtn.txPoolCheckpoint)
 	return rtn
 }
