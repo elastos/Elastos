@@ -795,11 +795,11 @@ export default class extends Base {
         const user = await db_user.findById({_id: userId})
         if (user && user.dids) {
             const did = user.dids.find(el => el.active === true)
-            if (did && !did.mark) {
+            if (did) {
                 return { success: true, did }
             } else {
                 return { success: false }
-            }   
+            }
         } else {
             return { success: false }
         }
