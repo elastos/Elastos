@@ -17,8 +17,7 @@ sleep 7
 
 # Migrate the database
 # Collect all static content
-rm -rf www/
-python manage.py collectstatic --no-input
+python manage.py collectstatic --no-input --clear
 
 python manage.py makemigrations
 python manage.py migrate

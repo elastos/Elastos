@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import rollbar
 from decouple import config, Csv
 from qr_code.qrcode import constants
 
@@ -99,6 +100,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'rollbar.contrib.django.middleware.RollbarNotifierMiddleware'
 ]
 
 ROOT_URLCONF = 'console_main.urls'
@@ -186,6 +188,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Rollbar
+ROLLBAR = {
+    'access_token': config('ROLLBAR_ACCESS_TOKEN'),
+    'environment': 'development' if DEBUG else 'production',
+    'branch': 'master',
+    'root': BASE_DIR
+}
+
 # In elastic beanstalk, LOG_DIR is set to /opt/python/log
 # See .ebextensions/{{cookiecutter.project_name}}.config
 # All other environments, LOG_DIR is empty, which means
@@ -235,15 +245,21 @@ LOGGING = {
             'filters': ['require_debug_true'],
             'formatter': 'verbose',
         },
+        'rollbar': {
+            'filters': ['require_debug_false'],
+            'access_token': config('ROLLBAR_ACCESS_TOKEN'),
+            'environment': 'production',
+            'class': 'rollbar.logger.RollbarHandler',
+        }
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'rollbar'],
             'level': 'ERROR',
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['mail_admins'],
+            'handlers': ['mail_admins', 'rollbar'],
             'level': 'ERROR',
             'propagate': True,
         },
