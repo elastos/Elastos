@@ -56,12 +56,12 @@ func (pt CRCProposalType) Name() string {
 	//	return "MainChainUpgradeCode"
 	//case SideChainUpgradeCode:
 	//	return "SideChainUpgradeCode"
-	//case ChangeProposalOwner:
-	//	return "ChangeProposalOwner"
-	//case CloseProposal:
-	//	return "CloseProposal"
-	//case SecretaryGeneral:
-	//	return "SecretaryGeneral"
+	case ChangeProposalOwner:
+		return "ChangeProposalOwner"
+	case CloseProposal:
+		return "CloseProposal"
+	case SecretaryGeneral:
+		return "SecretaryGeneral"
 	default:
 		return "Unknown"
 	}
@@ -146,6 +146,19 @@ func (p *CRCProposal) Data(version byte) []byte {
 }
 
 func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
+	switch p.ProposalType {
+	case ChangeProposalOwner:
+		return p.SerializeUnsignedChangeProposalOwner(w, version)
+	case CloseProposal:
+		return p.SerializeUnsignedCloseProposal(w, version)
+	case SecretaryGeneral:
+		return p.SerializeUnsignedChangeSecretaryGeneral(w, version)
+	default:
+		return p.SerializeUnsignedNormalOrELIP(w, version)
+	}
+}
+
+func (p *CRCProposal) SerializeUnsignedNormalOrELIP(w io.Writer, version byte) error {
 
 	if err := common.WriteElement(w, p.ProposalType); err != nil {
 		return errors.New("failed to serialize ProposalType")
@@ -180,17 +193,35 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 	return nil
 }
 
-func (b *Budget) Serialize(w io.Writer) error {
-	if err := common.WriteElement(w, b.Type); err != nil {
-		return errors.New("failed to serialize Type")
-	}
-	if err := common.WriteElement(w, b.Stage); err != nil {
-		return errors.New("failed to serialize Stage")
-	}
-	return b.Amount.Serialize(w)
+func (p *CRCProposal) SerializeUnsignedChangeProposalOwner(w io.Writer, version byte) error {
+	// todo complete me later
+	return nil
+}
+
+func (p *CRCProposal) SerializeUnsignedChangeSecretaryGeneral(w io.Writer, version byte) error {
+	// todo complete me later
+	return nil
+}
+
+func (p *CRCProposal) SerializeUnsignedCloseProposal(w io.Writer, version byte) error {
+	// todo complete me later
+	return nil
 }
 
 func (p *CRCProposal) Serialize(w io.Writer, version byte) error {
+	switch p.ProposalType {
+	case ChangeProposalOwner:
+		return p.SerializeChangeProposalOwner(w, version)
+	case CloseProposal:
+		return p.SerializeCloseProposal(w, version)
+	case SecretaryGeneral:
+		return p.SerializeChangeSecretaryGeneral(w, version)
+	default:
+		return p.SerializeNormalOrELIP(w, version)
+	}
+}
+
+func (p *CRCProposal) SerializeNormalOrELIP(w io.Writer, version byte) error {
 	if err := p.SerializeUnsigned(w, version); err != nil {
 		return err
 	}
@@ -206,6 +237,31 @@ func (p *CRCProposal) Serialize(w io.Writer, version byte) error {
 	return common.WriteVarBytes(w, p.CRCouncilMemberSignature)
 }
 
+func (p *CRCProposal) SerializeChangeProposalOwner(w io.Writer, version byte) error {
+	// todo complete me later
+	return nil
+}
+
+func (p *CRCProposal) SerializeChangeSecretaryGeneral(w io.Writer, version byte) error {
+	// todo complete me later
+	return nil
+}
+
+func (p *CRCProposal) SerializeCloseProposal(w io.Writer, version byte) error {
+	// todo complete me later
+	return nil
+}
+
+func (b *Budget) Serialize(w io.Writer) error {
+	if err := common.WriteElement(w, b.Type); err != nil {
+		return errors.New("failed to serialize Type")
+	}
+	if err := common.WriteElement(w, b.Stage); err != nil {
+		return errors.New("failed to serialize Stage")
+	}
+	return b.Amount.Serialize(w)
+}
+
 func (b *Budget) Deserialize(r io.Reader) error {
 	if err := common.ReadElement(r, &b.Type); err != nil {
 		return errors.New("[CRCProposal], Type deserialize failed")
@@ -218,6 +274,19 @@ func (b *Budget) Deserialize(r io.Reader) error {
 }
 
 func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
+	switch p.ProposalType {
+	case ChangeProposalOwner:
+		return p.DeserializeUnSignedChangeProposalOwner(r, version)
+	case CloseProposal:
+		return p.DeserializeUnSignedCloseProposal(r, version)
+	case SecretaryGeneral:
+		return p.DeserializeUnSignedChangeSecretaryGeneral(r, version)
+	default:
+		return p.DeserializeUnSignedNormalOrELIP(r, version)
+	}
+}
+
+func (p *CRCProposal) DeserializeUnSignedNormalOrELIP(r io.Reader, version byte) error {
 	err := common.ReadElement(r, &p.ProposalType)
 	if err != nil {
 		return errors.New("[CRCProposal], ProposalType deserialize failed")
@@ -257,7 +326,33 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 	return nil
 }
 
+func (p *CRCProposal) DeserializeUnSignedChangeProposalOwner(r io.Reader, version byte) error {
+	// todo complete me later
+	return nil
+}
+func (p *CRCProposal) DeserializeUnSignedCloseProposal(r io.Reader, version byte) error {
+	// todo complete me later
+	return nil
+}
+func (p *CRCProposal) DeserializeUnSignedChangeSecretaryGeneral(r io.Reader, version byte) error {
+	// todo complete me later
+	return nil
+}
+
 func (p *CRCProposal) Deserialize(r io.Reader, version byte) error {
+	switch p.ProposalType {
+	case ChangeProposalOwner:
+		return p.DeserializeChangeProposalOwner(r, version)
+	case CloseProposal:
+		return p.DeserializeCloseProposal(r, version)
+	case SecretaryGeneral:
+		return p.DeserializeChangeSecretaryGeneral(r, version)
+	default:
+		return p.DeserializeNormalOrELIP(r, version)
+	}
+}
+
+func (p *CRCProposal) DeserializeNormalOrELIP(r io.Reader, version byte) error {
 	if err := p.DeserializeUnSigned(r, version); err != nil {
 		return err
 	}
@@ -278,6 +373,19 @@ func (p *CRCProposal) Deserialize(r io.Reader, version byte) error {
 	}
 	p.CRCouncilMemberSignature = crSign
 
+	return nil
+}
+
+func (p *CRCProposal) DeserializeChangeProposalOwner(r io.Reader, version byte) error {
+	// todo complete me later
+	return nil
+}
+func (p *CRCProposal) DeserializeCloseProposal(r io.Reader, version byte) error {
+	// todo complete me later
+	return nil
+}
+func (p *CRCProposal) DeserializeChangeSecretaryGeneral(r io.Reader, version byte) error {
+	// todo complete me later
 	return nil
 }
 
