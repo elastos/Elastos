@@ -263,13 +263,13 @@
                             {% for activity in your_activity %}
                                 <div class="card-transparent text-white border-dark mb-3">
                                     {% for key, value in activity.items %}
-                                        {% if 'display_string' in key %}
+                                        {% if key == 'display_string' %}
                                             <div class="card-header" id="heading{{ forloop.parentloop.counter }}" style="background-color: rgba(0, 0, 0, 0); border-bottom: 0px;">
                                                 <div class="d-flex align-items-stretch">
                                                     <div class="mr-auto p-2">
                                                         <span class="float-md-left align-middle">
                                                             <h5 class="mb-0 align-middle" style="font-family: Overpass;">
-                                                                {{ value }}
+                                                                {{ activity.display_string }}
                                                             </h5>
                                                         </span>
                                                     </div>
@@ -283,17 +283,19 @@
                                             </div>
                                         {% endif %}
                                     {% endfor %}
-                                        <div id="collapse{{ forloop.counter }}" class="collapse" aria-labelledby="heading{{ forloop.counter }}" data-parent="#accordion">
-                                            <div class="card-body">
+                                    <div id="collapse{{ forloop.counter }}" class="collapse" aria-labelledby="heading{{ forloop.counter }}" data-parent="#accordion">
+                                        <div class="card-body">
                                             {% for ind, child in activity.items %}
-                                                <div class="row" style="margin-left: 0px">
-                                                    <p class="text-white font-weight-bold" style="padding-right: 4px">'{{ ind }}': </p>
-                                                    <p class="text-white font-weight-normal">'{{ child }}'</p>
-                                                </div>
+                                                {% if ind != 'display_string' and ind != 'last_visited' %}
+                                                    <div class="row" style="margin-left: 0px">
+                                                        <p class="text-white font-weight-bold" style="padding-right: 4px">'{{ ind }}': </p>
+                                                        <p class="text-white font-weight-normal">'{{ child }}'</p>
+                                                    </div>
+                                                {% endif %}
                                             {% endfor %}
-                                            </div>
                                         </div>
                                     </div>
+                                </div>
                                 <div class="divider"></div>
                             {% endfor %}
                         </div>

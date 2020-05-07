@@ -29,8 +29,6 @@ from .forms import DeployETHContractForm, WatchETHContractForm
 from .models import UploadFile, UserServiceSessionVars, SavedFileInformation, SavedETHContractInformation
 
 
-
-
 @login_required
 def generate_key(request):
     did = request.session['did']
@@ -85,7 +83,7 @@ def generate_key(request):
                     return redirect(reverse('service:generate_key'))
                 else:
                     request.session['api_key'] = api_key
-                    track_page_visit(did , 'Generate API Key' , "service:generate_key" , True , True , token)
+                    track_page_visit(did, 'Generate API Key', "service:generate_key", True, True, token)
                     return render(request, "service/generate_key.html",
                                   {'output': output, 'api_key': api_key, 'sample_code': sample_code,
                                    'recent_services': recent_services})
@@ -126,7 +124,6 @@ def upload_and_sign(request):
             form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key'],
                                               'private_key': request.session['private_key_mainchain']})
 
-
             return render(request, "service/upload_and_sign.html",
                           {'form': form, 'output': False, 'sample_code': sample_code,
                            'recent_services': recent_services, 'total_reached': True})
@@ -158,7 +155,7 @@ def upload_and_sign(request):
                     remove_uploaded_file = True
                     user_uploaded_file = File(request.FILES['uploaded_file'])
 
-                obj.uploaded_file.save(get_random_string(32),user_uploaded_file)
+                obj.uploaded_file.save(get_random_string(32), user_uploaded_file)
                 try:
                     temp_file = UploadFile.objects.get(did=did)
                     file_path = temp_file.uploaded_file.path
@@ -180,12 +177,12 @@ def upload_and_sign(request):
                                                                           message_hash=message_hash,
                                                                           signature=signature, file_hash=file_hash)
 
-                        track_page_visit(did , 'Upload And Sign' , "service:upload_and_sign" , True , True)
+                        track_page_visit(did, 'Upload And Sign', "service:upload_and_sign", True, True)
                         return render(request, "service/upload_and_sign.html",
                                       {"message_hash": message_hash, "public_key": public_key, "signature": signature,
                                        "file_hash": file_hash, 'output': True, 'sample_code': sample_code,
-                                       'recent_services': recent_services ,
-                                       'total_reached':False})
+                                       'recent_services': recent_services,
+                                       'total_reached': False})
                     else:
                         messages.success(request, response['status_message'])
                         return redirect(reverse('service:upload_and_sign'))
@@ -195,8 +192,8 @@ def upload_and_sign(request):
                     return redirect(reverse('service:upload_and_sign'))
                 finally:
                     temp_file.delete()
-                    if(remove_uploaded_file):
-                        os.remove(os.path.join(MEDIA_ROOT ,'user_files' ,true_file_name))
+                    if (remove_uploaded_file):
+                        os.remove(os.path.join(MEDIA_ROOT, 'user_files', true_file_name))
                     hive.close()
         else:
             return redirect(reverse('service:upload_and_sign'))
@@ -205,7 +202,7 @@ def upload_and_sign(request):
         form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key'],
                                           'private_key': request.session['private_key_mainchain']})
         return render(request, "service/upload_and_sign.html",
-                      {'form': form, 'output': False, 'sample_code': sample_code, 'recent_services': recent_services ,
+                      {'form': form, 'output': False, 'sample_code': sample_code, 'recent_services': recent_services,
                        'total_reached': False})
 
 
@@ -342,7 +339,7 @@ def create_wallet(request):
                                                                                                              'private_key']})
                             obj.save()
                         populate_session_vars_from_database(request, did)
-                        track_page_visit(did , 'Create Wallet', "service:create_wallet" , True , True)
+                        track_page_visit(did, 'Create Wallet', "service:create_wallet", True, True)
                         return render(request, "service/create_wallet.html",
                                       {'output': True, 'wallet_mainchain': wallet_mainchain,
                                        'wallet_did': wallet_did, 'wallet_token': wallet_token, 'wallet_eth': wallet_eth,
@@ -514,7 +511,7 @@ def request_ela(request):
                     content = json.loads(response['output'])['result']
                     address[chain] = content['address']
                     deposit_amount[chain] = content['deposit_amount']
-                    track_page_visit(did, 'Request ELA', 'service:request_ela', True , True , chain)
+                    track_page_visit(did, 'Request ELA', 'service:request_ela', True, True, chain)
                     return render(request, "service/request_ela.html", {'output': output, 'form': form_to_display,
                                                                         'address': address,
                                                                         'deposit_amount': deposit_amount,
@@ -568,7 +565,7 @@ def deploy_eth_contract(request):
                                                       'eth_gas': 2000000})
                 return render(request, "service/deploy_eth_contract.html",
                               {'form': form, 'output': False, 'sample_code': sample_code,
-                               'recent_services': recent_services , 'total_reached':True})
+                               'recent_services': recent_services, 'total_reached': True})
 
             # Purge old requests for housekeeping.
             UploadFile.objects.filter(did=did).delete()
@@ -614,12 +611,13 @@ def deploy_eth_contract(request):
                                                                              contract_name=contract_name,
                                                                              contract_code_hash=contract_code_hash,
                                                                              did=did)
+                        track_page_visit(did, 'Deploy ETH Contract', 'service:deploy_eth_contract', True, True)
                         return render(request, "service/deploy_eth_contract.html",
                                       {"contract_address": contract_address, "contract_name": contract_name,
                                        "contract_code_hash": contract_code_hash, 'output': True,
                                        'sample_code': sample_code,
                                        'recent_services': recent_services,
-                                       'total_reached':False})
+                                       'total_reached': False})
                     else:
                         messages.success(request, response['status_message'])
                         return redirect(reverse('service:deploy_eth_contract'))
@@ -630,7 +628,7 @@ def deploy_eth_contract(request):
                 finally:
                     temp_file.delete()
                     if remove_file:
-                        os.remove(os.path.join(MEDIA_ROOT , 'user_files', true_file_name))
+                        os.remove(os.path.join(MEDIA_ROOT, 'user_files', true_file_name))
                     sidechain_eth.close()
         else:
             return redirect(reverse('service:deploy_eth_contract'))
@@ -641,8 +639,8 @@ def deploy_eth_contract(request):
                                               'eth_private_key': request.session['private_key_eth'],
                                               'eth_gas': 2000000})
         return render(request, "service/deploy_eth_contract.html",
-                      {'form': form, 'output': False, 'sample_code': sample_code, 'recent_services': recent_services ,
-                       'total_reached':False})
+                      {'form': form, 'output': False, 'sample_code': sample_code, 'recent_services': recent_services,
+                       'total_reached': False})
 
 
 @login_required
@@ -682,7 +680,7 @@ def watch_eth_contract(request):
                         contract_address = data['result']['contract_address']
                         contract_functions = data['result']['contract_functions']
                         contract_source = data['result']['contract_source']
-                        track_page_visit(did, 'Watch ETH Contract', 'service:watch_eth_contract', True , True)
+                        track_page_visit(did, 'Watch ETH Contract', 'service:watch_eth_contract', True, True)
                         return render(request, "service/watch_eth_contract.html",
                                       {'output': True, 'contract_address': contract_address,
                                        'contract_name': contract_name,

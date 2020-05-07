@@ -28,7 +28,7 @@ from .models import DIDUser
 from .forms import DIDUserCreationForm, DIDUserChangeForm
 from service.forms import SuggestServiceForm
 from .tokens import account_activation_token
-from .your_activity_dict import get_activity_model
+from .your_activity_dict import get_activity_model, display_time_elapsed
 from service.models import UserServiceSessionVars, SavedFileInformation
 
 
@@ -119,13 +119,14 @@ def feed(request):
         model_found = False
         view_name = items.view.split(':')[1]  # get the view name
         your_activity_model = get_activity_model(view_name)
+        time_elapsed_in_seconds = math.floor((timezone.now() - items.last_visited).seconds)
+        last_visited = "{0} ago".format(display_time_elapsed(time_elapsed_in_seconds))
         if your_activity_model is None:
             your_activity_list.append({
-                'display_string': 'You just visited "{0}" page'.format(items.name), 'last_visited': "{} mins ago".format(math.floor(((timezone.now() - items.last_visited).seconds) / 60))
+                'display_string': 'You just visited "{0}" page'.format(items.name), 'last_visited': last_visited
             })
         else:
             for app in all_apps:
-
                 app_models = apps.get_app_config(app).get_models()
                 for model in app_models:
                     try:
@@ -134,25 +135,25 @@ def feed(request):
                             if items.additional_field != '':
                                 try:
                                     obj_dict = obj_model.your_activity()[view_name][items.additional_field]
-                                    obj_dict['last_visited'] = "{} mins ago".format(math.floor(((timezone.now() - items.last_visited).seconds) / 60))
+                                    obj_dict['last_visited'] = last_visited
                                     your_activity_list.append(obj_dict)
                                     model_found = True
                                     break
                                 except KeyError as e:
                                     your_activity_list.append({
-                                        'display_string': 'You just visited "{0}" page'.format(items.name), 'last_visited': "{} mins ago".format(math.floor(((timezone.now() - items.last_visited).seconds) / 60))
+                                        'display_string': 'You just visited "{0}" page'.format(items.name), 'last_visited': last_visited
                                     })
                                     logging.debug(e)
                                     break
                             else:
                                 obj_dict = obj_model.your_activity()[view_name]
-                                obj_dict['last_visited'] = "{} mins ago".format(math.floor(((timezone.now() - items.last_visited).seconds) / 60))
+                                obj_dict['last_visited'] = last_visited
                                 your_activity_list.append(obj_dict)
                                 model_found = True
                                 break
                     except Exception as e:
                         your_activity_list.append({
-                            'display_string': 'You just visited "{0}" page'.format(items.name), 'last_visited': "{} mins ago".format(math.floor(((timezone.now() - items.last_visited).seconds) / 60))
+                            'display_string': 'You just visited "{0}" page'.format(items.name), 'last_visited': last_visited
                         })
                 if model_found:
                     break
