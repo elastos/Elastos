@@ -4,10 +4,11 @@ docker container stop smartweb-postgres-test || true && docker container rm -f s
 
 # start a postgres docker container
 docker run -d --name smartweb-postgres-test \
-    -v "$PWD/.postgres-data-test:/var/lib/postgresql/data"     \
-    -e POSTGRES_DB=smartweb_test                             \
+    -v "$PWD/.postgres-data-test:/var/lib/postgresql"   \
+    -e POSTGRES_DB=smartweb_test                        \
     -e POSTGRES_USER=gmu                                \
     -e POSTGRES_PASSWORD=gmu                            \
+    -e PGDATA=/var/lib/postgresql/data/pgdata           \
     -p 5436:5432                                        \
     postgres:11-alpine
 
