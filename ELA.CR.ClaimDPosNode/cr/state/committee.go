@@ -407,8 +407,7 @@ func (c *Committee) recordCurrentStageAmount(height uint32) {
 	c.appropriationHistory.Append(height, func() {
 		c.AppropriationAmount = common.Fixed64(float64(c.CRCFoundationBalance-
 			lockedAmount) * c.params.CRCAppropriatePercentage / 100.0)
-		c.CRCCurrentStageAmount = c.CRCCommitteeBalance +
-			c.AppropriationAmount - c.CRCCommitteeUsedAmount
+		c.CRCCurrentStageAmount = c.CRCCommitteeBalance + c.AppropriationAmount
 		log.Infof("current stage amount:%s,appropriation amount:%s",
 			c.CRCCurrentStageAmount, c.AppropriationAmount)
 		log.Infof("CR expenses address balance: %s,CR assets address "+
