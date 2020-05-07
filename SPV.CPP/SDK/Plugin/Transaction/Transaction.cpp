@@ -24,6 +24,7 @@
 #include <Plugin/Transaction/Payload/CRCProposal.h>
 #include <Plugin/Transaction/Payload/CRCProposalReview.h>
 #include <Plugin/Transaction/Payload/CRCProposalTracking.h>
+#include <Plugin/Transaction/Payload/CRCProposalWithdraw.h>
 #include <Wallet/Wallet.h>
 
 #include <Common/Log.h>
@@ -297,6 +298,9 @@ namespace Elastos {
 		bool Transaction::IsSigned() const {
 			if (_type == rechargeToSideChain || _type == coinBase)
 				return true;
+
+			if (_type == crcProposalWithdraw)
+				return _payload->IsValid(CRCProposalWithdrawVersion);
 
 			if (_programs.size() == 0)
 				return false;

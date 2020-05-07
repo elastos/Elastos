@@ -1385,8 +1385,59 @@ namespace Elastos {
 																			 const nlohmann::json &utxo,
 																			 const nlohmann::json &payload,
 																			 const std::string &memo) {
-			ErrorChecker::ThrowParamException(Error::InvalidArgument, "interface not ready");
-			return nlohmann::json();
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("recipient: {}", recipient);
+			ArgInfo("amount: {}", amount);
+			ArgInfo("utxo: {}", utxo.dump());
+			ArgInfo("payload: {}", payload.dump());
+			ArgInfo("memo: {}", memo);
+
+#define CRCProposalWithdrawFee 10000
+
+			TransactionPtr txn;
+			Address recvAddress(recipient);
+			ErrorChecker::CheckParam(!recvAddress.Valid(), Error::InvalidArgument, "invalid recipient");
+
+			BigInt outputAmount, inputAmount;
+			outputAmount.setDec(amount);
+			ErrorChecker::CheckParam(outputAmount <= 0, Error::InvalidArgument, "invalid amount");
+
+			try {
+				PayloadPtr p(new CRCProposalWithdraw);
+				p->FromJson(payload, CRCProposalWithdrawVersion);
+				ErrorChecker::CheckParam(!p->IsValid(CRCProposalWithdrawVersion), Error::InvalidArgument, "invalid payload");
+
+				txn = TransactionPtr(new Transaction(Transaction::crcProposalWithdraw, p));
+				for (nlohmann::json::const_iterator it = utxo.cbegin(); it != utxo.cend(); ++it) {
+					uint256 txHash;
+					txHash.SetHex((*it)["Hash"].get<std::string>());
+					uint16_t index = (*it)["Index"].get<uint16_t>();
+					BigInt curAmount;
+					curAmount.setDec((*it)["Amount"].get<std::string>());
+
+					txn->AddInput(InputPtr(new TransactionInput(txHash, index)));
+					inputAmount += curAmount;
+				}
+
+				if (inputAmount < outputAmount + CRCProposalWithdrawFee)
+					ErrorChecker::ThrowParamException(Error::InvalidArgument, "input amount not enough");
+
+				txn->AddOutput(OutputPtr(new TransactionOutput(outputAmount, recvAddress)));
+
+				if (inputAmount > outputAmount + CRCProposalWithdrawFee)
+					txn->AddOutput(OutputPtr(new TransactionOutput(inputAmount - outputAmount - CRCProposalWithdrawFee, Address("CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b"))));
+
+				txn->SetFee(CRCProposalWithdrawFee);
+
+				txn->SetVersion(Transaction::TxVersion::V09);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "create tx fail");
+			}
+
+			nlohmann::json result;
+			EncodeTx(result, txn);
+
+			return result;
 		}
 
 	}
