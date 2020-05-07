@@ -893,7 +893,10 @@ export default class extends Base {
                     }
                   } else {
                     try {
-                        const didDoc = await db_did.findOne({ did: decoded.iss })
+                        const didDoc = await db_did.findOne({
+                            number: payload.nonce,
+                            did: decoded.iss
+                        })
                         if (!_.isEmpty(didDoc)) {
                             return {
                                 code: 200,
