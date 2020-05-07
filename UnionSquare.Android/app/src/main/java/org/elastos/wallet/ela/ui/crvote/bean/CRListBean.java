@@ -169,6 +169,7 @@ public class CRListBean extends BaseEntity {
                  * votes : 0
                  * index : 0
                  */
+                //private static  final   long serialVersionUID=-7500922453214839719L;
                 @Override
                 public int compareTo(@NonNull CrcandidatesinfoBean o) {
                     return Integer.compare(this.getIndex(), o.getIndex());

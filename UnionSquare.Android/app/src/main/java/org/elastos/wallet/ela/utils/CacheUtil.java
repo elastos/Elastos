@@ -62,18 +62,25 @@ public class CacheUtil {
         CacheDiskUtils.getInstance(file).remove("area");
     }
 
+    /*
+     */
+
     /**
      * 慎用
-     */
+     *//*
+
     public static void clear() {
         CacheDiskUtils.getInstance(file).clear();
     }
-
-    public static ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> getProducerList() {
+*/
+    public static void converDepositBean2String() {
         Wallet wallet = new RealmUtil().queryDefauleWallet();
         ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> list = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) CacheDiskUtils.getInstance(file)
                 .getSerializable("list" + wallet.getWalletId());
-        return list == null ? new ArrayList<>() : list;
+        if (list != null && list.size() > 0) {
+            setProducerList(list);
+            CacheDiskUtils.getInstance(file).remove("list" + wallet.getWalletId());
+        }
     }
 
     public static void setProducerList(List<VoteListBean.DataBean.ResultBean.ProducersBean> list) {
@@ -82,12 +89,35 @@ public class CacheUtil {
         }
         Wallet wallet = new RealmUtil().queryDefauleWallet();
         if (list.size() == 0) {
-            CacheDiskUtils.getInstance(file).remove("list" + wallet.getWalletId());
+            CacheDiskUtils.getInstance(file).remove("depositlistlist" + wallet.getWalletId());
             return;
         }
 
+        ArrayList<String> listString = new ArrayList<>();
+        for (VoteListBean.DataBean.ResultBean.ProducersBean bean : list) {
+            listString.add(bean.getOwnerpublickey());
+        }
+        CacheDiskUtils.getInstance(file).put("depositlistlist" + wallet.getWalletId(), listString, CacheDiskUtils.DAY * 360);
+    }
 
-        CacheDiskUtils.getInstance(file).put("list" + wallet.getWalletId(), (Serializable) list, CacheDiskUtils.DAY * 360);
+    public static ArrayList<String> getProducerListString() {
+        Wallet wallet = new RealmUtil().queryDefauleWallet();
+        ArrayList<String> list = (ArrayList<String>) CacheDiskUtils.getInstance(file)
+                .getSerializable("depositlistlist" + wallet.getWalletId());
+        return list == null ? new ArrayList<>() : list;
+    }
+
+    public static void setProducerListString(List<String> list) {
+        if (list == null) {
+            return;
+        }
+        Wallet wallet = new RealmUtil().queryDefauleWallet();
+        if (list.size() == 0) {
+            CacheDiskUtils.getInstance(file).remove("depositlistlist" + wallet.getWalletId());
+            return;
+        }
+
+        CacheDiskUtils.getInstance(file).put("depositlistlist" + wallet.getWalletId(), (Serializable) list, CacheDiskUtils.DAY * 360);
     }
 
     public static void converCrBean2String() {

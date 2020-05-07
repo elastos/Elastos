@@ -45,11 +45,10 @@ import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
-import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,7 +82,7 @@ public class NodeInformationFragment extends BaseFragment {
     TextView tvZl;
     @BindView(R.id.tv_addrs)
     TextView tv_addrs;
-    List<VoteListBean.DataBean.ResultBean.ProducersBean> list;
+    List<String> list;
     String zb;
     @BindView(R.id.tv_node_publickey)
     TextView tvNodePublickey;
@@ -175,14 +174,13 @@ public class NodeInformationFragment extends BaseFragment {
         }
 
         //  tvZl.setText(bean.getIp());
-        list = CacheUtil.getProducerList();
-        if (list != null) {
-            for (int i = 0; i < list.size(); i++) {
-                if (list.get(i).getOwnerpublickey().equals(bean.getOwnerpublickey())) {
-                    sbJrhxlb.setText(getString(R.string.remove_candidate_list));
-                }
+        list = CacheUtil.getProducerListString();
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).equals(bean.getOwnerpublickey())) {
+                sbJrhxlb.setText(getString(R.string.remove_candidate_list));
             }
         }
+
     }
 
 
@@ -212,11 +210,11 @@ public class NodeInformationFragment extends BaseFragment {
                 //移除
                 if (sbJrhxlb.getText().toString().equals(getString(R.string.remove_candidate_list))) {
                     for (int i = 0; i < list.size(); i++) {
-                        if (list.get(i).getOwnerpublickey().equals(bean.getOwnerpublickey())) {
+                        if (list.get(i).equals(bean.getOwnerpublickey())) {
                             ToastUtils.showShort(getString(R.string.yi_remove_candidate_list));
                             sbJrhxlb.setText(getString(R.string.candidate_list));
                             list.remove(i);
-                            CacheUtil.setProducerList(list);
+                            CacheUtil.setProducerListString(list);
                         }
                     }
                     return;
@@ -227,8 +225,8 @@ public class NodeInformationFragment extends BaseFragment {
                     if (list == null) {
                         list = new ArrayList<>();
                     }
-                    list.add(bean);
-                    CacheUtil.setProducerList(list);
+                    list.add(bean.getOwnerpublickey());
+                    CacheUtil.setProducerListString(list);
                     sbJrhxlb.setText(getString(R.string.remove_candidate_list));
                     ToastUtils.showShort(getString(R.string.candidate_list));
                     return;

@@ -131,7 +131,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     AppCompatTextView tv_num;
     @BindView(R.id.tv_ljtp)
     AppCompatTextView tv_ljtp;
-    List<VoteListBean.DataBean.ResultBean.ProducersBean> list;
+    List<VoteListBean.DataBean.ResultBean.ProducersBean> list = new ArrayList<>();
     List<VoteListBean.DataBean.ResultBean.ProducersBean> unSelectlist;//未选择
     DialogUtil dialogUtil = new DialogUtil();
     @BindView(R.id.ll_blank)
@@ -244,15 +244,14 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 
     // 初始化数据
     private void initDate() {
-        list = CacheUtil.getProducerList();
+        ArrayList<String> list1 = CacheUtil.getProducerListString();
+        // list = CacheUtil.getProducerList();
         unSelectlist = new ArrayList<>();
         ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> newlist = new ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>();
-        if (list.size() > 0) {
-            for (VoteListBean.DataBean.ResultBean.ProducersBean bean : netList) {
-                //刷新本地数据
-                if (list.contains(bean)) {
-                    newlist.add(bean);
-                }
+        for (VoteListBean.DataBean.ResultBean.ProducersBean bean : netList) {
+            //刷新本地数据
+            if (list1.contains(bean.getOwnerpublickey())) {
+                newlist.add(bean);
             }
         }
         unSelectlist.addAll(netList);
@@ -374,7 +373,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 nodelist.add(list.get(i).getOwnerpublickey());
             }
         }
-      //  nodelist.add("03d835419df96c76b4b7bd5e56b1ed9362c80186ce3b35cd962dec2232040b0f8m");
+        //  nodelist.add("03d835419df96c76b4b7bd5e56b1ed9362c80186ce3b35cd962dec2232040b0f8m");
         if (nodelist.size() > 36) {
             showToast(getString(R.string.max36dot));
             return;

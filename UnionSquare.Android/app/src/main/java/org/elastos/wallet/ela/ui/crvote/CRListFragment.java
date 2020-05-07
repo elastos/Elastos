@@ -149,6 +149,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
     @Override
     protected void initView(View view) {
+        CacheUtil.converCrBean2String();
         setToobar(toolbar, toolbarTitle, getString(R.string.crcvote), getString(R.string.voting_rules));
         presenter = new CRlistPresenter();
         //presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
@@ -160,7 +161,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
         addDIDPresenter = new AddDIDPresenter();
         registReceiver();
-        CacheUtil.converCrBean2String();
     }
 
     @OnClick({R.id.tv_myvote, R.id.tv_title_right, R.id.tv_going_to_vote, R.id.tv_signupfor, R.id.iv_swichlist, R.id.iv_toselect, R.id.ll_add, R.id.cb_selectall})

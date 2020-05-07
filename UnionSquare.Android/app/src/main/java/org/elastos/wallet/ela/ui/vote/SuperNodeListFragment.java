@@ -65,6 +65,7 @@ import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.ui.vote.myVote.MyVoteFragment;
 import org.elastos.wallet.ela.ui.vote.signupfor.SignUpForFragment;
 import org.elastos.wallet.ela.ui.vote.signupfor.SignUpPresenter;
+import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -127,6 +128,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
 
     @Override
     protected void initView(View view) {
+        CacheUtil.converDepositBean2String();
         setToobar(toolbar, toolbarTitle, getString(R.string.supernode_election), getString(R.string.voting_rules));
         netList = new ArrayList<>();
         srl.setOnRefreshListener(this);
