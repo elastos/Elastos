@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover, Spin } from 'antd'
+import { Popover, Spin, message } from 'antd'
 import I18N from '@/I18N'
 import QRCode from 'qrcode.react'
 import ExternalLinkSvg from './ExternalLinkSvg'
@@ -32,6 +32,16 @@ class ProfileDid extends Component {
         clearInterval(this.timerDid)
         this.timerDid = null
         this.setState({ url: '', visible: false })
+      }
+      if (rs && rs.success === false) {
+        clearInterval(this.timerDid)
+        this.timerDid = null
+        if (rs.message) {
+          message.error(rs.message)
+        } else {
+          message.error('Something went wrong')
+        }
+        this.setState({ visible: false })
       }
     }, 3000)
   }
