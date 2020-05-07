@@ -41,6 +41,13 @@ namespace Elastos {
 			EXCLUSIVE
 		} SqliteTransactionType;
 
+/*
+** The maximum value of a ?nnn wildcard that the parser will accept.
+*/
+#ifndef SQLITE_MAX_VARIABLE_NUMBER
+# define SQLITE_MAX_VARIABLE_NUMBER 999
+#endif
+
 		class Sqlite {
 		public:
 			Sqlite(const boost::filesystem::path &path);

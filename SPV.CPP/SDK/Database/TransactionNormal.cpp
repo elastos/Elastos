@@ -180,31 +180,42 @@ namespace Elastos {
 			if (uniqueHash.empty())
 				return txns;
 
-			sql = "SELECT " + _txHash + "," + _buff + "," + _blockHeight + "," + _timestamp + "," + _iso +
-				  " FROM " + _tableName + " WHERE " + _txHash + " IN (";
-			for (const std::string &hash : uniqueHash)
-				sql += "?,";
-			sql.back() = ')';
-			sql += ";";
+			std::set<std::string>::iterator it = uniqueHash.cbegin();
+			size_t cnt, maxCnt = uniqueHash.size(), markCnt;
+			std::string mark;
 
-			sqlite3_stmt *stmt = NULL;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}", sql);
-				return txns;
-			}
+			for (cnt = 0; cnt < maxCnt; ) {
+				sql = "SELECT " + _txHash + "," + _buff + "," + _blockHeight + "," + _timestamp + "," + _iso +
+					  " FROM " + _tableName + " WHERE " + _txHash + " IN (";
 
-			int index = 1;
-			for (const std::string &h: uniqueHash) {
-				if (!_sqlite->BindText(stmt, index++, h, nullptr)) {
-					Log::error("bind args");
+				markCnt = (maxCnt - cnt) < SQLITE_MAX_VARIABLE_NUMBER ? (maxCnt - cnt) : SQLITE_MAX_VARIABLE_NUMBER;
+
+				for (size_t i = 0; i < markCnt; ++i)
+					sql += "?,";
+				sql.back() = ')';
+				sql += ";";
+
+				sqlite3_stmt *stmt = NULL;
+				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+					Log::error("prepare sql: {}", sql);
+					return txns;
 				}
-			}
 
-			GetSelectedTxns(txns, chainID, stmt);
+				for (size_t i = 0; i < markCnt; ++i, ++it) {
+					if (!_sqlite->BindText(stmt, (int)(i + 1), *it, nullptr)) {
+						Log::error("bind args");
+						break;
+					}
+				}
 
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("Tx get all finalize");
-				return {};
+				GetSelectedTxns(txns, chainID, stmt);
+
+				if (!_sqlite->Finalize(stmt)) {
+					Log::error("Tx get all finalize");
+					return {};
+				}
+
+				cnt += markCnt;
 			}
 
 			return txns;
