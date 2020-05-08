@@ -3,7 +3,7 @@ import random
 import string
 import datetime
 import jwt
-from decouple import config
+
 from grpc_adenine.database import db_engine
 from grpc_adenine.database.user import Users
 from grpc_adenine.database.user_api_relation import UserApiRelations
@@ -15,25 +15,23 @@ from grpc_adenine.implementations.rate_limiter import RateLimiter
 
 class Common(common_pb2_grpc.CommonServicer):
 
-    def __init__(self, session=None, rate_limiter=None):
-        session_maker = sessionmaker(bind=db_engine)
-        self.session = session if session else session_maker()
-        self.rate_limiter = rate_limiter if rate_limiter else RateLimiter(self.session)
+    def __init__(self, secret_key):
+        self.secret_key = secret_key
+        self.session = sessionmaker(bind=db_engine)()
+        self.rate_limiter = RateLimiter(self.session)
 
     def GenerateAPIRequest(self, request, context):
         metadata = dict(context.invocation_metadata())
         did = metadata["did"]
-        secret_key = config('SHARED_SECRET_ADENINE')
         try:
-            jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+            jwt.decode(request.input, key=self.secret_key, algorithms=['HS256']).get('jwt_info')
         except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"GenerateAPIRequest : {secret_key} : {status_message} : {e}")
+            logging.debug(f"GenerateAPIRequest : {status_message} : {e}")
             return common_pb2.Response(output='', status_message=status_message, status=False)
 
         string_length = 64
         date_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S %z")
-        secret_key = config('SHARED_SECRET_ADENINE')
 
         api_key = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(string_length))
         api_present = self.session.query(UserApiRelations).filter_by(api_key=api_key).first()
@@ -90,7 +88,7 @@ class Common(common_pb2_grpc.CommonServicer):
         jwt_token = jwt.encode({
             'jwt_info': jwt_info,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
-        }, secret_key, algorithm='HS256')
+        }, self.secret_key, algorithm='HS256')
 
         response = common_pb2.Response(output=jwt_token, status_message='Success', status=True)
         return response
@@ -98,15 +96,13 @@ class Common(common_pb2_grpc.CommonServicer):
     def GetAPIKey(self, request, context):
         metadata = dict(context.invocation_metadata())
         did = metadata["did"]
-        secret_key = config('SHARED_SECRET_ADENINE')
         try:
-            jwt.decode(request.input, key=secret_key, algorithms=['HS256']).get('jwt_info')
+            jwt.decode(request.input, key=self.secret_key, algorithms=['HS256']).get('jwt_info')
         except Exception as e:
             status_message = 'Authentication Error'
-            logging.debug(f"GetAPIKey : {secret_key} : {status_message} : {e}")
+            logging.debug(f"GetAPIKey : {status_message} : {e}")
             return common_pb2.Response(output='', status_message=status_message, status=False)
 
-        secret_key = config('SHARED_SECRET_ADENINE')
         result = self.session.query(Users).filter_by(did=did).first()
         if result:
             api_present = self.session.query(UserApiRelations).filter_by(user_id=result.id).first()
@@ -124,7 +120,7 @@ class Common(common_pb2_grpc.CommonServicer):
             jwt_token = jwt.encode({
                 'jwt_info': jwt_info,
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
-            }, secret_key, algorithm='HS256')
+            }, self.secret_key, algorithm='HS256')
 
             response = common_pb2.Response(output=jwt_token, status_message='Success', status=True)
         else:

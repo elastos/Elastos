@@ -4,10 +4,11 @@ docker container stop smartweb-postgres-test || true && docker container rm -f s
 
 # start a postgres docker container
 docker run -d --name smartweb-postgres-test \
-    -v "$PWD/.postgres-data-test:/var/lib/postgresql/data"     \
-    -e POSTGRES_DB=smartweb_test                             \
+    -v "$PWD/.postgres-data-test:/var/lib/postgresql"   \
+    -e POSTGRES_DB=smartweb_test                        \
     -e POSTGRES_USER=gmu                                \
     -e POSTGRES_PASSWORD=gmu                            \
+    -e PGDATA=/var/lib/postgresql/data/pgdata           \
     -p 5436:5432                                        \
     postgres:11-alpine
 
@@ -22,6 +23,7 @@ docker cp ../grpc_adenine/database/scripts/reset_database.sql smartweb-postgres-
 reset=${1-no}
 if [ "$reset" == "yes" ]
 then
+  echo "Resetting database"
   docker container exec -it smartweb-postgres-test psql -h localhost -d smartweb_test -U gmu -a -q -f /reset_database.sql
 fi
 docker container exec -it smartweb-postgres-test psql -h localhost -d smartweb_test -U gmu -a -q -f /create_table_scripts.sql

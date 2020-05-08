@@ -1,29 +1,11 @@
-import datetime
-import pytz
-from requests import Session
 from sqlalchemy.orm import sessionmaker
 
-from grpc_adenine.database import connection, db_engine
+from grpc_adenine.database import db_engine
 from grpc_adenine.database.user_api_relation import UserApiRelations
 from grpc_adenine.database.user import Users
-from sqlalchemy.sql import exists
 
-headers = {
-    'Accepts': 'application/json',
-    'Content-Type': 'application/json'
-}
-session = Session()
-session.headers.update(headers)
+
 session_maker = sessionmaker(bind=db_engine)
-
-
-def validate_api_key(api_key):
-    result = connection.query(exists().where(UserApiRelations.api_key == api_key)).scalar()
-    return result
-
-
-def get_time():
-    return datetime.datetime.now(pytz.timezone('America/New_York')).strftime("%Y-%m-%d %H:%M:%S %z")
 
 
 def get_did_from_api(api_key):

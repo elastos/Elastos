@@ -16,9 +16,9 @@ from sqlalchemy.orm import sessionmaker
 
 from grpc_adenine import settings
 from grpc_adenine.database import db_engine
+from grpc_adenine.implementations.utils import get_api_from_did
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs.python import hive_pb2, hive_pb2_grpc
-from grpc_adenine.implementations.utils import validate_api_key, get_api_from_did
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 
 
@@ -35,6 +35,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
             "general": headers_general,
             "hive": headers_hive
         }
+
         self.session = Session()
         session_maker = sessionmaker(bind=db_engine)
         self.rate_limiter = RateLimiter(session_maker())
@@ -60,13 +61,6 @@ class Hive(hive_pb2_grpc.HiveServicer):
         network = jwt_info['network']
         private_key = jwt_info['privateKey']
         file_content = request.file_content
-
-        # Validate the API Key
-        api_status = validate_api_key(api_key)
-        if not api_status:
-            status_message = "API Key could not be verified"
-            logging.debug(f"{did} : {api_key} : {status_message}")
-            return hive_pb2.Response(output='', status_message=status_message, status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = self.rate_limiter.check_rate_limit(settings.UPLOAD_AND_SIGN_LIMIT, api_key,
@@ -160,14 +154,6 @@ class Hive(hive_pb2_grpc.HiveServicer):
         message_signature = jwt_info['sig']
         message_hash = jwt_info['hash']
         private_key = jwt_info['privateKey']
-
-        # Validate the API Key
-        api_status = validate_api_key(api_key)
-        if not api_status:
-            status_message = 'API Key could not be verified'
-            logging.debug(f"{did} : {api_key} : {status_message}")
-            return hive_pb2.Response(output='', status_message=status_message,
-                                     status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
         response = self.rate_limiter.check_rate_limit(settings.VERIFY_AND_SHOW_LIMIT, api_key,

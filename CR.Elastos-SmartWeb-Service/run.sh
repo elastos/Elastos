@@ -14,7 +14,5 @@ docker container stop elastos-smartweb-service || true && docker container rm -f
 # Run docker container
 docker run --name elastos-smartweb-service \
   -v "$PWD/.env:/elastos-smartweb-service/.env" \
-  -v "$PWD/tools/server.crt:/elastos-smartweb-service/tools/server.crt" \
-  -v "$PWD/tools/server.key:/elastos-smartweb-service/tools/server.key" \
   -p 8001:8001                                  \
   cyberrepublic/elastos-smartweb-service:latest
