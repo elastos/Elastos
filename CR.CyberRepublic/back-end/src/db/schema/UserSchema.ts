@@ -80,13 +80,12 @@ export const VotePower = {
 const did = {
   id: String,
   expirationDate: Date,
-  active: Boolean,
   message: String,
   _id: false
 }
 
 export const User = {
-  dids: [did],
+  did,
   username: {
     type: String,
     required: true,

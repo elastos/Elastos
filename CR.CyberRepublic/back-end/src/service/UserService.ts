@@ -15,8 +15,7 @@ import {
 import CommunityService from './CommunityService'
 import * as jwt from 'jsonwebtoken'
 
-const selectFields =
-  '-logins -salt -password -elaBudget -elaOwed -votePower -resetToken'
+const selectFields = `-logins -salt -password -elaBudget -elaOwed -votePower -resetToken`
 const strictSelectFields = selectFields + ' -email -profile.walletAddress'
 
 const restrictedFields = {
@@ -75,7 +74,7 @@ export default class extends Base {
     if (param.did && _.isString(param.did) && param.did.length === 46) {
       const rs = param.did.split(':')
       if (rs.length === 3 && rs[0] === 'did' && rs[1] === 'elastos') {
-        doc.dids = [{ id: param.did, active: true }]
+        doc.did = { id: param.did }
       }
     }
 
@@ -164,11 +163,8 @@ export default class extends Base {
         })
       }
     }
-    const did = user.dids && user.dids.find((el) => el.active === true)
-    const temp = { ...user._doc }
-    delete temp.dids
-    temp.did = did
-    return temp
+
+    return user
   }
 
   public async updateRole(param) {
@@ -286,9 +282,7 @@ export default class extends Base {
 
   public async findUserByDid(did: string): Promise<Document> {
     const db_user = this.getDBModel('User')
-    const query = {
-      dids: { $elemMatch: { id: did, active: true } }
-    }
+    const query = { 'did.id': did }
     return await db_user.getDBInstance().findOne(query, selectFields)
   }
 
@@ -748,12 +742,10 @@ export default class extends Base {
 
       const rs: any = await getDidPublicKey(claims.iss)
       if (!rs) {
-        const dids = [
-          {
-            message: `Can not get your did's public key.`
-          }
-        ]
-        await db_user.update({ _id: payload.userId }, { $set: { dids } })
+        const did = {
+          message: `Can not get your did's public key.`
+        }
+        await db_user.update({ _id: payload.userId }, { $set: { did } })
         return {
           code: 400,
           success: false,
@@ -767,8 +759,8 @@ export default class extends Base {
         rs.publicKey,
         async (err: any, decoded: any) => {
           if (err) {
-            const dids = [{ message: 'Verify signatrue failed.' }]
-            await db_user.update({ _id: payload.userId }, { $set: { dids } })
+            const did = { message: 'Verify signatrue failed.' }
+            await db_user.update({ _id: payload.userId }, { $set: { did } })
             return {
               code: 401,
               success: false,
@@ -778,34 +770,22 @@ export default class extends Base {
             try {
               const doc = await this.findUserByDid(decoded.iss)
               if (doc && !doc._id.equals(payload.userId)) {
-                const dids = [
-                  {
-                    message: 'This DID had been used by other user.'
-                  }
-                ]
-                await db_user.update(
-                  { _id: payload.userId },
-                  { $set: { dids } }
-                )
+                const did = {
+                  message: 'This DID had been used by other user.'
+                }
+                await db_user.update({ _id: payload.userId }, { $set: { did } })
                 return {
                   code: 400,
                   success: false,
                   message: 'This DID had been used by other user.'
                 }
               }
-              const dids = [
-                {
-                  id: decoded.iss,
-                  active: true,
-                  expirationDate: rs.expirationDate
-                }
-              ]
-              await db_user.update({ _id: payload.userId }, { $set: { dids } })
-              return {
-                code: 200,
-                success: true,
-                message: 'Ok'
+              const did = {
+                id: decoded.iss,
+                expirationDate: rs.expirationDate
               }
+              await db_user.update({ _id: payload.userId }, { $set: { did } })
+              return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
               logger.error(err)
               return {
@@ -832,11 +812,11 @@ export default class extends Base {
     const db_user = this.getDBModel('User')
     const user = await db_user.findById({ _id: userId })
     if (user) {
-      const did = _.get(user, 'dids[0].id')
-      if (did) {
-        return { success: true, did: user.dids[0] }
+      const id = _.get(user, 'did.id')
+      if (id) {
+        return { success: true, did: user.did }
       }
-      const message = _.get(user, 'dids[0].message')
+      const message = _.get(user, 'did.message')
       if (message) {
         return { success: false, message }
       }
@@ -951,11 +931,7 @@ export default class extends Base {
                 did: decoded.iss
               })
               if (!_.isEmpty(didDoc)) {
-                return {
-                  code: 200,
-                  success: true,
-                  message: 'Ok'
-                }
+                return { code: 200, success: true, message: 'Ok' }
               }
 
               await db_did.update(
@@ -969,11 +945,7 @@ export default class extends Base {
                   }
                 }
               )
-              return {
-                code: 200,
-                success: true,
-                message: 'Ok'
-              }
+              return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
               logger.error(err)
               return {
