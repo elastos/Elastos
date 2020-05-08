@@ -59,6 +59,8 @@ import org.elastos.wallet.ela.ui.Assets.fragment.WalletManageFragment;
 import org.elastos.wallet.ela.ui.did.fragment.DIDListFragment;
 import org.elastos.wallet.ela.ui.did.fragment.DidDetailFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
+import org.elastos.wallet.ela.ui.proposal.ProposalFragment;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.greenrobot.eventbus.EventBus;
 
@@ -519,6 +521,17 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         } else {
             startWithPopTo(new DIDListFragment(), WalletManageFragment.class, false);
 
+        }
+    }
+
+    public void showFragmentMethod() {
+        Log.d("???111getTopFragment", getTopFragment().getClass().getSimpleName());
+        Log.d("???111getPreFragment", getPreFragment().getClass().getSimpleName());
+        Log.d("???111findFragment", findFragment(ProposalFragment.class).getClass().getSimpleName());
+        for (Fragment fragment : getFragmentManager().getFragments()) {
+            Log.d("???111getTag", fragment.getTag());
+            Log.d("???111getSimpleName", fragment.getClass().getSimpleName());
+            Log.d("???111getId", fragment.getId() + "");
         }
     }
 

@@ -23,14 +23,19 @@
 package org.elastos.wallet.ela.ui.proposal.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 
 import java.util.List;
 
@@ -38,20 +43,15 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.ViewHolder> {
+public class ProcessRecAdapetr extends RecyclerView.Adapter<ProcessRecAdapetr.ViewHolder> {
 
 
-    public void setCommonRvListener(CommonRvListener commonRvListener) {
-        this.commonRvListener = commonRvListener;
-    }
-
-    private CommonRvListener commonRvListener;
     private List<String> list;
 
     private Context context;
 
 
-    public ProposalRecAdapetr(Context context, List<String> list) {
+    public ProcessRecAdapetr(Context context, List<String> list) {
         this.list = list;
         this.context = context;
 
@@ -60,23 +60,25 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_propasal_item, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_propasal_process, parent, false);
         ViewHolder holder = new ViewHolder(v);
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(ProposalRecAdapetr.ViewHolder holder, final int position) {
+    public void onBindViewHolder(ProcessRecAdapetr.ViewHolder holder, final int position) {
 
-        holder.tvTitle.setText(list.get(position));
-        if (commonRvListener != null) {
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    commonRvListener.onRvItemClick(position, null);
-                }
-            });
-        }
+
+        String str="这是设置TextView部分文字背景颜色和前景颜色的demo!";
+        int bstart=str.indexOf("背景");
+        int bend=bstart+"背景".length();
+        int fstart=str.indexOf("前景");
+        int fend=fstart+"前景".length();
+        SpannableStringBuilder style=new SpannableStringBuilder(str);
+        style.setSpan(new BackgroundColorSpan(Color.RED),bstart,bend, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        style.setSpan(new BackgroundColorSpan(Color.WHITE),bstart,bend, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+        holder.tvDescription1.setText(style);
+
     }
 
     @Override
@@ -86,17 +88,22 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.tv_num)
-        TextView tvNum;
-        @BindView(R.id.tv_title)
-        TextView tvTitle;
+        @BindView(R.id.iv_icon)
+        ImageView ivIcon;
+        @BindView(R.id.tv_name)
+        TextView tvName;
         @BindView(R.id.tv_time)
         TextView tvTime;
-        @BindView(R.id.tv_people)
-        TextView tvPeople;
-        @BindView(R.id.tv_status)
-        TextView tvStatus;
-
+        @BindView(R.id.tv_description)
+        TextView tvDescription;
+        @BindView(R.id.iv_icon1)
+        ImageView ivIcon1;
+        @BindView(R.id.tv_name1)
+        TextView tvName1;
+        @BindView(R.id.tv_time1)
+        TextView tvTime1;
+        @BindView(R.id.tv_description1)
+        TextView tvDescription1;
         ViewHolder(View view) {
 
             super(view);
