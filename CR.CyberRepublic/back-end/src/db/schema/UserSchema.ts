@@ -81,6 +81,7 @@ const did = {
     id: String,
     expirationDate: Date,
     active: Boolean,
+    message: String,
     _id: false
 }
 

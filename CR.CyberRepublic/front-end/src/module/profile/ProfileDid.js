@@ -64,6 +64,10 @@ class ProfileDid extends Component {
     clearInterval(this.timerDid)
   }
 
+  handleVisibleChange = (visible) => {
+    this.setState({ visible })
+  }
+
   render() {
     const { did } = this.props
     let domain
@@ -88,7 +92,13 @@ class ProfileDid extends Component {
       )
     } else {
       return (
-        <Popover content={this.elaQrCode()} trigger="click" placement="top">
+        <Popover
+          content={this.elaQrCode()}
+          trigger="click"
+          placement="top"
+          visible={this.state.visible}
+          onVisibleChange={this.handleVisibleChange}
+        >
           <Button onClick={this.handleAssociate}>
             {I18N.get('profile.associateDid')}
           </Button>
@@ -129,13 +139,4 @@ const Did = styled.div`
       text-decoration: none;
     }
   }
-`
-const Reassociate = styled.span`
-  display: inline-block;
-  font-size: 13px;
-  color: #008d85;
-  cursor: pointer;
-  border: 1px solid #008d85;
-  padding: 0 8px;
-  margin-bottom: 16px;
 `

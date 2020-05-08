@@ -815,7 +815,7 @@ export default class extends Base {
         if (user) {
             const did = _.get(user, 'dids[0].id')
             if (did) {
-                return { success: true, did }
+                return { success: true, did: user.dids[0] }
             }
             const message = _.get(user, 'dids[0].message')
             if (message) {
