@@ -219,7 +219,7 @@ export const TEAM_SUBCATEGORY = create([
   'DEVELOPER'
 ])
 // Images
-export const USER_AVATAR_DEFAULT = '/assets/images/user_blurred_white.png'
+export const USER_AVATAR_DEFAULT = '/assets/images/default_avatar.png'
 export const TASK_AVATAR_DEFAULT = '/assets/images/Elastos_Logo.png'
 export const TEAM_AVATAR_DEFAULT = '/assets/images/team_blurred.svg'
 
