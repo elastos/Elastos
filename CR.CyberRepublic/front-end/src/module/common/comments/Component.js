@@ -344,6 +344,40 @@ class C extends BaseComponent {
       )
     }
 
+    const avatarItem = (info) => {
+      const profile = info && info.profile
+      const { avatar, firstName, lastName} = profile || {}
+
+      if (avatar || (!firstName && !lastName)) {
+        return (
+          <Avatar
+            className="comment-avatar pull-left"
+            src={avatar || USER_AVATAR_DEFAULT}
+            shape="circle"
+            size={64}
+            onClick={() => this.linkUserDetail(info)}
+        />
+        )
+      }
+
+      if (firstName || lastName) {
+        return (
+          <Avatar
+            className="comment-avatar pull-left"
+            style={{
+              backgroundColor: '#000',
+              fontSize: 24
+            }}
+            shape="circle"
+            size={64}
+            onClick={() => this.linkUserDetail(info)}
+          >
+            {`${firstName && firstName.toUpperCase().substr(0, 1)}${lastName && lastName.toUpperCase().substr(0, 1)}`}
+          </Avatar>
+        )
+      }
+    }
+
     const commentItems = _.map(comments, (comment, ind) => {
       const thread = _.first(comment)
       const createdByUsername = (thread.createdBy && thread.createdBy.username) || ''
@@ -368,15 +402,7 @@ class C extends BaseComponent {
             )}
           </div>
         ),
-        avatar: (
-          <Avatar
-            className="comment-avatar pull-left"
-            src={avatar}
-            shape="circle"
-            size={64}
-            onClick={() => this.linkUserDetail(thread.createdBy)}
-          />
-        ),
+        avatar: avatarItem(thread.createdBy),
         delete: isDeletable && (
           <h5>
             <Popconfirm
