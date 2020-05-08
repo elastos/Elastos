@@ -865,10 +865,7 @@ export default class extends Base {
       const url = `elastos://credaccess/${jwtToken}`
 
       const db_did = this.getDBModel('Did')
-      const doc = {
-        number: nonce
-      }
-      await db_did.save(doc)
+      await db_did.save({ number: nonce })
 
       return { success: true, url }
     } catch (err) {
