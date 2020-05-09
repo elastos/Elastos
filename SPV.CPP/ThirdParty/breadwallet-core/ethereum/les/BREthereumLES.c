@@ -1113,10 +1113,10 @@ lesThreadBootstrapSeeds (BREthereumLES les) {
 
 static void *
 lesThread (BREthereumLES les) {
-#if defined (__ANDROID__)
-    pthread_setname_np (les->thread, LES_THREAD_NAME);
-#else
+#if defined (__DARWIN__)
     pthread_setname_np (LES_THREAD_NAME);
+#else
+    pthread_setname_np (les->thread, LES_THREAD_NAME);
 #endif
     // TODO: Don't timeout pselect(); get some 'wakeup descriptor'
     struct timespec timeout = { 0, 250000000 }; // .250 seconds

@@ -92,7 +92,8 @@ eventHandlerCreate (const char *name,
     handler->types = types;
     handler->eventSize = handler->timeoutEventType.eventSize;
 
-    strlcpy (handler->name, name, PTHREAD_NAME_SIZE);
+    strncpy (handler->name, name, PTHREAD_NAME_SIZE);
+    handler->name[PTHREAD_NAME_SIZE - 1] = '\0';
 
     // Update `eventSize` with the largest sized event
     for (int i = 0; i < handler->typesCount; i++) {
@@ -174,10 +175,10 @@ typedef void* (*ThreadRoutine) (void*);
 static void *
 eventHandlerThread (BREventHandler handler) {
 
-#if defined (__ANDROID__)
-    pthread_setname_np(handler->thread, handler->name);
-#else
+#if defined (__DARWIN__)
     pthread_setname_np(handler->name);
+#else
+    pthread_setname_np(handler->thread, handler->name);
 #endif
 
     pthread_mutex_lock (handler->lockToUse);

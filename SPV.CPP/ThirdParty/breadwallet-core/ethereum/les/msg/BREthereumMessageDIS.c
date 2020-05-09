@@ -196,7 +196,7 @@ neighborDISAsEnode (BREthereumDISNeighbor neighbor,
     char nodeID [129];
     encodeHex(nodeID, 129, &neighbor.key.pubKey[1], 64);
 
-    char IP [39];
+    char IP [139];
     if (neighbor.node.domain == AF_INET)
         sprintf (IP, "%d.%d.%d.%d",
                  neighbor.node.addr.ipv4[0],

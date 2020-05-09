@@ -12,9 +12,7 @@ foreach(src ${BRETH_SOURCE_FILES})
 	endif()
 endforeach()
 
-set(SPVSDK_SOURCE_FILES
-	${SPVSDK_SOURCE_FILES}
-	${BRETH_SOURCE_FILES_REMOVE_TEST})
+set(SPVSDK_SOURCE_FILES ${BRETH_SOURCE_FILES_REMOVE_TEST} ${SPVSDK_SOURCE_FILES})
 
 set(SPVSDK_DEPENDS boost libressl libfruit libsqlite json libspdlog secp256k1)
 set(LIBS boost_filesystem boost_system boost_thread crypto ssl fruit sqlite3 spdlog)

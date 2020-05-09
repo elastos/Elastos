@@ -2303,7 +2303,8 @@ int main(int argc, char *argv[]) {
 
 	while (1) {
 		fprintf(stdout, "-> wallet $ ");
-		fgets(cmdLine, sizeof(cmdLine), stdin);
+		if (NULL == fgets(cmdLine, sizeof(cmdLine), stdin))
+			continue;
 
 		numArgs = parseCmdLine(cmdLine, cmdArgs);
 		if (numArgs == 0)

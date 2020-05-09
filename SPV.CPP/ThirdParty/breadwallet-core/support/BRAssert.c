@@ -132,10 +132,10 @@ typedef void* (*ThreadRoutine) (void*);         // pthread_create
 
 static void *
 BRAssertThread (BRAssertContext *context) {
-#if defined (__ANDROID__)
-    pthread_setname_np (context->thread, ASSERT_THREAD_NAME);
-#else
+#if defined (__DARWIN__)
     pthread_setname_np (ASSERT_THREAD_NAME);
+#else
+    pthread_setname_np (context->thread, ASSERT_THREAD_NAME);
 #endif
 
     pthread_mutex_lock(&context->lock);

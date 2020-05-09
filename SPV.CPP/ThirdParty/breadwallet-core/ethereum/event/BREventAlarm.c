@@ -260,10 +260,10 @@ typedef void* (*ThreadRoutine) (void*);
 static void *
 alarmClockThread (BREventAlarmClock clock) {
 
-#if defined (__ANDROID__)
-    pthread_setname_np(clock->thread, "Core Ethereum Alarm Clock");
-#else
+#if defined (__DARWIN__)
     pthread_setname_np("Core Ethereum Alarm Clock");
+#else
+    pthread_setname_np(clock->thread, "Core Ethereum Alarm Clock");
 #endif
 
     pthread_mutex_lock(&clock->lock);

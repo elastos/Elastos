@@ -1625,27 +1625,27 @@ initializeGenesisBlocks (void) {
 
 /// MARK: - Block Checkpoint
 
-static BREthereumBlockCheckpoint
+BREthereumBlockCheckpoint
 ethereumMainnetCheckpoints [] = {
-    {       0, HASH_INIT("d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"), { .std = "17179869184"              },          0 },
-    { 4000000, HASH_INIT("b8a3f7f5cfc1748f91a684f20fe89031202cbadcd15078c49b85ec2a57f43853"), { .std = "469024977881526938386"    }, 1499633567 },
-    { 4500000, HASH_INIT("43340a6d232532c328211d8a8c0fa84af658dbff1f4906ab7a7d4e41f82fe3a3"), { .std = "1386905480746946772236"   }, 1509953783 },
-    { 5000000, HASH_INIT("7d5a4369273c723454ac137f48a4f142b097aa2779464e6505f1b1c5e37b5382"), { .std = "2285199027754071740498"   }, 1517319693 },
-    { 5500000, HASH_INIT("2d3a154eee9f90666c6e824f11e15f2d60b05323a81254f60075c34a61ef124d"), { .std = "3825806101695195923560"   }, 1524611221 },
-    { 6000000, HASH_INIT("be847be2bceb74e660daf96b3f0669d58f59dc9101715689a00ef864a5408f43"), { .std = "5484495551037046114587"   }, 1532118564 },
-    { 6500000, HASH_INIT("70c81c3cb256b5b930f05b244d095cb4845e9808c48d881e3cc31d18ae4c3ae5"), { .std = "7174074700595750315193"   }, 1539330275 },
+    {       0, "\xd4\xe5\x67\x40\xf8\x76\xae\xf8\xc0\x10\xb8\x6a\x40\xd5\xf5\x67\x45\xa1\x18\xd0\x90\x6a\x34\xe6\x9a\xec\x8c\x0d\xb1\xcb\x8f\xa3", { .std = "17179869184"              },          0 },
+    { 4000000, "\xb8\xa3\xf7\xf5\xcf\xc1\x74\x8f\x91\xa6\x84\xf2\x0f\xe8\x90\x31\x20\x2c\xba\xdc\xd1\x50\x78\xc4\x9b\x85\xec\x2a\x57\xf4\x38\x53", { .std = "469024977881526938386"    }, 1499633567 },
+    { 4500000, "\x43\x34\x0a\x6d\x23\x25\x32\xc3\x28\x21\x1d\x8a\x8c\x0f\xa8\x4a\xf6\x58\xdb\xff\x1f\x49\x06\xab\x7a\x7d\x4e\x41\xf8\x2f\xe3\xa3", { .std = "1386905480746946772236"   }, 1509953783 },
+    { 5000000, "\x7d\x5a\x43\x69\x27\x3c\x72\x34\x54\xac\x13\x7f\x48\xa4\xf1\x42\xb0\x97\xaa\x27\x79\x46\x4e\x65\x05\xf1\xb1\xc5\xe3\x7b\x53\x82", { .std = "2285199027754071740498"   }, 1517319693 },
+    { 5500000, "\x2d\x3a\x15\x4e\xee\x9f\x90\x66\x6c\x6e\x82\x4f\x11\xe1\x5f\x2d\x60\xb0\x53\x23\xa8\x12\x54\xf6\x00\x75\xc3\x4a\x61\xef\x12\x4d", { .std = "3825806101695195923560"   }, 1524611221 },
+    { 6000000, "\xbe\x84\x7b\xe2\xbc\xeb\x74\xe6\x60\xda\xf9\x6b\x3f\x06\x69\xd5\x8f\x59\xdc\x91\x01\x71\x56\x89\xa0\x0e\xf8\x64\xa5\x40\x8f\x43", { .std = "5484495551037046114587"   }, 1532118564 },
+    { 6500000, "\x70\xc8\x1c\x3c\xb2\x56\xb5\xb9\x30\xf0\x5b\x24\x4d\x09\x5c\xb4\x84\x5e\x98\x08\xc4\x8d\x88\x1e\x3c\xc3\x1d\x18\xae\x4c\x3a\xe5", { .std = "7174074700595750315193"   }, 1539330275 },
 };
 #define CHECKPOINT_MAINNET_COUNT      (sizeof (ethereumMainnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
 
 static BREthereumBlockCheckpoint
 ethereumTestnetCheckpoints [] = {
-    {       0, HASH_INIT("41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d"), { .std = "0x100000" },  0 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
+    {       0, "\x41\x94\x10\x23\x68\x09\x23\xe0\xfe\x4d\x74\xa3\x4b\xda\xc8\x14\x1f\x25\x40\xe3\xae\x90\x62\x37\x18\xe4\x7d\x66\xd1\xca\x4a\x2d", { .std = "0x100000" },  0 }, // 1061 days  6 hrs ago (Jul-30-2015 03:26:13 PM +UTC)
 };
 #define CHECKPOINT_TESTNET_COUNT      (sizeof (ethereumTestnetCheckpoints) / sizeof (BREthereumBlockCheckpoint))
 
 static BREthereumBlockCheckpoint
 ethereumRinkebyCheckpoints [] = {
-    {       0, HASH_INIT("6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177"), { .std = "0x01" },  0x58ee40ba }, //  439 days  6 hrs ago (Apr-12-2017 03:20:50 PM +UTC)
+    {       0, "\x63\x41\xfd\x3d\xaf\x94\xb7\x48\xc7\x2c\xed\x5a\x5b\x26\x02\x8f\x24\x74\xf5\xf0\x0d\x82\x45\x04\xe4\xfa\x37\xa7\x57\x67\xe1\x77", { .std = "0x01" },  0x58ee40ba }, //  439 days  6 hrs ago (Apr-12-2017 03:20:50 PM +UTC)
 };
 #define CHECKPOINT_RINKEBY_COUNT      (sizeof (ethereumRinkebyCheckpoints) / sizeof (BREthereumBlockCheckpoint))
 

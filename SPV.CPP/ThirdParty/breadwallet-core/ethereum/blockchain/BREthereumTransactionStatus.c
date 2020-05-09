@@ -9,6 +9,7 @@
 //  See the CONTRIBUTORS file at the project root for a list of contributors.
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include "BREthereumTransactionStatus.h"
 
@@ -59,7 +60,8 @@ transactionStatusCreateErrored (BREthereumTransactionErrorType type,
     BREthereumTransactionStatus status;
     status.type = TRANSACTION_STATUS_ERRORED;
     status.u.errored.type = type;
-    strlcpy (status.u.errored.detail, detail, TRANSACTION_STATUS_DETAIL_BYTES);
+    strncpy (status.u.errored.detail, detail, sizeof(status.u.errored.detail));
+    status.u.errored.detail[TRANSACTION_STATUS_DETAIL_BYTES] = '\0';
     return status;
 }
 
