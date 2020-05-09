@@ -346,7 +346,9 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 		cid, _ := getCIDByCode(program.Code)
 		if candidate := s.getCandidate(*cid); candidate != nil {
 			if candidate.state == Canceled {
-				returnCandidateAction(candidate, candidate.state)
+				if height-candidate.cancelHeight > s.params.CRDepositLockupBlocks {
+					returnCandidateAction(candidate, candidate.state)
+				}
 			}
 		}
 		if candidates := s.getHistoryCandidate(*cid); len(candidates) != 0 {
