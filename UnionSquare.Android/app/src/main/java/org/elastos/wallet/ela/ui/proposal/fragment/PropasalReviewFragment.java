@@ -124,9 +124,7 @@ public class PropasalReviewFragment extends BaseFragment {
             //公示期
             tvVote.setText(R.string.votedisagree);
             setInfoStatue(false);
-            llDisagreeprogress.setVisibility(View.VISIBLE);
-            circleIndicator.setProgress(30f);
-            circleIndicator.invalidate();
+            setDisagreeProgress(30);
 
         } else if (tag == 3) {
             //执行期
@@ -142,14 +140,18 @@ public class PropasalReviewFragment extends BaseFragment {
 
         } else if (tag == 5) {
             //已废止
+            setDisagreeProgress(100f);
             tvPropasalTile.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//删除线
-            llDisagreeprogress.setVisibility(View.VISIBLE);
-            circleIndicator.setProgress(100f);
-            circleIndicator.invalidate();
-            setInfoStatue(false);
 
 
         }
+    }
+
+    private void setDisagreeProgress(float progress) {
+        llDisagreeprogress.setVisibility(View.VISIBLE);
+        circleIndicator.setProgress(progress);
+        circleIndicator.invalidate();
+        setInfoStatue(false);
     }
 
     private void setInfoStatue(boolean show) {
