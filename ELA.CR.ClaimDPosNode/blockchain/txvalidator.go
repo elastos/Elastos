@@ -2155,6 +2155,26 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		}
 	}
 
+	if proposal.ProposalType == payload.CloseProposal {
+		pk, _ := crypto.DecodePoint(proposal.OwnerPublicKey)
+		redeemScript, _ := contract.CreateStandardRedeemScript(pk)
+		ct, _ := contract.CreateCRIDContractByCode(redeemScript)
+		ownerDid := ct.ToProgramHash()
+		ownerMember := b.crCommittee.GetMember(*ownerDid)
+
+		if ownerMember == nil {
+			return errors.New("CloseProposal owner should be one of the CR members")
+		}
+		if ownerMember.MemberState != crstate.MemberElected {
+			return errors.New("CloseProposal owner should be an of the elected CR members")
+		}
+		if ps := b.crCommittee.GetProposal(proposal.CloseProposalHash); ps == nil {
+			return errors.New("CloseProposalHash does not exist")
+		} else if ps.Status != crstate.VoterAgreed {
+			return errors.New("CloseProposalHash has to be voterAgreed")
+		}
+	}
+
 	// Check budgets of proposal
 	if len(proposal.Budgets) < 1 {
 		return errors.New("a proposal cannot be without a Budget")

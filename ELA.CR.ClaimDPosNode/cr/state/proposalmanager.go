@@ -104,7 +104,7 @@ func (p *ProposalManager) getAllProposals() (dst ProposalsMap) {
 }
 
 func (p *ProposalManager) getProposalByDraftHash(draftHash common.
-	Uint256) *ProposalState {
+Uint256) *ProposalState {
 	for _, v := range p.Proposals {
 		if v.Proposal.DraftHash.IsEqual(draftHash) {
 			return v
@@ -156,6 +156,16 @@ func getProposalTotalBudgetAmount(proposal payload.CRCProposal) common.Fixed64 {
 	return budget
 }
 
+func getProposalUnusedBudgetAmount(proposalState *ProposalState) common.Fixed64 {
+	var budget common.Fixed64
+	for _, b := range proposalState.Proposal.Budgets {
+		if _, ok := proposalState.WithdrawnBudgets[b.Stage]; !ok {
+			budget += b.Amount
+		}
+	}
+	return budget
+}
+
 // updateProposals will update proposals' status.
 func (p *ProposalManager) updateProposals(height uint32,
 	circulation common.Fixed64, inElectionPeriod bool) common.Fixed64 {
@@ -183,6 +193,11 @@ func (p *ProposalManager) updateProposals(height uint32,
 				if p.transferCRAgreedState(v, height, circulation) == VoterCanceled {
 					unusedAmount += getProposalTotalBudgetAmount(v.Proposal)
 				}
+				if v.Proposal.ProposalType == payload.CloseProposal {
+					closeProposal := p.Proposals[v.Proposal.CloseProposalHash]
+					unusedAmount += getProposalUnusedBudgetAmount(closeProposal)
+					p.terminatedProposal(closeProposal, height)
+				}
 			}
 		}
 	}
@@ -202,6 +217,27 @@ func (p *ProposalManager) abortProposal(proposalState *ProposalState,
 		proposalState.Status = Aborted
 		for k, _ := range proposalState.BudgetsStatus {
 			proposalState.BudgetsStatus[k] = Closed
+		}
+	}, func() {
+		proposalState.Status = oriStatus
+		proposalState.BudgetsStatus = oriBudgetsStatus
+	})
+}
+
+// abortProposal will transfer the status to aborted.
+func (p *ProposalManager) terminatedProposal(proposalState *ProposalState,
+	height uint32) {
+	oriStatus := proposalState.Status
+	oriBudgetsStatus := make(map[uint8]BudgetStatus)
+	for k, v := range proposalState.BudgetsStatus {
+		oriBudgetsStatus[k] = v
+	}
+	p.history.Append(height, func() {
+		proposalState.Status = Terminated
+		for k, v := range proposalState.BudgetsStatus {
+			if v == Unfinished || v == Rejected {
+				proposalState.BudgetsStatus[k] = Closed
+			}
 		}
 	}, func() {
 		proposalState.Status = oriStatus
