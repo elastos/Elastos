@@ -2882,7 +2882,7 @@ func TestCommitee_RollbackCRCBlendTxCRVert(t *testing.T) {
 
 	returnDepositTx1 := generateReturnDeposite(publicKeyStr1)
 	returnDepositTx2 := generateReturnDeposite(publicKeyStr2)
-	currentHeight++
+	currentHeight += committee.params.CRDepositLockupBlocks+1
 	// returnDepositTx
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
