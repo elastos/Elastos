@@ -216,6 +216,8 @@ type ProposalKeyFrame struct {
 	ProposalSession map[uint64][]common.Uint256
 	// proposalWithdraw info
 	WithdrawableTxInfo map[common.Uint256]types.OutputInfo
+	//publicKey of SecretaryGeneral
+	SecretaryGeneralPublicKey string
 }
 
 func NewProposalMap() ProposalsMap {

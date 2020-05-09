@@ -1654,8 +1654,10 @@ func ListProducers(param Params) map[string]interface{} {
 }
 
 func GetSecretaryGeneral(param Params) map[string]interface{} {
+	crCommittee := Chain.GetCRCommittee()
+
 	result := &RpcSecretaryGeneral{
-		SecretaryGeneral: ChainParams.SecretaryGeneral,
+		SecretaryGeneral: crCommittee.GetProposalManager().SecretaryGeneralPublicKey,
 	}
 	return ResponsePack(Success, result)
 }
@@ -1850,6 +1852,8 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 			ProposalOwner:      hex.EncodeToString(proposal.ProposalOwner),
 			Index:              index,
 		}
+		log.Warn("[ListCRProposalBaseState] :", proposal.Proposal.DraftHash)
+
 		RpcProposalBaseStates = append(RpcProposalBaseStates, RpcProposalBaseState)
 		index++
 	}
@@ -1905,6 +1909,8 @@ func GetCRProposalState(param Params) map[string]interface{} {
 
 	} else {
 		DraftHashStr, ok := param.String("drafthash")
+		log.Warn("GetCRProposalState:", DraftHashStr)
+
 		if !ok {
 			return ResponsePack(InvalidParams, "params at least one of proposalhash and DraftHash")
 		}
@@ -1913,6 +1919,8 @@ func GetCRProposalState(param Params) map[string]interface{} {
 			return ResponsePack(InvalidParams, "invalidate drafthash")
 		}
 		DraftHash, err := common.Uint256FromBytes(DraftHashStrBytes)
+		log.Warn("GetCRProposalState: DraftHash", DraftHash)
+
 		if err != nil {
 			return ResponsePack(InvalidParams, "invalidate drafthash")
 		}

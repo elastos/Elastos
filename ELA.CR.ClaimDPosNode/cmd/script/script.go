@@ -33,6 +33,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	toAddr := c.String("to")
 	amounts := c.String("amounts")
 	ownPubkey := c.String("ownerpublickey")
+	ownPrivatekey := c.String("ownerprivatekey")
+
 	nodePubkey := c.String("nodepublickey")
 	host := c.String("host")
 	candidates := c.String("candidates")
@@ -99,6 +101,11 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(ownPubkey))
 		return 1
 	}
+	getOwnerPrivateKey := func(L *lua.LState) int {
+		L.Push(lua.LString(ownPrivatekey))
+		return 1
+	}
+
 	getNodePublicKey := func(L *lua.LState) int {
 		L.Push(lua.LString(nodePubkey))
 		return 1
@@ -146,6 +153,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getToAddr", getToAddr)
 	L.Register("getAmounts", getAmounts)
 	L.Register("getOwnerPublicKey", getOwnerPublicKey)
+	L.Register("getOwnerPrivateKey", getOwnerPrivateKey)
 	L.Register("getNodePublicKey", getNodePublicKey)
 	L.Register("getHostAddr", getHostAddr)
 	L.Register("getCandidates", getCandidates)
@@ -171,6 +179,8 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	leaderPrivkey := c.String("leaderprivatekey")
 	newLeaderPrivkey := c.String("newleaderprivatekey")
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
+	secretaryGeneralPublickey := c.String("secretarygeneralpublickey")
+
 	recipient := c.String("recipient")
 	changeProposalOwnerKey := c.String("newownerpublickey")
 	previousHash := c.String("previoushash")
@@ -244,6 +254,11 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(secretaryGeneralPrivkey))
 		return 1
 	}
+	getSecretaryGeneralPublickey := func(L *lua.LState) int {
+		L.Push(lua.LString(secretaryGeneralPublickey))
+		return 1
+	}
+
 	getRecipient := func(L *lua.LState) int {
 		L.Push(lua.LString(recipient))
 		return 1
@@ -283,6 +298,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getLeaderPrivkey", getLeaderPrivkey)
 	L.Register("getNewLeaderPrivkey", getNewLeaderPrivkey)
 	L.Register("getSecretaryGeneralPrivkey", getSecretaryGeneralPrivkey)
+	L.Register("getSecretaryGeneralPublickey", getSecretaryGeneralPublickey)
 	L.Register("getRecipient", getRecipient)
 	L.Register("getChangeProposalOwnerKey", getChangeProposalOwnerKey)
 	L.Register("getPreviousHash", getPreviousHash)
@@ -406,6 +422,10 @@ func NewCommand() *cli.Command {
 				Usage: "set the node public key",
 			},
 			cli.StringFlag{
+				Name:  "ownerprivatekey, oprk",
+				Usage: "set the node owner private key",
+			},
+			cli.StringFlag{
 				Name:  "nodepublickey, npk",
 				Usage: "set the owner public key",
 			},
@@ -496,6 +516,10 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "secretarygeneralprivatekey",
 				Usage: "set the private key of secretary general",
+			},
+			cli.StringFlag{
+				Name:  "secretarygeneralpublickey",
+				Usage: "set the public key of secretary general",
 			},
 			cli.StringFlag{
 				Name:  "crccommiteeaddr",

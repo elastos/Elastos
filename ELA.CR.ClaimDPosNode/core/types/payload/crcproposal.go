@@ -133,6 +133,15 @@ type CRCProposal struct {
 	// The signature of proposal's owner.
 	Signature []byte
 
+	// Public key of SecretaryGeneral.
+	SecretaryGeneralPublicKey []byte
+
+	// DID of SecretaryGeneral.
+	SecretaryGeneralDID common.Uint168
+
+	// The signature of SecretaryGeneral.
+	SecretaryGeneraSignature []byte
+
 	// DID of CR Council Member.
 	CRCouncilMemberDID common.Uint168
 
@@ -223,7 +232,21 @@ func (p *CRCProposal) SerializeUnsignedChangeProposalOwner(w io.Writer, version 
 }
 
 func (p *CRCProposal) SerializeUnsignedChangeSecretaryGeneral(w io.Writer, version byte) error {
-	// todo complete me later
+	if err := common.WriteElement(w, p.ProposalType); err != nil {
+		return errors.New("failed to serialize ProposalType")
+	}
+
+	if err := common.WriteVarString(w, p.CategoryData); err != nil {
+		return errors.New("[CRCProposal], Category Data serialize failed")
+	}
+
+	if err := common.WriteVarBytes(w, p.OwnerPublicKey); err != nil {
+		return errors.New("failed to serialize OwnerPublicKey")
+	}
+
+	if err := p.DraftHash.Serialize(w); err != nil {
+		return errors.New("failed to serialize DraftHash")
+	}
 	return nil
 }
 
@@ -295,8 +318,31 @@ func (p *CRCProposal) SerializeChangeProposalOwner(w io.Writer, version byte) er
 }
 
 func (p *CRCProposal) SerializeChangeSecretaryGeneral(w io.Writer, version byte) error {
-	// todo complete me later
-	return nil
+
+	if err := p.SerializeUnsignedChangeSecretaryGeneral(w, version); err != nil {
+		return err
+	}
+	if err := common.WriteVarBytes(w, p.Signature); err != nil {
+		return err
+	}
+
+	if err := common.WriteVarBytes(w, p.SecretaryGeneralPublicKey); err != nil {
+		return errors.New("failed to serialize SecretaryGeneralPublicKey")
+	}
+
+	if err := p.SecretaryGeneralDID.Serialize(w); err != nil {
+		return errors.New("failed to serialize SecretaryGeneralDID")
+	}
+
+	if err := common.WriteVarBytes(w, p.SecretaryGeneraSignature); err != nil {
+		return err
+	}
+
+	if err := p.CRCouncilMemberDID.Serialize(w); err != nil {
+		return errors.New("failed to serialize CRCouncilMemberDID")
+	}
+
+	return common.WriteVarBytes(w, p.CRCouncilMemberSignature)
 }
 
 func (p *CRCProposal) SerializeCloseProposal(w io.Writer, version byte) error {
@@ -351,7 +397,6 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 
 func (p *CRCProposal) DeserializeUnSignedNormalOrELIP(r io.Reader, version byte) error {
 	var err error
-
 	p.CategoryData, err = common.ReadVarString(r)
 	if err != nil {
 		return errors.New("[CRCProposal], Category data deserialize failed")
@@ -437,7 +482,20 @@ func (p *CRCProposal) DeserializeUnSignedCloseProposal(r io.Reader, version byte
 	return nil
 }
 func (p *CRCProposal) DeserializeUnSignedChangeSecretaryGeneral(r io.Reader, version byte) error {
-	// todo complete me later
+	var err error
+	p.CategoryData, err = common.ReadVarString(r)
+	if err != nil {
+		return errors.New("[CRCProposal], Category data deserialize failed")
+	}
+
+	p.OwnerPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "owner")
+	if err != nil {
+		return errors.New("failed to deserialize OwnerPublicKey")
+	}
+
+	if err = p.DraftHash.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize DraftHash")
+	}
 	return nil
 }
 
@@ -446,7 +504,6 @@ func (p *CRCProposal) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return errors.New("[CRCProposal], ProposalType deserialize failed")
 	}
-
 	switch p.ProposalType {
 	case ChangeProposalOwner:
 		return p.DeserializeChangeProposalOwner(r, version)
@@ -531,7 +588,39 @@ func (p *CRCProposal) DeserializeCloseProposal(r io.Reader, version byte) error 
 	return nil
 }
 func (p *CRCProposal) DeserializeChangeSecretaryGeneral(r io.Reader, version byte) error {
-	// todo complete me later
+
+	if err := p.DeserializeUnSignedChangeSecretaryGeneral(r, version); err != nil {
+		return err
+	}
+
+	sign, err := common.ReadVarBytes(r, crypto.SignatureLength, "sign data")
+	if err != nil {
+		return err
+	}
+	p.Signature = sign
+
+	p.SecretaryGeneralPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "secretarygeneralpublickey")
+	if err != nil {
+		return errors.New("failed to deserialize SecretaryGeneralPublicKey")
+	}
+	if err := p.SecretaryGeneralDID.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize SecretaryGeneralDID")
+	}
+	SecretaryGeneraSignature, err := common.ReadVarBytes(r, crypto.SignatureLength, "secretary general sign data")
+	if err != nil {
+		return err
+	}
+	p.SecretaryGeneraSignature = SecretaryGeneraSignature
+
+	if err := p.CRCouncilMemberDID.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize CRCouncilMemberDID")
+	}
+
+	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
+	if err != nil {
+		return err
+	}
+	p.CRCouncilMemberSignature = crSign
 	return nil
 }
 

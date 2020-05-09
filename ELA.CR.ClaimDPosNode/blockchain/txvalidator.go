@@ -1657,8 +1657,9 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 		txn.PayloadVersion == payload.CRInfoDIDVersion {
 		// get DID program hash
 
-		if programHash, err = getDIDFromCode(info.Code); err != nil {
-			return err
+		programHash, err = getDIDFromCode(info.Code)
+		if err != nil {
+			return errors.New("invalid info.Code")
 		}
 		// check DID
 		if !info.DID.IsEqual(*programHash) {
@@ -1733,8 +1734,9 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		txn.PayloadVersion == payload.CRInfoDIDVersion {
 		// get DID program hash
 
-		if programHash, err = getDIDFromCode(info.Code); err != nil {
-			return err
+		programHash, err = getDIDFromCode(info.Code)
+		if err != nil {
+			return errors.New("invalid info.Code")
 		}
 		// check DID
 		if !info.DID.IsEqual(*programHash) {
@@ -1817,6 +1819,17 @@ func getCode(publicKey []byte) ([]byte, error) {
 			return redeemScript, nil
 		}
 	}
+	//<<<<<<< HEAD
+	//=======
+}
+
+func getDiDFromPublicKey(publicKey []byte) (*common.Uint168, error) {
+	if code, err := getCode(publicKey); err != nil {
+		return nil, err
+	} else {
+		return getDIDFromCode(code)
+	}
+	//>>>>>>> Add change secretary general proposal transaction
 }
 
 func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
@@ -2229,7 +2242,7 @@ func (b *BlockChain) checkSecretaryGeneralSignature(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState,
 	signedBuf *bytes.Buffer) error {
 	var sgContract *contract.Contract
-	publicKeyBytes, err := hex.DecodeString(b.chainParams.SecretaryGeneral)
+	publicKeyBytes, err := hex.DecodeString(b.crCommittee.GetProposalManager().SecretaryGeneralPublicKey)
 	if err != nil {
 		return errors.New("invalid secretary general public key")
 	}
@@ -2279,11 +2292,149 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 	return checkCRTransactionSignature(info.Signature, cr.Info().Code, signedBuf.Bytes())
 }
 
+func (b *BlockChain) isPublicKeyDIDMatch(pubKey []byte, did *common.Uint168) bool {
+	var code []byte
+	var err error
+	//get Code
+	if code, err = getCode(pubKey); err != nil {
+		return false
+	}
+	//get DID
+	var didGenerated *common.Uint168
+	if didGenerated, err = getDIDFromCode(code); err != nil {
+		return false
+	}
+	if !did.IsEqual(*didGenerated) {
+		return false
+	}
+	return true
+}
+
+func (b *BlockChain) checkProposalOwnerSign(crcProposal *payload.CRCProposal, signedBuf *bytes.Buffer) error {
+	//get ownerCode
+	var code []byte
+	var err error
+	if code, err = getCode(crcProposal.OwnerPublicKey); err != nil {
+		return err
+	}
+	// get verify data
+	err = crcProposal.SerializeUnsigned(signedBuf, payload.CRCProposalVersion)
+	if err != nil {
+		return err
+	}
+	//verify sign
+	if err := checkCRTransactionSignature(crcProposal.Signature, code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("owner signature check failed")
+	}
+	return nil
+}
+
+func (b *BlockChain) checkSecretaryGeneralSign(crcProposal *payload.CRCProposal, signedBuf *bytes.Buffer) error {
+	var code []byte
+	var err error
+	if code, err = getCode(crcProposal.SecretaryGeneralPublicKey); err != nil {
+		return err
+	}
+	if err = common.WriteVarBytes(signedBuf, crcProposal.Signature); err != nil {
+		return errors.New("failed to write proposal owner signature")
+	}
+	if err := common.WriteVarBytes(signedBuf, crcProposal.SecretaryGeneralPublicKey); err != nil {
+		return errors.New("failed to serialize SecretaryGeneralPublicKey")
+	}
+	if err = crcProposal.SecretaryGeneralDID.Serialize(signedBuf); err != nil {
+		return errors.New("failed to write SecretaryGeneralDID")
+	}
+	if err = checkCRTransactionSignature(crcProposal.SecretaryGeneraSignature, code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("failed to check SecretaryGeneral signature")
+	}
+	return nil
+}
+
+func (b *BlockChain) checkProposalCRCouncilMemberSign(crcProposal *payload.CRCProposal, code []byte,
+	signedBuf *bytes.Buffer) error {
+
+	// Check signature of CR Council Member.
+	if err := common.WriteVarBytes(signedBuf, crcProposal.SecretaryGeneraSignature); err != nil {
+		return errors.New("failed to write SecretaryGenera Signature")
+	}
+	if err := crcProposal.CRCouncilMemberDID.Serialize(signedBuf); err != nil {
+		return errors.New("failed to write CR Council Member's DID")
+	}
+	if err := checkCRTransactionSignature(crcProposal.CRCouncilMemberSignature, code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("failed to check CR Council Member signature")
+	}
+
+	return nil
+}
+func (b *BlockChain) checkChangeSecretaryGeneralProposalTx(crcProposal *payload.CRCProposal, blockHeight uint32) error {
+	// The number of the proposals of the committee can not more than 128
+	if b.crCommittee.IsProposalFull(crcProposal.CRCouncilMemberDID) {
+		return errors.New("proposal is full")
+	}
+	// Check draft hash of proposal.
+	if b.crCommittee.ExistDraft(crcProposal.DraftHash) {
+		return errors.New("duplicated draft proposal hash")
+	}
+	if !b.crCommittee.IsProposalAllowed(blockHeight) {
+		return errors.New("ChangeSecretaryGeneralProposal tx must InElectionPeriod and not during voting period")
+	}
+	var ownerCode []byte
+	var ownerDID *common.Uint168
+	var err error
+
+	if !b.isPublicKeyDIDMatch(crcProposal.SecretaryGeneralPublicKey, &crcProposal.SecretaryGeneralDID) {
+		return errors.New("SecretaryGeneral PublicKey and DID is not matching")
+	}
+	// get owner code
+	if ownerCode, err = getCode(crcProposal.OwnerPublicKey); err != nil {
+		return err
+	}
+	// get owner did
+	if ownerDID, err = getDIDFromCode(ownerCode); err != nil {
+		return err
+	}
+	//owner must MemberElected cr member
+	if !b.crCommittee.IsElectedCRMemberByDID(*ownerDID) {
+		return errors.New("proposal OwnerPublicKey must be MemberElected cr member")
+	}
+
+	//CRCouncilMemberDID must MemberElected cr member
+	if !b.crCommittee.IsElectedCRMemberByDID(crcProposal.CRCouncilMemberDID) {
+		return errors.New("CR Council Member should be one elected CR members")
+	}
+	//verify 3 signature(owner signature , new secretary general, CRCouncilMember)
+
+	//Check signature of owner
+	signedBuf := new(bytes.Buffer)
+	if err := b.checkProposalOwnerSign(crcProposal, signedBuf); err != nil {
+		return errors.New("owner signature check failed")
+	}
+	// Check signature of SecretaryGeneral
+	if err := b.checkSecretaryGeneralSign(crcProposal, signedBuf); err != nil {
+		return errors.New("SecretaryGeneral signature check failed")
+	}
+	// Check signature of CR Council Member.
+	crMember := b.crCommittee.GetMember(crcProposal.CRCouncilMemberDID)
+	if crMember == nil {
+		return errors.New("CR Council Member should be one of the CR members")
+	}
+	if err := b.checkProposalCRCouncilMemberSign(crcProposal, crMember.Info.Code, signedBuf); err != nil {
+		return errors.New("CR Council Member signature check failed")
+	}
+	return nil
+}
+
 func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	blockHeight uint32, proposalsUsedAmount common.Fixed64) error {
 	proposal, ok := txn.Payload.(*payload.CRCProposal)
 	if !ok {
 		return errors.New("invalid payload")
+	}
+	if proposal.ProposalType == payload.SecretaryGeneral {
+		return b.checkChangeSecretaryGeneralProposalTx(proposal, blockHeight)
 	}
 
 	if !b.crCommittee.IsProposalAllowed(blockHeight - 1) {

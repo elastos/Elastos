@@ -1408,7 +1408,6 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 		payload.CRInfoDIDVersion, &common.Uint168{1, 2, 3})
 	err = s.Chain.checkRegisterCRTransaction(txn2, registerCRByDIDHeight)
 	s.EqualError(err, "invalid did address")
-
 	did2, _ := getDIDFromCode(code2)
 	txn2 = s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1,
 		payload.CRInfoDIDVersion, did2)
@@ -1628,6 +1627,61 @@ func (s *txValidatorTestSuite) getCRMember(publicKeyStr, privateKeyStr, nickName
 	}
 }
 
+func (s *txValidatorTestSuite) getSecretaryGeneralCRCProposalTx(ownerPublicKeyStr, ownerPrivateKeyStr,
+	crPublicKeyStr, crPrivateKeyStr, secretaryPublicKeyStr, secretaryPrivateKeyStr string) *types.Transaction {
+
+	ownerPublicKey, _ := common.HexStringToBytes(ownerPublicKeyStr)
+	ownerPrivateKey, _ := common.HexStringToBytes(ownerPrivateKeyStr)
+
+	secretaryPublicKey, _ := common.HexStringToBytes(secretaryPublicKeyStr)
+	secretaryGeneralDID, _ := getDiDFromPublicKey(secretaryPublicKey)
+	secretaryGeneralPrivateKey, _ := common.HexStringToBytes(secretaryPrivateKeyStr)
+
+	crPrivateKey, _ := common.HexStringToBytes(crPrivateKeyStr)
+	crCode := getCodeByPubKeyStr(crPublicKeyStr)
+
+	draftData := randomBytes(10)
+	txn := new(types.Transaction)
+	txn.TxType = types.CRCProposal
+	txn.Version = types.TxVersion09
+
+	recipient := *randomUint168()
+	recipient[0] = uint8(contract.PrefixStandard)
+	crDID, _ := getDIDFromCode(crCode)
+	crcProposalPayload := &payload.CRCProposal{
+		ProposalType:              payload.SecretaryGeneral,
+		CategoryData:              "111",
+		OwnerPublicKey:            ownerPublicKey,
+		DraftHash:                 common.Hash(draftData),
+		SecretaryGeneralPublicKey: secretaryPublicKey,
+		SecretaryGeneralDID:       *secretaryGeneralDID,
+		CRCouncilMemberDID:        *crDID,
+	}
+
+	signBuf := new(bytes.Buffer)
+	crcProposalPayload.SerializeUnsigned(signBuf, payload.CRCProposalVersion)
+	sig, _ := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
+	crcProposalPayload.Signature = sig
+
+	common.WriteVarBytes(signBuf, sig)
+	common.WriteVarBytes(signBuf, crcProposalPayload.SecretaryGeneralPublicKey)
+	crcProposalPayload.SecretaryGeneralDID.Serialize(signBuf)
+	secretaryGeneralSig, _ := crypto.Sign(secretaryGeneralPrivateKey, signBuf.Bytes())
+	crcProposalPayload.SecretaryGeneraSignature = secretaryGeneralSig
+
+	common.WriteVarBytes(signBuf, secretaryGeneralSig)
+	crcProposalPayload.CRCouncilMemberDID.Serialize(signBuf)
+	crSig, _ := crypto.Sign(crPrivateKey, signBuf.Bytes())
+	crcProposalPayload.CRCouncilMemberSignature = crSig
+
+	txn.Payload = crcProposalPayload
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCodeByPubKeyStr(ownerPublicKeyStr),
+		Parameter: nil,
+	}}
+	return txn
+}
+
 func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	crPublicKeyStr, crPrivateKeyStr string) *types.Transaction {
 
@@ -1678,14 +1732,22 @@ func (s *txValidatorTestSuite) createSpecificStatusProposal(publicKey1, publicKe
 	recipient := *randomUint168()
 	recipient[0] = uint8(contract.PrefixStandard)
 	code2 := getCodeByPubKeyStr(hex.EncodeToString(publicKey2))
-	crCouncilMemberDID, _ := getDIDFromCode(code2)
+	//<<<<<<< HEAD
+	//	crCouncilMemberDID, _ := getDIDFromCode(code2)
+	//	proposal := &payload.CRCProposal{
+	//		ProposalType:       payload.Normal,
+	//		OwnerPublicKey:     publicKey1,
+	//		CRCouncilMemberDID: *crCouncilMemberDID,
+	//=======
+	CRCouncilMemberDID, _ := getDIDFromCode(code2)
 	proposal := &payload.CRCProposal{
 		ProposalType:       proposalType,
 		OwnerPublicKey:     publicKey1,
-		CRCouncilMemberDID: *crCouncilMemberDID,
-		DraftHash:          common.Hash(draftData),
-		Budgets:            createBudgets(3),
-		Recipient:          recipient,
+		CRCouncilMemberDID: *CRCouncilMemberDID,
+		//>>>>>>> Add change secretary general proposal transaction
+		DraftHash: common.Hash(draftData),
+		Budgets:   createBudgets(3),
+		Recipient: recipient,
 	}
 	budgetsStatus := make(map[uint8]crstate.BudgetStatus)
 	for _, budget := range proposal.Budgets {
@@ -1722,17 +1784,17 @@ func (s *txValidatorTestSuite) getCRCCloseProposalTx(publicKeyStr, privateKeyStr
 	privateKey2, _ := common.HexStringToBytes(crPrivateKeyStr)
 	publicKey2, _ := common.HexStringToBytes(crPublicKeyStr)
 	code2 := getCodeByPubKeyStr(crPublicKeyStr)
-	did2, _ := getDIDFromCode(code2)
+	//did2, _ := getDIDFromCode(code2)
 
 	draftData := randomBytes(10)
 	txn := new(types.Transaction)
 	txn.TxType = types.CRCProposal
 	txn.Version = types.TxVersion09
-
+	CRCouncilMemberDID, _ := getDIDFromCode(code2)
 	crcProposalPayload := &payload.CRCProposal{
 		ProposalType:       payload.CloseProposal,
 		OwnerPublicKey:     publicKey2,
-		CRCouncilMemberDID: *did2,
+		CRCouncilMemberDID: *CRCouncilMemberDID,
 		DraftHash:          common.Hash(draftData),
 		CloseProposalHash:  common.Hash(randomBytes(10)),
 	}
@@ -1798,8 +1860,8 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	votingHeight := config.DefaultParams.CRVotingStartHeight
 
 	// Set secretary general.
-	s.Chain.chainParams.SecretaryGeneral = publicKeyStr3
-
+	//s.Chain.chainParams.SecretaryGeneral = publicKeyStr3
+	s.Chain.crCommittee.GetProposalManager().SecretaryGeneralPublicKey = publicKeyStr3
 	// Check Common tracking tx.
 	txn := s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0,
 		publicKeyStr1, privateKeyStr1, "", "",
@@ -2770,6 +2832,83 @@ func (s *txValidatorTestSuite) getCRChangeProposalOwnerProposalTx(publicKeyStr, 
 		Parameter: nil,
 	}}
 	return txn
+}
+
+func (s *txValidatorTestSuite) TestCheckSecretaryGeneralProposalTransaction() {
+	ownerPublicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	ownerPrivateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+
+	crPublicKeyStr := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	crPrivateKeyStr := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+
+	secretaryPublicKeyStr := "031e12374bae471aa09ad479f66c2306f4bcc4ca5b754609a82a1839b94b4721b9"
+	secretaryPrivateKeyStr := "94396a69462208b8fd96d83842855b867d3b0e663203cb31d0dfaec0362ec034"
+
+	tenureHeight := config.DefaultParams.CRCommitteeStartHeight + 1
+	ownerNickName := "nickname owner"
+	crNickName := "nickname cr"
+
+	memberOwner := s.getCRMember(ownerPublicKeyStr1, ownerPrivateKeyStr1, ownerNickName)
+	memberCr := s.getCRMember(crPublicKeyStr, crPrivateKeyStr, crNickName)
+
+	memebers := make(map[common.Uint168]*crstate.CRMember)
+
+	s.Chain.crCommittee.Members = memebers
+	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(100 * 1e8)
+	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(100 * 1e8)
+	s.Chain.crCommittee.InElectionPeriod = true
+	s.Chain.crCommittee.NeedAppropriation = false
+
+	//owner not elected cr
+	txn := s.getSecretaryGeneralCRCProposalTx(ownerPublicKeyStr1, ownerPrivateKeyStr1, crPublicKeyStr, crPrivateKeyStr,
+		secretaryPublicKeyStr, secretaryPrivateKeyStr)
+	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
+	s.EqualError(err, "proposal OwnerPublicKey must be MemberElected cr member")
+	memebers[memberOwner.Info.DID] = memberOwner
+
+	//CRCouncilMember not elected cr
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
+	s.EqualError(err, "CR Council Member should be one elected CR members")
+	memebers[memberCr.Info.DID] = memberCr
+
+	//owner signature check failed
+	rightSign := txn.Payload.(*payload.CRCProposal).Signature
+	txn.Payload.(*payload.CRCProposal).Signature = []byte{}
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
+	s.EqualError(err, "owner signature check failed")
+	txn.Payload.(*payload.CRCProposal).Signature = rightSign
+
+	//SecretaryGeneral signature check failed
+	secretaryGeneralSign := txn.Payload.(*payload.CRCProposal).SecretaryGeneraSignature
+	txn.Payload.(*payload.CRCProposal).SecretaryGeneraSignature = []byte{}
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
+	s.EqualError(err, "SecretaryGeneral signature check failed")
+	txn.Payload.(*payload.CRCProposal).SecretaryGeneraSignature = secretaryGeneralSign
+
+	//CRCouncilMemberSignature signature check failed
+	crcouncilMemberSignature := txn.Payload.(*payload.CRCProposal).CRCouncilMemberSignature
+	txn.Payload.(*payload.CRCProposal).CRCouncilMemberSignature = []byte{}
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
+	s.EqualError(err, "CR Council Member signature check failed")
+	txn.Payload.(*payload.CRCProposal).CRCouncilMemberSignature = crcouncilMemberSignature
+
+	//SecretaryGeneralPublicKey and SecretaryGeneralDID not match
+	secretaryGeneralPublicKey := txn.Payload.(*payload.CRCProposal).SecretaryGeneralPublicKey
+	txn.Payload.(*payload.CRCProposal).SecretaryGeneralPublicKey, _ = common.HexStringToBytes(ownerPublicKeyStr1)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
+	s.EqualError(err, "SecretaryGeneral PublicKey and DID is not matching")
+	txn.Payload.(*payload.CRCProposal).SecretaryGeneralPublicKey = secretaryGeneralPublicKey
+
+	// ok
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
+	s.NoError(err)
+
+	//ChangeSecretaryGeneralProposal tx must InElectionPeriod and not during voting period
+	s.Chain.crCommittee.LastCommitteeHeight = config.DefaultParams.CRCommitteeStartHeight
+	tenureHeight = config.DefaultParams.CRCommitteeStartHeight + config.DefaultParams.CRDutyPeriod -
+		config.DefaultParams.CRVotingPeriod
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
+	s.EqualError(err, "ChangeSecretaryGeneralProposal tx must InElectionPeriod and not during voting period")
 }
 
 func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {

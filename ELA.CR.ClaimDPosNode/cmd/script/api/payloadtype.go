@@ -943,6 +943,8 @@ func RegisterCRCProposalType(L *lua.LState) {
 	L.SetGlobal("crcproposal", mt)
 	// static attributes
 	L.SetField(mt, "new", L.NewFunction(newCRCProposal))
+	L.SetField(mt, "newsg", L.NewFunction(newSecretaryGeneralProposal))
+
 	// methods
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), crcProposalMethods))
 }
@@ -963,6 +965,115 @@ func RegisterCRCCloseProposalHashType(L *lua.LState) {
 	L.SetField(mt, "new", L.NewFunction(newCRCCloseProposalHash))
 	// methods
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), crcProposalMethods))
+}
+
+// Constructor
+func newSecretaryGeneralProposal(L *lua.LState) int {
+	fmt.Println("newSecretaryGeneralProposal begin")
+
+	ownerPublicKeyStr := L.ToString(1)
+	ownerPrivateKeyStr := L.ToString(2)
+
+	proposalType := L.ToInt64(3)
+	draftHashStr := L.ToString(4)
+
+	secretaryGeneralPublicKeyStr := L.ToString(5)
+	secretaryGeneralPrivateKeyStr := L.ToString(6)
+	client, err := checkClient(L, 7)
+
+	fmt.Println("ownerPublicKeyStr", ownerPublicKeyStr)
+	fmt.Println("ownerPrivateKeyStr", ownerPrivateKeyStr)
+	fmt.Println("proposalType", proposalType)
+	fmt.Println("draftHashStr", draftHashStr)
+	fmt.Println("secretaryGeneralPublicKeyStr", secretaryGeneralPublicKeyStr)
+	fmt.Println("secretaryGeneralPrivateKeyStr", secretaryGeneralPrivateKeyStr)
+
+	secretaryGeneralPublicKey, _ := common.HexStringToBytes(secretaryGeneralPublicKeyStr)
+	ownPublicKey, _ := common.HexStringToBytes(ownerPublicKeyStr)
+	ownerPrivateKey, _ := common.HexStringToBytes(ownerPrivateKeyStr)
+	secretaryGeneralPrivateKey, _ := common.HexStringToBytes(secretaryGeneralPrivateKeyStr)
+
+	SecretaryGeneralDID, _ := getDiDFromPublicKey(secretaryGeneralPublicKey)
+	needSign := true
+	if err != nil {
+		needSign = false
+	}
+	draftHash, err := common.Uint256FromHexString(draftHashStr)
+	if err != nil {
+		fmt.Println("wrong draft proposal hash")
+		os.Exit(1)
+	}
+
+	account := client.GetMainAccount()
+	CRCouncilMembercode := account.RedeemScript
+	CRCouncilMemberDID, _ := getDIDFromCode(CRCouncilMembercode)
+
+	fmt.Printf("account %+v\n", account)
+
+	crcProposal := &payload.CRCProposal{
+		ProposalType:              payload.CRCProposalType(proposalType),
+		OwnerPublicKey:            ownPublicKey,
+		DraftHash:                 *draftHash,
+		SecretaryGeneralPublicKey: secretaryGeneralPublicKey,
+		SecretaryGeneralDID:       *SecretaryGeneralDID,
+		CRCouncilMemberDID:        *CRCouncilMemberDID,
+	}
+
+	if needSign {
+		signBuf := new(bytes.Buffer)
+		err = crcProposal.SerializeUnsigned(signBuf, payload.CRCProposalVersion)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		sig, err := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crcProposal.Signature = sig
+
+		if err = common.WriteVarBytes(signBuf, sig); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if err = common.WriteVarBytes(signBuf, crcProposal.SecretaryGeneralPublicKey); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if err = crcProposal.SecretaryGeneralDID.Serialize(signBuf); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		secretaryGeneralsig, err := crypto.Sign(secretaryGeneralPrivateKey, signBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crcProposal.SecretaryGeneraSignature = secretaryGeneralsig
+		if err = common.WriteVarBytes(signBuf, secretaryGeneralsig); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if err = crcProposal.CRCouncilMemberDID.Serialize(signBuf); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crSig, err := crypto.Sign(account.PrivKey(), signBuf.Bytes())
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crcProposal.CRCouncilMemberSignature = crSig
+	}
+	ud := L.NewUserData()
+	ud.Value = crcProposal
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCRCProposalName))
+	L.Push(ud)
+
+	fmt.Println("newSecretaryGeneralProposal end")
+	return 1
 }
 
 // Constructor
@@ -1028,13 +1139,14 @@ func newCRCProposal(L *lua.LState) int {
 		fmt.Println("wrong cr proposal ELA recipient")
 		os.Exit(1)
 	}
+	did, _ := getDIDFromCode(ct.Code)
 	crcProposal := &payload.CRCProposal{
 		ProposalType:       payload.CRCProposalType(proposalType),
 		OwnerPublicKey:     publicKey,
 		DraftHash:          *draftHash,
 		Budgets:            budgets,
 		Recipient:          *recipient,
-		CRCouncilMemberDID: *getDID(ct.Code),
+		CRCouncilMemberDID: *did,
 	}
 
 	if needSign {
@@ -1128,12 +1240,13 @@ func newCRChangeProposalOwner(L *lua.LState) int {
 		fmt.Println("wrong previous ProposalHash")
 		os.Exit(1)
 	}
+	did, _ := getDIDFromCode(ct.Code)
 
 	crcProposal := &payload.CRCProposal{
 		ProposalType:       payload.CRCProposalType(proposalType),
 		OwnerPublicKey:     newOwnerPublicKey,
 		PreviousHash:       *previousHash,
-		CRCouncilMemberDID: *getDID(ct.Code),
+		CRCouncilMemberDID: *did,
 	}
 
 	if needSign {
@@ -1227,12 +1340,13 @@ func newCRCCloseProposalHash(L *lua.LState) int {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
 	}
+	did, _ := getDIDFromCode(ct.Code)
 	crcProposal := &payload.CRCProposal{
 		ProposalType:       payload.CRCProposalType(proposalType),
 		OwnerPublicKey:     publicKey,
 		DraftHash:          *draftHash,
 		CloseProposalHash:  *closeProposalHash,
-		CRCouncilMemberDID: *getDID(ct.Code),
+		CRCouncilMemberDID: *did,
 	}
 
 	if needSign {
@@ -1285,12 +1399,6 @@ func newCRCCloseProposalHash(L *lua.LState) int {
 	return 1
 }
 
-func getCode(publicKey string) []byte {
-	pkBytes, _ := common.HexStringToBytes(publicKey)
-	pk, _ := crypto.DecodePoint(pkBytes)
-	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
-	return redeemScript
-}
 func getCodeHexStr(publicKey string) string {
 	pkBytes, _ := common.HexStringToBytes(publicKey)
 	pk, _ := crypto.DecodePoint(pkBytes)
@@ -1339,12 +1447,36 @@ func RegisterCRCProposalReviewType(L *lua.LState) {
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), crcProposalReviewMethods))
 }
 
-func getDID(code []byte) *common.Uint168 {
+func getDiDFromPublicKey(publicKey []byte) (*common.Uint168, error) {
+	if code, err := getCode(publicKey); err != nil {
+		return nil, err
+	} else {
+		return getDIDFromCode(code)
+	}
+}
+
+func getDIDFromCode(code []byte) (*common.Uint168, error) {
 	newCode := make([]byte, len(code))
 	copy(newCode, code)
 	didCode := append(newCode[:len(newCode)-1], common.DID)
-	ct1, _ := contract.CreateCRIDContractByCode(didCode)
-	return ct1.ToProgramHash()
+
+	if ct1, err := contract.CreateCRIDContractByCode(didCode); err != nil {
+		return nil, err
+	} else {
+		return ct1.ToProgramHash(), nil
+	}
+}
+
+func getCode(publicKey []byte) ([]byte, error) {
+	if pk, err := crypto.DecodePoint(publicKey); err != nil {
+		return nil, err
+	} else {
+		if redeemScript, err := contract.CreateStandardRedeemScript(pk); err != nil {
+			return nil, err
+		} else {
+			return redeemScript, nil
+		}
+	}
 }
 
 // Constructor
@@ -1371,11 +1503,12 @@ func newCRCProposalReview(L *lua.LState) int {
 			return 1
 		}
 	}
+	did, _ := getDIDFromCode(codeByte)
 	crcProposalReview := &payload.CRCProposalReview{
 		ProposalHash: *proposalHash,
 		VoteResult:   payload.VoteResult(voteResult),
 		OpinionHash:  *opinionHash,
-		DID:          *getDID(codeByte),
+		DID:          *did,
 	}
 	if needSign {
 		rpSignBuf := new(bytes.Buffer)
