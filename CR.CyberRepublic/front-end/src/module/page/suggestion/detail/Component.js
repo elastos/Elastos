@@ -525,20 +525,40 @@ export default class extends StandardPage {
 
   renderOwnerActionsNode() {
     const { detail, currentUserId, isAdmin, draft } = this.props
-    const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
+    const isOwner = currentUserId === _.get(detail, 'createdBy._id')
+    const isEditable = isOwner || isAdmin
     const editText = draft && draft.empty
       ? I18N.get('suggestion.btnText.edit')
       : I18N.get('suggestion.btnText.editDraft')
-    const res = isOwner && (
-      <StyledButton
-        type="ebp"
-        className="cr-btn cr-btn-default"
-        onClick={this.showEditForm}
-      >
-        {editText}
-      </StyledButton>
+    const EditButton = isEditable && (
+      <div style={{paddingRight: 16, display: 'inline-block'}}>
+        <StyledButton
+          type="ebp"
+          className="cr-btn cr-btn-default"
+          onClick={this.showEditForm}
+        >
+          {editText}
+        </StyledButton>
+      </div>
     )
-    return res
+    const SignButton = isOwner && (
+      <Popconfirm
+        title={'You can not edit your suggestion once it is signed.'}
+        onConfirm={() => {}}
+        okText={I18N.get('.yes')}
+        cancelText={I18N.get('.no')}
+      >
+        <StyledButton className="cr-btn cr-btn-default">
+          Sign Suggestion
+        </StyledButton>
+      </Popconfirm>
+    )
+    return (
+      <div>
+        {EditButton}
+        {SignButton}
+      </div>
+    )
   }
 
   renderCouncilActionsNode() {
