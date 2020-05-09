@@ -94,7 +94,7 @@ function build_docker {
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "ela" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
     build_binary_and_docker "v0.4.2" "github.com/elastos/Elastos.ELA" "ela" \
-        "cyberrepublic/elastos-mainchain-node" "yes" "v0.4.2"
+        "cyberrepublic/elastos-mainchain-node" "yes" "v0.4.3"
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "arbitrator" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
