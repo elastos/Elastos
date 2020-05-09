@@ -78,6 +78,11 @@ type ProposalManager struct {
 	history *utils.History
 }
 
+//only init use
+func (p *ProposalManager) InitSecretaryGeneralPublicKey(publicKey string) {
+	p.SecretaryGeneralPublicKey = publicKey
+}
+
 // existDraft judge if specified draft (that related to a proposal) exist.
 func (p *ProposalManager) existDraft(hash common.Uint256) bool {
 	for _, v := range p.Proposals {
@@ -212,6 +217,7 @@ func (p *ProposalManager) updateProposals(height uint32,
 					unusedAmount += getProposalUnusedBudgetAmount(closeProposal)
 					p.terminatedProposal(closeProposal, height)
 				}
+				p.dealProposal(v, height)
 			}
 		}
 	}
@@ -299,6 +305,19 @@ func (p *ProposalManager) transferRegisteredState(proposalState *ProposalState,
 	return
 }
 
+func (p *ProposalManager) dealProposal(proposalState *ProposalState, height uint32) {
+	oriSecretaryGeneralPublicKey := p.SecretaryGeneralPublicKey
+	p.history.Append(height, func() {
+		if proposalState.Proposal.ProposalType == payload.SecretaryGeneral {
+			p.SecretaryGeneralPublicKey = common.BytesToHexString(proposalState.Proposal.SecretaryGeneralPublicKey)
+		}
+	}, func() {
+		if proposalState.Proposal.ProposalType == payload.SecretaryGeneral {
+			p.SecretaryGeneralPublicKey = oriSecretaryGeneralPublicKey
+		}
+	})
+}
+
 // transferCRAgreedState will transfer CRAgreed state by votes' reject amount.
 func (p *ProposalManager) transferCRAgreedState(proposalState *ProposalState,
 	height uint32, circulation common.Fixed64) (status ProposalStatus) {
@@ -336,7 +355,6 @@ func (p *ProposalManager) transferCRAgreedState(proposalState *ProposalState,
 					break
 				}
 			}
-
 		})
 	}
 	return

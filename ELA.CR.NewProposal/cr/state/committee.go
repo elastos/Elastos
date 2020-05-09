@@ -85,6 +85,16 @@ func (c *Committee) IsCRMember(programCode []byte) bool {
 	return false
 }
 
+func (c *Committee) IsElectedCRMemberByDID(did common.Uint168) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	for _, v := range c.Members {
+		if v.Info.DID.IsEqual(did) && v.MemberState == MemberElected {
+			return true
+		}
+	}
+	return false
+}
 func (c *Committee) IsCRMemberByDID(did common.Uint168) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -95,7 +105,6 @@ func (c *Committee) IsCRMemberByDID(did common.Uint168) bool {
 	}
 	return false
 }
-
 func (c *Committee) IsInVotingPeriod(height uint32) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -1233,6 +1242,7 @@ func NewCommittee(params *config.Params) *Committee {
 		lastHistory:          utils.NewHistory(maxHistoryCapacity),
 		appropriationHistory: utils.NewHistory(maxHistoryCapacity),
 	}
+	committee.manager.InitSecretaryGeneralPublicKey(params.SecretaryGeneral)
 	committee.state.SetManager(committee.manager)
 	params.CkpManager.Register(NewCheckpoint(committee))
 	return committee
