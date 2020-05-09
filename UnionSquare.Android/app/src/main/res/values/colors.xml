@@ -16,6 +16,7 @@
     <color name="exmobi_white">#7f090000</color>
     <color name="whiter">#ffffff</color>
     <color name="whiter50">#80ffffff</color>
+    <color name="whiter15">#26ffffff</color>
     <color name="blue1">#307CA2</color>
     <color name="mainitembg">#26ffffff</color>
     <color name="green1">#ff83ff7a</color>
@@ -33,4 +34,5 @@
     <color name="white20">#33ffffff</color>
     <color name="c7DF17B">#7DF17B</color>
     <color name="c262626">#262626</color>
+    <color name="black30">#4d000000</color>
 </resources>

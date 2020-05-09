@@ -637,4 +637,23 @@
     <string name="sure1">确认</string>
     <string name="copyscanresult">复制扫描结果</string>
     <string name="covercredencial">是否覆盖当前凭证信息？</string>
+    <string name="search">搜索</string>
+    <string name="plzinputsearch">请输入提案号、提案名称或提案人</string>
+    <string name="nosearchresult">没有搜索结果。</string>
+    <string name="proposalinfo">提案信息</string>
+    <string name="resttime">剩余时间</string>
+    <string name="proposalhash">提案哈希</string>
+    <string name="origiinwebsite">原文网址</string>
+    <string name="abstract1">摘要</string>
+    <string name="menbervote">委员投票</string>
+    <string name="agree1">赞成</string>
+    <string name="disagree1">反对</string>
+    <string name="abstention">弃权</string>
+    <string name="scanvote">扫码投票</string>
+    <string name="novote">暂无投票</string>
+    <string name="disagressprogress">反对进度</string>
+    <string name="todisagreeneedvote">达成否决票数</string>
+    <string name="votedisagree">投票反对</string>
+    <string name="executeprocess">执行进度</string>
+    <string name="secretarygeneral">秘书长</string>
 </resources>

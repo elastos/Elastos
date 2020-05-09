@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.wallet.ela.ui.proposal.adapter;
+package org.elastos.wallet.ela.ui.council.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -33,12 +33,13 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 
 import java.util.List;
+import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.ViewHolder> {
+public class CouncilListRecAdapetr extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 
     public void setCommonRvListener(CommonRvListener commonRvListener) {
@@ -51,24 +52,32 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
     private Context context;
 
 
-    public ProposalRecAdapetr(Context context, List<String> list) {
+    public CouncilListRecAdapetr(Context context, List<String> list) {
         this.list = list;
         this.context = context;
 
 
     }
-
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_propasal_item, parent, false);
-        ViewHolder holder = new ViewHolder(v);
-        return holder;
+    public int getItemViewType(int position) {
+
+        return new Random().nextInt(2);
     }
 
     @Override
-    public void onBindViewHolder(ProposalRecAdapetr.ViewHolder holder, final int position) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == 1)
+            //展示照片
+            return new ViewHolder1(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_council_item1, parent, false));
+        else
+            return new ViewHolder0(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_council_item1, parent, false));
 
-        holder.tvTitle.setText(list.get(position));
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+
+
         if (commonRvListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -85,7 +94,7 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
     }
 
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder0 extends RecyclerView.ViewHolder {
         @BindView(R.id.tv_num)
         TextView tvNum;
         @BindView(R.id.tv_title)
@@ -97,7 +106,24 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
         @BindView(R.id.tv_status)
         TextView tvStatus;
 
-        ViewHolder(View view) {
+        ViewHolder0(View view) {
+
+            super(view);
+            ButterKnife.bind(this, view);
+        }
+    }public static class ViewHolder1 extends RecyclerView.ViewHolder {
+        @BindView(R.id.tv_num)
+        TextView tvNum;
+        @BindView(R.id.tv_title)
+        TextView tvTitle;
+        @BindView(R.id.tv_time)
+        TextView tvTime;
+        @BindView(R.id.tv_people)
+        TextView tvPeople;
+        @BindView(R.id.tv_status)
+        TextView tvStatus;
+
+        ViewHolder1(View view) {
 
             super(view);
             ButterKnife.bind(this, view);

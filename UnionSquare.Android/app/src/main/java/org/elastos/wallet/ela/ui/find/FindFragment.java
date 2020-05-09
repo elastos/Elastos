@@ -34,6 +34,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.council.CRCouncilFragment;
 import org.elastos.wallet.ela.ui.crvote.CRListFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.FindListBean;
 import org.elastos.wallet.ela.ui.find.adapter.FindListRecAdapter;
@@ -78,12 +79,17 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         bean2.setResouceId(R.mipmap.found_cr_proposal);
         bean2.setUpText(getString(R.string.findlistup2));
         bean2.setDownText(getString(R.string.findlistdown2));
+        FindListBean bean3 = new FindListBean();
+        bean3.setResouceId(R.mipmap.found_cr_vote);
+        bean3.setUpText(getString(R.string.findlistup4));
+        bean3.setDownText(getString(R.string.findlistdown4));
         FindListBean bean4 = new FindListBean();
-        bean4.setResouceId(R.mipmap.found_cr_vote);
-        bean4.setUpText(getString(R.string.findlistup4));
-        bean4.setDownText(getString(R.string.findlistdown4));
+        bean4.setResouceId(R.mipmap.found_cr_committee);
+        bean4.setUpText(getString(R.string.findlistup3));
+        bean4.setDownText(getString(R.string.findlistdown3));
         list.add(bean1);
-        //list.add(bean2);
+        list.add(bean2);
+        list.add(bean3);
         list.add(bean4);
         //  list.add(R.mipmap.found_card_id);
         //list.add(R.mipmap.found_card_paradrop);
@@ -121,10 +127,12 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         if (position == 0) {
             ((BaseFragment) getParentFragment()).start(SuperNodeListFragment.class);
         } else if (position == 1) {
-            ((BaseFragment) getParentFragment()).start(CRListFragment.class);
             //社区提案
-           // ((BaseFragment) getParentFragment()).start(ProposalFragment.class);
+             ((BaseFragment) getParentFragment()).start(ProposalFragment.class);
         } else if (position == 2) {
+            //cr委员会
+            ((BaseFragment) getParentFragment()).start(CRCouncilFragment.class);
+        }else if (position == 3) {
             ((BaseFragment) getParentFragment()).start(CRListFragment.class);
         }
     }

@@ -32,13 +32,15 @@ import android.widget.TextView;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.proposal.adapter.ProposalPagerAdapter;
+import org.elastos.wallet.ela.ui.proposal.fragment.ProposalItemFragment;
+import org.elastos.wallet.ela.ui.proposal.fragment.SearchFragment;
 import org.elastos.wallet.ela.utils.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.Unbinder;
+import butterknife.OnClick;
 
 public class ProposalFragment extends BaseFragment implements TabLayout.BaseOnTabSelectedListener {
     @BindView(R.id.tv_title)
@@ -49,7 +51,7 @@ public class ProposalFragment extends BaseFragment implements TabLayout.BaseOnTa
     TabLayout tab;
     @BindView(R.id.vp)
     ViewPager vp;
-    Unbinder unbinder;
+
 
     @Override
     protected int getLayoutId() {
@@ -58,6 +60,9 @@ public class ProposalFragment extends BaseFragment implements TabLayout.BaseOnTa
 
     @Override
     protected void initView(View view) {
+        ivTitleRight.setVisibility(View.VISIBLE);
+        ivTitleRight.setImageResource(R.mipmap.cr_search_icon);
+
         tvTitle.setText(R.string.findlistup2);
         List<String> titles = new ArrayList<String>();
 
@@ -68,9 +73,17 @@ public class ProposalFragment extends BaseFragment implements TabLayout.BaseOnTa
         titles.add(getString(R.string.finish));
         titles.add(getString(R.string.abolished));
         //设置适配器
-        ProposalPagerAdapter mPagerAdapter = new ProposalPagerAdapter(titles, getContext());
-        vp.setAdapter(mPagerAdapter);
+        ArrayList<BaseFragment> datas = new ArrayList<BaseFragment>();
+        datas.add(ProposalItemFragment.getInstance(0));
+        datas.add(ProposalItemFragment.getInstance(1));
+        datas.add(ProposalItemFragment.getInstance(2));
+        datas.add(ProposalItemFragment.getInstance(3));
+        datas.add(ProposalItemFragment.getInstance(4));
+        datas.add(ProposalItemFragment.getInstance(5));
 
+
+        ProposalPagerAdapter mPagerAdapter = new ProposalPagerAdapter(getFragmentManager(), datas, titles);
+        vp.setAdapter(mPagerAdapter);
         //关联
         tab.setupWithViewPager(vp);
         //vp.setOffscreenPageLimit(3);
@@ -78,6 +91,17 @@ public class ProposalFragment extends BaseFragment implements TabLayout.BaseOnTa
 
     }
 
+    @OnClick({R.id.iv_title_right})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.iv_title_right:
+                //查找
+                start(SearchFragment.class);
+                break;
+
+
+        }
+    }
 
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
@@ -85,20 +109,7 @@ public class ProposalFragment extends BaseFragment implements TabLayout.BaseOnTa
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         textView.setText(tab.getText());
         tab.setCustomView(textView);
-        Log.i("????", tab.getPosition());
-        switch (tab.getPosition()) {
-            case 0:
-
-                break;
-            case 1:
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
-            case 4:
-                break;
-        }
+        Log.i("?????", tab.getPosition());
 
     }
 

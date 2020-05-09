@@ -27,7 +27,7 @@ import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 
 public class Log {
-    private static boolean showLog = MyApplication.currentWalletNet != WalletNet.MAINNET && !BuildConfig.DEBUG;
+    private static boolean showLog = MyApplication.currentWalletNet != WalletNet.MAINNET || BuildConfig.DEBUG;
 
     public static void v(String tag, String msg) {
         if (showLog)
