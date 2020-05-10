@@ -1,13 +1,17 @@
 import Base from './Base'
 import * as _ from 'lodash'
 import { Document, Types } from 'mongoose'
+import * as jwt from 'jsonwebtoken'
+import * as moment from 'moment'
 import { constant } from '../constant'
 import {
   validate,
   mail,
   user as userUtil,
   permissions,
-  logger
+  logger,
+  getDidPublicKey,
+  utilCrypto
 } from '../utility'
 
 const ObjectId = Types.ObjectId
@@ -23,6 +27,15 @@ const BASE_FIELDS = [
   'elaAddress',
   'plan'
 ]
+
+interface BudgetItem {
+  type: string
+  stage: string
+  milestoneKey: string
+  amount: string
+  reasons: string
+  criteria: string
+}
 
 export default class extends Base {
   private model: any
@@ -1125,6 +1138,94 @@ export default class extends Base {
   public validateDesc(desc: String) {
     if (!validate.valid_string(desc, 1)) {
       throw 'invalid description'
+    }
+  }
+
+  /* sign a suggestion */
+  public async getSignatureUrl(param: { id: string }) {
+    try {
+      if (!this.isLoggedIn()) {
+        return { success: false }
+      }
+
+      const { id } = param
+      const suggestion = this.model
+        .getDBInstance()
+        .findById(id)
+        .populate('createdBy')
+      // check if current user is the owner of this suggestion
+      if (!suggestion.createdBy._id.equals(this.currentUser._id)) {
+        return { success: false }
+      }
+
+      const did = _.get(this.currentUser, 'did.id')
+      if (!did) {
+        return { success: false, message: 'Please bind a did to your account.' }
+      }
+      const rs: {
+        publicKey: string
+        expirationDate: moment.Moment
+      } = await getDidPublicKey(did)
+      if (!rs) {
+        return {
+          success: false,
+          message: `Can not get your did's public key.`
+        }
+      }
+      const ownerPublicKey = rs.publicKey
+
+      const budgets = suggestion.budget.map((item: BudgetItem) => ({
+        type: item.type,
+        stage: parseInt(item.milestoneKey),
+        amount: item.amount
+      }))
+
+      const fields = [
+        '_id',
+        'updatedAt',
+        'title',
+        'type',
+        'abstract',
+        'motivation',
+        'goal',
+        'plan',
+        'relevance',
+        'budget',
+        'budgetAmount',
+        'elaAddress'
+      ]
+      const content = {}
+      for (let field in _.sortBy(fields)) {
+        content[field] = suggestion[field]
+      }
+      const draftHash = utilCrypto.sha256D(JSON.stringify(content))
+
+      const jwtClaims = {
+        command: 'createsuggestion',
+        iss: process.env.APP_DID,
+        callbackurl: `${process.env.API_URL}/api/suggestion/signature-callback`,
+        website: {
+          domain: process.env.SERVER_URL,
+          logo: `${process.env.SERVER_URL}/assets/images/cr_ela_wallet.svg`
+        },
+        data: {
+          proposaltype: 'normal',
+          categorydata: 'Null',
+          ownerpublickey: ownerPublicKey,
+          drafthash: draftHash,
+          budgets,
+          recipient: suggestion.elaAddress
+        }
+      }
+      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, {
+        expiresIn: '7d',
+        algorithm: 'ES256'
+      })
+      const url = `elastos://crproposal/${jwtToken}`
+      return { success: true, url }
+    } catch (err) {
+      logger.error(err)
+      return { success: false }
     }
   }
 }
