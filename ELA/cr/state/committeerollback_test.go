@@ -2019,6 +2019,12 @@ func TestCommittee_RollbackCRCImpeachmentAndReelectionTx(t *testing.T) {
 		TotalAmount:   5000 * 1e8,
 		Penalty:       12,
 	}
+	committee.state.depositInfo[*did2] = &DepositInfo{
+		Refundable:    false,
+		DepositAmount: 5000 * 1e8,
+		TotalAmount:   5000 * 1e8,
+		Penalty:       12,
+	}
 	keyFrameA := committee.Snapshot()
 
 	//here process impeachment
@@ -2882,7 +2888,7 @@ func TestCommitee_RollbackCRCBlendTxCRVert(t *testing.T) {
 
 	returnDepositTx1 := generateReturnDeposite(publicKeyStr1)
 	returnDepositTx2 := generateReturnDeposite(publicKeyStr2)
-	currentHeight += committee.params.CRDepositLockupBlocks+1
+	currentHeight += committee.params.CRDepositLockupBlocks + 1
 	// returnDepositTx
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
