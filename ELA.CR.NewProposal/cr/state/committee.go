@@ -268,7 +268,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 	inElectionPeriod := c.tryStartVotingPeriod(block.Height)
 	c.updateProposals(block.Height, inElectionPeriod)
-	c.freshCirculationAmount(c.lastHistory, block.Height, block.Height)
+	c.freshCirculationAmount(c.lastHistory, block.Height)
 	needChg := false
 	if c.shouldChange(block.Height) && c.changeCommittee(block.Height) {
 		needChg = true
@@ -291,6 +291,46 @@ func (c *Committee) updateProposals(height uint32, inElectionPeriod bool) {
 		c.CRCCommitteeUsedAmount += unusedAmount
 	})
 	c.manager.history.Commit(height)
+}
+
+func (c *Committee) updateCRMembers(height uint32, inElectionPeriod bool) uint32 {
+	if !inElectionPeriod {
+		return 0
+	}
+	circulation := c.CirculationAmount
+	var count uint32
+	for _, v := range c.Members {
+		if v.MemberState != MemberElected {
+			continue
+		}
+
+		if v.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
+			c.params.VoterRejectPercentage/100.0) {
+			c.transferCRMemberState(v, height)
+			count++
+		}
+	}
+	return count
+}
+
+func (c *Committee) transferCRMemberState(crMember *CRMember, height uint32) {
+	oriPenalty := c.state.depositInfo[crMember.Info.CID].Penalty
+	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
+	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
+	oriMemberState := crMember.MemberState
+	penalty := c.getMemberPenalty(height, crMember)
+	c.lastHistory.Append(height, func() {
+		crMember.MemberState = MemberImpeached
+		c.state.depositInfo[crMember.Info.CID].Penalty = penalty
+		c.state.depositInfo[crMember.Info.CID].DepositAmount -= MinDepositAmount
+		c.state.depositInfo[crMember.Info.CID].Refundable = true
+	}, func() {
+		crMember.MemberState = oriMemberState
+		c.state.depositInfo[crMember.Info.CID].Penalty = oriPenalty
+		c.state.depositInfo[crMember.Info.CID].Refundable = oriRefundable
+		c.state.depositInfo[crMember.Info.CID].DepositAmount = oriDepositAmount
+	})
+	return
 }
 
 func (c *Committee) changeCommittee(height uint32) bool {
@@ -445,10 +485,9 @@ func (c *Committee) recordCRCRelatedAddressOutputs(block *types.Block) {
 	c.firstHistory.Commit(block.Height)
 }
 
-func (c *Committee) freshCirculationAmount(history *utils.History,
-	bestHeight uint32, height uint32) {
+func (c *Committee) freshCirculationAmount(history *utils.History, height uint32) {
 	circulationAmount := common.Fixed64(config.OriginIssuanceAmount) +
-		common.Fixed64(bestHeight)*c.params.RewardPerBlock -
+		common.Fixed64(height)*c.params.RewardPerBlock -
 		c.CRCFoundationBalance - c.CRCCommitteeBalance - c.DestroyedAmount
 	oriCirculationAmount := c.CirculationAmount
 	history.Append(height, func() {
@@ -480,13 +519,15 @@ func (c *Committee) tryStartVotingPeriod(height uint32) (inElection bool) {
 		return
 	}
 
+	newImpeachedCount := c.updateCRMembers(height, inElection)
+
 	var normalCount uint32
 	for _, m := range c.Members {
 		if m.MemberState == MemberElected {
 			normalCount++
 		}
 	}
-	if normalCount < c.params.CRAgreementCount {
+	if normalCount-newImpeachedCount < c.params.CRAgreementCount {
 		lastVotingStartHeight := c.LastVotingStartHeight
 		inElectionPeriod := c.InElectionPeriod
 		c.lastHistory.Append(height, func() {
@@ -503,7 +544,9 @@ func (c *Committee) tryStartVotingPeriod(height uint32) (inElection bool) {
 		inElection = false
 
 		for _, v := range c.Members {
-			if v.MemberState == MemberElected {
+			if v.MemberState == MemberElected &&
+				v.ImpeachmentVotes < common.Fixed64(float64(c.CirculationAmount)*
+					c.params.VoterRejectPercentage/100.0) {
 				c.terminateCRMember(v, height)
 			}
 		}
@@ -517,8 +560,8 @@ func (c *Committee) terminateCRMember(crMember *CRMember, height uint32) {
 	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
 	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
 	oriMemberState := crMember.MemberState
+	penalty := c.getMemberPenalty(height, crMember)
 	c.lastHistory.Append(height, func() {
-		penalty := c.getMemberPenalty(height, crMember)
 		crMember.MemberState = MemberTerminated
 		c.state.depositInfo[crMember.Info.CID].Penalty = penalty
 		c.state.depositInfo[crMember.Info.CID].DepositAmount -= MinDepositAmount
@@ -533,7 +576,6 @@ func (c *Committee) terminateCRMember(crMember *CRMember, height uint32) {
 
 func (c *Committee) processImpeachment(height uint32, member []byte,
 	votes common.Fixed64, history *utils.History) {
-	circulation := c.CirculationAmount
 	var crMember *CRMember
 	for _, v := range c.Members {
 		if bytes.Equal(v.Info.CID.Bytes(), member) &&
@@ -545,26 +587,10 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 	if crMember == nil {
 		return
 	}
-	oriPenalty := c.state.depositInfo[crMember.Info.CID].Penalty
-	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
-	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
-	oriMemberState := crMember.MemberState
 	history.Append(height, func() {
 		crMember.ImpeachmentVotes += votes
-		if crMember.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
-			c.params.VoterRejectPercentage/100.0) {
-			penalty := c.getMemberPenalty(height, crMember)
-			crMember.MemberState = MemberImpeached
-			c.state.depositInfo[crMember.Info.CID].Penalty = penalty
-			c.state.depositInfo[crMember.Info.CID].DepositAmount -= MinDepositAmount
-			c.state.depositInfo[crMember.Info.CID].Refundable = true
-		}
 	}, func() {
 		crMember.ImpeachmentVotes -= votes
-		crMember.MemberState = oriMemberState
-		c.state.depositInfo[crMember.Info.CID].Penalty = oriPenalty
-		c.state.depositInfo[crMember.Info.CID].Refundable = oriRefundable
-		c.state.depositInfo[crMember.Info.CID].DepositAmount = oriDepositAmount
 	})
 	return
 }
@@ -790,11 +816,9 @@ func (c *Committee) processCurrentMembersDepositInfo(height uint32) {
 			oriDepositAmount := c.state.depositInfo[m.Info.CID].DepositAmount
 			var dpositAmount common.Fixed64
 			dpositAmount = MinDepositAmount
+			penalty := c.getMemberPenalty(height, &member)
 			c.lastHistory.Append(height, func() {
-				//MemberImpeached do not recalculate penalty
-				if dpositAmount != 0 {
-					c.state.depositInfo[member.Info.CID].Penalty = c.getMemberPenalty(height, &member)
-				}
+				c.state.depositInfo[member.Info.CID].Penalty = penalty
 				c.state.depositInfo[member.Info.CID].Refundable = true
 				c.state.depositInfo[member.Info.CID].DepositAmount -= dpositAmount
 			}, func() {
@@ -893,7 +917,7 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 	currentPenalty := common.Fixed64(float64(MinDepositAmount) * (1 - electionRate*voteRate))
 	finalPenalty := penalty + currentPenalty
 
-	log.Infof("height %d member %s impeached, not election and not vote proposal"+
+	log.Infof("height %d member %s, not election and not vote proposal"+
 		" penalty: %s, old penalty: %s, final penalty: %s",
 		height, member.Info.NickName, currentPenalty, penalty, finalPenalty)
 	log.Info("electionRate:", electionRate, "voteRate:", voteRate,
