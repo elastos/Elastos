@@ -139,7 +139,7 @@ fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "elaphant" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
     build_binary_and_docker "v0.3.4" "github.com/elaphantapp/ElaphantNode" "elaphant" \
-        "cyberrepublic/elastos-elaphant-node" "yes" "v0.3.4"
+        "cyberrepublic/elastos-elaphant-node" "yes" "v0.3.5"
 fi
 
 cd $CURRENT_DIR
