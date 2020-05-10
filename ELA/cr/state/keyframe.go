@@ -25,6 +25,10 @@ const (
 	// MemberImpeached indicates the CR member was impeached.
 	MemberImpeached
 
+	// MemberTerminated indicates the CR member was terminated because elected
+	// CR members are not enough.
+	MemberTerminated
+
 	// MemberReturned indicates the CR member has deposit returned.
 	MemberReturned
 )
