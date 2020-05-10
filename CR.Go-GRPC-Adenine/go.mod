@@ -9,4 +9,5 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/susmit/Solidity-Go-Parser v0.0.0-20180410125129-e2df852a7cf0
 	google.golang.org/grpc v1.28.0
+    github.com/cyber-republic/go-grpc-adenine/v2 v2.0.0
 )
