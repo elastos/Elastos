@@ -41,6 +41,8 @@ func (s *MemberState) String() string {
 		return "Impeached"
 	case MemberReturned:
 		return "Returned"
+	case MemberTerminated:
+		return "Terminated"
 	}
 
 	return "Unknown"
