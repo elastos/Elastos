@@ -4,11 +4,12 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	"log"
 
-	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/health_check"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+
+	"github.com/cyber-republic/go-grpc-adenine/v2/elastosadenine/stubs/health_check"
 )
 
 type HealthCheck struct {

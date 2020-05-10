@@ -5,14 +5,16 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/node_rpc"
+	"log"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/cyber-republic/go-grpc-adenine/v2/elastosadenine/stubs/node_rpc"
 	"github.com/dgrijalva/jwt-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
-	"log"
-	"strconv"
-	"time"
 )
 
 type NodeRpc struct {
@@ -20,10 +22,10 @@ type NodeRpc struct {
 }
 
 type JWTInfoNodeRpc struct {
-	Network string `json:"network"`
-	Chain string	`json:"chain"`
-	Method string	`json:"method"`
-	Params map[string]interface{}	`json:"params"`
+	Network string      `json:"network"`
+	Chain   string      `json:"chain"`
+	Method  string      `json:"method"`
+	Params  interface{} `json:"params"`
 }
 
 func NewNodeRpc(host string, port int, production bool) *NodeRpc {
@@ -52,14 +54,14 @@ func (n *NodeRpc) Close() {
 	n.Connection.Close()
 }
 
-// TODO: Common method for mainchain only
+// Common method for mainchain only
 func (n *NodeRpc) GetCurrentCrcCouncil(apiKey, did, network string) map[string]interface{} {
 	params := make(map[string]interface{}, 0)
 	params["state"] = "all"
 	return n.RpcMethod(apiKey, did, network, "mainchain", "listcurrentcrs", params).(map[string]interface{})
 }
 
-// TODO: Common method for mainchain only
+// Common method for mainchain only
 func (n *NodeRpc) GetCurrentCrcCandidates(apiKey, did, network string) map[string]interface{} {
 	params := make(map[string]interface{}, 0)
 	params["start"] = 0
@@ -67,7 +69,7 @@ func (n *NodeRpc) GetCurrentCrcCandidates(apiKey, did, network string) map[strin
 	return n.RpcMethod(apiKey, did, network, "mainchain", "listcrcandidates", params).(map[string]interface{})
 }
 
-// TODO: Common method for mainchain only
+// Common method for mainchain only
 func (n *NodeRpc) GetCurrentDposSupernodes(apiKey, did, network string) map[string]interface{} {
 	params := make(map[string]interface{}, 0)
 	params["start"] = 0
@@ -118,39 +120,67 @@ func (n *NodeRpc) GetCurrentMiningInfo(apiKey, did, network string) map[string]i
 	return n.RpcMethod(apiKey, did, network, "mainchain", "getmininginfo", params).(map[string]interface{})
 }
 
-// Common method for mainchain, did sidechain and token sidechain
+// Common method for mainchain, did sidechain, token and eth sidechain
 func (n *NodeRpc) GetCurrentBlockInfo(apiKey, did, network, chain string) map[string]interface{} {
 	height := n.GetCurrentHeight(apiKey, did, network, chain)
 	return n.GetBlockInfo(apiKey, did, network, chain, height)
 }
 
-// Common method for mainchain, did sidechain and token sidechain
+// Common method for mainchain, did sidechain, token and eth sidechain
 func (n *NodeRpc) GetBlockInfo(apiKey, did, network, chain, height string) map[string]interface{} {
-	params := make(map[string]interface{}, 0)
-	params["height"] = height
-	return n.RpcMethod(apiKey, did, network, chain, "getblockbyheight", params).(map[string]interface{})
-}
-
-// Common method for mainchain, did sidechain and token sidechain
-func (n *NodeRpc) GetCurrentBalance(apiKey, did, network, chain, address string) interface{} {
-	params := make(map[string]interface{}, 0)
-	params["address"] = address
-	if chain == "token" {
-		result := n.RpcMethod(apiKey, did, network, chain, "getreceivedbyaddress", params).(map[string]interface{})
-		currentBalance := make(map[string]string)
-		for key, value := range result {
-			currentBalance[key] = value.(string)
-		}
-		return currentBalance
+	if chain == "eth" {
+		params := []interface{}{}
+		heightInt, _ := strconv.Atoi(height)
+		params = append(params, fmt.Sprintf("0x%02x", heightInt))
+		params = append(params, true)
+		return n.RpcMethod(apiKey, did, network, chain, "eth_getBlockByNumber", params).(map[string]interface{})
 	} else {
-		return n.RpcMethod(apiKey, did, network, chain, "getreceivedbyaddress", params).(string)
+		params := make(map[string]interface{}, 0)
+		params["height"] = height
+		return n.RpcMethod(apiKey, did, network, chain, "getblockbyheight", params).(map[string]interface{})
 	}
 }
 
-// Common method for mainchain, did sidechain and token sidechain
+// Common method for mainchain, did sidechain, token and eth sidechain
+func (n *NodeRpc) GetCurrentBalance(apiKey, did, network, chain, address string) interface{} {
+	var currentBalance interface{}
+
+	if chain == "eth" {
+		params := []string{address, "latest"}
+		currentBalanceHex := n.RpcMethod(apiKey, did, network, chain, "eth_getBalance", params).(string)
+		currentBalanceHexCleaned := strings.Replace(currentBalanceHex, "0x", "", -1)
+		currentBalanceInt64, _ := strconv.ParseInt(currentBalanceHexCleaned, 16, 64)
+		currentBalance = fmt.Sprintf("%v", currentBalanceInt64)
+	} else {
+		params := make(map[string]interface{}, 0)
+		params["address"] = address
+		if chain == "token" {
+			result := n.RpcMethod(apiKey, did, network, chain, "getreceivedbyaddress", params).(map[string]interface{})
+			balance := make(map[string]string)
+			for key, value := range result {
+				balance[key] = value.(string)
+			}
+			currentBalance = balance
+		} else {
+			currentBalance = n.RpcMethod(apiKey, did, network, chain, "getreceivedbyaddress", params).(string)
+		}
+	}
+	return currentBalance
+}
+
+// Common method for mainchain, did sidechain, token and eth sidechain
 func (n *NodeRpc) GetCurrentHeight(apiKey, did, network, chain string) string {
-	nodeState := n.GetCurrentNodeState(apiKey, did, network, chain)
-	currentHeight := fmt.Sprintf("%.0f", nodeState["height"].(float64))
+	var currentHeight string
+	params := make(map[string]interface{}, 0)
+	if chain == "eth" {
+		currentHeightHex := n.RpcMethod(apiKey, did, network, chain, "eth_blockNumber", params).(string)
+		currentHeightHexCleaned := strings.Replace(currentHeightHex, "0x", "", -1)
+		currentHeightInt64, _ := strconv.ParseInt(currentHeightHexCleaned, 16, 64)
+		currentHeight = fmt.Sprintf("%v", currentHeightInt64)
+	} else {
+		nodeState := n.GetCurrentNodeState(apiKey, did, network, chain)
+		currentHeight = fmt.Sprintf("%.0f", nodeState["height"].(float64))
+	}
 	return currentHeight
 }
 
@@ -160,15 +190,15 @@ func (n *NodeRpc) GetCurrentNodeState(apiKey, did, network, chain string) map[st
 	return n.RpcMethod(apiKey, did, network, chain, "getnodestate", params).(map[string]interface{})
 }
 
-func (n *NodeRpc) RpcMethod(apiKey, did, network, chain, method string, params map[string]interface{}) interface{} {
+func (n *NodeRpc) RpcMethod(apiKey, did, network, chain, method string, params interface{}) interface{} {
 	var data interface{}
 	client := node_rpc.NewNodeRpcClient(n.Connection)
 
 	jwtInfo, _ := json.Marshal(JWTInfoNodeRpc{
 		Network: network,
-		Chain: chain,
-		Method: method,
-		Params: params,
+		Chain:   chain,
+		Method:  method,
+		Params:  params,
 	})
 
 	claims := JWTClaim{

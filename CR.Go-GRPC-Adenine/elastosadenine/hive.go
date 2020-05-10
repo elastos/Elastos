@@ -5,15 +5,16 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/hive"
-	"github.com/dgrijalva/jwt-go"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/metadata"
 	"io/ioutil"
 	"log"
 	"os"
 	"time"
+
+	"github.com/cyber-republic/go-grpc-adenine/v2/elastosadenine/stubs/hive"
+	"github.com/dgrijalva/jwt-go"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 )
 
 type Hive struct {
@@ -21,17 +22,17 @@ type Hive struct {
 }
 
 type JWTInfoHiveUploadAndSign struct {
-	Network string `json:"network"`
-	PrivateKey string `json:"privateKey"`
+	Network     string `json:"network"`
+	PrivateKey  string `json:"privateKey"`
 	FileContent string `json:"file_content"`
 }
 
 type JWTInfoVerifyAndShow struct {
-	Network string `json:"network"`
-	Msg string `json:"msg"`
-	Pub string `json:"pub"`
-	Sig string `json:"sig"`
-	Hash string `json:"hash"`
+	Network    string `json:"network"`
+	Msg        string `json:"msg"`
+	Pub        string `json:"pub"`
+	Sig        string `json:"sig"`
+	Hash       string `json:"hash"`
 	PrivateKey string `json:"privateKey"`
 }
 
@@ -66,17 +67,17 @@ func (h *Hive) UploadAndSign(apiKey, did, network, privateKey, filename string) 
 	client := hive.NewHiveClient(h.Connection)
 
 	// Open file for reading
-    file, err := os.Open(filename)
-    if err != nil {
-        log.Fatal(err)
-    }
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
 	fileContent, err := ioutil.ReadAll(file)
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	jwtInfo, _ := json.Marshal(JWTInfoHiveUploadAndSign{
-		Network: network,
+		Network:    network,
 		PrivateKey: privateKey,
 	})
 
@@ -101,23 +102,23 @@ func (h *Hive) UploadAndSign(apiKey, did, network, privateKey, filename string) 
 	if err != nil {
 		log.Fatalf("Failed to execute 'UploadAndSign' method: %v", err)
 	}
-	
+
 	if response.Status == true {
 		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
-		    if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
-		        return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
-		    }
-		    return []byte(apiKey), nil
+			if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
+			}
+			return []byte(apiKey), nil
 		})
 
 		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
-		    strMap := recvClaims["jwt_info"].(map[string]interface{})
+			strMap := recvClaims["jwt_info"].(map[string]interface{})
 			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
 			outputData = string(result)
 		} else {
 			log.Fatalf("Failed to execute 'UploadAndSign' method: %v", err)
 		}
-	} 
+	}
 	responseData := Response{outputData, response.Status, response.StatusMessage}
 	return responseData
 }
@@ -127,11 +128,11 @@ func (h *Hive) VerifyAndShow(apiKey, did, network, privateKey, msg, pub, sig, ha
 	client := hive.NewHiveClient(h.Connection)
 
 	jwtInfo, _ := json.Marshal(JWTInfoVerifyAndShow{
-		Network: network,
-		Msg: msg,
-		Pub: pub,
-		Sig: sig,
-		Hash: hash,
+		Network:    network,
+		Msg:        msg,
+		Pub:        pub,
+		Sig:        sig,
+		Hash:       hash,
 		PrivateKey: privateKey,
 	})
 
@@ -156,13 +157,13 @@ func (h *Hive) VerifyAndShow(apiKey, did, network, privateKey, msg, pub, sig, ha
 	if err != nil {
 		log.Fatalf("Failed to execute 'VerifyAndShow' method: %v", err)
 	}
-	
+
 	if response.Status == true {
 		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
-		    if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
-		        return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
-		    }
-		    return []byte(apiKey), nil
+			if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
+			}
+			return []byte(apiKey), nil
 		})
 
 		if _, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
@@ -170,7 +171,7 @@ func (h *Hive) VerifyAndShow(apiKey, did, network, privateKey, msg, pub, sig, ha
 		} else {
 			log.Fatalf("Failed to execute 'VerifyAndShow' method: %v", err)
 		}
-	} 
+	}
 	responseData := ResponseData{fileContent, response.Status, response.StatusMessage}
 	return responseData
 }

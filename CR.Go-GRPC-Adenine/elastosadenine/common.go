@@ -5,13 +5,14 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/common"
+	"log"
+	"time"
+
+	"github.com/cyber-republic/go-grpc-adenine/v2/elastosadenine/stubs/common"
 	"github.com/dgrijalva/jwt-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
-	"log"
-	"time"
 )
 
 type Common struct {
@@ -19,7 +20,7 @@ type Common struct {
 }
 
 type JWTInfoCommon struct {
-    jwt.StandardClaims
+	jwt.StandardClaims
 }
 
 func NewCommon(host string, port int, production bool) *Common {

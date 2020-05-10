@@ -5,15 +5,16 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"google.golang.org/grpc/credentials"
-	"github.com/dgrijalva/jwt-go"
-	"google.golang.org/grpc/metadata"
 	"log"
 	"time"
+
 	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"github.com/cyber-republic/go-grpc-adenine/v2/elastosadenine/stubs/sidechain_eth"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/susmit/Solidity-Go-Parser/parser"
 	"google.golang.org/grpc"
-	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/sidechain_eth"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 )
 
 type SidechainEth struct {
@@ -21,18 +22,18 @@ type SidechainEth struct {
 }
 
 type JWTInfoSidechainEthDeploy struct {
-	Network string `json:"network"`
-	Address string `json:"eth_account_address"`
-	PrivateKey string `json:"eth_private_key"`
-	Gas int `json:"eth_gas"`
+	Network        string `json:"network"`
+	Address        string `json:"eth_account_address"`
+	PrivateKey     string `json:"eth_private_key"`
+	Gas            int    `json:"eth_gas"`
 	ContractSource string `json:"contract_source"`
-	ContractName string `json:"contract_name"`
+	ContractName   string `json:"contract_name"`
 }
 
 type JWTInfoSidechainEthWatch struct {
-	Network string `json:"network"`
-	ContractAddress string `json:"contract_address"`
-	ContractName string `json:"contract_name"`
+	Network          string `json:"network"`
+	ContractAddress  string `json:"contract_address"`
+	ContractName     string `json:"contract_name"`
 	ContractCodeHash string `json:"contract_code_hash"`
 }
 
@@ -78,18 +79,18 @@ func (e *SidechainEth) DeployEthContract(apiKey, did, network, address, privateK
 	// Parse the solidity smart contract
 	contractSource, _ := antlr.NewFileStream(fileName)
 	lexer := parser.NewSolidityLexer(contractSource)
-	stream := antlr.NewCommonTokenStream(lexer,0)
+	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewSolidityParser(stream)
 	solidityListener := SolidityListener{}
 	antlr.ParseTreeWalkerDefault.Walk(&solidityListener, p.SourceUnit())
 
 	jwtInfo, _ := json.Marshal(JWTInfoSidechainEthDeploy{
-		Network: network,
-		Address: address,
-		PrivateKey: privateKey,
-		Gas: gas,
+		Network:        network,
+		Address:        address,
+		PrivateKey:     privateKey,
+		Gas:            gas,
 		ContractSource: fmt.Sprint(contractSource),
-		ContractName: solidityListener.ContractName,
+		ContractName:   solidityListener.ContractName,
 	})
 
 	claims := JWTClaim{
@@ -113,23 +114,23 @@ func (e *SidechainEth) DeployEthContract(apiKey, did, network, address, privateK
 	if err != nil {
 		log.Fatalf("Failed to execute 'DeployEthContract' method: %v", err)
 	}
-	
+
 	if response.Status == true {
 		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
-		    if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
-		        return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
-		    }
-		    return []byte(apiKey), nil
+			if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
+			}
+			return []byte(apiKey), nil
 		})
 
 		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
-		    strMap := recvClaims["jwt_info"].(map[string]interface{})
+			strMap := recvClaims["jwt_info"].(map[string]interface{})
 			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
 			outputData = string(result)
 		} else {
 			log.Fatalf("Failed to execute 'DeployEthContract' method: %v", err)
 		}
-	} 
+	}
 	responseData := Response{outputData, response.Status, response.StatusMessage}
 	return responseData
 }
@@ -139,7 +140,7 @@ func (e *SidechainEth) WatchEthContract(apiKey, did, network, contractAddress, c
 	client := sidechain_eth.NewSidechainEthClient(e.Connection)
 
 	jwtInfo, _ := json.Marshal(JWTInfoSidechainEthWatch{
-		Network: network,
+		Network:          network,
 		ContractAddress:  contractAddress,
 		ContractName:     contractName,
 		ContractCodeHash: contractCodeHash,
@@ -166,23 +167,23 @@ func (e *SidechainEth) WatchEthContract(apiKey, did, network, contractAddress, c
 	if err != nil {
 		log.Fatalf("Failed to execute 'WatchEthContract' method: %v", err)
 	}
-	
+
 	if response.Status == true {
 		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
-		    if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
-		        return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
-		    }
-		    return []byte(apiKey), nil
+			if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
+			}
+			return []byte(apiKey), nil
 		})
 
 		if recvClaims, ok := recvToken.Claims.(jwt.MapClaims); ok && recvToken.Valid {
-		    strMap := recvClaims["jwt_info"].(map[string]interface{})
+			strMap := recvClaims["jwt_info"].(map[string]interface{})
 			result, _ := json.Marshal(strMap["result"].(map[string]interface{}))
 			outputData = string(result)
 		} else {
 			log.Fatalf("Failed to execute 'WatchEthContract' method: %v", err)
 		}
-	} 
+	}
 	responseData := Response{outputData, response.Status, response.StatusMessage}
 	return responseData
 }

@@ -9,8 +9,8 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/cyber-republic/go-grpc-adenine/elastosadenine"
-	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/health_check"
+	"github.com/cyber-republic/go-grpc-adenine/v2/elastosadenine"
+	"github.com/cyber-republic/go-grpc-adenine/v2/elastosadenine/stubs/health_check"
 )
 
 func main() {
@@ -40,7 +40,7 @@ optional arguments:
 
 	network := "gmunet"
 	didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
-	apiKeyToUse := "VRPWZq93E9nSgK21vqRgLTF3kPkqCOiQTBBHMqcFHxglHjiuXRBKkVYwWQXolWKe"
+	apiKeyToUse := "1htfwNmjePvE6blvXPc3YjD8Iqkst53ZF8EwnCZxbvyIcOoHt8wQHxPq4y501awz"
 	privateKeyToUse := "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
 
 	healthCheckTest(grpcServerHost, grpcServerPort, production)
@@ -111,10 +111,6 @@ func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, d
 func nodeRPCMethodsDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
 	nodeRpc := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production)
 	defer nodeRpc.Close()
-	var (
-		address = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"
-		// addressEth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
-	)
 
 	log.Println("--> Get current height")
 	currentHeight := nodeRpc.GetCurrentHeight(apiKeyToUse, didToUse, network, "mainchain")
@@ -123,14 +119,8 @@ func nodeRPCMethodsDemo(grpcServerHost string, grpcServerPort int, production bo
 	log.Println("Current Height - did sidechain: ", currentHeight)
 	currentHeight = nodeRpc.GetCurrentHeight(apiKeyToUse, didToUse, network, "token")
 	log.Println("Current Height - token sidechain: ", currentHeight)
-
-	log.Println("--> Get current balance")
-	currentBalance := nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "mainchain", address).(string)
-	log.Println("Current balance - mainchain:", currentBalance)
-	currentBalance = nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "did", address).(string)
-	log.Println("Current balance - did sidechain:", currentBalance)
-	currentBalanceToken := nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "token", address).(map[string]string)
-	log.Println("Current balance - token sidechain:", currentBalanceToken)
+	currentHeight = nodeRpc.GetCurrentHeight(apiKeyToUse, didToUse, network, "eth")
+	log.Println("Current Height - eth sidechain: ", currentHeight)
 
 	log.Println("--> Get current block info")
 	currentBlockInfo := nodeRpc.GetCurrentBlockInfo(apiKeyToUse, didToUse, network, "mainchain")
@@ -139,22 +129,12 @@ func nodeRPCMethodsDemo(grpcServerHost string, grpcServerPort int, production bo
 	log.Println("Current block info - did sidechain: ", currentBlockInfo)
 	currentBlockInfo = nodeRpc.GetCurrentBlockInfo(apiKeyToUse, didToUse, network, "token")
 	log.Println("Current block info - token sidechain: ", currentBlockInfo)
+	currentBlockInfo = nodeRpc.GetCurrentBlockInfo(apiKeyToUse, didToUse, network, "eth")
+	log.Println("Current block info - eth sidechain: ", currentBlockInfo)
 
 	log.Println("--> Get current mining info - mainchain")
 	currentMiningInfo := nodeRpc.GetCurrentMiningInfo(apiKeyToUse, didToUse, network)
 	log.Println("Current mining info: ", currentMiningInfo)
-
-	log.Println("--> Get current block confirm - mainchain")
-	currentBlockConfirm := nodeRpc.GetCurrentBlockConfirm(apiKeyToUse, didToUse, network)
-	log.Println("Current block confirm: ", currentBlockConfirm)
-
-	log.Println("--> Get current arbitrator info - mainchain")
-	currentArbitratorInfo := nodeRpc.GetCurrentArbitratorsInfo(apiKeyToUse, didToUse, network)
-	log.Println("Current arbitrator info: ", currentArbitratorInfo)
-
-	log.Println("--> Get current arbitrator group - mainchain")
-	currentArbitratorGroup := nodeRpc.GetCurrentArbitratorGroup(apiKeyToUse, didToUse, network)
-	log.Println("Current arbitrator group: ", currentArbitratorGroup)
 }
 
 func uploadAndSignDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network, privateKeyToUse string) {
@@ -223,15 +203,19 @@ func viewWalletDemo(grpcServerHost string, grpcServerPort int, production bool, 
 	nodeRpc := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production)
 	defer nodeRpc.Close()
 	var (
-		address = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"
-		// addressEth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
+		address    = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"
+		addressEth = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
 	)
+
+	log.Println("--> Get current balance")
 	currentBalance := nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "mainchain", address).(string)
 	log.Println("Current balance - mainchain:", currentBalance)
 	currentBalance = nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "did", address).(string)
 	log.Println("Current balance - did sidechain:", currentBalance)
 	currentBalanceToken := nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "token", address).(map[string]string)
 	log.Println("Current balance - token sidechain:", currentBalanceToken)
+	currentBalanceEth := nodeRpc.GetCurrentBalance(apiKeyToUse, didToUse, network, "eth", addressEth).(string)
+	log.Println("Current balance - eth sidechain:", currentBalanceEth)
 }
 
 func requestELADemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse string) {

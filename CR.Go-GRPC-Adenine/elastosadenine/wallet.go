@@ -8,7 +8,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/cyber-republic/go-grpc-adenine/elastosadenine/stubs/wallet"
+	"github.com/cyber-republic/go-grpc-adenine/v2/elastosadenine/stubs/wallet"
 	"github.com/dgrijalva/jwt-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
