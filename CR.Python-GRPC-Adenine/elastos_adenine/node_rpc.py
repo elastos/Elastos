@@ -21,17 +21,17 @@ class NodeRpc:
     def close(self):
         self._channel.close()
 
-    # TODO: Common method for mainchain only
+    # Common method for mainchain only
     def get_current_crc_council(self, api_key, did, network):
         params = {"state": "all"}
         return self.rpc_method(api_key, did, network, "mainchain", "listcurrentcrs", params)
 
-    # TODO: Common method for mainchain only
+    # Common method for mainchain only
     def get_current_crc_candidates(self, api_key, did, network):
         params = {"start": 0, "state": "all"}
         return self.rpc_method(api_key, did, network, "mainchain", "listcrcandidates", params)
 
-    # TODO: Common method for mainchain only
+    # Common method for mainchain only
     def get_current_dpos_supernodes(self, api_key, did, network):
         params = {"start": 0, "state": "all"}
         return self.rpc_method(api_key, did, network, "mainchain", "listproducers", params)

@@ -32,7 +32,7 @@ def main():
     ela_to_use = 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN'
     ela_eth_to_use = '0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e'
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'u5DbcBNWDfIviQryltFhvcEKOIEAxoUH6WkezyDcd9jWJKfkiFYBMmOGWskKtWqc'
+    api_key_to_use = '1htfwNmjePvE6blvXPc3YjD8Iqkst53ZF8EwnCZxbvyIcOoHt8wQHxPq4y501awz'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     # Check whether grpc server is healthy first
@@ -75,18 +75,6 @@ def main():
             print("--> Get current mining info - mainchain")
             current_mining_info = node_rpc.get_current_mining_info(api_key_to_use, did_to_use, network)
             print("Current mining info: ", current_mining_info)
-            
-            print("--> Get current block confirm - mainchain")
-            current_block_confirm = node_rpc.get_current_block_confirm(api_key_to_use, did_to_use, network)
-            print("Current block confirm: ", current_block_confirm)
-            
-            print("--> Get current arbitrator info - mainchain")
-            current_arbitrator_info = node_rpc.get_current_arbitrators_info(api_key_to_use, did_to_use, network)
-            print("Current arbitrator info: ", current_arbitrator_info)
-            
-            print("--> Get current arbitrator group - mainchain")
-            current_arbitrator_group = node_rpc.get_current_arbitrator_group(api_key_to_use, did_to_use, network)
-            print("Current arbitrator group: ", current_arbitrator_group)
         except Exception as e:
             print(e)
         finally:
