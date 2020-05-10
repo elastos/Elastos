@@ -501,9 +501,34 @@ func (c *Committee) tryStartVotingPeriod(height uint32) (inElection bool) {
 			c.LastVotingStartHeight = lastVotingStartHeight
 		})
 		inElection = false
+
+		for _, v := range c.Members {
+			if v.MemberState == MemberElected {
+				c.terminateCRMember(v, height)
+			}
+		}
 	}
 
 	return
+}
+
+func (c *Committee) terminateCRMember(crMember *CRMember, height uint32) {
+	oriPenalty := c.state.depositInfo[crMember.Info.CID].Penalty
+	oriRefundable := c.state.depositInfo[crMember.Info.CID].Refundable
+	oriDepositAmount := c.state.depositInfo[crMember.Info.CID].DepositAmount
+	oriMemberState := crMember.MemberState
+	c.lastHistory.Append(height, func() {
+		penalty := c.getMemberPenalty(height, crMember)
+		crMember.MemberState = MemberTerminated
+		c.state.depositInfo[crMember.Info.CID].Penalty = penalty
+		c.state.depositInfo[crMember.Info.CID].DepositAmount -= MinDepositAmount
+		c.state.depositInfo[crMember.Info.CID].Refundable = true
+	}, func() {
+		crMember.MemberState = oriMemberState
+		c.state.depositInfo[crMember.Info.CID].Penalty = oriPenalty
+		c.state.depositInfo[crMember.Info.CID].Refundable = oriRefundable
+		c.state.depositInfo[crMember.Info.CID].DepositAmount = oriDepositAmount
+	})
 }
 
 func (c *Committee) processImpeachment(height uint32, member []byte,
@@ -670,6 +695,10 @@ func (c *Committee) isInVotingPeriod(height uint32) bool {
 }
 
 func (c *Committee) changeCommitteeMembers(height uint32) error {
+	if c.InElectionPeriod == true {
+		c.processCurrentMembersDepositInfo(height)
+	}
+
 	candidates := c.getActiveAndExistDIDCRCandidatesDesc()
 	oriInElectionPeriod := c.InElectionPeriod
 	oriLastVotingStartHeight := c.LastVotingStartHeight
@@ -684,7 +713,8 @@ func (c *Committee) changeCommitteeMembers(height uint32) error {
 		return errors.New("candidates count less than required count height" + strconv.Itoa(int(height)))
 	}
 	// Process current members.
-	newMembers := c.processCurrentMembers(height, candidates)
+	newMembers := c.processCurrentMembersHistory(height, candidates)
+
 	// Process current candidates.
 	c.processCurrentCandidates(height, candidates, newMembers)
 
@@ -702,7 +732,7 @@ func (c *Committee) changeCommitteeMembers(height uint32) error {
 	return nil
 }
 
-func (c *Committee) processCurrentMembers(height uint32,
+func (c *Committee) processCurrentMembersHistory(height uint32,
 	activeCandidates []*Candidate) map[common.Uint168]*CRMember {
 
 	oriMembers := copyMembersMap(c.Members)
@@ -719,25 +749,9 @@ func (c *Committee) processCurrentMembers(height uint32,
 
 		for _, m := range oriMembers {
 			member := *m
-			oriPenalty := c.state.depositInfo[m.Info.CID].Penalty
-			oriRefundable := c.state.depositInfo[m.Info.CID].Refundable
-			oriDepositAmount := c.state.depositInfo[m.Info.CID].DepositAmount
-			var dpositAmount common.Fixed64
-			if member.MemberState != MemberImpeached {
-				dpositAmount = MinDepositAmount
-			}
 			c.lastHistory.Append(height, func() {
-				//MemberImpeached do not recalculate penalty
-				if dpositAmount != 0 {
-					c.state.depositInfo[member.Info.CID].Penalty = c.getMemberPenalty(height, &member)
-				}
-				c.state.depositInfo[member.Info.CID].Refundable = true
-				c.state.depositInfo[member.Info.CID].DepositAmount -= dpositAmount
 				c.HistoryMembers[c.state.CurrentSession][member.Info.CID] = &member
 			}, func() {
-				c.state.depositInfo[member.Info.CID].Penalty = oriPenalty
-				c.state.depositInfo[member.Info.CID].Refundable = oriRefundable
-				c.state.depositInfo[member.Info.CID].DepositAmount = oriDepositAmount
 				delete(c.HistoryMembers[c.state.CurrentSession], member.Info.CID)
 			})
 		}
@@ -761,6 +775,35 @@ func (c *Committee) processCurrentMembers(height uint32,
 		c.state.Votes = oriVotes
 	})
 	return newMembers
+}
+
+func (c *Committee) processCurrentMembersDepositInfo(height uint32) {
+	oriMembers := copyMembersMap(c.Members)
+	if len(c.Members) != 0 {
+		for _, m := range oriMembers {
+			member := *m
+			if member.MemberState != MemberElected {
+				continue
+			}
+			oriPenalty := c.state.depositInfo[m.Info.CID].Penalty
+			oriRefundable := c.state.depositInfo[m.Info.CID].Refundable
+			oriDepositAmount := c.state.depositInfo[m.Info.CID].DepositAmount
+			var dpositAmount common.Fixed64
+			dpositAmount = MinDepositAmount
+			c.lastHistory.Append(height, func() {
+				//MemberImpeached do not recalculate penalty
+				if dpositAmount != 0 {
+					c.state.depositInfo[member.Info.CID].Penalty = c.getMemberPenalty(height, &member)
+				}
+				c.state.depositInfo[member.Info.CID].Refundable = true
+				c.state.depositInfo[member.Info.CID].DepositAmount -= dpositAmount
+			}, func() {
+				c.state.depositInfo[member.Info.CID].Penalty = oriPenalty
+				c.state.depositInfo[member.Info.CID].Refundable = oriRefundable
+				c.state.depositInfo[member.Info.CID].DepositAmount = oriDepositAmount
+			})
+		}
+	}
 }
 
 func (c *Committee) processCurrentCandidates(height uint32,
