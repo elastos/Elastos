@@ -16,7 +16,7 @@ jobs:
         run: |
           mkdir -p build/linux
           cd build/linux
-          cmake ../..
+          cmake -DCMAKE_INSTALL_PREFIX=dist ../..
           make
           make dist
 
@@ -30,8 +30,14 @@ jobs:
       - uses: actions/checkout@v2
       - name: make
         run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+          brew install autoconf
+          brew install automake
+          brew install libtool
+          brew install pkg-config
+
           mkdir -p build/macos
           cd build/macos
-          cmake ../..
+          cmake -DCMAKE_INSTALL_PREFIX=dist ../..
           make
           make dist

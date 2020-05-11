@@ -1574,7 +1574,7 @@ int DIDDocumentBuilder_AuthorizationDid(DIDDocumentBuilder *builder, DIDURL *key
     PublicKey *pk;
     int rc;
 
-    if (!builder || !builder->document || !keyid || !controller || !authorkeyid) {
+    if (!builder || !builder->document || !keyid || !controller) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return -1;
     }
@@ -1583,7 +1583,13 @@ int DIDDocumentBuilder_AuthorizationDid(DIDDocumentBuilder *builder, DIDURL *key
     if (!doc)
         return -1;
 
-    pk = DIDDocument_GetAuthenticationKey(doc, authorkeyid);
+    if (!authorkeyid) {
+        authorkeyid = DIDDocument_GetDefaultPublicKey(doc);
+        pk = DIDDocument_GetPublicKey(doc, authorkeyid);
+    } else {
+        pk = DIDDocument_GetAuthenticationKey(doc, authorkeyid);
+    }
+
     if (!pk) {
         DIDDocument_Destroy(doc);
         return -1;

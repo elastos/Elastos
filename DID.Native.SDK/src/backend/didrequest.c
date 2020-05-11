@@ -49,7 +49,7 @@ static int header_toJson(JsonGenerator *gen, DIDRequest *req)
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "specification", req->header.spec));
     CHECK(JsonGenerator_WriteStringField(gen, "operation", req->header.op));
-    if (strcmp(req->header.op, operation[0]))
+    if (!strcmp(req->header.op, operation[1]))
         CHECK(JsonGenerator_WriteStringField(gen, "previousTxid", req->header.prevtxid));
 
     CHECK(JsonGenerator_WriteEndObject(gen));
@@ -129,14 +129,15 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DIDDocument *document, DIDURL 
         return NULL;
     }
 
-    prevtxid = DIDDocument_GetTxid(document);
-    if (!prevtxid) {
-        DIDError_Set(DIDERR_TRANSACTION_ERROR, "Can not determine the previous transaction ID.");
-        return NULL;
-    }
-
-    if (type == RequestType_Create)
+    if (type == RequestType_Create || type == RequestType_Deactivate) {
         prevtxid = "";
+    } else {
+        prevtxid = DIDDocument_GetTxid(document);
+        if (!prevtxid) {
+            DIDError_Set(DIDERR_TRANSACTION_ERROR, "Can not determine the previous transaction ID.");
+            return NULL;
+        }
+    }
 
     if (type == RequestType_Deactivate) {
         data = DID_ToString(DIDDocument_GetSubject(document), idstring, sizeof(idstring));
@@ -193,10 +194,12 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
     char *op, *docJson, *previousTxid;
     DID *subject;
     size_t len;
+    int rc;
 
     assert(request);
     assert(json);
 
+    memset(request, 0, sizeof(DIDRequest));
     item = cJSON_GetObjectItem(json, "header");
     if (!item) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing header.");
@@ -241,11 +244,20 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
         return NULL;
     }
 
-    field = cJSON_GetObjectItem(item, "previousTxid");
-    if (!strcmp(op, "create") && !field)
-        strcpy(request->header.prevtxid, "");
-    else
+    if (!strcmp(op, "update")) {
+        field = cJSON_GetObjectItem(item, "previousTxid");
+        if (!field) {
+            DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing payload.");
+            return NULL;
+        }
+        if (!cJSON_IsString(field)) {
+            DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid payload.");
+            return NULL;
+        }
         strcpy(request->header.prevtxid, cJSON_GetStringValue(field));
+    } else {
+        *request->header.prevtxid = 0;
+    }
 
     item = cJSON_GetObjectItem(json, "payload");
     if (!item) {
@@ -258,75 +270,87 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
     }
     request->payload = strdup(cJSON_GetStringValue(item));
 
-    len = strlen(request->payload) + 1;
-    docJson = (char*)malloc(len);
-    len = base64_url_decode((uint8_t *)docJson, request->payload);
-    if (len <= 0) {
-        DIDError_Set(DIDERR_CRYPTO_ERROR, "Decode the payload failed");
-        free(docJson);
-        return NULL;
-    }
-    docJson[len] = 0;
+    if (strcmp(request->header.op, "deactivate")) {
+        len = strlen(request->payload) + 1;
+        docJson = (char*)malloc(len);
+        len = base64_url_decode((uint8_t *)docJson, request->payload);
+        if (len <= 0) {
+            DIDError_Set(DIDERR_CRYPTO_ERROR, "Decode the payload failed");
+            free(docJson);
+            goto errorExit;
+        }
+        docJson[len] = 0;
 
-    request->doc = DIDDocument_FromJson(docJson);
-    free(docJson);
-    if (!request->doc) {
-        DIDError_Set(DIDERR_RESOLVE_ERROR, "Deserialize transaction payload from json failed.");
-        return NULL;
+        request->doc = DIDDocument_FromJson(docJson);
+        free(docJson);
+        if (!request->doc) {
+            DIDError_Set(DIDERR_RESOLVE_ERROR, "Deserialize transaction payload from json failed.");
+            goto errorExit;
+        }
+    } else {
+        subject = DID_FromString(request->payload);
+        if (!subject)
+            goto errorExit;
+
+        request->doc = DID_Resolve(subject, false);
+        DID_Destroy(subject);
+        if (!request->doc)
+            goto errorExit;
     }
 
     item = cJSON_GetObjectItem(json, "proof");
     if (!item) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing proof.");
-        DIDDocument_Destroy(request->doc);
-        return NULL;
+        goto errorExit;
     }
     if (!cJSON_IsObject(item)) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid proof.");
-        DIDDocument_Destroy(request->doc);
-        return NULL;
+        goto errorExit;
     }
 
     field = cJSON_GetObjectItem(item, "verificationMethod");
     if (!field) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing signing key.");
-        DIDDocument_Destroy(request->doc);
-        return NULL;
+        goto errorExit;
     }
     if (!cJSON_IsString(field)) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid signing key.");
-        DIDDocument_Destroy(request->doc);
-        return NULL;
+        goto errorExit;
     }
 
     subject = DIDDocument_GetSubject(request->doc);
     if (parse_didurl(&request->proof.verificationMethod,
             cJSON_GetStringValue(field), subject) < 0) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid signing key.");
-        DIDDocument_Destroy(request->doc);
-        return NULL;
+        goto errorExit;
     }
 
     field = cJSON_GetObjectItem(item, "signature");
     if (!field) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing signature.");
-        DIDDocument_Destroy(request->doc);
-        return NULL;
+        goto errorExit;
     }
     if (!cJSON_IsString(field) || strlen(cJSON_GetStringValue(field)) >= MAX_REQ_SIG_LEN) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid signature.");
-        DIDDocument_Destroy(request->doc);
-        return NULL;
+        goto errorExit;
     }
     strcpy(request->proof.signature, cJSON_GetStringValue(field));
 
     if (DIDRequest_Verify(request) < 0) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Verify payload failed.");
-        DIDDocument_Destroy(request->doc);
-        return NULL;
+        goto errorExit;
     }
 
     return request->doc;
+
+errorExit:
+    if (request->payload)
+        free((char*)request->payload);
+
+    if (request->doc)
+        DIDDocument_Destroy(request->doc);
+
+    return NULL;
 }
 
 void DIDRequest_Destroy(DIDRequest *request)

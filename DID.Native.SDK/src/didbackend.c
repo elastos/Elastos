@@ -229,7 +229,7 @@ static int resolve_from_backend(ResolveResult *result, DID *did, bool all)
     if (ResolveResult_FromJson(result, item, all) == -1)
         goto errorExit;
 
-    if (!all && ResolveCache_Store(result, did) == -1)
+    if (ResolveResult_GetStatus(result) != STATUS_NOT_FOUND && !all && ResolveCache_Store(result, did) == -1)
         goto errorExit;
     rc = 0;
 
@@ -258,7 +258,7 @@ static int resolve_internal(ResolveResult *result, DID *did, bool all, bool forc
 
 DIDDocument *DIDBackend_Resolve(DID *did, bool force)
 {
-    DIDDocument *doc;
+    DIDDocument *doc = NULL;
     ResolveResult result;
     DIDStatus status;
 
@@ -278,10 +278,18 @@ DIDDocument *DIDBackend_Resolve(DID *did, bool force)
         return NULL;
     }
 
-    doc = result.txinfos.infos[0].request.doc;
-    ResolveResult_Free(&result);
-    if (!doc)
-        DIDError_Set(DIDERR_NOT_EXISTS, "No did in chain: %s", did->idstring);
+    if (ResolveResult_GetStatus(&result) == STATUS_NOT_FOUND) {
+        DIDError_Set(DIDERR_NOT_EXISTS, "DID not exists.");
+        return NULL;
+    } else if (ResolveResult_GetStatus(&result) == STATUS_DEACTIVATED) {
+        DIDError_Set(DIDERR_DID_DEACTIVATED, "DID is deactivated.");
+        return NULL;
+    } else {
+        doc = result.txinfos.infos[0].request.doc;
+        ResolveResult_Free(&result);
+        if (!doc)
+            DIDError_Set(DIDERR_RESOLVE_ERROR, "Malformed resolver response.");
+    }
 
     return doc;
 }

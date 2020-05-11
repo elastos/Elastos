@@ -216,7 +216,7 @@ static void test_sync_with_localmodification1(void)
     strcpy(modified_signature, DIDDocument_GetProofSignature(modified_doc));
     DIDDocument_Destroy(modified_doc);
 
-    printf("\nSynchronizing again from IDChain...");
+    printf("Synchronizing again from IDChain...");
     rc = DIDStore_Synchronize(store, storepass, merge_to_localcopy);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
@@ -304,7 +304,7 @@ static void test_sync_with_localmodification2(void)
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
     DIDDocument_Destroy(modified_doc);
 
-    printf("\nSynchronizing again from IDChain...");
+    printf("Synchronizing again from IDChain...");
     rc = DIDStore_Synchronize(store, storepass, merge_to_chaincopy);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 

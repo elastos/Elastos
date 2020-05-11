@@ -1672,7 +1672,6 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeC
                 localCopy = DIDStore_LoadDID(store, &did);
                 if (localCopy) {
                     const char *local_signature = DIDMeta_GetSignature(&localCopy->meta);
-                    assert(local_signature);
                     if (!*local_signature ||
                             strcmp(DIDDocument_GetProofSignature(localCopy), local_signature)) {
                         finalCopy = callback(chainCopy, localCopy);
@@ -1698,12 +1697,11 @@ int DIDStore_Synchronize(DIDStore *store, const char *storepass, DIDStore_MergeC
                         DIDStore_DeleteDID(store, &did);
                     }
                 }
-
-                DIDDocument_Destroy(chainCopy);
-                DIDDocument_Destroy(localCopy);
                 if (finalCopy != chainCopy && finalCopy != localCopy)
                     DIDDocument_Destroy(finalCopy);
 
+                DIDDocument_Destroy(chainCopy);
+                DIDDocument_Destroy(localCopy);
                 blanks = 0;
             } else {
                 if (i >= nextindex)
@@ -2146,7 +2144,7 @@ const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
     bool localcopy = false;
     int rc = 0;
 
-    if (!store || !storepass || !*storepass || !did || !signkey) {
+    if (!store || !storepass || !*storepass || !did) {
         DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
         return NULL;
     }
@@ -2160,6 +2158,10 @@ const char *DIDStore_DeactivateDID(DIDStore *store, const char *storepass,
         } else {
             localcopy = true;
         }
+    }
+    else {
+        DIDMeta_SetStore(&doc->meta, store);
+        DIDMeta_SetStore(&doc->did.meta, store);
     }
 
     if (!signkey) {

@@ -155,11 +155,7 @@ void DIDMeta_Destroy(DIDMeta *meta)
 int DIDMeta_SetAlias(DIDMeta *meta, const char *alias)
 {
     assert(meta);
-
-    if (alias && strlen(alias) >= sizeof(meta->alias)) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Alias is too long.");
-        return -1;
-    }
+    assert(!alias || (alias && strlen(alias) < sizeof(meta->alias)));
 
     if (alias)
         strcpy(meta->alias, alias);
@@ -188,10 +184,7 @@ int DIDMeta_SetTimestamp(DIDMeta *meta, time_t time)
 int DIDMeta_SetTxid(DIDMeta *meta, const char *txid)
 {
     assert(meta);
-    if (txid && strlen(txid) >= sizeof(meta->txid)) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Id transaction is too long.");
-        return -1;
-    }
+    assert(!txid || (txid && strlen(txid) < sizeof(meta->txid)));
 
     if (txid)
         strcpy(meta->txid, txid);
@@ -204,11 +197,7 @@ int DIDMeta_SetTxid(DIDMeta *meta, const char *txid)
 int DIDMeta_SetSignature(DIDMeta *meta, const char *signature)
 {
     assert(meta);
-
-    if (signature && strlen(signature) >= sizeof(meta->signatureValue)) {
-        DIDError_Set(DIDERR_INVALID_ARGS, "Signature value is too long.");
-        return -1;
-    }
+    assert(!signature || (strlen(signature) < sizeof(meta->signatureValue)));
 
     if (signature)
         strcpy(meta->signatureValue, signature);

@@ -311,13 +311,12 @@ int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter)
             return 1;
 
         auto tx = result["Transactions"][0];
-        std::string confirm = tx["ConfirmStatus"];
-        if (std::stoi(confirm) >= 2)
+        int confirm = tx["ConfirmStatus"];
+        if (confirm >= 2)
             return 1;
     } catch (...) {
         return 0;
     }
-
     return 0;
 }
 

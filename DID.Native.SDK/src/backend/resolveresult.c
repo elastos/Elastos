@@ -35,7 +35,7 @@
 int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all)
 {
     cJSON *root, *item, *field;
-    int size;
+    int size = 0;
 
     assert(result);
     assert(json);
@@ -61,64 +61,66 @@ int ResolveResult_FromJson(ResolveResult *result, cJSON *json, bool all)
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid resolve result status.");
         return -1;
     }
-    if (item->valueint > 3) {
+    if (item->valueint > STATUS_NOT_FOUND) {
         DIDError_Set(DIDERR_RESOLVE_ERROR, "Unknown DID status code.");
         return -1;
     }
     result->status = item->valueint;
 
-    item = cJSON_GetObjectItem(json, "transaction");
-    if (!item) {
-        DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing transaction.");
-        return -1;
-    }
-    if (!cJSON_IsArray(item)) {
-        DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid transaction.");
-        return -1;
-    }
-
-    if (!all) {
-        size = 1;
-    } else {
-        size = cJSON_GetArraySize(item);
-        if (size <= 0) {
+    if (result->status != STATUS_NOT_FOUND) {
+        item = cJSON_GetObjectItem(json, "transaction");
+        if (!item) {
             DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing transaction.");
             return -1;
         }
-    }
-
-    result->txinfos.infos = (DIDTransactionInfo *)calloc(size, sizeof(DIDTransactionInfo));
-    if (!result->txinfos.infos) {
-        DIDError_Set(DIDERR_OUT_OF_MEMORY, "Create transaction info failed.");
-        return -1;
-    }
-
-    for (int i = 0; i < size; i++) {
-        field = cJSON_GetArrayItem(item, i);
-        if (!field) {
-            DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing resovled transaction.");
-            ResolveResult_Destroy(result);
-            return -1;
-        }
-        if (!cJSON_IsObject(field)) {
-            DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid resovled transaction.");
-            ResolveResult_Destroy(result);
+        if (!cJSON_IsArray(item)) {
+            DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid transaction.");
             return -1;
         }
 
-        DIDTransactionInfo *txinfo = &result->txinfos.infos[i];
-        if (DIDTransactionInfo_FromJson(txinfo, field) == -1) {
-            ResolveResult_Destroy(result);
+        if (!all) {
+            size = 1;
+        } else {
+            size = cJSON_GetArraySize(item);
+            if (size <= 0) {
+                DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing transaction.");
+                return -1;
+            }
+        }
+
+        result->txinfos.infos = (DIDTransactionInfo *)calloc(size, sizeof(DIDTransactionInfo));
+        if (!result->txinfos.infos) {
+            DIDError_Set(DIDERR_OUT_OF_MEMORY, "Create transaction info failed.");
             return -1;
         }
 
-        DIDDocument *doc = txinfo->request.doc;
-        DIDMeta_SetTimestamp(&doc->meta, txinfo->timestamp);
-        DIDMeta_SetTxid(&doc->meta, txinfo->txid);
-        DIDMeta_SetSignature(&doc->meta, doc->proof.signatureValue);
-        DIDMeta_SetAlias(&doc->meta, "");
-        DIDMeta_SetDeactived(&doc->meta, result->status);
-        DIDMeta_Copy(&doc->did.meta, &doc->meta);
+        for (int i = 0; i < size; i++) {
+            field = cJSON_GetArrayItem(item, i);
+            if (!field) {
+                DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing resovled transaction.");
+                ResolveResult_Destroy(result);
+                return -1;
+            }
+            if (!cJSON_IsObject(field)) {
+                DIDError_Set(DIDERR_RESOLVE_ERROR, "Invalid resovled transaction.");
+                ResolveResult_Destroy(result);
+                return -1;
+            }
+
+            DIDTransactionInfo *txinfo = &result->txinfos.infos[i];
+            if (DIDTransactionInfo_FromJson(txinfo, field) == -1) {
+                ResolveResult_Destroy(result);
+                return -1;
+            }
+
+            DIDDocument *doc = txinfo->request.doc;
+            DIDMeta_SetTimestamp(&doc->meta, txinfo->timestamp);
+            DIDMeta_SetTxid(&doc->meta, txinfo->txid);
+            DIDMeta_SetSignature(&doc->meta, doc->proof.signatureValue);
+            DIDMeta_SetAlias(&doc->meta, "");
+            DIDMeta_SetDeactived(&doc->meta, result->status);
+            DIDMeta_Copy(&doc->did.meta, &doc->meta);
+        }
     }
 
     result->txinfos.size = size;
@@ -161,12 +163,14 @@ static int resolveresult_tojson_internal(JsonGenerator *gen, ResolveResult *resu
             DID_ToString(&result->did, id, sizeof(id))));
     CHECK(JsonGenerator_WriteFieldName(gen, "status"));
     CHECK(JsonGenerator_WriteNumber(gen, result->status));
-    CHECK(JsonGenerator_WriteFieldName(gen, "transaction"));
-    CHECK(JsonGenerator_WriteStartArray(gen));
-    for (int i = 0; i < result->txinfos.size; i++)
-        //todo: check
-        CHECK(DIDTransactionInfo_ToJson_Internal(gen, &result->txinfos.infos[i]));
-    CHECK(JsonGenerator_WriteEndArray(gen));
+    if (result->status != STATUS_NOT_FOUND) {
+        CHECK(JsonGenerator_WriteFieldName(gen, "transaction"));
+        CHECK(JsonGenerator_WriteStartArray(gen));
+        for (int i = 0; i < result->txinfos.size; i++)
+            //todo: check
+            CHECK(DIDTransactionInfo_ToJson_Internal(gen, &result->txinfos.infos[i]));
+        CHECK(JsonGenerator_WriteEndArray(gen));
+    }
     CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
