@@ -1170,8 +1170,13 @@ export default class extends Base {
       }
       const ownerPublicKey = rs.publicKey
 
+      const chainBudgetType = {
+        ADVANCE: 'Imprest',
+        CONDITIONED: 'NormalPayment',
+        COMPLETION: 'FinalPayment'
+      }
       const budgets = suggestion.budget.map((item: BudgetItem) => ({
-        type: item.type,
+        type: chainBudgetType[item.type],
         stage: parseInt(item.milestoneKey),
         amount: (parseInt(item.amount) * Math.pow(10, 8)).toString()
       }))
