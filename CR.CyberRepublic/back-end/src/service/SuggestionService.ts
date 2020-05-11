@@ -1186,6 +1186,20 @@ export default class extends Base {
     }
   }
 
+  private convertBudget(budget: [BudgetItem]) {
+    const chainBudgetType = {
+      ADVANCE: 'Imprest',
+      CONDITIONED: 'NormalPayment',
+      COMPLETION: 'FinalPayment'
+    }
+    const budgets = budget.map((item: BudgetItem) => ({
+      type: chainBudgetType[item.type],
+      stage: parseInt(item.milestoneKey),
+      amount: (parseInt(item.amount) * Math.pow(10, 8)).toString()
+    }))
+    return budgets
+  }
+
   /* author signs a suggestion */
   public async getSignatureUrl(param: { id: string }) {
     try {
@@ -1214,17 +1228,6 @@ export default class extends Base {
         }
       }
       const ownerPublicKey = rs.publicKey
-
-      const chainBudgetType = {
-        ADVANCE: 'Imprest',
-        CONDITIONED: 'NormalPayment',
-        COMPLETION: 'FinalPayment'
-      }
-      const budgets = suggestion.budget.map((item: BudgetItem) => ({
-        type: chainBudgetType[item.type],
-        stage: parseInt(item.milestoneKey),
-        amount: (parseInt(item.amount) * Math.pow(10, 8)).toString()
-      }))
 
       const fields = [
         '_id',
@@ -1265,7 +1268,7 @@ export default class extends Base {
           categorydata: 'Null',
           ownerpublickey: ownerPublicKey,
           drafthash: draftHash,
-          budgets,
+          budgets: this.convertBudget(suggestion.budget),
           recipient: suggestion.elaAddress
         }
       }
@@ -1416,17 +1419,6 @@ export default class extends Base {
         return { success: false }
       }
 
-      const chainBudgetType = {
-        ADVANCE: 'Imprest',
-        CONDITIONED: 'NormalPayment',
-        COMPLETION: 'FinalPayment'
-      }
-      const budgets = suggestion.budget.map((item: BudgetItem) => ({
-        type: chainBudgetType[item.type],
-        stage: parseInt(item.milestoneKey),
-        amount: (parseInt(item.amount) * Math.pow(10, 8)).toString()
-      }))
-
       const jwtClaims = {
         command: 'createproposal',
         iss: process.env.APP_DID,
@@ -1441,7 +1433,7 @@ export default class extends Base {
           categorydata: 'Null',
           ownerpublickey: suggestion.ownerPublicKey,
           drafthash: suggestion.draftHash,
-          budgets,
+          budgets: this.convertBudget(suggestion.budget),
           recipient: suggestion.elaAddress,
           signature: suggestion.signature,
           did: councilMemberDid
