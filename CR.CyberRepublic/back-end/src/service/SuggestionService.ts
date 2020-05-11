@@ -1236,7 +1236,7 @@ export default class extends Base {
     try {
       const jwtToken = param.jwt
       const claims: any = jwt.decode(jwtToken)
-      if (!claims) {
+      if (_.get(claims, 'req')) {
         return {
           code: 400,
           success: false,
@@ -1244,18 +1244,10 @@ export default class extends Base {
         }
       }
 
-      if (claims && !claims.req) {
-        return {
-          code: 400,
-          success: false,
-          message: 'The payload of jwt token is not correct.'
-        }
-      }
-
       const payload: any = jwt.decode(
         claims.req.slice('elastos://crproposal/'.length)
       )
-      if (!payload || (payload && !payload.suggestionId)) {
+      if (!_.get(payload, 'suggestionId')) {
         return {
           code: 400,
           success: false,
