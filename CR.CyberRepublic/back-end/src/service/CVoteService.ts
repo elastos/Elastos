@@ -986,7 +986,7 @@ export default class extends Base {
 
     if (!param.status || !_.keys(WALLET_STATUS_TO_CVOTE_STATUS).includes(param.status)) {
       return {
-        code: 401,
+        code: 400,
         message: 'Invalid request parameters - status',
         // tslint:disable-next-line:no-null-keyword
         data: null,

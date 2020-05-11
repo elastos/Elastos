@@ -2,7 +2,7 @@ import Base from '../Base'
 import CVoteService from '../../service/CVoteService'
 
 export default class extends Base {
-    protected needLogin = false;
+    protected needLogin = false
 
     async action(){
         const param = this.getParam()
