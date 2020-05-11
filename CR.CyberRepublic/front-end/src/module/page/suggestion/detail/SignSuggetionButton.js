@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover, Spin, message, Popconfirm } from 'antd'
+import { Popover, Spin, message, Tooltip } from 'antd'
 import QRCode from 'qrcode.react'
+import I18N from '@/I18N'
 import { StyledButton } from './style'
 
 class SignSuggestionButton extends Component {
@@ -25,8 +26,9 @@ class SignSuggestionButton extends Component {
   }
 
   pollingSignature = () => {
+    const { id, getSignature } = this.props
     this.timerDid = setInterval(async () => {
-      const rs = await this.props.getSignature()
+      const rs = await getSignature(id)
       if (rs && rs.success) {
         clearInterval(this.timerDid)
         this.timerDid = null
@@ -53,7 +55,8 @@ class SignSuggestionButton extends Component {
   }
 
   componentDidMount = async () => {
-    const rs = await this.props.getSignatureUrl()
+    const { id, getSignatureUrl } = this.props
+    const rs = await getSignatureUrl(id)
     if (rs && rs.success) {
       this.setState({ url: rs.url })
     }
@@ -76,19 +79,12 @@ class SignSuggestionButton extends Component {
         visible={this.state.visible}
         onVisibleChange={this.handleVisibleChange}
       >
-        <Popconfirm
-          title={'You can not edit your suggestion once it is signed.'}
-          onConfirm={() => {}}
-          okText={I18N.get('.yes')}
-          cancelText={I18N.get('.no')}
+        <StyledButton
+          className="cr-btn cr-btn-default"
+          onClick={this.handleSign}
         >
-          <StyledButton
-            className="cr-btn cr-btn-default"
-            onClick={this.handleSign}
-          >
-            Sign Suggestion
-          </StyledButton>
-        </Popconfirm>
+          Sign Suggestion
+        </StyledButton>
       </Popover>
     )
   }

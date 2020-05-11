@@ -566,6 +566,7 @@ export default class extends StandardPage {
           <SignSuggestionButton
             getSignatureUrl={getSignatureUrl}
             getSignature={getSignature}
+            id={detail._id}
           />
         )}
       </div>

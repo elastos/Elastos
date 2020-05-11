@@ -396,7 +396,7 @@ export default class extends BaseService {
     return res
   }
 
-  async getSignature() {
+  async getSignature(id) {
     const path = `${this.prefixPath}/signature`
     const rs = await api_request({
       path,

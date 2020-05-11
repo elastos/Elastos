@@ -1145,7 +1145,7 @@ export default class extends Base {
   public async getSignatureUrl(param: { id: string }) {
     try {
       const { id } = param
-      const suggestion = this.model
+      const suggestion = await this.model
         .getDBInstance()
         .findById(id)
         .populate('createdBy')
@@ -1199,6 +1199,7 @@ export default class extends Base {
       for (let field in _.sortBy(fields)) {
         content[field] = suggestion[field]
       }
+
       const draftHash = utilCrypto.sha256D(JSON.stringify(content))
       await this.model.update({ _id: suggestion._id }, { $set: { draftHash } })
 
