@@ -403,6 +403,9 @@ export default class extends BaseService {
       method: 'post',
       data: { id }
     })
+    if (rs.success && rs.data) {
+      this.dispatch(this.selfRedux.actions.detail_update(rs.data))
+    }
     return rs
   }
 }

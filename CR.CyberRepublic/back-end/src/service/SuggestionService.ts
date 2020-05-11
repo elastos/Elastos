@@ -1333,11 +1333,11 @@ export default class extends Base {
 
   public async checkSignature(param: any) {
     const { id } = param
-    const suggestion = await this.model.findById(id)
+    const suggestion = await this.show({ id })
     if (suggestion) {
       const signature = _.get(suggestion, 'signature.data')
       if (signature) {
-        return { success: true, signature }
+        return { success: true, data: suggestion }
       }
       const message = _.get(suggestion, 'signature.message')
       if (message) {
