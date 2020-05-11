@@ -1086,19 +1086,14 @@ export default class extends Base {
     const proposalId = proposal._id
     const tracking = await this.getTracking(proposalId)
     const summary = await this.getSummary(proposalId)
-    
-    // data filter
-    var object = {};
-    _.forEach(proposal._doc,function(value,key){
-      object = _.setWith(object,key,value,Object)
-    })
-    object = _.pick(object,fields)
-    object = _.setWith(object, '[address]', address, Object)
-    object = _.setWith(object, '[duration]',duration,Object)
-    object = _.setWith(object, '[tracking]',tracking,Object)
-    object = _.setWith(object, '[summary]',summary,Object)
 
-    return object
+    return {
+      ...proposal._doc,
+      address,
+      duration,
+      tracking,
+      summary,
+    }
   }
 
   public async getTracking(id) {
