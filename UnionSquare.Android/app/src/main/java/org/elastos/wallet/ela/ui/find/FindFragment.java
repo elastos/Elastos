@@ -33,8 +33,8 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.ui.committee.PastCtListFragment;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
-import org.elastos.wallet.ela.ui.council.CRCouncilFragment;
 import org.elastos.wallet.ela.ui.crvote.CRListFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.FindListBean;
 import org.elastos.wallet.ela.ui.find.adapter.FindListRecAdapter;
@@ -131,7 +131,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
              ((BaseFragment) getParentFragment()).start(ProposalFragment.class);
         } else if (position == 2) {
             //cr委员会
-            ((BaseFragment) getParentFragment()).start(CRCouncilFragment.class);
+            ((BaseFragment) getParentFragment()).start(PastCtListFragment.class);
         }else if (position == 3) {
             ((BaseFragment) getParentFragment()).start(CRListFragment.class);
         }
