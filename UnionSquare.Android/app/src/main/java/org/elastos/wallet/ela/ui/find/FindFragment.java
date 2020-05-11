@@ -75,18 +75,22 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         bean1.setResouceId(R.mipmap.found_dpos_icon);
         bean1.setUpText(getString(R.string.supernode_election));
         bean1.setDownText(getString(R.string.findlistdown1));
+
         FindListBean bean2 = new FindListBean();
         bean2.setResouceId(R.mipmap.found_cr_proposal);
         bean2.setUpText(getString(R.string.findlistup2));
         bean2.setDownText(getString(R.string.findlistdown2));
+
         FindListBean bean3 = new FindListBean();
-        bean3.setResouceId(R.mipmap.found_cr_vote);
-        bean3.setUpText(getString(R.string.findlistup4));
-        bean3.setDownText(getString(R.string.findlistdown4));
+        bean3.setResouceId(R.mipmap.found_cr_committee);
+        bean3.setUpText(getString(R.string.findlistup3));
+        bean3.setDownText(getString(R.string.findlistdown3));
+
         FindListBean bean4 = new FindListBean();
-        bean4.setResouceId(R.mipmap.found_cr_committee);
-        bean4.setUpText(getString(R.string.findlistup3));
-        bean4.setDownText(getString(R.string.findlistdown3));
+        bean4.setResouceId(R.mipmap.found_cr_vote);
+        bean4.setUpText(getString(R.string.findlistup4));
+        bean4.setDownText(getString(R.string.findlistdown4));
+
         list.add(bean1);
         list.add(bean2);
         list.add(bean3);

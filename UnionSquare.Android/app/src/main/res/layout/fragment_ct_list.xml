@@ -7,8 +7,8 @@
     android:background="@mipmap/found_bg"
     android:orientation="vertical">
 
-
     <include layout="@layout/title_bar" />
+
 
 
 </com.qmuiteam.qmui.layout.QMUILinearLayout>

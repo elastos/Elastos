@@ -7,8 +7,16 @@
     android:background="@mipmap/found_bg"
     android:orientation="vertical">
 
+    <include layout="@layout/title" />
 
-    <include layout="@layout/title_bar" />
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/px10"
+        android:layout_marginTop="@dimen/px22"
+        android:layout_marginRight="@dimen/px10"
+        android:visibility="gone" />
 
 
 </com.qmuiteam.qmui.layout.QMUILinearLayout>

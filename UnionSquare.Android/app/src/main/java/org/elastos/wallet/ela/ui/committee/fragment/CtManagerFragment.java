@@ -2,6 +2,7 @@ package org.elastos.wallet.ela.ui.committee.fragment;
 
 import android.view.View;
 
+import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 
 /**
@@ -10,7 +11,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 public class CtManagerFragment extends BaseFragment {
     @Override
     protected int getLayoutId() {
-        return 0;
+        return R.layout.fragment_ct_manager;
     }
 
     @Override
