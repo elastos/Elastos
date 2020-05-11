@@ -107,11 +107,11 @@ func (c *Committee) IsInElectionPeriod() bool {
 
 func (c *Committee) IsProposalAllowed(height uint32) bool {
 	c.mtx.RLock()
+	defer c.mtx.RUnlock()
 	if !c.InElectionPeriod {
 		return false
 	}
-	c.mtx.RUnlock()
-	return !c.IsInVotingPeriod(height)
+	return !c.isInVotingPeriod(height)
 }
 
 func (c *Committee) IsAppropriationNeeded() bool {
