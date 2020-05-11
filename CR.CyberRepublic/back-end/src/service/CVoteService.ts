@@ -23,6 +23,30 @@ const BASE_FIELDS = [
   'payment'
 ]
 
+const WALLET_STATUS_TO_CVOTE_STATUS = {
+  'ALL': [constant.CVOTE_STATUS.PROPOSED,
+    constant.CVOTE_STATUS.NOTIFICATION,
+    constant.CVOTE_STATUS.ACTIVE,
+    constant.CVOTE_STATUS.FINAL,
+    constant.CVOTE_STATUS.REJECT,
+    constant.CVOTE_STATUS.DEFERRED
+  ],
+  'VOTING': [constant.CVOTE_STATUS.PROPOSED],
+  'NOTIFICATION': [constant.CVOTE_STATUS.NOTIFICATION],
+  'ACTIVE': [constant.CVOTE_STATUS.ACTIVE],
+  'FINAL': [constant.CVOTE_STATUS.FINAL],
+  'REJECTED': [constant.CVOTE_STATUS.REJECT, constant.CVOTE_STATUS.DEFERRED],
+}
+
+const CVOTE_STATUS_TO_WALLET_STATUS = {
+  [constant.CVOTE_STATUS.PROPOSED]: 'VOTING',
+  [constant.CVOTE_STATUS.NOTIFICATION]: 'NOTIFICATION',
+  [constant.CVOTE_STATUS.ACTIVE]: 'ACTIVE',
+  [constant.CVOTE_STATUS.FINAL]: 'FINAL',
+  [constant.CVOTE_STATUS.REJECT]: 'REJECTED',
+  [constant.CVOTE_STATUS.DEFERRED]: 'REJECTED',
+}
+
 export default class extends Base {
   // create a DRAFT propoal with minimal info
   public async createDraft(param: any): Promise<Document> {
@@ -953,5 +977,176 @@ export default class extends Base {
     }).then((value) => ret = value.body)
 
     return ret
+  }
+
+  /**
+   * API to Wallet
+   */
+  public async allOrSearch(param): Promise<any>{
+    const db_cvote = this.getDBModel('CVote')
+    const query: any = {}
+
+    if (!param.status || !_.keys(WALLET_STATUS_TO_CVOTE_STATUS).includes(param.status)) {
+      return {
+        code: 400,
+        message: 'Invalid request parameters - status',
+        // tslint:disable-next-line:no-null-keyword
+        data: null,
+      }
+    }
+
+    // status
+    query.status = WALLET_STATUS_TO_CVOTE_STATUS[param.status]
+
+    // search
+    if (param.$or) query.$or = param.$or
+
+    const fields = [
+      'vid',
+      'title',
+      'status',
+      'createdAt',
+      'proposedBy',
+      'proposalHash'
+    ]
+
+    const cursor =  await db_cvote
+      .getDBInstance()
+      .find(query, fields.join(' '))
+      .sort({vid: -1})
+
+    if (param.page && param.results
+        && parseInt(param.page) > 0
+        && parseInt(param.results) > 0) {
+      const results = parseInt(param.results, 10)
+      const page = parseInt(param.page, 10)
+      cursor.skip(results * (page - 1)).limit(results)
+    }
+    
+    const rs = await Promise.all([
+      cursor,
+      db_cvote
+        .getDBInstance()
+        .find(query)
+        .count()
+    ])
+
+    // filter return data，add proposalHash to CVoteSchema
+    const list = _.map(rs[0], function(o){
+      let temp = _.pick(o, fields)
+      temp.status = CVOTE_STATUS_TO_WALLET_STATUS[temp.status]
+      return _.mapKeys(temp, function(value,key){
+        if(key == 'vid'){
+          return 'id'
+        }else{
+          return key
+        }
+      })
+    })
+    
+    const total = rs[1]
+    return {list, total}
+  }
+
+  public async getProposalById(id): Promise<any> {
+    const db_cvote = this.getDBModel('CVote')
+
+    const fields = [
+      'status',
+      'abstract',
+      'voteResult',
+      'createdAt',
+      'proposalHash',
+    ]
+    const proposal = await db_cvote
+      .getDBInstance()
+      .findOne({ vid: id }, fields.join(' '))
+
+    if (!proposal) {
+      return {
+        code: 400,
+        message: 'Invalid request parameters',
+        // tslint:disable-next-line:no-null-keyword
+        data: null,
+      }
+    }
+
+    const address = `${process.env.SERVER_URL}/proposals/${proposal.id}`
+    
+    // duration 
+    const endTime = Math.round(proposal.createdAt.getTime()/1000+604800)
+    const nowTime = Math.round(new Date().getTime()/1000)
+    let duration = endTime-nowTime
+    duration = duration > 0 ? duration : 0
+    
+    const proposalId = proposal._id
+    const tracking = await this.getTracking(proposalId)
+    const summary = await this.getSummary(proposalId)
+
+    return {
+      ...proposal._doc,
+      address,
+      duration,
+      tracking,
+      summary,
+    }
+  }
+
+  public async getTracking(id) {
+    const db_tracking = this.getDBModel('CVote_Tracking')
+    const proposalId = id
+    const queryTrack: any = {
+      proposalId,
+    }
+    const fieldsTrack = [
+    'comment.createdBy.username',
+    'comment.content',
+    'content',
+    'status',
+    'createdAt',
+    'updatedAt'
+    ]
+    const cursorTrack = db_tracking.getDBInstance().find(queryTrack,fieldsTrack.join(' '))
+      .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .sort({ createdAt: 1 })
+    // const totalCursorTrack = db_tracking.getDBInstance().find(queryTrack).count()
+
+    const tracking = await cursorTrack
+    // const totalTrack = await totalCursorTrack
+   
+    const list = _.map(tracking,function(o){
+      return _.pick(o,fieldsTrack)
+    })
+    return list
+  }
+
+  public async getSummary(id) {
+
+    const db_summary = this.getDBModel('CVote_Summary')
+    const proposalId = id
+    const querySummary: any = {
+      proposalId,
+    }
+    const fieldsSummary = [
+      'comment.createdBy.username',
+      'comment.content',
+      'content',
+      'status',
+      'createdAt',
+      'updatedAt'
+      ]
+    const cursorSummary = db_summary.getDBInstance().find(querySummary,fieldsSummary.join(' '))
+      .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .sort({ createdAt: 1 })
+    // const totalCursorSummary = db_summary.getDBInstance().find(querySummary).count()
+
+    const summary = await cursorSummary
+    // const totalSummary = await totalCursorSummary
+    
+    const list = _.map(summary,function(o){
+      return _.pick(o,fieldsSummary)
+    })
+    return list
+
   }
 }

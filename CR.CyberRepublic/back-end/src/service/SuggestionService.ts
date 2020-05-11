@@ -1130,6 +1130,49 @@ export default class extends Base {
     return this.model.findByIdAndDelete(_id)
   }
 
+
+  /**
+   * Wallet Api
+   */
+  public async getSuggestion(id): Promise<any> {
+    const fileds = [
+        '_id',
+        'title',
+        'abstract',
+        'createdAt'
+    ]
+
+    const suggestion = await this.model
+        .getDBInstance()
+        .findOne({ displayId: id }, fileds.join(' '))
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+
+    if (!suggestion) {
+      return {
+        code: 400,
+        message: 'Invalid request parameters',
+        // tslint:disable-next-line:no-null-keyword
+        data: null,
+      }
+    }
+
+    const createdBy = suggestion.createdBy;
+    const address = `${process.env.SERVER_URL}/suggestion/${suggestion._id}`
+    const did = createdBy && createdBy.dids
+        && createdBy.dids.find(el => el.active === true)
+    const didName = createdBy && createdBy.profile
+        && `${createdBy.profile.firstName} ${createdBy.profile.lastName}`
+    const result = _.omit(suggestion._doc, ['_id', 'id', 'createdBy'])
+
+    return {
+      ...result,
+      id,
+      address,
+      did,
+      didName,
+    }
+  }
+
   /**
    * Utils
    */

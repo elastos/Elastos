@@ -25,6 +25,7 @@ import advisory from './advisory'
 import signatureUrl from './signature_url'
 import signatureCallback from './signature_callback'
 import checkSignature from './check_signature'
+import getSuggestion from './getSuggestion'
 
 export default Base.setRouter([
   {
@@ -157,4 +158,9 @@ export default Base.setRouter([
     router: checkSignature,
     method: 'post',
   },
+  {
+    path: '/get_suggestion/:id',
+    router: getSuggestion,
+    method: 'get',
+  }
 ])
