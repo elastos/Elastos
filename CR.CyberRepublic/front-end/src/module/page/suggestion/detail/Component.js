@@ -102,7 +102,7 @@ export default class extends StandardPage {
     ]
     return (
       <StyledAnchor offsetTop={420}>
-        {sections.map(section => {
+        {sections.map((section) => {
           return (
             <Anchor.Link
               key={section}
@@ -230,9 +230,11 @@ export default class extends StandardPage {
     let status = I18N.get('suggestion.status.posted')
     if (_.get(detail, 'reference.0.vid')) {
       status = <TagsContainer data={detail} />
-    } else if (_.some(detail.tags, tag => tag.type === 'INFO_NEEDED')) {
+    } else if (_.some(detail.tags, (tag) => tag.type === 'INFO_NEEDED')) {
       status = I18N.get('suggestion.status.moreInfoRequired')
-    } else if (_.some(detail.tags, tag => tag.type === 'UNDER_CONSIDERATION')) {
+    } else if (
+      _.some(detail.tags, (tag) => tag.type === 'UNDER_CONSIDERATION')
+    ) {
       status = I18N.get('suggestion.status.underConsideration')
     }
 
@@ -246,19 +248,22 @@ export default class extends StandardPage {
         <DescLabel id="preamble">
           {I18N.get('suggestion.fields.preamble')}
         </DescLabel>
-        {detail.displayId && this.renderPreambleItem(
-          I18N.get('suggestion.fields.preambleSub.suggestion'),
-          `#${detail.displayId}`
-        )}
+        {detail.displayId &&
+          this.renderPreambleItem(
+            I18N.get('suggestion.fields.preambleSub.suggestion'),
+            `#${detail.displayId}`
+          )}
         {this.renderPreambleItem(
           I18N.get('suggestion.fields.preambleSub.title'),
           detail.title
         )}
-        {detail.createdBy && detail.createdBy.username && this.renderPreambleItem(
-          I18N.get('suggestion.fields.preambleSub.creator'),
-          detail.createdBy.username,
-          'username'
-        )}
+        {detail.createdBy &&
+          detail.createdBy.username &&
+          this.renderPreambleItem(
+            I18N.get('suggestion.fields.preambleSub.creator'),
+            detail.createdBy.username,
+            'username'
+          )}
         {this.renderPreambleItem(
           I18N.get('suggestion.fields.preambleSub.status'),
           status
@@ -267,7 +272,7 @@ export default class extends StandardPage {
           I18N.get('suggestion.fields.preambleSub.created'),
           moment(detail.createdAt).format('MMM D, YYYY')
         )}
-        {sections.map(section => {
+        {sections.map((section) => {
           if (
             section === 'plan' &&
             detail.plan &&
@@ -281,14 +286,14 @@ export default class extends StandardPage {
                 <Subtitle>{I18N.get('suggestion.plan.milestones')}</Subtitle>
                 {typeof this.state.version !== 'number' ? (
                   <Milestones
-                   initialValue={detail.plan.milestone}
-                   editable={false}
-                 />
+                    initialValue={detail.plan.milestone}
+                    editable={false}
+                  />
                 ) : (
                   <MilestonesReadonly
-                   initialValue={detail.plan.milestone}
-                   editable={false}
-                 />
+                    initialValue={detail.plan.milestone}
+                    editable={false}
+                  />
                 )}
                 <Subtitle>{I18N.get('suggestion.plan.teamInfo')}</Subtitle>
                 <TeamInfoList list={detail.plan.teamInfo} editable={false} />
@@ -352,15 +357,17 @@ export default class extends StandardPage {
   renderTitleButton = () => {
     const { detail, currentUserId, isAdmin } = this.props
     const isOwner = currentUserId === _.get(detail, 'createdBy._id') || isAdmin
-    return isOwner && (
-      <Button
-        onClick={this.handleShowVersionHistory}
-        className="btn-create-suggestion"
-        htmlType="button"
-        style={{ position: 'relative', top: -5, marginRight: 10 }}
-      >
-        {I18N.get('suggestion.form.button.showVersion')}
-      </Button>
+    return (
+      isOwner && (
+        <Button
+          onClick={this.handleShowVersionHistory}
+          className="btn-create-suggestion"
+          htmlType="button"
+          style={{ position: 'relative', top: -5, marginRight: 10 }}
+        >
+          {I18N.get('suggestion.form.button.showVersion')}
+        </Button>
+      )
     )
   }
 
@@ -399,7 +406,7 @@ export default class extends StandardPage {
   renderTagsNode() {
     const tags = _.get(this.props.detail, 'tags')
     if (_.isEmpty(tags)) return null
-    const res = _.map(tags, tag => {
+    const res = _.map(tags, (tag) => {
       const { type, _id, desc } = tag
       if (type === SUGGESTION_TAG_TYPE.INFO_NEEDED) {
         return (
@@ -467,7 +474,7 @@ export default class extends StandardPage {
       'budget'
     ]
     const result = sections
-      .map(section => {
+      .map((section) => {
         if (
           section === 'plan' &&
           detail.plan &&
@@ -495,8 +502,8 @@ export default class extends StandardPage {
         return `
           <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
           <p>${convertMarkdownToHtml(
-    removeImageFromMarkdown(detail[section])
-  )}</p>
+            removeImageFromMarkdown(detail[section])
+          )}</p>
           `
       })
       .join('')
@@ -527,11 +534,12 @@ export default class extends StandardPage {
     const { detail, currentUserId, isAdmin, draft } = this.props
     const isOwner = currentUserId === _.get(detail, 'createdBy._id')
     const isEditable = isOwner || isAdmin
-    const editText = draft && draft.empty
-      ? I18N.get('suggestion.btnText.edit')
-      : I18N.get('suggestion.btnText.editDraft')
+    const editText =
+      draft && draft.empty
+        ? I18N.get('suggestion.btnText.edit')
+        : I18N.get('suggestion.btnText.editDraft')
     const EditButton = isEditable && (
-      <div style={{paddingRight: 16, display: 'inline-block'}}>
+      <div style={{ paddingRight: 16, display: 'inline-block' }}>
         <StyledButton
           type="ebp"
           className="cr-btn cr-btn-default"
@@ -591,18 +599,19 @@ export default class extends StandardPage {
         </StyledButton>
       </Col>
     )
-    const createFormBtn = isCouncil && !isReference && (
-      <Col xs={24} sm={8}>
-        <StyledButton
-          type="ebp"
-          className="cr-btn cr-btn-default"
-          disabled={this.state.proposeLoading}
-          onClick={this.makeIntoPropose}
-        >
-          {I18N.get('suggestion.btn.makeIntoProposal')}
-        </StyledButton>
-      </Col>
-    )
+    const createFormBtn = isCouncil &&
+      !isReference && (
+        <Col xs={24} sm={8}>
+          <StyledButton
+            type="ebp"
+            className="cr-btn cr-btn-default"
+            disabled={this.state.proposeLoading}
+            onClick={this.makeIntoPropose}
+          >
+            {I18N.get('suggestion.btn.makeIntoProposal')}
+          </StyledButton>
+        </Col>
+      )
     const needDueDiligenceBtn = isCouncil && (
       <Col xs={24} sm={8}>
         <StyledButton
@@ -666,9 +675,7 @@ export default class extends StandardPage {
               {`${userUtil.formatUsername(detail.proposer)} `}
               {I18N.get('suggestion.label.hasMadeIntoProposal')}
               <Link to={`/proposals/${_id}`}>
-                {` ${I18N.get(
-                  'council.voting.proposal'
-                )} #${vid}`}
+                {` ${I18N.get('council.voting.proposal')} #${vid}`}
               </Link>
             </CreateProposalText>
           </Col>
@@ -730,11 +737,11 @@ export default class extends StandardPage {
     })
   }
 
-  onCommentChanged = e => {
+  onCommentChanged = (e) => {
     this.setState({ comment: e.target.value })
   }
 
-  onFormSubmit = async param => {
+  onFormSubmit = async (param) => {
     try {
       await this.props.update(param)
       this.showEditForm()
@@ -781,7 +788,7 @@ export default class extends StandardPage {
     })
   }
 
-  refetch = async incViewsNum => {
+  refetch = async (incViewsNum) => {
     const id = _.get(this.props, 'match.params.id')
     await this.props.resetDetail()
     this.props.getDetail({ id, incViewsNum: !!incViewsNum })
