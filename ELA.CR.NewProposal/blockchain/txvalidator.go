@@ -2158,7 +2158,8 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if proposal.ProposalType == payload.CloseProposal {
 		pk, _ := crypto.DecodePoint(proposal.OwnerPublicKey)
 		redeemScript, _ := contract.CreateStandardRedeemScript(pk)
-		ct, _ := contract.CreateCRIDContractByCode(redeemScript)
+		didCode := append(redeemScript[:len(redeemScript)-1], common.DID)
+		ct, _ := contract.CreateCRIDContractByCode(didCode)
 		ownerDid := ct.ToProgramHash()
 		ownerMember := b.crCommittee.GetMember(*ownerDid)
 
@@ -2173,78 +2174,86 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		} else if ps.Status != crstate.VoterAgreed {
 			return errors.New("CloseProposalHash has to be voterAgreed")
 		}
+		if len(proposal.Budgets) > 0 {
+			return errors.New("CloseProposal cannot have budget")
+		}
+		emptyUint168 := common.Uint168{}
+		if proposal.Recipient != emptyUint168 {
+			return errors.New("CloseProposal recipient must be empty")
+		}
 	}
 
-	// Check budgets of proposal
-	if len(proposal.Budgets) < 1 {
-		return errors.New("a proposal cannot be without a Budget")
-	}
-	budgets := make([]payload.Budget, len(proposal.Budgets))
-	for i, budget := range proposal.Budgets {
-		budgets[i] = budget
-	}
-	sort.Slice(budgets, func(i, j int) bool {
-		return budgets[i].Stage < budgets[j].Stage
-	})
-	if budgets[0].Type == payload.Imprest && budgets[0].Stage != 0 {
-		return errors.New("proposal imprest can only be in the first phase")
-	}
-	if budgets[0].Type != payload.Imprest && budgets[0].Stage != 1 {
-		return errors.New("the first general type budget needs to start at the beginning")
-	}
-	if budgets[len(budgets)-1].Type != payload.FinalPayment {
-		return errors.New("proposal final payment can only be in the last phase")
-	}
-	stage := budgets[0].Stage
-	var amount common.Fixed64
-	var imprestPaymentCount int
-	var finalPaymentCount int
-	for _, b := range budgets {
-		switch b.Type {
-		case payload.Imprest:
-			imprestPaymentCount++
-		case payload.NormalPayment:
-		case payload.FinalPayment:
-			finalPaymentCount++
-		default:
-			return errors.New("type of budget should be known")
+	if proposal.ProposalType != payload.CloseProposal {
+		// Check budgets of proposal
+		if len(proposal.Budgets) < 1 {
+			return errors.New("a proposal cannot be without a Budget")
 		}
-		if b.Stage != stage {
-			return errors.New("the first phase starts incrementing")
+		budgets := make([]payload.Budget, len(proposal.Budgets))
+		for i, budget := range proposal.Budgets {
+			budgets[i] = budget
 		}
-		if b.Amount < 0 {
-			return errors.New("invalid amount")
+		sort.Slice(budgets, func(i, j int) bool {
+			return budgets[i].Stage < budgets[j].Stage
+		})
+		if budgets[0].Type == payload.Imprest && budgets[0].Stage != 0 {
+			return errors.New("proposal imprest can only be in the first phase")
 		}
-		stage++
-		amount += b.Amount
+		if budgets[0].Type != payload.Imprest && budgets[0].Stage != 1 {
+			return errors.New("the first general type budget needs to start at the beginning")
+		}
+		if budgets[len(budgets)-1].Type != payload.FinalPayment {
+			return errors.New("proposal final payment can only be in the last phase")
+		}
+		stage := budgets[0].Stage
+		var amount common.Fixed64
+		var imprestPaymentCount int
+		var finalPaymentCount int
+		for _, b := range budgets {
+			switch b.Type {
+			case payload.Imprest:
+				imprestPaymentCount++
+			case payload.NormalPayment:
+			case payload.FinalPayment:
+				finalPaymentCount++
+			default:
+				return errors.New("type of budget should be known")
+			}
+			if b.Stage != stage {
+				return errors.New("the first phase starts incrementing")
+			}
+			if b.Amount < 0 {
+				return errors.New("invalid amount")
+			}
+			stage++
+			amount += b.Amount
+		}
+		if imprestPaymentCount > 1 {
+			return errors.New("imprest payment count invalid")
+		}
+		if finalPaymentCount != 1 {
+			return errors.New("final payment count invalid")
+		}
+		if amount > b.crCommittee.CRCCurrentStageAmount*CRCProposalBudgetsPercentage/100 {
+			return errors.New("budgets exceeds 10% of CRC committee balance")
+		} else if amount > b.crCommittee.CRCCommitteeBalance-
+			b.crCommittee.CRCCommitteeUsedAmount {
+			return errors.New("budgets exceeds the balance of CRC committee")
+		} else if amount < 0 {
+			return errors.New("budgets is invalid")
+		}
+		emptyUint168 := common.Uint168{}
+		if proposal.Recipient == emptyUint168 {
+			return errors.New("recipient is empty")
+		}
+		prefix := contract.GetPrefixType(proposal.Recipient)
+		if prefix != contract.PrefixStandard && prefix != contract.PrefixMultiSig {
+			return errors.New("invalid recipient prefix")
+		}
+		_, err := proposal.Recipient.ToAddress()
+		if err != nil {
+			return errors.New("invalid recipient")
+		}
 	}
-	if imprestPaymentCount > 1 {
-		return errors.New("imprest payment count invalid")
-	}
-	if finalPaymentCount != 1 {
-		return errors.New("final payment count invalid")
-	}
-	if amount > b.crCommittee.CRCCurrentStageAmount*CRCProposalBudgetsPercentage/100 {
-		return errors.New("budgets exceeds 10% of CRC committee balance")
-	} else if amount > b.crCommittee.CRCCommitteeBalance-
-		b.crCommittee.CRCCommitteeUsedAmount {
-		return errors.New("budgets exceeds the balance of CRC committee")
-	} else if amount < 0 {
-		return errors.New("budgets is invalid")
-	}
-	emptyUint168 := common.Uint168{}
-	if proposal.Recipient == emptyUint168 {
-		return errors.New("recipient is empty")
-	}
-	prefix := contract.GetPrefixType(proposal.Recipient)
-	if prefix != contract.PrefixStandard && prefix != contract.PrefixMultiSig {
-		return errors.New("invalid recipient prefix")
-	}
-	_, err := proposal.Recipient.ToAddress()
-	if err != nil {
-		return errors.New("invalid recipient")
-	}
-
 	// The number of the proposals of the committee can not more than 128
 	if b.crCommittee.IsProposalFull(proposal.CRCouncilMemberDID) {
 		return errors.New("proposal is full")
