@@ -43,6 +43,7 @@ import PaymentList from '@/module/form/SuggestionForm/PaymentList'
 import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
 import Milestones from '@/module/form/SuggestionForm/Milestones'
 import MilestonesReadonly from '@/module/form/SuggestionForm/MilestonesReadonly'
+import SignSuggestionButton from './SignSuggetionButton'
 import {
   Container,
   Title,
@@ -531,7 +532,14 @@ export default class extends StandardPage {
   }
 
   renderOwnerActionsNode() {
-    const { detail, currentUserId, isAdmin, draft } = this.props
+    const {
+      detail,
+      currentUserId,
+      isAdmin,
+      draft,
+      getSignatureUrl,
+      getSignature
+    } = this.props
     const signature = _.get(detail, 'signature.data')
     const isOwner = currentUserId === _.get(detail, 'createdBy._id')
     const isEditable = (isOwner || isAdmin) && !signature
@@ -550,23 +558,16 @@ export default class extends StandardPage {
         </StyledButton>
       </div>
     )
-    const SignButton = !signature &&
-      isOwner && (
-        <Popconfirm
-          title={'You can not edit your suggestion once it is signed.'}
-          onConfirm={() => {}}
-          okText={I18N.get('.yes')}
-          cancelText={I18N.get('.no')}
-        >
-          <StyledButton className="cr-btn cr-btn-default">
-            Sign Suggestion
-          </StyledButton>
-        </Popconfirm>
-      )
+    const isSignable = !signature && isOwner
     return (
       <div>
         {EditButton}
-        {SignButton}
+        {isSignable && (
+          <SignSuggestionButton
+            getSignatureUrl={getSignatureUrl}
+            getSignature={getSignature}
+          />
+        )}
       </div>
     )
   }
