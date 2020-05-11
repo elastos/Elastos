@@ -1669,6 +1669,86 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	return txn
 }
 
+func (s *txValidatorTestSuite) createSpecificStatusProposal(publicKey1, publicKey2 []byte, height uint32, status crstate.ProposalStatus) (*crstate.ProposalState, *payload.CRCProposal) {
+	draftData := randomBytes(10)
+	recipient := *randomUint168()
+	recipient[0] = uint8(contract.PrefixStandard)
+	code2 := getCodeByPubKeyStr(hex.EncodeToString(publicKey2))
+	proposal := &payload.CRCProposal{
+		ProposalType:       payload.Normal,
+		OwnerPublicKey:     publicKey1,
+		CRCouncilMemberDID: *getDIDFromCode(code2),
+		DraftHash:          common.Hash(draftData),
+		Budgets:            createBudgets(3),
+		Recipient:          recipient,
+	}
+	budgetsStatus := make(map[uint8]crstate.BudgetStatus)
+	for _, budget := range proposal.Budgets {
+		if budget.Type == payload.Imprest {
+			budgetsStatus[budget.Stage] = crstate.Withdrawable
+			continue
+		}
+		budgetsStatus[budget.Stage] = crstate.Unfinished
+	}
+	proposalState := &crstate.ProposalState{
+		Status:              status,
+		Proposal:            *proposal,
+		TxHash:              common.Hash(randomBytes(10)),
+		CRVotes:             map[common.Uint168]payload.VoteResult{},
+		VotersRejectAmount:  common.Fixed64(0),
+		RegisterHeight:      height,
+		VoteStartHeight:     0,
+		WithdrawnBudgets:    make(map[uint8]common.Fixed64),
+		WithdrawableBudgets: make(map[uint8]common.Fixed64),
+		BudgetsStatus:       budgetsStatus,
+		FinalPaymentStatus:  false,
+		TrackingCount:       0,
+		TerminatedHeight:    0,
+		ProposalOwner:       proposal.OwnerPublicKey,
+	}
+	return proposalState, proposal
+}
+
+func (s *txValidatorTestSuite) getCRCCloseProposalTx(publicKeyStr, privateKeyStr,
+	crPublicKeyStr, crPrivateKeyStr string) *types.Transaction {
+
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr)
+
+	privateKey2, _ := common.HexStringToBytes(crPrivateKeyStr)
+	publicKey2, _ := common.HexStringToBytes(crPublicKeyStr)
+	code2 := getCodeByPubKeyStr(crPublicKeyStr)
+
+	draftData := randomBytes(10)
+	txn := new(types.Transaction)
+	txn.TxType = types.CRCProposal
+	txn.Version = types.TxVersion09
+
+	crcProposalPayload := &payload.CRCProposal{
+		ProposalType:       payload.CloseProposal,
+		OwnerPublicKey:     publicKey2,
+		CRCouncilMemberDID: *getDIDFromCode(code2),
+		DraftHash:          common.Hash(draftData),
+		CloseProposalHash:  common.Hash(randomBytes(10)),
+	}
+
+	signBuf := new(bytes.Buffer)
+	crcProposalPayload.SerializeUnsigned(signBuf, payload.CRCProposalVersion)
+	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
+	crcProposalPayload.Signature = sig
+
+	common.WriteVarBytes(signBuf, sig)
+	crcProposalPayload.CRCouncilMemberDID.Serialize(signBuf)
+	crSig, _ := crypto.Sign(privateKey2, signBuf.Bytes())
+	crcProposalPayload.CRCouncilMemberSignature = crSig
+
+	txn.Payload = crcProposalPayload
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCodeByPubKeyStr(publicKeyStr),
+		Parameter: nil,
+	}}
+	return txn
+}
+
 func createBudgets(n int) []payload.Budget {
 	budgets := make([]payload.Budget, 0)
 	for i := 0; i < n; i++ {
@@ -2588,6 +2668,48 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 		CRCouncilMemberDID] = proposalHashSet
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "proposal is full")
+
+	// invalid proposal owner
+	txn = s.getCRCCloseProposalTx(publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "CloseProposal owner should be one of the CR members")
+
+	// invalid closeProposalHash
+	txn = s.getCRCCloseProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "CloseProposalHash does not exist")
+
+	// invalid proposal status
+	publicKey2, _ := hex.DecodeString(publicKeyStr2)
+	proposalState, proposal := s.createSpecificStatusProposal(publicKey1, publicKey2, tenureHeight, crstate.Registered)
+	hash := proposal.Hash()
+	s.Chain.crCommittee.GetProposalManager().Proposals[hash] = proposalState
+	txn = s.getCRCCloseProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
+	txn.Payload.(*payload.CRCProposal).CloseProposalHash = hash
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "CloseProposalHash has to be voterAgreed")
+
+	// invalid receipt
+	proposalState, proposal = s.createSpecificStatusProposal(publicKey1, publicKey2, tenureHeight, crstate.VoterAgreed)
+	hash = proposal.Hash()
+	s.Chain.crCommittee.GetProposalManager().Proposals[hash] = proposalState
+	txn = s.getCRCCloseProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
+	txn.Payload.(*payload.CRCProposal).CloseProposalHash = hash
+	txn.Payload.(*payload.CRCProposal).Recipient = *randomUint168()
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "CloseProposal recipient must be empty")
+
+	// invalid budget
+	txn = s.getCRCCloseProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
+	txn.Payload.(*payload.CRCProposal).CloseProposalHash = hash
+	txn.Payload.(*payload.CRCProposal).Budgets = []payload.Budget{{
+		payload.Imprest,
+		0x01,
+		common.Fixed64(10000000000),
+	}}
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "CloseProposal cannot have budget")
+
 }
 
 func (s *txValidatorTestSuite) TestCheckStringField() {
