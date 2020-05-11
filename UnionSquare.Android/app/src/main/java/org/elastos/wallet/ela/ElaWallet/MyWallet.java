@@ -108,7 +108,7 @@ public class MyWallet {
                 break;
             case WalletNet.PRVNET:
                 net = "PrvNet";
-                config = "{\"ELA\":{\"ChainParameters\":{\"StandardPort\":40086,\"DNSSeeds\":[\"139.198.0.59\"]}},\"IDChain\":{\"ChainParameters\":{\"StandardPort\":40087,\"DNSSeeds\":[\"139.198.0.59\"]}}}";
+                config = WalletNet.PRICONFIG;
                 break;
 
         }
