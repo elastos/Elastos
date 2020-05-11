@@ -1130,38 +1130,36 @@ export default class extends Base {
     return this.model.findByIdAndDelete(_id)
   }
 
-
   /**
    * Wallet Api
    */
   public async getSuggestion(id): Promise<any> {
-    const fileds = [
-        '_id',
-        'title',
-        'abstract',
-        'createdAt'
-    ]
+    const fileds = ['_id', 'title', 'abstract', 'createdAt']
 
     const suggestion = await this.model
-        .getDBInstance()
-        .findOne({ displayId: id }, fileds.join(' '))
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+      .getDBInstance()
+      .findOne({ displayId: id }, fileds.join(' '))
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
     if (!suggestion) {
       return {
         code: 400,
         message: 'Invalid request parameters',
         // tslint:disable-next-line:no-null-keyword
-        data: null,
+        data: null
       }
     }
 
-    const createdBy = suggestion.createdBy;
+    const createdBy = suggestion.createdBy
     const address = `${process.env.SERVER_URL}/suggestion/${suggestion._id}`
-    const did = createdBy && createdBy.dids
-        && createdBy.dids.find(el => el.active === true)
-    const didName = createdBy && createdBy.profile
-        && `${createdBy.profile.firstName} ${createdBy.profile.lastName}`
+    const did =
+      createdBy &&
+      createdBy.dids &&
+      createdBy.dids.find((el) => el.active === true)
+    const didName =
+      createdBy &&
+      createdBy.profile &&
+      `${createdBy.profile.firstName} ${createdBy.profile.lastName}`
     const result = _.omit(suggestion._doc, ['_id', 'id', 'createdBy'])
 
     return {
@@ -1169,7 +1167,7 @@ export default class extends Base {
       id,
       address,
       did,
-      didName,
+      didName
     }
   }
 
@@ -1188,7 +1186,7 @@ export default class extends Base {
     }
   }
 
-  /* sign a suggestion */
+  /* author signs a suggestion */
   public async getSignatureUrl(param: { id: string }) {
     try {
       const { id } = param
@@ -1395,4 +1393,66 @@ export default class extends Base {
     }
   }
   /* end */
+
+  // a council member signs a suggestion
+  public async getCMSignatureUrl(param: { id: string }) {
+    try {
+      const councilMemberDid = _.get(this.currentUser, 'did.id')
+      if (!councilMemberDid) {
+        return { success: false }
+      }
+
+      const role = _.get(this.currentUser, 'role')
+      if (!permissions.isCouncil(role)) {
+        return { success: false }
+      }
+
+      const { id } = param
+      const suggestion = await this.model.findById(id)
+      if (!suggestion) {
+        return { success: false }
+      }
+
+      const chainBudgetType = {
+        ADVANCE: 'Imprest',
+        CONDITIONED: 'NormalPayment',
+        COMPLETION: 'FinalPayment'
+      }
+      const budgets = suggestion.budget.map((item: BudgetItem) => ({
+        type: chainBudgetType[item.type],
+        stage: parseInt(item.milestoneKey),
+        amount: (parseInt(item.amount) * Math.pow(10, 8)).toString()
+      }))
+
+      const jwtClaims = {
+        command: 'createproposal',
+        iss: process.env.APP_DID,
+        suggestionId: suggestion._id,
+        callbackurl: `${process.env.API_URL}/api/suggestion/cm-signature-callback`,
+        website: {
+          domain: process.env.SERVER_URL,
+          logo: `${process.env.SERVER_URL}/assets/images/cr_ela_wallet.svg`
+        },
+        data: {
+          proposaltype: 'normal',
+          categorydata: 'Null',
+          ownerpublickey: suggestion.ownerPublicKey,
+          drafthash: suggestion.draftHash,
+          budgets,
+          recipient: suggestion.elaAddress,
+          signature: suggestion.signature,
+          did: councilMemberDid
+        }
+      }
+      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, {
+        expiresIn: '7d',
+        algorithm: 'ES256'
+      })
+      const url = `elastos://crproposal/${jwtToken}`
+      return { success: true, url }
+    } catch (err) {
+      logger.error(err)
+      return { success: false }
+    }
+  }
 }
