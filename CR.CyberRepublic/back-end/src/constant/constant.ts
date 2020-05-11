@@ -154,6 +154,7 @@ export const TASK_CANDIDATE_CATEGORY = {
 export const CVOTE_STATUS = create([
   'DRAFT',
   'PROPOSED',
+  'NOTIFICATION',
   'ACTIVE',
   'REJECT',
   'FINAL',
