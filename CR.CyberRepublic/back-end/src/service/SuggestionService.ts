@@ -1200,6 +1200,7 @@ export default class extends Base {
         content[field] = suggestion[field]
       }
       const draftHash = utilCrypto.sha256D(JSON.stringify(content))
+      await this.model.update({ _id: suggestion._id }, { $set: { draftHash } })
 
       const jwtClaims = {
         command: 'createsuggestion',
@@ -1275,6 +1276,14 @@ export default class extends Base {
 
       const rs: any = await getDidPublicKey(claims.iss)
       if (!rs) {
+        await this.model.update(
+          { _id: payload.suggestionId },
+          {
+            $set: {
+              signature: { message: `Can not get your did's public key.` }
+            }
+          }
+        )
         return {
           code: 400,
           success: false,
@@ -1288,6 +1297,14 @@ export default class extends Base {
         rs.publicKey,
         async (err: any, decoded: any) => {
           if (err) {
+            await this.model.update(
+              { _id: payload.suggestionId },
+              {
+                $set: {
+                  signature: { message: 'Verify signatrue failed.' }
+                }
+              }
+            )
             return {
               code: 401,
               success: false,
@@ -1297,7 +1314,7 @@ export default class extends Base {
             try {
               await this.model.update(
                 { _id: payload.suggestionId },
-                { $set: { signature: decoded.data } }
+                { $set: { signature: { data: decoded.data } } }
               )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
@@ -1325,11 +1342,13 @@ export default class extends Base {
     const { id } = param
     const suggestion = await this.model.findById(id)
     if (suggestion) {
-      const signature = _.get(suggestion, 'signature')
+      const signature = _.get(suggestion, 'signature.data')
       if (signature) {
         return { success: true, signature }
-      } else {
-        return { success: false }
+      }
+      const message = _.get(suggestion, 'signature.message')
+      if (message) {
+        return { success: false, message }
       }
     } else {
       return { success: false }

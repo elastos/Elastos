@@ -89,6 +89,6 @@ export const Suggestion = {
     }
   ],
   tags: [tag],
-  signature: String,
-  contentHash: String
+  signature: { data: String, message: String },
+  draftHash: String
 }
