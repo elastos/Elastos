@@ -1173,7 +1173,7 @@ export default class extends Base {
       const budgets = suggestion.budget.map((item: BudgetItem) => ({
         type: item.type,
         stage: parseInt(item.milestoneKey),
-        amount: item.amount
+        amount: (parseInt(item.amount) * Math.pow(10, 8)).toString()
       }))
 
       const fields = [
