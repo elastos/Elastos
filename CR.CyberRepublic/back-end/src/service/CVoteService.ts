@@ -1065,8 +1065,14 @@ export default class extends Base {
     const proposal = await db_cvote
       .getDBInstance()
       .findOne(queryProposal, fields.join(' '))
+
     if (!proposal) {
-      return { success: true, empty: true }
+      return {
+        code: 400,
+        message: 'Invalid request parameters',
+        // tslint:disable-next-line:no-null-keyword
+        data: null,
+      }
     }
 
     const address = `${process.env.SERVER_URL}/proposals/${proposal.id}`
