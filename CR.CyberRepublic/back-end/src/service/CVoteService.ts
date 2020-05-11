@@ -23,6 +23,30 @@ const BASE_FIELDS = [
   'payment'
 ]
 
+const WALLET_STATUS_TO_CVOTE_STATUS = {
+  'ALL': [constant.CVOTE_STATUS.PROPOSED,
+    constant.CVOTE_STATUS.NOTIFICATION,
+    constant.CVOTE_STATUS.ACTIVE,
+    constant.CVOTE_STATUS.FINAL,
+    constant.CVOTE_STATUS.REJECT,
+    constant.CVOTE_STATUS.DEFERRED
+  ],
+  'VOTING': [constant.CVOTE_STATUS.PROPOSED],
+  'NOTIFICATION': [constant.CVOTE_STATUS.NOTIFICATION],
+  'ACTIVE': [constant.CVOTE_STATUS.ACTIVE],
+  'FINAL': [constant.CVOTE_STATUS.FINAL],
+  'REJECTED': [constant.CVOTE_STATUS.REJECT, constant.CVOTE_STATUS.DEFERRED],
+}
+
+const CVOTE_STATUS_TO_WALLET_STATUS = {
+  [constant.CVOTE_STATUS.PROPOSED]: 'VOTING',
+  [constant.CVOTE_STATUS.NOTIFICATION]: 'NOTIFICATION',
+  [constant.CVOTE_STATUS.ACTIVE]: 'ACTIVE',
+  [constant.CVOTE_STATUS.FINAL]: 'FINAL',
+  [constant.CVOTE_STATUS.REJECT]: 'REJECTED',
+  [constant.CVOTE_STATUS.DEFERRED]: 'REJECTED',
+}
+
 export default class extends Base {
   // create a DRAFT propoal with minimal info
   public async createDraft(param: any): Promise<Document> {
@@ -958,60 +982,19 @@ export default class extends Base {
   // API to Wallet 
   public async allOrSearch(param): Promise<any>{
     const db_cvote = this.getDBModel('CVote')
-    const currentUserId = _.get(this.currentUser, '_id')
-    const userRole = _.get(this.currentUser, 'role')
     const query: any = {}
 
-    if (!param.published) {
-      if (!this.isLoggedIn() || !this.canManageProposal()) {
-        throw 'cvoteservice.list - unpublished proposals only visible to council/secretary'
-      } else if (
-        param.voteResult === constant.CVOTE_RESULT.UNDECIDED &&
-        permissions.isCouncil(userRole)
-      ) {
-        // get unvoted by current council
-        query.voteResult = {
-          $elemMatch: {
-            value: constant.CVOTE_RESULT.UNDECIDED,
-            votedBy: currentUserId
-          }
-        }
-        query.published = true
-        query.status = constant.CVOTE_STATUS.PROPOSED
+    if (!param.status || !_.keys(WALLET_STATUS_TO_CVOTE_STATUS).includes(param.status)) {
+      return {
+        code: 401,
+        message: 'Invalid request parameters - status',
+        // tslint:disable-next-line:no-null-keyword
+        data: null,
       }
-    } else {
-      query.published = param.published
-    }
-    // createBy
-    if (param.author && param.author.length) {
-      let search = param.author
-      const db_user = this.getDBModel('User')
-      const pattern = search.split(' ').join('|')
-      const users = await db_user
-        .getDBInstance()
-        .find({
-          $or: [
-            { username: { $regex: search, $options: 'i' } },
-            { 'profile.firstName': { $regex: pattern, $options: 'i' } },
-            { 'profile.lastName': { $regex: pattern, $options: 'i' } }
-          ]
-        })
-        .select('_id')
-      const userIds = _.map(users, (el: { _id: string }) => el._id)
-      query.createdBy = { $in: userIds }
-    }
-    // cvoteType
-    if (
-      param.type &&
-      _.indexOf(_.values(constant.CVOTE_TYPE), param.type) >= 0
-    ) {
-      query.type = param.type
     }
 
     // status
-    if (param.status && constant.CVOTE_STATUS[param.status]) {
-      query.status = param.status
-    }
+    query.status = WALLET_STATUS_TO_CVOTE_STATUS[param.status]
 
     // search
     if (param.$or) query.$or = param.$or
@@ -1025,8 +1008,6 @@ export default class extends Base {
       'proposalHash'
     ]
 
-    // const test = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
-  
     const cursor =  db_cvote
       .getDBInstance()
       .find(query, fields.join(' '))
@@ -1048,10 +1029,9 @@ export default class extends Base {
 
     // filter return data，add proposalHash to CVoteSchema
     const list = _.map(rs[0], function(o){
-      console.log(o)
       let temp = _.pick(o, fields)
+      temp.status = CVOTE_STATUS_TO_WALLET_STATUS[temp.status]
       return _.mapKeys(temp, function(value,key){
-        console.log(key)
         if(key == 'vid'){
           return 'id'
         }else{
