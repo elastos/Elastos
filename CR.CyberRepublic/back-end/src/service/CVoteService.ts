@@ -954,4 +954,222 @@ export default class extends Base {
 
     return ret
   }
+
+  // API to Wallet 
+  public async allOrSearch(param): Promise<any>{
+    const db_cvote = this.getDBModel('CVote')
+    const currentUserId = _.get(this.currentUser, '_id')
+    const userRole = _.get(this.currentUser, 'role')
+    const query: any = {}
+
+    if (!param.published) {
+      if (!this.isLoggedIn() || !this.canManageProposal()) {
+        throw 'cvoteservice.list - unpublished proposals only visible to council/secretary'
+      } else if (
+        param.voteResult === constant.CVOTE_RESULT.UNDECIDED &&
+        permissions.isCouncil(userRole)
+      ) {
+        // get unvoted by current council
+        query.voteResult = {
+          $elemMatch: {
+            value: constant.CVOTE_RESULT.UNDECIDED,
+            votedBy: currentUserId
+          }
+        }
+        query.published = true
+        query.status = constant.CVOTE_STATUS.PROPOSED
+      }
+    } else {
+      query.published = param.published
+    }
+    // createBy
+    if (param.author && param.author.length) {
+      let search = param.author
+      const db_user = this.getDBModel('User')
+      const pattern = search.split(' ').join('|')
+      const users = await db_user
+        .getDBInstance()
+        .find({
+          $or: [
+            { username: { $regex: search, $options: 'i' } },
+            { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+            { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+          ]
+        })
+        .select('_id')
+      const userIds = _.map(users, (el: { _id: string }) => el._id)
+      query.createdBy = { $in: userIds }
+    }
+    // cvoteType
+    if (
+      param.type &&
+      _.indexOf(_.values(constant.CVOTE_TYPE), param.type) >= 0
+    ) {
+      query.type = param.type
+    }
+
+    // status
+    if (param.status && constant.CVOTE_STATUS[param.status]) {
+      query.status = param.status
+    }
+
+    // search
+    if (param.$or) query.$or = param.$or
+
+    const fields = [
+      'vid',
+      'title',
+      'status',
+      'createdAt',
+      'proposedBy',
+      'proposalHash'
+    ]
+
+    // const test = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
+  
+    const cursor =  db_cvote
+      .getDBInstance()
+      .find(query, fields.join(' '))
+      .sort({vid: -1})
+
+    if (param.results) {
+      const results = parseInt(param.results, 10)
+      const page = parseInt(param.page, 10)
+      cursor.skip(results * (page - 1)).limit(results)
+    }
+    
+    const rs = await Promise.all([
+      cursor,
+      db_cvote
+        .getDBInstance()
+        .find(query)
+        .count()
+    ])
+
+    // filter return data，add proposalHash to CVoteSchema
+    const list = _.map(rs[0], function(o){
+      console.log(o)
+      let temp = _.pick(o, fields)
+      return _.mapKeys(temp, function(value,key){
+        console.log(key)
+        if(key == 'vid'){
+          return 'id'
+        }else{
+          return key
+        }
+      })
+    })
+    
+    const total = rs[1]
+    return {list, total}
+  }
+
+  // API to Wallet
+  public async getProposalById(id): Promise<any> {
+    const db_cvote = this.getDBModel('CVote')
+    // access proposal by reference number
+    const isNumber = /^\d*$/.test(id)
+    let queryProposal: any
+    if (isNumber) {
+      queryProposal = { vid: parseInt(id) }
+    } else {
+      queryProposal = { _id: id }
+    }
+    const fields = [
+      'status',
+      'abstract',
+      'voteResult',
+      'createdAt',
+      'proposalHash',
+    ]
+    const proposal = await db_cvote
+      .getDBInstance()
+      .findOne(queryProposal, fields.join(' '))
+    if (!proposal) {
+      return { success: true, empty: true }
+    }
+
+    const address = `${process.env.SERVER_URL}/proposals/${proposal.id}`
+    
+    // duration 
+    const endTime = Math.round(proposal.createdAt.getTime()/1000+604800)
+    const nowTime = Math.round(new Date().getTime()/1000)
+    let duration = endTime-nowTime
+    duration = duration > 0 ? duration : 0
+    
+    const proposalId = proposal._id
+    const tracking = await this.getTracking(proposalId)
+    const summary = await this.getSummary(proposalId)
+    
+    // data filter
+    var object = {};
+    _.forEach(proposal._doc,function(value,key){
+      object = _.setWith(object,key,value,Object)
+    })
+    object = _.pick(object,fields)
+    object = _.setWith(object, '[address]', address, Object)
+    object = _.setWith(object, '[duration]',duration,Object)
+    object = _.setWith(object, '[tracking]',tracking,Object)
+    object = _.setWith(object, '[summary]',summary,Object)
+
+    return object
+  }
+
+  public async getTracking(id) {
+    const db_tracking = this.getDBModel('CVote_Tracking')
+    const proposalId = id
+    const queryTrack: any = {
+      proposalId,
+    }
+    const fieldsTrack = [
+    'comment.createdBy.username',
+    'comment.content',
+    'content',
+    'status',
+    'createdAt',
+    'updatedAt'
+    ]
+    const cursorTrack = db_tracking.getDBInstance().find(queryTrack,fieldsTrack.join(' '))
+      .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .sort({ createdAt: 1 })
+    // const totalCursorTrack = db_tracking.getDBInstance().find(queryTrack).count()
+
+    const tracking = await cursorTrack
+    // const totalTrack = await totalCursorTrack
+   
+    const list = _.map(tracking,function(o){
+      return _.pick(o,fieldsTrack)
+    })
+    return list
+  }
+
+  public async getSummary(id) {
+
+    const db_summary = this.getDBModel('CVote_Summary')
+    const proposalId = id
+    const querySummary: any = {
+      proposalId,
+    }
+    const fieldsSummary = [
+      'comment.createdBy.username',
+      'comment.content',
+      'content',
+      'status',
+      'createdAt',
+      'updatedAt'
+      ]
+    const cursorSummary = db_summary.getDBInstance().find(querySummary,fieldsSummary.join(' '))
+      .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .sort({ createdAt: 1 })
+    // const totalCursorSummary = db_summary.getDBInstance().find(querySummary).count()
+
+    const summary = await cursorSummary
+    // const totalSummary = await totalCursorSummary
+    
+    const list = _.map(summary,function(o){
+      return _.pick(o,fieldsSummary)
+    })
+    return list
+
+  }
 }

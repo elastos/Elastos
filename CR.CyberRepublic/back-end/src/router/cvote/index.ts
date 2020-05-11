@@ -14,6 +14,8 @@ import finish from './finish'
 import unfinish from './unfinish'
 import update_notes from './update_notes'
 import listcrcandidates from './listcrcandidates'
+import all_search from './all_search'
+import get_proposal from './get_proposal'
 
 export default Base.setRouter([
   {
@@ -85,5 +87,15 @@ export default Base.setRouter([
     path: '/listcrcandidates',
     router: listcrcandidates,
     method: 'post'
+  },
+  {
+    path: '/all_search',
+    router: all_search,
+    method: 'get'
+  },
+  {
+    path: '/get_proposal/:id',
+    router: get_proposal,
+    method: 'get'
   }
 ])
