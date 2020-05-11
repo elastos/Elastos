@@ -273,6 +273,12 @@ export default class extends StandardPage {
           I18N.get('suggestion.fields.preambleSub.created'),
           moment(detail.createdAt).format('MMM D, YYYY')
         )}
+        {_.get(detail, 'signature.data') &&
+          this.renderPreambleItem(
+            I18N.get('suggestion.fields.preambleSub.signature'),
+            detail.signature.data,
+            'signature'
+          )}
         {sections.map((section) => {
           if (
             section === 'plan' &&
