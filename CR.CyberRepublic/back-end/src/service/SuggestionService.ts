@@ -1246,7 +1246,10 @@ export default class extends Base {
       }
 
       const draftHash = utilCrypto.sha256D(JSON.stringify(content))
-      await this.model.update({ _id: suggestion._id }, { $set: { draftHash } })
+      await this.model.update(
+        { _id: suggestion._id },
+        { $set: { draftHash, ownerPublicKey } }
+      )
 
       const jwtClaims = {
         command: 'createsuggestion',
