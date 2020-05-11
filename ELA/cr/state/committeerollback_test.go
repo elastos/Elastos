@@ -1630,6 +1630,11 @@ func TestCommittee_RollbackCRCAppropriationTx(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := config.DefaultParams.CRVotingStartHeight
+	committee.RegisterFuncitons(&CommitteeFuncsConfig{
+		GetHeight: func() uint32 {
+			return currentHeight
+		},
+	})
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -2371,6 +2376,12 @@ func TestCommitee_RollbackCRCBlendAppropriationTx(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
+	committee.RegisterFuncitons(&CommitteeFuncsConfig{
+		GetHeight: func() uint32 {
+			return currentHeight
+		},
+	})
+
 	// register cr
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{

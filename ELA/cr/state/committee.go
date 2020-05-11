@@ -416,15 +416,21 @@ func (c *Committee) resetCRCCommitteeUsedAmount(height uint32) {
 		}
 	}
 
-	oriNeedAppropriation := c.NeedAppropriation
 	oriUsedAmount := c.CRCCommitteeUsedAmount
 	c.lastHistory.Append(height, func() {
-		c.NeedAppropriation = true
 		c.CRCCommitteeUsedAmount = budget
 	}, func() {
-		c.NeedAppropriation = oriNeedAppropriation
 		c.CRCCommitteeUsedAmount = oriUsedAmount
 	})
+
+	oriNeedAppropriation := c.NeedAppropriation
+	if c.getHeight != nil && height == c.getHeight() {
+		c.lastHistory.Append(height, func() {
+			c.NeedAppropriation = true
+		}, func() {
+			c.NeedAppropriation = oriNeedAppropriation
+		})
+	}
 
 }
 
