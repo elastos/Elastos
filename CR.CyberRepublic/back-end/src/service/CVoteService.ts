@@ -979,7 +979,9 @@ export default class extends Base {
     return ret
   }
 
-  // API to Wallet 
+  /**
+   * API to Wallet
+   */
   public async allOrSearch(param): Promise<any>{
     const db_cvote = this.getDBModel('CVote')
     const query: any = {}
@@ -1008,12 +1010,14 @@ export default class extends Base {
       'proposalHash'
     ]
 
-    const cursor =  db_cvote
+    const cursor =  await db_cvote
       .getDBInstance()
       .find(query, fields.join(' '))
       .sort({vid: -1})
 
-    if (param.results) {
+    if (param.page && param.results
+        && parseInt(param.page) > 0
+        && parseInt(param.results) > 0) {
       const results = parseInt(param.results, 10)
       const page = parseInt(param.page, 10)
       cursor.skip(results * (page - 1)).limit(results)
@@ -1044,17 +1048,9 @@ export default class extends Base {
     return {list, total}
   }
 
-  // API to Wallet
   public async getProposalById(id): Promise<any> {
     const db_cvote = this.getDBModel('CVote')
-    // access proposal by reference number
-    const isNumber = /^\d*$/.test(id)
-    let queryProposal: any
-    if (isNumber) {
-      queryProposal = { vid: parseInt(id) }
-    } else {
-      queryProposal = { _id: id }
-    }
+
     const fields = [
       'status',
       'abstract',
@@ -1064,7 +1060,7 @@ export default class extends Base {
     ]
     const proposal = await db_cvote
       .getDBInstance()
-      .findOne(queryProposal, fields.join(' '))
+      .findOne({ vid: id }, fields.join(' '))
 
     if (!proposal) {
       return {
