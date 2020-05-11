@@ -1320,6 +1320,22 @@ export default class extends Base {
     }
   }
 
-  public async checkSignature(param: any) {}
+  public async checkSignature(param: any) {
+    if (!this.isLoggedIn()) {
+      return { success: false }
+    }
+    const { id } = param
+    const suggestion = await this.model.findById(id)
+    if (suggestion) {
+      const signature = _.get(suggestion, 'signature')
+      if (signature) {
+        return { success: true, signature }
+      } else {
+        return { success: false }
+      }
+    } else {
+      return { success: false }
+    }
+  }
   /* end */
 }
