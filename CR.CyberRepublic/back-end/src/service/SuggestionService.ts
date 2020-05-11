@@ -202,6 +202,10 @@ export default class extends Base {
       throw 'Current document does not exist'
     }
 
+    if (_.get(currDoc, 'signature.data')) {
+      throw 'Current document does not allow to edit'
+    }
+
     if (
       !userId.equals(_.get(currDoc, 'createdBy')) &&
       !permissions.isAdmin(_.get(this.currentUser, 'role'))
