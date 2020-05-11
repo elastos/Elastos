@@ -1203,6 +1203,7 @@ export default class extends Base {
       const jwtClaims = {
         command: 'createsuggestion',
         iss: process.env.APP_DID,
+        suggestionId: suggestion._id,
         callbackurl: `${process.env.API_URL}/api/suggestion/signature-callback`,
         website: {
           domain: process.env.SERVER_URL,
@@ -1228,4 +1229,9 @@ export default class extends Base {
       return { success: false }
     }
   }
+
+  public async SignatureCallback(param: any) {}
+
+  public async checkSignature(param: any) {}
+  /* end */
 }
