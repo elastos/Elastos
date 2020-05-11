@@ -1144,10 +1144,6 @@ export default class extends Base {
   /* sign a suggestion */
   public async getSignatureUrl(param: { id: string }) {
     try {
-      if (!this.isLoggedIn()) {
-        return { success: false }
-      }
-
       const { id } = param
       const suggestion = this.model
         .getDBInstance()
@@ -1321,9 +1317,6 @@ export default class extends Base {
   }
 
   public async checkSignature(param: any) {
-    if (!this.isLoggedIn()) {
-      return { success: false }
-    }
     const { id } = param
     const suggestion = await this.model.findById(id)
     if (suggestion) {

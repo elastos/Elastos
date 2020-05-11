@@ -22,6 +22,9 @@ import editHistories from './editHistories'
 import revertVersion from './revertVersion'
 import investigation from './investigation'
 import advisory from './advisory'
+import signatureUrl from './signature_url'
+import signatureCallback from './signature_callback'
+import checkSignature from './check_signature'
 
 export default Base.setRouter([
   {
@@ -138,5 +141,20 @@ export default Base.setRouter([
     path: '/:id/advisory',
     router: advisory,
     method: 'post',
-  }
+  },
+  {
+    path: '/signature-url',
+    router: signatureUrl,
+    method: 'post',
+  },
+  {
+    path: '/signature-callback',
+    router: signatureCallback,
+    method: 'post',
+  },
+  {
+    path: '/signature',
+    router: checkSignature,
+    method: 'post',
+  },
 ])
