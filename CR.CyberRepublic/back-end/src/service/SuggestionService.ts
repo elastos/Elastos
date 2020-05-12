@@ -1284,7 +1284,7 @@ export default class extends Base {
     }
   }
 
-  public async SignatureCallback(param: any) {
+  public async signatureCallback(param: any) {
     try {
       const jwtToken = param.jwt
       const claims: any = jwt.decode(jwtToken)
