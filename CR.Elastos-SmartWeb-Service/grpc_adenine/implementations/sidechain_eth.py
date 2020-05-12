@@ -1,16 +1,15 @@
 import json
+
+import requests
 from decouple import config
-from requests import Session
 import logging
 import jwt
 import datetime
-from sqlalchemy.orm import sessionmaker
 from web3 import Web3, HTTPProvider
 from web3.middleware import geth_poa_middleware
 from solc import compile_standard
 
 from grpc_adenine import settings
-from grpc_adenine.database import db_engine
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 from grpc_adenine.implementations.utils import get_api_from_did
 from grpc_adenine.settings import REQUEST_TIMEOUT
@@ -20,13 +19,10 @@ from grpc_adenine.stubs.python import sidechain_eth_pb2, sidechain_eth_pb2_grpc
 class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
 
     def __init__(self):
-        headers = {
+        self.headers = {
             'Content-Disposition': 'multipart/form-data;boundary=--------------------------608819652137318562927303'
         }
-        self.session = Session()
-        self.session.headers.update(headers)
-        session_maker = sessionmaker(bind=db_engine)
-        self.rate_limiter = RateLimiter(session_maker())
+        self.rate_limiter = RateLimiter()
 
     def DeployEthContract(self, request, context):
 
@@ -73,7 +69,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         contract_source = jwt_info['contract_source']
 
         # upload smart contract code to hive
-        response = self.session.get(hive_api_url, files={'file': contract_source}, timeout=REQUEST_TIMEOUT)
+        response = requests.get(hive_api_url, headers=self.headers, files={'file': contract_source}, timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
         hive_hash = data['Hash']
 
@@ -193,7 +189,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         contract_code_hash = jwt_info['contract_code_hash']
 
         # show smart contract code from Hive
-        response = self.session.get(hive_api_url.format(contract_code_hash))
+        response = requests.get(hive_api_url.format(contract_code_hash), headers=self.headers, timeout=REQUEST_TIMEOUT)
         contract_source = response.text
 
         if not response:

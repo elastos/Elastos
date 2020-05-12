@@ -5,17 +5,15 @@ import datetime
 import json
 import base64
 
+import requests
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from decouple import config
-from requests import Session
-from sqlalchemy.orm import sessionmaker
 
 from grpc_adenine import settings
-from grpc_adenine.database import db_engine
 from grpc_adenine.implementations.utils import get_api_from_did
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs.python import hive_pb2, hive_pb2_grpc
@@ -35,10 +33,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
             "general": headers_general,
             "hive": headers_hive
         }
-
-        self.session = Session()
-        session_maker = sessionmaker(bind=db_engine)
-        self.rate_limiter = RateLimiter(session_maker())
+        self.rate_limiter = RateLimiter()
 
     def UploadAndSign(self, request, context):
 
@@ -91,7 +86,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         file_content_encrypted = fernet.encrypt(file_content)
 
         # upload file to hive
-        response = self.session.get(hive_api_url, files={'file': file_content_encrypted}, headers=self.headers['hive'],
+        response = requests.get(hive_api_url, files={'file': file_content_encrypted}, headers=self.headers['hive'],
                                     timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
         file_hash = data['Hash']
@@ -106,7 +101,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
             "privateKey": private_key,
             "msg": file_hash
         }
-        response = self.session.post(did_api_url, data=json.dumps(req_data), headers=self.headers['general'],
+        response = requests.post(did_api_url, data=json.dumps(req_data), headers=self.headers['general'],
                                      timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
         data['result']['hash'] = file_hash
@@ -180,7 +175,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
             "pub": public_key,
             "sig": message_signature
         }
-        response = self.session.post(did_api_verify_url, data=json.dumps(json_data), headers=self.headers['general'],
+        response = requests.post(did_api_verify_url, data=json.dumps(json_data), headers=self.headers['general'],
                                      timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
         if not data['result']:
@@ -191,7 +186,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
             "privateKey": private_key,
             "msg": message_hash
         }
-        response = self.session.post(did_api_sign_url, data=json.dumps(req_data), headers=self.headers['general'],
+        response = requests.post(did_api_sign_url, data=json.dumps(req_data), headers=self.headers['general'],
                                      timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
         if data['status'] != 200:
@@ -207,7 +202,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
                                      status=False)
 
         # show content
-        response = self.session.get(hive_api_url.format(jwt_info['hash']), timeout=REQUEST_TIMEOUT)
+        response = requests.get(hive_api_url.format(jwt_info['hash']), headers=self.headers['general'], timeout=REQUEST_TIMEOUT)
 
         # decrypt message
         key = get_encrypt_key(private_key)

@@ -2,12 +2,10 @@ import json
 import logging
 import datetime
 import jwt
-from requests import Session
+import requests
 from decouple import config
-from sqlalchemy.orm import sessionmaker
 
 from grpc_adenine import settings
-from grpc_adenine.database import db_engine
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 from grpc_adenine.implementations.utils import get_api_from_did
 from grpc_adenine.settings import REQUEST_TIMEOUT
@@ -17,14 +15,11 @@ from grpc_adenine.stubs.python import node_rpc_pb2, node_rpc_pb2_grpc
 class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
 
     def __init__(self):
-        headers = {
+        self.headers = {
             'Accepts': 'application/json',
             'Content-Type': 'application/json'
         }
-        self.session = Session()
-        self.session.headers.update(headers)
-        session_maker = sessionmaker(bind=db_engine)
-        self.rate_limiter = RateLimiter(session_maker())
+        self.rate_limiter = RateLimiter()
 
     def RpcMethod(self, request, context):
 
@@ -115,7 +110,7 @@ class NodeRpc(node_rpc_pb2_grpc.NodeRpcServicer):
                                              status_message=status_message,
                                              status=False)
 
-        response = self.session.post(url, data=json.dumps(d), timeout=REQUEST_TIMEOUT)
+        response = requests.post(url, data=json.dumps(d), headers=self.headers, timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)
 
         # generate jwt token

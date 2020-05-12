@@ -24,5 +24,5 @@ try:
     db_engine = create_engine(database_uri)
     connection = SQLAlchemy(database_uri)
 except Exception as e:
-    logging.debug(f"Error while connecting to the database: {e}")
+    logging.fatal(f"Error while connecting to the database: {e}")
 

@@ -3,9 +3,10 @@ import time
 import logging
 import threading
 
+import requests
+
 from grpc_adenine import settings
 
-from requests import Session
 from decouple import config
 from web3 import Web3, HTTPProvider
 from web3.middleware import geth_poa_middleware
@@ -16,16 +17,14 @@ from grpc_adenine.settings import REQUEST_TIMEOUT
 
 class Cron:
     def __init__(self):
-        headers = {
+        self.headers = {
             'Accepts': 'application/json',
             'Content-Type': 'application/json'
         }
-        self.session = Session()
-        self.session.headers.update(headers)
 
     def create_wallet_mainchain(self):
         create_wallet_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_CREATE_WALLET
-        response = self.session.get(create_wallet_url, timeout=REQUEST_TIMEOUT)
+        response = requests.get(create_wallet_url, headers=self.headers, timeout=REQUEST_TIMEOUT)
         data = json.loads(response.text)['result']
         return data['address'], data['privateKey']
 
@@ -62,7 +61,7 @@ class Cron:
 
         # Transfer from mainchain to mainchain
         transfer_ela_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_TRANSFER
-        response = self.session.post(transfer_ela_url, data=json.dumps(req_data_mainchain), timeout=REQUEST_TIMEOUT)
+        response = requests.post(transfer_ela_url, data=json.dumps(req_data_mainchain), headers=self.headers, timeout=REQUEST_TIMEOUT)
         tx_hash = json.loads(response.text)['result']
         logging.debug("Transferred 10 ELA. Tx Hash: {0}".format(tx_hash))
 
@@ -70,7 +69,7 @@ class Cron:
         done = False
         while not done:
             tx_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_GET_TRANSACTION + tx_hash
-            response = self.session.get(tx_url, timeout=REQUEST_TIMEOUT)
+            response = requests.get(tx_url, headers=self.headers, timeout=REQUEST_TIMEOUT)
             confirmation_times = json.loads(response.text)['result']['confirmations']
             if confirmation_times >= 1:
                 done = True
@@ -90,7 +89,7 @@ class Cron:
                 }]
             }
             transfer_ela_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_CROSSCHAIN_TRANSFER
-            response = self.session.post(transfer_ela_url, data=json.dumps(req_data), timeout=REQUEST_TIMEOUT)
+            response = requests.post(transfer_ela_url, data=json.dumps(req_data), headers=self.headers, timeout=REQUEST_TIMEOUT)
             tx_hash = json.loads(response.text)['result']
             logging.debug("Transferred 5 ELA/DIDSC to {0}. Tx Hash: {1}".format(address, tx_hash))
 
@@ -108,7 +107,7 @@ class Cron:
             }
             transfer_ela_url = config('PRIVATE_NET_WALLET_SERVICE_TOKENSIDECHAIN_URL') + \
                                settings.WALLET_API_CROSSCHAIN_TRANSFER_TOKENSIDECHAIN
-            response = self.session.post(transfer_ela_url, data=json.dumps(req_data), timeout=REQUEST_TIMEOUT)
+            response = requests.post(transfer_ela_url, data=json.dumps(req_data), headers=self.headers, timeout=REQUEST_TIMEOUT)
             tx_hash = json.loads(response.text)['result']
             logging.debug("Transferred 5 ELA/TOKENSC to: {0}. Tx Hash: {1}".format(address, tx_hash))
 

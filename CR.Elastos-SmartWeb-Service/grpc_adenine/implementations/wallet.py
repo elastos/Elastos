@@ -3,15 +3,14 @@ import secrets
 import logging
 import jwt
 import datetime
-from requests import Session
+
+import requests
 from decouple import config
-from sqlalchemy.orm import sessionmaker
 
 from web3 import Web3, HTTPProvider
 from web3.middleware import geth_poa_middleware
 
 from grpc_adenine import settings
-from grpc_adenine.database import db_engine
 from grpc_adenine.implementations import WalletAddresses, WalletAddressesETH
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 from grpc_adenine.implementations.utils import get_api_from_did
@@ -22,14 +21,11 @@ from grpc_adenine.stubs.python import wallet_pb2, wallet_pb2_grpc
 class Wallet(wallet_pb2_grpc.WalletServicer):
 
     def __init__(self):
-        headers = {
+        self.headers = {
             'Accepts': 'application/json',
             'Content-Type': 'application/json'
         }
-        self.session = Session()
-        self.session.headers.update(headers)
-        session_maker = sessionmaker(bind=db_engine)
-        self.rate_limiter = RateLimiter(session_maker())
+        self.rate_limiter = RateLimiter()
 
     def CreateWallet(self, request, context):
 
@@ -60,13 +56,13 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                                        status=False)
 
         # Create wallets
-        wallet_mainchain = create_wallet_mainchain(self.session, network)
+        wallet_mainchain = create_wallet_mainchain(self.headers, network)
         if wallet_mainchain is None:
             status_message = 'Error: Mainchain wallet could not created'
             logging.debug(f"{did} : {api_key} : {status_message}")
             return wallet_pb2.Response(output="", status_message=status_message, status=False)
 
-        wallet_sidechain_did = create_wallet_sidechain_did(self.session, network)
+        wallet_sidechain_did = create_wallet_sidechain_did(self.headers, network)
         if wallet_sidechain_did is None:
             status_message = 'Error: DID Sidechain wallet could not created'
             logging.debug(f"{did} : {api_key} : {status_message}")
@@ -187,14 +183,14 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         return wallet_pb2.Response(output=jwt_token, status_message=status_message, status=status)
 
 
-def create_wallet_mainchain(session, network):
+def create_wallet_mainchain(headers, network):
     result = {}
     # Generate mnemonics
     if network == "mainnet":
         generate_mnemonics_url = config('MAIN_NET_WALLET_SERVICE_URL') + settings.WALLET_API_GENERATE_MNEMONIC
     else:
         generate_mnemonics_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_GENERATE_MNEMONIC
-    response = session.get(generate_mnemonics_url, timeout=REQUEST_TIMEOUT)
+    response = requests.get(generate_mnemonics_url, headers=headers, timeout=REQUEST_TIMEOUT)
     data = json.loads(response.text)
     mnemonic = data['result']
     result['mnemonic'] = mnemonic
@@ -208,7 +204,7 @@ def create_wallet_mainchain(session, network):
         "mnemonic": mnemonic,
         "index": 1
     }
-    response = session.post(retrieve_wallet_url, data=json.dumps(req_data), timeout=REQUEST_TIMEOUT)
+    response = requests.post(retrieve_wallet_url, data=json.dumps(req_data), headers=headers, timeout=REQUEST_TIMEOUT)
     data = json.loads(response.text)['result']
     result['private_key'] = data['privateKey']
     result['public_key'] = data['publicKey']
@@ -216,14 +212,14 @@ def create_wallet_mainchain(session, network):
     return result
 
 
-def create_wallet_sidechain_did(session, network):
+def create_wallet_sidechain_did(headers, network):
     result = {}
     # Create DID
     if network == "mainnet":
         create_did_url = config('MAIN_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_CREATE_DID
     else:
         create_did_url = config('PRIVATE_NET_DID_SERVICE_URL') + settings.DID_SERVICE_API_CREATE_DID
-    response = session.get(create_did_url, timeout=REQUEST_TIMEOUT)
+    response = requests.get(create_did_url, headers=headers, timeout=REQUEST_TIMEOUT)
     data = json.loads(response.text)['result']
     result['mnemonic'] = ''
     result['private_key'] = data['privateKey']
