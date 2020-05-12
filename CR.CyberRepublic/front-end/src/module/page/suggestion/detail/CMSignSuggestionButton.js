@@ -20,7 +20,7 @@ class SignSuggestionButton extends Component {
     return (
       <Content>
         {url ? <QRCode value={url} size={145} /> : <Spin />}
-        <Tip>Scan the QR code above to sign your suggestion.</Tip>
+        <Tip>Scan the QR code above to make this suggestion into proposal.</Tip>
       </Content>
     )
   }
@@ -28,7 +28,7 @@ class SignSuggestionButton extends Component {
   pollingProposalState = () => {
     this.timerDid = setInterval(async () => {
       // polling ela node rpc
-      // make into proposal if proposal's state is Registered
+      // make into proposal if proposal's state on chain is Registered
     }, 3000)
   }
 
@@ -40,8 +40,8 @@ class SignSuggestionButton extends Component {
   }
 
   componentDidMount = async () => {
-    const { id, getCmSignatureUrl } = this.props
-    const rs = await getCmSignatureUrl(id)
+    const { id, getCMSignatureUrl } = this.props
+    const rs = await getCMSignatureUrl(id)
     if (rs && rs.success) {
       this.setState({ url: rs.url })
     }

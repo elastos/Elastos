@@ -408,4 +408,14 @@ export default class extends BaseService {
     }
     return rs
   }
+
+  async getCMSignatureUrl(id) {
+    const path = `${this.prefixPath}/cm-signature-url`
+    const res = await api_request({
+      path,
+      method: 'post',
+      data: { id }
+    })
+    return res
+  }
 }

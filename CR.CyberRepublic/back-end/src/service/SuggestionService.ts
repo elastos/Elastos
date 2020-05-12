@@ -1443,7 +1443,7 @@ export default class extends Base {
     }
   }
 
-  public async cmSignatureCallback(param: any) {
+  public async councilMemberSignatureCallback(param: any) {
     try {
       const jwtToken = param.jwt
       const claims: any = jwt.decode(jwtToken)

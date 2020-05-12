@@ -78,6 +78,9 @@ export default createContainer(
       },
       async getSignature(id) {
         return service.getSignature(id)
+      },
+      async getCMSignatureUrl(id) {
+        return service.getCMSignatureUrl(id)
       }
     }
   }

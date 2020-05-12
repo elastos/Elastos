@@ -581,7 +581,13 @@ export default class extends StandardPage {
   }
 
   renderCouncilActionsNode() {
-    const { isCouncil, isAdmin, isReference, detail } = this.props
+    const {
+      isCouncil,
+      isAdmin,
+      isReference,
+      detail,
+      getCMSignatureUrl
+    } = this.props
     const signature = _.get(detail, 'signature.data')
     const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
 
@@ -614,7 +620,10 @@ export default class extends StandardPage {
       isCouncil &&
       !isReference && (
         <Col xs={24} sm={8}>
-          <CMSignSuggestionButton />
+          <CMSignSuggestionButton
+            getCMSignatureUrl={getCMSignatureUrl}
+            id={detail._id}
+          />
         </Col>
       )
     const needDueDiligenceBtn = isCouncil && (
