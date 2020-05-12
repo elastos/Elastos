@@ -761,6 +761,9 @@ const en = {
   'council.voting.status': 'Status',
   'council.voting.createdAt': 'Created',
   'council.voting.proposedAt': 'Proposed',
+  'council.voting.chainStatus.success':'Chained',
+  'council.voting.chainStatus.fail':'Unchain',
+
 
   'council.voting.type.newMotion': 'New Motion',
   'council.voting.type.motionAgainst': 'Motion Against',
@@ -805,6 +808,8 @@ const en = {
   'council.voting.voteResult.all': 'All',
   'council.voting.voteResult.unvoted': 'Unvoted by me',
 
+  'council.voting.voteResult.onchain':'Vote onchain',
+  
   // Landing
   'landing.cr': 'Cyber Republic',
   'landing.footer.note': 'Stay up to date with Cyber Republic',

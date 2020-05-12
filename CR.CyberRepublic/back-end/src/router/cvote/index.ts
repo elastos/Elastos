@@ -14,8 +14,10 @@ import finish from './finish'
 import unfinish from './unfinish'
 import update_notes from './update_notes'
 import listcrcandidates from './listcrcandidates'
+import onchain from './onchain'
 import all_search from './all_search'
 import get_proposal from './get_proposal'
+import callback from './callback'
 
 export default Base.setRouter([
   {
@@ -87,6 +89,16 @@ export default Base.setRouter([
     path: '/listcrcandidates',
     router: listcrcandidates,
     method: 'post'
+  },
+  {
+    path: '/onchain',
+    router: onchain,
+    method: 'get'
+  },
+  {
+    path: '/callback',
+    router: callback,
+    method: 'get'
   },
   {
     path: '/all_search',

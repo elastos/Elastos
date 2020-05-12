@@ -159,4 +159,13 @@ export default class extends BaseService {
   async updateFilters(filters) {
     this.dispatch(this.selfRedux.actions.filters_update(filters))
   }
+
+  async getReviewProposal(id) {
+    const rs = await api_request({
+      path: `/api/cvote/onchain`,
+      method: 'get',
+      data: {_id : id}
+    })
+    return rs
+  }
 }

@@ -17,6 +17,10 @@ export const CVoteResultSchema = {
   reason: {
     type: String,
     default: ''
+  },
+  txid: {
+    type: String,
+    default: ''
   }
 }
 
@@ -155,6 +159,9 @@ export const CVote = {
     type: String
   },
   payment: {
+    type: String
+  },
+  proposalHash: {
     type: String
   }
 }

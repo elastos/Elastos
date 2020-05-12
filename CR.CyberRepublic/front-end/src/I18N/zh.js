@@ -737,6 +737,8 @@ const zh = {
   'council.voting.status': '状态',
   'council.voting.createdAt': '创建日期',
   'council.voting.proposedAt': '发布日期',
+  'council.voting.chainStatus.success':'已上链',
+  'council.voting.chainStatus.fail':'未上链',
 
   'council.voting.type.newMotion': '新动议',
   'council.voting.type.motionAgainst': '反对动议',
@@ -778,6 +780,8 @@ const zh = {
   'council.voting.voteResult.show': '显示',
   'council.voting.voteResult.all': '所有',
   'council.voting.voteResult.unvoted': '待投票',
+  
+  'council.voting.voteResult.onchain':'投票上链',
 
   // Landing
   'landing.cr': 'Cyber Republic',
