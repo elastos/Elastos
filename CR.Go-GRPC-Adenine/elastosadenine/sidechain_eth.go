@@ -52,6 +52,7 @@ func NewSidechainEth(host string, port int, production bool) *SidechainEth {
 	if production == false {
 		opts = []grpc.DialOption{
 			grpc.WithInsecure(),
+			grpc.WithMaxMsgSize(grpcMaxMsgSize),
 		}
 	} else {
 		config := &tls.Config{
@@ -59,6 +60,7 @@ func NewSidechainEth(host string, port int, production bool) *SidechainEth {
 		}
 		opts = []grpc.DialOption{
 			grpc.WithTransportCredentials(credentials.NewTLS(config)),
+			grpc.WithMaxMsgSize(grpcMaxMsgSize),
 		}
 	}
 	conn, err := grpc.Dial(address, opts...)

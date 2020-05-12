@@ -40,6 +40,7 @@ func NewWallet(host string, port int, production bool) *Wallet {
 	if production == false {
 		opts = []grpc.DialOption{
 			grpc.WithInsecure(),
+			grpc.WithMaxMsgSize(grpcMaxMsgSize),
 		}
 	} else {
 		config := &tls.Config{
@@ -47,6 +48,7 @@ func NewWallet(host string, port int, production bool) *Wallet {
 		}
 		opts = []grpc.DialOption{
 			grpc.WithTransportCredentials(credentials.NewTLS(config)),
+			grpc.WithMaxMsgSize(grpcMaxMsgSize),
 		}
 	}
 	conn, err := grpc.Dial(address, opts...)

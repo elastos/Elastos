@@ -29,6 +29,7 @@ func NewCommon(host string, port int, production bool) *Common {
 	if production == false {
 		opts = []grpc.DialOption{
 			grpc.WithInsecure(),
+			grpc.WithMaxMsgSize(grpcMaxMsgSize),
 		}
 	} else {
 		config := &tls.Config{
@@ -36,6 +37,7 @@ func NewCommon(host string, port int, production bool) *Common {
 		}
 		opts = []grpc.DialOption{
 			grpc.WithTransportCredentials(credentials.NewTLS(config)),
+			grpc.WithMaxMsgSize(grpcMaxMsgSize),
 		}
 	}
 	conn, err := grpc.Dial(address, opts...)

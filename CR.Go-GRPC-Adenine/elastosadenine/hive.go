@@ -42,6 +42,7 @@ func NewHive(host string, port int, production bool) *Hive {
 	if production == false {
 		opts = []grpc.DialOption{
 			grpc.WithInsecure(),
+			grpc.WithMaxMsgSize(grpcMaxMsgSize),
 		}
 	} else {
 		config := &tls.Config{
@@ -49,6 +50,7 @@ func NewHive(host string, port int, production bool) *Hive {
 		}
 		opts = []grpc.DialOption{
 			grpc.WithTransportCredentials(credentials.NewTLS(config)),
+			grpc.WithMaxMsgSize(grpcMaxMsgSize),
 		}
 	}
 	conn, err := grpc.Dial(address, opts...)

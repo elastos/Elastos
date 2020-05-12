@@ -34,6 +34,7 @@ func NewNodeRpc(host string, port int, production bool) *NodeRpc {
 	if production == false {
 		opts = []grpc.DialOption{
 			grpc.WithInsecure(),
+			grpc.WithMaxMsgSize(grpcMaxMsgSize),
 		}
 	} else {
 		config := &tls.Config{
@@ -41,6 +42,7 @@ func NewNodeRpc(host string, port int, production bool) *NodeRpc {
 		}
 		opts = []grpc.DialOption{
 			grpc.WithTransportCredentials(credentials.NewTLS(config)),
+			grpc.WithMaxMsgSize(grpcMaxMsgSize),
 		}
 	}
 	conn, err := grpc.Dial(address, opts...)
