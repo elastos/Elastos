@@ -2500,12 +2500,12 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 
 	// ok
 	txn := s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
-	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.NoError(err)
 
 	// member status is not elected
 	member1.MemberState = crstate.MemberImpeached
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "CR Council Member should be an elected CR members")
 
 	// register cr proposal in voting period
@@ -2513,69 +2513,69 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	tenureHeight = config.DefaultParams.CRCommitteeStartHeight +
 		config.DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
 	s.Chain.crCommittee.InElectionPeriod = false
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "cr proposal tx must not during voting period")
 
 	// recipient is empty
 	s.Chain.crCommittee.InElectionPeriod = true
 	tenureHeight = config.DefaultParams.CRCommitteeStartHeight + 1
 	txn.Payload.(*payload.CRCProposal).Recipient = common.Uint168{}
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "recipient is empty")
 
 	// invalid payload
 	txn.Payload = &payload.CRInfo{}
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "invalid payload")
 
 	// invalid proposal type
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x1000
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "type of proposal should be known")
 
 	// invalid outputs of ELIP.
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x0100
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "ELIP needs to have and only have two budget")
 
 	// invalid budgets.
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x0000
 	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(10 * 1e8)
 	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(10 * 1e8)
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "budgets exceeds 10% of CRC committee balance")
 
 	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(100 * 1e8)
 	s.Chain.crCommittee.CRCCurrentStageAmount = common.Fixed64(100 * 1e8)
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(99 * 1e8)
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "budgets exceeds the balance of CRC committee")
 
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0)
 
 	// CRCouncilMemberSignature is not signed by CR member
 	txn = s.getCRCProposalTx(publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2)
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "CR Council Member should be one of the CR members")
 
 	// invalid owner
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	txn.Payload.(*payload.CRCProposal).OwnerPublicKey = []byte{}
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "invalid owner")
 
 	// invalid owner signature
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	txn.Payload.(*payload.CRCProposal).OwnerPublicKey = publicKey1
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "owner signature check failed")
 
 	// invalid CR owner signature
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	txn.Payload.(*payload.CRCProposal).CRCouncilMemberSignature = []byte{}
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "failed to check CR Council Member signature")
 	// proposals can not more than MaxCommitteeProposalCount
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
@@ -2586,7 +2586,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	}
 	s.Chain.crCommittee.GetProposalManager().ProposalHashes[crcProposal.
 		CRCouncilMemberDID] = proposalHashSet
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight, 0)
 	s.EqualError(err, "proposal is full")
 }
 

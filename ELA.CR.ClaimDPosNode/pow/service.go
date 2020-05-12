@@ -246,6 +246,8 @@ func (pow *Service) GenerateBlock(minerAddr string,
 	txCount := 1
 	totalTxFee := common.Fixed64(0)
 	txs := pow.txMemPool.GetTxsInPool()
+	proposalsUsedAmount := pow.txMemPool.GetProposalsUsedAmount()
+
 	isHighPriority := func(tx *types.Transaction) bool {
 		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() ||
 			tx.IsSideChainPowTx() || tx.IsUpdateVersion() ||
@@ -284,7 +286,7 @@ func (pow *Service) GenerateBlock(minerAddr string,
 			log.Warn("check transaction context failed, get transaction reference failed")
 			break
 		}
-		errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx, references)
+		errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx, references, proposalsUsedAmount)
 		if errCode != nil {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue

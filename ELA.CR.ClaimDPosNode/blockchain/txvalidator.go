@@ -95,7 +95,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32,
 
 // CheckTransactionContext verifies a transaction with history transaction in ledger
 func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
-	txn *Transaction, references map[*Input]Output) elaerr.ELAError {
+	txn *Transaction, references map[*Input]Output, proposalsUsedAmount common.Fixed64) elaerr.ELAError {
 	// check if duplicated with transaction in ledger
 	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
@@ -214,7 +214,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		}
 
 	case CRCProposal:
-		if err := b.checkCRCProposalTransaction(txn, blockHeight); err != nil {
+		if err := b.checkCRCProposalTransaction(txn, blockHeight, proposalsUsedAmount); err != nil {
 			log.Warn("[checkCRCProposalTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
@@ -2119,7 +2119,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 }
 
 func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
-	blockHeight uint32) error {
+	blockHeight uint32, proposalsUsedAmount common.Fixed64) error {
 	proposal, ok := txn.Payload.(*payload.CRCProposal)
 	if !ok {
 		return errors.New("invalid payload")
@@ -2205,7 +2205,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if amount > b.crCommittee.CRCCurrentStageAmount*CRCProposalBudgetsPercentage/100 {
 		return errors.New("budgets exceeds 10% of CRC committee balance")
 	} else if amount > b.crCommittee.CRCCurrentStageAmount-
-		b.crCommittee.CRCCommitteeUsedAmount {
+		b.crCommittee.CRCCommitteeUsedAmount-proposalsUsedAmount {
 		return errors.New("budgets exceeds the balance of CRC committee")
 	} else if amount < 0 {
 		return errors.New("budgets is invalid")
