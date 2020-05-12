@@ -25,10 +25,18 @@ class SignSuggestionButton extends Component {
     )
   }
 
+  makeIntoProposal = async () => {
+    const { id, proposeSuggestion, history } = this.props
+    const param = { suggestionId: id }
+    const res = await proposeSuggestion(param)
+    history.push(`/proposals/${res._id}`)
+  }
+
   pollingProposalState = () => {
     this.timerDid = setInterval(async () => {
       // polling ela node rpc
       // make into proposal if proposal's state on chain is Registered
+      await this.makeIntoProposal()
     }, 3000)
   }
 
@@ -36,7 +44,7 @@ class SignSuggestionButton extends Component {
     if (this.timerDid) {
       return
     }
-    this.pollingProposalState()
+    // this.pollingProposalState()
   }
 
   componentDidMount = async () => {

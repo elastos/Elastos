@@ -586,7 +586,9 @@ export default class extends StandardPage {
       isAdmin,
       isReference,
       detail,
-      getCMSignatureUrl
+      getCMSignatureUrl,
+      proposeSuggestion,
+      history
     } = this.props
     const signature = _.get(detail, 'signature.data')
     const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
@@ -623,6 +625,8 @@ export default class extends StandardPage {
           <CMSignSuggestionButton
             getCMSignatureUrl={getCMSignatureUrl}
             id={detail._id}
+            proposeSuggestion={proposeSuggestion}
+            history={history}
           />
         </Col>
       )
@@ -810,29 +814,6 @@ export default class extends StandardPage {
 
   linkSuggestionDetail(suggestionId) {
     this.props.history.push(`/suggestion/${suggestionId}`)
-  }
-
-  makeIntoPropose = async () => {
-    const id = _.get(this.props, 'match.params.id')
-    const { current_user_id, profile, history } = this.props.user
-    const fullName = `${profile.firstName} ${profile.lastName}`
-    const { proposeSuggestion } = this.props
-
-    const param = {
-      proposedBy: fullName,
-      proposer: current_user_id,
-      suggestionId: id
-    }
-
-    this.setState({ proposeLoading: true })
-
-    try {
-      const res = await proposeSuggestion(param)
-      this.props.history.push(`/proposals/${res._id}`)
-    } catch (error) {
-      this.setState({ proposeLoading: false })
-      logger.error(error)
-    }
   }
 
   needDueDiligence = async () => {
