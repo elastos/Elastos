@@ -17,5 +17,5 @@ cp .env.example test/.env;
 Run sample program:
 ```
 cd test
-go run test/sample.go;
+go run sample.go;
 ```
