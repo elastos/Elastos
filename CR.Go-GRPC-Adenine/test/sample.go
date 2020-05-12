@@ -141,7 +141,7 @@ func uploadAndSignDemo(grpcServerHost string, grpcServerPort int, production boo
 	log.Println("--> Upload and Sign")
 	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
 	defer hive.Close()
-	response := hive.UploadAndSign(apiKeyToUse, didToUse, network, privateKeyToUse, "test/sample.txt")
+	response := hive.UploadAndSign(apiKeyToUse, didToUse, network, privateKeyToUse, "sample.txt")
 	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
 		log.Printf("Output: %s", response.Output)
@@ -160,7 +160,7 @@ func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production boo
 		"QmSs4TToAodQr5VqFvTtcqgowhq8AdV2tLAzF7STrQMXD8")
 	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		downloadPath := "test/sample_from_hive.txt"
+		downloadPath := "sample_from_hive.txt"
 		log.Printf("Download Path : %s", downloadPath)
 		// Open a new file for writing only
 		file, err := os.OpenFile(
@@ -271,7 +271,7 @@ func deployETHContractDemo(grpcServerHost string, grpcServerPort int, production
 		address    = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
 		privateKey = "0x35a12175385b24b2f906d6027d440aac7bd31e1097311fa8e3cf21ceac7c4809"
 		gas        = 2000000
-		fileName   = "test/HelloWorld.sol"
+		fileName   = "HelloWorld.sol"
 	)
 	response := sidechainEth.DeployEthContract(apiKeyToUse, didToUse, network, address, privateKey, gas, fileName)
 	if response.Status {

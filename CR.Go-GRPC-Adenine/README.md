@@ -4,7 +4,7 @@ This repository contains the go client library to interact with [Elastos Smart W
 ## Prerequisites
 First, install Go 1.13+: [https://golang.org/doc/install](https://golang.org/doc/install)
 
-## Instructions on how to build and run locally
+## Instructions on how to build and run sample program
 Clone the repository
 ```
 git clone https://github.com/cyber-republic/go-grpc-adenine.git
@@ -12,9 +12,10 @@ cd go-grpc-adenine
 ```
 Setup environment variables and update variables if needed:
 ```
-cp .env.example .env;
+cp .env.example test/.env;
 ```
-Run sample.go:
+Run sample program:
 ```
-go run sample.go
+cd test
+go run test/sample.go;
 ```

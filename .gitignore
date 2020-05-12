@@ -1,5 +1,5 @@
 .idea/
 
-.env
-
 *.DS_Store
+
+test/.env
