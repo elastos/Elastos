@@ -26,7 +26,8 @@ import signatureUrl from './signature_url'
 import signatureCallback from './signature_callback'
 import checkSignature from './check_signature'
 import getSuggestion from './getSuggestion'
-import councilMemberSignatureUrl from './cm_signature_url'
+import cmSignatureUrl from './cm_signature_url'
+import cmSignatureCallback from './cm_signature_callback'
 
 export default Base.setRouter([
   {
@@ -166,7 +167,12 @@ export default Base.setRouter([
   },
   {
     path: '/cm-signature-url',
-    router: councilMemberSignatureUrl,
+    router: cmSignatureUrl,
+    method: 'post'
+  },
+  {
+    path: '/cm-signature-callback',
+    router: cmSignatureCallback,
     method: 'post'
   }
 ])

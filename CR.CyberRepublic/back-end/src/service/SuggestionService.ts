@@ -1442,4 +1442,87 @@ export default class extends Base {
       return { success: false }
     }
   }
+
+  public async cmSignatureCallback(param: any) {
+    try {
+      const jwtToken = param.jwt
+      const claims: any = jwt.decode(jwtToken)
+      if (_.get(claims, 'req')) {
+        return {
+          code: 400,
+          success: false,
+          message: 'Problems parsing jwt token.'
+        }
+      }
+
+      const payload: any = jwt.decode(
+        claims.req.slice('elastos://crproposal/'.length)
+      )
+      if (!_.get(payload, 'suggestionId')) {
+        return {
+          code: 400,
+          success: false,
+          message: 'Problems parsing jwt token of CR website.'
+        }
+      }
+
+      const suggestion = await this.model.findById({
+        _id: payload.suggestionId
+      })
+
+      if (!suggestion) {
+        return {
+          code: 400,
+          success: false,
+          message: 'There is no this suggestion.'
+        }
+      }
+
+      const rs: any = getDidPublicKey(claims.iss)
+      if (!_.get(rs, 'publicKey')) {
+        return {
+          code: 400,
+          success: false,
+          message: `Can not get your did's public key.`
+        }
+      }
+
+      // verify response data from ela wallet
+      return jwt.verify(
+        jwtToken,
+        rs.publicKey,
+        async (err: any, decoded: any) => {
+          if (err) {
+            return {
+              code: 401,
+              success: false,
+              message: 'Verify signatrue failed.'
+            }
+          } else {
+            try {
+              await this.model.update(
+                { _id: payload.suggestionId },
+                { $set: { proposalHash: { data: decoded.data } } }
+              )
+              return { code: 200, success: true, message: 'Ok' }
+            } catch (err) {
+              logger.error(err)
+              return {
+                code: 500,
+                success: false,
+                message: 'Something went wrong'
+              }
+            }
+          }
+        }
+      )
+    } catch (err) {
+      logger.error(err)
+      return {
+        code: 500,
+        success: false,
+        message: 'Something went wrong'
+      }
+    }
+  }
 }
