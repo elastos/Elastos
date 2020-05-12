@@ -980,50 +980,55 @@ export default class extends Base {
     return ret
   }
 
-  // vote onchain
+  // council vote onchain
   public async onchain(param) {
-    const db_cvote = this.getDBModel('CVote')
-    const userId = _.get(this.currentUser, '_id')
-    const { _id } = param
-    const jwtClaims = {
-      iss: process.env.APP_DID,
-      callbackurl: `${process.env.API_URL}/api/CVote/callback`,
-      website:{
-        domain: process.env.SERVER_URL,
-        logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
-      },
-      command:"",
-      data: {
-        proposalHash: "",
-        voteResult: [],
-        opinionHash: "",
-        did: ""
+    try{
+      const db_cvote = this.getDBModel('CVote')
+      const userId = _.get(this.currentUser, '_id')
+      const { _id } = param
+      const jwtClaims = {
+        iss: process.env.APP_DID,
+        callbackurl: `${process.env.API_URL}/api/CVote/callback`,
+        website:{
+          domain: process.env.SERVER_URL,
+          logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+        },
+        command:"",
+        data: {
+          proposalHash: "",
+          voteResult: [],
+          opinionHash: "",
+          did: ""
+        }
       }
-    }
-    const cur = await db_cvote.findOne({ _id })
-   
-    if (!this.canManageProposal()) {
-      throw 'cvoteservice.unfinishById - not council'
-    }
-    if (!cur) {
-      throw 'cvoteservice.update - invalid proposal id'
-    }
-    // jwtClaims.data.proposalHash = utilCrypto.sha256(utilCrypto.sha256(cur.toLocaleString()))
-    jwtClaims.data.proposalHash = cur.proposalHash
-    jwtClaims.data.voteResult = cur.voteResult
-  
-    cur.voteResult.forEach(function(res){
-      if(res.votedBy.equals(userId)){
-        jwtClaims.data.opinionHash = utilCrypto.sha256(utilCrypto.sha256(res.reason))
+      const cur = await db_cvote.findOne({ _id })
+    
+      if (!this.canManageProposal()) {
+        throw 'cvoteservice.unfinishById - not council'
       }
-    })
-  
-    const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
-      expiresIn: '7d', 
-      algorithm: 'ES256' 
-    })
-    const url = `elastos://credaccess/${jwtToken}`
-    return { success: true, url}
+      if (!cur) {
+        throw 'cvoteservice.update - invalid proposal id'
+      }
+
+      jwtClaims.data.proposalHash = cur.proposalHash
+      jwtClaims.data.voteResult = cur.voteResult
+    
+      cur.voteResult.forEach(function(res){
+        if(res.votedBy.equals(userId)){
+          jwtClaims.data.opinionHash = utilCrypto.sha256(utilCrypto.sha256(res.reason))
+        }
+      })
+    
+      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
+        expiresIn: '7d', 
+        algorithm: 'ES256' 
+      })
+      const url = `elastos://credaccess/${jwtToken}`
+      return { success: true, url}
+    } catch(err) {
+      logger.error(err)
+      return { success:false }
+    }
   }
 
   // council callback
@@ -1031,7 +1036,7 @@ export default class extends Base {
     try {
       const jwtToken = param.jwt
       const claims: any = jwt.decode(jwtToken)
-      if(_.get(claims,'req')){
+      if(!_.get(claims,'req')){
         return{
           code: 400,
           success: false,
@@ -1042,8 +1047,7 @@ export default class extends Base {
       const payload:any = jwt.decode( 
         claims.req.slice("elastos://credaccess/".length)
       )
-      
-      if(!_.get(payload,'proposalHash')){
+      if(!_.get(payload.data,'proposalHash')){
         return {
           code: 400,
           success: false,
@@ -1052,8 +1056,8 @@ export default class extends Base {
       }
 
       const db_cvote = this.getDBModel('CVote')
-      const cur = await db_cvote.findById({
-        _id: payload.proposalHash
+      const cur = await db_cvote.find({
+        'proposalHash': payload.data.proposalHash
       })
       if(!cur){
         return {
@@ -1065,7 +1069,13 @@ export default class extends Base {
 
       const votedBy = _.get(this.currentUser, '_id')
       const proposalHash = payload.data.proposalHash
-
+     
+      const voteResult = _.find(cur[0].voteResult,function(o){
+        if (o.votedBy.equals(votedBy)){
+          return o
+        }
+      })
+      console.log(voteResult)
       const rs: any = await getDidPublicKey(claims.iss)
       if(!rs) {
         await db_cvote.update(
@@ -1076,13 +1086,22 @@ export default class extends Base {
           {
             $set: {
               'voteResult.$.signature': { message: `Can not get your did's public key. ` }
+            },
+            $push: {
+              voteHistory: {
+                'value': voteResult.value,
+                'reason': voteResult.reason,
+                'txid': voteResult.txid,
+                'votedBy': voteResult.votedBy,
+                'signature': voteResult.signature
+              }
             }
           }
         )
         return {
           code: 400,
           success: false,
-          message: `Can not get yur did's public key`
+          message: `Can not get your did's public key`
         }
       }
 
@@ -1108,13 +1127,8 @@ export default class extends Base {
               message: 'Verify signatrue failed.'
             }
           } else {
-            const voteResult = _.find(payload.data.voteResult,function(o){
-              if (o.votedBy == votedBy){
-                return o
-              }
-            })
             try {
-              await db_cvote.findOneandUpdate(
+              await db_cvote.update(
                 {
                    'proposalHash': proposalHash,
                    'voteResult.votedBy': votedBy
@@ -1122,12 +1136,16 @@ export default class extends Base {
                 {
                   $set: {
                     'voteResult.$.txid': claims.data,
-                    'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINING
+                    'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINING,
+                    'voteResult.$.signature': { data: decoded.data }
                   },
                   $push:{
                     voteHistory: {
-                      ...voteResult,
-                      'txid': claims.data
+                      'value': voteResult.value,
+                      'reason': voteResult.reason,
+                      'txid': voteResult.txid,
+                      'votedBy': voteResult.votedBy,
+                      'signature': voteResult.signature
                     }
                   }
                 }
@@ -1151,9 +1169,7 @@ export default class extends Base {
         success: false,
         message: 'Something went wrong'
       }
-    }
-    
-    
+    } 
   }
 
   // member callback

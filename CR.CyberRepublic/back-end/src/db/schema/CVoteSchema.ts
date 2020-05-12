@@ -21,7 +21,8 @@ export const CVoteResultSchema = {
   txid: {
     type: String,
     default: ''
-  }
+  },
+  signature: { data: String, message: String }
 }
 
 export const CVoteHistorySchema = {

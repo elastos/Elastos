@@ -737,8 +737,10 @@ const zh = {
   'council.voting.status': '状态',
   'council.voting.createdAt': '创建日期',
   'council.voting.proposedAt': '发布日期',
-  'council.voting.chainStatus.success':'已上链',
-  'council.voting.chainStatus.fail':'未上链',
+  'council.voting.chainStatus.chained':'已上链',
+  'council.voting.chainStatus.chaining':'上链中',
+  'council.voting.chainStatus.unchain':'未上链',
+  'council.voting.chainStatus.failed':'上链失败',
 
   'council.voting.type.newMotion': '新动议',
   'council.voting.type.motionAgainst': '反对动议',

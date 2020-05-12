@@ -2,23 +2,30 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import I18N from '@/I18N'
 import _ from 'lodash'
+import OnChain from '../../detail/OnChain'
 import Translation from '@/module/common/Translation/Container'
 
 import { Container, ResultRow, Reason, Label, List, Item, Avatar, StyledAvatarIcon } from './style'
 
-const Component = ({ label, type, dataList }) => {
-  const voteStatus = I18N.get('council.voting.chainStatus.success')
+const Component = ({ label, type, dataList,id,getReviewProposal,voteResult }) => {
   const votesNode = _.map(dataList, (data, key) => {
     // const isReject = type === CVOTE_RESULT.REJECT
     const userNode = (
       <Item key={key}>
         {data.avatar ? <Avatar src={data.avatar} alt="voter avatar" /> : <StyledAvatarIcon />}
         <div>{data.name}</div>
+        <div><OnChain getReviewProposal={getReviewProposal} _id={id}></OnChain></div>
       </Item>
     )
-
+    
     const googleNode = data.reason && <div style={{ marginTop: '0.5rem'}}><Translation text={data.reason} /></div>
-
+  
+    let voteStatus = voteResult[0].status
+    if(voteStatus == undefined){
+      voteStatus = I18N.get(`council.voting.chainStatus.unchain`)
+    }else{
+       voteStatus = I18N.get(`council.voting.chainStatus.${voteResult[0].status}`)
+    }
     // if (!isReject) return userNode
     // show reason for all vote type
     const reasonNode = (
@@ -32,9 +39,10 @@ const Component = ({ label, type, dataList }) => {
           )
         })}
         {googleNode}
+        {voteStatus}
       </Reason>
     )
-
+    
     return (
       <ResultRow key={key}>
         {userNode}
@@ -42,11 +50,10 @@ const Component = ({ label, type, dataList }) => {
       </ResultRow>
     )
   })
-
+  
   return (
     <Container>
-      {/* <Label>{label}</Label> */}
-      <Label>{label}({voteStatus})</Label>
+      <Label>{label}</Label>
       <List type={type}>{votesNode}</List>
     </Container>
   )

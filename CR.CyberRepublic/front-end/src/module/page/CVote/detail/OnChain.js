@@ -3,9 +3,8 @@ import styled from 'styled-components'
 import { Popover, Spin } from 'antd'
 import I18N from '@/I18N'
 import QRCode from 'qrcode.react'
-import { supportsHistory } from 'history/DOMUtils'
 
-class ProfileDid extends Component {
+class OnChainButton extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -36,6 +35,9 @@ class ProfileDid extends Component {
   }
 
   handleAssociate = async () => {
+    if (this.timerDid){
+      return
+    }
     this.pollingDid()
   }
 
@@ -45,6 +47,10 @@ class ProfileDid extends Component {
     if (rs && rs.success) {
       this.setState({ url: rs.url })
     }
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerDid)
   }
 
   handleVisibleChange = visible => {
@@ -59,7 +65,13 @@ class ProfileDid extends Component {
       domain = 'idchain'
     }
     return (
-        <Popover content={this.qrCode()} trigger="click" placement="right">
+        <Popover 
+        content={this.qrCode()} 
+        trigger="click" 
+        placement="top"
+        visible={this.state.visible}
+        onVisibleChange={this.handleVisibleChange}
+        >
             <Button onClick={this.handleAssociate}>
                 {I18N.get('council.voting.voteResult.onchain')}
             </Button>
@@ -68,7 +80,7 @@ class ProfileDid extends Component {
   }
 }
 
-export default ProfileDid
+export default OnChainButton
 
 const Button = styled.span`
   display: inline-block;

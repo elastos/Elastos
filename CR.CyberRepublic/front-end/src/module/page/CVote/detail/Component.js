@@ -24,7 +24,6 @@ import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 import ElipPreamble from './ElipPreamble'
 import Tracking from '../tracking/Container'
-import OnChain from './OnChain'
 import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
@@ -848,6 +847,8 @@ class C extends StandardPage {
       )
     }
 
+    const { match, getReviewProposal } = this.props
+    const id = _.get(match, 'params.id')
     const title = <h4>{I18N.get('council.voting.councilMembersVotes')}</h4>
     const detail = _.map(stats, (statArr, key) => {
       const type = CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED
@@ -855,17 +856,16 @@ class C extends StandardPage {
       const props = {
         dataList: statArr,
         type,
-        label
+        label,
+        id,
+        getReviewProposal,
+        voteResult
       }
       return <VoteResultComponent {...props} key={key} />
     })
-    const { match, getReviewProposal } = this.props
-    const id = _.get(match, 'params.id')
-    // const _id = '5ea53e2bb0461a06630c0227'
     return (
       <div id="vote">
         {title}
-        <OnChain getReviewProposal={getReviewProposal} _id={id}></OnChain>
         <div>{detail}</div>
       </div>
     )
