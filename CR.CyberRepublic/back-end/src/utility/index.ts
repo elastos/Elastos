@@ -7,13 +7,14 @@ import mail from './mail'
 import validate from './validate'
 import sso from './sso'
 import user from './user'
+import timestamp from './timestamp'
 import * as permissions from './permissions'
 import * as logger from './logger'
 const _ = require('lodash')
 const { PublicKey } = require('bitcore-lib-p256')
 const jwkToPem = require('jwk-to-pem')
 
-export { utilCrypto, sso, user, validate, permissions, mail, logger }
+export { utilCrypto, sso, user, timestamp, validate, permissions, mail, logger }
 
 export const getEnv = () => process.env.NODE_ENV
 
