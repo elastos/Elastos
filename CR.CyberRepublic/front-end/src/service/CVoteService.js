@@ -173,7 +173,7 @@ export default class extends BaseService {
 
   async getReviewProposal(id) {
     const rs = await api_request({
-      path: `${this.prefixPath}/onchain`,
+      path: `${this.prefixPath}/signature`,
       method: 'post',
       data: { id }
     })

@@ -985,7 +985,7 @@ export default class extends Base {
     try{
       const db_cvote = this.getDBModel('CVote')
       const userId = _.get(this.currentUser, '_id')
-      const { _id } = param
+      const { id } = param
       const jwtClaims = {
         iss: process.env.APP_DID,
         callbackurl: `${process.env.API_URL}/api/CVote/callback`,
@@ -1001,7 +1001,7 @@ export default class extends Base {
           did: ""
         }
       }
-      const cur = await db_cvote.findOne({ _id })
+      const cur = await db_cvote.findOne({ _id: id })
     
       if (!this.canManageProposal()) {
         throw 'cvoteservice.unfinishById - not council'
@@ -1066,7 +1066,6 @@ export default class extends Base {
           message: 'There is no this proposal'
         }
       }
-
       const votedBy = _.get(this.currentUser, '_id')
       const proposalHash = payload.data.proposalHash
      
@@ -1075,7 +1074,6 @@ export default class extends Base {
           return o
         }
       })
-      console.log(voteResult)
       const rs: any = await getDidPublicKey(claims.iss)
       if(!rs) {
         await db_cvote.update(
@@ -1170,6 +1168,50 @@ export default class extends Base {
         message: 'Something went wrong'
       }
     } 
+  }
+
+  public async checkSignature(param: any) {
+    const { id } = param
+    const db_cvote = this.getDBModel('CVote')
+    const proposal = await db_cvote.find({ _id: id})
+    if (proposal){
+      const signature = _.get(proposal, 'proposal.voteResult.signature')
+      if(signature) {
+        return { success: true, data: proposal}
+      }
+      const message = _.get(proposal, 'proposal.voteResult.message')
+      if(message) {
+        return { success: true, data: proposal}
+      }
+    } else {
+      return {
+        success: false
+      }
+    }
+
+  }
+
+  // according to txid polling vote status
+  public async pollVoteChain() {
+    const txid = ''
+    const status = ''
+
+    const db_cvote = this.getDBModel('CVote')
+
+    try{
+      await db_cvote.update(
+        {
+          'voteResult.txid': txid
+        },
+        {
+          $set:{
+            'voteResult.$.status': status
+          }
+        }
+      )
+    } catch(err) {
+      logger.error(err)
+    }
   }
 
   // member callback
