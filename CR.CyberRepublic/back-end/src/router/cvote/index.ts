@@ -18,6 +18,7 @@ import onchain from './onchain'
 import all_search from './all_search'
 import get_proposal from './get_proposal'
 import callback from './callback'
+import check_signature from './check_signature'
 
 export default Base.setRouter([
   {
@@ -91,9 +92,14 @@ export default Base.setRouter([
     method: 'post'
   },
   {
-    path: '/onchain',
+    path: '/reviewproposal-url',
     router: onchain,
-    method: 'get'
+    method: 'post'
+  },
+  {
+    path: '/signature',
+    router: check_signature,
+    method: 'post'
   },
   {
     path: '/callback',
