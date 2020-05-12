@@ -36,7 +36,6 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -59,7 +58,9 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
-import org.elastos.wallet.ela.ui.Assets.bean.RecieveJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.CreateProposalJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.LoginRecieveJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.RecieveJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.AssetDetailsFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.CreateSignReadOnlyWalletFragment;
@@ -82,8 +83,10 @@ import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.bean.MessageEntity;
 import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
+import org.elastos.wallet.ela.ui.proposal.fragment.SuggestionsInfoFragment;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.JwtUtils;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.MyUtil;
 import org.elastos.wallet.ela.utils.QrBean;
@@ -294,7 +297,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         result = result.replace("elastos:", "");
         if (result.startsWith("//credaccess/")) {
             //did
-            decodeJwt(result);
+            decodeDIDJwt(result);
+
+        } else if (result.startsWith("//crproposal/")) {
+            //社区提案的二维码
+            decodeProposalJwt(result);
 
         } else {
             //钱包转账地址情况 elastos:EJQcgWDazveSy436TauPJ3R8PCYpifp6HA?amount=6666.00000000
@@ -304,25 +311,39 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
     }
 
-    private void decodeJwt(String result) {
+    private void decodeProposalJwt(String result) {
+        try {
+            ////0 普通单签 1单签只读 2普通多签 3多签只读
+            if (wallet.getType() != 0) {
+                toErroScan(scanResult);
+            }
+            result = result.replace("//crproposal/", "");
+            String payload = JwtUtils.getJwtPayload(result);
+            CreateProposalJwtEntity recieveJwtEntity = JSON.parseObject(payload, CreateProposalJwtEntity.class);
+            String elaString = recieveJwtEntity.getIss();
+            elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
+            // Log.e("Base64", "Base64---->" + header + "\n" + payload + "\n" + signature);.0
+            new WalletManagePresenter().forceDIDResolve(elaString, this, recieveJwtEntity);
+        } catch (Exception e) {
+            toErroScan(scanResult);
+        }
+
+
+    }
+
+    private void decodeDIDJwt(String result) {
         try {
             ////0 普通单签 1单签只读 2普通多签 3多签只读
             if (wallet.getType() != 0) {
                 toErroScan(scanResult);
             }
             result = result.replace("//credaccess/", "");
-            String[] jwtParts = result.split("\\.");
-            // String base64Header = jwtParts[0];
-            String base64Payload = jwtParts[1];
-            // String unSignature = base64Header + "." + base64Payload;
-            //  String signature = jwtParts[2];
-            //  String header = new String(org.elastos.did.util.Base64.decode(base64Header));
-            String payload = new String(Base64.decode(base64Payload, Base64.URL_SAFE));
-            RecieveJwtEntity recieveJwtEntity = JSON.parseObject(payload, RecieveJwtEntity.class);
+            String payload = JwtUtils.getJwtPayload(result);
+            LoginRecieveJwtEntity recieveJwtEntity = JSON.parseObject(payload, LoginRecieveJwtEntity.class);
             String elaString = recieveJwtEntity.getIss();
             elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
             // Log.e("Base64", "Base64---->" + header + "\n" + payload + "\n" + signature);.0
-            new WalletManagePresenter().forceDIDResolve(elaString, this);
+            new WalletManagePresenter().forceDIDResolve(elaString, this, recieveJwtEntity);
         } catch (Exception e) {
             toErroScan(scanResult);
         }
@@ -814,7 +835,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         Bundle bundle = new Bundle();
         switch (analyzeElastosData) {
             case 0:
-                toErroScan("elastos:" + parts[0] + (parts.length > 1 ? "" : ("?" + parts[1])));
+                toErroScan("elastos:" + parts[0] + (parts.length == 1 ? "" : ("?" + parts[1])));
                 break;
             case 2:
                 bundle.putString("amount", parts[1].replace("amount=", ""));
@@ -878,41 +899,44 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         switch (methodName) {
             case "forceDIDResolve":
                 //未传递paypas网站提供的did验签
-                verifyDID((DIDDocument) ((CommmonObjEntity) baseEntity).getData());
+                verifyDID((DIDDocument) ((CommmonObjEntity) baseEntity).getData(), (RecieveJwtEntity) o);
 
 
                 break;
             case "DIDResolveWithTip":
-                //传递paypas是判断当前钱包有没有did
-                String webName= (String) o;//网站did的name
-                curentHasDID((DIDDocument) ((CommmonObjEntity) baseEntity).getData(),webName);
+                curentHasDID((DIDDocument) ((CommmonObjEntity) baseEntity).getData(), o);
                 break;
         }
     }
 
-    private void verifyDID(DIDDocument didDocument) {
-        if (didDocument == null) {
-            toErroScan(scanResult);
-        } else {
-            //验签
+    private void verifyDID(DIDDocument didDocument, RecieveJwtEntity jwtEntity) {
+        //验签
+        if (jwtEntity instanceof LoginRecieveJwtEntity) {
+            //did
             String result = scanResult.replace("elastos://credaccess/", "");
-            String[] jwtParts = result.split("\\.");
-            String unSignature = jwtParts[0] + "." + jwtParts[1];
-            String signature = jwtParts[2];
-            if (didDocument.verify(signature, unSignature.getBytes())) {
-                // 验签成功
-                // 验签成功
-                //先判断本地是否有did
-                String name=getMyDID().getName(didDocument);
+            if (JwtUtils.verifyJwt(result, didDocument)) {
+                String name = getMyDID().getName(didDocument);
                 new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, name);
-            } else {
-                //验签失败
-                toErroScan(scanResult);
+                return;
             }
+        } else if (jwtEntity instanceof CreateProposalJwtEntity) {
+            //proposal
+            String result = scanResult.replace("elastos://crproposal/", "");
+            if (JwtUtils.verifyJwt(result, didDocument)) {
+                if (((CreateProposalJwtEntity) jwtEntity).getCommand().equals("createsuggestion")) {
+                    //发建议
+                    new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, jwtEntity);
+                }
+                return;
+            }
+
         }
+        //验签失败
+        toErroScan(scanResult);
+
     }
 
-    private void curentHasDID(DIDDocument didDocument,String webName) {
+    private void curentHasDID(DIDDocument didDocument, Object o) {
         if (didDocument == null) {
             showToast(getString(R.string.notcreatedid));
             return;
@@ -928,10 +952,31 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         } catch (DIDStoreException e) {
             e.printStackTrace();
         }
+
+        if (o instanceof CreateProposalJwtEntity) {
+            //propaosal
+            CreateProposalJwtEntity entity = (CreateProposalJwtEntity) o;
+            if (entity.getCommand().equals("createsuggestion")) {
+                toSuggest(entity);
+            }
+        } else {
+            toAuthorization((String) o);
+        }
+    }
+
+
+    private void toSuggest(CreateProposalJwtEntity entity) {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("wallet", wallet);
+        bundle.putParcelable("JwtEntity", entity);// 网站did的name
+        ((BaseFragment) getParentFragment()).start(SuggestionsInfoFragment.class, bundle);
+    }
+
+    private void toAuthorization(String webName) {
         Bundle bundle = new Bundle();
         bundle.putString("scanResult", scanResult);
         bundle.putParcelable("wallet", wallet);
-        bundle.putString("webName", webName);
+        bundle.putString("webName", webName);// 网站did的name
         ((BaseFragment) getParentFragment()).start(AuthorizationFragment.class, bundle);
     }
 

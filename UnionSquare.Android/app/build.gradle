@@ -208,7 +208,7 @@ dependencies {
     //implementation 'com.tencent.bugly:crashreport:latest.release'
     //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.1.9
     //implementation 'com.tencent.bugly:nativecrashreport:latest.release'
-    implementation 'org.elastos:did:0.0.20'
+    implementation 'org.elastos:did:0.0.22'
     implementation 'com.caverock:androidsvg:1.3'
     /*implementation 'io.jsonwebtoken:jjwt-api:0.11.0'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.0'
