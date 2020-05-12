@@ -761,8 +761,10 @@ const en = {
   'council.voting.status': 'Status',
   'council.voting.createdAt': 'Created',
   'council.voting.proposedAt': 'Proposed',
-  'council.voting.chainStatus.success':'Chained',
-  'council.voting.chainStatus.fail':'Unchain',
+  'council.voting.chainStatus.chained':'Chained',
+  'council.voting.chainStatus.chaining':'Chaining',
+  'council.voting.chainStatus.unchain':'UnChain',
+  'council.voting.chainStatus.failed':'Failed',
 
 
   'council.voting.type.newMotion': 'New Motion',
