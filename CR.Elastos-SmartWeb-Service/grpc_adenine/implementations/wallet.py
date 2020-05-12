@@ -147,7 +147,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         status = True
         amount = 5
         if chain == "eth":
-            currency_representation = "ELA/ETHSC"
+            currency_representation = "ELAETHSC"
             if len(WalletAddressesETH) < 10000:
                 WalletAddressesETH.add(address)
             else:
@@ -163,9 +163,9 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                 amount = 10
                 currency_representation = "ELA"
             if chain == "did":
-                currency_representation = "ELA/DIDSC"
+                currency_representation = "ELADIDSC"
             elif chain == "token":
-                currency_representation = "ELA/TOKENSC"
+                currency_representation = "ELATOKENSC"
 
         # generate jwt token
         jwt_info = {

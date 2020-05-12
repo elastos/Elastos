@@ -29,7 +29,7 @@ class Cron:
         return data['address'], data['privateKey']
 
     def cronjob_send_ela(self):
-        logging.debug("Running cron job to send ELA, ELA/DIDSC and ELA/DIDTOKEN")
+        logging.debug("Running cron job to send ELA, ELADIDSC and ELATOKENSC")
         threading.Timer(300, self.cronjob_send_ela).start()
         if len(WalletAddresses) == 0:
             return
@@ -91,7 +91,7 @@ class Cron:
             transfer_ela_url = config('PRIVATE_NET_WALLET_SERVICE_URL') + settings.WALLET_API_CROSSCHAIN_TRANSFER
             response = requests.post(transfer_ela_url, data=json.dumps(req_data), headers=self.headers, timeout=REQUEST_TIMEOUT)
             tx_hash = json.loads(response.text)['result']
-            logging.debug("Transferred 5 ELA/DIDSC to {0}. Tx Hash: {1}".format(address, tx_hash))
+            logging.debug("Transferred 5 ELADIDSC to {0}. Tx Hash: {1}".format(address, tx_hash))
 
         # Transfer from mainchain to token sidechain
         for address, wallet in addrs_for_token.items():
@@ -109,7 +109,7 @@ class Cron:
                                settings.WALLET_API_CROSSCHAIN_TRANSFER_TOKENSIDECHAIN
             response = requests.post(transfer_ela_url, data=json.dumps(req_data), headers=self.headers, timeout=REQUEST_TIMEOUT)
             tx_hash = json.loads(response.text)['result']
-            logging.debug("Transferred 5 ELA/TOKENSC to: {0}. Tx Hash: {1}".format(address, tx_hash))
+            logging.debug("Transferred 5 ELATOKENSC to: {0}. Tx Hash: {1}".format(address, tx_hash))
 
         WalletAddresses.clear()
 
@@ -135,5 +135,5 @@ class Cron:
             }
             signed_tx = web3.eth.account.sign_transaction(transaction, config('SIDECHAIN_ETH_WALLET_PRIVATE_KEY'))
             tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
-            logging.debug("Transferred 5 ELA/ETHSC to: {0} Tx Hash: {1}".format(address, web3.toHex(tx_hash)))
+            logging.debug("Transferred 5 ELAETHSC to: {0} Tx Hash: {1}".format(address, web3.toHex(tx_hash)))
         WalletAddressesETH.clear()
