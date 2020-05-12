@@ -44,6 +44,7 @@ import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
 import Milestones from '@/module/form/SuggestionForm/Milestones'
 import MilestonesReadonly from '@/module/form/SuggestionForm/MilestonesReadonly'
 import SignSuggestionButton from './SignSuggetionButton'
+import CMSignSuggestionButton from './CMSignSuggestionButton'
 import {
   Container,
   Title,
@@ -613,13 +614,7 @@ export default class extends StandardPage {
       isCouncil &&
       !isReference && (
         <Col xs={24} sm={8}>
-          <StyledButton
-            type="ebp"
-            className="cr-btn cr-btn-default"
-            onClick={this.makeIntoPropose}
-          >
-            {I18N.get('suggestion.btn.makeIntoProposal')}
-          </StyledButton>
+          <CMSignSuggestionButton />
         </Col>
       )
     const needDueDiligenceBtn = isCouncil && (
