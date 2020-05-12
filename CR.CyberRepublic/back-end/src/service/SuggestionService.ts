@@ -8,6 +8,7 @@ import {
   validate,
   mail,
   user as userUtil,
+  timestamp,
   permissions,
   logger,
   getDidPublicKey,
@@ -1164,6 +1165,7 @@ export default class extends Base {
 
     return {
       ...result,
+      createdAt: timestamp.second(result.createdAt),
       id,
       address,
       did,

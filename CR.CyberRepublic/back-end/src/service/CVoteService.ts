@@ -5,7 +5,7 @@ import { constant } from '../constant'
 import { permissions, getDidPublicKey } from '../utility'
 import * as moment from 'moment'
 import * as jwt from 'jsonwebtoken'
-import { mail, utilCrypto, user as userUtil, logger } from '../utility'
+import { mail, utilCrypto, user as userUtil, timestamp, logger } from '../utility'
 const util = require('util')
 const request = require('request')
 
@@ -1278,6 +1278,7 @@ export default class extends Base {
     const list = _.map(rs[0], function(o){
       let temp = _.pick(o, fields)
       temp.status = CVOTE_STATUS_TO_WALLET_STATUS[temp.status]
+      temp.createdAt = timestamp.second(temp.createdAt)
       return _.mapKeys(temp, function(value,key){
         if(key == 'vid'){
           return 'id'
@@ -1304,6 +1305,7 @@ export default class extends Base {
     const proposal = await db_cvote
       .getDBInstance()
       .findOne({ vid: id }, fields.join(' '))
+      .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME)
 
     if (!proposal) {
       return {
@@ -1323,11 +1325,28 @@ export default class extends Base {
     duration = duration > 0 ? duration : 0
     
     const proposalId = proposal._id
+
+    const voteResultFields = [
+      'value',
+      'reason',
+      'votedBy'
+    ]
+    // filter undecided vote result
+    const filterVoteResult = _.filter(proposal._doc.voteResult, (o: any) => o.value !== constant.CVOTE_RESULT.UNDECIDED)
+    // update vote result data
+    const voteResult = _.map(filterVoteResult, (o: any) => (_.pick({
+      ...o._doc,
+      votedBy: `${_.get(o, 'votedBy.profile.firstName')} ${_.get(o, 'votedBy.profile.firstName')}`
+    }, voteResultFields)));
+
     const tracking = await this.getTracking(proposalId)
+
     const summary = await this.getSummary(proposalId)
 
     return {
       ...proposal._doc,
+      createdAt: timestamp.second(proposal.createdAt), 
+      voteResult,
       address,
       duration,
       tracking,
@@ -1358,7 +1377,12 @@ export default class extends Base {
     // const totalTrack = await totalCursorTrack
    
     const list = _.map(tracking,function(o){
-      return _.pick(o,fieldsTrack)
+      const obj = {
+        ...o,
+        createdAt: timestamp.second(o.createdAt),
+        updatedAt: timestamp.second(o.updatedAt),
+      }
+      return _.pick(obj,fieldsTrack)
     })
     return list
   }
@@ -1387,7 +1411,12 @@ export default class extends Base {
     // const totalSummary = await totalCursorSummary
     
     const list = _.map(summary,function(o){
-      return _.pick(o,fieldsSummary)
+      const obj = {
+        ...o,
+        createdAt: timestamp.second(o.createdAt),
+        updatedAt: timestamp.second(o.updatedAt),
+      }
+      return _.pick(obj,fieldsSummary)
     })
     return list
 
