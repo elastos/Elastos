@@ -2,7 +2,8 @@ import Base from '../Base'
 import CVoteService from '../../service/CVoteService'
 
 export default class extends Base {
-    // protected needLogin = true;
+    protected needLogin = false
+
     async action(){
         const param = this.getParam()
         const service = this.buildService(CVoteService)

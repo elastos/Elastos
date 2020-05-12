@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover, Spin } from 'antd'
+import { Popover, Spin, message } from 'antd'
 import I18N from '@/I18N'
 import QRCode from 'qrcode.react'
 import ExternalLinkSvg from './ExternalLinkSvg'
@@ -33,6 +33,16 @@ class ProfileDid extends Component {
         this.timerDid = null
         this.setState({ url: '', visible: false })
       }
+      if (rs && rs.success === false) {
+        clearInterval(this.timerDid)
+        this.timerDid = null
+        if (rs.message) {
+          message.error(rs.message)
+        } else {
+          message.error('Something went wrong')
+        }
+        this.setState({ visible: false })
+      }
     }, 3000)
   }
 
@@ -52,6 +62,10 @@ class ProfileDid extends Component {
 
   componentWillUnmount() {
     clearInterval(this.timerDid)
+  }
+
+  handleVisibleChange = (visible) => {
+    this.setState({ visible })
   }
 
   render() {
@@ -78,7 +92,13 @@ class ProfileDid extends Component {
       )
     } else {
       return (
-        <Popover content={this.elaQrCode()} trigger="click" placement="top">
+        <Popover
+          content={this.elaQrCode()}
+          trigger="click"
+          placement="top"
+          visible={this.state.visible}
+          onVisibleChange={this.handleVisibleChange}
+        >
           <Button onClick={this.handleAssociate}>
             {I18N.get('profile.associateDid')}
           </Button>
@@ -119,13 +139,4 @@ const Did = styled.div`
       text-decoration: none;
     }
   }
-`
-const Reassociate = styled.span`
-  display: inline-block;
-  font-size: 13px;
-  color: #008d85;
-  cursor: pointer;
-  border: 1px solid #008d85;
-  padding: 0 8px;
-  margin-bottom: 16px;
 `

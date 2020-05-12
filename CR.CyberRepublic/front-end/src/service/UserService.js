@@ -26,7 +26,6 @@ export default class extends BaseService {
     const is_leader = permissions.isLeader(res.user.role)
     const is_council = permissions.isCouncil(res.user.role)
     const is_secretary = permissions.isSecretary(res.user.role)
-    const did = res.user.dids && res.user.dids.find(el => el.active === true)
 
     this.dispatch(userRedux.actions.is_leader_update(is_leader))
     this.dispatch(userRedux.actions.is_admin_update(is_admin))
@@ -36,7 +35,7 @@ export default class extends BaseService {
     this.dispatch(userRedux.actions.login_form_reset())
     this.dispatch(userRedux.actions.is_login_update(true))
 
-    this.dispatch(userRedux.actions.did_update(did))
+    this.dispatch(userRedux.actions.did_update(res.user.did))
     this.dispatch(userRedux.actions.email_update(res.user.email))
     this.dispatch(userRedux.actions.username_update(res.user.username))
     this.dispatch(userRedux.actions.profile_update(res.user.profile))
@@ -334,7 +333,6 @@ export default class extends BaseService {
     const is_leader = permissions.isLeader(res.user.role)
     const is_council = permissions.isCouncil(res.user.role)
     const is_secretary = permissions.isSecretary(res.user.role)
-    const did = res.user.dids && res.user.dids.find(el => el.active === true)
 
     this.dispatch(userRedux.actions.is_leader_update(is_leader))
     this.dispatch(userRedux.actions.is_admin_update(is_admin))
@@ -344,7 +342,7 @@ export default class extends BaseService {
     this.dispatch(userRedux.actions.login_form_reset())
     this.dispatch(userRedux.actions.is_login_update(true))
 
-    this.dispatch(userRedux.actions.did_update(did))
+    this.dispatch(userRedux.actions.did_update(res.user.did))
     this.dispatch(userRedux.actions.email_update(res.user.email))
     this.dispatch(userRedux.actions.username_update(res.user.username))
     this.dispatch(userRedux.actions.profile_update(res.user.profile))

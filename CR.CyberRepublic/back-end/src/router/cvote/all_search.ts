@@ -3,7 +3,7 @@ import Base from '../Base'
 import CVoteService from '../../service/CVoteService'
 
 export default class extends Base {
-  protected needLogin = true
+  protected needLogin = false
 
   /**
    * This is the arbitrary call, however you need to be logged in to call it
@@ -15,8 +15,6 @@ export default class extends Base {
   async action() {
     const param = this.getParam()
     const service = this.buildService(CVoteService)
-
-    service.cronjob()
 
     if (param.search) {
       param.$or = [

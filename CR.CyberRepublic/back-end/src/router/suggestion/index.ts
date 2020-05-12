@@ -22,6 +22,7 @@ import editHistories from './editHistories'
 import revertVersion from './revertVersion'
 import investigation from './investigation'
 import advisory from './advisory'
+import getSuggestion from './getSuggestion'
 
 export default Base.setRouter([
   {
@@ -138,5 +139,10 @@ export default Base.setRouter([
     path: '/:id/advisory',
     router: advisory,
     method: 'post',
+  },
+  {
+    path: '/get_suggestion/:id',
+    router: getSuggestion,
+    method: 'get',
   }
 ])
