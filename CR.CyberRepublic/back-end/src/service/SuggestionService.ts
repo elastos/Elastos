@@ -1310,6 +1310,7 @@ export default class extends Base {
       const suggestion = await this.model.findById({
         _id: payload.suggestionId
       })
+
       if (!suggestion) {
         return {
           code: 400,
@@ -1318,16 +1319,7 @@ export default class extends Base {
         }
       }
 
-      const rs: any = await getDidPublicKey(claims.iss)
-      if (!rs) {
-        await this.model.update(
-          { _id: payload.suggestionId },
-          {
-            $set: {
-              signature: { message: `Can not get your did's public key.` }
-            }
-          }
-        )
+      if (!suggestion.ownerPublicKey) {
         return {
           code: 400,
           success: false,
@@ -1338,7 +1330,7 @@ export default class extends Base {
       // verify response data from ela wallet
       return jwt.verify(
         jwtToken,
-        rs.publicKey,
+        suggestion.ownerPublicKey,
         async (err: any, decoded: any) => {
           if (err) {
             await this.model.update(
