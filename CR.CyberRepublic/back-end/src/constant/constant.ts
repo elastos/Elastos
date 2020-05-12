@@ -185,6 +185,12 @@ export const ELIP_VOTE_RESULT = {
   ABSTENTION: 'abstention',
   UNDECIDED: 'undecided'
 }
+export const CVOTE_CHAIN_STATUS = {
+  CHAINED:'chained',
+  UNCHAIN:'unchain',
+  CHAINING:'chaining',
+  FAILED:'failed'
+}
 // expiration period: 7 days
 export const CVOTE_EXPIRATION = 1000 * 60 * 60 * 24 * 7
 export const ELIP_EXPIRATION = 1000 * 60 * 60 * 24 * 7
