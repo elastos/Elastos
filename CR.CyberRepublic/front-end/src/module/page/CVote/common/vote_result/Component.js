@@ -7,25 +7,39 @@ import Translation from '@/module/common/Translation/Container'
 
 import { Container, ResultRow, Reason, Label, List, Item, Avatar, StyledAvatarIcon } from './style'
 
-const Component = ({ label, type, dataList,id,getReviewProposal,voteResult }) => {
+const Component = ({ label, type, dataList,id,getReviewProposal,getReviewProposalUrl,voteResult }) => {
   const votesNode = _.map(dataList, (data, key) => {
+    let voteStatus = voteResult[key].status
+    if(voteStatus == undefined || voteStatus == 'failed') {
+      voteStatus = I18N.get(`council.voting.chainStatus.unchain`)
+    } 
+    if( voteStatus == 'chained'){
+      voteStatus = I18N.get(`council.voting.chainStatus.chained`)
+    }
+    if (voteStatus == 'chaining') {
+       voteStatus = I18N.get(`council.voting.chainStatus.chaining`)
+    }
     // const isReject = type === CVOTE_RESULT.REJECT
     const userNode = (
       <Item key={key}>
         {data.avatar ? <Avatar src={data.avatar} alt="voter avatar" /> : <StyledAvatarIcon />}
         <div>{data.name}</div>
-        <div><OnChain getReviewProposal={getReviewProposal} _id={id}></OnChain></div>
+        <div>{voteStatus}</div>
+        <div style={{ marginTop: '0.5rem'}}>
+          { 
+          ( voteResult[key].value != 'undecided' && voteResult[key].status != 'chained' ) ? 
+          <OnChain 
+          getReviewProposal={getReviewProposal}
+          getReviewProposalUrl={getReviewProposalUrl}
+          id={id} 
+          /> : null
+          }
+          </div>
       </Item>
     )
     
     const googleNode = data.reason && <div style={{ marginTop: '0.5rem'}}><Translation text={data.reason} /></div>
   
-    let voteStatus = voteResult[0].status
-    if(voteStatus == undefined){
-      voteStatus = I18N.get(`council.voting.chainStatus.unchain`)
-    }else{
-       voteStatus = I18N.get(`council.voting.chainStatus.${voteResult[0].status}`)
-    }
     // if (!isReject) return userNode
     // show reason for all vote type
     const reasonNode = (
@@ -39,7 +53,7 @@ const Component = ({ label, type, dataList,id,getReviewProposal,voteResult }) =>
           )
         })}
         {googleNode}
-        {voteStatus}
+        
       </Reason>
     )
     
