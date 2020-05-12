@@ -160,12 +160,26 @@ export default class extends BaseService {
     this.dispatch(this.selfRedux.actions.filters_update(filters))
   }
 
+  // signature
+  async getReviewProposalUrl(id) {
+    const path = `${this.prefixPath}/reviewproposal-url`
+    const res = await api_request({
+      path,
+      method: 'post',
+      data: { id }
+    })
+    return res
+  }
+
   async getReviewProposal(id) {
     const rs = await api_request({
-      path: `/api/cvote/onchain`,
-      method: 'get',
-      data: {_id : id}
+      path: `${this.prefixPath}/onchain`,
+      method: 'post',
+      data: { id }
     })
+    if (rs.success && rs.data) {
+      this.dispatch(this.selfRedux.actions.detail_update(rs.data))
+    }
     return rs
   }
 }

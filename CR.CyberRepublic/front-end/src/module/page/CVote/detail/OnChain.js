@@ -9,7 +9,6 @@ class OnChainButton extends Component {
     super(props)
     this.state = {
       url: '',
-      id: '',
       visible: false
     }
     this.timerDid = null
@@ -26,11 +25,25 @@ class OnChainButton extends Component {
   }
 
   pollingDid = () => {
-    const voteId = this.props._id
-    this.setState({id:voteId})
+    console.log(this.props)
+    const { id, getReviewProposal } = this.propos
     this.timerDid = setInterval(async () => {
-      const rs = await this.props.getReviewProposal(this.state.id)
-      this.setState({ url: rs.url })
+      const rs = await getReviewProposal(id)
+      if (rs && rs.success ){
+        clearInterval(this.timerDid)
+        this.timerDid = null
+        this.setState({ url: rs.url, visible:false })
+      }
+      if (rs && rs.success == false){
+        clearInterval(this.timerDid)
+        this.timerDid = null
+        if(rs.message) {
+          message.error(rs.message)
+        } else {
+          message.error('Something went wrong')
+        }
+        this.setState({ visible: false})
+      }
     }, 3000)
   }
 
@@ -42,8 +55,9 @@ class OnChainButton extends Component {
   }
 
   componentDidMount = async () => {
-    const { id } = this.state
-    const rs = await this.props.getReviewProposal(id)
+    const { id, getReviewProposalUrl } = this.propos
+    console.log(id)
+    const rs = await getReviewProposalUrl(id)
     if (rs && rs.success) {
       this.setState({ url: rs.url })
     }
