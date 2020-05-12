@@ -65,6 +65,9 @@ const mapDispatch = () => {
     },
     async updateNotes(param) {
       return service.updateNotes(param)
+    },
+    async getReviewProposal(id) {
+      return service.getReviewProposal(id)
     }
   }
 }

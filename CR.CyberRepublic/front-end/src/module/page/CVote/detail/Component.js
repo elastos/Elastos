@@ -24,6 +24,7 @@ import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
 import ElipPreamble from './ElipPreamble'
 import Tracking from '../tracking/Container'
+import OnChain from './OnChain'
 import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
@@ -858,9 +859,13 @@ class C extends StandardPage {
       }
       return <VoteResultComponent {...props} key={key} />
     })
+    const { match, getReviewProposal } = this.props
+    const id = _.get(match, 'params.id')
+    // const _id = '5ea53e2bb0461a06630c0227'
     return (
       <div id="vote">
         {title}
+        <OnChain getReviewProposal={getReviewProposal} _id={id}></OnChain>
         <div>{detail}</div>
       </div>
     )

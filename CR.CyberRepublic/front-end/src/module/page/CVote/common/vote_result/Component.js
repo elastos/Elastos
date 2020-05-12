@@ -1,11 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import I18N from '@/I18N'
 import _ from 'lodash'
 import Translation from '@/module/common/Translation/Container'
 
 import { Container, ResultRow, Reason, Label, List, Item, Avatar, StyledAvatarIcon } from './style'
 
 const Component = ({ label, type, dataList }) => {
+  const voteStatus = I18N.get('council.voting.chainStatus.success')
   const votesNode = _.map(dataList, (data, key) => {
     // const isReject = type === CVOTE_RESULT.REJECT
     const userNode = (
@@ -43,7 +45,8 @@ const Component = ({ label, type, dataList }) => {
 
   return (
     <Container>
-      <Label>{label}</Label>
+      {/* <Label>{label}</Label> */}
+      <Label>{label}({voteStatus})</Label>
       <List type={type}>{votesNode}</List>
     </Container>
   )

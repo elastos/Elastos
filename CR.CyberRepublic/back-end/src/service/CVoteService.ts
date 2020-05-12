@@ -2,9 +2,10 @@ import Base from './Base'
 import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { permissions } from '../utility'
+import { permissions, getDidPublicKey } from '../utility'
 import * as moment from 'moment'
-import { mail, user as userUtil, logger } from '../utility'
+import * as jwt from 'jsonwebtoken'
+import { mail, utilCrypto, user as userUtil, logger } from '../utility'
 const util = require('util')
 const request = require('request')
 
@@ -979,6 +980,188 @@ export default class extends Base {
     return ret
   }
 
+  // vote onchain
+  public async onchain(param) {
+    const db_cvote = this.getDBModel('CVote')
+    const userId = _.get(this.currentUser, '_id')
+    const { _id } = param
+    const jwtClaims = {
+      iss: process.env.APP_DID,
+      callbackurl: `${process.env.API_URL}/api/CVote/callback`,
+      website:{
+        domain: process.env.SERVER_URL,
+        logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+      },
+      command:"",
+      data: {
+        proposalHash: "",
+        voteResult: [],
+        opinionHash: "",
+        did: ""
+      }
+    }
+    const cur = await db_cvote.findOne({ _id })
+   
+    if (!this.canManageProposal()) {
+      throw 'cvoteservice.unfinishById - not council'
+    }
+    if (!cur) {
+      throw 'cvoteservice.update - invalid proposal id'
+    }
+    // jwtClaims.data.proposalHash = utilCrypto.sha256(utilCrypto.sha256(cur.toLocaleString()))
+    jwtClaims.data.proposalHash = cur.proposalHash
+    jwtClaims.data.voteResult = cur.voteResult
+  
+    cur.voteResult.forEach(function(res){
+      if(res.votedBy.equals(userId)){
+        jwtClaims.data.opinionHash = utilCrypto.sha256(utilCrypto.sha256(res.reason))
+      }
+    })
+  
+    const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
+      expiresIn: '7d', 
+      algorithm: 'ES256' 
+    })
+    const url = `elastos://credaccess/${jwtToken}`
+    return { success: true, url}
+  }
+
+  // council callback
+  public async councilCallback(param): Promise<any>{
+    try {
+      const jwtToken = param.jwt
+      const claims: any = jwt.decode(jwtToken)
+      if(_.get(claims,'req')){
+        return{
+          code: 400,
+          success: false,
+          message: 'Problems parsing jwt token.'
+        }
+      }
+
+      const payload:any = jwt.decode( 
+        claims.req.slice("elastos://credaccess/".length)
+      )
+      
+      if(!_.get(payload,'proposalHash')){
+        return {
+          code: 400,
+          success: false,
+          message: 'Problems parsing jwt token of CR website.'
+        }
+      }
+
+      const db_cvote = this.getDBModel('CVote')
+      const cur = await db_cvote.findById({
+        _id: payload.proposalHash
+      })
+      if(!cur){
+        return {
+          code: 400,
+          success: false,
+          message: 'There is no this proposal'
+        }
+      }
+
+      const votedBy = _.get(this.currentUser, '_id')
+      const proposalHash = payload.data.proposalHash
+
+      const rs: any = await getDidPublicKey(claims.iss)
+      if(!rs) {
+        await db_cvote.update(
+          { 
+            'proposalHash': proposalHash,
+            'voteResult.votedBy': votedBy
+          },
+          {
+            $set: {
+              'voteResult.$.signature': { message: `Can not get your did's public key. ` }
+            }
+          }
+        )
+        return {
+          code: 400,
+          success: false,
+          message: `Can not get yur did's public key`
+        }
+      }
+
+      return jwt.verify(
+        jwtToken,
+        rs.publicKey,
+        async (err:any, decoded: any) => {
+          if(err) {
+            await db_cvote.update(
+              { 
+                'proposalHash': proposalHash,
+                'voteResult.votedBy': votedBy
+              },
+              {
+                $set: {
+                  'voteResult.$.signature': { message: `Verify signatrue failed. ` }
+                }
+              }
+            )
+            return {
+              code: 401,
+              success: false,
+              message: 'Verify signatrue failed.'
+            }
+          } else {
+            const voteResult = _.find(payload.data.voteResult,function(o){
+              if (o.votedBy == votedBy){
+                return o
+              }
+            })
+            try {
+              await db_cvote.findOneandUpdate(
+                {
+                   'proposalHash': proposalHash,
+                   'voteResult.votedBy': votedBy
+                },
+                {
+                  $set: {
+                    'voteResult.$.txid': claims.data,
+                    'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINING
+                  },
+                  $push:{
+                    voteHistory: {
+                      ...voteResult,
+                      'txid': claims.data
+                    }
+                  }
+                }
+                )
+              return { code: 200, success: true, message: 'Ok' }
+            } catch (err) {
+              logger.error(err)
+              return {
+                code: 500,
+                success: false,
+                message: 'Something went wrong'
+              }
+            }
+          }
+        }
+      )
+    } catch(error){
+      logger.error(error)
+      return {
+        code: 500,
+        success: false,
+        message: 'Something went wrong'
+      }
+    }
+    
+    
+  }
+
+  // member callback
+  public async memberCallback(param): Promise<any> {
+    return 
+  }
+
+
   /**
    * API to Wallet
    */
@@ -1010,7 +1193,7 @@ export default class extends Base {
       'proposalHash'
     ]
 
-    const cursor =  await db_cvote
+    const cursor = db_cvote
       .getDBInstance()
       .find(query, fields.join(' '))
       .sort({vid: -1})
@@ -1020,7 +1203,9 @@ export default class extends Base {
         && parseInt(param.results) > 0) {
       const results = parseInt(param.results, 10)
       const page = parseInt(param.page, 10)
+
       cursor.skip(results * (page - 1)).limit(results)
+
     }
     
     const rs = await Promise.all([
