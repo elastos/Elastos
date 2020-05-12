@@ -35,10 +35,6 @@ Setup environment variables and update variables if needed:
 ```
 cp .env.example .env;
 ```
-Install elastos-adenine via pip:
-```
-pip3 install elastos-adenine==2.0.2
-```
 Run sample.py
 ```
 python3 sample.py
