@@ -18,7 +18,8 @@ export default {
       creator: 'Creator',
       status: 'Status',
       created: 'Created',
-      updated: 'Updated'
+      updated: 'Updated',
+      signature: 'Signature'
     },
     abstract: 'Abstract',
     goal: 'Goal',

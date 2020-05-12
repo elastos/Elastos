@@ -29,7 +29,9 @@ export default class extends BaseService {
   }
 
   async saveReferenceStatus(referenceStatus) {
-    this.dispatch(this.selfRedux.actions.reference_status_update(referenceStatus))
+    this.dispatch(
+      this.selfRedux.actions.reference_status_update(referenceStatus)
+    )
   }
 
   async saveEditHistory(editHistory) {
@@ -52,13 +54,17 @@ export default class extends BaseService {
         path,
         method: 'get',
         data: qry,
-        signal: this.getAbortSignal(path),
+        signal: this.getAbortSignal(path)
       })
 
       this.dispatch(this.selfRedux.actions.loading_update(false))
       this.dispatch(this.selfRedux.actions.all_suggestions_reset())
-      this.dispatch(this.selfRedux.actions.all_suggestions_total_update(result.total))
-      this.dispatch(this.selfRedux.actions.all_suggestions_update(_.values(result.list)))
+      this.dispatch(
+        this.selfRedux.actions.all_suggestions_total_update(result.total)
+      )
+      this.dispatch(
+        this.selfRedux.actions.all_suggestions_update(_.values(result.list))
+      )
     } catch (e) {
       logger.error(e)
     }
@@ -78,13 +84,17 @@ export default class extends BaseService {
         path,
         method: 'get',
         data: qry,
-        signal: this.getAbortSignal(path),
+        signal: this.getAbortSignal(path)
       })
 
       this.dispatch(this.selfRedux.actions.my_suggestions_loading_update(false))
       this.dispatch(this.selfRedux.actions.my_suggestions_reset())
-      this.dispatch(this.selfRedux.actions.my_suggestions_total_update(result.total))
-      this.dispatch(this.selfRedux.actions.my_suggestions_update(_.values(result.list)))
+      this.dispatch(
+        this.selfRedux.actions.my_suggestions_total_update(result.total)
+      )
+      this.dispatch(
+        this.selfRedux.actions.my_suggestions_update(_.values(result.list))
+      )
     } catch (e) {
       // Do nothing
     }
@@ -110,11 +120,10 @@ export default class extends BaseService {
     const path = `${this.prefixPath}/create`
     let res
     try {
-
       res = await api_request({
         path,
         method: 'post',
-        data: doc,
+        data: doc
       })
     } catch (error) {
       this.dispatch(this.selfRedux.actions.loading_update(false))
@@ -133,7 +142,7 @@ export default class extends BaseService {
       res = await api_request({
         path,
         method: 'put',
-        data: doc,
+        data: doc
       })
     } catch (error) {
       this.dispatch(this.selfRedux.actions.loading_update(false))
@@ -152,7 +161,7 @@ export default class extends BaseService {
       res = await api_request({
         path,
         method: 'post',
-        data: doc,
+        data: doc
       })
     } catch (error) {
       this.dispatch(this.selfRedux.actions.loading_update(false))
@@ -169,7 +178,7 @@ export default class extends BaseService {
     const result = await api_request({
       path,
       method: 'get',
-      data: { incViewsNum },
+      data: { incViewsNum }
     })
 
     this.dispatch(this.selfRedux.actions.loading_update(false))
@@ -183,12 +192,12 @@ export default class extends BaseService {
     const path = `${this.prefixPath}/${id}/editHistories`
     const res = await api_request({
       path,
-      method: 'get',
+      method: 'get'
     })
     const dpath = `${this.prefixPath}/${id}/show`
     const result = await api_request({
       path: dpath,
-      method: 'get',
+      method: 'get'
     })
 
     this.dispatch(this.selfRedux.actions.detail_update(result))
@@ -203,18 +212,16 @@ export default class extends BaseService {
     const path = `${this.prefixPath}/${id}/revertVersion`
     let res
     try {
-
       res = await api_request({
         path,
         method: 'post',
-        data: {version},
+        data: { version }
       })
 
       if (res.version) {
-        this.editHistories({id})
+        this.editHistories({ id })
         message.info(I18N.get('suggestion.msg.revertVersion'))
       }
-
     } catch (error) {
       this.dispatch(this.selfRedux.actions.loading_update(false))
       message.error('Error happened, please try again later or contact admin.')
@@ -226,13 +233,12 @@ export default class extends BaseService {
     this.dispatch(this.selfRedux.actions.edit_history_reset())
   }
 
-
   async like(id) {
     const path = `${this.prefixPath}/${id}/like`
 
     const res = await api_request({
       path,
-      method: 'post',
+      method: 'post'
     })
 
     return res
@@ -243,7 +249,7 @@ export default class extends BaseService {
 
     const res = await api_request({
       path,
-      method: 'post',
+      method: 'post'
     })
 
     return res
@@ -254,7 +260,7 @@ export default class extends BaseService {
 
     const res = await api_request({
       path,
-      method: 'post',
+      method: 'post'
     })
 
     return res
@@ -265,7 +271,7 @@ export default class extends BaseService {
 
     const res = await api_request({
       path,
-      method: 'post',
+      method: 'post'
     })
 
     return res
@@ -277,7 +283,7 @@ export default class extends BaseService {
     const res = await api_request({
       path,
       data,
-      method: 'post',
+      method: 'post'
     })
     if (res.success && !data.isArchived) {
       message.info(I18N.get('suggestion.msg.archived'))
@@ -294,7 +300,7 @@ export default class extends BaseService {
 
     const res = await api_request({
       path,
-      method: 'post',
+      method: 'post'
     })
 
     return res
@@ -305,7 +311,7 @@ export default class extends BaseService {
     const path = `${this.prefixPath}/${id}/investigation`
     const res = await api_request({
       path,
-      method: 'post',
+      method: 'post'
     })
     return res
   }
@@ -315,7 +321,7 @@ export default class extends BaseService {
     const path = `${this.prefixPath}/${id}/advisory`
     const res = await api_request({
       path,
-      method: 'post',
+      method: 'post'
     })
     return res
   }
@@ -332,7 +338,7 @@ export default class extends BaseService {
         data: qry,
         headers: {
           'Content-Type': 'text/csv'
-        },
+        }
       })
     } catch (e) {
       logger.error(e)
@@ -351,11 +357,10 @@ export default class extends BaseService {
     const path = `${this.prefixPath}/${doc.id}/saveDraft`
     let res
     try {
-
       res = await api_request({
         path,
         method: 'put',
-        data: doc,
+        data: doc
       })
     } catch (error) {
       this.dispatch(this.selfRedux.actions.loading_update(false))
@@ -372,11 +377,35 @@ export default class extends BaseService {
     const path = `${this.prefixPath}/${id}/showDraft`
     const result = await api_request({
       path,
-      method: 'get',
+      method: 'get'
     })
 
     this.dispatch(this.selfRedux.actions.loading_update(false))
     this.dispatch(this.selfRedux.actions.draft_update(result))
     return result
+  }
+
+  // signature
+  async getSignatureUrl(id) {
+    const path = `${this.prefixPath}/signature-url`
+    const res = await api_request({
+      path,
+      method: 'post',
+      data: { id }
+    })
+    return res
+  }
+
+  async getSignature(id) {
+    const path = `${this.prefixPath}/signature`
+    const rs = await api_request({
+      path,
+      method: 'post',
+      data: { id }
+    })
+    if (rs.success && rs.data) {
+      this.dispatch(this.selfRedux.actions.detail_update(rs.data))
+    }
+    return rs
   }
 }

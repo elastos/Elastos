@@ -1,13 +1,17 @@
 import Base from './Base'
 import * as _ from 'lodash'
-import {Document, Types} from 'mongoose'
+import { Document, Types } from 'mongoose'
+import * as jwt from 'jsonwebtoken'
+import * as moment from 'moment'
 import { constant } from '../constant'
 import {
   validate,
   mail,
   user as userUtil,
   permissions,
-  logger
+  logger,
+  getDidPublicKey,
+  utilCrypto
 } from '../utility'
 
 const ObjectId = Types.ObjectId
@@ -23,6 +27,15 @@ const BASE_FIELDS = [
   'elaAddress',
   'plan'
 ]
+
+interface BudgetItem {
+  type: string
+  stage: string
+  milestoneKey: string
+  amount: string
+  reasons: string
+  criteria: string
+}
 
 export default class extends Base {
   private model: any
@@ -73,7 +86,7 @@ export default class extends Base {
     `
 
     if (_.includes(mentions, '@</span>ALL')) {
-      _.map(councilMembers, user => {
+      _.map(councilMembers, (user) => {
         mail.send({
           to: user.email,
           toName: userUtil.formatUsername(user),
@@ -111,21 +124,18 @@ export default class extends Base {
 
   public async fixHistoryVersion(id: any) {
     const model = this.getDBModel('Suggestion_Edit_History')
-    const list = await model.getDBInstance()
-                            .find({ suggestion: id })
-                            .sort({ createdAt: 1 })
-    for(let i=0,ver=10;i<list.length;i++,ver+=1) {
+    const list = await model
+      .getDBInstance()
+      .find({ suggestion: id })
+      .sort({ createdAt: 1 })
+    for (let i = 0, ver = 10; i < list.length; i++, ver += 1) {
       const _id = list[i]._id
-      await model.getDBInstance()
-                         .update({ _id },
-                                 { "$set": { "version": ver }})
+      await model.getDBInstance().update({ _id }, { $set: { version: ver } })
     }
-    const detail = await this.model
-                       .getDBInstance()
-                       .findOne({_id: id})
-    if(detail) {
-      if(!detail.version || detail.version < 10) {
-        await this.model.update({ _id: id }, { $set: {version: 10}})
+    const detail = await this.model.getDBInstance().findOne({ _id: id })
+    if (detail) {
+      if (!detail.version || detail.version < 10) {
+        await this.model.update({ _id: id }, { $set: { version: 10 } })
       }
     }
   }
@@ -141,7 +151,7 @@ export default class extends Base {
     const hismodel = this.getDBModel('Suggestion_Edit_History')
     const hisres = await hismodel.save(hisdoc)
     await this.fixHistoryVersion(id)
-    const curhis = await hismodel.getDBInstance().findOne({_id: hisres._id})
+    const curhis = await hismodel.getDBInstance().findOne({ _id: hisres._id })
     return curhis.version
   }
 
@@ -166,12 +176,12 @@ export default class extends Base {
     doc.createdBy = ObjectId(userId)
 
     const currDraft = await this.draftModel.getDBInstance().findById(id)
-    if(currDraft) {
+    if (currDraft) {
       await this.draftModel.remove({ _id: ObjectId(id) })
     }
 
     doc.descUpdatedAt = new Date()
-    
+
     let result = null
     if (update) {
       doc.version = await this.saveHistoryGetCurrentVersion(id, currDoc._doc)
@@ -192,6 +202,10 @@ export default class extends Base {
       throw 'Current document does not exist'
     }
 
+    if (_.get(currDoc, 'signature.data')) {
+      throw 'Current document does not allow to edit'
+    }
+
     if (
       !userId.equals(_.get(currDoc, 'createdBy')) &&
       !permissions.isAdmin(_.get(this.currentUser, 'role'))
@@ -200,13 +214,13 @@ export default class extends Base {
     }
 
     const currDraft = await this.draftModel.getDBInstance().findById(id)
-    if(currDraft) {
+    if (currDraft) {
       await this.draftModel.remove({ _id: ObjectId(id) })
     }
 
     const doc = _.pick(param, BASE_FIELDS)
     doc.descUpdatedAt = new Date()
-    
+
     if (update) {
       doc.version = await this.saveHistoryGetCurrentVersion(id, doc)
       await this.model.update({ _id: id }, { $set: doc })
@@ -412,19 +426,19 @@ export default class extends Base {
       ]
 
       cursor = this.model
-                   .getDBInstance()
-                   .find(query, excludedFields.join(' '))
-                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-                   .sort(sortObject)
+        .getDBInstance()
+        .find(query, excludedFields.join(' '))
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+        .sort(sortObject)
     } else {
       // my suggestions on profile page
       cursor = this.model
-                   .getDBInstance()
-                   .find(
-                     query,
-                     'title activeness commentsNum createdAt dislikesNum displayId likesNum'
-                   )
+        .getDBInstance()
+        .find(
+          query,
+          'title activeness commentsNum createdAt dislikesNum displayId likesNum'
+        )
     }
 
     if (param.results) {
@@ -435,10 +449,7 @@ export default class extends Base {
 
     const rs = await Promise.all([
       cursor,
-      this.model
-          .getDBInstance()
-          .find(query)
-          .count()
+      this.model.getDBInstance().find(query).count()
     ])
 
     return {
@@ -568,20 +579,20 @@ export default class extends Base {
       ]
 
       cursor = this.model
-                   .getDBInstance()
-                   .find(query /*, excludedFields.join(' ')*/)
-                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-                   .sort(sortObject)
+        .getDBInstance()
+        .find(query /*, excludedFields.join(' ')*/)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+        .sort(sortObject)
     } else {
       // my suggestions on profile page
       cursor = this.model
-                   .getDBInstance()
-                   .find(
-                     query /*, 'title activeness commentsNum createdAt dislikesNum displayId likesNum'*/
-                   )
-                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+        .getDBInstance()
+        .find(
+          query /*, 'title activeness commentsNum createdAt dislikesNum displayId likesNum'*/
+        )
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     }
 
     /*if (param.results) {
@@ -653,10 +664,7 @@ export default class extends Base {
 
     const rs = await Promise.all([
       cursor,
-      this.model
-          .getDBInstance()
-          .find(query)
-          .count()
+      this.model.getDBInstance().find(query).count()
     ])
 
     return {
@@ -718,7 +726,7 @@ export default class extends Base {
       }
     }
 
-    if(!doc.version || doc.version < 10) doc.version = 10
+    if (!doc.version || doc.version < 10) doc.version = 10
     return doc
   }
   public async show(param: any): Promise<any> {
@@ -731,9 +739,9 @@ export default class extends Base {
   public async editHistories(param: any): Promise<Document[]> {
     await this.fixHistoryVersion(param.id)
     return await this.getDBModel('Suggestion_Edit_History')
-                     .getDBInstance()
-                     .find({ suggestion: param.id })
-                     .sort({ version: -1 })
+      .getDBInstance()
+      .find({ suggestion: param.id })
+      .sort({ version: -1 })
   }
 
   public async revertVersion(param: any): Promise<any> {
@@ -752,22 +760,20 @@ export default class extends Base {
       throw 'Only owner can edit suggestion'
     }
 
-    const currVer = await this.model
-                              .getDBInstance()
-                              .findOne({_id: id})
+    const currVer = await this.model.getDBInstance().findOne({ _id: id })
     const rVer = await this.getDBModel('Suggestion_Edit_History')
-                           .getDBInstance()
-                           .findOne({ suggestion: id, version })
-    if(!currVer || !rVer) {
+      .getDBInstance()
+      .findOne({ suggestion: id, version })
+    if (!currVer || !rVer) {
       throw 'Current document does not exist'
     }
 
     Object.assign(currVer, _.pick(rVer, BASE_FIELDS))
     currVer.version = rVer.version
-    
+
     await this.model.update({ _id: id }, { $set: currVer })
-    
-    return {id, version}
+
+    return { id, version }
   }
 
   // like or unlike
@@ -778,10 +784,10 @@ export default class extends Base {
     const { likes, dislikes } = doc
 
     // can not both like and dislike, use ObjectId.equals to compare
-    if (_.findIndex(dislikes, oid => userId.equals(oid)) !== -1) return doc
+    if (_.findIndex(dislikes, (oid) => userId.equals(oid)) !== -1) return doc
 
     // already liked, will unlike, use ObjectId.equals to compare
-    if (_.findIndex(likes, oid => userId.equals(oid)) !== -1) {
+    if (_.findIndex(likes, (oid) => userId.equals(oid)) !== -1) {
       await this.model.findOneAndUpdate(
         { _id },
         {
@@ -811,10 +817,10 @@ export default class extends Base {
     const { likes, dislikes } = doc
 
     // can not both like and dislike, use ObjectId.equals to compare
-    if (_.findIndex(likes, oid => userId.equals(oid)) !== -1) return doc
+    if (_.findIndex(likes, (oid) => userId.equals(oid)) !== -1) return doc
 
     // already liked, will unlike, use ObjectId.equals to compare
-    if (_.findIndex(dislikes, oid => userId.equals(oid)) !== -1) {
+    if (_.findIndex(dislikes, (oid) => userId.equals(oid)) !== -1) {
       await this.model.findOneAndUpdate(
         { _id },
         {
@@ -854,13 +860,13 @@ export default class extends Base {
       const currentUserId = _.get(this.currentUser, '_id')
       const councilMember = await db_user.findById(currentUserId)
       const suggestion = await this.model
-                                   .getDBInstance()
-                                   .findById(suggestionId)
-                                   .populate(
-                                     'subscribers.user',
-                                     constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
-                                   )
-                                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        .getDBInstance()
+        .findById(suggestionId)
+        .populate(
+          'subscribers.user',
+          constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
+        )
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
       // get users: creator and subscribers
       const toUsers = _.map(suggestion.subscribers, 'user') || []
@@ -887,7 +893,7 @@ export default class extends Base {
 
       const recVariables = _.zipObject(
         toMails,
-        _.map(toUsers, user => {
+        _.map(toUsers, (user) => {
           return {
             _id: user._id,
             username: userUtil.formatUsername(user)
@@ -915,9 +921,9 @@ export default class extends Base {
       const currentUserId = _.get(this.currentUser, '_id')
       const councilMember = await db_user.findById(currentUserId)
       const suggestion = await this.model
-                                   .getDBInstance()
-                                   .findById(suggestionId)
-                                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        .getDBInstance()
+        .findById(suggestionId)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
       // get users: creator and subscribers
       const toUsers = [suggestion.createdBy]
@@ -945,7 +951,7 @@ export default class extends Base {
 
       const recVariables = _.zipObject(
         toMails,
-        _.map(toUsers, user => {
+        _.map(toUsers, (user) => {
           return {
             _id: user._id,
             username: userUtil.formatUsername(user)
@@ -1062,12 +1068,12 @@ export default class extends Base {
     })
     const toUsers = _.filter(
       secretaries,
-      user => !user._id.equals(currentUserId)
+      (user) => !user._id.equals(currentUserId)
     )
     const toMails = _.map(toUsers, 'email')
     const recVariables = _.zipObject(
       toMails,
-      _.map(toUsers, user => {
+      _.map(toUsers, (user) => {
         return {
           _id: user._id,
           username: userUtil.formatUsername(user)
@@ -1090,9 +1096,9 @@ export default class extends Base {
   public async archive(param: any): Promise<object> {
     const { id: _id, isArchived } = param
     const suggestion = await this.model
-                                 .getDBInstance()
-                                 .findById(_id)
-                                 .populate('createdBy')
+      .getDBInstance()
+      .findById(_id)
+      .populate('createdBy')
     if (!suggestion) {
       return
     }
@@ -1181,4 +1187,212 @@ export default class extends Base {
       throw 'invalid description'
     }
   }
+
+  /* sign a suggestion */
+  public async getSignatureUrl(param: { id: string }) {
+    try {
+      const { id } = param
+      const suggestion = await this.model
+        .getDBInstance()
+        .findById(id)
+        .populate('createdBy')
+      // check if current user is the owner of this suggestion
+      if (!suggestion.createdBy._id.equals(this.currentUser._id)) {
+        return { success: false }
+      }
+
+      const did = _.get(this.currentUser, 'did.id')
+      if (!did) {
+        return { success: false, message: 'Please bind a did to your account.' }
+      }
+      const rs: {
+        publicKey: string
+        expirationDate: moment.Moment
+      } = await getDidPublicKey(did)
+      if (!rs) {
+        return {
+          success: false,
+          message: `Can not get your did's public key.`
+        }
+      }
+      const ownerPublicKey = rs.publicKey
+
+      const chainBudgetType = {
+        ADVANCE: 'Imprest',
+        CONDITIONED: 'NormalPayment',
+        COMPLETION: 'FinalPayment'
+      }
+      const budgets = suggestion.budget.map((item: BudgetItem) => ({
+        type: chainBudgetType[item.type],
+        stage: parseInt(item.milestoneKey),
+        amount: (parseInt(item.amount) * Math.pow(10, 8)).toString()
+      }))
+
+      const fields = [
+        '_id',
+        'updatedAt',
+        'title',
+        'type',
+        'abstract',
+        'motivation',
+        'goal',
+        'plan',
+        'relevance',
+        'budget',
+        'budgetAmount',
+        'elaAddress'
+      ]
+      const content = {}
+      for (let field in _.sortBy(fields)) {
+        content[field] = suggestion[field]
+      }
+
+      const draftHash = utilCrypto.sha256D(JSON.stringify(content))
+      await this.model.update({ _id: suggestion._id }, { $set: { draftHash } })
+
+      const jwtClaims = {
+        command: 'createsuggestion',
+        iss: process.env.APP_DID,
+        suggestionId: suggestion._id,
+        callbackurl: `${process.env.API_URL}/api/suggestion/signature-callback`,
+        website: {
+          domain: process.env.SERVER_URL,
+          logo: `${process.env.SERVER_URL}/assets/images/cr_ela_wallet.svg`
+        },
+        data: {
+          proposaltype: 'normal',
+          categorydata: 'Null',
+          ownerpublickey: ownerPublicKey,
+          drafthash: draftHash,
+          budgets,
+          recipient: suggestion.elaAddress
+        }
+      }
+      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, {
+        expiresIn: '7d',
+        algorithm: 'ES256'
+      })
+      const url = `elastos://crproposal/${jwtToken}`
+      return { success: true, url }
+    } catch (err) {
+      logger.error(err)
+      return { success: false }
+    }
+  }
+
+  public async SignatureCallback(param: any) {
+    try {
+      const jwtToken = param.jwt
+      const claims: any = jwt.decode(jwtToken)
+      if (_.get(claims, 'req')) {
+        return {
+          code: 400,
+          success: false,
+          message: 'Problems parsing jwt token.'
+        }
+      }
+
+      const payload: any = jwt.decode(
+        claims.req.slice('elastos://crproposal/'.length)
+      )
+      if (!_.get(payload, 'suggestionId')) {
+        return {
+          code: 400,
+          success: false,
+          message: 'Problems parsing jwt token of CR website.'
+        }
+      }
+
+      const suggestion = await this.model.findById({
+        _id: payload.suggestionId
+      })
+      if (!suggestion) {
+        return {
+          code: 400,
+          success: false,
+          message: 'There is no this suggestion.'
+        }
+      }
+
+      const rs: any = await getDidPublicKey(claims.iss)
+      if (!rs) {
+        await this.model.update(
+          { _id: payload.suggestionId },
+          {
+            $set: {
+              signature: { message: `Can not get your did's public key.` }
+            }
+          }
+        )
+        return {
+          code: 400,
+          success: false,
+          message: `Can not get your did's public key.`
+        }
+      }
+
+      // verify response data from ela wallet
+      return jwt.verify(
+        jwtToken,
+        rs.publicKey,
+        async (err: any, decoded: any) => {
+          if (err) {
+            await this.model.update(
+              { _id: payload.suggestionId },
+              {
+                $set: {
+                  signature: { message: 'Verify signatrue failed.' }
+                }
+              }
+            )
+            return {
+              code: 401,
+              success: false,
+              message: 'Verify signatrue failed.'
+            }
+          } else {
+            try {
+              await this.model.update(
+                { _id: payload.suggestionId },
+                { $set: { signature: { data: decoded.data } } }
+              )
+              return { code: 200, success: true, message: 'Ok' }
+            } catch (err) {
+              logger.error(err)
+              return {
+                code: 500,
+                success: false,
+                message: 'Something went wrong'
+              }
+            }
+          }
+        }
+      )
+    } catch (err) {
+      logger.error(err)
+      return {
+        code: 500,
+        success: false,
+        message: 'Something went wrong'
+      }
+    }
+  }
+
+  public async checkSignature(param: any) {
+    const { id } = param
+    const suggestion = await this.show({ id })
+    if (suggestion) {
+      const signature = _.get(suggestion, 'signature.data')
+      if (signature) {
+        return { success: true, data: suggestion }
+      }
+      const message = _.get(suggestion, 'signature.message')
+      if (message) {
+        return { success: false, message }
+      }
+    } else {
+      return { success: false }
+    }
+  }
+  /* end */
 }

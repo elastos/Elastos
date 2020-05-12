@@ -18,7 +18,8 @@ export default {
       creator: '创建人',
       status: '状态',
       created: '创建日期',
-      updated: '更新日期'
+      updated: '更新日期',
+      signature: '签名'
     },
     abstract: '摘要',
     goal: '目标',

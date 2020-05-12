@@ -88,6 +88,7 @@ export const Suggestion = {
       ref: 'cvote'
     }
   ],
-  tags: [tag]
+  tags: [tag],
+  signature: { data: String, message: String },
+  draftHash: String
 }
-
