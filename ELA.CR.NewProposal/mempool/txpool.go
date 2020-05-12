@@ -26,7 +26,8 @@ type TxPool struct {
 	conflictManager
 	*txPoolCheckpoint
 	chainParams *config.Params
-
+	//proposal of txpool used amout
+	proposalsUsedAmount Fixed64
 	sync.RWMutex
 }
 
@@ -70,7 +71,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 		log.Warn("[CheckTransactionContext] get transaction reference failed")
 		return elaerr.Simple(elaerr.ErrTxUnknownReferredTx, nil)
 	}
-	if errCode := chain.CheckTransactionContext(bestHeight+1, tx, references); errCode != nil {
+	if errCode := chain.CheckTransactionContext(bestHeight+1, tx, references, mp.proposalsUsedAmount); errCode != nil {
 		log.Warn("[TxPool CheckTransactionContext] failed", tx.Hash())
 		return errCode
 	}
@@ -414,12 +415,39 @@ func (mp *TxPool) RemoveTransaction(txn *Transaction) {
 	}
 	mp.Unlock()
 }
+func (mp *TxPool) GetProposalsUsedAmount() Fixed64 {
+	mp.Lock()
+	defer mp.Unlock()
+
+	return mp.proposalsUsedAmount
+}
+
+func (mp *TxPool) dealAddProposalTx(txn *Transaction) {
+	proposal, ok := txn.Payload.(*payload.CRCProposal)
+	if !ok {
+		return
+	}
+	for _, b := range proposal.Budgets {
+		mp.proposalsUsedAmount += b.Amount
+	}
+}
+
+func (mp *TxPool) dealDelProposalTx(txn *Transaction) {
+	proposal, ok := txn.Payload.(*payload.CRCProposal)
+	if !ok {
+		return
+	}
+	for _, b := range proposal.Budgets {
+		mp.proposalsUsedAmount -= b.Amount
+	}
+}
 
 func (mp *TxPool) doAddTransaction(tx *Transaction) elaerr.ELAError {
 	if err := mp.txFees.AddTx(tx); err != nil {
 		return err
 	}
 	mp.txnList[tx.Hash()] = tx
+	mp.dealAddProposalTx(tx)
 	return nil
 }
 
@@ -430,6 +458,7 @@ func (mp *TxPool) doRemoveTransaction(tx *Transaction) {
 
 	if _, exist := mp.txnList[hash]; exist {
 		delete(mp.txnList, hash)
+		mp.dealDelProposalTx(tx)
 		mp.txFees.RemoveTx(hash, uint64(txSize), feeRate)
 		mp.removeTx(tx)
 	}
@@ -446,12 +475,15 @@ func (mp *TxPool) onPopBack(hash Uint256) {
 		return
 	}
 	delete(mp.txnList, hash)
+	mp.dealDelProposalTx(tx)
+
 }
 
 func NewTxPool(params *config.Params) *TxPool {
 	rtn := &TxPool{
-		conflictManager: newConflictManager(),
-		chainParams:     params,
+		conflictManager:     newConflictManager(),
+		chainParams:         params,
+		proposalsUsedAmount: 0,
 	}
 	rtn.txPoolCheckpoint = newTxPoolCheckpoint(
 		rtn, func(m map[Uint256]*Transaction) {
