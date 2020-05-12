@@ -580,8 +580,8 @@ export default class extends StandardPage {
   }
 
   renderCouncilActionsNode() {
-    const { isCouncil, isAdmin, isReference } = this.props
-
+    const { isCouncil, isAdmin, isReference, detail } = this.props
+    const signature = _.get(detail, 'signature.data')
     const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
 
     const considerBtn = (isCouncil || isAdmin) && (
@@ -609,13 +609,13 @@ export default class extends StandardPage {
         </StyledButton>
       </Col>
     )
-    const createFormBtn = isCouncil &&
+    const createFormBtn = signature &&
+      isCouncil &&
       !isReference && (
         <Col xs={24} sm={8}>
           <StyledButton
             type="ebp"
             className="cr-btn cr-btn-default"
-            disabled={this.state.proposeLoading}
             onClick={this.makeIntoPropose}
           >
             {I18N.get('suggestion.btn.makeIntoProposal')}
