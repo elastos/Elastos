@@ -1256,16 +1256,14 @@ export default class extends Base {
         { _id: suggestion._id },
         { $set: { draftHash, ownerPublicKey } }
       )
-
+      const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
+        iat: now,
+        exp: now + (60 * 60 * 24),
         command: 'createsuggestion',
         iss: process.env.APP_DID,
         suggestionId: suggestion._id,
         callbackurl: `${process.env.API_URL}/api/suggestion/signature-callback`,
-        website: {
-          domain: process.env.SERVER_URL,
-          logo: `${process.env.SERVER_URL}/assets/images/cr_ela_wallet.svg`
-        },
         data: {
           proposaltype: 'normal',
           categorydata: 'Null',
@@ -1275,8 +1273,7 @@ export default class extends Base {
           recipient: suggestion.elaAddress
         }
       }
-      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, {
-        expiresIn: '7d',
+      const jwtToken = jwt.sign(JSON.stringify(jwtClaims), process.env.APP_PRIVATE_KEY, {
         algorithm: 'ES256'
       })
       const url = `elastos://crproposal/${jwtToken}`
@@ -1415,16 +1412,14 @@ export default class extends Base {
       if (!suggestion) {
         return { success: false }
       }
-
+      const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
+        iat: now,
+        exp: now + (60 * 60 * 24),
         command: 'createproposal',
         iss: process.env.APP_DID,
         suggestionId: suggestion._id,
         callbackurl: `${process.env.API_URL}/api/suggestion/cm-signature-callback`,
-        website: {
-          domain: process.env.SERVER_URL,
-          logo: `${process.env.SERVER_URL}/assets/images/cr_ela_wallet.svg`
-        },
         data: {
           proposaltype: 'normal',
           categorydata: 'Null',
@@ -1436,8 +1431,7 @@ export default class extends Base {
           did: councilMemberDid
         }
       }
-      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, {
-        expiresIn: '7d',
+      const jwtToken = jwt.sign(JSON.stringify(jwtClaims), process.env.APP_PRIVATE_KEY, {
         algorithm: 'ES256'
       })
       const url = `elastos://crproposal/${jwtToken}`
