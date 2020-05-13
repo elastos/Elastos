@@ -59,13 +59,7 @@ namespace Elastos {
 			void DatabaseFlush();
 
 		public:
-			virtual void onUTXOUpdated(const UTXOArray &utxoAdded, const UTXOArray &utxoDeleted, bool replace);
-
 			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
-
-			virtual void
-			onTxnReplace(const std::vector<TransactionPtr> &txConfirmed, const std::vector<TransactionPtr> &txPending,
-						 const std::vector<TransactionPtr> &txCoinbase);
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 
@@ -75,19 +69,6 @@ namespace Elastos {
 
 			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
 
-			virtual void onUsedAddressSaved(const AddressSet &usedAddress, bool replace);
-
-			virtual void onUsedAddressAdded(const AddressPtr &usedAddress);
-
-			virtual std::vector<TransactionPtr> onLoadTxn(const std::string &chainID, TxnType type) const;
-
-			virtual std::vector<TransactionPtr> onLoadTxnAfter(const std::string &chainID, uint32_t height) const;
-
-			virtual TransactionPtr onLoadTxn(const std::string &chainID, const uint256 &hash) const;
-
-			virtual bool onContainTxn(const uint256 &hash) const;
-
-			virtual std::vector<TransactionPtr> onLoadUTXOTxn(const std::string &chainID) const;
 		public:
 			virtual void syncStarted();
 
@@ -110,12 +91,6 @@ namespace Elastos {
 			virtual void connectStatusChanged(const std::string &status);
 
 		protected:
-			virtual bool ExistPendingTxnTable() const;
-
-			virtual AddressSet LoadUsedAddress() const;
-
-			virtual std::vector<UTXOPtr> LoadUTXOs() const;
-
 			virtual void DeleteTxn(const uint256 &hash);
 
 			virtual std::vector<TransactionPtr> loadCoinbaseTxns(const std::string &chainID);

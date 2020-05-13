@@ -499,5 +499,58 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		DatabaseManager *dbmNew = new DatabaseManager(DBFILE);
 		delete dbmNew;
 	}
+
+	SECTION("Used address Test") {
+		if (boost::filesystem::exists(DBFILE) && boost::filesystem::is_regular_file(DBFILE)) {
+			boost::filesystem::remove(DBFILE);
+		}
+
+		REQUIRE(!boost::filesystem::exists(DBFILE));
+#define TEST_USED_ADDRESS_CNT DEFAULT_RECORD_CNT
+		std::vector<std::string> usedAddress;
+
+		// prepare data
+		for (int i = 0; i < TEST_USED_ADDRESS_CNT; ++i) {
+			std::string hash = getRanduint256().GetHex();
+			usedAddress.push_back(hash);
+		}
+
+		// save
+		DatabaseManager *dbm = new DatabaseManager(DBFILE);
+		REQUIRE(dbm->PutUsedAddresses(usedAddress, false));
+		// test insert or replace
+		REQUIRE(dbm->PutUsedAddresses(usedAddress, false));
+
+		// read & verify
+		std::vector<std::string> usedAddressVerify = dbm->GetUsedAddresses();
+		REQUIRE(TEST_USED_ADDRESS_CNT == usedAddressVerify.size());
+		for (int i = 0; i < TEST_USED_ADDRESS_CNT; ++i)
+			REQUIRE(usedAddress[i] == usedAddressVerify[i]);
+
+		// save and replace
+		usedAddress.clear();
+
+		// prepare data
+		for (int i = 0; i < TEST_USED_ADDRESS_CNT; ++i) {
+			std::string hash = getRanduint256().GetHex();
+			usedAddress.push_back(hash);
+		}
+
+		// save & replace
+		REQUIRE(dbm->PutUsedAddresses(usedAddress, true));
+
+		// read & verify
+		usedAddressVerify = dbm->GetUsedAddresses();
+		REQUIRE(TEST_USED_ADDRESS_CNT == usedAddressVerify.size());
+		for (int i = 0; i < TEST_USED_ADDRESS_CNT; ++i)
+			REQUIRE(usedAddress[i] == usedAddressVerify[i]);
+
+		// delete all
+		REQUIRE(dbm->DeleteAllUsedAddresses());
+		REQUIRE(dbm->GetUTXOs().empty());
+
+		delete dbm;
+	}
+
 }
 

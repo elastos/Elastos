@@ -53,5 +53,9 @@ namespace Elastos {
 			return true;
 		}
 
+		bool IDTransaction::IsIDTransaction() const {
+			return _type == didTransaction;
+		}
+
 	}
 }

@@ -49,9 +49,7 @@ namespace Elastos {
 
 			if (_wallet == nullptr) {
 				_wallet = WalletPtr(new Wallet(_peerManager->GetLastBlockHeight(),
-											   ExistPendingTxnTable(),
-											   walletID, chainID, LoadUsedAddress(),
-											   LoadUTXOs(), loadAssets(),
+											   walletID, chainID,
 											   subAccount, createWalletListener(), database));
 				_peerManager->SetWallet(_wallet);
 			}
@@ -69,15 +67,7 @@ namespace Elastos {
 			return _peerManager;
 		}
 
-		void CoreSpvService::onUTXOUpdated(const UTXOArray &utxoAdded, const UTXOArray &utxoDeleted, bool replace) {
-		}
-
 		void CoreSpvService::onBalanceChanged(const uint256 &asset, const BigInt &balance) {
-		}
-
-		void CoreSpvService::onTxnReplace(const std::vector<TransactionPtr> &txConfirmed,
-										  const std::vector<TransactionPtr> &txPending,
-										  const std::vector<TransactionPtr> &txCoinbase) {
 		}
 
 		void CoreSpvService::onTxAdded(const TransactionPtr &transaction) {
@@ -90,32 +80,6 @@ namespace Elastos {
 		}
 
 		void CoreSpvService::onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller) {
-		}
-
-		void CoreSpvService::onUsedAddressSaved(const AddressSet &usedAddress, bool replace) {
-		}
-
-		void CoreSpvService::onUsedAddressAdded(const AddressPtr &usedAddress) {
-		}
-
-		std::vector<TransactionPtr> CoreSpvService::onLoadTxn(const std::string &chainID, TxnType type) const {
-			return {};
-		}
-
-		std::vector<TransactionPtr> CoreSpvService::onLoadTxnAfter(const std::string &chainID, uint32_t height) const {
-			return {};
-		}
-
-		TransactionPtr CoreSpvService::onLoadTxn(const std::string &chainID, const uint256 &hash) const {
-			return nullptr;
-		}
-
-		bool CoreSpvService::onContainTxn(const uint256 &hash) const {
-			return false;
-		}
-
-		std::vector<TransactionPtr> CoreSpvService::onLoadUTXOTxn(const std::string &chainID) const {
-			return {};
 		}
 
 		void CoreSpvService::syncStarted() {
@@ -148,18 +112,6 @@ namespace Elastos {
 		}
 
 		void CoreSpvService::connectStatusChanged(const std::string &status) {
-		}
-
-		bool CoreSpvService::ExistPendingTxnTable() const {
-			return false;
-		}
-
-		AddressSet CoreSpvService::LoadUsedAddress() const {
-			return {};
-		}
-
-		UTXOArray CoreSpvService::LoadUTXOs() const {
-			return {};
 		}
 
 		void CoreSpvService::DeleteTxn(const uint256 &hash) {
@@ -408,28 +360,9 @@ namespace Elastos {
 				_listener(listener) {
 		}
 
-		void WrappedExceptionWalletListener::onUTXOUpdated(const UTXOArray &utxoAdded, const UTXOArray &utxoDeleted,
-														   bool replace) {
-			try {
-				_listener->onUTXOUpdated(utxoAdded, utxoDeleted, false);
-			} catch (const std::exception &e) {
-				Log::error("{} e: {}", GetFunName(), e.what());
-			}
-		}
-
 		void WrappedExceptionWalletListener::onBalanceChanged(const uint256 &asset, const BigInt &balance) {
 			try {
 				_listener->onBalanceChanged(asset, balance);
-			} catch (const std::exception &e) {
-				Log::error("{} e: {}", GetFunName(), e.what());
-			}
-		}
-
-		void WrappedExceptionWalletListener::onTxnReplace(const std::vector<TransactionPtr> &txConfirmed,
-														  const std::vector<TransactionPtr> &txPending,
-														  const std::vector<TransactionPtr> &txCoinbase) {
-			try {
-				_listener->onTxnReplace(txConfirmed, txPending, txCoinbase);
 			} catch (const std::exception &e) {
 				Log::error("{} e: {}", GetFunName(), e.what());
 			}
@@ -471,70 +404,6 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionWalletListener::onUsedAddressSaved(const AddressSet &usedAddress, bool replace) {
-			try {
-				_listener->onUsedAddressSaved(usedAddress, replace);
-			} catch (const std::exception &e) {
-				Log::error("{} e: {}", GetFunName(), e.what());
-			}
-		}
-
-		void WrappedExceptionWalletListener::onUsedAddressAdded(const AddressPtr &usedAddress) {
-			try {
-				_listener->onUsedAddressAdded(usedAddress);
-			} catch (const std::exception &e) {
-				Log::error("{} e: {}", GetFunName(), e.what());
-			}
-		}
-
-		std::vector<TransactionPtr>
-		WrappedExceptionWalletListener::onLoadTxn(const std::string &chainID, TxnType type) const {
-			try {
-				return _listener->onLoadTxn(chainID, type);
-			} catch (const std::exception &e) {
-				Log::error("{} e: {}", GetFunName(), e.what());
-			}
-			return {};
-		}
-
-		std::vector<TransactionPtr>
-		WrappedExceptionWalletListener::onLoadTxnAfter(const std::string &chainID, uint32_t height) const {
-			try {
-				return _listener->onLoadTxnAfter(chainID, height);
-			} catch (const std::exception &e) {
-				Log::error("{} e: {}", GetFunName(), e.what());
-			}
-
-			return {};
-		}
-
-		TransactionPtr WrappedExceptionWalletListener::onLoadTxn(const std::string &chainID, const uint256 &hash) const {
-			try {
-				return _listener->onLoadTxn(chainID, hash);
-			} catch (const std::exception &e) {
-				Log::error("{} e: {}", GetFunName(), e.what());
-			}
-			return nullptr;
-		}
-
-		bool WrappedExceptionWalletListener::onContainTxn(const uint256 &hash) const {
-			try {
-				return _listener->onContainTxn(hash);
-			} catch (const std::exception &e) {
-				Log::error("{} e: {}", GetFunName(), e.what());
-			}
-			return false;
-		}
-
-		std::vector<TransactionPtr> WrappedExceptionWalletListener::onLoadUTXOTxn(const std::string &chainID) const {
-			try {
-				return _listener->onLoadUTXOTxn(chainID);
-			} catch (const std::exception &e) {
-				Log::error("{} e: {}", GetFunName(), e.what());
-			}
-			return {};
-		}
-
 		WrappedExecutorWalletListener::WrappedExecutorWalletListener(
 				Wallet::Listener *listener,
 				Executor *executor) :
@@ -542,33 +411,10 @@ namespace Elastos {
 				_executor(executor) {
 		}
 
-		void WrappedExecutorWalletListener::onUTXOUpdated(const UTXOArray &utxoAdded, const UTXOArray &utxoDeleted,
-														  bool replace) {
-			_executor->Execute(Runnable([this, utxoAdded, utxoDeleted, replace]() -> void {
-				try {
-					_listener->onUTXOUpdated(utxoAdded, utxoDeleted, replace);
-				} catch (const std::exception &e) {
-					Log::error("{} e: {}", GetFunName(), e.what());
-				}
-			}));
-		}
-
 		void WrappedExecutorWalletListener::onBalanceChanged(const uint256 &asset, const BigInt &balance) {
 			_executor->Execute(Runnable([this, asset, balance]() -> void {
 				try {
 					_listener->onBalanceChanged(asset, balance);
-				} catch (const std::exception &e) {
-					Log::error("{} e: {}", GetFunName(), e.what());
-				}
-			}));
-		}
-
-		void WrappedExecutorWalletListener::onTxnReplace(const std::vector<TransactionPtr> &txConfirmed,
-														 const std::vector<TransactionPtr> &txPending,
-														 const std::vector<TransactionPtr> &txCoinbase) {
-			_executor->Execute(Runnable([this, txConfirmed, txPending, txCoinbase]() -> void {
-				try {
-					_listener->onTxnReplace(txConfirmed, txPending, txCoinbase);
 				} catch (const std::exception &e) {
 					Log::error("{} e: {}", GetFunName(), e.what());
 				}
@@ -616,48 +462,6 @@ namespace Elastos {
 					Log::error("{} e: {}", GetFunName(), e.what());
 				}
 			}));
-		}
-
-		void WrappedExecutorWalletListener::onUsedAddressSaved(const AddressSet &usedAddress, bool replace) {
-			_executor->Execute(Runnable([this, usedAddress, replace]() -> void {
-				try {
-					_listener->onUsedAddressSaved(usedAddress, replace);
-				} catch (const std::exception &e) {
-					Log::error("{} e: {}", GetFunName(), e.what());
-				}
-			}));
-		}
-
-		void WrappedExecutorWalletListener::onUsedAddressAdded(const AddressPtr &usedAddress) {
-			_executor->Execute(Runnable([this, usedAddress]() -> void {
-				try {
-					_listener->onUsedAddressAdded(usedAddress);
-				} catch (const std::exception &e) {
-					Log::error("{} e: {}", GetFunName(), e.what());
-				}
-			}));
-		}
-
-		std::vector<TransactionPtr>
-		WrappedExecutorWalletListener::onLoadTxn(const std::string &chainID, TxnType type) const {
-			return _listener->onLoadTxn(chainID, type);
-		}
-
-		std::vector<TransactionPtr>
-		WrappedExecutorWalletListener::onLoadTxnAfter(const std::string &chainID, uint32_t height) const {
-			return _listener->onLoadTxnAfter(chainID, height);
-		}
-
-		TransactionPtr WrappedExecutorWalletListener::onLoadTxn(const std::string &chainID, const uint256 &hash) const {
-			return _listener->onLoadTxn(chainID, hash);
-		}
-
-		bool WrappedExecutorWalletListener::onContainTxn(const uint256 &hash) const {
-			return _listener->onContainTxn(hash);
-		}
-
-		std::vector<TransactionPtr> WrappedExecutorWalletListener::onLoadUTXOTxn(const std::string &chainID) const {
-			return _listener->onLoadUTXOTxn(chainID);
 		}
 
 	}

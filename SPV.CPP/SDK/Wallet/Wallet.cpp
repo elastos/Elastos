@@ -17,11 +17,11 @@
 #include <Plugin/Transaction/Payload/RegisterAsset.h>
 #include <Plugin/Registry.h>
 #include <Wallet/UTXO.h>
+#include "Database/DatabaseManager.h"
 
 #include <ISubWallet.h>
 
 #include <boost/scoped_ptr.hpp>
-#include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <cstdlib>
 
@@ -29,12 +29,8 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		Wallet::Wallet(uint32_t lastBlockHeight,
-					   bool existPendingTxnTable,
 					   const std::string &walletID,
 					   const std::string &chainID,
-					   const AddressSet &usedAddress,
-					   const std::vector<UTXOPtr> &utxo,
-					   const std::vector<AssetPtr> &assetArray,
 					   const SubAccountPtr &subAccount,
 					   const boost::shared_ptr<Wallet::Listener> &listener,
 					   const DatabaseManagerPtr &database) :
@@ -45,7 +41,11 @@ namespace Elastos {
 			_subAccount(subAccount),
 			_database(database) {
 
+			std::vector<std::string> txHashDPoS, txHashCRC, txHashProposal, txHashDID;
 			_listener = boost::weak_ptr<Listener>(listener);
+
+			std::vector<UTXOPtr> utxo = LoadUTXOs();
+			std::vector<AssetPtr> assetArray = LoadAssets();
 
 			if (assetArray.empty()) {
 				InstallDefaultAsset();
@@ -53,20 +53,38 @@ namespace Elastos {
 				InstallAssets(assetArray);
 			}
 
-			if (existPendingTxnTable) {
+			if (database->ExistPendingTxnTable()) {
+				AddressSet usedAddress = LoadUsedAddress();
 				_subAccount->SetUsedAddresses(usedAddress);
 
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 
-				std::vector<TransactionPtr> utxoTxns = LoadUTXOTxn();
-				std::map<uint256, TransactionPtr> utxoMap;
-				for (TransactionPtr &tx : utxoTxns)
-					utxoMap[tx->GetHash()] = tx;
+				std::map<uint256, TransactionPtr> txnMap;
+
+				if (!database->ExistTxHashTable()) {
+					// TODO: will remove after several version
+					std::vector<TransactionPtr> txns = LoadTxn(TxnType(TXN_NORMAL | TXN_COINBASE));
+					for (TransactionPtr &tx : txns) {
+						txnMap[tx->GetHash()] = tx;
+						if (tx->IsDPoSTransaction())
+							txHashDPoS.push_back(tx->GetHash().GetHex());
+						else if (tx->IsCRCTransaction())
+							txHashCRC.push_back(tx->GetHash().GetHex());
+						else if (tx->IsProposalTransaction())
+							txHashProposal.push_back(tx->GetHash().GetHex());
+						else if (tx->IsIDTransaction())
+							txHashDID.push_back(tx->GetHash().GetHex());
+					}
+				} else {
+					std::vector<TransactionPtr> utxoTxns = LoadUTXOTxn();
+					for (TransactionPtr &tx : utxoTxns)
+						txnMap[tx->GetHash()] = tx;
+				}
 
 				for (const UTXOPtr &u : utxo) {
-					std::map<uint256, TransactionPtr>::iterator it = utxoMap.find(u->Hash());
-					if (it != utxoMap.end()) {
+					std::map<uint256, TransactionPtr>::iterator it = txnMap.find(u->Hash());
+					if (it != txnMap.end()) {
 						TransactionPtr tx = it->second;
 						OutputPtr o = tx->OutputOfIndex(u->Index());
 						GroupedAssetPtr groupedAsset = GetGroupedAsset(o->AssetID());
@@ -86,9 +104,11 @@ namespace Elastos {
 						Log::error("utxo hash {} not found", u->Hash().GetHex());
 					}
 				}
+				SaveSpecialTxHash(txHashDPoS, txHashCRC, txHashProposal, txHashDID);
 			} else {
-				std::vector<TransactionPtr> txNormal = loadTxn(TXN_NORMAL);
-				std::vector<TransactionPtr> txCoinbase = loadTxn(TXN_COINBASE);
+				// TODO: will remove after several version
+				std::vector<TransactionPtr> txNormal = LoadTxn(TXN_NORMAL);
+				std::vector<TransactionPtr> txCoinbase = LoadTxn(TXN_COINBASE);
 				std::vector<TransactionPtr> txPending;
 				AddressSet usedAddr;
 				UTXOArray trash;
@@ -96,6 +116,16 @@ namespace Elastos {
 				for (std::vector<TransactionPtr>::iterator it = txNormal.begin(); it != txNormal.end();) {
 					for (const OutputPtr &o : (*it)->GetOutputs())
 						usedAddr.insert(o->Addr());
+
+					if ((*it)->IsDPoSTransaction())
+						txHashDPoS.push_back((*it)->GetHash().GetHex());
+					else if ((*it)->IsCRCTransaction())
+						txHashCRC.push_back((*it)->GetHash().GetHex());
+					else if ((*it)->IsProposalTransaction())
+						txHashProposal.push_back((*it)->GetHash().GetHex());
+					else if ((*it)->IsIDTransaction())
+						txHashDID.push_back((*it)->GetHash().GetHex());
+
 					if ((*it)->IsCoinBase()) {
 						txCoinbase.push_back(*it);
 						it = txNormal.erase(it);
@@ -147,6 +177,7 @@ namespace Elastos {
 				txnReplace(txNormal, txPending, txCoinbase);
 				UTXOUpdated(result, {}, true);
 				usedAddressSaved(usedAddr, true);
+				SaveSpecialTxHash(txHashDPoS, txHashCRC, txHashProposal, txHashDID);
 			}
 			SPVLOG_DEBUG("{} balance info {}", _walletID, GetBalanceInfo().dump(4));
 		}
@@ -363,7 +394,7 @@ namespace Elastos {
 			std::map<uint256, BigInt> changedBalance;
 
 			assert(txHash != 0);
-			const TransactionPtr tx = loadTxn(txHash);
+			const TransactionPtr tx = LoadTxn(txHash);
 
 			if (tx) {
 				std::vector<TransactionPtr> txnsAfter = loadTxnAfter(tx->GetBlockHeight());
@@ -422,7 +453,7 @@ namespace Elastos {
 				_blockHeight = blockHeight;
 
 			for (i = 0; i < txHashes.size(); i++) {
-				TransactionPtr tx = loadTxn(txHashes[i]);
+				TransactionPtr tx = LoadTxn(txHashes[i]);
 				if (tx) {
 					bool needUpdate = false;
 					if (tx->GetBlockHeight() == blockHeight && tx->GetTimestamp() == timestamp)
@@ -473,7 +504,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr Wallet::TransactionForHash(const uint256 &txHash) const {
-			return loadTxn(txHash);
+			return LoadTxn(txHash);
 		}
 
 		bool Wallet::TransactionIsValid(const TransactionPtr &tx) {
@@ -578,7 +609,7 @@ namespace Elastos {
 
 			for (InputArray::iterator in = tx->GetInputs().begin(); in != tx->GetInputs().end(); ++in) {
 				if (!tx->IsCoinBase()) {
-					TransactionPtr t = loadTxn((*in)->TxHash());
+					TransactionPtr t = LoadTxn((*in)->TxHash());
 					UTXOPtr cb = nullptr;
 					if (t) {
 						OutputPtr o = t->OutputOfIndex((*in)->Index());
@@ -774,7 +805,7 @@ namespace Elastos {
 				}
 
 				for (const InputPtr &in : tx->GetInputs()) {
-					TransactionPtr txInput = loadTxn(in->TxHash());
+					TransactionPtr txInput = LoadTxn(in->TxHash());
 					if (txInput) {
 						OutputPtr o = txInput->OutputOfIndex(in->Index());
 						if (o) {
@@ -809,20 +840,36 @@ namespace Elastos {
 			return _subAccount->UnusedAddresses(gapLimit, internal);
 		}
 
-		std::vector<TransactionPtr> Wallet::GetTransactions(const bytes_t &types) const {
-			std::vector<TransactionPtr> result, txNormal;
-
-			txNormal = loadTxn(TXN_NORMAL);
-			for (TransactionPtr &tx : txNormal) {
-				for (const unsigned char &type : types) {
-					if (type == tx->GetTransactionType()) {
-						result.push_back(tx);
-						break;
-					}
-				}
+		std::vector<TransactionPtr> Wallet::GetDPoSTransactions() const {
+			if (!_database.expired()) {
+				return _database.lock()->GetTxDPoS(_chainID);
 			}
 
-			return result;
+			return {};
+		}
+
+		std::vector<TransactionPtr> Wallet::GetCRCTransactions() const {
+			if (!_database.expired()) {
+				return _database.lock()->GetTxCRC(_chainID);
+			}
+
+			return {};
+		}
+
+		std::vector<TransactionPtr> Wallet::GetProposalTransactions() const {
+			if (!_database.expired()) {
+				return _database.lock()->GetTxProposal(_chainID);
+			}
+
+			return {};
+		}
+
+		std::vector<TransactionPtr> Wallet::GetDIDTransactions() const {
+			if (!_database.expired()) {
+				return _database.lock()->GetTxDID(_chainID);
+			}
+
+			return {};
 		}
 
 		std::map<uint256, TransactionPtr> Wallet::TransactionsForInputs(const InputArray &inputs) const {
@@ -919,7 +966,7 @@ namespace Elastos {
 			UTXOPtr cb = nullptr;
 			OutputPtr output = nullptr;
 
-			TransactionPtr tx = loadTxn(in->TxHash());
+			TransactionPtr tx = LoadTxn(in->TxHash());
 			if (tx) {
 				output = tx->OutputOfIndex(in->Index());
 				if (output && _subAccount->ContainsAddress(output->Addr())) {
@@ -1010,7 +1057,7 @@ namespace Elastos {
 				}
 
 				for (const InputPtr &in : tx->GetInputs()) {
-					TransactionPtr txInput = loadTxn(in->TxHash());
+					TransactionPtr txInput = LoadTxn(in->TxHash());
 					if (txInput && txInput->GetBlockHeight() != TX_UNCONFIRMED) {
 						OutputPtr o = txInput->OutputOfIndex(in->Index());
 						if (o) {
@@ -1084,101 +1131,236 @@ namespace Elastos {
 		}
 
 		bool Wallet::IsUTXOSpending(const UTXOPtr &utxo) const {
-			if (_spendingOutputs.find(utxo) != _spendingOutputs.end()) {
-				return true;
-			}
-
-			return false;
+			return _spendingOutputs.find(utxo) != _spendingOutputs.end();
 		}
 
-		void Wallet::UTXOUpdated(const UTXOArray &added, const UTXOArray &deleted, bool replace) {
-			if (!_listener.expired()) {
-				_listener.lock()->onUTXOUpdated(added, deleted, replace);
+		void Wallet::UTXOUpdated(const UTXOArray &utxoAdded, const UTXOArray &utxoDeleted, bool replace) {
+			if (!_database.expired()) {
+				std::vector<UTXOEntity> added, deleted;
+
+				added.reserve(utxoAdded.size());
+				for (const UTXOPtr &u : utxoAdded)
+					added.emplace_back(u->Hash().GetHex(), u->Index());
+
+				for (const UTXOPtr &u : utxoDeleted)
+					deleted.emplace_back(u->Hash().GetHex(), u->Index());
+
+				_database.lock()->UTXOUpdate(added, deleted, replace);
 			}
 		}
 
 		void Wallet::balanceChanged(const uint256 &asset, const BigInt &balance) {
-			if (!_listener.expired()) {
+			if (!_listener.expired())
 				_listener.lock()->onBalanceChanged(asset, balance);
-			}
 		}
 
 		void Wallet::txnReplace(const std::vector<TransactionPtr> &txConfirmed,
 								const std::vector<TransactionPtr> &txPending,
 								const std::vector<TransactionPtr> &txCoinbase) {
-			if (!_listener.expired()) {
-				_listener.lock()->onTxnReplace(txConfirmed, txPending, txCoinbase);
-			}
+			if (!_database.expired())
+				_database.lock()->ReplaceTxns(txConfirmed, txPending, txCoinbase);
 		}
 
 		void Wallet::txAdded(const TransactionPtr &tx) {
-			if (!_listener.expired()) {
+			if (!_listener.expired())
 				_listener.lock()->onTxAdded(tx);
-			}
 		}
 
 		void Wallet::txUpdated(const std::vector<TransactionPtr> &txns) {
 			if (!_listener.expired()) {
 				_listener.lock()->onTxUpdated(txns);
+				if (!_database.expired()) {
+					std::vector<std::string> txHashDPoS, txHashCRC, txHashProposal, txHashDID;
+
+					for (const TransactionPtr &tx : txns) {
+						if (!tx->IsUnconfirmed()) {
+							if (tx->IsDPoSTransaction())
+								txHashDPoS.push_back(tx->GetHash().GetHex());
+							else if (tx->IsCRCTransaction())
+								txHashCRC.push_back(tx->GetHash().GetHex());
+							else if (tx->IsProposalTransaction())
+								txHashProposal.push_back(tx->GetHash().GetHex());
+							else if (tx->IsIDTransaction())
+								txHashDID.push_back(tx->GetHash().GetHex());
+						}
+					}
+					SaveSpecialTxHash(txHashDPoS, txHashCRC, txHashProposal, txHashDID);
+				}
 			}
 		}
 
 		void Wallet::txDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan) {
-			if (!_listener.expired()) {
+			if (!_listener.expired())
 				_listener.lock()->onTxDeleted(tx, notifyUser, recommendRescan);
-			}
 		}
 
 		void Wallet::assetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller) {
-			if (!_listener.expired()) {
+			if (!_listener.expired())
 				_listener.lock()->onAssetRegistered(asset, amount, controller);
-			}
 		}
 
-		std::vector<TransactionPtr> Wallet::loadTxn(TxnType type) const {
-			if (!_listener.expired())
-				return _listener.lock()->onLoadTxn(_chainID, type);
+		std::vector<TransactionPtr> Wallet::LoadTxn(TxnType type) const {
+			if (!_database.expired()) {
+				std::vector<TransactionPtr> txns, tmp;
+				DatabaseManagerPtr db = _database.lock();
+
+				if ((type & TXN_PENDING) == TXN_PENDING) {
+					tmp = db->GetAllPendingTxns(_chainID);
+					txns.insert(txns.end(), tmp.begin(), tmp.end());
+				}
+
+				if ((type & TXN_NORMAL) == TXN_NORMAL) {
+					tmp = db->GetNormalTxns(_chainID);
+					txns.insert(txns.end(), tmp.begin(), tmp.end());
+				}
+
+				if ((type & TXN_COINBASE) == TXN_COINBASE) {
+					tmp = db->GetCoinbaseTxns(_chainID);
+					txns.insert(txns.end(), tmp.begin(), tmp.end());
+				}
+
+				return txns;
+			}
 
 			return {};
 		}
 
 		std::vector<TransactionPtr> Wallet::loadTxnAfter(uint32_t height) const {
-			if (!_listener.expired())
-				return _listener.lock()->onLoadTxnAfter(_chainID, height);
+			if (!_database.expired()) {
+				DatabaseManagerPtr db = _database.lock();
+
+				std::vector<TransactionPtr> result = db->GetAllPendingTxns(_chainID);
+				std::vector<TransactionPtr> txTmp = db->GetNormalTxns(_chainID, height);
+				result.insert(result.end(), txTmp.begin(), txTmp.end());
+				txTmp = db->GetCoinbaseTxns(_chainID, height);
+				result.insert(result.end(), txTmp.begin(), txTmp.end());
+
+				std::sort(result.begin(), result.end(), [](const TransactionPtr &x, const TransactionPtr &y) {
+					return x->GetBlockHeight() < y->GetBlockHeight();
+				});
+
+				return result;
+			}
 
 			return {};
 		}
 
-		TransactionPtr Wallet::loadTxn(const uint256 &hash) const {
-			if (!_listener.expired())
-				return _listener.lock()->onLoadTxn(_chainID, hash);
+		TransactionPtr Wallet::LoadTxn(const uint256 &hash) const {
+			if (!_database.expired()) {
+				DatabaseManagerPtr db = _database.lock();
+				TransactionPtr tx = db->GetNormalTxn(hash, _chainID);
+				if (tx != nullptr)
+					return tx;
+
+				tx = db->GetPendingTxn(hash, _chainID);
+				if (tx != nullptr)
+					return tx;
+
+				return db->GetCoinbaseTxn(hash, _chainID);
+			}
 
 			return nullptr;
 		}
 
 		bool Wallet::containTxn(const uint256 &hash) const {
-			bool contain = false;
-			if (!_listener.expired())
-				contain = _listener.lock()->onContainTxn(hash);
+			if (!_database.expired())
+				return _database.lock()->ContainTxn(hash);
 
-			return contain;
+			return false;
 		}
 
 		void Wallet::usedAddressSaved(const AddressSet &usedAddress, bool replace) {
-			if (!_listener.expired())
-				_listener.lock()->onUsedAddressSaved(usedAddress, replace);
-		}
-
-		void Wallet::usedAddressAdded(const AddressPtr &usedAddress) {
-			if (!_listener.expired())
-				_listener.lock()->onUsedAddressAdded(usedAddress);
+			if (!_database.expired()) {
+				std::vector<std::string> addresses;
+				for (const AddressPtr &a : usedAddress)
+					addresses.push_back(a->String());
+				_database.lock()->PutUsedAddresses(addresses, replace);
+			}
 		}
 
 		std::vector<TransactionPtr> Wallet::LoadUTXOTxn() const {
-			if (!_listener.expired())
-				return _listener.lock()->onLoadUTXOTxn(_chainID);
+			if (!_database.expired()) {
+				DatabaseManagerPtr db = _database.lock();
+				std::vector<TransactionPtr> txns = db->GetCoinbaseUTXOTxn(_chainID);
+				std::vector<TransactionPtr> tmp = db->GetNormalUTXOTxn(_chainID);
+
+				txns.insert(txns.end(), tmp.begin(), tmp.end());
+
+				return txns;
+			}
 
 			return {};
+		}
+
+		std::vector<UTXOPtr> Wallet::LoadUTXOs() const {
+			if (!_database.expired()) {
+				std::vector<UTXOEntity> entities = _database.lock()->GetUTXOs();
+				std::vector<UTXOPtr> allUTXOs;
+
+				for (UTXOEntity &entity : entities) {
+					UTXOPtr u(new UTXO(uint256(entity.Hash()), entity.Index()));
+					allUTXOs.push_back(u);
+				}
+
+				return allUTXOs;
+			}
+
+			return {};
+		}
+
+		std::vector<AssetPtr> Wallet::LoadAssets() {
+			if (!_database.expired()) {
+				std::vector<AssetPtr> assets;
+				std::vector<AssetEntity> assetsEntity = _database.lock()->GetAllAssets();
+
+				for (size_t i = 0; i < assetsEntity.size(); ++i) {
+					ByteStream stream(assetsEntity[i].Asset);
+					AssetPtr asset(new Asset());
+					if (asset->Deserialize(stream)) {
+						asset->SetHash(uint256(assetsEntity[i].AssetID));
+						assets.push_back(asset);
+					}
+				}
+
+				return assets;
+			}
+
+			return {};
+		}
+
+		AddressSet Wallet::LoadUsedAddress() const {
+			if (!_database.expired()) {
+
+				AddressSet usedAddress;
+				std::vector<std::string> usedAddr = _database.lock()->GetUsedAddresses();
+
+				for (const std::string &addr : usedAddr)
+					usedAddress.insert(AddressPtr(new Address(addr)));
+
+				return usedAddress;
+			}
+
+			return {};
+		}
+
+		void Wallet::SaveSpecialTxHash(const std::vector<std::string> &txHashDPoS,
+									   const std::vector<std::string> &txHashCRC,
+									   const std::vector<std::string> &txHashProposal,
+									   const std::vector<std::string> &txHashDID) {
+			if (!_database.expired()) {
+				DatabaseManagerPtr db = _database.lock();
+				if (!txHashDPoS.empty())
+					db->PutTxHashDPoS(txHashDPoS);
+
+				if (!txHashCRC.empty())
+					db->PutTxHashCRC(txHashCRC);
+
+				if (!txHashProposal.empty())
+					db->PutTxHashProposal(txHashProposal);
+
+				if (!txHashDID.empty())
+					db->PutTxHashDID(txHashDID);
+			}
 		}
 
 	}

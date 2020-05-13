@@ -63,15 +63,17 @@ namespace Elastos {
 
 			nlohmann::json GetVotedCRList() const override;
 
-			nlohmann::json CreateVoteCRCProposalTransaction(const std::string &fromAddress,
-															const nlohmann::json &votes,
-															const std::string &memo,
-															const nlohmann::json &invalidCandidates) override;
+			nlohmann::json CreateVoteCRCProposalTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &votes,
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates) override;
 
-			nlohmann::json CreateImpeachmentCRCTransaction(const std::string &fromAddress,
-														   const nlohmann::json &votes,
-														   const std::string &memo,
-														   const nlohmann::json &invalidCandidates) override;
+			nlohmann::json CreateImpeachmentCRCTransaction(
+				const std::string &fromAddress,
+				const nlohmann::json &votes,
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates) override;
 
 			nlohmann::json GetVoteInfo(const std::string &type) const override;
 

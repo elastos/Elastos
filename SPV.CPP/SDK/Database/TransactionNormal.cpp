@@ -325,16 +325,16 @@ namespace Elastos {
 			return txns;
 		}
 
-		std::vector<TransactionPtr> TransactionNormal::GetUTXOTxn(const std::string &chainID,
-																  const std::string &utxoTableName,
-																  const std::string &utxoTxHashColumnName) const {
+		std::vector<TransactionPtr> TransactionNormal::GetTxnBaseOnHash(const std::string &chainID,
+																		const std::string &tableName,
+																		const std::string &txHashColumnName) const {
 			std::vector<TransactionPtr> txns;
 			std::string sql;
 
 			sql = "SELECT " + _txHash + "," + _buff + "," + _blockHeight + "," + _timestamp + "," + _iso +
 				  " FROM " + _tableName + " WHERE " +
-				  _txHash + " IN (SELECT " + utxoTxHashColumnName + " FROM " + utxoTableName + " GROUP BY " +
-				  utxoTxHashColumnName + ");";
+				  _txHash + " IN (SELECT " + txHashColumnName + " FROM " + tableName + " GROUP BY " +
+				  txHashColumnName + ");";
 
 			sqlite3_stmt *stmt = NULL;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -346,7 +346,7 @@ namespace Elastos {
 
 			int r = sqlite3_finalize(stmt);
 			if (SQLITE_OK != r) {
-				Log::error("Tx get utxo txn({}) finalize: r = {}, extend code: {}", txns.size(), r, _sqlite->ExtendedEerrCode());
+				Log::error("Tx get txn({}) finalize: r = {}, extend code: {}", txns.size(), r, _sqlite->ExtendedEerrCode());
 				return {};
 			}
 

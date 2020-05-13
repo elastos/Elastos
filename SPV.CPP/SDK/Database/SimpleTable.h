@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Elastos Foundation
+ * Copyright (c) 2020 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,47 +20,46 @@
  * SOFTWARE.
  */
 
-#ifndef __ELASTOS_SDK_TABLEBASE_H__
-#define __ELASTOS_SDK_TABLEBASE_H__
+#ifndef __ELASTOS_SPVSDK_SIMPLETABLE_H__
+#define __ELASTOS_SPVSDK_SIMPLETABLE_H__
 
-#include "Sqlite.h"
-#include <CMakeConfig.h>
-
-#include <boost/function.hpp>
-
+#include "TableBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-#define ISO_OLD "ela"
-#define ISO "ela1"
-		class TableBase {
+		class SimpleTable : public TableBase {
 		public:
-			TableBase(Sqlite *sqlite);
+			SimpleTable(Sqlite *sqlite, SqliteTransactionType type = IMMEDIATE);
 
-			TableBase(SqliteTransactionType type, Sqlite *sqlite);
+			~SimpleTable();
 
 			virtual void InitializeTable();
 
-			virtual ~TableBase();
+			bool Puts(const std::vector<std::string> &items, bool replace);
 
-			void flush();
+			std::vector<std::string> Gets() const;
+
+			bool DeleteAll();
+
+			bool ContainTable() const;
+
+			const std::string &GetTableName() const;
+
+			const std::string &GetTxHashColumnName() const;
+
+		private:
+			bool PutInternal(const std::string &item);
 
 		protected:
-			bool ContainTable(const std::string &tableName) const;
+			std::string _tableName;
+			std::string _columnName;
+			std::string _tableCreation;
 
-			void InitializeTable(const std::string &constructScript);
-
-			bool DoTransaction(const boost::function<bool()> &fun) const;
-
-			bool DeleteAll(const std::string &tableName);
-
-		protected:
-			Sqlite *_sqlite;
-			SqliteTransactionType _txType;
+			bool _existTable;
 		};
 
 	}
 }
 
-#endif //__ELASTOS_SDK_TABLEBASE_H__
+#endif

@@ -133,13 +133,7 @@ namespace Elastos {
 			virtual void SyncStop();
 
 		protected: //implement Wallet::Listener
-			virtual void onUTXOUpdated(const UTXOArray &utxoAdded, const UTXOArray &utxoDeleted, bool replace) {}
-
 			virtual void onBalanceChanged(const uint256 &asset, const BigInt &balance);
-
-			virtual void onTxnReplace(const std::vector<TransactionPtr> &txConfirmed,
-									  const std::vector<TransactionPtr> &txPending,
-									  const std::vector<TransactionPtr> &txCoinbase);
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 
@@ -148,21 +142,6 @@ namespace Elastos {
 			virtual void onTxDeleted(const TransactionPtr &tx, bool notifyUser, bool recommendRescan);
 
 			virtual void onAssetRegistered(const AssetPtr &asset, uint64_t amount, const uint168 &controller);
-
-			virtual void onUsedAddressSaved(const AddressSet &usedAddress, bool replace) {}
-
-			virtual void onUsedAddressAdded(const AddressPtr &usedAddress) {}
-
-			virtual std::vector<TransactionPtr> onLoadTxn(const std::string &chainID, TxnType type) const { return {}; }
-
-			virtual std::vector<TransactionPtr>
-			onLoadTxnAfter(const std::string &chainID, uint32_t height) const { return {}; }
-
-			virtual TransactionPtr onLoadTxn(const std::string &chainID, const uint256 &hash) const { return nullptr; }
-
-			virtual bool onContainTxn(const uint256 &hash) const { return false; }
-
-			virtual std::vector<TransactionPtr> onLoadUTXOTxn(const std::string &chainID) const { return {}; }
 
 		protected: //implement PeerManager::Listener
 			virtual void syncStarted();

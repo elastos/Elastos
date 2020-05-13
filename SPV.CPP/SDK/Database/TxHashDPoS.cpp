@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Elastos Foundation
+ * Copyright (c) 2020 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,47 +20,25 @@
  * SOFTWARE.
  */
 
-#ifndef __ELASTOS_SDK_TABLEBASE_H__
-#define __ELASTOS_SDK_TABLEBASE_H__
-
-#include "Sqlite.h"
-#include <CMakeConfig.h>
-
-#include <boost/function.hpp>
-
+#include "TxHashDPoS.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-#define ISO_OLD "ela"
-#define ISO "ela1"
-		class TableBase {
-		public:
-			TableBase(Sqlite *sqlite);
+		TxHashDPoS::TxHashDPoS(Sqlite *sqlite, SqliteTransactionType type) :
+			SimpleTable(sqlite, type) {
+			_tableName = "txHashDPoSTable";
+			_columnName = "txHash";
+			_tableCreation = "CREATE TABLE IF NOT EXISTS " + _tableName + "(" + _columnName + " TEXT NOT NULL UNIQUE);";
+			_existTable = TableBase::ContainTable(_tableName);
+		}
 
-			TableBase(SqliteTransactionType type, Sqlite *sqlite);
+		TxHashDPoS::~TxHashDPoS() {
+		}
 
-			virtual void InitializeTable();
-
-			virtual ~TableBase();
-
-			void flush();
-
-		protected:
-			bool ContainTable(const std::string &tableName) const;
-
-			void InitializeTable(const std::string &constructScript);
-
-			bool DoTransaction(const boost::function<bool()> &fun) const;
-
-			bool DeleteAll(const std::string &tableName);
-
-		protected:
-			Sqlite *_sqlite;
-			SqliteTransactionType _txType;
-		};
+		void TxHashDPoS::InitializeTable() {
+			TableBase::InitializeTable(_tableCreation);
+		}
 
 	}
 }
-
-#endif //__ELASTOS_SDK_TABLEBASE_H__

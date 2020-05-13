@@ -60,31 +60,11 @@ namespace Elastos {
 			_databaseManager->flush();
 		}
 
-		//override Wallet listener
-		void SpvService::onUTXOUpdated(const UTXOArray &utxoAdded, const UTXOArray &utxoDeleted, bool replace) {
-			std::vector<UTXOEntity> added, deleted;
-
-			added.reserve(utxoAdded.size());
-			for (const UTXOPtr &u : utxoAdded)
-				added.emplace_back(u->Hash().GetHex(), u->Index());
-
-			for (const UTXOPtr &u : utxoDeleted)
-				deleted.emplace_back(u->Hash().GetHex(), u->Index());
-
-			_databaseManager->Update(added, deleted, replace);
-		}
-
 		void SpvService::onBalanceChanged(const uint256 &asset, const BigInt &balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&asset, &balance](Wallet::Listener *listener) {
 							  listener->onBalanceChanged(asset, balance);
 						  });
-		}
-
-		void SpvService::onTxnReplace(const std::vector<TransactionPtr> &txConfirmed,
-									  const std::vector<TransactionPtr> &txPending,
-									  const std::vector<TransactionPtr> &txCoinbase) {
-			_databaseManager->ReplaceTxns(txConfirmed, txPending, txCoinbase);
 		}
 
 		void SpvService::onTxAdded(const TransactionPtr &tx) {
@@ -137,69 +117,6 @@ namespace Elastos {
 						  [&asset, &amount, &controller](Wallet::Listener *listener) {
 							  listener->onAssetRegistered(asset, amount, controller);
 						  });
-		}
-
-		void SpvService::onUsedAddressSaved(const AddressSet &usedAddress, bool replace) {
-			std::vector<std::string> addresses;
-			for (const AddressPtr &a : usedAddress)
-				addresses.push_back(a->String());
-			_databaseManager->PutUsedAddresses(addresses, replace);
-		}
-
-		void SpvService::onUsedAddressAdded(const AddressPtr &usedAddress) {
-			std::vector<std::string> address;
-			address.push_back(usedAddress->String());
-			_databaseManager->PutUsedAddresses(address, false);
-		}
-
-		std::vector<TransactionPtr> SpvService::onLoadTxn(const std::string &chainID, TxnType type) const {
-			if (type == TXN_PENDING) {
-				return _databaseManager->GetAllPendingTxns(chainID);
-			} else if (type == TXN_NORMAL) {
-				return _databaseManager->GetNormalTxns(chainID);
-			} else if (type == TXN_COINBASE) {
-				return _databaseManager->GetCoinbaseTxns(chainID);
-			}
-			return {};
-		}
-
-		std::vector<TransactionPtr> SpvService::onLoadTxnAfter(const std::string &chainID, uint32_t height) const {
-			std::vector<TransactionPtr> result = _databaseManager->GetAllPendingTxns(chainID);
-			std::vector<TransactionPtr> txTmp = _databaseManager->GetNormalTxns(chainID, height);
-			result.insert(result.end(), txTmp.begin(), txTmp.end());
-			txTmp = _databaseManager->GetCoinbaseTxns(chainID, height);
-			result.insert(result.end(), txTmp.begin(), txTmp.end());
-
-			std::sort(result.begin(), result.end(), [](const TransactionPtr &x, const TransactionPtr &y) {
-				return x->GetBlockHeight() < y->GetBlockHeight();
-			});
-
-			return result;
-		}
-
-		TransactionPtr SpvService::onLoadTxn(const std::string &chainID, const uint256 &hash) const {
-			TransactionPtr tx = _databaseManager->GetNormalTxn(hash, chainID);
-			if (tx != nullptr)
-				return tx;
-
-			tx = _databaseManager->GetPendingTxn(hash, chainID);
-			if (tx != nullptr)
-				return tx;
-
-			return _databaseManager->GetCoinbaseTxn(hash, chainID);
-		}
-
-		bool SpvService::onContainTxn(const uint256 &hash) const {
-			return _databaseManager->ContainTxn(hash);
-		}
-
-		std::vector<TransactionPtr> SpvService::onLoadUTXOTxn(const std::string &chainID) const {
-			std::vector<TransactionPtr> txns = _databaseManager->GetCoinbaseUTXOTxn(chainID);
-			std::vector<TransactionPtr> tmp = _databaseManager->GetNormalUTXOTxn(chainID);
-
-			txns.insert(txns.end(), tmp.begin(), tmp.end());
-
-			return txns;
 		}
 
 		//override PeerManager listener
@@ -332,32 +249,6 @@ namespace Elastos {
 			}
 
 			return {};
-		}
-
-		bool SpvService::ExistPendingTxnTable() const {
-			return _databaseManager->ExistPendingTxnTable();
-		}
-
-		AddressSet SpvService::LoadUsedAddress() const {
-			AddressSet usedAddress;
-			std::vector<std::string> usedAddr = _databaseManager->GetUsedAddresses();
-
-			for (const std::string &addr : usedAddr)
-				usedAddress.insert(AddressPtr(new Address(addr)));
-
-			return usedAddress;
-		}
-
-		std::vector<UTXOPtr> SpvService::LoadUTXOs() const {
-			std::vector<UTXOEntity> entities = _databaseManager->GetUTXOs();
-			std::vector<UTXOPtr> allUTXOs;
-
-			for (UTXOEntity &entity : entities) {
-				UTXOPtr u(new UTXO(uint256(entity.Hash()), entity.Index()));
-				allUTXOs.push_back(u);
-			}
-
-			return allUTXOs;
 		}
 
 		void SpvService::DeleteTxn(const uint256 &hash) {

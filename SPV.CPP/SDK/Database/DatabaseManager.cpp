@@ -40,7 +40,11 @@ namespace Elastos {
 			_merkleBlockDataSource(&_sqlite),
 			_didDataStore(&_sqlite),
 			_utxoStore(&_sqlite),
-			_addressUsed(&_sqlite) {
+			_addressUsed(&_sqlite),
+			_txHashCRC(&_sqlite),
+			_txHashDPoS(&_sqlite),
+			_txHashProposal(&_sqlite),
+			_txHashDID(&_sqlite) {
 			_peerDataSource.InitializeTable();
 			_peerBlackList.InitializeTable();
 			_transactionCoinbase.InitializeTable();
@@ -51,6 +55,10 @@ namespace Elastos {
 			_didDataStore.InitializeTable();
 			_utxoStore.InitializeTable();
 			_addressUsed.InitializeTable();
+			_txHashCRC.InitializeTable();
+			_txHashDPoS.InitializeTable();
+			_txHashProposal.InitializeTable();
+			_txHashDID.InitializeTable();
 		}
 
 		DatabaseManager::DatabaseManager() : DatabaseManager("spv_wallet.db") {}
@@ -174,7 +182,8 @@ namespace Elastos {
 		}
 
 		std::vector<TransactionPtr> DatabaseManager::GetCoinbaseUTXOTxn(const std::string &chainID) const {
-			return _transactionCoinbase.GetUTXOTxn(chainID, _utxoStore.GetTableName(), _utxoStore.GetTxHashColumnName());
+			return _transactionCoinbase.GetTxnBaseOnHash(chainID, _utxoStore.GetTableName(),
+														 _utxoStore.GetTxHashColumnName());
 		}
 
 		std::vector<TransactionPtr> DatabaseManager::GetCoinbaseUniqueTxns(const std::string &chainID,
@@ -228,7 +237,8 @@ namespace Elastos {
 		}
 
 		std::vector<TransactionPtr> DatabaseManager::GetNormalUTXOTxn(const std::string &chainID) const {
-			return _transactionNormal.GetUTXOTxn(chainID, _utxoStore.GetTableName(), _utxoStore.GetTxHashColumnName());
+			return _transactionNormal.GetTxnBaseOnHash(chainID, _utxoStore.GetTableName(),
+													   _utxoStore.GetTxHashColumnName());
 		}
 
 		std::vector<TransactionPtr> DatabaseManager::GetNormalUniqueTxns(const std::string &chainID,
@@ -390,8 +400,8 @@ namespace Elastos {
 			return _utxoStore.Gets();
 		}
 
-		bool DatabaseManager::Update(const std::vector<UTXOEntity> &added, const std::vector<UTXOEntity> &deleted,
-									 bool replace) {
+		bool DatabaseManager::UTXOUpdate(const std::vector<UTXOEntity> &added, const std::vector<UTXOEntity> &deleted,
+										 bool replace) {
 			return _utxoStore.Update(added, deleted, replace);
 		}
 
@@ -415,6 +425,81 @@ namespace Elastos {
 			return _addressUsed.DeleteAll();
 		}
 
+		// TxHash CRC
+		bool DatabaseManager::PutTxHashCRC(const std::vector<std::string> &txHashes) {
+			return _txHashCRC.Puts(txHashes, false);
+		}
+
+		std::vector<std::string> DatabaseManager::GetTxHashCRC() const {
+			return _txHashCRC.Gets();
+		}
+
+		bool DatabaseManager::DeleteAllTxHashCRC() {
+			return _txHashCRC.DeleteAll();
+		}
+
+		std::vector<TransactionPtr> DatabaseManager::GetTxCRC(const std::string &chainID) const {
+			return _transactionNormal.GetTxnBaseOnHash(chainID, _txHashCRC.GetTableName(),
+												_txHashCRC.GetTxHashColumnName());
+		}
+
+		// TxHash DPoS
+		bool DatabaseManager::PutTxHashDPoS(const std::vector<std::string> &txHashes) {
+			return _txHashDPoS.Puts(txHashes, false);
+		}
+
+		std::vector<std::string> DatabaseManager::GetTxHashDPoS() const {
+			return _txHashDPoS.Gets();
+		}
+
+		bool DatabaseManager::DeleteAllTxHashDPoS() {
+			return _txHashDPoS.DeleteAll();
+		}
+
+		std::vector<TransactionPtr> DatabaseManager::GetTxDPoS(const std::string &chainID) const {
+			return _transactionNormal.GetTxnBaseOnHash(chainID, _txHashDPoS.GetTableName(),
+												_txHashDPoS.GetTxHashColumnName());
+		}
+
+		// TxHash Proposal
+		bool DatabaseManager::PutTxHashProposal(const std::vector<std::string> &txHashes) {
+			return _txHashProposal.Puts(txHashes, false);
+		}
+
+		std::vector<std::string> DatabaseManager::GetTxHashProposal() const {
+			return _txHashProposal.Gets();
+		}
+
+		bool DatabaseManager::DeleteAllTxHashProposal() {
+			return _txHashProposal.DeleteAll();
+		}
+
+		std::vector<TransactionPtr> DatabaseManager::GetTxProposal(const std::string &chainID) const {
+			return _transactionNormal.GetTxnBaseOnHash(chainID, _txHashProposal.GetTableName(),
+												_txHashProposal.GetTxHashColumnName());
+		}
+
+		bool DatabaseManager::PutTxHashDID(const std::vector<std::string> &txHashes) {
+			return _txHashDID.Puts(txHashes, false);
+		}
+
+		std::vector<std::string> DatabaseManager::GetTxHashDID() const {
+			return _txHashDID.Gets();
+		}
+
+		bool DatabaseManager::DeleteAllTxHashDID() {
+			return _txHashDID.DeleteAll();
+		}
+
+		std::vector<TransactionPtr> DatabaseManager::GetTxDID(const std::string &chainID) const {
+			return _transactionNormal.GetTxnBaseOnHash(chainID, _txHashDID.GetTableName(),
+												_txHashDID.GetTxHashColumnName());
+		}
+
+		bool DatabaseManager::ExistTxHashTable() const {
+			return _txHashCRC.ContainTable() && _txHashDPoS.ContainTable() && _txHashProposal.ContainTable();
+		}
+
 		void DatabaseManager::flush() {
 			_transactionNormal.flush();
 			_transactionCoinbase.flush();
@@ -425,6 +510,10 @@ namespace Elastos {
 			_didDataStore.flush();
 			_utxoStore.flush();
 			_addressUsed.flush();
+			_txHashProposal.flush();
+			_txHashDPoS.flush();
+			_txHashCRC.flush();
+			_txHashDID.flush();
 		}
 
 	} // namespace ElaWallet

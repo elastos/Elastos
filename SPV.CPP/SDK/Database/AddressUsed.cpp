@@ -26,92 +26,18 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-#define TABLE_NAME     "UsedAddressTable"
-#define ADDRESS        "Address"
-#define TABLE_CREATION "create table if not exists " TABLE_NAME "(" ADDRESS " text not null);"
 		AddressUsed::AddressUsed(Sqlite *sqlite, SqliteTransactionType type) :
-			TableBase(type, sqlite) {
+			SimpleTable(sqlite, type) {
 		}
 
 		AddressUsed::~AddressUsed() {
 		}
 
 		void AddressUsed::InitializeTable() {
-			TableBase::InitializeTable(TABLE_CREATION);
-		}
-
-		bool AddressUsed::Puts(const std::vector<std::string> &addresses, bool replace) {
-			return DoTransaction([&addresses, &replace, this]() {
-				if (replace) {
-					std::string sql("DELETE FROM " TABLE_NAME ";");
-
-					if (!_sqlite->exec(sql, nullptr, nullptr)) {
-						Log::error("exec sql: {}" + sql);
-						return false;
-					}
-				}
-
-				for (const std::string &address : addresses) {
-					if (!this->PutInternal(address))
-						return false;
-				}
-
-				return true;
-			});
-		}
-
-		std::vector<std::string> AddressUsed::Gets() const {
-			std::vector<std::string> addresses;
-			int r;
-			std::string sql("SELECT " ADDRESS " FROM " TABLE_NAME ";");
-
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}", sql);
-				return {};
-			}
-
-			while (SQLITE_ROW == (r = _sqlite->Step(stmt))) {
-				std::string address;
-				address = _sqlite->ColumnText(stmt, 0);
-				addresses.push_back(address);
-			}
-
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("Tx get all finalize");
-				return {};
-			}
-
-			return addresses;
-		}
-
-		bool AddressUsed::DeleteAll() {
-			return TableBase::DeleteAll(TABLE_NAME);
-		}
-
-		bool AddressUsed::PutInternal(const std::string &address) {
-			std::string sql("INSERT INTO " TABLE_NAME "(" ADDRESS ") VALUES (?);");
-
-			sqlite3_stmt *stmt;
-			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-				Log::error("prepare sql: {}" + sql);
-				return false;
-			}
-
-			if (!_sqlite->BindText(stmt, 1, address, nullptr)) {
-				Log::error("bind args");
-			}
-
-			if (SQLITE_DONE != _sqlite->Step(stmt)) {
-				Log::error("step");
-			}
-
-			if (!_sqlite->Finalize(stmt)) {
-				Log::error("utxo put finalize");
-				return false;
-			}
-
-			return true;
+			_tableName = "UsedAddressTable";
+			_columnName = "Address";
+			_tableCreation = "CREATE TABLE IF NOT EXISTS " + _tableName + "(" + _columnName + " TEXT NOT NULL UNIQUE);";
+			TableBase::InitializeTable(_tableCreation);
 		}
 
 	}

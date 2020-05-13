@@ -49,6 +49,30 @@ namespace Elastos {
 			_sqlite->flush();
 		}
 
+		bool TableBase::ContainTable(const std::string &tableName) const {
+			std::string sql;
+			int count = 0;
+
+			sql = "select count(*)  from sqlite_master where type='table' and name = '" + tableName + "';";
+
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return false;
+			}
+
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
+				count = _sqlite->ColumnInt(stmt, 0);
+			}
+
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Coinbase update finalize");
+				return false;
+			}
+
+			return count > 0;
+		}
+
 		bool TableBase::DoTransaction(const boost::function<bool()> &fun) const {
 
 			bool result;

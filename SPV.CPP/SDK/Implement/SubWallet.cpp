@@ -410,10 +410,10 @@ namespace Elastos {
 			const WalletPtr &wallet = _walletManager->GetWallet();
 			TransactionPtr txFound;
 
-			std::vector<TransactionPtr> txnPending = _walletManager->onLoadTxn(_info->GetChainID(), TXN_PENDING);
+			std::vector<TransactionPtr> txnPending = wallet->LoadTxn(TXN_PENDING);
 			for (std::vector<TransactionPtr>::iterator it = txnPending.begin(); it != txnPending.end();) {
-				if ((type == TXN_NORMAL && (*it)->IsCoinBase()) ||
-					(type == TXN_COINBASE && !(*it)->IsCoinBase())) {
+				if (((type & TXN_NORMAL) == TXN_NORMAL && (*it)->IsCoinBase()) ||
+					((type & TXN_COINBASE) == TXN_COINBASE && !(*it)->IsCoinBase())) {
 					it = txnPending.erase(it);
 				} else {
 					if (txid == (*it)->GetHash().GetHex())
@@ -429,7 +429,7 @@ namespace Elastos {
 				j["Transactions"] = {};
 				if (txFound == nullptr) {
 					uint256 txHash(txid);
-					txFound = _walletManager->onLoadTxn(_info->GetChainID(), txHash);
+					txFound = wallet->LoadTxn(txHash);
 				}
 				if (txFound && !txFound->IsCoinBase()) {
 					confirms = txFound->GetConfirms(wallet->LastBlockHeight());
@@ -495,12 +495,6 @@ namespace Elastos {
 			} else {
 				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
 			}
-		}
-
-		void SubWallet::onTxnReplace(const std::vector<TransactionPtr> &txConfirmed,
-									 const std::vector<TransactionPtr> &txPending,
-									 const std::vector<TransactionPtr> &txCoinbase) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 		}
 
 		void SubWallet::onTxAdded(const TransactionPtr &tx) {

@@ -528,14 +528,8 @@ namespace Elastos {
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 
 			nlohmann::json j, info;
-			bytes_t types;
 
-			types.push_back(Transaction::registerProducer);
-			types.push_back(Transaction::cancelProducer);
-			types.push_back(Transaction::updateProducer);
-			types.push_back(Transaction::returnDepositCoin);
-
-			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetTransactions(types);
+			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetDPoSTransactions();
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
@@ -908,14 +902,8 @@ namespace Elastos {
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 
 			nlohmann::json j, info;
-			bytes_t types;
 
-			types.push_back(Transaction::registerCR);
-			types.push_back(Transaction::unregisterCR);
-			types.push_back(Transaction::updateCR);
-			types.push_back(Transaction::returnCRDepositCoin);
-
-			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetTransactions(types);
+			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetCRCTransactions();
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();

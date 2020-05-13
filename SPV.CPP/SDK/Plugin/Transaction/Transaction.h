@@ -131,6 +131,14 @@ namespace Elastos {
 
 			uint8_t GetTransactionType() const;
 
+			bool IsDPoSTransaction() const;
+
+			bool IsCRCTransaction() const;
+
+			bool IsProposalTransaction() const;
+
+			virtual bool IsIDTransaction() const;
+
 			uint32_t GetLockTime() const;
 
 			void SetLockTime(uint32_t lockTime);

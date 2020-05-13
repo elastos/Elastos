@@ -33,6 +33,10 @@
 #include "DIDDataStore.h"
 #include "UTXOStore.h"
 #include "AddressUsed.h"
+#include "TxHashCRC.h"
+#include "TxHashDPoS.h"
+#include "TxHashProposal.h"
+#include "TxHashDID.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -188,7 +192,7 @@ namespace Elastos {
 
 			std::vector<UTXOEntity> GetUTXOs() const;
 
-			bool Update(const std::vector<UTXOEntity> &added, const std::vector<UTXOEntity> &deleted, bool replace);
+			bool UTXOUpdate(const std::vector<UTXOEntity> &added, const std::vector<UTXOEntity> &deleted, bool replace);
 
 			bool DeleteAllUTXOs();
 
@@ -201,6 +205,46 @@ namespace Elastos {
 
 			bool DeleteAllUsedAddresses();
 
+			// TxHash CRC
+			bool PutTxHashCRC(const std::vector<std::string> &txHashes);
+
+			std::vector<std::string> GetTxHashCRC() const;
+
+			bool DeleteAllTxHashCRC();
+
+			std::vector<TransactionPtr> GetTxCRC(const std::string &chainID) const;
+
+			// TxHash DPoS
+			bool PutTxHashDPoS(const std::vector<std::string> &txHashes);
+
+			std::vector<std::string> GetTxHashDPoS() const;
+
+			bool DeleteAllTxHashDPoS();
+
+			std::vector<TransactionPtr> GetTxDPoS(const std::string &chainID) const;
+
+			// TxHash Proposal
+			bool PutTxHashProposal(const std::vector<std::string> &txHashes);
+
+			std::vector<std::string> GetTxHashProposal() const;
+
+			bool DeleteAllTxHashProposal();
+
+			std::vector<TransactionPtr> GetTxProposal(const std::string &chainID) const;
+
+			// TxHash DID
+			bool PutTxHashDID(const std::vector<std::string> &txHashes);
+
+			std::vector<std::string> GetTxHashDID() const;
+
+			bool DeleteAllTxHashDID();
+
+			std::vector<TransactionPtr> GetTxDID(const std::string &chainID) const;
+
+			// TxHash common
+			bool ExistTxHashTable() const;
+
+			// common
 			const boost::filesystem::path &GetPath() const;
 
 			void flush();
@@ -218,6 +262,10 @@ namespace Elastos {
 			DIDDataStore _didDataStore;
 			UTXOStore _utxoStore;
 			AddressUsed _addressUsed;
+			TxHashCRC _txHashCRC;
+			TxHashDPoS _txHashDPoS;
+			TxHashProposal _txHashProposal;
+			TxHashDID _txHashDID;
 		};
 
 		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;

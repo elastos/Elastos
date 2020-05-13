@@ -64,9 +64,9 @@ namespace Elastos {
 
 			std::vector<TransactionPtr> Gets(const std::string &chainID, size_t offset, size_t limit, bool asc = false) const;
 
-			std::vector<TransactionPtr> GetUTXOTxn(const std::string &chainID,
-												   const std::string &utxoTableName,
-												   const std::string &utxoTxHashColumnName) const;
+			std::vector<TransactionPtr> GetTxnBaseOnHash(const std::string &chainID,
+														 const std::string &tableName,
+														 const std::string &txHashColumnName) const;
 
 			bool Update(const std::vector<TransactionPtr> &txns);
 

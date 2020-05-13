@@ -153,6 +153,33 @@ namespace Elastos {
 			return _type;
 		}
 
+		bool Transaction::IsDPoSTransaction() const {
+			return _type == Transaction::registerProducer ||
+				   _type == Transaction::cancelProducer ||
+				   _type == Transaction::updateProducer ||
+				   _type == Transaction::returnDepositCoin ||
+				   _type == Transaction::activateProducer;
+		}
+
+		bool Transaction::IsCRCTransaction() const {
+			return _type == registerCR ||
+				   _type == unregisterCR ||
+				   _type == updateCR ||
+				   _type == returnCRDepositCoin;
+		}
+
+		bool Transaction::IsProposalTransaction() const {
+			return _type == crcProposal ||
+				   _type == crcProposalReview ||
+				   _type == crcProposalTracking ||
+				   _type == crcAppropriation ||
+				   _type == crcProposalWithdraw;
+		}
+
+		bool Transaction::IsIDTransaction() const {
+			return false;
+		}
+
 		void Transaction::Reinit() {
 			Cleanup();
 			_type = DEFAULT_PAYLOAD_TYPE;
