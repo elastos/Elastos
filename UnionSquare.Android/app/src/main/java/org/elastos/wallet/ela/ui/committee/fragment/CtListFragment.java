@@ -88,7 +88,8 @@ public class CtListFragment extends BaseFragment {
             case R.id.secretary_layout:
                 //TODO daokun.xi test
 //                selectSecretaryList();
-                start(GeneralCtDetailFragment.class);
+//                start(GeneralCtDetailFragment.class);
+                start(CtManagerFragment.class);
                 break;
         }
     }

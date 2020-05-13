@@ -9,10 +9,8 @@ import org.elastos.wallet.ela.base.BaseFragment;
 
 import butterknife.BindView;
 
-/**
- * committee manage fragment(in office, expiration office, impeachment)
- */
-public class CtManagerFragment extends BaseFragment {
+public class CtManagerEditFragment extends BaseFragment {
+
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
     @BindView(R.id.toolbar)
@@ -20,13 +18,11 @@ public class CtManagerFragment extends BaseFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.fragment_ct_manager;
+        return R.layout.fragment_ct_manager_edit;
     }
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, "委员管理");
+        setToobar(toolbar, toolbarTitle, "编辑");
     }
-
-
 }
