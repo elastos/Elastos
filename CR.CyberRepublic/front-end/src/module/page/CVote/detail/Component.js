@@ -817,7 +817,8 @@ class C extends StandardPage {
               'votedBy.profile.lastName'
             )} `,
             avatar: _.get(cur, 'votedBy.profile.avatar'),
-            reason: cur.reason
+            reason: cur.reason,
+            votedBy: _.get(cur, 'votedBy._id')
           }
           if (prev[cur.value]) {
             prev[cur.value].push(item)
@@ -847,7 +848,12 @@ class C extends StandardPage {
       )
     }
 
-    const { match, getReviewProposal } = this.props
+    const { match, getReviewProposal,isCouncil,data,currentUserId } = this.props
+    const ownerVote = _.find(data.voteResult,function(o){
+      if(o.votedBy._id == currentUserId){
+        return o
+      }
+    })
     const id = _.get(match, 'params.id')
     const title = <h4>{I18N.get('council.voting.councilMembersVotes')}</h4>
     const detail = _.map(stats, (statArr, key) => {
@@ -859,7 +865,10 @@ class C extends StandardPage {
         label,
         id,
         getReviewProposal,
-        voteResult
+        voteResult,
+        isCouncil,
+        currentUserId,
+        ownerVote
       }
       return <VoteResultComponent {...props} key={key} />
     })

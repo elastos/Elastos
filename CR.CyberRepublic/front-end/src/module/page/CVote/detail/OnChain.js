@@ -115,23 +115,3 @@ const Tip = styled.div`
   color: #000;
   margin-top: 16px;
 `
-const Did = styled.div`
-  line-height: 32px;
-  a {
-    color: #008d85;
-    font-size: 13px;
-    padding-left: 10px;
-    &:focus {
-      text-decoration: none;
-    }
-  }
-`
-const Reassociate = styled.span`
-  display: inline-block;
-  font-size: 13px;
-  color: #008d85;
-  cursor: pointer;
-  border: 1px solid #008d85;
-  padding: 0 8px;
-  margin-bottom: 16px;
-`
