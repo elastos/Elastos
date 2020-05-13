@@ -2,7 +2,7 @@ import Base from './Base'
 import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { permissions, getDidPublicKey } from '../utility'
+import { permissions, getDidPublicKey, getProposalState } from '../utility'
 import * as moment from 'moment'
 import * as jwt from 'jsonwebtoken'
 import {
@@ -95,11 +95,35 @@ export default class extends Base {
     }
   }
 
+  public async pollProposalState(param: any) {
+    const { id } = param
+    const db_suggestion = this.getDBModel('Suggestion')
+    const suggestion = await db_suggestion.findById(id)
+    if (suggestion) {
+      const proposalHash = _.get(suggestion, 'proposalHash')
+      if (proposalHash) {
+        const rs = await getProposalState(proposalHash)
+        if (!rs) {
+          return { success: false }
+        }
+        if (rs && rs.status === 'Registered') {
+          const proposal = await this.proposeSuggestion({
+            suggestionId: id,
+            proposalHash
+          })
+          return { success: true, id: proposal._id }
+        }
+      }
+    } else {
+      return { success: false }
+    }
+  }
+
   public async proposeSuggestion(param: any): Promise<Document> {
     const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
     const db_user = this.getDBModel('User')
-    const { suggestionId } = param
+    const { suggestionId, proposalHash } = param
 
     const suggestion =
       suggestionId && (await db_suggestion.findById(suggestionId))
@@ -119,7 +143,8 @@ export default class extends Base {
       proposedBy: userUtil.formatUsername(creator),
       proposer: suggestion.createdBy,
       createdBy: this.currentUser._id,
-      reference: suggestionId
+      reference: suggestionId,
+      proposalHash
     }
 
     Object.assign(doc, _.pick(suggestion, BASE_FIELDS))
