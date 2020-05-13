@@ -1550,12 +1550,16 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	return nil
 }
 
-func getDIDFromCode(code []byte) *common.Uint168 {
+func getDIDFromCode(code []byte) (*common.Uint168, error) {
 	newCode := make([]byte, len(code))
 	copy(newCode, code)
 	didCode := append(newCode[:len(newCode)-1], common.DID)
-	ct1, _ := contract.CreateCRIDContractByCode(didCode)
-	return ct1.ToProgramHash()
+
+	if ct1, err := contract.CreateCRIDContractByCode(didCode); err != nil {
+		return nil, err
+	} else {
+		return ct1.ToProgramHash(), nil
+	}
 }
 
 func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
@@ -1615,8 +1619,10 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 	if blockHeight >= b.chainParams.RegisterCRByDIDHeight &&
 		txn.PayloadVersion == payload.CRInfoDIDVersion {
 		// get DID program hash
-		programHash = getDIDFromCode(info.Code)
 
+		if programHash, err = getDIDFromCode(info.Code); err != nil {
+			return err
+		}
 		// check DID
 		if !info.DID.IsEqual(*programHash) {
 			return errors.New("invalid did address")
@@ -1689,7 +1695,10 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 	if blockHeight >= b.chainParams.RegisterCRByDIDHeight &&
 		txn.PayloadVersion == payload.CRInfoDIDVersion {
 		// get DID program hash
-		programHash = getDIDFromCode(info.Code)
+
+		if programHash, err = getDIDFromCode(info.Code); err != nil {
+			return err
+		}
 		// check DID
 		if !info.DID.IsEqual(*programHash) {
 			return errors.New("invalid did address")
@@ -1761,10 +1770,16 @@ func (b *BlockChain) checkCRCProposalReviewTransaction(txn *Transaction,
 		signedBuf.Bytes())
 }
 
-func getCode(publicKey []byte) []byte {
-	pk, _ := crypto.DecodePoint(publicKey)
-	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
-	return redeemScript
+func getCode(publicKey []byte) ([]byte, error) {
+	if pk, err := crypto.DecodePoint(publicKey); err != nil {
+		return nil, err
+	} else {
+		if redeemScript, err := contract.CreateStandardRedeemScript(pk); err != nil {
+			return nil, err
+		} else {
+			return redeemScript, nil
+		}
+	}
 }
 
 func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
@@ -1814,7 +1829,10 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	if err != nil {
 		return err
 	}
-	code := getCode(withdrawPayload.OwnerPublicKey)
+	var code []byte
+	if code, err = getCode(withdrawPayload.OwnerPublicKey); err != nil {
+		return err
+	}
 	return checkCRTransactionSignature(withdrawPayload.Signature, code, signedBuf.Bytes())
 }
 
