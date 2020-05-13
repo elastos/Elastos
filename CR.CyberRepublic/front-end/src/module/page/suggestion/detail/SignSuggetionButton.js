@@ -19,7 +19,7 @@ class SignSuggestionButton extends Component {
     const { url } = this.state
     return (
       <Content>
-        {url ? <QRCode value={url} size={145} /> : <Spin />}
+        {url ? <QRCode value={url} size={600} /> : <Spin />}
         <Tip>Scan the QR code above to sign your suggestion.</Tip>
       </Content>
     )
