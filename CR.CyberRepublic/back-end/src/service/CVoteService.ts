@@ -986,21 +986,7 @@ export default class extends Base {
       const db_cvote = this.getDBModel('CVote')
       const userId = _.get(this.currentUser, '_id')
       const { id } = param
-      const jwtClaims = {
-        iss: process.env.APP_DID,
-        callbackurl: `${process.env.API_URL}/api/CVote/callback`,
-        website:{
-          domain: process.env.SERVER_URL,
-          logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
-        },
-        command:"",
-        data: {
-          proposalHash: "",
-          voteResult: [],
-          opinionHash: "",
-          did: ""
-        }
-      }
+      
       const cur = await db_cvote.findOne({ _id: id })
     
       if (!this.canManageProposal()) {
@@ -1010,9 +996,21 @@ export default class extends Base {
         throw 'cvoteservice.update - invalid proposal id'
       }
 
-      jwtClaims.data.proposalHash = cur.proposalHash
-      jwtClaims.data.voteResult = cur.voteResult
-    
+      const jwtClaims = {
+        iss: process.env.APP_DID,
+        callbackurl: `${process.env.API_URL}/api/CVote/callback`,
+        website:{
+          domain: process.env.SERVER_URL,
+          logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+        },
+        command:"reviewproposal",
+        data: {
+          proposalHash: cur.proposalHash,
+          voteResult: cur.voteResult,
+          opinionHash: "",
+          did: ""
+        }
+      }
       cur.voteResult.forEach(function(res){
         if(res.votedBy.equals(userId)){
           jwtClaims.data.opinionHash = utilCrypto.sha256(utilCrypto.sha256(res.reason))
@@ -1214,7 +1212,40 @@ export default class extends Base {
     }
   }
 
-  // member callback
+  // member vote against
+  public async memberVote(param): Promise<any> {
+    try{
+      const db_cvote = this.getDBModel('CVote')
+      const { id } = param
+      
+      const cur = await db_cvote.findOne({ _id: id })
+    
+      const jwtClaims = {
+        iss: process.env.APP_DID,
+        callbackurl: `${process.env.API_URL}/api/CVote/vote_callback`,
+        website:{
+          domain: process.env.SERVER_URL,
+          logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+        },
+        command:"voteforproposal",
+        data: {
+          proposalHash: cur.proposalHash
+        }
+      }
+    
+      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
+        expiresIn: '7d', 
+        algorithm: 'ES256' 
+      })
+      const url = `elastos://credaccess/${jwtToken}`
+      return { success: true, url}
+    } catch(err) {
+      logger.error(err)
+      return { success:false }
+    }
+  }
+
+  // member vote callback
   public async memberCallback(param): Promise<any> {
     return 
   }

@@ -19,6 +19,7 @@ import all_search from './all_search'
 import get_proposal from './get_proposal'
 import callback from './callback'
 import check_signature from './check_signature'
+import memberVote from './memberVote'
 
 export default Base.setRouter([
   {
@@ -99,6 +100,11 @@ export default Base.setRouter([
   {
     path: '/signature',
     router: check_signature,
+    method: 'post'
+  },
+  {
+    path: '/member_vote',
+    router: memberVote,
     method: 'post'
   },
   {
