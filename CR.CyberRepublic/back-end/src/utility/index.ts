@@ -77,3 +77,29 @@ export const getDidPublicKey = async (did: string) => {
     logger.error(err)
   }
 }
+
+export const getProposalState = async (proposalHash: string) => {
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+  const data = {
+    jsonrpc: '2.0',
+    method: 'getcrproposalstate',
+    params: {
+      proposalhash: proposalHash
+    }
+  }
+  try {
+    const res = await axios.post(process.env.ELA_NODE_URL, data, {
+      headers
+    })
+    if (res && res.data) {
+      const status = _.get(res.data, 'result.proposalstate.status')
+      if (status) {
+        return { status }
+      }
+    }
+  } catch (err) {
+    logger.error(err)
+  }
+}
