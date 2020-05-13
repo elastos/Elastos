@@ -54,7 +54,7 @@ public class CircleProgressView extends View {
         super.onDraw(canvas);
         drawCircle(canvas, radius);
         drawArc(canvas);
-        paint.setColor(ContextCompat.getColor(getContext(), R.color.surebutton));
+        paint.setColor(ContextCompat.getColor(getContext(), R.color.blue11));
         drawCircle(canvas, radius - ScreenUtil.dp2px(getContext(), 2));
         drawText(canvas);
     }

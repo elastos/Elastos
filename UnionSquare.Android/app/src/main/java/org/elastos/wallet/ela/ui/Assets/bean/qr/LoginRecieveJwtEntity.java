@@ -20,11 +20,11 @@
  * SOFTWARE.
  */
 
-package org.elastos.wallet.ela.ui.Assets.bean;
+package org.elastos.wallet.ela.ui.Assets.bean.qr;
 
-import android.os.Parcelable;
+import android.os.Parcel;
 
-public class RecieveJwtEntity  {
+public class LoginRecieveJwtEntity extends RecieveJwtEntity {
     //{
     // "iss": "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
     // "userId": "5e60cbc4d408a4606c1476de",
@@ -48,21 +48,11 @@ public class RecieveJwtEntity  {
      * exp : 1584438966
      */
 
-    private String iss;
+
     private String userId;
-    private String callbackurl;
+
     private ClaimsBean claims;
-    private WebsiteBean website;
-    private long iat;
-    private long exp;
 
-    public String getIss() {
-        return iss;
-    }
-
-    public void setIss(String iss) {
-        this.iss = iss;
-    }
 
     public String getUserId() {
         return userId;
@@ -72,13 +62,6 @@ public class RecieveJwtEntity  {
         this.userId = userId;
     }
 
-    public String getCallbackurl() {
-        return callbackurl;
-    }
-
-    public void setCallbackurl(String callbackurl) {
-        this.callbackurl = callbackurl;
-    }
 
     public ClaimsBean getClaims() {
         return claims;
@@ -88,56 +71,67 @@ public class RecieveJwtEntity  {
         this.claims = claims;
     }
 
-    public WebsiteBean getWebsite() {
-        return website;
-    }
 
-    public void setWebsite(WebsiteBean website) {
-        this.website = website;
-    }
-
-    public long getIat() {
-        return iat;
-    }
-
-    public void setIat(long iat) {
-        this.iat = iat;
-    }
-
-    public long getExp() {
-        return exp;
-    }
-
-    public void setExp(long exp) {
-        this.exp = exp;
-    }
-
-    public static class ClaimsBean {
-    }
-
-    public static class WebsiteBean {
-        /**
-         * domain : https://staging.cyberrepublic.org
-         * logo : https://staging.cyberrepublic.org/assets/images/logo.svg
-         */
-
-        private String domain;
-        private String logo;
-
-        public String getDomain() {
-            return domain;
+    public static class ClaimsBean implements android.os.Parcelable {
+        @Override
+        public int describeContents() {
+            return 0;
         }
 
-        public void setDomain(String domain) {
-            this.domain = domain;
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
         }
 
-        public String getLogo() {
-            return logo;
+        public ClaimsBean() {
         }
 
-        public void setLogo(String logo) {
-            this.logo = logo;
+        protected ClaimsBean(Parcel in) {
         }
+
+        public static final Creator<ClaimsBean> CREATOR = new Creator<ClaimsBean>() {
+            @Override
+            public ClaimsBean createFromParcel(Parcel source) {
+                return new ClaimsBean(source);
+            }
+
+            @Override
+            public ClaimsBean[] newArray(int size) {
+                return new ClaimsBean[size];
+            }
+        };
     }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        super.writeToParcel(dest, flags);
+        dest.writeString(this.userId);
+        dest.writeParcelable(this.claims, flags);
+    }
+
+    public LoginRecieveJwtEntity() {
+    }
+
+    protected LoginRecieveJwtEntity(Parcel in) {
+        super(in);
+        this.userId = in.readString();
+        this.claims = in.readParcelable(ClaimsBean.class.getClassLoader());
+    }
+
+    public static final Creator<LoginRecieveJwtEntity> CREATOR = new Creator<LoginRecieveJwtEntity>() {
+        @Override
+        public LoginRecieveJwtEntity createFromParcel(Parcel source) {
+            return new LoginRecieveJwtEntity(source);
+        }
+
+        @Override
+        public LoginRecieveJwtEntity[] newArray(int size) {
+            return new LoginRecieveJwtEntity[size];
+        }
+    };
 }

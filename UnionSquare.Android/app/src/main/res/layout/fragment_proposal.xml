@@ -11,7 +11,7 @@
         android:id="@+id/tab"
         android:layout_marginRight="15dp"
         android:layout_marginLeft="15dp"
-        style="@style/mTablayout"
+        app:tabTextAppearance="@style/mTablayout"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         app:tabMode="scrollable" />
