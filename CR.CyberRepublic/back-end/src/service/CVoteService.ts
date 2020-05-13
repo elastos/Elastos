@@ -1343,15 +1343,15 @@ export default class extends Base {
 
     const summary = await this.getSummary(proposalId)
 
-    return {
+    return _.omit({
       ...proposal._doc,
-      createdAt: timestamp.second(proposal.createdAt), 
+      createdAt: timestamp.second(proposal.createdAt),
       voteResult,
       address,
       duration,
       tracking,
       summary,
-    }
+    }, ['_id'])
   }
 
   public async getTracking(id) {
@@ -1361,8 +1361,7 @@ export default class extends Base {
       proposalId,
     }
     const fieldsTrack = [
-    'comment.createdBy.username',
-    'comment.content',
+    'comment',
     'content',
     'status',
     'createdAt',
@@ -1377,8 +1376,14 @@ export default class extends Base {
     // const totalTrack = await totalCursorTrack
    
     const list = _.map(tracking,function(o){
+      const comment = o._doc.comment
+      const commentObj = {
+        content: comment.content,
+        createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(o, 'comment.createdBy.profile.firstName')}`
+      }
       const obj = {
-        ...o,
+        ...o._doc,
+        comment: commentObj,
         createdAt: timestamp.second(o.createdAt),
         updatedAt: timestamp.second(o.updatedAt),
       }
@@ -1395,8 +1400,7 @@ export default class extends Base {
       proposalId,
     }
     const fieldsSummary = [
-      'comment.createdBy.username',
-      'comment.content',
+      'comment',
       'content',
       'status',
       'createdAt',
@@ -1411,8 +1415,14 @@ export default class extends Base {
     // const totalSummary = await totalCursorSummary
     
     const list = _.map(summary,function(o){
+      const comment = o._doc.comment
+      const commentObj = {
+        content: comment.content,
+        createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(o, 'comment.createdBy.profile.firstName')}`
+      }
       const obj = {
-        ...o,
+        ...o._doc,
+        comment: commentObj,
         createdAt: timestamp.second(o.createdAt),
         updatedAt: timestamp.second(o.updatedAt),
       }
