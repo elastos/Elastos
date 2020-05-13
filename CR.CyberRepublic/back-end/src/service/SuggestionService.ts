@@ -1506,7 +1506,7 @@ export default class extends Base {
             try {
               await this.model.update(
                 { _id: payload.suggestionId },
-                { $set: { proposalHash: { data: decoded.data } } }
+                { $set: { proposalHash: decoded.data } }
               )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
