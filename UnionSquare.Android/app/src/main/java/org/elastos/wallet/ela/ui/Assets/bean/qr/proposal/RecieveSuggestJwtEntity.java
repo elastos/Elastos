@@ -1,11 +1,14 @@
-package org.elastos.wallet.ela.ui.Assets.bean.qr;
+package org.elastos.wallet.ela.ui.Assets.bean.qr.proposal;
 
 import android.os.Parcel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreateProposalJwtEntity extends RecieveJwtEntity {
+/**
+ * 备用
+ */
+public class RecieveSuggestJwtEntity extends RecieveProposalFatherJwtEntity {
 
     /**
      * iat : 1566352213
@@ -15,17 +18,8 @@ public class CreateProposalJwtEntity extends RecieveJwtEntity {
      */
 
 
-    private String command;
     private DataBean data;
 
-
-    public String getCommand() {
-        return command;
-    }
-
-    public void setCommand(String command) {
-        this.command = command;
-    }
 
     public DataBean getData() {
         return data;
@@ -210,7 +204,7 @@ public class CreateProposalJwtEntity extends RecieveJwtEntity {
         };
     }
 
-    public CreateProposalJwtEntity() {
+    public RecieveSuggestJwtEntity() {
     }
 
 
@@ -222,25 +216,23 @@ public class CreateProposalJwtEntity extends RecieveJwtEntity {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);
-        dest.writeString(this.command);
         dest.writeParcelable(this.data, flags);
     }
 
-    protected CreateProposalJwtEntity(Parcel in) {
+    protected RecieveSuggestJwtEntity(Parcel in) {
         super(in);
-        this.command = in.readString();
         this.data = in.readParcelable(DataBean.class.getClassLoader());
     }
 
-    public static final Creator<CreateProposalJwtEntity> CREATOR = new Creator<CreateProposalJwtEntity>() {
+    public static final Creator<RecieveSuggestJwtEntity> CREATOR = new Creator<RecieveSuggestJwtEntity>() {
         @Override
-        public CreateProposalJwtEntity createFromParcel(Parcel source) {
-            return new CreateProposalJwtEntity(source);
+        public RecieveSuggestJwtEntity createFromParcel(Parcel source) {
+            return new RecieveSuggestJwtEntity(source);
         }
 
         @Override
-        public CreateProposalJwtEntity[] newArray(int size) {
-            return new CreateProposalJwtEntity[size];
+        public RecieveSuggestJwtEntity[] newArray(int size) {
+            return new RecieveSuggestJwtEntity[size];
         }
     };
 }

@@ -20,11 +20,13 @@
  * SOFTWARE.
  */
 
-package org.elastos.wallet.ela.ui.Assets.bean.qr;
+package org.elastos.wallet.ela.ui.Assets.bean.qr.did;
 
 import android.os.Parcel;
 
-public class LoginRecieveJwtEntity extends RecieveJwtEntity {
+import org.elastos.wallet.ela.ui.Assets.bean.qr.RecieveJwtEntity;
+
+public class RecieveLoginAuthorizedJwtEntity extends RecieveJwtEntity {
     //{
     // "iss": "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
     // "userId": "5e60cbc4d408a4606c1476de",
@@ -114,24 +116,24 @@ public class LoginRecieveJwtEntity extends RecieveJwtEntity {
         dest.writeParcelable(this.claims, flags);
     }
 
-    public LoginRecieveJwtEntity() {
+    public RecieveLoginAuthorizedJwtEntity() {
     }
 
-    protected LoginRecieveJwtEntity(Parcel in) {
+    protected RecieveLoginAuthorizedJwtEntity(Parcel in) {
         super(in);
         this.userId = in.readString();
         this.claims = in.readParcelable(ClaimsBean.class.getClassLoader());
     }
 
-    public static final Creator<LoginRecieveJwtEntity> CREATOR = new Creator<LoginRecieveJwtEntity>() {
+    public static final Creator<RecieveLoginAuthorizedJwtEntity> CREATOR = new Creator<RecieveLoginAuthorizedJwtEntity>() {
         @Override
-        public LoginRecieveJwtEntity createFromParcel(Parcel source) {
-            return new LoginRecieveJwtEntity(source);
+        public RecieveLoginAuthorizedJwtEntity createFromParcel(Parcel source) {
+            return new RecieveLoginAuthorizedJwtEntity(source);
         }
 
         @Override
-        public LoginRecieveJwtEntity[] newArray(int size) {
-            return new LoginRecieveJwtEntity[size];
+        public RecieveLoginAuthorizedJwtEntity[] newArray(int size) {
+            return new RecieveLoginAuthorizedJwtEntity[size];
         }
     };
 }

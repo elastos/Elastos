@@ -44,8 +44,8 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
-import org.elastos.wallet.ela.ui.Assets.bean.CallBackJwtEntity;
-import org.elastos.wallet.ela.ui.Assets.bean.qr.LoginRecieveJwtEntity;
+import org.elastos.wallet.ela.ui.did.entity.CallBackJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.did.RecieveLoginAuthorizedJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
@@ -83,7 +83,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
     @BindView(R.id.rv)
     RecyclerView rv;
     private String[] jwtParts;
-    LoginRecieveJwtEntity loginRecieveJwtEntity;
+    RecieveLoginAuthorizedJwtEntity recieveLoginAuthorizedJwtEntity;
     private String scanResult;
     String callBackUrl;
     private DIDStore store;
@@ -133,12 +133,12 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
             String result = scanResult.replace("elastos://credaccess/", "");
             jwtParts = result.split("\\.");
             String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
-            loginRecieveJwtEntity = JSON.parseObject(payload, LoginRecieveJwtEntity.class);
-            tvDid.setText(loginRecieveJwtEntity.getIss());
+            recieveLoginAuthorizedJwtEntity = JSON.parseObject(payload, RecieveLoginAuthorizedJwtEntity.class);
+            tvDid.setText(recieveLoginAuthorizedJwtEntity.getIss());
             tvName.setText(webName);
-            String logo = loginRecieveJwtEntity.getWebsite().getLogo();
+            String logo = recieveLoginAuthorizedJwtEntity.getWebsite().getLogo();
             GlideApp.with(this).load(logo).dontAnimate().into(ivLogo);
-            callBackUrl = loginRecieveJwtEntity.getCallbackurl();
+            callBackUrl = recieveLoginAuthorizedJwtEntity.getCallbackurl();
         }
     }
 
@@ -329,7 +329,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         callBackJwtEntity.setIss(getMyDID().getDidString());
         callBackJwtEntity.setIat(new Date().getTime() / 1000);
         callBackJwtEntity.setExp(new Date().getTime() / 1000 + 5 * 60);
-        callBackJwtEntity.setAud(loginRecieveJwtEntity.getIss());
+        callBackJwtEntity.setAud(recieveLoginAuthorizedJwtEntity.getIss());
         callBackJwtEntity.setReq(scanResult);
         callBackJwtEntity.setPresentation("");
         String header = jwtParts[0];

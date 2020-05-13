@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.wallet.ela.ui.Assets.bean;
+package org.elastos.wallet.ela.ui.did.entity;
 
 public class CallBackJwtEntity {
     /**

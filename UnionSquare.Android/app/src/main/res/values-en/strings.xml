@@ -661,6 +661,8 @@
     <string name="sign">签名</string>
     <string name="suggest">发起建议</string>
     <string name="ELIP"> ELIP</string>
+    <string name="signsendsuccess">签名发送成功</string>
+    <string name="putproposal">发起提案</string>
 
     <!--CR committee-->
     <string name="pastcttitle">CR委员会列表</string>

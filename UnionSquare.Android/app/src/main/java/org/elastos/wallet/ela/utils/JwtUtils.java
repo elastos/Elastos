@@ -222,6 +222,12 @@ public class JwtUtils {
         return new String(Base64.decode(base64Payload, Base64.URL_SAFE));
     }
 
+    public static String getJwtHeader(String jwt) {
+        String[] jwtParts = jwt.split("\\.");
+        //String header = jwtParts[0];
+        return jwtParts[0];
+    }
+
     public static boolean verifyJwt(String result, DIDDocument didDocument) {
         if (didDocument == null) {
             return false;

@@ -3,12 +3,27 @@ package org.elastos.wallet.ela.ui.Assets.bean.qr;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * 所有网站二维码的父类
+ */
 public class RecieveJwtEntity implements Parcelable {
     private String iss;
     private String callbackurl;
     private long iat;
     private long exp;
     private WebsiteBean website;
+
+    public static final Creator<RecieveJwtEntity> CREATOR = new Creator<RecieveJwtEntity>() {
+        @Override
+        public RecieveJwtEntity createFromParcel(Parcel in) {
+            return new RecieveJwtEntity(in);
+        }
+
+        @Override
+        public RecieveJwtEntity[] newArray(int size) {
+            return new RecieveJwtEntity[size];
+        }
+    };
 
     public String getIss() {
         return iss;
@@ -132,15 +147,4 @@ public class RecieveJwtEntity implements Parcelable {
         this.website = in.readParcelable(WebsiteBean.class.getClassLoader());
     }
 
-    public static final Creator<RecieveJwtEntity> CREATOR = new Creator<RecieveJwtEntity>() {
-        @Override
-        public RecieveJwtEntity createFromParcel(Parcel source) {
-            return new RecieveJwtEntity(source);
-        }
-
-        @Override
-        public RecieveJwtEntity[] newArray(int size) {
-            return new RecieveJwtEntity[size];
-        }
-    };
 }
