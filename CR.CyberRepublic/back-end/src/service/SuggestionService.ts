@@ -1386,6 +1386,8 @@ export default class extends Base {
       }
       const message = _.get(suggestion, 'signature.message')
       if (message) {
+        // clear error message
+        await this.model.update({ _id: id }, { $unset: { signature: true } })
         return { success: false, message }
       }
     } else {
