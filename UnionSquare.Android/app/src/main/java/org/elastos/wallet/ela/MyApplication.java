@@ -26,6 +26,8 @@ import android.content.Context;
 import android.support.multidex.MultiDexApplication;
 import android.webkit.WebView;
 
+import com.alibaba.fastjson.util.TypeUtils;
+
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
@@ -75,6 +77,7 @@ public class MyApplication extends MultiDexApplication {
             REQUEST_BASE_URL = WalletNet.PRVURL;
             useBugly();
         }
+
     }
 
     private void useBugly() {

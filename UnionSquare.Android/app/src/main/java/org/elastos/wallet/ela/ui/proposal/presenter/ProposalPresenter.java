@@ -23,5 +23,30 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
+    public void proposalCRCouncilMemberDigest(String walletId, String payload, BaseFragment baseFragment) {
+
+
+        Observer observer = createObserver(baseFragment, "proposalCRCouncilMemberDigest", walletId);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().proposalCRCouncilMemberDigest(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+public void createProposalTransaction(String walletId, String payload, BaseFragment baseFragment) {
+
+
+        Observer observer = createObserver(baseFragment, "createProposalTransaction", walletId);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().createProposalTransaction(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
 
 }

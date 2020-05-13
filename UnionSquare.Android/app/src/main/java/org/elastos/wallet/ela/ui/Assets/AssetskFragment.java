@@ -58,9 +58,9 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
-import org.elastos.wallet.ela.ui.Assets.bean.qr.CreateProposalJwtEntity;
-import org.elastos.wallet.ela.ui.Assets.bean.qr.LoginRecieveJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.RecieveJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.did.RecieveLoginAuthorizedJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalFatherJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.AssetDetailsFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.CreateSignReadOnlyWalletFragment;
@@ -293,6 +293,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
     }
 
+    /**
+     * 所有elastos 的第一级分发
+     *
+     * @param result
+     */
     private void scanElastos(String result) {
         result = result.replace("elastos:", "");
         if (result.startsWith("//credaccess/")) {
@@ -311,6 +316,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
     }
 
+    /**
+     * 所有提案二维码第一级处理
+     *
+     * @param result
+     */
     private void decodeProposalJwt(String result) {
         try {
             ////0 普通单签 1单签只读 2普通多签 3多签只读
@@ -319,11 +329,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             }
             result = result.replace("//crproposal/", "");
             String payload = JwtUtils.getJwtPayload(result);
-            CreateProposalJwtEntity recieveJwtEntity = JSON.parseObject(payload, CreateProposalJwtEntity.class);
-            String elaString = recieveJwtEntity.getIss();
+            RecieveProposalFatherJwtEntity recieveProposalJwtEntity = JSON.parseObject(payload, RecieveProposalFatherJwtEntity.class);
+            String elaString = recieveProposalJwtEntity.getIss();
             elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
-            // Log.e("Base64", "Base64---->" + header + "\n" + payload + "\n" + signature);.0
-            new WalletManagePresenter().forceDIDResolve(elaString, this, recieveJwtEntity);
+            new WalletManagePresenter().forceDIDResolve(elaString, this, recieveProposalJwtEntity);
         } catch (Exception e) {
             toErroScan(scanResult);
         }
@@ -339,7 +348,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             }
             result = result.replace("//credaccess/", "");
             String payload = JwtUtils.getJwtPayload(result);
-            LoginRecieveJwtEntity recieveJwtEntity = JSON.parseObject(payload, LoginRecieveJwtEntity.class);
+            RecieveLoginAuthorizedJwtEntity recieveJwtEntity = JSON.parseObject(payload, RecieveLoginAuthorizedJwtEntity.class);
             String elaString = recieveJwtEntity.getIss();
             elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
             // Log.e("Base64", "Base64---->" + header + "\n" + payload + "\n" + signature);.0
@@ -911,7 +920,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     private void verifyDID(DIDDocument didDocument, RecieveJwtEntity jwtEntity) {
         //验签
-        if (jwtEntity instanceof LoginRecieveJwtEntity) {
+        if (jwtEntity instanceof RecieveLoginAuthorizedJwtEntity) {
             //did
             String result = scanResult.replace("elastos://credaccess/", "");
             if (JwtUtils.verifyJwt(result, didDocument)) {
@@ -919,14 +928,18 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, name);
                 return;
             }
-        } else if (jwtEntity instanceof CreateProposalJwtEntity) {
+        } else if (jwtEntity instanceof RecieveProposalFatherJwtEntity) {
             //proposal
             String result = scanResult.replace("elastos://crproposal/", "");
             if (JwtUtils.verifyJwt(result, didDocument)) {
-                if (((CreateProposalJwtEntity) jwtEntity).getCommand().equals("createsuggestion")) {
-                    //发建议
-                    new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, jwtEntity);
-                }
+           /*     String commond = ((RecieveProposalFatherJwtEntity) jwtEntity).getCommand();
+                if (commond.equals("createsuggestion")) {
+                    //发建议 //发提案  判断网站是否有did
+                   // String payload = JwtUtils.getJwtPayload(result);
+                   // RecieveSuggestJwtEntity recieveProposalJwtEntity = JSON.parseObject(payload, RecieveSuggestJwtEntity.class);
+
+                }*/
+                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, jwtEntity);
                 return;
             }
 
@@ -953,11 +966,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             e.printStackTrace();
         }
 
-        if (o instanceof CreateProposalJwtEntity) {
+        if (o instanceof RecieveProposalFatherJwtEntity) {
             //propaosal
-            CreateProposalJwtEntity entity = (CreateProposalJwtEntity) o;
-            if (entity.getCommand().equals("createsuggestion")) {
-                toSuggest(entity);
+
+            String command = ((RecieveProposalFatherJwtEntity) o).getCommand();
+            if (command.equals("createsuggestion")||command.equals("createproposal")) {
+                toSuggest(command);
             }
         } else {
             toAuthorization((String) o);
@@ -965,10 +979,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
 
-    private void toSuggest(CreateProposalJwtEntity entity) {
+    private void toSuggest(String command) {
         Bundle bundle = new Bundle();
         bundle.putParcelable("wallet", wallet);
-        bundle.putParcelable("JwtEntity", entity);// 网站did的name
+        bundle.putString("command", command);
+        bundle.putString("scanResult", scanResult);
         ((BaseFragment) getParentFragment()).start(SuggestionsInfoFragment.class, bundle);
     }
 

@@ -9,7 +9,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -142,21 +143,22 @@
                 android:layout_marginTop="4dp"
                 android:textSize="11sp" />
 
-            <RelativeLayout
-                android:layout_marginTop="70dp"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:background="@color/black30"
-                android:orientation="vertical">
 
-                <View style="@style/line1" />
-
-                <TextView
-                    android:id="@+id/tv_sign"
-                    style="@style/button_margin"
-                    android:layout_centerInParent="true"
-                    android:text="@string/sign" />
-            </RelativeLayout>
         </LinearLayout>
     </ScrollView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginTop="70dp"
+        android:background="@color/black30">
+
+        <View style="@style/line1" />
+
+        <TextView
+            android:id="@+id/tv_sign"
+            style="@style/button_margin"
+            android:layout_centerInParent="true"
+            android:text="@string/sign" />
+    </RelativeLayout>
 </LinearLayout>
