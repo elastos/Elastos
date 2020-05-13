@@ -70,7 +70,8 @@ export const getDidPublicKey = async (did: string) => {
       const pemPubKey = getPemPubKey(PublicKey.fromString(publicKey))
       return {
         expirationDate: moment(payload.expires),
-        publicKey: pemPubKey
+        publicKey: pemPubKey,
+        compressedPublicKey: publicKey
       }
     }
   } catch (err) {

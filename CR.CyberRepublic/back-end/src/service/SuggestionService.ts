@@ -1220,6 +1220,7 @@ export default class extends Base {
         return { success: false, message: 'Please bind a did to your account.' }
       }
       const rs: {
+        compressedPublicKey: string
         publicKey: string
         expirationDate: moment.Moment
       } = await getDidPublicKey(did)
@@ -1229,7 +1230,7 @@ export default class extends Base {
           message: `Can not get your did's public key.`
         }
       }
-      const ownerPublicKey = rs.publicKey
+      const ownerPublicKey = rs.compressedPublicKey
 
       const fields = [
         '_id',
@@ -1320,8 +1321,8 @@ export default class extends Base {
           message: 'There is no this suggestion.'
         }
       }
-
-      if (!suggestion.ownerPublicKey) {
+      const rs: any = getDidPublicKey(claims.iss)
+      if (!rs) {
         return {
           code: 400,
           success: false,
@@ -1332,7 +1333,7 @@ export default class extends Base {
       // verify response data from ela wallet
       return jwt.verify(
         jwtToken,
-        suggestion.ownerPublicKey,
+        rs.publicKey,
         async (err: any, decoded: any) => {
           if (err) {
             await this.model.update(
