@@ -1291,7 +1291,7 @@ export default class extends Base {
     try {
       const jwtToken = param.jwt
       const claims: any = jwt.decode(jwtToken)
-      if (_.get(claims, 'req')) {
+      if (!_.get(claims, 'req')) {
         return {
           code: 400,
           success: false,
@@ -1313,7 +1313,6 @@ export default class extends Base {
       const suggestion = await this.model.findById({
         _id: payload.suggestionId
       })
-
       if (!suggestion) {
         return {
           code: 400,
@@ -1321,7 +1320,8 @@ export default class extends Base {
           message: 'There is no this suggestion.'
         }
       }
-      const rs: any = getDidPublicKey(claims.iss)
+
+      const rs: any = await getDidPublicKey(claims.iss)
       if (!rs) {
         return {
           code: 400,
@@ -1452,7 +1452,7 @@ export default class extends Base {
     try {
       const jwtToken = param.jwt
       const claims: any = jwt.decode(jwtToken)
-      if (_.get(claims, 'req')) {
+      if (!_.get(claims, 'req')) {
         return {
           code: 400,
           success: false,
@@ -1483,7 +1483,7 @@ export default class extends Base {
         }
       }
 
-      const rs: any = getDidPublicKey(claims.iss)
+      const rs: any = await getDidPublicKey(claims.iss)
       if (!_.get(rs, 'publicKey')) {
         return {
           code: 400,
