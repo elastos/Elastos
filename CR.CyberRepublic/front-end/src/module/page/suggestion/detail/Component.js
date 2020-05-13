@@ -587,7 +587,7 @@ export default class extends StandardPage {
       isReference,
       detail,
       getCMSignatureUrl,
-      proposeSuggestion,
+      pollProposalState,
       history
     } = this.props
     const signature = _.get(detail, 'signature.data')
@@ -625,7 +625,7 @@ export default class extends StandardPage {
           <CMSignSuggestionButton
             getCMSignatureUrl={getCMSignatureUrl}
             id={detail._id}
-            proposeSuggestion={proposeSuggestion}
+            pollProposalState={pollProposalState}
             history={history}
           />
         </Col>

@@ -25,18 +25,25 @@ class SignSuggestionButton extends Component {
     )
   }
 
-  makeIntoProposal = async () => {
-    const { id, proposeSuggestion, history } = this.props
-    const param = { suggestionId: id }
-    const res = await proposeSuggestion(param)
-    history.push(`/proposals/${res._id}`)
-  }
-
   pollingProposalState = () => {
+    const { id, pollProposalState, history } = this.props
     this.timerDid = setInterval(async () => {
-      // polling ela node rpc
-      // make into proposal if proposal's state on chain is Registered
-      await this.makeIntoProposal()
+      const rs = await pollProposalState(id)
+      if (rs && rs.success) {
+        clearInterval(this.timerDid)
+        this.timerDid = null
+        history.push(`/proposals/${rs.id}`)
+      }
+      if (rs && rs.success === false) {
+        clearInterval(this.timerDid)
+        this.timerDid = null
+        if (rs.message) {
+          message.error(rs.message)
+        } else {
+          message.error('Something went wrong')
+        }
+        this.setState({ visible: false })
+      }
     }, 3000)
   }
 
@@ -44,7 +51,7 @@ class SignSuggestionButton extends Component {
     if (this.timerDid) {
       return
     }
-    // this.pollingProposalState()
+    this.pollingProposalState()
   }
 
   componentDidMount = async () => {

@@ -46,6 +46,9 @@ export default createContainer(
       async proposeSuggestion(param) {
         return cVoteService.proposeSuggestion(param)
       },
+      async pollProposalState(param) {
+        return cVoteService.pollProposalState(param)
+      },
       async update(param) {
         return service.update(param)
       },
