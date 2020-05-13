@@ -58,7 +58,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 /**
- * 只为模拟交易获得手续费的情况准备 和init did
+ * 只为模拟交易获得手续费的情况准备 和发布 did
  */
 public class OtherPwdActivity extends BaseActivity implements CommmonStringWithMethNameViewData, NewBaseViewData, MyDIDTransactionCallback {
     @BindView(R.id.et_pwd)

@@ -596,7 +596,7 @@
     <string name="abolished">Aborted</string>
     <string name="notsufficientfundskeepornot">Previous vote is invalid due to insufficient balance. Continue?</string>
     <string name="commonfailereason">Transaction error. Unable to publish on-chain</string>
-    <string name="specialvotesucessreason">Your votes have expired due to insufficient transaction amount</string>
+    <string name="specialvotesucessreason">Your %1$s votes have expired due to insufficient transaction amount</string>
     <string name="transactionfinish">Transaction successful</string>
     <string name="tipdidauthorization">Apply for your DID information (Including but not limited to storage, display, etc.)：</string>
     <string name="didbaseinfo">- DID Basic Information</string>
@@ -651,6 +651,16 @@
     <string name="votedisagree">投票反对</string>
     <string name="executeprocess">执行进度</string>
     <string name="secretarygeneral">秘书长</string>
+    <string name="type">类型</string>
+    <string name="common">Normal</string>
+    <string name="suggesthash">建议哈希</string>
+    <string name="suggesterdid">发起人DID</string>
+    <string name="proposalmoneyacount">提案经费账户</string>
+    <string name="suggesterquota">提案经费额度</string>
+    <string name="count">合计</string>
+    <string name="sign">签名</string>
+    <string name="suggest">发起建议</string>
+    <string name="ELIP"> ELIP</string>
 
     <!--CR committee-->
     <string name="pastcttitle">CR委员会列表</string>

@@ -308,7 +308,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
         DID did = getMyDID().initDID(payPasswd);
         if (TextUtils.isEmpty(wallet.getDid()))
             new RealmUtil().upDataWalletDid(wallet.getWalletId(), getMyDID().getDidString());
-        presenter.forceDIDResolve(did.toString(), this);
+        presenter.forceDIDResolve(did.toString(), this,null);
 
     }
 

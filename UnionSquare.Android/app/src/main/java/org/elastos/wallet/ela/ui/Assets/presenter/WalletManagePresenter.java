@@ -26,6 +26,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.RecieveJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.listener.DestroyWalletListner;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
 
@@ -124,8 +125,8 @@ public class WalletManagePresenter extends NewPresenterAbstract {
     }
 
 
-    public void forceDIDResolve(String didString, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "forceDIDResolve");
+    public void forceDIDResolve(String didString, BaseFragment baseFragment, RecieveJwtEntity data) {
+        Observer observer = createObserver(baseFragment, "forceDIDResolve",data);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
@@ -135,7 +136,7 @@ public class WalletManagePresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void DIDResolveWithTip(String didString, BaseFragment baseFragment, String type) {
+    public void DIDResolveWithTip(String didString, BaseFragment baseFragment, Object type) {
         Observer observer = createObserver(baseFragment, "DIDResolveWithTip", type);
         Observable observable = createObservable(new ObservableListener() {
             @Override

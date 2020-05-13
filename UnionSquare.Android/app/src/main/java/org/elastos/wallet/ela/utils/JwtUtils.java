@@ -22,6 +22,10 @@
 
 package org.elastos.wallet.ela.utils;
 
+import android.util.Base64;
+
+import org.elastos.did.DIDDocument;
+
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -206,6 +210,26 @@ public class JwtUtils {
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
         keyGen.initialize(256, random);
         return keyGen.generateKeyPair();
+    }
+
+    public static String getJwtPayload(String jwt) {
+        String[] jwtParts = jwt.split("\\.");
+        // String base64Header = jwtParts[0];
+        String base64Payload = jwtParts[1];
+        // String unSignature = base64Header + "." + base64Payload;
+        //  String signature = jwtParts[2];
+        //  String header = new String(org.elastos.did.util.Base64.decode(base64Header));
+        return new String(Base64.decode(base64Payload, Base64.URL_SAFE));
+    }
+
+    public static boolean verifyJwt(String result, DIDDocument didDocument) {
+        if (didDocument == null) {
+            return false;
+        }
+        String[] jwtParts = result.split("\\.");
+        String unSignature = jwtParts[0] + "." + jwtParts[1];
+        String signature = jwtParts[2];
+        return didDocument.verify(signature, unSignature.getBytes());
     }
 /*
     public static class MySigningKeyResolver extends SigningKeyResolverAdapter {

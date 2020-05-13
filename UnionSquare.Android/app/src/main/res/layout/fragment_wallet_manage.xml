@@ -170,7 +170,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:text="签名"
+            android:text="@string/sign"
             android:textColor="@color/whiter"
             android:textSize="14dp" />
 

@@ -72,7 +72,7 @@ public class SignTransactionFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
-        tvTitle.setText("签名");
+        tvTitle.setText(R.string.sign);
         registReceiver();
         ((RadioButton) rb.getChildAt(0)).setChecked(true);
 

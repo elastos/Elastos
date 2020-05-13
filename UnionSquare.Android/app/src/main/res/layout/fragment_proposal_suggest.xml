@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue1"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_suggest_tile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="3" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="13dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_num"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/whiter50"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tv_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:textColor="@color/whiter50"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tv_people"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:textColor="@color/whiter50"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+            <TextView
+                style="@style/common_margin15"
+                android:layout_marginTop="25dp"
+                android:text="@string/type"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/type"
+                style="@style/common_margin15"
+                android:layout_marginTop="4dp"
+                android:textSize="11sp" />
+
+            <TextView
+                style="@style/common_margin15"
+                android:layout_marginTop="18dp"
+                android:text="@string/suggesthash"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/hash"
+                style="@style/common_margin15"
+                android:layout_marginTop="4dp"
+                android:textSize="11sp" />
+
+            <TextView
+                style="@style/common_margin15"
+                android:layout_marginTop="18dp"
+                android:text="@string/suggesterdid"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/did"
+                style="@style/common_margin15"
+                android:layout_marginTop="4dp"
+                android:textSize="11sp" />
+
+            <TextView
+                style="@style/common_margin15"
+                android:layout_marginTop="18dp"
+                android:text="@string/proposalmoneyacount"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/account"
+                style="@style/common_margin15"
+                android:layout_marginTop="4dp"
+                android:textSize="11sp" />
+
+            <TextView
+                style="@style/common_margin15"
+                android:layout_marginTop="18dp"
+                android:text="@string/suggesterquota"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                style="@style/common_margin15"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/count"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/count"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv"
+                style="@style/common_margin15" />
+
+            <TextView
+                style="@style/common_margin15"
+                android:layout_marginTop="18dp"
+                android:text="@string/abstract1"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/abstract1"
+                style="@style/common_margin15"
+                android:layout_marginTop="4dp"
+                android:textSize="11sp" />
+
+            <RelativeLayout
+                android:layout_marginTop="70dp"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="@color/black30"
+                android:orientation="vertical">
+
+                <View style="@style/line1" />
+
+                <TextView
+                    android:id="@+id/tv_sign"
+                    style="@style/button_margin"
+                    android:layout_centerInParent="true"
+                    android:text="@string/sign" />
+            </RelativeLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

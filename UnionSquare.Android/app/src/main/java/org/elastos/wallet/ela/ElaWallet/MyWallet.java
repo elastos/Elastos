@@ -281,6 +281,16 @@ public class MyWallet {
         return null;
 
     }
+
+    private MainchainSubWallet getMainChainSubWallet(String masterWalletID) {
+        SubWallet subWallet = getSubWallet(masterWalletID, ELA);
+
+        if ((subWallet instanceof MainchainSubWallet)) {
+            return (MainchainSubWallet) subWallet;
+        }
+        return null;
+
+    }
     // args[0]: String masterWalletID
     // args[1]: String chainID
 
@@ -1858,5 +1868,24 @@ public class MyWallet {
     public BaseEntity getResolveDIDInfo(String masterWalletID, int start, int count, String did) {
         return errorProcess("88888", "function removed");
     }
+
+    /***********************************************************Proposal**************************************************************/
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID (only main chain ID 'ELA')
+    public BaseEntity proposalOwnerDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalOwnerDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "proposalOwnerDigest");
+        }
+    }
+
 }
 

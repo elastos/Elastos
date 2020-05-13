@@ -656,6 +656,16 @@
     <string name="votedisagree">投票反对</string>
     <string name="executeprocess">执行进度</string>
     <string name="secretarygeneral">秘书长</string>
+    <string name="type">类型</string>
+    <string name="common">普通</string>
+    <string name="suggesthash">建议哈希</string>
+    <string name="suggesterdid">发起人DID</string>
+    <string name="proposalmoneyacount">提案经费账户</string>
+    <string name="suggesterquota">提案经费额度</string>
+    <string name="count">合计</string>
+    <string name="sign">签名</string>
+    <string name="suggest">发起建议</string>
+    <string name="ELIP"> ELIP</string>
 
     <!--CR committee-->
     <string name="pastcttitle">CR委员会列表</string>
