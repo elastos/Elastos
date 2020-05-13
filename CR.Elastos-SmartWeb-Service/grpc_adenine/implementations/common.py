@@ -78,8 +78,9 @@ class Common(common_pb2_grpc.CommonServicer):
                 # insert into SERVICES LISTS table
                 self.rate_limiter.add_new_access_entry(api_key, self.GenerateAPIRequest.__name__)
             session_local.commit()
-        except:
+        except Exception as e:
             session_local.rollback()
+            logging.debug(f"GenerateAPIRequest : {e}")
             return common_pb2.Response(output='', status_message='Encountered an error while generating an API key. '
                                                                  'Please try again later',
                                        status=False)
@@ -113,38 +114,37 @@ class Common(common_pb2_grpc.CommonServicer):
             logging.debug(f"GetAPIKey : {status_message} : {e}")
             return common_pb2.Response(output='', status_message=status_message, status=False)
 
-        result = self.session.query(Users).filter_by(did=did).first()
-        if result:
-            session_local = self.session()
-            try:
+        session_local = self.session()
+        try:
+            result = session_local.query(Users).filter_by(did=did).first()
+            if result:
                 api_present = session_local.query(UserApiRelations).filter_by(user_id=result.id).first()
-                session_local.commit()
-            except:
-                session_local.rollback()
-                return common_pb2.Response(output='',
-                                           status_message='Encountered an error while getting the API key. '
-                                                          'Please try again later',
-                                           status=False)
-            finally:
-                session_local.close()
+                api_key = api_present.api_key
+                data = {
+                    'api_key': api_key
+                }
 
-            api_key = api_present.api_key
+                # generate jwt token
+                jwt_info = {
+                    'result': data
+                }
 
-            data = {
-                'api_key': api_key
-            }
+                jwt_token = jwt.encode({
+                    'jwt_info': jwt_info,
+                    'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
+                }, self.secret_key, algorithm='HS256')
 
-            # generate jwt token
-            jwt_info = {
-                'result': data
-            }
-
-            jwt_token = jwt.encode({
-                'jwt_info': jwt_info,
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.TOKEN_EXPIRATION)
-            }, self.secret_key, algorithm='HS256')
-
-            response = common_pb2.Response(output=jwt_token, status_message='Success', status=True)
-        else:
-            response = common_pb2.Response(output='', status_message='No such API Key exists', status=False)
+                response = common_pb2.Response(output=jwt_token, status_message='Success', status=True)
+            else:
+                response = common_pb2.Response(output='', status_message='No such API Key exists', status=False)
+            session_local.commit()
+        except Exception as e:
+            session_local.rollback()
+            logging.debug(f"GetAPIKey : {e}")
+            return common_pb2.Response(output='',
+                                    status_message='Encountered an error while getting the API key. '
+                                                    'Please try again later',
+                                    status=False)
+        finally:
+            session_local.close()
         return response
