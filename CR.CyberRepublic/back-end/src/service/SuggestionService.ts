@@ -1432,7 +1432,7 @@ export default class extends Base {
           drafthash: suggestion.draftHash,
           budgets: this.convertBudget(suggestion.budget),
           recipient: suggestion.elaAddress,
-          signature: suggestion.signature,
+          signature: suggestion.signature.data,
           did: councilMemberDid
         }
       }
