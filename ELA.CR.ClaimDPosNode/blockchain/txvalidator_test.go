@@ -1409,13 +1409,15 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	err = s.Chain.checkRegisterCRTransaction(txn2, registerCRByDIDHeight)
 	s.EqualError(err, "invalid did address")
 
+	did2, _ := getDIDFromCode(code2)
 	txn2 = s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1,
-		payload.CRInfoDIDVersion, getDIDFromCode(code2))
+		payload.CRInfoDIDVersion, did2)
 	err = s.Chain.checkRegisterCRTransaction(txn2, registerCRByDIDHeight)
 	s.EqualError(err, "invalid did address")
 
+	did1, _ := getDIDFromCode(code1)
 	txn2 = s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1,
-		payload.CRInfoDIDVersion, getDIDFromCode(code1))
+		payload.CRInfoDIDVersion, did1)
 	err = s.Chain.checkRegisterCRTransaction(txn2, registerCRByDIDHeight)
 	s.NoError(err)
 }
@@ -1604,7 +1606,7 @@ func (s *txValidatorTestSuite) getCRMember(publicKeyStr, privateKeyStr, nickName
 	privateKeyStr1 := privateKeyStr
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 	code1 := getCodeByPubKeyStr(publicKeyStr1)
-	did1 := getDIDFromCode(code1)
+	did1, _ := getDIDFromCode(code1)
 
 	txn := new(types.Transaction)
 	txn.TxType = types.RegisterCR
@@ -1642,10 +1644,11 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 
 	recipient := *randomUint168()
 	recipient[0] = uint8(contract.PrefixStandard)
+	did2, _ := getDIDFromCode(code2)
 	crcProposalPayload := &payload.CRCProposal{
 		ProposalType:       payload.Normal,
 		OwnerPublicKey:     publicKey1,
-		CRCouncilMemberDID: *getDIDFromCode(code2),
+		CRCouncilMemberDID: *did2,
 		DraftHash:          common.Hash(draftData),
 		Budgets:            createBudgets(3),
 		Recipient:          recipient,
@@ -2221,10 +2224,11 @@ func (s *txValidatorTestSuite) getCRCProposalReviewTx(crPublicKeyStr,
 	txn := new(types.Transaction)
 	txn.TxType = types.CRCProposalReview
 	txn.Version = types.TxVersion09
+	did, _ := getDIDFromCode(code)
 	crcProposalReviewPayload := &payload.CRCProposalReview{
 		ProposalHash: *randomUint256(),
 		VoteResult:   payload.Approve,
-		DID:          *getDIDFromCode(code),
+		DID:          *did,
 	}
 
 	signBuf := new(bytes.Buffer)
