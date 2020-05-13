@@ -656,5 +656,8 @@
     <string name="votedisagree">投票反对</string>
     <string name="executeprocess">执行进度</string>
     <string name="secretarygeneral">秘书长</string>
+
+    <!--CR committee-->
     <string name="pastcttitle">CR委员会列表</string>
+    <string name="ctlisttitle">第%1$s届委员会</string>
 </resources>

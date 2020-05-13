@@ -10,5 +10,183 @@
 
     <include layout="@layout/title_bar" />
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp">
 
+        <org.elastos.wallet.ela.utils.widget.RoundImageView
+            android:id="@+id/head_ic"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:src="@mipmap/icon_ela"/>
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/head_ic"
+            android:textColor="@color/white"
+            android:text="Kevin Zhang"/>
+
+        <TextView
+            android:id="@+id/location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:layout_below="@+id/name"
+            android:layout_marginTop="3dp"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/head_ic"
+            android:textColor="@color/white"
+            android:text="布宜诺斯艾利斯"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/impeachment_progress_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/white"
+        android:layout_marginTop="25dp"
+        android:layout_marginLeft="15dp"
+        android:text="弹劾进度"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal">
+
+        <org.elastos.wallet.ela.utils.view.CircleProgressView
+            android:id="@+id/progress"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="15dp"/>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="50dp">
+            <TextView
+                android:id="@+id/vote_count_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textSize="11sp"
+                android:layout_centerHorizontal="true"
+                android:textColor="@color/white"
+                android:text="当前票数"/>
+
+            <TextView
+                android:id="@+id/vote_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="13sp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@+id/vote_count_title"
+                android:textColor="@color/white"
+                android:text="2312 ELA"/>
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/division"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="43dp"
+            android:textColor="@color/white"
+            android:layout_gravity="center_vertical"
+            android:text="/"/>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="30dp">
+            <TextView
+                android:id="@+id/impeachment_count_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:layout_marginTop="8dp"
+                android:layout_centerHorizontal="true"
+                android:textColor="@color/white"
+                android:text="弹劾通过票数"/>
+
+            <TextView
+                android:id="@+id/impeachment_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="13sp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@+id/impeachment_count_title"
+                android:textColor="@color/white"
+                android:text="2312 ELA"/>
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/tab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <LinearLayout
+            android:id="@+id/tab1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/line1"
+                android:layout_width="80dp"
+                android:layout_height="2dp"
+                android:background="@color/whiter"/>
+
+            <TextView
+                android:id="@+id/ct_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/px30"
+                android:text="委员信息" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tab2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/line2"
+                android:layout_width="80dp"
+                android:layout_height="2dp"
+                android:background="@color/whiter"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/secretary_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/px30"
+                android:text="履职记录"
+                android:textColor="@color/whiter50" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+    
 </com.qmuiteam.qmui.layout.QMUILinearLayout>

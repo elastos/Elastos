@@ -1,29 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="64dp"
-    android:background="#00000000"
-    android:layout_marginLeft="15dp"
-    android:layout_marginRight="15dp">
+    android:layout_height="55dp">
+
+    <org.elastos.wallet.ela.utils.widget.RoundImageView
+        android:id="@+id/icon"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerVertical="true"
+        android:src="@mipmap/icon_ela"/>
 
     <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/name"
         android:layout_marginTop="10dp"
         android:textSize="14sp"
+        android:layout_toRightOf="@+id/icon"
+        android:layout_marginLeft="10dp"
         android:textColor="@color/white"
-        android:text="第1届"/>
-
-    <TextView
-        android:id="@+id/time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Yipeng Su"/>
+
+    <TextView
+        android:id="@+id/location"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="10dp"
         android:textSize="11sp"
-        android:textColor="@color/white"
-        android:text="2019.02.28"/>
+        android:layout_toRightOf="@+id/icon"
+        android:layout_marginLeft="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="中国"/>
 
     <TextView
         android:id="@+id/arrow"
@@ -39,5 +46,5 @@
         android:layout_alignParentBottom="true"
         android:background="@color/white"
         android:layout_height="0.5dp"/>
-    
+
 </RelativeLayout>

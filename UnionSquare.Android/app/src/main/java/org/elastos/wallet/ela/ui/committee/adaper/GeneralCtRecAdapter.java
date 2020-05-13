@@ -9,17 +9,19 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
+import org.elastos.wallet.ela.ui.committee.bean.GeneralCtBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
+import org.elastos.wallet.ela.utils.widget.RoundImageView;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.ViewHolder>{
+public class GeneralCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdapter.ViewHolder> {
 
-    public PastCtRecAdapter(Context context, List<PastCtBean> list) {
+    public GeneralCtRecAdapter(Context context, List<GeneralCtBean> list) {
         this.context = context;
         this.list = list;
     }
@@ -27,16 +29,17 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_ct_past, viewGroup, false);
+        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_ct_general, viewGroup, false);
         ViewHolder holder = new ViewHolder(v);
         return holder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        PastCtBean data = list.get(i);
-        viewHolder.title.setText(String.format(context.getString(R.string.ctlisttitle), data.getIndex()));
-        viewHolder.time.setText(data.getTime());
+        GeneralCtBean data = list.get(i);
+        viewHolder.name.setText(data.getName());
+        viewHolder.location.setText(data.getLocation());
+        GlideApp.with(context).load(data.getUrl()).error(R.mipmap.icon_ela).into(viewHolder.icon);
         if (commonRvListener != null) {
             viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -52,12 +55,18 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
         return list==null ? 0 : list.size();
     }
 
+    public void setCommonRvListener(CommonRvListener commonRvListener) {
+        this.commonRvListener = commonRvListener;
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.title)
-        TextView title;
-        @BindView(R.id.time)
-        TextView time;
+        @BindView(R.id.name)
+        TextView name;
+        @BindView(R.id.location)
+        TextView location;
+        @BindView(R.id.icon)
+        RoundImageView icon;
 
         ViewHolder(View view) {
             super(view);
@@ -65,11 +74,7 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
         }
     }
 
-    public void setCommonRvListener(CommonRvListener commonRvListener) {
-        this.commonRvListener = commonRvListener;
-    }
-
     private Context context;
     private CommonRvListener commonRvListener;
-    private List<PastCtBean> list;
+    private List<GeneralCtBean> list;
 }

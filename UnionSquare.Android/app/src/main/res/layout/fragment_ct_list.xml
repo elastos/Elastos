@@ -1,14 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/qmuilinearlayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/found_bg"
     android:orientation="vertical">
 
     <include layout="@layout/title_bar" />
 
+    <LinearLayout
+        android:id="@+id/tab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px40"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <LinearLayout
+            android:id="@+id/ct_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/line1"
+                android:layout_width="80dp"
+                android:layout_height="2dp"
+                android:background="@color/whiter"/>
+
+            <TextView
+                android:id="@+id/ct_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/px30"
+                android:text="委员列表" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/secretary_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/line2"
+                android:layout_width="80dp"
+                android:layout_height="2dp"
+                android:background="@color/whiter"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/secretary_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/px30"
+                android:text="秘书长列表"
+                android:textColor="@color/whiter50" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vp"
+        android:layout_marginTop="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"/>
 
 
-</com.qmuiteam.qmui.layout.QMUILinearLayout>
+</LinearLayout>
