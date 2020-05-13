@@ -415,12 +415,6 @@ func (mp *TxPool) RemoveTransaction(txn *Transaction) {
 	}
 	mp.Unlock()
 }
-func (mp *TxPool) GetProposalsUsedAmount() Fixed64 {
-	mp.Lock()
-	defer mp.Unlock()
-
-	return mp.proposalsUsedAmount
-}
 
 func (mp *TxPool) dealAddProposalTx(txn *Transaction) {
 	proposal, ok := txn.Payload.(*payload.CRCProposal)
