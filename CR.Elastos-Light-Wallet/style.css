@@ -19,6 +19,11 @@ input,
 select {	
   -webkit-app-region: no-drag;	
 }
+
+*:focus {
+  outline: none;
+}
+
 @font-face {
   font-family: "BioSans-Regular";
   src: url("artwork/biosans-regular.otf");
@@ -36,6 +41,10 @@ html {
   text-align: center;
   margin: 0;
   background-color: rgba (0, 0, 0);
+}
+
+button {
+  transition: 0.4s;
 }
 
 #votingMenu,
@@ -67,6 +76,11 @@ html {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+.gradientfont-hover:hover {
+  color: linear-gradient(160deg, rgba(229, 167, 118, 1), rgba(244, 210, 174, 1));
+}
+
 
 .ta_left {
   text-align: left;
@@ -138,20 +152,50 @@ html {
   left: 995px;
   position: absolute;
   padding: 5px;
-  border-radius: 5px;
+  border-radius: 15px;
+  opacity: 0.9;
+  transition: 0.4s;
 }
 
 .refresh-icon:hover,
 .refresh-icon:active {
   background-image: linear-gradient(-180deg, #33373D 0%, rgba(51, 55, 61, 0.00) 130%);
+  transform: scale(1.1);
+  opacity: 1;
+  transition: 0.4s;
 }
 
 .dark-hover {
   -webkit-app-region: no-drag;	
+  transition: 0.4s;
 }
 
 .dark-hover:hover {
   background: rgba(151, 153, 166, 0.16);
+  transform: scale(1.1);
+  transition: 0.4s;
+}
+
+.dark-hover2 {
+  -webkit-app-region: no-drag;	
+  transition: 0.4s;
+}
+
+.dark-hover2:hover {
+  background: rgba(151, 153, 166, 0.16);
+  transition: 0.4s;
+}
+
+.scale-hover {
+  opacity: 0.9;
+  transition: 0.4s;
+}
+
+.scale-hover:hover {
+  transform: scale(1.1);
+  opacity: 1;
+  transition: 0.4s;
+
 }
 
 .logo-info {
@@ -283,13 +327,13 @@ html {
 }
 
 .article-days {
-  font-size: 14px;
+  font-size: 12px;
   color: #9799A6;
   letter-spacing: 0;
 }
 
 .article-title {
-  font-size: 20px;
+  font-size: 18px;
   color: #FFFFFF;
   letter-spacing: 0;
   font-weight: 600;
@@ -347,7 +391,10 @@ html {
 
 .next-button:active,
 .next-button:hover {
-  background: linear-gradient(160deg, rgba(229, 167, 118, 1), rgba(244, 210, 174, 1));
+  /* background: linear-gradient(160deg, rgba(229, 167, 118, 1), rgba(244, 210, 174, 1)); */
+  transform: scale(1.1);
+  opacity: 1;
+  transition: 0.4s;
 }
 
 .send-text {
@@ -477,7 +524,8 @@ html {
 }
 
 .sendela-button {
-  background-image: linear-gradient(-214deg, #F4D2AE 0%, #E5A776 100%);
+  /* background-image: linear-gradient(-214deg, #F4D2AE 0%, #E5A776 100%); */
+  background: #E5A776;
   box-shadow: 0 3px 6px -2px rgba(25, 23, 41, 0.66);
   border-radius: 8px;
   top: 358;
@@ -494,11 +542,14 @@ html {
   font-size: 16px;
   color: #FFFFFF;
   letter-spacing: 0;
+  opacity: 0.9;
 }
 
 .sendela-button:active,
 .sendela-button:hover{
-  background: rgba(151, 153, 166, 0.16);
+  transform: scale(1.1);
+  opacity: 1;
+  transition: 0.4s;
 }
 
 .send-back {
@@ -548,15 +599,25 @@ html {
 }
 
 .address-ex {
-  font-size: 14px;
+  font-size: 16px;
   color: #FFFFFF;
   letter-spacing: 0;
-  top: 167px;
-  left: 825px;
+  top: 161px;
+  left: 850px;
+  margin-right: 10px;
+
+}
+
+.word-breakall{
+  word-break: break-all;
+}
+
+.word-breakword{
+  word-break: break-word;
 }
 
 .copy-button {
-  left: 780px;
+  left: 808px;
   top: 159px;
   background: none;
   margin: 0;
@@ -564,6 +625,21 @@ html {
   height: 37.5px;
   width: 37.5px;
   padding: 0;
+  border-radius: 8px;
+  background-image: linear-gradient(-210deg, #F4D2AE 0%, #E5A776 100%);
+  box-shadow: 0 3px 6px -1px rgba(79,72,141,0.15);
+  opacity: 0.9;
+}
+.qrcopy-button {
+  margin: 0;
+  border: none;
+  height: 52px;
+  width: 52px;
+  padding: 0;
+  border-radius: 10px;
+  background-image: linear-gradient(-210deg, #F4D2AE 0%, #E5A776 100%);
+  box-shadow: 0 3px 6px -1px rgba(79,72,141,0.15);
+  opacity: 0.9;
 }
 
 .copy-icon {
@@ -574,6 +650,8 @@ html {
 .qr-icon {
   left: 808px;
   top: 219px;
+  padding: 0;
+  overflow: hidden;
 }
 
 .scanqr-text {
@@ -582,7 +660,7 @@ html {
   color: #9799A6;
   letter-spacing: 0;
   line-height: 16px;
-  left: 906px;
+  left: 915px;
   top: 225px;
 }
 
@@ -590,7 +668,7 @@ html {
   font-size: 16px;
   letter-spacing: 0;
   line-height: 16px;
-  left: 917px;
+  left: 900px;
   top: 274px;
 }
 
@@ -1091,6 +1169,10 @@ select, input {
   padding: 5px;
 }
 
+.padding_10px {
+  padding: 10px;
+}
+
 .paddingleft_10px {
   padding-left: 10px;
 }
@@ -1160,6 +1242,14 @@ select, input {
   padding-right: 87px;
 }
 
+.voting-hover:hover{
+  opacity: 0.7;
+}
+
+.voting-selected {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
 .voting-row3 {
   grid-area: row3;
   display: flex;
@@ -1169,7 +1259,7 @@ select, input {
 }
 
 .voting-row3 button {
-  background-image: linear-gradient(-214deg, #F4D2AE 0%, #E5A776 100%);
+  background: #E5A776;
   box-shadow: 0 3px 6px -2px rgba(25, 23, 41, 0.66);
   border-radius: 8px;
   position: absolute;
@@ -1291,9 +1381,9 @@ select, input {
   opacity: 0.9;
   right: 0;
   z-index: 10;
-  margin: 15px auto;
+  margin: 10px auto;
   position: absolute;
-  width: 1100px;
+  width: 1110px;
   border-radius: 35px;
   height: 110px;
   justify-content: space-around;
@@ -1327,6 +1417,7 @@ select, input {
   justify-content: space-evenly;
   align-items: center;
 }
+
 
 .proceed-btn {
   background-image: linear-gradient(-214deg, #F4D2AE 0%, #E5A776 100%);
@@ -1393,4 +1484,5 @@ select, input {
 
 .landing-btnbg {
   background: #E5A776;
+  opacity: 0.9;
 }

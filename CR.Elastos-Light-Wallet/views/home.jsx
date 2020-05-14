@@ -146,7 +146,7 @@ module.exports = (props) => {
       <div id="sendTwo" className={`send-area ${visibility}`}>
         <img src="artwork/sendicon.svg" className="send-icon" title="Refresh Blockchain Data"  onClick={(e) => App.refreshBlockchainData()}/>
         <p className="send-text">Send</p>
-        <div className="fees-text">Fees (in Satoshis)</div>
+        <div className="fees-text">Fees (in Satoshi ELA)</div>
         <input type="text" size="14" id="feeAmount" placeholder="Fees" defaultValue={App.getFee()} onFocus={(e) => sendIsFocus(e)} onBlur={(e) => sendIsNotFocus(e)}></input>
         <div className="estimate-new dark-hover cursor_def br5"onClick={(e) => showConfirmAndSeeFees()}>Estimate New Balance</div>
         <p className="fees-balance">Your balance will be deducted <span> {App.getSendAmount()} ELA</span>
@@ -208,21 +208,20 @@ module.exports = (props) => {
         <img src="artwork/sendicon.svg" className="rec-icon" />
         <p className="rec-text">Receive</p>
         <p className="address-text">Address</p>
-        <button className="copy-button" onClick={(e) => App.copyAddressToClipboard()}>
-          <img src="artwork/copyicon.svg" className="copy-icon" height="38px" width="38px" />
+        <button className="copy-button scale-hover" onClick={(e) => App.copyAddressToClipboard()}>
+          <img src="artwork/copycut.svg" className="copy-icon" height="20px" width="20px" />
         </button>
-        <p className="address-ex">{App.getAddress()}</p>
+        <p className="address-ex word-breakall">{App.getAddress()}</p>
         {/*<img id="qricon" src="artwork/qricon.svg" className="qr-icon" height="54px" width="54px" />*/}
-        <button className="qr-icon btn_none" title="Click to enlarge" onClick={(e) => GuiToggles.showQRCode()}>
-          <QRCode value={App.getAddressOrBlank()} size={78} includeMargin={true} className="br5"/>
+        <button className="qr-icon btn_none br5" title="Click to enlarge" onClick={(e) => GuiToggles.showQRCode()}>
+          <QRCode value={App.getAddressOrBlank()} size={78} includeMargin={true} className="scale-hover"/>
         </button>
         <p className="scanqr-text">Scan <strong>QR code</strong> to get <br />ELA Address</p>
-        <p className="howqr-text gradient-font">Click to Enlarge</p>
+        <p className="howqr-text gradient-font">Click QR code to Enlarge</p>
         <img src="artwork/separator.svg" className="rec-separator" />
         <p className="ledger-heading">Ledger</p>
-        <img src="artwork/ledgericon.svg" alt="" className="ledger-icon" height="36px" width="57px" title="Please verify above address on Ledger"/>
+        <img src="artwork/ledgericon.svg" alt="" className="ledger-icon scale-hover" height="36px" width="57px" title="Please verify above address on Ledger" onClick={(e) => App.verifyLedgerBanner()}/>
         <p className="verifyledger-text">Please verify above address<br /><strong>on Ledger Device</strong></p>
-
 </div>
 
 <div className="transaction-area">

@@ -47,27 +47,27 @@ module.exports = (props) => {
     <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()}/>
 
     <div className="login-div ">
-      <img src="artwork/logonew.svg" height="60px" width="180px" className="flexgrow_pt35"/>
+      <img src="artwork/logonew.svg" height="80px" width="240px" className="flexgrow_pt35"/>
 
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Create New Wallet</p>
       <div className="flex_center">
-      <button className="home-btn dark-hover landing-btnbg" onClick={(e) => GuiToggles.showGenerateNewMnemonic()}>
+      <button className="home-btn scale-hover landing-btnbg" onClick={(e) => GuiToggles.showGenerateNewMnemonic()}>
             Create
             </button>
       </div>
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Import Wallet</p>
       <div className="flex_center">
-      <button className="home-btn dark-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginMnemonic()}>
+      <button className="home-btn scale-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginMnemonic()}>
             Login with Mnemonics
             </button>
       </div>
       <div className="flex_center">
-      <button className="home-btn dark-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginPrivateKey()}>
+      <button className="home-btn scale-hover landing-btnbg" onClick={(e) => GuiToggles.showLoginPrivateKey()}>
             Login with Private Key
             </button>
       </div>
       <p className="address-text font_size24 margin_none display_inline_block gradient-font">Ledger</p>
-      <p className="color_white font_size16 w80pct">Ledger Status: <LedgerMessage App={App}/></p>
+      <p className="color_white font_size16 w80pct word-breakword">Ledger Status: <LedgerMessage App={App}/></p>
     </div>
       <div>
       <UseLedgerButton App={App} GuiToggles={GuiToggles} />
