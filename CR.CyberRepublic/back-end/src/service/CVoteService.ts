@@ -598,6 +598,7 @@ export default class extends Base {
           constant.CVOTE_STATUS.PROPOSED,
           constant.CVOTE_STATUS.ACTIVE,
           constant.CVOTE_STATUS.REJECT,
+          constant.CVOTE_STATUS.NOTIFICATION,
           constant.CVOTE_STATUS.FINAL,
           constant.CVOTE_STATUS.DEFERRED,
           constant.CVOTE_STATUS.INCOMPLETED
@@ -853,8 +854,37 @@ export default class extends Base {
     return false
   }
 
+  public isCouncilExpired(data: any, extraTime = 0): Boolean {
+    const ct = moment(data.proposedAt || data.createdAt).valueOf()
+    if (Date.now() - ct - extraTime > constant.CVOTE_COUNCIL_EXPIRATION) {
+      return true
+    }
+    return false
+  }
+
+  // proposal publicity
+  public async isNotification(data): Promise<any> {
+    
+    // Get one cr proposal detail state information by proposalhash or drafthash
+    const proposalHash = data.proposalHash
+    const rs: any = await getProposalState(proposalHash)
+    if (!rs) {
+      throw 'get one cr proposal crvotes by proposalhash is fail'
+    }
+    if (rs && rs.status === 'Registered') {
+      const voteRejectAmount = rs.votersrejectamount
+      const registerHeight = rs.registerheight
+      // TODO
+      // Once the number of votes against a proposal exceeds the equivalent of 10% of all circulating ELA, the proposal becomes invalid
+      return 
+    }
+    
+  }
+
   // proposal active/passed
   public isActive(data): Boolean {
+    // TODO
+    // Get one cr proposal detail state information by proposalhash or drafthash
     const supportNum =
       _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.SUPPORT] || 0
     return supportNum > data.voteResult.length * 0.5
@@ -862,6 +892,8 @@ export default class extends Base {
 
   // proposal rejected
   public isRejected(data): Boolean {
+    // TODO
+    // Get one cr proposal detail state information by proposalhash or drafthash
     const rejectNum =
       _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.REJECT] || 0
     return rejectNum > data.voteResult.length * 0.5
@@ -936,7 +968,7 @@ export default class extends Base {
     const idsRejected = []
 
     _.each(list, (item) => {
-      if (this.isExpired(item)) {
+      if (this.isCouncilExpired(item)) {
         if (this.isActive(item)) {
           idsActive.push(item._id)
         } else if (this.isRejected(item)) {
@@ -964,7 +996,7 @@ export default class extends Base {
         }
       },
       {
-        status: constant.CVOTE_STATUS.ACTIVE
+        status: constant.CVOTE_STATUS.NOTIFICATION
       },
       { multi: true }
     )
@@ -983,6 +1015,51 @@ export default class extends Base {
     this.notifyCouncilToVote()
   }
 
+  private async eachMemberVoteJob() {
+    const db_cvote = this.getDBModel('CVote')
+    const list = await db_cvote.find({
+      status: constant.CVOTE_STATUS.NOTIFICATION
+    })
+    const idsNotification = []
+    const idsDeferred = []
+
+    _.each(list, (item) => {
+      if (this.isExpired(item)) {
+        if (this.isNotification(item)) {
+          idsNotification.push(item._id)
+        }else {
+          idsDeferred.push(item._id)
+        }
+      }
+    })
+    await db_cvote.update(
+      {
+        _id: {
+          $in: idsDeferred
+        }
+      },
+      {
+        status: constant.CVOTE_STATUS.DEFERRED
+      },
+      { multi: true }
+    )
+    await db_cvote.update(
+      {
+        _id: {
+          $in: idsNotification
+        }
+      },
+      {
+        status: constant.CVOTE_STATUS.ACTIVE
+      },
+      { multi: true }
+    )
+
+    this.notifyCouncilToVote()
+  }
+
+
+
   public cronjob() {
     if (tm) {
       return false
@@ -990,6 +1067,7 @@ export default class extends Base {
     tm = setInterval(() => {
       console.log('---------------- start cvote cronjob -------------')
       this.eachJob()
+      this.eachMemberVoteJob()
     }, 1000 * 60)
   }
 
@@ -1202,25 +1280,75 @@ export default class extends Base {
   }
 
   // according to txid polling vote status
-  public async pollVoteChain() {
-    const txid = ''
-    const status = ''
-
+  public async pollingVoteStatus(param: any) {
+    const { id } = param
     const db_cvote = this.getDBModel('CVote')
+    const proposal = await db_cvote.findById(id)
+    if (proposal) {
+      const proposalHash = _.get(proposal, 'proposalHash')
+      if (proposalHash) {
+        const rs = {
+          "status": "Registered",
+          "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
+          "crvotes": {
+              "aabbcc": 0,
+              'ccddee': 0
+          },
+          "votersrejectamount": 0,
+          "registerheight": 1277
+        }
+        // const rs = await getProposalState(proposalHash)
+        if (!rs) {
+          return { success: false }
+        }
+        if (rs && rs.status === 'Registered') {
+          await this.updateVoteStatus({
+            proposalId: id,
+            rs
+          })
+          return { success: true, id: id }
+        }
+      }
+    } else {
+      return { success: false }
+    }
+  }
+
+  public async updateVoteStatus(param: any): Promise<Document> {
+    const db_cvote = this.getDBModel('CVote')
+    const { proposalId, rs } = param
+    
+    const proposal = proposalId && (await db_cvote.findById(proposalId))
+    if (!proposal) {
+      throw 'cannot find proposal'
+    }
+
+    const txids = [] 
+    _.forEach(rs.crvotes, function(v,k){
+      if( v == 0) {
+        txids.push(k)
+      }
+    })
 
     try {
-      await db_cvote.update(
-        {
-          'voteResult.txid': txid
+      const res = await db_cvote.update(
+        { 
+          'voteResult.txid': { $in : txids } 
         },
         {
-          $set: {
-            'voteResult.$.status': status
+          $set:{
+            'voteResult.$': {
+              status: constant.CVOTE_CHAIN_STATUS.CHAINED
+            }
           }
-        }
+        },
+        { multi: true }
       )
-    } catch (err) {
-      logger.error(err)
+      console.log(res)
+      return res
+    } catch (error) {
+      logger.error(error)
+      return
     }
   }
 
