@@ -1158,12 +1158,13 @@ export default class extends Base {
       createdBy &&
       createdBy.profile &&
       `${createdBy.profile.firstName} ${createdBy.profile.lastName}`
-    const result = _.omit(suggestion._doc, ['_id', 'id', 'createdBy'])
+    const result = _.omit(suggestion._doc, ['_id', 'id', 'createdBy', 'abstract'])
 
     return {
       ...result,
       createdAt: timestamp.second(result.createdAt),
       id,
+      abs: suggestion.abstract,
       address,
       did,
       didName
