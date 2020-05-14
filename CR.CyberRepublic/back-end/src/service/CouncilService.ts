@@ -7,37 +7,104 @@ const _ = require('lodash')
 
 let tm = undefined
 
-// TODO：history of council
 export default class extends Base {
     private model: any
-
+    private userMode: any
+    private proposalMode: any
     protected init() {
         this.model = this.getDBModel('Council')
+        this.userMode = this.getDBModel('User')
+        this.proposalMode = this.getDBModel('CVote')
     }
 
-    public async term(param: any): Promise<any> {
+    public async term(): Promise<any> {
+        const fields = [
+            'index',
+            'startDate',
+            'endDate',
+            'status'
+        ]
+
+        const result = await this.model.getDBInstance().find({}, fields)
+
+        return _.map(result, (o: any) => ({
+            id: o._id,
+            ..._.omit(o._doc, ['_id']),
+            startDate: moment(o.startDate).unix(),
+            endDate: moment(o.endDate).unix(),
+        }))
+    }
+
+    public async councilList(id: String): Promise<any> {
+        const fields = [
+            'councilMembers.did',
+            'councilMembers.didName',
+            'councilMembers.avatar',
+            'councilMembers.location',
+            'councilMembers.status',
+        ]
+
+        const result = await this.model.getDBInstance().findOne({_id: id}, fields)
+
+        if (!result) {
+            return {
+                code: 400,
+                message: 'Invalid request parameters - status',
+                // tslint:disable-next-line:no-null-keyword
+                data: null
+            }
+        }
+
+        return result.councilMembers
+    }
+
+    public async councilInformation(param: any): Promise<any> {
+        const {id, did} = param
+
+        const fields = [
+            'height',
+            'status',
+            'councilMembers.did',
+            'councilMembers.didName',
+            'councilMembers.avatar',
+            'councilMembers.address',
+            'councilMembers.introduction',
+            'councilMembers.impeachmentVotes',
+            'councilMembers.location',
+            'councilMembers.status',
+        ]
+
+        const result = await this.model.getDBInstance().findOne({_id: id}, fields)
+        const council = result && _.filter(result.councilMembers, (o: any) => o.did === did)
+        const user = await this.userMode.getDBInstance().findOne({'did.id': did}, ['_id'])
+        if (!result || !council) {
+            return {
+                code: 400,
+                message: 'Invalid request parameters',
+                // tslint:disable-next-line:no-null-keyword
+                data: null
+            }
+        }
+
+        // TODO： return term information
+        let term
+        if (result.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
+
+        }
+
         return {
-            test: 'test'
+            ...council[0]._doc,
+            impeachmentHeight: result.height * 0.2
         }
     }
 
-    public async termList(param: any): Promise<any> {
-        return {
-            test: 'test'
-        }
-    }
-
-    public async termInformation(param: any): Promise<any> {
-        return {
-            test: 'test'
-        }
-    }
 
     public async eachJob() {
         const currentCouncil = await ela.currentCouncil()
         const candidates = await ela.currentCandidates()
+        const height = await ela.height();
 
-        const lastCouncil = await this.model.getDBInstance().findOne().sort({ index: -1 })
+        const lastCouncil = await this.model.getDBInstance().findOne().sort({index: -1})
 
         const fields = [
             'code',
@@ -63,6 +130,7 @@ export default class extends Base {
             const doc: any = {
                 index: 1,
                 startDate: new Date(),
+                height: height || 0,
             }
 
             // add voting or current council list
@@ -78,49 +146,49 @@ export default class extends Base {
 
             await this.model.save(doc);
 
-            return
-        }
-
-        const { index, endDate } = lastCouncil
-
-        if (moment(endDate).startOf('day').isBefore(moment().startOf('day'))) {
-            // add council
-            const doc: any = {
-                index: index + 1,
-                startDate: new Date(),
-                endDate: moment().add(1, 'years').toDate(),
-                status: constant.TERM_COUNCIL_STATUS.CURRENT,
-                councilMembers: _.map(currentCouncil.crmembersinfo, (o) => dataToCouncil(o))
-            }
-
-            await this.model.getDBInstance().save(doc)
         } else {
-            // change council
-            const normalChange = moment(endDate)
-                .startOf('day')
-                .subtract(1, 'months')
-                .isAfter(moment().startOf('day'))
+            // TODO: exist bug
 
-            if (normalChange || currentCouncil.crmembersinfo) {
-                const doc: any = {
-                    index: index + 1,
-                    startDate: new Date(),
-                    endDate: moment().add(1, 'years').add(1, 'months').toDate(),
-                    status: constant.TERM_COUNCIL_STATUS.VOTING,
-                    councilMembers: _.map(candidates.crcandidatesinfo, (o) => dataToCouncil(o))
-                }
+            console.log('exist')
 
-                await this.model.getDBInstance().save(doc);
-            }
-
+            // const {index, endDate} = lastCouncil
+            //
+            // if (moment(endDate).startOf('day').isBefore(moment().startOf('day'))) {
+            //     // add council
+            //     await this.model.getDBInstance().update({_id: lastCouncil._id}, {
+            //         $set: {
+            //             ...lastCouncil,
+            //             status: constant.TERM_COUNCIL_STATUS.CURRENT,
+            //         }
+            //     })
+            // } else {
+            //     // change council
+            //     const normalChange = moment(endDate)
+            //         .startOf('day')
+            //         .subtract(1, 'months')
+            //         .isAfter(moment().startOf('day'))
+            //
+            //     if (normalChange || currentCouncil.crmembersinfo) {
+            //         const doc: any = {
+            //             index: index + 1,
+            //             startDate: new Date(),
+            //             endDate: moment().add(1, 'years').add(1, 'months').toDate(),
+            //             status: constant.TERM_COUNCIL_STATUS.VOTING,
+            //             height: height || 0,
+            //             councilMembers: _.map(candidates.crcandidatesinfo, (o) => dataToCouncil(o))
+            //         }
+            //
+            //         await this.model.getDBInstance().save(doc);
+            //         await this.model.getDBInstance().update({_id: lastCouncil._id}, {
+            //             $set: {
+            //                 ...lastCouncil,
+            //                 status: constant.TERM_COUNCIL_STATUS.HISTORY,
+            //             }
+            //         })
+            //     }
+            //
+            // }
         }
-
-        await this.model.getDBInstance().update({_id: lastCouncil._id}, {
-            $set: {
-                ...lastCouncil,
-                status: constant.TERM_COUNCIL_STATUS.HISTORY,
-            }
-        })
 
     }
 
@@ -128,9 +196,9 @@ export default class extends Base {
         if (tm) {
             return false
         }
-        tm = setInterval(() => {
+        tm = setInterval(async () => {
             console.log('---------------- start council or secretariat cronJob -------------')
-            this.eachJob()
-        }, 1000 * 60 * 30)
+            await this.eachJob()
+        }, 1000 * 60)
     }
 }

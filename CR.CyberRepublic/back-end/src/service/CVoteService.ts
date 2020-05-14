@@ -1527,7 +1527,8 @@ export default class extends Base {
 
     return _.omit(
       {
-        ...proposal._doc,
+        ..._.omit(proposal._doc, ['abstract']),
+        abs: proposal.abstract,
         createdAt: timestamp.second(proposal.createdAt),
         voteResult,
         address,

@@ -18,6 +18,9 @@ export const CouncilMembers = {
         type: String,
         required: true,
     },
+    avatar: {
+        type: String,
+    },
     address: {
         type: String,
         required: true,
@@ -70,6 +73,10 @@ export const Council = {
     },
     status: {
         type: String,
+        required: true,
+    },
+    height: {
+        type: Number,
         required: true,
     },
     councilMembers: [CouncilMembers],
