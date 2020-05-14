@@ -1479,11 +1479,7 @@ export default class extends Base {
 
     const address = `${process.env.SERVER_URL}/proposals/${proposal.id}`
 
-    // duration
-    const endTime = Math.round(proposal.createdAt.getTime() / 1000 + 604800)
-    const nowTime = Math.round(new Date().getTime() / 1000)
-    let duration = endTime - nowTime
-    duration = duration > 0 ? duration : 0
+    
 
     const proposalId = proposal._id
 
@@ -1492,7 +1488,8 @@ export default class extends Base {
     const filterVoteResult = _.filter(
       proposal._doc.voteResult,
       (o: any) => (o.value !== constant.CVOTE_RESULT.UNDECIDED
-          && o.status === constant.CVOTE_CHAIN_STATUS.CHAINING)
+          && [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
+              .includes(o.status))
     )
     // update vote result data
     const voteResult = _.map(filterVoteResult, (o: any) =>
@@ -1512,14 +1509,35 @@ export default class extends Base {
 
     const summary = await this.getSummary(proposalId)
 
+    const votingResult = {}
+    const notificationResult = {}
+    
+    // duration
+    const endTime = Math.round(proposal.createdAt.getTime() / 1000)
+    const nowTime = Math.round(new Date().getTime() / 1000)
+
+    if (proposal.status === constant.CVOTE_STATUS.PROPOSED) {
+      notificationResult['duration'] = (endTime - nowTime + 604800) > 0 ? (endTime - nowTime + 604800) : 0
+    }
+
+    if (proposal.status === constant.CVOTE_STATUS.NOTIFICATION
+        && proposal.rejectAmount >= 0
+        && proposal.rejectHeight > 0) {
+      notificationResult['rejectAmount'] = `${proposal.rejectAmount}`
+      notificationResult['rejectHeight'] = `${proposal.rejectHeight}`
+      notificationResult['rejectAmount'] = (proposal.rejectAmount / proposal.rejectHeight).toFixed(4)
+      notificationResult['duration'] = (endTime - nowTime + 604800 * 2) > 0 ? (endTime - nowTime + 604800 * 2) : 0
+    }
+
     return _.omit(
       {
         ..._.omit(proposal._doc, ['abstract']),
         abs: proposal.abstract,
+        ...votingResult,
+        ...notificationResult,
         createdAt: timestamp.second(proposal.createdAt),
         voteResult,
         address,
-        duration,
         tracking,
         summary
       },

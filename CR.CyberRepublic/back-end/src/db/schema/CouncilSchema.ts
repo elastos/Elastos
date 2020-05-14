@@ -1,6 +1,54 @@
 import { Schema } from 'mongoose'
 
 // TODO: 完善数据结构
+
+export const Secretariat = {
+    code: {
+        type: String,
+        required: true,
+    },
+    cid: {
+        type: String,
+        required: true,
+    },
+    did: {
+        type: String,
+        required: true,
+    },
+    didName: {
+        type: String,
+        required: true,
+    },
+    avatar: {
+        type: String,
+    },
+    address: {
+        type: String,
+        required: true,
+    },
+    birthday: {
+        type: Date,
+    },
+    email: {
+        type: String,
+    },
+    introduction: {
+        type: String,
+    },
+    wechat: {
+        type: String,
+    },
+    weibo: {
+        type: String,
+    },
+    facebook: {
+        type: String,
+    },
+    microsoft: {
+        type: String,
+    },
+}
+
 export const CouncilMembers = {
     code: {
         type: String,

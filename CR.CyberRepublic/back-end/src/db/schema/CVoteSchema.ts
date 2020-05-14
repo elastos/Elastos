@@ -169,5 +169,11 @@ export const CVote = {
   },
   proposalHash: {
     type: String
+  },
+  rejectAmount: {
+    type: Number
+  },
+  rejectHeight: {
+    type: Number
   }
 }
