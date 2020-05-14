@@ -215,12 +215,8 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
                     e.printStackTrace();
                 }
                 post(RxEnum.TRANSFERSUCESS.ordinal(), 37 + "", hash);
-                new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
-                    @Override
-                    public void affireBtnClick(View view) {
-                        popBackFragment();
-                    }
-                });
+                presenter.calculateProposalHash(wallet.getWalletId(), new Gson().toJson(targetEntity), this, payPasswd);
+
                 break;
             case "signTransaction":
                 new PwdPresenter().newPublishTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringWithiMethNameEntity) baseEntity).getData(), this);
@@ -230,6 +226,9 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
                 //这里直接签名发交易   已经输过密码了
                 new PwdPresenter().signTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(), (String) o, this);
 
+                break;
+            case "calculateProposalHash":
+                backProposalJwt("signature", ((CommmonStringEntity) baseEntity).getData());
                 break;
             case "proposalCRCouncilMemberDigest":
                 String signDigest1 = getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData());
@@ -241,12 +240,15 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
             case "proposalOwnerDigest":
                 //didsdk签名
                 String signDigest = getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData());
-                backSuggestJwt("signature", signDigest);
+                backProposalJwt("signature", signDigest);
                 break;
             case "postData":
-                showToast(getString(R.string.authoriizesuccess));
+                String des = "";
+                if ("createsuggestion".equals(command)) {
+                    des = getString(R.string.signsendsuccess);
 
-                new DialogUtil().showTransferSucess(getString(R.string.signsendsuccess), getBaseActivity(), new WarmPromptListener() {
+                }
+                new DialogUtil().showTransferSucess(des, getBaseActivity(), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
                         pop();
@@ -306,7 +308,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
     }
 
 
-    private void backSuggestJwt(String type, String data) {
+    private void backProposalJwt(String type, String data) {
         ProposalCallBackEntity callBackJwtEntity = new ProposalCallBackEntity();
         callBackJwtEntity.setType(type);
         callBackJwtEntity.setIss(getMyDID().getDidString());

@@ -50,6 +50,19 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
+    public void calculateProposalHash(String walletId, String payload, BaseFragment baseFragment, String pwd) {
+
+
+        Observer observer = createObserver(baseFragment, "calculateProposalHash", pwd);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().calculateProposalHash(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
     public void getSuggestion(String id, BaseFragment baseFragment) {
         Observable observable = RetrofitManager.webApiCreate().getSuggestion(id);
         Observer observer = createObserver(baseFragment, "getSuggestion");
