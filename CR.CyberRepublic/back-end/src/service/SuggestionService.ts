@@ -1266,7 +1266,7 @@ export default class extends Base {
         callbackurl: `${process.env.API_URL}/api/suggestion/signature-callback`,
         data: {
           proposaltype: 'normal',
-          categorydata: 'Null',
+          categorydata: '',
           ownerpublickey: ownerPublicKey,
           drafthash: draftHash,
           budgets: this.convertBudget(suggestion.budget),
@@ -1422,7 +1422,7 @@ export default class extends Base {
         callbackurl: `${process.env.API_URL}/api/suggestion/cm-signature-callback`,
         data: {
           proposaltype: 'normal',
-          categorydata: 'Null',
+          categorydata: '',
           ownerpublickey: suggestion.ownerPublicKey,
           drafthash: suggestion.draftHash,
           budgets: this.convertBudget(suggestion.budget),
