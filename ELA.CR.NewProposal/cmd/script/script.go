@@ -172,6 +172,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	newLeaderPrivkey := c.String("newleaderprivatekey")
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
 	recipient := c.String("recipient")
+	closeProposalHash := c.String("closeproposalhash")
 	crcCommitteeAddress := c.String("crccommiteeaddr")
 	payloadVersion := c.Int64("payloadversion")
 
@@ -245,6 +246,10 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(recipient))
 		return 1
 	}
+	getCloseProposalHash := func(L *lua.LState) int {
+		L.Push(lua.LString(closeProposalHash))
+		return 1
+	}
 	getCRCCommitteeAddress := func(L *lua.LState) int {
 		L.Push(lua.LString(crcCommitteeAddress))
 		return 1
@@ -269,6 +274,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getNewLeaderPrivkey", getNewLeaderPrivkey)
 	L.Register("getSecretaryGeneralPrivkey", getSecretaryGeneralPrivkey)
 	L.Register("getRecipient", getRecipient)
+	L.Register("getCloseProposalHash", getCloseProposalHash)
 	L.Register("getCRCCommitteeAddress", getCRCCommitteeAddress)
 	L.Register("getPayloadVersion", getPayloadVersion)
 }
@@ -410,6 +416,10 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "drafthash",
 				Usage: "set the draft proposal hash",
+			},
+			cli.StringFlag{
+				Name:  "closeproposalhash",
+				Usage: "set the close proposal hash",
 			},
 			cli.StringFlag{
 				Name:  "voteresult, votres",
