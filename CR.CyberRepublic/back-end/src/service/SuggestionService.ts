@@ -1262,7 +1262,7 @@ export default class extends Base {
         exp: now + (60 * 60 * 24),
         command: 'createsuggestion',
         iss: process.env.APP_DID,
-        suggestionId: suggestion._id,
+        sid: suggestion._id,
         callbackurl: `${process.env.API_URL}/api/suggestion/signature-callback`,
         data: {
           proposaltype: 'normal',
@@ -1299,7 +1299,7 @@ export default class extends Base {
       const payload: any = jwt.decode(
         claims.req.slice('elastos://crproposal/'.length)
       )
-      if (!_.get(payload, 'suggestionId')) {
+      if (!_.get(payload, 'sid')) {
         return {
           code: 400,
           success: false,
@@ -1308,7 +1308,7 @@ export default class extends Base {
       }
 
       const suggestion = await this.model.findById({
-        _id: payload.suggestionId
+        _id: payload.sid
       })
       if (!suggestion) {
         return {
@@ -1334,7 +1334,7 @@ export default class extends Base {
         async (err: any, decoded: any) => {
           if (err) {
             await this.model.update(
-              { _id: payload.suggestionId },
+              { _id: payload.sid },
               {
                 $set: {
                   signature: { message: 'Verify signatrue failed.' }
@@ -1349,7 +1349,7 @@ export default class extends Base {
           } else {
             try {
               await this.model.update(
-                { _id: payload.suggestionId },
+                { _id: payload.sid },
                 { $set: { signature: { data: decoded.data } } }
               )
               return { code: 200, success: true, message: 'Ok' }
@@ -1418,7 +1418,7 @@ export default class extends Base {
         exp: now + (60 * 60 * 24),
         command: 'createproposal',
         iss: process.env.APP_DID,
-        suggestionId: suggestion._id,
+        sid: suggestion._id,
         callbackurl: `${process.env.API_URL}/api/suggestion/cm-signature-callback`,
         data: {
           proposaltype: 'normal',
@@ -1457,7 +1457,7 @@ export default class extends Base {
       const payload: any = jwt.decode(
         claims.req.slice('elastos://crproposal/'.length)
       )
-      if (!_.get(payload, 'suggestionId')) {
+      if (!_.get(payload, 'sid')) {
         return {
           code: 400,
           success: false,
@@ -1466,7 +1466,7 @@ export default class extends Base {
       }
 
       const suggestion = await this.model.findById({
-        _id: payload.suggestionId
+        _id: payload.sid
       })
 
       if (!suggestion) {
@@ -1500,7 +1500,7 @@ export default class extends Base {
           } else {
             try {
               await this.model.update(
-                { _id: payload.suggestionId },
+                { _id: payload.sid },
                 { $set: { proposalHash: decoded.data } }
               )
               return { code: 200, success: true, message: 'Ok' }
