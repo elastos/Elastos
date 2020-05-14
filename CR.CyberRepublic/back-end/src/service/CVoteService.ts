@@ -1493,11 +1493,7 @@ export default class extends Base {
 
     const address = `${process.env.SERVER_URL}/proposals/${proposal.id}`
 
-    // duration
-    const endTime = Math.round(proposal.createdAt.getTime() / 1000 + 604800)
-    const nowTime = Math.round(new Date().getTime() / 1000)
-    let duration = endTime - nowTime
-    duration = duration > 0 ? duration : 0
+    
 
     const proposalId = proposal._id
 
@@ -1527,25 +1523,35 @@ export default class extends Base {
 
     const summary = await this.getSummary(proposalId)
 
-    const rejectResult = {}
+    const votingResult = {}
+    const notificationResult = {}
+    
+    // duration
+    const endTime = Math.round(proposal.createdAt.getTime() / 1000)
+    const nowTime = Math.round(new Date().getTime() / 1000)
+
+    if (proposal.status === constant.CVOTE_STATUS.PROPOSED) {
+      notificationResult['duration'] = (endTime - nowTime + 604800) > 0 ? (endTime - nowTime + 604800) : 0
+    }
 
     if (proposal.status === constant.CVOTE_STATUS.NOTIFICATION
         && proposal.rejectAmount >= 0
         && proposal.rejectHeight > 0) {
-      rejectResult['rejectAmount'] = `${proposal.rejectAmount}`
-      rejectResult['rejectHeight'] = `${proposal.rejectHeight}`
-      rejectResult['rejectAmount'] = (proposal.rejectAmount / proposal.rejectHeight).toFixed(4)
+      notificationResult['rejectAmount'] = `${proposal.rejectAmount}`
+      notificationResult['rejectHeight'] = `${proposal.rejectHeight}`
+      notificationResult['rejectAmount'] = (proposal.rejectAmount / proposal.rejectHeight).toFixed(4)
+      notificationResult['duration'] = (endTime - nowTime + 604800 * 2) > 0 ? (endTime - nowTime + 604800 * 2) : 0
     }
 
     return _.omit(
       {
         ..._.omit(proposal._doc, ['abstract']),
         abs: proposal.abstract,
-        ...rejectResult,
+        ...votingResult,
+        ...notificationResult,
         createdAt: timestamp.second(proposal.createdAt),
         voteResult,
         address,
-        duration,
         tracking,
         summary
       },
