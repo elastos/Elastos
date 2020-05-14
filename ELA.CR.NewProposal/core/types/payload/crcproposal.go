@@ -308,10 +308,6 @@ func (b *Budget) Deserialize(r io.Reader) error {
 }
 
 func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
-	var err = common.ReadElement(r, &p.ProposalType)
-	if err != nil {
-		return errors.New("[CRCProposal], ProposalType deserialize failed")
-	}
 	switch p.ProposalType {
 	case ChangeProposalOwner:
 		return p.DeserializeUnSignedChangeProposalOwner(r, version)
@@ -394,6 +390,24 @@ func (p *CRCProposal) DeserializeUnSignedChangeSecretaryGeneral(r io.Reader, ver
 }
 
 func (p *CRCProposal) Deserialize(r io.Reader, version byte) error {
+	err := common.ReadElement(r, &p.ProposalType)
+	if err != nil {
+		return errors.New("[CRCProposal], ProposalType deserialize failed")
+	}
+
+	switch p.ProposalType {
+	case ChangeProposalOwner:
+		return p.DeserializeChangeProposalOwner(r, version)
+	case CloseProposal:
+		return p.DeserializeCloseProposal(r, version)
+	case SecretaryGeneral:
+		return p.DeserializeChangeSecretaryGeneral(r, version)
+	default:
+		return p.DeserializeNormalOrELIP(r, version)
+	}
+}
+
+func (p *CRCProposal) DeserializeNormalOrELIP(r io.Reader, version byte) error {
 	if err := p.DeserializeUnSigned(r, version); err != nil {
 		return err
 	}
@@ -414,6 +428,39 @@ func (p *CRCProposal) Deserialize(r io.Reader, version byte) error {
 	}
 	p.CRCouncilMemberSignature = crSign
 
+	return nil
+}
+
+func (p *CRCProposal) DeserializeChangeProposalOwner(r io.Reader, version byte) error {
+	// todo complete me later
+	return nil
+}
+func (p *CRCProposal) DeserializeCloseProposal(r io.Reader, version byte) error {
+
+	if err := p.DeserializeUnSigned(r, version); err != nil {
+		return err
+	}
+
+	sign, err := common.ReadVarBytes(r, crypto.SignatureLength, "sign data")
+	if err != nil {
+		return err
+	}
+	p.Signature = sign
+
+	if err := p.CRCouncilMemberDID.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize CRCouncilMemberDID")
+	}
+
+	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
+	if err != nil {
+		return err
+	}
+	p.CRCouncilMemberSignature = crSign
+
+	return nil
+}
+func (p *CRCProposal) DeserializeChangeSecretaryGeneral(r io.Reader, version byte) error {
+	// todo complete me later
 	return nil
 }
 
