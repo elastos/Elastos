@@ -114,7 +114,13 @@ func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, d
 }
 
 func nodeRPCMethodsDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
-	nodeRpc  := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production)
+	var nodeRpc *elastosadenine.NodeRpc
+	if result, err := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production); err == nil {
+		nodeRpc = result
+	} else {
+		log.Println("Could not create connection to gRPC server: %v", err)
+		return
+	}
 	defer nodeRpc.Close()
 
 	log.Println("--> Get current height")
@@ -205,7 +211,13 @@ func createWalletDemo(grpcServerHost string, grpcServerPort int, production bool
 
 func viewWalletDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
 	log.Println("--> View Wallet")
-	nodeRpc  := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production)
+	var nodeRpc *elastosadenine.NodeRpc
+	if result, err := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production); err == nil {
+		nodeRpc = result
+	} else {
+		log.Println("Could not create connection to gRPC servier: %v", err)
+		return
+	}
 	defer nodeRpc.Close()
 	var (
 		address    = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"

@@ -28,7 +28,7 @@ type JWTInfoNodeRpc struct {
 	Params  interface{} `json:"params"`
 }
 
-func NewNodeRpc(host string, port int, production bool) *NodeRpc {
+func NewNodeRpc(host string, port int, production bool) (*NodeRpc, error) {
 	address := fmt.Sprintf("%s:%d", host, port)
 	var opts []grpc.DialOption
 	if production == false {
@@ -48,8 +48,9 @@ func NewNodeRpc(host string, port int, production bool) *NodeRpc {
 	conn, err := grpc.Dial(address, opts...)
 	if err != nil {
 		log.Fatalf("Failed to connect to gRPC server: %v", err)
+		return &NodeRpc{Connection: conn}, nil
 	}
-	return &NodeRpc{Connection: conn}
+	return &NodeRpc{Connection: conn}, nil
 }
 
 func (n *NodeRpc) Close() {
@@ -58,25 +59,37 @@ func (n *NodeRpc) Close() {
 
 // Common method for mainchain only
 func (n *NodeRpc) GetCurrentCrcCouncil(apiKey, did, network string) map[string]interface{} {
+	var result map[string]interface{}
 	params := make(map[string]interface{}, 0)
 	params["state"] = "all"
-	return n.RpcMethod(apiKey, did, network, "mainchain", "listcurrentcrs", params).(map[string]interface{})
+	if response, err := n.RpcMethod(apiKey, did, network, "mainchain", "listcurrentcrs", params); err == nil {
+		result = response.(map[string]interface{})
+	}
+	return result
 }
 
 // Common method for mainchain only
 func (n *NodeRpc) GetCurrentCrcCandidates(apiKey, did, network string) map[string]interface{} {
+	var result map[string]interface{}
 	params := make(map[string]interface{}, 0)
 	params["start"] = 0
 	params["state"] = "all"
-	return n.RpcMethod(apiKey, did, network, "mainchain", "listcrcandidates", params).(map[string]interface{})
+	if response, err := n.RpcMethod(apiKey, did, network, "mainchain", "listcrcandidates", params); err == nil {
+		result = response.(map[string]interface{})
+	}
+	return result
 }
 
 // Common method for mainchain only
 func (n *NodeRpc) GetCurrentDposSupernodes(apiKey, did, network string) map[string]interface{} {
+	var result map[string]interface{}
 	params := make(map[string]interface{}, 0)
 	params["start"] = 0
 	params["state"] = "all"
-	return n.RpcMethod(apiKey, did, network, "mainchain", "listproducers", params).(map[string]interface{})
+	if response, err := n.RpcMethod(apiKey, did, network, "mainchain", "listproducers", params); err == nil {
+		result = response.(map[string]interface{})
+	}
+	return result
 }
 
 // Common method for mainchain only
@@ -87,15 +100,23 @@ func (n *NodeRpc) GetCurrentArbitratorGroup(apiKey, did, network string) map[str
 
 // Common method for mainchain only
 func (n *NodeRpc) GetArbitratorGroup(apiKey, did, network, height string) map[string]interface{} {
+	var result map[string]interface{}
 	params := make(map[string]interface{}, 0)
 	params["height"] = height
-	return n.RpcMethod(apiKey, did, network, "mainchain", "getarbitratorgroupbyheight", params).(map[string]interface{})
+	if response, err := n.RpcMethod(apiKey, did, network, "mainchain", "getarbitratorgroupbyheight", params); err == nil {
+		result = response.(map[string]interface{})
+	}
+	return result
 }
 
 // Common method for mainchain only
 func (n *NodeRpc) GetCurrentArbitratorsInfo(apiKey, did, network string) map[string]interface{} {
+	var result map[string]interface{}
 	params := make(map[string]interface{}, 0)
-	return n.RpcMethod(apiKey, did, network, "mainchain", "getarbitersinfo", params).(map[string]interface{})
+	if response, err := n.RpcMethod(apiKey, did, network, "mainchain", "getarbitersinfo", params); err == nil {
+		result = response.(map[string]interface{})
+	}
+	return result
 }
 
 // Common method for mainchain only
@@ -106,6 +127,7 @@ func (n *NodeRpc) GetCurrentBlockConfirm(apiKey, did, network string) map[string
 
 // Common method for mainchain only
 func (n *NodeRpc) GetBlockConfirm(apiKey, did, network, height string) map[string]interface{} {
+	var result map[string]interface{}
 	h, err := strconv.Atoi(height)
 	if err != nil {
 		log.Fatalf("Failed to execute 'GetBlockConfirm' method: %v", err)
@@ -113,13 +135,20 @@ func (n *NodeRpc) GetBlockConfirm(apiKey, did, network, height string) map[strin
 	params := make(map[string]interface{}, 0)
 	params["height"] = h
 	params["verbosity"] = 1
-	return n.RpcMethod(apiKey, did, network, "mainchain", "getconfirmbyheight", params).(map[string]interface{})
+	if response, err := n.RpcMethod(apiKey, did, network, "mainchain", "getconfirmbyheight", params); err == nil {
+		result = response.(map[string]interface{})
+	}
+	return result
 }
 
 // Common method for mainchain only
 func (n *NodeRpc) GetCurrentMiningInfo(apiKey, did, network string) map[string]interface{} {
+	var result map[string]interface{}
 	params := make(map[string]interface{}, 0)
-	return n.RpcMethod(apiKey, did, network, "mainchain", "getmininginfo", params).(map[string]interface{})
+	if response, err := n.RpcMethod(apiKey, did, network, "mainchain", "getmininginfo", params); err == nil {
+		result = response.(map[string]interface{})
+	}
+	return result
 }
 
 // Common method for mainchain, did sidechain, token and eth sidechain
@@ -130,17 +159,23 @@ func (n *NodeRpc) GetCurrentBlockInfo(apiKey, did, network, chain string) map[st
 
 // Common method for mainchain, did sidechain, token and eth sidechain
 func (n *NodeRpc) GetBlockInfo(apiKey, did, network, chain, height string) map[string]interface{} {
+	var result map[string]interface{}
 	if chain == "eth" {
 		params := []interface{}{}
 		heightInt, _ := strconv.Atoi(height)
 		params = append(params, fmt.Sprintf("0x%02x", heightInt))
 		params = append(params, true)
-		return n.RpcMethod(apiKey, did, network, chain, "eth_getBlockByNumber", params).(map[string]interface{})
+		if response, err := n.RpcMethod(apiKey, did, network, chain, "eth_getBlockByNumber", params); err == nil {
+			result = response.(map[string]interface{})
+		}
 	} else {
 		params := make(map[string]interface{}, 0)
 		params["height"] = height
-		return n.RpcMethod(apiKey, did, network, chain, "getblockbyheight", params).(map[string]interface{})
+		if response, err := n.RpcMethod(apiKey, did, network, chain, "getblockbyheight", params); err == nil {
+			result = response.(map[string]interface{})
+		}
 	}
+	return result
 }
 
 // Common method for mainchain, did sidechain, token and eth sidechain
@@ -149,7 +184,10 @@ func (n *NodeRpc) GetCurrentBalance(apiKey, did, network, chain, address string)
 
 	if chain == "eth" {
 		params := []string{address, "latest"}
-		currentBalanceHex := n.RpcMethod(apiKey, did, network, chain, "eth_getBalance", params).(string)
+		var currentBalanceHex string
+		if response, err := n.RpcMethod(apiKey, did, network, chain, "eth_getBalance", params); err == nil {
+			currentBalanceHex = response.(string)
+		}
 		currentBalanceHexCleaned := strings.Replace(currentBalanceHex, "0x", "", -1)
 		currentBalanceInt64, _ := strconv.ParseInt(currentBalanceHexCleaned, 16, 64)
 		currentBalance = fmt.Sprintf("%v", currentBalanceInt64)
@@ -157,14 +195,19 @@ func (n *NodeRpc) GetCurrentBalance(apiKey, did, network, chain, address string)
 		params := make(map[string]interface{}, 0)
 		params["address"] = address
 		if chain == "token" {
-			result := n.RpcMethod(apiKey, did, network, chain, "getreceivedbyaddress", params).(map[string]interface{})
+			var result map[string]interface{}
+			if response, err := n.RpcMethod(apiKey, did, network, chain, "getreceivedbyaddress", params); err == nil {
+				result = response.(map[string]interface{})
+			}
 			balance := make(map[string]string)
 			for key, value := range result {
 				balance[key] = value.(string)
 			}
 			currentBalance = balance
 		} else {
-			currentBalance = n.RpcMethod(apiKey, did, network, chain, "getreceivedbyaddress", params).(string)
+			if response, err :=  n.RpcMethod(apiKey, did, network, chain, "getreceivedbyaddress", params); err == nil {
+				currentBalance = response.(string)
+			}
 		}
 	}
 	return currentBalance
@@ -175,7 +218,10 @@ func (n *NodeRpc) GetCurrentHeight(apiKey, did, network, chain string) string {
 	var currentHeight string
 	params := make(map[string]interface{}, 0)
 	if chain == "eth" {
-		currentHeightHex := n.RpcMethod(apiKey, did, network, chain, "eth_blockNumber", params).(string)
+		var currentHeightHex string
+		if response, err := n.RpcMethod(apiKey, did, network, chain, "eth_blockNumber", params); err == nil {
+			currentHeightHex = response.(string)
+		}
 		currentHeightHexCleaned := strings.Replace(currentHeightHex, "0x", "", -1)
 		currentHeightInt64, _ := strconv.ParseInt(currentHeightHexCleaned, 16, 64)
 		currentHeight = fmt.Sprintf("%v", currentHeightInt64)
@@ -188,11 +234,15 @@ func (n *NodeRpc) GetCurrentHeight(apiKey, did, network, chain string) string {
 
 // Common method for mainchain, did sidechain and token sidechain
 func (n *NodeRpc) GetCurrentNodeState(apiKey, did, network, chain string) map[string]interface{} {
+	var result map[string]interface{}
 	params := make(map[string]interface{}, 0)
-	return n.RpcMethod(apiKey, did, network, chain, "getnodestate", params).(map[string]interface{})
+	if response, err := n.RpcMethod(apiKey, did, network, chain, "getnodestate", params); err == nil {
+		result = response.(map[string]interface{})
+	}
+	return result
 }
 
-func (n *NodeRpc) RpcMethod(apiKey, did, network, chain, method string, params interface{}) interface{} {
+func (n *NodeRpc) RpcMethod(apiKey, did, network, chain, method string, params interface{}) (interface{}, error) {
 	var data interface{}
 	client := node_rpc.NewNodeRpcClient(n.Connection)
 
@@ -213,7 +263,8 @@ func (n *NodeRpc) RpcMethod(apiKey, did, network, chain, method string, params i
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	jwtTokenString, err := jwtToken.SignedString([]byte(apiKey))
 	if err != nil {
-		log.Fatalf("Failed to execute 'RpcMethod' method: %v", err)
+		log.Printf("Failed to execute 'RpcMethod' method: %v", err)
+		return data, err
 	}
 	md := metadata.Pairs("did", did)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
@@ -222,13 +273,14 @@ func (n *NodeRpc) RpcMethod(apiKey, did, network, chain, method string, params i
 
 	response, err := client.RpcMethod(ctx, &node_rpc.Request{Input: jwtTokenString})
 	if err != nil {
-		log.Fatalf("Failed to execute 'RpcMethod' method: %v", err)
+		log.Printf("Failed to execute 'RpcMethod' method: %v", err)
+		return data, err
 	}
 
 	if response.Status == true {
 		recvToken, err := jwt.Parse(response.Output, func(recvToken *jwt.Token) (interface{}, error) {
 			if _, ok := recvToken.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", recvToken.Header["alg"])
+				return nil, fmt.Errorf("Unexpected signing method: %v", recvToken.Header["alg"])
 			}
 			return []byte(apiKey), nil
 		})
@@ -237,8 +289,9 @@ func (n *NodeRpc) RpcMethod(apiKey, did, network, chain, method string, params i
 			strMap := recvClaims["jwt_info"].(map[string]interface{})
 			data = strMap["result"].(interface{})
 		} else {
-			log.Fatalf("Failed to execute 'RpcMethod' method: %v", err)
+			log.Printf("Unexpected error while decoding JWT Info: Error: %v", err)
+			return data, fmt.Errorf("Unexpected error while decoding JWT Info: Error: %v", err)
 		}
 	}
-	return data
+	return data, nil
 }
