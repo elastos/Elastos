@@ -773,6 +773,36 @@ static jstring JNICALL ProposalCRCouncilMemberDigest(JNIEnv *env, jobject clazz,
     return result;
 }
 
+#define JNI_CalculateProposalHash "(JLjava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+CalculateProposalHash(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                          jstring jpayload) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *payload = env->GetStringUTFChars(jpayload, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        std::string hash = subWallet->CalculateProposalHash(nlohmann::json::parse(payload));
+        result = env->NewStringUTF(hash.c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jpayload, payload);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
 #define JNI_CreateProposalTransaction "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL
@@ -1179,6 +1209,7 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetRegisteredCRInfo),
         REGISTER_METHOD(ProposalOwnerDigest),
         REGISTER_METHOD(ProposalCRCouncilMemberDigest),
+        REGISTER_METHOD(CalculateProposalHash),
         REGISTER_METHOD(CreateProposalTransaction),
         REGISTER_METHOD(CreateVoteCRCProposalTransaction),
         REGISTER_METHOD(CreateImpeachmentCRCTransaction),
