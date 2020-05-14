@@ -32,17 +32,9 @@ public class ImageBean extends BaseEntity {
      * exceptionMsg : null
      */
 
-    private String message;
     private String data;
     private Object exceptionMsg;
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     public String getData() {
         return data;

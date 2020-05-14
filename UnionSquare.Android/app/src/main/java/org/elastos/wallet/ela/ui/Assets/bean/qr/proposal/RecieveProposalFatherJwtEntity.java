@@ -1,7 +1,5 @@
 package org.elastos.wallet.ela.ui.Assets.bean.qr.proposal;
 
-import android.os.Parcel;
-
 import org.elastos.wallet.ela.ui.Assets.bean.qr.RecieveJwtEntity;
 
 /**
@@ -17,6 +15,16 @@ public class RecieveProposalFatherJwtEntity extends RecieveJwtEntity {
      */
 
     private String command;
+    private String sid;
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
+    }
+
     public String getCommand() {
         return command;
     }
@@ -25,23 +33,5 @@ public class RecieveProposalFatherJwtEntity extends RecieveJwtEntity {
         this.command = command;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        super.writeToParcel(dest, flags);
-        dest.writeString(this.command);
-    }
-
-    public RecieveProposalFatherJwtEntity() {
-    }
-
-    protected RecieveProposalFatherJwtEntity(Parcel in) {
-        super(in);
-        this.command = in.readString();
-    }
 
 }

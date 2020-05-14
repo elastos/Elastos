@@ -1,8 +1,5 @@
 package org.elastos.wallet.ela.ui.Assets.bean.qr.proposal;
 
-import android.os.Parcel;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,7 +26,7 @@ public class RecieveSuggestJwtEntity extends RecieveProposalFatherJwtEntity {
         this.data = data;
     }
 
-    public static class DataBean implements android.os.Parcelable {
+    public static class DataBean {
         /**
          * proposaltype : normal
          * categorydata :
@@ -94,7 +91,7 @@ public class RecieveSuggestJwtEntity extends RecieveProposalFatherJwtEntity {
             this.budgets = budgets;
         }
 
-        public static class BudgetsBean implements android.os.Parcelable {
+        public static class BudgetsBean {
             /**
              * type : imprest
              * stage : 0
@@ -129,110 +126,11 @@ public class RecieveSuggestJwtEntity extends RecieveProposalFatherJwtEntity {
                 this.amount = amount;
             }
 
-            @Override
-            public int describeContents() {
-                return 0;
-            }
 
-            @Override
-            public void writeToParcel(Parcel dest, int flags) {
-                dest.writeString(this.type);
-                dest.writeInt(this.stage);
-                dest.writeString(this.amount);
-            }
-
-            public BudgetsBean() {
-            }
-
-            protected BudgetsBean(Parcel in) {
-                this.type = in.readString();
-                this.stage = in.readInt();
-                this.amount = in.readString();
-            }
-
-            public static final Creator<BudgetsBean> CREATOR = new Creator<BudgetsBean>() {
-                @Override
-                public BudgetsBean createFromParcel(Parcel source) {
-                    return new BudgetsBean(source);
-                }
-
-                @Override
-                public BudgetsBean[] newArray(int size) {
-                    return new BudgetsBean[size];
-                }
-            };
         }
 
-        @Override
-        public int describeContents() {
-            return 0;
-        }
 
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(this.proposaltype);
-            dest.writeString(this.categorydata);
-            dest.writeString(this.ownerpublickey);
-            dest.writeString(this.drafthash);
-            dest.writeString(this.recipient);
-            dest.writeList(this.budgets);
-        }
-
-        public DataBean() {
-        }
-
-        protected DataBean(Parcel in) {
-            this.proposaltype = in.readString();
-            this.categorydata = in.readString();
-            this.ownerpublickey = in.readString();
-            this.drafthash = in.readString();
-            this.recipient = in.readString();
-            this.budgets = new ArrayList<BudgetsBean>();
-            in.readList(this.budgets, BudgetsBean.class.getClassLoader());
-        }
-
-        public static final Creator<DataBean> CREATOR = new Creator<DataBean>() {
-            @Override
-            public DataBean createFromParcel(Parcel source) {
-                return new DataBean(source);
-            }
-
-            @Override
-            public DataBean[] newArray(int size) {
-                return new DataBean[size];
-            }
-        };
-    }
-
-    public RecieveSuggestJwtEntity() {
     }
 
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        super.writeToParcel(dest, flags);
-        dest.writeParcelable(this.data, flags);
-    }
-
-    protected RecieveSuggestJwtEntity(Parcel in) {
-        super(in);
-        this.data = in.readParcelable(DataBean.class.getClassLoader());
-    }
-
-    public static final Creator<RecieveSuggestJwtEntity> CREATOR = new Creator<RecieveSuggestJwtEntity>() {
-        @Override
-        public RecieveSuggestJwtEntity createFromParcel(Parcel source) {
-            return new RecieveSuggestJwtEntity(source);
-        }
-
-        @Override
-        public RecieveSuggestJwtEntity[] newArray(int size) {
-            return new RecieveSuggestJwtEntity[size];
-        }
-    };
 }

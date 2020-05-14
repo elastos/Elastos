@@ -20,45 +20,12 @@
  * SOFTWARE.
  */
 
-package org.elastos.wallet.ela.ui.main.entity;
+package org.elastos.wallet.ela.ui.proposal.bean;
 
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 
-import java.util.List;
-
-public class ServerListEntity extends BaseEntity {
-    /**
-     * message : Getting Producer Nodes List Successed !
-     * data : ["https://unionsquare.elastos.org","http://54.223.158.189"]
-     * exceptionMsg : null
-     */
+public class SuggestBean extends BaseEntity {
 
 
-    private Object exceptionMsg;
-    private List<String> data;
 
-
-    public Object getExceptionMsg() {
-        return exceptionMsg;
-    }
-
-    public void setExceptionMsg(Object exceptionMsg) {
-        this.exceptionMsg = exceptionMsg;
-    }
-
-    public List<String> getData() {
-        return data;
-    }
-
-    public void setData(List<String> data) {
-        this.data = data;
-    }
-
-    @Override
-    public String toString() {
-        return "ServerListEntity{" +
-                ", exceptionMsg=" + exceptionMsg +
-                ", data=" + data +
-                '}';
-    }
 }

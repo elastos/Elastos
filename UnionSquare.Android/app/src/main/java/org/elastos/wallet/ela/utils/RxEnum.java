@@ -68,6 +68,7 @@ public enum RxEnum {
     UPDATACONTACT,//
     CHOOSECONTACT,//选择联系人
     TRANSFERSUCESS,//发起转账成功
+    JUSTSHOWFEE,//只展示手续费
     CHOSESIDECHAIN,//选择测链地址
     UPDATAPROGRESS,//首页同步
     VOTETRANSFERACTIVITY,//投票

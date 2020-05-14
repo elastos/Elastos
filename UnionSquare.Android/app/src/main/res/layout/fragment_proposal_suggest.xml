@@ -62,7 +62,7 @@
                 android:textSize="13sp" />
 
             <TextView
-                android:id="@+id/type"
+                android:id="@+id/tv_type"
                 style="@style/common_margin15"
                 android:layout_marginTop="4dp"
                 android:textSize="11sp" />
@@ -74,7 +74,7 @@
                 android:textSize="13sp" />
 
             <TextView
-                android:id="@+id/hash"
+                android:id="@+id/tv_hash"
                 style="@style/common_margin15"
                 android:layout_marginTop="4dp"
                 android:textSize="11sp" />
@@ -86,7 +86,7 @@
                 android:textSize="13sp" />
 
             <TextView
-                android:id="@+id/did"
+                android:id="@+id/tv_did"
                 style="@style/common_margin15"
                 android:layout_marginTop="4dp"
                 android:textSize="11sp" />
@@ -98,7 +98,7 @@
                 android:textSize="13sp" />
 
             <TextView
-                android:id="@+id/account"
+                android:id="@+id/tv_account"
                 style="@style/common_margin15"
                 android:layout_marginTop="4dp"
                 android:textSize="11sp" />
@@ -138,7 +138,7 @@
                 android:textSize="13sp" />
 
             <TextView
-                android:id="@+id/abstract1"
+                android:id="@+id/tv_abs"
                 style="@style/common_margin15"
                 android:layout_marginTop="4dp"
                 android:textSize="11sp" />

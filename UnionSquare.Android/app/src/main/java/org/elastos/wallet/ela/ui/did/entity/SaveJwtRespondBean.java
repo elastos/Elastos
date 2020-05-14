@@ -32,17 +32,9 @@ public class SaveJwtRespondBean extends BaseEntity {
      * exceptionMsg : null
      */
 
-    private String message;
     private Object data;
     private Object exceptionMsg;
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     public Object getData() {
         return data;

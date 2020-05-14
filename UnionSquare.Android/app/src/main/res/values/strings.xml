@@ -203,6 +203,7 @@
     <string name="transfertype34">取消CR参选交易</string>
     <string name="transfertype35">更新CR参选信息交易</string>
     <string name="transfertype36">提取CR质押金交易</string>
+    <string name="transfertype37">提案发起交易</string>
     <string name="sidetransfertype0">创币交易</string>
     <string name="sidetransfertype1">注册资产交易</string>
     <string name="sidetransfertype2">普通转账交易</string>
@@ -665,11 +666,11 @@
     <string name="count">合计</string>
     <string name="sign">签名</string>
     <string name="suggest">发起建议</string>
-    <string name="ELIP"> ELIP</string>
     <string name="signsendsuccess">签名发送成功</string>
     <string name="putproposal">发起提案</string>
 
     <!--CR committee-->
     <string name="pastcttitle">CR委员会列表</string>
     <string name="ctlisttitle">第%1$s届委员会</string>
+    <string name="didnotsame">钱包DID不匹配</string>
 </resources>

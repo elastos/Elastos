@@ -1,8 +1,5 @@
 package org.elastos.wallet.ela.ui.Assets.bean.qr.proposal;
 
-import android.os.Parcel;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,7 +26,7 @@ public class RecieveProposalJwtEntity extends RecieveProposalFatherJwtEntity {
         this.data = data;
     }
 
-    public static class DataBean implements android.os.Parcelable {
+    public static class DataBean {
         /**
          * proposaltype : normal
          * categorydata :
@@ -150,80 +147,7 @@ public class RecieveProposalJwtEntity extends RecieveProposalFatherJwtEntity {
             }
         }
 
-        @Override
-        public int describeContents() {
-            return 0;
-        }
 
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(this.proposaltype);
-            dest.writeString(this.categorydata);
-            dest.writeString(this.ownerpublickey);
-            dest.writeString(this.drafthash);
-            dest.writeString(this.recipient);
-            dest.writeString(this.signature);
-            dest.writeString(this.did);
-            dest.writeList(this.budgets);
-        }
-
-        public DataBean() {
-        }
-
-        protected DataBean(Parcel in) {
-            this.proposaltype = in.readString();
-            this.categorydata = in.readString();
-            this.ownerpublickey = in.readString();
-            this.drafthash = in.readString();
-            this.recipient = in.readString();
-            this.signature = in.readString();
-            this.did = in.readString();
-            this.budgets = new ArrayList<BudgetsBean>();
-            in.readList(this.budgets, BudgetsBean.class.getClassLoader());
-        }
-
-        public static final Creator<DataBean> CREATOR = new Creator<DataBean>() {
-            @Override
-            public DataBean createFromParcel(Parcel source) {
-                return new DataBean(source);
-            }
-
-            @Override
-            public DataBean[] newArray(int size) {
-                return new DataBean[size];
-            }
-        };
     }
 
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        super.writeToParcel(dest, flags);
-        dest.writeParcelable(this.data, flags);
-    }
-
-    public RecieveProposalJwtEntity() {
-    }
-
-    protected RecieveProposalJwtEntity(Parcel in) {
-        super(in);
-        this.data = in.readParcelable(DataBean.class.getClassLoader());
-    }
-
-    public static final Creator<RecieveProposalJwtEntity> CREATOR = new Creator<RecieveProposalJwtEntity>() {
-        @Override
-        public RecieveProposalJwtEntity createFromParcel(Parcel source) {
-            return new RecieveProposalJwtEntity(source);
-        }
-
-        @Override
-        public RecieveProposalJwtEntity[] newArray(int size) {
-            return new RecieveProposalJwtEntity[size];
-        }
-    };
 }

@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.proposal.presenter;
 
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
@@ -35,10 +36,11 @@ public class ProposalPresenter extends NewPresenterAbstract {
         });
         subscriberObservable(observer, observable, baseFragment);
     }
-public void createProposalTransaction(String walletId, String payload, BaseFragment baseFragment) {
+
+    public void createProposalTransaction(String walletId, String payload, BaseFragment baseFragment, String pwd) {
 
 
-        Observer observer = createObserver(baseFragment, "createProposalTransaction", walletId);
+        Observer observer = createObserver(baseFragment, "createProposalTransaction", pwd);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
@@ -48,5 +50,9 @@ public void createProposalTransaction(String walletId, String payload, BaseFragm
         subscriberObservable(observer, observable, baseFragment);
     }
 
-
+    public void getSuggestion(String id, BaseFragment baseFragment) {
+        Observable observable = RetrofitManager.webApiCreate().getSuggestion(id);
+        Observer observer = createObserver(baseFragment, "getSuggestion");
+        subscriberObservable(observer, observable, baseFragment);
+    }
 }

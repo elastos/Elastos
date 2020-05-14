@@ -25,6 +25,15 @@ package org.elastos.wallet.ela.rxjavahelp;
 public abstract   class BaseEntity {
     private String code;
     private String msg;
+    private String message;
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
     public String getCode() {
         return code;
