@@ -150,6 +150,12 @@ export const TASK_CANDIDATE_CATEGORY = {
   RSVP: 'RSVP'
 }
 
+export const TERM_COUNCIL_STATUS = create([
+    'HISTORY',
+    'CURRENT',
+    'VOTING'
+])
+
 // ACTIVE === PASSED, currently 'published' flag is used for 'DRAFT'
 export const CVOTE_STATUS = create([
   'DRAFT',

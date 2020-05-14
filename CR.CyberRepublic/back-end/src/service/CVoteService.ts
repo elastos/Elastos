@@ -2,10 +2,16 @@ import Base from './Base'
 import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { permissions, getDidPublicKey } from '../utility'
+import { permissions, getDidPublicKey, getProposalState } from '../utility'
 import * as moment from 'moment'
 import * as jwt from 'jsonwebtoken'
-import { mail, utilCrypto, user as userUtil, timestamp, logger } from '../utility'
+import {
+  mail,
+  utilCrypto,
+  user as userUtil,
+  timestamp,
+  logger
+} from '../utility'
 const util = require('util')
 const request = require('request')
 
@@ -25,18 +31,19 @@ const BASE_FIELDS = [
 ]
 
 const WALLET_STATUS_TO_CVOTE_STATUS = {
-  'ALL': [constant.CVOTE_STATUS.PROPOSED,
+  ALL: [
+    constant.CVOTE_STATUS.PROPOSED,
     constant.CVOTE_STATUS.NOTIFICATION,
     constant.CVOTE_STATUS.ACTIVE,
     constant.CVOTE_STATUS.FINAL,
     constant.CVOTE_STATUS.REJECT,
     constant.CVOTE_STATUS.DEFERRED
   ],
-  'VOTING': [constant.CVOTE_STATUS.PROPOSED],
-  'NOTIFICATION': [constant.CVOTE_STATUS.NOTIFICATION],
-  'ACTIVE': [constant.CVOTE_STATUS.ACTIVE],
-  'FINAL': [constant.CVOTE_STATUS.FINAL],
-  'REJECTED': [constant.CVOTE_STATUS.REJECT, constant.CVOTE_STATUS.DEFERRED],
+  VOTING: [constant.CVOTE_STATUS.PROPOSED],
+  NOTIFICATION: [constant.CVOTE_STATUS.NOTIFICATION],
+  ACTIVE: [constant.CVOTE_STATUS.ACTIVE],
+  FINAL: [constant.CVOTE_STATUS.FINAL],
+  REJECTED: [constant.CVOTE_STATUS.REJECT, constant.CVOTE_STATUS.DEFERRED]
 }
 
 const CVOTE_STATUS_TO_WALLET_STATUS = {
@@ -45,7 +52,7 @@ const CVOTE_STATUS_TO_WALLET_STATUS = {
   [constant.CVOTE_STATUS.ACTIVE]: 'ACTIVE',
   [constant.CVOTE_STATUS.FINAL]: 'FINAL',
   [constant.CVOTE_STATUS.REJECT]: 'REJECTED',
-  [constant.CVOTE_STATUS.DEFERRED]: 'REJECTED',
+  [constant.CVOTE_STATUS.DEFERRED]: 'REJECTED'
 }
 
 export default class extends Base {
@@ -57,7 +64,7 @@ export default class extends Base {
 
     const vid = await this.getNewVid()
     const userRole = _.get(this.currentUser, 'role')
-    if(!this.canCreateProposal()) {
+    if (!this.canCreateProposal()) {
       throw 'cvoteservice.create - no permission'
     }
 
@@ -88,13 +95,38 @@ export default class extends Base {
     }
   }
 
+  public async pollProposalState(param: any) {
+    const { id } = param
+    const db_suggestion = this.getDBModel('Suggestion')
+    const suggestion = await db_suggestion.findById(id)
+    if (suggestion) {
+      const proposalHash = _.get(suggestion, 'proposalHash')
+      if (proposalHash) {
+        const rs = await getProposalState(proposalHash)
+        if (!rs) {
+          return { success: false }
+        }
+        if (rs && rs.status === 'Registered') {
+          const proposal = await this.proposeSuggestion({
+            suggestionId: id,
+            proposalHash
+          })
+          return { success: true, id: proposal._id }
+        }
+      }
+    } else {
+      return { success: false }
+    }
+  }
+
   public async proposeSuggestion(param: any): Promise<Document> {
     const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
     const db_user = this.getDBModel('User')
-    const { suggestionId } = param
+    const { suggestionId, proposalHash } = param
 
-    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
+    const suggestion =
+      suggestionId && (await db_suggestion.findById(suggestionId))
     if (!suggestion) {
       throw 'cannot find suggestion'
     }
@@ -111,7 +143,8 @@ export default class extends Base {
       proposedBy: userUtil.formatUsername(creator),
       proposer: suggestion.createdBy,
       createdBy: this.currentUser._id,
-      reference: suggestionId
+      reference: suggestionId,
+      proposalHash
     }
 
     Object.assign(doc, _.pick(suggestion, BASE_FIELDS))
@@ -121,7 +154,7 @@ export default class extends Base {
     })
     const voteResult = []
     doc.proposedAt = Date.now()
-    _.each(councilMembers, user =>
+    _.each(councilMembers, (user) =>
       voteResult.push({
         votedBy: user._id,
         value: constant.CVOTE_RESULT.UNDECIDED
@@ -246,8 +279,8 @@ export default class extends Base {
 
     const vid = await this.getNewVid()
     const status = published
-                 ? constant.CVOTE_STATUS.PROPOSED
-                 : constant.CVOTE_STATUS.DRAFT
+      ? constant.CVOTE_STATUS.PROPOSED
+      : constant.CVOTE_STATUS.DRAFT
 
     const doc: any = {
       title,
@@ -279,7 +312,7 @@ export default class extends Base {
     const voteResult = []
     if (published) {
       doc.proposedAt = Date.now()
-      _.each(councilMembers, user =>
+      _.each(councilMembers, (user) =>
         voteResult.push({
           votedBy: user._id,
           value: constant.CVOTE_RESULT.UNDECIDED
@@ -321,7 +354,9 @@ export default class extends Base {
       .populate('subscribers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
-    const councilMember = await this.getDBModel('User').findById(cvote.createdBy)
+    const councilMember = await this.getDBModel('User').findById(
+      cvote.createdBy
+    )
 
     // get users: creator and subscribers
     const toUsers = _.map(suggestion.subscribers, 'user') || []
@@ -333,17 +368,21 @@ export default class extends Base {
     const body = `
       <p>Council member ${userUtil.formatUsername(
         councilMember
-      )} has refer to your suggestion ${suggestion.title} in a proposal #${cvote.vid}.</p>
+      )} has refer to your suggestion ${suggestion.title} in a proposal #${
+      cvote.vid
+    }.</p>
       <br />
       <p>Click this link to view more details:</p>
-      <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
+      <p><a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${
+      process.env.SERVER_URL
+    }/proposals/${cvote._id}</a></p>
       <br /> <br />
       <p>Thanks</p>
       <p>Cyber Republic</p>
     `
     const recVariables = _.zipObject(
       toMails,
-      _.map(toUsers, user => {
+      _.map(toUsers, (user) => {
         return {
           _id: user._id,
           username: userUtil.formatUsername(user)
@@ -371,7 +410,7 @@ export default class extends Base {
     })
     const toUsers = _.filter(
       councilMembers,
-      user => !user._id.equals(currentUserId)
+      (user) => !user._id.equals(currentUserId)
     )
     const toMails = _.map(toUsers, 'email')
 
@@ -389,7 +428,7 @@ export default class extends Base {
 
     const recVariables = _.zipObject(
       toMails,
-      _.map(toUsers, user => {
+      _.map(toUsers, (user) => {
         return {
           _id: user._id,
           username: userUtil.formatUsername(user)
@@ -428,8 +467,8 @@ export default class extends Base {
         constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
       )
 
-    _.each(unvotedCVotes, cvote => {
-      _.each(cvote.voteResult, result => {
+    _.each(unvotedCVotes, (cvote) => {
+      _.each(cvote.voteResult, (result) => {
         if (result.value === constant.CVOTE_RESULT.UNDECIDED) {
           // send email to council member to notify to vote
           const { title, _id } = cvote
@@ -589,7 +628,7 @@ export default class extends Base {
         'proposalId'
       )
       let trackingProposals = []
-      hasTracking.map(function(it) {
+      hasTracking.map(function (it) {
         trackingProposals.push(it.proposalId)
       })
       query._id = {
@@ -613,28 +652,25 @@ export default class extends Base {
 
     // const list = await db_cvote.list(query, { vid: -1 }, 0, fields.join(' '))
 
-    const cursor =  db_cvote
+    const cursor = db_cvote
       .getDBInstance()
       .find(query, fields.join(' '))
-      .sort({vid: -1})
+      .sort({ vid: -1 })
 
     if (param.results) {
       const results = parseInt(param.results, 10)
       const page = parseInt(param.page, 10)
       cursor.skip(results * (page - 1)).limit(results)
     }
-    
+
     const rs = await Promise.all([
       cursor,
-      db_cvote
-        .getDBInstance()
-        .find(query)
-        .count()
+      db_cvote.getDBInstance().find(query).count()
     ])
     const list = rs[0]
     const total = rs[1]
 
-    return {list, total}
+    return { list, total }
   }
 
   /**
@@ -695,7 +731,7 @@ export default class extends Base {
         role: constant.USER_ROLE.COUNCIL
       })
       const voteResult = []
-      _.each(councilMembers, user =>
+      _.each(councilMembers, (user) =>
         voteResult.push({
           votedBy: user._id,
           value: constant.CVOTE_RESULT.UNDECIDED
@@ -899,7 +935,7 @@ export default class extends Base {
     const idsActive = []
     const idsRejected = []
 
-    _.each(list, item => {
+    _.each(list, (item) => {
       if (this.isExpired(item)) {
         if (this.isActive(item)) {
           idsActive.push(item._id)
@@ -963,7 +999,9 @@ export default class extends Base {
   }
   private canCreateProposal() {
     const userRole = _.get(this.currentUser, 'role')
-    return !permissions.isCouncil(userRole) && !permissions.isSecretary(userRole)
+    return (
+      !permissions.isCouncil(userRole) && !permissions.isSecretary(userRole)
+    )
   }
 
   public async listcrcandidates(param) {
@@ -971,18 +1009,20 @@ export default class extends Base {
 
     let ret = null
     // url: 'http://54.223.244.60/api/dposnoderpc/check/listcrcandidates',
-    const postPromise = util.promisify(request.post, {multiArgs: true});
-    await postPromise({url: 'https://unionsquare.elastos.org/api/dposnoderpc/check/listcrcandidates',
-                       form: { pageNum, pageSize, state },
-                       encoding: 'utf8'
-    }).then((value) => ret = value.body)
+    const postPromise = util.promisify(request.post, { multiArgs: true })
+    await postPromise({
+      url:
+        'https://unionsquare.elastos.org/api/dposnoderpc/check/listcrcandidates',
+      form: { pageNum, pageSize, state },
+      encoding: 'utf8'
+    }).then((value) => (ret = value.body))
 
     return ret
   }
 
   // council vote onchain
   public async onchain(param) {
-    try{
+    try {
       const db_cvote = this.getDBModel('CVote')
       const userId = _.get(this.currentUser, '_id')
       const { id } = param
@@ -1026,30 +1066,30 @@ export default class extends Base {
         algorithm: 'ES256' 
       })
       const url = `elastos://credaccess/${jwtToken}`
-      return { success: true, url}
-    } catch(err) {
+      return { success: true, url }
+    } catch (err) {
       logger.error(err)
-      return { success:false }
+      return { success: false }
     }
   }
 
   // council callback
-  public async councilCallback(param): Promise<any>{
+  public async councilCallback(param): Promise<any> {
     try {
       const jwtToken = param.jwt
       const claims: any = jwt.decode(jwtToken)
-      if(!_.get(claims,'req')){
-        return{
+      if (!_.get(claims, 'req')) {
+        return {
           code: 400,
           success: false,
           message: 'Problems parsing jwt token.'
         }
       }
 
-      const payload:any = jwt.decode( 
-        claims.req.slice("elastos://credaccess/".length)
+      const payload: any = jwt.decode(
+        claims.req.slice('elastos://credaccess/'.length)
       )
-      if(!_.get(payload.data,'proposalHash')){
+      if (!_.get(payload.data, 'proposalHash')) {
         return {
           code: 400,
           success: false,
@@ -1059,9 +1099,9 @@ export default class extends Base {
 
       const db_cvote = this.getDBModel('CVote')
       const cur = await db_cvote.find({
-        'proposalHash': payload.data.proposalHash
+        proposalHash: payload.data.proposalHash
       })
-      if(!cur){
+      if (!cur) {
         return {
           code: 400,
           success: false,
@@ -1070,9 +1110,9 @@ export default class extends Base {
       }
       const votedBy = _.get(this.currentUser, '_id')
       const proposalHash = payload.data.proposalHash
-     
-      const voteResult = _.find(cur[0].voteResult,function(o){
-        if (o.votedBy.equals(votedBy)){
+
+      const voteResult = _.find(cur[0].voteResult, function (o) {
+        if (o.votedBy.equals(votedBy)) {
           return o
         }
       })
@@ -1099,8 +1139,8 @@ export default class extends Base {
             try {
               await db_cvote.update(
                 {
-                   'proposalHash': proposalHash,
-                   'voteResult.votedBy': votedBy
+                  proposalHash: proposalHash,
+                  'voteResult.votedBy': votedBy
                 },
                 {
                   $set: {
@@ -1108,17 +1148,17 @@ export default class extends Base {
                     'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINING,
                     'voteResult.$.signature': { data: decoded.data }
                   },
-                  $push:{
+                  $push: {
                     voteHistory: {
-                      'value': voteResult.value,
-                      'reason': voteResult.reason,
-                      'txid': voteResult.txid,
-                      'votedBy': voteResult.votedBy,
-                      'signature': voteResult.signature
+                      value: voteResult.value,
+                      reason: voteResult.reason,
+                      txid: voteResult.txid,
+                      votedBy: voteResult.votedBy,
+                      signature: voteResult.signature
                     }
                   }
                 }
-                )
+              )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
               logger.error(err)
@@ -1131,35 +1171,34 @@ export default class extends Base {
           }
         }
       )
-    } catch(error){
+    } catch (error) {
       logger.error(error)
       return {
         code: 500,
         success: false,
         message: 'Something went wrong'
       }
-    } 
+    }
   }
 
   public async checkSignature(param: any) {
     const { id } = param
     const db_cvote = this.getDBModel('CVote')
-    const proposal = await db_cvote.find({ _id: id})
-    if (proposal){
+    const proposal = await db_cvote.find({ _id: id })
+    if (proposal) {
       const signature = _.get(proposal, 'proposal.voteResult.signature')
-      if(signature) {
-        return { success: true, data: proposal}
+      if (signature) {
+        return { success: true, data: proposal }
       }
       const message = _.get(proposal, 'proposal.voteResult.message')
-      if(message) {
-        return { success: true, data: proposal}
+      if (message) {
+        return { success: true, data: proposal }
       }
     } else {
       return {
         success: false
       }
     }
-
   }
 
   // according to txid polling vote status
@@ -1169,18 +1208,18 @@ export default class extends Base {
 
     const db_cvote = this.getDBModel('CVote')
 
-    try{
+    try {
       await db_cvote.update(
         {
           'voteResult.txid': txid
         },
         {
-          $set:{
+          $set: {
             'voteResult.$.status': status
           }
         }
       )
-    } catch(err) {
+    } catch (err) {
       logger.error(err)
     }
   }
@@ -1223,23 +1262,25 @@ export default class extends Base {
 
   // member vote callback
   public async memberCallback(param): Promise<any> {
-    return 
+    return
   }
-
 
   /**
    * API to Wallet
    */
-  public async allOrSearch(param): Promise<any>{
+  public async allOrSearch(param): Promise<any> {
     const db_cvote = this.getDBModel('CVote')
     const query: any = {}
 
-    if (!param.status || !_.keys(WALLET_STATUS_TO_CVOTE_STATUS).includes(param.status)) {
+    if (
+      !param.status ||
+      !_.keys(WALLET_STATUS_TO_CVOTE_STATUS).includes(param.status)
+    ) {
       return {
         code: 400,
         message: 'Invalid request parameters - status',
         // tslint:disable-next-line:no-null-keyword
-        data: null,
+        data: null
       }
     }
 
@@ -1261,42 +1302,41 @@ export default class extends Base {
     const cursor = db_cvote
       .getDBInstance()
       .find(query, fields.join(' '))
-      .sort({vid: -1})
+      .sort({ vid: -1 })
 
-    if (param.page && param.results
-        && parseInt(param.page) > 0
-        && parseInt(param.results) > 0) {
+    if (
+      param.page &&
+      param.results &&
+      parseInt(param.page) > 0 &&
+      parseInt(param.results) > 0
+    ) {
       const results = parseInt(param.results, 10)
       const page = parseInt(param.page, 10)
 
       cursor.skip(results * (page - 1)).limit(results)
-
     }
-    
+
     const rs = await Promise.all([
       cursor,
-      db_cvote
-        .getDBInstance()
-        .find(query)
-        .count()
+      db_cvote.getDBInstance().find(query).count()
     ])
 
     // filter return data，add proposalHash to CVoteSchema
-    const list = _.map(rs[0], function(o){
+    const list = _.map(rs[0], function (o) {
       let temp = _.pick(o, fields)
       temp.status = CVOTE_STATUS_TO_WALLET_STATUS[temp.status]
       temp.createdAt = timestamp.second(temp.createdAt)
-      return _.mapKeys(temp, function(value,key){
-        if(key == 'vid'){
+      return _.mapKeys(temp, function (value, key) {
+        if (key == 'vid') {
           return 'id'
-        }else{
+        } else {
           return key
         }
       })
     })
-    
+
     const total = rs[1]
-    return {list, total}
+    return { list, total }
   }
 
   public async getProposalById(id): Promise<any> {
@@ -1307,7 +1347,7 @@ export default class extends Base {
       'abstract',
       'voteResult',
       'createdAt',
-      'proposalHash',
+      'proposalHash'
     ]
     const proposal = await db_cvote
       .getDBInstance()
@@ -1319,92 +1359,106 @@ export default class extends Base {
         code: 400,
         message: 'Invalid request parameters',
         // tslint:disable-next-line:no-null-keyword
-        data: null,
+        data: null
       }
     }
 
     const address = `${process.env.SERVER_URL}/proposals/${proposal.id}`
-    
-    // duration 
-    const endTime = Math.round(proposal.createdAt.getTime()/1000+604800)
-    const nowTime = Math.round(new Date().getTime()/1000)
-    let duration = endTime-nowTime
+
+    // duration
+    const endTime = Math.round(proposal.createdAt.getTime() / 1000 + 604800)
+    const nowTime = Math.round(new Date().getTime() / 1000)
+    let duration = endTime - nowTime
     duration = duration > 0 ? duration : 0
-    
+
     const proposalId = proposal._id
 
-    const voteResultFields = [
-      'value',
-      'reason',
-      'votedBy'
-    ]
+    const voteResultFields = ['value', 'reason', 'votedBy']
     // filter undecided vote result
-    const filterVoteResult = _.filter(proposal._doc.voteResult, (o: any) => o.value !== constant.CVOTE_RESULT.UNDECIDED)
+    const filterVoteResult = _.filter(
+      proposal._doc.voteResult,
+      (o: any) => o.value !== constant.CVOTE_RESULT.UNDECIDED
+    )
     // update vote result data
-    const voteResult = _.map(filterVoteResult, (o: any) => (_.pick({
-      ...o._doc,
-      votedBy: `${_.get(o, 'votedBy.profile.firstName')} ${_.get(o, 'votedBy.profile.firstName')}`
-    }, voteResultFields)));
+    const voteResult = _.map(filterVoteResult, (o: any) =>
+      _.pick(
+        {
+          ...o._doc,
+          votedBy: `${_.get(o, 'votedBy.profile.firstName')} ${_.get(
+            o,
+            'votedBy.profile.firstName'
+          )}`
+        },
+        voteResultFields
+      )
+    )
 
     const tracking = await this.getTracking(proposalId)
 
     const summary = await this.getSummary(proposalId)
 
-    return _.omit({
-      ...proposal._doc,
-      createdAt: timestamp.second(proposal.createdAt),
-      voteResult,
-      address,
-      duration,
-      tracking,
-      summary,
-    }, ['_id'])
+    return _.omit(
+      {
+        ...proposal._doc,
+        createdAt: timestamp.second(proposal.createdAt),
+        voteResult,
+        address,
+        duration,
+        tracking,
+        summary
+      },
+      ['_id']
+    )
   }
 
   public async getTracking(id) {
     const db_tracking = this.getDBModel('CVote_Tracking')
     const proposalId = id
     const queryTrack: any = {
-      proposalId,
+      proposalId
     }
     const fieldsTrack = [
-    'comment',
-    'content',
-    'status',
-    'createdAt',
-    'updatedAt'
+      'comment',
+      'content',
+      'status',
+      'createdAt',
+      'updatedAt'
     ]
-    const cursorTrack = db_tracking.getDBInstance().find(queryTrack,fieldsTrack.join(' '))
+    const cursorTrack = db_tracking
+      .getDBInstance()
+      .find(queryTrack, fieldsTrack.join(' '))
       .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
       .sort({ createdAt: 1 })
     // const totalCursorTrack = db_tracking.getDBInstance().find(queryTrack).count()
 
     const tracking = await cursorTrack
     // const totalTrack = await totalCursorTrack
-   
-    const list = _.map(tracking,function(o){
+
+    const list = _.map(tracking, function (o) {
       const comment = o._doc.comment
       const commentObj = {
         content: comment.content,
-        createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(o, 'comment.createdBy.profile.firstName')}`
+        createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(
+          o,
+          'comment.createdBy.profile.firstName'
+        )}`
       }
       const obj = {
         ...o._doc,
         comment: commentObj,
         createdAt: timestamp.second(o.createdAt),
-        updatedAt: timestamp.second(o.updatedAt),
+        updatedAt: timestamp.second(o.updatedAt)
       }
-      return _.pick(obj,fieldsTrack)
+      return _.pick(obj, fieldsTrack)
     })
     return list
   }
 
   public async getSummary(id) {
-
     const db_summary = this.getDBModel('CVote_Summary')
     const proposalId = id
     const querySummary: any = {
-      proposalId,
+      proposalId
     }
     const fieldsSummary = [
       'comment',
@@ -1412,30 +1466,34 @@ export default class extends Base {
       'status',
       'createdAt',
       'updatedAt'
-      ]
-    const cursorSummary = db_summary.getDBInstance().find(querySummary,fieldsSummary.join(' '))
+    ]
+    const cursorSummary = db_summary
+      .getDBInstance()
+      .find(querySummary, fieldsSummary.join(' '))
       .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
       .sort({ createdAt: 1 })
     // const totalCursorSummary = db_summary.getDBInstance().find(querySummary).count()
 
     const summary = await cursorSummary
     // const totalSummary = await totalCursorSummary
-    
-    const list = _.map(summary,function(o){
+
+    const list = _.map(summary, function (o) {
       const comment = o._doc.comment
       const commentObj = {
         content: comment.content,
-        createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(o, 'comment.createdBy.profile.firstName')}`
+        createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(
+          o,
+          'comment.createdBy.profile.firstName'
+        )}`
       }
       const obj = {
         ...o._doc,
         comment: commentObj,
         createdAt: timestamp.second(o.createdAt),
-        updatedAt: timestamp.second(o.updatedAt),
+        updatedAt: timestamp.second(o.updatedAt)
       }
-      return _.pick(obj,fieldsSummary)
+      return _.pick(obj, fieldsSummary)
     })
     return list
-
   }
 }

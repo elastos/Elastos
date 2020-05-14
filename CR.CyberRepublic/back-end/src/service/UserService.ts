@@ -818,6 +818,7 @@ export default class extends Base {
       }
       const message = _.get(user, 'did.message')
       if (message) {
+        await db_user.update({ _id: userId }, { unset: { did: true } })
         return { success: false, message }
       }
     } else {
@@ -987,10 +988,16 @@ export default class extends Base {
             const db_did = this.getDBModel('Did')
             const doc = await db_did.findOne({ number: decoded.nonce })
             if (doc) {
-              return {
-                success: doc.success,
-                did: doc.did,
-                message: doc.message
+              if (doc.did) {
+                await db_did.getDBInstance().remove({ number: decoded.nonce })
+                return { did: doc.did, success: true }
+              }
+              if (doc.success === false) {
+                await db_did.update(
+                  { number: decoded.nonce },
+                  { $unset: { success: true, message: true } }
+                )
+                return { message: doc.message, success: false }
               }
             } else {
               return { success: false }

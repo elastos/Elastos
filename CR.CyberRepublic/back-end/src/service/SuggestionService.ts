@@ -1220,6 +1220,7 @@ export default class extends Base {
         return { success: false, message: 'Please bind a did to your account.' }
       }
       const rs: {
+        compressedPublicKey: string
         publicKey: string
         expirationDate: moment.Moment
       } = await getDidPublicKey(did)
@@ -1229,7 +1230,7 @@ export default class extends Base {
           message: `Can not get your did's public key.`
         }
       }
-      const ownerPublicKey = rs.publicKey
+      const ownerPublicKey = rs.compressedPublicKey
 
       const fields = [
         '_id',
@@ -1290,7 +1291,7 @@ export default class extends Base {
     try {
       const jwtToken = param.jwt
       const claims: any = jwt.decode(jwtToken)
-      if (_.get(claims, 'req')) {
+      if (!_.get(claims, 'req')) {
         return {
           code: 400,
           success: false,
@@ -1312,7 +1313,6 @@ export default class extends Base {
       const suggestion = await this.model.findById({
         _id: payload.suggestionId
       })
-
       if (!suggestion) {
         return {
           code: 400,
@@ -1321,7 +1321,8 @@ export default class extends Base {
         }
       }
 
-      if (!suggestion.ownerPublicKey) {
+      const rs: any = await getDidPublicKey(claims.iss)
+      if (!rs) {
         return {
           code: 400,
           success: false,
@@ -1332,7 +1333,7 @@ export default class extends Base {
       // verify response data from ela wallet
       return jwt.verify(
         jwtToken,
-        suggestion.ownerPublicKey,
+        rs.publicKey,
         async (err: any, decoded: any) => {
           if (err) {
             await this.model.update(
@@ -1386,6 +1387,8 @@ export default class extends Base {
       }
       const message = _.get(suggestion, 'signature.message')
       if (message) {
+        // clear error message
+        await this.model.update({ _id: id }, { $unset: { signature: true } })
         return { success: false, message }
       }
     } else {
@@ -1429,7 +1432,7 @@ export default class extends Base {
           drafthash: suggestion.draftHash,
           budgets: this.convertBudget(suggestion.budget),
           recipient: suggestion.elaAddress,
-          signature: suggestion.signature,
+          signature: suggestion.signature.data,
           did: councilMemberDid
         }
       }
@@ -1449,7 +1452,7 @@ export default class extends Base {
     try {
       const jwtToken = param.jwt
       const claims: any = jwt.decode(jwtToken)
-      if (_.get(claims, 'req')) {
+      if (!_.get(claims, 'req')) {
         return {
           code: 400,
           success: false,
@@ -1480,7 +1483,7 @@ export default class extends Base {
         }
       }
 
-      const rs: any = getDidPublicKey(claims.iss)
+      const rs: any = await getDidPublicKey(claims.iss)
       if (!_.get(rs, 'publicKey')) {
         return {
           code: 400,
@@ -1504,7 +1507,7 @@ export default class extends Base {
             try {
               await this.model.update(
                 { _id: payload.suggestionId },
-                { $set: { proposalHash: { data: decoded.data } } }
+                { $set: { proposalHash: decoded.data } }
               )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {

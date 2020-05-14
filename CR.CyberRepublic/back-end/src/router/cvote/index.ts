@@ -20,11 +20,17 @@ import get_proposal from './get_proposal'
 import callback from './callback'
 import check_signature from './check_signature'
 import memberVote from './memberVote'
+import pollProposalState from './poll_proposal_state'
 
 export default Base.setRouter([
   {
     path: '/create_draft',
     router: create_draft,
+    method: 'post'
+  },
+  {
+    path: '/poll_proposal_state',
+    router: pollProposalState,
     method: 'post'
   },
   {

@@ -8,13 +8,14 @@ import validate from './validate'
 import sso from './sso'
 import user from './user'
 import timestamp from './timestamp'
+import ela from './ela'
 import * as permissions from './permissions'
 import * as logger from './logger'
 const _ = require('lodash')
 const { PublicKey } = require('bitcore-lib-p256')
 const jwkToPem = require('jwk-to-pem')
 
-export { utilCrypto, sso, user, timestamp, validate, permissions, mail, logger }
+export { utilCrypto, sso, user, timestamp, ela, validate, permissions, mail, logger }
 
 export const getEnv = () => process.env.NODE_ENV
 
@@ -46,8 +47,7 @@ export const getPemPubKey = (key: any) => {
 
 export const getDidPublicKey = async (did: string) => {
   const headers = {
-    'Content-Type': 'application/json',
-    Authorization: process.env.DID_SIDECHAIN_AUTH
+    'Content-Type': 'application/json'
   }
   const data = {
     jsonrpc: '2.0',
@@ -65,13 +65,40 @@ export const getDidPublicKey = async (did: string) => {
       const base64 = _.get(res.data.result, 'transaction[0].operation.payload')
       const payload: any = base64url.decode(base64)
       const pubKeys = _.get(JSON.parse(payload), 'publicKey')
-      const matched = pubKeys.find(el => el.id === '#primary')
+      const matched = pubKeys.find((el) => el.id === '#primary')
       // compressed public key beginning with 02
       const publicKey = bs58.decode(matched.publicKeyBase58).toString('hex')
       const pemPubKey = getPemPubKey(PublicKey.fromString(publicKey))
       return {
         expirationDate: moment(payload.expires),
-        publicKey: pemPubKey
+        publicKey: pemPubKey,
+        compressedPublicKey: publicKey
+      }
+    }
+  } catch (err) {
+    logger.error(err)
+  }
+}
+
+export const getProposalState = async (proposalHash: string) => {
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+  const data = {
+    jsonrpc: '2.0',
+    method: 'getcrproposalstate',
+    params: {
+      proposalhash: proposalHash
+    }
+  }
+  try {
+    const res = await axios.post(process.env.ELA_NODE_URL, data, {
+      headers
+    })
+    if (res && res.data) {
+      const status = _.get(res.data, 'result.proposalstate.status')
+      if (status) {
+        return { status }
       }
     }
   } catch (err) {

@@ -91,5 +91,6 @@ export const Suggestion = {
   tags: [tag],
   signature: { data: String, message: String },
   draftHash: String,
-  ownerPublicKey: String
+  ownerPublicKey: String,
+  proposalHash: String
 }
