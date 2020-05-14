@@ -1139,7 +1139,7 @@ export default class extends Base {
 
     const suggestion = await this.model
       .getDBInstance()
-      .findOne({ displayId: id }, fileds.join(' '))
+      .findOne({ _id: id }, fileds.join(' '))
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
     if (!suggestion) {
@@ -1153,10 +1153,7 @@ export default class extends Base {
 
     const createdBy = suggestion.createdBy
     const address = `${process.env.SERVER_URL}/suggestion/${suggestion._id}`
-    const did =
-      createdBy &&
-      createdBy.dids &&
-      createdBy.dids.find((el) => el.active === true)
+    const did = createdBy && createdBy.did && createdBy.did.id
     const didName =
       createdBy &&
       createdBy.profile &&

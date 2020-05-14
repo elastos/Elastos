@@ -6,9 +6,7 @@ export default class extends Base {
         const param = this.getParam()
         const service = this.buildService(CouncilService)
 
-        service.cronJob();
-
-        const rs = await service.term(param)
+        const rs = await service.councilInformation(param)
         return this.result(1, rs)
     }
 }
