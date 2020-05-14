@@ -1021,25 +1021,25 @@ export default class extends Base {
       status: constant.CVOTE_STATUS.NOTIFICATION
     })
     const idsNotification = []
-    const idsDeferred = []
+    const idsRejected = []
 
     _.each(list, (item) => {
       if (this.isExpired(item)) {
         if (this.isNotification(item)) {
           idsNotification.push(item._id)
         }else {
-          idsDeferred.push(item._id)
+          idsRejected.push(item._id)
         }
       }
     })
     await db_cvote.update(
       {
         _id: {
-          $in: idsDeferred
+          $in: idsRejected
         }
       },
       {
-        status: constant.CVOTE_STATUS.DEFERRED
+        status: constant.CVOTE_STATUS.REJECT
       },
       { multi: true }
     )
@@ -1287,17 +1287,7 @@ export default class extends Base {
     if (proposal) {
       const proposalHash = _.get(proposal, 'proposalHash')
       if (proposalHash) {
-        const rs = {
-          "status": "Registered",
-          "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
-          "crvotes": {
-              "aabbcc": 0,
-              'ccddee': 0
-          },
-          "votersrejectamount": 0,
-          "registerheight": 1277
-        }
-        // const rs = await getProposalState(proposalHash)
+        const rs = await getProposalState(proposalHash)
         if (!rs) {
           return { success: false }
         }
@@ -1336,11 +1326,7 @@ export default class extends Base {
           'voteResult.txid': { $in : txids } 
         },
         {
-          $set:{
-            'voteResult.$': {
-              status: constant.CVOTE_CHAIN_STATUS.CHAINED
-            }
-          }
+          'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
         },
         { multi: true }
       )
