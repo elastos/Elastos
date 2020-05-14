@@ -182,4 +182,13 @@ export default class extends BaseService {
     }
     return rs
   }
+
+  async getMemberVote(id) {
+    const rs = await api_request({
+      path: `${this.prefixPath}/member_vote`,
+      method: 'post',
+      data: { id }
+    })
+    return rs
+  }
 }

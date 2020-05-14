@@ -986,29 +986,34 @@ export default class extends Base {
       const db_cvote = this.getDBModel('CVote')
       const userId = _.get(this.currentUser, '_id')
       const { id } = param
+          
+      const councilMemberDid = _.get(this.currentUser, 'did.id')
+      if (!councilMemberDid) {
+        return { success: false }
+      }
+      
+      const role = _.get(this.currentUser, 'role')
+      if (!permissions.isCouncil(role)) {
+        return { success: false }
+      }
       
       const cur = await db_cvote.findOne({ _id: id })
-    
-      if (!this.canManageProposal()) {
-        throw 'cvoteservice.unfinishById - not council'
-      }
       if (!cur) {
-        throw 'cvoteservice.update - invalid proposal id'
+        return { success: false }
       }
 
+      const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
+        iat: now,
+        exp: now + (60 * 60 * 24),
         iss: process.env.APP_DID,
         callbackurl: `${process.env.API_URL}/api/CVote/callback`,
-        website:{
-          domain: process.env.SERVER_URL,
-          logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
-        },
         command:"reviewproposal",
         data: {
           proposalHash: cur.proposalHash,
           voteResult: cur.voteResult,
           opinionHash: "",
-          did: ""
+          did: councilMemberDid
         }
       }
       cur.voteResult.forEach(function(res){
@@ -1018,7 +1023,6 @@ export default class extends Base {
       })
     
       const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
-        expiresIn: '7d', 
         algorithm: 'ES256' 
       })
       const url = `elastos://credaccess/${jwtToken}`
@@ -1074,26 +1078,6 @@ export default class extends Base {
       })
       const rs: any = await getDidPublicKey(claims.iss)
       if(!rs) {
-        await db_cvote.update(
-          { 
-            'proposalHash': proposalHash,
-            'voteResult.votedBy': votedBy
-          },
-          {
-            $set: {
-              'voteResult.$.signature': { message: `Can not get your did's public key. ` }
-            },
-            $push: {
-              voteHistory: {
-                'value': voteResult.value,
-                'reason': voteResult.reason,
-                'txid': voteResult.txid,
-                'votedBy': voteResult.votedBy,
-                'signature': voteResult.signature
-              }
-            }
-          }
-        )
         return {
           code: 400,
           success: false,
@@ -1106,18 +1090,7 @@ export default class extends Base {
         rs.publicKey,
         async (err:any, decoded: any) => {
           if(err) {
-            await db_cvote.update(
-              { 
-                'proposalHash': proposalHash,
-                'voteResult.votedBy': votedBy
-              },
-              {
-                $set: {
-                  'voteResult.$.signature': { message: `Verify signatrue failed. ` }
-                }
-              }
-            )
-            return {
+                       return {
               code: 401,
               success: false,
               message: 'Verify signatrue failed.'
@@ -1220,7 +1193,10 @@ export default class extends Base {
       
       const cur = await db_cvote.findOne({ _id: id })
     
+      const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
+        iat: now,
+        exp: now + (60 * 60 * 24),
         iss: process.env.APP_DID,
         callbackurl: `${process.env.API_URL}/api/CVote/vote_callback`,
         website:{

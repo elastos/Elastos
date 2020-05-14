@@ -28,6 +28,8 @@ import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import { logger } from '@/util'
+import QRCode from 'qrcode.react'
+
 import {
   convertMarkdownToHtml,
   removeImageFromMarkdown,
@@ -222,6 +224,7 @@ class C extends StandardPage {
     const titleNode = this.renderTitle()
     const labelNode = this.renderLabelNode()
     const subTitleNode = this.renderSubTitle()
+    const memberVoteNode = this.renderMemberVoteQrCode()
     const { smallSpace } = this.state
     return (
       <Sticky>
@@ -246,12 +249,23 @@ class C extends StandardPage {
                 {labelNode}
                 {subTitleNode}
               </FixedHeader>
+              {memberVoteNode}
             </div>
           )
         }}
       </Sticky>
     )
   }
+
+  renderMemberVoteQrCode() {
+    return (
+      <div>
+        <QRCode value='elastos://credaccess/eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI1OTBlMTdjZS1iOGMzLTQxYjgtYTM3Yi1mNTMzZGZlNWM3NzYiLCJjYWxsYmFja3VybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMS9hcGkvQ1ZvdGUvY2FsbGJhY2siLCJ3ZWJzaXRlIjp7ImRvbWFpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMSIsImxvZ28iOiJodHRwOi8vbG9jYWxob3N0OjMwMDEvYXNzZXRzL2ltYWdlcy9sb2dvLnN2ZyJ9LCJjb21tYW5kIjoidm90ZWZvcnByb3Bvc2FsIiwiZGF0YSI6eyJwcm9wb3NhbEhhc2giOiJqa2Fsc2pka2xhanNkbGthanNrZGxqYWxrc2RqbGthc2pkbGthIn0sImlhdCI6MTU4OTM1NDA1OCwiZXhwIjoxNTg5OTU4ODU4fQ.ejjR59UmyzmKd_eh4U9_N28G794CschpoiKHhDy0V-woJaLXqd6HHzjXG2qXlIghpi6VUJj5O6eipGTpc98F-w' size={145} />
+      </div>
+    )
+  }
+
+  
 
   renderTranslationBtn() {
     const { data, isElip } = this.props
