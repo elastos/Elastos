@@ -73,11 +73,22 @@ public class PwdPresenter extends NewPresenterAbstract {
     //所有转账都要经历的方法   步骤1 2    fragment
 //步骤1
     public void signTransaction(String walletId, String chainId, String rawTransaction, String pwd, BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
+        Observer observer = createObserver(baseFragment, "signTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
                 return baseFragment.getMyWallet().signTransaction(walletId, chainId, rawTransaction, pwd);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void newPublishTransaction(String walletId, String chainId, String rawTransaction, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "newPublishTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().publishTransaction(walletId, chainId, rawTransaction);
             }
         });
         subscriberObservable(observer, observable, baseFragment);
@@ -148,13 +159,13 @@ public class PwdPresenter extends NewPresenterAbstract {
 
     /************************************CR**************************************/
     //验证交易
-    public void generateCRInfoPayload(String masterWalletID, String chainID, String publicKey, String nickName, String url, long location,String did
+    public void generateCRInfoPayload(String masterWalletID, String chainID, String publicKey, String nickName, String url, long location, String did
             , BaseActivity baseActivity) {
         Observer observer = createObserver(baseActivity, "generateCRInfoPayload");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().generateCRInfoPayload(masterWalletID, chainID, publicKey, nickName, url, location,did);
+                return baseActivity.getMyWallet().generateCRInfoPayload(masterWalletID, chainID, publicKey, nickName, url, location, did);
             }
         });
         subscriberObservable(observer, observable, baseActivity);
@@ -259,8 +270,9 @@ public class PwdPresenter extends NewPresenterAbstract {
         });
         subscriberObservable(observer, observable, baseActivity);
     }
-    public void DIDPublish(String pwd,BaseActivity baseActivity) {
-        Observer observer = createObserver(baseActivity, "DIDPublish",false);
+
+    public void DIDPublish(String pwd, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "DIDPublish", false);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

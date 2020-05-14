@@ -38,7 +38,6 @@ public class CRListBean extends BaseEntity {
     @Override
     public String toString() {
         return "CRListBean{" +
-                "message='" + message + '\'' +
                 ", data=" + data +
                 ", exceptionMsg=" + exceptionMsg +
                 '}';
@@ -50,17 +49,11 @@ public class CRListBean extends BaseEntity {
      * exceptionMsg : null
      */
 
-    private String message;
+
     private DataBean data;
     private Object exceptionMsg;
 
-    public String getMessage() {
-        return message;
-    }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     public DataBean getData() {
         return data;

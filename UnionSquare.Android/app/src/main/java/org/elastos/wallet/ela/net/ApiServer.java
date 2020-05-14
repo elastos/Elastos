@@ -30,6 +30,7 @@ import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
 import org.elastos.wallet.ela.ui.did.entity.SaveJwtRespondBean;
 import org.elastos.wallet.ela.ui.did.entity.WebBackEntity;
 import org.elastos.wallet.ela.ui.main.entity.ServerListEntity;
+import org.elastos.wallet.ela.ui.proposal.bean.SuggestBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 
@@ -42,6 +43,7 @@ import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 import retrofit2.http.Url;
 
 public interface ApiServer {
@@ -90,4 +92,7 @@ public interface ApiServer {
     @POST("api/dposnoderpc/check/jwtget")
     @Headers("Content-Type:application/x-www-form-urlencoded; charset=utf-8")
     Observable<GetJwtRespondBean> jwtGet(@FieldMap Map<String, String> map);
+
+    @GET("/api/suggestion/get_suggestion/{id}")
+    Observable<SuggestBean> getSuggestion(@Path("id") String id);
 }

@@ -75,6 +75,20 @@ public class JwtUtils {
         return result;
     }
 
+    public static byte[] hex2byteBe(String inputString) {
+        if (inputString == null || inputString.length() < 2) {
+            return new byte[0];
+        }
+        inputString = inputString.toLowerCase();
+        int l = inputString.length() / 2;
+        byte[] result = new byte[l];
+        for (int i = 0; i < l; ++i) {
+            String tmp = inputString.substring(2 * i, 2 * i + 2);
+            result[l-1-i] = (byte) (Integer.parseInt(tmp, 16) & 0xFF);
+        }
+        return result;
+    }
+
     /**
      * bytes[]换成16进制字符串
      *
@@ -219,7 +233,7 @@ public class JwtUtils {
         // String unSignature = base64Header + "." + base64Payload;
         //  String signature = jwtParts[2];
         //  String header = new String(org.elastos.did.util.Base64.decode(base64Header));
-        return new String(Base64.decode(base64Payload, Base64.URL_SAFE));
+        return new String(Base64.decode(base64Payload, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
     }
 
     public static String getJwtHeader(String jwt) {

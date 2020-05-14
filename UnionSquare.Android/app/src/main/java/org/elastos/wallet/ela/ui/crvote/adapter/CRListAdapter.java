@@ -38,6 +38,7 @@ import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
+import org.elastos.wallet.ela.utils.JwtUtils;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
 
 import java.util.List;
@@ -107,8 +108,7 @@ public class CRListAdapter extends CRListAdapterFather {
                 GetJwtRespondBean getJwtRespondBean = (GetJwtRespondBean) baseEntity;
                 String jwt = getJwtRespondBean.getData().getJwt();
                 if (!TextUtils.isEmpty(jwt)) {
-                    String[] jwtParts = jwt.split("\\.");
-                    String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
+                    String payload = JwtUtils.getJwtPayload(jwt);
                     String pro = context.getMyDID().getCredentialProFromJson(payload);
                     CredentialSubjectBean credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
                     if (credentialSubjectBean == null || credentialSubjectBean.getAvatar() == null) {

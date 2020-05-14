@@ -22,8 +22,6 @@
 
 package org.elastos.wallet.ela.ui.Assets.bean.qr.did;
 
-import android.os.Parcel;
-
 import org.elastos.wallet.ela.ui.Assets.bean.qr.RecieveJwtEntity;
 
 public class RecieveLoginAuthorizedJwtEntity extends RecieveJwtEntity {
@@ -74,66 +72,6 @@ public class RecieveLoginAuthorizedJwtEntity extends RecieveJwtEntity {
     }
 
 
-    public static class ClaimsBean implements android.os.Parcelable {
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-        }
-
-        public ClaimsBean() {
-        }
-
-        protected ClaimsBean(Parcel in) {
-        }
-
-        public static final Creator<ClaimsBean> CREATOR = new Creator<ClaimsBean>() {
-            @Override
-            public ClaimsBean createFromParcel(Parcel source) {
-                return new ClaimsBean(source);
-            }
-
-            @Override
-            public ClaimsBean[] newArray(int size) {
-                return new ClaimsBean[size];
-            }
-        };
+    public static class ClaimsBean {
     }
-
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        super.writeToParcel(dest, flags);
-        dest.writeString(this.userId);
-        dest.writeParcelable(this.claims, flags);
-    }
-
-    public RecieveLoginAuthorizedJwtEntity() {
-    }
-
-    protected RecieveLoginAuthorizedJwtEntity(Parcel in) {
-        super(in);
-        this.userId = in.readString();
-        this.claims = in.readParcelable(ClaimsBean.class.getClassLoader());
-    }
-
-    public static final Creator<RecieveLoginAuthorizedJwtEntity> CREATOR = new Creator<RecieveLoginAuthorizedJwtEntity>() {
-        @Override
-        public RecieveLoginAuthorizedJwtEntity createFromParcel(Parcel source) {
-            return new RecieveLoginAuthorizedJwtEntity(source);
-        }
-
-        @Override
-        public RecieveLoginAuthorizedJwtEntity[] newArray(int size) {
-            return new RecieveLoginAuthorizedJwtEntity[size];
-        }
-    };
 }

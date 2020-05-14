@@ -1899,17 +1899,33 @@ public class MyWallet {
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID) + "ProposalCRCouncilMemberDigest");
         }
-    }  public BaseEntity createProposalTransaction(String masterWalletID, String payload) {
+    }
+
+    public BaseEntity createProposalTransaction(String masterWalletID, String payload) {
         try {
             MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
             if (subWallet == null) {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
 
             }
-            String info = subWallet.CreateProposalTransaction(payload,"");
+            String info = subWallet.CreateProposalTransaction(payload, "");
             return new CommmonStringEntity(SUCCESSCODE, info);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID) + "CreateProposalTransaction");
+        }
+    }
+
+    public BaseEntity calculateProposalHash(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.CalculateProposalHash(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "calculateProposalHash");
         }
     }
 

@@ -50,6 +50,7 @@ public class Constant {
     public static final int CREATEMUL = 0x2;//打开创建多签钱包页面 已经打开了的情况直接填入
     public static final int SIGN = 0x3;//打开签名页面
     public static final int TRANSFER = 0x4;//打开转账页面
+    public static final String PROPOSALINPUT = "proposalInput";//打开转账页面
 
 
 

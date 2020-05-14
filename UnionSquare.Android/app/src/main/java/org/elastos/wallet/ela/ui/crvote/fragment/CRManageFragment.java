@@ -65,6 +65,7 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.JwtUtils;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
@@ -309,8 +310,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 GetJwtRespondBean getJwtRespondBean = (GetJwtRespondBean) baseEntity;
                 String jwt = getJwtRespondBean.getData().getJwt();
                 if (!TextUtils.isEmpty(jwt)) {
-                    String[] jwtParts = jwt.split("\\.");
-                    String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
+                    String payload = JwtUtils.getJwtPayload(jwt);
                     String pro = getMyDID().getCredentialProFromJson(payload);
                     credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
                     if (credentialSubjectBean == null || credentialSubjectBean.whetherEmpty()) {

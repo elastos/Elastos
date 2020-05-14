@@ -60,7 +60,7 @@ import org.elastos.wallet.ela.ui.Assets.adapter.AssetskAdapter;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.RecieveJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.did.RecieveLoginAuthorizedJwtEntity;
-import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalFatherJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.AssetDetailsFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.CreateSignReadOnlyWalletFragment;
@@ -329,7 +329,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             }
             result = result.replace("//crproposal/", "");
             String payload = JwtUtils.getJwtPayload(result);
-            RecieveProposalFatherJwtEntity recieveProposalJwtEntity = JSON.parseObject(payload, RecieveProposalFatherJwtEntity.class);
+            RecieveProposalJwtEntity recieveProposalJwtEntity = JSON.parseObject(payload, RecieveProposalJwtEntity.class);
             String elaString = recieveProposalJwtEntity.getIss();
             elaString = elaString.contains("did:elastos:") ? elaString : "did:elastos:" + elaString;
             new WalletManagePresenter().forceDIDResolve(elaString, this, recieveProposalJwtEntity);
@@ -928,7 +928,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, name);
                 return;
             }
-        } else if (jwtEntity instanceof RecieveProposalFatherJwtEntity) {
+        } else if (jwtEntity instanceof RecieveProposalJwtEntity) {
             //proposal
             String result = scanResult.replace("elastos://crproposal/", "");
             if (JwtUtils.verifyJwt(result, didDocument)) {
@@ -965,14 +965,22 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         } catch (DIDStoreException e) {
             e.printStackTrace();
         }
-
-        if (o instanceof RecieveProposalFatherJwtEntity) {
+        if (o instanceof RecieveProposalJwtEntity) {
             //propaosal
-
-            String command = ((RecieveProposalFatherJwtEntity) o).getCommand();
-            if (command.equals("createsuggestion")||command.equals("createproposal")) {
-                toSuggest(command);
+            RecieveProposalJwtEntity entity = (RecieveProposalJwtEntity) o;
+            String command = entity.getCommand().toLowerCase();
+            switch (command) {
+                case "createsuggestion":
+                    if (entity.getData().getOwnerpublickey().equals(getMyDID().getDidPublicKey(didDocument)))
+                        toSuggest(command);
+                    else
+                        showToast(getString(R.string.didnotsame));
+                    break;
+                case "createproposal":
+                    toSuggest(command);
+                    break;
             }
+
         } else {
             toAuthorization((String) o);
         }

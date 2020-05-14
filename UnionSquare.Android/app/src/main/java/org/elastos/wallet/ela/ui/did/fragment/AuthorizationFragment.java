@@ -60,6 +60,7 @@ import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.JwtUtils;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -132,7 +133,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
 
             String result = scanResult.replace("elastos://credaccess/", "");
             jwtParts = result.split("\\.");
-            String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
+            String payload = JwtUtils.getJwtPayload(result);
             recieveLoginAuthorizedJwtEntity = JSON.parseObject(payload, RecieveLoginAuthorizedJwtEntity.class);
             tvDid.setText(recieveLoginAuthorizedJwtEntity.getIss());
             tvName.setText(webName);
@@ -334,7 +335,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         callBackJwtEntity.setPresentation("");
         String header = jwtParts[0];
         // Base64
-        String payload = Base64.encodeToString(JSON.toJSONString(callBackJwtEntity).getBytes(), Base64.URL_SAFE | Base64.NO_WRAP);
+        String payload = Base64.encodeToString(JSON.toJSONString(callBackJwtEntity).getBytes(), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
         payload = payload.replaceAll("=", "");
         try {
             String signature = getMyDID().getDIDDocument().sign(payPasswd, (header + "." + payload).getBytes());
@@ -356,7 +357,7 @@ public class AuthorizationFragment extends BaseFragment implements NewBaseViewDa
         DIDDocument doc = getMyDID().getDIDDocument();
         String pro = JSON.toJSONString(convertCredentialSubjectBean(doc));
         Date exp = getMyDID().getExpires(doc);
-        String payload = Base64.encodeToString(getMyDID().getCredentialJson(pro, payPasswd, exp).getBytes(), Base64.URL_SAFE | Base64.NO_WRAP);
+        String payload = Base64.encodeToString(getMyDID().getCredentialJson(pro, payPasswd, exp).getBytes(), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
         payload = payload.replaceAll("=", "");
         try {
             String signature = doc.sign(payPasswd, (header + "." + payload).getBytes());

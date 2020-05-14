@@ -42,7 +42,6 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
-import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.did.adapter.PersonalAddRecAdapetr;
@@ -469,7 +468,8 @@ public class AddPersonalInfoFragment extends BaseFragment implements CommonRvLis
                 intent.putExtra("credentialSubjectBean", credentialSubjectBean);
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", MyWallet.IDChain);
-                intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
+                // intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
+                intent.putExtra("fee", 20000L);
                 intent.putExtra("type", Constant.DIDSIGNUP);
                 intent.putExtra("transType", 10);
                 startActivity(intent);
