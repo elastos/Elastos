@@ -1068,7 +1068,7 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
 			}
 
-			ErrorChecker::CheckParam(p->IsValid(CRCProposalDefaultVersion), Error::InvalidArgument, "invalid payload");
+			ErrorChecker::CheckParam(!p->IsValid(CRCProposalDefaultVersion), Error::InvalidArgument, "invalid payload");
 
 			AddressPtr receiveAddr = wallet->GetReceiveAddress();
 			OutputArray outputs;
