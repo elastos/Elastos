@@ -8,6 +8,7 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 
 import butterknife.BindView;
+import butterknife.OnClick;
 
 public class CtManagerEditFragment extends BaseFragment {
 
@@ -24,5 +25,10 @@ public class CtManagerEditFragment extends BaseFragment {
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, "编辑");
+    }
+
+    @OnClick({R.id.confirm})
+    public void onClick(View view) {
+        popBackFragment();
     }
 }

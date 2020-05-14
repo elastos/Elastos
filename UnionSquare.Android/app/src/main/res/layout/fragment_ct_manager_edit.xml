@@ -26,6 +26,7 @@
             android:layout_height="55dp"
             android:gravity="center_vertical"
             android:textColor="@color/white"
+            android:background="@null"
             android:hint="请输入昵称"/>
 
         <View

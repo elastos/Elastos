@@ -65,13 +65,21 @@
 
     </LinearLayout>
 
-    <android.support.v4.view.ViewPager
+<!--    <android.support.v4.view.ViewPager
         android:id="@+id/vp"
         android:layout_marginTop="15dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"/>
+        android:layout_marginRight="15dp"/>-->
 
+    <include
+        android:id="@+id/ct_general_layout"
+        layout="@layout/fragment_ct_general_list"/>
+
+    <include
+        android:id="@+id/ct_secretary_layout"
+        android:visibility="gone"
+        layout="@layout/fragment_ct_secretary_list"/>
 
 </LinearLayout>

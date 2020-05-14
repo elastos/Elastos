@@ -18,6 +18,7 @@ import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.adaper.PastCtRecAdapter;
 import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.committee.fragment.CtListFragment;
+import org.elastos.wallet.ela.ui.committee.fragment.CtManagerFragment;
 import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 
@@ -29,7 +30,7 @@ import butterknife.BindView;
 /**
  * List of past members
  */
-public class PastCtListFragment extends BaseFragment implements NewBaseViewData, CommonRvListener, OnLoadMoreListener {
+public class PastCtListFragment extends BaseFragment implements NewBaseViewData, CommonRvListener, PastCtRecAdapter.ManagerListener, OnLoadMoreListener {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.iv_title_right)
@@ -59,16 +60,19 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         list = new ArrayList<>();
         PastCtBean pastCtBean1 = new PastCtBean();
         pastCtBean1.setIndex("1");
+        pastCtBean1.setType(1);
         pastCtBean1.setTime("2019.03.01-2019.04.01");
         list.add(pastCtBean1);
 
         PastCtBean pastCtBean2 = new PastCtBean();
         pastCtBean2.setIndex("2");
+        pastCtBean2.setType(2);
         pastCtBean2.setTime("2019.03.01-2019.04.01");
         list.add(pastCtBean2);
 
         PastCtBean pastCtBean3 = new PastCtBean();
         pastCtBean3.setIndex("3");
+        pastCtBean3.setType(3);
         pastCtBean3.setTime("2019.03.01-2019.04.01");
         list.add(pastCtBean3);
 
@@ -117,7 +121,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
             recyclerview.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             recyclerview.setAdapter(adapter);
             adapter.setCommonRvListener(this);
-
+            adapter.setManagerListener(this);
         } else {
             adapter.notifyDataSetChanged();
         }
@@ -143,5 +147,10 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     @Override
     public void onLoadMore(RefreshLayout refreshLayout) {
 
+    }
+
+    @Override
+    public void onManagerClick(int position) {
+        start(CtManagerFragment.class);
     }
 }

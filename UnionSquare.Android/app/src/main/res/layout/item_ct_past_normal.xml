@@ -39,5 +39,11 @@
         android:layout_alignParentBottom="true"
         android:background="@color/white"
         android:layout_height="0.5dp"/>
-    
+
+    <TextView
+        android:id="@+id/manager_btn"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"/>
+
 </RelativeLayout>
