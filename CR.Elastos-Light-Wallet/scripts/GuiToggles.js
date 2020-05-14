@@ -127,6 +127,7 @@ const showAllBanners = () => {
   GuiUtils.show('votingBanner');
   GuiUtils.show('loginPrivateKeyBanner');
   GuiUtils.show('loginMnemonicBanner');
+  GuiUtils.show('qrcodeBanner');
 };
 
 const hideAllBanners = () => {
@@ -134,6 +135,7 @@ const hideAllBanners = () => {
   GuiUtils.hide('votingBanner');
   GuiUtils.hide('loginPrivateKeyBanner');
   GuiUtils.hide('loginMnemonicBanner');
+  GuiUtils.hide('qrcodeBanner');
 };
 
 exports.init = init;

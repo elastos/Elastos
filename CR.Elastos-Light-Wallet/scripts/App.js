@@ -1072,6 +1072,19 @@ const copyPrivateKeyToClipboard = () => {
   renderApp();
 };
 
+const verifyLedgerBanner = () => {
+  if (useLedgerFlag) {
+    bannerStatus = `Please verify this address:\n${address} corresponds to the address on you Ledger device`;
+    bannerClass = 'landing-btnbg color_white banner-look';
+  } else {
+    bannerStatus = `No Ledger Device Connected`;
+    bannerClass = 'landing-btnbg color_white banner-look';
+  }
+
+  GuiToggles.showAllBanners();
+  renderApp();
+};
+
 const clearGlobalData = () => {
   // mainConsole.log('STARTED clearGlobalData');
   GuiUtils.setValue('privateKey', '');
@@ -1415,3 +1428,4 @@ exports.copyAddressToClipboard = copyAddressToClipboard;
 exports.setRefreshCandiatesFlag = setRefreshCandiatesFlag;
 exports.requestListOfProducers = requestListOfProducers;
 exports.requestListOfCandidateVotes = requestListOfCandidateVotes;
+exports.verifyLedgerBanner = verifyLedgerBanner;

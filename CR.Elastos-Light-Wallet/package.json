@@ -2,7 +2,7 @@
   "name": "elastos-light-wallet",
   "version": "v1.0.0-RC26",
   "description": "elastos light wallet",
-  "productName": "elastos-light-wallet",
+  "productName": "Elastos Light Wallet",
   "main": "index.js",
   "build": {
     "mac": {

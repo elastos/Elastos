@@ -73,7 +73,7 @@ module.exports = (props) => {
 
       <div className="voting-row1">
         <div>
-          <img src="artwork/voting-back.svg" width="33px" height="33px" onClick={(e) => GuiToggles.showHome()}/>
+          <img src="artwork/voting-back.svg" className="scale-hover" width="33px" height="33px" onClick={(e) => GuiToggles.showHome()}/>
           <p className="display_inline_block votes-header">Votes</p>
           <p className="display_inline_block candidate-status status-font">Status: {App.getProducerListStatus()} </p>
           <p className="display_inline_block status-font">Candidates: {App.getParsedProducerList().producers.length} </p>
@@ -93,7 +93,7 @@ module.exports = (props) => {
                   </tr>
                   {
                     App.getParsedProducerList().producers.map((item, index) => {
-                      return (<tr className="txtable-row" key={index}>
+                      return (<tr className={item.isCandidate ? 'txtable-row voting-selected ': 'txtable-row voting-hover'} key={index} onClick={(e) => App.toggleProducerSelection({index})}>
                         <td className="no_border no_padding">{item.n}</td>
                         <td className="no_border no_padding">{item.nickname}</td>
                         {/* <td className="no_border no_padding">{item.active}</td> */}
@@ -101,7 +101,7 @@ module.exports = (props) => {
                         {Number(item.active) ? (<img src="artwork/greenstatus.svg" />) : (<img src="artwork/redstatus.svg" />)
                         } </td>
                         <td className="no_border no_padding">{item.votes}</td>
-                        <td className="white_on_purple_with_hover h20px fake_button" onClick={(e) => App.toggleProducerSelection({index})}>
+                        <td className="white_on_purple_with_hover h20px fake_button">
                           <ProducerSelectionButtonText item={item}/>
                         </td>
                       </tr>)
@@ -112,7 +112,7 @@ module.exports = (props) => {
       </div>
 
       <div className="voting-row3">
-        <button  onClick={(e) => App.sendVoteTx()} className="dark-hover">Vote</button>
+        <button  onClick={(e) => App.sendVoteTx()} className="scale-hover">Vote</button>
       </div>
 
       <div className="voting-row4">
