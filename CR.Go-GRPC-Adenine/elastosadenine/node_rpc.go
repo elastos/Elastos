@@ -187,6 +187,8 @@ func (n *NodeRpc) GetCurrentBalance(apiKey, did, network, chain, address string)
 		var currentBalanceHex string
 		if response, err := n.RpcMethod(apiKey, did, network, chain, "eth_getBalance", params); err == nil {
 			currentBalanceHex = response.(string)
+		} else {
+			return currentBalance
 		}
 		currentBalanceHexCleaned := strings.Replace(currentBalanceHex, "0x", "", -1)
 		currentBalanceInt64, _ := strconv.ParseInt(currentBalanceHexCleaned, 16, 64)
@@ -198,6 +200,8 @@ func (n *NodeRpc) GetCurrentBalance(apiKey, did, network, chain, address string)
 			var result map[string]interface{}
 			if response, err := n.RpcMethod(apiKey, did, network, chain, "getreceivedbyaddress", params); err == nil {
 				result = response.(map[string]interface{})
+			} else {
+				return currentBalance
 			}
 			balance := make(map[string]string)
 			for key, value := range result {
@@ -207,6 +211,8 @@ func (n *NodeRpc) GetCurrentBalance(apiKey, did, network, chain, address string)
 		} else {
 			if response, err :=  n.RpcMethod(apiKey, did, network, chain, "getreceivedbyaddress", params); err == nil {
 				currentBalance = response.(string)
+			} else {
+				return currentBalance
 			}
 		}
 	}
@@ -226,8 +232,9 @@ func (n *NodeRpc) GetCurrentHeight(apiKey, did, network, chain string) string {
 		currentHeightInt64, _ := strconv.ParseInt(currentHeightHexCleaned, 16, 64)
 		currentHeight = fmt.Sprintf("%v", currentHeightInt64)
 	} else {
-		nodeState := n.GetCurrentNodeState(apiKey, did, network, chain)
-		currentHeight = fmt.Sprintf("%.0f", nodeState["height"].(float64))
+		if nodeState := n.GetCurrentNodeState(apiKey, did, network, chain); len(nodeState) != 0 {
+			currentHeight = fmt.Sprintf("%.0f", nodeState["height"].(float64))
+		}
 	}
 	return currentHeight
 }

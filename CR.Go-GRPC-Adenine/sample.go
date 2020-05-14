@@ -38,7 +38,7 @@ optional arguments:
 	grpcServerPort, _ := strconv.Atoi(os.Getenv("GRPC_SERVER_PORT"))
 	production, _ := strconv.ParseBool(os.Getenv("PRODUCTION"))
 
-	network := "gmunet"
+	network := "mainnet"
 	didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
 	apiKeyToUse := "XtkJiYGbqyJS9MwA9LLH0mz1T8FxpRYqRVIi1uyU8VEUdfM0ReaqTFJpF5OLz9wm"
 	privateKeyToUse := "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
