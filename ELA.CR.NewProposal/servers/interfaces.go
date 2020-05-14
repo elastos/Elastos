@@ -2265,7 +2265,8 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.DraftHash = object.DraftHash.String()
 		obj.Budgets = budgets
-		obj.Recipient = object.Recipient.String()
+		addr, _ := object.Recipient.ToAddress()
+		obj.Recipient = addr
 		obj.Signature = common.BytesToHexString(object.Signature)
 		obj.CRCouncilMemberDID = object.CRCouncilMemberDID.String()
 		obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
