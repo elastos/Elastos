@@ -22,6 +22,11 @@ export const CVoteResultSchema = {
     type: String,
     default: ''
   },
+  status: {
+    type: String,
+    emnu: _.values(constant.CVOTE_CHAIN_STATUS),
+    default: constant.CVOTE_CHAIN_STATUS.UNCHAIN
+  },
   signature: { data: String, message: String }
 }
 
