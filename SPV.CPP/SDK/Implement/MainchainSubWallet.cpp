@@ -1054,6 +1054,29 @@ namespace Elastos {
 			return digest;
 		}
 
+		std::string MainchainSubWallet::CalculateProposalHash(const nlohmann::json &payload) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("payload: {}", payload.dump());
+
+			PayloadPtr p = PayloadPtr(new CRCProposal());
+			try {
+				p->FromJson(payload, 0);
+			} catch (const std::exception &e) {
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "convert from json");
+			}
+
+			ErrorChecker::CheckParam(!p->IsValid(CRCProposalDefaultVersion), Error::InvalidArgument, "invalid payload");
+
+			ByteStream stream;
+			p->Serialize(stream, CRCProposalDefaultVersion);
+			uint256 hash(sha256_2(stream.GetBytes()));
+			std::string hashString = hash.GetHex();
+
+			ArgInfo("r => {}", hashString);
+
+			return hashString;
+		}
+
 		nlohmann::json MainchainSubWallet::CreateProposalTransaction(const nlohmann::json &payload,
 																	 const std::string &memo) {
 			WalletPtr wallet = _walletManager->GetWallet();

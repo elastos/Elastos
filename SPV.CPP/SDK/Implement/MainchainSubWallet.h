@@ -153,6 +153,8 @@ namespace Elastos {
 
 			std::string ProposalCRCouncilMemberDigest(const nlohmann::json &payload) const override;
 
+			std::string CalculateProposalHash(const nlohmann::json &payload) const override ;
+
 			nlohmann::json CreateProposalTransaction(const nlohmann::json &payload,
 													 const std::string &memo) override;
 
