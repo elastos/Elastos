@@ -198,7 +198,8 @@ export const CVOTE_CHAIN_STATUS = {
   FAILED:'failed'
 }
 // expiration period: 7 days
-export const CVOTE_EXPIRATION = 1000 * 60 * 60 * 24 * 7
+export const CVOTE_EXPIRATION = 1000 * 60 * 60 * 24 * 14
+export const CVOTE_COUNCIL_EXPIRATION = 1000 * 60 * 60 * 24 * 7
 export const ELIP_EXPIRATION = 1000 * 60 * 60 * 24 * 7
 
 export const CONTENT_TYPE = create(['MARKDOWN', 'HTML'])
