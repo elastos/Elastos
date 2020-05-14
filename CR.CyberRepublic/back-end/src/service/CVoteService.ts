@@ -1506,7 +1506,8 @@ export default class extends Base {
     const filterVoteResult = _.filter(
       proposal._doc.voteResult,
       (o: any) => (o.value !== constant.CVOTE_RESULT.UNDECIDED
-          && o.status === constant.CVOTE_CHAIN_STATUS.CHAINING)
+          && [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
+              .includes(o.status))
     )
     // update vote result data
     const voteResult = _.map(filterVoteResult, (o: any) =>
@@ -1526,10 +1527,21 @@ export default class extends Base {
 
     const summary = await this.getSummary(proposalId)
 
+    const rejectResult = {}
+
+    if (proposal.status === constant.CVOTE_STATUS.NOTIFICATION
+        && proposal.rejectAmount >= 0
+        && proposal.rejectHeight > 0) {
+      rejectResult['rejectAmount'] = `${proposal.rejectAmount}`
+      rejectResult['rejectHeight'] = `${proposal.rejectHeight}`
+      rejectResult['rejectAmount'] = (proposal.rejectAmount / proposal.rejectHeight).toFixed(4)
+    }
+
     return _.omit(
       {
         ..._.omit(proposal._doc, ['abstract']),
         abs: proposal.abstract,
+        ...rejectResult,
         createdAt: timestamp.second(proposal.createdAt),
         voteResult,
         address,
