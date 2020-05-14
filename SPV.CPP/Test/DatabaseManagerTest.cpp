@@ -9,12 +9,9 @@
 
 #include <Database/TransactionNormal.h>
 #include <Database/DatabaseManager.h>
-#include <SpvService/BackgroundExecutor.h>
-#include <Common/Utils.h>
 #include <Common/Log.h>
 #include <Wallet/UTXO.h>
 #include <Plugin/Registry.h>
-#include <Plugin/Block/MerkleBlock.h>
 #include <Plugin/ELAPlugin.h>
 #include <Plugin/IDPlugin.h>
 #include <Plugin/TokenPlugin.h>
@@ -550,6 +547,29 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		REQUIRE(dbm->GetUTXOs().empty());
 
 		delete dbm;
+	}
+
+	SECTION("UTXO and tx test") {
+		// prepare data
+		std::vector<TransactionPtr> txns;
+		std::vector<std::string> txHashDPoS;
+#define TEST_TXNS_COUNT 10 // 1500
+
+		for (uint64_t i = 0; i < TEST_TXNS_COUNT; ++i) {
+			TransactionPtr tx(new Transaction());
+			initTransaction(*tx, Transaction::TxVersion::V09);
+			txns.push_back(tx);
+			if (txHashDPoS.size() < TEST_TXNS_COUNT)
+				txHashDPoS.push_back(tx->GetHash().GetHex());
+		}
+
+		DatabaseManager dm(DBFILE);
+		REQUIRE(dm.PutNormalTxns(txns));
+		REQUIRE(dm.PutTxHashDPoS(txHashDPoS));
+
+		std::vector<TransactionPtr> txnsDPoS = dm.GetTxDPoS(CHAINID_MAINCHAIN);
+
+		REQUIRE(txnsDPoS.size() == TEST_TXNS_COUNT);
 	}
 
 }
