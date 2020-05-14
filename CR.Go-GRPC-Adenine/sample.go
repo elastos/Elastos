@@ -43,7 +43,10 @@ optional arguments:
 	apiKeyToUse := "XtkJiYGbqyJS9MwA9LLH0mz1T8FxpRYqRVIi1uyU8VEUdfM0ReaqTFJpF5OLz9wm"
 	privateKeyToUse := "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
 
-	healthCheckTest(grpcServerHost, grpcServerPort, production)
+	err = healthCheckTest(grpcServerHost, grpcServerPort, production)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	if *service == "generate_api_key" {
 		generateAPIKeyDemo(grpcServerHost, grpcServerPort, production, didToUse)
@@ -68,16 +71,18 @@ optional arguments:
 	}
 }
 
-func healthCheckTest(grpcServerHost string, grpcServerPort int, production bool) {
+func healthCheckTest(grpcServerHost string, grpcServerPort int, production bool) error {
 	log.Println("--> Checking the health status of grpc server")
 	healthCheck := elastosadenine.NewHealthCheck(grpcServerHost, grpcServerPort, production)
 	defer healthCheck.Close()
-	response := healthCheck.Check()
-	if response.Status != health_check.HealthCheckResponse_SERVING {
-		log.Println("grpc server is not running properly")
-	} else {
-		log.Println("grpc server is running")
-	}
+	response, err := healthCheck.Check()
+	if err != nil {
+		return fmt.Errorf("Could not connect to grpc server: %v\n", err)
+	} else if response.Status != health_check.HealthCheckResponse_SERVING {
+		return fmt.Errorf("grpc server is not running properly\n")
+	} 
+	fmt.Println("grpc server is running\n")
+	return nil
 }
 
 func generateAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, didToUse string) {
@@ -109,13 +114,7 @@ func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, d
 }
 
 func nodeRPCMethodsDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
-	var nodeRpc *elastosadenine.NodeRpc
-	if result, err := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production); err == nil {
-		nodeRpc = result
-	} else {
-		log.Println("Could not create connection to gRPC servier: %v", err)
-		return
-	}
+	nodeRpc  := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production)
 	defer nodeRpc.Close()
 
 	log.Println("--> Get current height")
@@ -206,13 +205,7 @@ func createWalletDemo(grpcServerHost string, grpcServerPort int, production bool
 
 func viewWalletDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
 	log.Println("--> View Wallet")
-	var nodeRpc *elastosadenine.NodeRpc
-	if result, err := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production); err == nil {
-		nodeRpc = result
-	} else {
-		log.Println("Could not create connection to gRPC servier: %v", err)
-		return
-	}
+	nodeRpc  := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production)
 	defer nodeRpc.Close()
 	var (
 		address    = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"

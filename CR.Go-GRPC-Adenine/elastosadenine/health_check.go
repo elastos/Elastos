@@ -42,13 +42,14 @@ func (hc *HealthCheck) Close() {
 	hc.Connection.Close()
 }
 
-func (hc *HealthCheck) Check() *health_check.HealthCheckResponse {
+func (hc *HealthCheck) Check() (*health_check.HealthCheckResponse, error) {
 	client := health_check.NewHealthClient(hc.Connection)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 	response, err := client.Check(ctx, &health_check.HealthCheckRequest{})
 	if err != nil {
-		log.Fatalf("Failed to execute 'Check' method: %v", err)
+		log.Printf("Failed to execute 'Check' method: %v", err)
+		return response, err 
 	}
-	return response
+	return response, nil
 }
