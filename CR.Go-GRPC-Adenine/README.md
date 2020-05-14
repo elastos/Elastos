@@ -12,10 +12,9 @@ cd go-grpc-adenine
 ```
 Setup environment variables and update variables if needed:
 ```
-cp .env.example test/.env;
+cp .env.example .env;
 ```
 Run sample program:
 ```
-cd test
 go run sample.go;
 ```

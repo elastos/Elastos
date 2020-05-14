@@ -40,7 +40,7 @@ optional arguments:
 
 	network := "gmunet"
 	didToUse := "n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov"
-	apiKeyToUse := "1htfwNmjePvE6blvXPc3YjD8Iqkst53ZF8EwnCZxbvyIcOoHt8wQHxPq4y501awz"
+	apiKeyToUse := "XtkJiYGbqyJS9MwA9LLH0mz1T8FxpRYqRVIi1uyU8VEUdfM0ReaqTFJpF5OLz9wm"
 	privateKeyToUse := "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
 
 	healthCheckTest(grpcServerHost, grpcServerPort, production)
@@ -109,7 +109,13 @@ func getAPIKeyDemo(grpcServerHost string, grpcServerPort int, production bool, d
 }
 
 func nodeRPCMethodsDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
-	nodeRpc := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production)
+	var nodeRpc *elastosadenine.NodeRpc
+	if result, err := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production); err == nil {
+		nodeRpc = result
+	} else {
+		log.Println("Could not create connection to gRPC servier: %v", err)
+		return
+	}
 	defer nodeRpc.Close()
 
 	log.Println("--> Get current height")
@@ -141,7 +147,7 @@ func uploadAndSignDemo(grpcServerHost string, grpcServerPort int, production boo
 	log.Println("--> Upload and Sign")
 	hive := elastosadenine.NewHive(grpcServerHost, grpcServerPort, production)
 	defer hive.Close()
-	response := hive.UploadAndSign(apiKeyToUse, didToUse, network, privateKeyToUse, "sample.txt")
+	response := hive.UploadAndSign(apiKeyToUse, didToUse, network, privateKeyToUse, "test/sample.txt")
 	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
 		log.Printf("Output: %s", response.Output)
@@ -160,7 +166,7 @@ func verifyAndShowDemo(grpcServerHost string, grpcServerPort int, production boo
 		"QmSs4TToAodQr5VqFvTtcqgowhq8AdV2tLAzF7STrQMXD8")
 	if response.Status {
 		log.Printf("Status Message : %s", response.StatusMessage)
-		downloadPath := "sample_from_hive.txt"
+		downloadPath := "test/sample_from_hive.txt"
 		log.Printf("Download Path : %s", downloadPath)
 		// Open a new file for writing only
 		file, err := os.OpenFile(
@@ -200,7 +206,13 @@ func createWalletDemo(grpcServerHost string, grpcServerPort int, production bool
 
 func viewWalletDemo(grpcServerHost string, grpcServerPort int, production bool, apiKeyToUse, didToUse, network string) {
 	log.Println("--> View Wallet")
-	nodeRpc := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production)
+	var nodeRpc *elastosadenine.NodeRpc
+	if result, err := elastosadenine.NewNodeRpc(grpcServerHost, grpcServerPort, production); err == nil {
+		nodeRpc = result
+	} else {
+		log.Println("Could not create connection to gRPC servier: %v", err)
+		return
+	}
 	defer nodeRpc.Close()
 	var (
 		address    = "EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN"
@@ -271,7 +283,7 @@ func deployETHContractDemo(grpcServerHost string, grpcServerPort int, production
 		address    = "0x48F01b2f2b1a546927ee99dD03dCa37ff19cB84e"
 		privateKey = "0x35a12175385b24b2f906d6027d440aac7bd31e1097311fa8e3cf21ceac7c4809"
 		gas        = 2000000
-		fileName   = "HelloWorld.sol"
+		fileName   = "test/HelloWorld.sol"
 	)
 	response := sidechainEth.DeployEthContract(apiKeyToUse, didToUse, network, address, privateKey, gas, fileName)
 	if response.Status {
