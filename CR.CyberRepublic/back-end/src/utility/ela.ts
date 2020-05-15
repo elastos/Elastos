@@ -11,7 +11,7 @@ const ela = {
             method: 'getcurrentheight'
         }
         try {
-            const res = await axios.post(process.env.DID_SIDECHAIN_URL, data, {
+            const res = await axios.post(process.env.ELA_NODE_URL, data, {
                 headers: DEFAULT_HEADERS
             })
             if (res && res.data && res.data.result) {
@@ -29,7 +29,7 @@ const ela = {
             }
         }
         try {
-            const res = await axios.post(process.env.DID_SIDECHAIN_URL, data, {
+            const res = await axios.post(process.env.ELA_NODE_URL, data, {
                 headers: DEFAULT_HEADERS
             })
             if (res && res.data && res.data.result) {
@@ -54,7 +54,7 @@ const ela = {
             }
         }
         try {
-            const res = await axios.post(process.env.DID_SIDECHAIN_URL, data, {
+            const res = await axios.post(process.env.ELA_NODE_URL, data, {
                 headers: DEFAULT_HEADERS
             })
             if (res && res.data && res.data.result) {
@@ -72,7 +72,7 @@ const ela = {
             }
         }
         try {
-            const res = await axios.post(process.env.DID_SIDECHAIN_URL, data, {
+            const res = await axios.post(process.env.ELA_NODE_URL, data, {
                 headers: DEFAULT_HEADERS
             })
             if (res && res.data && res.data.result) {
