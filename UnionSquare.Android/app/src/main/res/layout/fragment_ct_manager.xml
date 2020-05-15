@@ -24,7 +24,7 @@
             android:layout_height="61dp"
             android:layout_marginTop="70dp"
             android:layout_gravity="center_horizontal"
-            android:src="@mipmap/icon_ela"/>
+            android:src="@mipmap/ct_manager_icon"/>
 
         <TextView
             android:id="@+id/name"
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_gravity="center_horizontal"
-            android:text="委员名称"/>
+            android:text="@string/ctname"/>
 
         <TextView
             android:id="@+id/description"
@@ -42,7 +42,7 @@
             android:layout_marginRight="15dp"
             android:layout_marginTop="80dp"
             android:layout_marginBottom="60dp"
-            android:text="每位CR委员须运行一个默认当选的DPoS超级节点，享有改节点产生的所有效益，并有义务保证节点正常运行。"/>
+            android:text="@string/inofficehint"/>
 
     </LinearLayout>
 
@@ -55,7 +55,7 @@
         android:layout_centerHorizontal="true"
         android:layout_above="@+id/refresh_ct_did"
         android:layout_marginBottom="20dp"
-        android:text="更新委员信息"/>
+        android:text="@string/refreshctinfo"/>
 
     <TextView
         android:id="@+id/refresh_ct_did"
@@ -66,6 +66,6 @@
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="25dp"
-        android:text="更新DID信息"/>
+        android:text="@string/refreshdidinfo"/>
 
 </RelativeLayout>

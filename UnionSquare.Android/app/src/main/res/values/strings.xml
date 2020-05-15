@@ -670,6 +670,53 @@
     <string name="putproposal">发起提案</string>
 
     <!--CR committee-->
-    <string name="pastcttitle">CR委员会列表</string>
-    <string name="ctlisttitle">第%1$s届委员会</string>
+    <string name="ctmemberlist">CR委员会列表</string>
+    <string name="current">本届</string>
+    <string name="voting">选举中</string>
+    <string name="pastitemtitle">第%1$s届%2$s</string>
+    <string name="amember">第%1$s届</string>
+    <string name="votemanager">选举管理</string>
+    <string name="ctmanager">委员管理</string>
+    <string name="refreshctinfo">更新委员信息</string>
+    <string name="refreshdidinfo">更新DID信息</string>
+    <string name="actmember">第%1$s届委员会</string>
+    <string name="ctdetail">委员详情</string>
+    <string name="impeachprogress">弹劾进度</string>
+    <string name="currentvotes">当前票数</string>
+    <string name="impeachpastvotes">弹劾通过票数</string>
+    <string name="ctname">委员名称</string>
+    <string name="ctinfo">委员信息</string>
+    <string name="ctdid">委员DID</string>
+    <string name="ctwebsite">委员网站</string>
+    <string name="ctintroduction">委员简介</string>
+    <string name="performancerecord">履职记录(%1$s)</string>
+    <string name="noperformancerecord">暂无履职记录</string>
+    <string name="impeachmemeber">弹劾该委员</string>
+    <string name="impeachvotes">弹劾票数</string>
+    <string name="impeachment">弹劾</string>
+    <string name="inputpwd">输入密码</string>
+    <string name="impeachrequestsuccess">弹劾请求发送成功，请耐心等待交易确认</string>
+    <string name="inofficehint">每位CR委员须运行一个默认当选的DPoS超级节点，享有该节点产生的所有收益，并有义务保证节点正常运行。</string>
+    <string name="completeofficehint">上届CR委员任期已满，所有委员自动卸任离职。根据您实际履职情况及CRC委员节点的运行情况，您的竞选押金返还额度为%1$sELA。</string>
+    <string name="completedialoghint">上届CR委员任期已满，所有委员自动卸任离职。</string>
+    <string name="cancelofficehint">由于对您的弹劾已通过，您的委员职务已被免职。据您时机履职情况及CRC委员节点的运行情况，您的竞选押金返回金额为%1$sELA。</string>
+    <string name="canceldialoghint">由于对您的弹劾已通过，您的委员职务已被免职。</string>
+    <string name="dimissofficehint">上届CR委员会因故解散，所有委员自动去职。根据您时机履职情况及CRC委员节点的运行情况，您的竞选押金返回金额为%1$sELA。</string>
+    <string name="dimissdialoghint">上届CR委员会因故解散，所有委员自动去职。</string>
+    <string name="withdrawaldeposit">提取质押金</string>
+    
+    <string name="ctlist">委员列表</string>
+    <string name="secretarylist">秘书长列表</string>
+    <string name="secretarydetail">秘书长详情</string>
+    <string name="incumbent">现任</string>
+    <string name="secretarydid">秘书长DID</string>
+    <string name="jobtime">在职时间</string>
+    <string name="applyusedidhint">申请使用您的DID信息（包括但不限于存储、展示等用途）:</string>
+    <string name="birthdatewithline">- 出生日期</string>
+    <string name="headportrait">- 头像</string>
+    <string name="emialwithline">- 邮箱</string>
+    <string name="personalprofilewithline">- 个人简介</string>
+    <string name="pagehomewithline">- 个人主页</string>
+    <string name="wechataccountwithline">- 微信账号</string>
+
 </resources>

@@ -27,7 +27,7 @@
             android:gravity="center_vertical"
             android:textColor="@color/white"
             android:background="@null"
-            android:hint="请输入昵称"/>
+            android:hint="@string/plzinputnick"/>
 
         <View
             android:layout_width="match_parent"
@@ -37,7 +37,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="55dp"
-            android:text="请选择国家/地区"
+            android:text="@string/pleasechoosearea"
             android:textSize="14sp"
             android:textColor="@color/whiter50"
             android:gravity="center_vertical"
@@ -54,7 +54,7 @@
             android:textSize="14sp"
             android:gravity="center_vertical"
             android:textColor="@color/whiter50"
-            android:text="请输入竞选网址"/>
+            android:text="@string/plzinputcrurl"/>
 
         <View
             android:layout_width="match_parent"
@@ -74,7 +74,7 @@
         android:layout_alignParentBottom="true"
         android:textSize="16sp"
         android:gravity="center"
-        android:text="确认"/>
+        android:text="@string/confirmed"/>
 
 
 

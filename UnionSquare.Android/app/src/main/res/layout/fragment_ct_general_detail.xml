@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="25dp"
-            android:text="弹劾进度"
+            android:text="@string/impeachprogress"
             android:textColor="@color/white"
             android:textSize="14sp" />
 
@@ -87,7 +87,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="8dp"
-                    android:text="当前票数"
+                    android:text="@string/currentvotes"
                     android:textColor="@color/white"
                     android:textSize="11sp" />
 
@@ -123,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="8dp"
-                    android:text="弹劾通过票数"
+                    android:text="@string/impeachpastvotes"
                     android:textColor="@color/white"
                     android:textSize="11sp" />
 
@@ -168,7 +168,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/px30"
-                    android:text="委员信息" />
+                    android:text="@string/ctinfo" />
 
             </LinearLayout>
 
@@ -192,7 +192,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/px30"
-                    android:text="履职记录"
+                    android:text="@string/performancerecord"
                     android:textColor="@color/whiter50" />
 
             </LinearLayout>
@@ -217,7 +217,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="20dp"
         android:gravity="center"
-        android:text="弹劾该委员"
+        android:text="@string/impeachmemeber"
         android:background="#2d454e"
         android:textColor="@color/white"
         android:textSize="16sp"/>

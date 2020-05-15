@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="15dp"
-        android:text="CR委员会"
+        android:text="@string/findlistup3"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="40dp"
-        android:text="申请使用您的DID信息（包括但不限于存储,展示等用途）："
+        android:text="@string/applyusedidhint"
         android:textColor="@color/white"
         android:textSize="12sp" />
 
@@ -62,7 +62,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="- DID基本信息"
+                android:text="@string/didbaseinfo"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
@@ -82,7 +82,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="- 出生日期"
+                android:text="@string/birthdatewithline"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
@@ -102,7 +102,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="- 头像"
+                android:text="@string/headportrait"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
@@ -122,7 +122,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="- 邮箱"
+                android:text="@string/emialwithline"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
@@ -142,7 +142,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="- 个人简介"
+                android:text="@string/personalprofilewithline"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
@@ -162,7 +162,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="- 个人主页"
+                android:text="@string/pagehomewithline"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
@@ -182,7 +182,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="- 微信帐号"
+                android:text="@string/wechataccountwithline"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
@@ -201,7 +201,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="24dp"
         android:gravity="center"
-        android:text="同意"
+        android:text="@string/agree"
         android:background="#66000000"
         android:textColor="@color/white"
         android:textSize="16sp" />
@@ -212,7 +212,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="15dp"
         android:gravity="center"
-        android:text="拒绝"
+        android:text="@string/refuse"
         android:background="#66000000"
         android:textColor="@color/white"
         android:textSize="16sp" />

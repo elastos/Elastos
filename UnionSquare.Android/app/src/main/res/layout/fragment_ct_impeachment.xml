@@ -20,7 +20,7 @@
             android:textColor="@color/white"
             android:textSize="16sp"
             android:layout_centerHorizontal="true"
-            android:text="弹劾"/>
+            android:text="@string/impeachment"/>
         <View
             android:id="@+id/next_line1"
             android:layout_below="@+id/next_title"
@@ -35,12 +35,11 @@
             android:layout_marginLeft="15dp"
             android:gravity="center_vertical"
             android:layout_below="@+id/next_line1"
-            android:text="弹劾票数"/>
+            android:text="@string/impeachvotes"/>
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="44dp"
-            android:hint="请输入票数"
             android:background="@null"
             android:layout_toLeftOf="@+id/next_vote_unit"
             android:layout_toRightOf="@+id/next_vote_count"
@@ -75,7 +74,7 @@
             android:gravity="center_vertical"
             android:layout_below="@+id/next_line2"
             android:layout_marginLeft="15dp"
-            android:text="手续费"/>
+            android:text="@string/charge"/>
 
         <TextView
             android:id="@+id/fee"
@@ -107,7 +106,7 @@
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="15dp"
             android:layout_centerHorizontal="true"
-            android:text="下一步"
+            android:text="@string/next"
             android:gravity="center"
             android:textColor="@color/white"/>
     </RelativeLayout>
@@ -129,7 +128,7 @@
             android:layout_marginLeft="15dp"
             android:drawableLeft="@mipmap/back_arrow_black"
             android:gravity="center"
-            android:text="输入密码"/>
+            android:text="@string/inputPwd"/>
 
         <View
             android:id="@+id/pwd_line1"
@@ -141,7 +140,7 @@
         <EditText
             android:id="@+id/input_pwd_edt"
             android:layout_width="match_parent"
-            android:hint="请输入钱包密码"
+            android:hint="@string/inputyourwallletpwd"
             android:background="@null"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
@@ -165,7 +164,7 @@
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="15dp"
             android:layout_centerHorizontal="true"
-            android:text="确认"
+            android:text="@string/confirmed"
             android:gravity="center"
             android:textColor="@color/white"/>
 
@@ -180,13 +179,23 @@
         android:background="#2f3f40">
 
         <TextView
+            android:id="@+id/wait_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:background="@mipmap/impeachment_waiting"/>
+
+        <TextView
             android:layout_width="151dp"
             android:layout_height="wrap_content"
             android:textSize="15sp"
             android:textColor="@color/white"
-            android:layout_centerInParent="true"
-            android:ellipsize="middle"
-            android:text="弹劾请求发送成功，请耐心等待交易确认"/>
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            android:layout_below="@+id/wait_icon"
+            android:layout_centerHorizontal="true"
+            android:text="@string/impeachrequestsuccess"/>
 
 
     </RelativeLayout>

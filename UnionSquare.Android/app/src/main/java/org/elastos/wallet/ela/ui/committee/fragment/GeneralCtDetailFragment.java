@@ -52,7 +52,7 @@ public class GeneralCtDetailFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, "委员详情");
+        setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctdetail));
         progress.setProgress(50);
 
         rockData();
@@ -120,7 +120,7 @@ public class GeneralCtDetailFragment extends BaseFragment {
         list.add(ExperienceBean4);
     }
 
-    @OnClick({R.id.tab1, R.id.tab2})
+    @OnClick({R.id.tab1, R.id.tab2, R.id.impeachment_btn})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.tab1:
@@ -128,6 +128,9 @@ public class GeneralCtDetailFragment extends BaseFragment {
                 break;
             case R.id.tab2:
                 selectExperience();
+                break;
+            case R.id.impeachment_btn:
+                start(ImpeachmentFragment.class);
                 break;
         }
 

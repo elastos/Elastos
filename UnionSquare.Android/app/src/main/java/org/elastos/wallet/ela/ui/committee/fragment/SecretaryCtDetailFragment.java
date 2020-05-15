@@ -26,6 +26,6 @@ public class SecretaryCtDetailFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, "秘书长详情");
+        setToobar(toolbar, toolbarTitle, getContext().getString(R.string.secretarydetail));
     }
 }

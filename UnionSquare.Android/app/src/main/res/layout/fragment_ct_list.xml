@@ -34,7 +34,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/px30"
-                android:text="委员列表" />
+                android:text="@string/ctlist" />
 
         </LinearLayout>
 
@@ -58,7 +58,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/px30"
-                android:text="秘书长列表"
+                android:text="@string/secretarylist"
                 android:textColor="@color/whiter50" />
 
         </LinearLayout>

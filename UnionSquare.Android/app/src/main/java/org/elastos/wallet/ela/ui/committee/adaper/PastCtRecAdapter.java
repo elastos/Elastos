@@ -41,10 +41,11 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         PastCtBean data = list.get(i);
-        viewHolder.title.setText(String.format(context.getString(R.string.ctlisttitle), data.getIndex()));
+        String state = context.getString(R.string.voting);
+        viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+state+")"));
         viewHolder.time.setText(data.getTime());
         if(data.getType() != 0) {
-            viewHolder.manager.setText("委员管理");
+            viewHolder.manager.setText(context.getString(R.string.ctmanager));
             if(null != managerListener) {
                 viewHolder.manager.setOnClickListener(v ->
                         managerListener.onManagerClick(i)

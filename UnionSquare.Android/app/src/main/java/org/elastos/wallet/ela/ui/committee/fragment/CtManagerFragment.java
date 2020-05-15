@@ -27,7 +27,7 @@ public class CtManagerFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, "委员管理");
+        setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctmanager));
     }
 
 

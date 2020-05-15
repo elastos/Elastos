@@ -11,7 +11,7 @@
         android:textSize="13sp"
         android:textColor="@color/white"
         android:layout_marginTop="20dp"
-        android:text="委员DID"/>
+        android:text="@string/ctdid"/>
 
     <TextView
         android:id="@+id/did"
@@ -28,7 +28,7 @@
         android:textSize="13sp"
         android:layout_marginTop="20dp"
         android:textColor="@color/white"
-        android:text="委员网站"/>
+        android:text="@string/ctwebsite"/>
 
     <TextView
         android:id="@+id/website"
@@ -45,7 +45,7 @@
         android:textSize="13sp"
         android:layout_marginTop="20dp"
         android:textColor="@color/white"
-        android:text="委员简介"/>
+        android:text="@string/ctintroduction"/>
 
     <TextView
         android:id="@+id/introduction"

@@ -24,7 +24,7 @@ public class CtManagerEditFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, "编辑");
+        setToobar(toolbar, toolbarTitle, getContext().getString(R.string.edit));
     }
 
     @OnClick({R.id.confirm})

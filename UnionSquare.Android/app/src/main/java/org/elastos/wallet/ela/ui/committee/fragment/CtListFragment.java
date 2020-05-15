@@ -61,7 +61,7 @@ public class CtListFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, getString(R.string.ctlisttitle));
+        setToobar(toolbar, toolbarTitle, String.format(getString(R.string.actmember), "1"));
 
         generalRockData();
         secretaryRockData();
