@@ -67,7 +67,7 @@ export default class extends Base {
         if (!result) {
             return {
                 code: 400,
-                message: 'Invalid request parameters - status',
+                message: 'Invalid request parameters',
                 // tslint:disable-next-line:no-null-keyword
                 data: null
             }
@@ -163,13 +163,29 @@ export default class extends Base {
                 'voteResult'
             ]
             const proposalList = await this.proposalMode.getDBInstance()
-                .find({proposer: council.user}, proposalFields)
+                .find({proposer: council.user._id}, proposalFields).sort({createdAt: -1})
                 .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
-            // TODO： return term information
             let term = []
             if (councilList.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
-
+                term =  _.map(proposalList, (o: any) => {
+                    const firstName = _.get(o, 'createdBy.profile.firstName')
+                    const lastName = _.get(o, 'createdBy.profile.lastName')
+                    const didName = (firstName || lastName) && `${firstName} ${lastName}`.trim()
+                    const chainStatus = [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
+                    // Todo: add chain status limit
+                    // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
+                    const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy.equals(council.user._id))
+                    const currentVoteResult = _.get(voteResult[0], 'value')
+                    return {
+                        id: o.vid,
+                        title: o.title,
+                        didName,
+                        status: CVOTE_STATUS_TO_WALLET_STATUS[o.status],
+                        voteResult: currentVoteResult,
+                        createdAt: moment(o.createdAt).unix()
+                    }
+                })
             }
 
             return {
@@ -230,7 +246,7 @@ export default class extends Base {
 
             // if public key not on the user's did
             if (user && user.did && !user.did.compressedPublicKey) {
-                const rs = await this.userMode.getDBInstance().update({_id: user._id}, {
+                await this.userMode.getDBInstance().update({_id: user._id}, {
                     $set: {'did.compressedPublicKey': secretariatPublicKey}
                 })
             }
@@ -319,10 +335,32 @@ export default class extends Base {
             await this.model.getDBInstance().create(doc);
 
         } else {
-            console.log('exist')
-
+            let newCouncilMembers
             // update data
+            if (lastCouncil.status === constant.TERM_COUNCIL_STATUS.VOTING) {
+                newCouncilMembers = _.map(candidates.crcandidatesinfo, async (o: any) => {
+                    const obj = dataToCouncil(o)
+                    const depositObj = await ela.depositCoin(o.did)
+                    if (!depositObj) {
+                        return obj
+                    }
+                    return {
+                        ...o,
+                        depositAmount: depositObj && depositObj.available || '0'
+                    }
+                })
+            }
 
+            if (lastCouncil.status === constant.TERM_COUNCIL_STATUS.CURRENT) {
+                newCouncilMembers = _.map(currentCouncil.crmembersinfo, (o: any) => dataToCouncil(o))
+            }
+            
+            const newCouncilsByDID = _.keyBy(newCouncilMembers, 'did')
+            const oldCouncilsByDID = _.keyBy(lastCouncil.councilMembers, 'did')
+
+            const councilMembers = _.map(oldCouncilsByDID, (v: any, k: any) => (_.merge(v, newCouncilsByDID[k])))
+
+            await this.model.getDBInstance().update({_id: lastCouncil._id}, {councilMembers})
 
             // TODO: 换届
             // const {index, endDate} = lastCouncil
