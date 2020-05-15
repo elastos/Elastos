@@ -9,10 +9,13 @@ let tm = undefined
 
 export default class extends Base {
     private model: any
+    private secretariatModel: any
     private userMode: any
     private proposalMode: any
+
     protected init() {
         this.model = this.getDBModel('Council')
+        this.secretariatModel = this.getDBModel('Secretariat')
         this.userMode = this.getDBModel('User')
         this.proposalMode = this.getDBModel('CVote')
     }
@@ -35,7 +38,7 @@ export default class extends Base {
         }))
     }
 
-    public async councilList(id: String): Promise<any> {
+    public async councilList(id: number): Promise<any> {
         const fields = [
             'councilMembers.did',
             'councilMembers.didName',
@@ -44,7 +47,7 @@ export default class extends Base {
             'councilMembers.status',
         ]
 
-        const result = await this.model.getDBInstance().findOne({_id: id}, fields)
+        const result = await this.model.getDBInstance().findOne({index: id}, fields)
 
         if (!result) {
             return {
@@ -60,6 +63,13 @@ export default class extends Base {
 
     public async councilInformation(param: any): Promise<any> {
         const {id, did} = param
+        const query = {}
+
+        if (id) {
+            query['index'] = id
+        } else {
+            query['status'] = constant.TERM_COUNCIL_STATUS.CURRENT
+        }
 
         const fields = [
             'height',
@@ -74,7 +84,7 @@ export default class extends Base {
             'councilMembers.status',
         ]
 
-        const result = await this.model.getDBInstance().findOne({_id: id}, fields)
+        const result = await this.model.getDBInstance().findOne(query, fields)
         const council = result && _.filter(result.councilMembers, (o: any) => o.did === did)
         const user = await this.userMode.getDBInstance().findOne({'did.id': did}, ['_id'])
         if (!result || !council) {
@@ -98,6 +108,49 @@ export default class extends Base {
         }
     }
 
+    public async eachSecretariatJob() {
+        const secretariatPublicKey = '0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87'
+        const secretariatDID = 'igCSy8ht7yDwV5qqcRzf5SGioMX8H9RXcj'
+
+        const currentSecretariat = await this.secretariatModel.getDBInstance().findOne({status: constant.SECRETARIAT_STATUS.CURRENT})
+        const information: any = await getInformationByDID(secretariatDID)
+        const user = await this.userMode.getDBInstance().findOne({'did.id': secretariatDID}, ['_id', 'did'])
+
+        if (!currentSecretariat) {
+            const doc: any = {
+                ...information,
+                userId: user._id,
+                did: secretariatDID,
+                startDate: new Date(),
+                status: constant.SECRETARIAT_STATUS.CURRENT
+            }
+
+            // add public key into user's did
+            await this.userMode.getDBInstance().update({_id: user._id}, {
+                $set: {
+                    'did.compressedPublicKey': secretariatPublicKey
+                }
+            })
+
+            // add secretariat
+            await this.secretariatModel.getDBInstance().create(doc)
+        } else {
+
+            // update secretariat
+            if (information) {
+                await this.secretariatModel.getDBInstance().update({did: secretariatDID}, {
+                    ...information
+                })
+            }
+
+            // if public key not on the user's did
+            if (user && user.did && !user.did.compressedPublicKey) {
+                const rs = await this.userMode.getDBInstance().update({_id: user._id}, {
+                    $set: {'did.compressedPublicKey': secretariatPublicKey}
+                })
+            }
+        }
+    }
 
     public async eachJob() {
         const currentCouncil = await ela.currentCouncil()
@@ -147,14 +200,12 @@ export default class extends Base {
             await this.model.getDBInstance().create(doc);
 
         } else {
-            // TODO: exist bug
-
             console.log('exist')
 
-            // 更新数据
+            // update data
 
-            // 是否换届
 
+            // TODO: 换届
             // const {index, endDate} = lastCouncil
             //
             // if (moment(endDate).startOf('day').isBefore(moment().startOf('day'))) {
@@ -203,6 +254,7 @@ export default class extends Base {
         tm = setInterval(async () => {
             console.log('---------------- start council or secretariat cronJob -------------')
             await this.eachJob()
+            await this.eachSecretariatJob()
         }, 1000 * 60)
     }
 }

@@ -113,7 +113,7 @@ export const getProposalState = async (proposalHash: string) => {
 
 export const getInformationByDID = async (did: string) => {
     const data = {
-        did
+        did: 'did:elastos:' + did
     }
     try {
         const res = await axios.post('http://cen.longrunweather.com:18080/api/dposnoderpc/check/jwtget', data)

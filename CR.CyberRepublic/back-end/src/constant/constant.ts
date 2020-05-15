@@ -156,6 +156,11 @@ export const TERM_COUNCIL_STATUS = create([
     'VOTING'
 ])
 
+export const SECRETARIAT_STATUS = create([
+  'CURRENT',
+  'NON_CURRENT'
+])
+
 // ACTIVE === PASSED, currently 'published' flag is used for 'DRAFT'
 export const CVOTE_STATUS = create([
   'DRAFT',

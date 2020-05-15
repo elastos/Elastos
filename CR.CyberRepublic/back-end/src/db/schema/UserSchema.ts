@@ -81,6 +81,7 @@ const did = {
   id: String,
   expirationDate: Date,
   message: String,
+  compressedPublicKey: String,
   _id: false
 }
 
