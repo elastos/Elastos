@@ -1479,8 +1479,6 @@ export default class extends Base {
 
     const address = `${process.env.SERVER_URL}/proposals/${proposal.id}`
 
-    
-
     const proposalId = proposal._id
 
     const voteResultFields = ['value', 'reason', 'votedBy']
@@ -1499,7 +1497,8 @@ export default class extends Base {
           votedBy: `${_.get(o, 'votedBy.profile.firstName')} ${_.get(
             o,
             'votedBy.profile.firstName'
-          )}`
+          )}`,
+          avatar: _.get(o, 'votedBy.profile.avatar')
         },
         voteResultFields
       )
@@ -1575,7 +1574,8 @@ export default class extends Base {
         createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(
           o,
           'comment.createdBy.profile.firstName'
-        )}`
+        )}`,
+        avatar: _.get(o, 'comment.createdBy.profile.avatar')
       }
       const obj = {
         ...o._doc,
@@ -1618,7 +1618,8 @@ export default class extends Base {
         createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(
           o,
           'comment.createdBy.profile.firstName'
-        )}`
+        )}`,
+        avatar: _.get(o, 'comment.createdBy.profile.avatar')
       }
       const obj = {
         ...o._doc,

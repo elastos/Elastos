@@ -1,6 +1,6 @@
 import Base from './Base'
 import {constant} from '../constant'
-import {ela, logger} from '../utility'
+import {ela, logger, getInformationByDID} from '../utility'
 import * as moment from 'moment'
 
 const _ = require('lodash')
@@ -144,12 +144,16 @@ export default class extends Base {
                 doc.councilMembers = _.map(currentCouncil.crmembersinfo, (o) => dataToCouncil(o))
             }
 
-            await this.model.save(doc);
+            await this.model.getDBInstance().create(doc);
 
         } else {
             // TODO: exist bug
 
             console.log('exist')
+
+            // 更新数据
+
+            // 是否换届
 
             // const {index, endDate} = lastCouncil
             //
