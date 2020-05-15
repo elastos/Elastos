@@ -34,6 +34,11 @@ export default {
   sha256D(str: string) {
     const hash = crypto.createHash('sha256')
     const rs = hash.update(str).digest()
-    return crypto.createHash('sha256').update(rs).digest('hex')
+    const normalHash = crypto.createHash('sha256').update(rs).digest('hex')
+    const reverseHash = normalHash
+      .match(/[a-fA-F0-9]{2}/g)
+      .reverse()
+      .join('')
+    return reverseHash
   }
 }
