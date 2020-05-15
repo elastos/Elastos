@@ -1,5 +1,6 @@
 import Base from './Base'
 import {constant} from '../constant'
+import { CVOTE_STATUS_TO_WALLET_STATUS } from './CVoteService'
 import {ela, logger, getInformationByDID} from '../utility'
 import * as moment from 'moment'
 
@@ -55,11 +56,12 @@ export default class extends Base {
             'status',
         ]
 
-        const result = await this.model.getDBInstance().findOne({index: id}, fields)
-            .populate('user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+        const result = await this.model.getDBInstance()
+            .findOne({index: id}, fields)
+            .populate('councilMembers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
-        const secretariatResult = await this.secretariatModel
-            .getDBInstance().find({}, secretariatFields).sort({'startDate': -1})
+        const secretariatResult = await this.secretariatModel.getDBInstance()
+            .find({}, secretariatFields).sort({'startDate': -1})
             .populate('user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
         if (!result) {
@@ -71,21 +73,18 @@ export default class extends Base {
             }
         }
 
-        const information = (user: any) => {
-            if (user && user.did) {
-                return _.pick(user.did, ['didName', 'avatar'])
-            }
-            return {}
+        const filterFields = (o: any) => {
+            return _.omit(o, ['_id', 'user'])
         }
 
         const council = _.map(result.councilMembers, (o: any) => ({
-            ..._.omit(o, ['user']),
-            ...information(o.user)
+            ...filterFields(o._doc),
+            ...this.getUserInformation(o.user)
         }))
 
         const secretariat = _.map(secretariatResult, (o: any) => ({
-            ..._.omit(o._doc, ['_id', 'user']),
-            ...information(o.user)
+            ...filterFields(o._doc),
+            ...this.getUserInformation(o.user)
         }))
 
         return {
@@ -96,20 +95,13 @@ export default class extends Base {
 
     public async councilInformation(param: any): Promise<any> {
         const {id, did} = param
-        const query = {}
 
-        if (id) {
-            query['index'] = id
-        } else {
-            query['status'] = constant.TERM_COUNCIL_STATUS.CURRENT
-        }
-
+        // query council
         const fields = [
             'height',
             'status',
+            'councilMembers.user.did',
             'councilMembers.did',
-            'councilMembers.didName',
-            'councilMembers.avatar',
             'councilMembers.address',
             'councilMembers.introduction',
             'councilMembers.impeachmentVotes',
@@ -117,13 +109,40 @@ export default class extends Base {
             'councilMembers.location',
             'councilMembers.status',
         ]
-
-        const result = await this.model.getDBInstance()
+        const query = {
+            councilMembers: {$elemMatch: {did}}
+        }
+        if (id) {
+            query['index'] = id
+        } else {
+            query['status'] = constant.TERM_COUNCIL_STATUS.CURRENT
+        }
+        const councilList = await this.model.getDBInstance()
             .findOne(query, fields)
+            .populate('councilMembers.user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
-        const council = result && _.filter(result.councilMembers, (o: any) => o.did === did)
+        // query secretariat
+        const secretariatFields = [
+            'user.did',
+            'did',
+            'address',
+            'location',
+            'birthday',
+            'email',
+            'introduction',
+            'wechat',
+            'weibo',
+            'facebook',
+            'microsoft',
+            'startDate',
+            'endDate',
+            'status',
+        ]
+        const secretariat = await this.secretariatModel.getDBInstance()
+            .findOne({did}, secretariatFields)
+            .populate('user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
-        if (!result || !council) {
+        if (!councilList && !secretariat) {
             return {
                 code: 400,
                 message: 'Invalid request parameters',
@@ -132,16 +151,46 @@ export default class extends Base {
             }
         }
 
-        // TODO： return term information
-        let term
-        if (result.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
+        if (councilList) {
+            const council = councilList && _.filter(councilList.councilMembers, (o: any) => o.did === did)[0]
 
+            const proposalFields = [
+                'createdBy',
+                'createdAt',
+                'vid',
+                'title',
+                'status',
+                'voteResult'
+            ]
+            const proposalList = await this.proposalMode.getDBInstance()
+                .find({proposer: council.user}, proposalFields)
+                .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+
+            // TODO： return term information
+            let term = []
+            if (councilList.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
+
+            }
+
+            return {
+                ..._.omit(council._doc, ['_id', 'user']),
+                ...this.getUserInformation(council.user),
+                impeachmentHeight: councilList.height * 0.2,
+                term,
+                type: 'COUNCIL'
+            }
         }
 
-        return {
-            ...council[0]._doc,
-            impeachmentHeight: result.height * 0.2
+        if (secretariat) {
+            return {
+                ..._.omit(secretariat._doc, ['_id', 'user', 'startDate', 'endDate']),
+                ...this.getUserInformation(secretariat.user),
+                startDate: moment(secretariat.startDate).unix(),
+                endDate: moment(secretariat.endDate).unix(),
+                type: 'SECRETARIAT'
+            }
         }
+
     }
 
     public async eachSecretariatJob() {
@@ -326,5 +375,17 @@ export default class extends Base {
             await this.eachJob()
             await this.eachSecretariatJob()
         }, 1000 * 30)
+    }
+
+    /**
+     * get user information
+     * didName avatar
+     * @param user
+     */
+    private getUserInformation(user: any) {
+        if (user && user.did) {
+            return _.pick(user.did, ['didName', 'avatar'])
+        }
+        return {}
     }
 }

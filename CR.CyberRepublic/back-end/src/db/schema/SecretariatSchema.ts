@@ -28,6 +28,10 @@ export const Secretariat = {
         type: String,
         // required: true,
     },
+    location: {
+        type: Number,
+        // required: true,
+    },
     birthday: {
         type: Date,
     },
