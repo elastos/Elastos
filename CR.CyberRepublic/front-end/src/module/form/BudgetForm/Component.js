@@ -21,7 +21,8 @@ class BudgetForm extends Component {
 
   checkTypeMilestone = (type) => {
     const { activeKey } = this.state
-    const { milestone } = this.props
+    const { milestone, paymentItems } = this.props
+    const keys = paymentItems.map((item) => item.milestoneKey)
     const max = milestone.length - 1
     if (type === ADVANCE && activeKey !== '0') {
       return {
@@ -36,6 +37,11 @@ class BudgetForm extends Component {
     if (type === CONDITIONED && (activeKey === '0' || activeKey === `${max}`)) {
       return {
         error: 'Project milestone payment can not apply to this milestone.'
+      }
+    }
+    if (type === CONDITIONED && keys.includes(activeKey)) {
+      return {
+        error: 'This milestone has been used.'
       }
     }
   }

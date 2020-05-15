@@ -191,6 +191,7 @@ class PaymentSchedule extends Component {
               onCancel={this.hideModal}
               milestone={milestone}
               total={total}
+              paymentItems={paymentItems}
             />
           ) : null}
         </Modal>
