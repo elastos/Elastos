@@ -671,6 +671,7 @@
     <string name="thexprocess">第%1$s阶段</string>
     <string name="imprest">预付款</string>
     <string name="finalpayment">尾款</string>
+    <string name="didnotsame">钱包DID不匹配</string>
     <!--CR committee-->
     <string name="ctmemberlist">CR委员会列表</string>
     <string name="current">本届</string>
