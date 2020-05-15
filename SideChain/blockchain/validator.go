@@ -6,9 +6,9 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -117,8 +117,8 @@ func (v *Validator) checkHeader(params ...interface{}) (err error) {
 	if !header.GetAuxPow().SideAuxPowCheck(header.Hash()) {
 		return errors.New("[powCheckHeader] block check proof is failed")
 	}
-	if v.checkProofOfWork(header, powLimit) != nil {
-		return errors.New("[powCheckHeader] block check proof is failed.")
+	if err = v.checkProofOfWork(header, powLimit); err != nil {
+		return errors.New("[powCheckHeader] block check proof is failed," + err.Error())
 	}
 
 	// A block timestamp must not have a greater precision than one second.
@@ -208,7 +208,7 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 
 		// Check for transaction sanity
 		if err := v.chain.cfg.CheckTxSanity(txn); err != nil {
-			return errors.New("[CheckTransactionsMerkle] failed when verifiy block")
+			return errors.New("[CheckTransactionsMerkle] failed when verifiy block, err:" + err.Error())
 		}
 
 		// Check for duplicate UTXO inputs in a block
