@@ -1107,17 +1107,17 @@ export default class extends Base {
           
       const councilMemberDid = _.get(this.currentUser, 'did.id')
       if (!councilMemberDid) {
-        return { success: false }
+        return { success: false, message: "this is not did" }
       }
       
       const role = _.get(this.currentUser, 'role')
       if (!permissions.isCouncil(role)) {
-        return { success: false }
+        return { success: false , message: 'member is no council'}
       }
       
       const cur = await db_cvote.findOne({ _id: id })
       if (!cur) {
-        return { success: false }
+        return { success: false ,message: "not find proposal"}
       }
 
       const now = Math.floor(Date.now() / 1000)
@@ -1137,6 +1137,13 @@ export default class extends Base {
       cur.voteResult.forEach(function(res){
         if(res.votedBy.equals(userId)){
           jwtClaims.data.opinionHash = utilCrypto.sha256(utilCrypto.sha256(res.reason))
+        }
+      })
+
+      cur.voteResult.forEach(function(res){
+        if(res.votedBy.equals(userId)){
+          const temp = utilCrypto.sha256(utilCrypto.sha256(res.reason))
+          jwtClaims.data.opinionHash = temp.split('').reverse().join('')
         }
       })
     
@@ -1354,7 +1361,6 @@ export default class extends Base {
 
   // member vote against
   public async memberVote(param): Promise<any> {
-    console.log(param)
     try{
       const db_cvote = this.getDBModel('CVote')
       const { id } = param
@@ -1377,7 +1383,6 @@ export default class extends Base {
         algorithm: 'ES256' 
       })
       const url = `elastos://crproposal/${jwtToken}`
-      console.log(url)
       return { success: true, url}
     } catch(err) {
       logger.error(err)
