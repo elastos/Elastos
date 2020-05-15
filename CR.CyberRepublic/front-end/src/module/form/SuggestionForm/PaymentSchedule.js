@@ -138,6 +138,8 @@ class PaymentSchedule extends Component {
   render() {
     const { paymentItems, index, total, address, errors } = this.state
     const milestone = this.getMilestone()
+    const flag = milestone && milestone.length <= paymentItems.length
+    const disabled = !milestone || flag
     return (
       <Wrapper>
         <Section>
@@ -160,15 +162,10 @@ class PaymentSchedule extends Component {
         </Section>
         <Section>
           <Label>{I18N.get('suggestion.budget.schedule')}</Label>
-          <Button
-            onClick={this.showModal}
-            disabled={!milestone.length ? true : false}
-          >
+          <Button onClick={this.showModal} disabled={disabled ? true : false}>
             {I18N.get('suggestion.budget.create')}
           </Button>
-          {!milestone.length ? (
-            <Tip>{I18N.get('suggestion.budget.tip')}</Tip>
-          ) : null}
+          {disabled ? <Tip>{I18N.get('suggestion.budget.tip')}</Tip> : null}
         </Section>
         {errors.schedule ? <Error>{errors.schedule}</Error> : null}
         {paymentItems.length ? (
