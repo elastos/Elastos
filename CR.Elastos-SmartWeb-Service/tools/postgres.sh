@@ -4,14 +4,13 @@ docker container stop smartweb-postgres || true && docker container rm -f smartw
 
 # start a postgres docker container
 docker run -d --name smartweb-postgres \
-    -v "$PWD/.postgres-data:/var/lib/postgresql"        \
+    -v "$PWD/.postgres-data:/var/lib/postgresql/data"     \
     -e POSTGRES_DB=smartweb                             \
     -e POSTGRES_USER=gmu                                \
     -e POSTGRES_PASSWORD=gmu                            \
-    -e PGDATA=/var/lib/postgresql/data/pgdata		\
     -p 5434:5432                                        \
     postgres:11-alpine
-
+    
 # wait for database to start
 sleep 7
 # Copy .sql files to the running container
