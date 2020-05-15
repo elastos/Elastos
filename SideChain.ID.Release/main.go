@@ -123,7 +123,8 @@ func main() {
 	}
 	chainCfg.Validator = blockchain.NewValidator(chain, spvService)
 
-	txPool := mempool.New(&mempoolCfg)
+	mempoolCfg.Chain = chain
+	txPool := mp.New(&mempoolCfg)
 
 	eladlog.Info("3. Start the P2P networks")
 	server, err := server.New(&server.Config{
