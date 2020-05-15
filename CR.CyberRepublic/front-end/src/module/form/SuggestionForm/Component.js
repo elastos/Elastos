@@ -83,19 +83,19 @@ class C extends BaseComponent {
       }
       const budget = form.getFieldValue('budget')
 
-      if(budget) {
+      if (budget) {
         const completion = budget.paymentItems.find((e) => {
-          if(e.type === "COMPLETION"){
+          if (e.type === 'COMPLETION') {
             return e
           }
         })
-        if(budget.budgetAmount && !completion){
+        if (budget.budgetAmount && !completion) {
           this.setState({ loading: false })
-          message.success(I18N.get('suggestion.form.error.requirePayment'));
+          message.success(I18N.get('suggestion.form.error.requirePayment'))
           return
         }
       }
-      
+
       // exclude old suggestion data
       if (budget && typeof budget !== 'string') {
         values.budget = budget.paymentItems
@@ -108,12 +108,12 @@ class C extends BaseComponent {
     })
   }
 
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     const { onSubmit } = this.props
     this.handleSave(e, onSubmit)
   }
 
-  handleEditSaveDraft = e => {
+  handleEditSaveDraft = (e) => {
     const { onSaveDraft } = this.props
     this.handleSave(e, onSaveDraft)
   }
@@ -132,7 +132,7 @@ class C extends BaseComponent {
     }
   }
 
-  handleContinue = e => {
+  handleContinue = (e) => {
     e.preventDefault()
     const { form } = this.props
     form.validateFields((err, values) => {
@@ -144,7 +144,7 @@ class C extends BaseComponent {
         })
         return
       }
-      const index = TAB_KEYS.findIndex(item => item === this.state.activeKey)
+      const index = TAB_KEYS.findIndex((item) => item === this.state.activeKey)
       if (index === TAB_KEYS.length - 1) {
         this.handleSubmit({ preventDefault: () => {} })
       } else {
@@ -165,7 +165,7 @@ class C extends BaseComponent {
     })(<Input size="large" type="text" />)
   }
 
-  onTextareaChange = activeKey => {
+  onTextareaChange = (activeKey) => {
     const { form } = this.props
     const err = form.getFieldError(activeKey)
     const { errorKeys } = this.state
@@ -201,8 +201,8 @@ class C extends BaseComponent {
 
   getTextarea(id) {
     const initialValues = _.isEmpty(this.props.initialValues)
-                        ? { type: '1' }
-                        : this.props.initialValues
+      ? { type: '1' }
+      : this.props.initialValues
 
     const { getFieldDecorator } = this.props.form
     const rules = [
@@ -238,7 +238,7 @@ class C extends BaseComponent {
     if (
       id === 'plan' &&
       ((initialValues.plan && typeof initialValues.plan !== 'string') ||
-       !initialValues.plan)
+        !initialValues.plan)
     ) {
       rules.push({
         validator: this.validatePlan
@@ -262,16 +262,16 @@ class C extends BaseComponent {
        !initialValues.budget) */
     ) {
       let initialBudget = {}
-      if(initialValues.budget && typeof initialValues.budget !== 'string') {
+      if (initialValues.budget && typeof initialValues.budget !== 'string') {
         initialBudget = initialValues.budget && {
           budgetAmount: initialValues.budgetAmount,
           elaAddress: initialValues.elaAddress,
           paymentItems: initialValues.budget
         }
-      }else{
+      } else {
         initialBudget = {
           budgetAmount: initialValues.budget,
-          elaAddress: "",
+          elaAddress: '',
           paymentItems: []
         }
       }
@@ -303,7 +303,8 @@ class C extends BaseComponent {
     const hasError = _.has(this.state.errorKeys, id)
     return (
       <TabText hasErr={hasError}>
-        {I18N.get(`suggestion.fields.${id}`)}{id !== 'budget' ? '*' : ''}
+        {I18N.get(`suggestion.fields.${id}`)}
+        {id !== 'budget' ? '*' : ''}
       </TabText>
     )
   }
@@ -336,8 +337,8 @@ class C extends BaseComponent {
       </Button>
     )
     const cancelText = isEditMode
-                     ? I18N.get('suggestion.form.button.discardChanges')
-                     : I18N.get('suggestion.form.button.cancel')
+      ? I18N.get('suggestion.form.button.discardChanges')
+      : I18N.get('suggestion.form.button.cancel')
     const cancelBtn = (
       <Button
         onClick={this.props.onCancel}
@@ -366,7 +367,7 @@ class C extends BaseComponent {
             activeKey={this.state.activeKey}
             onChange={this.onTabChange}
           >
-            {TAB_KEYS.map(item => (
+            {TAB_KEYS.map((item) => (
               <TabPane tab={this.renderTabText(item)} key={item}>
                 <TabPaneInner>
                   <Note>{I18N.get(`suggestion.form.note.${item}`)}</Note>
@@ -408,7 +409,7 @@ class C extends BaseComponent {
     )
   }
 
-  onTabChange = activeKey => {
+  onTabChange = (activeKey) => {
     this.setState({ activeKey })
   }
 }
