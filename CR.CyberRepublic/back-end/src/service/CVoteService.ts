@@ -102,7 +102,7 @@ export default class extends Base {
     if (suggestion) {
       const proposalHash = _.get(suggestion, 'proposalHash')
       if (proposalHash) {
-        const rs = await getProposalState(proposalHash)
+        const rs: any = await getProposalState(proposalHash)
         if (rs && rs.success === false) {
           return { success: false, message: rs.message }
         }
@@ -1287,11 +1287,11 @@ export default class extends Base {
     if (proposal) {
       const proposalHash = _.get(proposal, 'proposalHash')
       if (proposalHash) {
-        const rs = await getProposalState(proposalHash)
-        if (!rs) {
-          return { success: false }
+        const rs:any = await getProposalState(proposalHash)
+        if (rs && rs.success === false) {
+          return { success: false,message: rs.message }
         }
-        if (rs && rs.status === 'Registered') {
+        if (rs && rs.success && rs.status === 'Registered') {
           await this.updateVoteStatus({
             proposalId: id,
             rs
@@ -1300,7 +1300,7 @@ export default class extends Base {
         }
       }
     } else {
-      return { success: false }
+      return { success: false, message: 'no this proposal' }
     }
   }
 
