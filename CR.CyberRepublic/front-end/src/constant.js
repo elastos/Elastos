@@ -231,7 +231,8 @@ export const CVOTE_STATUS = create([
   'REJECT',
   'FINAL',
   'DEFERRED',
-  'INCOMPLETED'
+  'INCOMPLETED',
+  'NOTIFICATION'
 ])
 
 export const CVOTE_STATUS_TEXT = {
