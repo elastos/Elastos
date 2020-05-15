@@ -19,25 +19,23 @@ class BudgetForm extends Component {
     }
   }
 
-  checkTypeMilestone = () => {
+  checkTypeMilestone = (type) => {
     const { activeKey } = this.state
     const { milestone } = this.props
-    if (values.type === ADVANCE && activeKey !== '0') {
+    const max = milestone.length - 1
+    if (type === ADVANCE && activeKey !== '0') {
       return {
-        error: 'Project initiation payment only match with the first milestone.'
+        error: 'Project initiation payment only apply to the first milestone.'
       }
     }
-    if (values.type === COMPLETION && activeKey !== `${milestone.length - 1}`) {
+    if (type === COMPLETION && activeKey !== `${max}`) {
       return {
-        error: 'Project completion payment only match with the last milestone.'
+        error: 'Project completion payment only apply to the last milestone.'
       }
     }
-    if (
-      values.type === CONDITIONED &&
-      (activeKey === '0' || activeKey === `${milestone.length - 1}`)
-    ) {
+    if (type === CONDITIONED && (activeKey === '0' || activeKey === `${max}`)) {
       return {
-        error: 'Project milestone payment can not match this milestone.'
+        error: 'Project milestone payment can not apply to this milestone.'
       }
     }
   }
@@ -49,9 +47,9 @@ class BudgetForm extends Component {
     form.validateFields((err, values) => {
       if (!err) {
         const { activeKey } = this.state
-        const rs = this.checkTypeMilestone()
+        const rs = this.checkTypeMilestone(values.type)
         if (rs && rs.error) {
-          message.error(error)
+          message.error(rs.error)
           return
         }
         values.milestoneKey = activeKey
