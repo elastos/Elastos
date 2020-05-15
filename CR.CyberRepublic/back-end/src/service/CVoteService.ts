@@ -37,13 +37,14 @@ export const WALLET_STATUS_TO_CVOTE_STATUS = {
     constant.CVOTE_STATUS.ACTIVE,
     constant.CVOTE_STATUS.FINAL,
     constant.CVOTE_STATUS.REJECT,
-    constant.CVOTE_STATUS.DEFERRED
+    constant.CVOTE_STATUS.DEFERRED,
+    constant.CVOTE_STATUS.VETOED
   ],
   VOTING: [constant.CVOTE_STATUS.PROPOSED],
   NOTIFICATION: [constant.CVOTE_STATUS.NOTIFICATION],
   ACTIVE: [constant.CVOTE_STATUS.ACTIVE],
   FINAL: [constant.CVOTE_STATUS.FINAL],
-  REJECTED: [constant.CVOTE_STATUS.REJECT, constant.CVOTE_STATUS.DEFERRED]
+  REJECTED: [constant.CVOTE_STATUS.REJECT, constant.CVOTE_STATUS.DEFERRED, constant.CVOTE_STATUS.VETOED]
 }
 
 export const CVOTE_STATUS_TO_WALLET_STATUS = {
@@ -52,7 +53,8 @@ export const CVOTE_STATUS_TO_WALLET_STATUS = {
   [constant.CVOTE_STATUS.ACTIVE]: 'ACTIVE',
   [constant.CVOTE_STATUS.FINAL]: 'FINAL',
   [constant.CVOTE_STATUS.REJECT]: 'REJECTED',
-  [constant.CVOTE_STATUS.DEFERRED]: 'REJECTED'
+  [constant.CVOTE_STATUS.DEFERRED]: 'REJECTED',
+  [constant.CVOTE_STATUS.VETOED]: 'VETOED'
 }
 
 export default class extends Base {
@@ -879,7 +881,7 @@ export default class extends Base {
       // reject proportion，need to calculate
       const proportion = 0
       // 
-      return proportion > 0.1
+      return proportion < 0.1
     }
     
   }
@@ -1042,7 +1044,7 @@ export default class extends Base {
         }
       },
       {
-        status: constant.CVOTE_STATUS.REJECT
+        status: constant.CVOTE_STATUS.VETOED
       },
       { multi: true }
     )
