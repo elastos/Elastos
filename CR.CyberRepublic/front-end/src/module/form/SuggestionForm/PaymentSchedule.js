@@ -5,6 +5,7 @@ import { Button, Modal } from 'antd'
 import I18N from '@/I18N'
 import BudgetForm from '@/module/form/BudgetForm/Container'
 import PaymentList from './PaymentList'
+import _ from 'lodash'
 
 class PaymentSchedule extends Component {
   constructor(props) {
@@ -81,10 +82,11 @@ class PaymentSchedule extends Component {
       ...paymentItems.slice(0, index),
       ...paymentItems.slice(index + 1)
     ]
-    const errors = this.validateFields('schedule', rs)
+    const sortedItems = _.sortBy(rs, 'milestoneKey')
+    const errors = this.validateFields('schedule', sortedItems)
     this.setState(
       {
-        paymentItems: rs,
+        paymentItems: sortedItems,
         errors
       },
       () => {
@@ -106,16 +108,19 @@ class PaymentSchedule extends Component {
         }
         return item
       })
-      this.setState({ paymentItems: rs, visible: false }, () => {
+      const sortedItems = _.sortBy(rs, 'milestoneKey')
+      this.setState({ paymentItems: sortedItems, visible: false }, () => {
         this.passDataToParent()
       })
       return
     }
     const rs = [...paymentItems, values]
-    const errors = this.validateFields('schedule', rs)
+
+    const sortedItems = _.sortBy(rs, 'milestoneKey')
+    const errors = this.validateFields('schedule', sortedItems)
     this.setState(
       {
-        paymentItems: rs,
+        paymentItems: sortedItems,
         visible: false,
         errors
       },
