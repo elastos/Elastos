@@ -82,6 +82,8 @@ const did = {
   expirationDate: Date,
   message: String,
   compressedPublicKey: String,
+  avatar: String,
+  didName: String,
   _id: false
 }
 

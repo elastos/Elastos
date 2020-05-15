@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose'
 
 export const Secretariat = {
-    userId: {
+    user: {
         type: Schema.Types.ObjectId,
         ref: 'users'
     },

@@ -41,13 +41,26 @@ export default class extends Base {
     public async councilList(id: number): Promise<any> {
         const fields = [
             'councilMembers.did',
-            'councilMembers.didName',
-            'councilMembers.avatar',
+            'councilMembers.user.did',
             'councilMembers.location',
             'councilMembers.status',
         ]
 
+        const secretariatFields = [
+            'did',
+            'user.did',
+            'location',
+            'startDate',
+            'endDate',
+            'status',
+        ]
+
         const result = await this.model.getDBInstance().findOne({index: id}, fields)
+            .populate('user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+
+        const secretariatResult = await this.secretariatModel
+            .getDBInstance().find({}, secretariatFields).sort({'startDate': -1})
+            .populate('user', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
         if (!result) {
             return {
@@ -58,7 +71,27 @@ export default class extends Base {
             }
         }
 
-        return result.councilMembers
+        const information = (user: any) => {
+            if (user && user.did) {
+                return _.pick(user.did, ['didName', 'avatar'])
+            }
+            return {}
+        }
+
+        const council = _.map(result.councilMembers, (o: any) => ({
+            ..._.omit(o, ['user']),
+            ...information(o.user)
+        }))
+
+        const secretariat = _.map(secretariatResult, (o: any) => ({
+            ..._.omit(o._doc, ['_id', 'user']),
+            ...information(o.user)
+        }))
+
+        return {
+            council,
+            secretariat
+        }
     }
 
     public async councilInformation(param: any): Promise<any> {
@@ -80,13 +113,16 @@ export default class extends Base {
             'councilMembers.address',
             'councilMembers.introduction',
             'councilMembers.impeachmentVotes',
+            'councilMembers.depositAmount',
             'councilMembers.location',
             'councilMembers.status',
         ]
 
-        const result = await this.model.getDBInstance().findOne(query, fields)
+        const result = await this.model.getDBInstance()
+            .findOne(query, fields)
+
         const council = result && _.filter(result.councilMembers, (o: any) => o.did === did)
-        const user = await this.userMode.getDBInstance().findOne({'did.id': did}, ['_id'])
+
         if (!result || !council) {
             return {
                 code: 400,
@@ -119,7 +155,7 @@ export default class extends Base {
         if (!currentSecretariat) {
             const doc: any = {
                 ...information,
-                userId: user._id,
+                user: user._id,
                 did: secretariatDID,
                 startDate: new Date(),
                 status: constant.SECRETARIAT_STATUS.CURRENT
@@ -190,12 +226,46 @@ export default class extends Base {
             if (candidates.crcandidatesinfo) {
                 doc.endDate = moment().add(1, 'years').add(1, 'months').toDate()
                 doc.status = constant.TERM_COUNCIL_STATUS.VOTING
-                doc.councilMembers = _.map(candidates.crcandidatesinfo, (o) => dataToCouncil(o))
+                doc.councilMembers = _.map(candidates.crcandidatesinfo, async (o) => {
+                    const obj = dataToCouncil(o)
+                    const depositObj = await ela.depositCoin(o.did)
+                    if (!depositObj) {
+                        return obj
+                    }
+                    return {
+                        ...o,
+                        depositAmount: depositObj && depositObj.available || '0'
+                    }
+                })
             } else if (currentCouncil.crmembersinfo) {
                 doc.endDate = moment().add(1, 'years').toDate()
                 doc.status = constant.TERM_COUNCIL_STATUS.CURRENT
                 doc.councilMembers = _.map(currentCouncil.crmembersinfo, (o) => dataToCouncil(o))
             }
+
+            const didList = _.map(doc.councilMembers, 'did')
+            const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
+            const userByDID = _.keyBy(userList, 'did.id')
+
+            doc.councilMembers = _.map(doc.councilMembers, (o: any) => ({
+                ...o,
+                user: userByDID[o.did]
+            }))
+
+            // TODO: need to optimizing (multiple update)
+            // add avatar nickname into user's did
+            await Promise.all(_.map(userList, async (o: any) => {
+                const information: any = await getInformationByDID(o.did.id)
+                const result = _.pick(information, ['avatar', 'didName'])
+                if (result) {
+                    await this.userMode.getDBInstance().update({_id: o._id}, {
+                        $set: {
+                            'did.avatar': result.avatar,
+                            'did.didName': result.didName
+                        }
+                    })
+                }
+            }))
 
             await this.model.getDBInstance().create(doc);
 
@@ -247,7 +317,7 @@ export default class extends Base {
 
     }
 
-    public cronJob() {
+    public async cronJob() {
         if (tm) {
             return false
         }
@@ -255,6 +325,6 @@ export default class extends Base {
             console.log('---------------- start council or secretariat cronJob -------------')
             await this.eachJob()
             await this.eachSecretariatJob()
-        }, 1000 * 60)
+        }, 1000 * 30)
     }
 }
