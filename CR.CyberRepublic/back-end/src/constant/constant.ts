@@ -311,7 +311,7 @@ export const DB_SELECTED_FIELDS = {
     NAME: 'profile.firstName profile.lastName username',
     NAME_EMAIL: 'profile.firstName profile.lastName username email',
     NAME_AVATAR: 'profile.avatar profile.firstName profile.lastName username',
-    NAME_EMAIL_DID: 'profile.firstName profile.lastName username email dids',
+    NAME_EMAIL_DID: 'profile.firstName profile.lastName username email did',
   },
   SUGGESTION: {
     ID: 'displayId'
