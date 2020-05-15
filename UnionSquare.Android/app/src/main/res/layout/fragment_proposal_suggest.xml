@@ -19,14 +19,12 @@
 
             <TextView
                 android:id="@+id/tv_suggest_tile"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                style="@style/common_margin15"
                 android:ellipsize="end"
                 android:maxLines="3" />
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                style="@style/common_margin15"
                 android:layout_marginTop="13dp"
                 android:orientation="horizontal">
 
@@ -104,6 +102,7 @@
                 android:textSize="11sp" />
 
             <TextView
+                android:id="@+id/tv_tag_money"
                 style="@style/common_margin15"
                 android:layout_marginTop="18dp"
                 android:text="@string/suggesterquota"
@@ -111,25 +110,29 @@
 
             <LinearLayout
                 style="@style/common_margin15"
-                android:layout_marginTop="4dp"
+                android:layout_width="match_parent"
+                android:layout_marginTop="15dp"
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="50dp"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="2"
                     android:text="@string/count"
                     android:textSize="11sp" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/tv_count"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/count"
+                    android:layout_weight="3"
                     android:textSize="11sp" />
             </LinearLayout>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv"
-                style="@style/common_margin15" />
+                style="@style/common_margin15"
+                android:layout_width="match_parent" />
 
             <TextView
                 style="@style/common_margin15"
@@ -141,6 +144,7 @@
                 android:id="@+id/tv_abs"
                 style="@style/common_margin15"
                 android:layout_marginTop="4dp"
+                android:layout_marginBottom="38dp"
                 android:textSize="11sp" />
 
 
@@ -150,7 +154,6 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:layout_marginTop="70dp"
         android:background="@color/black30">
 
         <View style="@style/line1" />

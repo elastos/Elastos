@@ -663,9 +663,13 @@
     <string name="suggest">发起建议</string>
     <string name="signsendsuccess">签名发送成功</string>
     <string name="putproposal">发起提案</string>
+    <string name="thexprocess">第%1$s阶段</string>
+    <string name="imprest">预付款</string>
+    <string name="finalpayment">尾款</string>
 
     <!--CR committee-->
     <string name="pastcttitle">CR委员会列表</string>
     <string name="ctlisttitle">第%1$s届委员会</string>
     <string name="didnotsame">钱包DID不匹配</string>
+
 </resources>

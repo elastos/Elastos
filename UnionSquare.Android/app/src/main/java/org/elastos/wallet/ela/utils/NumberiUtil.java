@@ -27,6 +27,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.widget.EditText;
 
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
+
 import java.math.BigDecimal;
 import java.util.regex.Pattern;
 
@@ -61,6 +63,21 @@ public class NumberiUtil {
             b = new BigDecimal(number.toString());
         }
         return removeZero(b.setScale(wei, BigDecimal.ROUND_DOWN).toPlainString());
+    }
+
+    public static String salaToEla(Object number) {
+        if (number == null) {
+            return "0";
+        }
+        BigDecimal b;
+        if (number instanceof BigDecimal) {
+            b = (BigDecimal) number;
+
+        } else {
+            b = new BigDecimal(number.toString());
+        }
+        b = b.divide(new BigDecimal(MyWallet.RATE), 8, BigDecimal.ROUND_DOWN);
+        return removeZero(b.toPlainString());
     }
 
     public static String removeZero(String number) {
