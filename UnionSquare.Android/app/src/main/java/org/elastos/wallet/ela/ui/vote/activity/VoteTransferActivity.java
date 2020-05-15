@@ -46,7 +46,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 /**
- * 只为模拟交易获得手续费的情况准备
+ * 只为模拟交易获得手续费和固定手续费的情况准备
  */
 public class VoteTransferActivity extends BaseActivity {
 
@@ -65,6 +65,7 @@ public class VoteTransferActivity extends BaseActivity {
     View line1;
     private String amount, chainId;
     private long fee;
+    private String type;
 
     @Override
     protected int getLayoutId() {
@@ -93,12 +94,12 @@ public class VoteTransferActivity extends BaseActivity {
             chainId = MyWallet.ELA;
         }
         tvAmount.setText(amount + " " + MyWallet.ELA);
-        if (MyWallet.IDChain.equals(chainId)) {
+     /*   if (MyWallet.IDChain.equals(chainId)) {
             tvCharge.setText("0.0002 " + MyWallet.ELA);
-        } else {
-            tvCharge.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S).toPlainString(), 12) + " " + MyWallet.ELA);//0.0001
-        }
-        String type = data.getStringExtra("type");
+        } else {*/
+        tvCharge.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S).toPlainString(), 12) + " " + MyWallet.ELA);//0.0001
+        //   }
+        type = data.getStringExtra("type");
         switch (type) {
             case Constant.CRUPDATE:
             case Constant.UPDATENODEINFO:
@@ -106,6 +107,7 @@ public class VoteTransferActivity extends BaseActivity {
             case Constant.UNREGISTERCR:
             case Constant.DIDSIGNUP:
             case Constant.DIDUPDEATE:
+            case Constant.PROPOSALINPUT:
                 llAmount.setVisibility(View.GONE);
                 line1.setVisibility(View.GONE);
                 break;
@@ -120,11 +122,21 @@ public class VoteTransferActivity extends BaseActivity {
 
     @OnClick({R.id.tv_next})
     public void onViewClicked(View view) {
+        Intent intent;
         switch (view.getId()) {
             case R.id.tv_next:
-                Intent intent = new Intent(this, OtherPwdActivity.class);
-                intent.putExtras(getIntent());
-                startActivity(intent);
+                if (Constant.PROPOSALINPUT.equals(type)) {
+                    //为了在展示手续费后把密码返回给fragment
+                  /*  intent = new Intent(this, VertifyPwdActivity.class);
+                    intent.putExtra("walletId", chainId);
+                    intent.putExtra("type", type);
+                    startActivity(intent);*/
+                    post(RxEnum.JUSTSHOWFEE.ordinal(), null,null);
+                } else {
+                    intent = new Intent(this, OtherPwdActivity.class);
+                    intent.putExtras(getIntent());
+                    startActivity(intent);
+                }
                 break;
 
         }
@@ -134,7 +146,7 @@ public class VoteTransferActivity extends BaseActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
-        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal() || integer == RxEnum.VERTIFYPAYPASS.ordinal()) {
             finish();
 
         }

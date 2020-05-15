@@ -244,4 +244,33 @@ public class RetrofitManager {
         }
 
     }
+
+    private static ApiServer webApiService;
+
+    public static ApiServer webApiCreate() {
+        if (webApiService != null) {
+            return webApiService;
+        }
+        Retrofit retrofit;
+        Retrofit.Builder build = new Retrofit.Builder().baseUrl(WalletNet.WEBURl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
+        HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());
+        logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        synchronized (RetrofitManager.class) {
+            OkHttpClient mOkHttpClient = builder//.cache(cache)
+                    .connectTimeout(2, TimeUnit.SECONDS)
+                    .readTimeout(2, TimeUnit.SECONDS)
+                    .writeTimeout(2, TimeUnit.SECONDS)
+                    .addInterceptor(logInterceptor)
+                    .addInterceptor(new InterceptorCom())
+                    .build();
+            retrofit = build.client(mOkHttpClient).build();
+            webApiService = retrofit.create(ApiServer.class);
+            return webApiService;
+        }
+
+    }
 }

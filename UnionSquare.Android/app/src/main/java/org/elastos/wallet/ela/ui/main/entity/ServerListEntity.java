@@ -33,17 +33,10 @@ public class ServerListEntity extends BaseEntity {
      * exceptionMsg : null
      */
 
-    private String message;
+
     private Object exceptionMsg;
     private List<String> data;
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     public Object getExceptionMsg() {
         return exceptionMsg;
@@ -64,7 +57,6 @@ public class ServerListEntity extends BaseEntity {
     @Override
     public String toString() {
         return "ServerListEntity{" +
-                "message='" + message + '\'' +
                 ", exceptionMsg=" + exceptionMsg +
                 ", data=" + data +
                 '}';

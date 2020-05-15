@@ -49,6 +49,7 @@ import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
+import org.elastos.wallet.ela.utils.JwtUtils;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
 
 import java.util.List;
@@ -208,8 +209,7 @@ public class CRInformationFragment extends BaseFragment implements NewBaseViewDa
                 GetJwtRespondBean getJwtRespondBean = (GetJwtRespondBean) baseEntity;
                 String jwt = getJwtRespondBean.getData().getJwt();
                 if (!TextUtils.isEmpty(jwt)) {
-                    String[] jwtParts = jwt.split("\\.");
-                    String payload = new String(Base64.decode(jwtParts[1], Base64.URL_SAFE));
+                    String payload = JwtUtils.getJwtPayload(jwt);
                     String pro = getMyDID().getCredentialProFromJson(payload);
                     credentialSubjectBean = JSON.parseObject(pro, CredentialSubjectBean.class);
                     if (credentialSubjectBean == null || credentialSubjectBean.whetherEmpty()) {

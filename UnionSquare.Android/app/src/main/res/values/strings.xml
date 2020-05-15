@@ -203,6 +203,7 @@
     <string name="transfertype34">取消CR参选交易</string>
     <string name="transfertype35">更新CR参选信息交易</string>
     <string name="transfertype36">提取CR质押金交易</string>
+    <string name="transfertype37">提案发起交易</string>
     <string name="sidetransfertype0">创币交易</string>
     <string name="sidetransfertype1">注册资产交易</string>
     <string name="sidetransfertype2">普通转账交易</string>
@@ -665,10 +666,11 @@
     <string name="count">合计</string>
     <string name="sign">签名</string>
     <string name="suggest">发起建议</string>
-    <string name="ELIP"> ELIP</string>
     <string name="signsendsuccess">签名发送成功</string>
     <string name="putproposal">发起提案</string>
-
+    <string name="thexprocess">第%1$s阶段</string>
+    <string name="imprest">预付款</string>
+    <string name="finalpayment">尾款</string>
     <!--CR committee-->
     <string name="ctmemberlist">CR委员会列表</string>
     <string name="current">本届</string>
@@ -704,7 +706,7 @@
     <string name="dimissofficehint">上届CR委员会因故解散，所有委员自动去职。根据您时机履职情况及CRC委员节点的运行情况，您的竞选押金返回金额为%1$sELA。</string>
     <string name="dimissdialoghint">上届CR委员会因故解散，所有委员自动去职。</string>
     <string name="withdrawaldeposit">提取质押金</string>
-    
+
     <string name="ctlist">委员列表</string>
     <string name="secretarylist">秘书长列表</string>
     <string name="secretarydetail">秘书长详情</string>

@@ -1,29 +1,15 @@
 package org.elastos.wallet.ela.ui.Assets.bean.qr;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 /**
  * 所有网站二维码的父类
  */
-public class RecieveJwtEntity implements Parcelable {
+public class RecieveJwtEntity {
     private String iss;
     private String callbackurl;
     private long iat;
     private long exp;
     private WebsiteBean website;
 
-    public static final Creator<RecieveJwtEntity> CREATOR = new Creator<RecieveJwtEntity>() {
-        @Override
-        public RecieveJwtEntity createFromParcel(Parcel in) {
-            return new RecieveJwtEntity(in);
-        }
-
-        @Override
-        public RecieveJwtEntity[] newArray(int size) {
-            return new RecieveJwtEntity[size];
-        }
-    };
 
     public String getIss() {
         return iss;
@@ -65,7 +51,7 @@ public class RecieveJwtEntity implements Parcelable {
         this.website = website;
     }
 
-    public static class WebsiteBean implements Parcelable {
+    public static class WebsiteBean {
         /**
          * domain : https://staging.cyberrepublic.org
          * logo : https://staging.cyberrepublic.org/assets/images/logo.svg
@@ -90,61 +76,9 @@ public class RecieveJwtEntity implements Parcelable {
             this.logo = logo;
         }
 
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(this.domain);
-            dest.writeString(this.logo);
-        }
-
-        public WebsiteBean() {
-        }
-
-        protected WebsiteBean(Parcel in) {
-            this.domain = in.readString();
-            this.logo = in.readString();
-        }
-
-        public static final Parcelable.Creator<WebsiteBean> CREATOR = new Parcelable.Creator<WebsiteBean>() {
-            @Override
-            public WebsiteBean createFromParcel(Parcel source) {
-                return new WebsiteBean(source);
-            }
-
-            @Override
-            public WebsiteBean[] newArray(int size) {
-                return new WebsiteBean[size];
-            }
-        };
     }
 
     public RecieveJwtEntity() {
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.iss);
-        dest.writeString(this.callbackurl);
-        dest.writeLong(this.iat);
-        dest.writeLong(this.exp);
-        dest.writeParcelable(this.website, flags);
-    }
-
-    protected RecieveJwtEntity(Parcel in) {
-        this.iss = in.readString();
-        this.callbackurl = in.readString();
-        this.iat = in.readLong();
-        this.exp = in.readLong();
-        this.website = in.readParcelable(WebsiteBean.class.getClassLoader());
     }
 
 }

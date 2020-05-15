@@ -588,6 +588,15 @@ namespace Elastos {
 			virtual std::string ProposalCRCouncilMemberDigest(const nlohmann::json &payload) const = 0;
 
 			/**
+			 * Calculate proposal hash.
+			 *
+			 * @param payload Proposal payload signed by owner and CR committee. Same as payload of CreateProposalTransaction()
+			 * @param memo Remarks string. Can be empty string.
+			 * @return The transaction in JSON format to be signed and published.
+			 */
+			virtual std::string CalculateProposalHash(const nlohmann::json &payload) const = 0;
+
+			/**
 			 * Create proposal transaction.
 			 *
 			 * @param payload Proposal payload signed by owner and CR committee.

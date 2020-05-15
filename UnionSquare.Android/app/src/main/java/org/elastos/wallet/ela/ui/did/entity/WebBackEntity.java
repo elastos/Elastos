@@ -35,7 +35,7 @@ public class WebBackEntity extends BaseEntity {
 
 
     private boolean success;
-    private String message;
+
 
 
     public boolean isSuccess() {
@@ -46,19 +46,6 @@ public class WebBackEntity extends BaseEntity {
         this.success = success;
     }
 
-    public String getMessage() {
-        return message;
-    }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
-    @Override
-    public String toString() {
-        return "WebBackEntity{" +
-                "code=" + getCode() +
-                ", message='" + message + '\'' +
-                '}';
-    }
 }

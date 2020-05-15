@@ -36,7 +36,6 @@ public class VoteListBean extends BaseEntity implements Serializable {
     @Override
     public String toString() {
         return "VoteListBean{" +
-                "message='" + message + '\'' +
                 ", data=" + data +
                 ", exceptionMsg=" + exceptionMsg +
                 '}';
@@ -49,18 +48,12 @@ public class VoteListBean extends BaseEntity implements Serializable {
      */
 
 
-    private String message;
+
     private DataBean data;
     private Object exceptionMsg;
 
 
-    public String getMessage() {
-        return message;
-    }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     public DataBean getData() {
         return data;

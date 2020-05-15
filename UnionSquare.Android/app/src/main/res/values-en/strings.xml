@@ -201,6 +201,7 @@
     <string name="transfertype34">CR Cancellation Transaction</string>
     <string name="transfertype35">CR Update Transaction</string>
     <string name="transfertype36">CR Deposit Retrieve Transaction</string>
+    <string name="transfertype37">提案发起交易</string>
     <string name="sidetransfertype0">Coinbase Transaction</string>
     <string name="sidetransfertype1">Register Asset Transaction </string>
     <string name="sidetransfertype2">Transfer Transaction</string>
@@ -660,9 +661,11 @@
     <string name="count">合计</string>
     <string name="sign">签名</string>
     <string name="suggest">发起建议</string>
-    <string name="ELIP"> ELIP</string>
     <string name="signsendsuccess">签名发送成功</string>
     <string name="putproposal">发起提案</string>
+    <string name="thexprocess">第%1$s阶段</string>
+    <string name="imprest">预付款</string>
+    <string name="finalpayment">尾款</string>
 
     <!--CR committee-->
     <string name="ctmemberlist">CR委员会列表</string>

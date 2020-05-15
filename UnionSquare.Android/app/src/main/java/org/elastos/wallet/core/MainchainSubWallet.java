@@ -108,6 +108,10 @@ public class MainchainSubWallet extends SubWallet {
         return ProposalCRCouncilMemberDigest(mMainchainProxy, payload);
     }
 
+    public String CalculateProposalHash(String payload) throws WalletException {
+        return CalculateProposalHash(mMainchainProxy, payload);
+    }
+
     public String CreateProposalTransaction(String payload, String memo) throws WalletException {
         return CreateProposalTransaction(mMainchainProxy, payload, memo);
     }
@@ -200,6 +204,8 @@ public class MainchainSubWallet extends SubWallet {
     private native String ProposalOwnerDigest(long Proxy, String payload);
 
     private native String ProposalCRCouncilMemberDigest(long Proxy, String payload);
+
+    private native String CalculateProposalHash(long Proxy, String payload);
 
     private native String CreateProposalTransaction(long Proxy, String payload, String memo);
 

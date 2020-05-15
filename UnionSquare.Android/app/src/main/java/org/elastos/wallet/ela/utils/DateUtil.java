@@ -32,13 +32,13 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 public class DateUtil {
-    public static final String FORMART1 = "yyyy-MM-dd HH:mm:ss";
+    public static final String FORMART1 = "yyyy.MM.dd HH:mm:ss";
     public static final String FORMART2 = "yyyy/MM/dd";
-    public static final String FORMART3 = "yyyy-MM-dd";
+    public static final String FORMART3 = "yyyy.MM.dd";
 
     public static String getCurrentData() {
         Date day = new Date();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
         return df.format(day);
 
     }
@@ -69,7 +69,7 @@ public class DateUtil {
     }
 
     private static Date parseDate(String sd) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd");
         try {
             Date data = format.parse(sd);
             return data;
@@ -80,7 +80,7 @@ public class DateUtil {
     }
 
     public static long parseToLong(String sd) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd");
         try {
             Date data = format.parse(sd);
             return data.getTime();
@@ -91,7 +91,7 @@ public class DateUtil {
     }
 
     public static Date parseToDate(String sd) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd");
         try {
             return format.parse(sd);
         } catch (ParseException e) {
@@ -104,7 +104,7 @@ public class DateUtil {
         if (TextUtils.isEmpty(sd)) {
             return null;
         }
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd");
         int Language = new SPUtil(context).getLanguage();
         try {
             if (Language != 0) {
@@ -127,7 +127,7 @@ public class DateUtil {
         }
         Date dat = new Date(time);
         int Language = new SPUtil(context).getLanguage();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd");
         if (Language != 0) {
             format = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
 
@@ -148,7 +148,7 @@ public class DateUtil {
         }
         Date dat = new Date(milliseconds);
         int Language = new SPUtil(context).getLanguage();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd");
         if (Language != 0) {
             format = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
 
@@ -160,7 +160,7 @@ public class DateUtil {
         if (time == 0) return null;
         Date dat = new Date(time * 1000L);
         int Language = new SPUtil(context).getLanguage();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd");
         if (Language != 0) {
             format = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
 
@@ -171,7 +171,7 @@ public class DateUtil {
     public static String timeNYR(String time, Context context) {
         Date dat = new Date(Long.parseLong(time) * 1000L);
         int Language = new SPUtil(context).getLanguage();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd");
         if (Language != 0) {
             format = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
 
@@ -184,7 +184,7 @@ public class DateUtil {
             return "";
         }
         int Language = new SPUtil(context).getLanguage();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd");
         if (Language != 0) {
             format = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
 
@@ -212,7 +212,7 @@ public class DateUtil {
         GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(dat);
         int Language = new SPUtil(context).getLanguage();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
         if (Language != 0) {
             format = new SimpleDateFormat("HH:mm:ss MMM dd yyyy", Locale.ENGLISH);
 
@@ -226,7 +226,7 @@ public class DateUtil {
         Date dat = new Date(sd * 1000L);
         GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(dat);
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
         String sb = format.format(gc.getTime());
         return sb;
 

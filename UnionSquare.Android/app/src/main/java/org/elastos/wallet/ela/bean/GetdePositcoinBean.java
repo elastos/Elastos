@@ -31,17 +31,12 @@ public class GetdePositcoinBean  extends BaseEntity {
      * exceptionMsg : null
      */
 
-    private String message;
+
     private DataBean data;
     private Object exceptionMsg;
 
-    public String getMessage() {
-        return message;
-    }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
+
 
     public DataBean getData() {
         return data;
