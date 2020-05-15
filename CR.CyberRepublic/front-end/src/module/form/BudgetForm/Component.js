@@ -93,9 +93,7 @@ class BudgetForm extends Component {
     return (
       <Radio.Group>
         {Object.values(SUGGESTION_BUDGET_TYPE).map((el) => {
-          const specialTypes = types.filter(
-            (type) => type !== SUGGESTION_BUDGET_TYPE.CONDITIONED
-          )
+          const specialTypes = types.filter((type) => type !== CONDITIONED)
           if (!item) {
             // add payment line
             return (

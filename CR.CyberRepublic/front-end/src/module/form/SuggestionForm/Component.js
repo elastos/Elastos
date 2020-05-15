@@ -9,8 +9,7 @@ import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import PaymentSchedule from './PaymentSchedule'
 import ImplementationPlan from './ImplementationPlan'
 import { wordCounter } from '@/util'
-import Toast from '@/module/common/Toast'
-
+import { SUGGESTION_BUDGET_TYPE } from '@/constant'
 import { Container, TabPaneInner, Note, TabText, CirContainer } from './style'
 
 const FormItem = Form.Item
@@ -27,6 +26,7 @@ const TAB_KEYS = [
   'relevance',
   'budget'
 ]
+const { ADVANCE, COMPLETION, CONDITIONED } = SUGGESTION_BUDGET_TYPE
 
 class C extends BaseComponent {
   constructor(props) {
@@ -81,17 +81,29 @@ class C extends BaseComponent {
         })
         return
       }
-      const budget = form.getFieldValue('budget')
 
+      const budget = form.getFieldValue('budget')
       if (budget) {
-        const completion = budget.paymentItems.find((e) => {
-          if (e.type === 'COMPLETION') {
-            return e
-          }
-        })
-        if (budget.budgetAmount && !completion) {
+        const plan = form.getFieldValue('plan')
+        const milestone = _.get(plan, 'milestone')
+        const pItems = _.get(budget, 'paymentItems')
+        if (milestone.length !== pItems.length) {
           this.setState({ loading: false })
-          message.success(I18N.get('suggestion.form.error.requirePayment'))
+          message.error(
+            'Payment schedule must keep consistent with milestones.'
+          )
+          return
+        }
+        const initiation = pItems.filter((item) => item.type === ADVANCE)
+        if (initiation.length !== 1) {
+          this.setState({ loading: false })
+          message.error('Must provide only one project initiation payment')
+          return
+        }
+        const completion = pItems.filter((item) => item.type === COMPLETION)
+        if (completion.length !== 1) {
+          this.setState({ loading: false })
+          message.error('Must provide only one project completion payment')
           return
         }
       }
