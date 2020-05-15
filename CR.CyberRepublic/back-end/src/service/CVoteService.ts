@@ -30,7 +30,7 @@ const BASE_FIELDS = [
   'payment'
 ]
 
-const WALLET_STATUS_TO_CVOTE_STATUS = {
+export const WALLET_STATUS_TO_CVOTE_STATUS = {
   ALL: [
     constant.CVOTE_STATUS.PROPOSED,
     constant.CVOTE_STATUS.NOTIFICATION,
@@ -46,7 +46,7 @@ const WALLET_STATUS_TO_CVOTE_STATUS = {
   REJECTED: [constant.CVOTE_STATUS.REJECT, constant.CVOTE_STATUS.DEFERRED]
 }
 
-const CVOTE_STATUS_TO_WALLET_STATUS = {
+export const CVOTE_STATUS_TO_WALLET_STATUS = {
   [constant.CVOTE_STATUS.PROPOSED]: 'VOTING',
   [constant.CVOTE_STATUS.NOTIFICATION]: 'NOTIFICATION',
   [constant.CVOTE_STATUS.ACTIVE]: 'ACTIVE',
@@ -102,7 +102,7 @@ export default class extends Base {
     if (suggestion) {
       const proposalHash = _.get(suggestion, 'proposalHash')
       if (proposalHash) {
-        const rs = await getProposalState(proposalHash)
+        const rs: any = await getProposalState(proposalHash)
         if (rs && rs.success === false) {
           return { success: false, message: rs.message }
         }
@@ -876,7 +876,10 @@ export default class extends Base {
       const registerHeight = rs.registerheight
       // TODO
       // Once the number of votes against a proposal exceeds the equivalent of 10% of all circulating ELA, the proposal becomes invalid
-      return 
+      // reject proportion，need to calculate
+      const proportion = 0
+      // 
+      return proportion > 0.1
     }
     
   }
@@ -1107,17 +1110,17 @@ export default class extends Base {
           
       const councilMemberDid = _.get(this.currentUser, 'did.id')
       if (!councilMemberDid) {
-        return { success: false }
+        return { success: false, message: "this is not did" }
       }
       
       const role = _.get(this.currentUser, 'role')
       if (!permissions.isCouncil(role)) {
-        return { success: false }
+        return { success: false , message: 'member is no council'}
       }
       
       const cur = await db_cvote.findOne({ _id: id })
       if (!cur) {
-        return { success: false }
+        return { success: false ,message: "not find proposal"}
       }
 
       const now = Math.floor(Date.now() / 1000)
@@ -1134,13 +1137,14 @@ export default class extends Base {
           did: councilMemberDid
         }
       }
+
       cur.voteResult.forEach(function(res){
         if(res.votedBy.equals(userId)){
-          jwtClaims.data.opinionHash = utilCrypto.sha256(utilCrypto.sha256(res.reason))
+          jwtClaims.data.opinionHash = utilCrypto.sha256D(utilCrypto.sha256D(res.reason))
         }
       })
     
-      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
+      const jwtToken = jwt.sign(JSON.stringify(jwtClaims), process.env.APP_PRIVATE_KEY, { 
         algorithm: 'ES256' 
       })
       const url = `elastos://crproposal/${jwtToken}`
@@ -1287,11 +1291,11 @@ export default class extends Base {
     if (proposal) {
       const proposalHash = _.get(proposal, 'proposalHash')
       if (proposalHash) {
-        const rs = await getProposalState(proposalHash)
-        if (!rs) {
-          return { success: false }
+        const rs:any = await getProposalState(proposalHash)
+        if (rs && rs.success === false) {
+          return { success: false,message: rs.message }
         }
-        if (rs && rs.status === 'Registered') {
+        if (rs && rs.success && rs.status === 'Registered') {
           await this.updateVoteStatus({
             proposalId: id,
             rs
@@ -1300,7 +1304,7 @@ export default class extends Base {
         }
       }
     } else {
-      return { success: false }
+      return { success: false, message: 'no this proposal' }
     }
   }
 
@@ -1312,7 +1316,6 @@ export default class extends Base {
     if (!proposal) {
       throw 'cannot find proposal'
     }
-
     const txids = [] 
     _.forEach(rs.crvotes, function(v,k){
       if( v == 0) {
@@ -1320,21 +1323,36 @@ export default class extends Base {
       }
     })
 
+    if (txids.length == 0){
+      return 
+    }
     try {
-      const res = await db_cvote.update(
-        { 
-          'voteResult.txid': { $in : txids } 
-        },
-        {
-          'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
-        },
-        { multi: true }
-      )
-      console.log(res)
-      return res
+      _.forEach(txids,async function(value){
+        const rs = await db_cvote.find({'voteResult.txid': value})
+        if(rs.length == 0){
+          return false
+        }
+        const vote = _.find(rs[0].voteResult,function(o){
+          if(o.txid == value){
+            return o
+          }
+        })
+        await db_cvote.update(
+          {
+            'voteResult.txid': value
+          },
+          {
+            'voteResult.$':{
+              ..._.omit(vote._doc,['status']),
+              status: constant.CVOTE_CHAIN_STATUS.CHAINED
+            }
+          }
+        )
+      })
+      return proposal
     } catch (error) {
       logger.error(error)
-      return
+      return 
     }
   }
 
@@ -1352,10 +1370,6 @@ export default class extends Base {
         exp: now + (60 * 60 * 24),
         iss: process.env.APP_DID,
         callbackurl: `${process.env.API_URL}/api/CVote/vote_callback`,
-        website:{
-          domain: process.env.SERVER_URL,
-          logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
-        },
         command:"voteforproposal",
         data: {
           proposalHash: cur.proposalHash
@@ -1363,10 +1377,9 @@ export default class extends Base {
       }
     
       const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
-        expiresIn: '7d', 
         algorithm: 'ES256' 
       })
-      const url = `elastos://credaccess/${jwtToken}`
+      const url = `elastos://crproposal/${jwtToken}`
       return { success: true, url}
     } catch(err) {
       logger.error(err)
@@ -1479,8 +1492,6 @@ export default class extends Base {
 
     const address = `${process.env.SERVER_URL}/proposals/${proposal.id}`
 
-    
-
     const proposalId = proposal._id
 
     const voteResultFields = ['value', 'reason', 'votedBy']
@@ -1499,7 +1510,8 @@ export default class extends Base {
           votedBy: `${_.get(o, 'votedBy.profile.firstName')} ${_.get(
             o,
             'votedBy.profile.firstName'
-          )}`
+          )}`,
+          avatar: _.get(o, 'votedBy.profile.avatar')
         },
         voteResultFields
       )
@@ -1575,7 +1587,8 @@ export default class extends Base {
         createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(
           o,
           'comment.createdBy.profile.firstName'
-        )}`
+        )}`,
+        avatar: _.get(o, 'comment.createdBy.profile.avatar')
       }
       const obj = {
         ...o._doc,
@@ -1618,7 +1631,8 @@ export default class extends Base {
         createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(
           o,
           'comment.createdBy.profile.firstName'
-        )}`
+        )}`,
+        avatar: _.get(o, 'comment.createdBy.profile.avatar')
       }
       const obj = {
         ...o._doc,
@@ -1629,5 +1643,27 @@ export default class extends Base {
       return _.pick(obj, fieldsSummary)
     })
     return list
+  }
+
+  // TODO
+  // member vote result API, provide front end polling
+  public async getVotersRejectAmount(id) {
+    const db_cvote = this.getDBModel("CVote")
+    const cur = await db_cvote.find({_id:id})
+    if(!cur){
+      throw "this is not proposal"
+    }
+    const rs: any = await getProposalState(cur.proposalHash)
+    if (!rs) {
+      throw 'get one cr proposal crvotes by proposalhash is fail'
+    }
+    if (rs && rs.status === 'Registered') {
+      const { votersrejectamount,registerheight } = rs
+
+      // calculation reject proportion
+      const proportion = ''
+    
+      return { success: true, proportion }
+    }
   }
 }

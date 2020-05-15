@@ -1135,7 +1135,7 @@ export default class extends Base {
    * Wallet Api
    */
   public async getSuggestion(id): Promise<any> {
-    const fileds = ['_id', 'title', 'abstract', 'createdAt']
+    const fileds = ['_id', 'displayId', 'title', 'abstract', 'createdAt']
 
     const suggestion = await this.model
       .getDBInstance()
@@ -1158,12 +1158,12 @@ export default class extends Base {
       createdBy &&
       createdBy.profile &&
       `${createdBy.profile.firstName} ${createdBy.profile.lastName}`
-    const result = _.omit(suggestion._doc, ['_id', 'id', 'createdBy', 'abstract'])
+    const result = _.omit(suggestion._doc, ['_id', 'id', 'displayId', 'createdBy', 'abstract'])
 
     return {
       ...result,
       createdAt: timestamp.second(result.createdAt),
-      id,
+      id: suggestion.displayId,
       abs: suggestion.abstract,
       address,
       did,

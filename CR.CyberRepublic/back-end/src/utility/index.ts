@@ -111,28 +111,27 @@ export const getProposalState = async (proposalHash: string) => {
   }
 }
 
-
 export const getInformationByDID = async (did: string) => {
-  const data = {
-    did
-  }
-  try {
-    const res = await axios.post('http://cen.longrunweather.com:18080/api/dposnoderpc/check/jwtget', data)
-    const publicKey: any = await getDidPublicKey(did)
-    const jwtToken = res && res.data && res.data.data && res.data.data.jwt
-    if (jwtToken && publicKey) {
-      return jwt.verify(
-        jwtToken,
-        publicKey,
-        async (err: any, decoded: any) => {
-          if (err) {
-            logger.error(err)
-          } 
-          return decoded
-        }
-      )
+    const data = {
+        did: 'did:elastos:' + did
     }
-  } catch (err) {
-    logger.error(err)
-  }
+    try {
+        const res = await axios.post('http://cen.longrunweather.com:18080/api/dposnoderpc/check/jwtget', data)
+        const publicKeyObj: any = await getDidPublicKey(did)
+        const jwtToken = res && res.data && res.data.data && res.data.data.jwt
+        if (jwtToken && publicKeyObj) {
+            return jwt.verify(
+                jwtToken,
+                publicKeyObj.publicKey,
+                async (err: any, decoded: any) => {
+                    if (err) {
+                        logger.error(err)
+                    }
+                    return decoded && decoded.credentialSubject
+                }
+            )
+        }
+    } catch (err) {
+        logger.error(err)
+    }
 }

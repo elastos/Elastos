@@ -156,6 +156,11 @@ export const TERM_COUNCIL_STATUS = create([
     'VOTING'
 ])
 
+export const SECRETARIAT_STATUS = create([
+  'CURRENT',
+  'NON_CURRENT'
+])
+
 // ACTIVE === PASSED, currently 'published' flag is used for 'DRAFT'
 export const CVOTE_STATUS = create([
   'DRAFT',
@@ -311,7 +316,7 @@ export const DB_SELECTED_FIELDS = {
     NAME: 'profile.firstName profile.lastName username',
     NAME_EMAIL: 'profile.firstName profile.lastName username email',
     NAME_AVATAR: 'profile.avatar profile.firstName profile.lastName username',
-    NAME_EMAIL_DID: 'profile.firstName profile.lastName username email dids',
+    NAME_EMAIL_DID: 'profile.firstName profile.lastName username email did',
   },
   SUGGESTION: {
     ID: 'displayId'

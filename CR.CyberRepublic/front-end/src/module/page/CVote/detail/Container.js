@@ -71,6 +71,9 @@ const mapDispatch = () => {
     },
     async getReviewProposal(id) {
       return service.getReviewProposal(id)
+    },
+    async getMemberVoteUrl(id) {
+      return service.getMemberVote(id)
     }
   }
 }
