@@ -879,7 +879,7 @@ export default class extends Base {
       // reject proportion，need to calculate
       const proportion = 0
       // 
-      return proportion > 0.1
+      return proportion < 0.1
     }
     
   }
@@ -1042,7 +1042,7 @@ export default class extends Base {
         }
       },
       {
-        status: constant.CVOTE_STATUS.REJECT
+        status: constant.CVOTE_STATUS.VETOED
       },
       { multi: true }
     )
