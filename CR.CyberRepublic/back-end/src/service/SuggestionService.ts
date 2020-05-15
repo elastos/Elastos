@@ -1192,7 +1192,8 @@ export default class extends Base {
       CONDITIONED: 'NormalPayment',
       COMPLETION: 'FinalPayment'
     }
-    const budgets = budget.map((item: BudgetItem) => ({
+    const sortedBudget = _.sortBy(budget, 'milestoneKey')
+    const budgets = sortedBudget.map((item: BudgetItem) => ({
       type: chainBudgetType[item.type],
       stage: parseInt(item.milestoneKey),
       amount: (parseInt(item.amount) * Math.pow(10, 8)).toString()
