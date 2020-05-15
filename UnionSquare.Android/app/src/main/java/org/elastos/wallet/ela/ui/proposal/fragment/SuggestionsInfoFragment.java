@@ -2,6 +2,7 @@ package org.elastos.wallet.ela.ui.proposal.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.view.View;
@@ -27,6 +28,7 @@ import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresen
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AuthorizationPresenter;
+import org.elastos.wallet.ela.ui.proposal.adapter.SuggetMoneyRecAdapetr;
 import org.elastos.wallet.ela.ui.proposal.bean.ProposalCallBackEntity;
 import org.elastos.wallet.ela.ui.proposal.bean.SuggestBean;
 import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
@@ -35,9 +37,11 @@ import org.elastos.wallet.ela.ui.proposal.presenter.bean.ProposalOwnerDigestPayL
 import org.elastos.wallet.ela.ui.vote.activity.VertifyPwdActivity;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.JwtUtils;
 import org.elastos.wallet.ela.utils.Log;
+import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
@@ -45,12 +49,14 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 
 public class SuggestionsInfoFragment extends BaseFragment implements NewBaseViewData {
 
@@ -82,6 +88,10 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
     TextView tvAbs;
     @BindView(R.id.tv_sign)
     TextView tvSign;
+    @BindView(R.id.tv_tag_money)
+    TextView tvTagMoney;
+    @BindView(R.id.tv_count)
+    TextView tvCount;
     private Wallet wallet;
     private String scanResult;
     private RecieveProposalJwtEntity entity;
@@ -111,9 +121,9 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
     protected void initView(View view) {
         setQrData();
         presenter = new ProposalPresenter();
+        presenter.getSuggestion(entity.getSid(), this);
         if (command.equals("createsuggestion")) {
             tvTitle.setText(R.string.suggest);
-            presenter.getSuggestion(entity.getSid(), this);
         } else {
             tvTitle.setText(R.string.putproposal);
         }
@@ -130,7 +140,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
             tvType.setText("ELIP");
         }
         tvHash.setText(data.getDrafthash());
-        tvPeople.setText(data.getRecipient());
+        tvAccount.setText(data.getRecipient());
     }
 
     @OnClick({R.id.tv_sign})
@@ -173,7 +183,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
         }
 
         targetEntity.setCategoryData(data.getCategorydata());
-        targetEntity.setOwnerPublicKey(getMyDID().getDidPublicKey(getMyDID().getDIDDocument()));
+        targetEntity.setOwnerPublicKey(data.getOwnerpublickey());
         targetEntity.setDraftHash(data.getDrafthash());
         List<ProposalOwnerDigestPayLoad.BudgetsBean> bugetList = new ArrayList<>();
         for (RecieveProposalJwtEntity.DataBean.BudgetsBean orginBuget : data.getBudgets()) {
@@ -197,13 +207,42 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
         targetEntity.setRecipient(data.getRecipient());
     }
 
+    private void setWebData(SuggestBean suggestBean) {
+        SuggestBean.DataBean data = suggestBean.getData();
+        tvSuggestTile.setText(data.getTitle());
+        tvNum.setText("#" + data.getId());
+        tvTime.setText(DateUtil.timeNYR(data.getCreatedAt(), getContext(), true));
+        tvDid.setText(data.getDid());
+        tvPeople.setText(data.getDidName());
+        setRecycleView();
+        tvAbs.setText(data.getAbs());
+
+    }
+
+    private void setRecycleView() {
+        List<RecieveProposalJwtEntity.DataBean.BudgetsBean> list = entity.getData().getBudgets();
+
+        if (list == null || list.size() == 0) {
+            tvTagMoney.setVisibility(View.GONE);
+            rv.setVisibility(View.GONE);
+            return;
+        }
+        BigDecimal sum = new BigDecimal(0);
+        for (RecieveProposalJwtEntity.DataBean.BudgetsBean bean : list) {
+            sum = sum.add(new BigDecimal(bean.getAmount()));
+        }
+        tvCount.setText(NumberiUtil.salaToEla(sum) + " ELA");
+        SuggetMoneyRecAdapetr adapter = new SuggetMoneyRecAdapetr(getContext(), list);
+        rv.setLayoutManager(new LinearLayoutManager(getContext()));
+        rv.setAdapter(adapter);
+    }
+
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
 
         switch (methodName) {
             case "getSuggestion":
-                SuggestBean suggestBean = (SuggestBean) baseEntity;
-
+                setWebData((SuggestBean) baseEntity);
                 break;
             case "newPublishTransaction":
 

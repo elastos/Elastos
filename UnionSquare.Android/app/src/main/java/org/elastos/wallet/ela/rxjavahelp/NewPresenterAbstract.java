@@ -23,12 +23,12 @@
 package org.elastos.wallet.ela.rxjavahelp;
 
 import android.app.Dialog;
-import org.elastos.wallet.ela.utils.Log;
 import android.widget.Toast;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.utils.Log;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
@@ -90,13 +90,13 @@ public class NewPresenterAbstract extends PresenterAbstract {
                 if (isShowDialog) {
                     dismissProgessDialog(dialog);
                 }
-                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())||"200".equals(value.getCode())
-                        ||MyWallet.errorCodeDoInMeathed.equals(value.getCode())) {
+                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode()) || "200".equals(value.getCode()) || "1".equals(value.getCode())
+                        || MyWallet.errorCodeDoInMeathed.equals(value.getCode())) {
                     ((NewBaseViewData) baseFragment).onGetData(methodName, value, o);
                 } else {
                     showTips(value);
                 }
-                Log.e(TAG, methodName+" onNext:" + value);
+                Log.e(TAG, methodName + " onNext:" + value);
 
             }
 
@@ -144,13 +144,13 @@ public class NewPresenterAbstract extends PresenterAbstract {
                     dismissProgessDialog(dialog);
                 }
                 if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())
-                        ||MyWallet.errorCodeDoInMeathed.equals(value.getCode())) {
+                        || MyWallet.errorCodeDoInMeathed.equals(value.getCode())) {
                     ((NewBaseViewData) baseActivity).onGetData(methodName, value, o);
                 } else {
                     showTips(value);
 
                 }
-                Log.e(TAG, methodName+" onNext:" + value);
+                Log.e(TAG, methodName + " onNext:" + value);
 
             }
 
