@@ -876,7 +876,10 @@ export default class extends Base {
       const registerHeight = rs.registerheight
       // TODO
       // Once the number of votes against a proposal exceeds the equivalent of 10% of all circulating ELA, the proposal becomes invalid
-      return 
+      // reject proportion，need to calculate
+      const proportion = 0
+      // 
+      return proportion > 0.1
     }
     
   }
@@ -1107,17 +1110,17 @@ export default class extends Base {
           
       const councilMemberDid = _.get(this.currentUser, 'did.id')
       if (!councilMemberDid) {
-        return { success: false }
+        return { success: false, message: "this is not did" }
       }
       
       const role = _.get(this.currentUser, 'role')
       if (!permissions.isCouncil(role)) {
-        return { success: false }
+        return { success: false , message: 'member is no council'}
       }
       
       const cur = await db_cvote.findOne({ _id: id })
       if (!cur) {
-        return { success: false }
+        return { success: false ,message: "not find proposal"}
       }
 
       const now = Math.floor(Date.now() / 1000)
@@ -1134,13 +1137,14 @@ export default class extends Base {
           did: councilMemberDid
         }
       }
+
       cur.voteResult.forEach(function(res){
         if(res.votedBy.equals(userId)){
-          jwtClaims.data.opinionHash = utilCrypto.sha256(utilCrypto.sha256(res.reason))
+          jwtClaims.data.opinionHash = utilCrypto.sha256D(utilCrypto.sha256D(res.reason))
         }
       })
     
-      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
+      const jwtToken = jwt.sign(JSON.stringify(jwtClaims), process.env.APP_PRIVATE_KEY, { 
         algorithm: 'ES256' 
       })
       const url = `elastos://crproposal/${jwtToken}`
@@ -1373,7 +1377,6 @@ export default class extends Base {
       }
     
       const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
-        expiresIn: '7d', 
         algorithm: 'ES256' 
       })
       const url = `elastos://crproposal/${jwtToken}`
@@ -1640,5 +1643,27 @@ export default class extends Base {
       return _.pick(obj, fieldsSummary)
     })
     return list
+  }
+
+  // TODO
+  // member vote result API, provide front end polling
+  public async getVotersRejectAmount(id) {
+    const db_cvote = this.getDBModel("CVote")
+    const cur = await db_cvote.find({_id:id})
+    if(!cur){
+      throw "this is not proposal"
+    }
+    const rs: any = await getProposalState(cur.proposalHash)
+    if (!rs) {
+      throw 'get one cr proposal crvotes by proposalhash is fail'
+    }
+    if (rs && rs.status === 'Registered') {
+      const { votersrejectamount,registerheight } = rs
+
+      // calculation reject proportion
+      const proportion = ''
+    
+      return { success: true, proportion }
+    }
   }
 }

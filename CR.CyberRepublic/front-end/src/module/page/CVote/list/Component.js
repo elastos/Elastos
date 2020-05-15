@@ -590,14 +590,23 @@ export default class extends BaseComponent {
   renderBaseEndsIn = (item, isCSV = false) => {
     if (item.status === CVOTE_STATUS.DRAFT) return null
     // only show when status is PROPOSED
-    const endsInFloat = moment
+    let endsInFloat = moment
       .duration(
         moment(item.proposedAt || item.createdAt)
           .add(7, 'd')
           .diff(moment())
       )
       .as('days')
-    if (item.status !== CVOTE_STATUS.PROPOSED || endsInFloat <= 0) {
+    if (item.status == CVOTE_STATUS.NOTIFICATION) {
+      endsInFloat = moment
+      .duration(
+        moment(item.proposedAt || item.createdAt)
+          .add(14, 'd')
+          .diff(moment())
+      )
+      .as('days')
+    }
+    if ((item.status !== CVOTE_STATUS.PROPOSED && item.status !== CVOTE_STATUS.NOTIFICATION) || endsInFloat <= 0) {
       return I18N.get('council.voting.votingEndsIn.ended')
     }
     if (endsInFloat > 0 && endsInFloat <= 1) {

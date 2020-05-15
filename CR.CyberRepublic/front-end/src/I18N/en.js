@@ -971,6 +971,8 @@ const en = {
   'profile.submission.table.type': 'Type',
   'profile.submission.table.created': 'Created',
 
+  'profile.member.vote.qrcodeTip':'Open ELA wallet and scan vote',
+
   // Validate Form
   'ambassadors.form.required': 'This must be filled out',
   'ambassadors.form.reason.max': 'Reason too long',
@@ -1576,5 +1578,6 @@ en[`cvoteStatus.${CVOTE_STATUS.REJECT}`] = 'REJECTED'
 en[`cvoteStatus.${CVOTE_STATUS.FINAL}`] = 'FINAL'
 en[`cvoteStatus.${CVOTE_STATUS.INCOMPLETED}`] = 'INCOMPLETED'
 en[`cvoteStatus.${CVOTE_STATUS.DEFERRED}`] = 'DEFERRED'
+en[`cvoteStatus.${CVOTE_STATUS.NOTIFICATION}`] = 'NOTIFICATION'
 
 export default en
