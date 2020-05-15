@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Form, Input, Button, Tabs, Radio } from 'antd'
+import { Form, Input, Button, Tabs, Radio, message } from 'antd'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import I18N from '@/I18N'
 import moment from 'moment/moment'
@@ -9,22 +9,52 @@ import { SUGGESTION_BUDGET_TYPE } from '@/constant'
 
 const FormItem = Form.Item
 const { TabPane } = Tabs
-
+const { ADVANCE, COMPLETION, CONDITIONED } = SUGGESTION_BUDGET_TYPE
 class BudgetForm extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      activeKey: props.item && props.item.milestoneKey ? props.item.milestoneKey : '0'
+      activeKey:
+        props.item && props.item.milestoneKey ? props.item.milestoneKey : '0'
     }
   }
 
-  handleSubmit = e => {
+  checkTypeMilestone = () => {
+    const { activeKey } = this.state
+    const { milestone } = this.props
+    if (values.type === ADVANCE && activeKey !== '0') {
+      return {
+        error: 'Project initiation payment only match with the first milestone.'
+      }
+    }
+    if (values.type === COMPLETION && activeKey !== `${milestone.length - 1}`) {
+      return {
+        error: 'Project completion payment only match with the last milestone.'
+      }
+    }
+    if (
+      values.type === CONDITIONED &&
+      (activeKey === '0' || activeKey === `${milestone.length - 1}`)
+    ) {
+      return {
+        error: 'Project milestone payment can not match this milestone.'
+      }
+    }
+  }
+
+  handleSubmit = (e) => {
     e.stopPropagation() // prevent event bubbling
     e.preventDefault()
     const { form, onSubmit } = this.props
     form.validateFields((err, values) => {
       if (!err) {
-        values.milestoneKey = this.state.activeKey
+        const { activeKey } = this.state
+        const rs = this.checkTypeMilestone()
+        if (rs && rs.error) {
+          message.error(error)
+          return
+        }
+        values.milestoneKey = activeKey
         onSubmit(values)
       }
     })
@@ -38,11 +68,11 @@ class BudgetForm extends Component {
     const isNumber = !isNaN(value) && reg.test(value)
     if (!isNumber) {
       return cb(I18N.get('suggestion.form.error.isNaN'))
-    } 
+    }
     return cb()
   }
 
-  handleTabChange = activeKey => {
+  handleTabChange = (activeKey) => {
     this.setState({ activeKey })
   }
 
@@ -58,9 +88,9 @@ class BudgetForm extends Component {
     const { item, types } = this.props
     return (
       <Radio.Group>
-        {Object.values(SUGGESTION_BUDGET_TYPE).map(el => {
+        {Object.values(SUGGESTION_BUDGET_TYPE).map((el) => {
           const specialTypes = types.filter(
-            type => type !== SUGGESTION_BUDGET_TYPE.CONDITIONED
+            (type) => type !== SUGGESTION_BUDGET_TYPE.CONDITIONED
           )
           if (!item) {
             // add payment line
@@ -73,7 +103,7 @@ class BudgetForm extends Component {
             )
           } else {
             // edit payment line
-            const remained = specialTypes.filter(type => type !== item.type)
+            const remained = specialTypes.filter((type) => type !== item.type)
             return (
               !remained.includes(el) && (
                 <Radio value={el} key={el}>
@@ -228,7 +258,7 @@ const Label = styled.div`
   font-size: 17px;
   color: #000;
   display: block;
-  margin-bottom: ${props => (props.gutter ? props.gutter : 10)}px;
+  margin-bottom: ${(props) => (props.gutter ? props.gutter : 10)}px;
   > span {
     color: #ff0000;
   }
