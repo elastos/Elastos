@@ -37,7 +37,7 @@ class PaymentSchedule extends Component {
     })
   }
 
-  validateAmount = value => {
+  validateAmount = (value) => {
     const reg = /^(0|[1-9][0-9]*)(\.[0-9]*)?$/
     return (!isNaN(value) && reg.test(value)) || value === '' ? true : false
   }
@@ -75,7 +75,7 @@ class PaymentSchedule extends Component {
     this.setState({ visible: true, index: -1 })
   }
 
-  handleDelete = index => {
+  handleDelete = (index) => {
     const { paymentItems } = this.state
     const rs = [
       ...paymentItems.slice(0, index),
@@ -93,11 +93,11 @@ class PaymentSchedule extends Component {
     )
   }
 
-  handleEdit = index => {
+  handleEdit = (index) => {
     this.setState({ index, visible: true })
   }
 
-  handleSubmit = values => {
+  handleSubmit = (values) => {
     const { paymentItems, index } = this.state
     if (index >= 0) {
       const rs = paymentItems.map((item, key) => {
@@ -145,7 +145,7 @@ class PaymentSchedule extends Component {
           <StyledInput
             error={errors.total ? true : false}
             value={total}
-            onChange={e => this.handleChange(e, 'total')}
+            onChange={(e) => this.handleChange(e, 'total')}
           />
           {errors.total ? <Error>{errors.total}</Error> : null}
         </Section>
@@ -154,7 +154,7 @@ class PaymentSchedule extends Component {
           <StyledInput
             error={errors.address ? true : false}
             value={address}
-            onChange={e => this.handleChange(e, 'address')}
+            onChange={(e) => this.handleChange(e, 'address')}
           />
           {errors.address ? <Error>{errors.address}</Error> : null}
         </Section>
@@ -189,7 +189,7 @@ class PaymentSchedule extends Component {
           {this.state.visible === true ? (
             <BudgetForm
               item={index >= 0 ? paymentItems[index] : null}
-              types={paymentItems.map(item => item.type)}
+              types={paymentItems.map((item) => item.type)}
               onSubmit={this.handleSubmit}
               onCancel={this.hideModal}
               milestone={milestone}
@@ -239,11 +239,11 @@ const StyledInput = styled.input`
   height: 40px;
   transition: all 0.3s;
   &:hover {
-    border-color: ${props => (props.error ? '#f5222d' : '#66bda3')};
+    border-color: ${(props) => (props.error ? '#f5222d' : '#66bda3')};
   }
   &:focus {
-    border-color: ${props => (props.error ? '#f5222d' : '#66bda3')};
-    box-shadow: ${props =>
+    border-color: ${(props) => (props.error ? '#f5222d' : '#66bda3')};
+    box-shadow: ${(props) =>
       props.error
         ? '0 0 0 2px rgba(245, 34, 45, 0.2);'
         : '0 0 0 2px rgba(67, 175, 146, 0.2)'};
