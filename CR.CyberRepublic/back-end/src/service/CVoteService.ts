@@ -1143,7 +1143,7 @@ export default class extends Base {
       const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
         algorithm: 'ES256' 
       })
-      const url = `elastos://credaccess/${jwtToken}`
+      const url = `elastos://crproposal/${jwtToken}`
       return { success: true, url }
     } catch (err) {
       logger.error(err)
@@ -1165,7 +1165,7 @@ export default class extends Base {
       }
 
       const payload: any = jwt.decode(
-        claims.req.slice('elastos://credaccess/'.length)
+        claims.req.slice('elastos://crproposal/'.length)
       )
       if (!_.get(payload.data, 'proposalHash')) {
         return {
