@@ -1312,7 +1312,6 @@ export default class extends Base {
     if (!proposal) {
       throw 'cannot find proposal'
     }
-
     const txids = [] 
     _.forEach(rs.crvotes, function(v,k){
       if( v == 0) {
@@ -1320,21 +1319,36 @@ export default class extends Base {
       }
     })
 
+    if (txids.length == 0){
+      return 
+    }
     try {
-      const res = await db_cvote.update(
-        { 
-          'voteResult.txid': { $in : txids } 
-        },
-        {
-          'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
-        },
-        { multi: true }
-      )
-      console.log(res)
-      return res
+      _.forEach(txids,async function(value){
+        const rs = await db_cvote.find({'voteResult.txid': value})
+        if(rs.length == 0){
+          return false
+        }
+        const vote = _.find(rs[0].voteResult,function(o){
+          if(o.txid == value){
+            return o
+          }
+        })
+        await db_cvote.update(
+          {
+            'voteResult.txid': value
+          },
+          {
+            'voteResult.$':{
+              ..._.omit(vote._doc,['status']),
+              status: constant.CVOTE_CHAIN_STATUS.CHAINED
+            }
+          }
+        )
+      })
+      return proposal
     } catch (error) {
       logger.error(error)
-      return
+      return 
     }
   }
 
@@ -1352,10 +1366,6 @@ export default class extends Base {
         exp: now + (60 * 60 * 24),
         iss: process.env.APP_DID,
         callbackurl: `${process.env.API_URL}/api/CVote/vote_callback`,
-        website:{
-          domain: process.env.SERVER_URL,
-          logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
-        },
         command:"voteforproposal",
         data: {
           proposalHash: cur.proposalHash
@@ -1366,7 +1376,7 @@ export default class extends Base {
         expiresIn: '7d', 
         algorithm: 'ES256' 
       })
-      const url = `elastos://credaccess/${jwtToken}`
+      const url = `elastos://crproposal/${jwtToken}`
       return { success: true, url}
     } catch(err) {
       logger.error(err)
