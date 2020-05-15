@@ -1354,6 +1354,7 @@ export default class extends Base {
 
   // member vote against
   public async memberVote(param): Promise<any> {
+    console.log(param)
     try{
       const db_cvote = this.getDBModel('CVote')
       const { id } = param
@@ -1373,10 +1374,10 @@ export default class extends Base {
       }
     
       const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
-        expiresIn: '7d', 
         algorithm: 'ES256' 
       })
       const url = `elastos://crproposal/${jwtToken}`
+      console.log(url)
       return { success: true, url}
     } catch(err) {
       logger.error(err)
