@@ -6,6 +6,8 @@ import {
   message,
   Modal,
   Anchor,
+  Row,
+  Col,
   Popconfirm
 } from 'antd'
 import { Link } from 'react-router-dom'
@@ -21,6 +23,7 @@ import Translation from '@/module/common/Translation/Container'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import { StickyContainer, Sticky } from 'react-sticky'
 import VoteResultComponent from '../common/vote_result/Component'
+import MemberVoteQrCode from './MemberVoteQrCode'
 import Preamble from './Preamble'
 import ElipPreamble from './ElipPreamble'
 import Tracking from '../tracking/Container'
@@ -28,7 +31,6 @@ import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import { logger } from '@/util'
-import QRCode from 'qrcode.react'
 
 import {
   convertMarkdownToHtml,
@@ -46,6 +48,7 @@ import {
   ContentTitle,
   StyledAnchor,
   FixedHeader,
+  FixedHeaderQrCode,
   Body,
   SubTitleHeading,
   SubTitleContainer,
@@ -241,15 +244,27 @@ class C extends StandardPage {
               zIndex: 2
             }
             : style
+          const isNotification = this.props.data.status == 'NOTIFICATION'
           return (
             <div style={finalStyle}>
-              <FixedHeader>
-                {metaNode}
-                {titleNode}
-                {labelNode}
-                {subTitleNode}
-              </FixedHeader>
-              {memberVoteNode}
+              <Row>
+                <Col span={12}>
+                <FixedHeader>
+                  {metaNode}
+                  {titleNode}
+                  {labelNode}
+                  {subTitleNode}
+                </FixedHeader>
+                </Col>
+              { isNotification ?
+              <Col span={12}>
+                <FixedHeader>
+                  {memberVoteNode}  
+                </FixedHeader>
+              </Col>
+                : null
+              }
+              </Row>
             </div>
           )
         }}
@@ -257,11 +272,13 @@ class C extends StandardPage {
     )
   }
 
-  // TODO
   renderMemberVoteQrCode() {
+    const { data, getMemberVoteUrl } = this.props
     return (
-      <div>
-      </div>
+      <MemberVoteQrCode 
+        {...data}  
+        getMemberVoteUrl = {getMemberVoteUrl}  >
+      </MemberVoteQrCode>
     )
   }
 

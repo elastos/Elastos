@@ -938,6 +938,8 @@ const zh = {
   'profile.submission.table.type': '类型',
   'profile.submission.table.created': '创建日期',
 
+  'profile.member.vote.qrcodeTip':'打开 ELA 钱包扫码投票',
+
   // Validate Form
   'ambassadors.form.required': '必填项目',
   'ambassadors.form.reason.max': '原因太长',
