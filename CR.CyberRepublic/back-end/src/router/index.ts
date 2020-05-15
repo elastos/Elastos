@@ -25,6 +25,8 @@ import upload from './upload'
 import user from './user'
 import elip from './elip'
 import elipReview from './elip_review'
+import council from './council'
+import tempData from './temp_data'
 
 /**
  * Every request intercepts the token and sets the session user from the userId again
@@ -98,6 +100,8 @@ router.use('/user', user)
 router.use('/upload', upload)
 router.use('/elip', elip)
 router.use('/elipReview', elipReview)
+router.use('/council', council)
+router.use('/temp/data', tempData)
 
 router.use((req, res) => {
     return res.sendStatus(403)

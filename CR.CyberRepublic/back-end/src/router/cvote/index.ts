@@ -19,7 +19,9 @@ import all_search from './all_search'
 import get_proposal from './get_proposal'
 import callback from './callback'
 import check_signature from './check_signature'
+import memberVote from './memberVote'
 import pollProposalState from './poll_proposal_state'
+import pollVoteState from './poll_vote_state'
 
 export default Base.setRouter([
   {
@@ -108,6 +110,11 @@ export default Base.setRouter([
     method: 'post'
   },
   {
+    path: '/member_vote',
+    router: memberVote,
+    method: 'post'
+  },
+  {
     path: '/callback',
     router: callback,
     method: 'get'
@@ -121,5 +128,10 @@ export default Base.setRouter([
     path: '/get_proposal/:id',
     router: get_proposal,
     method: 'get'
-  }
+  },
+  {
+    path: '/poll_vote_state',
+    router: pollVoteState,
+    method: 'post'
+  },
 ])

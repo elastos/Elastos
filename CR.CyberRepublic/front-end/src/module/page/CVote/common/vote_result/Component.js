@@ -7,10 +7,22 @@ import Translation from '@/module/common/Translation/Container'
 
 import { Container, ResultRow, Reason, Label, List, Item, Avatar, StyledAvatarIcon } from './style'
 
-const Component = ({ label, type, dataList,id,getReviewProposal,getReviewProposalUrl,voteResult }) => {
+const Component = (
+    { 
+      label, 
+      type, 
+      dataList,
+      id,
+      getReviewProposal,
+      getReviewProposalUrl,
+      voteResult, 
+      isCouncil,
+      currentUserId      
+    }
+  ) => {
   const votesNode = _.map(dataList, (data, key) => {
     let voteStatus = voteResult[key].status
-    if(voteStatus == undefined || voteStatus == 'failed') {
+    if(voteStatus == undefined || voteStatus == 'failed' || voteStatus == 'unchain') {
       voteStatus = I18N.get(`council.voting.chainStatus.unchain`)
     } 
     if( voteStatus == 'chained'){
@@ -19,15 +31,18 @@ const Component = ({ label, type, dataList,id,getReviewProposal,getReviewProposa
     if (voteStatus == 'chaining') {
        voteStatus = I18N.get(`council.voting.chainStatus.chaining`)
     }
+    
+    let isOwner = data.votedBy === currentUserId
+
     // const isReject = type === CVOTE_RESULT.REJECT
     const userNode = (
       <Item key={key}>
         {data.avatar ? <Avatar src={data.avatar} alt="voter avatar" /> : <StyledAvatarIcon />}
         <div>{data.name}</div>
-        <div>{voteStatus}</div>
+        <div>{ isCouncil && data.reason != '' ? voteStatus : null }</div>
         <div style={{ marginTop: '0.5rem'}}>
           { 
-          ( voteResult[key].value != 'undecided' && voteResult[key].status != 'chained' ) ? 
+          ( isCouncil && isOwner && data.reason != '' ) ? 
           <OnChain 
           getReviewProposal={getReviewProposal}
           getReviewProposalUrl={getReviewProposalUrl}

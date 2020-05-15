@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover, Spin } from 'antd'
+import { Popover, Spin, message } from 'antd'
 import I18N from '@/I18N'
 import QRCode from 'qrcode.react'
+import ExternalLinkSvg from './ExternalLinkSvg'
 
-class OnChainButton extends Component {
+class MemberVoteQrCode extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -14,7 +15,7 @@ class OnChainButton extends Component {
     this.timerDid = null
   }
 
-  qrCode = () => {
+  elaQrCode = () => {
     const { url } = this.state
     return (
       <Content>
@@ -25,39 +26,35 @@ class OnChainButton extends Component {
   }
 
   pollingDid = () => {
-    console.log(this.props)
-    const { id, getReviewProposal } = this.propos
     this.timerDid = setInterval(async () => {
-      const rs = await getReviewProposal(id)
-      if (rs && rs.success ){
+      const rs = await this.props.getNewActiveDid()
+      if (rs && rs.success) {
         clearInterval(this.timerDid)
         this.timerDid = null
-        this.setState({ url: rs.url, visible:false })
+        this.setState({ url: '', visible: false })
       }
-      if (rs && rs.success == false){
+      if (rs && rs.success === false) {
         clearInterval(this.timerDid)
         this.timerDid = null
-        if(rs.message) {
+        if (rs.message) {
           message.error(rs.message)
         } else {
           message.error('Something went wrong')
         }
-        this.setState({ visible: false})
+        this.setState({ visible: false })
       }
     }, 3000)
   }
 
   handleAssociate = async () => {
-    if (this.timerDid){
+    if (this.timerDid) {
       return
     }
     this.pollingDid()
   }
 
   componentDidMount = async () => {
-    const { id, getReviewProposalUrl } = this.propos
-    console.log(id)
-    const rs = await getReviewProposalUrl(id)
+    const rs = await this.props.getElaUrl()
     if (rs && rs.success) {
       this.setState({ url: rs.url })
     }
@@ -67,34 +64,51 @@ class OnChainButton extends Component {
     clearInterval(this.timerDid)
   }
 
-  handleVisibleChange = visible => {
+  handleVisibleChange = (visible) => {
     this.setState({ visible })
   }
 
   render() {
+    const { did } = this.props
     let domain
     if (process.env.NODE_ENV === 'development') {
       domain = 'blockchain-did-regtest'
     } else {
       domain = 'idchain'
     }
-    return (
-        <Popover 
-        content={this.qrCode()} 
-        trigger="click" 
-        placement="top"
-        visible={this.state.visible}
-        onVisibleChange={this.handleVisibleChange}
+    if (did && did.id) {
+      return (
+        <Did>
+          <span>DID:</span>
+          <a
+            href={`https://${domain}.elastos.org/address/${did.id.slice(
+              'did:elastos:'.length
+            )}`}
+            target="_blank"
+          >
+            {did.id} <ExternalLinkSvg />
+          </a>
+        </Did>
+      )
+    } else {
+      return (
+        <Popover
+          content={this.elaQrCode()}
+          trigger="click"
+          placement="top"
+          visible={this.state.visible}
+          onVisibleChange={this.handleVisibleChange}
         >
-            <Button onClick={this.handleAssociate}>
-                {I18N.get('council.voting.voteResult.onchain')}
-            </Button>
+          <Button onClick={this.handleAssociate}>
+            {I18N.get('profile.associateDid')}
+          </Button>
         </Popover>
-    )
+      )
+    }
   }
 }
 
-export default OnChainButton
+export default MemberVoteQrCode
 
 const Button = styled.span`
   display: inline-block;
@@ -114,4 +128,15 @@ const Tip = styled.div`
   font-size: 14px;
   color: #000;
   margin-top: 16px;
+`
+const Did = styled.div`
+  line-height: 32px;
+  a {
+    color: #008d85;
+    font-size: 13px;
+    padding-left: 10px;
+    &:focus {
+      text-decoration: none;
+    }
+  }
 `

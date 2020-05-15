@@ -8,13 +8,15 @@ import validate from './validate'
 import sso from './sso'
 import user from './user'
 import timestamp from './timestamp'
+import ela from './ela'
 import * as permissions from './permissions'
 import * as logger from './logger'
 const _ = require('lodash')
 const { PublicKey } = require('bitcore-lib-p256')
 const jwkToPem = require('jwk-to-pem')
+import * as jwt from 'jsonwebtoken'
 
-export { utilCrypto, sso, user, timestamp, validate, permissions, mail, logger }
+export { utilCrypto, sso, user, timestamp, ela, validate, permissions, mail, logger }
 
 export const getEnv = () => process.env.NODE_ENV
 
@@ -103,6 +105,32 @@ export const getProposalState = async (proposalHash: string) => {
       if (status) {
         return { success: true, status }
       }
+    }
+  } catch (err) {
+    logger.error(err)
+  }
+}
+
+
+export const getInformationByDID = async (did: string) => {
+  const data = {
+    did
+  }
+  try {
+    const res = await axios.post('http://cen.longrunweather.com:18080/api/dposnoderpc/check/jwtget', data)
+    const publicKey: any = await getDidPublicKey(did)
+    const jwtToken = res && res.data && res.data.data && res.data.data.jwt
+    if (jwtToken && publicKey) {
+      return jwt.verify(
+        jwtToken,
+        publicKey,
+        async (err: any, decoded: any) => {
+          if (err) {
+            logger.error(err)
+          } 
+          return decoded
+        }
+      )
     }
   } catch (err) {
     logger.error(err)

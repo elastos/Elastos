@@ -598,6 +598,7 @@ export default class extends Base {
           constant.CVOTE_STATUS.PROPOSED,
           constant.CVOTE_STATUS.ACTIVE,
           constant.CVOTE_STATUS.REJECT,
+          constant.CVOTE_STATUS.NOTIFICATION,
           constant.CVOTE_STATUS.FINAL,
           constant.CVOTE_STATUS.DEFERRED,
           constant.CVOTE_STATUS.INCOMPLETED
@@ -853,8 +854,37 @@ export default class extends Base {
     return false
   }
 
+  public isCouncilExpired(data: any, extraTime = 0): Boolean {
+    const ct = moment(data.proposedAt || data.createdAt).valueOf()
+    if (Date.now() - ct - extraTime > constant.CVOTE_COUNCIL_EXPIRATION) {
+      return true
+    }
+    return false
+  }
+
+  // proposal publicity
+  public async isNotification(data): Promise<any> {
+    
+    // Get one cr proposal detail state information by proposalhash or drafthash
+    const proposalHash = data.proposalHash
+    const rs: any = await getProposalState(proposalHash)
+    if (!rs) {
+      throw 'get one cr proposal crvotes by proposalhash is fail'
+    }
+    if (rs && rs.status === 'Registered') {
+      const voteRejectAmount = rs.votersrejectamount
+      const registerHeight = rs.registerheight
+      // TODO
+      // Once the number of votes against a proposal exceeds the equivalent of 10% of all circulating ELA, the proposal becomes invalid
+      return 
+    }
+    
+  }
+
   // proposal active/passed
   public isActive(data): Boolean {
+    // TODO
+    // Get one cr proposal detail state information by proposalhash or drafthash
     const supportNum =
       _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.SUPPORT] || 0
     return supportNum > data.voteResult.length * 0.5
@@ -862,6 +892,8 @@ export default class extends Base {
 
   // proposal rejected
   public isRejected(data): Boolean {
+    // TODO
+    // Get one cr proposal detail state information by proposalhash or drafthash
     const rejectNum =
       _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.REJECT] || 0
     return rejectNum > data.voteResult.length * 0.5
@@ -936,7 +968,7 @@ export default class extends Base {
     const idsRejected = []
 
     _.each(list, (item) => {
-      if (this.isExpired(item)) {
+      if (this.isCouncilExpired(item)) {
         if (this.isActive(item)) {
           idsActive.push(item._id)
         } else if (this.isRejected(item)) {
@@ -964,7 +996,7 @@ export default class extends Base {
         }
       },
       {
-        status: constant.CVOTE_STATUS.ACTIVE
+        status: constant.CVOTE_STATUS.NOTIFICATION
       },
       { multi: true }
     )
@@ -983,6 +1015,51 @@ export default class extends Base {
     this.notifyCouncilToVote()
   }
 
+  private async eachMemberVoteJob() {
+    const db_cvote = this.getDBModel('CVote')
+    const list = await db_cvote.find({
+      status: constant.CVOTE_STATUS.NOTIFICATION
+    })
+    const idsNotification = []
+    const idsRejected = []
+
+    _.each(list, (item) => {
+      if (this.isExpired(item)) {
+        if (this.isNotification(item)) {
+          idsNotification.push(item._id)
+        }else {
+          idsRejected.push(item._id)
+        }
+      }
+    })
+    await db_cvote.update(
+      {
+        _id: {
+          $in: idsRejected
+        }
+      },
+      {
+        status: constant.CVOTE_STATUS.REJECT
+      },
+      { multi: true }
+    )
+    await db_cvote.update(
+      {
+        _id: {
+          $in: idsNotification
+        }
+      },
+      {
+        status: constant.CVOTE_STATUS.ACTIVE
+      },
+      { multi: true }
+    )
+
+    this.notifyCouncilToVote()
+  }
+
+
+
   public cronjob() {
     if (tm) {
       return false
@@ -990,6 +1067,7 @@ export default class extends Base {
     tm = setInterval(() => {
       console.log('---------------- start cvote cronjob -------------')
       this.eachJob()
+      this.eachMemberVoteJob()
     }, 1000 * 60)
   }
 
@@ -1026,46 +1104,46 @@ export default class extends Base {
       const db_cvote = this.getDBModel('CVote')
       const userId = _.get(this.currentUser, '_id')
       const { id } = param
+          
+      const councilMemberDid = _.get(this.currentUser, 'did.id')
+      if (!councilMemberDid) {
+        return { success: false }
+      }
+      
+      const role = _.get(this.currentUser, 'role')
+      if (!permissions.isCouncil(role)) {
+        return { success: false }
+      }
+      
+      const cur = await db_cvote.findOne({ _id: id })
+      if (!cur) {
+        return { success: false }
+      }
+
+      const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
+        iat: now,
+        exp: now + (60 * 60 * 24),
         iss: process.env.APP_DID,
         callbackurl: `${process.env.API_URL}/api/CVote/callback`,
-        website: {
-          domain: process.env.SERVER_URL,
-          logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
-        },
-        command: '',
+        command:"reviewproposal",
         data: {
-          proposalHash: '',
-          voteResult: [],
-          opinionHash: '',
-          did: ''
+          proposalHash: cur.proposalHash,
+          voteResult: cur.voteResult,
+          opinionHash: "",
+          did: councilMemberDid
         }
       }
-      const cur = await db_cvote.findOne({ _id: id })
-
-      if (!this.canManageProposal()) {
-        throw 'cvoteservice.unfinishById - not council'
-      }
-      if (!cur) {
-        throw 'cvoteservice.update - invalid proposal id'
-      }
-
-      jwtClaims.data.proposalHash = cur.proposalHash
-      jwtClaims.data.voteResult = cur.voteResult
-
-      cur.voteResult.forEach(function (res) {
-        if (res.votedBy.equals(userId)) {
-          jwtClaims.data.opinionHash = utilCrypto.sha256(
-            utilCrypto.sha256(res.reason)
-          )
+      cur.voteResult.forEach(function(res){
+        if(res.votedBy.equals(userId)){
+          jwtClaims.data.opinionHash = utilCrypto.sha256(utilCrypto.sha256(res.reason))
         }
       })
-
-      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, {
-        expiresIn: '7d',
-        algorithm: 'ES256'
+    
+      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
+        algorithm: 'ES256' 
       })
-      const url = `elastos://credaccess/${jwtToken}`
+      const url = `elastos://crproposal/${jwtToken}`
       return { success: true, url }
     } catch (err) {
       logger.error(err)
@@ -1087,7 +1165,7 @@ export default class extends Base {
       }
 
       const payload: any = jwt.decode(
-        claims.req.slice('elastos://credaccess/'.length)
+        claims.req.slice('elastos://crproposal/'.length)
       )
       if (!_.get(payload.data, 'proposalHash')) {
         return {
@@ -1117,29 +1195,7 @@ export default class extends Base {
         }
       })
       const rs: any = await getDidPublicKey(claims.iss)
-      if (!rs) {
-        await db_cvote.update(
-          {
-            proposalHash: proposalHash,
-            'voteResult.votedBy': votedBy
-          },
-          {
-            $set: {
-              'voteResult.$.signature': {
-                message: `Can not get your did's public key. `
-              }
-            },
-            $push: {
-              voteHistory: {
-                value: voteResult.value,
-                reason: voteResult.reason,
-                txid: voteResult.txid,
-                votedBy: voteResult.votedBy,
-                signature: voteResult.signature
-              }
-            }
-          }
-        )
+      if(!rs) {
         return {
           code: 400,
           success: false,
@@ -1150,22 +1206,9 @@ export default class extends Base {
       return jwt.verify(
         jwtToken,
         rs.publicKey,
-        async (err: any, decoded: any) => {
-          if (err) {
-            await db_cvote.update(
-              {
-                proposalHash: proposalHash,
-                'voteResult.votedBy': votedBy
-              },
-              {
-                $set: {
-                  'voteResult.$.signature': {
-                    message: `Verify signatrue failed. `
-                  }
-                }
-              }
-            )
-            return {
+        async (err:any, decoded: any) => {
+          if(err) {
+                       return {
               code: 401,
               success: false,
               message: 'Verify signatrue failed.'
@@ -1237,29 +1280,101 @@ export default class extends Base {
   }
 
   // according to txid polling vote status
-  public async pollVoteChain() {
-    const txid = ''
-    const status = ''
-
+  public async pollingVoteStatus(param: any) {
+    const { id } = param
     const db_cvote = this.getDBModel('CVote')
-
-    try {
-      await db_cvote.update(
-        {
-          'voteResult.txid': txid
-        },
-        {
-          $set: {
-            'voteResult.$.status': status
-          }
+    const proposal = await db_cvote.findById(id)
+    if (proposal) {
+      const proposalHash = _.get(proposal, 'proposalHash')
+      if (proposalHash) {
+        const rs = await getProposalState(proposalHash)
+        if (!rs) {
+          return { success: false }
         }
-      )
-    } catch (err) {
-      logger.error(err)
+        if (rs && rs.status === 'Registered') {
+          await this.updateVoteStatus({
+            proposalId: id,
+            rs
+          })
+          return { success: true, id: id }
+        }
+      }
+    } else {
+      return { success: false }
     }
   }
 
-  // member callback
+  public async updateVoteStatus(param: any): Promise<Document> {
+    const db_cvote = this.getDBModel('CVote')
+    const { proposalId, rs } = param
+    
+    const proposal = proposalId && (await db_cvote.findById(proposalId))
+    if (!proposal) {
+      throw 'cannot find proposal'
+    }
+
+    const txids = [] 
+    _.forEach(rs.crvotes, function(v,k){
+      if( v == 0) {
+        txids.push(k)
+      }
+    })
+
+    try {
+      const res = await db_cvote.update(
+        { 
+          'voteResult.txid': { $in : txids } 
+        },
+        {
+          'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINED
+        },
+        { multi: true }
+      )
+      console.log(res)
+      return res
+    } catch (error) {
+      logger.error(error)
+      return
+    }
+  }
+
+  // member vote against
+  public async memberVote(param): Promise<any> {
+    try{
+      const db_cvote = this.getDBModel('CVote')
+      const { id } = param
+      
+      const cur = await db_cvote.findOne({ _id: id })
+    
+      const now = Math.floor(Date.now() / 1000)
+      const jwtClaims = {
+        iat: now,
+        exp: now + (60 * 60 * 24),
+        iss: process.env.APP_DID,
+        callbackurl: `${process.env.API_URL}/api/CVote/vote_callback`,
+        website:{
+          domain: process.env.SERVER_URL,
+          logo: `${process.env.SERVER_URL}/assets/images/logo.svg`
+        },
+        command:"voteforproposal",
+        data: {
+          proposalHash: cur.proposalHash
+        }
+      }
+    
+      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, { 
+        expiresIn: '7d', 
+        algorithm: 'ES256' 
+      })
+      const url = `elastos://credaccess/${jwtToken}`
+      return { success: true, url}
+    } catch(err) {
+      logger.error(err)
+      return { success:false }
+    }
+  }
+
+  // member vote callback
   public async memberCallback(param): Promise<any> {
     return
   }
@@ -1364,11 +1479,7 @@ export default class extends Base {
 
     const address = `${process.env.SERVER_URL}/proposals/${proposal.id}`
 
-    // duration
-    const endTime = Math.round(proposal.createdAt.getTime() / 1000 + 604800)
-    const nowTime = Math.round(new Date().getTime() / 1000)
-    let duration = endTime - nowTime
-    duration = duration > 0 ? duration : 0
+    
 
     const proposalId = proposal._id
 
@@ -1376,7 +1487,9 @@ export default class extends Base {
     // filter undecided vote result
     const filterVoteResult = _.filter(
       proposal._doc.voteResult,
-      (o: any) => o.value !== constant.CVOTE_RESULT.UNDECIDED
+      (o: any) => (o.value !== constant.CVOTE_RESULT.UNDECIDED
+          && [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
+              .includes(o.status))
     )
     // update vote result data
     const voteResult = _.map(filterVoteResult, (o: any) =>
@@ -1396,13 +1509,35 @@ export default class extends Base {
 
     const summary = await this.getSummary(proposalId)
 
+    const votingResult = {}
+    const notificationResult = {}
+    
+    // duration
+    const endTime = Math.round(proposal.createdAt.getTime() / 1000)
+    const nowTime = Math.round(new Date().getTime() / 1000)
+
+    if (proposal.status === constant.CVOTE_STATUS.PROPOSED) {
+      notificationResult['duration'] = (endTime - nowTime + 604800) > 0 ? (endTime - nowTime + 604800) : 0
+    }
+
+    if (proposal.status === constant.CVOTE_STATUS.NOTIFICATION
+        && proposal.rejectAmount >= 0
+        && proposal.rejectHeight > 0) {
+      notificationResult['rejectAmount'] = `${proposal.rejectAmount}`
+      notificationResult['rejectHeight'] = `${proposal.rejectHeight}`
+      notificationResult['rejectAmount'] = (proposal.rejectAmount / proposal.rejectHeight).toFixed(4)
+      notificationResult['duration'] = (endTime - nowTime + 604800 * 2) > 0 ? (endTime - nowTime + 604800 * 2) : 0
+    }
+
     return _.omit(
       {
-        ...proposal._doc,
+        ..._.omit(proposal._doc, ['abstract']),
+        abs: proposal.abstract,
+        ...votingResult,
+        ...notificationResult,
         createdAt: timestamp.second(proposal.createdAt),
         voteResult,
         address,
-        duration,
         tracking,
         summary
       },
