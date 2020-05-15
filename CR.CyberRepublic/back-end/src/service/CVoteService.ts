@@ -103,10 +103,10 @@ export default class extends Base {
       const proposalHash = _.get(suggestion, 'proposalHash')
       if (proposalHash) {
         const rs = await getProposalState(proposalHash)
-        if (!rs) {
-          return { success: false }
+        if (rs && rs.success === false) {
+          return { success: false, message: rs.message }
         }
-        if (rs && rs.status === 'Registered') {
+        if (rs && rs.success && rs.status === 'Registered') {
           const proposal = await this.proposeSuggestion({
             suggestionId: id,
             proposalHash
@@ -115,7 +115,7 @@ export default class extends Base {
         }
       }
     } else {
-      return { success: false }
+      return { success: false, message: 'no this suggestion' }
     }
   }
 

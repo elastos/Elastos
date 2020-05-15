@@ -96,10 +96,14 @@ export const getProposalState = async (proposalHash: string) => {
     const res = await axios.post(process.env.ELA_NODE_URL, data, {
       headers
     })
-    if (res && res.data) {
+    if (res) {
+      const message = _.get(res.data, 'error.message')
+      if (message) {
+        return { success: false, message }
+      }
       const status = _.get(res.data, 'result.proposalstate.status')
       if (status) {
-        return { status }
+        return { success: true, status }
       }
     }
   } catch (err) {

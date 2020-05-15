@@ -1254,27 +1254,24 @@ export default class extends Base {
         { _id: suggestion._id },
         { $set: { draftHash, ownerPublicKey } }
       )
-
+      const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
+        iat: now,
+        exp: now + (60 * 60 * 24),
         command: 'createsuggestion',
         iss: process.env.APP_DID,
-        suggestionId: suggestion._id,
+        sid: suggestion._id,
         callbackurl: `${process.env.API_URL}/api/suggestion/signature-callback`,
-        website: {
-          domain: process.env.SERVER_URL,
-          logo: `${process.env.SERVER_URL}/assets/images/cr_ela_wallet.svg`
-        },
         data: {
           proposaltype: 'normal',
-          categorydata: 'Null',
+          categorydata: '',
           ownerpublickey: ownerPublicKey,
           drafthash: draftHash,
           budgets: this.convertBudget(suggestion.budget),
           recipient: suggestion.elaAddress
         }
       }
-      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, {
-        expiresIn: '7d',
+      const jwtToken = jwt.sign(JSON.stringify(jwtClaims), process.env.APP_PRIVATE_KEY, {
         algorithm: 'ES256'
       })
       const url = `elastos://crproposal/${jwtToken}`
@@ -1300,7 +1297,7 @@ export default class extends Base {
       const payload: any = jwt.decode(
         claims.req.slice('elastos://crproposal/'.length)
       )
-      if (!_.get(payload, 'suggestionId')) {
+      if (!_.get(payload, 'sid')) {
         return {
           code: 400,
           success: false,
@@ -1309,7 +1306,7 @@ export default class extends Base {
       }
 
       const suggestion = await this.model.findById({
-        _id: payload.suggestionId
+        _id: payload.sid
       })
       if (!suggestion) {
         return {
@@ -1335,7 +1332,7 @@ export default class extends Base {
         async (err: any, decoded: any) => {
           if (err) {
             await this.model.update(
-              { _id: payload.suggestionId },
+              { _id: payload.sid },
               {
                 $set: {
                   signature: { message: 'Verify signatrue failed.' }
@@ -1350,7 +1347,7 @@ export default class extends Base {
           } else {
             try {
               await this.model.update(
-                { _id: payload.suggestionId },
+                { _id: payload.sid },
                 { $set: { signature: { data: decoded.data } } }
               )
               return { code: 200, success: true, message: 'Ok' }
@@ -1413,19 +1410,17 @@ export default class extends Base {
       if (!suggestion) {
         return { success: false }
       }
-
+      const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
+        iat: now,
+        exp: now + (60 * 60 * 24),
         command: 'createproposal',
         iss: process.env.APP_DID,
-        suggestionId: suggestion._id,
+        sid: suggestion._id,
         callbackurl: `${process.env.API_URL}/api/suggestion/cm-signature-callback`,
-        website: {
-          domain: process.env.SERVER_URL,
-          logo: `${process.env.SERVER_URL}/assets/images/cr_ela_wallet.svg`
-        },
         data: {
           proposaltype: 'normal',
-          categorydata: 'Null',
+          categorydata: '',
           ownerpublickey: suggestion.ownerPublicKey,
           drafthash: suggestion.draftHash,
           budgets: this.convertBudget(suggestion.budget),
@@ -1434,8 +1429,7 @@ export default class extends Base {
           did: councilMemberDid
         }
       }
-      const jwtToken = jwt.sign(jwtClaims, process.env.APP_PRIVATE_KEY, {
-        expiresIn: '7d',
+      const jwtToken = jwt.sign(JSON.stringify(jwtClaims), process.env.APP_PRIVATE_KEY, {
         algorithm: 'ES256'
       })
       const url = `elastos://crproposal/${jwtToken}`
@@ -1461,7 +1455,7 @@ export default class extends Base {
       const payload: any = jwt.decode(
         claims.req.slice('elastos://crproposal/'.length)
       )
-      if (!_.get(payload, 'suggestionId')) {
+      if (!_.get(payload, 'sid')) {
         return {
           code: 400,
           success: false,
@@ -1470,7 +1464,7 @@ export default class extends Base {
       }
 
       const suggestion = await this.model.findById({
-        _id: payload.suggestionId
+        _id: payload.sid
       })
 
       if (!suggestion) {
@@ -1504,7 +1498,7 @@ export default class extends Base {
           } else {
             try {
               await this.model.update(
-                { _id: payload.suggestionId },
+                { _id: payload.sid },
                 { $set: { proposalHash: decoded.data } }
               )
               return { code: 200, success: true, message: 'Ok' }
