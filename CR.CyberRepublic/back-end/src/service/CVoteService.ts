@@ -1301,8 +1301,7 @@ export default class extends Base {
   }
 
 
-  public async pollVoteStatus(param: any) {
-    const { id } = param
+  public async pollVoteStatus(id) {
     const db_cvote = this.getDBModel('CVote')
     const proposal = await db_cvote.findById(id)
     if (proposal) {

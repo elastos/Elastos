@@ -288,7 +288,7 @@ export default class extends Base {
         const updateUserInformation = async (councilMembers: any) => {
             const didList = _.map(councilMembers, (o: any) => DID_PREFIX + o.did)
             const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
-            const userByDID = _.keyBy(userList, 'did.id')
+            const userByDID = _.keyBy(userList, (o: any) => o.did.id.replace(DID_PREFIX, ''))
 
             // TODO: need to optimizing (multiple update)
             // add avatar nickname into user's did
@@ -296,7 +296,7 @@ export default class extends Base {
                 if (o && o.did && !o.did.id) {
                     return
                 }
-                const information: any = await getInformationByDID(o.did.id)
+                const information: any = await getInformationByDID(o.did.id.replace(DID_PREFIX, ''))
                 const result = _.pick(information, ['avatar', 'didName'])
                 if (result) {
                     await this.userMode.getDBInstance().update({_id: o._id}, {
@@ -426,7 +426,7 @@ export default class extends Base {
             console.log('---------------- start council or secretariat cronJob -------------')
             await this.eachJob()
             await this.eachSecretariatJob()
-        }, 1000 * 60 * 15)
+        }, 1000 * 60 * 10)
     }
 
     /**
