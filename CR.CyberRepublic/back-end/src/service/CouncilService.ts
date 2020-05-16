@@ -229,7 +229,7 @@ export default class extends Base {
                 status: constant.SECRETARIAT_STATUS.CURRENT
             }
 
-            if (user) {
+            if (user && user.did) {
                 // add public key into user's did
                 await this.userMode.getDBInstance().update({_id: user._id}, {
                     $set: {
@@ -243,14 +243,13 @@ export default class extends Base {
         } else {
 
             // update secretariat
-            if (information) {
-                await this.secretariatModel.getDBInstance().update({did: secretariatDID}, {
-                    ...information
-                })
-            }
+            await this.secretariatModel.getDBInstance().update({did: secretariatDID}, {
+                ...information,
+                user: user && user._id,
+            })
 
             // if public key not on the user's did
-            if (user && user.did && !user.did.compressedPublicKey) {
+            if (user && user.did) {
                 await this.userMode.getDBInstance().update({_id: user._id}, {
                     $set: {'did.compressedPublicKey': secretariatPublicKey}
                 })
@@ -283,6 +282,35 @@ export default class extends Base {
             depositHash: data.deposithash,
             status: data.state,
         });
+        
+        const updateUserInformation = async (councilMembers: any) => {
+            const didList = _.map(councilMembers, 'did')
+            const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
+            const userByDID = _.keyBy(userList, 'did.id')
+
+            // TODO: need to optimizing (multiple update)
+            // add avatar nickname into user's did
+            await Promise.all(_.map(userList, async (o: any) => {
+                if (o && o.did && !o.did.id) {
+                    return
+                }
+                const information: any = await getInformationByDID(o.did.id)
+                const result = _.pick(information, ['avatar', 'didName'])
+                if (result) {
+                    await this.userMode.getDBInstance().update({_id: o._id}, {
+                        $set: {
+                            'did.avatar': result.avatar,
+                            'did.didName': result.didName
+                        }
+                    })
+                }
+            }))
+
+            return _.map(councilMembers, (o: any) => ({
+                ...o,
+                user: userByDID[o.did]
+            }))
+        }
 
         // not exist council
         if (!lastCouncil) {
@@ -313,30 +341,8 @@ export default class extends Base {
                 doc.councilMembers = _.map(currentCouncil.crmembersinfo, (o) => dataToCouncil(o))
             }
 
-            const didList = _.map(doc.councilMembers, 'did')
-            const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
-            const userByDID = _.keyBy(userList, 'did.id')
-
-            doc.councilMembers = _.map(doc.councilMembers, (o: any) => ({
-                ...o,
-                user: userByDID[o.did]
-            }))
-
-            // TODO: need to optimizing (multiple update)
-            // add avatar nickname into user's did
-            await Promise.all(_.map(userList, async (o: any) => {
-                const information: any = await getInformationByDID(o.did.id)
-                const result = _.pick(information, ['avatar', 'didName'])
-                if (result) {
-                    await this.userMode.getDBInstance().update({_id: o._id}, {
-                        $set: {
-                            'did.avatar': result.avatar,
-                            'did.didName': result.didName
-                        }
-                    })
-                }
-            }))
-
+            doc.councilMembers = await updateUserInformation(doc.councilMembers)
+        
             await this.model.getDBInstance().create(doc);
 
         } else {
@@ -363,10 +369,11 @@ export default class extends Base {
             const newCouncilsByDID = _.keyBy(newCouncilMembers, 'did')
             const oldCouncilsByDID = _.keyBy(lastCouncil.councilMembers, 'did')
 
-            const councilMembers = _.map(oldCouncilsByDID, (v: any, k: any) => (_.merge(v, newCouncilsByDID[k])))
+            const councils = _.map(oldCouncilsByDID, (v: any, k: any) => (_.merge(v._doc, newCouncilsByDID[k])))
+            const councilMembers = await updateUserInformation(councils)
 
             await this.model.getDBInstance().update({_id: lastCouncil._id}, {councilMembers})
-
+            
             // TODO: 换届
             // const {index, endDate} = lastCouncil
             //
