@@ -1128,7 +1128,7 @@ export default class extends Base {
         return { success: false ,message: "not find proposal"}
       }
 
-      const currentVoteResult: any = _.filter(cur.voteResult, (o: any) => o.votedBy.equals(userId))
+      const currentVoteResult: any = _.filter(cur.voteResult, (o: any) => o.votedBy.equals(userId))[0]
       
       const voteResultOnChain = {
         [constant.CVOTE_RESULT.SUPPORT]: 'approve',
