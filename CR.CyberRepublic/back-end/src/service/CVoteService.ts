@@ -1128,6 +1128,8 @@ export default class extends Base {
         return { success: false ,message: "not find proposal"}
       }
 
+      const currentVoteResult: any = _.filter(cur.voteResult, (o: any) => o.votedBy.equals(userId))
+      
       const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
         iat: now,
@@ -1137,17 +1139,11 @@ export default class extends Base {
         command:"reviewproposal",
         data: {
           proposalHash: cur.proposalHash,
-          voteResult: cur.voteResult,
-          opinionHash: "",
+          voteResult: currentVoteResult.value,
+          opinionHash: utilCrypto.sha256D(currentVoteResult.reason),
           did: councilMemberDid
         }
       }
-
-      cur.voteResult.forEach(function(res){
-        if(res.votedBy.equals(userId)){
-          jwtClaims.data.opinionHash = utilCrypto.sha256D(res.reason)
-        }
-      })
     
       const jwtToken = jwt.sign(JSON.stringify(jwtClaims), process.env.APP_PRIVATE_KEY, { 
         algorithm: 'ES256' 
