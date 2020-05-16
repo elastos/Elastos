@@ -5,6 +5,7 @@ import { Button, Modal } from 'antd'
 import I18N from '@/I18N'
 import BudgetForm from '@/module/form/BudgetForm/Container'
 import PaymentList from './PaymentList'
+import _ from 'lodash'
 
 class PaymentSchedule extends Component {
   constructor(props) {
@@ -37,7 +38,7 @@ class PaymentSchedule extends Component {
     })
   }
 
-  validateAmount = value => {
+  validateAmount = (value) => {
     const reg = /^(0|[1-9][0-9]*)(\.[0-9]*)?$/
     return (!isNaN(value) && reg.test(value)) || value === '' ? true : false
   }
@@ -75,16 +76,17 @@ class PaymentSchedule extends Component {
     this.setState({ visible: true, index: -1 })
   }
 
-  handleDelete = index => {
+  handleDelete = (index) => {
     const { paymentItems } = this.state
     const rs = [
       ...paymentItems.slice(0, index),
       ...paymentItems.slice(index + 1)
     ]
-    const errors = this.validateFields('schedule', rs)
+    const sortedItems = _.sortBy(rs, 'milestoneKey')
+    const errors = this.validateFields('schedule', sortedItems)
     this.setState(
       {
-        paymentItems: rs,
+        paymentItems: sortedItems,
         errors
       },
       () => {
@@ -93,11 +95,11 @@ class PaymentSchedule extends Component {
     )
   }
 
-  handleEdit = index => {
+  handleEdit = (index) => {
     this.setState({ index, visible: true })
   }
 
-  handleSubmit = values => {
+  handleSubmit = (values) => {
     const { paymentItems, index } = this.state
     if (index >= 0) {
       const rs = paymentItems.map((item, key) => {
@@ -106,16 +108,19 @@ class PaymentSchedule extends Component {
         }
         return item
       })
-      this.setState({ paymentItems: rs, visible: false }, () => {
+      const sortedItems = _.sortBy(rs, 'milestoneKey')
+      this.setState({ paymentItems: sortedItems, visible: false }, () => {
         this.passDataToParent()
       })
       return
     }
     const rs = [...paymentItems, values]
-    const errors = this.validateFields('schedule', rs)
+
+    const sortedItems = _.sortBy(rs, 'milestoneKey')
+    const errors = this.validateFields('schedule', sortedItems)
     this.setState(
       {
-        paymentItems: rs,
+        paymentItems: sortedItems,
         visible: false,
         errors
       },
@@ -138,6 +143,8 @@ class PaymentSchedule extends Component {
   render() {
     const { paymentItems, index, total, address, errors } = this.state
     const milestone = this.getMilestone()
+    const flag = milestone && milestone.length <= paymentItems.length
+    const disabled = !milestone || flag
     return (
       <Wrapper>
         <Section>
@@ -145,7 +152,7 @@ class PaymentSchedule extends Component {
           <StyledInput
             error={errors.total ? true : false}
             value={total}
-            onChange={e => this.handleChange(e, 'total')}
+            onChange={(e) => this.handleChange(e, 'total')}
           />
           {errors.total ? <Error>{errors.total}</Error> : null}
         </Section>
@@ -154,21 +161,16 @@ class PaymentSchedule extends Component {
           <StyledInput
             error={errors.address ? true : false}
             value={address}
-            onChange={e => this.handleChange(e, 'address')}
+            onChange={(e) => this.handleChange(e, 'address')}
           />
           {errors.address ? <Error>{errors.address}</Error> : null}
         </Section>
         <Section>
           <Label>{I18N.get('suggestion.budget.schedule')}</Label>
-          <Button
-            onClick={this.showModal}
-            disabled={!milestone.length ? true : false}
-          >
+          <Button onClick={this.showModal} disabled={disabled ? true : false}>
             {I18N.get('suggestion.budget.create')}
           </Button>
-          {!milestone.length ? (
-            <Tip>{I18N.get('suggestion.budget.tip')}</Tip>
-          ) : null}
+          {disabled ? <Tip>{I18N.get('suggestion.budget.tip')}</Tip> : null}
         </Section>
         {errors.schedule ? <Error>{errors.schedule}</Error> : null}
         {paymentItems.length ? (
@@ -189,11 +191,12 @@ class PaymentSchedule extends Component {
           {this.state.visible === true ? (
             <BudgetForm
               item={index >= 0 ? paymentItems[index] : null}
-              types={paymentItems.map(item => item.type)}
+              types={paymentItems.map((item) => item.type)}
               onSubmit={this.handleSubmit}
               onCancel={this.hideModal}
               milestone={milestone}
               total={total}
+              paymentItems={paymentItems}
             />
           ) : null}
         </Modal>
@@ -239,11 +242,11 @@ const StyledInput = styled.input`
   height: 40px;
   transition: all 0.3s;
   &:hover {
-    border-color: ${props => (props.error ? '#f5222d' : '#66bda3')};
+    border-color: ${(props) => (props.error ? '#f5222d' : '#66bda3')};
   }
   &:focus {
-    border-color: ${props => (props.error ? '#f5222d' : '#66bda3')};
-    box-shadow: ${props =>
+    border-color: ${(props) => (props.error ? '#f5222d' : '#66bda3')};
+    box-shadow: ${(props) =>
       props.error
         ? '0 0 0 2px rgba(245, 34, 45, 0.2);'
         : '0 0 0 2px rgba(67, 175, 146, 0.2)'};

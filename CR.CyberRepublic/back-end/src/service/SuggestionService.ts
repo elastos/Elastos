@@ -1192,7 +1192,8 @@ export default class extends Base {
       CONDITIONED: 'NormalPayment',
       COMPLETION: 'FinalPayment'
     }
-    const budgets = budget.map((item: BudgetItem) => ({
+    const sortedBudget = _.sortBy(budget, 'milestoneKey')
+    const budgets = sortedBudget.map((item: BudgetItem) => ({
       type: chainBudgetType[item.type],
       stage: parseInt(item.milestoneKey),
       amount: (parseInt(item.amount) * Math.pow(10, 8)).toString()
@@ -1245,10 +1246,11 @@ export default class extends Base {
         'elaAddress'
       ]
       const content = {}
-      for (let field in _.sortBy(fields)) {
+      const sortedFields = _.sortBy(fields)
+      for (let index in sortedFields) {
+        const field = sortedFields[index]
         content[field] = suggestion[field]
       }
-
       const draftHash = utilCrypto.sha256D(JSON.stringify(content))
       await this.model.update(
         { _id: suggestion._id },
@@ -1257,7 +1259,7 @@ export default class extends Base {
       const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
         iat: now,
-        exp: now + (60 * 60 * 24),
+        exp: now + 60 * 60 * 24,
         command: 'createsuggestion',
         iss: process.env.APP_DID,
         sid: suggestion._id,
@@ -1271,9 +1273,13 @@ export default class extends Base {
           recipient: suggestion.elaAddress
         }
       }
-      const jwtToken = jwt.sign(JSON.stringify(jwtClaims), process.env.APP_PRIVATE_KEY, {
-        algorithm: 'ES256'
-      })
+      const jwtToken = jwt.sign(
+        JSON.stringify(jwtClaims),
+        process.env.APP_PRIVATE_KEY,
+        {
+          algorithm: 'ES256'
+        }
+      )
       const url = `elastos://crproposal/${jwtToken}`
       return { success: true, url }
     } catch (err) {
@@ -1413,7 +1419,7 @@ export default class extends Base {
       const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
         iat: now,
-        exp: now + (60 * 60 * 24),
+        exp: now + 60 * 60 * 24,
         command: 'createproposal',
         iss: process.env.APP_DID,
         sid: suggestion._id,
@@ -1429,9 +1435,13 @@ export default class extends Base {
           did: councilMemberDid
         }
       }
-      const jwtToken = jwt.sign(JSON.stringify(jwtClaims), process.env.APP_PRIVATE_KEY, {
-        algorithm: 'ES256'
-      })
+      const jwtToken = jwt.sign(
+        JSON.stringify(jwtClaims),
+        process.env.APP_PRIVATE_KEY,
+        {
+          algorithm: 'ES256'
+        }
+      )
       const url = `elastos://crproposal/${jwtToken}`
       return { success: true, url }
     } catch (err) {

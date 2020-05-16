@@ -13,5 +13,5 @@ export default Base.setRouter([
         path: '/:id',
         router: proposal,
         method: 'get'
-    },
+    }
 ])

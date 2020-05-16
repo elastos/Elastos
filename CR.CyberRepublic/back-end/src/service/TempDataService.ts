@@ -1,5 +1,5 @@
 import Base from './Base'
-import {permissions} from '../utility';
+import {permissions, ela} from '../utility';
 
 const _ = require('lodash')
 
