@@ -171,9 +171,9 @@ export const CVote = {
     type: String
   },
   rejectAmount: {
-    type: Number
+    type: String
   },
   rejectHeight: {
-    type: Number
+    type: String
   }
 }

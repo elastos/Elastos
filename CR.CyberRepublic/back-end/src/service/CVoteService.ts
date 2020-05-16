@@ -1476,7 +1476,9 @@ export default class extends Base {
       'abstract',
       'voteResult',
       'createdAt',
-      'proposalHash'
+      'proposalHash',
+      'rejectAmount',
+      'rejectHeight',
     ]
     const proposal = await db_cvote
       .getDBInstance()
@@ -1539,7 +1541,7 @@ export default class extends Base {
         && proposal.rejectHeight > 0) {
       notificationResult['rejectAmount'] = `${proposal.rejectAmount}`
       notificationResult['rejectHeight'] = `${proposal.rejectHeight}`
-      notificationResult['rejectAmount'] = (proposal.rejectAmount / proposal.rejectHeight).toFixed(4)
+      notificationResult['rejectRatio'] = _.toNumber((_.toNumber(proposal.rejectAmount) / _.toNumber(proposal.rejectHeight)).toFixed(4))
       notificationResult['duration'] = (endTime - nowTime + 604800 * 2) > 0 ? (endTime - nowTime + 604800 * 2) : 0
     }
 
