@@ -1143,7 +1143,7 @@ export default class extends Base {
 
       cur.voteResult.forEach(function(res){
         if(res.votedBy.equals(userId)){
-          jwtClaims.data.opinionHash = utilCrypto.sha256D(utilCrypto.sha256D(res.reason))
+          jwtClaims.data.opinionHash = utilCrypto.sha256D(res.reason)
         }
       })
     
