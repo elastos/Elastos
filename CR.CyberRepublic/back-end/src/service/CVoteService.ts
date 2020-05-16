@@ -1483,7 +1483,7 @@ export default class extends Base {
     const proposal = await db_cvote
       .getDBInstance()
       .findOne({ vid: id }, fields.join(' '))
-      .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .populate('voteResult.votedBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
     if (!proposal) {
       return {
@@ -1498,7 +1498,7 @@ export default class extends Base {
 
     const proposalId = proposal._id
 
-    const voteResultFields = ['value', 'reason', 'votedBy']
+    const voteResultFields = ['value', 'reason', 'votedBy', 'avatar']
     // filter undecided vote result
     const filterVoteResult = _.filter(
       proposal._doc.voteResult,
@@ -1511,11 +1511,8 @@ export default class extends Base {
       _.pick(
         {
           ...o._doc,
-          votedBy: `${_.get(o, 'votedBy.profile.firstName')} ${_.get(
-            o,
-            'votedBy.profile.firstName'
-          )}`,
-          avatar: _.get(o, 'votedBy.profile.avatar')
+          votedBy: _.get(o, 'votedBy.did.didName'),
+          avatar: _.get(o, 'votedBy.did.avatar')
         },
         voteResultFields
       )
@@ -1577,7 +1574,7 @@ export default class extends Base {
     const cursorTrack = db_tracking
       .getDBInstance()
       .find(queryTrack, fieldsTrack.join(' '))
-      .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
       .sort({ createdAt: 1 })
     // const totalCursorTrack = db_tracking.getDBInstance().find(queryTrack).count()
 
@@ -1588,11 +1585,8 @@ export default class extends Base {
       const comment = o._doc.comment
       const commentObj = {
         content: comment.content,
-        createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(
-          o,
-          'comment.createdBy.profile.firstName'
-        )}`,
-        avatar: _.get(o, 'comment.createdBy.profile.avatar')
+        createdBy: _.get(o, 'comment.createdBy.did.didName'),
+        avatar: _.get(o, 'comment.createdBy.did.avatar')
       }
       const obj = {
         ...o._doc,
@@ -1621,7 +1615,7 @@ export default class extends Base {
     const cursorSummary = db_summary
       .getDBInstance()
       .find(querySummary, fieldsSummary.join(' '))
-      .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
       .sort({ createdAt: 1 })
     // const totalCursorSummary = db_summary.getDBInstance().find(querySummary).count()
 
@@ -1632,11 +1626,8 @@ export default class extends Base {
       const comment = o._doc.comment
       const commentObj = {
         content: comment.content,
-        createdBy: `${_.get(o, 'comment.createdBy.profile.firstName')} ${_.get(
-          o,
-          'comment.createdBy.profile.firstName'
-        )}`,
-        avatar: _.get(o, 'comment.createdBy.profile.avatar')
+        createdBy: _.get(o, 'comment.createdBy.did.didName'),
+        avatar: _.get(o, 'comment.createdBy.did.avatar')
       }
       const obj = {
         ...o._doc,

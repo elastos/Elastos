@@ -1,18 +1,18 @@
 import Base from './Base'
-import {permissions} from '../utility';
+import {permissions, ela} from '../utility';
 
 const _ = require('lodash')
 
 
 export default class extends Base {
     public async updateProposal(param: any): Promise<any> {
-        const userRole = _.get(this.currentUser, 'role')
+        // const userRole = _.get(this.currentUser, 'role')
 
-        if (!permissions.isAdmin(userRole)){
-            return {
-                code: 403,
-            }
-        }
+        // if (!permissions.isAdmin(userRole)){
+        //     return {
+        //         code: 403,
+        //     }
+        // }
 
         const {id, status, proposedAt, voteResult, voteHistory, rejectAmount, rejectHeight } = param
 
@@ -43,6 +43,18 @@ export default class extends Base {
         ]
 
         const rs = await db_cvote.getDBInstance().findOne({_id: id}, fields)
+
+        return rs
+    }
+
+    public async listCouncil(): Promise<any> {
+        const rs = await ela.currentCouncil()
+
+        return rs
+    }
+
+    public async listCandidates(): Promise<any> {
+        const rs = await ela.currentCandidates()
 
         return rs
     }
