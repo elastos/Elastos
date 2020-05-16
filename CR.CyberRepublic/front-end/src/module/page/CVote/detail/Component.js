@@ -879,7 +879,7 @@ class C extends StandardPage {
       )
     }
 
-    const { match, getReviewProposal,isCouncil,data,currentUserId } = this.props
+    const { match, getReviewProposalUrl, getReviewProposal,isCouncil,data,currentUserId } = this.props
     const ownerVote = _.find(data.voteResult,function(o){
       if(o.votedBy._id == currentUserId){
         return o
@@ -896,6 +896,7 @@ class C extends StandardPage {
         label,
         id,
         getReviewProposal,
+        getReviewProposalUrl,
         voteResult,
         isCouncil,
         currentUserId,

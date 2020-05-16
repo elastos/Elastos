@@ -1075,6 +1075,7 @@ export default class extends Base {
       console.log('---------------- start cvote cronjob -------------')
       this.eachJob()
       this.eachMemberVoteJob()
+      this.pollingVoteStatus()
     }, 1000 * 60)
   }
 
@@ -1286,9 +1287,21 @@ export default class extends Base {
       }
     }
   }
-
+  
   // according to txid polling vote status
-  public async pollingVoteStatus(param: any) {
+  public async pollingVoteStatus() {
+    const db_cvote = this.getDBModel('CVote')
+    const list = await db_cvote.find({
+      status: constant.CVOTE_STATUS.PROPOSED
+    })
+
+    _.each(list, (item) => {
+      this.pollVoteStatus(item._id)
+    })
+  }
+
+
+  public async pollVoteStatus(param: any) {
     const { id } = param
     const db_cvote = this.getDBModel('CVote')
     const proposal = await db_cvote.findById(id)
@@ -1549,7 +1562,7 @@ export default class extends Base {
 
     return _.omit(
       {
-        ..._.omit(proposal._doc, ['abstract', 'rejectAmount', 'rejectHeight']),
+        ..._.omit(proposal._doc, ['abstract', 'rejectAmount', 'rejectHeight', 'status']),
         abs: proposal.abstract,
         ...votingResult,
         ...notificationResult,
