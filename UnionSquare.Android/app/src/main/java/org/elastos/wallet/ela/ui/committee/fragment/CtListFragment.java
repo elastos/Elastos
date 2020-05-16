@@ -1,21 +1,20 @@
 package org.elastos.wallet.ela.ui.committee.fragment;
 
-import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
-import org.elastos.wallet.ela.ui.committee.adaper.CtListPagerAdapter;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.adaper.GeneralCtRecAdapter;
 import org.elastos.wallet.ela.ui.committee.adaper.SecretaryCtRecAdapter;
 import org.elastos.wallet.ela.ui.committee.bean.GeneralCtBean;
 import org.elastos.wallet.ela.ui.committee.bean.SecretaryCtBean;
-import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +25,7 @@ import butterknife.OnClick;
 /**
  * Committee and secretary general list container
  */
-public class CtListFragment extends BaseFragment {
+public class CtListFragment extends BaseFragment implements NewBaseViewData {
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
     @BindView(R.id.toolbar)
@@ -47,12 +46,14 @@ public class CtListFragment extends BaseFragment {
     @BindView(R.id.general_rv)
     RecyclerView generalRv;
     GeneralCtRecAdapter generalAdapter;
-    List<GeneralCtBean> generalList;
+    List<GeneralCtBean.DataBean> generalList;
 
     @BindView(R.id.secretary_rv)
     RecyclerView secretaryRv;
     SecretaryCtRecAdapter secretaryAdapter;
     List<SecretaryCtBean> secretaryList;
+
+    private CtListPresenter presenter;
 
     @Override
     protected int getLayoutId() {
@@ -63,6 +64,8 @@ public class CtListFragment extends BaseFragment {
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, String.format(getString(R.string.actmember), "1"));
 
+        presenter = new CtListPresenter();
+        presenter.getCouncilTerm(this, "id");
         generalRockData();
         secretaryRockData();
 
@@ -78,7 +81,7 @@ public class CtListFragment extends BaseFragment {
         secretaryTitleTv.setTextColor(getResources().getColor(R.color.whiter50));
         generalLayout.setVisibility(View.VISIBLE);
         secretaryLayout.setVisibility(View.GONE);
-        setGeneralRv();
+        refreshGeneralRv();
     }
 
     private void selectSecretaryList() {
@@ -88,10 +91,10 @@ public class CtListFragment extends BaseFragment {
         secretaryTitleTv.setTextColor(getResources().getColor(R.color.whiter));
         generalLayout.setVisibility(View.GONE);
         secretaryLayout.setVisibility(View.VISIBLE);
-        setSecretaryRv();
+        refreshSecretaryRv();
     }
 
-    private void setGeneralRv() {
+    private void refreshGeneralRv() {
         if (generalAdapter == null) {
             generalAdapter = new GeneralCtRecAdapter(getContext(), generalList);
             generalRv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
@@ -105,7 +108,7 @@ public class CtListFragment extends BaseFragment {
         }
     }
 
-    private void setSecretaryRv() {
+    private void refreshSecretaryRv() {
         if (secretaryAdapter == null) {
             secretaryAdapter = new SecretaryCtRecAdapter(getContext(), secretaryList);
             secretaryRv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
@@ -175,56 +178,41 @@ public class CtListFragment extends BaseFragment {
 
     private void generalRockData() {
         generalList = new ArrayList<>();
-        GeneralCtBean GeneralCtBean1 = new GeneralCtBean();
-        GeneralCtBean1.setName("Feng1");
-        GeneralCtBean1.setLocation("中国");
+        generalList = new ArrayList<>();
+        GeneralCtBean.DataBean GeneralCtBean1 = new GeneralCtBean.DataBean();
+        GeneralCtBean1.setDidName("Feng Zhang1");
+        GeneralCtBean1.setLocation(86);
+        GeneralCtBean1.setAvatar("");
+        GeneralCtBean1.setStatus("Elected");
         generalList.add(GeneralCtBean1);
 
-        GeneralCtBean GeneralCtBean2 = new GeneralCtBean();
-        GeneralCtBean2.setName("Feng2");
-        GeneralCtBean2.setLocation("中国");
+        GeneralCtBean.DataBean GeneralCtBean2 = new GeneralCtBean.DataBean();
+        GeneralCtBean2.setDidName("Feng Zhang1");
+        GeneralCtBean2.setLocation(86);
+        GeneralCtBean2.setAvatar("");
+        GeneralCtBean2.setStatus("Elected");
         generalList.add(GeneralCtBean2);
 
-        GeneralCtBean GeneralCtBean3 = new GeneralCtBean();
-        GeneralCtBean3.setName("Feng3");
-        GeneralCtBean3.setLocation("中国");
+        GeneralCtBean.DataBean GeneralCtBean3 = new GeneralCtBean.DataBean();
+        GeneralCtBean3.setDidName("Feng Zhang1");
+        GeneralCtBean3.setLocation(86);
+        GeneralCtBean3.setAvatar("");
+        GeneralCtBean3.setStatus("Returned");
         generalList.add(GeneralCtBean3);
 
-        GeneralCtBean GeneralCtBean4 = new GeneralCtBean();
-        GeneralCtBean4.setName("Feng4");
-        GeneralCtBean4.setLocation("中国");
+        GeneralCtBean.DataBean GeneralCtBean4 = new GeneralCtBean.DataBean();
+        GeneralCtBean4.setDidName("Feng Zhang1");
+        GeneralCtBean4.setLocation(86);
+        GeneralCtBean4.setAvatar("");
+        GeneralCtBean4.setStatus("");
         generalList.add(GeneralCtBean4);
 
-        GeneralCtBean GeneralCtBean5 = new GeneralCtBean();
-        GeneralCtBean5.setName("Feng5");
-        GeneralCtBean5.setLocation("中国");
+        GeneralCtBean.DataBean GeneralCtBean5 = new GeneralCtBean.DataBean();
+        GeneralCtBean5.setDidName("Feng Zhang1");
+        GeneralCtBean5.setLocation(86);
+        GeneralCtBean5.setAvatar("");
+        GeneralCtBean5.setStatus("");
         generalList.add(GeneralCtBean5);
-
-        GeneralCtBean GeneralCtBean6 = new GeneralCtBean();
-        GeneralCtBean6.setName("Feng6");
-        GeneralCtBean6.setLocation("中国");
-        generalList.add(GeneralCtBean6);
-
-        GeneralCtBean GeneralCtBean7 = new GeneralCtBean();
-        GeneralCtBean7.setName("Feng7");
-        GeneralCtBean7.setLocation("中国");
-        generalList.add(GeneralCtBean7);
-
-
-        GeneralCtBean GeneralCtBean8 = new GeneralCtBean();
-        GeneralCtBean8.setName("Feng8");
-        GeneralCtBean8.setLocation("中国");
-        generalList.add(GeneralCtBean8);
-
-        GeneralCtBean GeneralCtBean9 = new GeneralCtBean();
-        GeneralCtBean9.setName("Feng Zhang9");
-        GeneralCtBean9.setLocation("中国");
-        generalList.add(GeneralCtBean9);
-
-        GeneralCtBean GeneralCtBean10 = new GeneralCtBean();
-        GeneralCtBean10.setName("Feng Zhang10");
-        GeneralCtBean10.setLocation("中国");
-        generalList.add(GeneralCtBean10);
     }
 
     @OnClick({R.id.ct_layout, R.id.secretary_layout})
@@ -237,5 +225,34 @@ public class CtListFragment extends BaseFragment {
                 selectSecretaryList();
                 break;
         }
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "getSuggestion":
+                setGeneralRec((GeneralCtBean) baseEntity);
+                break;
+        }
+    }
+
+    private void setGeneralRec(GeneralCtBean generalCtBean) {
+        if(null == generalCtBean) return;
+        List<GeneralCtBean.DataBean> datas = generalCtBean.getData();
+        if(datas==null || datas.size()<=0) return;
+        if(null == generalList) {
+            generalList = new ArrayList<>();
+        } else {
+            generalList.clear();
+        }
+        for(GeneralCtBean.DataBean data : datas) {
+            GeneralCtBean.DataBean bean = new GeneralCtBean.DataBean();
+            bean.setDidName(data.getDidName());
+            bean.setLocation(data.getLocation());
+            bean.setAvatar("");
+            bean.setStatus(data.getStatus());
+            generalList.add(bean);
+        }
+        refreshGeneralRv();
     }
 }

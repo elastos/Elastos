@@ -8,6 +8,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 
 public class RoundImageView extends android.support.v7.widget.AppCompatImageView {
@@ -54,7 +55,8 @@ public class RoundImageView extends android.support.v7.widget.AppCompatImageView
     }
 
     private BitmapShader initBitmapShader() {
-        Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
+        Drawable drawable = getDrawable();
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
         BitmapShader bitmapShader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
         float scale = Math.max(width / bitmap.getWidth(), height / bitmap.getHeight());
         matrix.setScale(scale, scale);

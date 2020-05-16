@@ -2,6 +2,7 @@ package org.elastos.wallet.ela.ui.committee.adaper;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,6 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.committee.bean.SecretaryCtBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
-import org.elastos.wallet.ela.utils.widget.RoundImageView;
 
 import java.util.List;
 
@@ -32,8 +32,7 @@ public class SecretaryCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdap
     @Override
     public GeneralCtRecAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_ct_secretary, viewGroup, false);
-        GeneralCtRecAdapter.ViewHolder holder = new GeneralCtRecAdapter.ViewHolder(v);
-        return holder;
+        return new GeneralCtRecAdapter.ViewHolder(v);
     }
 
     @Override
@@ -41,14 +40,9 @@ public class SecretaryCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdap
         SecretaryCtBean data = list.get(i);
         viewHolder.name.setText(data.getName());
         viewHolder.location.setText(data.getLocation());
-        GlideApp.with(context).load(data.getUrl()).error(R.mipmap.icon_ela).into(viewHolder.icon);
+        GlideApp.with(context).load(data.getAvatar()).error(R.mipmap.icon_ela).into(viewHolder.icon);
         if (commonRvListener != null) {
-            viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    commonRvListener.onRvItemClick(i, data);
-                }
-            });
+            viewHolder.itemView.setOnClickListener(v -> commonRvListener.onRvItemClick(i, data));
         }
     }
 
@@ -68,7 +62,7 @@ public class SecretaryCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdap
         @BindView(R.id.location)
         TextView location;
         @BindView(R.id.icon)
-        RoundImageView icon;
+        AppCompatImageView icon;
 
         ViewHolder(View view) {
             super(view);

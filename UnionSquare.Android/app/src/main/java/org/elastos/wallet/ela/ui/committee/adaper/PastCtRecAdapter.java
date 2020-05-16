@@ -8,9 +8,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.zxing.common.StringUtils;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Log;
 
 import java.util.List;
@@ -20,7 +23,7 @@ import butterknife.ButterKnife;
 
 public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.ViewHolder>{
 
-    public PastCtRecAdapter(Context context, List<PastCtBean> list) {
+    public PastCtRecAdapter(Context context, List<PastCtBean.DataBean> list) {
         this.context = context;
         this.list = list;
     }
@@ -40,17 +43,28 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        PastCtBean data = list.get(i);
-        String state = context.getString(R.string.voting);
-        viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+state+")"));
-        viewHolder.time.setText(data.getTime());
-        if(data.getType() != 0) {
+        PastCtBean.DataBean data = list.get(i);
+//        String state = context.getString(R.string.voting);
+        viewHolder.time.setText(data.getStartDate() + "-" + data.getEndDate());
+        String status = data.getStatus();
+        viewHolder.manager.setVisibility(View.GONE);
+        if(AppUtlis.isNullOrEmpty(status) || status.equalsIgnoreCase("HISTORY")) {
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), ""));
+        } else if(status.equalsIgnoreCase("CURRENT")) {
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.current)+")"));
+            viewHolder.manager.setVisibility(View.VISIBLE);
             viewHolder.manager.setText(context.getString(R.string.ctmanager));
-            if(null != managerListener) {
-                viewHolder.manager.setOnClickListener(v ->
-                        managerListener.onManagerClick(i)
-                );
-            }
+        } else if(status.equalsIgnoreCase("VOTING")) {
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.voting)+")"));
+            viewHolder.manager.setVisibility(View.VISIBLE);
+            viewHolder.manager.setText(context.getString(R.string.votemanager));
+        } else {
+            viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), ""));
+        }
+        if(null != managerListener) {
+            viewHolder.manager.setOnClickListener(v ->
+                    managerListener.onManagerClick(i)
+            );
         }
         if (commonRvListener != null) {
             viewHolder.itemView.setOnClickListener(v -> commonRvListener.onRvItemClick(i, data));
@@ -59,7 +73,11 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
 
     @Override
     public int getItemViewType(int position) {
-        return list.get(position).getType();
+        String status = list.get(position).getStatus();
+        if(!AppUtlis.isNullOrEmpty(status) && !status.equalsIgnoreCase("HISTORY")) {
+            return 1;
+        }
+        return 0;
     }
 
     @Override
@@ -97,5 +115,5 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
     private Context context;
     private ManagerListener managerListener;
     private CommonRvListener commonRvListener;
-    private List<PastCtBean> list;
+    private List<PastCtBean.DataBean> list;
 }

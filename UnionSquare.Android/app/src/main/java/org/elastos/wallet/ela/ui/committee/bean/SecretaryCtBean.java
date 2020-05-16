@@ -1,8 +1,10 @@
 package org.elastos.wallet.ela.ui.committee.bean;
 
-public class SecretaryCtBean {
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+
+public class SecretaryCtBean extends BaseEntity {
     private String name;
-    private String url;
+    private String avatar;
     private String location;
     private String time;
     private String state;
@@ -16,12 +18,12 @@ public class SecretaryCtBean {
         this.name = name;
     }
 
-    public String getUrl() {
-        return url;
+    public String getAvatar() {
+        return avatar;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public String getLocation() {

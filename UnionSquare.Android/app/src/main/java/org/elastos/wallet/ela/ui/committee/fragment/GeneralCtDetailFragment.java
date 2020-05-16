@@ -8,8 +8,13 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.adaper.CtExpRecAdapter;
 import org.elastos.wallet.ela.ui.committee.bean.ExperienceBean;
+import org.elastos.wallet.ela.ui.committee.bean.GeneralCtDetailBean;
+import org.elastos.wallet.ela.ui.committee.presenter.GeneralDetailPresenter;
+import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.view.CircleProgressView;
 
 import java.util.ArrayList;
@@ -21,13 +26,11 @@ import butterknife.OnClick;
 /**
  * general committee detail
  */
-public class GeneralCtDetailFragment extends BaseFragment {
+public class GeneralCtDetailFragment extends BaseFragment implements NewBaseViewData {
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
-    @BindView(R.id.progress)
-    CircleProgressView progress;
     @BindView(R.id.ct_tv)
     TextView ctTitleTv;
     @BindView(R.id.line1)
@@ -45,6 +48,8 @@ public class GeneralCtDetailFragment extends BaseFragment {
     CtExpRecAdapter adapter;
     List<ExperienceBean> list;
 
+    GeneralDetailPresenter presenter;
+
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_ct_general_detail;
@@ -54,12 +59,11 @@ public class GeneralCtDetailFragment extends BaseFragment {
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctdetail));
         progress.setProgress(50);
-
+        presenter = new GeneralDetailPresenter();
+        //TODO id, did
+        presenter.getCouncilInfo(this, "id", "did");
         rockData();
-        setRecyclerView();
     }
-
-
 
     private void selectDetail() {
         line1.setVisibility(View.VISIBLE);
@@ -118,6 +122,8 @@ public class GeneralCtDetailFragment extends BaseFragment {
         ExperienceBean4.setSubTitle("#99 2019.07.01 Yipeng Su 公示中");
         ExperienceBean4.setType(2);
         list.add(ExperienceBean4);
+
+        setRecyclerView();
     }
 
     @OnClick({R.id.tab1, R.id.tab2, R.id.impeachment_btn})
@@ -136,4 +142,58 @@ public class GeneralCtDetailFragment extends BaseFragment {
 
     }
 
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "getCouncilInfo":
+                setBaseInfo((GeneralCtDetailBean) baseEntity);
+                setCtInfo((GeneralCtDetailBean) baseEntity);
+                setCtRecord((GeneralCtDetailBean) baseEntity);
+                break;
+        }
+    }
+
+    @BindView(R.id.name)
+    TextView name;
+    @BindView(R.id.location)
+    TextView location;
+    @BindView(R.id.vote_count)
+    TextView currentVotes;
+    @BindView(R.id.impeachment_count)
+    TextView impeachmentCount;
+    @BindView(R.id.progress)
+    CircleProgressView progress;
+    private void setBaseInfo(GeneralCtDetailBean generalCtDetailBean) {
+        GeneralCtDetailBean.DataBean dataBean = generalCtDetailBean.getData().get(0);
+        name.setText(dataBean.getDidName());
+        location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
+        currentVotes.setText(String.valueOf(dataBean.getImpeachmentVotes()));
+        impeachmentCount.setText(String.valueOf(dataBean.getImpeachmentHeight()));
+    }
+
+    @BindView(R.id.did)
+    TextView did;
+    @BindView(R.id.website)
+    TextView website;
+    @BindView(R.id.introduction)
+    TextView introduction;
+    private void setCtInfo(GeneralCtDetailBean generalCtDetailBean) {
+        if(null == generalCtDetailBean) return;
+        GeneralCtDetailBean.DataBean dataBean = generalCtDetailBean.getData().get(0);
+        did.setText(dataBean.getDid());
+        website.setText(dataBean.getAddress());
+        introduction.setText(dataBean.getIntroduction());
+    }
+
+    private void setCtRecord(GeneralCtDetailBean generalCtDetailBean) {
+        if(null == generalCtDetailBean) return;
+        List<GeneralCtDetailBean.Term> terms = generalCtDetailBean.getData().get(0).getTerm();
+        for(GeneralCtDetailBean.Term term : terms) {
+            ExperienceBean ExperienceBean = new ExperienceBean();
+            ExperienceBean.setTitle(term.getDidName());
+            ExperienceBean.setSubTitle(String.format("#%1$d %2$s %3$s %4$s", term.getId(), term.getCreatedAt(), term.getDidName(), term.getStatus()));
+            ExperienceBean.setType(1);
+            list.add(ExperienceBean);
+        }
+    }
 }

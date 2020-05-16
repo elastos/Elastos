@@ -7,14 +7,13 @@ import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 
-public class PastCtPresenter extends NewPresenterAbstract {
+public class CtListPresenter extends NewPresenterAbstract {
 
-    public void getCouncilTerm(BaseFragment baseFragment) {
-        Observable observable = RetrofitManager.webApiCreate().getCouncilTerm();
-        Observer observer = createObserver(baseFragment, "getCouncilTerm");
+    public void getCouncilTerm(BaseFragment baseFragment, String id) {
+        Observable observable = RetrofitManager.webApiCreate().getCouncilList(id);
+        Observer observer = createObserver(baseFragment, "getCouncilList");
         subscriberObservable(observer, observable, baseFragment);
     }
-
 
 
 }

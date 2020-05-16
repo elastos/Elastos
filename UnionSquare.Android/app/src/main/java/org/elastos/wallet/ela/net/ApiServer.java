@@ -24,6 +24,9 @@ package org.elastos.wallet.ela.net;
 
 import org.elastos.wallet.ela.bean.GetdePositcoinBean;
 import org.elastos.wallet.ela.bean.ImageBean;
+import org.elastos.wallet.ela.ui.committee.bean.GeneralCtBean;
+import org.elastos.wallet.ela.ui.committee.bean.GeneralCtDetailBean;
+import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
@@ -95,4 +98,13 @@ public interface ApiServer {
 
     @GET("/api/suggestion/get_suggestion/{id}")
     Observable<SuggestBean> getSuggestion(@Path("id") String id);
+
+    @GET("/api/council/term")
+    Observable<PastCtBean> getCouncilTerm();
+
+    @GET("/api/council/list/{id}")
+    Observable<GeneralCtBean> getCouncilList(@Path("id") String id);
+
+    @GET("/api/council/information/{id}/{did}")
+    Observable<GeneralCtDetailBean> getCouncilInfo(@Path("id") String id, @Path("did") String did);
 }

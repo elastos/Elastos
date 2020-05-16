@@ -204,4 +204,9 @@ public class AppUtlis {
                 + "(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$";
         return str.matches(regex);
     }
+
+    public static boolean isNullOrEmpty(String str) {
+        if(str==null || str.isEmpty()) return true;
+        return false;
+    }
 }

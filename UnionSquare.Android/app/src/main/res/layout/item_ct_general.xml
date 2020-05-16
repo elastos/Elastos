@@ -3,12 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="55dp">
 
-    <org.elastos.wallet.ela.utils.widget.RoundImageView
+    <android.support.v7.widget.AppCompatImageView
         android:id="@+id/icon"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_centerVertical="true"
-        android:src="@mipmap/icon_ela"/>
+        android:background="@drawable/ct_round_image_bg"
+        android:layout_centerVertical="true"/>
 
     <TextView
         android:id="@+id/name"
