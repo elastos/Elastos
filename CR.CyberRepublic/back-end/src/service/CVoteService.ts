@@ -1143,7 +1143,7 @@ export default class extends Base {
 
       cur.voteResult.forEach(function(res){
         if(res.votedBy.equals(userId)){
-          jwtClaims.data.opinionHash = utilCrypto.sha256D(utilCrypto.sha256D(res.reason))
+          jwtClaims.data.opinionHash = utilCrypto.sha256D(res.reason)
         }
       })
     
@@ -1559,7 +1559,7 @@ export default class extends Base {
 
     return _.omit(
       {
-        ..._.omit(proposal._doc, ['abstract', 'rejectAmount', 'rejectHeight']),
+        ..._.omit(proposal._doc, ['abstract', 'rejectAmount', 'rejectHeight', 'status']),
         abs: proposal.abstract,
         ...votingResult,
         ...notificationResult,

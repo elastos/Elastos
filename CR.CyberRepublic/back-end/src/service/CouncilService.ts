@@ -6,6 +6,8 @@ import * as moment from 'moment'
 
 const _ = require('lodash')
 
+const DID_PREFIX = 'did:elastos:'
+
 let tm = undefined
 
 export default class extends Base {
@@ -218,7 +220,7 @@ export default class extends Base {
 
         const currentSecretariat = await this.secretariatModel.getDBInstance().findOne({status: constant.SECRETARIAT_STATUS.CURRENT})
         const information: any = await getInformationByDID(secretariatDID)
-        const user = await this.userMode.getDBInstance().findOne({'did.id': secretariatDID}, ['_id', 'did'])
+        const user = await this.userMode.getDBInstance().findOne({'did.id': DID_PREFIX + secretariatDID}, ['_id', 'did'])
 
         if (!currentSecretariat) {
             const doc: any = {
@@ -284,7 +286,7 @@ export default class extends Base {
         });
         
         const updateUserInformation = async (councilMembers: any) => {
-            const didList = _.map(councilMembers, 'did')
+            const didList = _.map(councilMembers, (o: any) => DID_PREFIX + o.did)
             const userList = await this.userMode.getDBInstance().find({'did.id': {$in: didList}}, ['_id', 'did.id'])
             const userByDID = _.keyBy(userList, 'did.id')
 
