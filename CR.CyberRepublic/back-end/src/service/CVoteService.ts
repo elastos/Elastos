@@ -1128,6 +1128,12 @@ export default class extends Base {
 
       const currentVoteResult: any = _.filter(cur.voteResult, (o: any) => o.votedBy.equals(userId))
       
+      const voteResultOnChain = {
+        [constant.CVOTE_RESULT.SUPPORT]: 'approve',
+        [constant.CVOTE_RESULT.REJECT]: 'reject',
+        [constant.CVOTE_RESULT.ABSTENTION]: 'abstain',
+      }
+
       const now = Math.floor(Date.now() / 1000)
       const jwtClaims = {
         iat: now,
@@ -1137,7 +1143,7 @@ export default class extends Base {
         command:"reviewproposal",
         data: {
           proposalHash: cur.proposalHash,
-          voteResult: currentVoteResult.value,
+          voteResult: voteResultOnChain[currentVoteResult.value],
           opinionHash: utilCrypto.sha256D(currentVoteResult.reason),
           did: councilMemberDid
         }
