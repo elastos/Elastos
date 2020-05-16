@@ -11,15 +11,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="260dp"
-        android:background="#ff000000"
+        android:background="#262626"
         android:layout_gravity="bottom">
         <TextView
-            android:id="@+id/next_title"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/next_title"
+            android:layout_marginLeft="15dp"
+            android:background="@mipmap/window_750_close"/>
+
+        <TextView
+            android:id="@+id/next_title"
+            android:layout_width="match_parent"
             android:layout_height="44dp"
             android:textColor="@color/white"
             android:textSize="16sp"
-            android:layout_centerHorizontal="true"
+            android:gravity="center"
             android:text="@string/impeachment"/>
         <View
             android:id="@+id/next_line1"
@@ -55,6 +62,7 @@
             android:gravity="center_vertical"
             android:textColor="@color/white"
             android:layout_alignParentRight="true"
+            android:layout_marginRight="15dp"
             android:layout_marginLeft="15dp"
             android:text="ELA"/>
 
@@ -101,10 +109,9 @@
             android:id="@+id/next_step_btn"
             android:layout_width="250dp"
             android:layout_height="40dp"
-            android:layout_marginTop="180dp"
-            android:background="#363636"
+            android:background="@drawable/ct_btn_border"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="20dp"
             android:layout_centerHorizontal="true"
             android:text="@string/next"
             android:gravity="center"
@@ -118,7 +125,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="260dp"
         android:visibility="gone"
-        android:background="#ff000000"
+        android:background="#262626"
         android:layout_gravity="bottom">
 
         <TextView
@@ -160,11 +167,11 @@
             android:layout_width="250dp"
             android:layout_height="40dp"
             android:layout_marginTop="180dp"
-            android:background="#363636"
+            android:background="@drawable/ct_btn_border"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="20dp"
             android:layout_centerHorizontal="true"
-            android:text="@string/confirmed"
+            android:text="@string/sure1"
             android:gravity="center"
             android:textColor="@color/white"/>
 

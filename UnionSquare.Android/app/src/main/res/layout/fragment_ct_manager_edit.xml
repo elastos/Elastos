@@ -35,6 +35,7 @@
             android:layout_height="0.5dp"/>
 
         <TextView
+            android:id="@+id/area"
             android:layout_width="match_parent"
             android:layout_height="55dp"
             android:text="@string/pleasechoosearea"
@@ -48,13 +49,14 @@
             android:background="@color/white"
             android:layout_height="0.5dp"/>
 
-        <TextView
+        <EditText
+            android:id="@+id/website"
             android:layout_width="match_parent"
             android:layout_height="55dp"
-            android:textSize="14sp"
             android:gravity="center_vertical"
-            android:textColor="@color/whiter50"
-            android:text="@string/plzinputcrurl"/>
+            android:textColor="@color/white"
+            android:background="@null"
+            android:hint="@string/plzinputcrurl"/>
 
         <View
             android:layout_width="match_parent"

@@ -219,7 +219,7 @@
         android:layout_marginBottom="20dp"
         android:gravity="center"
         android:text="@string/impeachmemeber"
-        android:background="@drawable/ct_manage_btn_border"
+        android:background="@drawable/ct_btn_border"
         android:textColor="@color/white"
         android:textSize="16sp"/>
 

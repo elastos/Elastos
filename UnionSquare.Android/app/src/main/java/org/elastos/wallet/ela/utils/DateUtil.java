@@ -231,4 +231,23 @@ public class DateUtil {
         return sb;
 
     }
+
+    /**
+     * get format date
+     * @param timestamp
+     * @param format
+     * @return
+     */
+    public static String formatTimestamp(String timestamp, String format) {
+        try {
+            Date date = new Date(Long.valueOf(timestamp));
+            SimpleDateFormat formatter = new SimpleDateFormat(format);
+            String dateStr = formatter.format(date);
+            return dateStr;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
 }

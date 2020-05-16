@@ -119,62 +119,62 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         PastCtBean.DataBean pastCtBean1 = new PastCtBean.DataBean();
         pastCtBean1.setIndex(1);
         pastCtBean1.setStatus("HISTORY");
-        pastCtBean1.setStartDate("2019.03.01");
-        pastCtBean1.setEndDate("2019.04.01");
+        pastCtBean1.setStartDate("1589271912");
+        pastCtBean1.setEndDate("1589272000");
 
         PastCtBean.DataBean pastCtBean2 = new PastCtBean.DataBean();
         pastCtBean2.setIndex(2);
         pastCtBean2.setStatus("HISTORY");
-        pastCtBean2.setStartDate("2019.03.01");
-        pastCtBean2.setEndDate("2019.04.01");
+        pastCtBean2.setStartDate("1589271912");
+        pastCtBean2.setEndDate("1589272000");
 
         PastCtBean.DataBean pastCtBean3 = new PastCtBean.DataBean();
         pastCtBean3.setIndex(3);
         pastCtBean3.setStatus("HISTORY");
-        pastCtBean3.setStartDate("2019.03.01");
-        pastCtBean3.setEndDate("2019.04.01");
+        pastCtBean3.setStartDate("1589271912");
+        pastCtBean3.setEndDate("1589272000");
 
         PastCtBean.DataBean pastCtBean4 = new PastCtBean.DataBean();
         pastCtBean4.setIndex(4);
         pastCtBean4.setStatus("HISTORY");
-        pastCtBean4.setStartDate("2019.03.01");
-        pastCtBean4.setEndDate("2019.04.01");
+        pastCtBean4.setStartDate("1589271912");
+        pastCtBean4.setEndDate("1589272000");
 
         PastCtBean.DataBean pastCtBean5 = new PastCtBean.DataBean();
         pastCtBean5.setIndex(5);
         pastCtBean5.setStatus("HISTORY");
-        pastCtBean5.setStartDate("2019.03.01");
-        pastCtBean5.setEndDate("2019.04.01");
+        pastCtBean5.setStartDate("1589271912");
+        pastCtBean5.setEndDate("1589272000");
 
         PastCtBean.DataBean pastCtBean6 = new PastCtBean.DataBean();
         pastCtBean6.setIndex(6);
         pastCtBean6.setStatus("HISTORY");
-        pastCtBean6.setStartDate("2019.03.01");
-        pastCtBean6.setEndDate("2019.04.01");
+        pastCtBean6.setStartDate("1589271912");
+        pastCtBean6.setEndDate("1589272000");
 
         PastCtBean.DataBean pastCtBean7 = new PastCtBean.DataBean();
         pastCtBean7.setIndex(7);
         pastCtBean7.setStatus("HISTORY");
-        pastCtBean7.setStartDate("2019.03.01");
-        pastCtBean7.setEndDate("2019.04.01");
+        pastCtBean7.setStartDate("1589271912");
+        pastCtBean7.setEndDate("1589272000");
 
         PastCtBean.DataBean pastCtBean8 = new PastCtBean.DataBean();
         pastCtBean8.setIndex(8);
         pastCtBean8.setStatus("HISTORY");
-        pastCtBean8.setStartDate("2019.03.01");
-        pastCtBean8.setEndDate("2019.04.01");
+        pastCtBean8.setStartDate("1589271912");
+        pastCtBean8.setEndDate("1589272000");
 
         PastCtBean.DataBean pastCtBean9 = new PastCtBean.DataBean();
         pastCtBean9.setIndex(9);
         pastCtBean9.setStatus("CURRENT");
-        pastCtBean9.setStartDate("2019.03.01");
-        pastCtBean9.setEndDate("2019.04.01");
+        pastCtBean9.setStartDate("1589271912");
+        pastCtBean9.setEndDate("1589272000");
 
         PastCtBean.DataBean pastCtBean10 = new PastCtBean.DataBean();
         pastCtBean10.setIndex(10);
         pastCtBean10.setStatus("VOTING");
-        pastCtBean10.setStartDate("2019.03.01");
-        pastCtBean10.setEndDate("2019.04.01");
+        pastCtBean10.setStartDate("1589271912");
+        pastCtBean10.setEndDate("1589272000");
 
         list.add(pastCtBean10);
         list.add(pastCtBean9);

@@ -15,8 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
-            android:layout_marginTop="15dp"
-            android:text="第10届"/>
+            android:layout_marginTop="15dp"/>
 
         <TextView
             android:id="@+id/arrow"
@@ -40,8 +39,7 @@
                 android:layout_marginBottom="10dp"
                 android:layout_marginLeft="15dp"
                 android:textSize="11sp"
-                android:textColor="@color/white"
-                android:text="2019.02.28"/>
+                android:textColor="@color/white"/>
 
             <TextView
                 android:id="@+id/manager_btn"
@@ -49,7 +47,7 @@
                 android:layout_height="25dp"
                 android:layout_alignParentRight="true"
                 android:layout_marginRight="15dp"
-                android:background="@drawable/ct_manage_btn_border"
+                android:background="@drawable/ct_manager_item_btn_border"
                 android:gravity="center"/>
         </RelativeLayout>
 

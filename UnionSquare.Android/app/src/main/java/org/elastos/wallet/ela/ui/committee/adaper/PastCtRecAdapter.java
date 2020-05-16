@@ -8,13 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.zxing.common.StringUtils;
-
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.utils.AppUtlis;
-import org.elastos.wallet.ela.utils.Log;
+import org.elastos.wallet.ela.utils.DateUtil;
 
 import java.util.List;
 
@@ -45,7 +43,8 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         PastCtBean.DataBean data = list.get(i);
 //        String state = context.getString(R.string.voting);
-        viewHolder.time.setText(data.getStartDate() + "-" + data.getEndDate());
+        viewHolder.time.setText(
+                String.format("%1$s-%2$s", DateUtil.formatTimestamp(data.getStartDate(), "yyyy.MM.dd"), DateUtil.formatTimestamp(data.getEndDate(), "yyyy.MM.dd")));
         String status = data.getStatus();
         viewHolder.manager.setVisibility(View.GONE);
         if(AppUtlis.isNullOrEmpty(status) || status.equalsIgnoreCase("HISTORY")) {

@@ -1,5 +1,6 @@
 package org.elastos.wallet.ela.ui.committee.fragment;
 
+import android.annotation.SuppressLint;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -15,6 +16,7 @@ import org.elastos.wallet.ela.ui.committee.bean.ExperienceBean;
 import org.elastos.wallet.ela.ui.committee.bean.GeneralCtDetailBean;
 import org.elastos.wallet.ela.ui.committee.presenter.GeneralDetailPresenter;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.view.CircleProgressView;
 
 import java.util.ArrayList;
@@ -185,13 +187,16 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         introduction.setText(dataBean.getIntroduction());
     }
 
+    @SuppressLint("DefaultLocale")
     private void setCtRecord(GeneralCtDetailBean generalCtDetailBean) {
         if(null == generalCtDetailBean) return;
         List<GeneralCtDetailBean.Term> terms = generalCtDetailBean.getData().get(0).getTerm();
         for(GeneralCtDetailBean.Term term : terms) {
             ExperienceBean ExperienceBean = new ExperienceBean();
             ExperienceBean.setTitle(term.getDidName());
-            ExperienceBean.setSubTitle(String.format("#%1$d %2$s %3$s %4$s", term.getId(), term.getCreatedAt(), term.getDidName(), term.getStatus()));
+            ExperienceBean.setSubTitle(String.format("#%1$d %2$s %3$s %4$s", term.getId(),
+                    DateUtil.formatTimestamp(String.valueOf(term.getCreatedAt()), "yyyy.MM.dd"),
+                    term.getDidName(), term.getStatus()));
             ExperienceBean.setType(1);
             list.add(ExperienceBean);
         }
