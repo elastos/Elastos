@@ -31,6 +31,8 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearch;
+import org.elastos.wallet.ela.utils.DateUtil;
 
 import java.util.List;
 
@@ -46,12 +48,12 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
     }
 
     private CommonRvListener commonRvListener;
-    private List<String> list;
+    private List<ProposalSearch.DataBean.ListBean> list;
 
     private Context context;
 
 
-    public ProposalRecAdapetr(Context context, List<String> list) {
+    public ProposalRecAdapetr(Context context, List<ProposalSearch.DataBean.ListBean> list) {
         this.list = list;
         this.context = context;
 
@@ -67,13 +69,45 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
 
     @Override
     public void onBindViewHolder(ProposalRecAdapetr.ViewHolder holder, final int position) {
+        ProposalSearch.DataBean.ListBean bean = list.get(position);
+        holder.tvTitle.setText(bean.getTitle());
+        holder.tvNum.setText("#"+bean.getId() + "");
+        holder.tvTime.setText(DateUtil.timeNYR(bean.getCreatedAt(), context, true));
+        holder.tvPeople.setText(bean.getProposedBy());
+        String status = bean.getStatus();
+        switch (status) {
+            case "VOTING":
+                //委员评议
+                status = context.getString(R.string.menberreview);
+                break;
+            case "NOTIFICATION":
 
-        holder.tvTitle.setText(list.get(position));
+                status = context.getString(R.string.publishing);
+                break;
+            case "ACTIVE":
+
+                status = context.getString(R.string.executing);
+                break;
+            case "FINAL":
+
+                status = context.getString(R.string.finish);
+                break;
+            case "REJECTED":
+
+                status = context.getString(R.string.nopass);
+                break;
+            case "VETOED":
+
+                status = context.getString(R.string.hasreject);
+                break;
+        }
+
+        holder.tvStatus.setText(status);
         if (commonRvListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    commonRvListener.onRvItemClick(position, null);
+                    commonRvListener.onRvItemClick(position, bean);
                 }
             });
         }
@@ -98,7 +132,6 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
         TextView tvStatus;
 
         ViewHolder(View view) {
-
             super(view);
             ButterKnife.bind(this, view);
         }

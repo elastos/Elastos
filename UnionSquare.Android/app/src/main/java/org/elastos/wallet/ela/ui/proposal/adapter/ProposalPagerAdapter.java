@@ -25,17 +25,16 @@ package org.elastos.wallet.ela.ui.proposal.adapter;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-
-import org.elastos.wallet.ela.base.BaseFragment;
+import android.view.ViewGroup;
 
 import java.util.List;
 
 public class ProposalPagerAdapter extends FragmentPagerAdapter {
 
     private List<String> titles;
-    private List<BaseFragment> fragments;
+    private List<Fragment> fragments;
 
-    public ProposalPagerAdapter(FragmentManager manager, List<BaseFragment> fragments, List<String> titles) {
+    public ProposalPagerAdapter(FragmentManager manager, List<Fragment> fragments, List<String> titles) {
         super(manager);
         this.titles = titles;
         this.fragments = fragments;
@@ -58,4 +57,11 @@ public class ProposalPagerAdapter extends FragmentPagerAdapter {
 
         return titles.get(position);
     }
+
+    @Override
+    public void destroyItem(ViewGroup container, int position, Object object) {
+        //Log.i("????", "destroyItem");
+        container.removeView(((Fragment) object).getView()); // 移出viewpager两边之外的page布局
+    }
+
 }

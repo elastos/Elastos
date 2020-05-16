@@ -26,8 +26,6 @@ import android.content.Context;
 import android.support.multidex.MultiDexApplication;
 import android.webkit.WebView;
 
-import com.alibaba.fastjson.util.TypeUtils;
-
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.ElaWallet.WalletNet;
@@ -42,7 +40,7 @@ import io.realm.Realm;
 public class MyApplication extends MultiDexApplication {
     private static MyApplication myApplication;
     public static int currentWalletNet = WalletNet.MAINNET;
-    protected static MyWallet myWallet;
+    private static MyWallet myWallet;
     public static Set<String> serverList = new HashSet<>();
     public static String REQUEST_BASE_URL;
 

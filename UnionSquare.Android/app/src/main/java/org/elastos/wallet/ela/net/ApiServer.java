@@ -33,6 +33,7 @@ import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
 import org.elastos.wallet.ela.ui.did.entity.SaveJwtRespondBean;
 import org.elastos.wallet.ela.ui.did.entity.WebBackEntity;
 import org.elastos.wallet.ela.ui.main.entity.ServerListEntity;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearch;
 import org.elastos.wallet.ela.ui.proposal.bean.SuggestBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
@@ -47,6 +48,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.QueryMap;
 import retrofit2.http.Url;
 
 public interface ApiServer {
@@ -98,6 +100,9 @@ public interface ApiServer {
 
     @GET("/api/suggestion/get_suggestion/{id}")
     Observable<SuggestBean> getSuggestion(@Path("id") String id);
+
+    @GET("/api/cvote/all_search")
+    Observable<ProposalSearch> proposalSearch(@QueryMap Map<String, Object> map);
 
     @GET("/api/council/term")
     Observable<PastCtBean> getCouncilTerm();
