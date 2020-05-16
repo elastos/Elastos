@@ -1533,18 +1533,21 @@ export default class extends Base {
       notificationResult['duration'] = (endTime - nowTime + 604800) > 0 ? (endTime - nowTime + 604800) : 0
     }
 
-    if (proposal.status === constant.CVOTE_STATUS.NOTIFICATION
+    if (proposal.status === constant.CVOTE_STATUS.NOTIFICATION) {
+      notificationResult['duration'] = (endTime - nowTime + 604800 * 2) > 0 ? (endTime - nowTime + 604800 * 2) : 0
+    }
+
+    if ([constant.CVOTE_STATUS.NOTIFICATION, constant.CVOTE_STATUS.VETOED].includes(proposal.status)
         && proposal.rejectAmount >= 0
         && proposal.rejectHeight > 0) {
       notificationResult['rejectAmount'] = `${proposal.rejectAmount}`
       notificationResult['rejectHeight'] = `${proposal.rejectHeight}`
       notificationResult['rejectRatio'] = _.toNumber((_.toNumber(proposal.rejectAmount) / _.toNumber(proposal.rejectHeight)).toFixed(4))
-      notificationResult['duration'] = (endTime - nowTime + 604800 * 2) > 0 ? (endTime - nowTime + 604800 * 2) : 0
     }
 
     return _.omit(
       {
-        ..._.omit(proposal._doc, ['abstract']),
+        ..._.omit(proposal._doc, ['abstract', 'rejectAmount', 'rejectHeight']),
         abs: proposal.abstract,
         ...votingResult,
         ...notificationResult,
