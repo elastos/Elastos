@@ -101,9 +101,14 @@ export default class extends Base {
     const { id } = param
     const db_suggestion = this.getDBModel('Suggestion')
     const suggestion = await db_suggestion.findById(id)
+    const db_cvote = this.getDBModel('CVote')
     if (suggestion) {
       const draftHash = _.get(suggestion, 'draftHash')
       if (draftHash) {
+        const cvote = await db_cvote.findOne({ draftHash })
+        if (cvote) {
+          return { success: true, id: cvote._id }
+        }
         const rs: any = await getProposalState(draftHash)
         if (rs && rs.success && rs.status === 'Registered') {
           const proposal = await this.proposeSuggestion({
@@ -118,8 +123,8 @@ export default class extends Base {
   }
 
   public async proposeSuggestion(param: any): Promise<Document> {
-    const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
+    const db_suggestion = this.getDBModel('Suggestion')
     const db_user = this.getDBModel('User')
     const { suggestionId } = param
 
