@@ -1137,6 +1137,7 @@ export default class extends Base {
       }
 
       const now = Math.floor(Date.now() / 1000)
+      
       const jwtClaims = {
         iat: now,
         exp: now + (60 * 60 * 24),
