@@ -169,7 +169,7 @@ export default class extends BaseService {
     })
     return res
   }
-  
+
   // signature
   async getReviewProposal(id) {
     const rs = await api_request({
@@ -187,7 +187,7 @@ export default class extends BaseService {
     const rs = await api_request({
       path: `${this.prefixPath}/member_vote`,
       method: 'post',
-      data: { id } 
+      data: { id }
     })
     return rs
   }
@@ -197,6 +197,15 @@ export default class extends BaseService {
       path: `${this.prefixPath}/poll_proposal_state`,
       method: 'post',
       data: { id }
+    })
+    return rs
+  }
+
+  async updateMilestone(proposalId, stage, data) {
+    const rs = await api_request({
+      path: `/api/proposals/${proposalId}/milestones/${stage}`,
+      method: 'post',
+      data
     })
     return rs
   }

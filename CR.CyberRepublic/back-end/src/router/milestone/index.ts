@@ -3,7 +3,7 @@ import update from './update'
 
 export default Base.setRouter([
   {
-    path: '/milestones/:stage',
+    path: '/:id/milestones/:stage',
     router: update,
     method: 'post'
   }

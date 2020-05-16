@@ -107,7 +107,7 @@ router.use('/elip', elip)
 router.use('/elipReview', elipReview)
 router.use('/council', council)
 router.use('/temp/data', tempData)
-router.use('/proposals/:id', milestone)
+router.use('/proposals', milestone)
 
 router.use((req, res) => {
   return res.sendStatus(403)
