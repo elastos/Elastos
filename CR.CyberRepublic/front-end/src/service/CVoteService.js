@@ -160,7 +160,6 @@ export default class extends BaseService {
     this.dispatch(this.selfRedux.actions.filters_update(filters))
   }
 
-  // signature
   async getReviewProposalUrl(id) {
     const path = `${this.prefixPath}/reviewproposal-url`
     const res = await api_request({
@@ -170,7 +169,8 @@ export default class extends BaseService {
     })
     return res
   }
-
+  
+  // signature
   async getReviewProposal(id) {
     const rs = await api_request({
       path: `${this.prefixPath}/signature`,

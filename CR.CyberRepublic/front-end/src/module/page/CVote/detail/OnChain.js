@@ -25,8 +25,7 @@ class OnChainButton extends Component {
   }
 
   pollingDid = () => {
-    console.log(this.props)
-    const { id, getReviewProposal } = this.propos
+    const { id, getReviewProposal } = this.props
     this.timerDid = setInterval(async () => {
       const rs = await getReviewProposal(id)
       if (rs && rs.success ){
@@ -55,7 +54,7 @@ class OnChainButton extends Component {
   }
 
   componentDidMount = async () => {
-    const { id, getReviewProposalUrl } = this.propos
+    const { id, getReviewProposalUrl } = this.props
     console.log(id)
     const rs = await getReviewProposalUrl(id)
     if (rs && rs.success) {
