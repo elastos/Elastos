@@ -6,6 +6,7 @@ import { mail, logger, user as userUtil } from '../utility'
 export default class extends Base {
   public async update(param: any) {
     try {
+      console.log('param', param)
     } catch (error) {
       logger.error(error)
       return
