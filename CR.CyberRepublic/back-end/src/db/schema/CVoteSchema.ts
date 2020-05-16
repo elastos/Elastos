@@ -39,6 +39,27 @@ export const CVoteHistorySchema = {
   }
 }
 
+const withdrawHistorySchema = {
+  message: String,
+  milestoneKey: String,
+  signature: String,
+  createdAt: {
+    type: Date,
+    required: true,
+    default: Date.now
+  },
+  review: {
+    reason: String,
+    opinion: String,
+    signature: String,
+    createdAt: {
+      type: Date,
+      required: true,
+      default: Date.now
+    }
+  }
+}
+
 export const CVote = {
   title: {
     type: String,
@@ -80,12 +101,6 @@ export const CVote = {
   plan: {
     type: Schema.Types.Mixed
   },
-  // tracking: {
-  //   type: String,
-  // },
-  // summary: {
-  //   type: String,
-  // },
   // name of proposer
   proposedBy: {
     type: String,
@@ -178,5 +193,6 @@ export const CVote = {
   },
   rejectHeight: {
     type: String
-  }
+  },
+  withdrawHistory: [withdrawHistorySchema]
 }
