@@ -6,13 +6,13 @@ const _ = require('lodash')
 
 export default class extends Base {
     public async updateProposal(param: any): Promise<any> {
-        // const userRole = _.get(this.currentUser, 'role')
+        const userRole = _.get(this.currentUser, 'role')
 
-        // if (!permissions.isAdmin(userRole)){
-        //     return {
-        //         code: 403,
-        //     }
-        // }
+        if (!permissions.isAdmin(userRole)){
+            return {
+                code: 403,
+            }
+        }
 
         const {id, status, proposedAt, voteResult, voteHistory, rejectAmount, rejectHeight } = param
 
