@@ -46,16 +46,4 @@ export default class extends Base {
 
         return rs
     }
-
-    public async listCouncil(): Promise<any> {
-        const rs = await ela.currentCouncil()
-
-        return rs
-    }
-
-    public async listCandidates(): Promise<any> {
-        const rs = await ela.currentCandidates()
-
-        return rs
-    }
 }

@@ -153,39 +153,42 @@ export default class extends Base {
 
         if (councilList) {
             const council = councilList && _.filter(councilList.councilMembers, (o: any) => o.did === did)[0]
-
-            const proposalFields = [
-                'createdBy',
-                'createdAt',
-                'vid',
-                'title',
-                'status',
-                'voteResult'
-            ]
-            const proposalList = await this.proposalMode.getDBInstance()
-                .find({proposer: council.user._id}, proposalFields).sort({createdAt: -1})
-                .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-
+            
             let term = []
-            if (councilList.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
-                term =  _.map(proposalList, (o: any) => {
-                    const firstName = _.get(o, 'createdBy.profile.firstName')
-                    const lastName = _.get(o, 'createdBy.profile.lastName')
-                    const didName = (firstName || lastName) && `${firstName} ${lastName}`.trim()
-                    const chainStatus = [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
-                    // Todo: add chain status limit
-                    // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
-                    const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy.equals(council.user._id))
-                    const currentVoteResult = _.get(voteResult[0], 'value')
-                    return {
-                        id: o.vid,
-                        title: o.title,
-                        didName,
-                        status: CVOTE_STATUS_TO_WALLET_STATUS[o.status],
-                        voteResult: currentVoteResult,
-                        createdAt: moment(o.createdAt).unix()
-                    }
-                })
+            if (council && council.user) {
+                const proposalFields = [
+                    'createdBy',
+                    'createdAt',
+                    'vid',
+                    'title',
+                    'status',
+                    'voteResult'
+                ]
+                const proposalList = await this.proposalMode.getDBInstance()
+                    .find({proposer: council.user._id}, proposalFields).sort({createdAt: -1})
+                    .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+    
+                
+                if (councilList.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
+                    term =  _.map(proposalList, (o: any) => {
+                        const firstName = _.get(o, 'createdBy.profile.firstName')
+                        const lastName = _.get(o, 'createdBy.profile.lastName')
+                        const didName = (firstName || lastName) && `${firstName} ${lastName}`.trim()
+                        const chainStatus = [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
+                        // Todo: add chain status limit
+                        // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
+                        const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy.equals(council.user._id))
+                        const currentVoteResult = _.get(voteResult[0], 'value')
+                        return {
+                            id: o.vid,
+                            title: o.title,
+                            didName,
+                            status: CVOTE_STATUS_TO_WALLET_STATUS[o.status],
+                            voteResult: currentVoteResult,
+                            createdAt: moment(o.createdAt).unix()
+                        }
+                    })
+                }
             }
 
             return {
@@ -220,18 +223,20 @@ export default class extends Base {
         if (!currentSecretariat) {
             const doc: any = {
                 ...information,
-                user: user._id,
+                user: user && user._id,
                 did: secretariatDID,
                 startDate: new Date(),
                 status: constant.SECRETARIAT_STATUS.CURRENT
             }
 
-            // add public key into user's did
-            await this.userMode.getDBInstance().update({_id: user._id}, {
-                $set: {
-                    'did.compressedPublicKey': secretariatPublicKey
-                }
-            })
+            if (user) {
+                // add public key into user's did
+                await this.userMode.getDBInstance().update({_id: user._id}, {
+                    $set: {
+                        'did.compressedPublicKey': secretariatPublicKey
+                    }
+                })
+            }
 
             // add secretariat
             await this.secretariatModel.getDBInstance().create(doc)
