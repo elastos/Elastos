@@ -10,7 +10,7 @@ import {
   getDidPublicKey,
   getPemPublicKey
 } from '../utility'
-const { WAITING_FOR_WITHDRAW } = constant.BUDGET_STATUS
+const { WAITING_FOR_WITHDRAW, WAITING_FOR_APPROVAL } = constant.BUDGET_STATUS
 
 export default class extends Base {
   private model: any
@@ -142,7 +142,12 @@ export default class extends Base {
             try {
               await this.model.update(
                 { proposalHash, 'withdrawalHistory.messageHash': messageHash },
-                { $set: { 'withdrawalHistory.$.signature': decoded.data } }
+                {
+                  $set: {
+                    'withdrawalHistory.$.signature': decoded.data,
+                    'budget.$.status': WAITING_FOR_APPROVAL
+                  }
+                }
               )
               this.notifySecretaries(this.updateMailTemplate(proposal.vid))
               return { code: 200, success: true, message: 'Ok' }
@@ -169,13 +174,15 @@ export default class extends Base {
 
   public async checkSignature(param: any) {
     const { id, messageHash } = param
-    const proposal:any = await this.model.findById(id)
+    const proposal: any = await this.model.findById(id)
     if (proposal) {
-      const history = proposal.withdrawalHistory.filter(item => item.messageHash === messageHash)
+      const history = proposal.withdrawalHistory.filter(
+        (item) => item.messageHash === messageHash
+      )
       if (_.isEmpty(history)) {
         return { success: false }
       }
-      if(_.get(history, 'signature')) {
+      if (_.get(history, 'signature')) {
         return { success: true }
       }
     } else {
@@ -186,7 +193,8 @@ export default class extends Base {
   public async review(param: any) {}
 
   private updateMailTemplate(id: string) {
-    const subject = '【Payment Review】One payment request is waiting for your review'
+    const subject =
+      '【Payment Review】One payment request is waiting for your review'
     const body = `
       <p>One payment request in proposal #${id} is waiting for your review:</p>
       <p>Click this link to view more details:</p>
