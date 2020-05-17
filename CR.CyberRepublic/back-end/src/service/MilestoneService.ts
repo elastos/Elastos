@@ -217,19 +217,18 @@ export default class extends Base {
       )
       const opinionHash = utilCrypto.sha256D(opinion)
 
-      const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
       // generate jwt url
       const jwtClaims = {
         iat: now,
         exp: now + 60 * 60 * 24,
-        command: 'updatemilestone',
+        command: 'reviewmilestone',
         iss: process.env.APP_DID,
         callbackurl: `${process.env.API_URL}/api/proposals/milestones/sec-signature-callback`,
         data: {
           proposalhash: proposal.proposalHash,
           messagehash: messageHash,
           stage: parseInt(milestoneKey),
-          ownerpubkey: ownerPublicKey,
+          ownerpubkey: proposal.ownerPublicKey,
           newownerpubkey: '',
           ownersignature: '',
           proposaltrackingtype: status,
