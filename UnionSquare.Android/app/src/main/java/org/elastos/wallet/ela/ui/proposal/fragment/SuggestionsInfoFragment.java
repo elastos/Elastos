@@ -56,7 +56,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class SuggestionsInfoFragment extends BaseFragment implements NewBaseViewData {
 

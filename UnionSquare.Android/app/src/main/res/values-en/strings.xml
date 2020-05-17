@@ -669,6 +669,9 @@
     <string name="imprest">预付款</string>
     <string name="finalpayment">尾款</string>
     <string name="didnotsame">钱包DID不匹配</string>
+    <string name="noproposal">暂无提案</string>
+    <string name="nopass">未通过</string>
+    <string name="hasreject">已否决</string>
     <!--CR committee-->
     <string name="ctmemberlist">Council Member List</string>
     <string name="current">Current Term</string>

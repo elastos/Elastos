@@ -186,6 +186,7 @@ public class MyWallet {
 
             mMasterWalletManager.Dispose();
             mMasterWalletManager = null;
+            instance=null;
         }
 
 

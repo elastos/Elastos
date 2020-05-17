@@ -114,6 +114,7 @@ public class PropasalReviewFragment extends BaseFragment {
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
         tag = data.getInt("TAG");
+        int id = data.getInt("id");//提案编号
     }
 
     @Override
