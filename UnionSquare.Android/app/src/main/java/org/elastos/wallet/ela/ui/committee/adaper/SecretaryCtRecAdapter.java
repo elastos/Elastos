@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ui.committee.bean.SecretaryCtBean;
+import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
 
@@ -22,7 +22,7 @@ import butterknife.ButterKnife;
 public class SecretaryCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdapter.ViewHolder> {
 
 
-    public SecretaryCtRecAdapter(Context context, List<SecretaryCtBean> list) {
+    public SecretaryCtRecAdapter(Context context, List<CtListBean.Secretariat> list) {
         this.context = context;
         this.list = list;
     }
@@ -37,8 +37,8 @@ public class SecretaryCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdap
 
     @Override
     public void onBindViewHolder(@NonNull GeneralCtRecAdapter.ViewHolder viewHolder, int i) {
-        SecretaryCtBean data = list.get(i);
-        viewHolder.name.setText(data.getName());
+        CtListBean.Secretariat data = list.get(i);
+        viewHolder.name.setText(data.getDidName());
         viewHolder.location.setText(data.getLocation());
         GlideApp.with(context).load(data.getAvatar()).error(R.mipmap.icon_ela).into(viewHolder.icon);
         if (commonRvListener != null) {
@@ -72,5 +72,5 @@ public class SecretaryCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdap
 
     private Context context;
     private CommonRvListener commonRvListener;
-    private List<SecretaryCtBean> list;
+    private List<CtListBean.Secretariat> list;
 }

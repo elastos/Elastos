@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.committee.fragment;
 
 import android.annotation.SuppressLint;
+import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -13,7 +14,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.adaper.CtExpRecAdapter;
 import org.elastos.wallet.ela.ui.committee.bean.ExperienceBean;
-import org.elastos.wallet.ela.ui.committee.bean.GeneralCtDetailBean;
+import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
 import org.elastos.wallet.ela.ui.committee.presenter.GeneralDetailPresenter;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DateUtil;
@@ -52,6 +53,15 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
 
     GeneralDetailPresenter presenter;
 
+    private String id;
+    private String did;
+    @Override
+    protected void setExtraData(Bundle data) {
+        super.setExtraData(data);
+        id = data.getString("id");
+        did = data.getString("did");
+    }
+
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_ct_general_detail;
@@ -62,8 +72,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctdetail));
         progress.setProgress(50);
         presenter = new GeneralDetailPresenter();
-        //TODO id, did
-        presenter.getCouncilInfo(this, "id", "did");
+        presenter.getCouncilInfo(this, id, did);
         rockData();
     }
 
@@ -148,9 +157,9 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "getCouncilInfo":
-                setBaseInfo((GeneralCtDetailBean) baseEntity);
-                setCtInfo((GeneralCtDetailBean) baseEntity);
-                setCtRecord((GeneralCtDetailBean) baseEntity);
+                setBaseInfo((CtDetailBean) baseEntity);
+                setCtInfo((CtDetailBean) baseEntity);
+                setCtRecord((CtDetailBean) baseEntity);
                 break;
         }
     }
@@ -165,8 +174,8 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     TextView impeachmentCount;
     @BindView(R.id.progress)
     CircleProgressView progress;
-    private void setBaseInfo(GeneralCtDetailBean generalCtDetailBean) {
-        GeneralCtDetailBean.DataBean dataBean = generalCtDetailBean.getData().get(0);
+    private void setBaseInfo(CtDetailBean ctDetailBean) {
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData().get(0);
         name.setText(dataBean.getDidName());
         location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
         currentVotes.setText(String.valueOf(dataBean.getImpeachmentVotes()));
@@ -174,24 +183,24 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     }
 
     @BindView(R.id.did)
-    TextView did;
+    TextView didTv;
     @BindView(R.id.website)
     TextView website;
     @BindView(R.id.introduction)
     TextView introduction;
-    private void setCtInfo(GeneralCtDetailBean generalCtDetailBean) {
-        if(null == generalCtDetailBean) return;
-        GeneralCtDetailBean.DataBean dataBean = generalCtDetailBean.getData().get(0);
-        did.setText(dataBean.getDid());
+    private void setCtInfo(CtDetailBean ctDetailBean) {
+        if(null == ctDetailBean) return;
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData().get(0);
+        didTv.setText(dataBean.getDid());
         website.setText(dataBean.getAddress());
         introduction.setText(dataBean.getIntroduction());
     }
 
     @SuppressLint("DefaultLocale")
-    private void setCtRecord(GeneralCtDetailBean generalCtDetailBean) {
-        if(null == generalCtDetailBean) return;
-        List<GeneralCtDetailBean.Term> terms = generalCtDetailBean.getData().get(0).getTerm();
-        for(GeneralCtDetailBean.Term term : terms) {
+    private void setCtRecord(CtDetailBean ctDetailBean) {
+        if(null == ctDetailBean) return;
+        List<CtDetailBean.Term> terms = ctDetailBean.getData().get(0).getTerm();
+        for(CtDetailBean.Term term : terms) {
             ExperienceBean ExperienceBean = new ExperienceBean();
             ExperienceBean.setTitle(term.getDidName());
             ExperienceBean.setSubTitle(String.format("#%1$d %2$s %3$s %4$s", term.getId(),

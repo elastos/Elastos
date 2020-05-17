@@ -18,6 +18,7 @@ import org.elastos.wallet.ela.ui.committee.adaper.PastCtRecAdapter;
 import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.committee.fragment.CtListFragment;
 import org.elastos.wallet.ela.ui.committee.fragment.CtManagerFragment;
+import org.elastos.wallet.ela.ui.committee.fragment.SecretaryCtDetailFragment;
 import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.utils.AppUtlis;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
+import butterknife.OnClick;
 
 /**
  * List of past members
@@ -88,6 +90,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         for(PastCtBean.DataBean data : datas) {
             PastCtBean.DataBean bean = new PastCtBean.DataBean();
             bean.setIndex(data.getIndex());
+            bean.setId(data.getId());
             bean.setStatus(data.getStatus());
             bean.setStartDate(data.getStartDate());
             bean.setEndDate(data.getEndDate());
@@ -111,6 +114,11 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     @Override
     public void onManagerClick(int position) {
         start(CtManagerFragment.class);
+    }
+
+    @OnClick({R.id.iv_title_right})
+    public void onClick(View view) {
+        start(SecretaryCtDetailFragment.class);
     }
 
     private void rockData() {

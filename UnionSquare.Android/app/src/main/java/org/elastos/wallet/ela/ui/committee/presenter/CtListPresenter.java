@@ -9,7 +9,7 @@ import io.reactivex.Observer;
 
 public class CtListPresenter extends NewPresenterAbstract {
 
-    public void getCouncilTerm(BaseFragment baseFragment, String id) {
+    public void getCouncilList(BaseFragment baseFragment, String id) {
         Observable observable = RetrofitManager.webApiCreate().getCouncilList(id);
         Observer observer = createObserver(baseFragment, "getCouncilList");
         subscriberObservable(observer, observable, baseFragment);

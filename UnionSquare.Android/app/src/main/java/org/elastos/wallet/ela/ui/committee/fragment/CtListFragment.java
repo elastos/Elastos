@@ -1,5 +1,6 @@
 package org.elastos.wallet.ela.ui.committee.fragment;
 
+import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -12,8 +13,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.adaper.GeneralCtRecAdapter;
 import org.elastos.wallet.ela.ui.committee.adaper.SecretaryCtRecAdapter;
-import org.elastos.wallet.ela.ui.committee.bean.GeneralCtBean;
-import org.elastos.wallet.ela.ui.committee.bean.SecretaryCtBean;
+import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
 
 import java.util.ArrayList;
@@ -46,12 +46,12 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
     @BindView(R.id.general_rv)
     RecyclerView generalRv;
     GeneralCtRecAdapter generalAdapter;
-    List<GeneralCtBean.DataBean> generalList;
+    List<CtListBean.Council> generalList;
 
     @BindView(R.id.secretary_rv)
     RecyclerView secretaryRv;
     SecretaryCtRecAdapter secretaryAdapter;
-    List<SecretaryCtBean> secretaryList;
+    List<CtListBean.Secretariat> secretaryList;
 
     private CtListPresenter presenter;
 
@@ -60,12 +60,19 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
         return R.layout.fragment_ct_list;
     }
 
+    private int index;
+    @Override
+    protected void setExtraData(Bundle data) {
+        super.setExtraData(data);
+        index = data.getInt("index");
+    }
+
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, String.format(getString(R.string.actmember), "1"));
+        setToobar(toolbar, toolbarTitle, String.format(getString(R.string.actmember), String.valueOf(index)));
 
         presenter = new CtListPresenter();
-        presenter.getCouncilTerm(this, "id");
+        presenter.getCouncilList(this, String.valueOf(index));
         generalRockData();
         secretaryRockData();
 
@@ -100,7 +107,10 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
             generalRv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             generalRv.setAdapter(generalAdapter);
             generalAdapter.setCommonRvListener((position, o) -> {
-                start(GeneralCtDetailFragment.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("id", String.valueOf(index));
+                bundle.putString("did", generalList.get(position).getDid());
+                start(GeneralCtDetailFragment.class, bundle);
             });
 
         } else {
@@ -124,95 +134,52 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
 
     private void secretaryRockData() {
         secretaryList = new ArrayList<>();
-        SecretaryCtBean SecretaryCtBean1 = new SecretaryCtBean();
-        SecretaryCtBean1.setName("Feng Zhang1");
-        SecretaryCtBean1.setLocation("中国");
+        CtListBean.Secretariat SecretaryCtBean1 = new CtListBean.Secretariat();
+        SecretaryCtBean1.setDidName("Feng Zhang1");
+        SecretaryCtBean1.setLocation(86);
         secretaryList.add(SecretaryCtBean1);
 
-        SecretaryCtBean SecretaryCtBean2 = new SecretaryCtBean();
-        SecretaryCtBean2.setName("Feng Zhang2");
-        SecretaryCtBean2.setLocation("中国");
+        CtListBean.Secretariat SecretaryCtBean2 = new CtListBean.Secretariat();
+        SecretaryCtBean2.setDidName("Feng Zhang2");
+        SecretaryCtBean2.setLocation(86);
         secretaryList.add(SecretaryCtBean2);
 
-        SecretaryCtBean SecretaryCtBean3 = new SecretaryCtBean();
-        SecretaryCtBean3.setName("Feng Zhang3");
-        SecretaryCtBean3.setLocation("中国");
+        CtListBean.Secretariat SecretaryCtBean3 = new CtListBean.Secretariat();
+        SecretaryCtBean3.setDidName("Feng Zhang3");
+        SecretaryCtBean3.setLocation(86);
         secretaryList.add(SecretaryCtBean3);
 
-        SecretaryCtBean SecretaryCtBean4 = new SecretaryCtBean();
-        SecretaryCtBean4.setName("Feng Zhang4");
-        SecretaryCtBean4.setLocation("中国");
-        secretaryList.add(SecretaryCtBean4);
-
-        SecretaryCtBean SecretaryCtBean5 = new SecretaryCtBean();
-        SecretaryCtBean5.setName("Feng Zhang5");
-        SecretaryCtBean5.setLocation("中国");
-        secretaryList.add(SecretaryCtBean5);
-
-        SecretaryCtBean SecretaryCtBean6 = new SecretaryCtBean();
-        SecretaryCtBean6.setName("Feng Zhang6");
-        SecretaryCtBean6.setLocation("中国");
-        secretaryList.add(SecretaryCtBean6);
-
-        SecretaryCtBean SecretaryCtBean7 = new SecretaryCtBean();
-        SecretaryCtBean7.setName("Feng Zhang7");
-        SecretaryCtBean7.setLocation("中国");
-        secretaryList.add(SecretaryCtBean7);
-
-
-        SecretaryCtBean SecretaryCtBean8 = new SecretaryCtBean();
-        SecretaryCtBean8.setName("Feng Zhang8");
-        SecretaryCtBean8.setLocation("中国");
-        secretaryList.add(SecretaryCtBean8);
-
-        SecretaryCtBean SecretaryCtBean9 = new SecretaryCtBean();
-        SecretaryCtBean9.setName("Feng Zhang9");
-        SecretaryCtBean9.setLocation("中国");
-        secretaryList.add(SecretaryCtBean9);
-
-        SecretaryCtBean SecretaryCtBean10 = new SecretaryCtBean();
-        SecretaryCtBean10.setName("Feng Zhang10");
-        SecretaryCtBean10.setLocation("中国");
-        secretaryList.add(SecretaryCtBean10);
     }
 
     private void generalRockData() {
         generalList = new ArrayList<>();
-        generalList = new ArrayList<>();
-        GeneralCtBean.DataBean GeneralCtBean1 = new GeneralCtBean.DataBean();
+        CtListBean.Council GeneralCtBean1 = new CtListBean.Council();
         GeneralCtBean1.setDidName("Feng Zhang1");
         GeneralCtBean1.setLocation(86);
         GeneralCtBean1.setAvatar("");
         GeneralCtBean1.setStatus("Elected");
         generalList.add(GeneralCtBean1);
 
-        GeneralCtBean.DataBean GeneralCtBean2 = new GeneralCtBean.DataBean();
+        CtListBean.Council GeneralCtBean2 = new CtListBean.Council();
         GeneralCtBean2.setDidName("Feng Zhang1");
         GeneralCtBean2.setLocation(86);
         GeneralCtBean2.setAvatar("");
-        GeneralCtBean2.setStatus("Elected");
+        GeneralCtBean2.setStatus("Returned");
         generalList.add(GeneralCtBean2);
 
-        GeneralCtBean.DataBean GeneralCtBean3 = new GeneralCtBean.DataBean();
+        CtListBean.Council GeneralCtBean3 = new CtListBean.Council();
         GeneralCtBean3.setDidName("Feng Zhang1");
         GeneralCtBean3.setLocation(86);
         GeneralCtBean3.setAvatar("");
-        GeneralCtBean3.setStatus("Returned");
+        GeneralCtBean3.setStatus("Impeached");
         generalList.add(GeneralCtBean3);
 
-        GeneralCtBean.DataBean GeneralCtBean4 = new GeneralCtBean.DataBean();
+        CtListBean.Council GeneralCtBean4 = new CtListBean.Council();
         GeneralCtBean4.setDidName("Feng Zhang1");
         GeneralCtBean4.setLocation(86);
         GeneralCtBean4.setAvatar("");
-        GeneralCtBean4.setStatus("");
+        GeneralCtBean4.setStatus(null);
         generalList.add(GeneralCtBean4);
-
-        GeneralCtBean.DataBean GeneralCtBean5 = new GeneralCtBean.DataBean();
-        GeneralCtBean5.setDidName("Feng Zhang1");
-        GeneralCtBean5.setLocation(86);
-        GeneralCtBean5.setAvatar("");
-        GeneralCtBean5.setStatus("");
-        generalList.add(GeneralCtBean5);
     }
 
     @OnClick({R.id.ct_layout, R.id.secretary_layout})
@@ -231,27 +198,39 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "getSuggestion":
-                setGeneralRec((GeneralCtBean) baseEntity);
+                setGeneralRec((CtListBean) baseEntity);
+                setSecretaryRec((CtListBean) baseEntity);
                 break;
         }
     }
 
-    private void setGeneralRec(GeneralCtBean generalCtBean) {
-        if(null == generalCtBean) return;
-        List<GeneralCtBean.DataBean> datas = generalCtBean.getData();
+    private void setSecretaryRec(CtListBean ctListBean) {
+        if(null == ctListBean) return;
+        List<CtListBean.Secretariat> datas = ctListBean.getData().getSecretariat();
+        if(datas==null || datas.size()<=0) return;
+        if(null == secretaryList) {
+            secretaryList = new ArrayList<>();
+        } else {
+            secretaryList.clear();
+        }
+
+        for(CtListBean.Secretariat data : datas) {
+            secretaryList.add(data);
+        }
+        refreshSecretaryRv();
+    }
+
+    private void setGeneralRec(CtListBean ctListBean) {
+        if(null == ctListBean) return;
+        List<CtListBean.Council> datas = ctListBean.getData().getCouncil();
         if(datas==null || datas.size()<=0) return;
         if(null == generalList) {
             generalList = new ArrayList<>();
         } else {
             generalList.clear();
         }
-        for(GeneralCtBean.DataBean data : datas) {
-            GeneralCtBean.DataBean bean = new GeneralCtBean.DataBean();
-            bean.setDidName(data.getDidName());
-            bean.setLocation(data.getLocation());
-            bean.setAvatar("");
-            bean.setStatus(data.getStatus());
-            generalList.add(bean);
+        for(CtListBean.Council data : datas) {
+            generalList.add(data);
         }
         refreshGeneralRv();
     }

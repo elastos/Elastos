@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ui.committee.bean.GeneralCtBean;
+import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
@@ -22,7 +22,7 @@ import butterknife.ButterKnife;
 
 public class GeneralCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdapter.ViewHolder> {
 
-    public GeneralCtRecAdapter(Context context, List<GeneralCtBean.DataBean> list) {
+    public GeneralCtRecAdapter(Context context, List<CtListBean.Council> list) {
         this.context = context;
         this.list = list;
     }
@@ -36,7 +36,7 @@ public class GeneralCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        GeneralCtBean.DataBean data = list.get(i);
+        CtListBean.Council data = list.get(i);
         viewHolder.name.setText(data.getDidName());
         viewHolder.location.setText(AppUtlis.getLoc(context, String.valueOf(data.getLocation())));
         GlideApp.with(context).load(data.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(viewHolder.icon);
@@ -71,5 +71,5 @@ public class GeneralCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdapte
 
     private Context context;
     private CommonRvListener commonRvListener;
-    private List<GeneralCtBean.DataBean> list;
+    private List<CtListBean.Council> list;
 }
