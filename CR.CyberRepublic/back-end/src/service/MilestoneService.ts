@@ -60,7 +60,7 @@ export default class extends Base {
         exp: now + 60 * 60 * 24,
         command: 'updatemilestone',
         iss: process.env.APP_DID,
-        callbackurl: `${process.env.API_URL}/api/milestone/owner-signature-callback`,
+        callbackurl: `${process.env.API_URL}/api/proposals/milestones/signature-callback`,
         data: {
           proposalhash: proposal.proposalHash,
           messagehash: messageHash,
