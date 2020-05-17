@@ -7,7 +7,8 @@ import {
   logger,
   user as userUtil,
   utilCrypto,
-  getDidPublicKey
+  getDidPublicKey,
+  getPemPublicKey
 } from '../utility'
 const { WAITING_FOR_WITHDRAW } = constant.BUDGET_STATUS
 
@@ -117,20 +118,19 @@ export default class extends Base {
           message: 'There is no this proposal.'
         }
       }
-
-      const rs: any = await getDidPublicKey(claims.iss)
-      if (!rs) {
+      const ownerPublicKey = _.get(proposal, 'ownerPublicKey')
+      if (!ownerPublicKey) {
         return {
           code: 400,
           success: false,
           message: `Can not get your did's public key.`
         }
       }
-
+      const pemPublicKey = getPemPublicKey(ownerPublicKey)
       // verify response data from ela wallet
       return jwt.verify(
         jwtToken,
-        rs.publicKey,
+        pemPublicKey,
         async (err: any, decoded: any) => {
           if (err) {
             return {
