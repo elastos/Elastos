@@ -2,7 +2,13 @@ import Base from './Base'
 import * as _ from 'lodash'
 import * as jwt from 'jsonwebtoken'
 import { constant } from '../constant'
-import { mail, logger, user as userUtil, utilCrypto } from '../utility'
+import {
+  mail,
+  logger,
+  user as userUtil,
+  utilCrypto,
+  getDidPublicKey
+} from '../utility'
 const { WAITING_FOR_WITHDRAW } = constant.BUDGET_STATUS
 
 export default class extends Base {
@@ -75,6 +81,88 @@ export default class extends Base {
     } catch (error) {
       logger.error(error)
       return
+    }
+  }
+
+  public async ownerSignatureCallback(param: any) {
+    try {
+      const jwtToken = param.jwt
+      const claims: any = jwt.decode(jwtToken)
+      if (!_.get(claims, 'req')) {
+        return {
+          code: 400,
+          success: false,
+          message: 'Problems parsing jwt token.'
+        }
+      }
+
+      const payload: any = jwt.decode(
+        claims.req.slice('elastos://crproposal/'.length)
+      )
+      const proposalHash = _.get(payload, 'data.proposalhash')
+      const messageHash = _.get(payload, 'data.messagehash')
+      if (!proposalHash || !messageHash) {
+        return {
+          code: 400,
+          success: false,
+          message: 'Problems parsing jwt token of CR website.'
+        }
+      }
+
+      const proposal = await this.model.findOne({ proposalHash })
+      if (!proposal) {
+        return {
+          code: 400,
+          success: false,
+          message: 'There is no this proposal.'
+        }
+      }
+
+      const rs: any = await getDidPublicKey(claims.iss)
+      if (!rs) {
+        return {
+          code: 400,
+          success: false,
+          message: `Can not get your did's public key.`
+        }
+      }
+
+      // verify response data from ela wallet
+      return jwt.verify(
+        jwtToken,
+        rs.publicKey,
+        async (err: any, decoded: any) => {
+          if (err) {
+            return {
+              code: 401,
+              success: false,
+              message: 'Verify signatrue failed.'
+            }
+          } else {
+            try {
+              await this.model.update(
+                { proposalHash, 'withdrawalHistory.messageHash': messageHash },
+                { $set: { 'withdrawalHistory.$.signature': decoded.data } }
+              )
+              return { code: 200, success: true, message: 'Ok' }
+            } catch (err) {
+              logger.error(err)
+              return {
+                code: 500,
+                success: false,
+                message: 'Something went wrong'
+              }
+            }
+          }
+        }
+      )
+    } catch (err) {
+      logger.error(err)
+      return {
+        code: 500,
+        success: false,
+        message: 'Something went wrong'
+      }
     }
   }
 
