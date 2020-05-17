@@ -11,6 +11,7 @@ import {
   getPemPublicKey
 } from '../utility'
 const { WAITING_FOR_WITHDRAW, WAITING_FOR_APPROVAL } = constant.BUDGET_STATUS
+const { ACTIVE } = constant.CVOTE_STATUS
 
 export default class extends Base {
   private model: any
@@ -27,6 +28,10 @@ export default class extends Base {
       const proposal = await this.model.findById(id)
       // check if current user is the proposal's owner
       if (!proposal.proposer.equals(this.currentUser._id)) {
+        return { success: false }
+      }
+      const status = proposal.status
+      if (status !== ACTIVE) {
         return { success: false }
       }
       // check if milestoneKey is valid
@@ -54,7 +59,6 @@ export default class extends Base {
       )
 
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
-      const status = proposal.status
       // generate jwt url
       const jwtClaims = {
         iat: now,
