@@ -12,6 +12,7 @@ import {
 } from '../utility'
 const { WAITING_FOR_WITHDRAW, WAITING_FOR_APPROVAL } = constant.BUDGET_STATUS
 const { ACTIVE } = constant.CVOTE_STATUS
+const { DRAFT, REVIEWING, PUBLISHED, REJECT } = constant.CVOTE_TRACKING_STATUS
 
 export default class extends Base {
   private model: any
@@ -148,7 +149,7 @@ export default class extends Base {
                 { proposalHash, 'withdrawalHistory.messageHash': messageHash },
                 {
                   $set: {
-                    'withdrawalHistory.$.signature': decoded.data,
+                    'withdrawalHistory.$.review': decoded.data,
                     'budget.$.status': WAITING_FOR_APPROVAL
                   }
                 }
@@ -194,7 +195,60 @@ export default class extends Base {
     }
   }
 
-  public async review(param: any) {}
+  public async review(param: any) {
+    try {
+      const { id, milestoneKey, message, opinion } = param
+      if (!message || !opinion) {
+        return { success: false }
+      }
+      const proposal = await this.model.findById(id)
+      if (!proposal) {
+        return { success: false }
+      }
+      const status = proposal.status
+      if (status !== ACTIVE) {
+        return { success: false }
+      }
+
+      const now = Math.floor(Date.now() / 1000)
+
+      const messageHash = utilCrypto.sha256D(
+        JSON.stringify({ date: now, message })
+      )
+      const opinionHash = utilCrypto.sha256D(opinion)
+
+      const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
+      // generate jwt url
+      const jwtClaims = {
+        iat: now,
+        exp: now + 60 * 60 * 24,
+        command: 'updatemilestone',
+        iss: process.env.APP_DID,
+        callbackurl: `${process.env.API_URL}/api/proposals/milestones/sec-signature-callback`,
+        data: {
+          proposalhash: proposal.proposalHash,
+          messagehash: messageHash,
+          stage: parseInt(milestoneKey),
+          ownerpubkey: ownerPublicKey,
+          newownerpubkey: '',
+          ownersignature: '',
+          proposaltrackingtype: status,
+          secretaryopinionhash: opinionHash
+        }
+      }
+      const jwtToken = jwt.sign(
+        JSON.stringify(jwtClaims),
+        process.env.APP_PRIVATE_KEY,
+        { algorithm: 'ES256' }
+      )
+
+      const url = `elastos://crproposal/${jwtToken}`
+      return { success: true, url }
+    } catch (error) {
+      logger.error(error)
+      return
+    }
+  }
 
   private updateMailTemplate(id: string) {
     const subject =
