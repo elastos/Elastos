@@ -167,6 +167,22 @@ export default class extends Base {
     }
   }
 
+  public async checkSignature(param: any) {
+    const { id, messageHash } = param
+    const proposal:any = await this.model.findById(id)
+    if (proposal) {
+      const history = proposal.withdrawalHistory.filter(item => item.messageHash === messageHash)
+      if (_.isEmpty(history)) {
+        return { success: false }
+      }
+      if(_.get(history, 'signature')) {
+        return { success: true }
+      }
+    } else {
+      return { success: false }
+    }
+  }
+
   public async review(param: any) {}
 
   private updateMailTemplate(id: string) {
