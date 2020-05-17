@@ -62,19 +62,19 @@ namespace Elastos {
 
 				std::map<uint256, TransactionPtr> txnMap;
 
-				if (!database->ExistTxHashTable()) {
+				if (!database->ExistTxHashTable() || (_chainID == CHAINID_IDCHAIN && !database->GetTxHashDPoS().empty())) {
 					// TODO: will remove after several version
 					std::vector<TransactionPtr> txns = LoadTxn(TxnType(TXN_NORMAL | TXN_COINBASE));
 					for (TransactionPtr &tx : txns) {
 						txnMap[tx->GetHash()] = tx;
-						if (tx->IsDPoSTransaction())
+						if (tx->IsIDTransaction())
+							txHashDID.push_back(tx->GetHash().GetHex());
+						else if (tx->IsDPoSTransaction())
 							txHashDPoS.push_back(tx->GetHash().GetHex());
 						else if (tx->IsCRCTransaction())
 							txHashCRC.push_back(tx->GetHash().GetHex());
 						else if (tx->IsProposalTransaction())
 							txHashProposal.push_back(tx->GetHash().GetHex());
-						else if (tx->IsIDTransaction())
-							txHashDID.push_back(tx->GetHash().GetHex());
 					}
 				} else {
 					std::vector<TransactionPtr> utxoTxns = LoadUTXOTxn();
@@ -104,7 +104,7 @@ namespace Elastos {
 						Log::error("utxo hash {} not found", u->Hash().GetHex());
 					}
 				}
-				SaveSpecialTxHash(txHashDPoS, txHashCRC, txHashProposal, txHashDID);
+				SaveSpecialTxHash(txHashDPoS, txHashCRC, txHashProposal, txHashDID, _chainID == CHAINID_IDCHAIN);
 			} else {
 				// TODO: will remove after several version
 				std::vector<TransactionPtr> txNormal = LoadTxn(TXN_NORMAL);
@@ -1346,20 +1346,21 @@ namespace Elastos {
 		void Wallet::SaveSpecialTxHash(const std::vector<std::string> &txHashDPoS,
 									   const std::vector<std::string> &txHashCRC,
 									   const std::vector<std::string> &txHashProposal,
-									   const std::vector<std::string> &txHashDID) {
+									   const std::vector<std::string> &txHashDID,
+									   bool replace) {
 			if (!_database.expired()) {
 				DatabaseManagerPtr db = _database.lock();
-				if (!txHashDPoS.empty())
-					db->PutTxHashDPoS(txHashDPoS);
+				if (replace || !txHashDPoS.empty())
+					db->PutTxHashDPoS(txHashDPoS, replace);
 
-				if (!txHashCRC.empty())
-					db->PutTxHashCRC(txHashCRC);
+				if (replace || !txHashCRC.empty())
+					db->PutTxHashCRC(txHashCRC, replace);
 
-				if (!txHashProposal.empty())
-					db->PutTxHashProposal(txHashProposal);
+				if (replace || !txHashProposal.empty())
+					db->PutTxHashProposal(txHashProposal, replace);
 
-				if (!txHashDID.empty())
-					db->PutTxHashDID(txHashDID);
+				if (replace || !txHashDID.empty())
+					db->PutTxHashDID(txHashDID, replace);
 			}
 		}
 

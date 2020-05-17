@@ -1319,7 +1319,7 @@ static int proposal(int argc, char *argv[]) {
 		std::string did;
 		std::cout << "Enter CR committee's did: ";
 		std::cin >> did;
-		payload["CRCommitteeDID"] = did;
+		payload["CRCouncilMemberDID"] = did;
 
 		digest = subWallet->ProposalCRCouncilMemberDigest(payload);
 
@@ -1329,7 +1329,7 @@ static int proposal(int argc, char *argv[]) {
 		std::cout << "Enter CR committee's signature: ";
 		std::cin >> signature;
 
-		payload["CRCommitteeSignature"] = signature;
+		payload["CRCouncilMemberSignature"] = signature;
 
 		std::cout << "Payload preview: " << std::endl << payload.dump(4) << std::endl;
 		nlohmann::json tx = subWallet->CreateProposalTransaction(payload);

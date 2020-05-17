@@ -426,8 +426,8 @@ namespace Elastos {
 		}
 
 		// TxHash CRC
-		bool DatabaseManager::PutTxHashCRC(const std::vector<std::string> &txHashes) {
-			return _txHashCRC.Puts(txHashes, false);
+		bool DatabaseManager::PutTxHashCRC(const std::vector<std::string> &txHashes, bool replace) {
+			return _txHashCRC.Puts(txHashes, replace);
 		}
 
 		std::vector<std::string> DatabaseManager::GetTxHashCRC() const {
@@ -444,8 +444,8 @@ namespace Elastos {
 		}
 
 		// TxHash DPoS
-		bool DatabaseManager::PutTxHashDPoS(const std::vector<std::string> &txHashes) {
-			return _txHashDPoS.Puts(txHashes, false);
+		bool DatabaseManager::PutTxHashDPoS(const std::vector<std::string> &txHashes, bool replace) {
+			return _txHashDPoS.Puts(txHashes, replace);
 		}
 
 		std::vector<std::string> DatabaseManager::GetTxHashDPoS() const {
@@ -462,8 +462,8 @@ namespace Elastos {
 		}
 
 		// TxHash Proposal
-		bool DatabaseManager::PutTxHashProposal(const std::vector<std::string> &txHashes) {
-			return _txHashProposal.Puts(txHashes, false);
+		bool DatabaseManager::PutTxHashProposal(const std::vector<std::string> &txHashes, bool replace) {
+			return _txHashProposal.Puts(txHashes, replace);
 		}
 
 		std::vector<std::string> DatabaseManager::GetTxHashProposal() const {
@@ -479,8 +479,8 @@ namespace Elastos {
 												_txHashProposal.GetTxHashColumnName());
 		}
 
-		bool DatabaseManager::PutTxHashDID(const std::vector<std::string> &txHashes) {
-			return _txHashDID.Puts(txHashes, false);
+		bool DatabaseManager::PutTxHashDID(const std::vector<std::string> &txHashes, bool replace) {
+			return _txHashDID.Puts(txHashes, replace);
 		}
 
 		std::vector<std::string> DatabaseManager::GetTxHashDID() const {

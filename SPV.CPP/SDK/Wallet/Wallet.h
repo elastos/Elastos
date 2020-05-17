@@ -264,7 +264,8 @@ namespace Elastos {
 			void SaveSpecialTxHash(const std::vector<std::string> &txHashDPoS,
 								   const std::vector<std::string> &txHashCRC,
 								   const std::vector<std::string> &txHashProposal,
-								   const std::vector<std::string> &txHashDID);
+								   const std::vector<std::string> &txHashDID,
+								   bool replace = false);
 		public:
 			std::vector<TransactionPtr> LoadTxn(TxnType type) const;
 

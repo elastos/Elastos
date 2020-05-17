@@ -206,7 +206,7 @@ namespace Elastos {
 			bool DeleteAllUsedAddresses();
 
 			// TxHash CRC
-			bool PutTxHashCRC(const std::vector<std::string> &txHashes);
+			bool PutTxHashCRC(const std::vector<std::string> &txHashes, bool replace = false);
 
 			std::vector<std::string> GetTxHashCRC() const;
 
@@ -215,7 +215,7 @@ namespace Elastos {
 			std::vector<TransactionPtr> GetTxCRC(const std::string &chainID) const;
 
 			// TxHash DPoS
-			bool PutTxHashDPoS(const std::vector<std::string> &txHashes);
+			bool PutTxHashDPoS(const std::vector<std::string> &txHashes, bool replace = false);
 
 			std::vector<std::string> GetTxHashDPoS() const;
 
@@ -224,7 +224,7 @@ namespace Elastos {
 			std::vector<TransactionPtr> GetTxDPoS(const std::string &chainID) const;
 
 			// TxHash Proposal
-			bool PutTxHashProposal(const std::vector<std::string> &txHashes);
+			bool PutTxHashProposal(const std::vector<std::string> &txHashes, bool replace = false);
 
 			std::vector<std::string> GetTxHashProposal() const;
 
@@ -233,7 +233,7 @@ namespace Elastos {
 			std::vector<TransactionPtr> GetTxProposal(const std::string &chainID) const;
 
 			// TxHash DID
-			bool PutTxHashDID(const std::vector<std::string> &txHashes);
+			bool PutTxHashDID(const std::vector<std::string> &txHashes, bool replace = false);
 
 			std::vector<std::string> GetTxHashDID() const;
 
