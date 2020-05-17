@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 
 const create = (constant_list: string[]): any => {
   const map = {}
-  _.each(constant_list, key => {
+  _.each(constant_list, (key) => {
     map[key] = key
   })
 
@@ -150,16 +150,9 @@ export const TASK_CANDIDATE_CATEGORY = {
   RSVP: 'RSVP'
 }
 
-export const TERM_COUNCIL_STATUS = create([
-    'HISTORY',
-    'CURRENT',
-    'VOTING'
-])
+export const TERM_COUNCIL_STATUS = create(['HISTORY', 'CURRENT', 'VOTING'])
 
-export const SECRETARIAT_STATUS = create([
-  'CURRENT',
-  'NON_CURRENT'
-])
+export const SECRETARIAT_STATUS = create(['CURRENT', 'NON_CURRENT'])
 
 // ACTIVE === PASSED, currently 'published' flag is used for 'DRAFT'
 export const CVOTE_STATUS = create([
@@ -198,10 +191,10 @@ export const ELIP_VOTE_RESULT = {
   UNDECIDED: 'undecided'
 }
 export const CVOTE_CHAIN_STATUS = {
-  CHAINED:'chained',
-  UNCHAIN:'unchain',
-  CHAINING:'chaining',
-  FAILED:'failed'
+  CHAINED: 'chained',
+  UNCHAIN: 'unchain',
+  CHAINING: 'chaining',
+  FAILED: 'failed'
 }
 // expiration period: 7 days
 export const CVOTE_EXPIRATION = 1000 * 60 * 60 * 24 * 14
@@ -317,7 +310,7 @@ export const DB_SELECTED_FIELDS = {
     NAME: 'profile.firstName profile.lastName username',
     NAME_EMAIL: 'profile.firstName profile.lastName username email',
     NAME_AVATAR: 'profile.avatar profile.firstName profile.lastName username',
-    NAME_EMAIL_DID: 'profile.firstName profile.lastName username email did',
+    NAME_EMAIL_DID: 'profile.firstName profile.lastName username email did'
   },
   SUGGESTION: {
     ID: 'displayId'
@@ -339,13 +332,14 @@ export const ELIP_STATUS = create([
   'SUBMITTED_AS_PROPOSAL'
 ])
 
-export const ELIP_REVIEW_STATUS = create([
-  'APPROVED',
-  'REJECTED'
-])
+export const ELIP_REVIEW_STATUS = create(['APPROVED', 'REJECTED'])
 
-export const ELIP_TYPE = create([
-  'STANDARD_TRACK',
-  'PROCESS',
-  'INFORMATIONAL'
+export const ELIP_TYPE = create(['STANDARD_TRACK', 'PROCESS', 'INFORMATIONAL'])
+
+export const BUDGET_STATUS = create([
+  'WAITING_FOR_WITHDRAW',
+  'REJECTED',
+  'WAITING_FOR_APPROVAL',
+  'APPROVED',
+  'WITHDRAWN'
 ])

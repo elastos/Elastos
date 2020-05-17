@@ -39,8 +39,9 @@ export const CVoteHistorySchema = {
   }
 }
 
-const withdrawHistorySchema = {
+const withdrawalHistorySchema = {
   message: String,
+  messageHash: String,
   milestoneKey: String,
   signature: String,
   createdAt: {
@@ -50,7 +51,9 @@ const withdrawHistorySchema = {
   },
   review: {
     reason: String,
+    reasonHash: String,
     opinion: String,
+    opinionHash: String,
     signature: String,
     createdAt: {
       type: Date,
@@ -123,6 +126,7 @@ export const CVote = {
   avatar_map: Object,
   reason_map: Object,
   reason_zh_map: Object,
+  // council member
   createdBy: { type: Schema.Types.ObjectId, ref: 'users' },
 
   published: {
@@ -194,5 +198,5 @@ export const CVote = {
   rejectHeight: {
     type: String
   },
-  withdrawHistory: [withdrawHistorySchema]
+  withdrawalHistory: [withdrawalHistorySchema]
 }
