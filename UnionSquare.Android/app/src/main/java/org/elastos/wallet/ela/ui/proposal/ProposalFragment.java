@@ -23,6 +23,7 @@
 package org.elastos.wallet.ela.ui.proposal;
 
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.util.TypedValue;
 import android.view.View;
@@ -73,20 +74,18 @@ public class ProposalFragment extends BaseFragment implements TabLayout.BaseOnTa
         titles.add(getString(R.string.finish));
         titles.add(getString(R.string.abolished));
         //设置适配器
-        ArrayList<BaseFragment> datas = new ArrayList<BaseFragment>();
-        datas.add(ProposalItemFragment.getInstance(0));
-        datas.add(ProposalItemFragment.getInstance(1));
-        datas.add(ProposalItemFragment.getInstance(2));
-        datas.add(ProposalItemFragment.getInstance(3));
-        datas.add(ProposalItemFragment.getInstance(4));
-        datas.add(ProposalItemFragment.getInstance(5));
-
-
-        ProposalPagerAdapter mPagerAdapter = new ProposalPagerAdapter(getFragmentManager(), datas, titles);
+        ArrayList<Fragment> datas = new ArrayList<Fragment>();
+        datas.add(ProposalItemFragment.getInstance("ALL"));
+        datas.add(ProposalItemFragment.getInstance("VOTING"));
+        datas.add(ProposalItemFragment.getInstance("NOTIFICATION"));
+        datas.add(ProposalItemFragment.getInstance("ACTIVE"));
+        datas.add(ProposalItemFragment.getInstance("FINAL"));
+        datas.add(ProposalItemFragment.getInstance("REJECTED"));
+        ProposalPagerAdapter mPagerAdapter = new ProposalPagerAdapter(getChildFragmentManager(), datas, titles);
         vp.setAdapter(mPagerAdapter);
         //关联
         tab.setupWithViewPager(vp);
-        //vp.setOffscreenPageLimit(3);
+        vp.setOffscreenPageLimit(5);
         tab.addOnTabSelectedListener(this);
 
     }
@@ -122,4 +121,5 @@ public class ProposalFragment extends BaseFragment implements TabLayout.BaseOnTa
     public void onTabReselected(TabLayout.Tab tab) {
         Log.i("????11", tab.getPosition());
     }
+
 }
