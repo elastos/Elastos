@@ -148,7 +148,8 @@ export default class extends Base {
       createdBy: this.currentUser._id,
       reference: suggestionId,
       proposalHash: suggestion.proposalHash,
-      draftHash: suggestion.draftHash
+      draftHash: suggestion.draftHash,
+      ownerPublicKey: suggestion.ownerPublicKey
     }
 
     Object.assign(doc, _.pick(suggestion, BASE_FIELDS))

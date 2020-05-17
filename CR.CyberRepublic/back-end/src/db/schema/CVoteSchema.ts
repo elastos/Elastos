@@ -192,6 +192,7 @@ export const CVote = {
   draftHash: {
     type: String
   },
+  ownerPublicKey: String,
   rejectAmount: {
     type: String
   },
