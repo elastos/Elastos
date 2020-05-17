@@ -144,6 +144,7 @@ export default class extends Base {
                 { proposalHash, 'withdrawalHistory.messageHash': messageHash },
                 { $set: { 'withdrawalHistory.$.signature': decoded.data } }
               )
+              this.notifySecretaries(this.updateMailTemplate(proposal.vid))
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
               logger.error(err)
@@ -168,7 +169,18 @@ export default class extends Base {
 
   public async review(param: any) {}
 
-  private updateMailTemplate() {}
+  private updateMailTemplate(id: string) {
+    const subject = '【Payment Review】One payment request is waiting for your review'
+    const body = `
+      <p>One payment request in proposal #${id} is waiting for your review:</p>
+      <p>Click this link to view more details:</p>
+      <p><a href="${process.env.SERVER_URL}/proposals/${id}">${process.env.SERVER_URL}/proposals/${id}</a></p>
+      <br />
+      <p>Cyber Republic Team</p>
+      <p>Thanks</p>
+    `
+    return { subject, body }
+  }
 
   private reviewMailTemplate() {}
 
