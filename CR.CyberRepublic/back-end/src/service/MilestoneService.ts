@@ -274,6 +274,101 @@ export default class extends Base {
     }
   }
 
+  public async secSignatureCallback(param: any) {
+    try {
+      const jwtToken = param.jwt
+      const claims: any = jwt.decode(jwtToken)
+      if (!_.get(claims, 'req')) {
+        return {
+          code: 400,
+          success: false,
+          message: 'Problems parsing jwt token.'
+        }
+      }
+
+      const payload: any = jwt.decode(
+        claims.req.slice('elastos://crproposal/'.length)
+      )
+      const proposalHash = _.get(payload, 'data.proposalhash')
+      const messageHash = _.get(payload, 'data.messagehash')
+      if (!proposalHash || !messageHash) {
+        return {
+          code: 400,
+          success: false,
+          message: 'Problems parsing jwt token of CR website.'
+        }
+      }
+
+      const proposal = await this.model.findOne({ proposalHash })
+      if (!proposal) {
+        return {
+          code: 400,
+          success: false,
+          message: 'There is no this proposal.'
+        }
+      }
+
+      const rs: any = await getDidPublicKey(claims.iss)
+      if (!_.get(rs, 'publicKey')) {
+        return {
+          code: 400,
+          success: false,
+          message: `Can not get your did's public key.`
+        }
+      }
+      // verify response data from ela wallet
+      return jwt.verify(
+        jwtToken,
+        rs.publicKey,
+        async (err: any, decoded: any) => {
+          if (err) {
+            return {
+              code: 401,
+              success: false,
+              message: 'Verify signatrue failed.'
+            }
+          } else {
+            try {
+              const history = proposal.withdrawalHistory.filter((item: any) => {
+                item.review.messageHash === messageHash
+              })
+
+              await this.model.update(
+                {
+                  proposalHash,
+                  'withdrawalHistory.review.messageHash': messageHash
+                },
+                {
+                  $set: {
+                    'withdrawalHistory.$.review.txid': decoded.data,
+                    'budget.$.status': history.review.opinion
+                  }
+                }
+              )
+
+              this.notifyProposalOwner(this.updateMailTemplate(proposal.vid))
+              return { code: 200, success: true, message: 'Ok' }
+            } catch (err) {
+              logger.error(err)
+              return {
+                code: 500,
+                success: false,
+                message: 'Something went wrong'
+              }
+            }
+          }
+        }
+      )
+    } catch (err) {
+      logger.error(err)
+      return {
+        code: 500,
+        success: false,
+        message: 'Something went wrong'
+      }
+    }
+  }
+
   private updateMailTemplate(id: string) {
     const subject = `【Payment Review】One payment request is waiting for your review`
     const body = `
