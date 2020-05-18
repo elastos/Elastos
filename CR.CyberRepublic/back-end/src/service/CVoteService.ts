@@ -1495,7 +1495,7 @@ export default class extends Base {
       'createdAt',
       'proposalHash',
       'rejectAmount',
-      'rejectHeight',
+      'rejectThroughAmount',
     ]
     const proposal = await db_cvote
       .getDBInstance()
@@ -1556,15 +1556,15 @@ export default class extends Base {
 
     if ([constant.CVOTE_STATUS.NOTIFICATION, constant.CVOTE_STATUS.VETOED].includes(proposal.status)
         && proposal.rejectAmount >= 0
-        && proposal.rejectHeight > 0) {
+        && proposal.rejectThroughAmount > 0) {
       notificationResult['rejectAmount'] = `${proposal.rejectAmount}`
-      notificationResult['rejectHeight'] = `${proposal.rejectHeight}`
-      notificationResult['rejectRatio'] = _.toNumber((_.toNumber(proposal.rejectAmount) / _.toNumber(proposal.rejectHeight)).toFixed(4))
+      notificationResult['rejectThroughAmount'] = `${proposal.rejectThroughAmount}`
+      notificationResult['rejectRatio'] = _.toNumber((_.toNumber(proposal.rejectAmount) / _.toNumber(proposal.rejectThroughAmount)).toFixed(4))
     }
 
     return _.omit(
       {
-        ..._.omit(proposal._doc, ['abstract', 'rejectAmount', 'rejectHeight', 'status']),
+        ..._.omit(proposal._doc, ['abstract', 'rejectAmount', 'rejectThroughAmount', 'status']),
         abs: proposal.abstract,
         ...votingResult,
         ...notificationResult,
