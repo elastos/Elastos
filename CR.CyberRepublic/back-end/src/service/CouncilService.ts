@@ -199,7 +199,7 @@ export default class extends Base {
             return {
                 ..._.omit(council._doc, ['_id', 'user']),
                 ...this.getUserInformation(council._doc, council.user),
-                impeachmentThroughAmount: councilList.height * 0.2,
+                impeachmentThroughVotes: councilList.height * 0.2,
                 term,
                 type: 'CouncilMember'
             }
@@ -429,7 +429,7 @@ export default class extends Base {
             console.log('---------------- start council or secretariat cronJob -------------')
             await this.eachJob()
             await this.eachSecretariatJob()
-        }, 1000 * 30)
+        }, 1000 * 60 * 10)
     }
 
     /**
