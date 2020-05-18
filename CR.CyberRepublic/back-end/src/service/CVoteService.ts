@@ -1255,15 +1255,19 @@ export default class extends Base {
   public async checkSignature(param: any) {
     const { id } = param
     const db_cvote = this.getDBModel('CVote')
-    const proposal = await db_cvote.find({ _id: id })
+    const userId = _.get(this.currentUser, '_id')
+    const proposal = await db_cvote.findOne({ _id: id })
     if (proposal) {
-      const signature = _.get(proposal, 'proposal.voteResult.signature')
-      if (signature) {
-        return { success: true, data: proposal }
-      }
-      const message = _.get(proposal, 'proposal.voteResult.message')
-      if (message) {
-        return { success: true, data: proposal }
+      const voteResult = _.filter(proposal.voteResult, (o:any) =>  o.votedBy.equals(userId))[0]
+      if(voteResult) {
+        const signature = _.get(voteResult, 'signature')
+        if (signature) {
+          return { success: true, data: proposal }
+        }
+        const message = _.get(voteResult, 'message')
+        if (message) {
+          return { success: true, data: proposal }
+        }
       }
     } else {
       return {
@@ -1665,7 +1669,6 @@ export default class extends Base {
       }
       if (rs && rs.status === 'CRAgreed') {
         const { votersrejectamount,registerheight } = rs.data
-        console.log(votersrejectamount, registerheight)
         await db_cvote.update(
           { _id:id },
           {
