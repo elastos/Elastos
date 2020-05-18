@@ -22,6 +22,7 @@ import check_signature from './check_signature'
 import memberVote from './memberVote'
 import pollProposalState from './poll_proposal_state'
 import pollVoteState from './poll_vote_state'
+import pollMemberVote from './poll_member_vote'
 
 export default Base.setRouter([
   {
@@ -134,4 +135,9 @@ export default Base.setRouter([
     router: pollVoteState,
     method: 'post'
   },
+  {
+    path: '/poll_member_vote',
+    router: pollMemberVote,
+    method: 'post'
+  }
 ])

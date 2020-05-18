@@ -161,9 +161,8 @@ export default class extends BaseService {
   }
 
   async getReviewProposalUrl(id) {
-    const path = `${this.prefixPath}/reviewproposal-url`
     const res = await api_request({
-      path,
+      path: `${this.prefixPath}/reviewproposal-url`,
       method: 'post',
       data: { id }
     })
@@ -177,7 +176,7 @@ export default class extends BaseService {
       method: 'post',
       data: { id }
     })
-    if (rs.success && rs.data) {
+    if ( rs && rs.success && rs.data) {
       this.dispatch(this.selfRedux.actions.detail_update(rs.data))
     }
     return rs

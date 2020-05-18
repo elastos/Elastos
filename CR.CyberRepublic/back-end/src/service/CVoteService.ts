@@ -2,7 +2,7 @@ import Base from './Base'
 import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { permissions, getDidPublicKey, getProposalState } from '../utility'
+import { permissions, getDidPublicKey, getProposalState, getProposalData } from '../utility'
 import * as moment from 'moment'
 import * as jwt from 'jsonwebtoken'
 import {
@@ -868,30 +868,14 @@ export default class extends Base {
 
   // proposal publicity
   public async isNotification(data): Promise<any> {
-    
-    // Get one cr proposal detail state information by proposalhash or drafthash
-    const proposalHash = data.proposalHash
-    const rs: any = await getProposalState(proposalHash)
-    if (!rs) {
-      throw 'get one cr proposal crvotes by proposalhash is fail'
-    }
-    if (rs && rs.status === 'Registered') {
-      const voteRejectAmount = rs.votersrejectamount
-      const registerHeight = rs.registerheight
-      // TODO
-      // Once the number of votes against a proposal exceeds the equivalent of 10% of all circulating ELA, the proposal becomes invalid
-      // reject proportion，need to calculate
-      const proportion = 0
-      // 
-      return proportion < 0.1
-    }
-    
+    const voteRejectAmount = data.votersrejectamount
+    const registerHeight = data.registerheight
+    const proportion = voteRejectAmount/registerHeight
+    return proportion < 0.1
   }
 
   // proposal active/passed
   public isActive(data): Boolean {
-    // TODO
-    // Get one cr proposal detail state information by proposalhash or drafthash
     const supportNum =
       _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.SUPPORT] || 0
     return supportNum > data.voteResult.length * 0.5
@@ -899,8 +883,6 @@ export default class extends Base {
 
   // proposal rejected
   public isRejected(data): Boolean {
-    // TODO
-    // Get one cr proposal detail state information by proposalhash or drafthash
     const rejectNum =
       _.countBy(data.voteResult, 'value')[constant.CVOTE_RESULT.REJECT] || 0
     return rejectNum > data.voteResult.length * 0.5
@@ -1075,7 +1057,6 @@ export default class extends Base {
       console.log('---------------- start cvote cronjob -------------')
       this.eachJob()
       this.eachMemberVoteJob()
-      this.pollingVoteStatus()
     }, 1000 * 60)
   }
 
@@ -1292,7 +1273,7 @@ export default class extends Base {
   }
   
   // according to txid polling vote status
-  public async pollingVoteStatus() {
+  public async pollCouncilVoteStatus() {
     const db_cvote = this.getDBModel('CVote')
     const list = await db_cvote.find({
       status: constant.CVOTE_STATUS.PROPOSED
@@ -1303,14 +1284,13 @@ export default class extends Base {
     })
   }
 
-
   public async pollVoteStatus(id) {
     const db_cvote = this.getDBModel('CVote')
     const proposal = await db_cvote.findById(id)
     if (proposal) {
       const proposalHash = _.get(proposal, 'proposalHash')
       if (proposalHash) {
-        const rs:any = await getProposalState(proposalHash)
+        const rs:any = await getProposalData(proposalHash)
         if (rs && rs.success === false) {
           return { success: false,message: rs.message }
         }
@@ -1388,7 +1368,7 @@ export default class extends Base {
         iat: now,
         exp: now + (60 * 60 * 24),
         iss: process.env.APP_DID,
-        callbackurl: `${process.env.API_URL}/api/CVote/vote_callback`,
+        callbackurl: null,
         command:"voteforproposal",
         data: {
           proposalHash: cur.proposalHash
@@ -1660,25 +1640,57 @@ export default class extends Base {
     return list
   }
 
-  // TODO
-  // member vote result API, provide front end polling
-  public async getVotersRejectAmount(id) {
+  // poll notification, get votersrejectamount and registerheight
+  public async pollVotersRejectAmount() {
     const db_cvote = this.getDBModel("CVote")
-    const cur = await db_cvote.find({_id:id})
-    if(!cur){
-      throw "this is not proposal"
-    }
-    const rs: any = await getProposalState(cur.proposalHash)
-    if (!rs) {
-      throw 'get one cr proposal crvotes by proposalhash is fail'
-    }
-    if (rs && rs.status === 'Registered') {
-      const { votersrejectamount,registerheight } = rs
+    const list = await db_cvote.find({
+      status: constant.CVOTE_STATUS.NOTIFICATION
+    })
 
-      // calculation reject proportion
-      const proportion = ''
-    
-      return { success: true, proportion }
+    _.each(list, (item)=>{
+      this.getVotersRejectAmount(item._id)
+    })
+  }
+
+  public async getVotersRejectAmount(id) {
+    try{
+      const db_cvote = this.getDBModel("CVote")
+      const cur = await db_cvote.find({_id:id})
+      if(!cur){
+        throw "this is not proposal"
+      }
+      const rs: any = await getProposalData(cur.proposalHash)
+      if (!rs) {
+        throw 'get one cr proposal crvotes by proposalhash is fail'
+      }
+      if (rs && rs.status === 'CRAgreed') {
+        const { votersrejectamount,registerheight } = rs.data
+        console.log(votersrejectamount, registerheight)
+        await db_cvote.update(
+          { _id:id },
+          {
+            $set: {
+              rejectAmount: votersrejectamount,
+              rejectHeight: registerheight
+            }
+          }
+        )
+      }
+      return {success: true, id}
+    }catch(err){
+      logger.error(err)
+      return
     }
+  }
+
+  public async crjob() {
+    if(tm){
+      return false
+    }
+    tm = setInterval(() => {
+      console.log('---------------- start cvote crjob of 5 min -------------')
+      this.pollVotersRejectAmount()
+      this.pollCouncilVoteStatus()
+    }, 1000 * 60 * 5)
   }
 }

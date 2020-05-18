@@ -107,6 +107,33 @@ export const getProposalState = async (draftHash: string) => {
   }
 }
 
+export const getProposalData = async (proposalHash: string ) => {
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+  const data = {
+    jsonrpc: '2.0',
+    method: 'getcrproposalstate',
+    params: {
+      proposalHash: proposalHash
+    }
+  }
+  try {
+    const res = await axios.post(process.env.ELA_NODE_URL, data, {
+      headers
+    })
+    if (res) {
+      const status = _.get(res.data, 'result.proposalstate.status')
+      const data = _.get(res.data, 'result.proposalstate')
+      if (status) {
+        return { success: true, status, data }
+      }
+    }
+  } catch (err) {
+    logger.error(err)
+  }
+}
+
 export const getInformationByDID = async (did: string) => {
     const data = {
         did: 'did:elastos:' + did
