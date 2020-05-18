@@ -76,7 +76,7 @@ export default class extends Base {
         }
 
         const filterFields = (o: any) => {
-            return _.omit(o, ['_id', 'user'])
+            return _.omit(o, ['_id', 'user', 'startDate', 'endDate',])
         }
 
         const council = _.map(result.councilMembers, (o: any) => ({
@@ -86,7 +86,9 @@ export default class extends Base {
 
         const secretariat = _.map(secretariatResult, (o: any) => ({
             ...filterFields(o._doc),
-            ...this.getUserInformation(o.user)
+            ...this.getUserInformation(o.user),
+            startDate: moment(o.startDate).unix(),
+            endDate: moment(o.endDate).unix(),
         }))
 
         return {
