@@ -634,7 +634,7 @@ namespace Elastos {
 			 *   "ProposalHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
 			 *   "VoteResult": 1,    // approve = 0, reject = 1, abstain = 2
 			 *   "OpinionHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
-			 *   "DID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY", // did of CR council member's did
+			 *   "DID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY", // did of CR council member
 			 * }
 			 *
 			 * @return Digest of payload.
