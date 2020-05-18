@@ -1671,7 +1671,7 @@ export default class extends Base {
           {
             $set: {
               rejectAmount: votersrejectamount,
-              rejectHeight: registerheight
+              rejectThroughAmount: registerheight
             }
           }
         )
