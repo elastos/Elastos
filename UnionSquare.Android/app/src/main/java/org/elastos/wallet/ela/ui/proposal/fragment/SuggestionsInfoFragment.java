@@ -1,10 +1,8 @@
 package org.elastos.wallet.ela.ui.proposal.fragment;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -14,7 +12,6 @@ import com.google.gson.Gson;
 
 import org.elastos.did.DIDStore;
 import org.elastos.did.exception.DIDException;
-import org.elastos.did.exception.DIDStoreException;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -27,20 +24,14 @@ import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
-import org.elastos.wallet.ela.ui.did.presenter.AuthorizationPresenter;
 import org.elastos.wallet.ela.ui.proposal.adapter.SuggetMoneyRecAdapetr;
-import org.elastos.wallet.ela.ui.proposal.bean.ProposalCallBackEntity;
 import org.elastos.wallet.ela.ui.proposal.bean.SuggestBean;
 import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
 import org.elastos.wallet.ela.ui.proposal.presenter.bean.ProposalCRCouncialMenberDigestPayLoad;
-import org.elastos.wallet.ela.ui.proposal.presenter.bean.ProposalOwnerDigestPayLoad;
-import org.elastos.wallet.ela.ui.vote.activity.VertifyPwdActivity;
-import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.JwtUtils;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -51,7 +42,6 @@ import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -148,10 +138,11 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
             case R.id.tv_sign:
                 //签名
                 if ("createsuggestion".equals(command)) {
-                    toVertifyPwdActivity();
+                    presenter.toVertifyPwdActivity(wallet, this);
 
                 } else if ("createproposal".equals(command)) {
-                    showFeePage();
+                    //showFeePage();
+                    presenter.showFeePage(wallet, Constant.PROPOSALINPUT, 37, this);
                 }
 
                 break;
@@ -160,20 +151,9 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
         }
     }
 
-    private void showFeePage() {
-        //发送提案交易
-        Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
-        intent.putExtra("wallet", wallet);
-        intent.putExtra("chainId", MyWallet.ELA);
-        intent.putExtra("fee", 10000L);
-        intent.putExtra("type", Constant.PROPOSALINPUT);
-        intent.putExtra("transType", 37);
-        startActivity(intent);
-    }
 
-    private void ConverProposalOwnerDigestPayLoad(RecieveProposalJwtEntity entity) {
+    private void ConverProposalPayLoad(RecieveProposalJwtEntity entity) {
         RecieveProposalJwtEntity.DataBean data = entity.getData();
-        //ProposalOwnerDigestPayLoad targetEntity = new ProposalOwnerDigestPayLoad();
         String originType = data.getProposaltype().toLowerCase();
         if ("Normal".toLowerCase().equals(originType)) {
             targetEntity.setType(0x0000);
@@ -184,9 +164,9 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
         targetEntity.setCategoryData(data.getCategorydata());
         targetEntity.setOwnerPublicKey(data.getOwnerpublickey());
         targetEntity.setDraftHash(data.getDrafthash());
-        List<ProposalOwnerDigestPayLoad.BudgetsBean> bugetList = new ArrayList<>();
+        List<ProposalCRCouncialMenberDigestPayLoad.BudgetsBean> bugetList = new ArrayList<>();
         for (RecieveProposalJwtEntity.DataBean.BudgetsBean orginBuget : data.getBudgets()) {
-            ProposalOwnerDigestPayLoad.BudgetsBean targetBudget = new ProposalOwnerDigestPayLoad.BudgetsBean();
+            ProposalCRCouncialMenberDigestPayLoad.BudgetsBean targetBudget = new ProposalCRCouncialMenberDigestPayLoad.BudgetsBean();
             switch (orginBuget.getType().toLowerCase()) {
                 case "imprest":
                     targetBudget.setType(0);
@@ -257,7 +237,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
 
                 break;
             case "signTransaction":
-                new PwdPresenter().newPublishTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringWithiMethNameEntity) baseEntity).getData(), this);
+                new PwdPresenter().newPublishTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringWithiMethNameEntity) baseEntity).getData(), this, null);
 
                 break;
             case "createProposalTransaction":
@@ -266,10 +246,10 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
 
                 break;
             case "calculateProposalHash":
-                backProposalJwt("signature", ((CommmonStringEntity) baseEntity).getData());
+                presenter.backProposalJwt("proposalhash", scanResult, ((CommmonStringEntity) baseEntity).getData(), payPasswd, this);
                 break;
             case "proposalCRCouncilMemberDigest":
-                String signDigest1 = getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData());
+                String signDigest1 = presenter.getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData(), this);
                 //生成transactionPayload
                 targetEntity.setCRCouncilMemberSignature(signDigest1);
                 presenter.createProposalTransaction(wallet.getWalletId(), new Gson().toJson(targetEntity), this, payPasswd);
@@ -277,8 +257,8 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
                 break;
             case "proposalOwnerDigest":
                 //didsdk签名
-                String signDigest = getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData());
-                backProposalJwt("signature", signDigest);
+                String signDigest = presenter.getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData(), this);
+                presenter.backProposalJwt("signature", scanResult, signDigest, payPasswd, this);
                 break;
             case "postData":
                 String des = "";
@@ -318,60 +298,17 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
         }
         if (integer == RxEnum.JUSTSHOWFEE.ordinal()) {
             //展示手续费后  再去验证密码
-            toVertifyPwdActivity();
+            presenter.toVertifyPwdActivity(wallet, this);
 
         }
 
     }
 
-    private void toVertifyPwdActivity() {
-        Intent intent = new Intent(getActivity(), VertifyPwdActivity.class);
-        intent.putExtra("walletId", wallet.getWalletId());
-        intent.putExtra("type", this.getClass().getSimpleName());
-        startActivity(intent);
-    }
-
-    private String getSignDigist(String payPasswd, String digist) {
-
-        try {
-            String sign = getMyDID().getDIDDocument().signDigest(payPasswd, JwtUtils.hex2byteBe(digist));
-            Log.i("signDigest", sign);
-            return JwtUtils.bytesToHexString(Base64.decode(sign, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
-
-        } catch (DIDStoreException e) {
-            e.printStackTrace();
-        }
-        return null;
-
-    }
-
-
-    private void backProposalJwt(String type, String data) {
-        ProposalCallBackEntity callBackJwtEntity = new ProposalCallBackEntity();
-        callBackJwtEntity.setType(type);
-        callBackJwtEntity.setIss(getMyDID().getDidString());
-        callBackJwtEntity.setIat(new Date().getTime() / 1000);
-        callBackJwtEntity.setExp(new Date().getTime() / 1000 + 10 * 60);
-        callBackJwtEntity.setAud(entity.getIss());
-        callBackJwtEntity.setReq(scanResult);
-        callBackJwtEntity.setCommand(entity.getCommand());
-        callBackJwtEntity.setData(data);
-        String header = JwtUtils.getJwtHeader(scanResult.replace("elastos://crproposal/", ""));
-        // Base64
-        String payload = Base64.encodeToString(JSON.toJSONString(callBackJwtEntity).getBytes(), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
-        payload = payload.replaceAll("=", "");
-        try {
-            String signature = getMyDID().getDIDDocument().sign(payPasswd, (header + "." + payload).getBytes());
-            new AuthorizationPresenter().postData(entity.getCallbackurl(), header + "." + payload + "." + signature, this);
-        } catch (DIDStoreException e) {
-            e.printStackTrace();
-        }
-    }
 
     private void containsPrivateIdentity() {
         getMyDID().initDID(payPasswd);
         targetEntity = new ProposalCRCouncialMenberDigestPayLoad();
-        ConverProposalOwnerDigestPayLoad(entity);
+        ConverProposalPayLoad(entity);
         if ("createsuggestion".equals(command)) {
             //spv签名
             presenter.proposalOwnerDigest(wallet.getWalletId(), new Gson().toJson(targetEntity), this);

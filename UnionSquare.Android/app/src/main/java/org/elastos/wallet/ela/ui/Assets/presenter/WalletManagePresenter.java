@@ -125,7 +125,7 @@ public class WalletManagePresenter extends NewPresenterAbstract {
     }
 
 
-    public void forceDIDResolve(String didString, BaseFragment baseFragment, RecieveJwtEntity data) {
+    public void forceDIDResolve(String didString, BaseFragment baseFragment, Object data) {
         Observer observer = createObserver(baseFragment, "forceDIDResolve",data);
         Observable observable = createObservable(new ObservableListener() {
             @Override

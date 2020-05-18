@@ -106,7 +106,11 @@ public class NewPresenterAbstract extends PresenterAbstract {
                     dismissProgessDialog(dialog);
                 }
                 Log.e(TAG, "onError=" + e.getMessage());
-                Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                try {
+                    Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                } catch (Exception e1) {
+                }
+
                 finish();
             }
 
