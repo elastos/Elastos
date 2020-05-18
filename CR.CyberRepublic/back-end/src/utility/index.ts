@@ -135,7 +135,7 @@ export const getProposalData = async (proposalHash: string ) => {
   }
 }
 
-export const getInformationByDID = async (did: string) => {
+export const getInformationByDid = async (did: string) => {
     const data = {
         did: did
     }
