@@ -1158,7 +1158,13 @@ export default class extends Base {
       createdBy &&
       createdBy.profile &&
       `${createdBy.profile.firstName} ${createdBy.profile.lastName}`
-    const result = _.omit(suggestion._doc, ['_id', 'id', 'displayId', 'createdBy', 'abstract'])
+    const result = _.omit(suggestion._doc, [
+      '_id',
+      'id',
+      'displayId',
+      'createdBy',
+      'abstract'
+    ])
 
     return {
       ...result,
@@ -1196,7 +1202,7 @@ export default class extends Base {
     const budgets = sortedBudget.map((item: BudgetItem) => ({
       type: chainBudgetType[item.type],
       stage: parseInt(item.milestoneKey),
-      amount: (parseInt(item.amount) * Math.pow(10, 8)).toString()
+      amount: (parseFloat(item.amount) * Math.pow(10, 8)).toString()
     }))
     return budgets
   }
