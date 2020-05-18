@@ -119,14 +119,14 @@ namespace Elastos {
 					for (const OutputPtr &o : (*it)->GetOutputs())
 						usedAddr.insert(o->Addr());
 
-					if ((*it)->IsDPoSTransaction())
+					if ((*it)->IsIDTransaction())
+						txHashDID.push_back((*it)->GetHash().GetHex());
+					else if ((*it)->IsDPoSTransaction())
 						txHashDPoS.push_back((*it)->GetHash().GetHex());
 					else if ((*it)->IsCRCTransaction())
 						txHashCRC.push_back((*it)->GetHash().GetHex());
 					else if ((*it)->IsProposalTransaction())
 						txHashProposal.push_back((*it)->GetHash().GetHex());
-					else if ((*it)->IsIDTransaction())
-						txHashDID.push_back((*it)->GetHash().GetHex());
 
 					if ((*it)->IsCoinBase()) {
 						txCoinbase.push_back(*it);
@@ -1176,14 +1176,14 @@ namespace Elastos {
 
 					for (const TransactionPtr &tx : txns) {
 						if (!tx->IsUnconfirmed()) {
-							if (tx->IsDPoSTransaction())
+							if (tx->IsIDTransaction())
+								txHashDID.push_back(tx->GetHash().GetHex());
+							else if (tx->IsDPoSTransaction())
 								txHashDPoS.push_back(tx->GetHash().GetHex());
 							else if (tx->IsCRCTransaction())
 								txHashCRC.push_back(tx->GetHash().GetHex());
 							else if (tx->IsProposalTransaction())
 								txHashProposal.push_back(tx->GetHash().GetHex());
-							else if (tx->IsIDTransaction())
-								txHashDID.push_back(tx->GetHash().GetHex());
 						}
 					}
 					SaveSpecialTxHash(txHashDPoS, txHashCRC, txHashProposal, txHashDID);
