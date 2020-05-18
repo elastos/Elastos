@@ -14,6 +14,7 @@
         android:background="#262626"
         android:layout_gravity="bottom">
         <TextView
+            android:id="@+id/close"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/next_title"
@@ -36,7 +37,7 @@
             android:layout_height="0.5dp"/>
 
         <TextView
-            android:id="@+id/next_vote_count"
+            android:id="@+id/impeachvotes_title"
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:layout_marginLeft="15dp"
@@ -45,11 +46,12 @@
             android:text="@string/impeachvotes"/>
 
         <EditText
+            android:id="@+id/impeachvotes"
             android:layout_width="match_parent"
             android:layout_height="44dp"
             android:background="@null"
             android:layout_toLeftOf="@+id/next_vote_unit"
-            android:layout_toRightOf="@+id/next_vote_count"
+            android:layout_toRightOf="@+id/impeachvotes_title"
             android:layout_below="@+id/next_line1"
             android:gravity="center_vertical|right"/>
 
@@ -72,7 +74,7 @@
             android:layout_height="0.5dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
-            android:layout_below="@+id/next_vote_count"
+            android:layout_below="@+id/impeachvotes_title"
             android:background="@color/white"/>
 
         <TextView
@@ -163,7 +165,7 @@
             android:background="@color/white"/>
 
         <TextView
-            android:id="@+id/next_confirm_btn"
+            android:id="@+id/confirm_btn"
             android:layout_width="250dp"
             android:layout_height="40dp"
             android:layout_marginTop="180dp"

@@ -15,7 +15,7 @@ import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.adaper.CtExpRecAdapter;
 import org.elastos.wallet.ela.ui.committee.bean.ExperienceBean;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
-import org.elastos.wallet.ela.ui.committee.presenter.GeneralDetailPresenter;
+import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.view.CircleProgressView;
@@ -51,7 +51,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     CtExpRecAdapter adapter;
     List<ExperienceBean> list;
 
-    GeneralDetailPresenter presenter;
+    CtDetailPresenter presenter;
 
     private String id;
     private String did;
@@ -71,7 +71,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctdetail));
         progress.setProgress(50);
-        presenter = new GeneralDetailPresenter();
+        presenter = new CtDetailPresenter();
         presenter.getCouncilInfo(this, id, did);
 //        rockData();
     }
@@ -179,7 +179,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         name.setText(dataBean.getDidName());
         location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
         currentVotes.setText(String.valueOf(dataBean.getImpeachmentVotes()));
-        impeachmentCount.setText(String.valueOf(dataBean.getImpeachmentHeight()));
+        impeachmentCount.setText(String.valueOf(dataBean.getImpeachmentThroughVotes()));
     }
 
     @BindView(R.id.did)

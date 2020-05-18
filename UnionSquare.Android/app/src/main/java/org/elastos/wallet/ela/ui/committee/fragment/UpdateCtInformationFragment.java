@@ -5,8 +5,14 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
+import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -18,7 +24,10 @@ import org.greenrobot.eventbus.ThreadMode;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class CtManagerEditFragment extends BaseFragment {
+/**
+ * refresh cr infomation
+ */
+public class UpdateCtInformationFragment extends BaseFragment implements NewBaseViewData {
 
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
@@ -29,7 +38,7 @@ public class CtManagerEditFragment extends BaseFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.fragment_ct_manager_edit;
+        return R.layout.fragment_update_ct_info;
     }
 
     @Override
@@ -64,12 +73,18 @@ public class CtManagerEditFragment extends BaseFragment {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.confirm:
-                popBackFragment();
+                //TODO 待确认
+
                 break;
 
             case R.id.area:
                 start(AreaCodeFragment.class);
                 break;
         }
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+
     }
 }

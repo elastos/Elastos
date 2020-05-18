@@ -12,6 +12,7 @@ import android.widget.TextView;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public class SecretaryCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdap
     public void onBindViewHolder(@NonNull GeneralCtRecAdapter.ViewHolder viewHolder, int i) {
         CtListBean.Secretariat data = list.get(i);
         viewHolder.name.setText(data.getDidName());
-        viewHolder.location.setText(data.getLocation());
+        viewHolder.location.setText(AppUtlis.getLoc(context, String.valueOf(data.getLocation())));
         GlideApp.with(context).load(data.getAvatar()).error(R.mipmap.icon_ela).into(viewHolder.icon);
         if (commonRvListener != null) {
             viewHolder.itemView.setOnClickListener(v -> commonRvListener.onRvItemClick(i, data));

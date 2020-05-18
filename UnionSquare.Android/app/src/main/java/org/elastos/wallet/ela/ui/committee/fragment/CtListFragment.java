@@ -73,9 +73,6 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
 
         presenter = new CtListPresenter();
         presenter.getCouncilList(this, String.valueOf(index));
-//        generalRockData();
-//        secretaryRockData();
-
         selectCtList();
 
     }
@@ -88,7 +85,6 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
         secretaryTitleTv.setTextColor(getResources().getColor(R.color.whiter50));
         generalLayout.setVisibility(View.VISIBLE);
         secretaryLayout.setVisibility(View.GONE);
-        refreshGeneralRv();
     }
 
     private void selectSecretaryList() {
@@ -98,11 +94,14 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
         secretaryTitleTv.setTextColor(getResources().getColor(R.color.whiter));
         generalLayout.setVisibility(View.GONE);
         secretaryLayout.setVisibility(View.VISIBLE);
-        refreshSecretaryRv();
     }
 
-    private void refreshGeneralRv() {
+    private void refreshGeneralRv(List<CtListBean.Council> datas) {
         if (generalAdapter == null) {
+            generalList = new ArrayList<>();
+            generalList.clear();
+            generalList.addAll(datas);
+
             generalAdapter = new GeneralCtRecAdapter(getContext(), generalList);
             generalRv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             generalRv.setAdapter(generalAdapter);
@@ -114,12 +113,18 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
             });
 
         } else {
+            generalList.clear();
+            generalList.addAll(datas);
             generalAdapter.notifyDataSetChanged();
         }
     }
 
-    private void refreshSecretaryRv() {
+    private void refreshSecretaryRv(List<CtListBean.Secretariat> datas) {
         if (secretaryAdapter == null) {
+            secretaryList = new ArrayList<>();
+            secretaryList.clear();
+            secretaryList.addAll(datas);
+
             secretaryAdapter = new SecretaryCtRecAdapter(getContext(), secretaryList);
             secretaryRv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             secretaryRv.setAdapter(secretaryAdapter);
@@ -128,58 +133,10 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
             });
 
         } else {
+            secretaryList.clear();
+            secretaryList.addAll(datas);
             secretaryAdapter.notifyDataSetChanged();
         }
-    }
-
-    private void secretaryRockData() {
-        secretaryList = new ArrayList<>();
-        CtListBean.Secretariat SecretaryCtBean1 = new CtListBean.Secretariat();
-        SecretaryCtBean1.setDidName("Feng Zhang1");
-        SecretaryCtBean1.setLocation(86);
-        secretaryList.add(SecretaryCtBean1);
-
-        CtListBean.Secretariat SecretaryCtBean2 = new CtListBean.Secretariat();
-        SecretaryCtBean2.setDidName("Feng Zhang2");
-        SecretaryCtBean2.setLocation(86);
-        secretaryList.add(SecretaryCtBean2);
-
-        CtListBean.Secretariat SecretaryCtBean3 = new CtListBean.Secretariat();
-        SecretaryCtBean3.setDidName("Feng Zhang3");
-        SecretaryCtBean3.setLocation(86);
-        secretaryList.add(SecretaryCtBean3);
-
-    }
-
-    private void generalRockData() {
-        generalList = new ArrayList<>();
-        CtListBean.Council GeneralCtBean1 = new CtListBean.Council();
-        GeneralCtBean1.setDidName("Feng Zhang1");
-        GeneralCtBean1.setLocation(86);
-        GeneralCtBean1.setAvatar("");
-        GeneralCtBean1.setStatus("Elected");
-        generalList.add(GeneralCtBean1);
-
-        CtListBean.Council GeneralCtBean2 = new CtListBean.Council();
-        GeneralCtBean2.setDidName("Feng Zhang1");
-        GeneralCtBean2.setLocation(86);
-        GeneralCtBean2.setAvatar("");
-        GeneralCtBean2.setStatus("Returned");
-        generalList.add(GeneralCtBean2);
-
-        CtListBean.Council GeneralCtBean3 = new CtListBean.Council();
-        GeneralCtBean3.setDidName("Feng Zhang1");
-        GeneralCtBean3.setLocation(86);
-        GeneralCtBean3.setAvatar("");
-        GeneralCtBean3.setStatus("Impeached");
-        generalList.add(GeneralCtBean3);
-
-        CtListBean.Council GeneralCtBean4 = new CtListBean.Council();
-        GeneralCtBean4.setDidName("Feng Zhang1");
-        GeneralCtBean4.setLocation(86);
-        GeneralCtBean4.setAvatar("");
-        GeneralCtBean4.setStatus(null);
-        generalList.add(GeneralCtBean4);
     }
 
     @OnClick({R.id.ct_layout, R.id.secretary_layout})
@@ -196,11 +153,9 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
-        switch (methodName) {
-            case "getSuggestion":
-                setGeneralRec((CtListBean) baseEntity);
-                setSecretaryRec((CtListBean) baseEntity);
-                break;
+        if(methodName.equals("getCouncilList")) {
+            setGeneralRec((CtListBean) baseEntity);
+            setSecretaryRec((CtListBean) baseEntity);
         }
     }
 
@@ -208,30 +163,13 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
         if(null == ctListBean) return;
         List<CtListBean.Secretariat> datas = ctListBean.getData().getSecretariat();
         if(datas==null || datas.size()<=0) return;
-        if(null == secretaryList) {
-            secretaryList = new ArrayList<>();
-        } else {
-            secretaryList.clear();
-        }
-
-        for(CtListBean.Secretariat data : datas) {
-            secretaryList.add(data);
-        }
-        refreshSecretaryRv();
+        refreshSecretaryRv(datas);
     }
 
     private void setGeneralRec(CtListBean ctListBean) {
         if(null == ctListBean) return;
         List<CtListBean.Council> datas = ctListBean.getData().getCouncil();
         if(datas==null || datas.size()<=0) return;
-        if(null == generalList) {
-            generalList = new ArrayList<>();
-        } else {
-            generalList.clear();
-        }
-        for(CtListBean.Council data : datas) {
-            generalList.add(data);
-        }
-        refreshGeneralRv();
+        refreshGeneralRv(datas);
     }
 }

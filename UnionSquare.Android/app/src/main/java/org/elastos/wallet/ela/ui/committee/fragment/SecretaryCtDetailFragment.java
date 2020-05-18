@@ -14,7 +14,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
-import org.elastos.wallet.ela.ui.committee.presenter.GeneralDetailPresenter;
+import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DateUtil;
@@ -32,7 +32,7 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     TextView toolbarTitle;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
-    GeneralDetailPresenter presenter;
+    CtDetailPresenter presenter;
 
     private String id;
     private String did;
@@ -51,7 +51,7 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.secretarydetail));
-        presenter = new GeneralDetailPresenter();
+        presenter = new CtDetailPresenter();
         presenter.getCouncilInfo(this, id, did);
     }
 

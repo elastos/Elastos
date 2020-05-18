@@ -12,13 +12,18 @@ import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.adaper.PastCtRecAdapter;
+import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
 import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
+import org.elastos.wallet.ela.ui.committee.fragment.CtDismissPromptFragment;
 import org.elastos.wallet.ela.ui.committee.fragment.CtListFragment;
 import org.elastos.wallet.ela.ui.committee.fragment.CtManagerFragment;
 import org.elastos.wallet.ela.ui.committee.fragment.SecretaryCtDetailFragment;
+import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
 import org.elastos.wallet.ela.ui.committee.presenter.PastCtPresenter;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.utils.AppUtlis;
@@ -41,7 +46,11 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     RecyclerView recyclerview;
     PastCtRecAdapter adapter;
     List<PastCtBean.DataBean> list;
-    PastCtPresenter presenter;
+    CtDetailPresenter ctDetailPresenter;
+    PastCtPresenter pastCtPresenter;
+
+    private RealmUtil realmUtil = new RealmUtil();
+    private Wallet wallet = realmUtil.queryDefauleWallet();
 
     @Override
     protected int getLayoutId() {
@@ -53,8 +62,10 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.found_ct_secretary_entrance);
         tvTitle.setText(mContext.getString(R.string.ctmemberlist));
-        presenter = new PastCtPresenter();
-        presenter.getCouncilTerm(this);
+        ctDetailPresenter = new CtDetailPresenter();
+        pastCtPresenter = new PastCtPresenter();
+
+        ctDetailPresenter.getCouncilInfo(this, "", wallet.getDid());
 
 //        rockData();
     }
@@ -73,8 +84,28 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
-        if(!AppUtlis.isNullOrEmpty(methodName) && methodName.equals("getCouncilTerm")) {
-            setRcViewData((PastCtBean) baseEntity);
+
+        switch (methodName) {
+            case "getCouncilInfo":
+                go2((CtDetailBean) baseEntity);
+                break;
+            case "getCouncilTerm":
+                setRcViewData((PastCtBean) baseEntity);
+                break;
+        }
+    }
+
+    private void go2(CtDetailBean ctDetailBean) {
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData().get(0);
+        String status = dataBean.getStatus();
+        String depositAmount = dataBean.getDepositAmount();
+        if(AppUtlis.isNullOrEmpty(status) || status.equals("Elected")) {
+            pastCtPresenter.getCouncilTerm(this);
+        } else {
+            Bundle bundle = new Bundle();
+            bundle.putString("status", status);
+            bundle.putString("depositAmount", depositAmount);
+            start(CtDismissPromptFragment.class, bundle);
         }
     }
 
@@ -113,88 +144,13 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
 
     @Override
     public void onManagerClick(int position) {
-        start(CtManagerFragment.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("status", "Elected");
+        start(CtManagerFragment.class, bundle);
     }
 
     @OnClick({R.id.iv_title_right})
     public void onClick(View view) {
         start(SecretaryCtDetailFragment.class);
-    }
-
-    private void rockData() {
-        //rock data
-        list = new ArrayList<>();
-        PastCtBean.DataBean pastCtBean1 = new PastCtBean.DataBean();
-        pastCtBean1.setIndex(1);
-        pastCtBean1.setStatus("HISTORY");
-        pastCtBean1.setStartDate("1589271912");
-        pastCtBean1.setEndDate("1589272000");
-
-        PastCtBean.DataBean pastCtBean2 = new PastCtBean.DataBean();
-        pastCtBean2.setIndex(2);
-        pastCtBean2.setStatus("HISTORY");
-        pastCtBean2.setStartDate("1589271912");
-        pastCtBean2.setEndDate("1589272000");
-
-        PastCtBean.DataBean pastCtBean3 = new PastCtBean.DataBean();
-        pastCtBean3.setIndex(3);
-        pastCtBean3.setStatus("HISTORY");
-        pastCtBean3.setStartDate("1589271912");
-        pastCtBean3.setEndDate("1589272000");
-
-        PastCtBean.DataBean pastCtBean4 = new PastCtBean.DataBean();
-        pastCtBean4.setIndex(4);
-        pastCtBean4.setStatus("HISTORY");
-        pastCtBean4.setStartDate("1589271912");
-        pastCtBean4.setEndDate("1589272000");
-
-        PastCtBean.DataBean pastCtBean5 = new PastCtBean.DataBean();
-        pastCtBean5.setIndex(5);
-        pastCtBean5.setStatus("HISTORY");
-        pastCtBean5.setStartDate("1589271912");
-        pastCtBean5.setEndDate("1589272000");
-
-        PastCtBean.DataBean pastCtBean6 = new PastCtBean.DataBean();
-        pastCtBean6.setIndex(6);
-        pastCtBean6.setStatus("HISTORY");
-        pastCtBean6.setStartDate("1589271912");
-        pastCtBean6.setEndDate("1589272000");
-
-        PastCtBean.DataBean pastCtBean7 = new PastCtBean.DataBean();
-        pastCtBean7.setIndex(7);
-        pastCtBean7.setStatus("HISTORY");
-        pastCtBean7.setStartDate("1589271912");
-        pastCtBean7.setEndDate("1589272000");
-
-        PastCtBean.DataBean pastCtBean8 = new PastCtBean.DataBean();
-        pastCtBean8.setIndex(8);
-        pastCtBean8.setStatus("HISTORY");
-        pastCtBean8.setStartDate("1589271912");
-        pastCtBean8.setEndDate("1589272000");
-
-        PastCtBean.DataBean pastCtBean9 = new PastCtBean.DataBean();
-        pastCtBean9.setIndex(9);
-        pastCtBean9.setStatus("CURRENT");
-        pastCtBean9.setStartDate("1589271912");
-        pastCtBean9.setEndDate("1589272000");
-
-        PastCtBean.DataBean pastCtBean10 = new PastCtBean.DataBean();
-        pastCtBean10.setIndex(10);
-        pastCtBean10.setStatus("VOTING");
-        pastCtBean10.setStartDate("1589271912");
-        pastCtBean10.setEndDate("1589272000");
-
-        list.add(pastCtBean10);
-        list.add(pastCtBean9);
-        list.add(pastCtBean8);
-        list.add(pastCtBean7);
-        list.add(pastCtBean6);
-        list.add(pastCtBean5);
-        list.add(pastCtBean4);
-        list.add(pastCtBean3);
-        list.add(pastCtBean2);
-        list.add(pastCtBean1);
-
-        setRecycleView();
     }
 }

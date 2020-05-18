@@ -18,6 +18,7 @@ public class CtDetailBean extends BaseEntity {
 
     public static class DataBean {
         private String type;
+        private String status;
         private String did;
         private String didName;
         private String avatar;
@@ -32,7 +33,7 @@ public class CtDetailBean extends BaseEntity {
         private String microsoft;
         private long startDate;
         private long endDate;
-        private long impeachmentHeight;
+        private long impeachmentThroughVotes;
         private long impeachmentVotes;
         private String depositAmount;
         private List<Term> term;
@@ -43,6 +44,14 @@ public class CtDetailBean extends BaseEntity {
 
         public void setType(String type) {
             this.type = type;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
         }
 
         public long getBirthday() {
@@ -157,12 +166,12 @@ public class CtDetailBean extends BaseEntity {
             this.introduction = introduction;
         }
 
-        public long getImpeachmentHeight() {
-            return impeachmentHeight;
+        public long getImpeachmentThroughVotes() {
+            return impeachmentThroughVotes;
         }
 
-        public void setImpeachmentHeight(long impeachmentHeight) {
-            this.impeachmentHeight = impeachmentHeight;
+        public void setImpeachmentThroughVotes(long impeachmentThroughVotes) {
+            this.impeachmentThroughVotes = impeachmentThroughVotes;
         }
 
         public long getImpeachmentVotes() {
