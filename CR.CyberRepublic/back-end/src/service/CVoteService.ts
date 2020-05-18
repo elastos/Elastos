@@ -101,17 +101,18 @@ export default class extends Base {
     const { id } = param
     const db_suggestion = this.getDBModel('Suggestion')
     const suggestion = await db_suggestion.findById(id)
+    const db_cvote = this.getDBModel('CVote')
     if (suggestion) {
-      const proposalHash = _.get(suggestion, 'proposalHash')
-      if (proposalHash) {
-        const rs: any = await getProposalState(proposalHash)
-        if (rs && rs.success === false) {
-          return { success: false, message: rs.message }
+      const draftHash = _.get(suggestion, 'draftHash')
+      if (draftHash) {
+        const cvote = await db_cvote.findOne({ draftHash })
+        if (cvote) {
+          return { success: true, id: cvote._id }
         }
+        const rs: any = await getProposalState(draftHash)
         if (rs && rs.success && rs.status === 'Registered') {
           const proposal = await this.proposeSuggestion({
-            suggestionId: id,
-            proposalHash
+            suggestionId: id
           })
           return { success: true, id: proposal._id }
         }
@@ -122,10 +123,10 @@ export default class extends Base {
   }
 
   public async proposeSuggestion(param: any): Promise<Document> {
-    const db_suggestion = this.getDBModel('Suggestion')
     const db_cvote = this.getDBModel('CVote')
+    const db_suggestion = this.getDBModel('Suggestion')
     const db_user = this.getDBModel('User')
-    const { suggestionId, proposalHash } = param
+    const { suggestionId } = param
 
     const suggestion =
       suggestionId && (await db_suggestion.findById(suggestionId))
@@ -146,7 +147,8 @@ export default class extends Base {
       proposer: suggestion.createdBy,
       createdBy: this.currentUser._id,
       reference: suggestionId,
-      proposalHash
+      proposalHash: suggestion.proposalHash,
+      draftHash: suggestion.draftHash
     }
 
     Object.assign(doc, _.pick(suggestion, BASE_FIELDS))
@@ -1135,6 +1137,7 @@ export default class extends Base {
       }
 
       const now = Math.floor(Date.now() / 1000)
+      
       const jwtClaims = {
         iat: now,
         exp: now + (60 * 60 * 24),

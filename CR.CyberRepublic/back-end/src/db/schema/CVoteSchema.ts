@@ -170,6 +170,9 @@ export const CVote = {
   proposalHash: {
     type: String
   },
+  draftHash: {
+    type: String
+  },
   rejectAmount: {
     type: String
   },

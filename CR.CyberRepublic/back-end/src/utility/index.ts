@@ -81,7 +81,7 @@ export const getDidPublicKey = async (did: string) => {
   }
 }
 
-export const getProposalState = async (proposalHash: string) => {
+export const getProposalState = async (draftHash: string) => {
   const headers = {
     'Content-Type': 'application/json'
   }
@@ -89,7 +89,7 @@ export const getProposalState = async (proposalHash: string) => {
     jsonrpc: '2.0',
     method: 'getcrproposalstate',
     params: {
-      proposalhash: proposalHash
+      drafthash: draftHash
     }
   }
   try {
@@ -97,10 +97,6 @@ export const getProposalState = async (proposalHash: string) => {
       headers
     })
     if (res) {
-      const message = _.get(res.data, 'error.message')
-      if (message) {
-        return { success: false, message }
-      }
       const status = _.get(res.data, 'result.proposalstate.status')
       if (status) {
         return { success: true, status }
