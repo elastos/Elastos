@@ -73,7 +73,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         progress.setProgress(50);
         presenter = new GeneralDetailPresenter();
         presenter.getCouncilInfo(this, id, did);
-        rockData();
+//        rockData();
     }
 
     private void selectDetail() {

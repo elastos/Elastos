@@ -56,7 +56,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         presenter = new PastCtPresenter();
         presenter.getCouncilTerm(this);
 
-        rockData();
+//        rockData();
     }
 
     private void setRecycleView() {

@@ -12,6 +12,7 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
 import org.elastos.wallet.ela.ui.committee.presenter.GeneralDetailPresenter;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
@@ -114,10 +115,13 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
 
     @OnClick({R.id.refresh_ct_did})
     public void onClick(View view) {
+        //TODO 待确认
         Bundle bundle = new Bundle();
         bundle.putString("type", "authorization");
         bundle.putParcelable("wallet", wallet);
         start(AuthorizationFragment.class, bundle);
+        //先绑定did  再更新到服务器
+        new WalletManagePresenter().DIDResolveWithTip(did, this, "1");
     }
 
 }

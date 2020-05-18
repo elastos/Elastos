@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/qmuilinearlayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,8 +7,46 @@
     android:orientation="vertical">
 
 
-    <include layout="@layout/title_bar" />
+    <RelativeLayout
+        android:layout_width="270dp"
+        android:layout_height="wrap_content"
+        android:background="#262626"
+        android:layout_gravity="center"
+        android:paddingBottom="20dp">
+
+        <TextView
+            android:id="@+id/tv_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="15dp"
+            android:background="@mipmap/window_750_close"/>
+        
+        <TextView
+            android:id="@+id/tv_prompt"
+            android:layout_width="160dp"
+            android:layout_marginTop="20dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/tv_close"
+            android:text="@string/dimissdialoghint"/>
+
+        <TextView
+            android:id="@+id/tv_deposit"
+            android:layout_width="180dp"
+            android:layout_height="40dp"
+            android:background="@drawable/ct_dismiss_btn_border"
+            android:layout_below="@+id/tv_prompt"
+            android:text="@string/withdraw_registration_deposit"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/white"/>
+    </RelativeLayout>
 
 
 
-</com.qmuiteam.qmui.layout.QMUILinearLayout>
+</FrameLayout>

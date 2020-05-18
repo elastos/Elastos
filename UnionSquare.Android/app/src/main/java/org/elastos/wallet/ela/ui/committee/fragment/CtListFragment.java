@@ -73,8 +73,8 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
 
         presenter = new CtListPresenter();
         presenter.getCouncilList(this, String.valueOf(index));
-        generalRockData();
-        secretaryRockData();
+//        generalRockData();
+//        secretaryRockData();
 
         selectCtList();
 
