@@ -14,7 +14,7 @@ export default class extends Base {
             }
         }
 
-        const {id, status, proposedAt, voteResult, voteHistory, rejectAmount, rejectHeight } = param
+        const {id, status, proposedAt, voteResult, voteHistory, rejectThroughAmount, rejectHeight } = param
 
         const db_cvote = this.getDBModel('CVote')
 
@@ -23,7 +23,7 @@ export default class extends Base {
             proposedAt,
             voteResult,
             voteHistory,
-            rejectAmount: rejectAmount || 0,
+            rejectThroughAmount: rejectThroughAmount || 0,
             rejectHeight: rejectHeight || 0,
         })
 
@@ -39,7 +39,7 @@ export default class extends Base {
             'voteResult',
             'voteHistory',
             'rejectAmount',
-            'rejectHeight',
+            'rejectThroughAmount',
         ]
 
         const rs = await db_cvote.getDBInstance().findOne({_id: id}, fields)
