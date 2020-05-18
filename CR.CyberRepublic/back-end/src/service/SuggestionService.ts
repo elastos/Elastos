@@ -1308,16 +1308,16 @@ export default class extends Base {
       const payload: any = jwt.decode(
         claims.req.slice('elastos://crproposal/'.length)
       )
-      if (!_.get(payload, 'data.draftHash')) {
+      if (!_.get(payload, 'data.drafthash')) {
         return {
           code: 400,
           success: false,
           message: 'Problems parsing jwt token of CR website.'
         }
       }
-
+      const draftHash = payload.data.drafthash
       const suggestion = await this.model.findOne({
-        draftHash: payload.data.draftHash
+        draftHash
       })
       if (!suggestion) {
         return {
@@ -1343,7 +1343,7 @@ export default class extends Base {
         async (err: any, decoded: any) => {
           if (err) {
             await this.model.update(
-              { draftHash: payload.data.draftHash },
+              { draftHash },
               {
                 $set: {
                   signature: { message: 'Verify signatrue failed.' }
@@ -1358,7 +1358,7 @@ export default class extends Base {
           } else {
             try {
               await this.model.update(
-                { draftHash: payload.data.draftHash },
+                { draftHash },
                 { $set: { signature: { data: decoded.data } } }
               )
               return { code: 200, success: true, message: 'Ok' }
@@ -1469,16 +1469,16 @@ export default class extends Base {
       const payload: any = jwt.decode(
         claims.req.slice('elastos://crproposal/'.length)
       )
-      if (!_.get(payload, 'data.draftHash')) {
+      if (!_.get(payload, 'data.drafthash')) {
         return {
           code: 400,
           success: false,
           message: 'Problems parsing jwt token of CR website.'
         }
       }
-
+      const draftHash = payload.data.drafthash
       const suggestion = await this.model.findOne({
-        draftHash: payload.data.draftHash
+        draftHash
       })
 
       if (!suggestion) {
@@ -1512,7 +1512,7 @@ export default class extends Base {
           } else {
             try {
               await this.model.update(
-                { draftHash: payload.data.draftHash },
+                { draftHash },
                 { $set: { proposalHash: decoded.data } }
               )
               return { code: 200, success: true, message: 'Ok' }
