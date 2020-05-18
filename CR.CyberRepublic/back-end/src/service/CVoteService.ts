@@ -1201,10 +1201,10 @@ export default class extends Base {
         rs.publicKey,
         async (err:any, decoded: any) => {
           if(err) {
-                       return {
+            return {
               code: 401,
               success: false,
-              message: 'Verify signatrue failed.'
+              message: 'Verify signatrue failed.' + err.message
             }
           } else {
             try {
