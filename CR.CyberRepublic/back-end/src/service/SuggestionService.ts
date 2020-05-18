@@ -1427,6 +1427,7 @@ export default class extends Base {
         exp: now + 60 * 60 * 24,
         command: 'createproposal',
         iss: process.env.APP_DID,
+        sid: suggestion._id,
         callbackurl: `${process.env.API_URL}/api/suggestion/cm-signature-callback`,
         data: {
           proposaltype: 'normal',
@@ -1469,7 +1470,7 @@ export default class extends Base {
       const payload: any = jwt.decode(
         claims.req.slice('elastos://crproposal/'.length)
       )
-      if (!_.get(payload, 'data.draftHash')) {
+      if (!_.get(payload, 'sid')) {
         return {
           code: 400,
           success: false,
@@ -1477,8 +1478,8 @@ export default class extends Base {
         }
       }
 
-      const suggestion = await this.model.findOne({
-        draftHash: payload.data.draftHash
+      const suggestion = await this.model.findById({
+        _id: payload.sid
       })
 
       if (!suggestion) {
@@ -1512,7 +1513,7 @@ export default class extends Base {
           } else {
             try {
               await this.model.update(
-                { draftHash: payload.data.draftHash },
+                { _id: payload.sid },
                 { $set: { proposalHash: decoded.data } }
               )
               return { code: 200, success: true, message: 'Ok' }
