@@ -345,8 +345,16 @@ export default class extends Base {
                   }
                 }
               )
-
-              this.notifyProposalOwner(this.updateMailTemplate(proposal.vid))
+              if (history.review.opinion === APPROVED) {
+                this.notifyProposalOwner(
+                  this.approvalMailTemplate(proposal.vid)
+                )
+              }
+              if (history.review.opinion === REJECTED) {
+                this.notifyProposalOwner(
+                  this.rejectedMailTemplate(proposal.vid)
+                )
+              }
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
               logger.error(err)
