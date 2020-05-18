@@ -128,7 +128,7 @@ public class MainchainSubWallet extends SubWallet {
         return ProposalReviewDigest(mMainchainProxy, payload);
     }
 
-    public String CreateProposalReviewTransaction(String proposalHash, String payload, String memo) throws WalletException {
+    public String CreateProposalReviewTransaction( String payload, String memo) throws WalletException {
         return CreateProposalReviewTransaction(mMainchainProxy, payload, memo);
     }
 
