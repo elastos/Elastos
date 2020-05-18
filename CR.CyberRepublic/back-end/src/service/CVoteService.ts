@@ -1696,4 +1696,31 @@ export default class extends Base {
       this.pollCouncilVoteStatus()
     }, 1000 * 60 * 5)
   }
+
+  // trigger temporary change，if proposal status is notification or proposed alter aborted
+  public async pollProposalAborted() {
+    const db_cvote = this.getDBModel("CVote")
+    const list = await db_cvote.find({
+      $or:[{ status: constant.CVOTE_STATUS.NOTIFICATION }, { status: constant.CVOTE_STATUS.PROPOSED }]
+    })
+    const idsAborted = []
+    _.each(list, (item)=>{
+      idsAborted.push(item._id)
+      this.proposalAborted(item.proposalHash)
+    })
+  }
+
+  // TODO
+  public async proposalAborted(proposalHash) {
+    const db_cvote = this.getDBModel("CVote")
+    const rs: any = await getProposalData(proposalHash)
+    if (rs && rs.success && rs.status === 'Aborted'){
+      await db_cvote.update(
+        { proposalHash },
+        {
+          status: 'ABORTED' // proposal aboretd
+        }
+      )
+    }
+  }
 }
