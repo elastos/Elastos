@@ -1512,7 +1512,7 @@ type RpcCrMemberInfo struct {
 	Location         uint64 `json:"location"`
 	ImpeachmentVotes string `json:"impeachmentvotes"`
 	DepositAmount    string `json:"depositamout"`
-	DepositHash      string `json:"deposithash"`
+	DepositAddress   string `json:"depositaddress"`
 	Penalty          string `json:"penalty"`
 	State            string `json:"state"`
 	Index            uint64 `json:"index"`
@@ -1765,6 +1765,7 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 		if !cr.Info.DID.IsEqual(emptyHash) {
 			didAddress, _ = cr.Info.DID.ToAddress()
 		}
+		depositAddr, _ := cr.DepositHash.ToAddress()
 		memberInfo := RpcCrMemberInfo{
 			Code:             hex.EncodeToString(cr.Info.Code),
 			CID:              cidAddress,
@@ -1774,7 +1775,7 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 			Location:         cr.Info.Location,
 			ImpeachmentVotes: cr.ImpeachmentVotes.String(),
 			DepositAmount:    cm.GetAvailableDepositAmount(cr.Info.CID).String(),
-			DepositHash:      cr.DepositHash.String(),
+			DepositAddress:   depositAddr,
 			Penalty:          cm.GetPenalty(cr.Info.CID).String(),
 			Index:            uint64(i),
 			State:            cr.MemberState.String(),
@@ -1834,7 +1835,8 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 	for _, proposal := range proposalMap {
 		crVotes = make(map[string]string)
 		for k, v := range proposal.CRVotes {
-			crVotes[k.String()] = v.Name()
+			did, _ := k.ToAddress()
+			crVotes[did] = v.Name()
 		}
 		RpcProposalBaseState := RpcProposalBaseState{
 			Status:             proposal.Status.String(),
@@ -1946,7 +1948,8 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	}
 	crVotes := make(map[string]string)
 	for k, v := range proposalState.CRVotes {
-		crVotes[k.String()] = v.Name()
+		did, _ := k.ToAddress()
+		crVotes[did] = v.Name()
 	}
 	RpcProposalState := RpcProposalState{
 		Status:             proposalState.Status.String(),
