@@ -10,9 +10,11 @@ import {
   getDidPublicKey,
   getPemPublicKey
 } from '../utility'
-const { WAITING_FOR_WITHDRAW, WAITING_FOR_APPROVAL } = constant.BUDGET_STATUS
+import moment from 'moment'
+const { WAITING_FOR_WITHDRAW, WAITING_FOR_APPROVAL } = constant.MILESTONE_STATUS
 const { ACTIVE } = constant.CVOTE_STATUS
 const { DRAFT, REVIEWING, PUBLISHED, REJECT } = constant.CVOTE_TRACKING_STATUS
+const { APPROVAL, REJECTED } = constant.MILESTONE_REVIEW_STATUS
 
 export default class extends Base {
   private model: any
@@ -31,10 +33,10 @@ export default class extends Base {
       if (!proposal.proposer.equals(this.currentUser._id)) {
         return { success: false }
       }
-      const status = proposal.status
-      if (status !== ACTIVE) {
+      if (proposal.status !== ACTIVE) {
         return { success: false }
       }
+
       // check if milestoneKey is valid
       const budget = proposal.budget.filter(
         (item: any) => item.milestoneKey === milestoneKey
@@ -46,20 +48,24 @@ export default class extends Base {
         return { success: false }
       }
 
-      const now = Math.floor(Date.now() / 1000)
-      const hashMsg = {
-        date: now,
-        message
-      }
+      const currDate = Date.now()
+      const now = Math.floor(currDate / 1000)
+      const hashMsg = { date: now, message }
       const messageHash = utilCrypto.sha256D(JSON.stringify(hashMsg))
       // update withdrawal history
-      const history = { message, milestoneKey, messageHash }
+      const history = {
+        message,
+        milestoneKey,
+        messageHash,
+        createdAt: moment(currDate)
+      }
       await this.model.update(
         { _id: id },
         { $push: { withdrawalHistory: history } }
       )
 
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
+      const trackingStatus = ''
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -73,7 +79,7 @@ export default class extends Base {
           stage: parseInt(milestoneKey),
           ownerpubkey: ownerPublicKey,
           newownerpubkey: '',
-          proposaltrackingtype: status
+          proposaltrackingtype: trackingStatus
         }
       }
       const jwtToken = jwt.sign(
@@ -149,7 +155,7 @@ export default class extends Base {
                 { proposalHash, 'withdrawalHistory.messageHash': messageHash },
                 {
                   $set: {
-                    'withdrawalHistory.$.review': decoded.data,
+                    'withdrawalHistory.$.signature': decoded.data,
                     'budget.$.status': WAITING_FOR_APPROVAL
                   }
                 }
@@ -182,7 +188,7 @@ export default class extends Base {
     const proposal: any = await this.model.findById(id)
     if (proposal) {
       const history = proposal.withdrawalHistory.filter(
-        (item) => item.messageHash === messageHash
+        (item: any) => item.messageHash === messageHash
       )
       if (_.isEmpty(history)) {
         return { success: false }
@@ -198,25 +204,40 @@ export default class extends Base {
   public async review(param: any) {
     try {
       const { id, milestoneKey, message, opinion } = param
-      if (!message || !opinion) {
+      if (!message || !opinion || ![APPROVAL, REJECTED].includes(opinion)) {
         return { success: false }
       }
       const proposal = await this.model.findById(id)
       if (!proposal) {
         return { success: false }
       }
-      const status = proposal.status
-      if (status !== ACTIVE) {
+      if (proposal.status !== ACTIVE) {
         return { success: false }
       }
 
-      const now = Math.floor(Date.now() / 1000)
-
+      const currTime = Date.now()
+      const now = Math.floor(currTime / 1000)
       const messageHash = utilCrypto.sha256D(
         JSON.stringify({ date: now, message })
       )
       const opinionHash = utilCrypto.sha256D(opinion)
 
+      await this.model.update(
+        { _id: id, 'withdrawalHistory.messageHash': messageHash },
+        {
+          $set: {
+            'withdrawalHistory.$.review': {
+              message,
+              messageHash,
+              opinion,
+              opinionHash,
+              createdAt: moment(currTime)
+            },
+            'budget.$.status': opinion
+          }
+        }
+      )
+      const trackingStatus = ''
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -231,7 +252,7 @@ export default class extends Base {
           ownerpubkey: proposal.ownerPublicKey,
           newownerpubkey: '',
           ownersignature: '',
-          proposaltrackingtype: status,
+          proposaltrackingtype: trackingStatus,
           secretaryopinionhash: opinionHash
         }
       }

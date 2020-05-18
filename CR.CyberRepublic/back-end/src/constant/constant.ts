@@ -336,10 +336,11 @@ export const ELIP_REVIEW_STATUS = create(['APPROVED', 'REJECTED'])
 
 export const ELIP_TYPE = create(['STANDARD_TRACK', 'PROCESS', 'INFORMATIONAL'])
 
-export const BUDGET_STATUS = create([
+export const MILESTONE_STATUS = create([
   'WAITING_FOR_WITHDRAW',
   'REJECTED',
   'WAITING_FOR_APPROVAL',
   'APPROVED',
   'WITHDRAWN'
 ])
+export const MILESTONE_REVIEW_STATUS = create(['REJECTED', 'APPROVED'])
