@@ -18,8 +18,10 @@ const { APPROVAL, REJECTED } = constant.MILESTONE_REVIEW_STATUS
 
 export default class extends Base {
   private model: any
+  private trackingModel: any
   protected init() {
     this.model = this.getDBModel('CVote')
+    this.trackingModel = this.getDBModel('CVote_Tracking')
   }
 
   public async update(param: any) {
@@ -65,7 +67,8 @@ export default class extends Base {
       )
 
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
-      const trackingStatus = ''
+      const tracking = await this.trackingModel.findOne({ proposalId: id })
+      const trackingStatus = tracking.status
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -237,7 +240,8 @@ export default class extends Base {
           }
         }
       )
-      const trackingStatus = ''
+      const tracking = await this.trackingModel.findOne({ proposalId: id })
+      const trackingStatus = tracking.status
       // generate jwt url
       const jwtClaims = {
         iat: now,
