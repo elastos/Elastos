@@ -1158,7 +1158,13 @@ export default class extends Base {
       createdBy &&
       createdBy.profile &&
       `${createdBy.profile.firstName} ${createdBy.profile.lastName}`
-    const result = _.omit(suggestion._doc, ['_id', 'id', 'displayId', 'createdBy', 'abstract'])
+    const result = _.omit(suggestion._doc, [
+      '_id',
+      'id',
+      'displayId',
+      'createdBy',
+      'abstract'
+    ])
 
     return {
       ...result,
@@ -1262,7 +1268,6 @@ export default class extends Base {
         exp: now + 60 * 60 * 24,
         command: 'createsuggestion',
         iss: process.env.APP_DID,
-        sid: suggestion._id,
         callbackurl: `${process.env.API_URL}/api/suggestion/signature-callback`,
         data: {
           proposaltype: 'normal',
@@ -1303,7 +1308,7 @@ export default class extends Base {
       const payload: any = jwt.decode(
         claims.req.slice('elastos://crproposal/'.length)
       )
-      if (!_.get(payload, 'sid')) {
+      if (!_.get(payload, 'data.draftHash')) {
         return {
           code: 400,
           success: false,
@@ -1311,8 +1316,8 @@ export default class extends Base {
         }
       }
 
-      const suggestion = await this.model.findById({
-        _id: payload.sid
+      const suggestion = await this.model.findOne({
+        draftHash: payload.data.draftHash
       })
       if (!suggestion) {
         return {
@@ -1338,7 +1343,7 @@ export default class extends Base {
         async (err: any, decoded: any) => {
           if (err) {
             await this.model.update(
-              { _id: payload.sid },
+              { draftHash: payload.data.draftHash },
               {
                 $set: {
                   signature: { message: 'Verify signatrue failed.' }
@@ -1353,7 +1358,7 @@ export default class extends Base {
           } else {
             try {
               await this.model.update(
-                { _id: payload.sid },
+                { draftHash: payload.data.draftHash },
                 { $set: { signature: { data: decoded.data } } }
               )
               return { code: 200, success: true, message: 'Ok' }
