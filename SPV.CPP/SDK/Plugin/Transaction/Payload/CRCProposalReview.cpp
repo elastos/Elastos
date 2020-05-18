@@ -199,7 +199,7 @@ namespace Elastos {
 		}
 
 		bool CRCProposalReview::IsValid(uint8_t version) const {
-			if (IsValidUnsigned(version))
+			if (!IsValidUnsigned(version))
 				return false;
 
 			if (_signature.empty()) {

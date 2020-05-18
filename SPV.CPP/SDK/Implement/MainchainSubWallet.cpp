@@ -1152,8 +1152,6 @@ namespace Elastos {
 			if (!p->IsValid(CRCProposalReviewDefaultVersion))
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid payload");
 
-			ErrorChecker::ThrowParamException(Error::InvalidArgument, "this interface not ready");
-
 			OutputArray outputs;
 			AddressPtr receiveAddr = wallet->GetReceiveAddress();
 			outputs.push_back(OutputPtr(new TransactionOutput(0, *receiveAddr)));
