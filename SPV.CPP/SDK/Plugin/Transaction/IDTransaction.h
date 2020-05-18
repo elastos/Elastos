@@ -30,6 +30,12 @@ namespace Elastos {
 
 			virtual bool DeserializeType(const ByteStream &istream);
 
+			virtual bool IsDPoSTransaction() const;
+
+			virtual bool IsCRCTransaction() const;
+
+			virtual bool IsProposalTransaction() const;
+
 			virtual bool IsIDTransaction() const;
 		public:
 			virtual PayloadPtr InitPayload(uint8_t type);

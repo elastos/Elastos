@@ -131,11 +131,11 @@ namespace Elastos {
 
 			uint8_t GetTransactionType() const;
 
-			bool IsDPoSTransaction() const;
+			virtual bool IsDPoSTransaction() const;
 
-			bool IsCRCTransaction() const;
+			virtual bool IsCRCTransaction() const;
 
-			bool IsProposalTransaction() const;
+			virtual bool IsProposalTransaction() const;
 
 			virtual bool IsIDTransaction() const;
 
