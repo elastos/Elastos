@@ -14,7 +14,7 @@ import moment from 'moment'
 const { WAITING_FOR_WITHDRAW, WAITING_FOR_APPROVAL } = constant.MILESTONE_STATUS
 const { ACTIVE } = constant.CVOTE_STATUS
 const { DRAFT, REVIEWING, PUBLISHED, REJECT } = constant.CVOTE_TRACKING_STATUS
-const { APPROVAL, REJECTED } = constant.MILESTONE_REVIEW_STATUS
+const { APPROVED, REJECTED } = constant.MILESTONE_REVIEW_STATUS
 
 export default class extends Base {
   private model: any
@@ -206,8 +206,8 @@ export default class extends Base {
 
   public async review(param: any) {
     try {
-      const { id, milestoneKey, message, opinion } = param
-      if (!message || !opinion || ![APPROVAL, REJECTED].includes(opinion)) {
+      const { id, milestoneKey, reason, opinion } = param
+      if (!reason || !opinion || ![APPROVED, REJECTED].includes(opinion)) {
         return { success: false }
       }
       const proposal = await this.model.findById(id)
@@ -220,18 +220,18 @@ export default class extends Base {
 
       const currTime = Date.now()
       const now = Math.floor(currTime / 1000)
-      const messageHash = utilCrypto.sha256D(
-        JSON.stringify({ date: now, message })
+      const reasonHash = utilCrypto.sha256D(
+        JSON.stringify({ date: now, reason })
       )
       const opinionHash = utilCrypto.sha256D(opinion)
 
       await this.model.update(
-        { _id: id, 'withdrawalHistory.messageHash': messageHash },
+        { _id: id, 'withdrawalHistory.messageHash': reasonHash },
         {
           $set: {
             'withdrawalHistory.$.review': {
-              message,
-              messageHash,
+              reason,
+              reasonHash,
               opinion,
               opinionHash,
               createdAt: moment(currTime)
@@ -251,7 +251,7 @@ export default class extends Base {
         callbackurl: `${process.env.API_URL}/api/proposals/milestones/sec-signature-callback`,
         data: {
           proposalhash: proposal.proposalHash,
-          messagehash: messageHash,
+          messagehash: reasonHash,
           stage: parseInt(milestoneKey),
           ownerpubkey: proposal.ownerPublicKey,
           newownerpubkey: '',
@@ -290,8 +290,8 @@ export default class extends Base {
         claims.req.slice('elastos://crproposal/'.length)
       )
       const proposalHash = _.get(payload, 'data.proposalhash')
-      const messageHash = _.get(payload, 'data.messagehash')
-      if (!proposalHash || !messageHash) {
+      const reasonHash = _.get(payload, 'data.messagehash')
+      if (!proposalHash || !reasonHash) {
         return {
           code: 400,
           success: false,
@@ -330,13 +330,13 @@ export default class extends Base {
           } else {
             try {
               const history = proposal.withdrawalHistory.filter((item: any) => {
-                item.review.messageHash === messageHash
+                item.review.reasonHash === reasonHash
               })
 
               await this.model.update(
                 {
                   proposalHash,
-                  'withdrawalHistory.review.messageHash': messageHash
+                  'withdrawalHistory.review.reasonHash': reasonHash
                 },
                 {
                   $set: {
