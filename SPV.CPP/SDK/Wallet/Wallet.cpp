@@ -61,9 +61,10 @@ namespace Elastos {
 				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 
 				std::map<uint256, TransactionPtr> txnMap;
+				bool saveTxHash = false;
 
 				if (!database->ExistTxHashTable() || (_chainID == CHAINID_IDCHAIN && !database->GetTxHashDPoS().empty())) {
-					// TODO: will remove after several version
+					saveTxHash = true;
 					std::vector<TransactionPtr> txns = LoadTxn(TxnType(TXN_NORMAL | TXN_COINBASE));
 					for (TransactionPtr &tx : txns) {
 						txnMap[tx->GetHash()] = tx;
@@ -104,7 +105,8 @@ namespace Elastos {
 						Log::error("utxo hash {} not found", u->Hash().GetHex());
 					}
 				}
-				SaveSpecialTxHash(txHashDPoS, txHashCRC, txHashProposal, txHashDID, _chainID == CHAINID_IDCHAIN);
+				if (saveTxHash)
+					SaveSpecialTxHash(txHashDPoS, txHashCRC, txHashProposal, txHashDID, _chainID == CHAINID_IDCHAIN);
 			} else {
 				// TODO: will remove after several version
 				std::vector<TransactionPtr> txNormal = LoadTxn(TXN_NORMAL);
