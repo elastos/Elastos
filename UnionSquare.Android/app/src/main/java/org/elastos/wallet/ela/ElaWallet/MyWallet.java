@@ -1930,5 +1930,32 @@ public class MyWallet {
         }
     }
 
+    public BaseEntity proposalReviewDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalReviewDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "proposalReviewDigest");
+        }
+    }
+    public BaseEntity createProposalReviewTransaction(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.CreateProposalReviewTransaction(payload,"");
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "createProposalReviewTransaction");
+        }
+    }
+
 }
 

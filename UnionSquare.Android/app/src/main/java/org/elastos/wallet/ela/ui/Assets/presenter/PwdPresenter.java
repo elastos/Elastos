@@ -73,7 +73,7 @@ public class PwdPresenter extends NewPresenterAbstract {
     //所有转账都要经历的方法   步骤1 2    fragment
 //步骤1
     public void signTransaction(String walletId, String chainId, String rawTransaction, String pwd, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "signTransaction");
+        Observer observer = createObserver(baseFragment, "signTransaction",pwd);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
@@ -83,8 +83,8 @@ public class PwdPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void newPublishTransaction(String walletId, String chainId, String rawTransaction, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "newPublishTransaction");
+    public void newPublishTransaction(String walletId, String chainId, String rawTransaction, BaseFragment baseFragment,Object o) {
+        Observer observer = createObserver(baseFragment, "newPublishTransaction",o);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
