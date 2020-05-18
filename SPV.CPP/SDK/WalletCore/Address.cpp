@@ -234,7 +234,8 @@ namespace Elastos {
 				_programHash.prefix() == PrefixCrossChain ||
 				_programHash.prefix() == PrefixMultiSign ||
 				_programHash.prefix() == PrefixIDChain ||
-				_programHash.prefix() == PrefixDestroy) {
+				_programHash.prefix() == PrefixDestroy ||
+				_programHash.prefix() == PrefixCRExpenses) {
 				_isValid = true;
 			} else {
 				_isValid = false;

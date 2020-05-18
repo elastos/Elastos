@@ -38,6 +38,7 @@ namespace Elastos {
 			PrefixStandard   = 0x21,
 			PrefixMultiSign  = 0x12,
 			PrefixCrossChain = 0x4B,
+			PrefixCRExpenses = 0x1C,
 			PrefixDeposit    = 0x1F,
 			PrefixIDChain    = 0x67,
 			PrefixDestroy    = 0,
