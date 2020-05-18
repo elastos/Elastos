@@ -1432,19 +1432,16 @@ typedef void ElaFriendMessageReceiptCallback(int64_t msgid,  ElaMessageState sta
  *                        receipt is received or failed to send message.
  * @param
  *      content     [in] The user context in callback.
- * @param
- *      msgid       [out] The unique number indicate this message.
  * 
  * @return
- *      0 if the text message successfully add to send task list.
+ *      > 0 message id if the text message successfully add to send task list.
  *      Otherwise, return <0, and a specific error code can be
  *      retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
+int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
                                   const void *msg, size_t len,
-                                  ElaFriendMessageReceiptCallback *cb, void *context,
-                                  int64_t *msgid);
+                                  ElaFriendMessageReceiptCallback *cb, void *context);
 
 /**
  * \~English

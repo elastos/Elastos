@@ -3151,18 +3151,66 @@ static void parse_address(const char *addr, char **uid, char **ext)
     }
 }
 
-static int send_general_message(ElaCarrier *w, uint32_t friend_number,
-                                const char *userid,
-                                const void *msg, size_t len,
-                                const char *ext_name,
-                                bool friend_online,
-                                bool *with_offline)
+int64_t generate_msgid(ElaCarrier *w, uint32_t refer, MsgCh ch)
+{
+    int64_t msgid = 0;
+    int now = time(NULL);
+
+    if(ch != MSGCH_DHT) {
+        refer = ++w->msgid_counter;
+    }
+
+    if(refer > 0x1FFFFFFF)
+        refer -= 0x1FFFFFFF;
+
+    msgid = refer;
+    msgid = (msgid << 2) + ch;
+    msgid = (msgid << 32) + now;
+
+    return msgid;
+}
+
+bool is_msgid_equal(int64_t msgid, int64_t refer, MsgCh ch)
+{
+    if(msgid == refer) {
+        return true;
+    } else if(ch != MSGCH_DHT) {
+        return false;
+    }
+
+    MsgCh msgch;
+
+    if(refer > 0x1FFFFFFF)
+        refer -= 0x1FFFFFFF;
+
+    msgid = msgid >> 32;
+    if((msgid & 0x03) != ch)
+        return false;
+
+    msgid = msgid >> 2;
+    if(msgid != refer)
+        return false;
+
+    return true;
+}
+
+int get_msgid_createtime(int64_t msgid) {
+    msgid = msgid & 0xFFFFFFFF;
+    return (int) msgid;
+}
+
+
+static int64_t send_general_message(ElaCarrier *w, uint32_t friend_number,
+                                    const char *userid,
+                                    const void *msg, size_t len,
+                                    const char *ext_name,
+                                    bool friend_online)
 {
     ElaCP *cp;
     uint8_t *data;
     size_t data_len;
-    bool conn_made;
-    int rc;
+    int64_t msgid;
+    int64_t rc;
 
     cp = elacp_create(ELACP_TYPE_MESSAGE, ext_name);
     if (!cp)
@@ -3178,34 +3226,19 @@ static int send_general_message(ElaCarrier *w, uint32_t friend_number,
 
     if (friend_online) {
         rc = dht_friend_message(&w->dht, friend_number, data, data_len);
-        if (!rc) {
+        if (rc <= 0) {
             free(data);
-
-            if (with_offline)
-                *with_offline = false;
-
             return 0;
         }
     } else {
         rc = ELA_DHT_ERROR(ELAERR_FRIEND_OFFLINE);
     }
 
-    conn_made = try_make_connector(w);
-    if (conn_made) {
-        rc = express_enqueue_post_message(w->connector, userid, data, data_len);
-        if (rc < 0)
-            vlogW("Carrier: Enqueue offline friend request.");
-    }
-
     free(data);
 
-    if (rc < 0)
-        return rc;
+    msgid = generate_msgid(w, rc, MSGCH_DHT);
 
-    if (with_offline)
-        *with_offline = true;
-
-    return 0;
+    return msgid;
 }
 
 static int64_t generate_tid(void)
@@ -3220,12 +3253,11 @@ static int64_t generate_tid(void)
     return tid;
 }
 
-static int send_bulk_message(ElaCarrier *w, uint32_t friend_number,
-                             const char *userid,
-                             const void *msg, size_t len,
-                             const char *ext_name,
-                             bool friend_online,
-                             bool *with_offline)
+static int64_t send_bulk_message(ElaCarrier *w, uint32_t friend_number,
+                                 const char *userid,
+                                 const void *msg, size_t len,
+                                 const char *ext_name,
+                                 bool friend_online)
 {
     ElaCP *cp;
     int64_t tid;
@@ -3234,8 +3266,8 @@ static int send_bulk_message(ElaCarrier *w, uint32_t friend_number,
     char *pos = (char *)msg;
     size_t left = len;
     int index = 0;
-    bool conn_made;
-    int rc;
+    int64_t msgid;
+    int64_t rc;
 
     if (friend_online) {
         tid = generate_tid();
@@ -3274,55 +3306,62 @@ static int send_bulk_message(ElaCarrier *w, uint32_t friend_number,
                 break;
 
         } while (left > 0);
-
-        if (rc >= 0) {
-            if (with_offline)
-                *with_offline = false;
-
-            return 0;
-        }
     } else {
         rc = ELA_DHT_ERROR(ELAERR_FRIEND_OFFLINE);
     }
 
-    conn_made = try_make_connector(w);
-    if (conn_made) {
-        cp = elacp_create(ELACP_TYPE_MESSAGE, ext_name);
-        if (!cp)
-            return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+    msgid = generate_msgid(w, rc, MSGCH_DHT);
 
-        elacp_set_raw_data(cp, msg, len);
-
-        data = elacp_encode(cp, &data_len);
-        elacp_free(cp);
-
-        if (!data)
-            return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
-
-        rc = express_enqueue_post_message(w->connector, userid, data, data_len);
-        if (rc < 0)
-            vlogW("Carrier: Enqueu offline friend message error.");
-
-        free(data);
-    }
-
-    if (rc < 0)
-        return rc;
-
-    if (with_offline)
-        *with_offline = true;
-
-    return 0;
+    return msgid;
 }
 
-int ela_send_friend_message(ElaCarrier *w, const char *to,
-                            const void *msg, size_t len, bool *is_offline)
+static int64_t send_express_message(ElaCarrier *w, uint32_t friend_number,
+                                    const char *userid,
+                                    const void *msg, size_t len,
+                                    const char *ext_name)
+{
+    ElaCP *cp;
+    uint8_t *data;
+    size_t data_len;
+    bool conn_made;
+    int64_t msgid;
+    int rc;
+
+    conn_made = try_make_connector(w);
+    if (!conn_made) {
+        return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+    }
+
+    cp = elacp_create(ELACP_TYPE_MESSAGE, ext_name);
+    if (!cp)
+        return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+
+    elacp_set_raw_data(cp, msg, len);
+
+    data = elacp_encode(cp, &data_len);
+    elacp_free(cp);
+
+    if (!data)
+        return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+
+    msgid = generate_msgid(w, 0, MSGCH_EXPRESS);
+    rc = express_enqueue_post_message_with_receipt(w->connector, userid, data, data_len, msgid);
+    free(data);
+    if (rc < 0)
+        vlogW("Carrier: Enqueu offline friend message error.");
+
+    return msgid;
+}
+
+static int64_t send_friend_message_internal(ElaCarrier *w, const char *to,
+                                            const void *msg, size_t len, bool *is_offline)
 {
     char *addr, *userid, *ext_name;
     FriendInfo *fi;
     uint32_t friend_number;
     bool friend_online;
-    int rc;
+    bool online_sent;
+    int64_t rc;
 
     if (!w || !to || !msg || !len || len > ELA_MAX_APP_BULKMSG_LEN) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
@@ -3369,15 +3408,40 @@ int ela_send_friend_message(ElaCarrier *w, const char *to,
     friend_online = (fi->info.status == ElaConnectionStatus_Connected);
     deref(fi);
 
-    if (len <= ELA_MAX_APP_MESSAGE_LEN)
-        rc = send_general_message(w, friend_number, to, msg, len, ext_name, friend_online, is_offline);
-    else
-        rc = send_bulk_message(w, friend_number, to, msg, len, ext_name, friend_online, is_offline);
+    online_sent = false;
+    if(friend_online) {
+        if (len <= ELA_MAX_APP_MESSAGE_LEN)
+            rc = send_general_message(w, friend_number, to, msg, len, ext_name, friend_online);
+        else
+            rc = send_bulk_message(w, friend_number, to, msg, len, ext_name, friend_online);
+
+        if (rc >= 0)
+            online_sent = true;
+    }
+    if(online_sent == false) {
+        rc = send_express_message(w, friend_number, to, msg, len, ext_name);
+    }
 
     if (rc < 0) {
         ela_set_error(rc);
         return -1;
     }
+
+    if(is_offline) {
+        *is_offline = !online_sent;
+    }
+
+    return rc;
+}
+
+int ela_send_friend_message(ElaCarrier *w, const char *to,
+                            const void *msg, size_t len, bool *is_offline)
+{
+    int64_t msgid;
+
+    msgid = send_friend_message_internal(w, to, msg, len, is_offline);
+    if(msgid < 0)
+        return (int)msgid;
 
     return 0;
 }
@@ -4304,54 +4368,6 @@ int ela_leave_all_groups(ElaCarrier *w)
     return 0;
 }
 
-int64_t gen_msgid(ElaCarrier *w, uint32_t refer, MsgCh ch)
-{
-    int64_t msgid = 0;
-    int now = time(NULL);
-
-    if(ch != MSGCH_DHT) {
-        refer = ++w->msgid_counter;
-    }
-
-    if(refer > 0x1FFFFFFF)
-        refer -= 0x1FFFFFFF;
-
-    msgid = refer;
-    msgid = (msgid << 2) + ch;
-    msgid = (msgid << 32) + now;
-
-    return msgid;
-}
-
-bool is_msgid_equal(int64_t msgid, int64_t refer, MsgCh ch)
-{
-    if(msgid == refer) {
-        return true;
-    } else if(ch != MSGCH_DHT) {
-        return false;
-    }
-
-    MsgCh msgch;
-
-    if(refer > 0x1FFFFFFF)
-        refer -= 0x1FFFFFFF;
-
-    msgid = msgid >> 32;
-    if((msgid & 0x03) != ch)
-        return false;
-
-    msgid = msgid >> 2;
-    if(msgid != refer)
-        return false;
-
-    return true;
-}
-
-int get_msgid_createtime(int64_t msgid) {
-    msgid = msgid & 0xFFFFFFFF;
-    return (int) msgid;
-}
-
 static void on_friend_messge_receipted(ElaCarrier *w, int64_t msgid, bool succeed)
 {
     list_iterator_t it;
@@ -4568,96 +4584,96 @@ static int bundle_bulk_message(const void *msg, size_t len, const char *ext_name
     return data_len;
 }
 
-int send_message_by_dht(ElaCarrier *w, const char *to,
-                        const void *msg, size_t len,
-                        uint32_t *msgid)
-{
-    uint32_t friend_number;
-    char ext_name[ELA_MAX_ID_LEN] = {0};
-    bool friend_online;
-    uint8_t *data;
-    int data_len;
-    int rc;
+// int send_message_by_dht(ElaCarrier *w, const char *to,
+//                         const void *msg, size_t len,
+//                         uint32_t *msgid)
+// {
+//     uint32_t friend_number;
+//     char ext_name[ELA_MAX_ID_LEN] = {0};
+//     bool friend_online;
+//     uint8_t *data;
+//     int data_len;
+//     int rc;
 
-    rc = check_message_sendable(w, to, msg, len, &friend_number, ext_name);
-    if (rc < 0)
-        return rc;
+//     rc = check_message_sendable(w, to, msg, len, &friend_number, ext_name);
+//     if (rc < 0)
+//         return rc;
 
-    if (len <= ELA_MAX_APP_MESSAGE_LEN) {
-        rc = bundle_single_message(msg, len, ext_name, &data);
-        if (rc < 0)
-            return rc;
+//     if (len <= ELA_MAX_APP_MESSAGE_LEN) {
+//         rc = bundle_single_message(msg, len, ext_name, &data);
+//         if (rc < 0)
+//             return rc;
 
-        data_len = rc;
-        rc = dht_friend_message_with_msgid(&w->dht, friend_number, data,
-                                           data_len, msgid);
-        free(data);
-        if (rc < 0)
-            return rc;
-    } else {
-        int64_t tid = generate_tid();
-        size_t sent_off = 0;
+//         data_len = rc;
+//         rc = dht_friend_message_with_msgid(&w->dht, friend_number, data,
+//                                            data_len, msgid);
+//         free(data);
+//         if (rc < 0)
+//             return rc;
+//     } else {
+//         int64_t tid = generate_tid();
+//         size_t sent_off = 0;
 
-        do {
-            int msg_len = ELA_MAX_APP_MESSAGE_LEN;
-            if(len - sent_off < ELA_MAX_APP_MESSAGE_LEN)
-                msg_len = len - sent_off;
+//         do {
+//             int msg_len = ELA_MAX_APP_MESSAGE_LEN;
+//             if(len - sent_off < ELA_MAX_APP_MESSAGE_LEN)
+//                 msg_len = len - sent_off;
 
-            rc = bundle_bulk_message(msg + sent_off, msg_len, ext_name,
-                                     tid, sent_off == 0 ? len : 0,
-                                     &data);
-            if (rc < 0)
-                return rc;
+//             rc = bundle_bulk_message(msg + sent_off, msg_len, ext_name,
+//                                      tid, sent_off == 0 ? len : 0,
+//                                      &data);
+//             if (rc < 0)
+//                 return rc;
 
-            sent_off += msg_len;
-            data_len = rc;
-            rc = dht_friend_message_with_msgid(&w->dht, friend_number, data,
-                                               data_len, msgid);
-            free(data);
-            if (rc < 0)
-                return rc;
+//             sent_off += msg_len;
+//             data_len = rc;
+//             rc = dht_friend_message_with_msgid(&w->dht, friend_number, data,
+//                                                data_len, msgid);
+//             free(data);
+//             if (rc < 0)
+//                 return rc;
 
-        } while (sent_off < len);
+//         } while (sent_off < len);
 
-    }
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
-int send_message_by_express(ElaCarrier *w, const char *to,
-                            const void *msg, size_t len,
-                            int64_t msgid)
-{
-    uint32_t friend_number;
-    char ext_name[ELA_MAX_ID_LEN] = {0};
-    bool friend_online;
-    uint8_t *data;
-    int data_len;
-    bool conn_made;
-    int rc;
+// int send_message_by_express(ElaCarrier *w, const char *to,
+//                             const void *msg, size_t len,
+//                             int64_t msgid)
+// {
+//     uint32_t friend_number;
+//     char ext_name[ELA_MAX_ID_LEN] = {0};
+//     bool friend_online;
+//     uint8_t *data;
+//     int data_len;
+//     bool conn_made;
+//     int rc;
 
-    rc = check_message_sendable(w, to, msg, len, &friend_number, ext_name);
-    if (rc < 0)
-        return rc;
+//     rc = check_message_sendable(w, to, msg, len, &friend_number, ext_name);
+//     if (rc < 0)
+//         return rc;
 
-    rc = bundle_single_message(msg, len, ext_name, &data);
-    if (rc < 0)
-        return rc;
+//     rc = bundle_single_message(msg, len, ext_name, &data);
+//     if (rc < 0)
+//         return rc;
      
-    data_len = rc;
+//     data_len = rc;
 
-    conn_made = try_make_connector(w);
-    if (!conn_made)
-        return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+//     conn_made = try_make_connector(w);
+//     if (!conn_made)
+//         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
-    rc = express_enqueue_post_message_with_receipt(w->connector, to, data, data_len, msgid);
-    if (rc < 0) {
-        vlogW("Carrier: Enqueue offline friend message error.");
-        return rc;
-    }
+//     rc = express_enqueue_post_message_with_receipt(w->connector, to, data, data_len, msgid);
+//     if (rc < 0) {
+//         vlogW("Carrier: Enqueue offline friend message error.");
+//         return rc;
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
 int make_express_pref(const ElaOptions *opts, Preferences* pref)
 {
@@ -4746,7 +4762,7 @@ static void do_message_receipt_expire(ElaCarrier *w)
         if(event->msgch == MSGCH_DHT) {
             vlogI("Carrier: Expired to send message to %s, resend(0x%llx) by express.", event->to, event->msgid);
             event->msgch = MSGCH_EXPRESS;
-            rc = send_message_by_express(w, event->to, event->data, event->size, event->msgid);
+            // rc = send_message_by_express(w, event->to, event->data, event->size, event->msgid);
             if(rc < 0) {
                 event->callback(event->msgid, ElaMessage_Error, event->context);
                 list_iterator_remove(&it);
@@ -4790,49 +4806,39 @@ static void notify_friend_read_receipt_cb(uint32_t friend_number, uint32_t messa
     on_friend_messge_receipted(w, message_id, true);
 }
 
-int ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
-                                  const void *msg, size_t len,
-                                  ElaFriendMessageReceiptCallback *cb, void *context,
-                                  int64_t *msgid)
+int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
+                                      const void *msg, size_t len,
+                                      ElaFriendMessageReceiptCallback *cb, void *context)
 {
-    int rc;
-    MsgCh msgch;
-    uint32_t id = 0;
-    
-    rc = send_message_by_dht(carrier, to, msg, len, &id);
-    msgch = MSGCH_DHT;
-    *msgid = gen_msgid(carrier, id, msgch);
-    if(rc < 0) {
-        msgch = MSGCH_EXPRESS;
-        *msgid = gen_msgid(carrier, id, msgch);
-        rc = send_message_by_express(carrier, to, msg, len, *msgid);
-        if(rc < 0)
-            return rc;
-    }
-
+    bool is_offline;
+    int64_t msgid;
     MsgReceiptEvent *event;
 
-    assert(carrier);
-    assert(to && *to);
-    assert(msg);
-    assert(len);
-
-    event = rc_zalloc(sizeof(MsgReceiptEvent) + len, NULL);
-    if (event) {
-        strcpy(event->to, to);
-        event->msgch = msgch;
-        event->msgid = *msgid;
-
-        event->callback = cb;
-        event->context = context;
-
-        event->size = len;
-        memcpy(event->data, msg, len);
-
-        event->base.le.data = event;
-        list_push_tail(carrier->friend_msgs, &event->base.le);
-        deref(event);
+    event = (MsgReceiptEvent*)rc_zalloc(sizeof(MsgReceiptEvent) + len, NULL);
+    if (!event) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        return -1;
     }
 
-    return 0;
+    msgid = send_friend_message_internal(carrier, to, msg, len, &is_offline);
+    if(msgid < 0) {
+        deref(event);
+        return (int)msgid;
+    }
+
+    strcpy(event->to, to);
+    event->msgch = (is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
+    event->msgid = msgid;
+
+    event->callback = cb;
+    event->context = context;
+
+    event->size = len;
+    memcpy(event->data, msg, len);
+
+    event->base.le.data = event;
+    list_push_tail(carrier->friend_msgs, &event->base.le);
+    deref(event);
+
+    return msgid;
 }

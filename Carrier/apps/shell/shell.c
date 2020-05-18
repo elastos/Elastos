@@ -948,10 +948,9 @@ static void send_receipt_message(ElaCarrier *w, int argc, char *argv[])
         return;
     }
 
-    int64_t msgid;
-    rc = ela_send_message_with_receipt(w, argv[1], argv[2], strlen(argv[2]) + 1,
-                                       receipt_message_callback, NULL, &msgid);
-    if (rc == 0)
+    int64_t msgid = ela_send_message_with_receipt(w, argv[1], argv[2], strlen(argv[2]) + 1,
+                                                  receipt_message_callback, NULL);
+    if (msgid >= 0)
         output("Sending receipt message. msgid:0x%llx\n", msgid);
     else
         output("Send message failed(0x%x).\n", ela_get_error());
@@ -973,10 +972,9 @@ static void send_receipt_bulkmessage(ElaCarrier *w, int argc, char *argv[])
     }
     memcpy(data + datalen - 5, "end", 4);
 
-    int64_t msgid;
-    rc = ela_send_message_with_receipt(w, argv[1], data, strlen(data) + 1,
-                                       receipt_message_callback, NULL, &msgid);
-    if (rc == 0)
+    int64_t msgid = ela_send_message_with_receipt(w, argv[1], data, strlen(data) + 1,
+                                                  receipt_message_callback, NULL);
+    if (msgid >= 0)
         output("Sending receipt message. msgid:0x%llx\n", msgid);
     else
         output("Send message failed(0x%x).\n", ela_get_error());
