@@ -1144,7 +1144,8 @@ export default class extends Base {
                                         voteHistory: {
                                             value: voteResult.value,
                                             reason: voteResult.reason,
-                                            txid: voteResult.txid,
+                                            txid: claims.data,
+                                            status: constant.CVOTE_CHAIN_STATUS.CHAINING,
                                             votedBy: voteResult.votedBy,
                                             signature: voteResult.signature
                                         }
