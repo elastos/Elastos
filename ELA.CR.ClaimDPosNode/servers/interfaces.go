@@ -2265,9 +2265,9 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *payload.CRCProposal:
-		var budgets []BudgetInfo
+		var budgets []BudgetBaseInfo
 		for _, b := range object.Budgets {
-			budgets = append(budgets, BudgetInfo{
+			budgets = append(budgets, BudgetBaseInfo{
 				Type:   b.Type.Name(),
 				Stage:  b.Stage,
 				Amount: b.Amount.String(),
