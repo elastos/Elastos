@@ -248,7 +248,7 @@ class C extends StandardPage {
           return (
             <div style={finalStyle}>
               <Row>
-                <Col span={12}>
+                <Col span={ isNotification ? 12 : 24 }>
                 <FixedHeader>
                   {metaNode}
                   {titleNode}

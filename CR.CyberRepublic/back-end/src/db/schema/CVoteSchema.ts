@@ -197,7 +197,7 @@ export const CVote = {
   rejectAmount: {
     type: String
   },
-  rejectHeight: {
+  rejectThroughAmount: {
     type: String
   },
   withdrawalHistory: [withdrawalHistorySchema]
