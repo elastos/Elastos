@@ -150,7 +150,7 @@ struct ElaCarrier {
     hashtable_t *friends;
 
     ExpressConnector *connector;
-    uint32_t msgid_counter;
+    uint32_t offmsgid;
     struct timeval express_expiretime;
 
     hashtable_t *tcallbacks;
