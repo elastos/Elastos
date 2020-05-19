@@ -1123,7 +1123,7 @@ export default class extends Base {
         iat: now,
         exp: now + (60 * 60 * 24),
         iss: process.env.APP_DID,
-        callbackurl: `${process.env.API_URL}/api/CVote/callback`,
+        callbackurl: `${process.env.API_URL}/api/CVote/review_callback`,
         command:"reviewproposal",
         data: {
           proposalHash: cur.proposalHash,

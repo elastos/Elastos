@@ -17,7 +17,7 @@ import listcrcandidates from './listcrcandidates'
 import onchain from './onchain'
 import all_search from './all_search'
 import get_proposal from './get_proposal'
-import callback from './callback'
+import review_callback from './review_callback'
 import check_signature from './check_signature'
 import memberVote from './memberVote'
 import pollProposalState from './poll_proposal_state'
@@ -116,8 +116,8 @@ export default Base.setRouter([
     method: 'post'
   },
   {
-    path: '/callback',
-    router: callback,
+    path: '/review_callback',
+    router: review_callback,
     method: 'get'
   },
   {
