@@ -154,7 +154,7 @@ class PaymentList extends BaseComponent {
   }
 
   ord_render() {
-    const { list, proposalId, actions } = this.props
+    const { list, proposalId, actions, user } = this.props
     const visible = this.isVisible()
     return (
       <StyledTable>
@@ -190,6 +190,7 @@ class PaymentList extends BaseComponent {
               applyPayment={actions.applyPayment}
               getPaymentSignature={actions.getPaymentSignature}
               hideModal={this.hideModal}
+              isSecretary={user.is_secretary}
             />
           ) : null}
         </Modal>
