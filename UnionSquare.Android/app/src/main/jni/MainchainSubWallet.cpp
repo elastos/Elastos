@@ -360,6 +360,35 @@ static jstring JNICALL GetVotedProducerList(JNIEnv *env, jobject clazz, jlong jS
     return list;
 }
 
+#define JNI_GetVoteInfo "(JLjava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL GetVoteInfo(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+        jstring jtype) {
+    bool exception = false;
+    std::string msgException;
+
+    const char *type = env->GetStringUTFChars(jtype, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+    jstring list = NULL;
+
+    try {
+        nlohmann::json listJson = subWallet->GetVoteInfo(type);
+        list = env->NewStringUTF(listJson.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jtype, type);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return list;
+}
+
 #define JNI_GetRegisteredProducerInfo "(J)Ljava/lang/String;"
 
 static jstring JNICALL
@@ -1206,6 +1235,7 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(CreateRetrieveCRDepositTransaction),
         REGISTER_METHOD(CreateVoteCRTransaction),
         REGISTER_METHOD(GetVotedCRList),
+        REGISTER_METHOD(GetVoteInfo),
         REGISTER_METHOD(GetRegisteredCRInfo),
         REGISTER_METHOD(ProposalOwnerDigest),
         REGISTER_METHOD(ProposalCRCouncilMemberDigest),

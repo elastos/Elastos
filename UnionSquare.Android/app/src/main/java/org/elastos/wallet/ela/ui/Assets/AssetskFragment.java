@@ -791,6 +791,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             //展示手续费后  再去验证密码
             proposalPresenter.toVertifyPwdActivity(wallet, this);
 
+        }if (integer == RxEnum.SCANDATATOASSETPAGE.ordinal()) {
+            //其他页面接收的二维码数据
+            scanResult=(String) result.getObj();
+            scanElastos(scanResult);
+
         }
 
     }
@@ -954,11 +959,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 try {
                     JSONObject pulishdata = new JSONObject(((CommmonStringWithiMethNameEntity) baseEntity).getData());
                     hash = pulishdata.getString("TxHash");
+                    proposalPresenter.backProposalJwt("txidproposalreview", scanResult, hash, (String) o, this);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 post(RxEnum.TRANSFERSUCESS.ordinal(), 38 + "", hash);
-                proposalPresenter.backProposalJwt("txidproposalreview", scanResult, ((CommmonStringEntity) baseEntity).getData(), (String) o, this);
                 break;
             case "signTransaction":
                 new PwdPresenter().newPublishTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringWithiMethNameEntity) baseEntity).getData(), this, (String) o);
@@ -1051,7 +1057,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                         if (proposalPresenter == null) {
                             proposalPresenter = new ProposalPresenter();
                         }
-                        proposalPresenter.showFeePage(wallet, Constant.PROPOSALINPUT, 38, this);
+                        proposalPresenter.showFeePage(wallet, Constant.PROPOSALREVIEW, 38,this,entity2.getData());
                     } else
                         showToast(getString(R.string.didnotsame));
 
@@ -1069,8 +1075,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         switch (origin.getVoteresult().toLowerCase()) {
             case "approve":
                 proposalReviewPayLoad.setVoteResult(0);
+                break;
             case "reject":
                 proposalReviewPayLoad.setVoteResult(1);
+                break;
             case "abstain":
                 proposalReviewPayLoad.setVoteResult(2);
                 break;

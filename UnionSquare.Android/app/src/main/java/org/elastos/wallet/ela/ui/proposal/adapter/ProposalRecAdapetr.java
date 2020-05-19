@@ -31,7 +31,7 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
-import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearch;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.utils.DateUtil;
 
 import java.util.List;
@@ -48,12 +48,12 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
     }
 
     private CommonRvListener commonRvListener;
-    private List<ProposalSearch.DataBean.ListBean> list;
+    private List<ProposalSearchEntity.DataBean.ListBean> list;
 
     private Context context;
 
 
-    public ProposalRecAdapetr(Context context, List<ProposalSearch.DataBean.ListBean> list) {
+    public ProposalRecAdapetr(Context context, List<ProposalSearchEntity.DataBean.ListBean> list) {
         this.list = list;
         this.context = context;
 
@@ -69,7 +69,7 @@ public class ProposalRecAdapetr extends RecyclerView.Adapter<ProposalRecAdapetr.
 
     @Override
     public void onBindViewHolder(ProposalRecAdapetr.ViewHolder holder, final int position) {
-        ProposalSearch.DataBean.ListBean bean = list.get(position);
+        ProposalSearchEntity.DataBean.ListBean bean = list.get(position);
         holder.tvTitle.setText(bean.getTitle());
         holder.tvNum.setText("#"+bean.getId() + "");
         holder.tvTime.setText(DateUtil.timeNYR(bean.getCreatedAt(), context, true));

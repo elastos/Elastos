@@ -159,7 +159,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         setRecyclerView(list);
         new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
 
-        tvAvaliable.setText(getString(R.string.available) + "0 ELA");
+        tvAvaliable.setText(getString(R.string.available) + "：" + "0 ELA");
     }
 
 
@@ -319,14 +319,14 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
                 balance = new BigDecimal(0);
                 tvBalance.setText(getString(R.string.maxvote1) + "0 ELA");
-                tvAvaliable.setText(getString(R.string.available) + "0 ELA");
+                tvAvaliable.setText(getString(R.string.available) + "：" + "0 ELA");
             } else {
                 tvBalance.setText(getString(R.string.maxvote1) + "< 1 ELA");
-                tvAvaliable.setText(getString(R.string.available) + "< 1 ELA");
+                tvAvaliable.setText(getString(R.string.available) + "：" + "< 1 ELA");
             }
         } else {
             tvBalance.setText(getString(R.string.maxvote) + balance.intValue() + " ELA");
-            tvAvaliable.setText(getString(R.string.available) + balance.intValue() + " ELA");
+            tvAvaliable.setText(getString(R.string.available) + "：" + balance.intValue() + " ELA");
         }
         mAdapter.setBalance(balance);
     }
@@ -347,7 +347,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             mAdapter.initDateStaus(false);
             mAdapter.notifyDataSetChanged();
             tvAmount.setText(getString(R.string.totle) + "0 ELA");
-            tvAvaliable.setText(getString(R.string.available) + balance.intValue() + " ELA");
+            tvAvaliable.setText(getString(R.string.available) + "：" + balance.intValue() + " ELA");
             cbSelectall.setChecked(false);
             cbEqual.setChecked(false);
         } else if (checkSelectNuber && mAdapter.getList().size() > 36) {
@@ -396,12 +396,12 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         BigDecimal countEla = mAdapter.getCountEla();
         countEla = balance.subtract(countEla);
         if (countEla.compareTo(new BigDecimal(0)) <= 0) {
-            tvAvaliable.setText(getString(R.string.available) + "0 ELA");
+            tvAvaliable.setText(getString(R.string.available) + "：" + "0 ELA");
         } else {
             if (countEla.compareTo(new BigDecimal(1)) < 0) {
-                tvAvaliable.setText(getString(R.string.available) + "< 1 ELA");
+                tvAvaliable.setText(getString(R.string.available) + "：" + "< 1 ELA");
             } else {
-                tvAvaliable.setText(getString(R.string.available) + countEla.intValue() + " ELA");
+                tvAvaliable.setText(getString(R.string.available) + "：" + countEla.intValue() + " ELA");
             }
 
         }

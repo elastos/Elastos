@@ -108,7 +108,7 @@ public class ProposalFragment extends BaseFragment implements TabLayout.BaseOnTa
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         textView.setText(tab.getText());
         tab.setCustomView(textView);
-        Log.i("?????", tab.getPosition());
+        //Log.i("?????", tab.getPosition());
 
     }
 
@@ -119,7 +119,7 @@ public class ProposalFragment extends BaseFragment implements TabLayout.BaseOnTa
 
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
-        Log.i("????11", tab.getPosition());
+        //Log.i("????11", tab.getPosition());
     }
 
 }

@@ -186,7 +186,7 @@ public class MyWallet {
 
             mMasterWalletManager.Dispose();
             mMasterWalletManager = null;
-            instance=null;
+            instance = null;
         }
 
 
@@ -1985,6 +1985,7 @@ public class MyWallet {
             return exceptionProcess(e, formatWalletName(masterWalletID) + "proposalReviewDigest");
         }
     }
+
     public BaseEntity createProposalReviewTransaction(String masterWalletID, String payload) {
         try {
             MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
@@ -1992,10 +1993,81 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
 
             }
-            String info = subWallet.CreateProposalReviewTransaction(payload,"");
+            String info = subWallet.CreateProposalReviewTransaction(payload, "");
             return new CommmonStringEntity(SUCCESSCODE, info);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID) + "createProposalReviewTransaction");
+        }
+    }
+
+    public BaseEntity createVoteCRCProposalTransaction(String masterWalletID, String votes, String invalidCandidates) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.CreateVoteCRCProposalTransaction("", votes, "", invalidCandidates);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "createVoteCRCProposalTransaction");
+        }
+    }
+
+
+    public BaseEntity proposalTrackingOwnerDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalTrackingOwnerDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "ProposalTrackingOwnerDigest");
+        }
+    }
+
+    public BaseEntity proposalTrackingNewOwnerDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalTrackingNewOwnerDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "ProposalTrackingNewOwnerDigest");
+        }
+    }
+
+    public BaseEntity proposalTrackingSecretaryDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalTrackingSecretaryDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "ProposalTrackingSecretaryDigest");
+        }
+    }
+
+    public BaseEntity getVoteInfo(String masterWalletID, String type) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalTrackingSecretaryDigest(type);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "ProposalTrackingSecretaryDigest");
         }
     }
 

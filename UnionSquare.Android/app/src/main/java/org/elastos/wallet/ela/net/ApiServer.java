@@ -24,8 +24,8 @@ package org.elastos.wallet.ela.net;
 
 import org.elastos.wallet.ela.bean.GetdePositcoinBean;
 import org.elastos.wallet.ela.bean.ImageBean;
-import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
+import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
@@ -33,7 +33,8 @@ import org.elastos.wallet.ela.ui.did.entity.GetJwtRespondBean;
 import org.elastos.wallet.ela.ui.did.entity.SaveJwtRespondBean;
 import org.elastos.wallet.ela.ui.did.entity.WebBackEntity;
 import org.elastos.wallet.ela.ui.main.entity.ServerListEntity;
-import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearch;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalDetailEntity;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.ui.proposal.bean.SuggestBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
@@ -102,7 +103,7 @@ public interface ApiServer {
     Observable<SuggestBean> getSuggestion(@Path("id") String id);
 
     @GET("/api/cvote/all_search")
-    Observable<ProposalSearch> proposalSearch(@QueryMap Map<String, Object> map);
+    Observable<ProposalSearchEntity> proposalSearch(@QueryMap Map<String, Object> map);
 
     @GET("/api/council/term")
     Observable<PastCtBean> getCouncilTerm();
@@ -112,4 +113,7 @@ public interface ApiServer {
 
     @GET("/api/council/information/{did}/{id}")
     Observable<CtDetailBean> getCouncilInfo(@Path("id") String id, @Path("did") String did);
+
+    @GET("/api/cvote/get_proposal/{id}")
+    Observable<ProposalDetailEntity> getProposalDetail(@Path("id") int id);
 }

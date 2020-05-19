@@ -56,4 +56,5 @@ public class Constant {
 
 
     public static final String EDITCREDENTIAL = "editPersonalinfo";//保留凭证  新增或编辑did  从凭证信息进入三部分凭证
+    public static final String PROPOSALPUBLISHED = "proposalpublished";//提案公示期
 }

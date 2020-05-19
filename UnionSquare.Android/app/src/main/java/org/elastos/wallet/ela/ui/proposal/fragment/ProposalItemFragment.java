@@ -17,7 +17,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.proposal.adapter.ProposalRecAdapetr;
-import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearch;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class ProposalItemFragment extends BaseFragment implements CommonRvListen
     @BindView(R.id.srl)
     SmartRefreshLayout srl;
     private String status;
-    private List<ProposalSearch.DataBean.ListBean> list;
+    private ArrayList<ProposalSearchEntity.DataBean.ListBean> list;
     private int pageNum = 1;
     private ProposalPresenter presenter;
     private ProposalRecAdapetr adapter;
@@ -63,7 +63,7 @@ public class ProposalItemFragment extends BaseFragment implements CommonRvListen
     }
 
 
-    private void setRecycleView(List<ProposalSearch.DataBean.ListBean> data) {
+    private void setRecycleView(List<ProposalSearchEntity.DataBean.ListBean> data) {
         if (data == null || data.size() == 0) {
             if (pageNum == 1) {
                 rv.setVisibility(View.GONE);
@@ -114,9 +114,10 @@ public class ProposalItemFragment extends BaseFragment implements CommonRvListen
     @Override
     public void onRvItemClick(int position, Object o) {
         Bundle bundle = new Bundle();
-        ProposalSearch.DataBean.ListBean bean = (ProposalSearch.DataBean.ListBean) o;
-        bundle.putInt("id", bean.getId());
-        ((BaseFragment) getParentFragment()).start(PropasalReviewFragment.class, bundle);
+        ProposalSearchEntity.DataBean.ListBean bean = (ProposalSearchEntity.DataBean.ListBean) o;
+        bundle.putInt("position", position);
+        bundle.putParcelableArrayList("ProposalSearchDateList", list);
+        ((BaseFragment) getParentFragment()).start(PropasalDetailFragment.class, bundle);
 
     }
 
@@ -132,7 +133,7 @@ public class ProposalItemFragment extends BaseFragment implements CommonRvListen
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "proposalSearch":
-                setRecycleView(((ProposalSearch) baseEntity).getData().getList());
+                setRecycleView(((ProposalSearchEntity) baseEntity).getData().getList());
                 break;
         }
     }

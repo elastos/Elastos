@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.proposal.presenter;
 
 import android.content.Intent;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -19,7 +20,6 @@ import org.elastos.wallet.ela.ui.did.presenter.AuthorizationPresenter;
 import org.elastos.wallet.ela.ui.proposal.bean.ProposalCallBackEntity;
 import org.elastos.wallet.ela.ui.vote.activity.VertifyPwdActivity;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
-import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.JwtUtils;
 
 import java.util.Date;
@@ -123,14 +123,15 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void showFeePage(Wallet wallet, String type, int transType, BaseFragment baseFragment) {
+    public void showFeePage(Wallet wallet, String type, int transType, BaseFragment baseFragment, Parcelable extra) {
         //发送提案交易
         Intent intent = new Intent(baseFragment.getActivity(), VoteTransferActivity.class);
         intent.putExtra("wallet", wallet);
         intent.putExtra("chainId", MyWallet.ELA);
         intent.putExtra("fee", 10000L);
-        intent.putExtra("type", Constant.PROPOSALINPUT);
-        intent.putExtra("transType", 37);
+        intent.putExtra("type", type);
+        intent.putExtra("extra",  extra);
+        intent.putExtra("transType", transType);
         baseFragment.startActivity(intent);
     }
 
