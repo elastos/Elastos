@@ -32,13 +32,12 @@ const Component = (
     if (voteStatus == 'chaining') {
        voteStatus = I18N.get(`council.voting.chainStatus.chaining`)
     }
-    
     let isOwner = data.votedBy && data.votedBy === currentUserId
     const userNode = (
       <Item key={key}>
         {data.avatar ? <Avatar src={data.avatar} alt="voter avatar" /> : <StyledAvatarIcon />}
         <div>{ data.name }</div>
-        <div>{ voteStatus }</div>
+        <div>{ data.reason !== "" ? voteStatus : null }</div>
         <div style={{ marginTop: '0.5rem'}}>
           { 
           ( isCouncil && isOwner && (voteStatus == 'unchain' || voteStatus == undefined ) && data.reason != '' ) ? 
