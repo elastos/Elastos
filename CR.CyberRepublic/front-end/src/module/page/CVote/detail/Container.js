@@ -74,6 +74,9 @@ const mapDispatch = () => {
     },
     async getMemberVoteUrl(id) {
       return service.getMemberVote(id)
+    },
+    async updateMilestone(id, stage, data) {
+      return service.updateMilestone(id, stage, data)
     }
   }
 }

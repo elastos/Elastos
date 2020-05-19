@@ -32,7 +32,8 @@ export const uncompressPubKey = (key: any) => {
   return Buffer.concat([Buffer.from([0x04]), xbuf, ybuf])
 }
 
-export const getPemPubKey = (key: any) => {
+export const getPemPublicKey = (publicKey: any) => {
+  const key = PublicKey.fromString(publicKey)
   if (!key.compressed) {
     throw new Error('Public key is not compressed.')
   }
@@ -70,7 +71,7 @@ export const getDidPublicKey = async (did: string) => {
       const matched = pubKeys.find((el) => el.id === '#primary')
       // compressed public key beginning with 02
       const publicKey = bs58.decode(matched.publicKeyBase58).toString('hex')
-      const pemPubKey = getPemPubKey(PublicKey.fromString(publicKey))
+      const pemPubKey = getPemPublicKey(publicKey)
       return {
         expirationDate: moment(payload.expires),
         publicKey: pemPubKey,

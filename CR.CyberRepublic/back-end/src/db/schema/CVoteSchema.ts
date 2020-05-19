@@ -39,6 +39,31 @@ export const CVoteHistorySchema = {
   }
 }
 
+const withdrawalHistorySchema = {
+  message: String,
+  messageHash: String,
+  milestoneKey: String,
+  signature: String,
+  createdAt: {
+    type: Date,
+    required: true,
+    default: Date.now
+  },
+  review: {
+    reason: String,
+    reasonHash: String,
+    opinion: String,
+    opinionHash: String,
+    signature: String,
+    txid: String,
+    createdAt: {
+      type: Date,
+      required: true,
+      default: Date.now
+    }
+  }
+}
+
 export const CVote = {
   title: {
     type: String,
@@ -80,12 +105,6 @@ export const CVote = {
   plan: {
     type: Schema.Types.Mixed
   },
-  // tracking: {
-  //   type: String,
-  // },
-  // summary: {
-  //   type: String,
-  // },
   // name of proposer
   proposedBy: {
     type: String,
@@ -108,6 +127,7 @@ export const CVote = {
   avatar_map: Object,
   reason_map: Object,
   reason_zh_map: Object,
+  // council member
   createdBy: { type: Schema.Types.ObjectId, ref: 'users' },
 
   published: {
@@ -173,10 +193,12 @@ export const CVote = {
   draftHash: {
     type: String
   },
+  ownerPublicKey: String,
   rejectAmount: {
     type: String
   },
   rejectThroughAmount: {
     type: String
-  }
+  },
+  withdrawalHistory: [withdrawalHistorySchema]
 }
