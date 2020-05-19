@@ -1153,11 +1153,8 @@ export default class extends Base {
 
     const createdBy = suggestion.createdBy
     const address = `${process.env.SERVER_URL}/suggestion/${suggestion._id}`
-    const did = createdBy && createdBy.did && createdBy.did.id
-    const didName =
-      createdBy &&
-      createdBy.profile &&
-      `${createdBy.profile.firstName} ${createdBy.profile.lastName}`
+    const did = _.get(createdBy, 'did.id')
+    const didName = _.get(createdBy, 'did.didName')
     const result = _.omit(suggestion._doc, [
       '_id',
       'id',

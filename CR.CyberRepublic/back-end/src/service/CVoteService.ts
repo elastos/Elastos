@@ -1424,13 +1424,14 @@ export default class extends Base {
             'title',
             'status',
             'createdAt',
-            'proposedBy',
+            'proposer',
             'proposalHash'
         ]
 
         const cursor = db_cvote
             .getDBInstance()
             .find(query, fields.join(' '))
+            .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
             .sort({vid: -1})
 
         if (
@@ -1452,7 +1453,8 @@ export default class extends Base {
 
         // filter return data，add proposalHash to CVoteSchema
         const list = _.map(rs[0], function (o) {
-            let temp = _.pick(o, fields)
+            let temp = _.omit(o._doc, ['_id', 'proposer'])
+            temp.proposedBy = _.get(o, 'proposer.did.didName')
             temp.status = CVOTE_STATUS_TO_WALLET_STATUS[temp.status]
             temp.createdAt = timestamp.second(temp.createdAt)
             return _.mapKeys(temp, function (value, key) {
