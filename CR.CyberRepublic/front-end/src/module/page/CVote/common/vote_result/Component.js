@@ -40,7 +40,7 @@ const Component = (
         <div>{ data.reason !== "" ? voteStatus : null }</div>
         <div style={{ marginTop: '0.5rem'}}>
           { 
-          ( isCouncil && isOwner && (voteStatus == 'unchain' || voteStatus == undefined ) && data.reason != '' ) ? 
+          ( isCouncil && isOwner && (data.status == 'unchain' || data.status == undefined ) && data.reason != '' ) ? 
           <OnChain 
           getReviewProposal={getReviewProposal}
           getReviewProposalUrl={getReviewProposalUrl}

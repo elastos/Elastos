@@ -31,7 +31,7 @@ class OnChainButton extends Component {
       if (rs && rs.success ){
         clearInterval(this.timerDid)
         this.timerDid = null
-        this.setState({ url: rs.url, visible:false })
+        this.setState({ url: '', visible:false })
       }
       if (rs && rs.success == false){
         clearInterval(this.timerDid)
@@ -55,7 +55,6 @@ class OnChainButton extends Component {
 
   componentDidMount = async () => {
     const { id, getReviewProposalUrl } = this.props
-    console.log(id)
     const rs = await getReviewProposalUrl(id)
     if (rs && rs.success) {
       this.setState({ url: rs.url })
