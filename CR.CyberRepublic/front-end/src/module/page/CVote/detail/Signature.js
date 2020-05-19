@@ -39,44 +39,37 @@ class Signature extends Component {
   renderTextare = () => {
     const { getFieldDecorator } = this.props.form
     return (
-      <FormItem>
-        {getFieldDecorator('message', {
-          rules: [
-            {
-              required: true,
-              message: 'This field is required'
-            }
-          ]
-        })(<TextArea rows={16} style={{ resize: 'none' }} />)}
-      </FormItem>
+      <Form onSubmit={this.handleSubmit}>
+        <Label>
+          <span>*</span>
+          Reason
+        </Label>
+        <FormItem>
+          {getFieldDecorator('message', {
+            rules: [
+              {
+                required: true,
+                message: 'This field is required'
+              }
+            ]
+          })(<TextArea rows={16} style={{ resize: 'none' }} />)}
+        </FormItem>
+        <Actions>
+          <Button className="cr-btn cr-btn-primary" htmlType="submit">
+            Next
+          </Button>
+        </Actions>
+      </Form>
     )
   }
 
   render() {
     const { url } = this.state
+    const { stage } = this.props
     return (
       <Wrapper>
-        <Title>Apply Payment</Title>
-        <Form onSubmit={this.handleSubmit}>
-          <Label>
-            <span>*</span>
-            Reason
-          </Label>
-          {url ? this.signatureQrCode() : this.renderTextare()}
-          <Actions>
-            <Button
-              className="cr-btn cr-btn-default"
-              onClick={() => {
-                this.props.onCancel()
-              }}
-            >
-              Cancel
-            </Button>
-            <Button className="cr-btn cr-btn-primary" htmlType="submit">
-              Next
-            </Button>
-          </Actions>
-        </Form>
+        <Title>Apply Payment #{parseInt(stage) + 1}</Title>
+        {url ? this.signatureQrCode() : this.renderTextare()}
       </Wrapper>
     )
   }
