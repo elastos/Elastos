@@ -180,7 +180,7 @@ static int parse_proof(DID *signer, Presentation *pre, cJSON *json)
         return -1;
     }
     strcpy(pre->proof.signatureValue, cJSON_GetStringValue(item));
-    
+
     return 0;
 }
 
@@ -364,12 +364,12 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, DIDStore *store,
             va_end(list);
             goto errorExit;
         }
-        
+
         if (Credential_IsExpired(cred)) {
             DIDError_Set(DIDERR_EXPIRED, "Credential is expired.");
             free(creds);
             va_end(list);
-            goto errorExit;           
+            goto errorExit;
         }
 
         add_credential(creds, i, cred);
@@ -685,7 +685,7 @@ bool Presentation_IsGenuine(Presentation *pre)
         if (!cred) {
             DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing credential.");
             goto errorExit;
-        } 
+        }
         if (!DID_Equals(Credential_GetOwner(cred), Presentation_GetSigner(pre))) {
             DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Credential is not match with signer.");
             goto errorExit;
@@ -749,7 +749,7 @@ bool Presentation_IsValid(Presentation *pre)
         if (!cred) {
             DIDError_Set(DIDERR_MALFORMED_PRESENTATION, "Missing credential.");
             goto errorExit;
-        } 
+        }
         if (!DID_Equals(Credential_GetOwner(cred), Presentation_GetSigner(pre))) {
             DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Credential is not match with signer.");
             goto errorExit;

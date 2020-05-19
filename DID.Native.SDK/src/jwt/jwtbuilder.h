@@ -20,45 +20,33 @@
  * SOFTWARE.
  */
 
-#ifndef __DIDSTORE_H__
-#define __DIDSTORE_H__
+#ifndef __JWTBUILDER_H__
+#define __JWTBUILDER_H__
 
-#include <limits.h>
+#include <stdbool.h>
+#include <cjose/cjose.h>
+#include <jansson.h>
 
 #include "ela_did.h"
-#include "didbackend.h"
-#include "didmeta.h"
-#include "credmeta.h"
+#include "HDkey.h"
+#include "did.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_PRIVATEKEY_BASE64           80
+typedef struct JWTBuilder {
+    cjose_header_t *header;
+    cjose_jwk_t *jwk;
+    json_t *claims;
+    DID issuer;
+    DIDDocument *doc;
+} JWTBuilder;
 
-typedef struct DIDBackend    DIDBackend;
-
-struct DIDStore {
-    char root[PATH_MAX];
-    DIDBackend backend;
-};
-
-int DIDStore_StoreDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
-
-int DIDStore_LoadDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
-
-int DIDStore_StoreCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
-
-int DIDStore_LoadCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
-
-int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *key, char *sig, uint8_t *digest, size_t size);
-
-int DIDStore_LoadPrivateKey(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *key, uint8_t *privatekey);
+JWTBuilder *JWTBuilder_Create(DID *issuer);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__DIDSTORE_H__
+#endif //__JWTBUILDER_H__

@@ -353,7 +353,7 @@ static int import_privatekey(DIDURL *id, const char *storepass, const char *file
     if (!skbase || !*skbase)
         return -1;
 
-    if (base58_decode(privatekey, skbase) != PRIVATEKEY_BYTES) {
+    if (base58_decode(privatekey, sizeof(privatekey), skbase) != PRIVATEKEY_BYTES) {
         free(skbase);
         return -1;
     }

@@ -495,7 +495,7 @@ int DID_SetAlias(DID *did, const char *alias)
         return -1;
 
     if (DIDMeta_AttachedStore(&did->meta))
-        return didstore_storedidmeta(did->meta.store, &did->meta, did);
+        return DIDStore_StoreDIDMeta(did->meta.store, &did->meta, did);
 
     return 0;
 }
@@ -554,7 +554,7 @@ int DIDURL_SetAlias(DIDURL *id, const char *alias)
     }
 
     if (CredentialMeta_AttachedStore(&id->meta))
-        return didstore_storecredmeta(id->meta.store, &id->meta, id);
+        return DIDStore_StoreCredMeta(id->meta.store, &id->meta, id);
 
     return 0;
 }

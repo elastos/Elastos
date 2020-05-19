@@ -11,6 +11,12 @@ add_submodule(CUnit
     DEPENDS platform-specific)
 add_submodule(libcurl
     DEPENDS libressl platform-specific)
+add_submodule(libjansson
+    DIRECTORY jansson
+    DEPENDS platform-specific)
+add_submodule(libcjose
+    DIRECTORY cjose
+    DEPENDS libjansson libressl platform-specific)
 
 if (ENABLE_SPVADAPTER)
     add_submodule(libspvsdk

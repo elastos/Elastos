@@ -38,6 +38,7 @@ endif()
 
 file(GLOB utility-SOURCES "utility/*.c")
 file(GLOB backend-SOURCES "backend/*.c")
+file(GLOB jwt-SOURCES "jwt/*.c")
 
 set(SRC
     diderror.c
@@ -52,10 +53,12 @@ set(SRC
     credmeta.c
     didmeta.c
     ${utility-SOURCES}
-    ${backend-SOURCES})
+    ${backend-SOURCES}
+    ${jwt-SOURCES})
 
 set(HEADERS
-    ela_did.h)
+    ela_did.h
+    jwt/ela_jwt.h)
 
 if(ENABLE_TESTS)
     set(HEADERS
@@ -88,6 +91,7 @@ include_directories(
     utility
     backend
     adapter
+    jwt
     .
     ../hdkey
     ${PROJECT_INT_DIST_DIR}/include)
@@ -119,7 +123,9 @@ set(LIBS
     curl
     ssl
     crypto
-    z)
+    z
+    jansson
+    cjose)
 
 if(WIN32)
     set(LIBS
@@ -131,7 +137,7 @@ add_definitions(-DDID_BUILD)
 
 add_custom_target(ela-did)
 
-set(ELADID_DEPENDS libressl libcurl cJSON hdkey)
+set(ELADID_DEPENDS libressl libcurl cJSON hdkey libjansson libcjose)
 
 if(WIN32)
     set(ELADID_DEPENDS

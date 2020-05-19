@@ -187,6 +187,11 @@ typedef struct DIDAdapter           DIDAdapter;
 typedef struct DIDResolver          DIDResolver;
 /**
  * \~English
+ * JWTBuilder records the content about jwt.
+ */
+typedef struct JWTBuilder           JWTBuilder;
+/**
+ * \~English
  * DID list callbacks, return alias about did.
  */
 typedef int DIDStore_DIDsCallback(DID *did, void *context);
@@ -1563,6 +1568,18 @@ DID_API const char *DIDDocument_GetProofSignature(DIDDocument *document);
 
 /**
  * \~English
+ * Get JWTBuilder from document.
+ *
+ * @param
+ *      document                 [in] A handle to DID Document.
+ *                                ps：document must attatch DIDstore.
+ * @return
+ *      If no error occurs, return the handle to JWTBuilder.
+ *      Otherwise, return NULL.
+ */
+DID_API JWTBuilder *DIDDocument_GetJwtBuilder(DIDDocument *document);
+/**
+ * \~English
  * Get identifier of public key.
  *
  * @param
@@ -1571,6 +1588,7 @@ DID_API const char *DIDDocument_GetProofSignature(DIDDocument *document);
  *      If no error occurs, return the identifier of public key.
  *      Otherwise, return NULL.
  */
+
 DID_API DIDURL *PublicKey_GetId(PublicKey *publickey);
 
 /**
@@ -1893,18 +1911,6 @@ DID_API const char *Credential_GetProofType(Credential *cred);
  *      Otherwise, return NULL.
  */
 DID_API const char *Credential_GetProofSignture(Credential *cred);
-
-/**
- * \~English
- * Verify the credential is valid or not.
- * Issuance always occurs before any other actions involving a credential.
- *
- * @param
- *      cred                     [in] The Credential handle.
- * @return
- *      0 on success, -1 if an error occurred or verify failed.
- */
-DID_API int Credential_Verify(Credential *cred);
 
 /**
  * \~English
@@ -2555,15 +2561,6 @@ DID_API void Presentation_Destroy(Presentation *pre);
 
 /**
  * \~English
- * Verify Presentation is valid or not.
- *
- * @param
- *      pre                      [in] The handle to Presentation.
- */
-DID_API int Presentation_Verify(Presentation *pre);
-
-/**
- * \~English
  * Get json context from Presentation.
  *
  * @param
@@ -2873,6 +2870,11 @@ DID_API void DIDBackend_SetTTL(long ttl);
  * Unsupported error.
  */
 #define DIDERR_UNSUPPOTED                           0x8D000016
+/**
+ * \~English
+ * JWT error.
+ */
+#define DIDERR_JWT                                  0x8D000017
 /**
  * \~English
  * Unknown error.

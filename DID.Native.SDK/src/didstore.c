@@ -173,7 +173,7 @@ static int load_didmeta(DIDStore *store, DIDMeta *meta, const char *did)
     return rc;
 }
 
-int didstore_loaddidmeta(DIDStore *store, DIDMeta *meta, DID *did)
+int DIDStore_LoadDIDMeta(DIDStore *store, DIDMeta *meta, DID *did)
 {
     bool iscontain;
 
@@ -190,7 +190,7 @@ int didstore_loaddidmeta(DIDStore *store, DIDMeta *meta, DID *did)
     return load_didmeta(store, meta, did->idstring);
 }
 
-int didstore_storedidmeta(DIDStore *store, DIDMeta *meta, DID *did)
+int DIDStore_StoreDIDMeta(DIDStore *store, DIDMeta *meta, DID *did)
 {
     bool iscontain;
 
@@ -304,7 +304,7 @@ static int load_credmeta(DIDStore *store, CredentialMeta *meta, const char *did,
     return rc;
 }
 
-int didstore_storecredmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
+int DIDStore_StoreCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
 {
     bool iscontain;
 
@@ -321,7 +321,7 @@ int didstore_storecredmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
     return store_credmeta(store, meta, id);
 }
 
-int didstore_loadcredmeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
+int DIDStore_LoadCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id)
 {
     bool iscontain;
 
@@ -483,7 +483,7 @@ static int store_extendedpubkey(DIDStore *store, uint8_t *extendedkey, size_t si
     assert(store);
     assert(extendedkey && size > 0);
 
-    if (base58_encode(publickeybase58, extendedkey, size) == -1) {
+    if (base58_encode(publickeybase58, sizeof(publickeybase58), extendedkey, size) == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decode extended public key failed.");
         return -1;
     }
@@ -521,7 +521,7 @@ static ssize_t load_extendedpubkey(DIDStore *store, uint8_t *extendedkey, size_t
         return -1;
     }
 
-    len = base58_decode(extendedkey, string);
+    len = base58_decode(extendedkey, size, string);
     free((char*)string);
     if (len < 0)
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decode extended public key failed.");
@@ -1229,7 +1229,7 @@ Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *id)
     if (!credential)
         return NULL;
 
-    if (didstore_loadcredmeta(store, &credential->meta, id) == -1) {
+    if (DIDStore_LoadCredMeta(store, &credential->meta, id) == -1) {
         Credential_Destroy(credential);
         return NULL;
     }
@@ -1823,7 +1823,7 @@ int DIDStore_InitPrivateIdentityFromRootKey(DIDStore *store, const char *storepa
         }
     }
 
-    size = base58_decode(extendedkey, extendedprvkey);
+    size = base58_decode(extendedkey, sizeof(extendedkey), extendedprvkey);
     if (size == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Decode extended private key failed.");
         return -1;
@@ -1971,7 +1971,8 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
         return NULL;
     }
 
-    base58_encode(publickeybase58, DerivedKey_GetPublicKey(derivedkey), PUBLICKEY_BYTES);
+    base58_encode(publickeybase58, sizeof(publickeybase58),
+            DerivedKey_GetPublicKey(derivedkey), PUBLICKEY_BYTES);
     DerivedKey_Wipe(derivedkey);
 
     document = create_document(store, &did, publickeybase58, storepass, alias);
@@ -1990,7 +1991,7 @@ DIDDocument *DIDStore_NewDIDByIndex(DIDStore *store, const char *storepass,
     return document;
 }
 
-static int load_privatekey(DIDStore *store, const char *storepass, DID *did,
+int DIDStore_LoadPrivateKey(DIDStore *store, const char *storepass, DID *did,
         DIDURL *key, uint8_t *privatekey)
 {
     const char *privatekey_str;
@@ -2024,7 +2025,7 @@ static int load_privatekey(DIDStore *store, const char *storepass, DID *did,
     return 0;
 }
 
-int didstore_sign(DIDStore *store, const char *storepass, DID *did,
+int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
         DIDURL *key, char *sig, uint8_t *digest, size_t size)
 {
     uint8_t binkey[PRIVATEKEY_BYTES];
@@ -2035,7 +2036,7 @@ int didstore_sign(DIDStore *store, const char *storepass, DID *did,
         return -1;
     }
 
-    if (load_privatekey(store, storepass, did, key, binkey) == -1)
+    if (DIDStore_LoadPrivateKey(store, storepass, did, key, binkey) == -1)
         return -1;
 
     if (ecdsa_sign_base64(sig, binkey, digest, size) == -1) {

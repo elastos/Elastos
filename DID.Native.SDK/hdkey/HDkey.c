@@ -646,3 +646,47 @@ void DerivedKey_Wipe(DerivedKey *derivedkey)
 
     memset(derivedkey, 0, sizeof(DerivedKey));
 }
+
+//-------------------------
+KeySpec *KeySpec_Fill(KeySpec *keyspec, uint8_t *publickey, uint8_t *privatekey)
+{
+    if (!keyspec || (!publickey && !privatekey))
+        return NULL;
+
+    //set curve type
+    keyspec->curve = EC_CURVE_P_256;
+
+    //set d
+    if (privatekey) {
+        memcpy(keyspec->dbuf, privatekey, PRIVATEKEY_BYTES);
+        keyspec->dlen = PRIVATEKEY_BYTES;
+    }
+    keyspec->d = keyspec->dbuf;
+
+    //set x,y
+    if (publickey) {
+        keyspec->xlen = sizeof(keyspec->xbuf);
+        keyspec->ylen = sizeof(keyspec->ybuf);
+
+        if (getPubKeyCoordinate(publickey, PUBLICKEY_BYTES, keyspec->xbuf, &keyspec->xlen,
+                keyspec->ybuf, &keyspec->ylen) == -1)
+            return NULL;
+
+        keyspec->x = keyspec->xbuf;
+        keyspec->y = keyspec->ybuf;
+    }
+
+    return keyspec;
+}
+
+KeySpec *KeySpec_Copy(KeySpec *dst, KeySpec *src)
+{
+    if (!dst || !src)
+        return NULL;
+
+    memcpy(dst, src, sizeof(KeySpec));
+    dst->d = dst->dbuf;
+    dst->x = dst->xbuf;
+    dst->y = dst->ybuf;
+    return dst;
+}

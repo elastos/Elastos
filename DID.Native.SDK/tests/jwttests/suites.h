@@ -20,45 +20,13 @@
  * SOFTWARE.
  */
 
-#ifndef __DIDSTORE_H__
-#define __DIDSTORE_H__
+#ifndef __JWT_TEST_SUITES_H__
+#define __JWT_TEST_SUITES_H__
 
-#include <limits.h>
+DECL_TESTSUITE(jwt_test);
 
-#include "ela_did.h"
-#include "didbackend.h"
-#include "didmeta.h"
-#include "credmeta.h"
+#define DEFINE_JWT_TESTSUITES \
+    DEFINE_TESTSUITE(jwt_test)
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#endif /* __JWT_TEST_SUITES_H__ */
 
-#define MAX_PRIVATEKEY_BASE64           80
-
-typedef struct DIDBackend    DIDBackend;
-
-struct DIDStore {
-    char root[PATH_MAX];
-    DIDBackend backend;
-};
-
-int DIDStore_StoreDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
-
-int DIDStore_LoadDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
-
-int DIDStore_StoreCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
-
-int DIDStore_LoadCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
-
-int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *key, char *sig, uint8_t *digest, size_t size);
-
-int DIDStore_LoadPrivateKey(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *key, uint8_t *privatekey);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif //__DIDSTORE_H__

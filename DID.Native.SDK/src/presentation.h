@@ -54,6 +54,8 @@ struct Presentation {
     PresentationProof proof;
 };
 
+int Presentation_Verify(Presentation *pre);
+
 #ifdef __cplusplus
 }
 #endif

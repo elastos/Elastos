@@ -27,6 +27,7 @@
 #include <assert.h>
 
 #include "ela_did.h"
+#include "ela_jwt.h"
 #include "did.h"
 #include "diddocument.h"
 #include "didstore.h"
@@ -37,6 +38,7 @@
 #include "HDkey.h"
 #include "didmeta.h"
 #include "diderror.h"
+#include "jwtbuilder.h"
 
 #define MAX_EXPIRES              5
 
@@ -872,7 +874,7 @@ int DIDDocument_SetAlias(DIDDocument *document, const char *alias)
     DIDMeta_Copy(&document->did.meta, &document->meta);
 
     if (DIDMeta_AttachedStore(&document->meta))
-        rc = didstore_storedidmeta(document->meta.store, &document->meta, &document->did);
+        rc = DIDStore_StoreDIDMeta(document->meta.store, &document->meta, &document->did);
 
     return rc;
 }
@@ -1321,7 +1323,7 @@ int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *builder, DIDURL *keyid,
         return -1;
     }
     //check base58 is valid
-    if (base58_decode(binkey, key) != PUBLICKEY_BYTES) {
+    if (base58_decode(binkey, sizeof(binkey), key) != PUBLICKEY_BYTES) {
         DIDError_Set(DIDERR_INVALID_KEY, "Decode public key failed.");
         return -1;
     }
@@ -1401,7 +1403,7 @@ int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *builder,
         return -1;
     }
 
-    if (key && base58_decode(binkey, key) != PUBLICKEY_BYTES) {
+    if (key && base58_decode(binkey, sizeof(binkey), key) != PUBLICKEY_BYTES) {
         DIDError_Set(DIDERR_INVALID_KEY, "Decode authentication key failed.");
         return -1;
     }
@@ -1524,7 +1526,7 @@ int DIDDocumentBuilder_AddAuthorizationKey(DIDDocumentBuilder *builder, DIDURL *
         return -1;
     }
 
-    if (key && base58_decode(binkey, key) != PUBLICKEY_BYTES) {
+    if (key && base58_decode(binkey, sizeof(binkey), key) != PUBLICKEY_BYTES) {
         DIDError_Set(DIDERR_INVALID_KEY, "Decode public key failed.");
         return -1;
     }
@@ -2050,7 +2052,7 @@ DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document)
         if (DID_Equals(&pk->controller, &document->did) == 0)
             continue;
 
-        base58_decode(binkey, pk->publicKeyBase58);
+        base58_decode(binkey, sizeof(binkey), pk->publicKeyBase58);
         HDKey_PublicKey2Address(binkey, idstring, sizeof(idstring));
 
         if (!strcmp(idstring, pk->id.did.idstring))
@@ -2556,7 +2558,7 @@ int DIDDocument_SignDigest(DIDDocument *document, DIDURL *keyid,
     if (!keyid)
         keyid = DIDDocument_GetDefaultPublicKey(document);
 
-    return didstore_sign(document->meta.store, storepass,
+    return DIDStore_Sign(document->meta.store, storepass,
         DIDDocument_GetSubject(document), keyid, sig, digest, size);
 }
 
@@ -2604,7 +2606,7 @@ int DIDDocument_VerifyDigest(DIDDocument *document, DIDURL *keyid,
         return -1;
     }
 
-    base58_decode(binkey, PublicKey_GetPublicKeyBase58(publickey));
+    base58_decode(binkey, sizeof(binkey), PublicKey_GetPublicKeyBase58(publickey));
 
     if (ecdsa_verify_base64(sig, binkey, digest, size) == -1) {
         DIDError_Set(DIDERR_CRYPTO_ERROR, "Ecdsa verify failed.");
@@ -2612,6 +2614,27 @@ int DIDDocument_VerifyDigest(DIDDocument *document, DIDURL *keyid,
     }
 
     return 0;
+}
+
+JWTBuilder *DIDDocument_GetJwtBuilder(DIDDocument *document)
+{
+    DID *did;
+    JWTBuilder *builder;
+
+    if (!document) {
+        DIDError_Set(DIDERR_INVALID_ARGS, "Invalid arguments.");
+        return NULL;
+    }
+
+    did = DIDDocument_GetSubject(document);
+    if (!did)
+        return NULL;
+
+    builder = JWTBuilder_Create(did);
+    if (!builder)
+        return NULL;
+
+    return builder;
 }
 
 DIDURL *PublicKey_GetId(PublicKey *publickey)

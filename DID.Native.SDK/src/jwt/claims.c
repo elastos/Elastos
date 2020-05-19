@@ -20,45 +20,15 @@
  * SOFTWARE.
  */
 
-#ifndef __DIDSTORE_H__
-#define __DIDSTORE_H__
+#include <stdio.h>
+#include <string.h>
 
-#include <limits.h>
+#include "claims.h"
 
-#include "ela_did.h"
-#include "didbackend.h"
-#include "didmeta.h"
-#include "credmeta.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define MAX_PRIVATEKEY_BASE64           80
-
-typedef struct DIDBackend    DIDBackend;
-
-struct DIDStore {
-    char root[PATH_MAX];
-    DIDBackend backend;
-};
-
-int DIDStore_StoreDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
-
-int DIDStore_LoadDIDMeta(DIDStore *store, DIDMeta *meta, DID *did);
-
-int DIDStore_StoreCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
-
-int DIDStore_LoadCredMeta(DIDStore *store, CredentialMeta *meta, DIDURL *id);
-
-int DIDStore_Sign(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *key, char *sig, uint8_t *digest, size_t size);
-
-int DIDStore_LoadPrivateKey(DIDStore *store, const char *storepass, DID *did,
-        DIDURL *key, uint8_t *privatekey);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif //__DIDSTORE_H__
+const char *ISSUER = "iss";
+const char *SUBJECT = "sub";
+const char *AUDIENCE = "aud";
+const char *EXPIRATION = "exp";
+const char *NOT_BEFORE = "nbf";
+const char *ISSUER_AT = "iat";
+const char *ID = "jti";

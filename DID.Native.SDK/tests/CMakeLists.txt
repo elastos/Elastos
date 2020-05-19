@@ -48,6 +48,7 @@ file(GLOB DSTORE-TESTS "dstoretests/*.c")
 file(GLOB VP-TESTS "vptests/*.c")
 file(GLOB ISSUER-TESTS "issuertests/*.c")
 file(GLOB HDKEY-TESTS "hdkeytests/*.c")
+file(GLOB JWT-TESTS "jwttests/*.c")
 
 set(SRC
     tests.c
@@ -60,6 +61,7 @@ set(SRC
     ${VP-TESTS}
     ${ISSUER-TESTS}
     ${HDKEY-TESTS}
+    ${JWT-TESTS}
     )
 
 add_definitions(-DLIBCONFIG_STATIC)
@@ -118,6 +120,7 @@ include_directories(
     ../src
     ../src/utility
     ../src/adapter
+    ../src/jwt
     ../hdkey
     ../adapter/spvadapter
     ${PROJECT_INT_DIST_DIR}/include)

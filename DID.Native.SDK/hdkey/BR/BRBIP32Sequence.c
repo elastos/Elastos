@@ -91,6 +91,61 @@ void getPubKeyFromPrivKey(void *brecPoint, const UInt256 *k)
     }
 }
 
+int getPubKeyCoordinate(const void *pubKey, size_t pubKeyLen, uint8_t *xbuf, size_t *xlen,
+        uint8_t *ybuf, size_t *ylen)
+{
+    BIGNUM *_pubkey, *x = NULL, *y = NULL;
+    uint8_t arrBN[256] = {0};
+    int rc = -1, len;
+    EC_POINT *ec_p = NULL;
+
+    if (!pubKey || 33 != pubKeyLen || !xbuf || !xlen || !ybuf || !ylen)
+        return rc;
+
+    _pubkey = BN_bin2bn((const unsigned char *)pubKey, (int)pubKeyLen, NULL);
+    EC_KEY *key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    if (NULL != _pubkey && NULL != key) {
+        const EC_GROUP *curve = EC_KEY_get0_group(key);
+        ec_p = EC_POINT_bn2point(curve, _pubkey, NULL, NULL);
+        if (!ec_p)
+            goto errorExit;
+
+        x = BN_new();
+        y = BN_new();
+        if (EC_POINT_get_affine_coordinates_GFp(curve, ec_p, x, y, NULL) == 0)
+            goto errorExit;
+
+        len = BN_bn2bin(x, arrBN);
+        if (len > *xlen)
+            goto errorExit;
+
+        memcpy(xbuf, arrBN, len);
+        *xlen = len;
+
+        memset(arrBN, 0, sizeof(arrBN));
+        len = BN_bn2bin(y, arrBN);
+        if (len > *ylen)
+            goto errorExit;
+
+        memcpy(ybuf, arrBN, len);
+        *ylen = len;
+
+        rc = 0;
+    }
+
+errorExit:
+    if (ec_p)
+        EC_POINT_free(ec_p);
+    if (x)
+        BN_free(x);
+    if (y)
+        BN_free(y);
+
+    EC_KEY_free(key);
+    BN_free(_pubkey);
+    return rc;
+}
+
 ssize_t
 ECDSA65Sign_sha256(const void *privKey, size_t privKeyLen, const UInt256 *md,
         void *signedData, size_t signedDataSize)

@@ -279,23 +279,27 @@ ssize_t base64_url_decode(uint8_t *buffer, const char *base64)
     return len; //success
 }
 
-ssize_t base58_encode(char *base58, uint8_t *input, size_t len)
+ssize_t base58_encode(char *base58, size_t base58_len, uint8_t *input, size_t len)
 {
-    if (!base58 || !input || !len)
+    if (!base58 || base58_len <= 0 || !input || !len)
         return -1;
 
     size_t size = BRBase58Encode(NULL, 0, input, len);
+    if (size > base58_len)
+        return 0;
+
     return BRBase58Encode(base58, size, input, len);
 }
 
-ssize_t base58_decode(uint8_t *data, const char *base58)
+ssize_t base58_decode(uint8_t *data, size_t len, const char *base58)
 {
-    unsigned char *string;
-
-    if (!data || !base58)
+    if (!data || len <= 0 || !base58)
         return -1;
 
     size_t size = BRBase58Decode(NULL, 0, base58);
+    if (size > len)
+        return 0;
+
     return BRBase58Decode(data, size, base58);
 }
 

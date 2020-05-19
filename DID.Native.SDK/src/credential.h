@@ -75,6 +75,8 @@ CredentialMeta *Credential_GetMeta(Credential *credential);
 
 const char* Credential_ToJson_ForSign(Credential *cred, bool compact, bool forsign);
 
+int Credential_Verify(Credential *cred);
+
 #ifdef __cplusplus
 }
 #endif

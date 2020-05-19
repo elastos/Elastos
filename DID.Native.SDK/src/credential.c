@@ -422,7 +422,7 @@ static const char *item_astext(cJSON *item)
     } else {
         value = "";
     }
-    
+
     return strdup(value);
 }
 
@@ -505,7 +505,7 @@ Credential *Parse_Credential(cJSON *json, DID *did)
     }
     if (parse_didurl(&credential->id, item->valuestring, did) < 0) {
         DIDError_Set(DIDERR_MALFORMED_CREDENTIAL, "Invalid credential id.");
-        goto errorExit;        
+        goto errorExit;
     }
 
     if (did && strcmp(credential->id.did.idstring, did->idstring) != 0) {
@@ -897,7 +897,7 @@ bool Credential_IsValid(Credential *cred)
             DIDError_Set(DIDERR_NOT_EXISTS, "Issuer don't already exist.");
             return false;
         }
-        
+
         if (!DIDDocument_IsValid(doc)) {
             DIDError_Set(DIDERR_MALFORMED_DID, "Issuer is invalid.");
             DIDDocument_Destroy(doc);
@@ -930,7 +930,7 @@ int Credential_SetAlias(Credential *credential, const char *alias)
         return -1;
 
     if (CredentialMeta_AttachedStore(&credential->meta))
-        return didstore_storecredmeta(CredentialMeta_GetStore(&credential->meta),
+        return DIDStore_StoreCredMeta(CredentialMeta_GetStore(&credential->meta),
                 &credential->meta, &credential->id);
 
     return 0;

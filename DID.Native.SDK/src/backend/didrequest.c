@@ -49,7 +49,7 @@ static int header_toJson(JsonGenerator *gen, DIDRequest *req)
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "specification", req->header.spec));
     CHECK(JsonGenerator_WriteStringField(gen, "operation", req->header.op));
-    if (!strcmp(req->header.op, operation[1]))
+    if (!strcmp(req->header.op, operation[RequestType_Update]))
         CHECK(JsonGenerator_WriteStringField(gen, "previousTxid", req->header.prevtxid));
 
     CHECK(JsonGenerator_WriteEndObject(gen));
@@ -194,7 +194,6 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
     char *op, *docJson, *previousTxid;
     DID *subject;
     size_t len;
-    int rc;
 
     assert(request);
     assert(json);
@@ -236,15 +235,15 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
         return NULL;
     }
     op = cJSON_GetStringValue(field);
-    if (!strcmp(op, "create") || !strcmp(op, "update") ||
-            !strcmp(op, "deactivate")) {
+    if (!strcmp(op, operation[RequestType_Create]) || !strcmp(op, operation[RequestType_Update]) ||
+            !strcmp(op, operation[RequestType_Deactivate])) {
         strcpy(request->header.op, op);
     } else {
         DIDError_Set(DIDERR_UNKNOWN, "Unknown DID operaton.");
         return NULL;
     }
 
-    if (!strcmp(op, "update")) {
+    if (!strcmp(op, operation[RequestType_Update])) {
         field = cJSON_GetObjectItem(item, "previousTxid");
         if (!field) {
             DIDError_Set(DIDERR_RESOLVE_ERROR, "Missing payload.");
@@ -270,7 +269,7 @@ DIDDocument *DIDRequest_FromJson(DIDRequest *request, cJSON *json)
     }
     request->payload = strdup(cJSON_GetStringValue(item));
 
-    if (strcmp(request->header.op, "deactivate")) {
+    if (strcmp(request->header.op, operation[RequestType_Deactivate])) {
         len = strlen(request->payload) + 1;
         docJson = (char*)malloc(len);
         len = base64_url_decode((uint8_t *)docJson, request->payload);
