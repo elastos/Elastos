@@ -1,5 +1,8 @@
 package org.elastos.wallet.ela.ui.Assets.bean.qr.proposal;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * 兼顾提建议和提案
  */
@@ -23,7 +26,7 @@ public class RecieveReviewJwtEntity extends RecieveProposalFatherJwtEntity {
         this.data = data;
     }
 
-    public static class DataBean {
+    public static class DataBean implements Parcelable {
         /**
          * proposalhash : 9b6c85d10b1208d896eb7efc391d1a562ba91452a78f37acfbb1ac1ed63f1a83
          * voteresult : approve
@@ -67,5 +70,40 @@ public class RecieveReviewJwtEntity extends RecieveProposalFatherJwtEntity {
         public void setDID(String DID) {
             this.DID = DID;
         }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(this.proposalhash);
+            dest.writeString(this.voteresult);
+            dest.writeString(this.opinionhash);
+            dest.writeString(this.DID);
+        }
+
+        public DataBean() {
+        }
+
+        protected DataBean(Parcel in) {
+            this.proposalhash = in.readString();
+            this.voteresult = in.readString();
+            this.opinionhash = in.readString();
+            this.DID = in.readString();
+        }
+
+        public static final Parcelable.Creator<DataBean> CREATOR = new Parcelable.Creator<DataBean>() {
+            @Override
+            public DataBean createFromParcel(Parcel source) {
+                return new DataBean(source);
+            }
+
+            @Override
+            public DataBean[] newArray(int size) {
+                return new DataBean[size];
+            }
+        };
     }
 }

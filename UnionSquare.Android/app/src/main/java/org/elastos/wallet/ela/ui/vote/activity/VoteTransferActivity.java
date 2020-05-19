@@ -25,15 +25,18 @@ package org.elastos.wallet.ela.ui.vote.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.bean.BusEvent;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveReviewJwtEntity;
 import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.Constant;
@@ -43,6 +46,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -63,6 +67,20 @@ public class VoteTransferActivity extends BaseActivity {
     LinearLayout llAmount;
     @BindView(R.id.line1)
     View line1;
+    @BindView(R.id.tv_hash_tag)
+    TextView tvHashTag;
+    @BindView(R.id.tv_hash)
+    TextView tvHash;
+    @BindView(R.id.rl_hash)
+    RelativeLayout rlHash;
+    @BindView(R.id.tv_voteadvice)
+    TextView tvVoteadvice;
+    @BindView(R.id.rl_voteadvice)
+    RelativeLayout rlVoteadvice;
+    @BindView(R.id.tv_next)
+    TextView tvNext;
+    @BindView(R.id.ll)
+    LinearLayout ll;
     private String amount, chainId;
     private long fee;
     private String type;
@@ -101,6 +119,8 @@ public class VoteTransferActivity extends BaseActivity {
         //   }
         type = data.getStringExtra("type");
         switch (type) {
+            case Constant.PROPOSALREVIEW:
+                doProposalReview(data);
             case Constant.CRUPDATE:
             case Constant.UPDATENODEINFO:
             case Constant.UNREGISTERSUPRRNODE:
@@ -120,18 +140,39 @@ public class VoteTransferActivity extends BaseActivity {
         }
     }
 
+    private void doProposalReview(Intent data) {
+        rlHash.setVisibility(View.VISIBLE);
+        RecieveReviewJwtEntity.DataBean dataBean = data.getParcelableExtra("extra");
+        tvHash.setText(dataBean.getOpinionhash());
+        rlVoteadvice.setVisibility(View.VISIBLE);
+        switch (dataBean.getVoteresult().toLowerCase()) {
+            case "approve":
+                tvVoteadvice.setText(R.string.agree1);
+                tvVoteadvice.setBackgroundResource(R.drawable.sc_35b08f_cr3);
+                break;
+            case "reject":
+                tvVoteadvice.setText(R.string.disagree1);
+                tvVoteadvice.setBackgroundResource(R.drawable.sc_b04135_cr3);
+                break;
+            case "abstain":
+                tvVoteadvice.setText(R.string.abstention);
+                tvVoteadvice.setBackgroundResource(R.drawable.sc_ffffff_sc000000_cr3);
+                break;
+        }
+    }
+
     @OnClick({R.id.tv_next})
     public void onViewClicked(View view) {
         Intent intent;
         switch (view.getId()) {
             case R.id.tv_next:
-                if (Constant.PROPOSALINPUT.equals(type)) {
+                if (Constant.PROPOSALINPUT.equals(type) || Constant.PROPOSALREVIEW.equals(type)) {
                     //为了在展示手续费后把密码返回给fragment
                   /*  intent = new Intent(this, VertifyPwdActivity.class);
                     intent.putExtra("walletId", chainId);
                     intent.putExtra("type", type);
                     startActivity(intent);*/
-                    post(RxEnum.JUSTSHOWFEE.ordinal(), null,null);
+                    post(RxEnum.JUSTSHOWFEE.ordinal(), null, null);
                 } else {
                     intent = new Intent(this, OtherPwdActivity.class);
                     intent.putExtras(getIntent());

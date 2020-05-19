@@ -676,6 +676,8 @@
     <string name="noproposal">暂无提案</string>
     <string name="nopass">未通过</string>
     <string name="hasreject">已否决</string>
+    <string name="jugethash">评议哈希</string>
+    <string name="voteadvice">投票意见</string>
     <!--CR committee-->
     <string name="ctmemberlist">CR委员会列表</string>
     <string name="current">本届</string>
