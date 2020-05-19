@@ -11,7 +11,12 @@ import {
   getPemPublicKey
 } from '../utility'
 import * as moment from 'moment'
-const { WAITING_FOR_WITHDRAW, WAITING_FOR_APPROVAL } = constant.MILESTONE_STATUS
+const {
+  WAITING_FOR_REQUEST,
+  WAITING_FOR_APPROVAL,
+  WAITING_FOR_WITHDRAW,
+  WITHDRAWN
+} = constant.MILESTONE_STATUS
 const { ACTIVE } = constant.CVOTE_STATUS
 const { DRAFT, REVIEWING, PUBLISHED, REJECT } = constant.CVOTE_TRACKING_STATUS
 const { APPROVED, REJECTED } = constant.MILESTONE_REVIEW_STATUS
@@ -46,7 +51,7 @@ export default class extends Base {
       if (_.isEmpty(budget)) {
         return { success: false }
       }
-      if (budget.status !== WAITING_FOR_WITHDRAW) {
+      if (budget.status !== WAITING_FOR_REQUEST) {
         return { success: false }
       }
 
@@ -335,7 +340,13 @@ export default class extends Base {
               const history = proposal.withdrawalHistory.filter((item: any) => {
                 item.review.reasonHash === reasonHash
               })
-
+              let status: string
+              if (history.review.opinion === REJECTED) {
+                status = REJECTED
+              }
+              if (history.review.opinion === REJECTED) {
+                status = WAITING_FOR_WITHDRAW
+              }
               await this.model.update(
                 {
                   proposalHash,
@@ -344,7 +355,7 @@ export default class extends Base {
                 {
                   $set: {
                     'withdrawalHistory.$.review.txid': decoded.data,
-                    'budget.$.status': history.review.opinion
+                    'budget.$.status': status
                   }
                 }
               )
