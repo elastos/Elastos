@@ -67,6 +67,65 @@
             android:layout_marginRight="15dp"
             android:visibility="gone" />
 
+        <RelativeLayout
+            android:visibility="gone"
+            android:id="@+id/rl_hash"
+            style="@style/settingItem_margin15">
+
+            <TextView
+                android:id="@+id/tv_hash_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="@string/jugethash" />
+
+            <TextView
+                android:id="@+id/tv_hash"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="15dp"
+                android:layout_toRightOf="@id/tv_hash_tag"
+                android:gravity="right" />
+
+            <View
+                style="@style/line1"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:visibility="gone"
+            android:id="@+id/rl_voteadvice"
+            style="@style/settingItem_margin15">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="@string/voteadvice" />
+
+            <TextView
+                android:id="@+id/tv_voteadvice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="15dp"
+                android:background="@drawable/sc_35b08f_cr3"
+                android:gravity="right"
+                android:paddingLeft="10dp"
+                android:paddingTop="6dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="6dp"
+                android:text="赞同" />
+
+            <View
+                style="@style/line1"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
+
+
         <LinearLayout
             android:id="@+id/ll_amount"
             android:layout_width="match_parent"
@@ -120,7 +179,6 @@
             style="@style/line1"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp" />
-
 
 
         <View

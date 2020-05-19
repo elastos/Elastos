@@ -142,7 +142,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
 
                 } else if ("createproposal".equals(command)) {
                     //showFeePage();
-                    presenter.showFeePage(wallet, Constant.PROPOSALINPUT, 37, this);
+                    presenter.showFeePage(wallet, Constant.PROPOSALINPUT, 37, this,null);
                 }
 
                 break;
