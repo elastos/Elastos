@@ -2,7 +2,7 @@ import Base from './Base'
 import {Document} from 'mongoose'
 import * as _ from 'lodash'
 import {constant} from '../constant'
-import {permissions, getDidPublicKey, getProposalState, getProposalData, getDidName} from '../utility'
+import {permissions, getDidPublicKey, getProposalState, getProposalData, getDidName, ela} from '../utility'
 import * as moment from 'moment'
 import * as jwt from 'jsonwebtoken'
 import {
@@ -1283,20 +1283,29 @@ export default class extends Base {
         const { rs, _id } = data
         const {data: {
             votersrejectamount: rejectAmount, 
-            registerheight: rejectThroughAmount
         },
          status: chainStatus 
         } = rs
-       
+        
+        let rejectThroughAmount: any
+        const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
+        switch(proposalStatus) {
+            case constant.CVOTE_STATUS.VETOED:
+                rejectThroughAmount = rejectAmount
+                break;
+            case constant.CVOTE_STATUS.ACTIVE:
+            case constant.CVOTE_STATUS.NOTIFICATION:
+                rejectThroughAmount = (await ela.circulatingSupply()) * 0.1 
+                break;
+        }
+
         await db_cvote.update({
             _id
         }, {
-            status: CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus],
+            status: proposalStatus,
             rejectAmount,
             rejectThroughAmount
         })
-        
-
     }
 
     // according to txid polling vote status

@@ -33,6 +33,7 @@ const ela = {
                 headers: DEFAULT_HEADERS
             })
             if (res && res.data && res.data.result) {
+                console.log(res.data.result)
                 return res.data.result
             }
         } catch (err) {
@@ -41,10 +42,10 @@ const ela = {
     },
     async circulatingSupply() {
         return 33000000
-            + this.height() * 5.02283105
-            - this.balance('CRASSETSXXXXXXXXXXXXXXXXXXXX2qDX5J')
-            - this.balance('CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b')
-            - this.balance('ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr')
+            + (await this.height()) * 5.02283105
+            - await this.balance('CRASSETSXXXXXXXXXXXXXXXXXXXX2qDX5J')
+            - await this.balance('CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b')
+            - await this.balance('ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr')
     },
     async currentCouncil() {
         const data = {
