@@ -7,6 +7,13 @@ import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
+import { MILESTONE_STATUS } from '@/constant'
+const {
+  WAITING_FOR_REQUEST,
+  REJECTED,
+  WAITING_FOR_APPROVAL,
+  WAITING_FOR_WITHDRAW
+} = MILESTONE_STATUS
 
 class PaymentList extends BaseComponent {
   isOwner() {
@@ -42,12 +49,36 @@ class PaymentList extends BaseComponent {
     )
   }
 
-  renderActions() {
-    return <td>request</td>
+  renderActions(status) {
+    const { user } = this.props
+    switch (status) {
+      case WAITING_FOR_REQUEST:
+        return <td>request</td>
+      case REJECTED:
+        return <td>re-request</td>
+      case WAITING_FOR_APPROVAL:
+        return (
+          user.is_secretary && (
+            <td>
+              <div>reject</div>
+              <div>approve</div>
+            </td>
+          )
+        )
+      case WAITING_FOR_WITHDRAW:
+        return (
+          <td>
+            <div>withdraw</div>
+          </td>
+        )
+      default:
+        return
+    }
   }
 
   renderPaymentItem(item, index) {
     const { milestone } = this.props
+    const visible = this.isVisible()
     return (
       <StyledRow key={index}>
         <td>{index + 1}</td>
@@ -79,7 +110,7 @@ class PaymentList extends BaseComponent {
           />
         </td>
         <td>{item.status}</td>
-        {this.renderActions()}
+        {visible && <td>{this.renderActions(item.status)}</td>}
       </StyledRow>
     )
   }

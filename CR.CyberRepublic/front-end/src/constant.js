@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-const create = list => {
+const create = (list) => {
   return _.zipObject(list, list)
 }
 
@@ -425,3 +425,12 @@ export const ELIP_VOTE_STATUS_COLOR = {
 }
 export const ELIP_TYPE = create(['STANDARD_TRACK', 'PROCESS', 'INFORMATIONAL'])
 export const ELIP_NUMBER_TYPE = ['4', '5', '6']
+
+export const MILESTONE_STATUS = create([
+  'WAITING_FOR_REQUEST',
+  'REJECTED',
+  'WAITING_FOR_APPROVAL',
+  'WAITING_FOR_WITHDRAW',
+  'WITHDRAWN'
+])
+export const REVIEW_OPINION = create(['REJECTED', 'APPROVED'])
