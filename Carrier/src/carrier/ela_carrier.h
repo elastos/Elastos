@@ -1349,7 +1349,7 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  * @param
  *      to          [in] The target userid.
  * @param
- *      msg         [in] The message content defined by application.
+ *      message     [in] The message content defined by application.
  * @param
  *      len         [in] The message length in bytes.
  * @param
@@ -1366,7 +1366,7 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  */
 CARRIER_API
 int ela_send_friend_message(ElaCarrier *carrier, const char *to,
-                            const void *msg, size_t len, bool *offline);
+                            const void *message, size_t len, bool *offline);
 
 /**
  * \~English
@@ -1427,7 +1427,7 @@ typedef void ElaFriendMessageReceiptCallback(int64_t msgid,
  * @param
  *      to          [in] The target userid.
  * @param
- *      msg         [in] The message content defined by application.
+ *      message     [in] The message content defined by application.
  * @param
  *      len         [in] The message length in bytes.
  * @param
@@ -1443,7 +1443,7 @@ typedef void ElaFriendMessageReceiptCallback(int64_t msgid,
  */
 CARRIER_API
 int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
-                                      const void *msg, size_t len,
+                                      const void *message, size_t len,
                                       ElaFriendMessageReceiptCallback *cb,
                                       void *context);
 
