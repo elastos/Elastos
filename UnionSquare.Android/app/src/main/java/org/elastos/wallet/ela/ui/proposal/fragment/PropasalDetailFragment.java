@@ -13,33 +13,55 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
+import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
+import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
+import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.fragment.WebViewFragment;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.proposal.adapter.ProcessRecAdapetr;
 import org.elastos.wallet.ela.ui.proposal.adapter.VoteRecAdapetr;
 import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
-import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
-import org.elastos.wallet.ela.ui.proposal.presenter.ProposalViewPresenter;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalDetailPresenter;
+import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
+import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
+import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
+import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.elastos.wallet.ela.utils.ScreenUtil;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.view.CircleProgressView;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class PropasalReviewFragment extends BaseFragment implements NewBaseViewData {
+public class PropasalDetailFragment extends BaseFragment implements NewBaseViewData, CommonBalanceViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.tv_propasal_tile)
@@ -109,7 +131,10 @@ public class PropasalReviewFragment extends BaseFragment implements NewBaseViewD
     int tag = 1;
     private String scanResult;
     private Wallet wallet;
-    private ProposalPresenter proposalPresenter;
+    //private ProposalPresenter proposalPresenter;
+    private String maxBalance;
+    private ProposalDetailPresenter presenter;
+    ArrayList<ProposalSearchEntity.DataBean.ListBean> searchBeanList;
 
     @Override
     protected int getLayoutId() {
@@ -119,8 +144,8 @@ public class PropasalReviewFragment extends BaseFragment implements NewBaseViewD
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
-        searchBean = data.getParcelable("ProposalSearchDate");
-
+        searchBeanList = data.getParcelableArrayList("ProposalSearchDateList");
+        searchBean = searchBeanList.get(data.getInt("position"));
     }
 
     @Override
@@ -128,15 +153,18 @@ public class PropasalReviewFragment extends BaseFragment implements NewBaseViewD
         setVoteRecycleView();
         setProcessRecycleView();
         wallet = new RealmUtil().queryDefauleWallet();
-        new ProposalViewPresenter().proposalDetail(searchBean.getId(), this);
-        //registReceiver();
+        presenter = new ProposalDetailPresenter();
+        presenter.proposalDetail(searchBean.getId(), this);
+        registReceiver();
         switch (searchBean.getStatus()) {
             case "VOTING":
                 //委员评议
+                tvTitle.setText(R.string.proposalcomments);
                 rlVote.setVisibility(View.VISIBLE);
                 break;
             case "NOTIFICATION":
                 //公示期
+                tvTitle.setText(R.string.proposalpublished);
                 tvVote.setText(R.string.votedisagree);
                 setInfoStatue(false);
                 setDisagreeProgress(30);
@@ -144,8 +172,14 @@ public class PropasalReviewFragment extends BaseFragment implements NewBaseViewD
                 break;
             case "ACTIVE":
                 //执行期;
+                tvTitle.setText(R.string.proposalprocess);
+                llProcess.setVisibility(View.VISIBLE);
+                setInfoStatue(false);
+                setVoteStatue(false);
+                break;
             case "FINAL":
                 //已完结
+                tvTitle.setText(R.string.proposalfinish);
                 llProcess.setVisibility(View.VISIBLE);
                 setInfoStatue(false);
                 setVoteStatue(false);
@@ -153,6 +187,7 @@ public class PropasalReviewFragment extends BaseFragment implements NewBaseViewD
             case "REJECTED":
             case "VETOED":
                 //已废止
+                tvTitle.setText(R.string.proposalabandon);
                 setDisagreeProgress(100f);
                 tvPropasalTile.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//删除线
                 break;
@@ -192,6 +227,8 @@ public class PropasalReviewFragment extends BaseFragment implements NewBaseViewD
 
 
     }
+
+    JSONArray otherUnActiveVote;
 
     @OnClick({R.id.tv_agree, R.id.iv_info, R.id.iv_vote, R.id.tv_disagree, R.id.tv_abstention, R.id.tv_hash, R.id.tv_web, R.id.tv_vote})
     public void onViewClicked(View view) {
@@ -237,8 +274,12 @@ public class PropasalReviewFragment extends BaseFragment implements NewBaseViewD
                     requstManifestPermission(getString(R.string.needpermission));
                 } else if ("NOTIFICATION".equals(searchBean.getStatus())) {
                     //公示期 投票反对
-
-
+                    if (otherUnActiveVote == null) {
+                        otherUnActiveVote = new JSONArray();
+                    }
+                    new VoteListPresenter().getDepositVoteList("1", "all", this, false);
+                    new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
+                    new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
                 }
                 break;
             case R.id.iv_info:
@@ -317,9 +358,98 @@ public class PropasalReviewFragment extends BaseFragment implements NewBaseViewD
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
+            case "getVoteInfo":
+                //剔除非公示期的
+                try {
+                    JSONObject newVotes = new JSONObject();
+                    newVotes.put(searchBean.getProposalHash(), amount);
+                    JSONArray lastVoteInfo = new JSONArray(((CommmonStringEntity) baseEntity).getData());
+                    if (lastVoteInfo.length() >= 1) {
+                        JSONObject lastVote = lastVoteInfo.getJSONObject(0).getJSONObject("Votes");
+                        //获得上次的投票后筛选数据
+                        Iterator it = lastVote.keys();
+                        while (it.hasNext()) {
+                            String key = (String) it.next();
+                            for (int i = 0; i < searchBeanList.size(); i++) {
+                                if (searchBeanList.get(i).getProposalHash().equals(key)) {
+                                    newVotes.put(key, amount);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    presenter.createVoteCRCProposalTransaction(wallet.getWalletId(), newVotes.toString(), otherUnActiveVote.toString(), this);
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "getCRlist":
+                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+                otherUnActiveVote.put(new ProposalDetailPresenter().getCRUnactiveData(crList));
+                break;
+            case "getDepositVoteList":
+                List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
+                otherUnActiveVote.put(new ProposalDetailPresenter().getDepositUnactiveData(depositList));
+                break;
             case "proposalDetail":
                 break;
+            case "createVoteCRCProposalTransaction":
+                //签名发交易
+             //   goTransferActivity(((CommmonStringEntity) baseEntity).getData());
+                break;
         }
+    }
+
+    private void goTransferActivity(String attributesJson) {
+        Intent intent = new Intent(getActivity(), TransferActivity.class);
+        intent.putExtra("amount", amount);
+        intent.putExtra("wallet", wallet);
+        intent.putExtra("chainId", MyWallet.ELA);
+        intent.putExtra("attributes", attributesJson);
+        intent.putExtra("type", Constant.SUPERNODEVOTE);
+        intent.putExtra("transType", 1004);
+        startActivity(intent);
+    }
+    @Override
+    public void onBalance(BalanceEntity data) {
+
+        Intent intent = new Intent(getContext(), VoteActivity.class);
+        BigDecimal balance = Arith.div(Arith.sub(data.getBalance(), 1000000), MyWallet.RATE_S, 8);
+        maxBalance = NumberiUtil.removeZero(balance.toPlainString());
+        //小于1 huo 0
+        if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
+            maxBalance = "0";
+            intent.putExtra("maxBalance", "0");
+        } else {
+            intent.putExtra("maxBalance", maxBalance);
+        }
+        intent.putExtra("type", Constant.PROPOSALPUBLISHED);
+        startActivity(intent);
+    }
+
+    String amount;//投票金额
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+        if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
+            String num = result.getName();
+            amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
+            //点击下一步 获得金额后
+            presenter.getVoteInfo(wallet.getWalletId(), "CRCProposal", this);
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    popBackFragment();
+                }
+            });
+
+        }
+
     }
 
 
