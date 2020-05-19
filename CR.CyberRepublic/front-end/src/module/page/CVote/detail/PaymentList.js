@@ -140,7 +140,7 @@ class PaymentList extends BaseComponent {
   }
 
   ord_render() {
-    const { list, proposalId } = this.props
+    const { list, proposalId, actions } = this.props
     const visible = this.isVisible()
     return (
       <StyledTable>
@@ -175,7 +175,11 @@ class PaymentList extends BaseComponent {
           width={520}
         >
           {this.state.toggle === true ? (
-            <Signature stage={this.state.stage} proposalId={proposalId} />
+            <Signature
+              stage={this.state.stage}
+              proposalId={proposalId}
+              applyPayment={actions.applyPayment}
+            />
           ) : null}
         </Modal>
       </StyledTable>

@@ -65,7 +65,7 @@ import './style.scss'
 
 const { TextArea } = Input
 
-const renderRichContent = (data, key, title, user) => {
+const renderRichContent = (data, key, title, user, actions) => {
   let rc
   if (
     key === 'budget' &&
@@ -85,6 +85,7 @@ const renderRichContent = (data, key, title, user) => {
           user={user}
           proposer={data.proposer}
           proposalId={data._id}
+          actions={actions}
         />
       </div>
     )
@@ -620,7 +621,8 @@ class C extends StandardPage {
           data,
           'budget',
           I18N.get('proposal.fields.budget'),
-          user
+          user,
+          { applyPayment: this.props.applyPayment }
         )}
       </div>
     )

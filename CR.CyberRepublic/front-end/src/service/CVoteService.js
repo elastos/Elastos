@@ -200,7 +200,7 @@ export default class extends BaseService {
     return rs
   }
 
-  async updateMilestone(proposalId, stage, data) {
+  async applyPayment(proposalId, stage, data) {
     const rs = await api_request({
       path: `/api/proposals/${proposalId}/milestones/${stage}`,
       method: 'post',

@@ -8,16 +8,19 @@ const FormItem = Form.Item
 class Signature extends Component {
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = { url: '' }
   }
 
   handleSubmit = (e) => {
     e.stopPropagation() // prevent event bubbling
     e.preventDefault()
-    const { form, onSubmit } = this.props
-    form.validateFields((err, values) => {
+    const { form, applyPayment, proposalId, stage } = this.props
+    form.validateFields(async (err, values) => {
       if (!err) {
-        onSubmit(values)
+        const rs = await applyPayment(proposalId, stage, values)
+        if (rs.success && rs.url) {
+          this.setState({ url: rs.url })
+        }
       }
     })
   }
@@ -33,7 +36,7 @@ class Signature extends Component {
             Reason
           </Label>
           <FormItem>
-            {getFieldDecorator('reason', {
+            {getFieldDecorator('message', {
               rules: [
                 {
                   required: true,
