@@ -89,14 +89,28 @@ class PaymentList extends BaseComponent {
       return (
         user.is_secretary && (
           <td>
-            <div>reject</div>
-            <div>approve</div>
+            <div
+              className="action reject"
+              onClick={() => {
+                this.showModal(item.milestoneKey)
+              }}
+            >
+              Reject
+            </div>
+            <div
+              className="action approve"
+              onClick={() => {
+                this.showModal(item.milestoneKey)
+              }}
+            >
+              Approve
+            </div>
           </td>
         )
       )
     }
     if (status === WAITING_FOR_WITHDRAW) {
-      return <td>withdraw</td>
+      return <td>Withdraw</td>
     }
   }
 
@@ -156,11 +170,7 @@ class PaymentList extends BaseComponent {
             <th>{I18N.get('suggestion.budget.goal')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
             <th>Status</th>
-            {visible && (
-              <th style={{ width: 110 }}>
-                {I18N.get('suggestion.budget.action')}
-              </th>
-            )}
+            {visible && <th>{I18N.get('suggestion.budget.action')}</th>}
           </StyledRow>
         </StyledHead>
         <tbody>
@@ -222,6 +232,9 @@ const StyledRow = styled.tr`
       &:hover {
         cursor: pointer;
       }
+    }
+    .reject {
+      color: red;
     }
   }
 `
