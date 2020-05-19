@@ -1015,10 +1015,10 @@ export default class extends Base {
             const userId = _.get(this.currentUser, '_id')
             const {id} = param
 
-            // const councilMemberDid = _.get(this.currentUser, 'did.id')
-            // if (!councilMemberDid) {
-            //     return {success: false, message: 'this is not did'}
-            // }
+            const councilMemberDid = _.get(this.currentUser, 'did.id')
+            if (!councilMemberDid) {
+                return {success: false, message: 'this is not did'}
+            }
 
             const role = _.get(this.currentUser, 'role')
             if (!permissions.isCouncil(role)) {
@@ -1031,7 +1031,7 @@ export default class extends Base {
             }
 
             const currentVoteResult: any = _.filter(cur.voteResult, (o: any) => userId.equals())[0]
-
+            console.log(currentVoteResult)
             const voteResultOnChain = {
                 [constant.CVOTE_RESULT.SUPPORT]: 'approve',
                 [constant.CVOTE_RESULT.REJECT]: 'reject',
@@ -1050,7 +1050,7 @@ export default class extends Base {
                     proposalHash: cur.proposalHash,
                     voteResult: voteResultOnChain[currentVoteResult.value],
                     opinionHash: utilCrypto.sha256D(currentVoteResult.reason),
-                    // did: councilMemberDid
+                    did: councilMemberDid
                 }
             }
 
