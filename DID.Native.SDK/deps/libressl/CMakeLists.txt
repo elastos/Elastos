@@ -8,7 +8,7 @@ ExternalProject_Add(
     libressl
 
     PREFIX ${PROJECT_DEPS_BUILD_PREFIX}
-    URL "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.7.4.tar.gz"
+    URL "http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.7.4.tar.gz"
     URL_HASH SHA256=1e3a9fada06c1c060011470ad0ff960de28f9a0515277d7336f7e09362517da6
     DOWNLOAD_NAME "libressl-2.7.4.tar.gz"
     DOWNLOAD_DIR ${PROJECT_DEPS_TARBALL_DIR}
