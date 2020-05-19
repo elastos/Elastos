@@ -218,6 +218,9 @@ export default class extends BaseService {
         messageHash: data.messageHash
       }
     })
+    if (rs && rs.success && rs.detail) {
+      this.dispatch(this.selfRedux.actions.data_update(rs.detail))
+    }
     return rs
   }
 }

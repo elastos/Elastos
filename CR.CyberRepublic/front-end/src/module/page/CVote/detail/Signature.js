@@ -29,14 +29,14 @@ class Signature extends Component {
   }
 
   pollingSignature = () => {
-    const { proposalId, getPaymentSignature } = this.props
+    const { proposalId, getPaymentSignature, hideModal } = this.props
     const { messageHash } = this.state
     this.timerDid = setInterval(async () => {
       const rs = await getPaymentSignature({ proposalId, messageHash })
       if (rs && rs.success) {
         clearInterval(this.timerDid)
         this.timerDid = null
-        this.setState({ url: '', visible: false })
+        hideModal()
       }
       if (rs && rs.success === false) {
         clearInterval(this.timerDid)
@@ -46,9 +46,9 @@ class Signature extends Component {
         } else {
           message.error('Something went wrong')
         }
-        this.setState({ visible: false })
+        hideModal()
       }
-    }, 3000)
+    }, 5000)
   }
 
   componentWillUnmount() {

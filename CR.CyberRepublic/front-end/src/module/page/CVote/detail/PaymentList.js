@@ -179,6 +179,7 @@ class PaymentList extends BaseComponent {
               proposalId={proposalId}
               applyPayment={actions.applyPayment}
               getPaymentSignature={actions.getPaymentSignature}
+              hideModal={this.hideModal}
             />
           ) : null}
         </Modal>
