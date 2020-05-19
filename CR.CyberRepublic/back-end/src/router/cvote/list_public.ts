@@ -10,7 +10,7 @@ export default class extends Base {
     const service = this.buildService(CVoteService)
 
     // TODO: this is curious, this should be run using agenda or something
-    service.cronjob()
+    service.cronJob()
 
     if (param.search) {
       param.$or = [
