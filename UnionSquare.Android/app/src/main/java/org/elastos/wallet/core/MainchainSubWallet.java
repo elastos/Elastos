@@ -124,6 +124,10 @@ public class MainchainSubWallet extends SubWallet {
         return CreateImpeachmentCRCTransaction(mMainchainProxy, fromAddress, votes, memo, invalidCandidates);
     }
 
+    public String GetVoteInfo(String type) {
+        return GetVoteInfo(mMainchainProxy, type);
+    }
+
     public String ProposalReviewDigest(String payload) throws WalletException {
         return ProposalReviewDigest(mMainchainProxy, payload);
     }
@@ -212,6 +216,8 @@ public class MainchainSubWallet extends SubWallet {
     private native String CreateVoteCRCProposalTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
 
     private native String CreateImpeachmentCRCTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
+
+    private native String GetVoteInfo(long Proxy, String type);
 
     private native String ProposalReviewDigest(long Proxy, String payload);
 

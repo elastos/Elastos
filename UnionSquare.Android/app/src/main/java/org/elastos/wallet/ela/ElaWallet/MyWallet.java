@@ -1576,6 +1576,48 @@ public class MyWallet {
         }
     }
 
+    public BaseEntity createImpeachmentCRCTransaction(String masterWalletID, String chainID, String fromAddress, String votes, String memo, String invalidCandidates) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                return errorProcess("" + errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+
+            }
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String tx = mainchainSubWallet.CreateImpeachmentCRCTransaction(fromAddress, votes, memo, invalidCandidates);
+
+            return new CommmonStringEntity(SUCCESSCODE, tx);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "create impeachment crc tx");
+        }
+    }
+
+    public BaseEntity getVoteInfo(String masterWalletID, String chainID, String type) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                return errorProcess("" + errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+
+            }
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String info = mainchainSubWallet.GetVoteInfo(type);
+
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + "get vote info");
+        }
+    }
+
     // args[0]: String masterWalletID
     // args[1]: String chainID (only main chain ID 'ELA')
     public BaseEntity getVotedCRList(String masterWalletID, String chainID) {

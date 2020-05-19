@@ -13,14 +13,13 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.committee.adaper.CtExpRecAdapter;
-import org.elastos.wallet.ela.ui.committee.bean.ExperienceBean;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
+import org.elastos.wallet.ela.ui.committee.bean.ExperienceBean;
 import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.view.CircleProgressView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -73,7 +72,6 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         progress.setProgress(50);
         presenter = new CtDetailPresenter();
         presenter.getCouncilInfo(this, id, did);
-//        rockData();
     }
 
     private void selectDetail() {
@@ -106,35 +104,6 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         } else {
             adapter.notifyDataSetChanged();
         }
-    }
-
-    private void rockData() {
-        list = new ArrayList<>();
-        ExperienceBean ExperienceBean1 = new ExperienceBean();
-        ExperienceBean1.setTitle("马尔代夫联谊团建活动");
-        ExperienceBean1.setSubTitle("#99 2019.07.01 疯狂的茄子 已否决");
-        ExperienceBean1.setType(1);
-        list.add(ExperienceBean1);
-
-        ExperienceBean ExperienceBean2 = new ExperienceBean();
-        ExperienceBean2.setTitle("What should belongs in a normal CRC proposal?");
-        ExperienceBean2.setSubTitle("#99 2019.07.01 Yipeng Su 公示中");
-        ExperienceBean2.setType(2);
-        list.add(ExperienceBean2);
-
-        ExperienceBean ExperienceBean3 = new ExperienceBean();
-        ExperienceBean3.setTitle("建议大象钱包团队，把cr网站加入到大象钱包中。");
-        ExperienceBean3.setSubTitle("#99 2019.07.01 Yipeng Su 公示中");
-        ExperienceBean3.setType(0);
-        list.add(ExperienceBean3);
-
-        ExperienceBean ExperienceBean4 = new ExperienceBean();
-        ExperienceBean4.setTitle("Community Management Team Proposal");
-        ExperienceBean4.setSubTitle("#99 2019.07.01 Yipeng Su 公示中");
-        ExperienceBean4.setType(2);
-        list.add(ExperienceBean4);
-
-        setRecyclerView();
     }
 
     @OnClick({R.id.tab1, R.id.tab2, R.id.impeachment_btn})
@@ -200,6 +169,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     private void setCtRecord(CtDetailBean ctDetailBean) {
         if(null == ctDetailBean) return;
         List<CtDetailBean.Term> terms = ctDetailBean.getData().get(0).getTerm();
+        list.clear();
         for(CtDetailBean.Term term : terms) {
             ExperienceBean ExperienceBean = new ExperienceBean();
             ExperienceBean.setTitle(term.getDidName());
@@ -209,5 +179,6 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
             ExperienceBean.setType(1);
             list.add(ExperienceBean);
         }
+        setRecyclerView();
     }
 }
