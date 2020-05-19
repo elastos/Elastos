@@ -103,8 +103,7 @@ func (p *ProposalManager) getAllProposals() (dst ProposalsMap) {
 	return
 }
 
-func (p *ProposalManager) getProposalByDraftHash(draftHash common.
-Uint256) *ProposalState {
+func (p *ProposalManager) getProposalByDraftHash(draftHash common.Uint256) *ProposalState {
 	for _, v := range p.Proposals {
 		if v.Proposal.DraftHash.IsEqual(draftHash) {
 			return v
@@ -192,6 +191,7 @@ func (p *ProposalManager) updateProposals(height uint32,
 			if p.shouldEndPublicVote(v.VoteStartHeight, height) {
 				if p.transferCRAgreedState(v, height, circulation) == VoterCanceled {
 					unusedAmount += getProposalTotalBudgetAmount(v.Proposal)
+					continue
 				}
 				if v.Proposal.ProposalType == payload.CloseProposal {
 					closeProposal := p.Proposals[v.Proposal.CloseProposalHash]
