@@ -791,6 +791,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             //展示手续费后  再去验证密码
             proposalPresenter.toVertifyPwdActivity(wallet, this);
 
+        }if (integer == RxEnum.SCANDATATOASSETPAGE.ordinal()) {
+            //其他页面接收的二维码数据
+            scanResult=(String) result.getObj();
+            scanElastos(scanResult);
+
         }
 
     }
