@@ -101,6 +101,7 @@ public enum RxEnum {
     VERTIFYPAYPASS,//回传密码
     TRANSFERSUCESSPWD,//交易成功并回传密码
     SAVECREDENCIALTOWEB,//上传凭证到服务器
+    SCANDATATOASSETPAGE,//把数据给首页处理
 
    /* enum Type {
         CoinBase, // 创币交易

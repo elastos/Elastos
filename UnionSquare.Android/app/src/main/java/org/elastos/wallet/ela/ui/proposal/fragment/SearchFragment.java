@@ -18,7 +18,7 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.proposal.adapter.ProposalRecAdapetr;
-import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearch;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
 
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class SearchFragment extends BaseFragment implements CommonRvListener, Ne
     Unbinder unbinder;
     private ProposalPresenter presenter;
     private int pageNum = 1;
-    private List<ProposalSearch.DataBean.ListBean> list;
+    private List<ProposalSearchEntity.DataBean.ListBean> list;
     private String searchInput;
     private ProposalRecAdapetr adapter;
 
@@ -82,12 +82,12 @@ public class SearchFragment extends BaseFragment implements CommonRvListener, Ne
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "proposalSearch":
-                setRecycleView(((ProposalSearch) baseEntity).getData().getList());
+                setRecycleView(((ProposalSearchEntity) baseEntity).getData().getList());
                 break;
         }
     }
 
-    private void setRecycleView(List<ProposalSearch.DataBean.ListBean> data) {
+    private void setRecycleView(List<ProposalSearchEntity.DataBean.ListBean> data) {
         if (data == null || data.size() == 0) {
             if (pageNum == 1) {
                 rv.setVisibility(View.GONE);
@@ -124,8 +124,9 @@ public class SearchFragment extends BaseFragment implements CommonRvListener, Ne
     @Override
     public void onRvItemClick(int position, Object o) {
         Bundle bundle = new Bundle();
-        ProposalSearch.DataBean.ListBean bean = (ProposalSearch.DataBean.ListBean) o;
+        ProposalSearchEntity.DataBean.ListBean bean = (ProposalSearchEntity.DataBean.ListBean) o;
         bundle.putInt("id", bean.getId());
+        bundle.putString("proposalHash ", bean.getProposalHash());
         start(PropasalReviewFragment.class, bundle);
     }
 

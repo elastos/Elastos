@@ -6,25 +6,28 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSON;
-
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.fragment.WebViewFragment;
 import org.elastos.wallet.ela.ui.proposal.adapter.ProcessRecAdapetr;
 import org.elastos.wallet.ela.ui.proposal.adapter.VoteRecAdapetr;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalViewPresenter;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.Log;
-import org.elastos.wallet.ela.utils.QrBean;
+import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.elastos.wallet.ela.utils.ScreenUtil;
@@ -33,11 +36,10 @@ import org.elastos.wallet.ela.utils.view.CircleProgressView;
 import java.util.ArrayList;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class PropasalReviewFragment extends BaseFragment {
+public class PropasalReviewFragment extends BaseFragment implements NewBaseViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.tv_propasal_tile)
@@ -103,7 +105,11 @@ public class PropasalReviewFragment extends BaseFragment {
     TextView tvTitleRight;
     @BindView(R.id.ll_process)
     LinearLayout llProcess;
-    private int tag;
+    ProposalSearchEntity.DataBean.ListBean searchBean;
+    int tag = 1;
+    private String scanResult;
+    private Wallet wallet;
+    private ProposalPresenter proposalPresenter;
 
     @Override
     protected int getLayoutId() {
@@ -113,38 +119,43 @@ public class PropasalReviewFragment extends BaseFragment {
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
-        tag = data.getInt("TAG");
-        int id = data.getInt("id");//提案编号
+        searchBean = data.getParcelable("ProposalSearchDate");
+
     }
 
     @Override
     protected void initView(View view) {
         setVoteRecycleView();
         setProcessRecycleView();
-        if (tag == 2) {
-            //公示期
-            tvVote.setText(R.string.votedisagree);
-            setInfoStatue(false);
-            setDisagreeProgress(30);
-
-        } else if (tag == 3) {
-            //执行期
-            llProcess.setVisibility(View.VISIBLE);
-            setInfoStatue(false);
-            setVoteStatue(false);
-
-        } else if (tag == 4) {
-            //已完结
-            llProcess.setVisibility(View.VISIBLE);
-            setInfoStatue(false);
-            setVoteStatue(false);
-
-        } else if (tag == 5) {
-            //已废止
-            setDisagreeProgress(100f);
-            tvPropasalTile.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//删除线
-
-
+        wallet = new RealmUtil().queryDefauleWallet();
+        new ProposalViewPresenter().proposalDetail(searchBean.getId(), this);
+        //registReceiver();
+        switch (searchBean.getStatus()) {
+            case "VOTING":
+                //委员评议
+                rlVote.setVisibility(View.VISIBLE);
+                break;
+            case "NOTIFICATION":
+                //公示期
+                tvVote.setText(R.string.votedisagree);
+                setInfoStatue(false);
+                setDisagreeProgress(30);
+                rlVote.setVisibility(View.VISIBLE);
+                break;
+            case "ACTIVE":
+                //执行期;
+            case "FINAL":
+                //已完结
+                llProcess.setVisibility(View.VISIBLE);
+                setInfoStatue(false);
+                setVoteStatue(false);
+                break;
+            case "REJECTED":
+            case "VETOED":
+                //已废止
+                setDisagreeProgress(100f);
+                tvPropasalTile.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//删除线
+                break;
         }
     }
 
@@ -221,11 +232,12 @@ public class PropasalReviewFragment extends BaseFragment {
                 }
                 break;
             case R.id.tv_vote:
-                if (tag == 1) {
+                if ("VOTING".equals(searchBean.getStatus())) {
                     //评议扫码投票
                     requstManifestPermission(getString(R.string.needpermission));
-                } else if (tag == 2) {
+                } else if ("NOTIFICATION".equals(searchBean.getStatus())) {
                     //公示期 投票反对
+
 
                 }
                 break;
@@ -280,22 +292,19 @@ public class PropasalReviewFragment extends BaseFragment {
         super.onActivityResult(requestCode, resultCode, data);
         //处理扫描结果（在界面上显示）
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
-            String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
-            if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                if (result.startsWith("elastos:")) {
-                    return;
+            scanResult = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
+            if (!TextUtils.isEmpty(scanResult) /*&& matcherUtil.isMatcherAddr(result)*/) {
+                if (scanResult.startsWith("elastos://crproposal/")) {
+                    //兼容elastos:
+                    post(RxEnum.SCANDATATOASSETPAGE.ordinal(), getClass().getSimpleName(), scanResult);//交给首页去处理
+                } else {
+                    showToast(getString(R.string.infoformatwrong));
                 }
-                try {
-                    QrBean qrBean = JSON.parseObject(result, QrBean.class);
-                    int type = qrBean.getExtra().getType();
 
-                } catch (Exception e) {
-                }
             }
         }
 
     }
-
 
     private void setMargin(View view, int left, int top, int right, int bottom) {
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) view.getLayoutParams();
@@ -304,17 +313,14 @@ public class PropasalReviewFragment extends BaseFragment {
 
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
-    }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "proposalDetail":
+                break;
+        }
     }
+
+
 }
