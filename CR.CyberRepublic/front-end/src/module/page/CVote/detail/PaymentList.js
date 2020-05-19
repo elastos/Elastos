@@ -172,7 +172,6 @@ class PaymentList extends BaseComponent {
           visible={this.state.toggle}
           onCancel={this.hideModal}
           footer={null}
-          width={520}
         >
           {this.state.toggle === true ? (
             <Signature
