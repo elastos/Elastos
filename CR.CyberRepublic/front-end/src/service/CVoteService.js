@@ -176,7 +176,7 @@ export default class extends BaseService {
       method: 'post',
       data: { id }
     })
-    if ( rs && rs.success && rs.data) {
+    if (rs && rs.success && rs.data) {
       this.dispatch(this.selfRedux.actions.detail_update(rs.data))
     }
     return rs
@@ -205,6 +205,18 @@ export default class extends BaseService {
       path: `/api/proposals/${proposalId}/milestones/${stage}`,
       method: 'post',
       data
+    })
+    return rs
+  }
+
+  async getPaymentSignature(data) {
+    const rs = await api_request({
+      path: `/api/proposals/milestones/signature`,
+      method: 'post',
+      data: {
+        id: data.proposalId,
+        messageHash: data.messageHash
+      }
     })
     return rs
   }

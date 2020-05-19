@@ -4,7 +4,7 @@ import _ from 'lodash'
 import { avatar_map, ELIP_NUMBER_TYPE } from '@/constant'
 import CVoteService from '@/service/CVoteService'
 
-const mapState = state => ({
+const mapState = (state) => ({
   user: state.user,
   currentUserId: state.user.current_user_id,
   isLogin: state.user.is_login,
@@ -77,6 +77,9 @@ const mapDispatch = () => {
     },
     async applyPayment(id, stage, data) {
       return service.applyPayment(id, stage, data)
+    },
+    async getPaymentSignature(data) {
+      return service.getPaymentSignature(data)
     }
   }
 }

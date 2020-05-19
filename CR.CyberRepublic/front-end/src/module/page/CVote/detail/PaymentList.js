@@ -178,6 +178,7 @@ class PaymentList extends BaseComponent {
               stage={this.state.stage}
               proposalId={proposalId}
               applyPayment={actions.applyPayment}
+              getPaymentSignature={actions.getPaymentSignature}
             />
           ) : null}
         </Modal>

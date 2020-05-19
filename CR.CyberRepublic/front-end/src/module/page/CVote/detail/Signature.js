@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Form, Button, Input } from 'antd'
+import { Form, Button, Input, message } from 'antd'
 import QRCode from 'qrcode.react'
 
 const { TextArea } = Input
@@ -9,7 +9,8 @@ const FormItem = Form.Item
 class Signature extends Component {
   constructor(props) {
     super(props)
-    this.state = { url: '' }
+    this.state = { url: '', messageHash: '' }
+    this.timerDid = null
   }
 
   handleSubmit = (e) => {
@@ -20,10 +21,38 @@ class Signature extends Component {
       if (!err) {
         const rs = await applyPayment(proposalId, stage, values)
         if (rs.success && rs.url) {
-          this.setState({ url: rs.url })
+          this.setState({ url: rs.url, messageHash: rs.messageHash })
+          this.pollingSignature()
         }
       }
     })
+  }
+
+  pollingSignature = () => {
+    const { proposalId, getPaymentSignature } = this.props
+    const { messageHash } = this.state
+    this.timerDid = setInterval(async () => {
+      const rs = await getPaymentSignature({ proposalId, messageHash })
+      if (rs && rs.success) {
+        clearInterval(this.timerDid)
+        this.timerDid = null
+        this.setState({ url: '', visible: false })
+      }
+      if (rs && rs.success === false) {
+        clearInterval(this.timerDid)
+        this.timerDid = null
+        if (rs.message) {
+          message.error(rs.message)
+        } else {
+          message.error('Something went wrong')
+        }
+        this.setState({ visible: false })
+      }
+    }, 3000)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerDid)
   }
 
   signatureQrCode = () => {
