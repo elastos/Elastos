@@ -1015,10 +1015,10 @@ export default class extends Base {
             const userId = _.get(this.currentUser, '_id')
             const {id} = param
 
-            const councilMemberDid = _.get(this.currentUser, 'did.id')
-            if (!councilMemberDid) {
-                return {success: false, message: 'this is not did'}
-            }
+            // const councilMemberDid = _.get(this.currentUser, 'did.id')
+            // if (!councilMemberDid) {
+            //     return {success: false, message: 'this is not did'}
+            // }
 
             const role = _.get(this.currentUser, 'role')
             if (!permissions.isCouncil(role)) {
@@ -1030,7 +1030,7 @@ export default class extends Base {
                 return {success: false, message: 'not find proposal'}
             }
 
-            const currentVoteResult: any = _.filter(cur.voteResult, (o: any) => o.votedBy.equals(userId))[0]
+            const currentVoteResult: any = _.filter(cur.voteResult, (o: any) => userId.equals())[0]
 
             const voteResultOnChain = {
                 [constant.CVOTE_RESULT.SUPPORT]: 'approve',
@@ -1050,7 +1050,7 @@ export default class extends Base {
                     proposalHash: cur.proposalHash,
                     voteResult: voteResultOnChain[currentVoteResult.value],
                     opinionHash: utilCrypto.sha256D(currentVoteResult.reason),
-                    did: councilMemberDid
+                    // did: councilMemberDid
                 }
             }
 
@@ -1180,7 +1180,7 @@ export default class extends Base {
         const userId = _.get(this.currentUser, '_id')
         const proposal = await db_cvote.findOne({_id: id})
         if (proposal) {
-            const voteResult = _.filter(proposal.voteResult, (o: any) => o.votedBy.equals(userId))[0]
+            const voteResult = _.filter(proposal.voteResult, (o: any) => userId.equals(o.votedBy))[0]
             if (voteResult) {
                 const signature = _.get(voteResult, 'signature')
                 if (signature) {
@@ -1234,7 +1234,10 @@ export default class extends Base {
                     })
                     break;
                 case constant.CVOTE_STATUS.NOTIFICATION:
-                    console.log('')
+                    await this.updateProposalOnNotification({
+                        rs,
+                        _id: o._id,
+                    })
                     break;
             }
         })
@@ -1275,13 +1278,33 @@ export default class extends Base {
         })
     }
 
+    public async updateProposalOnNotification(data: any) {
+        const db_cvote = this.getDBModel("CVote")
+        const { rs, _id } = data
+        const {data: {
+            votersrejectamount: rejectAmount, 
+            registerheight: rejectThroughAmount
+        },
+         status: chainStatus 
+        } = rs
+       
+        await db_cvote.update({
+            _id
+        }, {
+            status: CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus],
+            rejectAmount,
+            rejectThroughAmount
+        })
+        
+
+    }
+
     // according to txid polling vote status
     public async pollCouncilVoteStatus() {
         const db_cvote = this.getDBModel('CVote')
         const list = await db_cvote.find({
             status: constant.CVOTE_STATUS.PROPOSED
         })
-        console.log(list)
         _.each(list, (item) => {
             this.pollVoteStatus(item._id)
         })
@@ -1712,18 +1735,6 @@ export default class extends Base {
     public async updateProposalStatus(proposalHash) {
         const db_cvote = this.getDBModel('CVote')
         const rs: any = await getProposalData(proposalHash)
-        const proposalOnChain = {
-            Registered: constant.CVOTE_STATUS.PROPOSED,
-            CRAgreed: constant.CVOTE_STATUS.NOTIFICATION,
-            CRCanceled: constant.CVOTE_STATUS.REJECT,
-            VoterAgreed: constant.CVOTE_STATUS.ACTIVE,
-            VoterCanceled: constant.CVOTE_STATUS.VETOED,
-            Finished: constant.CVOTE_STATUS.FINAL,
-            Aborted: {
-                [constant.CVOTE_STATUS.PROPOSED]: constant.CVOTE_STATUS.REJECT,
-                [constant.CVOTE_STATUS.NOTIFICATION]: constant.CVOTE_STATUS.VETOED
-            }
-        }
 
         // status not support "Terminated"
         if (rs && rs.success && rs.status !== 'Terminated') {
@@ -1733,7 +1744,7 @@ export default class extends Base {
                     await db_cvote.update(
                         {proposalHash},
                         {
-                            status: proposalOnChain.Aborted[rs.status]
+                            status: CHAIN_STATUS_TO_PROPOSAL_STATUS.Aborted[rs.status]
                         }
                     )
                 }
@@ -1741,17 +1752,18 @@ export default class extends Base {
                     await db_cvote.update(
                         {proposalHash},
                         {
-                            status: proposalOnChain.Aborted[rs.status]
+                            status: CHAIN_STATUS_TO_PROPOSAL_STATUS.Aborted[rs.status]
                         }
                     )
                 }
+            } else {
+                await db_cvote.update(
+                    {proposalHash},
+                    {
+                        status: CHAIN_STATUS_TO_PROPOSAL_STATUS[rs.status]
+                    }
+                )
             }
-            await db_cvote.update(
-                {proposalHash},
-                {
-                    status: proposalOnChain[rs.status]
-                }
-            )
         }
     }
 
