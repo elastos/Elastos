@@ -176,9 +176,6 @@ export default class extends BaseService {
       method: 'post',
       data: { id }
     })
-    if ( rs && rs.success && rs.data) {
-      this.dispatch(this.selfRedux.actions.data_update(rs.data))
-    }
     return rs
   }
 
