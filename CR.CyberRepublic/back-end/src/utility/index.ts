@@ -117,7 +117,7 @@ export const getProposalData = async (proposalHash: string ) => {
     jsonrpc: '2.0',
     method: 'getcrproposalstate',
     params: {
-      proposalHash: proposalHash
+      proposalhash: proposalHash
     }
   }
   try {
