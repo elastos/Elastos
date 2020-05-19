@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Popover, Modal } from 'antd'
 import moment from 'moment'
@@ -68,11 +67,12 @@ class PaymentList extends BaseComponent {
 
   renderActions(item) {
     const { user } = this.props
-    const status = item.status ? item.status : WAITING_FOR_REQUEST
+    const status = item.status
     if (status === WAITING_FOR_REQUEST) {
       return (
         <td>
           <div
+            className="action"
             onClick={() => {
               this.showModal(item.milestoneKey)
             }}
@@ -188,13 +188,6 @@ class PaymentList extends BaseComponent {
   }
 }
 
-PaymentList.propTypes = {
-  onDelete: PropTypes.func,
-  onEdit: PropTypes.func,
-  list: PropTypes.array,
-  editable: PropTypes.bool
-}
-
 export default PaymentList
 
 const StyledTable = styled.table`
@@ -223,6 +216,12 @@ const StyledRow = styled.tr`
     overflow-wrap: break-word;
     > button {
       margin: 0 4px;
+    }
+    .action {
+      color: #43af92;
+      &:hover {
+        cursor: pointer;
+      }
     }
   }
 `
