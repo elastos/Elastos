@@ -55,6 +55,10 @@ public class MainchainSubWallet extends SubWallet {
         return GetVotedProducerList(mMainchainProxy);
     }
 
+    public String GetVoteInfo(String type) throws WalletException {
+        return GetVoteInfo(mMainchainProxy, type);
+    }
+
     public String GetRegisteredProducerInfo() throws WalletException {
         return GetRegisteredProducerInfo(mMainchainProxy);
     }
@@ -228,5 +232,7 @@ public class MainchainSubWallet extends SubWallet {
     private native String ProposalWithdrawDigest(long Proxy, String payload);
 
     private native String CreateProposalWithdrawTransaction(long Proxy, String recipient, String amount, String utxo, String payload, String memo);
+
+    private native String GetVoteInfo(long Proxy, String type);
 
 }
