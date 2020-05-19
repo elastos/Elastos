@@ -7,6 +7,7 @@ import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
+import Signature from './Signature'
 import { MILESTONE_STATUS } from '@/constant'
 const {
   WAITING_FOR_REQUEST,
@@ -70,12 +71,12 @@ class PaymentList extends BaseComponent {
     if (status === WAITING_FOR_REQUEST) {
       return (
         <td>
-          <div onClick={this.showModal}>request</div>
+          <div onClick={this.showModal}>Apply</div>
         </td>
       )
     }
     if (status === REJECTED) {
-      return <td>re-request</td>
+      return <td>Reapply</td>
     }
     if (status === WAITING_FOR_APPROVAL) {
       return (
@@ -164,9 +165,9 @@ class PaymentList extends BaseComponent {
           visible={this.state.toggle}
           onCancel={this.hideModal}
           footer={null}
-          width={500}
+          width={520}
         >
-          {this.state.toggle === true ? <div>modal</div> : null}
+          {this.state.toggle === true ? <Signature /> : null}
         </Modal>
       </StyledTable>
     )
