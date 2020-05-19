@@ -36,7 +36,7 @@ public class ProposalItemFragment extends BaseFragment implements CommonRvListen
     @BindView(R.id.srl)
     SmartRefreshLayout srl;
     private String status;
-    private List<ProposalSearchEntity.DataBean.ListBean> list;
+    private ArrayList<ProposalSearchEntity.DataBean.ListBean> list;
     private int pageNum = 1;
     private ProposalPresenter presenter;
     private ProposalRecAdapetr adapter;
@@ -115,8 +115,9 @@ public class ProposalItemFragment extends BaseFragment implements CommonRvListen
     public void onRvItemClick(int position, Object o) {
         Bundle bundle = new Bundle();
         ProposalSearchEntity.DataBean.ListBean bean = (ProposalSearchEntity.DataBean.ListBean) o;
-        bundle.putParcelable("ProposalSearchDate", bean);
-        ((BaseFragment) getParentFragment()).start(PropasalReviewFragment.class, bundle);
+        bundle.putInt("position", position);
+        bundle.putParcelableArrayList("ProposalSearchDateList", list);
+        ((BaseFragment) getParentFragment()).start(PropasalDetailFragment.class, bundle);
 
     }
 

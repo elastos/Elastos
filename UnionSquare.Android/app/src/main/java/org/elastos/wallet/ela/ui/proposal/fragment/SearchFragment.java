@@ -43,7 +43,7 @@ public class SearchFragment extends BaseFragment implements CommonRvListener, Ne
     Unbinder unbinder;
     private ProposalPresenter presenter;
     private int pageNum = 1;
-    private List<ProposalSearchEntity.DataBean.ListBean> list;
+    private ArrayList<ProposalSearchEntity.DataBean.ListBean> list;
     private String searchInput;
     private ProposalRecAdapetr adapter;
 
@@ -125,9 +125,9 @@ public class SearchFragment extends BaseFragment implements CommonRvListener, Ne
     public void onRvItemClick(int position, Object o) {
         Bundle bundle = new Bundle();
         ProposalSearchEntity.DataBean.ListBean bean = (ProposalSearchEntity.DataBean.ListBean) o;
-        bundle.putInt("id", bean.getId());
-        bundle.putString("proposalHash ", bean.getProposalHash());
-        start(PropasalReviewFragment.class, bundle);
+        bundle.putInt("position", position);
+        bundle.putParcelableArrayList("ProposalSearchDateList", list);
+        start(PropasalDetailFragment.class, bundle);
     }
 
 

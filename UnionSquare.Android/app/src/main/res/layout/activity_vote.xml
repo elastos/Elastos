@@ -29,6 +29,7 @@
                 android:src="@mipmap/window_750_back" />
 
             <TextView
+                android:id="@+id/tv_title"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
@@ -48,6 +49,7 @@
 
 
             <TextView
+                android:id="@+id/tv_vote_tag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
@@ -56,7 +58,7 @@
                 android:textSize="15sp" />
 
             <org.elastos.wallet.ela.utils.ClearEditText
-                android:id="@+id/et_pwd"
+                android:id="@+id/et_vote"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="15dp"
@@ -67,7 +69,9 @@
                 android:gravity="right"
                 android:hint="@string/please_enter_ticket"
                 android:inputType="numberDecimal"
-                android:padding="15dp"
+                android:paddingLeft="15dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:textSize="15sp" />
 
 
