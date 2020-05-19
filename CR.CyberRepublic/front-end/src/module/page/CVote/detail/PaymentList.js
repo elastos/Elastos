@@ -20,7 +20,8 @@ class PaymentList extends BaseComponent {
   constructor(props) {
     super(props)
     this.state = {
-      toggle: false
+      toggle: false,
+      stage: null
     }
   }
 
@@ -28,8 +29,8 @@ class PaymentList extends BaseComponent {
     this.setState({ toggle: false })
   }
 
-  showModal = () => {
-    this.setState({ toggle: true })
+  showModal = (stage) => {
+    this.setState({ toggle: true, stage })
   }
 
   isOwner() {
@@ -65,13 +66,19 @@ class PaymentList extends BaseComponent {
     )
   }
 
-  renderActions(mStatus) {
+  renderActions(item) {
     const { user } = this.props
-    const status = mStatus ? mStatus : WAITING_FOR_REQUEST
+    const status = item.status ? item.status : WAITING_FOR_REQUEST
     if (status === WAITING_FOR_REQUEST) {
       return (
         <td>
-          <div onClick={this.showModal}>Apply</div>
+          <div
+            onClick={() => {
+              this.showModal(item.milestoneKey)
+            }}
+          >
+            Apply
+          </div>
         </td>
       )
     }
@@ -127,13 +134,13 @@ class PaymentList extends BaseComponent {
           />
         </td>
         <td>{item.status}</td>
-        {visible && <td>{this.renderActions(item.status)}</td>}
+        {visible && <td>{this.renderActions(item)}</td>}
       </StyledRow>
     )
   }
 
   ord_render() {
-    const { list } = this.props
+    const { list, proposalId } = this.props
     const visible = this.isVisible()
     return (
       <StyledTable>
@@ -167,7 +174,9 @@ class PaymentList extends BaseComponent {
           footer={null}
           width={520}
         >
-          {this.state.toggle === true ? <Signature /> : null}
+          {this.state.toggle === true ? (
+            <Signature stage={this.state.stage} proposalId={proposalId} />
+          ) : null}
         </Modal>
       </StyledTable>
     )

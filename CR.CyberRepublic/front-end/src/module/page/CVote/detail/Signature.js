@@ -24,7 +24,6 @@ class Signature extends Component {
 
   render() {
     const { getFieldDecorator } = this.props.form
-    const { item } = this.props
     return (
       <Wrapper>
         <Title>Apply Payment</Title>
@@ -41,7 +40,7 @@ class Signature extends Component {
                   message: 'This field is required'
                 }
               ]
-            })(<TextArea rows={8} style={{ resize: 'none' }} />)}
+            })(<TextArea rows={16} style={{ resize: 'none' }} />)}
           </FormItem>
           <Actions>
             <Button
@@ -53,7 +52,7 @@ class Signature extends Component {
               Cancel
             </Button>
             <Button className="cr-btn cr-btn-primary" htmlType="submit">
-              Submit
+              Next
             </Button>
           </Actions>
         </Form>

@@ -84,6 +84,7 @@ const renderRichContent = (data, key, title, user) => {
           milestone={data.plan.milestone}
           user={user}
           proposer={data.proposer}
+          proposalId={data._id}
         />
       </div>
     )
