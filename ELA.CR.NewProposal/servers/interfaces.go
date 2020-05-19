@@ -1955,7 +1955,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		Status:             proposalState.Status.String(),
 		Proposal:           rpcProposal,
 		ProposalHash:       ToReversedString(proposalHash),
-		TxHash:             proposalState.TxHash.String(),
+		TxHash:             ToReversedString(proposalState.TxHash),
 		CRVotes:            crVotes,
 		VotersRejectAmount: proposalState.VotersRejectAmount.String(),
 		RegisterHeight:     proposalState.RegisterHeight,
