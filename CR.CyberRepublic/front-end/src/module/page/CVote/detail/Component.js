@@ -38,7 +38,7 @@ import {
   getPlanHtml,
   getBudgetHtml
 } from '@/util/markdown-it'
-import PaymentList from '@/module/form/SuggestionForm/PaymentList'
+import PaymentList from './PaymentList'
 import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
 import Milestones from '@/module/form/SuggestionForm/Milestones'
 import {
@@ -82,7 +82,6 @@ const renderRichContent = (data, key, title) => {
         <PaymentList
           list={data.budget}
           milestone={data.plan.milestone}
-          editable={false}
         />
       </div>
     )
