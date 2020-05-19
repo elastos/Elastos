@@ -17,7 +17,7 @@ export default Base.setRouter([
     method: 'post'
   },
   {
-    path: '/:id/milestones/signature',
+    path: '/milestones/signature',
     router: checkSignature,
     method: 'post'
   },

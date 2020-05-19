@@ -51,9 +51,9 @@ export default class extends Base {
       if (_.isEmpty(budget)) {
         return { success: false }
       }
-      if (budget.status !== WAITING_FOR_REQUEST) {
-        return { success: false }
-      }
+      // if (budget.status !== WAITING_FOR_REQUEST) {
+      //   return { success: false }
+      // }
 
       const currDate = Date.now()
       const now = Math.floor(currDate / 1000)
@@ -96,7 +96,7 @@ export default class extends Base {
       )
 
       const url = `elastos://crproposal/${jwtToken}`
-      return { success: true, url }
+      return { success: true, url, messageHash }
     } catch (error) {
       logger.error(error)
       return
@@ -192,7 +192,7 @@ export default class extends Base {
 
   public async checkSignature(param: any) {
     const { id, messageHash } = param
-    const proposal: any = await this.model.findById(id)
+    const proposal: any = await this.getProposal(id)
     if (proposal) {
       const history = proposal.withdrawalHistory.filter(
         (item: any) => item.messageHash === messageHash
@@ -200,8 +200,8 @@ export default class extends Base {
       if (_.isEmpty(history)) {
         return { success: false }
       }
-      if (_.get(history, 'signature')) {
-        return { success: true }
+      if (_.get(history[0], 'signature')) {
+        return { success: true, detail: proposal }
       }
     } else {
       return { success: false }
@@ -482,5 +482,23 @@ export default class extends Base {
     }
 
     mail.send(mailObj)
+  }
+
+  private async getProposal(id: string) {
+    const rs = await this.model
+      .getDBInstance()
+      .findOne({ _id: id })
+      .populate(
+        'voteResult.votedBy',
+        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
+      )
+      .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+      .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
+      .populate('referenceElip', 'vid')
+    if (!rs) {
+      return { success: true, empty: true }
+    }
+    return rs
   }
 }
