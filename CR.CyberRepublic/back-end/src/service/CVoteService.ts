@@ -1169,26 +1169,24 @@ export default class extends Base {
       }
 
       const db_cvote = this.getDBModel('CVote')
-      const db_user = this.getDBModel('User')
       const cur = await db_cvote.find({
         proposalHash: payload.data.proposalHash
       })
-      const user = await db_user.find({'did.id': payload.data.did})
-      const votedBy = user[0]._id
-      const proposalHash = payload.data.proposalHash
-      const voteResult = _.find(cur[0].voteResult, function (o) {
-        if (o.votedBy.equals(votedBy)) {
-          return o
-        }
-      })
-      if (!cur || !voteResult) {
+      if (!cur) {
         return {
           code: 400,
           success: false,
           message: 'There is no this proposal'
         }
       }
+      const votedBy = _.get(this.currentUser, '_id')
+      const proposalHash = payload.data.proposalHash
 
+      const voteResult = _.find(cur[0].voteResult, function (o) {
+        if (o.votedBy.equals(votedBy)) {
+          return o
+        }
+      })
       const rs: any = await getDidPublicKey(claims.iss)
       if(!rs) {
         return {
@@ -1216,36 +1214,22 @@ export default class extends Base {
                   'voteResult.votedBy': votedBy
                 },
                 {
-                  'voteResult.$':{
-                    ..._.omit(voteResult._doc,['status','txid','signature']),
-                    status: constant.CVOTE_CHAIN_STATUS.CHAINING,
-                    txid: claims.data,
-                    signature: { data: decoded.data }
+                  $set: {
+                    'voteResult.$.txid': claims.data,
+                    'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINING,
+                    'voteResult.$.signature': { data: decoded.data }
+                  },
+                  $push: {
+                    voteHistory: {
+                      value: voteResult.value,
+                      reason: voteResult.reason,
+                      txid: voteResult.txid,
+                      votedBy: voteResult.votedBy,
+                      signature: voteResult.signature
+                    }
                   }
                 }
               )
-              // await db_cvote.update(
-              //   {
-              //     proposalHash: proposalHash,
-              //     'voteResult.votedBy': votedBy
-              //   },
-              //   {
-              //     $set: {
-              //       'voteResult.$.txid': claims.data,
-              //       'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINING,
-              //       'voteResult.$.signature': { data: decoded.data }
-              //     },
-              //     $push: {
-              //       voteHistory: {
-              //         value: voteResult.value,
-              //         reason: voteResult.reason,
-              //         txid: voteResult.txid,
-              //         votedBy: voteResult.votedBy,
-              //         signature: voteResult.signature
-              //       }
-              //     }
-              //   }
-              // )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
               logger.error(err)
