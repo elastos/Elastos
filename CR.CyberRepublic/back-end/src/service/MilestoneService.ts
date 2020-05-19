@@ -428,20 +428,12 @@ export default class extends Base {
       body: string
     }
   ) {
-    const recVariables = _.zipObject(proposer.email, [
-      {
-        _id: proposer._id,
-        username: userUtil.formatUsername(proposer)
-      }
-    ])
-
     const mailObj = {
-      to: [proposer.email],
+      to: proposer.email,
+      toName: userUtil.formatUsername(proposer),
       subject: content.subject,
-      body: content.body,
-      recVariables
+      body: content.body
     }
-
     mail.send(mailObj)
   }
 
