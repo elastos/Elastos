@@ -2156,10 +2156,19 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	}
 
 	if proposal.ProposalType == payload.CloseProposal {
-		pk, _ := crypto.DecodePoint(proposal.OwnerPublicKey)
-		redeemScript, _ := contract.CreateStandardRedeemScript(pk)
+		pk, err := crypto.DecodePoint(proposal.OwnerPublicKey)
+		if err != nil {
+			return errors.New("DecodePoint from OwnerPublicKey error")
+		}
+		redeemScript, err := contract.CreateStandardRedeemScript(pk)
+		if err != nil {
+			return errors.New("CreateStandardRedeemScript from OwnerPublicKey error")
+		}
 		didCode := append(redeemScript[:len(redeemScript)-1], common.DID)
-		ct, _ := contract.CreateCRIDContractByCode(didCode)
+		ct, err := contract.CreateCRIDContractByCode(didCode)
+		if err != nil {
+			return errors.New("CreateCRIDContractByCode from OwnerPublicKey error")
+		}
 		ownerDid := ct.ToProgramHash()
 		ownerMember := b.crCommittee.GetMember(*ownerDid)
 
