@@ -56,10 +56,10 @@ static void bootstraps_destructor(void *p)
 {
     size_t i;
     size_t *size = (size_t *)p;
-    BootstrapNode *bootstraps = (struct BootstrapNode *)(size + 1);
+    BootstrapNode *nodes = (BootstrapNode *)(size + 1);
 
     for (i = 0; i < *size; i++) {
-        BootstrapNode *node = bootstraps + i;
+        BootstrapNode *node = nodes + i;
 
         if (node->ipv4)
             free((void *)node->ipv4);
@@ -75,14 +75,14 @@ static void bootstraps_destructor(void *p)
     }
 }
 
-static void hive_bootstrap_destructor(void *p)
+static void express_nodes_destructor(void *p)
 {
     size_t i;
     size_t *size = (size_t *)p;
-    HiveBootstrapNode *bootstraps = (struct HiveBootstrapNode *)(size + 1);
+    ExpressNode *nodes = (ExpressNode *)(size + 1);
 
     for (i = 0; i < *size; i++) {
-        HiveBootstrapNode *node = bootstraps + i;
+        ExpressNode *node = nodes + i;
 
         if (node->ipv4)
             free((void *)node->ipv4);
@@ -92,6 +92,9 @@ static void hive_bootstrap_destructor(void *p)
 
         if (node->port)
             free((void *)node->port);
+
+        if (node->public_key)
+            free((void *)node->public_key);
     }
 }
 
@@ -118,83 +121,13 @@ static void qualified_path(const char *path, const char *ref, char *qualified)
     }
 }
 
-int load_express_config(config_t *cfg, ElaOptions *options)
-{
-    int express_bootstraps_size;
-    config_setting_t *bootstraps_setting;
-    config_setting_t *bootstrap_setting;
-    int entries;
-    size_t *mem;
-    int idx;
-
-    const char *stropt;
-    char number[64];
-    int intopt;
-
-    bootstraps_setting = config_lookup(cfg, "express_bootstraps");
-    if (!bootstraps_setting) {
-        fprintf(stderr, "Missing express bootstraps section.\n");
-        return -1;
-    }
-
-    entries = config_setting_length(bootstraps_setting);
-    if (entries <= 0) {
-        fprintf(stderr, "Empty express bootstraps option.\n");
-        return -1;
-    }
-
-    mem = (size_t *)rc_zalloc(sizeof(size_t) +
-            sizeof(BootstrapNode) * entries, bootstraps_destructor);
-    if (!mem) {
-        fprintf(stderr, "Load configuration failed, out of memory.\n");
-        return -1;
-    }
-
-    *mem = entries;
-    options->express_bootstraps_size = entries;
-    options->express_bootstraps = (BootstrapNode *)(++mem);
-
-    for (idx = 0; idx < entries; idx++) {
-        BootstrapNode *node = options->express_bootstraps + idx;
-
-        bootstrap_setting = config_setting_get_elem(bootstraps_setting, idx);
-
-        int rc = config_setting_lookup_string(bootstrap_setting, "ipv4", &stropt);
-        if (rc && *stropt)
-            node->ipv4 = (const char *)strdup(stropt);
-        else
-            node->ipv4 = NULL;
-
-        rc = config_setting_lookup_string(bootstrap_setting, "ipv6", &stropt);
-        if (rc && *stropt)
-            node->ipv6 = (const char *)strdup(stropt);
-        else
-            node->ipv6 = NULL;
-
-        rc = config_setting_lookup_int(bootstrap_setting, "port", &intopt);
-        if (rc && intopt) {
-            sprintf(number, "%d", intopt);
-            node->port = (const char *)strdup(number);
-        } else
-            node->port = NULL;
-
-        rc = config_setting_lookup_string(bootstrap_setting, "public-key", &stropt);
-        if (rc && *stropt)
-            node->public_key = (const char *)strdup(stropt);
-        else
-            node->public_key = NULL;
-    }
-
-    return options->express_bootstraps_size;
-}
-
 ElaOptions *carrier_config_load(const char *config_file,
         int (*extra_config_handle)(void *cfg, ElaOptions *options),
         ElaOptions *options)
 {
     config_t cfg;
-    config_setting_t *bootstraps_setting;
-    config_setting_t *bootstrap_setting;
+    config_setting_t *nodes_setting;
+    config_setting_t *node_setting;
     int entries;
 
     char path[PATH_MAX];
@@ -244,14 +177,14 @@ ElaOptions *carrier_config_load(const char *config_file,
         return NULL;
     }
 
-    bootstraps_setting = config_lookup(&cfg, "bootstraps");
-    if (!bootstraps_setting) {
+    nodes_setting = config_lookup(&cfg, "bootstraps");
+    if (!nodes_setting) {
         fprintf(stderr, "Missing bootstraps section.\n");
         config_destroy(&cfg);
         return NULL;
     }
 
-    entries = config_setting_length(bootstraps_setting);
+    entries = config_setting_length(nodes_setting);
     if (entries <= 0) {
         fprintf(stderr, "Empty bootstraps option.\n");
         config_destroy(&cfg);
@@ -273,94 +206,85 @@ ElaOptions *carrier_config_load(const char *config_file,
     for (i = 0; i < entries; i++) {
         BootstrapNode *node = options->bootstraps + i;
 
-        bootstrap_setting = config_setting_get_elem(bootstraps_setting, i);
+        node_setting = config_setting_get_elem(nodes_setting, i);
 
-        rc = config_setting_lookup_string(bootstrap_setting, "ipv4", &stropt);
+        rc = config_setting_lookup_string(node_setting, "ipv4", &stropt);
         if (rc && *stropt)
             node->ipv4 = (const char *)strdup(stropt);
         else
             node->ipv4 = NULL;
 
-        rc = config_setting_lookup_string(bootstrap_setting, "ipv6", &stropt);
+        rc = config_setting_lookup_string(node_setting, "ipv6", &stropt);
         if (rc && *stropt)
             node->ipv6 = (const char *)strdup(stropt);
         else
             node->ipv6 = NULL;
 
-        rc = config_setting_lookup_int(bootstrap_setting, "port", &intopt);
+        rc = config_setting_lookup_int(node_setting, "port", &intopt);
         if (rc && intopt) {
             sprintf(number, "%d", intopt);
             node->port = (const char *)strdup(number);
         } else
             node->port = NULL;
 
-        rc = config_setting_lookup_string(bootstrap_setting, "public-key", &stropt);
+        rc = config_setting_lookup_string(node_setting, "public-key", &stropt);
         if (rc && *stropt)
             node->public_key = (const char *)strdup(stropt);
         else
             node->public_key = NULL;
     }
 
-    bootstraps_setting = config_lookup(&cfg, "hive_bootstraps");
-    if (!bootstraps_setting) {
-        fprintf(stderr, "Missing hive bootstraps section.\n");
-        carrier_config_free(options);
+    nodes_setting = config_lookup(&cfg, "express_nodes");
+    if (!nodes_setting) {
+        fprintf(stderr, "Missing express_nodes section.\n");
         config_destroy(&cfg);
         return NULL;
     }
 
-    entries = config_setting_length(bootstraps_setting);
+    entries = config_setting_length(nodes_setting);
     if (entries <= 0) {
-        fprintf(stderr, "Empty hive bootstraps option.\n");
-        carrier_config_free(options);
+        fprintf(stderr, "Empty express_nodes option.\n");
         config_destroy(&cfg);
         return NULL;
     }
 
     mem = (size_t *)rc_zalloc(sizeof(size_t) +
-            sizeof(HiveBootstrapNode) * entries, hive_bootstrap_destructor);
+            sizeof(ExpressNode) * entries, express_nodes_destructor);
     if (!mem) {
         fprintf(stderr, "Load configuration failed, out of memory.\n");
-        carrier_config_free(options);
         config_destroy(&cfg);
         return NULL;
     }
 
     *mem = entries;
-    options->hive_bootstraps_size = entries;
-    options->hive_bootstraps = (HiveBootstrapNode *)(++mem);
+    options->express_nodes_size = entries;
+    options->express_nodes = (ExpressNode *)(++mem);
 
     for (i = 0; i < entries; i++) {
-        HiveBootstrapNode *node = options->hive_bootstraps + i;
+        ExpressNode *node = options->express_nodes + i;
 
-        bootstrap_setting = config_setting_get_elem(bootstraps_setting, i);
+        node_setting = config_setting_get_elem(nodes_setting, i);
 
-        rc = config_setting_lookup_string(bootstrap_setting, "ipv4", &stropt);
+        rc = config_setting_lookup_string(node_setting, "ipv4", &stropt);
         if (rc && *stropt)
             node->ipv4 = (const char *)strdup(stropt);
         else
             node->ipv4 = NULL;
 
-        rc = config_setting_lookup_string(bootstrap_setting, "ipv6", &stropt);
-        if (rc && *stropt)
-            node->ipv6 = (const char *)strdup(stropt);
-        else
-            node->ipv6 = NULL;
+        node->ipv6 = NULL;
 
-        rc = config_setting_lookup_int(bootstrap_setting, "port", &intopt);
+        rc = config_setting_lookup_int(node_setting, "port", &intopt);
         if (rc && intopt) {
             sprintf(number, "%d", intopt);
             node->port = (const char *)strdup(number);
         } else
             node->port = NULL;
-    }
 
-    rc = load_express_config(&cfg, options);
-    if (rc < 0) { // TODO: does empty express is allowed?
-        fprintf(stderr, "Empty express bootstraps option.\n");
-        carrier_config_free(options);
-        config_destroy(&cfg);
-        return NULL;
+        rc = config_setting_lookup_string(node_setting, "public-key", &stropt);
+        if (rc && *stropt)
+            node->public_key = (const char *)strdup(stropt);
+        else
+            node->public_key = NULL;
     }
 
     options->udp_enabled = true;
@@ -496,8 +420,8 @@ void carrier_config_free(ElaOptions *options)
         deref(--p);
     }
 
-    if (options->hive_bootstraps) {
-        size_t *p = (size_t *)options->hive_bootstraps;
+    if (options->express_nodes) {
+        size_t *p = (size_t *)options->express_nodes;
         deref(--p);
     }
 

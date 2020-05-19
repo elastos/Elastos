@@ -59,15 +59,17 @@ typedef struct HiveBootstrapNodeBuf {
     uint16_t port;
 } HiveBootstrapNodeBuf;
 
+typedef struct DhtBootstrapNodeBuf ExpressNodeBuf;
+
 typedef struct Preferences {
     char *data_location;
     bool udp_enabled;
-    int dht_bootstraps_size;
+
+    size_t dht_bootstraps_size;
     DhtBootstrapNodeBuf *dht_bootstraps;
-    int hive_bootstraps_size;
-    HiveBootstrapNodeBuf *hive_bootstraps;
-    int express_bootstraps_size;
-    DhtBootstrapNodeBuf *express_bootstraps;
+
+    size_t express_nodes_size;
+    ExpressNodeBuf *express_nodes;
 } Preferences;
 
 typedef struct EventBase EventBase;

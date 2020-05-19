@@ -318,7 +318,7 @@ static int parse_msg_stream(ExpressConnector *connector,
         msg_sz = ntohl(*(uint32_t*)&data[data_off]);
         data_off += sizeof(msg_sz);
 
-        if(data_off + msg_sz > size) { // message is incomplete 
+        if(data_off + msg_sz > size) { // message is incomplete
             break;
         }
         msg = &data[data_off];
@@ -387,7 +387,7 @@ size_t http_write_data(char *buffer, size_t size, size_t nitems, void *userdata)
 
     data_sz = (data_sz < buf_sz ? data_sz : buf_sz);
     memcpy(buffer, task->data + task->pos, data_sz);
-    
+
     task->pos += data_sz;
     if(task->pos >= task->length) {
         task->pos = 0;
@@ -692,7 +692,7 @@ ExpressConnector *express_connector_create(ElaCarrier *carrier,
     int rc;
     ExpressConnector *connector;
     char url_base[EXP_HTTP_URL_MAXSIZE];
-    const char* url_host;
+    ExpressNodeBuf *node_0;
     pthread_t tid;
 
     assert(carrier);
@@ -726,21 +726,21 @@ ExpressConnector *express_connector_create(ElaCarrier *carrier,
         return NULL;
     }
 
-    if (carrier->pref.express_bootstraps_size < 0) {
+    if (carrier->pref.express_nodes_size <= 0) {
         deref(connector);
         ela_set_error(ELA_EXPRESS_ERROR(ELAERR_INVALID_ARGS));
         return NULL;
     }
 
-    DhtBootstrapNodeBuf *express_bootstrap_0 = &carrier->pref.express_bootstraps[0];
-    rc = compute_sharedkey(carrier, express_bootstrap_0->public_key, connector->shared_key);
+    node_0 = &carrier->pref.express_nodes[0];
+    rc = compute_sharedkey(carrier, node_0->public_key, connector->shared_key);
     if (rc < 0) {
         deref(connector);
         ela_set_error(rc);
         return NULL;
     }
-    url_host = (strlen(express_bootstrap_0->ipv4) != 0 ? express_bootstrap_0->ipv4 : express_bootstrap_0->ipv6); 
-    snprintf(url_base, sizeof(url_base), "http://%s:%d", url_host, express_bootstrap_0->port);
+
+    snprintf(url_base, sizeof(url_base), "http://%s:%d", node_0->ipv4, node_0->port);
     connector->base_url = strdup(url_base);
     connector->magic_num = ntohl(EXP_HTTP_MAGICNUM);
 

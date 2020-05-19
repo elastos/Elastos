@@ -259,7 +259,12 @@ typedef struct BootstrapNode {
     const char *public_key;
 } BootstrapNode;
 
-typedef struct HiveBootstrapNode {
+/**
+ * \~English
+ * ExpressNode defines a couple of perperities to provide for Carrier node
+ * to send offline messages. The definition of ExpressNode is same with
+ */
+typedef struct ExpressNode {
     /**
      * \~English
      * The ip address supported with ipv4 protocol.
@@ -268,17 +273,26 @@ typedef struct HiveBootstrapNode {
 
     /**
      * \~English
-     * The ip address supported with ipv6 protocol.
+     * This field is reserved for future, not suported currently.
+     * user should feed this vaue with NULL.
      */
     const char *ipv6;
 
     /**
      * \~English
      * The ip port.
-     * The default value is 9095
+     * The default value is 33445.
      */
     const char *port;
-} HiveBootstrapNode;
+
+    /**
+     * \~English
+     * The unique public key to provide for Carrier nodes, terminated
+     * by null-string.
+     * The length of public key is about 45 bytes.
+     */
+    const char *public_key;
+} ExpressNode;
 
 /**
  * \~English
@@ -345,31 +359,17 @@ typedef struct ElaOptions {
 
     /**
      * \~English
-     * The total number of Hive bootstrap nodes to connect.
-     * There must have at least one bootstrap node for the very first time
+     * The total number of Express nodes to connect.
+     * There must have at least on node for the very first time
      * to create carrier instance.
      */
-    size_t hive_bootstraps_size;
+    size_t express_nodes_size;
 
     /**
      * \~English
-     * The array of Hive bootstrap nodes.
+     * The array of Express nodes.
      */
-    HiveBootstrapNode *hive_bootstraps;
-
-    /**
-     * \~English
-     * The total number of Express bootstrap nodes to connect.
-     * There must have at least one bootstrap node for the very first time
-     * to create carrier instance.
-     */
-    size_t express_bootstraps_size;
-
-    /**
-     * \~English
-     * The array of Express bootstrap nodes.
-     */
-    BootstrapNode *express_bootstraps;
+    ExpressNode *express_nodes;
 } ElaOptions;
 
 /**
