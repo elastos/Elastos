@@ -18,8 +18,8 @@ const {
   WITHDRAWN
 } = constant.MILESTONE_STATUS
 const { ACTIVE } = constant.CVOTE_STATUS
-const { DRAFT, REVIEWING, PUBLISHED, REJECT } = constant.CVOTE_TRACKING_STATUS
-const { APPROVED, REJECTED } = constant.MILESTONE_REVIEW_STATUS
+const { PROGRESS } = constant.PROPOSAL_TRACKING_TYPE
+const { APPROVED, REJECTED } = constant.REVIEW_OPINION
 
 export default class extends Base {
   private model: any
@@ -72,8 +72,7 @@ export default class extends Base {
       )
 
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
-      const tracking = await this.trackingModel.findOne({ proposalId: id })
-      const trackingStatus = tracking.status
+      const trackingStatus = PROGRESS
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -245,8 +244,13 @@ export default class extends Base {
           }
         }
       )
-      const tracking = await this.trackingModel.findOne({ proposalId: id })
-      const trackingStatus = tracking.status
+      let trackingStatus: string
+      if (opinion === APPROVED) {
+        trackingStatus = constant.PROPOSAL_TRACKING_TYPE.REJECTED
+      } else {
+        trackingStatus = PROGRESS
+      }
+
       // generate jwt url
       const jwtClaims = {
         iat: now,

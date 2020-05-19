@@ -343,4 +343,12 @@ export const MILESTONE_STATUS = create([
   'WAITING_FOR_WITHDRAW',
   'WITHDRAWN'
 ])
-export const MILESTONE_REVIEW_STATUS = create(['REJECTED', 'APPROVED'])
+export const REVIEW_OPINION = create(['REJECTED', 'APPROVED'])
+
+export const PROPOSAL_TRACKING_TYPE = {
+  PROGRESS: 'progress',
+  REJECTED: 'rejected',
+  TERMINATED: 'terminated',
+  CHANGEOWNER: 'changeowner',
+  FINALIZED: 'finalized'
+}
