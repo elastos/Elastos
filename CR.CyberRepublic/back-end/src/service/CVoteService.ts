@@ -1214,29 +1214,43 @@ export default class extends Base {
                   'voteResult.votedBy': votedBy
                 },
                 {
-                  $set: {
-                    'voteResult.$.txid': claims.data,
-                    'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINING,
-                    'voteResult.$.signature': { data: decoded.data }
-                  },
-                  $push: {
-                    voteHistory: {
-                      value: voteResult.value,
-                      reason: voteResult.reason,
-                      txid: voteResult.txid,
-                      votedBy: voteResult.votedBy,
-                      signature: voteResult.signature
-                    }
+                  'voteResult.$':{
+                    ..._.omit(voteResult._doc,['status','txid','signature']),
+                    status: constant.CVOTE_CHAIN_STATUS.CHAINING,
+                    txid: claims.data,
+                    signature: { data: decoded.data }
                   }
                 }
               )
+              // await db_cvote.update(
+              //   {
+              //     proposalHash: proposalHash,
+              //     'voteResult.votedBy': votedBy
+              //   },
+              //   {
+              //     $set: {
+              //       'voteResult.$.txid': claims.data,
+              //       'voteResult.$.status': constant.CVOTE_CHAIN_STATUS.CHAINING,
+              //       'voteResult.$.signature': { data: decoded.data }
+              //     },
+              //     $push: {
+              //       voteHistory: {
+              //         value: voteResult.value,
+              //         reason: voteResult.reason,
+              //         txid: voteResult.txid,
+              //         votedBy: voteResult.votedBy,
+              //         signature: voteResult.signature
+              //       }
+              //     }
+              //   }
+              // )
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
               logger.error(err)
               return {
                 code: 500,
                 success: false,
-                message: 'Something went wrong'
+                message: 'Something went wrong.' + err.message
               }
             }
           }
@@ -1692,8 +1706,12 @@ export default class extends Base {
     }
     tm = setInterval(() => {
       console.log('---------------- start cvote crjob of 5 min -------------')
-      this.pollVotersRejectAmount()
+      // poll proposal status in chain
+      this.pollproposalStatus()
+      // council vote status in registered
       this.pollCouncilVoteStatus()
+      // member vote status in agreed
+      this.pollVotersRejectAmount()
     }, 1000 * 60 * 5)
   }
 
@@ -1708,6 +1726,61 @@ export default class extends Base {
       idsAborted.push(item._id)
       this.proposalAborted(item.proposalHash)
     })
+  }
+
+  public async pollproposalStatus() {
+    const db_cvote = this.getDBModel("CVote")
+    const list = await db_cvote.find()
+    _.each(list, (item)=>{
+      this.updateProposlaStatus(item.proposalHash)
+    })
+    
+  }
+
+  public async updateProposlaStatus(proposalHash) {
+    const db_cvote = this.getDBModel("CVote")
+    const rs: any = await getProposalData(proposalHash)
+    const proposalOnChain = {
+      Registered: constant.CVOTE_STATUS.PROPOSED,
+      CRAgreed: constant.CVOTE_STATUS.NOTIFICATION,
+      CRCanceled: constant.CVOTE_STATUS.REJECT,
+      VoterAgreed: constant.CVOTE_STATUS.ACTIVE,
+      VoterCanceled: constant.CVOTE_STATUS.VETOED,
+      Finished: constant.CVOTE_STATUS.FINAL,
+      Aborted: {
+        [constant.CVOTE_STATUS.PROPOSED]: constant.CVOTE_STATUS.REJECT,
+        [constant.CVOTE_STATUS.NOTIFICATION]: constant.CVOTE_STATUS.VETOED
+      }
+    }
+
+    // status not support "Terminated"
+    if(rs && rs.success && rs.status !== 'Terminated'){
+      if ( rs.status === 'Aborted' ){
+        const rs = await db_cvote.find({proposalHash})
+        if(rs.status === 'PROPOSED'){
+          await db_cvote.update(
+            {proposalHash},
+            {
+              status: proposalOnChain.Aborted[rs.status]
+            }
+          )
+        }
+        if(rs.status === 'NOTIFICATION'){
+          await db_cvote.update(
+            {proposalHash},
+            {
+              status: proposalOnChain.Aborted[rs.status]
+            }
+          ) 
+        }
+      }
+      await db_cvote.update(
+        { proposalHash },
+        {
+          status: proposalOnChain[rs.status]
+        }
+      )
+    }
   }
 
   // TODO
