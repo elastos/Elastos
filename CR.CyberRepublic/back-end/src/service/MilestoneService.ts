@@ -10,7 +10,7 @@ import {
   getDidPublicKey,
   getPemPublicKey
 } from '../utility'
-import moment from 'moment'
+import * as moment from 'moment'
 const { WAITING_FOR_WITHDRAW, WAITING_FOR_APPROVAL } = constant.MILESTONE_STATUS
 const { ACTIVE } = constant.CVOTE_STATUS
 const { DRAFT, REVIEWING, PUBLISHED, REJECT } = constant.CVOTE_TRACKING_STATUS
@@ -299,7 +299,10 @@ export default class extends Base {
         }
       }
 
-      const proposal = await this.model.findOne({ proposalHash })
+      const proposal = await this.model
+        .getDBInstance()
+        .findOne({ proposalHash })
+        .populate('proposer')
       if (!proposal) {
         return {
           code: 400,
@@ -347,11 +350,13 @@ export default class extends Base {
               )
               if (history.review.opinion === APPROVED) {
                 this.notifyProposalOwner(
+                  proposal.proposer,
                   this.approvalMailTemplate(proposal.vid)
                 )
               }
               if (history.review.opinion === REJECTED) {
                 this.notifyProposalOwner(
+                  proposal.proposer,
                   this.rejectedMailTemplate(proposal.vid)
                 )
               }
@@ -416,10 +421,29 @@ export default class extends Base {
     return { subject, body }
   }
 
-  private async notifyProposalOwner(content: {
-    subject: string
-    body: string
-  }) {}
+  private async notifyProposalOwner(
+    proposer: any,
+    content: {
+      subject: string
+      body: string
+    }
+  ) {
+    const recVariables = _.zipObject(proposer.email, [
+      {
+        _id: proposer._id,
+        username: userUtil.formatUsername(proposer)
+      }
+    ])
+
+    const mailObj = {
+      to: [proposer.email],
+      subject: content.subject,
+      body: content.body,
+      recVariables
+    }
+
+    mail.send(mailObj)
+  }
 
   private async notifySecretaries(content: { subject: string; body: string }) {
     const db_user = this.getDBModel('User')
