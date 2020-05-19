@@ -67,8 +67,10 @@ class Signature extends Component {
 
   renderTextare = () => {
     const { getFieldDecorator } = this.props.form
+    const { isSecretary } = this.props
     return (
       <Form onSubmit={this.handleSubmit}>
+        {isSecretary && <div>application</div>}
         <Label>
           <span>*</span>
           Reason
@@ -94,10 +96,15 @@ class Signature extends Component {
 
   render() {
     const { url } = this.state
-    const { stage } = this.props
+    const { stage, isSecretary } = this.props
     return (
       <Wrapper>
-        <Title>Apply Payment #{parseInt(stage) + 1}</Title>
+        {isSecretary ? (
+          <Title>Review Payment #{parseInt(stage) + 1}</Title>
+        ) : (
+          <Title>Apply Payment #{parseInt(stage) + 1}</Title>
+        )}
+
         {url ? this.signatureQrCode() : this.renderTextare()}
       </Wrapper>
     )

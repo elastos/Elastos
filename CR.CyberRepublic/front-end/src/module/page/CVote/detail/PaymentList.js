@@ -90,20 +90,20 @@ class PaymentList extends BaseComponent {
         user.is_secretary && (
           <td>
             <div
-              className="action reject"
-              onClick={() => {
-                this.showModal(item.milestoneKey)
-              }}
-            >
-              Reject
-            </div>
-            <div
               className="action approve"
               onClick={() => {
                 this.showModal(item.milestoneKey)
               }}
             >
               Approve
+            </div>
+            <div
+              className="action reject"
+              onClick={() => {
+                this.showModal(item.milestoneKey)
+              }}
+            >
+              Reject
             </div>
           </td>
         )
@@ -230,12 +230,14 @@ const StyledRow = styled.tr`
     }
     .action {
       color: #43af92;
+      display: inline-block;
       &:hover {
         cursor: pointer;
       }
     }
     .reject {
       color: red;
+      margin-left: 16px;
     }
   }
 `
