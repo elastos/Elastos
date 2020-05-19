@@ -357,53 +357,56 @@ namespace Elastos {
 
 		void MainchainSubWallet::FilterVoteCandidates(TransactionPtr &tx,
 		                                              const nlohmann::json &invalidCandidates) const {
+			if (invalidCandidates.is_null())
+				return;
+
+			if (!invalidCandidates.is_array())
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid candidate is not array");
+
 			OutputPayloadPtr &outputPayload = tx->GetOutputs()[0]->GetPayload();
 			PayloadVote *pv = dynamic_cast<PayloadVote *>(outputPayload.get());
 			ErrorChecker::CheckCondition(!pv, Error::InvalidTransaction, "invalid vote tx");
 
 			nlohmann::json result;
 			std::vector<VoteContent> voteContent = pv->GetVoteContent();
-			if (voteContent.size() <= 1 || invalidCandidates.size() <= 0) {
-				return;
-			}
 
-			for (std::vector<VoteContent>::iterator it = voteContent.begin(); it != voteContent.end();) {
-				std::string type = (*it).GetTypeString();
-
+			for (nlohmann::json::const_iterator it = invalidCandidates.cbegin(); it != invalidCandidates.cend(); ++it) {
+				std::string type;
 				std::set<std::string> invalidList;
-				for (size_t i = 0; i < invalidCandidates.size(); ++i) {
-					if ((invalidCandidates[i]["Type"].get<std::string>()) == type) {
-						invalidList = invalidCandidates[i]["Candidates"].get<std::set<std::string>>();
+				try {
+					type = (*it)["Type"].get<std::string>();
+					invalidList = (*it)["Candidates"].get<std::set<std::string>>();
+				} catch (const std::exception &e) {
+					ErrorChecker::ThrowParamException(Error::InvalidArgument, "parse invalid candidate error");
+				}
+
+				for (std::vector<VoteContent>::iterator itvc = voteContent.begin(); itvc != voteContent.end();) {
+					if (type == (*itvc).GetTypeString()) {
+						std::vector<CandidateVotes> candidatesVotes = (*itvc).GetCandidateVotes();
+						for (std::vector<CandidateVotes>::iterator itcv = candidatesVotes.begin(); itcv != candidatesVotes.end();) {
+							std::string candString;
+							if ((*itvc).GetType() == VoteContent::CRC || (*itvc).GetType() == VoteContent::CRCImpeachment)
+								candString = Address(uint168((*itcv).GetCandidate())).String();
+							else if ((*itvc).GetType() == VoteContent::CRCProposal)
+								candString = uint256((*itcv).GetCandidate()).GetHex();
+							else if ((*itvc).GetType() == VoteContent::Delegate)
+								candString = (*itcv).GetCandidate().getHex();
+
+							if (invalidList.find(candString) != invalidList.end())
+								itcv = candidatesVotes.erase(itcv);
+							else
+								++itcv;
+						}
+
+						if (candidatesVotes.empty())
+							itvc = voteContent.erase(itvc);
+						else
+							(*itvc++).SetCandidateVotes(candidatesVotes);
+
 						break;
-					}
-				}
-
-				if (invalidList.empty()) {
-					++it;
-					continue;
-				}
-
-				std::vector<CandidateVotes> candidatesVotes = (*it).GetCandidateVotes();
-				for (std::vector<CandidateVotes>::iterator i = candidatesVotes.begin(); i != candidatesVotes.end();) {
-					std::string candidate = (*i).GetCandidate().getHex();
-					if ((*it).GetType() == VoteContent::CRC || (*it).GetType() == VoteContent::CRCImpeachment) {
-						uint168 programHash((*i).GetCandidate());
-						Address didAddress(programHash);
-						candidate = didAddress.String();
-					}
-
-					if (invalidList.find(candidate) != invalidList.end()) {
-						i = candidatesVotes.erase(i);
 					} else {
-						++i;
+						++itvc;
 					}
-				}
-
-				if (candidatesVotes.empty()) {
-					it = voteContent.erase(it);
-				} else {
-					(*it).SetCandidateVotes(candidatesVotes);
-					++it;
 				}
 			}
 
@@ -436,8 +439,6 @@ namespace Elastos {
 			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
 			// -1 means max
 			ErrorChecker::CheckParam(bgStake <= 0 && !max, Error::Code::VoteStakeError, "Vote stake should not be zero");
-
-			ErrorChecker::CheckJsonArray(invalidCandidates, 0, "invalidCandidates is error json format");
 
 			VoteContent voteContent(VoteContent::Delegate);
 			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
@@ -808,7 +809,6 @@ namespace Elastos {
 			ArgInfo("invalidCandidates: {}", invalidCandidates.dump());
 
 			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
-			ErrorChecker::CheckJsonArray(invalidCandidates, 0, "invalidCandidates is error json format");
 
 			BigInt bgStake = 0;
 
@@ -984,9 +984,9 @@ namespace Elastos {
 							  [&jinfo, &type, &timestamp](const VoteContent &vc) {
 								  nlohmann::json j;
 								  if (type.empty() || type == vc.GetTypeString()) {
-									  if (vc.GetType() == VoteContent::CRC)
+									  if (vc.GetType() == VoteContent::CRC || vc.GetType() == VoteContent::CRCImpeachment)
 										  j["Amount"] = vc.GetTotalVoteAmount().getDec();
-									  else if (vc.GetType() == VoteContent::Delegate)
+									  else if (vc.GetType() == VoteContent::Delegate || vc.GetType() == VoteContent::CRCProposal)
 										  j["Amount"] = vc.GetMaxVoteAmount().getDec();
 									  j["Type"] = vc.GetTypeString();
 									  j["Timestamp"] = timestamp;
@@ -995,9 +995,12 @@ namespace Elastos {
 									  std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
 													[&vc, &candidateVotes](const CandidateVotes &cv) {
 														std::string c;
-														if (vc.GetType() == VoteContent::CRC) {
+														if (vc.GetType() == VoteContent::CRC ||
+															vc.GetType() == VoteContent::CRCImpeachment) {
 															c = Address(uint168(cv.GetCandidate())).String();
-														} else {
+														} else if (vc.GetType() == VoteContent::CRCProposal) {
+															c = uint256(cv.GetCandidate()).GetHex();
+														} else if (vc.GetType() == VoteContent::Delegate) {
 															c = cv.GetCandidate().getHex();
 														}
 														candidateVotes[c] = cv.GetVotes().getDec();
@@ -1182,23 +1185,22 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 
 			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
-			ErrorChecker::CheckJsonArray(invalidCandidates, 0, "invalidCandidates is error json format");
 			BigInt bgStake = 0;
 
 			VoteContent voteContent(VoteContent::CRCProposal);
 			std::vector<CandidateVotes> candidates;
-			bytes_t candidate;
+			uint256 proposalHash;
 			BigInt value;
 			for (nlohmann::json::const_iterator it = votes.cbegin(); it != votes.cend(); ++it) {
 				ErrorChecker::CheckParam(!it.value().is_string(), Error::InvalidArgument, "stake value should be big int string");
 
-				candidate = it.key();
-				ErrorChecker::CheckParam(candidate.size() != 32, Error::InvalidArgument, "invalid proposal hash");
+				proposalHash.SetHex(it.key());
+				ErrorChecker::CheckParam(proposalHash.size() != 32, Error::InvalidArgument, "invalid proposal hash");
 
 				value.setDec(it.value().get<std::string>());
 				ErrorChecker::CheckParam(value <= 0, Error::InvalidArgument, "stake value should larger than 0");
 
-				voteContent.AddCandidate(CandidateVotes(candidate, value));
+				voteContent.AddCandidate(CandidateVotes(proposalHash.bytes(), value));
 			}
 
 			VoteContentArray dropedList;
@@ -1229,7 +1231,6 @@ namespace Elastos {
 			ArgInfo("memo: {}", memo);
 
 			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
-			ErrorChecker::CheckJsonArray(invalidCandidates, 0, "invalidCandidates is error json format");
 			BigInt bgStake = 0;
 
 			VoteContent voteContent(VoteContent::CRCImpeachment);
@@ -1242,9 +1243,9 @@ namespace Elastos {
 				ErrorChecker::CheckBigIntAmount(it.value().get<std::string>());
 
 				key = it.key();
-				Address didAddress(key);
-				ErrorChecker::CheckParam(!didAddress.Valid(), Error::InvalidArgument, "invalid candidate did");
-				candidate = didAddress.ProgramHash().bytes();
+				Address cid(key);
+				ErrorChecker::CheckParam(!cid.Valid(), Error::InvalidArgument, "invalid candidate cid");
+				candidate = cid.ProgramHash().bytes();
 
 				value.setDec(it.value().get<std::string>());
 				ErrorChecker::CheckParam(value <= 0, Error::InvalidArgument, "stake value should larger than 0");
