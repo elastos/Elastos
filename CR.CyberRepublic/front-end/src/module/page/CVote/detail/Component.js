@@ -65,7 +65,7 @@ import './style.scss'
 
 const { TextArea } = Input
 
-const renderRichContent = (data, key, title) => {
+const renderRichContent = (data, key, title, user) => {
   let rc
   if (
     key === 'budget' &&
@@ -82,6 +82,8 @@ const renderRichContent = (data, key, title) => {
         <PaymentList
           list={data.budget}
           milestone={data.plan.milestone}
+          user={user}
+          proposer={data.proposer}
         />
       </div>
     )
@@ -613,7 +615,12 @@ class C extends StandardPage {
           'relevance',
           I18N.get('proposal.fields.relevance')
         )}
-        {renderRichContent(data, 'budget', I18N.get('proposal.fields.budget'))}
+        {renderRichContent(
+          data,
+          'budget',
+          I18N.get('proposal.fields.budget'),
+          user
+        )}
       </div>
     )
   }

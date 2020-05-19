@@ -9,6 +9,16 @@ import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 
 class PaymentList extends BaseComponent {
+  isOwner() {
+    const { user, proposer } = this.props
+    return user.current_user_id === proposer._id
+  }
+
+  isVisible() {
+    const { user } = this.props
+    return this.isOwner() || user.is_secretary
+  }
+
   renderMilestone = (item) => {
     const date = (
       <div className="square-date">
@@ -76,7 +86,7 @@ class PaymentList extends BaseComponent {
 
   ord_render() {
     const { list } = this.props
-    const visible = true
+    const visible = this.isVisible()
     return (
       <StyledTable>
         <StyledHead>
