@@ -228,23 +228,30 @@ type UnregisterCRInfo struct {
 	Signature string `json:"signature"`
 }
 
+type BudgetBaseInfo struct {
+	Type   string `json:"type"`
+	Stage  uint8  `json:"stage"`
+	Amount string `json:"amount"`
+}
+
 type BudgetInfo struct {
 	Type   string `json:"type"`
 	Stage  uint8  `json:"stage"`
 	Amount string `json:"amount"`
 	Status string `json:"status"`
 }
+
 type CRCProposalInfo struct {
-	ProposalType             string       `json:"proposaltype"`
-	CategoryData             string       `json:"categorydata"`
-	OwnerPublicKey           string       `json:"ownerpublickey"`
-	DraftHash                string       `json:"drafthash"`
-	Budgets                  []BudgetInfo `json:"budgets"`
-	Recipient                string       `json:"recipient"`
-	Signature                string       `json:"signature"`
-	CRCouncilMemberDID       string       `json:"crcouncilmemberdid"`
-	CRCouncilMemberSignature string       `json:"crcouncilmembersignature"`
-	Hash                     string       `json:"hash"`
+	ProposalType             string           `json:"proposaltype"`
+	CategoryData             string           `json:"categorydata"`
+	OwnerPublicKey           string           `json:"ownerpublickey"`
+	DraftHash                string           `json:"drafthash"`
+	Budgets                  []BudgetBaseInfo `json:"budgets"`
+	Recipient                string           `json:"recipient"`
+	Signature                string           `json:"signature"`
+	CRCouncilMemberDID       string           `json:"crcouncilmemberdid"`
+	CRCouncilMemberSignature string           `json:"crcouncilmembersignature"`
+	Hash                     string           `json:"hash"`
 }
 
 type CRCProposalReviewInfo struct {
