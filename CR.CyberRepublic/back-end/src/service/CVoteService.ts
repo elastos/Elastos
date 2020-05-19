@@ -1169,24 +1169,26 @@ export default class extends Base {
       }
 
       const db_cvote = this.getDBModel('CVote')
+      const db_user = this.getDBModel('User')
       const cur = await db_cvote.find({
         proposalHash: payload.data.proposalHash
       })
-      if (!cur) {
+      const user = await db_user.find({'did.id': payload.data.did})
+      const votedBy = user[0]._id
+      const proposalHash = payload.data.proposalHash
+      const voteResult = _.find(cur[0].voteResult, function (o) {
+        if (o.votedBy.equals(votedBy)) {
+          return o
+        }
+      })
+      if (!cur || !voteResult) {
         return {
           code: 400,
           success: false,
           message: 'There is no this proposal'
         }
       }
-      const votedBy = _.get(this.currentUser, '_id')
-      const proposalHash = payload.data.proposalHash
 
-      const voteResult = _.find(cur[0].voteResult, function (o) {
-        if (o.votedBy.equals(votedBy)) {
-          return o
-        }
-      })
       const rs: any = await getDidPublicKey(claims.iss)
       if(!rs) {
         return {
@@ -1199,7 +1201,7 @@ export default class extends Base {
       return jwt.verify(
         jwtToken,
         rs.publicKey,
-        async (err:any, decoded: any) => {
+        async (err: any, decoded: any) => {
           if(err) {
             return {
               code: 401,
