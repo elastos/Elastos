@@ -1170,26 +1170,24 @@ export default class extends Base {
       }
 
       const db_cvote = this.getDBModel('CVote')
-      const db_user = this.getDBModel('User')
       const cur = await db_cvote.find({
         proposalHash: payload.data.proposalHash
       })
-      const user = await db_user.find({'did.id': payload.data.did})
-      const votedBy = user[0]._id
-      const proposalHash = payload.data.proposalHash
-      const voteResult = _.find(cur[0].voteResult, function (o) {
-        if (o.votedBy.equals(votedBy)) {
-          return o
-        }
-      })
-      if (!cur || !voteResult) {
+      if (!cur) {
         return {
           code: 400,
           success: false,
           message: 'There is no this proposal'
         }
       }
+      const votedBy = _.get(this.currentUser, '_id')
+      const proposalHash = payload.data.proposalHash
 
+      const voteResult = _.find(cur[0].voteResult, function (o) {
+        if (o.votedBy.equals(votedBy)) {
+          return o
+        }
+      })
       const rs: any = await getDidPublicKey(claims.iss)
       if(!rs) {
         return {
@@ -1239,7 +1237,7 @@ export default class extends Base {
               return {
                 code: 500,
                 success: false,
-                message: 'Something went wrong'
+                message: 'Something went wrong.' + err.message
               }
             }
           }
@@ -1695,8 +1693,12 @@ export default class extends Base {
     }
     tm = setInterval(() => {
       console.log('---------------- start cvote crjob of 5 min -------------')
-      this.pollVotersRejectAmount()
+      // poll proposal status in chain
+      this.pollproposalStatus()
+      // council vote status in registered
       this.pollCouncilVoteStatus()
+      // member vote status in agreed
+      this.pollVotersRejectAmount()
     }, 1000 * 60 * 5)
   }
 
@@ -1711,6 +1713,61 @@ export default class extends Base {
       idsAborted.push(item._id)
       this.proposalAborted(item.proposalHash)
     })
+  }
+
+  public async pollproposalStatus() {
+    const db_cvote = this.getDBModel("CVote")
+    const list = await db_cvote.find()
+    _.each(list, (item)=>{
+      this.updateProposlaStatus(item.proposalHash)
+    })
+    
+  }
+
+  public async updateProposlaStatus(proposalHash) {
+    const db_cvote = this.getDBModel("CVote")
+    const rs: any = await getProposalData(proposalHash)
+    const proposalOnChain = {
+      Registered: constant.CVOTE_STATUS.PROPOSED,
+      CRAgreed: constant.CVOTE_STATUS.NOTIFICATION,
+      CRCanceled: constant.CVOTE_STATUS.REJECT,
+      VoterAgreed: constant.CVOTE_STATUS.ACTIVE,
+      VoterCanceled: constant.CVOTE_STATUS.VETOED,
+      Finished: constant.CVOTE_STATUS.FINAL,
+      Aborted: {
+        [constant.CVOTE_STATUS.PROPOSED]: constant.CVOTE_STATUS.REJECT,
+        [constant.CVOTE_STATUS.NOTIFICATION]: constant.CVOTE_STATUS.VETOED
+      }
+    }
+
+    // status not support "Terminated"
+    if(rs && rs.success && rs.status !== 'Terminated'){
+      if ( rs.status === 'Aborted' ){
+        const rs = await db_cvote.find({proposalHash})
+        if(rs.status === 'PROPOSED'){
+          await db_cvote.update(
+            {proposalHash},
+            {
+              status: proposalOnChain.Aborted[rs.status]
+            }
+          )
+        }
+        if(rs.status === 'NOTIFICATION'){
+          await db_cvote.update(
+            {proposalHash},
+            {
+              status: proposalOnChain.Aborted[rs.status]
+            }
+          ) 
+        }
+      }
+      await db_cvote.update(
+        { proposalHash },
+        {
+          status: proposalOnChain[rs.status]
+        }
+      )
+    }
   }
 
   // TODO
