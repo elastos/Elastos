@@ -206,7 +206,6 @@ export default class extends Base {
         }
 
         if (secretariat) {
-
             return {
                 ..._.omit(secretariat._doc, ['_id', 'user', 'startDate', 'endDate']),
                 ...this.getUserInformation(secretariat._doc, secretariat.user),
