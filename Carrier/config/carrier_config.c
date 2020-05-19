@@ -125,6 +125,7 @@ int load_express_config(config_t *cfg, ElaOptions *options)
     config_setting_t *bootstrap_setting;
     int entries;
     size_t *mem;
+    int idx;
 
     const char *stropt;
     char number[64];
@@ -153,10 +154,10 @@ int load_express_config(config_t *cfg, ElaOptions *options)
     options->express_bootstraps_size = entries;
     options->express_bootstraps = (BootstrapNode *)(++mem);
 
-    for (int i = 0; i < entries; i++) {
-        BootstrapNode *node = options->express_bootstraps + i;
+    for (idx = 0; idx < entries; idx++) {
+        BootstrapNode *node = options->express_bootstraps + idx;
 
-        bootstrap_setting = config_setting_get_elem(bootstraps_setting, i);
+        bootstrap_setting = config_setting_get_elem(bootstraps_setting, idx);
 
         int rc = config_setting_lookup_string(bootstrap_setting, "ipv4", &stropt);
         if (rc && *stropt)

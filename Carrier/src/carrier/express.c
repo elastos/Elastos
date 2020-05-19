@@ -23,6 +23,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -96,7 +97,7 @@ static const int  EXP_CURLCODE_MASK    = 0x00001000;
 static const int  EXP_HTTP_MAGICNUM    = 0xCA6EE595;
 static const int  EXP_HTTP_MAGICSIZE   = 4;
 static const int  EXP_HTTP_TIMEOUT     = 30 * 1000; // ms
-static const int  EXP_HTTP_URL_MAXSIZE = 1024;
+#define  EXP_HTTP_URL_MAXSIZE 1024
 
 static inline int conv_curlcode(int curlcode) {
     return (curlcode | EXP_CURLCODE_MASK);
@@ -358,7 +359,7 @@ size_t http_read_data(char *buffer, size_t size, size_t nitems, void *userdata)
     }
     parsed_sz = rc;
 
-    if(parsed_sz > 0 && parsed_sz < task->pos) {
+    if(parsed_sz > 0 && parsed_sz < (int)task->pos) {
         size_t remain_sz = task->pos - parsed_sz;
         uint8_t *remain_data = rc_alloc(remain_sz, NULL);
         memcpy(remain_data, task->data + parsed_sz, remain_sz);
@@ -446,7 +447,7 @@ static int http_do(ExpressConnector *connector, http_client_t *http_client,
     http_client_set_timeout(connector->http_client, EXP_HTTP_TIMEOUT);
     rc = http_client_request(http_client);
     if(rc != 0) {
-        vlogE("Express: Failed to perform http request.(CURLE: %d)", rc);
+        vlogE("Express: Failed to perform http request. url=%s,(CURLE: %d)", url, rc);
         return ELA_EXPRESS_ERROR(conv_curlcode(rc));
     }
 
@@ -468,7 +469,7 @@ static int http_do(ExpressConnector *connector, http_client_t *http_client,
 }
 
 static int del_msgs(ExpressConnector *connector, http_client_t *httpc,
-                        int64_t msg_lasttime)
+                    int64_t msg_lasttime)
 {
     int rc;
     char lasttime[256];
@@ -482,7 +483,7 @@ static int del_msgs(ExpressConnector *connector, http_client_t *httpc,
     if(msg_lasttime <= 0)
         return 0;
 
-    snprintf(lasttime, sizeof(lasttime), "%lld", msg_lasttime);
+    snprintf(lasttime, sizeof(lasttime), "%"PRId64, msg_lasttime);
     lasttime_len = strlen(lasttime);
 
     crypted_data = alloca(NONCE_BYTES + lasttime_len + ZERO_BYTES);
@@ -519,7 +520,7 @@ static int postmsg_runner(ExpTasklet *base)
     int rc;
     ExpSendTasklet *task = (ExpSendTasklet *)base;
     ExpressConnector *connector = task->base.connector;
-    char path[EXP_HTTP_URL_MAXSIZE] = {0};
+    char path[EXP_HTTP_URL_MAXSIZE];
 
 #if 0
     vlogV("Express: send message data: (%d) 0x%02x 0x%02x ~ 0x%02x 0x%02x",

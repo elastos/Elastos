@@ -23,7 +23,6 @@
 #define __ELASTOS_CARRIER_EXPRESS__
 
 #include <stdint.h>
-#include <unistd.h>
 
 #ifdef __cplusplus
 extern "C" {

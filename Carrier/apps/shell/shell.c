@@ -941,15 +941,15 @@ static void receipt_message_callback(int64_t msgid,  ElaMessageState state, void
 
 static void send_receipt_message(ElaCarrier *w, int argc, char *argv[])
 {
-    int rc;
+    int64_t msgid;
 
     if (argc != 3) {
         output("Invalid command syntax.\n");
         return;
     }
 
-    int64_t msgid = ela_send_message_with_receipt(w, argv[1], argv[2], strlen(argv[2]) + 1,
-                                                  receipt_message_callback, NULL);
+    msgid = ela_send_message_with_receipt(w, argv[1], argv[2], strlen(argv[2]) + 1,
+                                          receipt_message_callback, NULL);
     if (msgid >= 0)
         output("Sending receipt message. msgid:0x%llx\n", msgid);
     else
@@ -960,20 +960,23 @@ static void send_receipt_bulkmessage(ElaCarrier *w, int argc, char *argv[])
 {
     int rc;
     int datalen = 2048;
-    char data[datalen];
+    char *data;
+    int idx;
 
     if (argc != 2) {
         output("Invalid command syntax.\n");
         return;
     }
 
-    for(int idx = 0; idx < datalen; idx++) {
+    data = (char*)calloc(1, datalen);
+    for(idx = 0; idx < datalen; idx++) {
         data[idx] = '0' + (idx % 8);
     }
     memcpy(data + datalen - 5, "end", 4);
 
     int64_t msgid = ela_send_message_with_receipt(w, argv[1], data, strlen(data) + 1,
                                                   receipt_message_callback, NULL);
+    free(data);
     if (msgid >= 0)
         output("Sending receipt message. msgid:0x%llx\n", msgid);
     else

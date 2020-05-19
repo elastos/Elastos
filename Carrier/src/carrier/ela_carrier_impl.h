@@ -82,8 +82,8 @@ typedef struct FriendEvent {
 } FriendEvent;
 
 typedef enum MsgCh {
-    MSGCH_DHT = 0,
-    MSGCH_EXPRESS = 1,
+    MSGCH_DHT = 1,
+    MSGCH_EXPRESS = 2,
 } MsgCh;
 
 typedef struct MsgReceiptEvent {
@@ -160,6 +160,8 @@ struct ElaCarrier {
     hashtable_t *tassembly_irsps;
 
     hashtable_t *bulkmsgs;
+
+    hashtable_t *recptmsg;
 
     pthread_t main_thread;
 

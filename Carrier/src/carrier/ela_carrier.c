@@ -75,6 +75,7 @@
 #include "tassemblies.h"
 #include "bulkmsgs.h"
 #include "express.h"
+#include "receiptmsg.h"
 
 #define TURN_SERVER_PORT                ((uint16_t)3478)
 #define TURN_SERVER_USER_SUFFIX         "auth.tox"
@@ -1038,6 +1039,9 @@ static void ela_destroy(void *argv)
     if (w->bulkmsgs)
         deref(w->bulkmsgs);
 
+    if (w->recptmsg)
+        deref(w->recptmsg);
+
     if (w->thistory)
         deref(w->thistory);
 
@@ -1333,6 +1337,14 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
 
     w->bulkmsgs = bulkmsgs_create(8);
     if (!w->bulkmsgs) {
+        free_persistence_data(&data);
+        deref(w);
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        return NULL;
+    }
+
+    w->recptmsg = recptmsg_create(16);
+    if (!w->recptmsg) {
         free_persistence_data(&data);
         deref(w);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
@@ -3154,18 +3166,17 @@ static void parse_address(const char *addr, char **uid, char **ext)
 int64_t generate_msgid(ElaCarrier *w, uint32_t refer, MsgCh ch)
 {
     int64_t msgid = 0;
-    int now = time(NULL);
+    // int now = time(NULL);
 
-    if(ch != MSGCH_DHT) {
+    if(refer == 0)
         refer = ++w->msgid_counter;
-    }
 
     if(refer > 0x1FFFFFFF)
         refer -= 0x1FFFFFFF;
 
     msgid = refer;
     msgid = (msgid << 2) + ch;
-    msgid = (msgid << 32) + now;
+    // msgid = (msgid << 32) + now;
 
     return msgid;
 }
@@ -4368,44 +4379,31 @@ int ela_leave_all_groups(ElaCarrier *w)
     return 0;
 }
 
-static void on_friend_messge_receipted(ElaCarrier *w, int64_t msgid, bool succeed)
+static void on_friend_messge_receipted(ElaCarrier *w, MsgCh msgch, int64_t msgid, bool succeed)
 {
-    list_iterator_t it;
+    ElaMessageState msg_state;
+    ReceiptMsg *msg;
+    
+    msg = recptmsg_get(w->recptmsg, msgid);
+    if(!msg)
+        return;
 
-    list_iterate(w->friend_msgs, &it);
-    while(list_iterator_has_next(&it)) {
-        struct MsgReceiptEvent *event;
-        ElaMessageState msg_state;
-        int rc;
-
-        rc = list_iterator_next(&it, (void **)&event);
-        assert(rc == 1);
-
-        if(is_msgid_equal(event->msgid, msgid, event->msgch)) {
-            switch (event->msgch) {
-                case MSGCH_DHT:
-                    msg_state = ElaMessage_Receipted;
-                    break;
-                case MSGCH_EXPRESS:
-                    msg_state = (succeed ? ElaMessage_OfflineSent : ElaMessage_Error);
-                    break;
-                default:
-                    assert(false); // never reached
-            }
-        } else {
-            deref(event);
-            continue;
-        }
-
-        if(event->callback != NULL)
-            event->callback(event->msgid,
-                            msg_state,
-                            event->context);
-
-        list_iterator_remove(&it);
-        deref(event);
-        break;
+    switch (msg->msgch) {
+        case MSGCH_DHT:
+            msg_state = ElaMessage_Receipted;
+            break;
+        case MSGCH_EXPRESS:
+            msg_state = (succeed ? ElaMessage_OfflineSent : ElaMessage_Error);
+            break;
+        default:
+            assert(false); // never reached
     }
+
+    if(msg->callback != NULL)
+        msg->callback(msg->msgid, msg_state, msg->context);
+
+    deref(msg);
+    recptmsg_remove(w->recptmsg, msgid);
 
     vlogI("Carrier: processed receipted message, remaining item: %d.", list_size(w->friend_msgs));
 }
@@ -4451,7 +4449,7 @@ static void handle_offline_stat(EventBase *event, ElaCarrier *w)
     if(ev->stat.errcode < 0)
         ela_set_error(ev->stat.errcode);
 
-    on_friend_messge_receipted(w, ev->stat.msgid, ev->stat.errcode >= 0);
+    on_friend_messge_receipted(w, MSGCH_EXPRESS, ev->stat.msgid, ev->stat.errcode >= 0);
 }
 
 static void notify_offline_stat(ElaCarrier *w, const char *to,
@@ -4584,99 +4582,9 @@ static int bundle_bulk_message(const void *msg, size_t len, const char *ext_name
     return data_len;
 }
 
-// int send_message_by_dht(ElaCarrier *w, const char *to,
-//                         const void *msg, size_t len,
-//                         uint32_t *msgid)
-// {
-//     uint32_t friend_number;
-//     char ext_name[ELA_MAX_ID_LEN] = {0};
-//     bool friend_online;
-//     uint8_t *data;
-//     int data_len;
-//     int rc;
-
-//     rc = check_message_sendable(w, to, msg, len, &friend_number, ext_name);
-//     if (rc < 0)
-//         return rc;
-
-//     if (len <= ELA_MAX_APP_MESSAGE_LEN) {
-//         rc = bundle_single_message(msg, len, ext_name, &data);
-//         if (rc < 0)
-//             return rc;
-
-//         data_len = rc;
-//         rc = dht_friend_message_with_msgid(&w->dht, friend_number, data,
-//                                            data_len, msgid);
-//         free(data);
-//         if (rc < 0)
-//             return rc;
-//     } else {
-//         int64_t tid = generate_tid();
-//         size_t sent_off = 0;
-
-//         do {
-//             int msg_len = ELA_MAX_APP_MESSAGE_LEN;
-//             if(len - sent_off < ELA_MAX_APP_MESSAGE_LEN)
-//                 msg_len = len - sent_off;
-
-//             rc = bundle_bulk_message(msg + sent_off, msg_len, ext_name,
-//                                      tid, sent_off == 0 ? len : 0,
-//                                      &data);
-//             if (rc < 0)
-//                 return rc;
-
-//             sent_off += msg_len;
-//             data_len = rc;
-//             rc = dht_friend_message_with_msgid(&w->dht, friend_number, data,
-//                                                data_len, msgid);
-//             free(data);
-//             if (rc < 0)
-//                 return rc;
-
-//         } while (sent_off < len);
-
-//     }
-
-//     return 0;
-// }
-
-// int send_message_by_express(ElaCarrier *w, const char *to,
-//                             const void *msg, size_t len,
-//                             int64_t msgid)
-// {
-//     uint32_t friend_number;
-//     char ext_name[ELA_MAX_ID_LEN] = {0};
-//     bool friend_online;
-//     uint8_t *data;
-//     int data_len;
-//     bool conn_made;
-//     int rc;
-
-//     rc = check_message_sendable(w, to, msg, len, &friend_number, ext_name);
-//     if (rc < 0)
-//         return rc;
-
-//     rc = bundle_single_message(msg, len, ext_name, &data);
-//     if (rc < 0)
-//         return rc;
-     
-//     data_len = rc;
-
-//     conn_made = try_make_connector(w);
-//     if (!conn_made)
-//         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
-
-//     rc = express_enqueue_post_message_with_receipt(w->connector, to, data, data_len, msgid);
-//     if (rc < 0) {
-//         vlogW("Carrier: Enqueue offline friend message error.");
-//         return rc;
-//     }
-
-//     return 0;
-// }
-
 int make_express_pref(const ElaOptions *opts, Preferences* pref)
 {
+    int idx;
     int express_bootstraps_size = opts->express_bootstraps_size;
     pref->express_bootstraps = (DhtBootstrapNodeBuf *)calloc(1, sizeof(DhtBootstrapNodeBuf)
                          * express_bootstraps_size);
@@ -4684,9 +4592,9 @@ int make_express_pref(const ElaOptions *opts, Preferences* pref)
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
     }
 
-    for (int i = 0; i < express_bootstraps_size; i++) {
-        BootstrapNode *b = &opts->express_bootstraps[i];
-        DhtBootstrapNodeBuf *bi = &pref->express_bootstraps[i];
+    for (idx = 0; idx < express_bootstraps_size; idx++) {
+        BootstrapNode *b = &opts->express_bootstraps[idx];
+        DhtBootstrapNodeBuf *bi = &pref->express_bootstraps[idx];
         char *endptr = "";
         ssize_t len;
 
@@ -4741,35 +4649,41 @@ static bool try_make_connector(ElaCarrier *w)
 
 static void do_message_receipt_expire(ElaCarrier *w)
 {
-    int now = time(NULL);
-    list_iterator_t it;
+    hashtable_iterator_t it;
+    time_t now = time(NULL);
 
-    list_iterate(w->friend_msgs, &it);
-    while(list_iterator_has_next(&it)) {
-        struct MsgReceiptEvent *event;
+redo_events:
+    recptmsg_iterate(w->recptmsg, &it);
+    while (recptmsg_iterator_has_next(&it)) {
+        ReceiptMsg *item;
         ElaMessageState msg_state;
         int rc;
 
-        rc = list_iterator_next(&it, (void **)&event);
-        assert(rc == 1);
+        rc = recptmsg_iterator_next(&it, &item);
+        if (rc == 0)
+            break;
 
-        int create_at = get_msgid_createtime(event->msgid);
+        if (rc == -1)
+            goto redo_events;
+
+        // int create_at = get_msgid_createtime(item->msgid);
+        time_t create_at = item->timestamp;
         if(now - create_at < 30) {
-            deref(event);
+            deref(item);
             continue;
         }
 
-        if(event->msgch == MSGCH_DHT) {
-            vlogI("Carrier: Expired to send message to %s, resend(0x%llx) by express.", event->to, event->msgid);
-            event->msgch = MSGCH_EXPRESS;
-            // rc = send_message_by_express(w, event->to, event->data, event->size, event->msgid);
+        if(item->msgch == MSGCH_DHT) {
+            vlogI("Carrier: Expired to send message to %s, resend(0x%llx) by express.", item->to, item->msgid);
+            item->msgch = MSGCH_EXPRESS;
+            // rc = send_message_by_express(w, item->to, item->data, item->size, item->msgid);
             if(rc < 0) {
-                event->callback(event->msgid, ElaMessage_Error, event->context);
-                list_iterator_remove(&it);
+                item->callback(item->msgid, ElaMessage_Error, item->context);
+                recptmsg_iterator_remove(&it);
             }
         }
 
-        deref(event);
+        deref(item);
     }
 
     // vlogI("Carrier: processed expired message, remaining item: %d.", list_size(w->friend_msgs));
@@ -4778,21 +4692,27 @@ static void do_message_receipt_expire(ElaCarrier *w)
 static void do_express_expire(ElaCarrier *w, struct timeval *now)
 {
     struct timeval expire_interval;
+    bool need_pullmsg = false;
     bool conn_made;
     int rc;
 
     if (timercmp(now, &w->express_expiretime, <))
         return;
     
+    if(w->express_expiretime.tv_sec != 0)
+        need_pullmsg = true;
+
     expire_interval.tv_sec = EXPRESS_DEF_TIMEOUT;
     expire_interval.tv_usec = 0;
     timeradd(now, &expire_interval, &w->express_expiretime);
 
-    conn_made = try_make_connector(w);
-    if (conn_made) {
-        rc = express_enqueue_pull_messages(w->connector);
-        if(rc < 0)
-            vlogE("Express: expire pullmsg failed.(%x)", rc);
+    if (need_pullmsg) {
+        conn_made = try_make_connector(w);
+        if (need_pullmsg && conn_made) {
+            rc = express_enqueue_pull_messages(w->connector);
+            if(rc < 0)
+                vlogE("Express: expire pullmsg failed.(%x)", rc);
+        }
     }
 
     return;
@@ -4802,8 +4722,9 @@ static void notify_friend_read_receipt_cb(uint32_t friend_number, uint32_t messa
                                           void *context)
 {
     ElaCarrier *w = (ElaCarrier *)context;
-
-    on_friend_messge_receipted(w, message_id, true);
+    int64_t msgid = generate_msgid(w, message_id, MSGCH_DHT);
+    
+    on_friend_messge_receipted(w, MSGCH_DHT, msgid, true);
 }
 
 int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
@@ -4812,9 +4733,9 @@ int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
 {
     bool is_offline;
     int64_t msgid;
-    MsgReceiptEvent *event;
+    ReceiptMsg *event;
 
-    event = (MsgReceiptEvent*)rc_zalloc(sizeof(MsgReceiptEvent) + len, NULL);
+    event = (ReceiptMsg*)rc_zalloc(sizeof(ReceiptMsg) + len, NULL);
     if (!event) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return -1;
@@ -4830,14 +4751,15 @@ int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
     event->msgch = (is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
     event->msgid = msgid;
 
+    event->timestamp = time(NULL);
+
     event->callback = cb;
     event->context = context;
 
     event->size = len;
     memcpy(event->data, msg, len);
 
-    event->base.le.data = event;
-    list_push_tail(carrier->friend_msgs, &event->base.le);
+    recptmsg_put(carrier->recptmsg, event);
     deref(event);
 
     return msgid;
