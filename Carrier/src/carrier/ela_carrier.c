@@ -1765,14 +1765,18 @@ static void do_tassemblies_expire(hashtable_t *tassemblies)
 
     gettimeofday(&now, NULL);
 
+redo_expire:
     tassemblies_iterate(tassemblies, &it);
     while(tassemblies_iterator_has_next(&it)) {
         TransactedAssembly *item;
         int rc;
 
         rc = tassemblies_iterator_next(&it, &item);
-        if (rc <= 0)
+        if (rc == 0)
             break;
+
+        if (rc == -1)
+            goto redo_expire;
 
         if (timercmp(&now, &item->expire_time, >))
             tassemblies_iterator_remove(&it);
@@ -1802,21 +1806,25 @@ void transacted_callback_expire(ElaCarrier *w, TransactedCallback *callback)
                   NULL, 0, callback->callback_context);
 }
 
-static void do_transacted_callabcks_check(ElaCarrier *w)
+static void do_transacted_callabcks_expire(ElaCarrier *w)
 {
     hashtable_iterator_t it;
     struct timeval now;
 
     gettimeofday(&now, NULL);
 
+redo_expire:
     transacted_callbacks_iterate(w->tcallbacks, &it);
     while(transacted_callbacks_iterator_has_next(&it)) {
         TransactedCallback *tcb;
         int rc;
 
         rc = transacted_callbacks_iterator_next(&it, &tcb);
-        if (rc <= 0)
+        if (rc == 0)
             break;
+
+        if (rc == -1)
+            goto redo_expire;
 
         if (timercmp(&now, &tcb->expire_time, >)) {
             hashtable_iterator_remove(&it);
@@ -1834,17 +1842,62 @@ static void do_bulkmsgs_expire(hashtable_t *bulkmsgs)
 
     gettimeofday(&now, NULL);
 
+
+redo_exipre:
     bulkmsgs_iterate(bulkmsgs, &it);
     while (bulkmsgs_iterator_has_next(&it)) {
         BulkMsg *item;
         int rc;
 
         rc = bulkmsgs_iterator_next(&it, &item);
-        if (rc <= 0)
+        if (rc == 0)
             break;
+
+        if (rc == -1)
+            goto redo_exipre;
 
         if (timercmp(&now, &item->expire_time, >))
             bulkmsgs_iterator_remove(&it);
+
+        deref(item);
+    }
+}
+
+static void do_receipts_expire(hashtable_t *receipts)
+{
+    hashtable_iterator_t it;
+    struct timeval now;
+
+    gettimeofday(&now, NULL);
+
+redo_check:
+    receipts_iterate(receipts, &it);
+    while (receipts_iterator_has_next(&it)) {
+        Receipt *item;
+        ElaReceiptState state;
+        int rc;
+
+        rc = receipts_iterator_next(&it, &item);
+        if (rc == 0)
+            break;
+
+        if (rc == -1)
+            goto redo_check;
+
+        if (timercmp(&now, &item->expire_time, <)) {
+            deref(item);
+            continue;
+        }
+
+        if(item->msgch == MSGCH_DHT) {
+            vlogI("Carrier: Expired to send message to %s, resend(0x%llx) by express.", item->to, item->msgid);
+            item->msgch = MSGCH_EXPRESS;
+            // rc = send_message_by_express(w, item->to, item->data, item->size, item->msgid);
+            if(rc < 0) {
+                item->callback(item->msgid, ElaReceipt_Error, item->context);
+                receipts_iterator_remove(&it);
+            }
+        }
 
         deref(item);
     }
@@ -2560,9 +2613,9 @@ int ela_run(ElaCarrier *w, int interval)
         do_friend_events(w);
         do_tassemblies_expire(w->tassembly_ireqs);
         do_tassemblies_expire(w->tassembly_irsps);
-        do_transacted_callabcks_check(w);
+        do_transacted_callabcks_expire(w);
         do_bulkmsgs_expire(w->bulkmsgs);
-        do_message_receipt_expire(w);
+        do_receipts_expire(w->receipts);
         do_express_expire(w, &expire);
 
         if (idle_interval > 0)
@@ -4649,48 +4702,6 @@ static bool try_make_connector(ElaCarrier *w)
     return (w->connector != NULL);
 }
 
-static void do_message_receipt_expire(ElaCarrier *w)
-{
-    hashtable_iterator_t it;
-    time_t now = time(NULL);
-
-redo_check:
-    receipts_iterate(w->receipts, &it);
-    while (receipts_iterator_has_next(&it)) {
-        Receipt *item;
-        ElaReceiptState state;
-        int rc;
-
-        rc = receipts_iterator_next(&it, &item);
-        if (rc == 0)
-            break;
-
-        if (rc == -1)
-            goto redo_check;
-
-        // int create_at = get_msgid_createtime(item->msgid);
-        time_t create_at = item->timestamp;
-        if(now - create_at < 30) {
-            deref(item);
-            continue;
-        }
-
-        if(item->msgch == MSGCH_DHT) {
-            vlogI("Carrier: Expired to send message to %s, resend(0x%llx) by express.", item->to, item->msgid);
-            item->msgch = MSGCH_EXPRESS;
-            // rc = send_message_by_express(w, item->to, item->data, item->size, item->msgid);
-            if(rc < 0) {
-                item->callback(item->msgid, ElaReceipt_Error, item->context);
-                receipts_iterator_remove(&it);
-            }
-        }
-
-        deref(item);
-    }
-
-    // vlogI("Carrier: processed expired message, remaining item: %d.", list_size(w->friend_msgs));
-}
-
 static void do_express_expire(ElaCarrier *w, struct timeval *now)
 {
     struct timeval expire_interval;
@@ -4736,6 +4747,7 @@ int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
     bool is_offline;
     int64_t msgid;
     Receipt *receipt;
+    struct timeval expire_interval;
 
     receipt = (Receipt*)rc_zalloc(sizeof(Receipt) + len, NULL);
     if (!receipt) {
@@ -4753,7 +4765,10 @@ int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
     receipt->msgch = (is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
     receipt->msgid = msgid;
 
-    receipt->timestamp = time(NULL);
+    gettimeofday(&receipt->expire_time, NULL);
+    expire_interval.tv_sec = 30;
+    expire_interval.tv_usec = 0;
+    timeradd(&receipt->expire_time, &expire_interval, &receipt->expire_time);
 
     receipt->callback = cb;
     receipt->context = context;

@@ -33,8 +33,7 @@ typedef struct Receipt {
     MsgCh msgch;
     int64_t msgid;
 
-    time_t timestamp;
-
+    struct timeval expire_time;
     ElaFriendMessageReceiptCallback *callback;
     void *context;
 
