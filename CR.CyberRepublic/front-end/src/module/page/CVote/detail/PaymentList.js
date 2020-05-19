@@ -51,28 +51,24 @@ class PaymentList extends BaseComponent {
 
   renderActions(status) {
     const { user } = this.props
-    switch (status) {
-      case WAITING_FOR_REQUEST:
-        return <td>request</td>
-      case REJECTED:
-        return <td>re-request</td>
-      case WAITING_FOR_APPROVAL:
-        return (
-          user.is_secretary && (
-            <td>
-              <div>reject</div>
-              <div>approve</div>
-            </td>
-          )
-        )
-      case WAITING_FOR_WITHDRAW:
-        return (
+    if (status === WAITING_FOR_REQUEST) {
+      return <td>request</td>
+    }
+    if (status === REJECTED) {
+      return <td>re-request</td>
+    }
+    if (status === WAITING_FOR_APPROVAL) {
+      return (
+        user.is_secretary && (
           <td>
-            <div>withdraw</div>
+            <div>reject</div>
+            <div>approve</div>
           </td>
         )
-      default:
-        return
+      )
+    }
+    if (status === WAITING_FOR_WITHDRAW) {
+      return <td>withdraw</td>
     }
   }
 
