@@ -1,5 +1,5 @@
 import Base from '../Base'
-import update from './update'
+import applyPayment from './apply_payment'
 import signatureCallback from './owner_signature_callback'
 import checkSignature from './check_signature'
 import secSignatureCallback from './sec_signature_callback'
@@ -8,7 +8,7 @@ import review from './review'
 export default Base.setRouter([
   {
     path: '/:id/milestones/:milestoneKey',
-    router: update,
+    router: applyPayment,
     method: 'post'
   },
   {

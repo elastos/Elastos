@@ -24,7 +24,7 @@ export default class extends Base {
     this.trackingModel = this.getDBModel('CVote_Tracking')
   }
 
-  public async update(param: any) {
+  public async applyPayment(param: any) {
     try {
       const { id, milestoneKey, message } = param
       if (!message) {

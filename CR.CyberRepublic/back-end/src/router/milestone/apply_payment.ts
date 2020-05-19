@@ -6,7 +6,7 @@ export default class extends Base {
   async action() {
     const param = this.getParam()
     const service = this.buildService(MilestoneService)
-    const rs = await service.update(param)
+    const rs = await service.applyPayment(param)
     return this.result(1, rs)
   }
 }
