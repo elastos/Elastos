@@ -849,7 +849,8 @@ class C extends StandardPage {
             )} `,
             avatar: _.get(cur, 'votedBy.profile.avatar'),
             reason: cur.reason,
-            votedBy: _.get(cur, 'votedBy._id')
+            votedBy: _.get(cur, 'votedBy._id'),
+            status: _.get(cur, 'status')
           }
           if (prev[cur.value]) {
             prev[cur.value].push(item)
@@ -867,7 +868,8 @@ class C extends StandardPage {
           const item = {
             name: key,
             avatar: _.get(avatarMap, key),
-            reason: _.get(reasonMap, key)
+            reason: _.get(reasonMap, key),
+            status: key
           }
           if (prev[value]) {
             prev[value].push(item)
@@ -881,7 +883,7 @@ class C extends StandardPage {
 
     const { match, getReviewProposalUrl, getReviewProposal,isCouncil,data,currentUserId } = this.props
     const ownerVote = _.find(data.voteResult,function(o){
-      if(o.votedBy._id == currentUserId){
+      if( o.votedBy && o.votedBy._id == currentUserId){
         return o
       }
     })

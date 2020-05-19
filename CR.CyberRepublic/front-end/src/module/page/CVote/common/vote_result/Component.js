@@ -20,8 +20,9 @@ const Component = (
       currentUserId      
     }
   ) => {
+  // console.log(dataList)
   const votesNode = _.map(dataList, (data, key) => {
-    let voteStatus = voteResult[key].status
+    let voteStatus = data.status
     if(voteStatus == undefined || voteStatus == 'failed' || voteStatus == 'unchain') {
       voteStatus = I18N.get(`council.voting.chainStatus.unchain`)
     } 
@@ -32,17 +33,15 @@ const Component = (
        voteStatus = I18N.get(`council.voting.chainStatus.chaining`)
     }
     
-    let isOwner = data.votedBy === currentUserId
-
-    // const isReject = type === CVOTE_RESULT.REJECT
+    let isOwner = data.votedBy && data.votedBy === currentUserId
     const userNode = (
       <Item key={key}>
         {data.avatar ? <Avatar src={data.avatar} alt="voter avatar" /> : <StyledAvatarIcon />}
-        <div>{data.name}</div>
-        <div>{ isCouncil && data.reason != '' ? voteStatus : null }</div>
+        <div>{ data.name }</div>
+        <div>{ voteStatus }</div>
         <div style={{ marginTop: '0.5rem'}}>
           { 
-          ( isCouncil && isOwner && (voteResult[key].status == 'unchain' || voteResult[key].status == undefined ) && data.reason != '' ) ? 
+          ( isCouncil && isOwner && (voteStatus == 'unchain' || voteStatus == undefined ) && data.reason != '' ) ? 
           <OnChain 
           getReviewProposal={getReviewProposal}
           getReviewProposalUrl={getReviewProposalUrl}
