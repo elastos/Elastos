@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Popover } from 'antd'
+import { Popover, Modal } from 'antd'
 import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
@@ -16,6 +16,21 @@ const {
 } = MILESTONE_STATUS
 
 class PaymentList extends BaseComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      toggle: false
+    }
+  }
+
+  hideModal = () => {
+    this.setState({ toggle: false })
+  }
+
+  showModal = () => {
+    this.setState({ toggle: true })
+  }
+
   isOwner() {
     const { user, proposer } = this.props
     return user.current_user_id === proposer._id
@@ -49,10 +64,15 @@ class PaymentList extends BaseComponent {
     )
   }
 
-  renderActions(status) {
+  renderActions(mStatus) {
     const { user } = this.props
+    const status = mStatus ? mStatus : WAITING_FOR_REQUEST
     if (status === WAITING_FOR_REQUEST) {
-      return <td>request</td>
+      return (
+        <td>
+          <div onClick={this.showModal}>request</div>
+        </td>
+      )
     }
     if (status === REJECTED) {
       return <td>re-request</td>
@@ -139,6 +159,15 @@ class PaymentList extends BaseComponent {
           {list &&
             list.map((item, index) => this.renderPaymentItem(item, index))}
         </tbody>
+        <Modal
+          maskClosable={false}
+          visible={this.state.toggle}
+          onCancel={this.hideModal}
+          footer={null}
+          width={500}
+        >
+          {this.state.toggle === true ? <div>modal</div> : null}
+        </Modal>
       </StyledTable>
     )
   }
