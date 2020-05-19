@@ -1123,7 +1123,7 @@ export default class extends Base {
         iat: now,
         exp: now + (60 * 60 * 24),
         iss: process.env.APP_DID,
-        callbackurl: `${process.env.API_URL}/api/CVote/review_callback`,
+        callbackurl: `${process.env.API_URL}/api/cvote/review/callback`,
         command:"reviewproposal",
         data: {
           proposalHash: cur.proposalHash,
@@ -1201,10 +1201,10 @@ export default class extends Base {
         rs.publicKey,
         async (err:any, decoded: any) => {
           if(err) {
-                       return {
+            return {
               code: 401,
               success: false,
-              message: 'Verify signatrue failed.'
+              message: 'Verify signatrue failed.' + err.message
             }
           } else {
             try {
