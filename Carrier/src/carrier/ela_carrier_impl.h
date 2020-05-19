@@ -160,8 +160,7 @@ struct ElaCarrier {
     hashtable_t *tassembly_irsps;
 
     hashtable_t *bulkmsgs;
-
-    hashtable_t *recptmsg;
+    hashtable_t *receipts;
 
     pthread_t main_thread;
 

@@ -1372,24 +1372,25 @@ int ela_send_friend_message(ElaCarrier *carrier, const char *to,
  * \~English
  * Carrier message receipt status to Carrier network.
  */
-typedef enum ElaMessageState {
+typedef enum ElaReceiptState {
     /**
      * \~English
-     * Message is receipted by carrier network.
+     * Message has been accepted by remote friend via carrier network.
      */
-    ElaMessage_Receipted,
+    ElaReceipt_ByFriend,
     /**
      * \~English
-     * Message is receipted by offline network.
+     * Message has been delivered to offline message store.
      */
-    ElaMessage_OfflineSent,
+    ElaReceipt_Offline,
     /**
      * \~English
+     * Message sent before not
      * Message send unsuccessfully. A specific error code can be
      * retrieved by calling ela_get_error().
      */
-    ElaMessage_Error,
-} ElaMessageState;
+    ElaReceipt_Error,
+} ElaReceiptState;
 
 /**
  * \~English
@@ -1408,7 +1409,9 @@ typedef enum ElaMessageState {
  *      Return true to continue iterate next friend user info,
  *      false to stop iterate.
  */
-typedef void ElaFriendMessageReceiptCallback(int64_t msgid,  ElaMessageState state, void *context);
+typedef void ElaFriendMessageReceiptCallback(int64_t msgid,
+                                             ElaReceiptState state,
+                                             void *context);
 
 /**
  * \~English
@@ -1432,7 +1435,7 @@ typedef void ElaFriendMessageReceiptCallback(int64_t msgid,  ElaMessageState sta
  *                        receipt is received or failed to send message.
  * @param
  *      content     [in] The user context in callback.
- * 
+ *
  * @return
  *      > 0 message id if the text message successfully add to send task list.
  *      Otherwise, return <0, and a specific error code can be
@@ -1440,8 +1443,9 @@ typedef void ElaFriendMessageReceiptCallback(int64_t msgid,  ElaMessageState sta
  */
 CARRIER_API
 int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
-                                  const void *msg, size_t len,
-                                  ElaFriendMessageReceiptCallback *cb, void *context);
+                                      const void *msg, size_t len,
+                                      ElaFriendMessageReceiptCallback *cb,
+                                      void *context);
 
 /**
  * \~English

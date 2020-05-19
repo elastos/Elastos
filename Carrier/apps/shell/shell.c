@@ -915,19 +915,20 @@ static void send_bulk_message(ElaCarrier *w, int argc, char *argv[])
     output("  failed: %d\n", failed_count);
 }
 
-static void receipt_message_callback(int64_t msgid,  ElaMessageState state, void *context)
+static void receipt_message_callback(int64_t msgid,  ElaReceiptState state,
+                                     void *context)
 {
     const char* state_str;
     int errcode = 0;
 
     switch (state) {
-        case ElaMessage_Receipted:
-            state_str = "Receipted";
+        case ElaReceipt_ByFriend:
+            state_str = "Friend receipt";
             break;
-        case ElaMessage_OfflineSent:
-            state_str = "OfflineSent";
+        case ElaReceipt_Offline:
+            state_str = "Offline";
             break;
-        case ElaMessage_Error:
+        case ElaReceipt_Error:
             state_str = "Error";
             errcode = ela_get_error();
             break;
@@ -935,6 +936,7 @@ static void receipt_message_callback(int64_t msgid,  ElaMessageState state, void
             state_str = "Unknown";
             break;
     }
+
     output("Messages receipted. msgid:0x%llx, state:%s, ecode:%x\n",
            msgid, state_str, errcode);
 }

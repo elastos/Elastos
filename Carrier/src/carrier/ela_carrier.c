@@ -75,7 +75,7 @@
 #include "tassemblies.h"
 #include "bulkmsgs.h"
 #include "express.h"
-#include "receiptmsg.h"
+#include "receipts.h"
 
 #define TURN_SERVER_PORT                ((uint16_t)3478)
 #define TURN_SERVER_USER_SUFFIX         "auth.tox"
@@ -1039,8 +1039,8 @@ static void ela_destroy(void *argv)
     if (w->bulkmsgs)
         deref(w->bulkmsgs);
 
-    if (w->recptmsg)
-        deref(w->recptmsg);
+    if (w->receipts)
+        deref(w->receipts);
 
     if (w->thistory)
         deref(w->thistory);
@@ -1343,8 +1343,8 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
-    w->recptmsg = recptmsg_create(16);
-    if (!w->recptmsg) {
+    w->receipts = receipts_create(16);
+    if (!w->receipts) {
         free_persistence_data(&data);
         deref(w);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
@@ -4381,29 +4381,31 @@ int ela_leave_all_groups(ElaCarrier *w)
 
 static void on_friend_messge_receipted(ElaCarrier *w, MsgCh msgch, int64_t msgid, bool succeed)
 {
-    ElaMessageState msg_state;
-    ReceiptMsg *msg;
-    
-    msg = recptmsg_get(w->recptmsg, msgid);
-    if(!msg)
-        return;
+    ElaReceiptState state;
+    Receipt *receipt;
 
-    switch (msg->msgch) {
+    receipt = receipts_get(w->receipts, msgid);
+    if(!receipt) {
+        vlogW("Carrier: No corresponding receipt record to message (%lld) found");
+        return;
+    }
+
+    switch (receipt->msgch) {
         case MSGCH_DHT:
-            msg_state = ElaMessage_Receipted;
+            state = ElaReceipt_ByFriend;
             break;
         case MSGCH_EXPRESS:
-            msg_state = (succeed ? ElaMessage_OfflineSent : ElaMessage_Error);
+            state = (succeed ? ElaReceipt_Offline : ElaReceipt_Error);
             break;
         default:
             assert(false); // never reached
     }
 
-    if(msg->callback != NULL)
-        msg->callback(msg->msgid, msg_state, msg->context);
+    if(receipt->callback != NULL)
+        receipt->callback(receipt->msgid, state, receipt->context);
 
-    deref(msg);
-    recptmsg_remove(w->recptmsg, msgid);
+    deref(receipt);
+    deref(receipts_remove(w->receipts, msgid));
 
     vlogI("Carrier: processed receipted message, remaining item: %d.", list_size(w->friend_msgs));
 }
@@ -4652,19 +4654,19 @@ static void do_message_receipt_expire(ElaCarrier *w)
     hashtable_iterator_t it;
     time_t now = time(NULL);
 
-redo_events:
-    recptmsg_iterate(w->recptmsg, &it);
-    while (recptmsg_iterator_has_next(&it)) {
-        ReceiptMsg *item;
-        ElaMessageState msg_state;
+redo_check:
+    receipts_iterate(w->receipts, &it);
+    while (receipts_iterator_has_next(&it)) {
+        Receipt *item;
+        ElaReceiptState state;
         int rc;
 
-        rc = recptmsg_iterator_next(&it, &item);
+        rc = receipts_iterator_next(&it, &item);
         if (rc == 0)
             break;
 
         if (rc == -1)
-            goto redo_events;
+            goto redo_check;
 
         // int create_at = get_msgid_createtime(item->msgid);
         time_t create_at = item->timestamp;
@@ -4678,8 +4680,8 @@ redo_events:
             item->msgch = MSGCH_EXPRESS;
             // rc = send_message_by_express(w, item->to, item->data, item->size, item->msgid);
             if(rc < 0) {
-                item->callback(item->msgid, ElaMessage_Error, item->context);
-                recptmsg_iterator_remove(&it);
+                item->callback(item->msgid, ElaReceipt_Error, item->context);
+                receipts_iterator_remove(&it);
             }
         }
 
@@ -4698,7 +4700,7 @@ static void do_express_expire(ElaCarrier *w, struct timeval *now)
 
     if (timercmp(now, &w->express_expiretime, <))
         return;
-    
+
     if(w->express_expiretime.tv_sec != 0)
         need_pullmsg = true;
 
@@ -4723,7 +4725,7 @@ static void notify_friend_read_receipt_cb(uint32_t friend_number, uint32_t messa
 {
     ElaCarrier *w = (ElaCarrier *)context;
     int64_t msgid = generate_msgid(w, message_id, MSGCH_DHT);
-    
+
     on_friend_messge_receipted(w, MSGCH_DHT, msgid, true);
 }
 
@@ -4733,34 +4735,33 @@ int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
 {
     bool is_offline;
     int64_t msgid;
-    ReceiptMsg *event;
+    Receipt *receipt;
 
-    event = (ReceiptMsg*)rc_zalloc(sizeof(ReceiptMsg) + len, NULL);
-    if (!event) {
+    receipt = (Receipt*)rc_zalloc(sizeof(Receipt) + len, NULL);
+    if (!receipt) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return -1;
     }
 
     msgid = send_friend_message_internal(carrier, to, msg, len, &is_offline);
     if(msgid < 0) {
-        deref(event);
-        return (int)msgid;
+        deref(receipt);
+        return -1;
     }
 
-    strcpy(event->to, to);
-    event->msgch = (is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
-    event->msgid = msgid;
+    strcpy(receipt->to, to);
+    receipt->msgch = (is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
+    receipt->msgid = msgid;
 
-    event->timestamp = time(NULL);
+    receipt->timestamp = time(NULL);
 
-    event->callback = cb;
-    event->context = context;
+    receipt->callback = cb;
+    receipt->context = context;
+    receipt->size = len;
+    memcpy(receipt->data, msg, len);
 
-    event->size = len;
-    memcpy(event->data, msg, len);
-
-    recptmsg_put(carrier->recptmsg, event);
-    deref(event);
+    receipts_put(carrier->receipts, receipt);
+    deref(receipt);
 
     return msgid;
 }

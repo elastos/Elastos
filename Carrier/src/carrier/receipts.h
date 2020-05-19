@@ -20,19 +20,13 @@
  * SOFTWARE.
  */
 
-#ifndef __RECEIPTMSGS_H__
-#define __RECEIPTMSGS_H__
+#ifndef __RECEIPTS_H__
+#define __RECEIPTS_H__
 
-// #include <time.h>
 #include <crystal.h>
 #include "ela_carrier.h"
 
-// typedef enum MsgCh {
-//     MSGCH_DHT = 0,
-//     MSGCH_EXPRESS = 1,
-// } MsgCh;
-
-typedef struct ReceiptMsg {
+typedef struct Receipt {
     hash_entry_t he;
 
     char to[ELA_MAX_ID_LEN + 1];
@@ -46,73 +40,73 @@ typedef struct ReceiptMsg {
 
     size_t size;
     uint8_t data[0];
-} ReceiptMsg;
+} Receipt;
 
 static inline
-int recptmsg_key_compare(const void *key1, size_t len1,
+int receipts_key_compare(const void *key1, size_t len1,
                          const void *key2, size_t len2)
 {
     return memcmp(key1, key2, sizeof(int64_t));
 }
 
 static inline
-hashtable_t *recptmsg_create(int capacity)
+hashtable_t *receipts_create(int capacity)
 {
-    return hashtable_create(capacity, 1, NULL, recptmsg_key_compare);
+    return hashtable_create(capacity, 1, NULL, receipts_key_compare);
 }
 
 static inline
-ReceiptMsg *recptmsg_get(hashtable_t *msgs, int64_t msgid)
+Receipt *receipts_get(hashtable_t *receipts, int64_t msgid)
 {
-    assert(msgs);
+    assert(receipts);
     assert(msgid);
 
-    return (ReceiptMsg *)hashtable_get(msgs, &msgid, sizeof(msgid));
+    return (Receipt *)hashtable_get(receipts, &msgid, sizeof(msgid));
 }
 
 static inline
-int recptmsg_exist(hashtable_t *msgs, int64_t msgid)
+int receipts_exist(hashtable_t *receipts, int64_t msgid)
 {
-    assert(msgs);
+    assert(receipts);
     assert(msgid);
 
-    return hashtable_exist(msgs, &msgid, sizeof(msgid));
+    return hashtable_exist(receipts, &msgid, sizeof(msgid));
 }
 
 static inline
-void recptmsg_put(hashtable_t *msgs, ReceiptMsg *msg)
+void receipts_put(hashtable_t *receipts, Receipt *receipt)
 {
-    assert(msgs);
-    assert(msg);
+    assert(receipts);
+    assert(receipt);
 
-    msg->he.data = msg;
-    msg->he.key = &msg->msgid;
-    msg->he.keylen = sizeof(msg->msgid);
+    receipt->he.data = receipt;
+    receipt->he.key = &receipt->msgid;
+    receipt->he.keylen = sizeof(receipt->msgid);
 
-    hashtable_put(msgs, &msg->he);
+    hashtable_put(receipts, &receipt->he);
 }
 
 static inline
-ReceiptMsg *recptmsg_remove(hashtable_t *msgs, int64_t msgid)
+Receipt *receipts_remove(hashtable_t *receipts, int64_t msgid)
 {
-    assert(msgs);
+    assert(receipts);
     assert(msgid);
 
-    return (ReceiptMsg *)hashtable_remove(msgs, &msgid, sizeof(msgid));
+    return (Receipt *)hashtable_remove(receipts, &msgid, sizeof(msgid));
 }
 
 static inline
-hashtable_iterator_t *recptmsg_iterate(hashtable_t *msgs,
+hashtable_iterator_t *receipts_iterate(hashtable_t *receipts,
                                        hashtable_iterator_t *iterator)
 {
-    assert(msgs);
+    assert(receipts);
     assert(iterator);
 
-    return hashtable_iterate(msgs, iterator);
+    return hashtable_iterate(receipts, iterator);
 }
 
 static inline
-int recptmsg_iterator_next(hashtable_iterator_t *iterator, ReceiptMsg **item)
+int receipts_iterator_next(hashtable_iterator_t *iterator, Receipt **item)
 {
     assert(item);
     assert(iterator);
@@ -121,17 +115,17 @@ int recptmsg_iterator_next(hashtable_iterator_t *iterator, ReceiptMsg **item)
 }
 
 static inline
-int recptmsg_iterator_has_next(hashtable_iterator_t *iterator)
+int receipts_iterator_has_next(hashtable_iterator_t *iterator)
 {
     assert(iterator);
     return hashtable_iterator_has_next(iterator);
 }
 
 static inline
-int recptmsg_iterator_remove(hashtable_iterator_t *iterator)
+int receipts_iterator_remove(hashtable_iterator_t *iterator)
 {
     assert(iterator);
     return hashtable_iterator_remove(iterator);
 }
 
-#endif // __RECEIPTMSGS_H__
+#endif // __RECEIPTS_H__
