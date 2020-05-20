@@ -1,7 +1,7 @@
 
 # Elastos Philippines
 
-![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/Philippines.JPG ':size=800')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/Philippines.JPG ':size=800')
 
 Elastos Philippines was formed when Elastos visited Manila in October 2018 to attend Blockchain Fair Asia, host a meetup, and meet with other local and foreign blockchain personalities. Now robust and rapidly growing, Elastos Philippines is a group of organizers and evangelists who are hard at work seeding new communities throughout the Philippines. Elastos Philippines is headed by Lead Organizer Krisha Amada, who graduated with a Bachelor’s of Science in Computer Science at STI College Global City at age 20.  She has since interned at Cognizant Technology Solutions, a BPO company, and performed research for a US-based cryptocurrency investor. She is joined by Senior Partnerships Manager Alex Timbol, an economist by training and an accomplished sales and marketing veteran who last worked as an Institutional Stockbroker with various firms  since 1990, and also spent 8 years pursuing passions in tech-voc education and startups.
 

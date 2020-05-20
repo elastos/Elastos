@@ -2,7 +2,7 @@
 
 # Welcome to the CR Regions Website
 
-![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/bitwork-ela-wall.jpg ':size=800')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/bitwork-ela-wall.jpg ':size=800')
 
 ?> CR Regions are the primary vehicle to grow the Elastos ecosystem in the real world.
 
@@ -49,6 +49,6 @@ critical to our growth, if you have ELA follow this [voting guide](/main/voting-
 
 ## Start a CR Region Team!
 
-![](https://s3.amazonaws.com/elastosjs.com/img/cr-regions/region-map.2f917b00.png ':size=800')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/region-map.2f917b00.png ':size=800')
 
 ### We are always looking for new teams to start new CR Region Teams in new regions, email us at [cyberrepublic@elastos.org](mailto:cyberrepublic@elastos.org) and get in touch!
