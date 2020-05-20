@@ -68,9 +68,9 @@
             android:visibility="gone" />
 
         <RelativeLayout
-            android:visibility="gone"
             android:id="@+id/rl_hash"
-            style="@style/settingItem_margin15">
+            style="@style/settingItem_margin15"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/tv_hash_tag"
@@ -95,9 +95,9 @@
 
 
         <RelativeLayout
-            android:visibility="gone"
             android:id="@+id/rl_voteadvice"
-            style="@style/settingItem_margin15">
+            style="@style/settingItem_margin15"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -111,7 +111,6 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="15dp"
                 android:background="@drawable/sc_35b08f_cr3"
                 android:gravity="right"
                 android:paddingLeft="10dp"
@@ -126,59 +125,54 @@
         </RelativeLayout>
 
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/ll_amount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:padding="15dp">
+            style="@style/settingItem_margin15">
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_centerVertical="true"
                 android:text="@string/amount" />
 
             <TextView
                 android:id="@+id/tv_amount"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:gravity="right"
                 android:maxLines="1" />
-        </LinearLayout>
 
-        <View
-            android:id="@+id/line1"
-            style="@style/line1"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp" />
+            <View
+                style="@style/line1"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:padding="15dp">
+
+        <RelativeLayout
+            android:id="@+id/rl_fee"
+            style="@style/settingItem_margin15">
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_centerVertical="true"
                 android:text="@string/charge" />
 
             <TextView
                 android:id="@+id/tv_charge"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:gravity="right"
                 android:maxLines="1" />
-        </LinearLayout>
 
-        <View
-            style="@style/line1"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp" />
+            <View
+                style="@style/line1"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
 
 
         <View

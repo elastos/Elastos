@@ -51,7 +51,9 @@ public class Constant {
     public static final int SIGN = 0x3;//打开签名页面
     public static final int TRANSFER = 0x4;//打开转账页面
     public static final String PROPOSALINPUT = "proposalInput";//建议变提案
-    public static final String PROPOSALREVIEW= "proposalReview";//提案公示期投票
+    public static final String PROPOSALREVIEW= "proposalReview";//提案评议期
+    public static final String PROPOSALPROCESS= "proposalPROCESS";//提案公执行期 提案人反馈
+    public static final String PROPOSALSECRET= "proposalSecret";//提案公执行期 秘书长签名
 
 
 

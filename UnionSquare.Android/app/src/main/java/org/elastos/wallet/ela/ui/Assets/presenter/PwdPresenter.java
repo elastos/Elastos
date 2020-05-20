@@ -83,8 +83,8 @@ public class PwdPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void newPublishTransaction(String walletId, String chainId, String rawTransaction, BaseFragment baseFragment,Object o) {
-        Observer observer = createObserver(baseFragment, "newPublishTransaction",o);
+    public void newPublishTransaction(String walletId, String chainId, String rawTransaction, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "newPublishTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
