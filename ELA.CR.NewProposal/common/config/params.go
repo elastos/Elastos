@@ -213,7 +213,8 @@ var DefaultParams = Params{
 		HistoryStartHeight: uint32(0),
 		NeedSave:           false,
 	}),
-	TxCacheVolume: 100000,
+	TxCacheVolume:          100000,
+	CheckVoteCRCountHeight: 0, // todo correct me later
 }
 
 // TestNet returns the network parameters for the test network.
@@ -274,6 +275,7 @@ func (p *Params) TestNet() *Params {
 	copy.CRCAppropriatePercentage = 10
 	copy.MaxCommitteeProposalCount = 128
 	copy.MaxNodePerHost = 10
+	copy.CheckVoteCRCountHeight = 0 // todo correct me later
 
 	return &copy
 }
@@ -319,14 +321,14 @@ func (p *Params) RegNet() *Params {
 		"03c559769d5f7bb64c28f11760cb36a2933596ca8a966bc36a09d50c24c48cc3e8",
 		"03b5d90257ad24caf22fa8a11ce270ea57f3c2597e52322b453d4919ebec4e6300",
 	}
-	copy.SecretaryGeneral = "" // todo correct me later
+	copy.SecretaryGeneral = "0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87"
 	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 170000
 	copy.CRCOnlyDPOSHeight = 211000
-	copy.PublicDPOSHeight = 234000
+	copy.PublicDPOSHeight = 231500
 	copy.CRVotingStartHeight = 292000
-	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
+	copy.CRCommitteeStartHeight = 442000
 	copy.EnableActivateIllegalHeight = 256000
 	copy.CheckRewardHeight = 280000
 	copy.VoteStatisticsHeight = 0
@@ -336,6 +338,7 @@ func (p *Params) RegNet() *Params {
 	copy.CRCAppropriatePercentage = 10
 	copy.MaxCommitteeProposalCount = 128
 	copy.MaxNodePerHost = 10
+	copy.CheckVoteCRCountHeight = 435000
 
 	return &copy
 }
@@ -540,7 +543,7 @@ type Params struct {
 	//MaxCommitteeProposalCount defines per committee max proposal count
 	MaxCommitteeProposalCount uint32
 
-	// SecretaryGeneral defines the secretary general of CR.
+	// SecretaryGeneral defines the secretary general of CR by public key.
 	SecretaryGeneral string
 
 	// MaxProposalTrackingCount defines the max count of CRC proposal tracking
@@ -566,6 +569,9 @@ type Params struct {
 	TxCacheVolume uint32
 	//MaxNodePerHost defines max nodes that one host can establish
 	MaxNodePerHost uint32
+
+	// CheckVoteCRCountHeight defines the height to check count of vote CR
+	CheckVoteCRCountHeight uint32
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time

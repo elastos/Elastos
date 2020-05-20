@@ -95,7 +95,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32,
 
 // CheckTransactionContext verifies a transaction with history transaction in ledger
 func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
-	txn *Transaction, references map[*Input]Output) elaerr.ELAError {
+	txn *Transaction, references map[*Input]Output, proposalsUsedAmount common.Fixed64) elaerr.ELAError {
 	// check if duplicated with transaction in ledger
 	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
@@ -214,7 +214,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		}
 
 	case CRCProposal:
-		if err := b.checkCRCProposalTransaction(txn, blockHeight); err != nil {
+		if err := b.checkCRCProposalTransaction(txn, blockHeight, proposalsUsedAmount); err != nil {
 			log.Warn("[checkCRCProposalTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
@@ -447,6 +447,11 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32,
 	if payloadVersion < outputpayload.VoteProducerAndCRVersion {
 		return errors.New("payload VoteProducerVersion not support vote CR")
 	}
+	if blockHeight >= b.chainParams.CheckVoteCRCountHeight {
+		if len(content.CandidateVotes) > outputpayload.MaxVoteProducersPerTransaction {
+			return errors.New("invalid count of CR candidates ")
+		}
+	}
 	for _, cv := range content.CandidateVotes {
 		cid, err := common.Uint168FromBytes(cv.Candidate)
 		if err != nil {
@@ -498,7 +503,7 @@ func (b *BlockChain) checkVoteCRCProposalContent(
 func getCRMembersMap(members []*crstate.CRMember) map[string]struct{} {
 	crMaps := make(map[string]struct{})
 	for _, c := range members {
-		crMaps[c.Info.DID.String()] = struct{}{}
+		crMaps[c.Info.CID.String()] = struct{}{}
 	}
 	return crMaps
 }
@@ -1545,12 +1550,16 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	return nil
 }
 
-func getDIDFromCode(code []byte) *common.Uint168 {
+func getDIDFromCode(code []byte) (*common.Uint168, error) {
 	newCode := make([]byte, len(code))
 	copy(newCode, code)
 	didCode := append(newCode[:len(newCode)-1], common.DID)
-	ct1, _ := contract.CreateCRIDContractByCode(didCode)
-	return ct1.ToProgramHash()
+
+	if ct1, err := contract.CreateCRIDContractByCode(didCode); err != nil {
+		return nil, err
+	} else {
+		return ct1.ToProgramHash(), nil
+	}
 }
 
 func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
@@ -1610,8 +1619,10 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 	if blockHeight >= b.chainParams.RegisterCRByDIDHeight &&
 		txn.PayloadVersion == payload.CRInfoDIDVersion {
 		// get DID program hash
-		programHash = getDIDFromCode(info.Code)
 
+		if programHash, err = getDIDFromCode(info.Code); err != nil {
+			return err
+		}
 		// check DID
 		if !info.DID.IsEqual(*programHash) {
 			return errors.New("invalid did address")
@@ -1684,7 +1695,10 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 	if blockHeight >= b.chainParams.RegisterCRByDIDHeight &&
 		txn.PayloadVersion == payload.CRInfoDIDVersion {
 		// get DID program hash
-		programHash = getDIDFromCode(info.Code)
+
+		if programHash, err = getDIDFromCode(info.Code); err != nil {
+			return err
+		}
 		// check DID
 		if !info.DID.IsEqual(*programHash) {
 			return errors.New("invalid did address")
@@ -1756,10 +1770,16 @@ func (b *BlockChain) checkCRCProposalReviewTransaction(txn *Transaction,
 		signedBuf.Bytes())
 }
 
-func getCode(publicKey []byte) []byte {
-	pk, _ := crypto.DecodePoint(publicKey)
-	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
-	return redeemScript
+func getCode(publicKey []byte) ([]byte, error) {
+	if pk, err := crypto.DecodePoint(publicKey); err != nil {
+		return nil, err
+	} else {
+		if redeemScript, err := contract.CreateStandardRedeemScript(pk); err != nil {
+			return nil, err
+		} else {
+			return redeemScript, nil
+		}
+	}
 }
 
 func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
@@ -1809,7 +1829,10 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	if err != nil {
 		return err
 	}
-	code := getCode(withdrawPayload.OwnerPublicKey)
+	var code []byte
+	if code, err = getCode(withdrawPayload.OwnerPublicKey); err != nil {
+		return err
+	}
 	return checkCRTransactionSignature(withdrawPayload.Signature, code, signedBuf.Bytes())
 }
 
@@ -1885,11 +1908,7 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 	//
 	// Outputs has check in CheckTransactionOutput function:
 	// first one to CRCommitteeAddress, second one to CRCFoundation
-	fAmount := b.crCommittee.CRCFoundationBalance
-	cAmount := b.crCommittee.CRCCommitteeBalance
-	uAmount := b.crCommittee.CRCCommitteeUsedAmount
-	appropriationAmount := common.Fixed64(float64(fAmount+cAmount)*
-		b.chainParams.CRCAppropriatePercentage/100.0) - cAmount + uAmount
+	appropriationAmount := b.crCommittee.AppropriationAmount
 	if appropriationAmount != txn.Outputs[0].Value {
 		return fmt.Errorf("invalid appropriation amount %s, need to be %s",
 			txn.Outputs[0].Value, appropriationAmount)
@@ -2118,13 +2137,13 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 }
 
 func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
-	blockHeight uint32) error {
+	blockHeight uint32, proposalsUsedAmount common.Fixed64) error {
 	proposal, ok := txn.Payload.(*payload.CRCProposal)
 	if !ok {
 		return errors.New("invalid payload")
 	}
 
-	if !b.crCommittee.IsProposalAllowed(blockHeight) {
+	if !b.crCommittee.IsProposalAllowed(blockHeight - 1) {
 		return errors.New("cr proposal tx must not during voting period")
 	}
 
@@ -2133,12 +2152,9 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		return errors.New("type of proposal should be known")
 	}
 
-	if len(proposal.CategoryData) != 0 {
-		return errors.New("the proposal category data should be empty now")
+	if len(proposal.CategoryData) > MaxCategoryDataStringLength {
+		return errors.New("the Proposal category data cannot be more than 4096 characters")
 	}
-	//if len(proposal.CategoryData) > MaxCategoryDataStringLength {
-	//	return errors.New("the Proposal category data cannot be more than 4096 characters")
-	//}
 
 	if len(proposal.Budgets) > MaxBudgetsCount {
 		return errors.New("budgets exceeded the maximum limit")
@@ -2244,8 +2260,8 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		}
 		if amount > b.crCommittee.CRCCurrentStageAmount*CRCProposalBudgetsPercentage/100 {
 			return errors.New("budgets exceeds 10% of CRC committee balance")
-		} else if amount > b.crCommittee.CRCCommitteeBalance-
-			b.crCommittee.CRCCommitteeUsedAmount {
+		} else if amount > b.crCommittee.CRCCurrentStageAmount-
+			b.crCommittee.CRCCommitteeUsedAmount-proposalsUsedAmount {
 			return errors.New("budgets exceeds the balance of CRC committee")
 		} else if amount < 0 {
 			return errors.New("budgets is invalid")
