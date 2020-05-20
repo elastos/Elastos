@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Popover, Modal } from 'antd'
+import { Popover, Modal, Spin } from 'antd'
 import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
@@ -8,6 +8,7 @@ import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import Signature from './Signature'
 import { MILESTONE_STATUS } from '@/constant'
+import QRCode from 'qrcode.react'
 const {
   WAITING_FOR_REQUEST,
   REJECTED,
@@ -21,7 +22,9 @@ class PaymentList extends BaseComponent {
     this.state = {
       toggle: false,
       stage: null,
-      opinion: ''
+      opinion: '',
+      url: '',
+      visible: ''
     }
   }
 
@@ -64,6 +67,28 @@ class PaymentList extends BaseComponent {
         {version}
       </Square>
     )
+  }
+
+  elaQrCode = () => {
+    const { url } = this.state
+    return (
+      <Content>
+        {url ? <QRCode value={url} size={400} /> : <Spin />}
+        <Tip>Scan the QR code above to withdraw.</Tip>
+      </Content>
+    )
+  }
+
+  handleWithdraw = async (stage) => {
+    const { proposalId, actions } = this.props
+    const rs = await actions.withdraw(proposalId, stage)
+    if (rs && rs.success) {
+      this.setState({ url: rs.url })
+    }
+  }
+
+  handleVisibleChange = (visible) => {
+    this.setState({ visible })
   }
 
   renderActions(item) {
@@ -124,7 +149,20 @@ class PaymentList extends BaseComponent {
     if (status === WAITING_FOR_WITHDRAW) {
       return (
         <td>
-          <div className="action">Withdraw</div>
+          <Popover
+            content={this.elaQrCode()}
+            trigger="click"
+            placement="top"
+            visible={this.state.visible}
+            onVisibleChange={this.handleVisibleChange}
+          >
+            <div
+              className="action"
+              onClick={() => this.handleWithdraw(item.milestoneKey)}
+            >
+              Withdraw
+            </div>
+          </Popover>
         </td>
       )
     }
@@ -285,4 +323,13 @@ const Square = styled.div`
       }
     }
   }
+`
+const Content = styled.div`
+  padding: 16px;
+  text-align: center;
+`
+const Tip = styled.div`
+  font-size: 14px;
+  color: #000;
+  margin-top: 16px;
 `

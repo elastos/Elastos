@@ -557,10 +557,10 @@ export default class extends Base {
       const proposal = await this.model.findById(id)
       // check if current user is the proposal's owner
       if (!proposal.proposer.equals(this.currentUser._id)) {
-        return { success: false }
+        return { success: false, message: 'You are not the proposal owner.' }
       }
       if (proposal.status !== ACTIVE) {
-        return { success: false }
+        return { success: false, message: 'The proposal is not active.' }
       }
 
       // check if milestoneKey is valid
@@ -568,10 +568,10 @@ export default class extends Base {
         (item: any) => item.milestoneKey === milestoneKey
       )
       if (_.isEmpty(budget)) {
-        return { success: false }
+        return { success: false, message: 'This milestone does not exist.' }
       }
       if (budget[0].status !== WAITING_FOR_WITHDRAW) {
-        return { success: false }
+        return { success: false, message: 'This milestone is not withdrawal.' }
       }
 
       const currDate = Date.now()
@@ -579,6 +579,7 @@ export default class extends Base {
       // update withdrawal history
       const history = {
         message: 'withdraw',
+        milestoneKey,
         createdAt: moment(currDate)
       }
       await this.model.update(

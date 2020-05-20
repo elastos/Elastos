@@ -87,7 +87,7 @@ const mapDispatch = () => {
     async getReviewTxid(data) {
       return service.getReviewTxid(data)
     },
-    async withdraw(data) {
+    async withdraw(id, stage) {
       return service.withdraw(id, stage)
     }
   }
