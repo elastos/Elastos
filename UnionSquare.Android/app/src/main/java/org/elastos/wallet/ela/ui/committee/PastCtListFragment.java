@@ -66,6 +66,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         pastCtPresenter = new PastCtPresenter();
 
         ctDetailPresenter.getCouncilInfo(this, "", wallet.getDid());
+        pastCtPresenter.getCouncilTerm(this);
 
 //        rockData();
     }
@@ -100,7 +101,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         String status = dataBean.getStatus();
         String depositAmount = dataBean.getDepositAmount();
         if(AppUtlis.isNullOrEmpty(status) || status.equals("Elected")) {
-            pastCtPresenter.getCouncilTerm(this);
+//            pastCtPresenter.getCouncilTerm(this);
         } else {
             Bundle bundle = new Bundle();
             bundle.putString("status", status);

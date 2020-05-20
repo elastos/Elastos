@@ -98,7 +98,15 @@ public class ImpeachmentFragment extends BaseFragment implements NewBaseViewData
     JSONObject otherVotes = new JSONObject();
     private void getVotes(String json) {
         if(AppUtlis.isNullOrEmpty(json)) return;
-
+//        List<InfoStruct> infos = new Gson().fromJson(json, new TypeToken<List<InfoStruct>>() {
+//        }.getType());
+//        InfoStruct impeachmentInfo = null;
+//        for(InfoStruct info : infos) {
+//            String type = info.Type;
+//            if(type.equals("CRCImpeachment")) {
+//                impeachmentInfo = info;
+//            }
+//        }
 //        otherVotes.put(did, amount);
     }
 
@@ -112,7 +120,7 @@ public class ImpeachmentFragment extends BaseFragment implements NewBaseViewData
             long fee = ((CommmonLongEntity) baseEntity).getData();
             feeTv.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S).toPlainString(), 12) + " " + MyWallet.ELA);
         } else if(methodName.equals("getCouncilList")) {
-            presenter.getVoteInfo(wallet.getWalletId(), MyWallet.ELA, "CRC", this);
+            presenter.getVoteInfo(wallet.getWalletId(), MyWallet.ELA, "CRCImpeachment", this);
             createJsonObject((CtListBean) baseEntity);
         } else if(methodName.equals("getVoteInfo")) {
             getVotes(baseEntity.getMessage());
