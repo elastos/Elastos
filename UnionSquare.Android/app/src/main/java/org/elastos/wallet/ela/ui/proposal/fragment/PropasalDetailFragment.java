@@ -54,7 +54,6 @@ import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -154,7 +153,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         setProcessRecycleView();
         wallet = new RealmUtil().queryDefauleWallet();
         presenter = new ProposalDetailPresenter();
-        presenter.proposalDetail(searchBean.getId(), this);
+       // presenter.proposalDetail(searchBean.getId(), this);
         registReceiver();
         switch (searchBean.getStatus()) {
             case "VOTING":
@@ -360,48 +359,40 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         switch (methodName) {
             case "getVoteInfo":
                 //剔除非公示期的
-                JSONObject newVotes = new JSONObject();
                 try {
-                    String amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
-                    newVotes.put(searchBean.getProposalHash(), amount);
                     String voteInfo = ((CommmonStringEntity) baseEntity).getData();
-                    if (!TextUtils.isEmpty(voteInfo) && !voteInfo.equals("null") && !voteInfo.equals("[]")) {
-                        JSONArray lastVoteInfo = new JSONArray(((CommmonStringEntity) baseEntity).getData());
-                        if (lastVoteInfo.length() >= 1) {
-                            JSONObject lastVote = lastVoteInfo.getJSONObject(0).getJSONObject("Votes");
-                            //获得上次的投票后筛选数据
-                            Iterator it = lastVote.keys();
-                            while (it.hasNext()) {
-                                String key = (String) it.next();
-                                for (int i = 0; i < searchBeanList.size(); i++) {
-                                    if (searchBeanList.get(i).getProposalHash().equals(key)) {
-                                        newVotes.put(key, amount);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+                    JSONObject voteJson = presenter.conversVote(voteInfo);//key value
+                    if ("CRC".equals(o)) {
+                        //在没有crlist的时候
+                        otherUnActiveVote.put(presenter.getCRLastVote(voteJson));
+                    } else if ("CRCProposal".equals(o)) {
+                        //获得上次的投票后筛选数据
+                        String amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
+                        JSONObject newVotes = presenter.getPublishDataFromLastVote(voteJson, amount, searchBeanList);
+                        newVotes.put(searchBean.getProposalHash(), amount);
+                       /* Log.i("???", otherUnActiveVote.toString());
+                        Log.i("???", newVotes.toString());*/
+                        presenter.createVoteCRCProposalTransaction(wallet.getWalletId(), newVotes.toString(), otherUnActiveVote.toString(), this);
                     }
-
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                Log.i("???", otherUnActiveVote.toString());
-                Log.i("???", newVotes.toString());
-                presenter.createVoteCRCProposalTransaction(wallet.getWalletId(), newVotes.toString(), otherUnActiveVote.toString(), this);
+
 
                 break;
             case "getCRlist":
                 List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
-                if (crList != null || crList.size() > 0) {
-                    otherUnActiveVote.put(new ProposalDetailPresenter().getCRUnactiveData(crList));
+                if (crList != null && crList.size() > 0) {
+                    otherUnActiveVote.put(presenter.getCRUnactiveData(crList));
+                } else {
+                    presenter.getVoteInfo(wallet.getWalletId(), "CRC", this);
                 }
                 break;
             case "getDepositVoteList":
                 List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
-                if (depositList != null || depositList.size() > 0) {
-                    otherUnActiveVote.put(new ProposalDetailPresenter().getDepositUnactiveData(depositList));
+                if (depositList != null && depositList.size() > 0) {
+                    otherUnActiveVote.put(presenter.getDepositUnactiveData(depositList));
                 }
                 break;
             case "proposalDetail":
