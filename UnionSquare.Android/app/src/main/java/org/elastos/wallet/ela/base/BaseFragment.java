@@ -46,6 +46,7 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.footer.ClassicsFooter;
 import com.scwang.smartrefresh.layout.header.ClassicsHeader;
 import com.trello.rxlifecycle2.LifecycleTransformer;
+import com.trello.rxlifecycle2.android.FragmentEvent;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.DID.MyDID;
@@ -222,7 +223,8 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
 
     @Override
     public <V> LifecycleTransformer<V> bindToLife() {
-        return this.bindToLifecycle();
+       // return this.bindToLifecycle();
+        return bindUntilEvent(FragmentEvent.DESTROY);
     }
 
 
