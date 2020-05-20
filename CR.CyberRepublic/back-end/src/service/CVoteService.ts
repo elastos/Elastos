@@ -1541,7 +1541,7 @@ export default class extends Base {
         const filterVoteResult = _.filter(
             proposal._doc.voteResult,
             (o: any) => (o.value !== constant.CVOTE_RESULT.UNDECIDED
-                && [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
+                && [constant.CVOTE_CHAIN_STATUS.CHAINED]
                     .includes(o.status))
         )
         // update vote result data
