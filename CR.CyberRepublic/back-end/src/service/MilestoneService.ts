@@ -360,11 +360,15 @@ export default class extends Base {
                 },
                 {
                   $set: {
-                    'withdrawalHistory.$.review.txid': decoded.data,
-                    'budget.$.status': status
+                    'withdrawalHistory.$.review.txid': decoded.data
                   }
                 }
               )
+              await this.model.update(
+                { proposalHash, 'budget.milestoneKey': history.milestoneKey },
+                { $set: { 'budget.$.status': status } }
+              )
+
               if (history.review.opinion === APPROVED) {
                 this.notifyProposalOwner(
                   proposal.proposer,
