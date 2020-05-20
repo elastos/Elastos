@@ -19,7 +19,7 @@ const {
   WITHDRAWN
 } = constant.MILESTONE_STATUS
 const { ACTIVE } = constant.CVOTE_STATUS
-const { PROGRESS } = constant.PROPOSAL_TRACKING_TYPE
+const { PROGRESS, FINALIZED } = constant.PROPOSAL_TRACKING_TYPE
 const { APPROVED, REJECTED } = constant.REVIEW_OPINION
 
 export default class extends Base {
@@ -48,11 +48,11 @@ export default class extends Base {
       // check if milestoneKey is valid
       const budget = proposal.budget.filter(
         (item: any) => item.milestoneKey === milestoneKey
-      )
+      )[0]
       if (_.isEmpty(budget)) {
         return { success: false }
       }
-      if (budget[0].status !== WAITING_FOR_REQUEST) {
+      if (budget.status !== WAITING_FOR_REQUEST) {
         return { success: false }
       }
 
@@ -73,7 +73,7 @@ export default class extends Base {
       )
 
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
-      const trackingStatus = PROGRESS
+      const trackingStatus = budget.type === 'COMPLETION' ? FINALIZED : PROGRESS
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -240,6 +240,17 @@ export default class extends Base {
         return { success: false }
       }
 
+      // check if milestoneKey is valid
+      const budget = proposal.budget.filter(
+        (item: any) => item.milestoneKey === milestoneKey
+      )[0]
+      if (_.isEmpty(budget)) {
+        return { success: false }
+      }
+      if (budget.status !== WAITING_FOR_APPROVAL) {
+        return { success: false }
+      }
+
       const currTime = Date.now()
       const now = Math.floor(currTime / 1000)
       const reasonHash = utilCrypto.sha256D(
@@ -266,9 +277,9 @@ export default class extends Base {
       )
       let trackingStatus: string
       if (opinion === APPROVED) {
-        trackingStatus = constant.PROPOSAL_TRACKING_TYPE.REJECTED
+        trackingStatus = budget.type === 'COMPLETION' ? FINALIZED : PROGRESS
       } else {
-        trackingStatus = PROGRESS
+        trackingStatus = constant.PROPOSAL_TRACKING_TYPE.REJECTED
       }
 
       // generate jwt url
