@@ -195,6 +195,7 @@ class PaymentList extends BaseComponent {
               opinion={this.state.opinion}
               reviewApplication={actions.reviewApplication}
               application={withdrawalHistory[withdrawalHistory.length - 1]}
+              getReviewTxid={actions.getReviewTxid}
             />
           ) : null}
         </Modal>

@@ -229,4 +229,19 @@ export default class extends BaseService {
     })
     return rs
   }
+
+  async getReviewTxid(data) {
+    const rs = await api_request({
+      path: `/api/proposals/milestones/review/txid`,
+      method: 'post',
+      data: {
+        id: data.proposalId,
+        messageHash: data.messageHash
+      }
+    })
+    if (rs && rs.success && rs.detail) {
+      this.dispatch(this.selfRedux.actions.data_update(rs.detail))
+    }
+    return rs
+  }
 }

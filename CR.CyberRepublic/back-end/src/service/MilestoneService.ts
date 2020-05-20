@@ -278,7 +278,7 @@ export default class extends Base {
       )
 
       const url = `elastos://crproposal/${jwtToken}`
-      return { success: true, url }
+      return { success: true, url, messageHash: reasonHash }
     } catch (error) {
       logger.error(error)
       return

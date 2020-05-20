@@ -53,17 +53,29 @@ class Signature extends Component {
         }
         const rs = await reviewApplication(proposalId, stage, data)
         if (rs.success && rs.url) {
-          this.setState({ url: rs.url })
+          this.setState({ url: rs.url, messageHash: rs.messageHash })
+          this.pollingSignature()
         }
       }
     })
   }
 
   pollingSignature = () => {
-    const { proposalId, getPaymentSignature, hideModal } = this.props
+    const {
+      proposalId,
+      getPaymentSignature,
+      hideModal,
+      isSecretary,
+      getReviewTxid
+    } = this.props
     const { messageHash } = this.state
     this.timerDid = setInterval(async () => {
-      const rs = await getPaymentSignature({ proposalId, messageHash })
+      let rs
+      if (isSecretary) {
+        rs = await getReviewTxid({ proposalId, messageHash })
+      } else {
+        rs = await getPaymentSignature({ proposalId, messageHash })
+      }
       if (rs && rs.success) {
         clearInterval(this.timerDid)
         this.timerDid = null
