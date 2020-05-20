@@ -620,7 +620,7 @@ export default class extends Base {
         data: {
           proposalhash: proposal.proposalHash,
           amount: (sum * Math.pow(10, 8)).toString(),
-          recipient: proposal.recipient,
+          recipient: proposal.elaAddress,
           ownerpublickey: proposal.ownerPublicKey || ownerPublicKey,
           utxos: rs.utxos
         }
