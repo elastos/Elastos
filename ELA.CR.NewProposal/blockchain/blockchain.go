@@ -333,8 +333,9 @@ type OutputInfo struct {
 	Amount    *Fixed64
 }
 
-func (b *BlockChain) createTransaction(fromAddress Uint168, fee Fixed64,
-	lockedUntil uint32, utxos []*UTXO, outputs ...*OutputInfo) (*Transaction, error) {
+func (b *BlockChain) createTransaction(payload Payload,
+	fromAddress Uint168, fee Fixed64, lockedUntil uint32,
+	utxos []*UTXO, outputs ...*OutputInfo) (*Transaction, error) {
 	// check output
 	if len(outputs) == 0 {
 		return nil, errors.New("invalid transaction target")
@@ -351,11 +352,10 @@ func (b *BlockChain) createTransaction(fromAddress Uint168, fee Fixed64,
 		return nil, err
 	}
 	txOutputs = append(txOutputs, changeOutputs...)
-	crcAppropriationPayload := &payload.CRCAppropriation{}
 	return &Transaction{
 		Version:    TxVersion09,
 		TxType:     CRCAppropriation,
-		Payload:    crcAppropriationPayload,
+		Payload:    payload,
 		Attributes: []*Attribute{},
 		Inputs:     txInputs,
 		Outputs:    txOutputs,
@@ -472,8 +472,35 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
 		&appropriationAmount}}
 
 	var tx *Transaction
-	tx, err = b.createTransaction(b.chainParams.CRCFoundation, Fixed64(0),
-		uint32(0), utxos, outputs...)
+	tx, err = b.createTransaction(&payload.CRCAppropriation{},
+		b.chainParams.CRCFoundation, Fixed64(0), uint32(0), utxos, outputs...)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
+}
+
+func (b *BlockChain) CreateCRAssetsRectifyTransaction() (*Transaction, error) {
+	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRCFoundation)
+	if err != nil {
+		return nil, err
+	}
+	var crcFoundationBalance Fixed64
+	for _, u := range utxos {
+		crcFoundationBalance += u.Value
+	}
+	rectifyAmount := crcFoundationBalance
+
+	log.Info("create CR assets rectify amount:", rectifyAmount)
+	if rectifyAmount <= 0 {
+		return nil, nil
+	}
+	outputs := []*OutputInfo{{b.chainParams.CRCFoundation,
+		&rectifyAmount}}
+
+	var tx *Transaction
+	tx, err = b.createTransaction(&payload.CRAssetsRectify{},
+		b.chainParams.CRCFoundation, Fixed64(0), uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}

@@ -104,6 +104,7 @@ type KeyFrame struct {
 	LastVotingStartHeight      uint32
 	InElectionPeriod           bool
 	NeedAppropriation          bool
+	NeedRectifyAssets          bool
 	CRCFoundationLockedAmounts []common.Fixed64
 	CRCFoundationBalance       common.Fixed64
 	CRCCommitteeBalance        common.Fixed64
@@ -112,6 +113,7 @@ type KeyFrame struct {
 	DestroyedAmount            common.Fixed64
 	CirculationAmount          common.Fixed64
 	AppropriationAmount        common.Fixed64
+	CRAssetsAddressUTXOCount   uint32
 }
 
 type DepositInfo struct {

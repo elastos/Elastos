@@ -42,6 +42,7 @@ const (
 	ErrTxAssetPrecision    ErrCode = -22013
 	ErrTxReturnDeposit     ErrCode = -22014
 	ErrTxAppropriation     ErrCode = -22015
+	ErrTxAssetsRectify     ErrCode = -22016
 	// 23 sidechain
 	ErrTxSidechainValidation   ErrCode = -23000
 	ErrTxSidechainDuplicate    ErrCode = -23001

@@ -32,13 +32,14 @@ type Committee struct {
 	lastHistory          *utils.History
 	appropriationHistory *utils.History
 
-	getCheckpoint            func(height uint32) *Checkpoint
-	getHeight                func() uint32
-	isCurrent                func() bool
-	broadcast                func(msg p2p.Message)
-	appendToTxpool           func(transaction *types.Transaction) elaerr.ELAError
-	createCRCAppropriationTx func() (*types.Transaction, error)
-	getUTXO                  func(programHash *common.Uint168) ([]*types.UTXO, error)
+	getCheckpoint                    func(height uint32) *Checkpoint
+	getHeight                        func() uint32
+	isCurrent                        func() bool
+	broadcast                        func(msg p2p.Message)
+	appendToTxpool                   func(transaction *types.Transaction) elaerr.ELAError
+	createCRCAppropriationTx         func() (*types.Transaction, error)
+	createCRAssetsRectifyTransaction func() (*types.Transaction, error)
+	getUTXO                          func(programHash *common.Uint168) ([]*types.UTXO, error)
 }
 
 type CommitteeKeyFrame struct {
@@ -279,6 +280,10 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		c.createAppropriationTransaction(block.Height)
 		c.recordCurrentStageAmount(block.Height)
 		c.appropriationHistory.Commit(block.Height)
+	} else {
+		if c.CRAssetsAddressUTXOCount >= c.params.MaxCRAssetsAddressUTXOCount {
+			c.createRectifyCRAssetsTransaction(block.Height)
+		}
 	}
 }
 
@@ -380,7 +385,32 @@ func (c *Committee) createAppropriationTransaction(height uint32) {
 					if err := c.appendToTxpool(tx); err == nil {
 						c.broadcast(msg.NewTx(tx))
 					} else {
-						log.Warn("create CRCAppropriation appendToTxpool err ", err)
+						log.Warn("create CRCAppropriation append to tx pool err ", err)
+					}
+				}
+			}()
+		}
+	}
+	return
+}
+
+func (c *Committee) createRectifyCRAssetsTransaction(height uint32) {
+	if c.createCRCAppropriationTx != nil && height == c.getHeight() {
+		tx, err := c.createCRAssetsRectifyTransaction()
+		if err != nil {
+			log.Error("create rectify UTXOs tx failed:", err.Error())
+			return
+		}
+
+		log.Info("create rectify UTXOs transaction:", tx.Hash())
+		if c.isCurrent != nil && c.broadcast != nil && c.
+			appendToTxpool != nil {
+			go func() {
+				if c.isCurrent() {
+					if err := c.appendToTxpool(tx); err == nil {
+						c.broadcast(msg.NewTx(tx))
+					} else {
+						log.Warn("create rectify UTXOs append to tx pool err ", err)
 					}
 				}
 			}()
@@ -1093,6 +1123,7 @@ type CommitteeFuncsConfig struct {
 		map[*types.Input]types.Output, error)
 	GetHeight                        func() uint32
 	CreateCRAppropriationTransaction func() (*types.Transaction, error)
+	CreateCRAssetsRectifyTransaction func() (*types.Transaction, error)
 	IsCurrent                        func() bool
 	Broadcast                        func(msg p2p.Message)
 	AppendToTxpool                   func(transaction *types.Transaction) elaerr.ELAError
@@ -1101,6 +1132,7 @@ type CommitteeFuncsConfig struct {
 
 func (c *Committee) RegisterFuncitons(cfg *CommitteeFuncsConfig) {
 	c.createCRCAppropriationTx = cfg.CreateCRAppropriationTransaction
+	c.createCRAssetsRectifyTransaction = cfg.CreateCRAssetsRectifyTransaction
 	c.isCurrent = cfg.IsCurrent
 	c.broadcast = cfg.Broadcast
 	c.appendToTxpool = cfg.AppendToTxpool

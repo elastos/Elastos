@@ -102,19 +102,20 @@ type DPoSConfiguration struct {
 }
 
 type CRConfiguration struct {
-	MemberCount                uint32  `json:"MemberCount"`
-	VotingPeriod               uint32  `json:"VotingPeriod"`
-	DutyPeriod                 uint32  `json:"DutyPeriod"`
-	DepositLockupBlocks        uint32  `json:"DepositLockupBlocks"`
-	ProposalCRVotingPeriod     uint32  `json:"ProposalCRVotingPeriod"`
-	ProposalPublicVotingPeriod uint32  `json:"ProposalPublicVotingPeriod"`
-	CRAgreementCount           uint32  `json:"CRAgreementCount"`
-	VoterRejectPercentage      float64 `json:"VoterRejectPercentage"`
-	CRCAppropriatePercentage   float64 `json:"CRCAppropriatePercentage"`
-	MaxCommitteeProposalCount  uint32  `json:"MaxCommitteeProposalCount"`
-	SecretaryGeneral           string  `json:"SecretaryGeneral"`
-	MaxProposalTrackingCount   uint8   `json:"MaxProposalTrackingCount"`
-	RegisterCRByDIDHeight      uint32  `json:"RegisterCRByDIDHeight"`
+	MemberCount                  uint32  `json:"MemberCount"`
+	VotingPeriod                 uint32  `json:"VotingPeriod"`
+	DutyPeriod                   uint32  `json:"DutyPeriod"`
+	DepositLockupBlocks          uint32  `json:"DepositLockupBlocks"`
+	ProposalCRVotingPeriod       uint32  `json:"ProposalCRVotingPeriod"`
+	ProposalPublicVotingPeriod   uint32  `json:"ProposalPublicVotingPeriod"`
+	CRAgreementCount             uint32  `json:"CRAgreementCount"`
+	VoterRejectPercentage        float64 `json:"VoterRejectPercentage"`
+	CRCAppropriatePercentage     float64 `json:"CRCAppropriatePercentage"`
+	MaxCommitteeProposalCount    uint32  `json:"MaxCommitteeProposalCount"`
+	SecretaryGeneral             string  `json:"SecretaryGeneral"`
+	MaxProposalTrackingCount     uint8   `json:"MaxProposalTrackingCount"`
+	RegisterCRByDIDHeight        uint32  `json:"RegisterCRByDIDHeight"`
+	MaxCRAssetsAddressUTXOCount uint32  `json:"MaxCRAssetsAddressUTXOCount"`
 }
 
 type RPCServiceLevel byte

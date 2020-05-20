@@ -213,8 +213,9 @@ var DefaultParams = Params{
 		HistoryStartHeight: uint32(0),
 		NeedSave:           false,
 	}),
-	TxCacheVolume:          100000,
-	CheckVoteCRCountHeight: 0, // todo correct me later
+	TxCacheVolume:               100000,
+	CheckVoteCRCountHeight:      0, // todo correct me later
+	MaxCRAssetsAddressUTXOCount: 3000,
 }
 
 // TestNet returns the network parameters for the test network.
@@ -567,11 +568,16 @@ type Params struct {
 
 	// TxCacheVolume defines the default volume of the transaction cache.
 	TxCacheVolume uint32
-	//MaxNodePerHost defines max nodes that one host can establish
+
+	//MaxNodePerHost defines max nodes that one host can establish.
 	MaxNodePerHost uint32
 
-	// CheckVoteCRCountHeight defines the height to check count of vote CR
+	// CheckVoteCRCountHeight defines the height to check count of vote CR.
 	CheckVoteCRCountHeight uint32
+
+	// MaxCRAssetsAddressUTXOCount defines the max UTXOs count of CRFoundation
+	// address.
+	MaxCRAssetsAddressUTXOCount uint32
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time

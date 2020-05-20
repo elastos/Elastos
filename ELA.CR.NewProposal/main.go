@@ -250,6 +250,7 @@ func startNode(c *cli.Context, st *settings.Settings) {
 		GetUTXO:                          chainStore.GetFFLDB().GetUTXO,
 		GetHeight:                        chainStore.GetHeight,
 		CreateCRAppropriationTransaction: chain.CreateCRCAppropriationTransaction,
+		CreateCRAssetsRectifyTransaction: chain.CreateCRAssetsRectifyTransaction,
 		IsCurrent:                        server.IsCurrent,
 		Broadcast: func(msg p2p.Message) {
 			server.BroadcastMessage(msg)

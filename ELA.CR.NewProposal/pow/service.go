@@ -250,7 +250,8 @@ func (pow *Service) GenerateBlock(minerAddr string,
 	isHighPriority := func(tx *types.Transaction) bool {
 		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() ||
 			tx.IsSideChainPowTx() || tx.IsUpdateVersion() ||
-			tx.IsActivateProducerTx() || tx.IsCRCAppropriationTx() {
+			tx.IsActivateProducerTx() || tx.IsCRCAppropriationTx() ||
+			tx.IsCRAssetsRectifyTx() {
 			return true
 		}
 		return false
