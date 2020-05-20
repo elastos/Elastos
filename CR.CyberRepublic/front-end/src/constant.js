@@ -246,6 +246,13 @@ export const CVOTE_STATUS_TEXT = {
   INCOMPLETED: 'INCOMPLETED'
 }
 
+export const CVOTE_CHAIN_STATUS = {
+  CHAINED: 'chained',
+  UNCHAIN: 'unchain',
+  CHAINING: 'chaining',
+  FAILED: 'failed'
+}
+
 export const CONTENT_TYPE = create(['MARKDOWN', 'HTML'])
 
 export const CVOTE_RESULT = {
