@@ -244,4 +244,12 @@ export default class extends BaseService {
     }
     return rs
   }
+
+  async withdraw(proposalId, stage) {
+    const rs = await api_request({
+      path: `/api/proposals/${proposalId}/milestones/${stage}/withdraw`,
+      method: 'get'
+    })
+    return rs
+  }
 }
