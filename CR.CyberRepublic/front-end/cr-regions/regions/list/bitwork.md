@@ -1,7 +1,7 @@
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/logo_black.png ':size=400')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/logo_black.png ':width=400')
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/mmexport1556125571612.jpg ':size=800')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/mmexport1556125571612.jpg ':width=800')
 
 ### https://bitwork.asia
 

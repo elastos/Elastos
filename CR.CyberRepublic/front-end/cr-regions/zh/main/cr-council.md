@@ -1,7 +1,7 @@
 
 # CR Consensus - Bitwork Council Committee
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/council-committee.jpg ':size=800')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/council-committee.jpg ':width=800')
 
 
 ## 於亞洲建立全新營運基地

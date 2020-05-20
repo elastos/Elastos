@@ -4,7 +4,7 @@
 
 > VP Development at Elastos
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/Clarence.jpg ':size=500')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/Clarence.jpg ':width=500')
 
 The architect and strategist behind the CR Regions initiative, Clarence is also a full-time Elastos core member based out of San Francisco, USA who handles or supports everything
 from business development, software engineering and partner relations globally.
@@ -13,11 +13,11 @@ Joining Elastos in May 2018 he comes from a software engineering background with
 Senior Software Engineering. At Elastos he brings his full expansive experience in Silicon Valley businesses and methodology to all aspects of the Elastos global operations.
 Since 2018 he has also spoken at dozens of meetups and events around the world and represented Elastos on blockchain panels.
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/IMG_4466-sm.jpg ':size=500')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/IMG_4466-sm.jpg ':width=500')
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/D-MeUgoUIAA_yzH.jpg ':size=500')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/D-MeUgoUIAA_yzH.jpg ':width=500')
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/DSC00706-sm.jpg ':size=500')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/DSC00706-sm.jpg ':width=500')
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/QiuKCmHHJtM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
@@ -33,7 +33,7 @@ Since 2018 he has also spoken at dozens of meetups and events around the world a
 
 # CR Regions
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/bitwork-ela-wall.jpg ':size=800')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/bitwork-ela-wall.jpg ':width=800')
 
 ?> CR Regions are the primary vehicle to grow the Elastos ecosystem in the real world.
 
@@ -80,6 +80,6 @@ critical to our growth, if you have ELA follow this [voting guide](/main/voting-
 
 ## Start a CR Region Team!
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/region-map.2f917b00.png ':size=800')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/region-map.2f917b00.png ':width=800')
 
 ### We are always looking for new teams to start new CR Region Teams in new regions, email us at [cyberrepublic@elastos.org](mailto:cyberrepublic@elastos.org) and get in touch!

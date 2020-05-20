@@ -12,7 +12,7 @@ Or visit our Github folder to browse the logos: [https://github.com/elastos/Elas
 
 Our latest banner is here: [https://drive.google.com/open?id=1B6cpg7hWDQCLH1yxoAIoDjkJKOkxDJdC](https://drive.google.com/open?id=1B6cpg7hWDQCLH1yxoAIoDjkJKOkxDJdC)
 
-![thumb](https://raw.githubusercontent.com/elastos/Elastos.Community/master/CyberRepublicLogoAssets/ElastosBanner_01-sm.png ':size=300')
+![thumb](https://raw.githubusercontent.com/elastos/Elastos.Community/master/CyberRepublicLogoAssets/ElastosBanner_01-sm.png ':width=300')
 
 
 ### Brochures

@@ -1,7 +1,7 @@
 
 # CR Consensus - Bitwork Council Committee
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/council-committee.jpg ':size=800x450')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/council-committee.jpg ':width=800x450')
 
 
 ## Creating a New Base of Operations for CR in Asia

@@ -2,7 +2,7 @@
 # CR Regions Global Fund - Clarence Liu
 ##### Elastos DPoS Supernode - see us at&nbsp;<https://elanodes.com>
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/elanodes.png ':size=800')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/elanodes.png ':width=800')
 
 **All funds from our CR Regions Global Fund supernode are used to fund our regional teams
 and events that we believe will bring the most people to our community.**

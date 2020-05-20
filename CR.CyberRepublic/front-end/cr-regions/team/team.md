@@ -12,7 +12,7 @@ their best. We also want each team to feel like they are not alone and have a re
 
 ### Clarence Liu - VP of Development - Elastos
 
-![](https://s3.amazonaws.com/elastosjs.com/img/Clarence.jpg ':size=200')
+![](https://s3.amazonaws.com/elastosjs.com/img/Clarence.jpg ':width=200')
 
 Clarence is a full-time employee and also the leader of the CR Regions initiative. He started building the CR Regions
 teams after spending months on the road experiencing the blockchain revolution first hand and realizing that a stronger

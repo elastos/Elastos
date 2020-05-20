@@ -2,7 +2,7 @@
 # elaHorse Supernode
 ##### Elastos DPoS Supernode
 
-![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/elanodes-elahorse.png ':size=800')
+![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/elanodes-elahorse.png ':width=800')
 
 Run by our esteemed CR Malaysia Task Force member KK - Telegram: @elaHorse, this supernode supports a
 mission to grow the ElastOS ecosystem in Malaysia. One of their main accomplishments of 2019 was bringing on our

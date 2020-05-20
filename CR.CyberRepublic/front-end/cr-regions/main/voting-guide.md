@@ -22,23 +22,23 @@ grow the Elastos ecosystem.
 
 1. Click the "Community" link at the bottom bar
 
-  ![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/howtovote-1.png ':size=300')
+  ![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/howtovote-1.png ':width=300')
 
 2. Select our CR Region supernodes from the list
 
-  ![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/howtovote-2.png ':size=300')
+  ![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/howtovote-2.png ':width=300')
 
 3. Add the node to the Candidate List
 
-  ![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/howtovote-3.png ':size=300')
+  ![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/howtovote-3.png ':width=300')
 
 4. Click the Vote Button
 
-  ![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/howtovote-4.png ':size=300')
+  ![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/howtovote-4.png ':width=300')
 
 5. Enter the amount of ELA to vote with and then your wallet password to vote
 
-  ![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/howtovote-5.png ':size=300')
+  ![](https://d1717iy6bbpwr8.cloudfront.net/assets/img/cr-regions/howtovote-5.png ':width=300')
 
 ?> If you did everything correctly you should see a new transaction for 0 ELA for your wallet
 
