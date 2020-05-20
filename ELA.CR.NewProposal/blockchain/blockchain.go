@@ -334,7 +334,7 @@ type OutputInfo struct {
 }
 
 func (b *BlockChain) createTransaction(fromAddress Uint168, fee Fixed64,
-	lockedUntil uint32, outputs ...*OutputInfo) (*Transaction, error) {
+	lockedUntil uint32, utxos []*UTXO, outputs ...*OutputInfo) (*Transaction, error) {
 	// check output
 	if len(outputs) == 0 {
 		return nil, errors.New("invalid transaction target")
@@ -346,7 +346,7 @@ func (b *BlockChain) createTransaction(fromAddress Uint168, fee Fixed64,
 		return nil, err
 	}
 	// create inputs
-	txInputs, changeOutputs, err := b.createInputs(fromAddress, totalAmount)
+	txInputs, changeOutputs, err := b.createInputs(fromAddress, totalAmount, utxos)
 	if err != nil {
 		return nil, err
 	}
@@ -413,14 +413,10 @@ func (b *BlockChain) getUTXOsFromAddress(address Uint168) ([]*UTXO, error) {
 }
 
 func (b *BlockChain) createInputs(fromAddress Uint168,
-	totalAmount Fixed64) ([]*Input, []*Output, error) {
-	UTXOs, err := b.getUTXOsFromAddress(fromAddress)
-	if err != nil {
-		return nil, nil, err
-	}
+	totalAmount Fixed64, utxos []*UTXO) ([]*Input, []*Output, error) {
 	var txInputs []*Input
 	var changeOutputs []*Output
-	for _, utxo := range UTXOs {
+	for _, utxo := range utxos {
 		input := &Input{
 			Previous: OutPoint{
 				TxID:  utxo.TxID,
@@ -430,9 +426,6 @@ func (b *BlockChain) createInputs(fromAddress Uint168,
 		}
 		txInputs = append(txInputs, input)
 		amount := &utxo.Value
-		if err != nil {
-			return nil, nil, err
-		}
 		if *amount < totalAmount {
 			totalAmount -= *amount
 		} else if *amount == totalAmount {
@@ -460,7 +453,7 @@ func (b *BlockChain) createInputs(fromAddress Uint168,
 }
 
 func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
-	utxos, err := b.db.GetFFLDB().GetUTXO(&b.chainParams.CRCFoundation)
+	utxos, err := b.getUTXOsFromAddress(b.chainParams.CRCFoundation)
 	if err != nil {
 		return nil, err
 	}
@@ -468,19 +461,10 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
 	for _, u := range utxos {
 		crcFoundationBalance += u.Value
 	}
-	utxos, err = b.db.GetFFLDB().GetUTXO(&b.chainParams.CRCCommitteeAddress)
-	if err != nil {
-		return nil, err
-	}
-	var crcCommiteeBalance Fixed64
-	for _, u := range utxos {
-		crcCommiteeBalance += u.Value
-	}
 	p := b.chainParams.CRCAppropriatePercentage
-	uAmount := b.crCommittee.CRCCommitteeUsedAmount
-	appropriationAmount := Fixed64(float64(crcFoundationBalance+
-		crcCommiteeBalance)*p/100.0) - crcCommiteeBalance + uAmount
+	appropriationAmount := Fixed64(float64(crcFoundationBalance) * p / 100.0)
 
+	log.Info("create appropriation transaction amount:", appropriationAmount)
 	if appropriationAmount <= 0 {
 		return nil, nil
 	}
@@ -489,7 +473,7 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
 
 	var tx *Transaction
 	tx, err = b.createTransaction(b.chainParams.CRCFoundation, Fixed64(0),
-		uint32(0), outputs...)
+		uint32(0), utxos, outputs...)
 	if err != nil {
 		return nil, err
 	}

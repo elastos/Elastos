@@ -25,6 +25,10 @@ const (
 	// MemberImpeached indicates the CR member was impeached.
 	MemberImpeached
 
+	// MemberTerminated indicates the CR member was terminated because elected
+	// CR members are not enough.
+	MemberTerminated
+
 	// MemberReturned indicates the CR member has deposit returned.
 	MemberReturned
 )
@@ -37,6 +41,8 @@ func (s *MemberState) String() string {
 		return "Impeached"
 	case MemberReturned:
 		return "Returned"
+	case MemberTerminated:
+		return "Terminated"
 	}
 
 	return "Unknown"
@@ -92,18 +98,20 @@ type CRMember struct {
 
 // StateKeyFrame holds necessary state about CR committee.
 type KeyFrame struct {
-	Members                map[common.Uint168]*CRMember
-	HistoryMembers         map[uint64]map[common.Uint168]*CRMember
-	LastCommitteeHeight    uint32
-	LastVotingStartHeight  uint32
-	InElectionPeriod       bool
-	NeedAppropriation      bool
-	CRCFoundationBalance   common.Fixed64
-	CRCCommitteeBalance    common.Fixed64
-	CRCCommitteeUsedAmount common.Fixed64
-	CRCCurrentStageAmount  common.Fixed64
-	DestroyedAmount        common.Fixed64
-	CirculationAmount      common.Fixed64
+	Members                    map[common.Uint168]*CRMember
+	HistoryMembers             map[uint64]map[common.Uint168]*CRMember
+	LastCommitteeHeight        uint32
+	LastVotingStartHeight      uint32
+	InElectionPeriod           bool
+	NeedAppropriation          bool
+	CRCFoundationLockedAmounts []common.Fixed64
+	CRCFoundationBalance       common.Fixed64
+	CRCCommitteeBalance        common.Fixed64
+	CRCCommitteeUsedAmount     common.Fixed64
+	CRCCurrentStageAmount      common.Fixed64
+	DestroyedAmount            common.Fixed64
+	CirculationAmount          common.Fixed64
+	AppropriationAmount        common.Fixed64
 }
 
 type DepositInfo struct {
@@ -242,10 +250,14 @@ func (kf *KeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
+	if err = kf.serializeAmountList(w, kf.CRCFoundationLockedAmounts); err != nil {
+		return
+	}
+
 	return common.WriteElements(w, kf.LastCommitteeHeight,
 		kf.LastVotingStartHeight, kf.InElectionPeriod, kf.NeedAppropriation,
 		kf.CRCFoundationBalance, kf.CRCCommitteeBalance, kf.CRCCommitteeUsedAmount,
-		kf.DestroyedAmount, kf.CirculationAmount)
+		kf.DestroyedAmount, kf.CirculationAmount, kf.AppropriationAmount)
 }
 
 func (kf *KeyFrame) Deserialize(r io.Reader) (err error) {
@@ -257,10 +269,15 @@ func (kf *KeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
+	if kf.CRCFoundationLockedAmounts, err = kf.deserializeAmountList(r); err != nil {
+		return
+	}
+
 	err = common.ReadElements(r, &kf.LastCommitteeHeight,
 		&kf.LastVotingStartHeight, &kf.InElectionPeriod, &kf.NeedAppropriation,
 		&kf.CRCFoundationBalance, &kf.CRCCommitteeBalance,
-		&kf.CRCCommitteeUsedAmount, &kf.DestroyedAmount, &kf.CirculationAmount)
+		&kf.CRCCommitteeUsedAmount, &kf.DestroyedAmount, &kf.CirculationAmount,
+		&kf.AppropriationAmount)
 	return
 }
 
@@ -296,6 +313,36 @@ func (kf *KeyFrame) serializeHistoryMembersMap(w io.Writer,
 		}
 	}
 
+	return
+}
+
+func (kf *KeyFrame) serializeAmountList(w io.Writer,
+	amounts []common.Fixed64) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(amounts))); err != nil {
+		return
+	}
+	for _, a := range amounts {
+		if err = a.Serialize(w); err != nil {
+			return err
+		}
+	}
+	return
+}
+
+func (kf *KeyFrame) deserializeAmountList(
+	r io.Reader) (amounts []common.Fixed64, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	amounts = make([]common.Fixed64, 0)
+	for i := uint64(0); i < count; i++ {
+		var amount common.Fixed64
+		if err = amount.Deserialize(r); err != nil {
+			return
+		}
+		amounts = append(amounts, amount)
+	}
 	return
 }
 
@@ -354,6 +401,7 @@ func (kf *KeyFrame) Snapshot() *KeyFrame {
 	frame.CRCCommitteeUsedAmount = kf.CRCCommitteeUsedAmount
 	frame.DestroyedAmount = kf.DestroyedAmount
 	frame.CirculationAmount = kf.CirculationAmount
+	frame.AppropriationAmount = kf.AppropriationAmount
 	frame.Members = copyMembersMap(kf.Members)
 	frame.HistoryMembers = copyHistoryMembersMap(kf.HistoryMembers)
 	return frame
@@ -361,9 +409,10 @@ func (kf *KeyFrame) Snapshot() *KeyFrame {
 
 func NewKeyFrame() *KeyFrame {
 	return &KeyFrame{
-		Members:             make(map[common.Uint168]*CRMember, 0),
-		HistoryMembers:      make(map[uint64]map[common.Uint168]*CRMember, 0),
-		LastCommitteeHeight: 0,
+		Members:                    make(map[common.Uint168]*CRMember, 0),
+		HistoryMembers:             make(map[uint64]map[common.Uint168]*CRMember, 0),
+		CRCFoundationLockedAmounts: make([]common.Fixed64, 0),
+		LastCommitteeHeight:        0,
 	}
 }
 
