@@ -1119,7 +1119,7 @@ export default class extends Base {
                     message: `Can not get your did's public key`
                 }
             }
-            console.log('123')
+
             return jwt.verify(
                 jwtToken,
                 rs.publicKey,
