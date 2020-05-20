@@ -154,7 +154,7 @@ class PaymentList extends BaseComponent {
   }
 
   ord_render() {
-    const { list, proposalId, actions, user } = this.props
+    const { list, proposalId, actions, user, withdrawalHistory } = this.props
     const visible = this.isVisible()
     return (
       <StyledTable>
@@ -191,6 +191,8 @@ class PaymentList extends BaseComponent {
               getPaymentSignature={actions.getPaymentSignature}
               hideModal={this.hideModal}
               isSecretary={user.is_secretary}
+              reviewPaymentApplication={actions.reviewPaymentApplication}
+              application={withdrawalHistory[withdrawalHistory.length - 1]}
             />
           ) : null}
         </Modal>

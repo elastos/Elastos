@@ -210,7 +210,7 @@ export default class extends Base {
 
   public async review(param: any) {
     try {
-      const { id, milestoneKey, reason, opinion } = param
+      const { id, milestoneKey, reason, opinion, applicationId } = param
       if (!reason || !opinion || ![APPROVED, REJECTED].includes(opinion)) {
         return { success: false }
       }
@@ -230,7 +230,7 @@ export default class extends Base {
       const opinionHash = utilCrypto.sha256D(opinion)
 
       await this.model.update(
-        { _id: id, 'withdrawalHistory.messageHash': reasonHash },
+        { _id: id, 'withdrawalHistory._id': applicationId },
         {
           $set: {
             'withdrawalHistory.$.review': {

@@ -80,6 +80,9 @@ const mapDispatch = () => {
     },
     async getPaymentSignature(data) {
       return service.getPaymentSignature(data)
+    },
+    async reviewPaymentApplication(data) {
+      return service.reviewPaymentApplication(data)
     }
   }
 }

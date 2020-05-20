@@ -67,10 +67,10 @@ class Signature extends Component {
 
   renderTextare = () => {
     const { getFieldDecorator } = this.props.form
-    const { isSecretary } = this.props
+    const { isSecretary, application } = this.props
     return (
       <Form onSubmit={this.handleSubmit}>
-        {isSecretary && <div>application</div>}
+        {isSecretary && <Msg>{application.message}</Msg>}
         <Label>
           <span>*</span>
           Reason
@@ -147,4 +147,10 @@ const Tip = styled.div`
   font-size: 14px;
   color: #000;
   margin-top: 16px;
+`
+const Msg = styled.div`
+  background-color: #ececec;
+  border: 1px sold #cccccc;
+  padding: 8px;
+  margin-bottom: 24px;
 `

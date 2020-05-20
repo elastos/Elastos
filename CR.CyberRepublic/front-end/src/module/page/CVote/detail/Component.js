@@ -78,6 +78,7 @@ const renderRichContent = (data, key, title, user, actions) => {
         <PaymentList
           list={data.budget}
           milestone={data.plan.milestone}
+          withdrawalHistory={data.withdrawalHistory}
           user={user}
           proposer={data.proposer}
           proposalId={data._id}
@@ -615,7 +616,8 @@ class C extends StandardPage {
           user,
           {
             applyPayment: this.props.applyPayment,
-            getPaymentSignature: this.props.getPaymentSignature
+            getPaymentSignature: this.props.getPaymentSignature,
+            reviewPaymentApplication: this.props.reviewPaymentApplication
           }
         )}
       </div>
