@@ -112,7 +112,11 @@ export const getUtxosByAmount = async (amount: string) => {
     if (res && res.data) {
       const utxos = _.get(res.data, 'result')
       if (utxos) {
-        return { success: true, utxos }
+        const rs = utxos.map((item: any) => {
+          const amount = (parseFloat(item.amount) * Math.pow(10, 8)).toString()
+          return { ...item, amount }
+        })
+        return { success: true, utxos: rs }
       }
     }
   } catch (err) {
