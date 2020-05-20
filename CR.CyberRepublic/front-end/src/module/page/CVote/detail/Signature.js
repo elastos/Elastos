@@ -88,10 +88,15 @@ class Signature extends Component {
 
   signatureQrCode = () => {
     const { url } = this.state
+    const { isSecretary } = this.props
     return (
       <Content>
         {url ? <QRCode value={url} size={400} /> : <Spin />}
-        <Tip>Scan the QR code above to sign your application.</Tip>
+        {isSecretary ? (
+          <Tip>Scan the QR code above to sign</Tip>
+        ) : (
+          <Tip>Scan the QR code above to sign your application.</Tip>
+        )}
       </Content>
     )
   }
