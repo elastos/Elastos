@@ -51,9 +51,9 @@ export default class extends Base {
       if (_.isEmpty(budget)) {
         return { success: false }
       }
-      // if (budget.status !== WAITING_FOR_REQUEST) {
-      //   return { success: false }
-      // }
+      if (budget[0].status !== WAITING_FOR_REQUEST) {
+        return { success: false }
+      }
 
       const currDate = Date.now()
       const now = Math.floor(currDate / 1000)
