@@ -43,7 +43,7 @@ export const CouncilMembers = {
         type: String,
         required: true,
     },
-    depositHash: {
+    depositAddress: {
         type: String,
         required: true,
     },

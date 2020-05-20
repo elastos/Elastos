@@ -149,10 +149,7 @@ export default class extends Base {
 
         if (!councilList && !secretariat) {
             return {
-                code: 400,
-                message: 'Invalid request parameters',
-                // tslint:disable-next-line:no-null-keyword
-                data: null
+                type: 'Other'
             }
         }
 
@@ -176,9 +173,7 @@ export default class extends Base {
 
                 if (councilList.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
                     term = _.map(proposalList, (o: any) => {
-                        const firstName = _.get(o, 'createdBy.profile.firstName')
-                        const lastName = _.get(o, 'createdBy.profile.lastName')
-                        const didName = (firstName || lastName) && `${firstName} ${lastName}`.trim()
+                        const didName = _.get(o, 'createdBy.did.didName')
                         const chainStatus = [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
                         // Todo: add chain status limit
                         // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
@@ -281,7 +276,7 @@ export default class extends Base {
             address: data.url,
             impeachmentVotes: data.impeachmentvotes,
             depositAmount: data.depositamout,
-            depositHash: data.deposithash,
+            depositAddress: data.depositaddress,
             status: data.state,
         });
 
