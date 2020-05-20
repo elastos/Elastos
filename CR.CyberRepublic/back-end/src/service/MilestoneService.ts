@@ -403,7 +403,7 @@ export default class extends Base {
     }
   }
 
-  public async checkSecretaryTxid(param: any) {
+  public async checkReviewTxid(param: any) {
     const { id, messageHash } = param
     const proposal: any = await this.getProposal(id)
     if (proposal) {
