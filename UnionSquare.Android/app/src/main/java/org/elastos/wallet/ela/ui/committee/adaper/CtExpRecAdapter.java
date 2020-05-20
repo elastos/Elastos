@@ -10,8 +10,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
 import org.elastos.wallet.ela.ui.committee.bean.ExperienceBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.DateUtil;
 
 import java.util.List;
 
@@ -23,7 +26,7 @@ import butterknife.ButterKnife;
  */
 public class CtExpRecAdapter extends RecyclerView.Adapter<CtExpRecAdapter.ViewHolder> {
 
-    public CtExpRecAdapter(Context context, List<ExperienceBean> list) {
+    public CtExpRecAdapter(Context context, List<CtDetailBean.Term> list) {
         this.context = context;
         this.list = list;
     }
@@ -35,21 +38,60 @@ public class CtExpRecAdapter extends RecyclerView.Adapter<CtExpRecAdapter.ViewHo
         return new ViewHolder(v);
     }
 
+    private static final String VOTING = "VOTING"; //委员评议
+    private static final String NOTIFICATION = "NOTIFICATION"; //公示中
+    private static final String ACTIVE = "ACTIVE"; //执行中
+    private static final String FINAL = "FINAL"; //已完成
+    private static final String REJECTED = "REJECTED"; //已废止
+
+    private static final String SUPPORT = "support"; //赞同
+    private static final String REJECT = "reject"; //反对
+    private static final String ABSTENTION = "abstention"; //弃权
+    private static final String UNDECIDED = "undecided"; //为操作
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        ExperienceBean data = list.get(i);
+        CtDetailBean.Term data = list.get(i);
         viewHolder.title.setText(data.getTitle());
-        viewHolder.subTitle.setText(data.getSubTitle());
-        if(data.getType() == 0) {
+        String status = data.getStatus();
+        String statusStr = "";
+        if(!AppUtlis.isNullOrEmpty(status)) {
+            switch (status) {
+                case VOTING:
+                    statusStr = context.getString(R.string.proposalcomments);
+                    break;
+                case NOTIFICATION:
+                    statusStr = context.getString(R.string.proposalpublished);
+                    break;
+                case ACTIVE:
+                    statusStr = context.getString(R.string.proposalprocess);
+                    break;
+                case FINAL:
+                    statusStr = context.getString(R.string.proposalfinish);
+                    break;
+                case REJECTED:
+                    statusStr = context.getString(R.string.proposalabandon);
+                    break;
+                default:
+                    statusStr = "";
+            }
+        }
+        viewHolder.subTitle.setText(String.format("#%1$d %2$s %3$s %4$s",
+                data.getId(),
+                DateUtil.formatTimestamp(String.valueOf(data.getCreatedAt()), "yyyy.MM.dd"),
+                data.getDidName(),
+                statusStr));
+        if(data.getVoteResult().equalsIgnoreCase(ABSTENTION)) {
             viewHolder.tag.setBackgroundColor(Color.parseColor("#666666"));
-            viewHolder.tag.setText("弃权");
-        } else if(data.getType() == 1) {
+            viewHolder.tag.setText(context.getString(R.string.abstention));
+        } else if(data.getVoteResult().equalsIgnoreCase(REJECT)) {
             viewHolder.tag.setBackgroundColor(Color.parseColor("#B04135"));
-            viewHolder.tag.setText("反对");
-        } else if(data.getType() == 2) {
+            viewHolder.tag.setText(context.getString(R.string.disagree1));
+        } else if(data.getVoteResult().equalsIgnoreCase(SUPPORT)) {
             viewHolder.tag.setBackgroundColor(Color.parseColor("#35B08F"));
-            viewHolder.tag.setText("赞成");
+            viewHolder.tag.setText(context.getString(R.string.agree1));
         } else {
+            viewHolder.tag.setText("");
             viewHolder.tag.setBackgroundColor(Color.parseColor("#00000000"));
         }
 
@@ -83,5 +125,5 @@ public class CtExpRecAdapter extends RecyclerView.Adapter<CtExpRecAdapter.ViewHo
 
     private Context context;
     private CommonRvListener commonRvListener;
-    private List<ExperienceBean> list;
+    private List<CtDetailBean.Term> list;
 }

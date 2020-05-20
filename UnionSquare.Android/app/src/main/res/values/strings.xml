@@ -730,6 +730,7 @@
     <string name="personalprofilewithline">- 个人简介</string>
     <string name="pagehomewithline">- 个人主页</string>
     <string name="wechataccountwithline">- 微信账号</string>
+    <string name="disbanded">已去职</string>
     <string name="votemoney">投票金额</string>
     <string name="proposalcomments">提案评议</string>
     <string name="proposalpublished">提案公示</string>

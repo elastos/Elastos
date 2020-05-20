@@ -23,11 +23,13 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp">
 
-            <org.elastos.wallet.ela.utils.widget.CircleImageView
+            <org.elastos.wallet.ela.utils.widget.RoundImageView
                 android:id="@+id/head_ic"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_centerVertical="true"
+                app:circle="true"
+                android:scaleType="matrix"
                 android:src="@mipmap/icon_ela" />
 
             <TextView
@@ -36,7 +38,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_toRightOf="@+id/head_ic"
-                android:text="Kevin Zhang"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
@@ -48,7 +49,6 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="3dp"
                 android:layout_toRightOf="@+id/head_ic"
-                android:text="布宜诺斯艾利斯"
                 android:textColor="@color/white"
                 android:textSize="11sp" />
         </RelativeLayout>
@@ -98,7 +98,6 @@
                     android:layout_below="@+id/vote_count_title"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="6dp"
-                    android:text="2312 ELA"
                     android:textColor="@color/white"
                     android:textSize="13sp" />
             </RelativeLayout>
@@ -110,7 +109,8 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="43dp"
                 android:text="/"
-                android:textColor="@color/white" />
+                android:textSize="25sp"
+                android:textColor="@color/whiter50" />
 
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -134,7 +134,6 @@
                     android:layout_below="@+id/impeachment_count_title"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="6dp"
-                    android:text="2312 ELA"
                     android:textColor="@color/white"
                     android:textSize="13sp" />
             </RelativeLayout>

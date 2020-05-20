@@ -2,10 +2,12 @@ package org.elastos.wallet.ela.ui.committee.fragment;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -20,6 +22,7 @@ import org.elastos.wallet.ela.ui.committee.bean.ExperienceBean;
 import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DateUtil;
+import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.elastos.wallet.ela.utils.view.CircleProgressView;
 
 import java.math.BigDecimal;
@@ -51,8 +54,10 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     View workExperience;
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
+    @BindView(R.id.no_info)
+    TextView norecord;
     CtExpRecAdapter adapter;
-    List<ExperienceBean> list = new ArrayList<>();
+    List<CtDetailBean.Term> list = null;
 
     CtDetailPresenter presenter;
 
@@ -75,6 +80,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctdetail));
         presenter = new CtDetailPresenter();
         presenter.getCouncilInfo(this, id, did);
+        experienceTitleTv.setText(String.format(getString(R.string.performancerecord), String.valueOf(0)));
     }
 
     private void selectDetail() {
@@ -95,18 +101,27 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         workExperience.setVisibility(View.VISIBLE);
     }
 
-    private void setRecyclerView() {
+    private void setRecyclerView(List<CtDetailBean.Term> datas) {
+        if(datas==null || datas.size()<=0) return;
+        norecord.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.VISIBLE);
         if (adapter == null) {
+            list = new ArrayList<>();
+            list.clear();
+            list.addAll(datas);
+
             adapter = new CtExpRecAdapter(getContext(), list);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             recyclerView.setAdapter(adapter);
             adapter.setCommonRvListener((position, o) -> {
                 start(GeneralCtDetailFragment.class);
             });
-
         } else {
+            list.clear();
+            list.addAll(datas);
             adapter.notifyDataSetChanged();
         }
+        experienceTitleTv.setText(String.format(getString(R.string.performancerecord), String.valueOf(list.size())));
     }
 
     @OnClick({R.id.tab1, R.id.tab2, R.id.impeachment_btn})
@@ -139,6 +154,8 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
 
     @BindView(R.id.name)
     TextView name;
+    @BindView(R.id.head_ic)
+    AppCompatImageView headIc;
     @BindView(R.id.location)
     TextView location;
     @BindView(R.id.vote_count)
@@ -150,6 +167,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     private void setBaseInfo(CtDetailBean ctDetailBean) {
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         name.setText(dataBean.getDidName());
+        GlideApp.with(getContext()).load(dataBean.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(headIc);
         location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
         BigDecimal gress = new BigDecimal(dataBean.getImpeachmentVotes()).divide(new BigDecimal(dataBean.getImpeachmentThroughVotes())).multiply(new BigDecimal(100));
         progress.setProgress(gress.floatValue());
@@ -175,17 +193,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     private void setCtRecord(CtDetailBean ctDetailBean) {
         if(null == ctDetailBean) return;
         List<CtDetailBean.Term> terms = ctDetailBean.getData().getTerm();
-        list.clear();
-        for(CtDetailBean.Term term : terms) {
-            ExperienceBean ExperienceBean = new ExperienceBean();
-            ExperienceBean.setTitle(term.getDidName());
-            ExperienceBean.setSubTitle(String.format("#%1$d %2$s %3$s %4$s", term.getId(),
-                    DateUtil.formatTimestamp(String.valueOf(term.getCreatedAt()), "yyyy.MM.dd"),
-                    term.getDidName(), term.getStatus()));
-            ExperienceBean.setType(1);
-            list.add(ExperienceBean);
-        }
-        setRecyclerView();
+        setRecyclerView(terms);
     }
 
 }

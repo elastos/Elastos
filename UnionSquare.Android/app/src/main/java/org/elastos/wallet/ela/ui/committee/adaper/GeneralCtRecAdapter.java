@@ -39,6 +39,16 @@ public class GeneralCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdapte
         CtListBean.Council data = list.get(i);
         viewHolder.name.setText(data.getDidName());
         viewHolder.location.setText(AppUtlis.getLoc(context, String.valueOf(data.getLocation())));
+        String status = data.getStatus();
+        viewHolder.tag.setVisibility(View.GONE);
+        viewHolder.tag.setText("");
+        if(!AppUtlis.isNullOrEmpty(status)) {
+            if(status.equalsIgnoreCase("Returned")
+            || status.equalsIgnoreCase("Impeached")) {
+                viewHolder.tag.setVisibility(View.VISIBLE);
+                viewHolder.tag.setText(context.getString(R.string.disbanded));
+            }
+        }
         GlideApp.with(context).load(data.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(viewHolder.icon);
         if (commonRvListener != null) {
             viewHolder.itemView.setOnClickListener(v -> commonRvListener.onRvItemClick(i, data));
@@ -62,6 +72,8 @@ public class GeneralCtRecAdapter extends RecyclerView.Adapter<GeneralCtRecAdapte
         TextView location;
         @BindView(R.id.icon)
         AppCompatImageView icon;
+        @BindView(R.id.tag)
+        TextView tag;
 
         ViewHolder(View view) {
             super(view);

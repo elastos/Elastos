@@ -59,13 +59,13 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
 
     @Override
     protected void initView(View view) {
-        ivTitleRight.setVisibility(View.VISIBLE);
+        ivTitleRight.setVisibility(View.GONE);
         ivTitleRight.setImageResource(R.mipmap.found_ct_secretary_entrance);
         tvTitle.setText(mContext.getString(R.string.ctmemberlist));
         ctDetailPresenter = new CtDetailPresenter();
         pastCtPresenter = new PastCtPresenter();
 
-        ctDetailPresenter.getCouncilInfo(this, "", wallet.getDid());
+        ctDetailPresenter.getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""));
         pastCtPresenter.getCouncilTerm(this);
 
 //        rockData();
@@ -85,9 +85,9 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
-
         switch (methodName) {
-            case "getCouncilInfo":
+            case "getCurrentCouncilInfo":
+                ivTitleRight.setVisibility(View.VISIBLE);
                 go2((CtDetailBean) baseEntity);
                 break;
             case "getCouncilTerm":

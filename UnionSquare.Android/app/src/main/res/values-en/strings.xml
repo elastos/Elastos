@@ -727,6 +727,7 @@
     <string name="personalprofilewithline">- Personal Profile</string>
     <string name="pagehomewithline">- Homepage</string>
     <string name="wechataccountwithline">- Wechat Account</string>
+    <string name="disbanded">Disbanded</string>
     <string name="votemoney">投票金额</string>
     <string name="proposalcomments">提案评议</string>
     <string name="proposalpublished">提案公示</string>

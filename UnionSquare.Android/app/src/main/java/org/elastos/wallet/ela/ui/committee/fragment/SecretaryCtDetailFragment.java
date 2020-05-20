@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.committee.fragment;
 
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
@@ -65,7 +66,7 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     }
 
     @BindView(R.id.head_ic)
-    ImageView head;
+    AppCompatImageView headIc;
     @BindView(R.id.name)
     TextView name;
     @BindView(R.id.location)
@@ -93,21 +94,25 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     @BindView(R.id.personal_profile)
     TextView introduce;
     private void setInfo(CtDetailBean ctDetailBean) {
-        CtDetailBean.DataBean dataBean = ctDetailBean.getData();
-//        GlideApp.with(getContext()).load(dataBean.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(head);
-        name.setText(dataBean.getDidName());
-        location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
-        didTv.setText(dataBean.getDid());
-        endTime.setText(DateUtil.formatTimestamp(String.valueOf(dataBean.getEndDate()), "yyyy.MM.dd"));
-        fromTime.setText(DateUtil.formatTimestamp(String.valueOf(dataBean.getStartDate()), "yyyy.MM.dd"));
-        birthDay.setText(DateUtil.formatTimestamp(String.valueOf(dataBean.getBirthday()), "yyyy.MM.dd"));
-        email.setText(dataBean.getEmail());
-        homepage.setText(dataBean.getAddress());
-        wechat.setText(dataBean.getWechat());
-        weibo.setText(dataBean.getWeibo());
-        facebook.setText(dataBean.getFacebook());
-        microsoft.setText(dataBean.getMicrosoft());
-        introduce.setText(dataBean.getIntroduction());
+        try {
+            CtDetailBean.DataBean dataBean = ctDetailBean.getData();
+            GlideApp.with(getContext()).load(dataBean.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(headIc);
+            name.setText(dataBean.getDidName());
+            location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
+            didTv.setText(dataBean.getDid());
+            endTime.setText(DateUtil.formatTimestamp(String.valueOf(dataBean.getEndDate()), "yyyy.MM.dd"));
+            fromTime.setText(DateUtil.formatTimestamp(String.valueOf(dataBean.getStartDate()), "yyyy.MM.dd"));
+            birthDay.setText(DateUtil.formatTimestamp(String.valueOf(dataBean.getBirthday()), "yyyy.MM.dd"));
+            email.setText(dataBean.getEmail());
+            homepage.setText(dataBean.getAddress());
+            wechat.setText(dataBean.getWechat());
+            weibo.setText(dataBean.getWeibo());
+            facebook.setText(dataBean.getFacebook());
+            microsoft.setText(dataBean.getMicrosoft());
+            introduce.setText(dataBean.getIntroduction());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private RealmUtil realmUtil = new RealmUtil();

@@ -17,6 +17,13 @@
         </attr>
     </declare-styleable>
 
+    <declare-styleable name="RoundImageView">
+        <attr name="circle" format="boolean" />
+        <attr name="radius" format="dimension" />
+        <attr name="border_width" format="dimension"/>
+        <attr name="border_color" format="dimension"/>
+    </declare-styleable>
+
     <style name="dialog" parent="@android:style/Theme.Dialog">
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">true</item>
@@ -28,6 +35,4 @@
         <item name="android:backgroundDimAmount">0.8</item>
         <item name="colorAccent">#FFFFFF</item>
     </style>
-
-
 </resources>

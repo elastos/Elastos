@@ -39,7 +39,7 @@
                 android:layout_marginBottom="10dp"
                 android:layout_marginLeft="15dp"
                 android:textSize="11sp"
-                android:textColor="@color/white"/>
+                android:textColor="@color/whiter50"/>
 
             <TextView
                 android:id="@+id/manager_btn"
