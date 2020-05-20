@@ -179,6 +179,10 @@ export default class extends BaseService {
     return rs
   }
 
+  async updateProposal(data) {
+    this.dispatch(this.selfRedux.actions.data_update(data))
+  }
+
   async getMemberVote(id) {
     const rs = await api_request({
       path: `${this.prefixPath}/member_vote`,

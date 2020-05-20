@@ -77,6 +77,9 @@ const mapDispatch = () => {
     },
     async updateMilestone(id, stage, data) {
       return service.updateMilestone(id, stage, data)
+    },
+    async updateProposal(data) {
+      return service.updateProposal(data)
     }
   }
 }

@@ -18,20 +18,21 @@ class OnChainButton extends Component {
     const { url } = this.state
     return (
       <Content>
-        {url ? <QRCode value={url} size={200} /> : <Spin />}
+        {url ? <QRCode value={url} size={300} /> : <Spin />}
         <Tip>{I18N.get('profile.qrcodeTip')}</Tip>
       </Content>
     )
   }
 
   pollingDid = () => {
-    const { id, getReviewProposal } = this.props
+    const { id, getReviewProposal, updateProposal } = this.props
     this.timerDid = setInterval(async () => {
       const rs = await getReviewProposal(id)
       if (rs && rs.success){
         clearInterval(this.timerDid)
         this.timerDid = null
         this.setState({ url: '', visible:false })
+        await updateProposal(rs.data)
       }
       if (rs && rs.success == false){
         clearInterval(this.timerDid)
@@ -47,10 +48,10 @@ class OnChainButton extends Component {
   }
 
   handleAssociate = async () => {
-    // if (this.timerDid){
-    //   return
-    // }
-    // this.pollingDid()
+    if (this.timerDid){
+      return
+    }
+    this.pollingDid()
   }
 
   componentDidMount = async () => {
