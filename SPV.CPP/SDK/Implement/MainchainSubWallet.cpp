@@ -367,6 +367,7 @@ namespace Elastos {
 			PayloadVote *pv = dynamic_cast<PayloadVote *>(outputPayload.get());
 			ErrorChecker::CheckCondition(!pv, Error::InvalidTransaction, "invalid vote tx");
 
+			bool changed = false;
 			nlohmann::json result;
 			std::vector<VoteContent> voteContent = pv->GetVoteContent();
 
@@ -380,6 +381,9 @@ namespace Elastos {
 					ErrorChecker::ThrowParamException(Error::InvalidArgument, "parse invalid candidate error");
 				}
 
+				if (invalidList.empty())
+					continue;
+
 				for (std::vector<VoteContent>::iterator itvc = voteContent.begin(); itvc != voteContent.end();) {
 					if (type == (*itvc).GetTypeString()) {
 						std::vector<CandidateVotes> candidatesVotes = (*itvc).GetCandidateVotes();
@@ -392,16 +396,20 @@ namespace Elastos {
 							else if ((*itvc).GetType() == VoteContent::Delegate)
 								candString = (*itcv).GetCandidate().getHex();
 
-							if (invalidList.find(candString) != invalidList.end())
+							if (invalidList.find(candString) != invalidList.end()) {
 								itcv = candidatesVotes.erase(itcv);
-							else
+								changed = true;
+							} else {
 								++itcv;
+							}
 						}
 
-						if (candidatesVotes.empty())
+						if (candidatesVotes.empty()) {
 							itvc = voteContent.erase(itvc);
-						else
+							changed = true;
+						} else {
 							(*itvc++).SetCandidateVotes(candidatesVotes);
+						}
 
 						break;
 					} else {
@@ -410,7 +418,7 @@ namespace Elastos {
 				}
 			}
 
-			pv->SetVoteContent(voteContent);
+			if (changed) pv->SetVoteContent(voteContent);
 		}
 
 		nlohmann::json MainchainSubWallet::CreateVoteProducerTransaction(
@@ -961,7 +969,7 @@ namespace Elastos {
 
 			WalletPtr wallet = _walletManager->GetWallet();
 			UTXOArray utxos = wallet->GetVoteUTXO();
-			nlohmann::json jinfo;
+			nlohmann::json jinfo = nlohmann::json::array();
 			time_t timestamp;
 
 			for (UTXOArray::iterator u = utxos.begin(); u != utxos.end(); ++u) {
@@ -1183,6 +1191,7 @@ namespace Elastos {
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("votes: {}", votes.dump());
 			ArgInfo("memo: {}", memo);
+			ArgInfo("invalidCandidates: {}", invalidCandidates.dump());
 
 			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
 			BigInt bgStake = 0;
@@ -1229,6 +1238,7 @@ namespace Elastos {
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("votes: {}", votes.dump());
 			ArgInfo("memo: {}", memo);
+			ArgInfo("invalidCandidates: {}", invalidCandidates.dump());
 
 			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
 			BigInt bgStake = 0;
@@ -1446,6 +1456,8 @@ namespace Elastos {
 
 			nlohmann::json result;
 			EncodeTx(result, txn);
+
+			ArgInfo("r => {}", result.dump());
 
 			return result;
 		}
