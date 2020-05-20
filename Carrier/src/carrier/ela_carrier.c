@@ -1059,66 +1059,20 @@ static void ela_destroy(void *argv)
     dht_kill(&w->dht);
 }
 
-static void handle_offline_msg(EventBase *event, ElaCarrier *w)
+static void notify_offmsg_received(ElaCarrier *w, const char *, const uint8_t *, size_t, int64_t);
+static void notify_offreq_received(ElaCarrier *w, const char *, const uint8_t *, size_t, int64_t);
+static void notify_offreceipt_received(ElaCarrier *w, const char *, int64_t, int);
+static ExpressConnector *create_express_connector(ElaCarrier *w)
 {
-    OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
-    ElaCP *cp;
-    const char* name;
-
-    cp = elacp_decode(ev->msg.content, ev->msg.len);
-    if (!cp) {
-        vlogE("Carrier: Invalid DHT message, dropped.");
-        return;
-    }
-
-    if (elacp_get_type(cp) != ELACP_TYPE_MESSAGE) {
-        vlogE("Carrier: Unknown DHT message, dropped.");
-        return;
-    }
-
-    name = elacp_get_extension(cp);
-    if ((!name || strlen(name) == 0)
-    && ela_is_friend(w, ev->friendid)
-    && w->callbacks.friend_message)
-        w->callbacks.friend_message(w, ev->friendid,
-                                    elacp_get_raw_data(cp), elacp_get_raw_data_length(cp),
-                                    ev->msg.timestamp, true,
-                                    w->context);
+    return express_connector_create(w, notify_offmsg_received,
+                    notify_offreq_received, notify_offreceipt_received);
 }
-
-static void notify_offline_msg(ElaCarrier *w, const char *from,
-                               const uint8_t *msg, size_t len,
-                               int64_t timestamp)
-{
-    OfflineMsgEvent *event;
-
-    assert(w);
-    assert(from && *from);
-    assert(msg);
-    assert(len);
-
-    event = rc_zalloc(sizeof(OfflineMsgEvent) + len, NULL);
-    if (event) {
-        strcpy(event->friendid, from);
-        event->msg.timestamp = timestamp;
-        event->msg.len = len;
-        memcpy(event->msg.content, msg, len);
-
-        event->base.le.data = event;
-        event->base.handle = handle_offline_msg;
-        list_push_tail(w->friend_events, &event->base.le);
-        deref(event);
-    }
-}
-
-static bool try_make_connector(ElaCarrier *w);
 
 ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
                     void *context)
 {
     ElaCarrier *w;
     persistence_data data;
-    bool conn_made;
     int rc;
     size_t i;
 
@@ -1369,8 +1323,8 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         return NULL;
     }
 
-    conn_made = try_make_connector(w);
-    if (!conn_made)
+    w->connector = create_express_connector(w);
+    if (!w->connector)
         vlogW("Carrier: Creating express connector error (%s)", ela_get_error());
 
     apply_extra_data(w, data.extra_savedata, data.extra_savedata_len);
@@ -1444,7 +1398,6 @@ static void notify_friends(ElaCarrier *w)
 static void notify_connection_cb(bool connected, void *context)
 {
     ElaCarrier *w = (ElaCarrier *)context;
-    bool conn_made;
 
     if (!w->is_ready && connected) {
         w->is_ready = true;
@@ -1458,8 +1411,8 @@ static void notify_connection_cb(bool connected, void *context)
     if (w->callbacks.connection_status)
         w->callbacks.connection_status(w, w->connection_status, w->context);
 
-    conn_made = try_make_connector(w);
-    if (connected && conn_made)
+    w->connector = create_express_connector(w);
+    if (w->connector && connected)
         express_enqueue_pull_messages(w->connector);
 }
 
@@ -1901,7 +1854,6 @@ static void do_express_expire(ElaCarrier *w)
 {
     struct timeval expire_interval;
     bool need_pullmsg = false;
-    bool conn_made;
     struct timeval now;
     int rc;
 
@@ -1917,14 +1869,9 @@ static void do_express_expire(ElaCarrier *w)
     expire_interval.tv_usec = 0;
     timeradd(&now, &expire_interval, &w->express_expiretime);
 
-    if (need_pullmsg) {
-        conn_made = try_make_connector(w);
-        if (need_pullmsg && conn_made) {
-            rc = express_enqueue_pull_messages(w->connector);
-            if(rc < 0)
-                vlogE("Express: expire pullmsg failed.(%x)", rc);
-        }
-    }
+    w->connector = create_express_connector(w);
+    if (need_pullmsg && w->connector)
+        express_enqueue_pull_messages(w->connector);
 }
 
 static
@@ -1943,7 +1890,7 @@ void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
-        vlogE("Carrier: Unknown friend number %u, friend message dropped.",
+        vlogW("Carrier: Unknown friend number %u, friend message dropped.",
               friend_number);
         return;
     }
@@ -3051,7 +2998,6 @@ int ela_add_friend(ElaCarrier *w, const char *address, const char *hello)
     uint8_t *data;
     size_t data_len;
     size_t _len;
-    bool conn_made;
     int rc;
 
     if (!w || !hello || !*hello || !address || !*address) {
@@ -3128,11 +3074,11 @@ int ela_add_friend(ElaCarrier *w, const char *address, const char *hello)
         return -1;
     }
 
-    conn_made = try_make_connector(w);
-    if (conn_made) {
+    w->connector = create_express_connector(w);
+    if (w->connector) {
         rc = express_enqueue_post_request(w->connector, address, data, data_len);
         if (rc < 0)
-            vlogW("Carrier: Enqueue offline friend request.");
+            vlogW("Carrier: Enqueue offline friend request error (%rc)", rc);
     }
 
     free(data);
@@ -3387,12 +3333,11 @@ static int64_t send_express_message(ElaCarrier *w, uint32_t friend_number,
     ElaCP *cp;
     uint8_t *data;
     size_t data_len;
-    bool conn_made;
     int64_t msgid;
     int rc;
 
-    conn_made = try_make_connector(w);
-    if (!conn_made)
+    w->connector = create_express_connector(w);
+    if (!w->connector)
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
     cp = elacp_create(ELACP_TYPE_MESSAGE, ext_name);
@@ -3512,6 +3457,188 @@ int ela_send_friend_message(ElaCarrier *w, const char *to,
         return (int)msgid;
 
     return 0;
+}
+
+static void handle_offline_friend_message(EventBase *event, ElaCarrier *w)
+{
+    OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
+    ElaCP *cp;
+    const char* name;
+    const void* data;
+    size_t len;
+
+    assert(ev->msg.timestamp > 0);
+    assert(ev->msg.len > 0);
+
+    if (!ela_is_friend(w, ev->friendid)) {
+        vlogW("Carrier: Offline message not from friends, dropped.");
+        return;
+    }
+
+    cp = elacp_decode(ev->msg.content, ev->msg.len);
+    if (!cp) {
+        vlogE("Carrier: Invalid offline message, dropped.");
+        return;
+    }
+
+    if (elacp_get_type(cp) != ELACP_TYPE_MESSAGE) {
+        vlogE("Carrier: Unknown offline message type, dropped.");
+        return;
+    }
+
+    name = elacp_get_extension(cp);
+    data = elacp_get_raw_data(cp);
+    len  = elacp_get_raw_data_length(cp);
+
+    assert(data);
+    assert(len > 0);
+
+    if (w->callbacks.friend_message && (!name || !*name))
+        w->callbacks.friend_message(w, ev->friendid, data, len, ev->msg.timestamp,
+                                    true, w->context);
+}
+
+static void notify_offmsg_received(ElaCarrier *w, const char *from,
+                                   const uint8_t *msg, size_t len,
+                                   int64_t timestamp)
+{
+    OfflineMsgEvent *event;
+
+    assert(w);
+    assert(from && *from);
+    assert(msg);
+    assert(len);
+
+    event = rc_zalloc(sizeof(OfflineMsgEvent) + len, NULL);
+    if (event) {
+        strcpy(event->friendid, from);
+        event->msg.timestamp = timestamp;
+        event->msg.len = len;
+        memcpy(event->msg.content, msg, len);
+
+        event->base.le.data = event;
+        event->base.handle = handle_offline_friend_message;
+        list_push_tail(w->friend_events, &event->base.le);
+        deref(event);
+    }
+}
+
+static void handle_offline_friend_request(EventBase *event, ElaCarrier *w)
+{
+    OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
+    uint8_t from[DHT_PUBLIC_KEY_SIZE] = {0};
+    ssize_t len;
+
+    len = base58_decode(ev->friendid, strlen(ev->friendid), from, sizeof(from));
+    if (len != (ssize_t)sizeof(from)) {
+        vlogE("Carrier: Offline friend request from nodeid (%s) that can not"
+              " base58 encoded.", ev->friendid);
+        return;
+    }
+
+    notify_friend_request_cb(from, ev->req.gretting, ev->req.len, w);
+}
+
+static void notify_offreq_received(ElaCarrier *w, const char *from,
+                                   const uint8_t *gretting, size_t len,
+                                   int64_t timestamp)
+{
+    OfflineMsgEvent *event;
+
+    assert(w);
+    assert(from && *from);
+    assert(gretting);
+    assert(len);
+
+    event = rc_zalloc(sizeof(OfflineMsgEvent) + len, NULL);
+    if (event) {
+        strcpy(event->friendid, from);
+        event->req.timestamp = timestamp;
+        event->req.len = len;
+        memcpy(event->req.gretting, gretting, len);
+
+        event->base.le.data = event;
+        event->base.handle = handle_offline_friend_request;
+        list_push_tail(w->friend_events, &event->base.le);
+        deref(event);
+    }
+}
+
+static void handle_offline_message_receipt(EventBase *event, ElaCarrier *w)
+{
+    OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
+    ElaReceiptState state;
+
+    if(ev->stat.errcode < 0) {
+        state = ElaReceipt_Error;
+        ela_set_error(ev->stat.errcode);
+    } else {
+        state = ElaReceipt_Offline;
+    }
+
+    on_friend_message_receipt(w, state, ev->stat.msgid);
+}
+
+static void notify_offreceipt_received(ElaCarrier *w, const char *to,
+                                       int64_t msgid, int errcode)
+{
+    OfflineMsgEvent *event;
+
+    assert(w);
+    assert(to && *to);
+
+    event = rc_zalloc(sizeof(OfflineMsgEvent) + sizeof(int64_t), NULL);
+    if (event) {
+        strcpy(event->friendid, to);
+        event->stat.msgid = msgid;
+        event->stat.errcode = errcode;
+
+        event->base.le.data = event;
+        event->base.handle = handle_offline_message_receipt;
+        list_push_tail(w->friend_events, &event->base.le);
+        deref(event);
+    }
+}
+
+int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
+                                      const void *msg, size_t len,
+                                      ElaFriendMessageReceiptCallback *cb, void *context)
+{
+    bool is_offline;
+    int64_t msgid;
+    Receipt *receipt;
+    struct timeval expire_interval;
+
+    receipt = (Receipt*)rc_zalloc(sizeof(Receipt) + len, NULL);
+    if (!receipt) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        return -1;
+    }
+
+    msgid = send_friend_message_internal(carrier, to, msg, len, &is_offline);
+    if(msgid < 0) {
+        deref(receipt);
+        return -1;
+    }
+
+    strcpy(receipt->to, to);
+    receipt->msgch = (is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
+    receipt->msgid = msgid;
+
+    gettimeofday(&receipt->expire_time, NULL);
+    expire_interval.tv_sec = 30;
+    expire_interval.tv_usec = 0;
+    timeradd(&receipt->expire_time, &expire_interval, &receipt->expire_time);
+
+    receipt->callback = cb;
+    receipt->context = context;
+    receipt->size = len;
+    memcpy(receipt->data, msg, len);
+
+    receipts_put(carrier->receipts, receipt);
+    deref(receipt);
+
+    return msgid;
 }
 
 int ela_invite_friend(ElaCarrier *w, const char *to, const char *bundle,
@@ -4434,126 +4561,4 @@ int ela_leave_all_groups(ElaCarrier *w)
         dht_group_leave(&w->dht, group_number_list[i]);
 
     return 0;
-}
-
-static void handle_offline_req(EventBase *event, ElaCarrier *w)
-{
-    OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
-    uint8_t from[DHT_PUBLIC_KEY_SIZE] = {0};
-
-    base58_decode(ev->friendid, strlen(ev->friendid), from, sizeof(from));
-    notify_friend_request_cb(from, ev->req.gretting, ev->req.len, w);
-}
-
-static void notify_offline_req(ElaCarrier *w, const char *from,
-                               const uint8_t *gretting, size_t len,
-                               int64_t timestamp)
-{
-    OfflineMsgEvent *event;
-
-    assert(w);
-    assert(from && *from);
-    assert(gretting);
-    assert(len);
-
-    event = rc_zalloc(sizeof(OfflineMsgEvent) + len, NULL);
-    if (event) {
-        strcpy(event->friendid, from);
-        event->req.timestamp = timestamp;
-        event->req.len = len;
-        memcpy(event->req.gretting, gretting, len);
-
-        event->base.le.data = event;
-        event->base.handle = handle_offline_req;
-        list_push_tail(w->friend_events, &event->base.le);
-        deref(event);
-    }
-}
-
-static void handle_offline_stat(EventBase *event, ElaCarrier *w)
-{
-    OfflineMsgEvent *ev = (OfflineMsgEvent *)event;
-    ElaReceiptState state;
-
-    if(ev->stat.errcode < 0) {
-        state = ElaReceipt_Error;
-        ela_set_error(ev->stat.errcode);
-    } else {
-        state = ElaReceipt_Offline;
-    }
-
-    on_friend_message_receipt(w, state, ev->stat.msgid);
-}
-
-static void notify_offline_stat(ElaCarrier *w, const char *to,
-                                int64_t msgid, int errcode)
-{
-    OfflineMsgEvent *event;
-
-    assert(w);
-    assert(to && *to);
-
-    event = rc_zalloc(sizeof(OfflineMsgEvent) + sizeof(int64_t), NULL);
-    if (event) {
-        strcpy(event->friendid, to);
-        event->stat.msgid = msgid;
-        event->stat.errcode = errcode;
-
-        event->base.le.data = event;
-        event->base.handle = handle_offline_stat;
-        list_push_tail(w->friend_events, &event->base.le);
-        deref(event);
-    }
-}
-
-static bool try_make_connector(ElaCarrier *w)
-{
-    if (!w->connector)
-        w->connector = express_connector_create(w,
-                                                notify_offline_msg,
-                                                notify_offline_req,
-                                                notify_offline_stat);
-
-    return (w->connector != NULL);
-}
-
-int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
-                                      const void *msg, size_t len,
-                                      ElaFriendMessageReceiptCallback *cb, void *context)
-{
-    bool is_offline;
-    int64_t msgid;
-    Receipt *receipt;
-    struct timeval expire_interval;
-
-    receipt = (Receipt*)rc_zalloc(sizeof(Receipt) + len, NULL);
-    if (!receipt) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return -1;
-    }
-
-    msgid = send_friend_message_internal(carrier, to, msg, len, &is_offline);
-    if(msgid < 0) {
-        deref(receipt);
-        return -1;
-    }
-
-    strcpy(receipt->to, to);
-    receipt->msgch = (is_offline ? MSGCH_EXPRESS : MSGCH_DHT);
-    receipt->msgid = msgid;
-
-    gettimeofday(&receipt->expire_time, NULL);
-    expire_interval.tv_sec = 30;
-    expire_interval.tv_usec = 0;
-    timeradd(&receipt->expire_time, &expire_interval, &receipt->expire_time);
-
-    receipt->callback = cb;
-    receipt->context = context;
-    receipt->size = len;
-    memcpy(receipt->data, msg, len);
-
-    receipts_put(carrier->receipts, receipt);
-    deref(receipt);
-
-    return msgid;
 }

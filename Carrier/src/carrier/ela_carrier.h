@@ -808,7 +808,8 @@ typedef struct ElaCallbacks {
      * @param
      *      len         [in] The message length in bytes.
      * @param
-     *      timestame   [in] The message send time.
+     *      timestamp   [in] The message sent time as the number of seconds
+     *                       since the Epoch, 1970-01-01 00:00:00 +0000 (UTC).
      * @param
      *      offline     [in] The value tells whether this message is received
      *                       as offline message or online message. The value of
