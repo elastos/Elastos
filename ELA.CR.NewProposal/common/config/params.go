@@ -165,7 +165,7 @@ var DefaultParams = Params{
 		"02b95b000f087a97e988c24331bf6769b4a75e4b7d5d2a38105092a3aa841be33b",
 		"02a0aa9eac0e168f3474c2a0d04e50130833905740a5270e8a44d6c6e85cf6d98c",
 	},
-	SecretaryGeneral:            "", // todo correct me later
+	SecretaryGeneral:            "02712da531804d1c38d159a901313239d2100dfb5b693d71a2f76b15dec3f8fc32",
 	MaxProposalTrackingCount:    128,
 	PowLimit:                    powLimit,
 	PowLimitBits:                0x1f0008ff,
@@ -182,7 +182,7 @@ var DefaultParams = Params{
 	PublicDPOSHeight:            402680,
 	EnableActivateIllegalHeight: 439000,
 	CRVotingStartHeight:         537670,
-	CRCommitteeStartHeight:      2000000, // todo correct me when height has been confirmed
+	CRCommitteeStartHeight:      658930,
 	CheckRewardHeight:           436812,
 	VoteStatisticsHeight:        512881,
 	RegisterCRByDIDHeight:       598000,
@@ -214,7 +214,7 @@ var DefaultParams = Params{
 		NeedSave:           false,
 	}),
 	TxCacheVolume:          100000,
-	CheckVoteCRCountHeight: 0, // todo correct me later
+	CheckVoteCRCountHeight: 658930,
 }
 
 // TestNet returns the network parameters for the test network.
