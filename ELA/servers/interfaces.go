@@ -2352,10 +2352,10 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 				}
 			case outputpayload.CRCProposal:
 				for _, cv := range content.CandidateVotes {
-					c, _ := common.Uint256FromBytes(common.BytesReverse(cv.Candidate))
+					c, _ := common.Uint256FromBytes(cv.Candidate)
 					contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
 						CandidateVotes{
-							Candidate: c.String(),
+							Candidate: ToReversedString(*c),
 							Votes:     cv.Votes.String(),
 						})
 				}
