@@ -230,7 +230,10 @@ export default class extends Base {
       const opinionHash = utilCrypto.sha256D(opinion)
 
       await this.model.update(
-        { _id: id, 'withdrawalHistory._id': applicationId },
+        {
+          _id: id,
+          'withdrawalHistory._id': applicationId
+        },
         {
           $set: {
             'withdrawalHistory.$.review': {
@@ -239,8 +242,7 @@ export default class extends Base {
               opinion,
               opinionHash,
               createdAt: moment(currTime)
-            },
-            'budget.$.status': opinion
+            }
           }
         }
       )
