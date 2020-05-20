@@ -549,4 +549,68 @@ export default class extends Base {
     }
     return rs
   }
+
+  public async withdraw(param: any) {
+    try {
+      const { id, milestoneKey } = param
+      const proposal = await this.model.findById(id)
+      // check if current user is the proposal's owner
+      if (!proposal.proposer.equals(this.currentUser._id)) {
+        return { success: false }
+      }
+      if (proposal.status !== ACTIVE) {
+        return { success: false }
+      }
+
+      // check if milestoneKey is valid
+      const budget = proposal.budget.filter(
+        (item: any) => item.milestoneKey === milestoneKey
+      )
+      if (_.isEmpty(budget)) {
+        return { success: false }
+      }
+      if (budget[0].status !== WAITING_FOR_WITHDRAW) {
+        return { success: false }
+      }
+
+      const currDate = Date.now()
+      const now = Math.floor(currDate / 1000)
+      // update withdrawal history
+      const history = {
+        message: 'withdraw',
+        createdAt: moment(currDate)
+      }
+      await this.model.update(
+        { _id: id },
+        { $push: { withdrawalHistory: history } }
+      )
+      const amount = (parseFloat(budget[0].amount) * Math.pow(10, 8)).toString()
+      // generate jwt url
+      const jwtClaims = {
+        iat: now,
+        exp: now + 60 * 60 * 24,
+        command: 'withdraw',
+        iss: process.env.APP_DID,
+        callbackurl: '',
+        data: {
+          proposalhash: proposal.proposalHash,
+          amount: '',
+          recipient: proposal.recipient,
+          ownerpublickey: proposal.ownerPublicKey,
+          utxos: []
+        }
+      }
+      const jwtToken = jwt.sign(
+        JSON.stringify(jwtClaims),
+        process.env.APP_PRIVATE_KEY,
+        { algorithm: 'ES256' }
+      )
+
+      const url = `elastos://crproposal/${jwtToken}`
+      return { success: true, url }
+    } catch (error) {
+      logger.error(error)
+      return
+    }
+  }
 }
