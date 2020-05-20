@@ -28,10 +28,11 @@ class OnChainButton extends Component {
     const { id, getReviewProposal } = this.props
     this.timerDid = setInterval(async () => {
       const rs = await getReviewProposal(id)
-      if (rs && rs.success ){
+      if (rs && rs.success){
         clearInterval(this.timerDid)
         this.timerDid = null
         this.setState({ url: '', visible:false })
+        window.location.reload()
       }
       if (rs && rs.success == false){
         clearInterval(this.timerDid)
