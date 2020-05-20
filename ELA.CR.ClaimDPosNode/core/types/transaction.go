@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package types
 
@@ -59,6 +59,7 @@ const (
 	CRCProposalTracking TxType = 0x27
 	CRCAppropriation    TxType = 0x28
 	CRCProposalWithdraw TxType = 0x29
+	CRAssetsRectify     TxType = 0x2a
 )
 
 func (self TxType) Name() string {
@@ -121,6 +122,8 @@ func (self TxType) Name() string {
 		return "CRCProposalTracking"
 	case CRCAppropriation:
 		return "CRCAppropriation"
+	case CRAssetsRectify:
+		return "CRAssetsRectify"
 	default:
 		return "Unknown"
 	}
@@ -360,6 +363,10 @@ func (tx *Transaction) Hash() common.Uint256 {
 	return *tx.txHash
 }
 
+func (tx *Transaction) IsCRAssetsRectifyTx() bool {
+	return tx.TxType == CRAssetsRectify
+}
+
 func (tx *Transaction) IsCRCAppropriationTx() bool {
 	return tx.TxType == CRCAppropriation
 }
@@ -544,6 +551,8 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.CRCProposalTracking)
 	case CRCAppropriation:
 		p = new(payload.CRCAppropriation)
+	case CRAssetsRectify:
+		p = new(payload.CRAssetsRectify)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

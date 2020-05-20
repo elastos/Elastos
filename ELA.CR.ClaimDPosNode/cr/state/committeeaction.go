@@ -247,8 +247,10 @@ func (c *Committee) processCRCAddressRelatedTx(tx *types.Transaction, height uin
 	for _, input := range tx.Inputs {
 		if amount, ok := c.state.CRCFoundationOutputs[input.Previous.ReferKey()]; ok {
 			c.state.history.Append(height, func() {
+				c.CRAssetsAddressUTXOCount++
 				c.CRCFoundationBalance -= amount
 			}, func() {
+				c.CRAssetsAddressUTXOCount--
 				c.CRCFoundationBalance += amount
 			})
 		} else if amount, ok := c.state.CRCCommitteeOutputs[input.Previous.ReferKey()]; ok {
@@ -266,6 +268,7 @@ func (c *Committee) processCRCAddressRelatedTx(tx *types.Transaction, height uin
 		amount := output.Value
 		if output.ProgramHash.IsEqual(c.params.CRCFoundation) {
 			c.state.history.Append(height, func() {
+				c.CRAssetsAddressUTXOCount++
 				c.CRCFoundationBalance += amount
 				if isCoinBaseTx {
 					c.CRCFoundationLockedAmounts = append(c.CRCFoundationLockedAmounts, amount)
@@ -274,6 +277,7 @@ func (c *Committee) processCRCAddressRelatedTx(tx *types.Transaction, height uin
 					}
 				}
 			}, func() {
+				c.CRAssetsAddressUTXOCount--
 				c.CRCFoundationBalance -= amount
 				c.CRCFoundationLockedAmounts = oriCRCFoundationLockedAmounts
 			})

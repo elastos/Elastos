@@ -272,6 +272,12 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			return elaerr.Simple(elaerr.ErrTxAppropriation, err)
 		}
 		return nil
+
+	case CRAssetsRectify:
+		if err := b.checkCRAssetsRectifyTransaction(txn, references); err != nil {
+			log.Warn("[checkCRAssetsRectifyTransaction],", err)
+			return elaerr.Simple(elaerr.ErrTxAssetsRectify, err)
+		}
 	}
 
 	if err := b.checkTransactionFee(txn, references); err != nil {
@@ -1917,6 +1923,42 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 	return nil
 }
 
+func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
+	references map[*Input]Output) error {
+	// Inputs count should be greater than or equal to MaxCRAssetsAddressUTXOCount
+	if len(txn.Inputs) < int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
+		return errors.New("inputs count should be greater than or " +
+			"equal to MaxCRAssetsAddressUTXOCount")
+	}
+
+	// Inputs need to only from CRC foundation
+	var totalInput common.Fixed64
+	for _, output := range references {
+		totalInput += output.Value
+		if !output.ProgramHash.IsEqual(b.chainParams.CRCFoundation) {
+			return errors.New("input does not from CRAssetsAddress")
+		}
+	}
+
+	// Outputs count should be only one
+	if len(txn.Outputs) != 1 {
+		return errors.New("outputs count should be only one")
+	}
+
+	// Output should translate to CR Assets Address only
+	if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRCFoundation) {
+		return errors.New("output does not to CRAssetsAddress")
+	}
+
+	// Inputs amount need equal to outputs amount
+	totalOutput := txn.Outputs[0].Value
+	if totalInput != totalOutput {
+		return fmt.Errorf("inputs does not equal to outputs amount, "+
+			"inputs:%s outputs:%s", totalInput, totalOutput)
+	}
+
+	return nil
+}
 func (b *BlockChain) checkCRCProposalCommonTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check stage of proposal
