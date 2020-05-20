@@ -32,7 +32,6 @@ class OnChainButton extends Component {
         clearInterval(this.timerDid)
         this.timerDid = null
         this.setState({ url: '', visible:false })
-        window.location.reload()
       }
       if (rs && rs.success == false){
         clearInterval(this.timerDid)
@@ -48,10 +47,10 @@ class OnChainButton extends Component {
   }
 
   handleAssociate = async () => {
-    if (this.timerDid){
-      return
-    }
-    this.pollingDid()
+    // if (this.timerDid){
+    //   return
+    // }
+    // this.pollingDid()
   }
 
   componentDidMount = async () => {
