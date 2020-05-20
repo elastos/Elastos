@@ -1579,7 +1579,7 @@ export default class extends Base {
             && proposal.rejectAmount >= 0
             && proposal.rejectThroughAmount > 0) {
             notificationResult['rejectAmount'] = `${proposal.rejectAmount}`
-            notificationResult['rejectThroughAmount'] = `${proposal.rejectThroughAmount}`
+            notificationResult['rejectThroughAmount'] = `${_.toNumber(proposal.rejectThroughAmount).toFixed(8)}`
             notificationResult['rejectRatio'] = _.toNumber((_.toNumber(proposal.rejectAmount) / _.toNumber(proposal.rejectThroughAmount)).toFixed(4))
         }
 
