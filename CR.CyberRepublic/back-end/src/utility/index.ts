@@ -15,9 +15,18 @@ const _ = require('lodash')
 const { PublicKey } = require('bitcore-lib-p256')
 const jwkToPem = require('jwk-to-pem')
 import * as jwt from 'jsonwebtoken'
-import {verify} from "jsonwebtoken";
 
-export { utilCrypto, sso, user, timestamp, ela, validate, permissions, mail, logger }
+export {
+  utilCrypto,
+  sso,
+  user,
+  timestamp,
+  ela,
+  validate,
+  permissions,
+  mail,
+  logger
+}
 
 export const getEnv = () => process.env.NODE_ENV
 
@@ -83,6 +92,34 @@ export const getDidPublicKey = async (did: string) => {
   }
 }
 
+export const getUtxosByAmount = async (amount: string) => {
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+  const data = {
+    jsonrpc: '2.0',
+    method: 'getutxosbyamount',
+    params: {
+      address: 'CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b',
+      amount,
+      utxotype: 'unused'
+    }
+  }
+  try {
+    const res = await axios.post(process.env.ELA_NODE_URL, data, {
+      headers
+    })
+    if (res && res.data) {
+      const utxos = _.get(res.data, 'result')
+      if (utxos) {
+        return { success: true, utxos }
+      }
+    }
+  } catch (err) {
+    logger.error(err)
+  }
+}
+
 export const getProposalState = async (draftHash: string) => {
   const headers = {
     'Content-Type': 'application/json'
@@ -109,7 +146,7 @@ export const getProposalState = async (draftHash: string) => {
   }
 }
 
-export const getProposalData = async (proposalHash: string ) => {
+export const getProposalData = async (proposalHash: string) => {
   const headers = {
     'Content-Type': 'application/json'
   }
@@ -137,56 +174,62 @@ export const getProposalData = async (proposalHash: string ) => {
 }
 
 export const getInformationByDid = async (did: string) => {
-    const data = {
-        did: did
-    }
-    try {
-        const res = await axios.post('http://cen.longrunweather.com:18080/api/dposnoderpc/check/jwtget', data)
-        const publicKeyObj: any = await getDidPublicKey(did)
-        const jwtToken = res && res.data && res.data.data && res.data.data.jwt
-        if (jwtToken && publicKeyObj) {
-            return jwt.verify(
-                jwtToken,
-                publicKeyObj.publicKey,
-                async (err: any, decoded: any) => {
-                    if (err) {
-                        logger.error(err)
-                    }
-                    return decoded && decoded.credentialSubject
-                }
-            )
+  const data = {
+    did: did
+  }
+  try {
+    const res = await axios.post(
+      'http://cen.longrunweather.com:18080/api/dposnoderpc/check/jwtget',
+      data
+    )
+    const publicKeyObj: any = await getDidPublicKey(did)
+    const jwtToken = res && res.data && res.data.data && res.data.data.jwt
+    if (jwtToken && publicKeyObj) {
+      return jwt.verify(
+        jwtToken,
+        publicKeyObj.publicKey,
+        async (err: any, decoded: any) => {
+          if (err) {
+            logger.error(err)
+          }
+          return decoded && decoded.credentialSubject
         }
-    } catch (err) {
-        logger.error(err)
+      )
     }
+  } catch (err) {
+    logger.error(err)
+  }
 }
 
 export const getDidName = async (did: string) => {
-    const headers = {
-        'Content-Type': 'application/json'
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+  const data = {
+    jsonrpc: '2.0',
+    method: 'resolvedid',
+    params: {
+      did,
+      all: false
     }
-    const data = {
-        jsonrpc: '2.0',
-        method: 'resolvedid',
-        params: {
-            did,
-            all: false
-        }
+  }
+  try {
+    const res = await axios.post(process.env.DID_SIDECHAIN_URL, data, {
+      headers
+    })
+    if (res && res.data && res.data.result) {
+      const base64 = _.get(res.data.result, 'transaction[0].operation.payload')
+      const payload: any = base64url.decode(base64)
+      const { verifiableCredential } = JSON.parse(payload)
+      if (!_.isEmpty(verifiableCredential)) {
+        const verifiableCredentialById = _.keyBy(verifiableCredential, 'id')
+        return (
+          verifiableCredentialById['#name'] &&
+          _.get(verifiableCredentialById['#name'], 'credentialSubject.name')
+        )
+      }
     }
-    try {
-        const res = await axios.post(process.env.DID_SIDECHAIN_URL, data, {
-            headers
-        })
-        if (res && res.data && res.data.result) {
-            const base64 = _.get(res.data.result, 'transaction[0].operation.payload')
-            const payload: any = base64url.decode(base64)
-            const { verifiableCredential } = JSON.parse(payload)
-            if (!_.isEmpty(verifiableCredential)) {
-                const verifiableCredentialById = _.keyBy(verifiableCredential, 'id')
-                return verifiableCredentialById['#name'] && _.get(verifiableCredentialById['#name'], 'credentialSubject.name')
-            }
-        }
-    } catch (err) {
-        logger.error(err)
-    }
+  } catch (err) {
+    logger.error(err)
+  }
 }

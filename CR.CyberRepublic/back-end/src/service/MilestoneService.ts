@@ -8,7 +8,8 @@ import {
   user as userUtil,
   utilCrypto,
   getDidPublicKey,
-  getPemPublicKey
+  getPemPublicKey,
+  getUtxosByAmount
 } from '../utility'
 import * as moment from 'moment'
 const {
@@ -18,7 +19,7 @@ const {
   WITHDRAWN
 } = constant.MILESTONE_STATUS
 const { ACTIVE } = constant.CVOTE_STATUS
-const { PROGRESS } = constant.PROPOSAL_TRACKING_TYPE
+const { PROGRESS, FINALIZED } = constant.PROPOSAL_TRACKING_TYPE
 const { APPROVED, REJECTED } = constant.REVIEW_OPINION
 
 export default class extends Base {
@@ -47,11 +48,11 @@ export default class extends Base {
       // check if milestoneKey is valid
       const budget = proposal.budget.filter(
         (item: any) => item.milestoneKey === milestoneKey
-      )
+      )[0]
       if (_.isEmpty(budget)) {
         return { success: false }
       }
-      if (budget[0].status !== WAITING_FOR_REQUEST) {
+      if (budget.status !== WAITING_FOR_REQUEST) {
         return { success: false }
       }
 
@@ -72,7 +73,7 @@ export default class extends Base {
       )
 
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
-      const trackingStatus = PROGRESS
+      const trackingStatus = budget.type === 'COMPLETION' ? FINALIZED : PROGRESS
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -239,6 +240,17 @@ export default class extends Base {
         return { success: false }
       }
 
+      // check if milestoneKey is valid
+      const budget = proposal.budget.filter(
+        (item: any) => item.milestoneKey === milestoneKey
+      )[0]
+      if (_.isEmpty(budget)) {
+        return { success: false }
+      }
+      if (budget.status !== WAITING_FOR_APPROVAL) {
+        return { success: false }
+      }
+
       const currTime = Date.now()
       const now = Math.floor(currTime / 1000)
       const reasonHash = utilCrypto.sha256D(
@@ -265,9 +277,9 @@ export default class extends Base {
       )
       let trackingStatus: string
       if (opinion === APPROVED) {
-        trackingStatus = constant.PROPOSAL_TRACKING_TYPE.REJECTED
+        trackingStatus = budget.type === 'COMPLETION' ? FINALIZED : PROGRESS
       } else {
-        trackingStatus = PROGRESS
+        trackingStatus = constant.PROPOSAL_TRACKING_TYPE.REJECTED
       }
 
       // generate jwt url
@@ -548,5 +560,82 @@ export default class extends Base {
       return { success: true, empty: true }
     }
     return rs
+  }
+
+  public async withdraw(param: any) {
+    try {
+      const { id, milestoneKey } = param
+      const proposal = await this.model.findById(id)
+      // check if current user is the proposal's owner
+      if (!proposal.proposer.equals(this.currentUser._id)) {
+        return { success: false, message: 'You are not the proposal owner.' }
+      }
+      if (proposal.status !== ACTIVE) {
+        return { success: false, message: 'The proposal is not active.' }
+      }
+
+      // check if milestoneKey is valid
+      const budget = proposal.budget.filter(
+        (item: any) => item.milestoneKey === milestoneKey
+      )
+      if (_.isEmpty(budget)) {
+        return { success: false, message: 'This milestone does not exist.' }
+      }
+      if (budget[0].status !== WAITING_FOR_WITHDRAW) {
+        return { success: false, message: 'This milestone is not withdrawal.' }
+      }
+
+      const currDate = Date.now()
+      const now = Math.floor(currDate / 1000)
+      // update withdrawal history
+      const history = {
+        message: 'withdraw',
+        milestoneKey,
+        createdAt: moment(currDate)
+      }
+      await this.model.update(
+        { _id: id },
+        { $push: { withdrawalHistory: history } }
+      )
+
+      let sum = 0
+      for (let i = 0; i <= parseInt(milestoneKey); i++) {
+        const item = proposal.budget[i]
+        if (item.status !== WITHDRAWN) {
+          sum += parseFloat(item.amount)
+        }
+      }
+      const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
+      const rs: any = await getUtxosByAmount(sum.toString())
+      if (!rs) {
+        return { success: false }
+      }
+      // generate jwt url
+      const jwtClaims = {
+        iat: now,
+        exp: now + 60 * 60 * 24,
+        command: 'withdraw',
+        iss: process.env.APP_DID,
+        callbackurl: '',
+        data: {
+          proposalhash: proposal.proposalHash,
+          amount: (sum * Math.pow(10, 8)).toString(),
+          recipient: proposal.recipient,
+          ownerpublickey: proposal.ownerPublicKey || ownerPublicKey,
+          utxos: rs.utxos
+        }
+      }
+      const jwtToken = jwt.sign(
+        JSON.stringify(jwtClaims),
+        process.env.APP_PRIVATE_KEY,
+        { algorithm: 'ES256' }
+      )
+
+      const url = `elastos://crproposal/${jwtToken}`
+      return { success: true, url }
+    } catch (error) {
+      logger.error(error)
+      return
+    }
   }
 }

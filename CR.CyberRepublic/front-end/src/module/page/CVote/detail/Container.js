@@ -89,6 +89,9 @@ const mapDispatch = () => {
     },
     async updateProposal(data) {
       return service.updateProposal(data)
+    },
+    async withdraw(id, stage) {
+      return service.withdraw(id, stage)
     }
   }
 }
