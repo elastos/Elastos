@@ -146,8 +146,8 @@ func (s *State) ExistCandidateByCID(cid common.Uint168) (ok bool) {
 }
 
 // existCandidateByDepositHash judges if there is a candidate with deposit hash.
-func (s *State) existCandidateByDepositHash(cid common.Uint168) bool {
-	_, ok := s.DepositHashCIDMap[cid]
+func (s *State) existCandidateByDepositHash(hash common.Uint168) bool {
+	_, ok := s.DepositHashCIDMap[hash]
 	return ok
 }
 
@@ -346,7 +346,9 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 		cid, _ := getCIDByCode(program.Code)
 		if candidate := s.getCandidate(*cid); candidate != nil {
 			if candidate.state == Canceled {
-				returnCandidateAction(candidate, candidate.state)
+				if height-candidate.cancelHeight > s.params.CRDepositLockupBlocks {
+					returnCandidateAction(candidate, candidate.state)
+				}
 			}
 		}
 		if candidates := s.getHistoryCandidate(*cid); len(candidates) != 0 {

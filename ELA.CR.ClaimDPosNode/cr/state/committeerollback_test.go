@@ -1630,6 +1630,11 @@ func TestCommittee_RollbackCRCAppropriationTx(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := config.DefaultParams.CRVotingStartHeight
+	committee.RegisterFuncitons(&CommitteeFuncsConfig{
+		GetHeight: func() uint32 {
+			return currentHeight
+		},
+	})
 
 	// register cr
 	committee.ProcessBlock(&types.Block{
@@ -2019,6 +2024,12 @@ func TestCommittee_RollbackCRCImpeachmentAndReelectionTx(t *testing.T) {
 		TotalAmount:   5000 * 1e8,
 		Penalty:       12,
 	}
+	committee.state.depositInfo[*did2] = &DepositInfo{
+		Refundable:    false,
+		DepositAmount: 5000 * 1e8,
+		TotalAmount:   5000 * 1e8,
+		Penalty:       12,
+	}
 	keyFrameA := committee.Snapshot()
 
 	//here process impeachment
@@ -2365,6 +2376,12 @@ func TestCommitee_RollbackCRCBlendAppropriationTx(t *testing.T) {
 
 	// avoid getting UTXOs from database
 	currentHeight := cfg.CRVotingStartHeight
+	committee.RegisterFuncitons(&CommitteeFuncsConfig{
+		GetHeight: func() uint32 {
+			return currentHeight
+		},
+	})
+
 	// register cr
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -2882,7 +2899,7 @@ func TestCommitee_RollbackCRCBlendTxCRVert(t *testing.T) {
 
 	returnDepositTx1 := generateReturnDeposite(publicKeyStr1)
 	returnDepositTx2 := generateReturnDeposite(publicKeyStr2)
-	currentHeight++
+	currentHeight += committee.params.CRDepositLockupBlocks + 1
 	// returnDepositTx
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{

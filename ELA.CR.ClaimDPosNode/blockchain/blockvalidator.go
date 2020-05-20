@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2020 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -73,7 +73,7 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 
 	// A block must not exceed the maximum allowed block payload when serialized.
 	blockSize := block.GetSize()
-	if blockSize > int(pact.MaxBlockContextSize + pact.MaxBlockHeaderSize) {
+	if blockSize > int(pact.MaxBlockContextSize+pact.MaxBlockHeaderSize) {
 		return errors.New("[PowCheckBlockSanity] serialized block is too big")
 	}
 
@@ -248,7 +248,7 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 		}
 
 		if errCode := b.CheckTransactionContext(block.Height,
-			block.Transactions[i], references); errCode != nil {
+			block.Transactions[i], references, 0); errCode != nil {
 			return elaerr.SimpleWithMessage(elaerr.ErrBlockValidation, errCode,
 				"CheckTransactionContext failed when verify block")
 		}
