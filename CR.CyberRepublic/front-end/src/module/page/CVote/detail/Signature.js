@@ -16,6 +16,13 @@ class Signature extends Component {
   handleSubmit = (e) => {
     e.stopPropagation() // prevent event bubbling
     e.preventDefault()
+    const { isSecretary } = this.props
+    {
+      isSecretary ? this.reviewApplication() : this.applyPayment()
+    }
+  }
+
+  applyPayment = () => {
     const { form, applyPayment, proposalId, stage } = this.props
     form.validateFields(async (err, values) => {
       if (!err) {
@@ -23,6 +30,30 @@ class Signature extends Component {
         if (rs.success && rs.url) {
           this.setState({ url: rs.url, messageHash: rs.messageHash })
           this.pollingSignature()
+        }
+      }
+    })
+  }
+
+  reviewApplication = () => {
+    const {
+      form,
+      reviewApplication,
+      proposalId,
+      stage,
+      opinion,
+      application
+    } = this.props
+    form.validateFields(async (err, values) => {
+      if (!err) {
+        const data = {
+          reason: values.message,
+          opinion,
+          applicationId: application._id
+        }
+        const rs = await reviewApplication(proposalId, stage, data)
+        if (rs.success && rs.url) {
+          this.setState({ url: rs.url })
         }
       }
     })

@@ -221,7 +221,7 @@ export default class extends BaseService {
     return rs
   }
 
-  async reviewPaymentApplication(proposalId, stage, data) {
+  async reviewApplication(proposalId, stage, data) {
     const rs = await api_request({
       path: `/api/proposals/${proposalId}/milestones/${stage}/review`,
       method: 'post',

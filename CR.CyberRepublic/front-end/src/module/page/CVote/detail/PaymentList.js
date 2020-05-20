@@ -20,7 +20,8 @@ class PaymentList extends BaseComponent {
     super(props)
     this.state = {
       toggle: false,
-      stage: null
+      stage: null,
+      opinion: ''
     }
   }
 
@@ -28,8 +29,8 @@ class PaymentList extends BaseComponent {
     this.setState({ toggle: false })
   }
 
-  showModal = (stage) => {
-    this.setState({ toggle: true, stage })
+  showModal = (stage, opinion) => {
+    this.setState({ toggle: true, stage, opinion })
   }
 
   isOwner() {
@@ -92,7 +93,7 @@ class PaymentList extends BaseComponent {
             <div
               className="action approve"
               onClick={() => {
-                this.showModal(item.milestoneKey)
+                this.showModal(item.milestoneKey, 'APPROVED')
               }}
             >
               Approve
@@ -100,7 +101,7 @@ class PaymentList extends BaseComponent {
             <div
               className="action reject"
               onClick={() => {
-                this.showModal(item.milestoneKey)
+                this.showModal(item.milestoneKey, 'REJECTED')
               }}
             >
               Reject
@@ -191,7 +192,8 @@ class PaymentList extends BaseComponent {
               getPaymentSignature={actions.getPaymentSignature}
               hideModal={this.hideModal}
               isSecretary={user.is_secretary}
-              reviewPaymentApplication={actions.reviewPaymentApplication}
+              opinion={this.state.opinion}
+              reviewApplication={actions.reviewApplication}
               application={withdrawalHistory[withdrawalHistory.length - 1]}
             />
           ) : null}
