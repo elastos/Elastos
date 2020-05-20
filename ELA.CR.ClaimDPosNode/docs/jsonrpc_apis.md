@@ -2003,7 +2003,7 @@ Show current cr members information
 | location        | uint64 | the location number of the cr member      |
 | impeachmentvotes| int64  | impeachment votes of the cr member        |
 | depositamount   | string | the deposite amout of the cr member       |
-| deposithash     | string | the deposite address of the cr member     |
+| depositaddress  | string | the deposite address of the cr member     |
 | penalty         | int64  | the penalty of the cr member              |
 | index           | uint64 | the index of the cr member                |
 | totalcounts     | uint64 | the total counts of current cr member     |
@@ -2037,7 +2037,7 @@ Response:
                 "url": "ela_cr2.org",
                 "location": 112211, "impeachmentvotes": 0,
                 "depositamout": "5000",
-                "deposithash": "1f56b347f27954f1061883cfe469839f8465cc7340",
+                "deposithash": "De87Qiekzpx7Xqf8RphdwNX5Z84iGgHLKMF5b",
                 "penalty": 0,
                 "index": 0,
                 "State": "Elected"
@@ -2051,7 +2051,7 @@ Response:
                 "location": 112211,
                 "impeachmentvotes": 0,
                 "depositamout": "5000",
-                "deposithash": "1f0f11c336563d31ed1cf81ac4a83f9df7306f9967",
+                "depositaddress": "DnemZpPgHLKMF5bMX3WbJYSGTpqJkBN7pe",
                 "penalty": 0,
                 "index": 1,
                 "State": "Elected"
@@ -2126,10 +2126,10 @@ Response:
                 "proposalhash": "e6942385c899889d4afd4b093e44a29f7d374c25c21432347faf3f82af2e5a88",
                 "txhash": "a859222538901eb656ad293483bb361dc0ec2835ce804fb7dffc67241c0ee965",
                 "crvotes": {
-                    "671ea45f83da61bad2a1d807bc41ee9933ae55345a": "approve",
-                    "67501a0f8b4744d8e2fda6dfc32c72d7c911573362": "approve",
-                    "67e9f9289ee606be597e222125910586091b8d3695": "approve",
-                    "67fbac33fd09d0891d87367091deae13fe8c0fd83b": "approve"
+                    "intySungjAK3uyHeoajez3yRqX5x68NrNi": "approve",
+                    "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf": "approve",
+                    "iTgmaqaMpMj46MW3GCU2h7bPaytwuvQrV3": "approve",
+                    "inTc9GeWyNNKNwT1cDcvvEgQwnjszbtpZ5": "approve"
                 },
                 "votersrejectamount": "324.22213333",
                 "registerHeight": 1764,
@@ -2231,7 +2231,7 @@ Response:
             },
             "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
             "crvotes": {
-                "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
+                "iTgmaqaMpMj46MW3GCU2h7bPaytwuvQrV3": 0
             },
             "votersrejectamount": 0,
             "registerheight": 1277
@@ -2264,7 +2264,7 @@ Response:
             "proposal": {
                 "proposaltype": 0,
                 "ownerpublickey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
-                "crcouncilmemberdid": "670f11c336563d31ed1cf81ac4a83f9df7306f9967",
+                "crcouncilmemberdid": "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf",
                 "drafthash": "9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0",
                 "budgets": [
                      {
@@ -2289,7 +2289,7 @@ Response:
              },
              "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
              "crvotes": {
-                 "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
+                 "iTgmaqaMpMj46MW3GCU2h7bPaytwuvQrV3": 0
              },
              "votersrejectamount": 0,
              "registerheight": 1277,

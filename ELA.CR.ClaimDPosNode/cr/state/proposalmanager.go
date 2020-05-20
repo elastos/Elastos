@@ -545,7 +545,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 
 	if trackingType == payload.Terminated {
 		for _, budget := range proposalState.Proposal.Budgets {
-			if _, ok := proposalState.WithdrawnBudgets[budget.Stage]; !ok {
+			if _, ok := proposalState.WithdrawableBudgets[budget.Stage]; !ok {
 				unusedBudget += budget.Amount
 			}
 		}
@@ -555,7 +555,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 			if budget.Type == payload.FinalPayment {
 				continue
 			}
-			if _, ok := proposalState.WithdrawnBudgets[budget.Stage]; !ok {
+			if _, ok := proposalState.WithdrawableBudgets[budget.Stage]; !ok {
 				unusedBudget += budget.Amount
 			}
 		}

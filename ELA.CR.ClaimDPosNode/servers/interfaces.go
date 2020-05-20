@@ -1512,7 +1512,7 @@ type RpcCrMemberInfo struct {
 	Location         uint64 `json:"location"`
 	ImpeachmentVotes string `json:"impeachmentvotes"`
 	DepositAmount    string `json:"depositamout"`
-	DepositHash      string `json:"deposithash"`
+	DepositAddress   string `json:"depositaddress"`
 	Penalty          string `json:"penalty"`
 	State            string `json:"state"`
 	Index            uint64 `json:"index"`
@@ -1765,6 +1765,7 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 		if !cr.Info.DID.IsEqual(emptyHash) {
 			didAddress, _ = cr.Info.DID.ToAddress()
 		}
+		depositAddr, _ := cr.DepositHash.ToAddress()
 		memberInfo := RpcCrMemberInfo{
 			Code:             hex.EncodeToString(cr.Info.Code),
 			CID:              cidAddress,
@@ -1774,7 +1775,7 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 			Location:         cr.Info.Location,
 			ImpeachmentVotes: cr.ImpeachmentVotes.String(),
 			DepositAmount:    cm.GetAvailableDepositAmount(cr.Info.CID).String(),
-			DepositHash:      cr.DepositHash.String(),
+			DepositAddress:   depositAddr,
 			Penalty:          cm.GetPenalty(cr.Info.CID).String(),
 			Index:            uint64(i),
 			State:            cr.MemberState.String(),
@@ -1834,12 +1835,13 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 	for _, proposal := range proposalMap {
 		crVotes = make(map[string]string)
 		for k, v := range proposal.CRVotes {
-			crVotes[k.String()] = v.Name()
+			did, _ := k.ToAddress()
+			crVotes[did] = v.Name()
 		}
 		RpcProposalBaseState := RpcProposalBaseState{
 			Status:             proposal.Status.String(),
-			ProposalHash:       proposal.Proposal.Hash().String(),
-			TxHash:             proposal.TxHash.String(),
+			ProposalHash:       ToReversedString(proposal.Proposal.Hash()),
+			TxHash:             ToReversedString(proposal.TxHash),
 			CRVotes:            crVotes,
 			VotersRejectAmount: proposal.VotersRejectAmount.String(),
 			RegisterHeight:     proposal.RegisterHeight,
@@ -1888,7 +1890,11 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	crCommittee := Chain.GetCRCommittee()
 	ProposalHashHexStr, ok := param.String("proposalhash")
 	if ok {
-		ProposalHash, err := common.Uint256FromHexString(ProposalHashHexStr)
+		proposalHashBytes, err := FromReversedString(ProposalHashHexStr)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalidate proposalhash")
+		}
+		ProposalHash, err := common.Uint256FromBytes(proposalHashBytes)
 		if err != nil {
 			return ResponsePack(InvalidParams, "invalidate proposalhash")
 		}
@@ -1902,7 +1908,11 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		if !ok {
 			return ResponsePack(InvalidParams, "params at least one of proposalhash and DraftHash")
 		}
-		DraftHash, err := common.Uint256FromHexString(DraftHashStr)
+		DraftHashStrBytes, err := FromReversedString(DraftHashStr)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalidate drafthash")
+		}
+		DraftHash, err := common.Uint256FromBytes(DraftHashStrBytes)
 		if err != nil {
 			return ResponsePack(InvalidParams, "invalidate drafthash")
 		}
@@ -1917,7 +1927,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 
 	did, _ := proposalState.Proposal.CRCouncilMemberDID.ToAddress()
 	rpcProposal.CRCouncilMemberDID = did
-	rpcProposal.DraftHash = proposalState.Proposal.DraftHash.String()
+	rpcProposal.DraftHash = ToReversedString(proposalState.Proposal.DraftHash)
 	rpcProposal.ProposalType = proposalState.Proposal.ProposalType.Name()
 	rpcProposal.OwnerPublicKey = common.BytesToHexString(proposalState.Proposal.OwnerPublicKey)
 	rpcProposal.Budgets = make([]BudgetInfo, 0)
@@ -1938,13 +1948,14 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	}
 	crVotes := make(map[string]string)
 	for k, v := range proposalState.CRVotes {
-		crVotes[k.String()] = v.Name()
+		did, _ := k.ToAddress()
+		crVotes[did] = v.Name()
 	}
 	RpcProposalState := RpcProposalState{
 		Status:             proposalState.Status.String(),
 		Proposal:           rpcProposal,
-		ProposalHash:       proposalHash.String(),
-		TxHash:             proposalState.TxHash.String(),
+		ProposalHash:       ToReversedString(proposalHash),
+		TxHash:             ToReversedString(proposalState.TxHash),
 		CRVotes:            crVotes,
 		VotersRejectAmount: proposalState.VotersRejectAmount.String(),
 		RegisterHeight:     proposalState.RegisterHeight,
@@ -2234,11 +2245,13 @@ func getPayloadInfo(p Payload) PayloadInfo {
 	case *payload.CRInfo:
 		obj := new(CRInfo)
 		obj.Code = common.BytesToHexString(object.Code)
-		obj.CID = object.CID.String()
+		cid, _ := object.CID.ToAddress()
+		obj.CID = cid
+		did, _ := object.DID.ToAddress()
 		if object.DID.IsEqual(emptyHash) {
-			obj.DID = object.DID.String()
+			obj.DID = ""
 		} else {
-			obj.DID = object.DID.String()
+			obj.DID = did
 		}
 		obj.NickName = object.NickName
 		obj.Url = object.Url
@@ -2247,13 +2260,14 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *payload.UnregisterCR:
 		obj := new(UnregisterCRInfo)
-		obj.CID = object.CID.String()
+		cid, _ := object.CID.ToAddress()
+		obj.CID = cid
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
 	case *payload.CRCProposal:
-		var budgets []BudgetInfo
+		var budgets []BudgetBaseInfo
 		for _, b := range object.Budgets {
-			budgets = append(budgets, BudgetInfo{
+			budgets = append(budgets, BudgetBaseInfo{
 				Type:   b.Type.Name(),
 				Stage:  b.Stage,
 				Amount: b.Amount.String(),
@@ -2263,26 +2277,29 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.ProposalType = object.ProposalType.Name()
 		obj.CategoryData = object.CategoryData
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
-		obj.DraftHash = object.DraftHash.String()
+		obj.DraftHash = ToReversedString(object.DraftHash)
 		obj.Budgets = budgets
-		obj.Recipient = object.Recipient.String()
+		addr, _ := object.Recipient.ToAddress()
+		obj.Recipient = addr
 		obj.Signature = common.BytesToHexString(object.Signature)
-		obj.CRCouncilMemberDID = object.CRCouncilMemberDID.String()
+		crmdid, _ := object.CRCouncilMemberDID.ToAddress()
+		obj.CRCouncilMemberDID = crmdid
 		obj.CRCouncilMemberSignature = common.BytesToHexString(object.CRCouncilMemberSignature)
-		obj.Hash = object.Hash().String()
+		obj.Hash = ToReversedString(object.Hash())
 		return obj
 	case *payload.CRCProposalReview:
 		obj := new(CRCProposalReviewInfo)
-		obj.ProposalHash = object.ProposalHash.String()
+		obj.ProposalHash = ToReversedString(object.ProposalHash)
 		obj.VoteResult = object.VoteResult.Name()
 		obj.OpinionHash = object.OpinionHash.String()
-		obj.DID = object.DID.String()
+		did, _ := object.DID.ToAddress()
+		obj.DID = did
 		obj.Sign = common.BytesToHexString(object.Signature)
 		return obj
 	case *payload.CRCProposalTracking:
 		obj := new(CRCProposalTrackingInfo)
 		obj.ProposalTrackingType = object.ProposalTrackingType.Name()
-		obj.ProposalHash = object.ProposalHash.String()
+		obj.ProposalHash = ToReversedString(object.ProposalHash)
 		obj.MessageHash = object.MessageHash.String()
 		obj.Stage = object.Stage
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
@@ -2295,7 +2312,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *payload.CRCProposalWithdraw:
 		obj := new(CRCProposalWithdrawInfo)
-		obj.ProposalHash = object.ProposalHash.String()
+		obj.ProposalHash = ToReversedString(object.ProposalHash)
 		obj.OwnerPublicKey = common.BytesToHexString(object.OwnerPublicKey)
 		obj.Signature = common.BytesToHexString(object.Signature)
 		return obj
@@ -2335,7 +2352,7 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 				}
 			case outputpayload.CRCProposal:
 				for _, cv := range content.CandidateVotes {
-					c, _ := common.Uint256FromBytes(cv.Candidate)
+					c, _ := common.Uint256FromBytes(common.BytesReverse(cv.Candidate))
 					contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
 						CandidateVotes{
 							Candidate: c.String(),
