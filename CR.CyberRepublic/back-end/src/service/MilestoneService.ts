@@ -158,15 +158,22 @@ export default class extends Base {
             }
           } else {
             try {
+              const history = proposal.withdrawalHistory.filter(
+                (item: any) => item.messageHash === messageHash
+              )[0]
               await this.model.update(
                 { proposalHash, 'withdrawalHistory.messageHash': messageHash },
                 {
                   $set: {
-                    'withdrawalHistory.$.signature': decoded.data,
-                    'budget.$.status': WAITING_FOR_APPROVAL
+                    'withdrawalHistory.$.signature': decoded.data
                   }
                 }
               )
+              await this.model.update(
+                { proposalHash, 'budget.milestoneKey': history.milestoneKey },
+                { $set: { 'budget.$.status': WAITING_FOR_APPROVAL } }
+              )
+
               this.notifySecretaries(this.updateMailTemplate(proposal.vid))
               return { code: 200, success: true, message: 'Ok' }
             } catch (err) {
@@ -345,7 +352,7 @@ export default class extends Base {
             try {
               const history = proposal.withdrawalHistory.filter((item: any) => {
                 item.review.reasonHash === reasonHash
-              })
+              })[0]
               let status: string
               if (history.review.opinion === REJECTED) {
                 status = REJECTED
