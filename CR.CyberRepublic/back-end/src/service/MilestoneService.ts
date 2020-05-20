@@ -8,7 +8,8 @@ import {
   user as userUtil,
   utilCrypto,
   getDidPublicKey,
-  getPemPublicKey
+  getPemPublicKey,
+  getUtxosByAmount
 } from '../utility'
 import * as moment from 'moment'
 const {
@@ -593,6 +594,10 @@ export default class extends Base {
         }
       }
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
+      const rs: any = await getUtxosByAmount(sum.toString())
+      if (!rs) {
+        return { success: false }
+      }
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -605,7 +610,7 @@ export default class extends Base {
           amount: (sum * Math.pow(10, 8)).toString(),
           recipient: proposal.recipient,
           ownerpublickey: proposal.ownerPublicKey || ownerPublicKey,
-          utxos: []
+          utxos: rs.utxos
         }
       }
       const jwtToken = jwt.sign(

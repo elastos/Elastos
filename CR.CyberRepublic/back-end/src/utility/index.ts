@@ -15,7 +15,6 @@ const _ = require('lodash')
 const { PublicKey } = require('bitcore-lib-p256')
 const jwkToPem = require('jwk-to-pem')
 import * as jwt from 'jsonwebtoken'
-import { verify } from 'jsonwebtoken'
 
 export {
   utilCrypto,
@@ -86,6 +85,34 @@ export const getDidPublicKey = async (did: string) => {
         expirationDate: moment(payload.expires),
         publicKey: pemPubKey,
         compressedPublicKey: publicKey
+      }
+    }
+  } catch (err) {
+    logger.error(err)
+  }
+}
+
+export const getUtxosByAmount = async (amount: string) => {
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+  const data = {
+    jsonrpc: '2.0',
+    method: 'getutxosbyamount',
+    params: {
+      address: 'CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b',
+      amount,
+      utxotype: 'unused'
+    }
+  }
+  try {
+    const res = await axios.post(process.env.ELA_NODE_URL, data, {
+      headers
+    })
+    if (res && res.data) {
+      const utxos = _.get(res.data, 'result')
+      if (utxos) {
+        return { success: true, utxos }
       }
     }
   } catch (err) {
