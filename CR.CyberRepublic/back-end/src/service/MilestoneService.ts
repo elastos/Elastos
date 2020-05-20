@@ -161,6 +161,13 @@ export default class extends Base {
               const history = proposal.withdrawalHistory.filter(
                 (item: any) => item.messageHash === messageHash
               )[0]
+              if (_.isEmpty(history)) {
+                return {
+                  code: 400,
+                  success: false,
+                  message: 'There is no this payment application.'
+                }
+              }
               await this.model.update(
                 { proposalHash, 'withdrawalHistory.messageHash': messageHash },
                 {
@@ -170,7 +177,10 @@ export default class extends Base {
                 }
               )
               await this.model.update(
-                { proposalHash, 'budget.milestoneKey': history.milestoneKey },
+                {
+                  proposalHash,
+                  'budget.milestoneKey': history.milestoneKey
+                },
                 { $set: { 'budget.$.status': WAITING_FOR_APPROVAL } }
               )
 
@@ -353,6 +363,13 @@ export default class extends Base {
               const history = proposal.withdrawalHistory.filter((item: any) => {
                 item.review.reasonHash === reasonHash
               })[0]
+              if (_.isEmpty(history)) {
+                return {
+                  code: 400,
+                  success: false,
+                  message: 'There is no this review record.'
+                }
+              }
               let status: string
               if (history.review.opinion === REJECTED) {
                 status = REJECTED
