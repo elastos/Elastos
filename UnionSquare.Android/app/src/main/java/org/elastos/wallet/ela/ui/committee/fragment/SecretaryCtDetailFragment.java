@@ -93,8 +93,8 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     @BindView(R.id.personal_profile)
     TextView introduce;
     private void setInfo(CtDetailBean ctDetailBean) {
-        CtDetailBean.DataBean dataBean = ctDetailBean.getData().get(0);
-        GlideApp.with(getContext()).load(dataBean.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(head);
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData();
+//        GlideApp.with(getContext()).load(dataBean.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(head);
         name.setText(dataBean.getDidName());
         location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
         didTv.setText(dataBean.getDid());

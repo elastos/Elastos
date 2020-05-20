@@ -129,7 +129,10 @@ public class CtListFragment extends BaseFragment implements NewBaseViewData {
             secretaryRv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             secretaryRv.setAdapter(secretaryAdapter);
             secretaryAdapter.setCommonRvListener((position, o) -> {
-                start(SecretaryCtDetailFragment.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("id", String.valueOf(index));
+                bundle.putString("did", generalList.get(position).getDid());
+                start(SecretaryCtDetailFragment.class, bundle);
             });
 
         } else {

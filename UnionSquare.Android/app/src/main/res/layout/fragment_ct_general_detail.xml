@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp">
 
-            <org.elastos.wallet.ela.utils.widget.RoundImageView
+            <org.elastos.wallet.ela.utils.widget.CircleImageView
                 android:id="@+id/head_ic"
                 android:layout_width="30dp"
                 android:layout_height="30dp"

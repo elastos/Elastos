@@ -6,18 +6,19 @@ import java.util.List;
 
 public class CtDetailBean extends BaseEntity {
 
-    private List<DataBean> data;
+    private DataBean data;
 
-    public List<DataBean> getData() {
+    public DataBean getData() {
         return data;
     }
 
-    public void setData(List<DataBean> data) {
+    public void setData(DataBean data) {
         this.data = data;
     }
 
     public static class DataBean {
         private String type;
+        private String cid;
         private String status;
         private String did;
         private String didName;
@@ -33,8 +34,8 @@ public class CtDetailBean extends BaseEntity {
         private String microsoft;
         private long startDate;
         private long endDate;
-        private long impeachmentThroughVotes;
-        private long impeachmentVotes;
+        private double impeachmentThroughVotes;
+        private double impeachmentVotes;
         private String depositAmount;
         private List<Term> term;
 
@@ -44,6 +45,14 @@ public class CtDetailBean extends BaseEntity {
 
         public void setType(String type) {
             this.type = type;
+        }
+
+        public String getCid() {
+            return cid;
+        }
+
+        public void setCid(String cid) {
+            this.cid = cid;
         }
 
         public String getStatus() {
@@ -166,19 +175,19 @@ public class CtDetailBean extends BaseEntity {
             this.introduction = introduction;
         }
 
-        public long getImpeachmentThroughVotes() {
+        public double getImpeachmentThroughVotes() {
             return impeachmentThroughVotes;
         }
 
-        public void setImpeachmentThroughVotes(long impeachmentThroughVotes) {
+        public void setImpeachmentThroughVotes(double impeachmentThroughVotes) {
             this.impeachmentThroughVotes = impeachmentThroughVotes;
         }
 
-        public long getImpeachmentVotes() {
+        public double getImpeachmentVotes() {
             return impeachmentVotes;
         }
 
-        public void setImpeachmentVotes(long impeachmentVotes) {
+        public void setImpeachmentVotes(double impeachmentVotes) {
             this.impeachmentVotes = impeachmentVotes;
         }
 
@@ -200,18 +209,18 @@ public class CtDetailBean extends BaseEntity {
     }
 
     public static class Term {
-        private String id;
+        private long id;
         private String title;
         private String didName;
         private String status;
         private String voteResult;
         private long createdAt;
 
-        public String getId() {
+        public long getId() {
             return id;
         }
 
-        public void setId(String id) {
+        public void setId(long id) {
             this.id = id;
         }
 

@@ -8,6 +8,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -20,6 +22,8 @@ import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.view.CircleProgressView;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -48,7 +52,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
     CtExpRecAdapter adapter;
-    List<ExperienceBean> list;
+    List<ExperienceBean> list = new ArrayList<>();
 
     CtDetailPresenter presenter;
 
@@ -69,7 +73,6 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctdetail));
-        progress.setProgress(50);
         presenter = new CtDetailPresenter();
         presenter.getCouncilInfo(this, id, did);
     }
@@ -133,6 +136,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         }
     }
 
+
     @BindView(R.id.name)
     TextView name;
     @BindView(R.id.location)
@@ -144,9 +148,11 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     @BindView(R.id.progress)
     CircleProgressView progress;
     private void setBaseInfo(CtDetailBean ctDetailBean) {
-        CtDetailBean.DataBean dataBean = ctDetailBean.getData().get(0);
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         name.setText(dataBean.getDidName());
         location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
+        BigDecimal gress = new BigDecimal(dataBean.getImpeachmentVotes()).divide(new BigDecimal(dataBean.getImpeachmentThroughVotes())).multiply(new BigDecimal(100));
+        progress.setProgress(gress.floatValue());
         currentVotes.setText(String.valueOf(dataBean.getImpeachmentVotes()));
         impeachmentCount.setText(String.valueOf(dataBean.getImpeachmentThroughVotes()));
     }
@@ -159,7 +165,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     TextView introduction;
     private void setCtInfo(CtDetailBean ctDetailBean) {
         if(null == ctDetailBean) return;
-        CtDetailBean.DataBean dataBean = ctDetailBean.getData().get(0);
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         didTv.setText(dataBean.getDid());
         website.setText(dataBean.getAddress());
         introduction.setText(dataBean.getIntroduction());
@@ -168,7 +174,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     @SuppressLint("DefaultLocale")
     private void setCtRecord(CtDetailBean ctDetailBean) {
         if(null == ctDetailBean) return;
-        List<CtDetailBean.Term> terms = ctDetailBean.getData().get(0).getTerm();
+        List<CtDetailBean.Term> terms = ctDetailBean.getData().getTerm();
         list.clear();
         for(CtDetailBean.Term term : terms) {
             ExperienceBean ExperienceBean = new ExperienceBean();
@@ -181,4 +187,5 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         }
         setRecyclerView();
     }
+
 }

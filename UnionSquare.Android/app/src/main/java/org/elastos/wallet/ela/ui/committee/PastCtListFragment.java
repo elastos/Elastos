@@ -97,7 +97,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     }
 
     private void go2(CtDetailBean ctDetailBean) {
-        CtDetailBean.DataBean dataBean = ctDetailBean.getData().get(0);
+        CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         String status = dataBean.getStatus();
         String depositAmount = dataBean.getDepositAmount();
         if(AppUtlis.isNullOrEmpty(status) || status.equals("Elected")) {
@@ -152,6 +152,9 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
 
     @OnClick({R.id.iv_title_right})
     public void onClick(View view) {
-        start(SecretaryCtDetailFragment.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("id", "");
+        bundle.putString("did", wallet.getDid());
+        start(SecretaryCtDetailFragment.class, bundle);
     }
 }
