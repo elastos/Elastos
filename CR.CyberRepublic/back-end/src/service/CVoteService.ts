@@ -1185,19 +1185,17 @@ export default class extends Base {
         if (proposal) {
             const voteResult = _.filter(proposal.voteResult, (o: any) => userId.equals(o.votedBy))[0]
             if (voteResult) {
-                const signature = _.get(voteResult, 'signature')
+                const signature = _.get(voteResult, 'signature.data')
                 if (signature) {
                     return {success: true, data: proposal}
                 }
-                const message = _.get(voteResult, 'message')
+                const message = _.get(voteResult, 'signature.message')
                 if (message) {
-                    return {success: true, data: proposal}
+                    return {success: false, message}
                 }
             }
         } else {
-            return {
-                success: false
-            }
+            return {success: false}
         }
     }
 

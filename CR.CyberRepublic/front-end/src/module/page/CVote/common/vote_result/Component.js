@@ -15,12 +15,11 @@ const Component = (
       id,
       getReviewProposal,
       getReviewProposalUrl,
-      voteResult, 
+      updateProposal,
       isCouncil,
       currentUserId      
     }
   ) => {
-  // console.log(dataList)
   const votesNode = _.map(dataList, (data, key) => {
     let voteStatus = data.status
     if(voteStatus == undefined || voteStatus == 'failed' || voteStatus == 'unchain') {
@@ -44,6 +43,7 @@ const Component = (
           <OnChain 
             getReviewProposal={getReviewProposal}
             getReviewProposalUrl={getReviewProposalUrl}
+            updateProposal={updateProposal}
             id={id}
           /> : null
           }
@@ -57,9 +57,9 @@ const Component = (
     // show reason for all vote type
     const reasonNode = (
       <Reason>
-        {data.reason.split('\n').map((item) => {
+        {data.reason.split('\n').map((item,key) => {
           return (
-            <span>
+            <span key={key}>
               {item}
               <br/>
             </span>
@@ -90,6 +90,12 @@ const propTypes = {
   label: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
   dataList: PropTypes.array.isRequired,
+  id: PropTypes.string.isRequired,
+  getReviewProposal: PropTypes.func.isRequired,
+  getReviewProposalUrl: PropTypes.func.isRequired,
+  updateProposal: PropTypes.func.isRequired,
+  isCouncil: PropTypes.bool.isRequired,
+  currentUserId: PropTypes.string.isRequired
 }
 
 Component.propTypes = propTypes

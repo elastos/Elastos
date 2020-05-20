@@ -86,6 +86,9 @@ const mapDispatch = () => {
     },
     async getReviewTxid(data) {
       return service.getReviewTxid(data)
+    },
+    async updateProposal(data) {
+      return service.updateProposal(data)
     }
   }
 }
