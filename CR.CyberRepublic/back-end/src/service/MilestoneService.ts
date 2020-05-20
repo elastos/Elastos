@@ -584,7 +584,15 @@ export default class extends Base {
         { _id: id },
         { $push: { withdrawalHistory: history } }
       )
-      const amount = (parseFloat(budget[0].amount) * Math.pow(10, 8)).toString()
+
+      let sum = 0
+      for (let i = 0; i <= parseInt(milestoneKey); i++) {
+        const item = proposal.budget[i]
+        if (item.status !== WITHDRAWN) {
+          sum += parseFloat(item.amount)
+        }
+      }
+      const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -594,9 +602,9 @@ export default class extends Base {
         callbackurl: '',
         data: {
           proposalhash: proposal.proposalHash,
-          amount: '',
+          amount: (sum * Math.pow(10, 8)).toString(),
           recipient: proposal.recipient,
-          ownerpublickey: proposal.ownerPublicKey,
+          ownerpublickey: proposal.ownerPublicKey || ownerPublicKey,
           utxos: []
         }
       }

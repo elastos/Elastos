@@ -5,6 +5,7 @@ import checkSignature from './check_signature'
 import secSignatureCallback from './sec_signature_callback'
 import review from './review'
 import checkReviewTxid from './review_txid'
+import withdraw from './withdraw'
 
 export default Base.setRouter([
   {
@@ -36,5 +37,10 @@ export default Base.setRouter([
     path: '/milestones/review/txid',
     router: checkReviewTxid,
     method: 'post'
+  },
+  {
+    path: '/:id/milestones/:milestoneKey/withdraw',
+    router: withdraw,
+    method: 'get'
   }
 ])
