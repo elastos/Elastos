@@ -84,7 +84,11 @@ class PaymentList extends BaseComponent {
       )
     }
     if (status === REJECTED) {
-      return <td>Reapply</td>
+      return (
+        <td>
+          <div className="action">Reapply</div>
+        </td>
+      )
     }
     if (status === WAITING_FOR_APPROVAL) {
       return (
@@ -111,7 +115,11 @@ class PaymentList extends BaseComponent {
       )
     }
     if (status === WAITING_FOR_WITHDRAW) {
-      return <td>Withdraw</td>
+      return (
+        <td>
+          <div className="action">Withdraw</div>
+        </td>
+      )
     }
   }
 
