@@ -2064,7 +2064,7 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
 
             }
-            String info = subWallet.ProposalTrackingSecretaryDigest(type);
+            String info = subWallet.GetVoteInfo(type);
             return new CommmonStringEntity(SUCCESSCODE, info);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID) + "ProposalTrackingSecretaryDigest");

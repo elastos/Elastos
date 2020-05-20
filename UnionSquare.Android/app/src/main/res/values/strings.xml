@@ -737,5 +737,6 @@
     <string name="proposalprocess">提案执行</string>
     <string name="proposalfinish">提案完结</string>
     <string name="proposalabandon">提案废止</string>
+    <string name="rejectticket">反对票数</string>
 
 </resources>
