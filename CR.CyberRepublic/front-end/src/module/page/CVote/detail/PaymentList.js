@@ -86,7 +86,14 @@ class PaymentList extends BaseComponent {
     if (status === REJECTED) {
       return (
         <td>
-          <div className="action">Reapply</div>
+          <div
+            className="action"
+            onClick={() => {
+              this.showModal(item.milestoneKey)
+            }}
+          >
+            Reapply
+          </div>
         </td>
       )
     }
