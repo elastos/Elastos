@@ -25,8 +25,10 @@ package org.elastos.wallet.ela.ui.Assets.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -35,6 +37,7 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.Constant;
@@ -52,6 +55,8 @@ import butterknife.OnClick;
 public class TransferActivity extends BaseActivity {
 
 
+    @BindView(R.id.tv_amount_tag)
+    TextView tvAmountTag;
     @BindView(R.id.tv_address)
     TextView tvAddress;
     @BindView(R.id.tv_amount)
@@ -64,6 +69,16 @@ public class TransferActivity extends BaseActivity {
     RelativeLayout rlAmount;
     @BindView(R.id.rl_address)
     RelativeLayout rlAddress;
+    @BindView(R.id.tv_hash)
+    TextView tvHash;
+    @BindView(R.id.rl_hash)
+    RelativeLayout rlHash;
+    @BindView(R.id.tv_rate)
+    TextView tvRate;
+    @BindView(R.id.tv_next)
+    TextView tvNext;
+    @BindView(R.id.ll)
+    LinearLayout ll;
     private Wallet wallet;
     private String chainId;
     private String amount;
@@ -130,6 +145,12 @@ public class TransferActivity extends BaseActivity {
                 //转账
                 rlRate.setVisibility(View.GONE);
                 break;
+            case Constant.PROPOSALPUBLISHED:
+                //公示期投票
+                ProposalSearchEntity.DataBean.ListBean searchBean = data.getParcelableExtra("extra");
+                rlHash.setVisibility(View.VISIBLE);
+                tvHash.setText(searchBean.getProposalHash());
+                tvAmountTag.setText(R.string.rejectticket);
             case Constant.SUPERNODEVOTE:
             case Constant.CRVOTE:
             case Constant.WITHDRAWSUPERNODE:

@@ -1,7 +1,5 @@
 package org.elastos.wallet.ela.ui.proposal.presenter;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.net.RetrofitManager;
@@ -10,6 +8,9 @@ import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,8 +112,13 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
 
     private JSONObject getActiveJson(String type, List<String> list) {
         JSONObject unActiveVote = new JSONObject();
-        unActiveVote.put("Type", type);
-        unActiveVote.put("Candidates", JSON.toJSON(list));
+
+        try {
+            unActiveVote.put("Type", type);
+            unActiveVote.put("Candidates", new JSONArray(list));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         return unActiveVote;
     }
 }

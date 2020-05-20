@@ -302,7 +302,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     }
 
     private void setVoteRecycleView() {
-        Log.i("????", tag + "");
+
         ArrayList<String> list = new ArrayList<String>();
         list.add(tag + "");
         list.add(tag + "");
@@ -313,7 +313,7 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
     }
 
     private void setProcessRecycleView() {
-        Log.i("????", tag + "");
+
         ArrayList<String> list = new ArrayList<String>();
         list.add(tag + "");
         list.add(tag + "");
@@ -360,58 +360,71 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         switch (methodName) {
             case "getVoteInfo":
                 //剔除非公示期的
+                JSONObject newVotes = new JSONObject();
                 try {
-                    JSONObject newVotes = new JSONObject();
+                    String amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
                     newVotes.put(searchBean.getProposalHash(), amount);
-                    JSONArray lastVoteInfo = new JSONArray(((CommmonStringEntity) baseEntity).getData());
-                    if (lastVoteInfo.length() >= 1) {
-                        JSONObject lastVote = lastVoteInfo.getJSONObject(0).getJSONObject("Votes");
-                        //获得上次的投票后筛选数据
-                        Iterator it = lastVote.keys();
-                        while (it.hasNext()) {
-                            String key = (String) it.next();
-                            for (int i = 0; i < searchBeanList.size(); i++) {
-                                if (searchBeanList.get(i).getProposalHash().equals(key)) {
-                                    newVotes.put(key, amount);
-                                    break;
+                    String voteInfo = ((CommmonStringEntity) baseEntity).getData();
+                    if (!TextUtils.isEmpty(voteInfo) && !voteInfo.equals("null") && !voteInfo.equals("[]")) {
+                        JSONArray lastVoteInfo = new JSONArray(((CommmonStringEntity) baseEntity).getData());
+                        if (lastVoteInfo.length() >= 1) {
+                            JSONObject lastVote = lastVoteInfo.getJSONObject(0).getJSONObject("Votes");
+                            //获得上次的投票后筛选数据
+                            Iterator it = lastVote.keys();
+                            while (it.hasNext()) {
+                                String key = (String) it.next();
+                                for (int i = 0; i < searchBeanList.size(); i++) {
+                                    if (searchBeanList.get(i).getProposalHash().equals(key)) {
+                                        newVotes.put(key, amount);
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
-                    presenter.createVoteCRCProposalTransaction(wallet.getWalletId(), newVotes.toString(), otherUnActiveVote.toString(), this);
 
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                Log.i("???", otherUnActiveVote.toString());
+                Log.i("???", newVotes.toString());
+                presenter.createVoteCRCProposalTransaction(wallet.getWalletId(), newVotes.toString(), otherUnActiveVote.toString(), this);
+
                 break;
             case "getCRlist":
                 List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
-                otherUnActiveVote.put(new ProposalDetailPresenter().getCRUnactiveData(crList));
+                if (crList != null || crList.size() > 0) {
+                    otherUnActiveVote.put(new ProposalDetailPresenter().getCRUnactiveData(crList));
+                }
                 break;
             case "getDepositVoteList":
                 List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
-                otherUnActiveVote.put(new ProposalDetailPresenter().getDepositUnactiveData(depositList));
+                if (depositList != null || depositList.size() > 0) {
+                    otherUnActiveVote.put(new ProposalDetailPresenter().getDepositUnactiveData(depositList));
+                }
                 break;
             case "proposalDetail":
                 break;
             case "createVoteCRCProposalTransaction":
                 //签名发交易
-             //   goTransferActivity(((CommmonStringEntity) baseEntity).getData());
+                goTransferActivity(((CommmonStringEntity) baseEntity).getData());
                 break;
         }
     }
 
     private void goTransferActivity(String attributesJson) {
         Intent intent = new Intent(getActivity(), TransferActivity.class);
-        intent.putExtra("amount", amount);
+        intent.putExtra("amount", num);
         intent.putExtra("wallet", wallet);
         intent.putExtra("chainId", MyWallet.ELA);
         intent.putExtra("attributes", attributesJson);
-        intent.putExtra("type", Constant.SUPERNODEVOTE);
+        intent.putExtra("type", Constant.PROPOSALPUBLISHED);
+        intent.putExtra("extra", searchBean);
         intent.putExtra("transType", 1004);
         startActivity(intent);
     }
+
     @Override
     public void onBalance(BalanceEntity data) {
 
@@ -429,14 +442,13 @@ public class PropasalDetailFragment extends BaseFragment implements NewBaseViewD
         startActivity(intent);
     }
 
-    String amount;//投票金额
+    String num;//投票金额
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
-            String num = result.getName();
-            amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
+            num = result.getName();
             //点击下一步 获得金额后
             presenter.getVoteInfo(wallet.getWalletId(), "CRCProposal", this);
         }
