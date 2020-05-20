@@ -1089,25 +1089,28 @@ export default class extends Base {
                 }
             }
 
+            const proposalHash = payload.data.proposalHash
             const db_cvote = this.getDBModel('CVote')
+            const db_user = this.getDBModel('User')
             const cur = await db_cvote.find({
-                proposalHash: payload.data.proposalHash
+                proposalHash
             })
-            if (!cur) {
+            const user = await db_user.find({'did.id': payload.data.did})
+            const votedBy = _.get(user[0], '_id')
+            const voteResult = _.find(_.get(cur[0], 'voteResult'), function (o) {
+                if (o.votedBy.equals(votedBy)) {
+                    return o
+                }
+            })
+
+            if (!cur || !voteResult) {
                 return {
                     code: 400,
                     success: false,
                     message: 'There is no this proposal'
                 }
             }
-            const votedBy = _.get(this.currentUser, '_id')
-            const proposalHash = payload.data.proposalHash
 
-            const voteResult = _.find(cur[0].voteResult, function (o) {
-                if (o.votedBy.equals(votedBy)) {
-                    return o
-                }
-            })
             const rs: any = await getDidPublicKey(claims.iss)
             if (!rs) {
                 return {
@@ -1116,7 +1119,7 @@ export default class extends Base {
                     message: `Can not get your did's public key`
                 }
             }
-
+            console.log('123')
             return jwt.verify(
                 jwtToken,
                 rs.publicKey,
@@ -1280,22 +1283,23 @@ export default class extends Base {
 
     public async updateProposalOnNotification(data: any) {
         const db_cvote = this.getDBModel("CVote")
-        const { rs, _id } = data
-        const {data: {
-            votersrejectamount: rejectAmount, 
-        },
-         status: chainStatus 
+        const {rs, _id} = data
+        const {
+            data: {
+                votersrejectamount: rejectAmount,
+            },
+            status: chainStatus
         } = rs
-        
+
         let rejectThroughAmount: any
         const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
-        switch(proposalStatus) {
+        switch (proposalStatus) {
             case constant.CVOTE_STATUS.VETOED:
                 rejectThroughAmount = rejectAmount
                 break;
             case constant.CVOTE_STATUS.ACTIVE:
             case constant.CVOTE_STATUS.NOTIFICATION:
-                rejectThroughAmount = (await ela.circulatingSupply()) * 0.1 
+                rejectThroughAmount = (await ela.circulatingSupply()) * 0.1
                 break;
         }
 
