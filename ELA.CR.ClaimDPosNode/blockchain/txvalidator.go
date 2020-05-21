@@ -2035,6 +2035,12 @@ func (b *BlockChain) normalCheckCRCProposalTrackingSignature(
 		return errors.New("the NewOwnerSignature need to be empty")
 	}
 
+	// Write new owner signature.
+	err := common.WriteVarBytes(signedBuf, cptPayload.NewOwnerSignature)
+	if err != nil {
+		return errors.New("failed to write NewOwnerSignature")
+	}
+
 	// Check secretary general signature。
 	return b.checkSecretaryGeneralSignature(cptPayload, pState, signedBuf)
 }
@@ -2097,6 +2103,9 @@ func (b *BlockChain) checkSecretaryGeneralSignature(
 	sgContract, err = contract.CreateStandardContract(publicKey)
 	if err != nil {
 		return errors.New("invalid secretary general public key")
+	}
+	if _, err := signedBuf.Write([]byte{byte(cptPayload.ProposalTrackingType)}); err != nil {
+		return errors.New("invalid ProposalTrackingType")
 	}
 	if err := cptPayload.SecretaryGeneralOpinionHash.Serialize(signedBuf); err != nil {
 		return errors.New("invalid secretary opinion hash")

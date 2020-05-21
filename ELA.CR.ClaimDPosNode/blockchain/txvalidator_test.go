@@ -1886,15 +1886,18 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	cPayload.SerializeUnsigned(signBuf, payload.CRCProposalTrackingVersion)
 	sig, _ := crypto.Sign(ownerPrivateKey, signBuf.Bytes())
 	cPayload.OwnerSignature = sig
+	common.WriteVarBytes(signBuf, sig)
 
 	if newLeaderPublicKeyStr != "" && newLeaderPrivateKeyStr != "" {
-		common.WriteVarBytes(signBuf, sig)
 		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
 		cPayload.NewOwnerSignature = crSig
 		sig = crSig
+	} else {
+		sig = []byte{}
 	}
 
 	common.WriteVarBytes(signBuf, sig)
+	signBuf.Write([]byte{byte(cPayload.ProposalTrackingType)})
 	cPayload.SecretaryGeneralOpinionHash.Serialize(signBuf)
 	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
 	cPayload.SecretaryGeneralSignature = crSig
