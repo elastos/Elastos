@@ -13,7 +13,7 @@ const {
   WAITING_FOR_REQUEST,
   REJECTED,
   WAITING_FOR_APPROVAL,
-  WAITING_FOR_WITHDRAW
+  WAITING_FOR_WITHDRAWAL
 } = MILESTONE_STATUS
 
 class PaymentList extends BaseComponent {
@@ -151,7 +151,7 @@ class PaymentList extends BaseComponent {
         )
       )
     }
-    if (status === WAITING_FOR_WITHDRAW) {
+    if (status === WAITING_FOR_WITHDRAWAL) {
       return (
         <td>
           <Popover
