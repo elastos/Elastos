@@ -26,7 +26,6 @@ import user from './user'
 import elip from './elip'
 import elipReview from './elip_review'
 import council from './council'
-import tempData from './temp_data'
 import milestone from './milestone'
 
 /**
@@ -106,7 +105,6 @@ router.use('/upload', upload)
 router.use('/elip', elip)
 router.use('/elipReview', elipReview)
 router.use('/council', council)
-router.use('/temp/data', tempData)
 router.use('/proposals', milestone)
 
 router.use((req, res) => {

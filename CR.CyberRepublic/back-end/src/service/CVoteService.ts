@@ -1297,7 +1297,7 @@ export default class extends Base {
                 break;
             case constant.CVOTE_STATUS.ACTIVE:
             case constant.CVOTE_STATUS.NOTIFICATION:
-                rejectThroughAmount = (await ela.circulatingSupply()) * 0.1
+                rejectThroughAmount = (await ela.currentCirculatingSupply()) * 0.1
                 break;
         }
 
