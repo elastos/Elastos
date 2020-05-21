@@ -117,7 +117,7 @@ export const getUtxosByAmount = async (amount: string) => {
       }
       if (utxos) {
         let arr = []
-        for (let i = 0; i < utxos.length - 1; i++) {
+        for (let i = 0; i < utxos.length; i++) {
           const item = utxos[i]
           if (item.confirmations < 2) {
             return { success: false, utxos: null }

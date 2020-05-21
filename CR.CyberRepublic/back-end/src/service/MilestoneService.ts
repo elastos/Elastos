@@ -375,7 +375,7 @@ export default class extends Base {
           } else {
             try {
               const history = proposal.withdrawalHistory.filter((item: any) => {
-                item.review.reasonHash === reasonHash
+                return item.review.reasonHash === reasonHash
               })[0]
               if (_.isEmpty(history)) {
                 return {
