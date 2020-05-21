@@ -176,8 +176,8 @@ export default class extends Base {
                         const didName = _.get(o, 'createdBy.did.didName')
                         const chainStatus = [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
                         // Todo: add chain status limit
-                        // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
-                        const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy.equals(council.user._id))
+                        const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
+                        // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy.equals(council.user._id))
                         const currentVoteResult = _.get(voteResult[0], 'value')
                         return {
                             id: o.vid,
@@ -191,10 +191,18 @@ export default class extends Base {
                 }
             }
 
+            let impeachmentObj = {}
+            if (councilList.status !== constant.TERM_COUNCIL_STATUS.HISTORY) {
+                const impeachmentThroughVotes = (await ela.circulatingSupply(councilList.height)) * 0.2
+                impeachmentObj['impeachmentVotes'] = council.impeachmentVotes
+                impeachmentObj['impeachmentThroughVotes'] = _.toNumber(impeachmentThroughVotes.toFixed(8))
+                impeachmentObj['impeachmentRatio'] = _.toNumber((council.impeachmentVotes / impeachmentThroughVotes).toFixed(4))
+            }
+
             return {
-                ..._.omit(council._doc, ['_id', 'user']),
+                ..._.omit(council._doc, ['_id', 'user', 'impeachmentVotes']),
                 ...this.getUserInformation(council._doc, council.user),
-                impeachmentThroughVotes: councilList.height * 0.2,
+                ...impeachmentObj,
                 term,
                 type: 'CouncilMember'
             }
