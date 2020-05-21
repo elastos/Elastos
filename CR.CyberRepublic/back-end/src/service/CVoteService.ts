@@ -1451,7 +1451,25 @@ export default class extends Base {
         query.status = WALLET_STATUS_TO_CVOTE_STATUS[param.status]
 
         // search
-        if (param.$or) query.$or = param.$or
+        if (param.search) {
+            let search = param.search
+            const db_user = this.getDBModel('User')
+            const pattern = search.split(' ').join('|')
+            const users = await db_user
+                .getDBInstance()
+                .find({
+                    $or: [
+                        {'did.didName': {$regex: pattern, $options: 'i'}}
+                    ]
+                })
+                .select('_id')
+            const userId = users[0]._id
+            query.$or = [
+                { title: { $regex: _.trim(param.search), $options: 'i' } },
+                { vid: _.toNumber(_.trim(param.search)) || 0 },
+                { proposer: { '_id':userId }}
+            ]
+        }
 
         const fields = [
             'vid',
