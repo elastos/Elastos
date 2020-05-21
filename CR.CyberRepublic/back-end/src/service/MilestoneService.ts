@@ -576,7 +576,6 @@ export default class extends Base {
       if (proposal.status !== ACTIVE) {
         return { success: false, message: 'The proposal is not active.' }
       }
-
       // check if milestoneKey is valid
       const budget = proposal.budget.filter(
         (item: any) => item.milestoneKey === milestoneKey
@@ -590,19 +589,6 @@ export default class extends Base {
           message: 'This milestone is not withdrawable.'
         }
       }
-
-      const currDate = Date.now()
-      const now = Math.floor(currDate / 1000)
-      // update withdrawal history
-      const history = {
-        message: 'withdraw',
-        milestoneKey,
-        createdAt: moment(currDate)
-      }
-      await this.model.update(
-        { _id: id },
-        { $push: { withdrawalHistory: history } }
-      )
       let sum: string
       try {
         sum = proposal.budget
@@ -624,6 +610,8 @@ export default class extends Base {
       if (!rs.success && rs.utxos === null) {
         return { success: false, url: null }
       }
+      const currDate = Date.now()
+      const now = Math.floor(currDate / 1000)
       // generate jwt url
       const jwtClaims = {
         iat: now,
