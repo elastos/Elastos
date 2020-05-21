@@ -735,4 +735,6 @@
     <string name="proposalfinish">提案完结</string>
     <string name="proposalabandon">提案废止</string>
     <string name="rejectticket">反对票数</string>
+    <string name="suremessage">确认信息</string>
+    <string name="feedbackhash">反馈哈希</string>
 </resources>

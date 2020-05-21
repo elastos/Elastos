@@ -53,39 +53,6 @@ public class ProposalDetailPresenter extends NewPresenterAbstract {
     }
 
 
-    public void proposalTrackingOwnerDigest(String walletId, String payload, BaseFragment baseFragment, String pwd) {
-        Observer observer = createObserver(baseFragment, "proposalTrackingOwnerDigest", pwd);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().proposalTrackingOwnerDigest(walletId, payload);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
-
-    public void proposalTrackingNewOwnerDigest(String walletId, String payload, BaseFragment baseFragment, String pwd) {
-        Observer observer = createObserver(baseFragment, "proposalTrackingNewOwnerDigest", pwd);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().proposalTrackingNewOwnerDigest(walletId, payload);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
-
-    public void proposalTrackingSecretaryDigest(String walletId, String payload, BaseFragment baseFragment, String pwd) {
-        Observer observer = createObserver(baseFragment, "ProposalTrackingSecretaryDigest", pwd);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().proposalTrackingSecretaryDigest(walletId, payload);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
-
     public JSONObject getCRUnactiveData(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list) {
 
         JSONArray candidates = new JSONArray();
