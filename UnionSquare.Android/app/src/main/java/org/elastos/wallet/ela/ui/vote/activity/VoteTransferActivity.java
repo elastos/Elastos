@@ -25,7 +25,6 @@ package org.elastos.wallet.ela.ui.vote.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -48,7 +47,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -125,7 +123,7 @@ public class VoteTransferActivity extends BaseActivity {
         switch (type) {
             case Constant.PROPOSALSECRET:
                 doProposalSecret(data);
-                 break;
+                break;
             case Constant.PROPOSALPROCESS:
                 doProposalProcess(data);
 
@@ -181,24 +179,27 @@ public class VoteTransferActivity extends BaseActivity {
                 tvVoteadvice.setBackgroundResource(R.drawable.sc_ffffff_sc000000_cr3);
                 break;
         }
-    }private void doProposalSecret(Intent data) {
+    }
+
+    private void doProposalSecret(Intent data) {
+        llAmount.setVisibility(View.GONE);
+        tvTitle.setText(R.string.suremessage);
         rlHash.setVisibility(View.VISIBLE);
-        RecieveReviewJwtEntity.DataBean dataBean = data.getParcelableExtra("extra");
-        tvHash.setText(dataBean.getOpinionhash());
+        tvHashTag.setText(R.string.optionhash);
+        RecieveProcessJwtEntity.DataBean dataBean = data.getParcelableExtra("extra");
+        tvHash.setText(dataBean.getSecretaryopinionhash());
         rlVoteadvice.setVisibility(View.VISIBLE);
-        switch (dataBean.getVoteresult().toLowerCase()) {
-            case "approve":
-                tvVoteadvice.setText(R.string.agree1);
+        switch (dataBean.getProposaltrackingtype().toLowerCase()) {
+            case "progress":
+            case "finalized":
+                tvVoteadvice.setText(R.string.pass);
                 tvVoteadvice.setBackgroundResource(R.drawable.sc_35b08f_cr3);
                 break;
-            case "reject":
-                tvVoteadvice.setText(R.string.disagree1);
+            case "rejected":
+                tvVoteadvice.setText(R.string.rejected);
                 tvVoteadvice.setBackgroundResource(R.drawable.sc_b04135_cr3);
                 break;
-            case "abstain":
-                tvVoteadvice.setText(R.string.abstention);
-                tvVoteadvice.setBackgroundResource(R.drawable.sc_ffffff_sc000000_cr3);
-                break;
+
         }
     }
 
@@ -207,7 +208,8 @@ public class VoteTransferActivity extends BaseActivity {
         Intent intent;
         switch (view.getId()) {
             case R.id.tv_next:
-                if (Constant.PROPOSALINPUT.equals(type) || Constant.PROPOSALREVIEW.equals(type) || Constant.PROPOSALPROCESS.equals(type)) {
+                if (Constant.PROPOSALINPUT.equals(type) || Constant.PROPOSALREVIEW.equals(type)
+                        || Constant.PROPOSALPROCESS.equals(type) || Constant.PROPOSALSECRET.equals(type)) {
                     //为了在展示手续费后把密码返回给fragment
                   /*  intent = new Intent(this, VertifyPwdActivity.class);
                     intent.putExtra("walletId", chainId);

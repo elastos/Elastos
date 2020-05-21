@@ -204,14 +204,31 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void proposalTrackingSecretaryDigest(String walletId, String payload, BaseFragment baseFragment, String pwd) {
-        Observer observer = createObserver(baseFragment, "ProposalTrackingSecretaryDigest", pwd);
+    public void proposalTrackingSecretaryDigest(String walletId, String payload, BaseFragment baseFragment, Object o) {
+        Observer observer = createObserver(baseFragment, "proposalTrackingSecretaryDigest", o);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
                 return baseFragment.getMyWallet().proposalTrackingSecretaryDigest(walletId, payload);
             }
         });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void createProposalTrackingTransaction(String walletId, String payload, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "createProposalTrackingTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().createProposalTrackingTransaction(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void getCurrentCouncilInfo(String did, BaseFragment baseFragment) {
+        Observable observable = RetrofitManager.webApiCreate().getCurrentCouncilInfo(did);
+        Observer observer = createObserver(baseFragment, "getCurrentCouncilInfo");
         subscriberObservable(observer, observable, baseFragment);
     }
 }

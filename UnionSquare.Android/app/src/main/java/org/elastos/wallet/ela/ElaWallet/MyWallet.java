@@ -2057,6 +2057,20 @@ public class MyWallet {
         }
     }
 
+    public BaseEntity createProposalTrackingTransaction(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.CreateProposalTrackingTransaction(payload, "");
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "CreateProposalTrackingTransaction");
+        }
+    }
+
     public BaseEntity getVoteInfo(String masterWalletID, String type) {
         try {
             MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
