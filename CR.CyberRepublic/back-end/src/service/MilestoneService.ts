@@ -299,6 +299,7 @@ export default class extends Base {
           ownerpubkey: proposal.ownerPublicKey,
           newownerpubkey: '',
           ownersignature: history.signature,
+          newownersignature: '',
           proposaltrackingtype: trackingStatus,
           secretaryopinionhash: opinionHash
         }

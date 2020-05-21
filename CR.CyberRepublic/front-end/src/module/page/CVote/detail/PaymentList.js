@@ -100,7 +100,7 @@ class PaymentList extends BaseComponent {
     const { user } = this.props
     const status = item.status
     if (status === WAITING_FOR_REQUEST) {
-      return (
+      return !user.is_secretary &&(
         <td>
           <div
             className="action"
@@ -114,7 +114,7 @@ class PaymentList extends BaseComponent {
       )
     }
     if (status === REJECTED) {
-      return (
+      return !user.is_secretary &&(
         <td>
           <div
             className="action"
@@ -152,7 +152,7 @@ class PaymentList extends BaseComponent {
       )
     }
     if (status === WAITING_FOR_WITHDRAWAL) {
-      return (
+      return !user.is_secretary &&(
         <td>
           <Popover
             content={this.elaQrCode()}
