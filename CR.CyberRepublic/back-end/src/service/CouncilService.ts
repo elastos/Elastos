@@ -37,7 +37,7 @@ export default class extends Base {
             id: o._id,
             ..._.omit(o._doc, ['_id']),
             startDate: moment(o.startDate).unix(),
-            endDate: moment(o.endDate).unix(),
+            endDate: o.endDate && moment(o.endDate).unix(),
         }))
     }
 
