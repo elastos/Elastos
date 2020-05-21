@@ -16,14 +16,6 @@ export default class extends Base {
     const param = this.getParam()
     const service = this.buildService(CVoteService)
 
-    if (param.search) {
-      param.$or = [
-        { title: { $regex: _.trim(param.search), $options: 'i' } },
-        { vid: _.toNumber(_.trim(param.search)) || 0 },
-        { proposedBy: { $regex: _.trim(param.search), $options: 'i' }}
-      ]
-    }
-
     const rs = await service.allOrSearch(param)
     return this.result(1, rs)
   }

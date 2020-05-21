@@ -1451,7 +1451,26 @@ export default class extends Base {
         query.status = WALLET_STATUS_TO_CVOTE_STATUS[param.status]
 
         // search
-        if (param.$or) query.$or = param.$or
+        if (param.search) {
+            const search = _.trim(param.search)
+            const db_user = this.getDBModel('User')
+            const users = await db_user
+                .getDBInstance()
+                .find({
+                    $or: [
+                        {'did.didName': {$regex: _.trim(search), $options: 'i'}}
+                    ]
+                })
+                .select('_id')
+            const userIds = _.map(users, '_id')
+            query.$or = [
+                {title: {$regex: search, $options: 'i'}},
+                {proposer: {$in: userIds}}
+            ]
+            if (_.isNumber(search)) {
+                query.$or.push({vid: _.toNumber(search)})
+            }
+        }
 
         const fields = [
             'vid',
@@ -1508,6 +1527,7 @@ export default class extends Base {
         const db_cvote = this.getDBModel('CVote')
 
         const fields = [
+            'vid',
             'status',
             'abstract',
             'voteResult',
@@ -1583,13 +1603,14 @@ export default class extends Base {
 
         return _.omit(
             {
-                ..._.omit(proposal._doc, ['abstract', 'rejectAmount', 'rejectThroughAmount', 'status']),
+                id: proposal.vid,
                 abs: proposal.abstract,
+                address,
+                ..._.omit(proposal._doc, ['vid', 'abstract', 'rejectAmount', 'rejectThroughAmount', 'status']),
                 ...votingResult,
                 ...notificationResult,
                 createdAt: timestamp.second(proposal.createdAt),
                 voteResult,
-                address,
                 tracking,
                 summary
             },
@@ -1614,7 +1635,7 @@ export default class extends Base {
             .getDBInstance()
             .find(queryTrack, fieldsTrack.join(' '))
             .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-            .sort({createdAt: 1})
+            .sort({createdAt: -1})
         // const totalCursorTrack = db_tracking.getDBInstance().find(queryTrack).count()
 
         const tracking = await cursorTrack
@@ -1622,14 +1643,16 @@ export default class extends Base {
 
         const list = _.map(tracking, function (o) {
             const comment = o._doc.comment
+            const content = (JSON.parse(o.content)).blocks[0].text
             const commentObj = {
-                content: comment.content,
+                content: comment.content ? comment.content : null,
                 createdBy: _.get(o, 'comment.createdBy.did.didName'),
                 avatar: _.get(o, 'comment.createdBy.did.avatar')
             }
             const obj = {
                 ...o._doc,
                 comment: commentObj,
+                content,
                 createdAt: timestamp.second(o.createdAt),
                 updatedAt: timestamp.second(o.updatedAt)
             }
@@ -1655,7 +1678,7 @@ export default class extends Base {
             .getDBInstance()
             .find(querySummary, fieldsSummary.join(' '))
             .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-            .sort({createdAt: 1})
+            .sort({createdAt: -1})
         // const totalCursorSummary = db_summary.getDBInstance().find(querySummary).count()
 
         const summary = await cursorSummary
@@ -1663,14 +1686,16 @@ export default class extends Base {
 
         const list = _.map(summary, function (o) {
             const comment = o._doc.comment
+            const content = (JSON.parse(o.content)).blocks[0].text
             const commentObj = {
-                content: comment.content,
+                content: comment.content ? comment.content : null,
                 createdBy: _.get(o, 'comment.createdBy.did.didName'),
                 avatar: _.get(o, 'comment.createdBy.did.avatar')
             }
             const obj = {
                 ...o._doc,
                 comment: commentObj,
+                content,
                 createdAt: timestamp.second(o.createdAt),
                 updatedAt: timestamp.second(o.updatedAt)
             }
