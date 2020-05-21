@@ -116,11 +116,16 @@ export const getUtxosByAmount = async (amount: string) => {
         return { success: false, utxos: null }
       }
       if (utxos) {
-        const rs = utxos.map((item: any) => {
+        let arr = []
+        for (let i = 0; i < utxos.length - 1; i++) {
+          const item = utxos[i]
+          if (item.confirmations < 2) {
+            return { success: false, utxos: null }
+          }
           const amount = Big(`${item.amount}e+8`).toString()
-          return { ...item, amount }
-        })
-        return { success: true, utxos: rs }
+          arr.push({ txid: item.txid, vout: item.vout, amount })
+        }
+        return { success: true, utxos: arr }
       }
     }
   } catch (err) {
