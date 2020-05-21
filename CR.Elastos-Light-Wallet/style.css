@@ -54,17 +54,17 @@ button {
   position: absolute;
   top: 0;
   right: 0;
-  height: 98px;
   float: right;
-  background: #595C61;
-  border-radius: 0 47px 0 28px;
   display: flex;
   flex-flow: row;
   align-items: center;
   justify-content: space-evenly;
   z-index: 1;
-  width: 938px;
-  color: white;
+  color: #B2B4C3;
+  background-image: url(artwork/menubg.svg);
+  width: 788px;
+  height: 99px;
+  font-size: 14px;
 }
 
 .display_inline_block {
@@ -189,6 +189,7 @@ button {
 .scale-hover {
   opacity: 0.9;
   transition: 0.4s;
+  -webkit-app-region: no-drag;
 }
 
 .scale-hover:hover {
@@ -300,6 +301,11 @@ button {
   left: 82px;
   top: 453px;
   white-space: nowrap;
+}
+
+.arrow-right {
+  left: 320px;
+  top: 435px;
 }
 
 
@@ -424,13 +430,13 @@ button {
   color: #FFFFFF;
   letter-spacing: 0;
   height: 67.5px;
-  width: 346px;
+  width: 281px;
   top: 137.4px;
-  left: 390px;
+  left: 423px;
   text-align: center;
   border: none;
   text-align: left;
-  padding-left: 15px;
+  padding-left: 8px;
 }
 
 .ela-address__input::placeholder {
@@ -512,10 +518,12 @@ button {
   left: 445px;
   top: 267px;
   font-size: 16px;
+  width: 225px;
   color: #C0C2CA;
   letter-spacing: 0;
   line-height: 20px;
   position: absolute;
+  text-align: left;
 }
 
 .fees-balance span {
@@ -556,11 +564,17 @@ button {
   font-size: 16px;
   color: #B2B4C3;
   letter-spacing: 0;
-  top: 363;
-  left: 400;
+  top: 359px;
+  left: 410px;
   position: absolute;
   padding: 12px 24px;
   border-radius: 15px;
+}
+
+.arrow-back {
+  position: relative;
+  top: 23.5px;
+  margin-right: 5px;
 }
 
 .receive-area {
@@ -824,23 +838,15 @@ footer div {
   font-size: 14px;
   color: #9799A6;
   letter-spacing: 0;
-  text-align: center;
-  vertical-align: center;
-  position: relative;
   border-radius: 7px;
-  margin: 0;
-  padding-right: 14px;
-  align-self: flex-end;
-  display: inline-block;
+  margin-left: auto;
+  margin-right: 20px;
 
 }
 
 .logout-image {
   vertical-align: middle;
-  align-self: flex-end;
-  display: inline-block;
-  padding: 12px;
-  border-radius: 7px;
+  padding-left: 10px;
 }
 
 select, input {
@@ -913,6 +919,19 @@ select, input {
 
 .margin_none {
   margin: 0;
+}
+
+.marginleft_25px {
+  margin-left: 25px;
+}
+
+
+.marginright_20px {
+  margin-right: 20px;
+}
+
+.marginright_15px {
+  margin-right: 15px;
 }
 
 .margin_auto {
@@ -1074,6 +1093,7 @@ select, input {
 
 .exit_link:hover {
   color: #AAA;
+  text-decoration: underline;
 }
 
 .color_orange {
@@ -1139,6 +1159,11 @@ select, input {
   left: 0px;
   transform-origin: 0px 0px;
   transform: rotate(-90deg);
+}
+
+.rotate_180 {
+  transform-origin: 0px 0px;
+  transform: rotate(180deg);
 }
 
 .monospace {
@@ -1386,7 +1411,7 @@ select, input {
   width: 1110px;
   border-radius: 35px;
   height: 110px;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
   display: flex;
   box-shadow: 0 24px 50px 0 rgba(4,16,9,0.27);
@@ -1405,6 +1430,7 @@ select, input {
   width: 80px;
   height: 80px;
   font-weight: 600;
+  -webkit-app-region: no-drag;
 }
 
 .login-div {
@@ -1485,4 +1511,33 @@ select, input {
 .landing-btnbg {
   background: #E5A776;
   opacity: 0.9;
+}
+
+.menu-change-div {
+  border-radius: 5px;
+  padding: 9.5px;
+  border: 1px solid #787981;
+  padding-right: 1px;
+}
+
+.menu-change-input {
+  margin-right: 5px;
+  background: inherit;
+  border: none;
+  font-size: 14px;
+}
+
+.menu-change-btn {
+  background: rgba(217,218,223,0.47);
+  border-radius: 4px;
+  padding: 9px 15px;
+  color: #D9DADF;
+}
+
+.menu-selector {
+  color: #B2B4C3; 
+  font-size: 14px;
+  width: 70;
+  height: 40px;
+  border-color: #787981;
 }

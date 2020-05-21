@@ -44,7 +44,7 @@ module.exports = (props) => {
   return (
   
     <div id="landing">
-    <img src="artwork/refreshicon.svg" className="refresh-icon" onClick={(e) => App.refreshBlockchainData()}/>
+    <img src="artwork/refreshicon.svg" className="refresh-icon" title="Refresh" onClick={(e) => App.refreshBlockchainData()}/>
 
     <div className="login-div ">
       <img src="artwork/logonew.svg" height="80px" width="240px" className="flexgrow_pt35"/>

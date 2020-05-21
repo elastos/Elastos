@@ -957,8 +957,8 @@ const getTransactionHistoryReadyCallback = (transactionHistory) => {
         parsedTransaction.address = tx.Address;
         parsedTransaction.txHash = tx.Txid;
         parsedTransaction.txHashWithEllipsis = tx.Txid;
-        if (parsedTransaction.txHashWithEllipsis.length > 30) {
-          parsedTransaction.txHashWithEllipsis = parsedTransaction.txHashWithEllipsis.substring(0, 30) + '...';
+        if (parsedTransaction.txHashWithEllipsis.length > 20) {
+          parsedTransaction.txHashWithEllipsis = parsedTransaction.txHashWithEllipsis.substring(0, 20) + '...';
         }
         parsedTransaction.txDetailsUrl = getTransactionHistoryLink(tx.Txid);
         parsedTransaction.time = time;
@@ -1050,7 +1050,7 @@ const setBlockchainLastActionHeight = () => {
 
 const copyAddressToClipboard = () => {
   appClipboard.writeText(address);
-  bannerStatus = `copied to clipboard:\n${address}`;
+  bannerStatus = `Copied to clipboard:\n${address}`;
   bannerClass = 'bg_green color_white banner-look';
   GuiToggles.showAllBanners();
   renderApp();
