@@ -193,6 +193,20 @@ func (p *ProposalManager) updateProposals(height uint32,
 					unusedAmount += getProposalTotalBudgetAmount(v.Proposal)
 					continue
 				}
+				if v.Proposal.ProposalType == payload.ChangeProposalOwner {
+					proposal := p.getProposal(v.Proposal.PreviousHash)
+					originRecipient := proposal.Recipient
+					emptyUint168 := common.Uint168{}
+					p.history.Append(height, func() {
+						proposal.ProposalOwner = v.Proposal.NewOwnerPublicKey
+						if v.Proposal.Recipient != emptyUint168 {
+							proposal.Recipient = v.Proposal.Recipient
+						}
+					}, func() {
+						proposal.ProposalOwner = v.Proposal.OwnerPublicKey
+						proposal.Recipient = originRecipient
+					})
+				}
 				if v.Proposal.ProposalType == payload.CloseProposal {
 					closeProposal := p.Proposals[v.Proposal.CloseProposalHash]
 					unusedAmount += getProposalUnusedBudgetAmount(closeProposal)
@@ -412,6 +426,7 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		TrackingCount:       0,
 		TerminatedHeight:    0,
 		ProposalOwner:       proposal.OwnerPublicKey,
+		Recipient:           proposal.Recipient,
 	}
 	crCouncilMemberDID := proposal.CRCouncilMemberDID
 	hash := proposal.Hash()

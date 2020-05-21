@@ -598,7 +598,7 @@ func (b *BlockChain) checkCRCProposalWithdrawOutput(txn *Transaction) error {
 
 	if txn.PayloadVersion == payload.CRCProposalWithdrawDefault {
 		//check output[0] must equal with Recipient
-		if txn.Outputs[0].ProgramHash != proposalState.Proposal.Recipient {
+		if txn.Outputs[0].ProgramHash != proposalState.Recipient {
 			return errors.New("txn.Outputs[0].ProgramHash != Recipient")
 		}
 		//check output[1] if exist must equal with CRCComitteeAddresss
@@ -613,7 +613,7 @@ func (b *BlockChain) checkCRCProposalWithdrawOutput(txn *Transaction) error {
 	} else if txn.PayloadVersion == payload.CRCProposalWithdrawVersion01 {
 
 		//check output[0] must equal with Recipient
-		if withdrawPayload.Recipient != proposalState.Proposal.Recipient {
+		if withdrawPayload.Recipient != proposalState.Recipient {
 			return errors.New("withdrawPayload.Recipient != Recipient")
 		}
 
@@ -2237,6 +2237,47 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		return errors.New("budgets exceeded the maximum limit")
 	}
 
+	if proposal.ProposalType == payload.ChangeProposalOwner {
+		proposalState := b.crCommittee.GetProposal(proposal.PreviousHash)
+		if proposalState == nil {
+			return errors.New("proposal doesn't exist")
+		}
+		if proposalState.Status != crstate.VoterAgreed {
+			return errors.New("proposal status is not VoterAgreed")
+		}
+
+		publicKey, err := crypto.DecodePoint(proposal.OwnerPublicKey)
+		if err != nil {
+			return errors.New("invalid owner")
+		}
+
+		newPublicKey, err := crypto.DecodePoint(proposal.NewOwnerPublicKey)
+		if err != nil {
+			return errors.New("invalid owner")
+		}
+
+		if newPublicKey == publicKey {
+			return errors.New("cr new did must be different from the previous one")
+		}
+
+		newCode, err := contract.CreateStandardRedeemScript(newPublicKey)
+		if err != nil {
+			return errors.New("invalid owner")
+		}
+		did, err := getDIDByCode(newCode)
+		if err != nil {
+			return errors.New("invalid owner code")
+		}
+		crMember := b.crCommittee.GetMember(*did)
+		if crMember == nil {
+			return errors.New("proposal sponsors must be members")
+		}
+
+		if crMember.MemberState != crstate.MemberElected {
+			return errors.New("cr members should be elected")
+		}
+	}
+
 	if proposal.ProposalType == payload.ELIP {
 		if len(proposal.Budgets) != ELIPBudgetsCount {
 			return errors.New("ELIP needs to have and only have two budget")
@@ -2405,6 +2446,17 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	}
 
 	return nil
+}
+
+func getDIDByCode(code []byte) (*common.Uint168, error) {
+	didCode := make([]byte, len(code))
+	copy(didCode, code)
+	didCode = append(didCode[:len(code)-1], common.DID)
+	ct1, err := contract.CreateCRIDContractByCode(didCode)
+	if err != nil {
+		return nil, err
+	}
+	return ct1.ToProgramHash(), err
 }
 
 func getParameterBySignature(signature []byte) []byte {
