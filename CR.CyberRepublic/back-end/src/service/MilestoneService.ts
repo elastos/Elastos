@@ -610,6 +610,9 @@ export default class extends Base {
       if (!rs) {
         return { success: false }
       }
+      if (!rs.success && rs.utxos === null) {
+        return { success: false, url: null }
+      }
       // generate jwt url
       const jwtClaims = {
         iat: now,
