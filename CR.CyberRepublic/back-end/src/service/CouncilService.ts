@@ -37,7 +37,7 @@ export default class extends Base {
             id: o._id,
             ..._.omit(o._doc, ['_id']),
             startDate: moment(o.startDate).unix(),
-            endDate: moment(o.endDate).unix(),
+            endDate: o.endDate && moment(o.endDate).unix(),
         }))
     }
 
@@ -157,27 +157,34 @@ export default class extends Base {
             const council = councilList && _.filter(councilList.councilMembers, (o: any) => o.did === did)[0]
 
             let term = []
-            if (council && council.user) {
-                const proposalFields = [
-                    'createdBy',
-                    'createdAt',
-                    'vid',
-                    'title',
-                    'status',
-                    'voteResult'
-                ]
-                const proposalList = await this.proposalMode.getDBInstance()
-                    .find({proposer: council.user._id}, proposalFields).sort({createdAt: -1})
-                    .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+            let impeachmentObj = {}
+            if (councilList.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
+                // update impeachment
+                const impeachmentThroughVotes = (await ela.circulatingSupply(councilList.height)) * 0.2
+                impeachmentObj['impeachmentVotes'] = council.impeachmentVotes
+                impeachmentObj['impeachmentThroughVotes'] = _.toNumber(impeachmentThroughVotes.toFixed(8))
+                impeachmentObj['impeachmentRatio'] = _.toNumber((council.impeachmentVotes / impeachmentThroughVotes).toFixed(4))
 
+                // update term
+                if (council && council.user) {
+                    const proposalFields = [
+                        'createdBy',
+                        'createdAt',
+                        'vid',
+                        'title',
+                        'status',
+                        'voteResult'
+                    ]
+                    const proposalList = await this.proposalMode.getDBInstance()
+                        .find({$or: [{proposer: council.user._id}, {'voteResult.votedBy': council.user._id}]}, proposalFields).sort({createdAt: -1})
+                        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
-                if (councilList.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
                     term = _.map(proposalList, (o: any) => {
                         const didName = _.get(o, 'createdBy.did.didName')
                         const chainStatus = [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
                         // Todo: add chain status limit
-                        // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
-                        const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy.equals(council.user._id))
+                        const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy === council.user._id && (chainStatus.includes(o.status) || o.value === constant.CVOTE_RESULT.UNDECIDED))
+                        // const voteResult = _.filter(o.voteResult, (o: any) => o.votedBy.equals(council.user._id))
                         const currentVoteResult = _.get(voteResult[0], 'value')
                         return {
                             id: o.vid,
@@ -192,9 +199,9 @@ export default class extends Base {
             }
 
             return {
-                ..._.omit(council._doc, ['_id', 'user']),
+                ..._.omit(council._doc, ['_id', 'user', 'impeachmentVotes']),
                 ...this.getUserInformation(council._doc, council.user),
-                impeachmentThroughVotes: councilList.height * 0.2,
+                ...impeachmentObj,
                 term,
                 type: 'CouncilMember'
             }
