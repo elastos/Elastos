@@ -12,10 +12,11 @@ import {
   getUtxosByAmount
 } from '../utility'
 import * as moment from 'moment'
+const Big = require('big.js')
 const {
   WAITING_FOR_REQUEST,
   WAITING_FOR_APPROVAL,
-  WAITING_FOR_WITHDRAW,
+  WAITING_FOR_WITHDRAWAL,
   WITHDRAWN
 } = constant.MILESTONE_STATUS
 const { ACTIVE } = constant.CVOTE_STATUS
@@ -387,7 +388,7 @@ export default class extends Base {
                 status = REJECTED
               }
               if (history.review.opinion === REJECTED) {
-                status = WAITING_FOR_WITHDRAW
+                status = WAITING_FOR_WITHDRAWAL
               }
               await this.model.update(
                 {
@@ -581,8 +582,11 @@ export default class extends Base {
       if (_.isEmpty(budget)) {
         return { success: false, message: 'This milestone does not exist.' }
       }
-      if (budget[0].status !== WAITING_FOR_WITHDRAW) {
-        return { success: false, message: 'This milestone is not withdrawal.' }
+      if (budget[0].status !== WAITING_FOR_WITHDRAWAL) {
+        return {
+          success: false,
+          message: 'This milestone is not withdrawable.'
+        }
       }
 
       const currDate = Date.now()
@@ -597,18 +601,27 @@ export default class extends Base {
         { _id: id },
         { $push: { withdrawalHistory: history } }
       )
-
-      let sum = 0
-      for (let i = 0; i <= parseInt(milestoneKey); i++) {
-        const item = proposal.budget[i]
-        if (item.status !== WITHDRAWN) {
-          sum += parseFloat(item.amount)
-        }
+      let sum: string
+      try {
+        sum = proposal.budget
+          .reduce((sum: any, item: any) => {
+            if (item.status === WAITING_FOR_WITHDRAWAL && item.amount) {
+              return sum.plus(Big(item.amount))
+            }
+            return sum
+          }, Big(0))
+          .toString()
+      } catch (err) {
+        throw `plus payments error - ${err}`
       }
+      const total = Big(`${sum}e+8`).toString()
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
-      const rs: any = await getUtxosByAmount(sum.toString())
+      const rs: any = await getUtxosByAmount(total)
       if (!rs) {
         return { success: false }
+      }
+      if (!rs.success && rs.utxos === null) {
+        return { success: false, url: null }
       }
       // generate jwt url
       const jwtClaims = {
@@ -619,7 +632,7 @@ export default class extends Base {
         callbackurl: '',
         data: {
           proposalhash: proposal.proposalHash,
-          amount: (sum * Math.pow(10, 8)).toString(),
+          amount: total,
           recipient: proposal.elaAddress,
           ownerpublickey: proposal.ownerPublicKey || ownerPublicKey,
           utxos: rs.utxos

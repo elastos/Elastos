@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Popover, Modal, Spin } from 'antd'
+import { Popover, Modal, Spin, message } from 'antd'
 import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
@@ -13,7 +13,7 @@ const {
   WAITING_FOR_REQUEST,
   REJECTED,
   WAITING_FOR_APPROVAL,
-  WAITING_FOR_WITHDRAW
+  WAITING_FOR_WITHDRAWAL
 } = MILESTONE_STATUS
 
 class PaymentList extends BaseComponent {
@@ -82,6 +82,11 @@ class PaymentList extends BaseComponent {
   handleWithdraw = async (stage) => {
     const { proposalId, actions } = this.props
     const rs = await actions.withdraw(proposalId, stage)
+    if (rs && !rs.success && rs.url === null) {
+      message.info('The business is busy, please try again later.')
+      this.setState({ visible: false })
+      return
+    }
     if (rs && rs.success) {
       this.setState({ url: rs.url })
     }
@@ -146,7 +151,7 @@ class PaymentList extends BaseComponent {
         )
       )
     }
-    if (status === WAITING_FOR_WITHDRAW) {
+    if (status === WAITING_FOR_WITHDRAWAL) {
       return (
         <td>
           <Popover

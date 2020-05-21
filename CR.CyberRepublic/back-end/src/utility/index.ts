@@ -15,6 +15,7 @@ const _ = require('lodash')
 const { PublicKey } = require('bitcore-lib-p256')
 const jwkToPem = require('jwk-to-pem')
 import * as jwt from 'jsonwebtoken'
+const Big = require('big.js')
 
 export {
   utilCrypto,
@@ -111,9 +112,12 @@ export const getUtxosByAmount = async (amount: string) => {
     })
     if (res && res.data) {
       const utxos = _.get(res.data, 'result')
+      if (utxos === null) {
+        return { success: false, utxos: null }
+      }
       if (utxos) {
         const rs = utxos.map((item: any) => {
-          const amount = (parseFloat(item.amount) * Math.pow(10, 8)).toString()
+          const amount = Big(`${item.amount}e+8`).toString()
           return { ...item, amount }
         })
         return { success: true, utxos: rs }
