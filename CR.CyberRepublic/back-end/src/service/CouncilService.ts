@@ -33,12 +33,19 @@ export default class extends Base {
 
         const result = await this.model.getDBInstance().find({}, fields)
 
-        return _.map(result, (o: any) => ({
-            id: o._id,
-            ..._.omit(o._doc, ['_id']),
-            startDate: moment(o.startDate).unix(),
-            endDate: o.status === constant.TERM_COUNCIL_STATUS.HISTORY && o.endDate && moment(o.endDate).unix(),
-        }))
+
+        return _.map(result, (o: any) => {
+            let dateObj = {}
+            if (o.status === constant.TERM_COUNCIL_STATUS.HISTORY) {
+                dateObj['endDate'] = o.endDate && moment(o.endDate).unix()
+            }
+            return ({
+                id: o._id,
+                ..._.omit(o._doc, ['_id', 'startDate', 'endDate']),
+                startDate: moment(o.startDate).unix(),
+                ...dateObj,
+            })
+        })
     }
 
     public async councilList(id: number): Promise<any> {
