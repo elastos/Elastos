@@ -257,7 +257,6 @@ export default class extends Base {
       const reasonHash = utilCrypto.sha256D(
         JSON.stringify({ date: now, reason })
       )
-      const opinionHash = utilCrypto.sha256D(opinion)
 
       await this.model.update(
         {
@@ -270,7 +269,6 @@ export default class extends Base {
               reason,
               reasonHash,
               opinion,
-              opinionHash,
               createdAt: moment(currTime)
             }
           }
@@ -294,14 +292,14 @@ export default class extends Base {
         callbackurl: `${process.env.API_URL}/api/proposals/milestones/sec-signature-callback`,
         data: {
           proposalhash: proposal.proposalHash,
-          messagehash: reasonHash,
+          messagehash: history.messageHash,
           stage: parseInt(milestoneKey),
           ownerpubkey: proposal.ownerPublicKey,
           newownerpubkey: '',
           ownersignature: history.signature,
           newownersignature: '',
           proposaltrackingtype: trackingStatus,
-          secretaryopinionhash: opinionHash
+          secretaryopinionhash: reasonHash
         }
       }
       const jwtToken = jwt.sign(
