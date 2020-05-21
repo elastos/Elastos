@@ -616,9 +616,8 @@ export default class extends Base {
       } catch (err) {
         throw `plus payments error - ${err}`
       }
-      const total = Big(`${sum}e+8`).toString()
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
-      const rs: any = await getUtxosByAmount(total)
+      const rs: any = await getUtxosByAmount(sum)
       if (!rs) {
         return { success: false }
       }
@@ -634,7 +633,7 @@ export default class extends Base {
         callbackurl: '',
         data: {
           proposalhash: proposal.proposalHash,
-          amount: total,
+          amount: Big(`${sum}e+8`).toString(),
           recipient: proposal.elaAddress,
           ownerpublickey: proposal.ownerPublicKey || ownerPublicKey,
           utxos: rs.utxos
