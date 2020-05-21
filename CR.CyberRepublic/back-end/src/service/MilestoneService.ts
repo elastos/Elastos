@@ -282,7 +282,9 @@ export default class extends Base {
       } else {
         trackingStatus = constant.PROPOSAL_TRACKING_TYPE.REJECTED
       }
-
+      const history = proposal.withdrawalHistory.filter(
+        (item: any) => item._id.equals(applicationId)[0]
+      )
       // generate jwt url
       const jwtClaims = {
         iat: now,
@@ -296,7 +298,7 @@ export default class extends Base {
           stage: parseInt(milestoneKey),
           ownerpubkey: proposal.ownerPublicKey,
           newownerpubkey: '',
-          ownersignature: '',
+          ownersignature: history.signature,
           proposaltrackingtype: trackingStatus,
           secretaryopinionhash: opinionHash
         }
