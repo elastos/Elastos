@@ -888,6 +888,7 @@ class C extends StandardPage {
       }
     })
     const id = _.get(match, 'params.id')
+    const isProposed = status == 'PROPOSED'
     const title = <h4>{I18N.get('council.voting.councilMembersVotes')}</h4>
     const detail = _.map(stats, (statArr, key) => {
       const type = CVOTE_RESULT[key.toUpperCase()] || CVOTE_RESULT.UNDECIDED
@@ -900,6 +901,7 @@ class C extends StandardPage {
         getReviewProposal,
         getReviewProposalUrl,
         updateProposal,
+        isProposed,
         isCouncil,
         currentUserId,
         ownerVote
