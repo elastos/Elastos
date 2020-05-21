@@ -21,6 +21,7 @@ import org.elastos.wallet.ela.ui.proposal.bean.ProposalCallBackEntity;
 import org.elastos.wallet.ela.ui.vote.activity.VertifyPwdActivity;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.JwtUtils;
+import org.elastos.wallet.ela.utils.Log;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -101,7 +102,7 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void proposalReviewDigest(String walletId, String payload, BaseFragment baseFragment, String pwd) {
+    public void proposalReviewDigest(String walletId, String payload, BaseFragment baseFragment, Object pwd) {
         Observer observer = createObserver(baseFragment, "proposalReviewDigest", pwd);
         Observable observable = createObservable(new ObservableListener() {
             @Override
@@ -112,8 +113,8 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void createProposalReviewTransaction(String walletId, String payload, BaseFragment baseFragment, String pwd) {
-        Observer observer = createObserver(baseFragment, "createProposalReviewTransaction", pwd);
+    public void createProposalReviewTransaction(String walletId, String payload, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "createProposalReviewTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
@@ -130,7 +131,7 @@ public class ProposalPresenter extends NewPresenterAbstract {
         intent.putExtra("chainId", MyWallet.ELA);
         intent.putExtra("fee", 10000L);
         intent.putExtra("type", type);
-        intent.putExtra("extra",  extra);
+        intent.putExtra("extra", extra);
         intent.putExtra("transType", transType);
         baseFragment.startActivity(intent);
     }
@@ -139,7 +140,7 @@ public class ProposalPresenter extends NewPresenterAbstract {
 
         try {
             String sign = baseFragment.getMyDID().getDIDDocument().signDigest(payPasswd, JwtUtils.hex2byteBe(digist));
-            //Log.i("signDigest", sign);
+            Log.i("signDigest", sign);
             return JwtUtils.bytesToHexString(Base64.decode(sign, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
 
         } catch (DIDStoreException e) {
@@ -181,4 +182,36 @@ public class ProposalPresenter extends NewPresenterAbstract {
         }
     }
 
+    public void proposalTrackingOwnerDigest(String walletId, String payload, BaseFragment baseFragment, Object o) {
+        Observer observer = createObserver(baseFragment, "proposalTrackingOwnerDigest", o);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().proposalTrackingOwnerDigest(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void proposalTrackingNewOwnerDigest(String walletId, String payload, BaseFragment baseFragment, String pwd) {
+        Observer observer = createObserver(baseFragment, "proposalTrackingNewOwnerDigest", pwd);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().proposalTrackingNewOwnerDigest(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void proposalTrackingSecretaryDigest(String walletId, String payload, BaseFragment baseFragment, String pwd) {
+        Observer observer = createObserver(baseFragment, "ProposalTrackingSecretaryDigest", pwd);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().proposalTrackingSecretaryDigest(walletId, payload);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
 }
