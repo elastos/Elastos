@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <openssl/obj_mac.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,6 +38,7 @@ extern "C" {
 #define CHAINCODE_BYTES                 32
 #define EXTENDEDKEY_BYTES               82
 #define SEED_BYTES                      64
+#define BUFF_BYTES                      128
 
 #define CHINESE_SIMPLIFIED             "chinese_simplified"
 #define CHINESE_TRADITIONAL            "chinese_traditional"
@@ -61,6 +63,34 @@ typedef struct DerivedKey {
     uint8_t privatekey[PRIVATEKEY_BYTES];
     char address[ADDRESS_LEN];
 } DerivedKey;
+
+typedef enum
+{
+    EC_CURVE_P_256 = NID_X9_62_prime256v1
+} EC_CURVE;
+
+typedef struct KeySpec {
+    /** The elliptic curve */
+    EC_CURVE curve;
+    /** point to dbuf*/
+    uint8_t *d;
+    /** Length of <tt>d</tt> */
+    size_t dlen;
+    /** point to xbuf*/
+    uint8_t *x;
+    /** Length of <tt>x</tt> */
+    size_t xlen;
+    /** point to ybuf*/
+    uint8_t *y;
+    /** Length of <tt>y</tt> */
+    size_t ylen;
+    /** The private key */
+    uint8_t dbuf[BUFF_BYTES];
+    /** The public key's X coordinate */
+    uint8_t xbuf[BUFF_BYTES];
+    /** The public key's Y coordiate */
+    uint8_t ybuf[BUFF_BYTES];
+} KeySpec;
 
 const char *HDKey_GenerateMnemonic(const char *language);
 
@@ -95,6 +125,15 @@ uint8_t *DerivedKey_GetPrivateKey(DerivedKey *derivedkey);
 char *DerivedKey_GetAddress(DerivedKey *derivedkey);
 
 void DerivedKey_Wipe(DerivedKey *derivedkey);
+
+//- for jwt -----------------------------------------------
+KeySpec *KeySpec_Fill(KeySpec *keyspec, uint8_t *publickey, uint8_t *privatekey);
+
+KeySpec *KeySpec_Copy(KeySpec *dst, KeySpec *src);
+
+int PEM_WritePublicKey(const uint8_t *publicKey, char *buffer, size_t *size);
+
+int PEM_WritePrivateKey(const uint8_t *publickey, const uint8_t *privatekey,  char *buffer, size_t *size);
 
 #ifdef __cplusplus
 }

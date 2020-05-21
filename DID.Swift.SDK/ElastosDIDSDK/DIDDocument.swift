@@ -691,12 +691,14 @@ public class DIDDocument {
         }
 
         var cinputs: [CVarArg] = []
+        var capacity: Int = 0
         data.forEach { data in
             let json = String(data: data, encoding: .utf8)
             if json != "" {
                 let cjson = json!.toUnsafePointerInt8()!
                 cinputs.append(cjson)
                 cinputs.append(json!.count)
+                capacity += json!.count * 3
             }
         }
         let pks = pubKey!.publicKeyBytes
@@ -707,7 +709,12 @@ public class DIDDocument {
         let csignature = sigature.toUnsafeMutablePointerInt8()
         let c_inputs = getVaList(cinputs)
         let count = cinputs.count / 2
-        let re = ecdsa_verify_base64v(csignature, cpk, Int32(count), c_inputs)
+
+        // digest
+        let cdigest = UnsafeMutablePointer<UInt8>.allocate(capacity: capacity)
+        let size = sha256v_digest(cdigest, Int32(count), c_inputs)
+        let re = ecdsa_verify_base64(csignature, cpk, cdigest, size)
+
         return re == 0 ? true : false
     }
 

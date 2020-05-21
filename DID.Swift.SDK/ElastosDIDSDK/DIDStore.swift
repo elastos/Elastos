@@ -1506,7 +1506,7 @@ public class DIDStore: NSObject {
                  let cjson = json!.toUnsafePointerInt8()!
                  cinputs.append(cjson)
                  cinputs.append(json!.count)
-                capacity += json!.count * 3
+                 capacity += json!.count * 3
              }
         }
         
@@ -1514,10 +1514,14 @@ public class DIDStore: NSObject {
         
         let c_inputs = getVaList(cinputs)
         let count = cinputs.count / 2
-        // UnsafeMutablePointer(mutating: toPPointer)
+
+        // digest
+        let cdigest = UnsafeMutablePointer<UInt8>.allocate(capacity: capacity)
+        let size = sha256v_digest(cdigest, Int32(count), c_inputs)
 
         let csig = UnsafeMutablePointer<Int8>.allocate(capacity: capacity)
-        let re = ecdsa_sign_base64v(csig, UnsafeMutablePointer(mutating: toPPointer), Int32(count), c_inputs)
+        let re = ecdsa_sign_base64(csig, UnsafeMutablePointer(mutating: toPPointer), cdigest, size)
+
         guard re >= 0 else {
             throw DIDError.didStoreError("sign error.")
         }

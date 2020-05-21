@@ -119,7 +119,7 @@ class TestData: XCTestCase {
         let capacity = skBase58.count * 3
         let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: capacity)
         let cp = skBase58.toUnsafePointerInt8()
-        let re = base58_decode(buffer, cp)
+        let re = base58_decode(buffer, capacity, cp)
         let temp = UnsafeRawPointer(buffer)
         .bindMemory(to: UInt8.self, capacity: re)
         
