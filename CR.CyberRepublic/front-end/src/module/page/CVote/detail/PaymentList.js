@@ -84,6 +84,7 @@ class PaymentList extends BaseComponent {
     const rs = await actions.withdraw(proposalId, stage)
     if (rs && !rs.success && rs.url === null) {
       message.info('The business is busy, please try again later.')
+      this.setState({ visible: false })
       return
     }
     if (rs && rs.success) {
