@@ -176,7 +176,7 @@ export default class extends Base {
                         'voteResult'
                     ]
                     const proposalList = await this.proposalMode.getDBInstance()
-                        .find({proposer: council.user._id}, proposalFields).sort({createdAt: -1})
+                        .find({$or: [{proposer: council.user._id}, {'voteResult.votedBy': council.user._id}]}, proposalFields).sort({createdAt: -1})
                         .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
                     term = _.map(proposalList, (o: any) => {
