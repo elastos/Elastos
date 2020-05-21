@@ -2085,5 +2085,33 @@ public class MyWallet {
         }
     }
 
+    public BaseEntity proposalWithdrawDigest(String masterWalletID, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.ProposalWithdrawDigest(payload);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "ProposalWithdrawDigest");
+        }
+    }
+
+    public BaseEntity createProposalWithdrawTransaction(String masterWalletID, String recipient, String amount, String utxo, String payload) {
+        try {
+            MainchainSubWallet subWallet = getMainChainSubWallet(masterWalletID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+            String info = subWallet.CreateProposalWithdrawTransaction(recipient, amount, utxo, payload, "");
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID) + "CreateProposalWithdrawTransaction");
+        }
+    }
+
 }
 

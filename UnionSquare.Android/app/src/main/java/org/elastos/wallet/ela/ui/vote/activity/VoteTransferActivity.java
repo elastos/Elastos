@@ -38,6 +38,7 @@ import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProcessJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveReviewJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveWithdrawJwtEntity;
 import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.Constant;
@@ -83,6 +84,10 @@ public class VoteTransferActivity extends BaseActivity {
     TextView tvNext;
     @BindView(R.id.ll)
     LinearLayout ll;
+    @BindView(R.id.tv_address_tag)
+    TextView tvAddressTag;
+    @BindView(R.id.rl_address)
+    RelativeLayout rlAddress;
     private String amount, chainId;
     private long fee;
     private String type;
@@ -121,6 +126,9 @@ public class VoteTransferActivity extends BaseActivity {
         //   }
         type = data.getStringExtra("type");
         switch (type) {
+            case Constant.PROPOSALWITHDRAW:
+                doProposalWithDraw(data);
+                break;
             case Constant.PROPOSALSECRET:
                 doProposalSecret(data);
                 break;
@@ -157,6 +165,15 @@ public class VoteTransferActivity extends BaseActivity {
         tvHashTag.setText(R.string.feedbackhash);
         RecieveProcessJwtEntity.DataBean dataBean = data.getParcelableExtra("extra");
         tvHash.setText(dataBean.getProposalhash());
+
+    }
+
+    private void doProposalWithDraw(Intent data) {
+        rlAddress.setVisibility(View.VISIBLE);
+        tvAddressTag.setText(R.string.withdrawaddress);
+        RecieveWithdrawJwtEntity.DataBean dataBean = data.getParcelableExtra("extra");
+        tvAddress.setText(dataBean.getRecipient());
+        tvAmount.setText(NumberiUtil.salaToEla(dataBean.getAmount()) + " " + MyWallet.ELA);
 
     }
 
@@ -209,7 +226,8 @@ public class VoteTransferActivity extends BaseActivity {
         switch (view.getId()) {
             case R.id.tv_next:
                 if (Constant.PROPOSALINPUT.equals(type) || Constant.PROPOSALREVIEW.equals(type)
-                        || Constant.PROPOSALPROCESS.equals(type) || Constant.PROPOSALSECRET.equals(type)) {
+                        || Constant.PROPOSALPROCESS.equals(type) || Constant.PROPOSALSECRET.equals(type)
+                        || Constant.PROPOSALWITHDRAW.equals(type)) {
                     //为了在展示手续费后把密码返回给fragment
                   /*  intent = new Intent(this, VertifyPwdActivity.class);
                     intent.putExtra("walletId", chainId);

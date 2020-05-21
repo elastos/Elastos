@@ -54,6 +54,7 @@ public class Constant {
     public static final String PROPOSALREVIEW= "proposalReview";//提案评议期
     public static final String PROPOSALPROCESS= "proposalPROCESS";//提案公执行期 提案人反馈
     public static final String PROPOSALSECRET= "proposalSecret";//提案公执行期 秘书长签名
+    public static final String PROPOSALWITHDRAW= "proposalWithDraw";//提案公执行期 提现
 
 
 
