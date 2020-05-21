@@ -44,6 +44,7 @@ import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
@@ -130,10 +131,10 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
         new RealmUtil().updateSubWalletDetial(walletId, data, new RealmTransactionAbs() {
             @Override
             public void onSuccess() {
+                popTo(AddAssetFragment.class, true);
                 post(RxEnum.UPDATAPROPERTY.ordinal(), null, walletId);
                 post(RxEnum.ADDPROPERTY.ordinal(), null, null);
                 ((View) o).setSelected(true);
-                popBackFragment();
             }
         });
 
