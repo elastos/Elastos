@@ -12,6 +12,7 @@ import {
   getUtxosByAmount
 } from '../utility'
 import * as moment from 'moment'
+const Big = require('big.js')
 const {
   WAITING_FOR_REQUEST,
   WAITING_FOR_APPROVAL,
@@ -597,16 +598,22 @@ export default class extends Base {
         { _id: id },
         { $push: { withdrawalHistory: history } }
       )
-
-      let sum = 0
-      for (let i = 0; i <= parseInt(milestoneKey); i++) {
-        const item = proposal.budget[i]
-        if (item.status !== WITHDRAWN) {
-          sum += parseFloat(item.amount)
-        }
+      let sum: string
+      try {
+        sum = proposal.budget
+          .reduce((sum: any, item: any) => {
+            if (item.status === WAITING_FOR_WITHDRAW && item.amount) {
+              return sum.plus(Big(item.amount))
+            }
+            return sum
+          }, Big(0))
+          .toString()
+      } catch (err) {
+        throw `plus payments error - ${err}`
       }
+      const total = Big(`${sum}e+8`).toString()
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
-      const rs: any = await getUtxosByAmount(sum.toString())
+      const rs: any = await getUtxosByAmount(total)
       if (!rs) {
         return { success: false }
       }
@@ -622,7 +629,7 @@ export default class extends Base {
         callbackurl: '',
         data: {
           proposalhash: proposal.proposalHash,
-          amount: (sum * Math.pow(10, 8)).toString(),
+          amount: total,
           recipient: proposal.elaAddress,
           ownerpublickey: proposal.ownerPublicKey || ownerPublicKey,
           utxos: rs.utxos
