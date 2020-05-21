@@ -90,7 +90,7 @@ typedef enum MsgCh {
 
 typedef struct MsgReceiptEvent {
     EventBase base;
-    char to[ELA_MAX_ID_LEN + 1];
+    char to[ELA_MAX_ADDRESS_LEN + 1];
     MsgCh msgch;
     int64_t msgid;
 
@@ -103,7 +103,7 @@ typedef struct MsgReceiptEvent {
 
 typedef struct OfflineMsgEvent {
     EventBase base;
-    char friendid[ELA_MAX_ID_LEN + 1];
+    char friendid[ELA_MAX_ADDRESS_LEN + 1];
     union {
         struct {
             int64_t timestamp;

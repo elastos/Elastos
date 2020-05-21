@@ -88,6 +88,8 @@
 // Carrier invite request/response data transmission unit length.
 #define INVITE_DATA_UNIT                (1280)
 
+#define DHT_MSG_EXPIRE_TIME               (5) //5s.
+
 const char* ela_get_version(void)
 {
     return carrier_version;
@@ -1810,7 +1812,11 @@ redo_exipre:
     }
 }
 
-static void do_receipts_expire(hashtable_t *receipts)
+static void parse_address(const char *addr, char **uid, char **ext);
+static int send_express_message(ElaCarrier *w, uint32_t friend_number, const char *userid,
+                                int64_t msgid, const void *msg, size_t len,
+                                const char *ext_name);
+static void do_receipts_expire(ElaCarrier *w)
 {
     hashtable_iterator_t it;
     struct timeval now;
@@ -1818,7 +1824,7 @@ static void do_receipts_expire(hashtable_t *receipts)
     gettimeofday(&now, NULL);
 
 redo_check:
-    receipts_iterate(receipts, &it);
+    receipts_iterate(w->receipts, &it);
     while (receipts_iterator_has_next(&it)) {
         Receipt *item;
         ElaReceiptState state;
@@ -1838,9 +1844,22 @@ redo_check:
 
         if(item->msgch == MSGCH_DHT) {
             vlogI("Carrier: Expired to send message to %s, resend(0x%llx) by express.", item->to, item->msgid);
+            uint32_t friend_number;
+            char *addr;
+            char *userid;
+            char *ext_name;
+
+            get_friend_number(w, item->to, &friend_number);
+            addr = (char *)alloca(strlen(item->to) + 1);
+            strcpy(addr, item->to);
+            parse_address(addr, &userid, &ext_name);
+
             item->msgch = MSGCH_EXPRESS;
-            // rc = send_message_by_express(w, item->to, item->data, item->size, item->msgid);
-            if(rc < 0) {
+            rc = send_express_message(w, friend_number, item->to,
+                                      item->msgid, item->data, item->size,
+                                      ext_name);
+
+            if (rc < 0) {
                 item->callback(item->msgid, ElaReceipt_Error, item->context);
                 receipts_iterator_remove(&it);
             }
@@ -2626,7 +2645,7 @@ int ela_run(ElaCarrier *w, int interval)
         do_tassemblies_expire(w->tassembly_irsps);
         do_transacted_callabcks_expire(w);
         do_bulkmsgs_expire(w->bulkmsgs);
-        do_receipts_expire(w->receipts);
+        do_receipts_expire(w);
         do_express_expire(w);
 
         if (idle_interval > 0)
@@ -3252,7 +3271,7 @@ static int64_t send_general_message(ElaCarrier *w, uint32_t friend_number,
     rc = dht_friend_message(&w->dht, friend_number, data, data_len, &msgid);
     free(data);
 
-    if (rc <= 0)
+    if (rc < 0)
         return rc;
 
     return generate_msgid(msgid, friend_number, true);
@@ -3325,15 +3344,13 @@ static int64_t send_bulk_message(ElaCarrier *w, uint32_t friend_number,
     return generate_msgid(msgid, friend_number, true);
 }
 
-static int64_t send_express_message(ElaCarrier *w, uint32_t friend_number,
-                                    const char *userid,
-                                    const void *msg, size_t len,
-                                    const char *ext_name)
+static int send_express_message(ElaCarrier *w, uint32_t friend_number, const char *userid,
+                                int64_t msgid, const void *msg, size_t len,
+                                const char *ext_name)
 {
     ElaCP *cp;
     uint8_t *data;
     size_t data_len;
-    int64_t msgid;
     int rc;
 
     w->connector = create_express_connector(w);
@@ -3352,14 +3369,13 @@ static int64_t send_express_message(ElaCarrier *w, uint32_t friend_number,
     if (!data)
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
-    msgid = generate_msgid(++w->offmsgid, friend_number, false);
     rc = express_enqueue_post_message_with_receipt(w->connector, userid, data, data_len, msgid);
     free(data);
 
     if (rc < 0)
         vlogW("Carrier: Enqueu offline friend message error.");
 
-    return msgid;
+    return 0;
 }
 
 static int64_t send_friend_message_internal(ElaCarrier *w, const char *to,
@@ -3372,7 +3388,8 @@ static int64_t send_friend_message_internal(ElaCarrier *w, const char *to,
     FriendInfo *fi;
     uint32_t friend_number;
     bool online;
-    int64_t rc;
+    int64_t msgid = 0;
+    int rc;
 
     if (!w || !to || !msg || !len || len > ELA_MAX_APP_BULKMSG_LEN) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
@@ -3421,11 +3438,12 @@ static int64_t send_friend_message_internal(ElaCarrier *w, const char *to,
 
     if(online) {
         if (len <= ELA_MAX_APP_MESSAGE_LEN)
-            rc = send_general_message(w, friend_number, to, msg, len, ext_name);
+            msgid = send_general_message(w, friend_number, to, msg, len, ext_name);
         else
-            rc = send_bulk_message(w, friend_number, to, msg, len, ext_name);
+            msgid = send_bulk_message(w, friend_number, to, msg, len, ext_name);
 
-        if (rc >= 0 && offline)
+        rc = (msgid < 0 ? (int)msgid : 0); 
+        if (rc == 0 && offline)
             *offline = false;
 
     } else {
@@ -3433,9 +3451,9 @@ static int64_t send_friend_message_internal(ElaCarrier *w, const char *to,
     }
 
     if (rc < 0) {
-        rc = send_express_message(w, friend_number, to, msg, len, ext_name);
-
-        if (rc >= 0 && offline)
+        msgid = generate_msgid(++w->offmsgid, friend_number, false);
+        rc = send_express_message(w, friend_number, to, msgid, msg, len, ext_name);
+        if (rc == 0 && offline)
             *offline = true;
     }
 
@@ -3444,7 +3462,7 @@ static int64_t send_friend_message_internal(ElaCarrier *w, const char *to,
         return -1;
     }
 
-    return 0;
+    return msgid;
 }
 
 int ela_send_friend_message(ElaCarrier *w, const char *to,
@@ -3576,7 +3594,12 @@ static void handle_offline_message_receipt(EventBase *event, ElaCarrier *w)
         state = ElaReceipt_Offline;
     }
 
-    on_friend_message_receipt(w, state, ev->stat.msgid);
+    if (ev->stat.msgid > 0)
+        on_friend_message_receipt(w, state, ev->stat.msgid);
+    else
+        vlogI("Carrier: offline request friend %s %s(%d).",
+              ev->friendid, (ev->stat.errcode == 0 ? "success" : "failed"), ev->stat.errcode);
+
 }
 
 static void notify_offreceipt_received(ElaCarrier *w, const char *to,
@@ -3626,7 +3649,7 @@ int64_t ela_send_message_with_receipt(ElaCarrier *carrier, const char *to,
     receipt->msgid = msgid;
 
     gettimeofday(&receipt->expire_time, NULL);
-    expire_interval.tv_sec = 30;
+    expire_interval.tv_sec = DHT_MSG_EXPIRE_TIME;
     expire_interval.tv_usec = 0;
     timeradd(&receipt->expire_time, &expire_interval, &receipt->expire_time);
 
