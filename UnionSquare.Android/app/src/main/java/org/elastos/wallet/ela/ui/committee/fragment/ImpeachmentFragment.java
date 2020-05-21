@@ -1,11 +1,16 @@
 package org.elastos.wallet.ela.ui.committee.fragment;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -14,12 +19,16 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.committee.bean.CtListBean;
 import org.elastos.wallet.ela.ui.committee.presenter.CtListPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.util.ArrayList;
@@ -36,9 +45,16 @@ public class ImpeachmentFragment extends BaseFragment implements NewBaseViewData
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     private CtListPresenter presenter;
+    @BindView(R.id.next_step_layout)
+    View nextLayout;
+    @BindView(R.id.confirm_layout)
+    View confirmLayout;
+    String cid;
 
     @BindView(R.id.fee)
     TextView feeTv;
+    @BindView(R.id.impeachvotes)
+    TextView amountTv;
 
     @Override
     protected int getLayoutId() {
@@ -46,8 +62,16 @@ public class ImpeachmentFragment extends BaseFragment implements NewBaseViewData
     }
 
     @Override
+    protected void setExtraData(Bundle data) {
+        super.setExtraData(data);
+        cid = data.getString("cid");
+    }
+
+    @Override
     protected void initView(View view) {
         new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+        presenter = new CtListPresenter();
+//        presenter.getVoteInfo(wallet.getWalletId(), MyWallet.ELA, "CRC", this);
     }
 
     @OnClick({R.id.close, R.id.next_step_btn, R.id.confirm_btn})
@@ -56,6 +80,10 @@ public class ImpeachmentFragment extends BaseFragment implements NewBaseViewData
             case R.id.close:
                 popBackFragment();
                 break;
+            case R.id.next_step_btn:
+                nextLayout.setVisibility(View.GONE);
+                confirmLayout.setVisibility(View.VISIBLE);
+                break;
             case R.id.confirm_btn:
                 impeachCt();
                 break;
@@ -63,7 +91,6 @@ public class ImpeachmentFragment extends BaseFragment implements NewBaseViewData
     }
 
     private void impeachCt() {
-        presenter = new CtListPresenter();
         presenter.getCouncilList(this, String.valueOf(1));
     }
 
@@ -81,32 +108,28 @@ public class ImpeachmentFragment extends BaseFragment implements NewBaseViewData
             }
         }
 
-        unActiveVotes.put("Type", "Delegate");
+        unActiveVotes.put("Type", "CRCImpeachment");
         unActiveVotes.put("Candidates", JSON.toJSON(candidates));
         otherUnActiveVote.add(unActiveVotes);
     }
 
 
-    public static  class InfoStruct {
-        public String Type;
-        public String Amount;
-        public String Votes;
-    }
-
-
-
     JSONObject otherVotes = new JSONObject();
-    private void getVotes(String json) {
-        if(AppUtlis.isNullOrEmpty(json)) return;
-//        List<InfoStruct> infos = new Gson().fromJson(json, new TypeToken<List<InfoStruct>>() {
-//        }.getType());
-//        InfoStruct impeachmentInfo = null;
-//        for(InfoStruct info : infos) {
-//            String type = info.Type;
-//            if(type.equals("CRCImpeachment")) {
-//                impeachmentInfo = info;
-//            }
-//        }
+    private void getVotes(CommmonStringEntity commmonStringEntity) {
+        try {
+            if(null == commmonStringEntity) return;
+            String json = commmonStringEntity.getData();
+
+            JSONArray jsonArray = (JSONArray) JSON.parse(json);
+            JSONObject jsonObject = (JSONObject) jsonArray.get(0);
+            JSONObject votesObj = (JSONObject) jsonObject.get("Votes");
+            String amount = (String) votesObj.get(cid);
+
+            otherVotes.put(cid, amount);
+            Log.d("test", "amount:"+amount);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 //        otherVotes.put(did, amount);
     }
 
@@ -123,8 +146,21 @@ public class ImpeachmentFragment extends BaseFragment implements NewBaseViewData
             presenter.getVoteInfo(wallet.getWalletId(), MyWallet.ELA, "CRCImpeachment", this);
             createJsonObject((CtListBean) baseEntity);
         } else if(methodName.equals("getVoteInfo")) {
-            getVotes(baseEntity.getMessage());
+            getVotes((CommmonStringEntity) baseEntity);
             doVote();
+        } else if(methodName.equalsIgnoreCase("createImpeachmentCRCTransaction")) {
+            goTransferActivity(((CommmonStringEntity) baseEntity).getData());
         }
+    }
+
+    private void goTransferActivity(String attributesJson) {
+        Intent intent = new Intent(getActivity(), TransferActivity.class);
+        intent.putExtra("amount", amountTv.getText().toString());
+        intent.putExtra("wallet", wallet);
+        intent.putExtra("chainId", MyWallet.ELA);
+        intent.putExtra("attributes", attributesJson);
+        intent.putExtra("type", Constant.PROPOSALPUBLISHED);
+        intent.putExtra("transType", 1004);
+        startActivity(intent);
     }
 }

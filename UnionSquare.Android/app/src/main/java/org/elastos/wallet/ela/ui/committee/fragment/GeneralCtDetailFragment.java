@@ -134,12 +134,15 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
                 selectExperience();
                 break;
             case R.id.impeachment_btn:
-                start(ImpeachmentFragment.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("cid", cid);
+                start(ImpeachmentFragment.class, bundle);
                 break;
         }
 
     }
 
+    private String cid;
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
@@ -167,6 +170,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     private void setBaseInfo(CtDetailBean ctDetailBean) {
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         name.setText(dataBean.getDidName());
+        cid = dataBean.getCid();
         GlideApp.with(getContext()).load(dataBean.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(headIc);
         location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
         BigDecimal gress = new BigDecimal(dataBean.getImpeachmentVotes()).divide(new BigDecimal(dataBean.getImpeachmentThroughVotes())).multiply(new BigDecimal(100));
