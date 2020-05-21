@@ -1452,23 +1452,24 @@ export default class extends Base {
 
         // search
         if (param.search) {
-            let search = param.search
+            const search = _.trim(param.search)
             const db_user = this.getDBModel('User')
-            const pattern = search.split(' ').join('|')
             const users = await db_user
                 .getDBInstance()
                 .find({
                     $or: [
-                        {'did.didName': {$regex: pattern, $options: 'i'}}
+                        {'did.didName': {$regex: _.trim(search), $options: 'i'}}
                     ]
                 })
                 .select('_id')
-            const userId = users[0]._id
+            const userIds = _.map(users, '_id')
             query.$or = [
-                { title: { $regex: _.trim(param.search), $options: 'i' } },
-                { vid: _.toNumber(_.trim(param.search)) || 0 },
-                { proposer: { '_id':userId }}
+                {title: {$regex: search, $options: 'i'}},
+                {proposer: {$in: userIds}}
             ]
+            if (_.isNumber(search)) {
+                query.$or.push({vid: _.toNumber(search)})
+            }
         }
 
         const fields = [
@@ -1605,7 +1606,7 @@ export default class extends Base {
                 id: proposal.vid,
                 abs: proposal.abstract,
                 address,
-                ..._.omit(proposal._doc, ['vid','abstract', 'rejectAmount', 'rejectThroughAmount', 'status']),
+                ..._.omit(proposal._doc, ['vid', 'abstract', 'rejectAmount', 'rejectThroughAmount', 'status']),
                 ...votingResult,
                 ...notificationResult,
                 createdAt: timestamp.second(proposal.createdAt),
@@ -1644,7 +1645,7 @@ export default class extends Base {
             const comment = o._doc.comment
             const content = (JSON.parse(o.content)).blocks[0].text
             const commentObj = {
-                content: comment.content ? comment.content : null ,
+                content: comment.content ? comment.content : null,
                 createdBy: _.get(o, 'comment.createdBy.did.didName'),
                 avatar: _.get(o, 'comment.createdBy.did.avatar')
             }
@@ -1687,7 +1688,7 @@ export default class extends Base {
             const comment = o._doc.comment
             const content = (JSON.parse(o.content)).blocks[0].text
             const commentObj = {
-                content: comment.content ? comment.content : null ,
+                content: comment.content ? comment.content : null,
                 createdBy: _.get(o, 'comment.createdBy.did.didName'),
                 avatar: _.get(o, 'comment.createdBy.did.avatar')
             }
