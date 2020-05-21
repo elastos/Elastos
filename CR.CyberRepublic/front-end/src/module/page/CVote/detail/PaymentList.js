@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Popover, Modal, Spin } from 'antd'
+import { Popover, Modal, Spin, message } from 'antd'
 import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
@@ -82,6 +82,10 @@ class PaymentList extends BaseComponent {
   handleWithdraw = async (stage) => {
     const { proposalId, actions } = this.props
     const rs = await actions.withdraw(proposalId, stage)
+    if (rs && !rs.success && rs.url === null) {
+      message.info('The business is busy, please try again later.')
+      return
+    }
     if (rs && rs.success) {
       this.setState({ url: rs.url })
     }
