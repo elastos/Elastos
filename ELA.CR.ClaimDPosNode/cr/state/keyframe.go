@@ -167,6 +167,7 @@ type ProposalState struct {
 	TrackingCount    uint8
 	TerminatedHeight uint32
 	ProposalOwner    []byte
+	Recipient        common.Uint168
 }
 
 type ProposalHashSet map[common.Uint256]struct{}

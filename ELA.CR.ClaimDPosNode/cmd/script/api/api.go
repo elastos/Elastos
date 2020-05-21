@@ -279,6 +279,7 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterUpdateCRType(L)
 	RegisterUnregisterCRType(L)
 	RegisterCRCProposalType(L)
+	RegisterCRChangeProposalOwnerType(L)
 	RegisterCRCCloseProposalHashType(L)
 	RegisterCRCProposalReviewType(L)
 	RegisterCRCProposalWithdrawType(L)

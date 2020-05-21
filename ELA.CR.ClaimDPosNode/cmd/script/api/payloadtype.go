@@ -21,22 +21,23 @@ import (
 )
 
 const (
-	luaCoinBaseTypeName         = "coinbase"
-	luaTransferAssetTypeName    = "transferasset"
-	luaRegisterProducerName     = "registerproducer"
-	luaUpdateProducerName       = "updateproducer"
-	luaCancelProducerName       = "cancelproducer"
-	luaActivateProducerName     = "activateproducer"
-	luaReturnDepositCoinName    = "returndepositcoin"
-	luaSideChainPowName         = "sidechainpow"
-	luaRegisterCRName           = "registercr"
-	luaUpdateCRName             = "updatecr"
-	luaUnregisterCRName         = "unregistercr"
-	luaCRCProposalName          = "crcproposal"
-	luaCRCCloseProposalHashName = "crccloseproposalhash"
-	luaCRCProposalReviewName    = "crcproposalreview"
-	luaCRCProposalTrackingName  = "crcproposaltracking"
-	luaCRCProposalWithdrawName  = "crcproposalwithdraw"
+	luaCoinBaseTypeName          = "coinbase"
+	luaTransferAssetTypeName     = "transferasset"
+	luaRegisterProducerName      = "registerproducer"
+	luaUpdateProducerName        = "updateproducer"
+	luaCancelProducerName        = "cancelproducer"
+	luaActivateProducerName      = "activateproducer"
+	luaReturnDepositCoinName     = "returndepositcoin"
+	luaSideChainPowName          = "sidechainpow"
+	luaRegisterCRName            = "registercr"
+	luaUpdateCRName              = "updatecr"
+	luaUnregisterCRName          = "unregistercr"
+	luaCRCProposalName           = "crcproposal"
+	luaCRChangeProposalOwnerName = "crchangeproposalowner"
+	luaCRCCloseProposalHashName  = "crccloseproposalhash"
+	luaCRCProposalReviewName     = "crcproposalreview"
+	luaCRCProposalTrackingName   = "crcproposaltracking"
+	luaCRCProposalWithdrawName   = "crcproposalwithdraw"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
@@ -946,6 +947,15 @@ func RegisterCRCProposalType(L *lua.LState) {
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), crcProposalMethods))
 }
 
+func RegisterCRChangeProposalOwnerType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaCRChangeProposalOwnerName)
+	L.SetGlobal("crchangeproposalowner", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newCRChangeProposalOwner))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), crcProposalMethods))
+}
+
 func RegisterCRCCloseProposalHashType(L *lua.LState) {
 	mt := L.NewTypeMetatable(luaCRCCloseProposalHashName)
 	L.SetGlobal("crccloseproposalhash", mt)
@@ -1075,6 +1085,106 @@ func newCRCProposal(L *lua.LState) int {
 	L.Push(ud)
 
 	return 1
+}
+
+func newCRChangeProposalOwner(L *lua.LState) int {
+	publicKeyStr := L.ToString(1)
+	proposalType := L.ToInt64(2)
+	newOwnerPublicKeyStr := L.ToString(3)
+	previousHashStr := L.ToString(4)
+
+	needSign := true
+	client, err := checkClient(L, 5)
+	if err != nil {
+		needSign = false
+	}
+
+	newOwnerPublicKey, err := common.HexStringToBytes(newOwnerPublicKeyStr)
+	if err != nil {
+		fmt.Println("wrong new cr owner public key")
+		os.Exit(1)
+	}
+
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	pk, err := crypto.DecodePoint(publicKey)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	ct, err := contract.CreateStandardContract(pk)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	previousHash, err := common.Uint256FromHexString(previousHashStr)
+	if err != nil {
+		fmt.Println("wrong previous ProposalHash")
+		os.Exit(1)
+	}
+
+	crcProposal := &payload.CRCProposal{
+		ProposalType:       payload.CRCProposalType(proposalType),
+		OwnerPublicKey:     newOwnerPublicKey,
+		PreviousHash:       *previousHash,
+		CRCouncilMemberDID: *getDID(ct.Code),
+	}
+
+	if needSign {
+		signBuf := new(bytes.Buffer)
+		err = crcProposal.SerializeUnsigned(signBuf, payload.CRCProposalVersion)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		acc := client.GetAccountByCodeHash(*codeHash)
+		if acc == nil {
+			fmt.Println("no available account in wallet")
+			os.Exit(1)
+		}
+
+		sig, err := crypto.Sign(acc.PrivKey(), signBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crcProposal.Signature = sig
+		if err = common.WriteVarBytes(signBuf, sig); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if err = crcProposal.CRCouncilMemberDID.Serialize(signBuf); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crSig, err := crypto.Sign(acc.PrivKey(), signBuf.Bytes())
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crcProposal.CRCouncilMemberSignature = crSig
+	}
+	ud := L.NewUserData()
+	ud.Value = crcProposal
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCRChangeProposalOwnerName))
+	L.Push(ud)
+
+	return 1
+
 }
 
 // Constructor

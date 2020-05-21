@@ -172,6 +172,8 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	newLeaderPrivkey := c.String("newleaderprivatekey")
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
 	recipient := c.String("recipient")
+	changeProposalOwnerKey := c.String("newownerpublickey")
+	previousHash := c.String("previoushash")
 	closeProposalHash := c.String("closeproposalhash")
 	crcCommitteeAddress := c.String("crccommiteeaddr")
 	payloadVersion := c.Int64("payloadversion")
@@ -246,6 +248,14 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(recipient))
 		return 1
 	}
+	getChangeProposalOwnerKey := func(L *lua.LState) int {
+		L.Push(lua.LString(changeProposalOwnerKey))
+		return 1
+	}
+	getPreviousHash := func(L *lua.LState) int {
+		L.Push(lua.LString(previousHash))
+		return 1
+	}
 	getCloseProposalHash := func(L *lua.LState) int {
 		L.Push(lua.LString(closeProposalHash))
 		return 1
@@ -274,6 +284,8 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getNewLeaderPrivkey", getNewLeaderPrivkey)
 	L.Register("getSecretaryGeneralPrivkey", getSecretaryGeneralPrivkey)
 	L.Register("getRecipient", getRecipient)
+	L.Register("getChangeProposalOwnerKey", getChangeProposalOwnerKey)
+	L.Register("getPreviousHash", getPreviousHash)
 	L.Register("getCloseProposalHash", getCloseProposalHash)
 	L.Register("getCRCCommitteeAddress", getCRCCommitteeAddress)
 	L.Register("getPayloadVersion", getPayloadVersion)
@@ -416,6 +428,14 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "drafthash",
 				Usage: "set the draft proposal hash",
+			},
+			cli.StringFlag{
+				Name:  "newownerpublickey",
+				Usage: "set the new owner public key",
+			},
+			cli.StringFlag{
+				Name:  "previoushash",
+				Usage: "set the previous proposal hash",
 			},
 			cli.StringFlag{
 				Name:  "closeproposalhash",

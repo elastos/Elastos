@@ -1942,7 +1942,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	}
 
 	var err error
-	rpcProposal.Recipient, err = proposalState.Proposal.Recipient.ToAddress()
+	rpcProposal.Recipient, err = proposalState.Recipient.ToAddress()
 	if err != nil {
 		return ResponsePack(InternalError, "invalidate Recipient")
 	}
