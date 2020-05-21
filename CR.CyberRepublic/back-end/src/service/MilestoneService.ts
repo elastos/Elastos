@@ -332,7 +332,7 @@ export default class extends Base {
         claims.req.slice('elastos://crproposal/'.length)
       )
       const proposalHash = _.get(payload, 'data.proposalhash')
-      const reasonHash = _.get(payload, 'data.messagehash')
+      const reasonHash = _.get(payload, 'data.secretaryopinionhash')
       if (!proposalHash || !reasonHash) {
         return {
           code: 400,
@@ -388,7 +388,7 @@ export default class extends Base {
               if (history.review.opinion === REJECTED) {
                 status = REJECTED
               }
-              if (history.review.opinion === REJECTED) {
+              if (history.review.opinion === APPROVED) {
                 status = WAITING_FOR_WITHDRAWAL
               }
               await this.model.update(
