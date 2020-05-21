@@ -157,21 +157,28 @@ export default class extends Base {
             const council = councilList && _.filter(councilList.councilMembers, (o: any) => o.did === did)[0]
 
             let term = []
-            if (council && council.user) {
-                const proposalFields = [
-                    'createdBy',
-                    'createdAt',
-                    'vid',
-                    'title',
-                    'status',
-                    'voteResult'
-                ]
-                const proposalList = await this.proposalMode.getDBInstance()
-                    .find({proposer: council.user._id}, proposalFields).sort({createdAt: -1})
-                    .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+            let impeachmentObj = {}
+            if (councilList.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
+                // update impeachment
+                const impeachmentThroughVotes = (await ela.circulatingSupply(councilList.height)) * 0.2
+                impeachmentObj['impeachmentVotes'] = council.impeachmentVotes
+                impeachmentObj['impeachmentThroughVotes'] = _.toNumber(impeachmentThroughVotes.toFixed(8))
+                impeachmentObj['impeachmentRatio'] = _.toNumber((council.impeachmentVotes / impeachmentThroughVotes).toFixed(4))
 
+                // update term
+                if (council && council.user) {
+                    const proposalFields = [
+                        'createdBy',
+                        'createdAt',
+                        'vid',
+                        'title',
+                        'status',
+                        'voteResult'
+                    ]
+                    const proposalList = await this.proposalMode.getDBInstance()
+                        .find({proposer: council.user._id}, proposalFields).sort({createdAt: -1})
+                        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
-                if (councilList.status !== constant.TERM_COUNCIL_STATUS.VOTING) {
                     term = _.map(proposalList, (o: any) => {
                         const didName = _.get(o, 'createdBy.did.didName')
                         const chainStatus = [constant.CVOTE_CHAIN_STATUS.CHAINED, constant.CVOTE_CHAIN_STATUS.CHAINING]
@@ -189,14 +196,6 @@ export default class extends Base {
                         }
                     })
                 }
-            }
-
-            let impeachmentObj = {}
-            if (councilList.status !== constant.TERM_COUNCIL_STATUS.HISTORY) {
-                const impeachmentThroughVotes = (await ela.circulatingSupply(councilList.height)) * 0.2
-                impeachmentObj['impeachmentVotes'] = council.impeachmentVotes
-                impeachmentObj['impeachmentThroughVotes'] = _.toNumber(impeachmentThroughVotes.toFixed(8))
-                impeachmentObj['impeachmentRatio'] = _.toNumber((council.impeachmentVotes / impeachmentThroughVotes).toFixed(4))
             }
 
             return {
