@@ -16,6 +16,7 @@ const Component = (
       getReviewProposal,
       getReviewProposalUrl,
       updateProposal,
+      isProposed,
       isCouncil,
       currentUserId      
     }
@@ -35,11 +36,11 @@ const Component = (
     const userNode = (
       <Item key={key}>
         {data.avatar ? <Avatar src={data.avatar} alt="voter avatar" /> : <StyledAvatarIcon />}
-        <div>{ data.name }</div>
+        <div>{ data.didName }</div>
         <div>{ data.reason !== "" ? voteStatus : null }</div>
         <div style={{ marginTop: '0.5rem'}}>
           {
-          ( isCouncil && isOwner && (data.status === 'unchain' || data.status === undefined ) && data.reason !== '' ) ?
+          ( isProposed && isCouncil && isOwner && (data.status === 'unchain' || data.status === undefined ) && data.reason !== '' ) ?
           <OnChain 
             getReviewProposal={getReviewProposal}
             getReviewProposalUrl={getReviewProposalUrl}
@@ -95,6 +96,7 @@ const propTypes = {
   getReviewProposalUrl: PropTypes.func.isRequired,
   updateProposal: PropTypes.func.isRequired,
   isCouncil: PropTypes.bool.isRequired,
+  isProposed: PropTypes.bool.isRequired,
   currentUserId: PropTypes.string.isRequired
 }
 
