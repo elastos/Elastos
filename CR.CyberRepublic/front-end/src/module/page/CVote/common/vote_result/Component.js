@@ -36,7 +36,7 @@ const Component = (
     const userNode = (
       <Item key={key}>
         {data.avatar ? <Avatar src={data.avatar} alt="voter avatar" /> : <StyledAvatarIcon />}
-        <div>{ data.name }</div>
+        <div>{ data.didName }</div>
         <div>{ data.reason !== "" ? voteStatus : null }</div>
         <div style={{ marginTop: '0.5rem'}}>
           {

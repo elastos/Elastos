@@ -835,7 +835,6 @@ class C extends StandardPage {
     } = this.props.data
     const { avatar_map: avatarMap } = this.props
     let stats
-
     if (status === CVOTE_STATUS.DRAFT) return null
 
     if (!_.isEmpty(voteResult)) {
@@ -847,6 +846,7 @@ class C extends StandardPage {
               cur,
               'votedBy.profile.lastName'
             )} `,
+            didName: _.get(cur,'votedBy.did.didName'),
             avatar: _.get(cur, 'votedBy.profile.avatar'),
             reason: cur.reason,
             votedBy: _.get(cur, 'votedBy._id'),
