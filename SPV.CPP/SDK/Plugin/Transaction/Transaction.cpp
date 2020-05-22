@@ -864,6 +864,8 @@ namespace Elastos {
 				payload = PayloadPtr(new CRCProposalReview());
 			} else if (type == crcProposalTracking) {
 				payload = PayloadPtr(new CRCProposalTracking());
+			} else if (type == crcProposalWithdraw) {
+				payload = PayloadPtr(new CRCProposalWithdraw());
 			}
 
 			return payload;

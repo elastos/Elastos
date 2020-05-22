@@ -1423,7 +1423,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(outputAmount <= 0, Error::InvalidArgument, "invalid amount");
 
 			try {
-				PayloadPtr p(new CRCProposalWithdraw);
+				PayloadPtr p(new CRCProposalWithdraw());
 				p->FromJson(payload, CRCProposalWithdrawVersion);
 				ErrorChecker::CheckParam(!p->IsValid(CRCProposalWithdrawVersion), Error::InvalidArgument, "invalid payload");
 
