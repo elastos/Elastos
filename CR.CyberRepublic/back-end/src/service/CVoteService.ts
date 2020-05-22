@@ -1225,7 +1225,6 @@ export default class extends Base {
             if (!rs || rs.success === false) {
                 return
             }
-
             switch (status) {
                 case constant.CVOTE_STATUS.PROPOSED:
                     await this.updateProposalOnProposed({
@@ -1280,7 +1279,7 @@ export default class extends Base {
     }
 
     public async updateProposalOnNotification(data: any) {
-        const { WAITING_FOR_WITHDRAWAL } = constant.MILESTONE_STATUS
+        const { WAITING_FOR_WITHDRAWAL, WAITING_FOR_REQUEST } = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel("CVote")
         const {rs, _id} = data
         const {
@@ -1293,12 +1292,19 @@ export default class extends Base {
         const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
         if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
             rejectThroughAmount = (await ela.currentCirculatingSupply()) * 0.1
+            const proposal = await db_cvote.findById(_id)
+            const budget = proposal.budget.map((item:any) => {
+                if (item.type === 'ADVANCE') {
+                    return { ...item, status: WAITING_FOR_WITHDRAWAL }
+                } else {
+                    return { ...item, status: WAITING_FOR_REQUEST }
+                }
+            })
             await db_cvote.update({
-                _id,
-                'budget.type': 'ADVANCE'
+                _id
             }, {
                 $set: {
-                    'budget.$.status': WAITING_FOR_WITHDRAWAL,
+                    budget,
                     status: proposalStatus,
                     rejectAmount,
                     rejectThroughAmount
