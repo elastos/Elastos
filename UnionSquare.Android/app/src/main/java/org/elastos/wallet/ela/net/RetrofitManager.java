@@ -261,9 +261,9 @@ public class RetrofitManager {
 
         synchronized (RetrofitManager.class) {
             OkHttpClient mOkHttpClient = builder//.cache(cache)
-                    .connectTimeout(2, TimeUnit.SECONDS)
-                    .readTimeout(2, TimeUnit.SECONDS)
-                    .writeTimeout(2, TimeUnit.SECONDS)
+                    .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                    .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+                    .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
                     .addInterceptor(logInterceptor)
                     .addInterceptor(new InterceptorCom())
                     .build();
