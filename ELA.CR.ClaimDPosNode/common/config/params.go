@@ -258,15 +258,15 @@ func (p *Params) TestNet() *Params {
 		"02bf9e37b3db0cbe86acf76a76578c6b17b4146df101ec934a00045f7d201f06dd",
 		"03111f1247c66755d369a8c8b3a736dfd5cf464ca6735b659533cbe1268cd102a9",
 	}
-	copy.SecretaryGeneral = "" // todo correct me later
+	copy.SecretaryGeneral = "0349cb77a69aa35be0bcb044ffd41a616b8367136d3b339d515b1023cc0f302f87"
 	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
 	copy.PublicDPOSHeight = 300000
 	copy.CRVotingStartHeight = 436900
-	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
-	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
+	copy.CRCommitteeStartHeight = 546500
+	copy.EnableActivateIllegalHeight = 546500
 	copy.CheckRewardHeight = 100
 	copy.VoteStatisticsHeight = 0
 	copy.RegisterCRByDIDHeight = 483500
@@ -275,7 +275,7 @@ func (p *Params) TestNet() *Params {
 	copy.CRCAppropriatePercentage = 10
 	copy.MaxCommitteeProposalCount = 128
 	copy.MaxNodePerHost = 10
-	copy.CheckVoteCRCountHeight = 0 // todo correct me later
+	copy.CheckVoteCRCountHeight = 546500
 
 	return &copy
 }
