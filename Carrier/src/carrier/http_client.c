@@ -293,6 +293,9 @@ int http_client_set_method(http_client_t *client, http_method_t method)
     CURLcode code = CURLE_UNSUPPORTED_PROTOCOL;
 
     switch (method) {
+    case HTTP_METHOD_HEAD:
+        code = curl_easy_setopt(client->curl, CURLOPT_NOBODY, 1L);
+        break;
     case HTTP_METHOD_GET:
         code = curl_easy_setopt(client->curl, CURLOPT_HTTPGET, 1L);
         break;

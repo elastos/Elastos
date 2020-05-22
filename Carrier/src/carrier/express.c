@@ -108,7 +108,8 @@ typedef struct {
 static const int  EXP_CURLCODE_MASK    = 0x00001000;
 static const int  EXP_HTTP_MAGICNUM    = 0xCA6EE595;
 static const int  EXP_HTTP_MAGICSIZE   = 4;
-static const int  EXP_HTTP_TIMEOUT     = 30 * 1000; // ms
+static const int  EXP_HTTP_REQ_TIMEOUT     = 30 * 1000; // ms
+static const int  EXP_HTTP_HEAD_TIMEOUT     = 5 * 1000; // ms
 #define  EXP_HTTP_URL_MAXSIZE 1024
 
 static inline int conv_curlcode(int curlcode) {
@@ -331,6 +332,7 @@ static int parse_msg_stream(ExpressConnector *connector, uint8_t *shared_key,
         data_off += sizeof(msg_sz);
 
         if(data_off + msg_sz > size) { // message is incomplete
+            data_off = magic_off;
             break;
         }
         msg = &data[data_off];
@@ -371,7 +373,7 @@ size_t http_read_data(char *buffer, size_t size, size_t nitems, void *userdata)
     }
     parsed_sz = rc;
 
-    if(parsed_sz > 0 && parsed_sz < (int)task->pos) {
+    if(parsed_sz >= 0 && parsed_sz < (int)task->pos) {
         size_t remain_sz = task->pos - parsed_sz;
         uint8_t *remain_data = rc_alloc(remain_sz, NULL);
         memcpy(remain_data, task->data + parsed_sz, remain_sz);
@@ -418,10 +420,11 @@ static int http_do(ExpressConnector *connector, http_client_t *http_client,
     char url[EXP_HTTP_URL_MAXSIZE];
     long http_client_rescode = 0;
 
-    const char* dowhat = (method == HTTP_METHOD_POST ? "pushing"
+    const char* dowhat = (method == HTTP_METHOD_HEAD ? "heading"
+                       : (method == HTTP_METHOD_POST ? "pushing"
                        : (method == HTTP_METHOD_GET ? "pulling"
                        : (method == HTTP_METHOD_DELETE ? "deleting"
-                       : "unknown")));
+                       : "unknown"))));
 
     snprintf(url, sizeof(url), "https://%s:%d/%s", ip, port, path);
     vlogD("Express: %s message, url: %s", dowhat, url);
@@ -457,7 +460,8 @@ static int http_do(ExpressConnector *connector, http_client_t *http_client,
         }
     }
 
-    http_client_set_timeout(connector->http_client, EXP_HTTP_TIMEOUT);
+    http_client_set_timeout(connector->http_client,
+                            method == HTTP_METHOD_HEAD ?  EXP_HTTP_HEAD_TIMEOUT : EXP_HTTP_REQ_TIMEOUT);
     rc = http_client_request(http_client);
     if(rc != 0) {
         vlogE("Express: Failed to perform http request. url=%s,(CURLE: %d)", url, rc);
@@ -625,8 +629,90 @@ static int pullmsgs_runner(ExpTasklet *base)
     return 0;
 }
 
+static int speedmeter_runner(ExpTasklet *base)
+{
+    int rc;
+    ExpTasklet *task = (ExpTasklet *)base;
+    ExpressConnector *connector = task->connector;
+    int idx, iidx, jidx;
+    struct timeval starttime;
+    struct timeval *timeloss;
+    
+    timeloss = alloca(sizeof(*timeloss) * connector->express_nodes_size);
+    memset(timeloss, 0, sizeof(*timeloss) * connector->express_nodes_size);
+
+    for(idx = 0; idx < connector->express_nodes_size; idx++) {
+        gettimeofday(&starttime, NULL);
+        rc = http_do(connector, connector->http_client,
+                     connector->express_nodes[idx].ipv4, connector->express_nodes[idx].port,
+                     "version", HTTP_METHOD_HEAD, NULL);
+        if(rc >= 0) {
+            gettimeofday(&timeloss[idx], NULL);
+            timersub(&timeloss[idx], &starttime, &timeloss[idx]);
+        } else {
+            timeloss[idx].tv_sec = EXP_HTTP_HEAD_TIMEOUT;
+        }
+    }
+
+    // bubble sort
+    int total_count = connector->express_nodes_size - 1;
+    for (iidx = 0; iidx < total_count; iidx++) {
+        for (jidx = 0; jidx < total_count - iidx; jidx++) {
+            if (timercmp(&timeloss[jidx], &timeloss[jidx + 1], >)) {
+                struct timeval tmptime;
+                ExpNode tmpnode;
+
+                memcpy(&tmptime, &timeloss[jidx + 1], sizeof(struct timeval));
+                memcpy(&timeloss[jidx + 1], &timeloss[jidx], sizeof(struct timeval));
+                memcpy(&timeloss[jidx], &tmptime, sizeof(struct timeval));
+
+                memcpy(&tmpnode, &connector->express_nodes[jidx + 1], sizeof(ExpNode));
+                memcpy(&connector->express_nodes[jidx + 1], &connector->express_nodes[jidx], sizeof(ExpNode));
+                memcpy(&connector->express_nodes[jidx], &tmpnode, sizeof(ExpNode));
+            }
+        }
+    }
+
+    vlogD("Express: meter express node speed:");
+    for(idx = 0; idx < connector->express_nodes_size; idx++) {
+        vlogD("  %s ==> %ld%06ld",
+              connector->express_nodes[idx].ipv4,
+              timeloss[idx].tv_sec, timeloss[idx].tv_usec);
+    }
+
+    return 0;
+}
+
+static int enqueue_speedmeter_tasklet(ExpressConnector *connector)
+{
+    int rc;
+    ExpTasklet *task;
+
+    assert(connector);
+
+    task = (ExpTasklet *)rc_zalloc(sizeof(ExpTasklet), NULL);
+    if (!task) {
+        rc = ELA_EXPRESS_ERROR(ELAERR_OUT_OF_MEMORY);
+        ela_set_error(rc);
+        return rc;
+    }
+
+    task->entry.data = task;
+    task->connector = connector;
+    task->runner = speedmeter_runner;
+
+    pthread_mutex_lock(&connector->lock);
+    list_push_head(connector->task_list, &task->entry);
+    pthread_mutex_unlock(&connector->lock);
+
+    deref(task);
+    pthread_cond_signal(&connector->cond);
+
+    return 0;
+}
+
 static int enqueue_post_tasklet(ExpressConnector *connector, const char *to,
-                                    const void *data, size_t size, int64_t msgid)
+                                const void *data, size_t size, int64_t msgid)
 {
     int rc;
     ExpSendTasklet *task;
@@ -789,8 +875,12 @@ ExpressConnector *express_connector_create(ElaCarrier *carrier,
         }
     }
 
-    // snprintf(url_base, sizeof(url_base), "https://%s:%d", node_0->ipv4, node_0->port);
-    // connector->base_url = strdup(url_base);
+    rc = enqueue_speedmeter_tasklet(connector);
+    if (rc < 0) {
+        deref(connector);
+        ela_set_error(rc);
+        return NULL;
+    }
 
     rc = pthread_create(&tid, NULL, connector_laundry, connector);
     if (rc != 0) {
