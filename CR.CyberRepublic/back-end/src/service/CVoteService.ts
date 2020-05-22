@@ -1003,7 +1003,7 @@ export default class extends Base {
             // member vote status in agreed
             // await this.pollVotersRejectAmount()
 
-        }, 1000 * 60 * 10)
+        }, 1000 * 60 * 2)
     }
 
     private canManageProposal() {
