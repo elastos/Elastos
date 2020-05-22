@@ -192,8 +192,17 @@ class PaymentList extends BaseComponent {
     )
   }
 
+  getApplication() {
+    const { withdrawalHistory } = this.props
+    const { stage } = this.state
+    const rs = withdrawalHistory.filter((item) => {
+      return item.signature && stage === item.milestoneKey
+    })
+    return rs && rs.length > 0 && rs[rs.length - 1]
+  }
+
   ord_render() {
-    const { list, proposalId, actions, user, withdrawalHistory } = this.props
+    const { list, proposalId, actions, user } = this.props
     const visible = this.isVisible()
     return (
       <StyledTable>
@@ -232,7 +241,7 @@ class PaymentList extends BaseComponent {
               isSecretary={user.is_secretary}
               opinion={this.state.opinion}
               reviewApplication={actions.reviewApplication}
-              application={withdrawalHistory[withdrawalHistory.length - 1]}
+              application={this.getApplication()}
               getReviewTxid={actions.getReviewTxid}
             />
           ) : null}
