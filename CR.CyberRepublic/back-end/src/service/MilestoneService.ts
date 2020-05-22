@@ -231,16 +231,16 @@ export default class extends Base {
     try {
       const { id, milestoneKey, reason, opinion, applicationId } = param
       if (!reason || !opinion || ![APPROVED, REJECTED].includes(opinion)) {
-        return { success: false, message: 'param is invalid' }
+        return { success: false, message: 'Some param is invalid.' }
       }
       const proposal = await this.model.findById(id)
       if (!proposal) {
-        return { success: false, message: 'no this proposal' }
+        return { success: false, message: 'No this proposal.' }
       }
       if (proposal.status !== ACTIVE) {
         return {
           success: false,
-          message: ' this proposal status is not active'
+          message: 'This proposal status is not active.'
         }
       }
 
@@ -249,10 +249,10 @@ export default class extends Base {
         (item: any) => item.milestoneKey === milestoneKey
       )[0]
       if (_.isEmpty(budget)) {
-        return { success: false, message: 'milestone key is invalid' }
+        return { success: false, message: 'Payment stage is invalid.' }
       }
       if (budget.status !== WAITING_FOR_APPROVAL) {
-        return { success: false, message: 'milestone status is invalid' }
+        return { success: false, message: 'Milestone status is wrong.' }
       }
 
       const currTime = Date.now()
@@ -602,7 +602,7 @@ export default class extends Base {
           }, Big(0))
           .toString()
       } catch (err) {
-        throw `plus payments error - ${err}`
+        return { success: false, message: 'Can not get total payment amount.' }
       }
       const ownerPublicKey = _.get(this.currentUser, 'did.compressedPublicKey')
       const rs: any = await getUtxosByAmount(sum)
