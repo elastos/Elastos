@@ -49,7 +49,7 @@ public class VertifyPwdActivity extends BaseActivity implements NewBaseViewData 
     @BindView(R.id.et_pwd)
     ClearEditText etPwd;
 
-    private String walletId, type;
+    private String walletId, openType;
 
 
     @Override
@@ -72,7 +72,7 @@ public class VertifyPwdActivity extends BaseActivity implements NewBaseViewData 
     @Override
     protected void setExtraData(Intent data) {
         walletId = data.getStringExtra("walletId");
-        type = data.getStringExtra("type");
+        openType = data.getStringExtra("openType");//区分谁打开的classsimplename
     }
 
 
@@ -103,7 +103,7 @@ public class VertifyPwdActivity extends BaseActivity implements NewBaseViewData 
                 boolean result = ((CommmonBooleanEntity) baseEntity).getData();
                 String pwd= (String) o;
                 if (result) {
-                    post(RxEnum.VERTIFYPAYPASS.ordinal(), type, pwd);
+                    post(RxEnum.VERTIFYPAYPASS.ordinal(), openType, pwd);
                     finish();
                 } else {
                     showToastMessage(getString(R.string.error_20003));
