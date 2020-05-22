@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Popover, Modal, Spin, message } from 'antd'
+import { Popover, Modal } from 'antd'
 import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
@@ -8,7 +8,8 @@ import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import Signature from './Signature'
 import { MILESTONE_STATUS } from '@/constant'
-import QRCode from 'qrcode.react'
+import WithdrawMoney from './WithdrawMoney'
+
 const {
   WAITING_FOR_REQUEST,
   REJECTED,
@@ -21,19 +22,27 @@ class PaymentList extends BaseComponent {
     super(props)
     this.state = {
       toggle: false,
-      stage: null,
+      stage: '',
       opinion: '',
-      url: '',
-      visible: ''
+      withdrawal: false,
+      withdrawalStage: ''
     }
   }
 
   hideModal = () => {
-    this.setState({ toggle: false })
+    this.setState({ toggle: false, stage: '', opinion: '' })
   }
 
   showModal = (stage, opinion) => {
     this.setState({ toggle: true, stage, opinion })
+  }
+
+  showWithdrawalModal = (stage) => {
+    this.setState({ withdrawal: true, withdrawalStage: stage })
+  }
+
+  hideWithdrawalModal = () => {
+    this.setState({ withdrawal: false, withdrawalStage: '' })
   }
 
   isOwner() {
@@ -69,62 +78,39 @@ class PaymentList extends BaseComponent {
     )
   }
 
-  elaQrCode = () => {
-    const { url } = this.state
-    return (
-      <Content>
-        {url ? <QRCode value={url} size={400} /> : <Spin />}
-        <Tip>Scan the QR code above to withdraw.</Tip>
-      </Content>
-    )
-  }
-
-  handleWithdraw = async (stage) => {
-    const { proposalId, actions } = this.props
-    const rs = await actions.withdraw(proposalId, stage)
-    if (rs && !rs.success && rs.url === null) {
-      message.info('The business is busy, please try again later.')
-      this.setState({ visible: false })
-      return
-    }
-    if (rs && rs.success) {
-      this.setState({ url: rs.url })
-    }
-  }
-
-  handleVisibleChange = (visible) => {
-    this.setState({ visible })
-  }
-
   renderActions(item) {
     const { user } = this.props
     const status = item.status
     if (status === WAITING_FOR_REQUEST) {
-      return !user.is_secretary &&(
-        <td>
-          <div
-            className="action"
-            onClick={() => {
-              this.showModal(item.milestoneKey)
-            }}
-          >
-            Apply
-          </div>
-        </td>
+      return (
+        !user.is_secretary && (
+          <td>
+            <div
+              className="action"
+              onClick={() => {
+                this.showModal(item.milestoneKey)
+              }}
+            >
+              Apply
+            </div>
+          </td>
+        )
       )
     }
     if (status === REJECTED) {
-      return !user.is_secretary &&(
-        <td>
-          <div
-            className="action"
-            onClick={() => {
-              this.showModal(item.milestoneKey)
-            }}
-          >
-            Reapply
-          </div>
-        </td>
+      return (
+        !user.is_secretary && (
+          <td>
+            <div
+              className="action"
+              onClick={() => {
+                this.showModal(item.milestoneKey)
+              }}
+            >
+              Reapply
+            </div>
+          </td>
+        )
       )
     }
     if (status === WAITING_FOR_APPROVAL) {
@@ -152,23 +138,17 @@ class PaymentList extends BaseComponent {
       )
     }
     if (status === WAITING_FOR_WITHDRAWAL) {
-      return !user.is_secretary &&(
-        <td>
-          <Popover
-            content={this.elaQrCode()}
-            trigger="click"
-            placement="top"
-            visible={this.state.visible}
-            onVisibleChange={this.handleVisibleChange}
-          >
+      return (
+        !user.is_secretary && (
+          <td>
             <div
               className="action"
-              onClick={() => this.handleWithdraw(item.milestoneKey)}
+              onClick={() => this.showWithdrawalModal(item.milestoneKey)}
             >
               Withdraw
             </div>
-          </Popover>
-        </td>
+          </td>
+        )
       )
     }
   }
@@ -257,6 +237,15 @@ class PaymentList extends BaseComponent {
             />
           ) : null}
         </Modal>
+        {this.state.withdrawal ? (
+          <WithdrawMoney
+            withdrawal={this.state.withdrawal}
+            proposalId={proposalId}
+            withdraw={actions.withdraw}
+            stage={this.state.withdrawalStage}
+            hideModal={this.hideWithdrawalModal}
+          />
+        ) : null}
       </StyledTable>
     )
   }
@@ -328,13 +317,4 @@ const Square = styled.div`
       }
     }
   }
-`
-const Content = styled.div`
-  padding: 16px;
-  text-align: center;
-`
-const Tip = styled.div`
-  font-size: 14px;
-  color: #000;
-  margin-top: 16px;
 `
