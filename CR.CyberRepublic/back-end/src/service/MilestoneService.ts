@@ -231,14 +231,17 @@ export default class extends Base {
     try {
       const { id, milestoneKey, reason, opinion, applicationId } = param
       if (!reason || !opinion || ![APPROVED, REJECTED].includes(opinion)) {
-        return { success: false }
+        return { success: false, message: 'param is invalid' }
       }
       const proposal = await this.model.findById(id)
       if (!proposal) {
-        return { success: false }
+        return { success: false, message: 'no this proposal' }
       }
       if (proposal.status !== ACTIVE) {
-        return { success: false }
+        return {
+          success: false,
+          message: ' this proposal status is not active'
+        }
       }
 
       // check if milestoneKey is valid
@@ -246,10 +249,10 @@ export default class extends Base {
         (item: any) => item.milestoneKey === milestoneKey
       )[0]
       if (_.isEmpty(budget)) {
-        return { success: false }
+        return { success: false, message: 'milestone key is invalid' }
       }
       if (budget.status !== WAITING_FOR_APPROVAL) {
-        return { success: false }
+        return { success: false, message: 'milestone status is invalid' }
       }
 
       const currTime = Date.now()
@@ -280,8 +283,8 @@ export default class extends Base {
       } else {
         trackingStatus = constant.PROPOSAL_TRACKING_TYPE.REJECTED
       }
-      const history = proposal.withdrawalHistory.filter(
-        (item: any) => item._id.equals(applicationId)
+      const history = proposal.withdrawalHistory.filter((item: any) =>
+        item._id.equals(applicationId)
       )[0]
       // generate jwt url
       const jwtClaims = {
