@@ -237,7 +237,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
 
                 break;
             case "signTransaction":
-                new PwdPresenter().newPublishTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringWithiMethNameEntity) baseEntity).getData(), this);
+                new PwdPresenter().newPublishTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(), this);
 
                 break;
             case "createProposalTransaction":
