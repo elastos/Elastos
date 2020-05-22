@@ -44,7 +44,6 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         PastCtBean.DataBean data = list.get(i);
-//        String state = context.getString(R.string.voting);
         viewHolder.time.setText(
                 String.format("%1$s-%2$s", DateUtil.formatTimestamp(data.getStartDate(), "yyyy.MM.dd"), DateUtil.formatTimestamp(data.getEndDate(), "yyyy.MM.dd")));
         String status = data.getStatus();

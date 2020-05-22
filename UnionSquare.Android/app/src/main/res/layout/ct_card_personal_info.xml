@@ -6,6 +6,7 @@
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/did_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="13sp"
@@ -19,10 +20,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:textSize="11sp"
-        android:textColor="@color/white"
-        android:text="sjofjosfjsofjsofsjfsofsjfosfjso"/>
+        android:textColor="@color/white"/>
 
     <TextView
+        android:id="@+id/website_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="13sp"
@@ -36,10 +37,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:textSize="11sp"
-        android:textColor="@color/white"
-        android:text="http://www.elasto.org"/>
+        android:textColor="@color/white"/>
 
     <TextView
+        android:id="@+id/introduction_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="13sp"
@@ -53,7 +54,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:textSize="11sp"
-        android:textColor="@color/white"
-        android:text="这里会有一串800字以内的委员简介。"/>
+        android:textColor="@color/white"/>
 
 </LinearLayout>

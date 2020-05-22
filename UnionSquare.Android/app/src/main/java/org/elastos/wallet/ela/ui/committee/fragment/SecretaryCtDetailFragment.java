@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
@@ -106,17 +105,46 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
                     DateUtil.formatTimestamp(startDate, "yyyy.MM.dd HH:mm:ss"),
                     DateUtil.formatTimestamp(endDate, "yyyy.MM.dd HH:mm:ss")));
             String brithday = dataBean.getBirthday()==0?"":String.valueOf(dataBean.getBirthday());
-            if(!AppUtlis.isNullOrEmpty(brithday)){
-                birthDay.setVisibility(View.VISIBLE);
-                birthDay.setText(DateUtil.formatTimestamp(brithday, "yyyy.MM.dd"));
+            birthDay.setText(DateUtil.formatTimestamp(brithday, "yyyy.MM.dd"));
+            if(AppUtlis.isNullOrEmpty(brithday)){
+                birthdayTitle.setVisibility(View.GONE);
+                birthDay.setVisibility(View.GONE);
             }
             email.setText(dataBean.getEmail());
+            if(AppUtlis.isNullOrEmpty(dataBean.getEmail())) {
+                email.setVisibility(View.GONE);
+                emailTitle.setVisibility(View.GONE);
+            }
             homepage.setText(dataBean.getAddress());
+            if(AppUtlis.isNullOrEmpty(dataBean.getAddress())) {
+                homepage.setVisibility(View.GONE);
+                homepageTitle.setVisibility(View.GONE);
+            }
             wechat.setText(dataBean.getWechat());
+            if(AppUtlis.isNullOrEmpty(dataBean.getWechat())) {
+                wechatTitle.setVisibility(View.GONE);
+                wechat.setVisibility(View.GONE);
+            }
             weibo.setText(dataBean.getWeibo());
+            if(AppUtlis.isNullOrEmpty(dataBean.getWeibo())) {
+                weiboTitle.setVisibility(View.GONE);
+                weibo.setVisibility(View.GONE);
+            }
             facebook.setText(dataBean.getFacebook());
+            if(AppUtlis.isNullOrEmpty(dataBean.getFacebook())) {
+                facebookTitle.setVisibility(View.GONE);
+                facebook.setVisibility(View.GONE);
+            }
             microsoft.setText(dataBean.getMicrosoft());
+            if(AppUtlis.isNullOrEmpty(dataBean.getMicrosoft())) {
+                microsoftTitle.setVisibility(View.GONE);
+                microsoft.setVisibility(View.GONE);
+            }
             introduce.setText(dataBean.getIntroduction());
+            if(AppUtlis.isNullOrEmpty(dataBean.getIntroduction())) {
+                introduce.setVisibility(View.GONE);
+                personalprofileTitle.setVisibility(View.GONE);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -136,4 +164,20 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
         new WalletManagePresenter().DIDResolveWithTip(did, this, "1");
     }
 
+    @BindView(R.id.birth_time_title)
+    TextView birthdayTitle;
+    @BindView(R.id.email_title)
+    TextView emailTitle;
+    @BindView(R.id.personal_homepage_title)
+    TextView homepageTitle;
+    @BindView(R.id.wechat_account_title)
+    TextView wechatTitle;
+    @BindView(R.id.blog_account_title)
+    TextView weiboTitle;
+    @BindView(R.id.facebook_account_title)
+    TextView facebookTitle;
+    @BindView(R.id.microsoft_account_title)
+    TextView microsoftTitle;
+    @BindView(R.id.personal_profile_title)
+    TextView personalprofileTitle;
 }

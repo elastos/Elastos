@@ -189,8 +189,20 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         if(null == ctDetailBean) return;
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         didTv.setText(dataBean.getDid());
+        if(AppUtlis.isNullOrEmpty(dataBean.getDid())) {
+            didTitle.setVisibility(View.GONE);
+            didTv.setVisibility(View.GONE);
+        }
         website.setText(dataBean.getAddress());
+        if(AppUtlis.isNullOrEmpty(dataBean.getAddress())) {
+            website.setVisibility(View.GONE);
+            websiteTitle.setVisibility(View.GONE);
+        }
         introduction.setText(dataBean.getIntroduction());
+        if(AppUtlis.isNullOrEmpty(dataBean.getIntroduction())) {
+            introduction.setVisibility(View.GONE);
+            introducetionTitle.setVisibility(View.GONE);
+        }
     }
 
     @SuppressLint("DefaultLocale")
@@ -200,4 +212,10 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         setRecyclerView(terms);
     }
 
+    @BindView(R.id.did_title)
+    TextView didTitle;
+    @BindView(R.id.website_title)
+    TextView websiteTitle;
+    @BindView(R.id.introduction_title)
+    TextView introducetionTitle;
 }

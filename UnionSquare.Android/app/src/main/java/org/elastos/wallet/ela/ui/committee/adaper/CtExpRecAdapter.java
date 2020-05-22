@@ -78,9 +78,9 @@ public class CtExpRecAdapter extends RecyclerView.Adapter<CtExpRecAdapter.ViewHo
         }
         viewHolder.subTitle.setText(String.format("#%1$d %2$s %3$s %4$s",
                 data.getId(),
-                DateUtil.formatTimestamp(String.valueOf(data.getCreatedAt()), "yyyy.MM.dd"),
-                data.getDidName(),
-                statusStr));
+                DateUtil.formatTimestamp(String.valueOf(0==data.getCreatedAt()?"":data.getCreatedAt()), "yyyy.MM.dd"),
+                AppUtlis.isNullOrEmpty(data.getDidName())?"":data.getDidName(),
+                AppUtlis.isNullOrEmpty(statusStr)?"":statusStr));
         if(data.getVoteResult().equalsIgnoreCase(ABSTENTION)) {
             viewHolder.tag.setBackgroundColor(Color.parseColor("#666666"));
             viewHolder.tag.setText(context.getString(R.string.abstention));
