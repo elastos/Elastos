@@ -53,13 +53,13 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.secretarydetail));
         presenter = new CtDetailPresenter();
-        presenter.getCouncilInfo(this, id, did);
+        presenter.getCurrentCouncilInfo(this, did);
     }
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
-            case "getCouncilInfo":
+            case "getCurrentCouncilInfo":
                 setInfo((CtDetailBean) baseEntity);
                 break;
         }
@@ -100,9 +100,16 @@ public class SecretaryCtDetailFragment extends BaseFragment implements NewBaseVi
             name.setText(dataBean.getDidName());
             location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
             didTv.setText(dataBean.getDid());
-            endTime.setText(DateUtil.formatTimestamp(String.valueOf(dataBean.getEndDate()), "yyyy.MM.dd"));
-            fromTime.setText(DateUtil.formatTimestamp(String.valueOf(dataBean.getStartDate()), "yyyy.MM.dd"));
-            birthDay.setText(DateUtil.formatTimestamp(String.valueOf(dataBean.getBirthday()), "yyyy.MM.dd"));
+            String startDate = dataBean.getStartDate()==0?"":String.valueOf(dataBean.getStartDate());
+            String endDate = dataBean.getEndDate()==0?"":String.valueOf(dataBean.getEndDate());
+            endTime.setText(String.format("%1$s - %2$s",
+                    DateUtil.formatTimestamp(startDate, "yyyy.MM.dd HH:mm:ss"),
+                    DateUtil.formatTimestamp(endDate, "yyyy.MM.dd HH:mm:ss")));
+            String brithday = dataBean.getBirthday()==0?"":String.valueOf(dataBean.getBirthday());
+            if(!AppUtlis.isNullOrEmpty(brithday)){
+                birthDay.setVisibility(View.VISIBLE);
+                birthDay.setText(DateUtil.formatTimestamp(brithday, "yyyy.MM.dd"));
+            }
             email.setText(dataBean.getEmail());
             homepage.setText(dataBean.getAddress());
             wechat.setText(dataBean.getWechat());

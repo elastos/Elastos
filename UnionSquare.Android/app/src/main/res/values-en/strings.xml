@@ -682,7 +682,7 @@
     <string name="ctmemberlist">Council Member List</string>
     <string name="current">Current Term</string>
     <string name="voting">In Election</string>
-    <string name="pastitemtitle">the %1$s-th Term(%2$s)</string>
+    <string name="pastitemtitle">the %1$d-th Term(%2$s)</string>
     <string name="amember">the %1$s-th Term</string>
     <string name="votemanager">Election Management</string>
     <string name="ctmanager">Council Member Management</string>

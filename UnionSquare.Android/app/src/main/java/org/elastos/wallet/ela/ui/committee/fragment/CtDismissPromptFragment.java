@@ -50,7 +50,6 @@ public class CtDismissPromptFragment extends BaseFragment {
                 promptTv.setText(getString(R.string.dimissdialoghint));
                 break;
             default:
-                throw new IllegalStateException("Unexpected value: " + status);
         }
     }
 

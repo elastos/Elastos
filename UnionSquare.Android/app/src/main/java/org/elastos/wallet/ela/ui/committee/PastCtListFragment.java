@@ -66,14 +66,14 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         pastCtPresenter = new PastCtPresenter();
 
         ctDetailPresenter.getCurrentCouncilInfo(this, wallet.getDid().replace("did:elastos:", ""));
-        pastCtPresenter.getCouncilTerm(this);
+//        pastCtPresenter.getCouncilTerm(this);
 
 //        rockData();
     }
 
     private void setRecycleView() {
         if (adapter == null) {
-            adapter = new PastCtRecAdapter(getContext(), list);
+            adapter = new PastCtRecAdapter(getContext(), wallet, list);
             recyclerview.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             recyclerview.setAdapter(adapter);
             adapter.setCommonRvListener(this);
@@ -96,12 +96,17 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         }
     }
 
+
     private void go2(CtDetailBean ctDetailBean) {
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         String status = dataBean.getStatus();
         String depositAmount = dataBean.getDepositAmount();
-        if(AppUtlis.isNullOrEmpty(status) || status.equals("Elected")) {
-//            pastCtPresenter.getCouncilTerm(this);
+
+        if(!AppUtlis.isNullOrEmpty(status)
+                && !status.equals("Terminated")
+                && !status.equals("Impeached")
+                && !status.equals("Returned")) {
+            pastCtPresenter.getCouncilTerm(this);
         } else {
             Bundle bundle = new Bundle();
             bundle.putString("status", status);
@@ -154,7 +159,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     public void onClick(View view) {
         Bundle bundle = new Bundle();
         bundle.putString("id", "");
-        bundle.putString("did", wallet.getDid());
+        bundle.putString("did", wallet.getDid().replace("did:elastos:", ""));
         start(SecretaryCtDetailFragment.class, bundle);
     }
 }

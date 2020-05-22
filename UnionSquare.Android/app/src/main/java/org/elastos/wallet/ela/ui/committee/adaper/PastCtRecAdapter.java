@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.committee.bean.PastCtBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.utils.AppUtlis;
@@ -21,9 +22,10 @@ import butterknife.ButterKnife;
 
 public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.ViewHolder>{
 
-    public PastCtRecAdapter(Context context, List<PastCtBean.DataBean> list) {
+    public PastCtRecAdapter(Context context, Wallet wallet, List<PastCtBean.DataBean> list) {
         this.context = context;
         this.list = list;
+        this.wallet = wallet;
     }
 
     @NonNull
@@ -51,12 +53,16 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), ""));
         } else if(status.equalsIgnoreCase("CURRENT")) {
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.current)+")"));
-            viewHolder.manager.setVisibility(View.VISIBLE);
-            viewHolder.manager.setText(context.getString(R.string.ctmanager));
+            if(wallet.getWalletId().equals(data.getId())) {
+                viewHolder.manager.setText(context.getString(R.string.ctmanager));
+                viewHolder.manager.setVisibility(View.VISIBLE);
+            }
         } else if(status.equalsIgnoreCase("VOTING")) {
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.voting)+")"));
-            viewHolder.manager.setVisibility(View.VISIBLE);
-            viewHolder.manager.setText(context.getString(R.string.votemanager));
+            if(wallet.getWalletId().equals(data.getId())) {
+                viewHolder.manager.setVisibility(View.VISIBLE);
+                viewHolder.manager.setText(context.getString(R.string.votemanager));
+            }
         } else {
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), ""));
         }
@@ -114,5 +120,6 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
     private Context context;
     private ManagerListener managerListener;
     private CommonRvListener commonRvListener;
+    private Wallet wallet;
     private List<PastCtBean.DataBean> list;
 }
