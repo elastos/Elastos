@@ -88,7 +88,7 @@
 // Carrier invite request/response data transmission unit length.
 #define INVITE_DATA_UNIT                (1280)
 
-#define DHT_MSG_EXPIRE_TIME               (5) //5s.
+#define DHT_MSG_EXPIRE_TIME               (10) //10s.
 
 const char* ela_get_version(void)
 {
@@ -1026,8 +1026,14 @@ static void ela_destroy(void *argv)
     if (w->pref.dht_bootstraps)
         free(w->pref.dht_bootstraps);
 
-    if (w->pref.express_nodes)
+    if (w->pref.express_nodes) {
+        int idx;
+        for(idx = 0; idx < w->pref.express_nodes_size; idx++) {
+            if(w->pref.express_nodes[idx].ipv4)
+                free(w->pref.express_nodes[idx].ipv4);
+        }
         free(w->pref.express_nodes);
+    }
 
     if (w->tassembly_irsps)
         deref(w->tassembly_irsps);
@@ -1066,6 +1072,9 @@ static void notify_offreq_received(ElaCarrier *w, const char *, const uint8_t *,
 static void notify_offreceipt_received(ElaCarrier *w, const char *, int64_t, int);
 static ExpressConnector *create_express_connector(ElaCarrier *w)
 {
+    if (w->connector)
+        return w->connector;
+
     return express_connector_create(w, notify_offmsg_received,
                     notify_offreq_received, notify_offreceipt_received);
 }
@@ -1176,29 +1185,13 @@ ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
         char *endptr = "";
         ssize_t len;
 
-        if (n->ipv4 && strlen(n->ipv4) > MAX_IPV4_ADDRESS_LEN) {
-            vlogE("Carrier: Express node ipv4 address (%s) too long", n->ipv4);
-            deref(w);
-            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
-            return NULL;
-        }
-
-        if (n->ipv6) {
-            vlogE("Carrier: Express node currently only support ipv4 address.");
-            deref(w);
-            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
-            return NULL;
-        }
-
         if (!n->ipv4) {
             vlogE("Carrier: Express node without ipv4 address.");
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
         }
-
-        if (n->ipv4)
-            strcpy(ni->ipv4, n->ipv4);
+        ni->ipv4 = strdup(n->ipv4);
 
         ni->port = n->port ? (int)strtol(n->port, &endptr, 10) : DHT_BOOTSTRAP_DEFAULT_PORT;
         if (ni->port < 1 || ni->port > 65535 || *endptr) {

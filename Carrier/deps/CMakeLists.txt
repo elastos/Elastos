@@ -15,8 +15,10 @@ add_submodule(CUnit
     DEPENDS platform-specific)
 add_submodule(zlib
     DEPENDS platform-specific)
-add_submodule(curl
-    DEPENDS platform-specific zlib)
+add_submodule(libressl
+    DEPENDS platform-specific)
+add_submodule(libcurl
+    DEPENDS platform-specific libressl zlib)
 add_submodule(cJSON
     DEPENDS platform-specific)
 

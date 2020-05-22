@@ -59,7 +59,11 @@ typedef struct HiveBootstrapNodeBuf {
     uint16_t port;
 } HiveBootstrapNodeBuf;
 
-typedef struct DhtBootstrapNodeBuf ExpressNodeBuf;
+typedef struct ExpressNodeBuf {
+    char *ipv4;
+    uint16_t port;
+    uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
+} ExpressNodeBuf;
 
 typedef struct Preferences {
     char *data_location;
