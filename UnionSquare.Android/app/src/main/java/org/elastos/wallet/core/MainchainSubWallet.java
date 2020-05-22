@@ -141,11 +141,11 @@ public class MainchainSubWallet extends SubWallet {
     }
 
     public String ProposalTrackingNewOwnerDigest(String payload) {
-        return ProposalTrackingNewOwnerDigest(payload);
+        return ProposalTrackingNewOwnerDigest(mMainchainProxy,payload);
     }
 
     public String ProposalTrackingSecretaryDigest(String payload) {
-        return ProposalTrackingSecretaryDigest(payload);
+        return ProposalTrackingSecretaryDigest(mMainchainProxy,payload);
     }
 
     public String CreateProposalTrackingTransaction(String payload, String memo) {

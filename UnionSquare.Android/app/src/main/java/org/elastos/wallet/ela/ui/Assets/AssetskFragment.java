@@ -66,6 +66,7 @@ import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProcessJwtEntity
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalFatherJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveProposalJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveReviewJwtEntity;
+import org.elastos.wallet.ela.ui.Assets.bean.qr.proposal.RecieveWithdrawJwtEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.AssetDetailsFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.CreateSignReadOnlyWalletFragment;
@@ -83,6 +84,7 @@ import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.mulwallet.CreatMulWalletPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
+import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
@@ -96,6 +98,7 @@ import org.elastos.wallet.ela.ui.proposal.fragment.SuggestionsInfoFragment;
 import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
 import org.elastos.wallet.ela.ui.proposal.presenter.bean.ProposalProcessPayLoad;
 import org.elastos.wallet.ela.ui.proposal.presenter.bean.ProposalReviewPayLoad;
+import org.elastos.wallet.ela.ui.proposal.presenter.bean.ProposalWithdrawPayLoad;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -109,6 +112,7 @@ import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -152,7 +156,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private String scanResult;
     private String payPasswd;
     private ProposalPresenter proposalPresenter;
-    private RecieveJwtEntity curentJwtEntity;
+    private RecieveProposalFatherJwtEntity curentJwtEntity;
 
     @Override
     protected int getLayoutId() {
@@ -828,6 +832,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         if (curentJwtEntity instanceof RecieveProcessJwtEntity) {
             getProcessDigest();
         }
+        if (curentJwtEntity instanceof RecieveWithdrawJwtEntity) {
+            getWithDrawDigest();
+        }
 
     }
 
@@ -838,13 +845,50 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         proposalPresenter.proposalReviewDigest(wallet.getWalletId(), new Gson().toJson(payLoad), this, payLoad);
     }
 
+    private void getWithDrawDigest() {
+
+        RecieveWithdrawJwtEntity entity = (RecieveWithdrawJwtEntity) curentJwtEntity;
+        ProposalWithdrawPayLoad payLoad = converWithDrawPayLoad(entity.getData());
+        proposalPresenter.proposalWithdrawDigest(wallet.getWalletId(), new Gson().toJson(payLoad), this, payLoad);
+    }
+
     private void getProcessDigest() {
 
 
         RecieveProcessJwtEntity entity = (RecieveProcessJwtEntity) curentJwtEntity;
-        ProposalProcessPayLoad payLoad = converRrpcessPayLoad(entity.getData());
-        proposalPresenter.proposalTrackingOwnerDigest(wallet.getWalletId(), new Gson().toJson(payLoad), this, payLoad);
+        ProposalProcessPayLoad payLoad = converRrocessPayLoad(entity.getData());
 
+        if ("reviewmilestone".equals(entity.getCommand())) {
+            payLoad.setOwnerSignature(entity.getData().getOwnersignature());
+            payLoad.setNewOwnerSignature(entity.getData().getNewownersignature() == null ? "" : entity.getData().getNewownersignature());
+            switch (entity.getData().getProposaltrackingtype().toLowerCase()) {
+                case "common":
+                    payLoad.setType(0);
+                    break;
+                case "progress":
+                    payLoad.setType(1);
+                    break;
+                case "rejected":
+                    payLoad.setType(2);
+                    break;
+                case "terminated":
+                    payLoad.setType(3);
+                    break;
+                case "changeowner":
+                    payLoad.setType(4);
+                    break;
+                case "finalized":
+                    payLoad.setType(5);
+                    break;
+            }
+
+            payLoad.setSecretaryGeneralOpinionHash(entity.getData().getSecretaryopinionhash());
+            Log.i("///", new Gson().toJson(payLoad));
+            proposalPresenter.proposalTrackingSecretaryDigest(wallet.getWalletId(), new Gson().toJson(payLoad), this, payLoad);
+
+        } else if ("updatemilestone".equals(entity.getCommand())) {
+            proposalPresenter.proposalTrackingOwnerDigest(wallet.getWalletId(), new Gson().toJson(payLoad), this, payLoad);
+        }
     }
 
     @Override
@@ -965,45 +1009,80 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
-
-            case "getCouncilInfo":
-              /*  CtDetailBean ctDetailBean= (CtDetailBean) baseEntity;
-               if( "COUNCIL".equals(ctDetailBean.getData().getType())){}else {
-
-               }*/
+            case "getCurrentCouncilInfo":
+                CtDetailBean ctDetailBean = (CtDetailBean) baseEntity;
+                switch (curentJwtEntity.getCommand().toLowerCase()) {
+                    case "reviewmilestone":
+                        if ("SecretaryGeneral".equals(ctDetailBean.getData().getType())) {
+                            proposalPresenter.showFeePage(wallet, Constant.PROPOSALSECRET, 39, this, ((RecieveProcessJwtEntity) curentJwtEntity).getData());
+                        } else {
+                            restoreScanData();
+                            showToast(getString(R.string.didnotsame));
+                        }
+                        break;
+                    case "createproposal":
+                        if ("CouncilMember".equals(ctDetailBean.getData().getType())) {
+                            //目前只有建议转提案调用他
+                            toSuggest((String) o);
+                        } else {
+                            restoreScanData();
+                            showToast(getString(R.string.didnotsame));
+                        }
+                        break;
+                }
 
 
                 break;
             case "postData":
+                String command = curentJwtEntity.getCommand();
                 String des = "";
-                /*if ("createsuggestion".equals(command)) {
+                if ("createsuggestion".equals(command) || "updatemilestone".equals(command)) {
                     des = getString(R.string.signsendsuccess);
 
-                }*/
+                }
                 new DialogUtil().showTransferSucess(des, getBaseActivity(), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
                     }
                 });
+                restoreScanData();
                 break;
             case "newPublishTransaction":
                 String hash = "";
+                int transfertype = -1;
                 try {
                     JSONObject pulishdata = new JSONObject(((CommmonStringWithiMethNameEntity) baseEntity).getData());
                     hash = pulishdata.getString("TxHash");
-                    proposalPresenter.backProposalJwt("txidproposalreview", scanResult, hash, payPasswd, this);
+                    String callBacktype = "";
+
+                    if ("reviewproposal".equals(curentJwtEntity.getCommand())) {
+                        callBacktype = "txidproposalreview";
+                        transfertype = 38;
+
+                    } else if ("reviewmilestone".equals(curentJwtEntity.getCommand())) {
+                        transfertype = 39;
+                        callBacktype = "txid";
+
+                    } else if ("withdraw".equals(curentJwtEntity.getCommand())) {
+                        transfertype = 41;
+                        post(RxEnum.TRANSFERSUCESS.ordinal(), transfertype + "", hash);
+                        return;
+
+                    }
+                    proposalPresenter.backProposalJwt(callBacktype, scanResult, hash, payPasswd, this);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                restoreScanData();
-                post(RxEnum.TRANSFERSUCESS.ordinal(), 38 + "", hash);
+                post(RxEnum.TRANSFERSUCESS.ordinal(), transfertype + "", hash);
                 break;
             case "signTransaction":
                 new PwdPresenter().newPublishTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringWithiMethNameEntity) baseEntity).getData(), this);
 
                 break;
+            case "createProposalTrackingTransaction":
             case "createProposalReviewTransaction":
+            case "createProposalWithdrawTransaction":
 
                 new PwdPresenter().signTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(), payPasswd, this);
 
@@ -1013,11 +1092,27 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 proposalPresenter.backProposalJwt("signature", scanResult, signDigest1, payPasswd, this);
 
                 break;
+            case "proposalTrackingSecretaryDigest":
+                String signDigest2 = proposalPresenter.getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData(), this);
+                ProposalProcessPayLoad processPayLoad = (ProposalProcessPayLoad) o;
+                processPayLoad.setSecretaryGeneralSignature(signDigest2);
+                proposalPresenter.createProposalTrackingTransaction(wallet.getWalletId(), new Gson().toJson(processPayLoad), this);
+
+
+                break;
             case "proposalReviewDigest":
                 String signDigest = proposalPresenter.getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData(), this);
                 ProposalReviewPayLoad proposalReviewPayLoad = (ProposalReviewPayLoad) o;
                 proposalReviewPayLoad.setSignature(signDigest);
                 proposalPresenter.createProposalReviewTransaction(wallet.getWalletId(), new Gson().toJson(proposalReviewPayLoad), this);
+                break;
+            case "proposalWithdrawDigest":
+                String signDigest3 = proposalPresenter.getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData(), this);
+                ProposalWithdrawPayLoad withdrawPayLoad = (ProposalWithdrawPayLoad) o;
+                withdrawPayLoad.setSignature(signDigest3);
+                RecieveWithdrawJwtEntity.DataBean dataBean = ((RecieveWithdrawJwtEntity) curentJwtEntity).getData();
+                JSONArray utxos = converWithDrawPayLoadUtxo(dataBean.getUtxos());
+                proposalPresenter.createProposalWithdrawTransaction(wallet.getWalletId(), dataBean.getRecipient(), dataBean.getAmount(), utxos.toString(), new Gson().toJson(withdrawPayLoad), this);
                 break;
             case "forceDIDResolve":
                 //未传递paypas网站提供的did验签
@@ -1082,32 +1177,37 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 proposalPresenter = new ProposalPresenter();
             }
             switch (command) {
-                case "reviewmilestone":
+                case "withdraw":
+                    //提现  判断是否本人
+                    curentJwtEntity = JSON.parseObject(payload, RecieveWithdrawJwtEntity.class);
+                    RecieveWithdrawJwtEntity.DataBean procesData2 = ((RecieveWithdrawJwtEntity) curentJwtEntity).getData();
 
-                    //执行期  秘书长签名 发送交易
-                    //判断身份  必须是秘书长
-                    //new CtDetailPresenter().getCouncilInfo(this, "", wallet.getDid());
-                    curentJwtEntity = JSON.parseObject(payload, RecieveProcessJwtEntity.class);
-                    RecieveProcessJwtEntity.DataBean procesData1 = ((RecieveProcessJwtEntity) curentJwtEntity).getData();
-                    proposalPresenter.showFeePage(wallet, Constant.PROPOSALSECRET, 39, this, procesData1);
-
-
-                    break;
-                case "updatemilestone":
-                    //执行期  委员自己执行反馈
-
-                    curentJwtEntity = JSON.parseObject(payload, RecieveProcessJwtEntity.class);
-                    RecieveProcessJwtEntity.DataBean procesData = ((RecieveProcessJwtEntity) curentJwtEntity).getData();
-                    if (procesData.getOwnerpubkey().equals(getMyDID().getDidPublicKey(didDocument))) {
-                        proposalPresenter.showFeePage(wallet, Constant.PROPOSALPROCESS, 39, this, procesData);
+                    if (procesData2.getOwnerpublickey().equals(getMyDID().getDidPublicKey(didDocument))) {
+                        proposalPresenter.showFeePage(wallet, Constant.PROPOSALWITHDRAW, 41, this, procesData2);
                     } else {
                         restoreScanData();
                         showToast(getString(R.string.didnotsame));
                     }
                     break;
-
-
+                case "reviewmilestone":
+                    //执行期  秘书长签名 发送交易
+                    //判断身份  网站判断是秘书长  这里判断是本
+                    curentJwtEntity = JSON.parseObject(payload, RecieveProcessJwtEntity.class);
+                    proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
+                    break;
+                case "updatemilestone":
+                    //执行期  委员自己执行反馈 网站确认是委员  这里确认本人 只签名
+                    curentJwtEntity = JSON.parseObject(payload, RecieveProcessJwtEntity.class);
+                    RecieveProcessJwtEntity.DataBean procesData1 = ((RecieveProcessJwtEntity) curentJwtEntity).getData();
+                    if (procesData1.getOwnerpubkey().equals(getMyDID().getDidPublicKey(didDocument))) {
+                        proposalPresenter.showFeePage(wallet, Constant.PROPOSALPROCESS, 39, this, procesData1);
+                    } else {
+                        restoreScanData();
+                        showToast(getString(R.string.didnotsame));
+                    }
+                    break;
                 case "createsuggestion":
+                    //发建议 任何人 本人 只签名
                     curentJwtEntity = JSON.parseObject(payload, RecieveProposalJwtEntity.class);
                     RecieveProposalJwtEntity.DataBean suggestData = ((RecieveProposalJwtEntity) curentJwtEntity).getData();
                     if (suggestData.getOwnerpublickey().equals(getMyDID().getDidPublicKey(didDocument)))
@@ -1118,12 +1218,14 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     }
                     break;
                 case "createproposal":
-                    //判断身份  必须是委员
-                    //new CtDetailPresenter().getCouncilInfo(this, "", wallet.getDid());
-                    toSuggest(command);
+                    //把建议->提案 判断身份  任意委员 发交易
+                    curentJwtEntity = JSON.parseObject(payload, RecieveProposalJwtEntity.class);
+                    proposalPresenter.getCurrentCouncilInfo(wallet.getDid().replace("did:elastos:", ""), this);
+
                     break;
+
                 case "reviewproposal":
-                    //review
+                    //评议期  身份必须是本委员(委员身份网站已经确认   本人) 发交易
                     curentJwtEntity = JSON.parseObject(payload, RecieveReviewJwtEntity.class);
                     RecieveReviewJwtEntity.DataBean reviewData = ((RecieveReviewJwtEntity) curentJwtEntity).getData();
                     if (reviewData.getDID().toLowerCase().equals(wallet.getDid().toLowerCase())) {
@@ -1141,33 +1243,59 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     }
 
-    private ProposalReviewPayLoad converReviewPayLoad(RecieveReviewJwtEntity.DataBean origin) {
-        ProposalReviewPayLoad proposalReviewPayLoad = new ProposalReviewPayLoad();
-        proposalReviewPayLoad.setProposalHash(origin.getProposalhash());
-        switch (origin.getVoteresult().toLowerCase()) {
-            case "approve":
-                proposalReviewPayLoad.setVoteResult(0);
-                break;
-            case "reject":
-                proposalReviewPayLoad.setVoteResult(1);
-                break;
-            case "abstain":
-                proposalReviewPayLoad.setVoteResult(2);
-                break;
+    private JSONArray converWithDrawPayLoadUtxo(List<RecieveWithdrawJwtEntity.DataBean.UtxosBean> lists) {
+        JSONArray utxos = new JSONArray();
+        for (RecieveWithdrawJwtEntity.DataBean.UtxosBean bean : lists) {
+
+
+            try {
+                JSONObject utxo = new JSONObject();
+                utxo.put("Hash", bean.getTxid());
+                utxo.put("Index", bean.getVout());
+                utxo.put("Amount", bean.getAmount());
+                utxos.put(utxo);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
-        proposalReviewPayLoad.setOpinionHash(origin.getOpinionhash());
-        proposalReviewPayLoad.setDID(origin.getDID().replace("did:elastos:", ""));
-        return proposalReviewPayLoad;
+
+        return utxos;
     }
 
-    private ProposalProcessPayLoad converRrpcessPayLoad(RecieveProcessJwtEntity.DataBean origin) {
-        ProposalProcessPayLoad proposalReviewPayLoad = new ProposalProcessPayLoad();
-        proposalReviewPayLoad.setProposalHash(origin.getProposalhash());
-        proposalReviewPayLoad.setMessageHash(origin.getMessagehash());
-        proposalReviewPayLoad.setStage(origin.getStage());
-        proposalReviewPayLoad.setOwnerPublicKey(origin.getOwnerpubkey());
-        proposalReviewPayLoad.setNewOwnerPublicKey(origin.getNewownerpubkey());
-        return proposalReviewPayLoad;
+    private ProposalWithdrawPayLoad converWithDrawPayLoad(RecieveWithdrawJwtEntity.DataBean origin) {
+        ProposalWithdrawPayLoad payload = new ProposalWithdrawPayLoad();
+        payload.setProposalHash(origin.getProposalhash());
+        payload.setOwnerPublicKey(origin.getOwnerpublickey());
+        return payload;
+    }
+
+    private ProposalReviewPayLoad converReviewPayLoad(RecieveReviewJwtEntity.DataBean origin) {
+        ProposalReviewPayLoad payload = new ProposalReviewPayLoad();
+        payload.setProposalHash(origin.getProposalhash());
+        switch (origin.getVoteresult().toLowerCase()) {
+            case "approve":
+                payload.setVoteResult(0);
+                break;
+            case "reject":
+                payload.setVoteResult(1);
+                break;
+            case "abstain":
+                payload.setVoteResult(2);
+                break;
+        }
+        payload.setOpinionHash(origin.getOpinionhash());
+        payload.setDID(origin.getDID().replace("did:elastos:", ""));
+        return payload;
+    }
+
+    private ProposalProcessPayLoad converRrocessPayLoad(RecieveProcessJwtEntity.DataBean origin) {
+        ProposalProcessPayLoad payload = new ProposalProcessPayLoad();
+        payload.setProposalHash(origin.getProposalhash());
+        payload.setMessageHash(origin.getMessagehash());
+        payload.setStage(origin.getStage());
+        payload.setOwnerPublicKey(origin.getOwnerpubkey());
+        payload.setNewOwnerPublicKey(origin.getNewownerpubkey() == null ? "" : origin.getNewownerpubkey());
+        return payload;
     }
 
     private void toSuggest(String command) {

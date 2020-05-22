@@ -74,7 +74,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class WalletManageFragment extends BaseFragment implements WarmPromptListener, WalletManageViewData, CommmonStringWithMethNameViewData, NewBaseViewData {
 
@@ -85,7 +84,6 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
     private static final String OUTPORTMUPK = "outportmupk";
     @BindView(R.id.tv_title)
     TextView tvTitle;
-    Unbinder unbinder;
     @BindView(R.id.tv_updatename)
     TextView tvUpdatename;
     @BindView(R.id.ll_updatename)
@@ -308,7 +306,7 @@ public class WalletManageFragment extends BaseFragment implements WarmPromptList
         DID did = getMyDID().initDID(payPasswd);
         if (TextUtils.isEmpty(wallet.getDid()))
             new RealmUtil().upDataWalletDid(wallet.getWalletId(), getMyDID().getDidString());
-        presenter.forceDIDResolve(did.toString(), this,null);
+        presenter.forceDIDResolve(did.toString(), this, null);
 
     }
 
