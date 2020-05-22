@@ -1085,6 +1085,10 @@ func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) 
 		if blockHeight < b.chainParams.CRCommitteeStartHeight {
 			return errors.New("not support before CRCommitteeStartHeight")
 		}
+	case CRAssetsRectify:
+		if blockHeight < b.chainParams.CRAssetsRectifyTransactionHeight {
+			return errors.New("not support before CRAssetsRectifyTransactionHeight")
+		}
 	case TransferAsset:
 		if blockHeight >= b.chainParams.CRVotingStartHeight {
 			return nil
@@ -1926,7 +1930,7 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 func (b *BlockChain) checkCRAssetsRectifyTransaction(txn *Transaction,
 	references map[*Input]Output) error {
 	// Inputs count should be greater than or equal to MaxCRAssetsAddressUTXOCount
-	if len(txn.Inputs) < int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
+	if len(txn.Inputs) <= int(b.chainParams.MaxCRAssetsAddressUTXOCount) {
 		return errors.New("inputs count should be greater than or " +
 			"equal to MaxCRAssetsAddressUTXOCount")
 	}
