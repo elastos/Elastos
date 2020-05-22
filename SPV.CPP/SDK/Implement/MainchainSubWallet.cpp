@@ -39,6 +39,7 @@
 #include <Plugin/Transaction/Payload/CRCProposalTracking.h>
 #include <Plugin/Transaction/Payload/CRCProposalWithdraw.h>
 #include <Plugin/Transaction/TransactionOutput.h>
+#include <Plugin/Transaction/Attribute.h>
 #include <SpvService/Config.h>
 #include <Plugin/Transaction/Payload/ReturnDepositCoin.h>
 #include <CMakeConfig.h>
@@ -1420,6 +1421,7 @@ namespace Elastos {
 
 			BigInt outputAmount, inputAmount;
 			outputAmount.setDec(amount);
+			outputAmount -= CRCProposalWithdrawFee;
 			ErrorChecker::CheckParam(outputAmount <= 0, Error::InvalidArgument, "invalid amount");
 
 			try {
@@ -1428,6 +1430,9 @@ namespace Elastos {
 				ErrorChecker::CheckParam(!p->IsValid(CRCProposalWithdrawVersion), Error::InvalidArgument, "invalid payload");
 
 				txn = TransactionPtr(new Transaction(Transaction::crcProposalWithdraw, p));
+				std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
+				txn->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
+
 				for (nlohmann::json::const_iterator it = utxo.cbegin(); it != utxo.cend(); ++it) {
 					uint256 txHash;
 					txHash.SetHex((*it)["Hash"].get<std::string>());

@@ -283,7 +283,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(!tx->Deserialize(stream, true), Error::InvalidArgument,
 									 "Invalid input: deserialize fail");
 
-			SPVLOG_DEBUG("tx: {}", tx->ToJson().dump(4));
+			SPVLOG_DEBUG("decoded tx: {}", tx->ToJson().dump(4));
 			return tx;
 		}
 
@@ -347,7 +347,6 @@ namespace Elastos {
 
 			TransactionPtr tx = DecodeTx(signedTx);
 
-			SPVLOG_DEBUG("publishing tx: {}", tx->ToJson().dump(4));
 			publishTransaction(tx);
 
 			nlohmann::json result;
@@ -573,8 +572,7 @@ namespace Elastos {
 		}
 
 		void SubWallet::txPublished(const std::string &hash, const nlohmann::json &result) {
-			ArgInfo("{} {} hash: {} result: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), hash,
-					result.dump());
+			ArgInfo("{} {} hash: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), hash);
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 

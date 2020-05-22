@@ -1010,7 +1010,7 @@ namespace Elastos {
 			if (willSave) FireSavePeers(true, {});
 			if (willSave) FireSyncStopped(error);
 			if (isBlack) FireSaveBlackPeer(peer->GetPeerInfo());
-			if (willReconnect) ConnectLaster(0);
+			if (willReconnect) ConnectLaster(1);
 			FireTxStatusUpdate();
 		}
 
@@ -1194,16 +1194,16 @@ namespace Elastos {
 		}
 
 		void PeerManager::OnRejectedTx(const PeerPtr &peer, const uint256 &txHash, uint8_t code, const std::string &reason) {
-
+			TransactionPtr tx;
 			PublishedTransaction pubTx;
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				peer->info("rejected tx");
-				TransactionPtr tx = _wallet->TransactionForHash(txHash);
+				peer->info("rejected tx: code {}, reason {}", code, reason);
+				tx = _wallet->TransactionForHash(txHash);
 				RemovePeerFromList(peer, txHash, _txRequests);
 
-				for (size_t i = _publishedTx.size(); i > 0 && tx != nullptr; --i) { // see if tx is in list of published tx
-					if (_publishedTxHashes[i - 1] == tx->GetHash()) {
+				for (size_t i = _publishedTx.size(); i > 0; --i) { // see if tx is in list of published tx
+					if (_publishedTxHashes[i - 1] == txHash) {
 						pubTx = _publishedTx[i - 1];
 						if (code != 0x12) {
 							_publishedTx[i - 1].ResetCallback();
@@ -1242,9 +1242,9 @@ namespace Elastos {
 
 			FireTxStatusUpdate();
 			if (pubTx.HasCallback()) pubTx.FireCallback(code, reason);
-			if (code != 0x12 && reason.find("Duplicate") == std::string::npos &&
+			if (tx != nullptr && code != 0x12 && reason.find("Duplicate") == std::string::npos &&
 				reason.find("duplicate") == std::string::npos) {
-				_wallet->RemoveTransaction(pubTx.GetTransaction()->GetHash());
+				_wallet->RemoveTransaction(txHash);
 			}
 		}
 
