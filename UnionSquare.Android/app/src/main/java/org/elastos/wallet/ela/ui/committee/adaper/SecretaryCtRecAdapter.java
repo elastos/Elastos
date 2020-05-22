@@ -42,8 +42,8 @@ public class SecretaryCtRecAdapter extends RecyclerView.Adapter<SecretaryCtRecAd
         CtListBean.Secretariat data = list.get(i);
         viewHolder.name.setText(data.getDidName());
         viewHolder.location.setText(AppUtlis.getLoc(context, String.valueOf(data.getLocation())));
-        viewHolder.tag.setText(
-                String.format("%1$s-%2$s", DateUtil.formatTimestamp(String.valueOf(data.getStartDate()), "yyyy.MM.dd"), DateUtil.formatTimestamp(String.valueOf(data.getEndDate()), "yyyy.MM.dd")));
+        viewHolder.date.setText(
+                String.format("%1$s — %2$s", DateUtil.formatTimestamp(String.valueOf(data.getStartDate()), "yyyy.MM.dd"), DateUtil.formatTimestamp(String.valueOf(data.getEndDate()), "yyyy.MM.dd")));
         String status = data.getStatus();
         if(!AppUtlis.isNullOrEmpty(status) && status.equalsIgnoreCase("CURRENT")) {
             viewHolder.tag.setVisibility(View.VISIBLE);

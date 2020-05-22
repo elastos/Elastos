@@ -90,6 +90,14 @@ public class VoteActivity extends BaseActivity {
                 tv_max.setText("ELA");
                 etVote.setHint(getString(R.string.available) + maxBalance);
                 break;
+            case Constant.IMPEACHMENTCRC:
+
+                tvVoteTag.setText(R.string.impeachvotes);
+                tvTitle.setText(R.string.impeachment);
+                tv_max.setBackgroundResource(0);
+                tv_max.setText("ELA");
+                etVote.setHint(getString(R.string.available) + maxBalance);
+                break;
             default:
                 tv_max.setOnClickListener(v -> etVote.setText("MAX"));
                 tv_maxvote.setText(getString(R.string.maximum_voting_rights) + "  " + maxBalance);

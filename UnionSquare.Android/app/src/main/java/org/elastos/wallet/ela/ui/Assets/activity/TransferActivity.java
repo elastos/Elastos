@@ -55,6 +55,8 @@ import butterknife.OnClick;
 public class TransferActivity extends BaseActivity {
 
 
+    @BindView(R.id.title)
+    TextView title;
     @BindView(R.id.tv_amount_tag)
     TextView tvAmountTag;
     @BindView(R.id.tv_address)
@@ -151,6 +153,12 @@ public class TransferActivity extends BaseActivity {
                 rlHash.setVisibility(View.VISIBLE);
                 tvHash.setText(searchBean.getProposalHash());
                 tvAmountTag.setText(R.string.rejectticket);
+            case Constant.IMPEACHMENTCRC:
+                tvAddress.setVisibility(View.GONE);
+                tvRate.setVisibility(View.GONE);
+                title.setText(R.string.impeachment);
+                tvAmountTag.setText(R.string.impeachvotes);
+                break;
             case Constant.SUPERNODEVOTE:
             case Constant.CRVOTE:
             case Constant.WITHDRAWSUPERNODE:

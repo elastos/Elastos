@@ -39,7 +39,7 @@ import io.realm.Realm;
 
 public class MyApplication extends MultiDexApplication {
     private static MyApplication myApplication;
-    public static int currentWalletNet = WalletNet.MAINNET;
+    public static int currentWalletNet = WalletNet.PRVNET;
     private static MyWallet myWallet;
     public static Set<String> serverList = new HashSet<>();
     public static String REQUEST_BASE_URL;

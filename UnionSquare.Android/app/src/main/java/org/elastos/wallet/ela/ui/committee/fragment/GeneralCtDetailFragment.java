@@ -1,29 +1,50 @@
 package org.elastos.wallet.ela.ui.committee.fragment;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.BusEvent;
+import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
+import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
+import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
+import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.committee.adaper.CtExpRecAdapter;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
-import org.elastos.wallet.ela.ui.committee.bean.ExperienceBean;
 import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
+import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
+import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
+import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
-import org.elastos.wallet.ela.utils.DateUtil;
+import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.NumberiUtil;
+import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.svg.GlideApp;
 import org.elastos.wallet.ela.utils.view.CircleProgressView;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -35,7 +56,7 @@ import butterknife.OnClick;
 /**
  * general committee detail
  */
-public class GeneralCtDetailFragment extends BaseFragment implements NewBaseViewData {
+public class GeneralCtDetailFragment extends BaseFragment implements NewBaseViewData, CommonBalanceViewData {
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
     @BindView(R.id.toolbar)
@@ -59,10 +80,13 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     CtExpRecAdapter adapter;
     List<CtDetailBean.Term> list = null;
 
+    private RealmUtil realmUtil = new RealmUtil();
+    private Wallet wallet = realmUtil.queryDefauleWallet();
     CtDetailPresenter presenter;
 
     private String id;
     private String did;
+
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
@@ -77,6 +101,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
 
     @Override
     protected void initView(View view) {
+        registReceiver();
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctdetail));
         presenter = new CtDetailPresenter();
         presenter.getCouncilInfo(this, id, did);
@@ -124,6 +149,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         experienceTitleTv.setText(String.format(getString(R.string.performancerecord), String.valueOf(list.size())));
     }
 
+    JSONArray otherUnActiveVote;
     @OnClick({R.id.tab1, R.id.tab2, R.id.impeachment_btn})
     public void onClick(View view) {
         switch (view.getId()) {
@@ -134,15 +160,18 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
                 selectExperience();
                 break;
             case R.id.impeachment_btn:
-                Bundle bundle = new Bundle();
-                bundle.putString("cid", cid);
-                start(ImpeachmentFragment.class, bundle);
+                if (otherUnActiveVote == null) {
+                    otherUnActiveVote = new JSONArray();
+                }
+                new VoteListPresenter().getDepositVoteList("1", "all", this, false);
+                new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
+                new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
                 break;
         }
 
     }
 
-    private String cid;
+    String cid;
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
@@ -151,9 +180,54 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
                 setCtInfo((CtDetailBean) baseEntity);
                 setCtRecord((CtDetailBean) baseEntity);
                 break;
+            case "getVoteInfo":
+                try {
+                    String voteInfo = ((CommmonStringEntity) baseEntity).getData();
+                    JSONObject voteJson = presenter.conversVote(voteInfo);
+                    if ("CRC".equals(o)) {
+                        otherUnActiveVote.put(presenter.getCRLastVote(voteJson));
+                    } else if ("CRCImpeachment".equals(o)) {
+                        String amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
+                        JSONObject newVotes = new JSONObject();
+                        newVotes.put(cid, amount);
+                        presenter.createImpeachmentCRCTransaction(wallet.getWalletId(), MyWallet.ELA, "", newVotes.toString(), "", otherUnActiveVote.toString(), this);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "getCRlist":
+                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+                if (crList != null && crList.size() > 0) {
+                    otherUnActiveVote.put(presenter.getCRUnactiveData(crList));
+                } else {
+                    presenter.getVoteInfo(wallet.getWalletId(), "CRC", this);
+                }
+                break;
+            case "getDepositVoteList":
+                List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
+                if (depositList != null && depositList.size() > 0) {
+                    otherUnActiveVote.put(presenter.getDepositUnactiveData(depositList));
+                }
+                break;
+            case "createImpeachmentCRCTransaction":
+                goTransferActivity(((CommmonStringEntity) baseEntity).getData());
+                break;
+
         }
     }
 
+    private void goTransferActivity(String attributesJson) {
+        Intent intent = new Intent(getActivity(), TransferActivity.class);
+        intent.putExtra("amount", num);
+        intent.putExtra("wallet", wallet);
+        intent.putExtra("chainId", MyWallet.ELA);
+        intent.putExtra("attributes", attributesJson);
+        intent.putExtra("type", Constant.IMPEACHMENTCRC);
+        intent.putExtra("transType", 1004);
+        startActivity(intent);
+    }
 
     @BindView(R.id.name)
     TextView name;
@@ -173,8 +247,8 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         cid = dataBean.getCid();
         GlideApp.with(getContext()).load(dataBean.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(headIc);
         location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
-        BigDecimal gress = new BigDecimal(dataBean.getImpeachmentVotes()).divide(new BigDecimal(dataBean.getImpeachmentThroughVotes())).multiply(new BigDecimal(100));
-        progress.setProgress(gress.floatValue());
+//        BigDecimal gress = new BigDecimal(dataBean.getImpeachmentVotes()).divide(new BigDecimal(dataBean.getImpeachmentThroughVotes())).multiply(new BigDecimal(100));
+        progress.setProgress(/*gress.floatValue()*/dataBean.getImpeachmentRatio());
         currentVotes.setText(String.valueOf(dataBean.getImpeachmentVotes()));
         impeachmentCount.setText(String.valueOf(dataBean.getImpeachmentThroughVotes()));
     }
@@ -218,4 +292,46 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
     TextView websiteTitle;
     @BindView(R.id.introduction_title)
     TextView introducetionTitle;
+
+    private String maxBalance;
+    @Override
+    public void onBalance(BalanceEntity data) {
+        Intent intent = new Intent(getContext(), VoteActivity.class);
+        BigDecimal balance = Arith.div(Arith.sub(data.getBalance(), 1000000), MyWallet.RATE_S, 8);
+        maxBalance = NumberiUtil.removeZero(balance.toPlainString());
+
+        if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
+            maxBalance = "0";
+            intent.putExtra("maxBalance", "0");
+        } else {
+            intent.putExtra("maxBalance", maxBalance);
+        }
+        intent.putExtra("type", Constant.IMPEACHMENTCRC);
+        startActivity(intent);
+    }
+
+    String num;//弹劾票数
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+        if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
+            num = result.getName();
+            presenter.getVoteInfo(wallet.getWalletId(), "CRCImpeachment", this);
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    popBackFragment();
+                }
+            });
+
+        }
+
+    }
+
+    public void registReceiver() {
+        if (!EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().register(this);
+    }
 }
