@@ -1280,7 +1280,7 @@ export default class extends Base {
     }
 
     public async updateProposalOnNotification(data: any) {
-        const { WAITING_FOR_REQUEST } = constant.MILESTONE_STATUS
+        const { WAITING_FOR_WITHDRAWAL } = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel("CVote")
         const {rs, _id} = data
         const {
@@ -1289,7 +1289,6 @@ export default class extends Base {
             },
             status: chainStatus
         } = rs
-
         let rejectThroughAmount: any
         const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
         if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
@@ -1299,7 +1298,7 @@ export default class extends Base {
                 'budget.type': 'ADVANCE'
             }, {
                 $set: {
-                    'budget.$.status': WAITING_FOR_REQUEST,
+                    'budget.$.status': WAITING_FOR_WITHDRAWAL,
                     status: proposalStatus,
                     rejectAmount,
                     rejectThroughAmount
