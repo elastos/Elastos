@@ -1643,7 +1643,14 @@ export default class extends Base {
 
         const list = _.map(tracking, function (o) {
             const comment = o._doc.comment
-            const content = (JSON.parse(o.content)).blocks[0].text
+            const contents = (JSON.parse(o.content))
+            let content = ""
+            _.each(contents.blocks,function(v: any,k: any){
+                content += v.text
+                if(k !== (contents.blocks.length)-1){
+                    content += "\n"
+                }
+            })
             const commentObj = {
                 content: comment.content ? comment.content : null,
                 createdBy: _.get(o, 'comment.createdBy.did.didName'),
@@ -1686,7 +1693,14 @@ export default class extends Base {
 
         const list = _.map(summary, function (o) {
             const comment = o._doc.comment
-            const content = (JSON.parse(o.content)).blocks[0].text
+            const contents = (JSON.parse(o.content))
+            let content = ""
+            _.each(contents.blocks,function(v: any,k: any){
+                content += v.text
+                if(k !== (contents.blocks.length)-1){
+                    content += "\n"
+                }
+            })
             const commentObj = {
                 content: comment.content ? comment.content : null,
                 createdBy: _.get(o, 'comment.createdBy.did.didName'),
