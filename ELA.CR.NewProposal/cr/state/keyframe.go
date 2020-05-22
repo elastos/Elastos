@@ -104,7 +104,6 @@ type KeyFrame struct {
 	LastVotingStartHeight      uint32
 	InElectionPeriod           bool
 	NeedAppropriation          bool
-	NeedRectifyAssets          bool
 	CRCFoundationLockedAmounts []common.Fixed64
 	CRCFoundationBalance       common.Fixed64
 	CRCCommitteeBalance        common.Fixed64
@@ -406,6 +405,7 @@ func (kf *KeyFrame) Snapshot() *KeyFrame {
 	frame.AppropriationAmount = kf.AppropriationAmount
 	frame.Members = copyMembersMap(kf.Members)
 	frame.HistoryMembers = copyHistoryMembersMap(kf.HistoryMembers)
+	frame.CRAssetsAddressUTXOCount = kf.CRAssetsAddressUTXOCount
 	return frame
 }
 
