@@ -1023,7 +1023,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     case "createproposal":
                         if ("CouncilMember".equals(ctDetailBean.getData().getType())) {
                             //目前只有建议转提案调用他
-                            toSuggest((String) o);
+                            toSuggest(curentJwtEntity.getCommand());
                         } else {
                             restoreScanData();
                             showToast(getString(R.string.didnotsame));
