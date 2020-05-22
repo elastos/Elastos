@@ -832,6 +832,31 @@ export default class extends Base {
         return rs
     }
 
+    private async updateProposalBudget(query: any) {
+        const { WITHDRAWN } = constant.MILESTONE_STATUS
+        const db_cvote = this.getDBModel('CVote')
+        const proposal = await db_cvote.findOne(query)
+        if (proposal.status === 'ACTIVE') {
+            const result = await getProposalData(proposal.proposalHash)
+            const status = _.get(result, 'status')
+            if ( status && status.toLowerCase() === 'finished') {
+                proposal.status = constant.CVOTE_STATUS.FINAL
+            }
+            const budgets = _.get(result, 'data.proposal.budgets')
+            if (budgets) {
+                const temp = _.sortBy(proposal.budget, 'milestoneKey')
+                const budget = temp.map((item, index) => {
+                    if (budgets[index].status.toLowerCase() === 'withdrawn') {
+                        return { ...item, status: WITHDRAWN }
+                    }
+                    return item
+                })
+                proposal.budget = budget
+            }
+            await proposal.save()
+        }
+    }
+
     public async getById(id): Promise<any> {
         const db_cvote = this.getDBModel('CVote')
         // access proposal by reference number
@@ -842,6 +867,7 @@ export default class extends Base {
         } else {
             query = {_id: id}
         }
+        await this.updateProposalBudget(query)
         const rs = await db_cvote
             .getDBInstance()
             .findOne(query)
