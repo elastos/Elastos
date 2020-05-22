@@ -1280,6 +1280,7 @@ export default class extends Base {
     }
 
     public async updateProposalOnNotification(data: any) {
+        const { WAITING_FOR_REQUEST } = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel("CVote")
         const {rs, _id} = data
         const {
@@ -1291,11 +1292,25 @@ export default class extends Base {
 
         let rejectThroughAmount: any
         const proposalStatus = CHAIN_STATUS_TO_PROPOSAL_STATUS[chainStatus]
+        if (proposalStatus === constant.CVOTE_STATUS.ACTIVE) {
+            rejectThroughAmount = (await ela.currentCirculatingSupply()) * 0.1
+            await db_cvote.update({
+                _id,
+                'budget.type': 'ADVANCE'
+            }, {
+                $set: {
+                    'budget.$.status': WAITING_FOR_REQUEST,
+                    status: proposalStatus,
+                    rejectAmount,
+                    rejectThroughAmount
+                }
+            })
+            return
+        }
         switch (proposalStatus) {
             case constant.CVOTE_STATUS.VETOED:
                 rejectThroughAmount = rejectAmount
                 break;
-            case constant.CVOTE_STATUS.ACTIVE:
             case constant.CVOTE_STATUS.NOTIFICATION:
                 rejectThroughAmount = (await ela.currentCirculatingSupply()) * 0.1
                 break;
