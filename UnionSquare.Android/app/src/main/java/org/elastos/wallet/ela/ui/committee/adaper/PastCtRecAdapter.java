@@ -22,10 +22,10 @@ import butterknife.ButterKnife;
 
 public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.ViewHolder>{
 
-    public PastCtRecAdapter(Context context, Wallet wallet, List<PastCtBean.DataBean> list) {
+    public PastCtRecAdapter(Context context, List<PastCtBean.DataBean> list, boolean isCRC) {
         this.context = context;
         this.list = list;
-        this.wallet = wallet;
+        this.isCRC = isCRC;
     }
 
     @NonNull
@@ -53,13 +53,13 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), ""));
         } else if(status.equalsIgnoreCase("CURRENT")) {
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.current)+")"));
-            if(wallet.getWalletId().equals(data.getId())) {
+            if(isCRC) {
                 viewHolder.manager.setText(context.getString(R.string.ctmanager));
                 viewHolder.manager.setVisibility(View.VISIBLE);
             }
         } else if(status.equalsIgnoreCase("VOTING")) {
             viewHolder.title.setText(String.format(context.getString(R.string.pastitemtitle), data.getIndex(), "("+context.getString(R.string.voting)+")"));
-            if(wallet.getWalletId().equals(data.getId())) {
+            if(isCRC) {
                 viewHolder.manager.setVisibility(View.VISIBLE);
                 viewHolder.manager.setText(context.getString(R.string.votemanager));
             }
@@ -120,6 +120,6 @@ public class PastCtRecAdapter extends RecyclerView.Adapter<PastCtRecAdapter.View
     private Context context;
     private ManagerListener managerListener;
     private CommonRvListener commonRvListener;
-    private Wallet wallet;
+    private boolean isCRC;
     private List<PastCtBean.DataBean> list;
 }

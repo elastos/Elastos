@@ -48,6 +48,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     List<PastCtBean.DataBean> list;
     CtDetailPresenter ctDetailPresenter;
     PastCtPresenter pastCtPresenter;
+    private boolean isCRC = false;
 
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
@@ -73,7 +74,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
 
     private void setRecycleView() {
         if (adapter == null) {
-            adapter = new PastCtRecAdapter(getContext(), wallet, list);
+            adapter = new PastCtRecAdapter(getContext(), list, isCRC);
             recyclerview.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             recyclerview.setAdapter(adapter);
             adapter.setCommonRvListener(this);
@@ -87,7 +88,6 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "getCurrentCouncilInfo":
-                ivTitleRight.setVisibility(View.VISIBLE);
                 go2((CtDetailBean) baseEntity);
                 break;
             case "getCouncilTerm":
@@ -101,9 +101,17 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         String status = dataBean.getStatus();
         String depositAmount = dataBean.getDepositAmount();
+        String type = dataBean.getType();
 
-        if(!AppUtlis.isNullOrEmpty(status)
-                && !status.equals("Terminated")
+        if(!AppUtlis.isNullOrEmpty(type) && !type.equalsIgnoreCase("Other")) {
+            isCRC = true;
+        }
+
+        ivTitleRight.setVisibility(View.VISIBLE);
+        if(AppUtlis.isNullOrEmpty(type) || AppUtlis.isNullOrEmpty(status) || type.equalsIgnoreCase("Other")) {
+            pastCtPresenter.getCouncilTerm(this);
+            ivTitleRight.setVisibility(View.GONE);
+        } else if(!status.equals("Terminated")
                 && !status.equals("Impeached")
                 && !status.equals("Returned")) {
             pastCtPresenter.getCouncilTerm(this);
