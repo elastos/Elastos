@@ -759,9 +759,9 @@ namespace Elastos {
 			 * @param amount Withdraw amount.
 			 * @param utxo UTXO json array of address CREXPENSESXXXXXXXXXXXXXXXXXX4UdT6b.
 			 * [{
-			 *   "Hash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513", txid":
-			 *   "Index": 0,   vout
-			 *   "Amount": "100000000",   // 1 ela = 100000000 sela    amount
+			 *   "Hash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *   "Index": 0,
+			 *   "Amount": "100000000",   // 1 ela = 100000000 sela
 			 * },{
 			 *   "Hash": "7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
 			 *   "Index": 2,

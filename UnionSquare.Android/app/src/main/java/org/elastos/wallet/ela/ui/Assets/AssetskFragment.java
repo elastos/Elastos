@@ -1023,7 +1023,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     case "createproposal":
                         if ("CouncilMember".equals(ctDetailBean.getData().getType())) {
                             //目前只有建议转提案调用他
-                            toSuggest((String) o);
+                            toSuggest(curentJwtEntity.getCommand());
                         } else {
                             restoreScanData();
                             showToast(getString(R.string.didnotsame));
@@ -1066,6 +1066,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     } else if ("withdraw".equals(curentJwtEntity.getCommand())) {
                         transfertype = 41;
                         post(RxEnum.TRANSFERSUCESS.ordinal(), transfertype + "", hash);
+                        new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                            @Override
+                            public void affireBtnClick(View view) {
+                                restoreScanData();
+                            }
+                        });
+
                         return;
 
                     }
@@ -1077,15 +1084,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 post(RxEnum.TRANSFERSUCESS.ordinal(), transfertype + "", hash);
                 break;
             case "signTransaction":
-                new PwdPresenter().newPublishTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringWithiMethNameEntity) baseEntity).getData(), this);
-
+            case "createProposalWithdrawTransaction":
+                new PwdPresenter().newPublishTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(), this);
                 break;
             case "createProposalTrackingTransaction":
             case "createProposalReviewTransaction":
-            case "createProposalWithdrawTransaction":
-
                 new PwdPresenter().signTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(), payPasswd, this);
-
                 break;
             case "proposalTrackingOwnerDigest":
                 String signDigest1 = proposalPresenter.getSignDigist(payPasswd, ((CommmonStringEntity) baseEntity).getData(), this);

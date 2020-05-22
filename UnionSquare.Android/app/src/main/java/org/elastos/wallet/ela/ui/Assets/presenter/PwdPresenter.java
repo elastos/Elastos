@@ -27,6 +27,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
+import org.elastos.wallet.ela.ui.Assets.listener.SignTransactionListener;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
 
 import io.reactivex.Observable;
@@ -36,14 +37,14 @@ public class PwdPresenter extends NewPresenterAbstract {
     //所有转账都要经历的方法  步骤1 2 activitry
 //步骤1
     public void signTransaction(String walletId, String chainId, String rawTransaction, String pwd, BaseActivity baseActivity) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
+        Observer observer = createObserver(SignTransactionListener.class, baseActivity);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
                 return baseActivity.getWallet().signTransaction(walletId, chainId, rawTransaction, pwd);
             }
         });
-        subscriberObservable(observer, observable);
+        subscriberObservable(observer, observable, baseActivity);
     }
 
     public void signDigest(String walletId, String cid, String digest, String pwd, BaseActivity baseActivity) {
@@ -73,7 +74,7 @@ public class PwdPresenter extends NewPresenterAbstract {
     //所有转账都要经历的方法   步骤1 2    fragment
 //步骤1
     public void signTransaction(String walletId, String chainId, String rawTransaction, String pwd, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "signTransaction",pwd);
+        Observer observer = createObserver(baseFragment, "signTransaction", pwd);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

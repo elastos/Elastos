@@ -766,7 +766,7 @@ public class MyWallet {
             }
 
             String result = subWallet.SignTransaction(rawTransaction, payPassword);
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, result, "signTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, result, "signTransaction");
         } catch (WalletException e) {
             return exceptionProcess(e, "Sign " + formatWalletName(masterWalletID, chainID) + " tx");
         }

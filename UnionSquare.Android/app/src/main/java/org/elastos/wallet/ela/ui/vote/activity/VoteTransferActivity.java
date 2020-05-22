@@ -164,7 +164,7 @@ public class VoteTransferActivity extends BaseActivity {
         rlHash.setVisibility(View.VISIBLE);
         tvHashTag.setText(R.string.feedbackhash);
         RecieveProcessJwtEntity.DataBean dataBean = data.getParcelableExtra("extra");
-        tvHash.setText(dataBean.getProposalhash());
+        tvHash.setText(dataBean.getMessagehash());
 
     }
 
