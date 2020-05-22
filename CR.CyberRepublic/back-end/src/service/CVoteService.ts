@@ -836,7 +836,7 @@ export default class extends Base {
         const { WITHDRAWN } = constant.MILESTONE_STATUS
         const db_cvote = this.getDBModel('CVote')
         const proposal = await db_cvote.findOne(query)
-        if (proposal.status === 'ACTIVE') {
+        if (proposal.status === 'ACTIVE' || proposal.status === 'FINAL') {
             const result = await getProposalData(proposal.proposalHash)
             const status = _.get(result, 'status')
             if ( status && status.toLowerCase() === 'finished') {

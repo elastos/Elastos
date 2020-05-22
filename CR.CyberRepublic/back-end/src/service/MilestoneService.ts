@@ -19,7 +19,7 @@ const {
   WAITING_FOR_WITHDRAWAL,
   WITHDRAWN
 } = constant.MILESTONE_STATUS
-const { ACTIVE } = constant.CVOTE_STATUS
+const { ACTIVE, FINAL } = constant.CVOTE_STATUS
 const { PROGRESS, FINALIZED } = constant.PROPOSAL_TRACKING_TYPE
 const { APPROVED, REJECTED } = constant.REVIEW_OPINION
 
@@ -86,7 +86,7 @@ export default class extends Base {
           proposalhash: proposal.proposalHash,
           messagehash: messageHash,
           stage: parseInt(milestoneKey),
-          ownerpubkey: ownerPublicKey,
+          ownerpubkey: ownerPublicKey || proposal.ownerPublicKey,
           newownerpubkey: '',
           proposaltrackingtype: trackingStatus
         }
@@ -575,7 +575,7 @@ export default class extends Base {
       if (!proposal.proposer.equals(this.currentUser._id)) {
         return { success: false, message: 'You are not the proposal owner.' }
       }
-      if (proposal.status !== ACTIVE) {
+      if (![ACTIVE, FINAL].includes(proposal.status)) {
         return { success: false, message: 'The proposal is not active.' }
       }
       // check if milestoneKey is valid
@@ -634,7 +634,6 @@ export default class extends Base {
         process.env.APP_PRIVATE_KEY,
         { algorithm: 'ES256' }
       )
-
       const url = `elastos://crproposal/${jwtToken}`
       return { success: true, url }
     } catch (error) {
