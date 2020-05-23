@@ -26,7 +26,9 @@ class Signature extends Component {
     const { form, applyPayment, proposalId, stage } = this.props
     form.validateFields(async (err, values) => {
       if (!err) {
-        const rs = await applyPayment(proposalId, stage, values)
+        const rs = await applyPayment(proposalId, stage, {
+          message: values.message.trim()
+        })
         if (rs.success && rs.url) {
           this.setState({ url: rs.url, messageHash: rs.messageHash })
           this.pollingSignature()
@@ -47,7 +49,7 @@ class Signature extends Component {
     form.validateFields(async (err, values) => {
       if (!err) {
         const data = {
-          reason: values.message,
+          reason: values.message.trim(),
           opinion,
           applicationId: application._id
         }
