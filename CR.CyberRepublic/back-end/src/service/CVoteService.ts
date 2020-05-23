@@ -1622,7 +1622,8 @@ export default class extends Base {
 
         const tracking = await this.getTracking(proposalId)
 
-        const summary = await this.getSummary(proposalId)
+        // const summary = await this.getSummary(proposalId)
+        const summary = []
 
         const votingResult = {}
         const notificationResult = {}
@@ -1665,53 +1666,49 @@ export default class extends Base {
     }
 
     public async getTracking(id) {
-        const db_tracking = this.getDBModel('CVote_Tracking')
-        const proposalId = id
-        const queryTrack: any = {
-            proposalId
+        const db_cvote = this.getDBModel('CVote')
+        const db_user = this.getDBModel('User')
+        const secretary = await db_user.getDBInstance().findOne({role: constant.USER_ROLE.SECRETARY, 'did.id': 'did:elastos:igCSy8ht7yDwV5qqcRzf5SGioMX8H9RXcj'}, constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
+        const propoal = await db_cvote.getDBInstance().findOne({_id: id})
+
+        if (!propoal) {
+            return
         }
-        const fieldsTrack = [
-            'comment',
-            'content',
-            'status',
-            'createdAt',
-            'updatedAt'
-        ]
-        const cursorTrack = db_tracking
-            .getDBInstance()
-            .find(queryTrack, fieldsTrack.join(' '))
-            .populate('comment.createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-            .sort({createdAt: -1})
-        // const totalCursorTrack = db_tracking.getDBInstance().find(queryTrack).count()
-
-        const tracking = await cursorTrack
-        // const totalTrack = await totalCursorTrack
-
-        const list = _.map(tracking, function (o) {
-            const comment = o._doc.comment
-            const contents = (JSON.parse(o.content))
-            let content = ""
-            _.each(contents.blocks,function(v: any,k: any){
-                content += v.text
-                if(k !== (contents.blocks.length)-1){
-                    content += "\n"
+        
+        try {
+            const didName = _.get(secretary, 'did.didName')
+            const avatar = _.get(secretary, 'did.avatar')
+            const { withdrawalHistory } = propoal
+            const withdrawalList = _.filter(withdrawalHistory, (o: any) => o.milestoneKey !== '0')
+            const withdrawalListByStage = _.groupBy(withdrawalList, 'milestoneKey')
+            const keys = _.keys(withdrawalListByStage).sort().reverse()
+            const result = _.map(keys, (k: any) => {
+                const withdrawals = _.sortBy(withdrawalListByStage[`${k}`], 'createdAt')
+                const withdrawal = withdrawals[withdrawals.length - 1]
+    
+                const comment = {}
+                    
+                if (_.get(withdrawal, 'review.createdAt')) {
+                    comment['content'] = _.get(withdrawal, 'review.reason')
+                    comment['opinion'] = _.get(withdrawal, 'review.opinion')
+                    comment['avatar'] = avatar
+                    comment['createdBy'] = didName
+                    comment['createdAt'] = moment(_.get(withdrawal, 'review.createdAt')).unix()
+                }
+    
+                return {
+                    stage: parseInt(k),
+                    content: withdrawal.message,
+                    createdAt: moment(withdrawal.createdAt).unix(),
+                    comment
                 }
             })
-            const commentObj = {
-                content: comment.content ? comment.content : null,
-                createdBy: _.get(o, 'comment.createdBy.did.didName'),
-                avatar: _.get(o, 'comment.createdBy.did.avatar')
-            }
-            const obj = {
-                ...o._doc,
-                comment: commentObj,
-                content,
-                createdAt: timestamp.second(o.createdAt),
-                updatedAt: timestamp.second(o.updatedAt)
-            }
-            return _.pick(obj, fieldsTrack)
-        })
-        return list
+
+            return result
+        } catch(err) {
+            logger.error(err)
+        }
+        
     }
 
     public async getSummary(id) {
