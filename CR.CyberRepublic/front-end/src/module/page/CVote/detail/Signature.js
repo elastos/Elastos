@@ -117,7 +117,7 @@ class Signature extends Component {
 
   renderTextare = () => {
     const { getFieldDecorator } = this.props.form
-    const { isSecretary, application } = this.props
+    const { isSecretary, application, opinion } = this.props
     return (
       <Form onSubmit={this.handleSubmit}>
         {isSecretary && <Msg>{application.message}</Msg>}
@@ -146,7 +146,8 @@ class Signature extends Component {
 
   render() {
     const { url } = this.state
-    const { stage, isSecretary, hideModal, toggle } = this.props
+    const { stage, isSecretary, hideModal, toggle, opinion } = this.props
+    const flag = opinion && opinion.toLowerCase() === 'rejected'
     return (
       <Modal
         maskClosable={false}
@@ -156,7 +157,9 @@ class Signature extends Component {
       >
         <Wrapper>
           {isSecretary ? (
-            <Title>Review Payment #{parseInt(stage) + 1}</Title>
+            <Title>
+              {flag ? 'Reject' : 'Approve'} Payment #{parseInt(stage) + 1}
+            </Title>
           ) : (
             <Title>Apply Payment #{parseInt(stage) + 1}</Title>
           )}
