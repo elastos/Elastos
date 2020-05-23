@@ -1669,7 +1669,7 @@ export default class extends Base {
         const db_cvote = this.getDBModel('CVote')
         const db_user = this.getDBModel('User')
         const secretary = await db_user.getDBInstance().findOne({role: constant.USER_ROLE.SECRETARY, 'did.id': 'did:elastos:igCSy8ht7yDwV5qqcRzf5SGioMX8H9RXcj'}, constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
-        const propoal = await db_cvote.getDBInstance().findOne({_id: id})
+        const propoal = await db_cvote.getDBInstance().findOne({_id: id}).populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL_DID)
 
         if (!propoal) {
             return
@@ -1678,6 +1678,8 @@ export default class extends Base {
         try {
             const didName = _.get(secretary, 'did.didName')
             const avatar = _.get(secretary, 'did.avatar')
+            const ownerDidName = _.get(propoal, 'proposer.did.didName')
+            const ownerAvatar = _.get(propoal, 'proposer.did.avatar') || _.get(propoal, 'proposer.profile.avatar')
             const { withdrawalHistory } = propoal
             const withdrawalList = _.filter(withdrawalHistory, (o: any) => o.milestoneKey !== '0')
             const withdrawalListByStage = _.groupBy(withdrawalList, 'milestoneKey')
@@ -1695,9 +1697,12 @@ export default class extends Base {
                     comment['createdBy'] = didName
                     comment['createdAt'] = moment(_.get(withdrawal, 'review.createdAt')).unix()
                 }
-    
+                
+                
                 return {
                     stage: parseInt(k),
+                    didName: ownerDidName,
+                    avatar: ownerAvatar,
                     content: withdrawal.message,
                     createdAt: moment(withdrawal.createdAt).unix(),
                     comment
