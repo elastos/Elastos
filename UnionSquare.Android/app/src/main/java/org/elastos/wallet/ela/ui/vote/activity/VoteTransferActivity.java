@@ -91,6 +91,7 @@ public class VoteTransferActivity extends BaseActivity {
     private String amount, chainId;
     private long fee;
     private String type;
+    private String openType;//区分谁打开的classsimplename
 
     @Override
     protected int getLayoutId() {
@@ -111,7 +112,7 @@ public class VoteTransferActivity extends BaseActivity {
 
     @Override
     protected void setExtraData(Intent data) {
-
+        openType=data.getStringExtra("openType");
         amount = data.getStringExtra("amount");
         fee = data.getLongExtra("fee", MyWallet.feePerKb);
         chainId = data.getStringExtra("chainId");
@@ -233,7 +234,7 @@ public class VoteTransferActivity extends BaseActivity {
                     intent.putExtra("walletId", chainId);
                     intent.putExtra("type", type);
                     startActivity(intent);*/
-                    post(RxEnum.JUSTSHOWFEE.ordinal(), null, type);
+                    post(RxEnum.JUSTSHOWFEE.ordinal(), openType, null);
                 } else {
                     intent = new Intent(this, OtherPwdActivity.class);
                     intent.putExtras(getIntent());

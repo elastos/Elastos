@@ -133,6 +133,7 @@ public class ProposalPresenter extends NewPresenterAbstract {
         intent.putExtra("type", type);
         intent.putExtra("extra", extra);
         intent.putExtra("transType", transType);
+        intent.putExtra("openType", baseFragment.getClass().getSimpleName());
         baseFragment.startActivity(intent);
     }
 
@@ -153,7 +154,7 @@ public class ProposalPresenter extends NewPresenterAbstract {
     public void toVertifyPwdActivity(Wallet wallet, BaseFragment baseFragment) {
         Intent intent = new Intent(baseFragment.getActivity(), VertifyPwdActivity.class);
         intent.putExtra("walletId", wallet.getWalletId());
-        intent.putExtra("type", this.getClass().getSimpleName());
+        intent.putExtra("openType", baseFragment.getClass().getSimpleName());
         baseFragment.startActivity(intent);
     }
 
@@ -237,12 +238,12 @@ public class ProposalPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void createProposalWithdrawTransaction(String walletId, String recipient, String amount, String utxo, String payload,BaseFragment baseFragment) {
+    public void createProposalWithdrawTransaction(String walletId, String recipient, String amount, String utxo, String payload, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "createProposalWithdrawTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createProposalWithdrawTransaction(walletId, recipient, amount, utxo,payload);
+                return baseFragment.getMyWallet().createProposalWithdrawTransaction(walletId, recipient, amount, utxo, payload);
             }
         });
         subscriberObservable(observer, observable, baseFragment);

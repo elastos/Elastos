@@ -797,14 +797,16 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
         if (integer == RxEnum.JUSTSHOWFEE.ordinal()) {
             //展示手续费后  再去验证密码
-            proposalPresenter.toVertifyPwdActivity(wallet, this);
-
+            if (getClass().getSimpleName().equals(result.getName())) {
+                proposalPresenter.toVertifyPwdActivity(wallet, this);
+            }
         }
         if (integer == RxEnum.SCANDATATOASSETPAGE.ordinal()) {
             //其他页面接收的二维码数据
-            scanResult = (String) result.getObj();
-            scanElastos(scanResult);
-
+            if (getClass().getSimpleName().equals(result.getName())) {
+                scanResult = (String) result.getObj();
+                scanElastos(scanResult);
+            }
         }
 
     }
@@ -1203,7 +1205,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                     //执行期  委员自己执行反馈 网站确认是委员  这里确认本人 只签名
                     curentJwtEntity = JSON.parseObject(payload, RecieveProcessJwtEntity.class);
                     RecieveProcessJwtEntity.DataBean procesData1 = ((RecieveProcessJwtEntity) curentJwtEntity).getData();
-                    if (procesData1.getOwnerpubkey().equals(getMyDID().getDidPublicKey(didDocument))) {
+                    if (getMyDID().getDidPublicKey(didDocument).equals(procesData1.getOwnerpubkey())) {
                         proposalPresenter.showFeePage(wallet, Constant.PROPOSALPROCESS, 39, this, procesData1);
                     } else {
                         restoreScanData();
