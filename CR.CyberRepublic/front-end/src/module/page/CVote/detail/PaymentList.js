@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { Popover } from 'antd'
 import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
-import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import Signature from './Signature'
@@ -84,39 +83,35 @@ class PaymentList extends Component {
     if (status === WAITING_FOR_REQUEST) {
       return (
         !user.is_secretary && (
-          <td>
-            <div
-              className="action"
-              onClick={() => {
-                this.showModal(item.milestoneKey)
-              }}
-            >
-              Apply
-            </div>
-          </td>
+          <div
+            className="action"
+            onClick={() => {
+              this.showModal(item.milestoneKey)
+            }}
+          >
+            Apply
+          </div>
         )
       )
     }
     if (status === REJECTED) {
       return (
         !user.is_secretary && (
-          <td>
-            <div
-              className="action"
-              onClick={() => {
-                this.showModal(item.milestoneKey)
-              }}
-            >
-              Reapply
-            </div>
-          </td>
+          <div
+            className="action"
+            onClick={() => {
+              this.showModal(item.milestoneKey)
+            }}
+          >
+            Reapply
+          </div>
         )
       )
     }
     if (status === WAITING_FOR_APPROVAL) {
       return (
         user.is_secretary && (
-          <td>
+          <div>
             <div
               className="action approve"
               onClick={() => {
@@ -133,21 +128,19 @@ class PaymentList extends Component {
             >
               Reject
             </div>
-          </td>
+          </div>
         )
       )
     }
     if (status === WAITING_FOR_WITHDRAWAL) {
       return (
         !user.is_secretary && (
-          <td>
-            <div
-              className="action"
-              onClick={() => this.showWithdrawalModal(item.milestoneKey)}
-            >
-              Withdraw
-            </div>
-          </td>
+          <div
+            className="action"
+            onClick={() => this.showWithdrawalModal(item.milestoneKey)}
+          >
+            Withdraw
+          </div>
         )
       )
     }
