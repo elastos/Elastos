@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Popover, Modal } from 'antd'
+import { Popover } from 'antd'
 import moment from 'moment'
 import linkifyStr from 'linkifyjs/string'
 import BaseComponent from '@/model/BaseComponent'
@@ -17,7 +17,7 @@ const {
   WAITING_FOR_WITHDRAWAL
 } = MILESTONE_STATUS
 
-class PaymentList extends BaseComponent {
+class PaymentList extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -201,7 +201,7 @@ class PaymentList extends BaseComponent {
     return rs && rs.length > 0 && rs[rs.length - 1]
   }
 
-  ord_render() {
+  render() {
     const { list, proposalId, actions, user } = this.props
     const visible = this.isVisible()
     return (
@@ -225,27 +225,21 @@ class PaymentList extends BaseComponent {
           {list &&
             list.map((item, index) => this.renderPaymentItem(item, index))}
         </tbody>
-        <Modal
-          maskClosable={false}
-          visible={this.state.toggle}
-          onCancel={this.hideModal}
-          footer={null}
-        >
-          {this.state.toggle === true ? (
-            <Signature
-              stage={this.state.stage}
-              proposalId={proposalId}
-              applyPayment={actions.applyPayment}
-              getPaymentSignature={actions.getPaymentSignature}
-              hideModal={this.hideModal}
-              isSecretary={user.is_secretary}
-              opinion={this.state.opinion}
-              reviewApplication={actions.reviewApplication}
-              application={this.getApplication()}
-              getReviewTxid={actions.getReviewTxid}
-            />
-          ) : null}
-        </Modal>
+        {this.state.toggle === true ? (
+          <Signature
+            toggle={this.state.toggle}
+            stage={this.state.stage}
+            proposalId={proposalId}
+            applyPayment={actions.applyPayment}
+            getPaymentSignature={actions.getPaymentSignature}
+            hideModal={this.hideModal}
+            isSecretary={user.is_secretary}
+            opinion={this.state.opinion}
+            reviewApplication={actions.reviewApplication}
+            application={this.getApplication()}
+            getReviewTxid={actions.getReviewTxid}
+          />
+        ) : null}
         {this.state.withdrawal ? (
           <WithdrawMoney
             withdrawal={this.state.withdrawal}

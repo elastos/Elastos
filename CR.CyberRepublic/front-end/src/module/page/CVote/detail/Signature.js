@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { Form, Button, Input, message } from 'antd'
+import { Form, Button, Input, message, Modal, Spin } from 'antd'
 import QRCode from 'qrcode.react'
 
 const { TextArea } = Input
@@ -144,17 +144,24 @@ class Signature extends Component {
 
   render() {
     const { url } = this.state
-    const { stage, isSecretary } = this.props
+    const { stage, isSecretary, hideModal, toggle } = this.props
     return (
-      <Wrapper>
-        {isSecretary ? (
-          <Title>Review Payment #{parseInt(stage) + 1}</Title>
-        ) : (
-          <Title>Apply Payment #{parseInt(stage) + 1}</Title>
-        )}
+      <Modal
+        maskClosable={false}
+        visible={toggle}
+        onCancel={hideModal}
+        footer={null}
+      >
+        <Wrapper>
+          {isSecretary ? (
+            <Title>Review Payment #{parseInt(stage) + 1}</Title>
+          ) : (
+            <Title>Apply Payment #{parseInt(stage) + 1}</Title>
+          )}
 
-        {url ? this.signatureQrCode() : this.renderTextare()}
-      </Wrapper>
+          {url ? this.signatureQrCode() : this.renderTextare()}
+        </Wrapper>
+      </Modal>
     )
   }
 }
