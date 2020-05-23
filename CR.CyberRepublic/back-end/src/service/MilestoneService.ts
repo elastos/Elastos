@@ -52,8 +52,8 @@ export default class extends Base {
       if (_.isEmpty(budget)) {
         return { success: false }
       }
-      if (budget.status !== WAITING_FOR_REQUEST) {
-        return { success: false }
+      if (![WAITING_FOR_REQUEST, REJECTED].includes(budget.status)) {
+        return { success: false, message: 'Milestone status is invalid.' }
       }
 
       const currDate = Date.now()
