@@ -11,7 +11,6 @@ import {
   getPemPublicKey,
   getUtxosByAmount
 } from '../utility'
-import * as moment from 'moment'
 const Big = require('big.js')
 const {
   WAITING_FOR_REQUEST,
@@ -66,7 +65,7 @@ export default class extends Base {
         message,
         milestoneKey,
         messageHash,
-        createdAt: moment(currDate)
+        createdAt: currDate
       }
       await this.model.update(
         { _id: id },
@@ -272,7 +271,7 @@ export default class extends Base {
               reason,
               reasonHash,
               opinion,
-              createdAt: moment(currTime)
+              createdAt: currTime
             }
           }
         }
