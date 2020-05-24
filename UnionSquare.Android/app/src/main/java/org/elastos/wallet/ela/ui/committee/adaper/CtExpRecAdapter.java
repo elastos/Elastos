@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.committee.bean.CtDetailBean;
-import org.elastos.wallet.ela.ui.committee.bean.ExperienceBean;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.DateUtil;
@@ -82,13 +81,13 @@ public class CtExpRecAdapter extends RecyclerView.Adapter<CtExpRecAdapter.ViewHo
                 AppUtlis.isNullOrEmpty(data.getDidName())?"":data.getDidName(),
                 AppUtlis.isNullOrEmpty(statusStr)?"":statusStr));
         if(data.getVoteResult().equalsIgnoreCase(ABSTENTION)) {
-            viewHolder.tag.setBackgroundColor(Color.parseColor("#666666"));
+            viewHolder.tag.setBackground(context.getDrawable(R.drawable.ct_abstention_tag_border));
             viewHolder.tag.setText(context.getString(R.string.abstention));
         } else if(data.getVoteResult().equalsIgnoreCase(REJECT)) {
-            viewHolder.tag.setBackgroundColor(Color.parseColor("#B04135"));
+            viewHolder.tag.setBackground(context.getDrawable(R.drawable.ct_reject_tag_border));
             viewHolder.tag.setText(context.getString(R.string.disagree1));
         } else if(data.getVoteResult().equalsIgnoreCase(SUPPORT)) {
-            viewHolder.tag.setBackgroundColor(Color.parseColor("#35B08F"));
+            viewHolder.tag.setBackground(context.getDrawable(R.drawable.ct_support_tag_border));
             viewHolder.tag.setText(context.getString(R.string.agree1));
         } else {
             viewHolder.tag.setText("");

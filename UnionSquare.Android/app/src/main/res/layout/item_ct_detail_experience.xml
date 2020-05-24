@@ -21,13 +21,14 @@
 
     <TextView
         android:id="@+id/tag"
-        android:layout_width="27dp"
-        android:layout_height="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/title"
         android:layout_marginTop="11dp"
         android:layout_alignParentRight="true"
-        android:background="#35B08F"
-        android:textSize="11sp"
+        android:background="@drawable/ct_support_tag_border"
+        android:textSize="10sp"
+        android:padding="2.5dp"
         android:textColor="@color/white"
         android:gravity="center"/>
 

@@ -6,6 +6,7 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.utils.AppUtlis;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -17,6 +18,7 @@ public class CtDismissPromptFragment extends BaseFragment {
 
     String depositAmount;
     String status;
+    String did;
     @BindView(R.id.tv_prompt)
     TextView promptTv;
 
@@ -28,6 +30,7 @@ public class CtDismissPromptFragment extends BaseFragment {
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
+        did = data.getString("did");
         depositAmount = data.getString("depositAmount");
         status = data.getString("status");
     }
@@ -61,8 +64,9 @@ public class CtDismissPromptFragment extends BaseFragment {
                 break;
             case R.id.tv_deposit:
                 Bundle bundle = new Bundle();
+                bundle.putString("did", did);
                 bundle.putString("status", status);
-                bundle.putString("depositAmount", depositAmount);
+                bundle.putString("depositAmount", AppUtlis.isNullOrEmpty(depositAmount)?"0":depositAmount);
                 start(CtManagerFragment.class, bundle);
                 break;
         }

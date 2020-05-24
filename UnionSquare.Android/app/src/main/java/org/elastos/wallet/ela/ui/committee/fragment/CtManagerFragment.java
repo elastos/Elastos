@@ -25,7 +25,6 @@ import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.Constant;
-import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -48,6 +47,12 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     TextView refreshDid;
     @BindView(R.id.deposit)
     TextView deposit;
+    @BindView(R.id.first_layout)
+    View firstLayout;
+    @BindView(R.id.second_layout)
+    View secondLayout;
+    @BindView(R.id.tv_prompt)
+    TextView promptTv;
 
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
@@ -62,64 +67,40 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctmanager));
-        setView();
-        registReceiver();
+        presenter = new CtManagePresenter();
+        showFirstLayout();
     }
 
     String status;
-    String cid;
+    String did;
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
+        did = data.getString("did");
         status = data.getString("status");
-    }
-
-    private void setView() {
-
-        presenter = new CtManagePresenter();
-
-        switch (status) {
-            case "Terminated":
-                description.setText(getString(R.string.completeofficehint));
-                showDepositView();
-                break;
-            case "Impeached":
-                description.setText(getString(R.string.cancelofficehint));
-                showDepositView();
-                break;
-            case "Returned":
-                description.setText(getString(R.string.dimissofficehint));
-                showDepositView();
-                break;
-            case "Elected":
-                description.setText(getString(R.string.inofficehint));
-                showRefreshView();
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + status);
-        }
+        depositAmount = data.getString("depositAmount");
     }
 
     private void showRefreshView() {
-        refreshInfo.setVisibility(View.GONE);
-        refreshDid.setVisibility(View.GONE);
-        deposit.setVisibility(View.VISIBLE);
-    }
-
-    private void showDepositView() {
         refreshInfo.setVisibility(View.VISIBLE);
         refreshDid.setVisibility(View.VISIBLE);
         deposit.setVisibility(View.GONE);
     }
 
+    private void showDepositView() {
+        refreshInfo.setVisibility(View.GONE);
+        refreshDid.setVisibility(View.GONE);
+        deposit.setVisibility(View.VISIBLE);
+    }
 
-    @OnClick({R.id.refresh_ct_info, R.id.refresh_ct_did, R.id.deposit})
+
+    @OnClick({R.id.refresh_ct_info, R.id.refresh_ct_did, R.id.deposit, R.id.tv_close, R.id.tv_deposit})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.refresh_ct_info:
                 //TODO 待确认
                 start(UpdateCtInformationFragment.class, getArguments());
-                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid(), this, "2");
+                new WalletManagePresenter().DIDResolveWithTip(wallet.getDid().replace("did:elastos:", ""), this, "2");
                 break;
             case R.id.refresh_ct_did:
                 Bundle bundle = new Bundle();
@@ -128,8 +109,59 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
                 start(AuthorizationFragment.class, bundle);
                 break;
             case R.id.deposit:
-                presenter.getCRDepositcoin(cid, this);
+//                presenter.getCRDepositcoin(did, this);
+                if(!AppUtlis.isNullOrEmpty(depositAmount))
+                    presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
                 break;
+            case R.id.tv_close:
+                popBackFragment();
+                break;
+            case R.id.tv_deposit:
+                showSecondLayout();
+                break;
+        }
+    }
+
+
+    private void showFirstLayout() {
+        firstLayout.setVisibility(View.VISIBLE);
+        secondLayout.setVisibility(View.GONE);
+        switch (status) {
+            case "Terminated":
+                promptTv.setText(getString(R.string.completedialoghint));
+                break;
+            case "Impeached":
+                promptTv.setText(getString(R.string.canceldialoghint));
+                break;
+            case "Returned":
+                promptTv.setText(getString(R.string.dimissdialoghint));
+                break;
+            default:
+        }
+    }
+
+    private void showSecondLayout() {
+        firstLayout.setVisibility(View.GONE);
+        secondLayout.setVisibility(View.VISIBLE);
+        switch (status) {
+            case "Terminated":
+                description.setText(String.format(getString(R.string.completeofficehint), depositAmount));
+                showDepositView();
+                break;
+            case "Impeached":
+                description.setText(String.format(getString(R.string.cancelofficehint), depositAmount));
+                showDepositView();
+                break;
+            case "Returned":
+                description.setText(String.format(getString(R.string.dimissofficehint), depositAmount));
+                showDepositView();
+                break;
+            case "Elected":
+                description.setText(getString(R.string.inofficehint));
+                showRefreshView();
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + status);
         }
     }
 
@@ -163,8 +195,4 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
         }
     }
 
-    public void registReceiver() {
-        if (!EventBus.getDefault().isRegistered(this))
-            EventBus.getDefault().register(this);
-    }
 }

@@ -101,6 +101,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
         CtDetailBean.DataBean dataBean = ctDetailBean.getData();
         String status = dataBean.getStatus();
         String depositAmount = dataBean.getDepositAmount();
+        String did = dataBean.getDid();
         String type = dataBean.getType();
 
         if(!AppUtlis.isNullOrEmpty(type) && !type.equalsIgnoreCase("Other")) {
@@ -117,9 +118,10 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
             pastCtPresenter.getCouncilTerm(this);
         } else {
             Bundle bundle = new Bundle();
+            bundle.putString("did", did);
             bundle.putString("status", status);
             bundle.putString("depositAmount", depositAmount);
-            start(CtDismissPromptFragment.class, bundle);
+            start(CtManagerFragment.class, bundle);
         }
     }
 
@@ -159,6 +161,7 @@ public class PastCtListFragment extends BaseFragment implements NewBaseViewData,
     @Override
     public void onManagerClick(int position) {
         Bundle bundle = new Bundle();
+
         bundle.putString("status", "Elected");
         start(CtManagerFragment.class, bundle);
     }

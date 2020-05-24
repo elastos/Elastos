@@ -26,12 +26,13 @@
     <TextView
         android:id="@+id/tag"
         android:layout_marginTop="10dp"
-        android:textSize="14sp"
-        android:layout_toRightOf="@+id/icon"
+        android:textSize="10sp"
+        android:padding="2.5dp"
+        android:layout_toRightOf="@+id/name"
         android:layout_marginLeft="10dp"
         android:textColor="@color/white"
         android:text=""
-        android:background="#B04135"
+        android:background="@drawable/ct_general_tag_border"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 

@@ -261,7 +261,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
         GlideApp.with(getContext()).load(dataBean.getAvatar()).error(R.mipmap.icon_ela).circleCrop().into(headIc);
         location.setText(AppUtlis.getLoc(getContext(), String.valueOf(dataBean.getLocation())));
 //        BigDecimal gress = new BigDecimal(dataBean.getImpeachmentVotes()).divide(new BigDecimal(dataBean.getImpeachmentThroughVotes())).multiply(new BigDecimal(100));
-        progress.setProgress(/*gress.floatValue()*/dataBean.getImpeachmentRatio());
+        progress.setProgress(new BigDecimal(dataBean.getImpeachmentRatio()).multiply(new BigDecimal(100)).floatValue());
         currentVotes.setText(String.valueOf(dataBean.getImpeachmentVotes()));
         impeachmentCount.setText(String.valueOf(dataBean.getImpeachmentThroughVotes()));
     }

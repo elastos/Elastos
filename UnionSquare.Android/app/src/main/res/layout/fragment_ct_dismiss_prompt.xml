@@ -2,9 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/qmuilinearlayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@mipmap/found_bg"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
 
     <RelativeLayout
