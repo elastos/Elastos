@@ -1651,6 +1651,7 @@ export default class extends Base {
         return _.omit(
             {
                 id: proposal.vid,
+                status: CVOTE_STATUS_TO_WALLET_STATUS[proposal.status],
                 abs: proposal.abstract,
                 address,
                 ..._.omit(proposal._doc, ['vid', 'abstract', 'rejectAmount', 'rejectThroughAmount', 'status']),
