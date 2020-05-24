@@ -190,7 +190,6 @@ static void test_request_friend_by_express(void)
     start_node();
 
     rc = read_ack("%32s %32s", buf[0], buf[1]);
-    vlogE("================ %s %s", buf[0], buf[1]);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "fadd");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
@@ -199,6 +198,7 @@ static void test_request_friend_by_express(void)
 
 static void test_message_receipt_cb(int64_t msgid,  ElaReceiptState state, void *context)
 {
+    vlogV("========= msgid=%lld, stat=%d", msgid, state);
     CarrierContextExtra *extra = ((CarrierContext *)context)->extra;
     extra->msgid  = msgid;
     extra->state  = state;
@@ -237,6 +237,49 @@ static void test_send_message_to_friend_with_receipt(void)
     rc = read_ack("%64s", in);
     CU_ASSERT_EQUAL(rc, 1);
     CU_ASSERT_STRING_EQUAL(in, out);
+}
+
+static void test_send_bulkmsg_to_friend_with_receipt(void)
+{
+    CarrierContext *wctxt = test_context.carrier;
+    CarrierContextExtra *extra = wctxt->extra;
+    bool is_offline;
+    int64_t msgid = 0;
+    bool is_wakeup;
+    int idx;
+    const int datalen = 4096;
+    char *in, *out;
+    int rc;
+
+    test_context.context_reset(&test_context);
+
+    rc = add_friend_anyway(&test_context, robotid, robotaddr);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+    CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
+
+    out = (char*)calloc(1, datalen);
+    for(idx = 0; idx < datalen; idx++) {
+        out[idx] = '0' + (idx % 8);
+    }
+    memcpy(out + datalen - 5, "end", 4);
+    msgid = ela_send_message_with_receipt(wctxt->carrier, robotid, out, strlen(out),
+                                          test_message_receipt_cb, wctxt);
+    CU_ASSERT(msgid > 0);
+
+    is_wakeup = cond_trywait(wctxt->cond, 60000);
+    CU_ASSERT_TRUE(is_wakeup);
+    if (is_wakeup) {
+        CU_ASSERT(extra->msgid == msgid);
+        CU_ASSERT(extra->state == ElaReceipt_ByFriend);
+    }
+
+    in = (char*)calloc(1, datalen);
+    rc = read_ack("%5192s", in);
+    CU_ASSERT_EQUAL(rc, 1);
+    CU_ASSERT_STRING_EQUAL(in, out);
+
+    free(in);
+    free(out);
 }
 
 static void test_send_offmsg_to_friend_with_receipt(void)
@@ -279,6 +322,58 @@ static void test_send_offmsg_to_friend_with_receipt(void)
     rc = read_ack("%64s", in);
     CU_ASSERT_EQUAL(rc, 1);
     CU_ASSERT_STRING_EQUAL(in, out);
+}
+
+static void test_send_offbmsg_to_friend_with_receipt(void)
+{
+    CarrierContext *wctxt = test_context.carrier;
+    CarrierContextExtra *extra = wctxt->extra;
+    char buf[2][32] = {0};
+    bool is_offline;
+    int64_t msgid = 0;
+    bool is_wakeup;
+    int idx;
+    const int datalen = 4096;
+    char *in, *out;
+    int rc;
+
+    test_context.context_reset(&test_context);
+
+    rc = add_friend_anyway(&test_context, robotid, robotaddr);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+    CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
+
+    kill_node();
+
+    status_cond_wait(wctxt->friend_status_cond, OFFLINE);
+
+    out = (char*)calloc(1, datalen);
+    for(idx = 0; idx < datalen; idx++) {
+        out[idx] = '0' + (idx % 8);
+    }
+    memcpy(out + datalen - 5, "end", 4);
+    msgid = ela_send_message_with_receipt(wctxt->carrier, robotid, out, strlen(out),
+                                          test_message_receipt_cb, wctxt);
+    CU_ASSERT(msgid > 0);
+
+    is_wakeup = cond_trywait(wctxt->cond, 60000);
+    CU_ASSERT_TRUE(is_wakeup);
+    if (is_wakeup) {
+        CU_ASSERT(extra->msgid == msgid);
+        CU_ASSERT(extra->state == ElaReceipt_Offline);
+    }
+
+    start_node();
+
+    status_cond_wait(wctxt->friend_status_cond, ONLINE);
+
+    in = (char*)calloc(1, datalen);
+    rc = read_ack("%5192s", in);
+    CU_ASSERT_EQUAL(rc, 1);
+    CU_ASSERT_STRING_EQUAL(in, out);
+
+    free(in);
+    free(out);
 }
 
 static void test_send_edgemsg_to_friend_with_receipt(void)
@@ -326,7 +421,9 @@ static void test_send_edgemsg_to_friend_with_receipt(void)
 static CU_TestInfo cases[] = {
     { "test_request_friend_by_express", test_request_friend_by_express },
     { "test_send_message_to_friend_with_receipt", test_send_message_to_friend_with_receipt },
+    { "test_send_bulkmsg_to_friend_with_receipt", test_send_bulkmsg_to_friend_with_receipt },
     { "test_send_offmsg_to_friend_with_receipt", test_send_offmsg_to_friend_with_receipt },
+    { "test_send_offbmsg_to_friend_with_receipt", test_send_offbmsg_to_friend_with_receipt },
     { "test_send_edgemsg_to_friend_with_receipt", test_send_edgemsg_to_friend_with_receipt },
     {NULL, NULL }
 };
