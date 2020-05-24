@@ -2,7 +2,7 @@ import Base from './Base'
 import {Document} from 'mongoose'
 import * as _ from 'lodash'
 import {constant} from '../constant'
-import {permissions, getDidPublicKey, getProposalState, getProposalData, getDidName, ela} from '../utility'
+import {permissions, getDidPublicKey, getProposalState, getProposalData, getDidName, ela, getVoteResultByTxid} from '../utility'
 import * as moment from 'moment'
 import * as jwt from 'jsonwebtoken'
 import {
@@ -1272,27 +1272,28 @@ export default class extends Base {
     public async updateProposalOnProposed(data: any) {
         const {rs, _id, voteResult} = data
         const db_cvote = this.getDBModel('CVote')
-        const {data: {crvotes: crVotes}, status: chainStatus} = rs
+        const {status: chainStatus} = rs
         const newVoteHistory = []
-        const newVoteResult = _.map(voteResult, (e: any) => {
+        const newVoteResult = await Promise.all(_.map(voteResult, async (e: any) => {
             const newE = {
                 ..._.omit(e._doc, ['votedBy']),
                 votedBy: e.votedBy._id
             }
-            const did = _.get(e, 'votedBy.did.id')
-            if (!did) {
+            if (e.status !== constant.CVOTE_CHAIN_STATUS.CHAINING || _.isEmpty(e.txid)) {
                 return newE
             }
-            const existFlag = crVotes[did.replace('did:elastos:', '')]
-            if (!existFlag) return newE
+            const voteResultflag = await getVoteResultByTxid(e.txid)
+            if (!voteResultflag) {
+                return newE
+            }
             const newElement = {
                 ...newE,
                 status: constant.CVOTE_CHAIN_STATUS.CHAINED
             }
             newVoteHistory.push(_.omit(newElement, '_id'))
             return newElement
-        });
-
+        }));
+        
         await db_cvote.update({
             _id
         }, {

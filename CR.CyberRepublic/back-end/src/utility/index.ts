@@ -246,3 +246,31 @@ export const getDidName = async (did: string) => {
     logger.error(err)
   }
 }
+
+export const getVoteResultByTxid = async (txid: string) => {
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+  const data = {
+    jsonrpc: '2.0',
+    method: 'getrawtransaction',
+    params: {
+      txid: txid,
+      verbose: true
+    }
+  }
+  try {
+    const res = await axios.post(process.env.ELA_NODE_URL, data, {
+      headers
+    })
+    if (res && res.data && res.data.result) {
+      const confirmations = _.get(res.data.result, 'confirmations')
+      if (confirmations && confirmations > 0) {
+        return true
+      }
+    }
+    return false
+  } catch (err) {
+    logger.error(err)
+  }
+}
