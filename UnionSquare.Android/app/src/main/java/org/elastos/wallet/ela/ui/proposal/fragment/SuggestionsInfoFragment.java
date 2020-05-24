@@ -142,7 +142,7 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
 
                 } else if ("createproposal".equals(command)) {
                     //showFeePage();
-                    presenter.showFeePage(wallet, Constant.PROPOSALINPUT, 37, this,null);
+                    presenter.showFeePage(wallet, Constant.PROPOSALINPUT, 37, this, null);
                 }
 
                 break;
@@ -293,12 +293,17 @@ public class SuggestionsInfoFragment extends BaseFragment implements NewBaseView
 
         if (integer == RxEnum.VERTIFYPAYPASS.ordinal()) {
             //验证密码成功
-            payPasswd = (String) result.getObj();
-            initDid();
+            if (getClass().getSimpleName().equals(result.getName())) {
+                payPasswd = (String) result.getObj();
+                initDid();
+            }
+
         }
         if (integer == RxEnum.JUSTSHOWFEE.ordinal()) {
             //展示手续费后  再去验证密码
-            presenter.toVertifyPwdActivity(wallet, this);
+            if (getClass().getSimpleName().equals(result.getName())) {
+                presenter.toVertifyPwdActivity(wallet, this);
+            }
 
         }
 
