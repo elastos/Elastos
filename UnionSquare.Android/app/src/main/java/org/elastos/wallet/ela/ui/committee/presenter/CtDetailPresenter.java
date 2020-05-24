@@ -10,6 +10,7 @@ import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
+import org.elastos.wallet.ela.utils.AppUtlis;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -91,6 +92,21 @@ public class CtDetailPresenter extends NewPresenterAbstract {
         return getActiveJson("CRC", candidates);
     }
 
+
+    public JSONObject getProposalUnactiveData(List<ProposalSearchEntity.DataBean.ListBean> list) {
+        JSONArray candidates = new JSONArray();
+        if (list != null && list.size() > 0) {
+            for (int i = 0; i < list.size(); i++) {
+                ProposalSearchEntity.DataBean.ListBean bean = list.get(i);
+                if (!bean.getStatus().equalsIgnoreCase("NOTIFICATION")) {
+                    String hash = bean.getProposalHash();
+                    if(!AppUtlis.isNullOrEmpty(hash)) candidates.put(hash);
+                }
+            }
+        }
+        return getActiveJson("CRCProposal", candidates);
+    }
+
     public JSONObject conversVote(String voteInfo) {
         if (!TextUtils.isEmpty(voteInfo) && !voteInfo.equals("null") && !voteInfo.equals("[]")) {
             try {
@@ -108,6 +124,14 @@ public class CtDetailPresenter extends NewPresenterAbstract {
 
     public JSONObject getCRLastVote(JSONObject origin) {
         return getActiveJson("CRC", getJsonKeys(origin));
+    }
+
+    public JSONObject getProposalLastVote(JSONObject origin) {
+        return getActiveJson("CRCProposal", getJsonKeys(origin));
+    }
+
+    public JSONObject getImpeachmentVote(JSONObject origin) {
+        return getActiveJson("CRCImpeachment", getJsonKeys(origin));
     }
 
     public JSONArray getJsonKeys(JSONObject origin) {

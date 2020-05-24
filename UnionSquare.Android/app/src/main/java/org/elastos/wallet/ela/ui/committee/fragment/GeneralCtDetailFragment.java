@@ -28,6 +28,8 @@ import org.elastos.wallet.ela.ui.committee.presenter.CtDetailPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
+import org.elastos.wallet.ela.ui.proposal.bean.ProposalSearchEntity;
+import org.elastos.wallet.ela.ui.proposal.presenter.ProposalPresenter;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
@@ -165,6 +167,7 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
                 }
                 new VoteListPresenter().getDepositVoteList("1", "all", this, false);
                 new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
+                new ProposalPresenter().proposalSearch(1, 10000, "ALL", null, this);
                 new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
                 break;
         }
@@ -186,7 +189,9 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
                     JSONObject voteJson = presenter.conversVote(voteInfo);
                     if ("CRC".equals(o)) {
                         otherUnActiveVote.put(presenter.getCRLastVote(voteJson));
-                    } else if ("CRCImpeachment".equals(o)) {
+                    } else if("CRCProposal".equals(o)) {
+                        otherUnActiveVote.put(presenter.getProposalLastVote(voteJson));
+                    }else if ("CRCImpeachment".equals(o)) {
                         String amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
                         JSONObject newVotes = new JSONObject();
                         newVotes.put(cid, amount);
@@ -209,6 +214,14 @@ public class GeneralCtDetailFragment extends BaseFragment implements NewBaseView
                 List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
                 if (depositList != null && depositList.size() > 0) {
                     otherUnActiveVote.put(presenter.getDepositUnactiveData(depositList));
+                }
+                break;
+            case "proposalSearch":
+                List<ProposalSearchEntity.DataBean.ListBean> proposalList = ((ProposalSearchEntity)baseEntity).getData().getList();
+                if(proposalList!=null && proposalList.size()>0) {
+                    otherUnActiveVote.put(presenter.getProposalUnactiveData(proposalList));
+                } else {
+                    presenter.getVoteInfo(wallet.getWalletId(), "CRCProposal", this);
                 }
                 break;
             case "createImpeachmentCRCTransaction":

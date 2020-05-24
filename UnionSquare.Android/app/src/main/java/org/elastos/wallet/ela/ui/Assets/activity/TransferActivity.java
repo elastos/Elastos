@@ -154,8 +154,8 @@ public class TransferActivity extends BaseActivity {
                 tvHash.setText(searchBean.getProposalHash());
                 tvAmountTag.setText(R.string.rejectticket);
             case Constant.IMPEACHMENTCRC:
-                tvAddress.setVisibility(View.GONE);
-                tvRate.setVisibility(View.GONE);
+                rlAddress.setVisibility(View.GONE);
+                rlRate.setVisibility(View.GONE);
                 title.setText(R.string.impeachment);
                 tvAmountTag.setText(R.string.impeachvotes);
                 break;

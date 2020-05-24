@@ -6,6 +6,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -15,11 +17,15 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.presenter.WalletManagePresenter;
+import org.elastos.wallet.ela.ui.committee.presenter.CtManagePresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
+import org.elastos.wallet.ela.ui.crvote.bean.CrStatusBean;
 import org.elastos.wallet.ela.ui.did.fragment.AuthorizationFragment;
-import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.ElectoralAffairsPresenter;
+import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.Constant;
+import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -45,7 +51,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
 
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
-    ElectoralAffairsPresenter presenter = new ElectoralAffairsPresenter();
+    CtManagePresenter presenter;
     String depositAmount;
 
     @Override
@@ -57,9 +63,11 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getContext().getString(R.string.ctmanager));
         setView();
+        registReceiver();
     }
 
     String status;
+    String cid;
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
@@ -67,6 +75,9 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     }
 
     private void setView() {
+
+        presenter = new CtManagePresenter();
+
         switch (status) {
             case "Terminated":
                 description.setText(getString(R.string.completeofficehint));
@@ -117,8 +128,7 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
                 start(AuthorizationFragment.class, bundle);
                 break;
             case R.id.deposit:
-                presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                        Arith.mulRemoveZero(depositAmount, MyWallet.RATE_S).toPlainString(), this);
+                presenter.getCRDepositcoin(cid, this);
                 break;
         }
     }
@@ -126,18 +136,35 @@ public class CtManagerFragment extends BaseFragment implements NewBaseViewData {
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
-            case "createRetrieveDepositTransaction":
+            case "createRetrieveCRDepositTransaction":
                 Intent intent = new Intent(getActivity(), TransferActivity.class);
                 intent.putExtra("wallet", wallet);
-                intent.putExtra("type", Constant.WITHDRAWSUPERNODE);
+                intent.putExtra("type", Constant.WITHDRAWCR);
                 intent.putExtra("amount", depositAmount);
                 intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("transType", 36);
                 intent.putExtra("attributes", ((CommmonStringEntity) baseEntity).getData());
                 startActivity(intent);
                 break;
-            case "getDepositcoin":
 
+            case "getCRDepositcoin":
+                CRDePositcoinBean getdePositcoinBean = (CRDePositcoinBean) baseEntity;
+                depositAmount = getdePositcoinBean.getData().getResult().getAvailable();
+                if(!AppUtlis.isNullOrEmpty(depositAmount))
+                    presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
+                break;
+
+            case "getRegisteredCRInfo":
+                CrStatusBean crStatusBean = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), CrStatusBean.class);
+                String ownerPublicKey = crStatusBean.getInfo().getCROwnerPublicKey();
+                presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
+                        Arith.mulRemoveZero(depositAmount, MyWallet.RATE_S).toPlainString(), "", this);
                 break;
         }
+    }
+
+    public void registReceiver() {
+        if (!EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().register(this);
     }
 }
